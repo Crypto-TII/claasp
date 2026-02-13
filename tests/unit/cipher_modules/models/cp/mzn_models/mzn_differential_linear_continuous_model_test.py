@@ -344,7 +344,7 @@ def test_full_search_continuous_propagation_only():
     ]   
     
     
-    result = model.find_continuous_correlations(
+    result = model.find_one_continuous_correlations(
         fixed_values=fixed_inputs,
         solver_name="scip"
     )
@@ -416,7 +416,7 @@ def test_full_search_continuous_propagation_two_rounds():
         }
     ] 
 
-    result = model.find_continuous_correlations(
+    result = model.find_one_continuous_correlations(
         fixed_values=fixed_inputs,
         solver_name="scip"
     )
@@ -446,3 +446,136 @@ def test_full_search_continuous_propagation_two_rounds():
     for i in range(plaintext_size):
         assert abs(cipher_out[i] - expected_output_cipher[i]) < tol_error
         assert abs(cipher_intermediate_out[i] - expected_intermediate_cipher[i]) < tol_error
+
+def test_find_lowest_continuous_propagation():
+    cipher = SpeckBlockCipher(
+        block_bit_size=32,
+        key_bit_size=64,
+        number_of_rounds=2)
+    
+    plaintext_size = cipher.inputs_bit_size[0] 
+    key_size = cipher.inputs_bit_size[1]
+
+    model = MznDifferentialLinearContinuousModel(cipher)
+    
+    input_left = [-1.0, -1.0, -1.0,  -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0]
+    input_right = [-1.0,  -1.0, -1.0,  1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0]
+
+    key = [-1.0] * key_size
+
+    fixed_inputs = [
+        {
+            "component_id": "plaintext",
+            "bit_positions": list(range(0, plaintext_size//2)),
+            "bit_values": input_left
+        },
+        {
+            "component_id": "plaintext",
+            "bit_positions": list(range(plaintext_size//2, plaintext_size)),
+            "bit_values": input_right
+        },
+        {
+            "component_id": "key",
+            "bit_positions": list(range(key_size)),
+            "bit_values": key
+        }
+    ]   
+    
+    
+    result = model.find_lowest_continuous_correlation(
+        fixed_values=fixed_inputs,
+        solver_name="scip"
+    )
+    assert abs(result["diffLin_corr"]) > 0.0
+    assert -1.0 <= result["diffLin_corr"] <= 1.0
+
+    print(result["diffLin_corr"])
+    print(result["output_mask"])
+    print(result["diffLinComplement_corr"])
+
+
+def test_find_lowest_continuous_propagation_with_fixed_masks():
+    """
+    The correlation values correspond to the continuous differential-linear
+    correlations reported in Table 4 of [BGGMP2023]_.
+
+    Only the total correlation of the continuous part is verified here.
+
+    This method replicates the behavior of the find_lowest_continuous_correlation method, but using fixed output masks instead of searching over them.
+    """
+    cipher = SpeckBlockCipher(
+        block_bit_size=32,
+        key_bit_size=64,
+        number_of_rounds=2)
+    
+    plaintext_size = cipher.inputs_bit_size[0] 
+    key_size = cipher.inputs_bit_size[1]
+
+    model = MznDifferentialLinearContinuousModel(cipher)
+    
+    input_left = [-1.0, -1.0, -1.0,  1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0]
+    input_right = [-1.0,  1.0, -1.0,  1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0]
+
+    key = [-1.0] * key_size
+
+    fixed_inputs = [
+        {
+            "component_id": "plaintext",
+            "bit_positions": list(range(0, plaintext_size//2)),
+            "bit_values": input_left
+        },
+        {
+            "component_id": "plaintext",
+            "bit_positions": list(range(plaintext_size//2, plaintext_size)),
+            "bit_values": input_right
+        },
+        {
+            "component_id": "key",
+            "bit_positions": list(range(key_size)),
+            "bit_values": key
+        }
+    ]   
+    
+    mask_bits = [
+        [0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0]
+    ]
+
+    model.build_differential_linear_continuous_trail_model(
+        fixed_values=fixed_inputs
+    )
+
+    model._build_linear_mask_correlation_constraints()
+    model._build_difflin_corr_constraints()
+
+    for row in range(2):
+        for col in range(cipher.word_size):
+            model._model_constraints.append(
+                f"constraint output_mask[{row},{col}] = {mask_bits[row][col]};"
+            )
+
+    cipher_output_id = model._get_cipher_output_id()
+
+    model._model_constraints.append(
+        f"solve :: float_search({cipher_output_id}, 1e-12, smallest, indomain_min, complete) "
+        "minimize diffLinComplement_corr;"
+    )
+
+    result = model.solve_for_ARX("scip")
+    result = model._parse_result(result, "scip")
+
+    correlation = result["diffLin_corr"]
+    real_exponent = result["real_log2_exponent"]
+
+    tol_err_correlation_expected = 1e-6
+    tol_exponent_expected = 0.1
+
+    expected_diffLin_corr = 0.7454814092873888
+    expected_diffLinComplement_corr = 0.42   
+
+    assert abs(correlation - expected_diffLin_corr) < tol_err_correlation_expected
+    assert abs(real_exponent - expected_diffLinComplement_corr) < tol_exponent_expected
+
+
+
+

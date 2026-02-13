@@ -1,4 +1,5 @@
 from datetime import timedelta
+import math
 import time
 from minizinc import Instance, Model, Solver, Status
 from claasp.cipher_modules.models.cp.mzn_model import MznModel
@@ -51,7 +52,17 @@ class MznDifferentialLinearContinuousModel(MznModel):
         self.init_input_declarations()
 
         self._model_constraints.extend(self.connect_components())
-        self._variables_list.extend([get_continuous_operations()])
+        self._variables_list.insert(0, get_continuous_operations())
+        self.add_linear_mask_variables()
+        
+
+    def add_linear_mask_variables(self):
+        word_size = self._cipher.word_size
+        output_mask = (
+            f"array [0..1, 0..{word_size - 1}] "
+            f"of var 0..1: output_mask;"
+        )
+        self._variables_list.append(output_mask)
 
     def init_input_declarations(self):
         input_declarations = [
@@ -76,26 +87,104 @@ class MznDifferentialLinearContinuousModel(MznModel):
                     constraints.append(f"constraint {input_array} = {link_id};")
         return constraints
 
-    def find_continuous_correlations(self, fixed_values=[], solver_name="scip"):
+    def find_one_continuous_correlations(self, fixed_values=[], solver_name="scip"):
         self.build_differential_linear_continuous_trail_model(fixed_values=fixed_values)
         result = self.solve_for_ARX(solver_name=solver_name)
         return self._parse_result(result, solver_name)
+
+    def _get_cipher_output_id(self):
+        for component in self._cipher.get_all_components():
+            if component.type == CIPHER_OUTPUT:
+                return component.id
+        raise ValueError("cipher_output component not found")
     
-    def _parse_result(self, result, solver_name):                
+    def _build_linear_mask_correlation_constraints(self):
+        word_size = self._cipher.word_size
+        cipher_output_id = self._get_cipher_output_id()
+
+        left_half = ", ".join([
+            f"if output_mask[0, {i}] = 0 then 1.0 "
+            f"else output_mask[0, {i}] * abs({cipher_output_id}[{i}]) endif"
+            for i in range(word_size)
+        ])
+        right_half = ", ".join([
+            f"if output_mask[1, {i}] = 0 then 1.0 "
+            f"else output_mask[1, {i}] * abs({cipher_output_id}[{word_size + i}]) endif"
+            for i in range(word_size)
+        ])
+
+        mask_corr_decl = (
+            f"array [1..{2 * word_size}] of var lower..upper: linear_mask_times_diff_lin_output = "
+            f"array1d(0..{word_size - 1}, [{left_half}]) ++ "
+            f"array1d(0..{word_size - 1}, [{right_half}]);"
+        )
+        self._variables_list.append(mask_corr_decl)
+    
+    def _build_difflin_corr_constraints(self):
+        self._variables_list.append("var lower..upper: diffLin_corr;")
+        self._variables_list.append("var float: diffLinComplement_corr;")
+
+        self._model_constraints.append(
+            "constraint diffLin_corr = product(linear_mask_times_diff_lin_output);"
+        )
+        self._model_constraints.append(
+            "constraint diffLin_corr != 0.0;"
+        )
+        self._model_constraints.append(
+            "constraint sum(array1d(output_mask)) >= 1;"
+        )
+        self._model_constraints.append("""
+        constraint diffLinComplement_corr =
+        if diffLin_corr <= 0.001021453702391378 then
+        -19931.57001201849*diffLin_corr+29.89737278555626
+        elseif diffLin_corr <= 0.004151650554233785 /\ diffLin_corr > 0.001021453702391378 then
+        -584.962260272084*diffLin_corr+10.13570866882117
+        elseif diffLin_corr <= 0.01359667098324998 /\ diffLin_corr > 0.004151650554233785 then
+        -192.6450521799878*diffLin_corr+8.506944714410169
+        elseif diffLin_corr <= 0.05399137458004444 /\ diffLin_corr > 0.01359667098324998 then
+        -50.62607129324977*diffLin_corr+6.575959357916722
+        elseif diffLin_corr <= 0.1420480516058986 /\ diffLin_corr > 0.05399137458004444 then
+        -11.87410019056137*diffLin_corr+4.483687170396419
+        elseif diffLin_corr <= 0.2463455066216964 /\ diffLin_corr > 0.1420480516058986 then
+        -8.613130253286352*diffLin_corr+4.020472744461092
+        elseif diffLin_corr <= 0.595815289564374 /\ diffLin_corr > 0.2463455066216964 then
+        -3.761918786389538*diffLin_corr+2.825398597919413
+        elseif diffLin_corr <= 0.998000001 /\ diffLin_corr > 0.595815289564374 then
+        -1.444862453710759*diffLin_corr+1.44486100812744
+        else
+        1=1
+        endif;
+        """)
+
+    def find_lowest_continuous_correlation(self, fixed_values=[], solver_name="scip"):
+        self.build_differential_linear_continuous_trail_model(fixed_values=fixed_values)
+        self._build_linear_mask_correlation_constraints()
+        self._build_difflin_corr_constraints()
+        cipher_output_id = self._get_cipher_output_id()
+        self._model_constraints.append(
+            f"solve :: float_search({cipher_output_id}, 1e-12, smallest, indomain_min, complete) "
+            "minimize diffLinComplement_corr;"
+        )
+
+        result = self.solve_for_ARX(solver_name=solver_name)
+        return self._parse_result(result, solver_name)
+
+    def _parse_result(self, result, solver_name):
+
         parsed = {
             "cipher": self.cipher_id,
             "model_type": "continuous_differential",
             "solver_name": solver_name,
             "solving_time_seconds": getattr(self, '_last_solve_time', -1),
-            "memory_megabytes": str(self._last_result_stats.get('trailMem', '-1')) 
+            "memory_megabytes": str(self._last_result_stats.get('trailMem', '-1'))
                 if hasattr(self, '_last_result_stats') else '-1',
             "components_values": {},
             "status": str(result.status)
         }
-        
+
         if result.status not in [Status.SATISFIED, Status.OPTIMAL_SOLUTION]:
             return parsed
-        
+
         for component_id in sorted(self.added_component_ids):
             try:
                 if component_id in self._cipher.inputs:
@@ -105,7 +194,7 @@ class MznDifferentialLinearContinuousModel(MznModel):
                             "value": self._format_continuous_value(val),
                             "weight": 0
                         }
-                
+
                 elif component_id.startswith(("intermediate_output_", "cipher_output_")):
                     output_val = result[component_id]
                     if output_val is not None:
@@ -121,7 +210,7 @@ class MznDifferentialLinearContinuousModel(MznModel):
                                     "value": formatted,
                                     "weight": 0
                                 }
-                
+
                 elif component_id.startswith(("rot_", "modadd_", "xor_")):
                     input_vars = []
                     for prefix in ["x1_", "x2_"]:
@@ -129,24 +218,46 @@ class MznDifferentialLinearContinuousModel(MznModel):
                             input_vars.extend(result[f"{prefix}{component_id}"])
                         except (KeyError, AttributeError):
                             pass
-                    
+
                     if input_vars:
                         parsed["components_values"][f"{component_id}_i"] = {
                             "value": self._format_continuous_value(input_vars),
                             "weight": 0
                         }
-                    
+
                     output_val = result[component_id]
                     if output_val is not None:
                         parsed["components_values"][f"{component_id}_o"] = {
                             "value": self._format_continuous_value(output_val),
                             "weight": 0
                         }
-                        
+
             except (KeyError, AttributeError):
                 continue
-        
+
+        self._parse_difflin_fields(result, parsed)
+
         return parsed
+
+    def _parse_difflin_fields(self, result, parsed):
+
+        for field in ["diffLin_corr", "diffLinComplement_corr"]:
+            try:
+                parsed[field] = float(result[field])
+            except (KeyError, AttributeError, TypeError):
+                pass
+
+        try:
+            corr = float(result["diffLin_corr"])
+            if corr != 0.0:
+                parsed["real_log2_exponent"] = -math.log2(abs(corr))
+        except (KeyError, AttributeError, TypeError, ValueError):
+            pass
+
+        try:
+            parsed["output_mask"] = list(result["output_mask"])
+        except (KeyError, AttributeError, TypeError):
+            pass
         
     def _format_continuous_value(self, val):
         if isinstance(val, list):
@@ -156,7 +267,7 @@ class MznDifferentialLinearContinuousModel(MznModel):
     def solve_for_ARX(self, solver_name="scip", timeout_in_seconds_=30, processes_=4):
         constraints = self._model_constraints
         variables = self._variables_list
-        mzn_model_string = "\n".join(constraints) + "\n".join(variables)
+        mzn_model_string =  "\n".join(variables) + "\n".join(constraints) 
         solver_name_mzn = Solver.lookup(solver_name)
         bit_mzn_model = Model()
         bit_mzn_model.add_string(mzn_model_string)
