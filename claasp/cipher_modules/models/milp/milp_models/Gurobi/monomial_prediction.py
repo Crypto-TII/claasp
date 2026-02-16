@@ -362,10 +362,24 @@ class MilpMonomialPredictionModel():
         output_vars = []
         tmp = list(self._occurences[component.id].keys())
         tmp.sort()
-        for i in tmp:
-            output_vars.append(self._model.getVarByName(f"{component.id}[{i}]"))
+        
+        # Optimized: Use _variables dict if available (created by create_gurobi_vars_from_all_components)
+        if component.id in self._variables:
+             vars_dict = self._variables[component.id]
+             for i in tmp:
+                  if i in vars_dict:
+                       output_vars.append(vars_dict[i]["original"])
+                  else:
+                       # Fallback to name search if for some reason not in dict (should not happen)
+                       output_vars.append(self._model.getVarByName(f"{component.id}[{i}]"))
+        else:
+             # Fallback for legacy calls or unitialized dict
+             for i in tmp:
+                output_vars.append(self._model.getVarByName(f"{component.id}[{i}]"))
+                
         self._model.update()
         return output_vars
+
 
     def get_input_vars(self, component):
         input_vars_concat = []
@@ -669,11 +683,15 @@ class MilpMonomialPredictionModel():
 
         return self._model
 
+
+
     def get_where_component_is_used(self, predecessors, input_id_link_needed, block_needed):
         occurences = {}
         ids = self._cipher.inputs + predecessors
         for name in ids:
             for component_id in predecessors:
+                if component_id in self._cipher.inputs:
+                    continue
                 component = self._cipher.get_component_from_id(component_id)
                 if name in component.input_id_links:
                     indexes = [i for i, j in enumerate(component.input_id_links) if j == name]
@@ -825,11 +843,81 @@ class MilpMonomialPredictionModel():
         self.set_unused_variables_to_zero()
         self.create_all_copies()
         self._model.update()
-        end = time.time()
-        building_time = end - start
         if verbosity:
             print(f"########## building_time : {building_time}")
         self._model.update()
+
+
+    def build_model_with_input_output_constraints(self, output_indices, chosen_cipher_output=None):
+        """
+        Builds a Gurobi model based on build_generic_model_for_specific_output_bit 
+        but allows multiple output bits to be set to 1.
+        
+        Args:
+            output_indices (list): List of integers (indices) of the output bits to be set to 1.
+                                   All other output bits will be set to 0.
+            chosen_cipher_output (str, optional): ID of the output component. Defaults to cipher output.
+        """
+        import time
+        start = time.time()
+        
+        # build_generic_model does NOT call build_gurobi_model() at start, 
+        # it calls add_constraints which calls build_gurobi_model.
+
+        if chosen_cipher_output is not None:
+             input_id_link_needed = chosen_cipher_output
+        else:
+             input_id_link_needed = self.get_cipher_output_component_id()
+             
+        component = self._cipher.get_component_from_id(input_id_link_needed)
+        block_needed = list(range(component.output_bit_size))
+        
+        G = create_networkx_graph_from_input_ids(self._cipher)
+        predecessors = list(_get_predecessors_subgraph(G, [input_id_link_needed]))
+        for input_id in self._cipher.inputs + ['']:
+            if input_id in predecessors:
+                predecessors.remove(input_id)
+            
+        self.add_constraints(predecessors, input_id_link_needed, block_needed)
+        
+        var_from_block_needed = []
+        if input_id_link_needed in self._variables:
+            for i in block_needed:
+                var_from_block_needed.append(self._variables[input_id_link_needed][i]["original"])
+        else:
+            # Fallback if component not in variables (should not happen if add_constraints worked)
+            for i in block_needed:
+                 var_from_block_needed.append(self._model.getVarByName(f"{input_id_link_needed}[{i}]"))
+
+        output_vars = self._model.addVars(list(range(len(block_needed))), vtype=GRB.BINARY, name="output")
+        self._variables["output"] = output_vars
+        output_vars = list(output_vars.values())
+        self._model.update()
+
+        for i in range(len(block_needed)):
+            self._model.addConstr(output_vars[i] == var_from_block_needed[i])
+            self.set_as_used_variables([output_vars[i], var_from_block_needed[i]])
+            
+        # Set constraints: specified indices to 1, others to 0
+        # If output_indices is None, we build the variables but DO NOT constrain them (free variables)
+        if output_indices is not None:
+            output_set = set(output_indices)
+            
+            for i in range(len(block_needed)):
+                if i in output_set:
+                    self._model.addConstr(output_vars[i] == 1)
+                else:
+                    self._model.addConstr(output_vars[i] == 0)
+
+        # Skip fixed_degree logic from generic model as not requested/relevant here
+        
+        self.set_unused_variables_to_zero()
+        self.create_all_copies()
+        self._model.update()
+
+
+
+
 
     def _prefix_for_input(self, name: str) -> str:
         return name[:1].lower()
@@ -1800,11 +1888,383 @@ class MilpMonomialPredictionModel():
         except Exception as e:
             print(f"[WARNING] Failed to save {experiment_name} to file: {e}")
 
+    def find_coefficient_of_cube_by_divide_and_conquer(
+            self,
+            output_bit_index,
+            middle_round,
+            cube,
+            chosen_cipher_output=None
+    ):
+        r"""
+        Compute the superpoly (coefficient of the cube monomial) in terms of key variables using a divide-and-conquer strategy.
 
+        This method reconstructs the polynomial $P(k)$ such that the coefficient of the cube $x^u$ in the ANF is $P(k)$.
+        It implements a Meet-in-the-Middle approach by dividing the cipher into two halves at ``middle_round``.
+        It enumerates all feasible intermediate states at the connection point and sums the number of paths
+        through both halves for each state.
+
+        .. NOTE::
+
+            This method is currently fully operational for **permutations** (where no key variables are involved).
+            Support for block ciphers or stream ciphers with key schedules is experimental and currently
+            under debugging. Results for keyed primitives may not be accurate yet.
+
+        INPUT:
+
+        - ``output_bit_index`` -- **integer**
+          Index of the target output bit (0-based, counting from the most significant bit).
+
+        - ``middle_round`` -- **integer**
+          The round index at which to split the cipher.
+          The first half covers rounds ``0`` to ``middle_round - 1``.
+          The second half covers rounds ``middle_round`` to the end.
+
+        - ``cube`` -- **list of strings**
+          List of cube variable names (e.g. ``["p1", "p3", "p8"]``) representing the input variables
+          of the cube that are fixed to 1. All other public variables (e.g., plaintext/IV bits not in the cube)
+          are implicitly fixed to 0.
+
+        - ``chosen_cipher_output`` -- **string** (default: ``None``)
+          Optional component ID if the computation targets an intermediate output component
+          instead of the final cipher output.
+
+        OUTPUT:
+
+        - **Sage BooleanPolynomial**
+          The superpoly (or coefficient) in the key variables.
+          If the cipher is a permutation (no key input), this returns a constant Boolean polynomial
+          (``0`` or ``1``) representing the parity of paths.
+        """
+        
+        # 0. Identify Key Variables and Setup Polynomial Ring
+        key_input_index = None
+        for i, inp in enumerate(self._cipher.inputs):
+            if "key" in inp.lower():
+                key_input_index = i
+                break
+        
+        # Fallback for key input identification
+        if key_input_index is None and len(self._cipher.inputs) > 1:
+             key_input_index = 1 # Typical for block ciphers [plaintext, key]
+        
+        # For permutations without key, create a minimal ring for constant polynomials
+        if key_input_index is None:
+            if verbosity:
+                print("[INFO] No key input found (permutation). Result will be constant 0 or 1.")
+            # Create minimal ring with 1 variable (we won't use it, just for type compatibility)
+            B = BooleanPolynomialRing(1, 'k0')
+            k_vars = B.gens()
+            key_size = 0  # No actual key bits
+            has_key = False
+        else:
+            key_size = self._cipher.inputs_bit_size[key_input_index]
+            B = BooleanPolynomialRing(key_size, tuple(f"k{i}" for i in range(key_size)))
+            k_vars = B.gens()
+            has_key = True
+
+
+        # 1. Build Full Model
+        fixed_degree = None
+        which_var_degree = None
+        print("DEBUG: Building Generic Model...")
+        self.build_generic_model_for_specific_output_bit(output_bit_index, fixed_degree, which_var_degree,
+                                                         chosen_cipher_output)
+        print("DEBUG: Generic Model Built.")
+
+        # 2. Fix Input (Cube)
+        # Fix variables in Cube to 1
+        cube_verbose = self.var_list_to_input_positions(cube)
+        cube_vars_set = set()
+        for term in cube_verbose:
+            var_name = f"{term[0]}[{term[1]}]"
+            cube_vars_set.add(var_name)
+            var_term = self._model.getVarByName(var_name)
+            if var_term is not None:
+                self._model.addConstr(var_term == 1)
+        
+        # Fix non-cube PUBLIC variables to 0
+        for i, inp in enumerate(self._cipher.inputs):
+            # Skip key input 
+            if i == key_input_index:
+                continue
+            
+            size = self._cipher.inputs_bit_size[i]
+            for bit in range(size):
+                var_name = f"{inp}[{bit}]"
+                if var_name not in cube_vars_set:
+                    var_term = self._model.getVarByName(var_name)
+                    if var_term is not None:
+                        self._model.addConstr(var_term == 0)
+
+        # 3. Identify Middle Variables
+        if middle_round <= 0 or middle_round >= self._cipher.number_of_rounds:
+            raise ValueError(
+                f"Middle round {middle_round} out of valid range (1 to {self._cipher.number_of_rounds - 1})")
+
+        mid_round_obj = self._cipher.rounds_as_list[middle_round - 1]
+        mid_comp_id = None
+
+        from claasp.name_mappings import INTERMEDIATE_OUTPUT, CIPHER_OUTPUT
+        for c in mid_round_obj.components:
+            if c.type == INTERMEDIATE_OUTPUT and c.description == ["round_output"]:
+                mid_comp_id = c.id
+                break
+
+        if mid_comp_id is None:
+            for c in mid_round_obj.components:
+                if "output" in c.id or "state" in c.id:
+                    mid_comp_id = c.id
+                    break
+
+        if mid_comp_id is None:
+            raise ValueError(f"Could not identify round output component for round {middle_round - 1}")
+
+        # Collect the Gurobi variables for this component
+        mid_vars_list = []
+        mid_comp = self._cipher.get_component_from_id(mid_comp_id)
+        bit_size = mid_comp.output_bit_size
+
+        # Try to get variables from the component itself
+        found_vars = False
+        if mid_comp_id in self._variables and len(self._variables[mid_comp_id]) > 0:
+            found_vars = True
+            for i in range(bit_size):
+                if i in self._variables[mid_comp_id]:
+                    v = self._variables[mid_comp_id][i]["original"]
+                    if v is not None:
+                         mid_vars_list.append(v)
+        
+        # Fallback: if no vars found (e.g. dangling tap), get from inputs
+        if not found_vars or len(mid_vars_list) == 0:
+            mid_vars_list = [] # Reset key
+            for link_idx, link_id in enumerate(mid_comp.input_id_links):
+                # link_id is the component ID feeding this input
+                # pos_list is list of bit positions from that component
+                pos_list = mid_comp.input_bit_positions[link_idx]
+                for pos in pos_list:
+                    if link_id in self._variables and pos in self._variables[link_id]:
+                         v = self._variables[link_id][pos]["original"]
+                         if v is not None:
+                              mid_vars_list.append(v)
+        
+        if len(mid_vars_list) == 0:
+             # Last resort debug
+             if verbosity: print(f"DEBUG: Still no vars for {mid_comp_id}. Available vars keys: {list(self._variables.keys())[:10]}...") 
+        
+        if verbosity:
+            print(f"Dividing at component {mid_comp_id} (size {bit_size}), found {len(mid_vars_list)} vars")
+
+        print("DEBUG: Starting Enumeration...")
+        # 4. Enumerate Middle States using Callback
+        feasible_states = set()
+
+        def mid_state_callback(model, where):
+            if where == GRB.Callback.MIPSOL:
+                vals = model.cbGetSolution(mid_vars_list)
+                state = tuple(int(round(v)) for v in vals)
+
+                if state not in feasible_states:
+                    feasible_states.add(state)
+                    # Add lazy constraint
+                    if mid_vars_list:
+                        lhs = 0
+                        for i, v in enumerate(mid_vars_list):
+                            val = state[i]
+                            if val == 0:
+                                lhs += v
+                            else:
+                                lhs += (1 - v)
+                        model.cbLazy(lhs >= 1)
+        
+        self._model.setParam(GRB.Param.LazyConstraints, 1)
+        self._model.setParam(GRB.Param.PoolSearchMode, 0)
+        self._model.setParam(GRB.Param.OutputFlag, 0)
+        
+        self._model.optimize(mid_state_callback)
+        print(f"Enumerated {len(feasible_states)} middle states at round {middle_round}.")
+        
+        # 5. Split and Count (Polynomial Reconstruction)
+        remaining_rounds = self._cipher.number_of_rounds - middle_round
+        
+            
+        cipher1 = self._cipher.__class__(number_of_rounds=middle_round)
+        cipher2 = self._cipher.__class__(number_of_rounds=remaining_rounds)
+        
+        model1 = MilpMonomialPredictionModel(cipher1)
+        model2 = MilpMonomialPredictionModel(cipher2)
+
+        total_poly = B(0)
+
+
+        def get_key_masks(m_model, m_cipher):
+            masks = []
+            if m_model.Status not in [GRB.OPTIMAL, GRB.SUBOPTIMAL]:
+                return masks
+            
+            # Find key vars in this sub-model
+            m_key_idx = None
+            for idx, inp in enumerate(m_cipher.inputs):
+                if "key" in inp.lower():
+                    m_key_idx = idx
+                    break
+            
+            if m_key_idx is None: 
+                # If no key input found, assume independent (empty mask)
+                return [0] * m_model.SolCount 
+
+            m_key_vars = []
+            m_key_size = m_cipher.inputs_bit_size[m_key_idx]
+            for i in range(m_key_size):
+                 v = m_model.getVarByName(f"{m_cipher.inputs[m_key_idx]}[{i}]")
+                 m_key_vars.append(v)
+            
+            # Retrieve all solutions
+            for sol_idx in range(m_model.SolCount):
+                 m_model.Params.SolutionNumber = sol_idx
+                 mask = 0
+                 # Bulk retrieval possible? use getAttr checks
+                 for bit_i, v in enumerate(m_key_vars):
+                      if v is not None and v.Xn > 0.5:
+                           mask |= (1 << bit_i)
+                 masks.append(mask)
+            return masks
+
+        
+       
+        
+        # Prepare Output for Model 2: Target bit must be 1 (Static)
+        model2.build_generic_model_for_specific_output_bit(output_bit_index)
+        
+        # --- Model 1 Static Build (Cube Inputs, Free Outputs) ---
+        # Build structure with NO output constraints (output_indices=None)
+        model1.build_model_with_input_output_constraints(None)
+        
+        # Add Static Cube Constraints to Model 1 Base
+        cube_locs = model1.var_list_to_input_positions(cube)
+        cube_set = {(p[0], p[1]) for p in cube_locs}
+        
+        for inp_name, size in zip(cipher1.inputs, cipher1.inputs_bit_size):
+            if "key" in inp_name.lower(): continue
+            
+            if inp_name in model1._variables:
+                for i in range(size):
+                    if i in model1._variables[inp_name]:
+                        v = model1._variables[inp_name][i]["original"]
+                        if v is not None:
+                            if (inp_name, i) in cube_set:
+                                model1._model.addConstr(v == 1)
+                            else:
+                                model1._model.addConstr(v == 0)
+        
+        model1._model.update()
+        
+        parity = 0
+        for idx, state in enumerate(feasible_states):
+            # Always print progress
+            if idx == 0 or (idx + 1) % 10 == 0 or (idx + 1) == len(feasible_states):
+                print(f"Processing state {idx+1}/{len(feasible_states)}...")
+                import sys
+                sys.stdout.flush()
+
+            
+            # --- Model 1: Cube -> Middle State (state) ---
+            # Use a COPY of the static model1
+            m1_core = model1._model.copy()
+            m1_core.setParam(GRB.Param.PoolSearchMode, 2)
+            m1_core.setParam(GRB.Param.PoolSolutions, 2000000000)
+            m1_core.setParam(GRB.Param.OutputFlag, 0)
+            
+            # Add Dynamic Output Constraints (State) to the COPY
+            # The output variables in base model are named "output[i]"
+            # We must find them in the copy and constrain them to state[i]
+            
+            # Note: "output" variables are auxiliary vars created in build_model...
+            # We can find them by name.
+            
+            for i, val in enumerate(state):
+                 v_copy = m1_core.getVarByName(f"output[{i}]")
+                 if v_copy is not None:
+                     m1_core.addConstr(v_copy == val)
+            
+            # Solve Model 1 copy
+            m1_core.optimize()
+            
+            masks1 = get_key_masks(m1_core, cipher1)
+            c1 = m1_core.SolCount % 2
+            
+            # Dispose copy
+            m1_core.dispose()
+            
+            if not masks1:
+                print("  Model 1 infeasible")
+                continue
+
+            # --- Model 2: Middle State (state) -> Target Output ---
+            
+            # Use a COPY of the static model2
+            m2_core = model2._model.copy()
+            m2_core.setParam(GRB.Param.PoolSearchMode, 2)
+            m2_core.setParam(GRB.Param.PoolSolutions, 200000000)
+            m2_core.setParam(GRB.Param.OutputFlag, 0)
+            
+            # Manually add Input (State) constraints to the COPY
+            inp_state_name = cipher2.inputs[0] # Assume single input state for partial cipher
+            
+            # We need to find the variables in m2_core that correspond to logic variables
+            # The logic variables are stored in model2._variables (which map to original model vars)
+            # We can use getVarByName using the names from original variables
+            
+            if inp_state_name in model2._variables:
+                for i in range(min(len(state), len(model2._variables[inp_state_name]))):
+                     if i in model2._variables[inp_state_name]:
+                         v_orig = model2._variables[inp_state_name][i]["original"]
+                         if v_orig is not None:
+                             # Get corresponding variable in the COPY
+                             v_copy = m2_core.getVarByName(v_orig.VarName)
+                             if v_copy is not None:
+                                 m2_core.addConstr(v_copy == state[i])
+
+            # Solve Model 2 copy
+            m2_core.optimize()
+            c2 = m2_core.SolCount % 2
+
+            masks2 = get_key_masks(m2_core, cipher2)
+        
+            # Dispose of the copy to free resources
+            m2_core.dispose()
+            
+            if not masks2:
+                print("  Model 2 infeasible")
+                continue
+
+
+            parity += c1 * c2
+            print(f"Parity: {parity}")
+            # Combine Results
+            if not has_key:
+                # Permutation: just count parity
+                count = len(masks1) * len(masks2)
+                total_poly += B(count % 2)
+
+            else:
+                for m1 in masks1:
+                    for m2 in masks2:
+                        m_total = m1 | m2
+                        # Convert integer mask to monomial
+                        mon = B(1)
+                        for i in range(key_size):
+                            if (m_total >> i) & 1:
+                                mon *= k_vars[i]
+                        total_poly += mon
+            
+        
+        print(f"Parity: {parity}")
+        return total_poly
 
 ################################
 ######## END OF CLASS ##########
 ################################
+
 
 
 def _valuation_from_assign(cipher, full_assign_bits, allowed_prefixes=None):
@@ -1967,3 +2427,4 @@ def check_correctness_of_keycoeff_of_cube_monomial_or_superpoly(cipher, output_b
         if acc != rhs:
             return False
     return True
+
