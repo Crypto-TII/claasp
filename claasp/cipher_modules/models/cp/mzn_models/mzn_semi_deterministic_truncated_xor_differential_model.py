@@ -51,7 +51,6 @@ class MznSemiDeterministicTruncatedXorDifferentialModel(MznModel):
                 cp_constraints.append(f"constraint count({output_id_link},2) < {output_size};")
             elif CONSTANT not in component.type:
                 cp_declarations.append(f"array[0..{output_size - 1}] of var 0..2: {output_id_link};")
-        cp_constraints.append("constraint count(plaintext,1) > 0;")
 
         return cp_declarations, cp_constraints
 
@@ -140,7 +139,6 @@ class MznSemiDeterministicTruncatedXorDifferentialModel(MznModel):
         self.build_cp_semi_deterministic_truncated_xor_differential_trail(
             fixed_variables=fixed_values, minimize=False
         )
-
         return self.solve(
             SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL_ONE_SOLUTION,
             solver_name=solver_name,

@@ -210,11 +210,6 @@ class Modular(Component):
         for id_link, bit_positions in zip(self.input_id_links, self.input_bit_positions):
             all_inputs.extend([f"{id_link}[{position}]" for position in bit_positions])
 
-        if num_add != 2:
-            raise NotImplementedError(
-                "CP semi-deterministic truncated XOR differential is only implemented for binary modular operations"
-            )
-
         input_len = len(all_inputs) // num_add
         cp_declarations = []
         cp_constraints = []
@@ -225,23 +220,59 @@ class Modular(Component):
                 [f"constraint pre_{output_id_link}_{i}[{j}] = {all_inputs[i * input_len + j]};" for j in range(input_len)]
             )
 
-        delta_carry = f"delta_carry_{output_id_link}"
-        costs = f"costs_{output_id_link}"
+        for i in range(num_add, 2 * num_add - 2):
+            cp_declarations.append(f"array[0..{input_len - 1}] of var 0..2: pre_{output_id_link}_{i};")
+
         probability_var = f"probability_{output_id_link}"
-        pivot_var = f"p_{output_id_link}"
+        stage_probability_vars = []
+
+        for i in range(num_add - 2):
+            delta_carry = f"delta_carry_{output_id_link}_{i}" if num_add > 2 else f"delta_carry_{output_id_link}"
+            costs = f"costs_{output_id_link}_{i}" if num_add > 2 else f"costs_{output_id_link}"
+            pivot_var = f"p_{output_id_link}_{i}" if num_add > 2 else f"p_{output_id_link}"
+            stage_probability_var = f"{probability_var}_{i}" if num_add > 2 else probability_var
+
+            cp_declarations.extend(
+                [
+                    f"array[0..{input_len - 1}] of var 0..2: {delta_carry};",
+                    f"array[0..{input_len - 1}] of var {{100, 41, 19, 9, 4, 2, 1, 0}}: {costs};",
+                    f"var 0..{input_len - 1}: {pivot_var};",
+                    f"var int: {stage_probability_var};",
+                ]
+            )
+
+            cp_constraints.append(
+                f"constraint counter_based_modadd_semideterministic(pre_{output_id_link}_{i + 1}, pre_{output_id_link}_{num_add - 1}, pre_{output_id_link}_{num_add + i}, {delta_carry}, {pivot_var}, {costs}, {input_len}, {stage_probability_var});"
+            )
+
+            if num_add > 2:
+                stage_probability_vars.append(stage_probability_var)
+
+        final_index = num_add - 2
+        final_delta_carry = (
+            f"delta_carry_{output_id_link}_{final_index}" if num_add > 2 else f"delta_carry_{output_id_link}"
+        )
+        final_costs = f"costs_{output_id_link}_{final_index}" if num_add > 2 else f"costs_{output_id_link}"
+        final_pivot_var = f"p_{output_id_link}_{final_index}" if num_add > 2 else f"p_{output_id_link}"
+        final_probability_var = f"{probability_var}_{final_index}" if num_add > 2 else probability_var
 
         cp_declarations.extend(
             [
-                f"array[0..{input_len - 1}] of var 0..2: {delta_carry};",
-                f"array[0..{input_len - 1}] of var {{100, 41, 19, 9, 4, 0}}: {costs};",
-                f"var 0..{input_len - 1}: {pivot_var};",
-                f"var int: {probability_var};",
+                f"array[0..{input_len - 1}] of var 0..2: {final_delta_carry};",
+                f"array[0..{input_len - 1}] of var {{100, 41, 19, 9, 4, 2, 1, 0}}: {final_costs};",
+                f"var 0..{input_len - 1}: {final_pivot_var};",
+                f"var int: {final_probability_var};",
             ]
         )
 
         cp_constraints.append(
-            f"constraint counter_based_modadd_semideterministic(pre_{output_id_link}_0, pre_{output_id_link}_1, {output_id_link}, {delta_carry}, {pivot_var}, {costs}, {input_len}, {probability_var});"
+            f"constraint counter_based_modadd_semideterministic(pre_{output_id_link}_0, pre_{output_id_link}_{2 * num_add - 3}, {output_id_link}, {final_delta_carry}, {final_pivot_var}, {final_costs}, {input_len}, {final_probability_var});"
         )
+
+        if num_add > 2:
+            stage_probability_vars.append(final_probability_var)
+            cp_declarations.append(f"var int: {probability_var};")
+            cp_constraints.append(f"constraint {probability_var} = sum([{', '.join(stage_probability_vars)}]);")
 
         metadata = {"probability_var": probability_var}
 

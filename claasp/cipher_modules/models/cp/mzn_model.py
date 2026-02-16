@@ -413,7 +413,7 @@ class MznModel:
                 logic_operator = " \\/ "
             else:
                 raise ValueError(CONSTRAINT_TYPE_ERROR)
-            if bit_values[0] not in [0,1]:
+            if bit_values[0] not in [0, 1, 2]:
                 variables_values = []
                 for v in bit_values:
                     variables_values.extend([(v[0], i) for i in v[1]])
