@@ -125,8 +125,8 @@ class GostBlockCipher(Cipher):
         self, plaintext: ComponentState, key: ComponentState
     ) -> ComponentState:
         plaintext_id = self.add_MODADD_component(
-            plaintext.id[-1] + key.id,
-            plaintext.input_bit_positions[-1] + key.input_bit_positions,
+            [plaintext.id[-1], key.id],
+            [plaintext.input_bit_positions[-1]] + key.input_bit_positions,
             self.half_block_size,
         ).id
 
@@ -145,7 +145,7 @@ class GostBlockCipher(Cipher):
         for i, sbox in enumerate(SBOX):
             plaintext_ids += [
                 self.add_SBOX_component(
-                    plaintext.id[-1], list(range(4 * i, 4 * (i + 1))), 4, sbox
+                    [plaintext.id[-1]], [list(range(4 * i, 4 * (i + 1)))], 4, sbox
                 ).id
             ]
 
@@ -174,8 +174,8 @@ class GostBlockCipher(Cipher):
 
     def xor(self, plaintext: ComponentState) -> ComponentState:
         plaintext_id = self.add_XOR_component(
-            plaintext.id[0] + plaintext.id[2],
-            plaintext.input_bit_positions[0] + plaintext.input_bit_positions[2],
+            [plaintext.id[0], plaintext.id[2]],
+            [plaintext.input_bit_positions[0]] + [plaintext.input_bit_positions[2]],
             self.half_block_size,
         ).id
 
@@ -189,6 +189,6 @@ class GostBlockCipher(Cipher):
 
     def update_key(self, key: ComponentState, r: int) -> ComponentState:
         if r <= 23:
-            return ComponentState(key.id[r % 8], key.input_bit_positions[r % 8])
+            return ComponentState(key.id[r % 8], [key.input_bit_positions[r % 8]])
 
-        return ComponentState(key.id[7 - (r % 8)], key.input_bit_positions[7 - (r % 8)])
+        return ComponentState(key.id[7 - (r % 8)], [key.input_bit_positions[7 - (r % 8)]])
