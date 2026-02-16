@@ -1045,22 +1045,23 @@ class MznModel:
     @property
     def model_constraints(self):
         """
-        Return the model specified by ``model_type``.
+        Return the constraints of the model.
 
-        INPUT:
-
-        - ``model_type`` -- **string**; the model to retrieve
+        This property provides access to only the constraints, excluding variable declarations.
+        Use together with `model_variables` to get the complete model.
 
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
-            sage: speck = SpeckBlockCipher(number_of_rounds=4)
-            sage: cp = MznModel(speck)
-            sage: cp.model_constraints()
-            Traceback (most recent call last):
-            ...
-            ValueError: No model generated
+            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model import MznXorDifferentialModel
+            sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
+            sage: mzn = MznXorDifferentialModel(speck)
+            sage: mzn.build_xor_differential_trail_model()
+            sage: constraints = mzn.model_constraints
+            sage: len(constraints) > 0
+            True
+            sage: 'constraint rot_0_0[2] = plaintext[11];' == constraints[29]
+            True
         """
         if not self._model_constraints:
             raise ValueError("No model generated")
@@ -1069,22 +1070,23 @@ class MznModel:
     @property
     def model_variables(self):
         """
-        Return the variables of the model specified by ``model_type``.
+        Return the variable declarations of the model.
 
-        INPUT:
-
-        - ``model_type`` -- **string**; the model to retrieve
+        This property provides access to only the variable declarations, excluding constraints.
+        Use together with `model_constraints` to get the complete model.
 
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
-            sage: speck = SpeckBlockCipher(number_of_rounds=4)
-            sage: cp = MznModel(speck)
-            sage: cp.model_variables()
-            Traceback (most recent call last):
-            ...
-            ValueError: No model generated
+            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model import MznXorDifferentialModel
+            sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
+            sage: mzn = MznXorDifferentialModel(speck)
+            sage: mzn.build_xor_differential_trail_model()
+            sage: variables = mzn.model_variables
+            sage: len(variables) > 0
+            True
+            sage: 'array[0..15] of var 0..1: pre_modadd_0_1_0;' == variables[0]
+            True
         """
         if not self._variables_list:
             raise ValueError("No model generated")
