@@ -138,7 +138,9 @@ class UblockSingleLinearLayerBlockCipher(Cipher):
     - ``key_bit_size`` -- **integer** (default: `128`); cipher round_key bit size of the cipher
     - ``number_of_rounds`` -- **integer** (default: `16`); number of rounds of the cipher. The cipher uses the
       corresponding amount given the other parameters (if available) when r is 0
-    - ``use_mix_column`` -- **boolean** (default: `False`); whether to use mix column in the linear layer
+    - ``use_mix_column`` -- **boolean** (default: `False`); controls which internal linear transformation the
+      cipher uses, when set to True, the component is instantiated with a MixColumn-based transformation; when
+      False, a standard linear layer is used instead
 
     EXAMPLES::
 
