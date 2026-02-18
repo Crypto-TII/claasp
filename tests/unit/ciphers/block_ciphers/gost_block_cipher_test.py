@@ -2,6 +2,9 @@ from claasp.ciphers.block_ciphers.gost_block_cipher import GostBlockCipher
 
 
 def test_gost_block_cipher():
+    """
+    Test Gost block cipher against the test vector from https://www.rfc-editor.org/rfc/rfc8891.pdf
+    """
     gost = GostBlockCipher()
     assert gost.type == "block_cipher"
     assert gost.family_name == "gost"
