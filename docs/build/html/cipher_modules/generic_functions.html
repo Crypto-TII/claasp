@@ -1,23 +1,24 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Generic functions &#8212; CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</title>
+    <title>Generic functions &#8212; CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives v3.1.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/sage.css" />
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Tester" href="tester.html" />
-    <link rel="prev" title="Inverse cipher" href="inverse_cipher.html" />
+    <link rel="next" title="Evaluator" href="evaluator.html" />
+    <link rel="prev" title="Generic word based c functions" href="generic_word_based_c_functions.html" />
     <link rel="icon" href="../_static/sageicon.png" type="image/x-icon" />
     <script src="../_static/thebe.js" type="text/javascript"></script>
     <script src="../_static/thebe-sage.js" type="text/javascript"></script>
@@ -33,10 +34,10 @@
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="tester.html" title="Tester"
+          <a href="evaluator.html" title="Evaluator"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="inverse_cipher.html" title="Inverse cipher"
+          <a href="generic_word_based_c_functions.html" title="Generic word based c functions"
              accesskey="P">previous</a> |</li>
   
     
@@ -44,7 +45,7 @@
     
   
   
-        <li class="nav-item nav-item-0"><a href="../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives v3.1.0 documentation</a> &#187;</li>
 
         <li class="nav-item nav-item-this"><a href="">Generic functions</a></li> 
       </ul>
@@ -56,7 +57,7 @@
           <div class="body" role="main">
             
   <section id="module-cipher_modules.generic_functions">
-<span id="generic-functions"></span><h1>Generic functions<a class="headerlink" href="#module-cipher_modules.generic_functions" title="Permalink to this headline">¶</a></h1>
+<span id="generic-functions"></span><h1>Generic functions<a class="headerlink" href="#module-cipher_modules.generic_functions" title="Permalink to this heading">¶</a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="cipher_modules.generic_functions.AND">
 <span class="sig-name descname"><span class="pre">AND</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_inputs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbosity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions.AND" title="Permalink to this definition">¶</a></dt>
@@ -229,6 +230,29 @@ negative for left rotation</p></li>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions.THETA_GASTON">
+<span class="sig-name descname"><span class="pre">THETA_GASTON</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotation_amounts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(1,</span> <span class="pre">18,</span> <span class="pre">23,</span> <span class="pre">25,</span> <span class="pre">32,</span> <span class="pre">52,</span> <span class="pre">60,</span> <span class="pre">63)</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions.THETA_GASTON" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform the twin column parity mixer (mixing layer) of Gaston.</p>
+<p>INPUT:
+- <code class="docutils literal notranslate"><span class="pre">input</span></code> – BitArray of length 320 or 640, interpreted as 5 rows of 64 bits.
+- <code class="docutils literal notranslate"><span class="pre">rotation_amounts</span></code> – <strong>tuple of 8 integers</strong> (default: (1, 18, 23, 25, 32, 52, 60, 63)):</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>First three values: <span class="math">r</span>, <span class="math">s</span>, <span class="math">u</span> — rotation amounts for P, Q, and E.</p></li>
+<li><p>Remaining five values: <span class="math">t0</span> through <span class="math">t4</span> — row-specific rotation amounts used in computing Q.</p></li>
+</ul>
+</div></blockquote>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.generic_functions</span> <span class="kn">import</span> <span class="n">THETA_GASTON</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">bitstring</span> <span class="kn">import</span> <span class="n">BitArray</span>
+<span class="gp">sage: </span><span class="n">b</span> <span class="o">=</span> <span class="n">BitArray</span><span class="p">(</span><span class="nb">bytes</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="mi">40</span><span class="p">))</span>
+<span class="gp">sage: </span><span class="n">THETA_GASTON</span><span class="p">(</span><span class="n">b</span><span class="p">)</span><span class="o">.</span><span class="n">bin</span><span class="p">[:</span><span class="mi">70</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;0011010110100010000110000010011000101100101110110000000100111111001111&#39;</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="cipher_modules.generic_functions.THETA_KECCAK">
 <span class="sig-name descname"><span class="pre">THETA_KECCAK</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions.THETA_KECCAK" title="Permalink to this definition">¶</a></dt>
 <dd><p>Perform the mixing layer of Keccak.</p>
@@ -291,6 +315,20 @@ negative for left rotation</p></li>
 <dd></dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions.compute_indexed_sum">
+<span class="sig-name descname"><span class="pre">compute_indexed_sum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bits</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions.compute_indexed_sum" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the XOR-sum of products of bits at specified indices.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions.compute_word_indexed_sum">
+<span class="sig-name descname"><span class="pre">compute_word_indexed_sum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">word_array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">word_gf</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions.compute_word_indexed_sum" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluate an index-based expression sum in GF(2^w).
+Each entry in index_list: (field coefficient as int, [word indices]).
+The sum is computed and returned.</p>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="cipher_modules.generic_functions.concatenate_bool_func">
 <span class="sig-name descname"><span class="pre">concatenate_bool_func</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">BoolPolyRing</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions.concatenate_bool_func" title="Permalink to this definition">¶</a></dt>
 <dd><p>INPUT:</p>
@@ -349,14 +387,14 @@ negative for left rotation</p></li>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">input</span></code> – <strong>BitArray object</strong>; a BitArray</p></li>
 <li><dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">registers_info</span></code> – <strong>list</strong>; a list of [register_bit_length, register_polynomial, clock_polynomial (optional)],</dt><dd><p>register_bit_length is an integer to indicates the length of register. register_polynomial and clock_polynomial
-are lists of monomials, which is presented in the integer list. For example [[0], [1], [2, 3]] represents
-x0+x1+x2*x3. [] represents 1.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">registers_info</span></code> – <strong>list</strong>; a list of [register_bit_length, update_expression, clock_condition (optional)],</dt><dd><p>register_bit_length is an integer to indicate the length of the register. update_expression and clock_condition
+are lists of index groups, represented as integer lists. For example [[0], [1], [2, 3]] represents
+x0 + x1 + x2*x3. [] represents a constant 1.</p>
 </dd>
 </dl>
 </li>
 <li><dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">number_of_clocks</span></code> – <strong>integer</strong>; indicates how many loops this fsr component would operate, this is optional</dt><dd><p>by default it is 1.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">number_of_clocks</span></code> – <strong>integer</strong>; indicates how many loops this FSR component would operate, this is optional</dt><dd><p>by default it is 1.</p>
 </dd>
 </dl>
 </li>
@@ -371,20 +409,36 @@ x0+x1+x2*x3. [] represents 1.</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">input</span></code> – <strong>BitArray object</strong>; a BitArray</p></li>
 <li><dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">registers_info</span></code> – <strong>list</strong>; a list of [register_bit_length, register_polynomial, clock_polynomial (optional)],</dt><dd><p>register_bit_length is an integer to indicates the length of register. register_polynomial and clock_polynomial
-are lists of monomials, which is presented in the integer list. For example [[0], [1], [2, 3]] represents
-x0+x1+x2*x3. [] represents 1.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">registers_info</span></code> – <strong>list</strong>; a list of [register_bit_length, update_expression, clock_condition (optional)],</dt><dd><p>register_bit_length is an integer to indicate the length of the register. update_expression and clock_condition
+are lists of index groups, represented as integer lists. Each entry in update_expression has a field coefficient
+and a list of word indices. For example: [[1, [0]], [1, [1]], [1, [2, 3]]] represents
+x0 + x1 + x2*x3. [] represents a constant 1.</p>
 </dd>
 </dl>
 </li>
-<li><dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">number_of_clocks</span></code> – <strong>integer</strong>; indicates how many bits in a word this fsr component would operate. By</dt><dd><p>default, it is 1.</p>
-</dd>
-</dl>
-</li>
-<li><p><code class="docutils literal notranslate"><span class="pre">number_of_clocks</span></code> – <strong>integer</strong>; indicates how many loops this fsr component would operate.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">verbosity</span></code> – <strong>boolean</strong> (default: <span class="math">False</span>); set this flag to True to print the input/output</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">bits_inside_word</span></code> – <strong>integer</strong>; number of bits in a word.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">number_of_clocks</span></code> – <strong>integer</strong>; indicates how many loops this FSR component would operate.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">verbosity</span></code> – <strong>boolean</strong> (default: <span class="math">False</span>); set this flag to True to print the input/output.</p></li>
 </ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions.index_list_to_expression_str">
+<span class="sig-name descname"><span class="pre">index_list_to_expression_str</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions.index_list_to_expression_str" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert an index-based expression list to a readable string.</p>
+<p>Example:
+[[0], [1], [2, 3]] -&gt; ‘x0 + x1 + x2*x3’</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions.index_list_to_expression_str_word">
+<span class="sig-name descname"><span class="pre">index_list_to_expression_str_word</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions.index_list_to_expression_str_word" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a word-level index-based expression list to a readable string.</p>
+<p>Each entry is [field_coefficient, [indices]].
+For example:</p>
+<blockquote>
+<div><p>[[1, [0]], [1, [2]], [1, [11]]] -&gt; ‘x0 + x2 + x11’</p>
+</div></blockquote>
 </dd></dl>
 
 <dl class="py function">
@@ -506,13 +560,13 @@ x0+x1+x2*x3. [] represents 1.</p>
         <div class="sphinxsidebarwrapper">
   <div>
     <h4>Previous topic</h4>
-    <p class="topless"><a href="inverse_cipher.html"
-                          title="previous chapter">Inverse cipher</a></p>
+    <p class="topless"><a href="generic_word_based_c_functions.html"
+                          title="previous chapter">Generic word based c functions</a></p>
   </div>
   <div>
     <h4>Next topic</h4>
-    <p class="topless"><a href="tester.html"
-                          title="next chapter">Tester</a></p>
+    <p class="topless"><a href="evaluator.html"
+                          title="next chapter">Evaluator</a></p>
   </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
@@ -530,7 +584,7 @@ x0+x1+x2*x3. [] represents 1.</p>
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -545,10 +599,10 @@ x0+x1+x2*x3. [] represents 1.</p>
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="tester.html" title="Tester"
+          <a href="evaluator.html" title="Evaluator"
              >next</a> |</li>
         <li class="right" >
-          <a href="inverse_cipher.html" title="Inverse cipher"
+          <a href="generic_word_based_c_functions.html" title="Generic word based c functions"
              >previous</a> |</li>
   
     
@@ -556,7 +610,7 @@ x0+x1+x2*x3. [] represents 1.</p>
     
   
   
-        <li class="nav-item nav-item-0"><a href="../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives v3.1.0 documentation</a> &#187;</li>
 
         <li class="nav-item nav-item-this"><a href="">Generic functions</a></li> 
       </ul>

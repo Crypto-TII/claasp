@@ -6,7 +6,7 @@ def test_gimli_permutation():
     assert gimli.family_name == 'gimli'
     assert gimli.type == 'permutation'
     assert gimli.number_of_rounds == 24
-    assert gimli.WORD_BIT_SIZE == 32
+    assert gimli.word_bit_size == 32
     assert gimli.id == 'gimli_p384_o384_r24'
     assert gimli.component_from(0, 0).id == 'rot_0_0'
 

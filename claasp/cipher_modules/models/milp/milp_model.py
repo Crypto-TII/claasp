@@ -1,17 +1,16 @@
-
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
@@ -36,6 +35,7 @@ Available MILP solvers are:
 The default choice is GLPK.
 
 """
+
 import os
 import subprocess
 import time
@@ -43,11 +43,21 @@ import tracemalloc
 
 from sage.numerical.mip import MixedIntegerLinearProgram, MIPSolverException
 
-from claasp.cipher_modules.models.milp.solvers import SOLVER_DEFAULT, MODEL_DEFAULT_PATH, MILP_SOLVERS_EXTERNAL, \
-    MILP_SOLVERS_INTERNAL
+from claasp.cipher_modules.models.milp.solvers import (
+    MILP_SOLVERS_EXTERNAL,
+    MILP_SOLVERS_INTERNAL,
+    MODEL_DEFAULT_PATH,
+    SOLVER_DEFAULT,
+)
 from claasp.cipher_modules.models.milp.utils.milp_name_mappings import MILP_DEFAULT_WEIGHT_PRECISION
-from claasp.cipher_modules.models.milp.utils.utils import _get_data, _parse_external_solver_output, _write_model_to_lp_file
+from claasp.cipher_modules.models.milp.utils.utils import (
+    _get_data,
+    _parse_external_solver_output,
+    _write_model_to_lp_file,
+)
 from claasp.cipher_modules.models.utils import convert_solver_solution_to_dictionary
+from claasp.name_mappings import SATISFIABLE, UNSATISFIABLE
+
 
 def get_independent_input_output_variables(component):
     """
@@ -187,22 +197,47 @@ class MilpModel:
              1 <= x_4 + x_6 + x_8 + x_10]
         """
         x = self._binary_variable
+        n_trails = self._number_of_trails_found
         constraints = []
-        for fixed_variable in fixed_variables:
-            component_id = fixed_variable["component_id"]
-            if fixed_variable["constraint_type"] == "equal":
-                for index, bit_position in enumerate(fixed_variable["bit_positions"]):
-                    constraints.append(x[f"{component_id}_{bit_position}"] == fixed_variable["bit_values"][index])
+
+        for fv in fixed_variables:
+            bit_vals = fv["bit_values"]
+            comp_id = fv["component_id"]
+            bit_pos = fv["bit_positions"]
+            ctype = fv["constraint_type"]
+
+            if bit_vals[0] not in [0, 1]:
+                var_vals = []
+                for v in bit_vals:
+                    var_vals.extend([(v_id, i) for v_id, bits in [v] for i in bits])
+
+                if ctype == "equal":
+                    for i, pos in enumerate(bit_pos):
+                        constraints.append(x[f"{comp_id}_{pos}"] == x[f"{var_vals[i][0]}_{var_vals[i][1]}"])
+                else:
+                    for i, pos in enumerate(bit_pos):
+                        neq = f"{comp_id}{pos}_not_equal_{n_trails}"
+                        lhs = x[neq]
+                        a = x[f"{comp_id}_{pos}"]
+                        b = x[f"{var_vals[i][0]}_{var_vals[i][1]}"]
+
+                        constraints.append(lhs <= a + b)
+                        constraints.append(lhs >= a - b)
+                        constraints.append(lhs >= b - a)
+                        constraints.append(lhs + a + b <= 2)
+
+                    constraints.append(sum(x[f"{comp_id}{p}_not_equal_{n_trails}"] for p in bit_pos) >= 1)
             else:
-                for index, bit_position in enumerate(fixed_variable["bit_positions"]):
-                    if fixed_variable["bit_values"][index]:
-                        constraints.append(x[f"{component_id}{bit_position}_not_equal_{self._number_of_trails_found}"]
-                                           == 1 - x[f"{component_id}_{bit_position}"])
-                    else:
-                        constraints.append(x[f"{component_id}{bit_position}_not_equal_{self._number_of_trails_found}"]
-                                           == x[f"{component_id}_{bit_position}"])
-                constraints.append(sum(x[f"{component_id}{i}_not_equal_{self._number_of_trails_found}"]
-                                       for i in fixed_variable["bit_positions"]) >= 1)
+                if ctype == "equal":
+                    for i, pos in enumerate(bit_pos):
+                        constraints.append(x[f"{comp_id}_{pos}"] == bit_vals[i])
+                else:
+                    for i, pos in enumerate(bit_pos):
+                        neq = x[f"{comp_id}{pos}_not_equal_{n_trails}"]
+                        a = x[f"{comp_id}_{pos}"]
+                        bit_val = bit_vals[i]
+                        constraints.append(neq == (1 - a if bit_val else a))
+                    constraints.append(sum(x[f"{comp_id}{p}_not_equal_{n_trails}"] for p in bit_pos) >= 1)
 
         return constraints
 
@@ -233,10 +268,10 @@ class MilpModel:
         constraints = []
 
         if weight >= 0:
-            constraints.append(p["probability"] == (10 ** weight_precision) * weight)
+            constraints.append(p["probability"] == (10**weight_precision) * weight)
             variables = [("p[probability]", p["probability"])]
         elif weight != -1:
-            self._model.set_max(p["probability"], - (10 ** weight_precision) * weight)
+            self._model.set_max(p["probability"], -(10**weight_precision) * weight)
             variables = [("p[probability]", p["probability"])]
 
         return variables, constraints
@@ -267,49 +302,50 @@ class MilpModel:
         self._non_linear_component_id = []
 
     def _solve_with_external_solver(self, model_type, model_path, solver_name=SOLVER_DEFAULT):
-
-
         solver_specs = [specs for specs in MILP_SOLVERS_EXTERNAL if specs["solver_name"] == solver_name.upper()][0]
-        solution_file_path = f'{MODEL_DEFAULT_PATH}/{model_path[:-3]}.sol'
+        solution_file_path = f"{MODEL_DEFAULT_PATH}/{model_path[:-3]}.sol"
 
         command = ""
-        for key in solver_specs['keywords']['command']['format']:
-            parameter = solver_specs['keywords']['command'][key]
+        for key in solver_specs["keywords"]["command"]["format"]:
+            parameter = solver_specs["keywords"]["command"][key]
             if key == "input_file":
                 parameter += " " + model_path
             elif key == "output_file":
-                parameter = parameter + solution_file_path if parameter.endswith('=') else parameter + " " + solution_file_path
+                parameter = (
+                    parameter + solution_file_path if parameter.endswith("=") else parameter + " " + solution_file_path
+                )
             elif key == "options":
                 parameter = " ".join(parameter)
             command += " " + parameter
         tracemalloc.start()
         solver_process = subprocess.run(command, capture_output=True, shell=True, text=True)
-        milp_memory = tracemalloc.get_traced_memory()[1] / 10 ** 6
+        milp_memory = tracemalloc.get_traced_memory()[1] / 10**6
         tracemalloc.stop()
 
         if solver_process.stderr:
             raise MIPSolverException("Make sure that the solver is correctly installed.")
 
-        if 'memory' in solver_specs:
-            milp_memory = _get_data(solver_specs['keywords']['memory'], str(solver_process))
+        if "memory" in solver_specs:
+            milp_memory = _get_data(solver_specs["keywords"]["memory"], str(solver_process))
 
-        return _parse_external_solver_output(self, solver_specs, model_type, solution_file_path, solver_process.stdout) + (milp_memory,)
+        return _parse_external_solver_output(
+            self, solver_specs, model_type, solution_file_path, solver_process.stdout
+        ) + (milp_memory,)
 
     def _solve_with_internal_solver(self):
-
         mip = self._model
-        status = 'UNSATISFIABLE'
+        status = UNSATISFIABLE
         self._verbose_print("Solving model in progress ...")
         time_start = time.time()
         tracemalloc.start()
         try:
             mip.solve()
-            status = 'SATISFIABLE'
+            status = SATISFIABLE
 
         except MIPSolverException as milp_exception:
             print(milp_exception)
         finally:
-            milp_memory = tracemalloc.get_traced_memory()[1] / 10 ** 6
+            milp_memory = tracemalloc.get_traced_memory()[1] / 10**6
             tracemalloc.stop()
             time_end = time.time()
             milp_time = time_end - time_start
@@ -341,13 +377,16 @@ class MilpModel:
         if external_solver_name or (solver_name.upper().endswith("_EXT")):
             solver_choice = external_solver_name or solver_name
             if solver_choice.upper() not in [specs["solver_name"] for specs in MILP_SOLVERS_EXTERNAL]:
-                raise ValueError(f"Invalid solver name: {solver_choice}.\n"
-                                 f"Please select a solver in the following list: {[specs['solver_name'] for specs in MILP_SOLVERS_EXTERNAL]}.")
+                raise ValueError(
+                    f"Invalid solver name: {solver_choice}.\n"
+                    f"Please select a solver in the following list: {[specs['solver_name'] for specs in MILP_SOLVERS_EXTERNAL]}."
+                )
 
             solver_name_in_solution = solver_choice
             model_path = _write_model_to_lp_file(self, model_type)
-            solution_file_path, status, objective_value, components_values, milp_time, milp_memory = self._solve_with_external_solver(
-                model_type, model_path, solver_choice)
+            solution_file_path, status, objective_value, components_values, milp_time, milp_memory = (
+                self._solve_with_external_solver(model_type, model_path, solver_choice)
+            )
             os.remove(model_path)
             os.remove(f"{solution_file_path}")
         else:
@@ -355,22 +394,29 @@ class MilpModel:
             components_values = None
             solver_name_in_solution = solver_name
             status, milp_time, milp_memory = self._solve_with_internal_solver()
-            if status == 'SATISFIABLE':
+            if status == SATISFIABLE:
                 objective_value, components_values = self._parse_solver_output()
 
-        solution = convert_solver_solution_to_dictionary(self._cipher, model_type, solver_name_in_solution, milp_time,
-                                                         milp_memory, components_values, objective_value)
-        solution['status'] = status
+        solution = convert_solver_solution_to_dictionary(
+            self._cipher,
+            model_type,
+            solver_name_in_solution,
+            milp_time,
+            milp_memory,
+            components_values,
+            objective_value,
+        )
+        solution["status"] = status
         return solution
 
     def solver_names(self, verbose=False):
         solver_names = []
 
-        keys = ['solver_brand_name', 'solver_name']
+        keys = ["solver_brand_name", "solver_name"]
         for solver in MILP_SOLVERS_INTERNAL:
             solver_names.append({key: solver[key] for key in keys})
         if verbose:
-            keys = ['solver_brand_name', 'solver_name', 'keywords']
+            keys = ["solver_brand_name", "solver_name", "keywords"]
 
         for solver in MILP_SOLVERS_EXTERNAL:
             solver_names.append({key: solver[key] for key in keys})
@@ -421,7 +467,7 @@ class MilpModel:
             ValueError: No model generated
         """
         if not self._model_constraints:
-            raise ValueError('No model generated')
+            raise ValueError("No model generated")
         return self._model_constraints
 
     @property

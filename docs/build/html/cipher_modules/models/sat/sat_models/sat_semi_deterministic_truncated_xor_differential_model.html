@@ -1,0 +1,459 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Sat semi deterministic truncated xor differential model &#8212; CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives v3.1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sage.css" />
+    <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+    <script src="../../../../_static/jquery.js"></script>
+    <script src="../../../../_static/underscore.js"></script>
+    <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../../../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../../../../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+    <link rel="next" title="Sat shared difference paired input differential model" href="sat_shared_difference_paired_input_differential_model.html" />
+    <link rel="prev" title="Sat probabilistic xor truncated differential model" href="sat_probabilistic_xor_truncated_differential_model.html" />
+    <link rel="icon" href="../../../../_static/sageicon.png" type="image/x-icon" />
+    <script src="../../../../_static/thebe.js" type="text/javascript"></script>
+    <script src="../../../../_static/thebe-sage.js" type="text/javascript"></script>
+
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="sat_shared_difference_paired_input_differential_model.html" title="Sat shared difference paired input differential model"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="sat_probabilistic_xor_truncated_differential_model.html" title="Sat probabilistic xor truncated differential model"
+             accesskey="P">previous</a> |</li>
+  
+    
+      <a href="../../../../../index.html"><img src="../../../../_static/logo_tii.svg" height="28" style="vertical-align: middle" title="TII Logo"></a>
+    
+  
+  
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives v3.1.0 documentation</a> &#187;</li>
+
+        <li class="nav-item nav-item-this"><a href="">Sat semi deterministic truncated xor differential model</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="module-cipher_modules.models.sat.sat_models.sat_semi_deterministic_truncated_xor_differential_model">
+<span id="sat-semi-deterministic-truncated-xor-differential-model"></span><h1>Sat semi deterministic truncated xor differential model<a class="headerlink" href="#module-cipher_modules.models.sat.sat_models.sat_semi_deterministic_truncated_xor_differential_model" title="Permalink to this heading">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="cipher_modules.models.sat.sat_models.sat_semi_deterministic_truncated_xor_differential_model.SatSemiDeterministicTruncatedXorDifferentialModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SatSemiDeterministicTruncatedXorDifferentialModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cipher</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">counter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'sequential'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compact</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.sat_models.sat_semi_deterministic_truncated_xor_differential_model.SatSemiDeterministicTruncatedXorDifferentialModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">SatTruncatedXorDifferentialModel</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="cipher_modules.models.sat.sat_models.sat_semi_deterministic_truncated_xor_differential_model.SatSemiDeterministicTruncatedXorDifferentialModel.build_generic_sat_model_from_dictionary">
+<span class="sig-name descname"><span class="pre">build_generic_sat_model_from_dictionary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component_and_model_types</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.sat_models.sat_semi_deterministic_truncated_xor_differential_model.SatSemiDeterministicTruncatedXorDifferentialModel.build_generic_sat_model_from_dictionary" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cipher_modules.models.sat.sat_models.sat_semi_deterministic_truncated_xor_differential_model.SatSemiDeterministicTruncatedXorDifferentialModel.build_semi_deterministic_truncated_xor_differential_trail_model">
+<span class="sig-name descname"><span class="pre">build_semi_deterministic_truncated_xor_differential_trail_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">number_of_unknowns_per_component</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unknown_window_size_configuration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_variables</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.sat_models.sat_semi_deterministic_truncated_xor_differential_model.SatSemiDeterministicTruncatedXorDifferentialModel.build_semi_deterministic_truncated_xor_differential_trail_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build the model for the search of deterministic truncated XOR DIFFERENTIAL trails.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">number_of_unknown_variables</span></code> – <strong>int</strong> (default: None); the number
+of unknown variables that we want to have in the trail</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fixed_variables</span></code> – <strong>list</strong> (default: <span class="math">[]</span>); the variables to be
+fixed in standard format</p></li>
+</ul>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../../utils.html#cipher_modules.models.utils.set_fixed_variables" title="cipher_modules.models.utils.set_fixed_variables"><code class="xref py py-meth docutils literal notranslate"><span class="pre">set_fixed_variables()</span></code></a></p>
+</div>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.sat.sat_models.sat_semi_deterministic_truncated_xor_differential_model</span> <span class="kn">import</span> <span class="n">SatSemiDeterministicTruncatedXorDifferentialModel</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
+<span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">sat</span> <span class="o">=</span> <span class="n">SatSemiDeterministicTruncatedXorDifferentialModel</span><span class="p">(</span><span class="n">speck</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">sat</span><span class="o">.</span><span class="n">build_semi_deterministic_truncated_xor_differential_trail_model</span><span class="p">()</span>
+<span class="go">...</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cipher_modules.models.sat.sat_models.sat_semi_deterministic_truncated_xor_differential_model.SatSemiDeterministicTruncatedXorDifferentialModel.calculate_component_weight">
+<span class="sig-name descname"><span class="pre">calculate_component_weight</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_suffix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_values_dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.sat_models.sat_semi_deterministic_truncated_xor_differential_model.SatSemiDeterministicTruncatedXorDifferentialModel.calculate_component_weight" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="cipher_modules.models.sat.sat_models.sat_semi_deterministic_truncated_xor_differential_model.SatSemiDeterministicTruncatedXorDifferentialModel.cipher_id">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">cipher_id</span></span><a class="headerlink" href="#cipher_modules.models.sat.sat_models.sat_semi_deterministic_truncated_xor_differential_model.SatSemiDeterministicTruncatedXorDifferentialModel.cipher_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cipher_modules.models.sat.sat_models.sat_semi_deterministic_truncated_xor_differential_model.SatSemiDeterministicTruncatedXorDifferentialModel.find_one_semi_deterministic_truncated_xor_differential_trail">
+<span class="sig-name descname"><span class="pre">find_one_semi_deterministic_truncated_xor_differential_trail</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fixed_values</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'CRYPTOMINISAT_EXT'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unknown_window_size_configuration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_unknowns_per_component</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.sat_models.sat_semi_deterministic_truncated_xor_differential_model.SatSemiDeterministicTruncatedXorDifferentialModel.find_one_semi_deterministic_truncated_xor_differential_trail" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns one deterministic truncated XOR differential trail.</p>
+<p>INPUTS:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">fixed_values</span></code> – <em>list of dict</em>, the variables to be fixed in
+standard format (see <code class="xref py py-meth docutils literal notranslate"><span class="pre">set_fixed_variables()</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">solver_name</span></code> – <em>str</em>, the solver to call</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">unknown_window_size_configuration</span></code> – <em>dict</em>, the number of maximum window sizes</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">number_of_unknowns_per_component</span></code> – <em>dict</em>, the number of unknowns per component</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cipher_modules.models.sat.sat_models.sat_semi_deterministic_truncated_xor_differential_model.SatSemiDeterministicTruncatedXorDifferentialModel.fix_variables_value_constraints">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">fix_variables_value_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fixed_variables</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.sat_models.sat_semi_deterministic_truncated_xor_differential_model.SatSemiDeterministicTruncatedXorDifferentialModel.fix_variables_value_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return constraints for fixed variables</p>
+<p>Return lists of variables and clauses for fixing variables in semi
+deterministic truncated XOR differential model.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../../utils.html#cipher_modules.models.utils.set_fixed_variables" title="cipher_modules.models.utils.set_fixed_variables"><code class="xref py py-meth docutils literal notranslate"><span class="pre">set_fixed_variables()</span></code></a></p>
+</div>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">fixed_variables</span></code> – <strong>list</strong> (default: <span class="math">[]</span>); variables in default format</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.sat.sat_models.sat_semi_deterministic_truncated_xor_differential_model</span> <span class="kn">import</span> <span class="n">SatSemiDeterministicTruncatedXorDifferentialModel</span>
+<span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">sat</span> <span class="o">=</span> <span class="n">SatSemiDeterministicTruncatedXorDifferentialModel</span><span class="p">(</span><span class="n">speck</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">fixed_variables</span> <span class="o">=</span> <span class="p">[{</span>
+<span class="gp">....: </span>   <span class="s1">&#39;component_id&#39;</span><span class="p">:</span> <span class="s1">&#39;plaintext&#39;</span><span class="p">,</span>
+<span class="gp">....: </span>   <span class="s1">&#39;constraint_type&#39;</span><span class="p">:</span> <span class="s1">&#39;equal&#39;</span><span class="p">,</span>
+<span class="gp">....: </span>   <span class="s1">&#39;bit_positions&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
+<span class="gp">....: </span>   <span class="s1">&#39;bit_values&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+<span class="gp">....: </span><span class="p">},</span> <span class="p">{</span>
+<span class="gp">....: </span>   <span class="s1">&#39;component_id&#39;</span><span class="p">:</span> <span class="s1">&#39;ciphertext&#39;</span><span class="p">,</span>
+<span class="gp">....: </span>   <span class="s1">&#39;constraint_type&#39;</span><span class="p">:</span> <span class="s1">&#39;not_equal&#39;</span><span class="p">,</span>
+<span class="gp">....: </span>   <span class="s1">&#39;bit_positions&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
+<span class="gp">....: </span>   <span class="s1">&#39;bit_values&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+<span class="gp">....: </span><span class="p">}]</span>
+<span class="gp">sage: </span><span class="n">list_of_constraints</span> <span class="o">=</span> <span class="n">SatSemiDeterministicTruncatedXorDifferentialModel</span><span class="o">.</span><span class="n">fix_variables_value_constraints</span><span class="p">(</span><span class="n">fixed_variables</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">expected_set_of_constraints</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="s1">&#39;-plaintext_0_0&#39;</span><span class="p">,</span>
+<span class="gp">....: </span><span class="s1">&#39;plaintext_0_1&#39;</span><span class="p">,</span>
+<span class="gp">....: </span><span class="s1">&#39;-plaintext_1_0&#39;</span><span class="p">,</span>
+<span class="gp">....: </span><span class="s1">&#39;-plaintext_1_1&#39;</span><span class="p">,</span>
+<span class="gp">....: </span><span class="s1">&#39;-plaintext_2_0&#39;</span><span class="p">,</span>
+<span class="gp">....: </span><span class="s1">&#39;plaintext_2_1&#39;</span><span class="p">,</span>
+<span class="gp">....: </span><span class="s1">&#39;-plaintext_3_0&#39;</span><span class="p">,</span>
+<span class="gp">....: </span><span class="s1">&#39;plaintext_3_1&#39;</span><span class="p">,</span>
+<span class="gp">....: </span><span class="s1">&#39;-ciphertext_0_0 ciphertext_0_1&#39;</span><span class="p">,</span>
+<span class="gp">....: </span><span class="s1">&#39;-ciphertext_0_0 -ciphertext_0_1&#39;</span><span class="p">,</span>
+<span class="gp">....: </span><span class="s1">&#39;ciphertext_1_0 -ciphertext_1_1 ciphertext_2_0 -ciphertext_2_1 ciphertext_3_0 ciphertext_3_1&#39;</span><span class="p">])</span>
+<span class="gp">sage: </span><span class="nb">set</span><span class="p">(</span><span class="n">list_of_constraints</span><span class="p">)</span> <span class="o">==</span> <span class="n">expected_set_of_constraints</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="cipher_modules.models.sat.sat_models.sat_semi_deterministic_truncated_xor_differential_model.SatSemiDeterministicTruncatedXorDifferentialModel.model_constraints">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">model_constraints</span></span><a class="headerlink" href="#cipher_modules.models.sat.sat_models.sat_semi_deterministic_truncated_xor_differential_model.SatSemiDeterministicTruncatedXorDifferentialModel.model_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the model specified by <code class="docutils literal notranslate"><span class="pre">model_type</span></code>.</p>
+<p>If the key refers to one of the available solver, Otherwise will raise a KeyError exception.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">model_type</span></code> – <strong>string</strong>; the model to retrieve</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.sat.sat_model</span> <span class="kn">import</span> <span class="n">SatModel</span>
+<span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">sat</span> <span class="o">=</span> <span class="n">SatModel</span><span class="p">(</span><span class="n">speck</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">sat</span><span class="o">.</span><span class="n">model_constraints</span><span class="p">(</span><span class="s1">&#39;xor_differential&#39;</span><span class="p">)</span>
+<span class="go">Traceback (most recent call last):</span>
+<span class="go">...</span>
+<span class="go">ValueError: No model generated</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="cipher_modules.models.sat.sat_models.sat_semi_deterministic_truncated_xor_differential_model.SatSemiDeterministicTruncatedXorDifferentialModel.sboxes_ddt_templates">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sboxes_ddt_templates</span></span><a class="headerlink" href="#cipher_modules.models.sat.sat_models.sat_semi_deterministic_truncated_xor_differential_model.SatSemiDeterministicTruncatedXorDifferentialModel.sboxes_ddt_templates" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="cipher_modules.models.sat.sat_models.sat_semi_deterministic_truncated_xor_differential_model.SatSemiDeterministicTruncatedXorDifferentialModel.sboxes_lat_templates">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sboxes_lat_templates</span></span><a class="headerlink" href="#cipher_modules.models.sat.sat_models.sat_semi_deterministic_truncated_xor_differential_model.SatSemiDeterministicTruncatedXorDifferentialModel.sboxes_lat_templates" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cipher_modules.models.sat.sat_models.sat_semi_deterministic_truncated_xor_differential_model.SatSemiDeterministicTruncatedXorDifferentialModel.solve">
+<span class="sig-name descname"><span class="pre">solve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'CRYPTOMINISAT_EXT'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.sat_models.sat_semi_deterministic_truncated_xor_differential_model.SatSemiDeterministicTruncatedXorDifferentialModel.solve" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the solution of the model using the <code class="docutils literal notranslate"><span class="pre">solver_name</span></code> SAT solver.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Two types of solvers can be chosen: external or internal. In the following list of inputs, allowed SAT
+solvers are listed. Those ending with <code class="docutils literal notranslate"><span class="pre">_sage</span></code> will not create a subprocess nor additional files and will
+work completely embedded in Sage. Remaining solvers are allowed, but they need to be installed in the
+system.</p>
+</div>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">model_type</span></code> – <strong>string</strong>; the model for which we want a solution. Available values are:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">'cipher'</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">'xor_differential'</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">'xor_linear'</span></code></p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">solver_name</span></code> – <strong>string</strong> (default: <span class="math">cryptominisat</span>); the name of the solver</p></li>
+</ul>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../sat_model.html#sat-solvers"><span class="std std-ref">SAT Solvers</span></a></p>
+</div>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.sat.sat_models.sat_cipher_model</span> <span class="kn">import</span> <span class="n">SatCipherModel</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.tea_block_cipher</span> <span class="kn">import</span> <span class="n">TeaBlockCipher</span>
+<span class="gp">sage: </span><span class="n">tea</span> <span class="o">=</span> <span class="n">TeaBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">sat</span> <span class="o">=</span> <span class="n">SatCipherModel</span><span class="p">(</span><span class="n">tea</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">sat</span><span class="o">.</span><span class="n">build_cipher_model</span><span class="p">()</span>
+<span class="gp">sage: </span><span class="n">sat</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="s1">&#39;cipher&#39;</span><span class="p">)</span> <span class="c1"># random</span>
+<span class="go">{&#39;cipher_id&#39;: &#39;tea_p64_k128_o64_r32&#39;,</span>
+<span class="go"> &#39;model_type&#39;: &#39;tea_p64_k128_o64_r32&#39;,</span>
+<span class="go"> &#39;solver_name&#39;: &#39;CRYPTOMINISAT_EXT&#39;,</span>
+<span class="go"> ...</span>
+<span class="go">  &#39;intermediate_output_31_15&#39;: {&#39;value&#39;: &#39;8ca8d5de0906f08e&#39;, &#39;weight&#39;: 0, &#39;sign&#39;: 1},</span>
+<span class="go">  &#39;cipher_output_31_16&#39;: {&#39;value&#39;: &#39;8ca8d5de0906f08e&#39;, &#39;weight&#39;: 0, &#39;sign&#39;: 1}},</span>
+<span class="go"> &#39;total_weight&#39;: 0,</span>
+<span class="go"> &#39;status&#39;: &#39;SATISFIABLE&#39;}}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cipher_modules.models.sat.sat_models.sat_semi_deterministic_truncated_xor_differential_model.SatSemiDeterministicTruncatedXorDifferentialModel.unknown_window_size_configuration_constraints">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">unknown_window_size_configuration_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">unknown_window_size_configuration</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variables_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cardinality_constraint_method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.sat_models.sat_semi_deterministic_truncated_xor_differential_model.SatSemiDeterministicTruncatedXorDifferentialModel.unknown_window_size_configuration_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return lists of variables and constraints that fix the number of unknown
+variables of the input and the output of the trail to a specific value.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">unknown_window_size_configuration</span></code> – <strong>dict</strong>; the number of maximum window sizes</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">variables_list</span></code> – <strong>list</strong> (default: <span class="math">None</span>); the list of variables of the SAT model.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">cardinality_constraint_method</span></code> – <strong>function</strong> (default: <span class="math">None</span>); the method to be used to generate the cardinality constraints.</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cipher_modules.models.sat.sat_models.sat_semi_deterministic_truncated_xor_differential_model.SatSemiDeterministicTruncatedXorDifferentialModel.weight_constraints">
+<span class="sig-name descname"><span class="pre">weight_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">weight</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.sat_models.sat_semi_deterministic_truncated_xor_differential_model.SatSemiDeterministicTruncatedXorDifferentialModel.weight_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return lists of variables and constraints that fix the total weight of the trail to a specific value.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">weight</span></code> – <strong>integer</strong>; the total weight of the trail</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model</span> <span class="kn">import</span> <span class="n">SatXorDifferentialModel</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
+<span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">sat</span> <span class="o">=</span> <span class="n">SatXorDifferentialModel</span><span class="p">(</span><span class="n">speck</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">sat</span><span class="o">.</span><span class="n">build_xor_differential_trail_model</span><span class="p">()</span>
+<span class="gp">sage: </span><span class="n">sat</span><span class="o">.</span><span class="n">weight_constraints</span><span class="p">(</span><span class="mi">7</span><span class="p">)</span>
+<span class="go">([&#39;dummy_hw_0_0_0&#39;,</span>
+<span class="go">  &#39;dummy_hw_0_0_1&#39;,</span>
+<span class="go">  &#39;dummy_hw_0_0_2&#39;,</span>
+<span class="go">  ...</span>
+<span class="go">  &#39;-dummy_hw_0_77_6 dummy_hw_0_78_6&#39;,</span>
+<span class="go">  &#39;-hw_modadd_2_7_14 -dummy_hw_0_77_6&#39;,</span>
+<span class="go">  &#39;-hw_modadd_2_7_15 -dummy_hw_0_78_6&#39;])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.models.sat.sat_models.sat_semi_deterministic_truncated_xor_differential_model.group_triples">
+<span class="sig-name descname"><span class="pre">group_triples</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">var_names</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.sat_models.sat_semi_deterministic_truncated_xor_differential_model.group_triples" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="simple">
+<dt>Given a list of variable names (strings) of the form</dt><dd><p>hw_{p|q|r}_modadd_X_Y_Z</p>
+</dd>
+<dt>group them by (X,Y,Z) and return a dict:</dt><dd><p>grouped[(X, Y, Z)] = (pVarName, qVarName, rVarName)</p>
+</dd>
+</dl>
+<p>where pVarName, qVarName, rVarName are the corresponding names.
+We assume each group has exactly three variables: one for p, q, and r.</p>
+</dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="sat_probabilistic_xor_truncated_differential_model.html"
+                          title="previous chapter">Sat probabilistic xor truncated differential model</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="sat_shared_difference_paired_input_differential_model.html"
+                          title="next chapter">Sat shared difference paired input differential model</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../../../_sources/cipher_modules/models/sat/sat_models/sat_semi_deterministic_truncated_xor_differential_model.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="sat_shared_difference_paired_input_differential_model.html" title="Sat shared difference paired input differential model"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="sat_probabilistic_xor_truncated_differential_model.html" title="Sat probabilistic xor truncated differential model"
+             >previous</a> |</li>
+  
+    
+      <a href="../../../../../index.html"><img src="../../../../_static/logo_tii.svg" height="28" style="vertical-align: middle" title="TII Logo"></a>
+    
+  
+  
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives v3.1.0 documentation</a> &#187;</li>
+
+        <li class="nav-item nav-item-this"><a href="">Sat semi deterministic truncated xor differential model</a></li> 
+      </ul>
+    </div>
+    
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2005--2022, The Sage Development Team.
+    </div>
+    <script type="text/javascript">
+/*global jQuery, window */
+/* Sphinx sidebar toggle.  Putting this code at the end of the body
+ * enables the toggle for the live, static, and offline docs.  Note:
+ * sage.misc.html.math_parse() eats jQuery's dollar-sign shortcut. */
+var jq = jQuery;
+jq(document).ready(function () {
+    var bar, bod, bg, fg, key, tog, wid_old, wid_new, resize, get_state, set_state;
+    bod = jq('div.bodywrapper');
+    bar = jq('div.sphinxsidebar');
+    tog = jq('<div class="sphinxsidebartoggle"></div>');
+
+    /* Delayed resize helper.  Not perfect but good enough. */
+    resize = function () {
+        setTimeout(function () {
+            tog.height(bod.height());
+        }, 100);
+    };
+    jq(window).resize(function () {
+        resize();
+    });
+
+    /* Setup and add the toggle. See Sphinx v0.5.1 default.css. */
+    fg = jq('div.sphinxsidebar p a').css('color') || 'rgb(152, 219, 204)';
+    bg = jq('div.document').css('background-color') || 'rgb(28, 78, 99)';
+    wid_old = '230px';
+    wid_new = '5px';
+    tog.css('background-color', bg)
+        .css('border-width', '0px')
+        .css('border-right', wid_new + ' ridge ' + bg)
+        .css('cursor', 'pointer')
+        .css('position', 'absolute')
+        .css('left', '-' + wid_new)
+        .css('top', '0px')
+        .css('width', wid_new);
+    bod.css('position', 'relative');
+    bod.prepend(tog);
+    resize();
+
+    /* Cookie helpers. */
+    key = 'sphinxsidebar=';
+    set_state = function (s) {
+        var date = new Date();
+        /* Expiry in 7 days. */
+        date.setTime(date.getTime() + (7 * 24 * 3600 * 1000));
+        document.cookie = key + encodeURIComponent(s) + '; expires=' +
+            date.toUTCString() + '; path=/';
+    };
+    get_state = function () {
+        var i, c, crumbs = document.cookie.split(';');
+        for (i = 0; i < crumbs.length; i += 1) {
+            c = crumbs[i].replace(/^\s+/, '');
+            if (c.indexOf(key) === 0) {
+                return decodeURIComponent(c.substring(key.length, c.length));
+            }
+        }
+        return null;
+    };
+
+    /* Event handlers. */
+    tog.mouseover(function (ev) {
+        tog.css('border-right-color', fg);
+    }).mouseout(function (ev) {
+        tog.css('border-right-color', bg);
+    }).click(function (ev) {
+        if (bod.hasClass('wide')) {
+            bod.removeClass('wide');
+            bod.css('margin-left', wid_old);
+            bar.css('width', wid_old);
+            bar.show();
+            set_state('visible');
+        } else {
+            set_state('hidden');
+            bar.hide();
+            bar.css('width', '0px');
+            bod.css('margin-left', wid_new);
+            bod.addClass('wide');
+        }
+        resize();
+    });
+
+    /* Hide the normally visible sidebar? */
+    if (get_state() === 'hidden') {
+        tog.trigger('click');
+    } else {
+        set_state('visible');
+    }
+});
+    </script>
+  </body>
+</html>

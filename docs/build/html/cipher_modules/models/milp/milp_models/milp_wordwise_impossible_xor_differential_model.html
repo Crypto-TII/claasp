@@ -1,17 +1,18 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Milp wordwise impossible xor differential model &#8212; CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</title>
+    <title>Milp wordwise impossible xor differential model &#8212; CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives v3.1.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/sage.css" />
     <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
     <script src="../../../../_static/jquery.js"></script>
     <script src="../../../../_static/underscore.js"></script>
+    <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../../../../_static/favicon.ico"/>
     <link rel="index" title="Index" href="../../../../genindex.html" />
@@ -44,7 +45,7 @@
     
   
   
-        <li class="nav-item nav-item-0"><a href="../../../../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives v3.1.0 documentation</a> &#187;</li>
 
         <li class="nav-item nav-item-this"><a href="">Milp wordwise impossible xor differential model</a></li> 
       </ul>
@@ -56,20 +57,22 @@
           <div class="body" role="main">
             
   <section id="module-cipher_modules.models.milp.milp_models.milp_wordwise_impossible_xor_differential_model">
-<span id="milp-wordwise-impossible-xor-differential-model"></span><h1>Milp wordwise impossible xor differential model<a class="headerlink" href="#module-cipher_modules.models.milp.milp_models.milp_wordwise_impossible_xor_differential_model" title="Permalink to this headline">¶</a></h1>
+<span id="milp-wordwise-impossible-xor-differential-model"></span><h1>Milp wordwise impossible xor differential model<a class="headerlink" href="#module-cipher_modules.models.milp.milp_models.milp_wordwise_impossible_xor_differential_model" title="Permalink to this heading">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="cipher_modules.models.milp.milp_models.milp_wordwise_impossible_xor_differential_model.MilpWordwiseImpossibleXorDifferentialModel">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MilpWordwiseImpossibleXorDifferentialModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cipher</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_window_heuristic</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.milp.milp_models.milp_wordwise_impossible_xor_differential_model.MilpWordwiseImpossibleXorDifferentialModel" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model.MilpWordwiseDeterministicTruncatedXorDifferentialModel</span></code></p>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MilpWordwiseImpossibleXorDifferentialModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cipher</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_window_heuristic</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.milp.milp_models.milp_wordwise_impossible_xor_differential_model.MilpWordwiseImpossibleXorDifferentialModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">MilpWordwiseDeterministicTruncatedXorDifferentialModel</span></code></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="cipher_modules.models.milp.milp_models.milp_wordwise_impossible_xor_differential_model.MilpWordwiseImpossibleXorDifferentialModel.add_constraints_to_build_fully_automatic_model_in_sage_milp_class">
-<span class="sig-name descname"><span class="pre">add_constraints_to_build_fully_automatic_model_in_sage_milp_class</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fixed_bits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_words</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.milp.milp_models.milp_wordwise_impossible_xor_differential_model.MilpWordwiseImpossibleXorDifferentialModel.add_constraints_to_build_fully_automatic_model_in_sage_milp_class" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">add_constraints_to_build_fully_automatic_model_in_sage_milp_class</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fixed_bits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_words</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_all_components</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.milp.milp_models.milp_wordwise_impossible_xor_differential_model.MilpWordwiseImpossibleXorDifferentialModel.add_constraints_to_build_fully_automatic_model_in_sage_milp_class" title="Permalink to this definition">¶</a></dt>
 <dd><p>Take the constraints contained in self._model_constraints and add them to the build-in sage class.</p>
 <p>INPUT:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">model_type</span></code> – <strong>string</strong>; the model to solve</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">fixed_bits</span></code> – <em>list of dict</em>, the bit variables to be fixed in standard format</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">fixed_words</span></code> – <em>list of dict</em>, the word variables to be fixed in standard format</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">include_all_components</span></code> – <strong>boolean</strong> (default: <span class="math">False</span>); when set to <span class="math">True</span>, every component output can be a source
+of incompatibility; otherwise, only round outputs are considered</p></li>
 </ul>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
@@ -82,7 +85,7 @@
 <span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.milp.milp_models.milp_wordwise_impossible_xor_differential_model</span> <span class="kn">import</span> <span class="n">MilpWordwiseImpossibleXorDifferentialModel</span>
 <span class="gp">sage: </span><span class="n">milp</span> <span class="o">=</span> <span class="n">MilpWordwiseImpossibleXorDifferentialModel</span><span class="p">(</span><span class="n">aes</span><span class="p">)</span>
 <span class="gp">sage: </span><span class="n">milp</span><span class="o">.</span><span class="n">init_model_in_sage_milp_class</span><span class="p">()</span>
-<span class="gp">sage: </span><span class="n">milp</span><span class="o">.</span><span class="n">add_constraints_to_build_fully_automatic_model_in_sage_milp_class</span><span class="p">(</span><span class="n">get_single_key_scenario_format_for_fixed_values</span><span class="p">(</span><span class="n">aes</span><span class="p">))</span>
+<span class="gp">sage: </span><span class="n">milp</span><span class="o">.</span><span class="n">add_constraints_to_build_fully_automatic_model_in_sage_milp_class</span><span class="p">(</span><span class="n">get_single_key_scenario_format_for_fixed_values</span><span class="p">(</span><span class="n">aes</span><span class="p">))</span> <span class="c1"># doctest: +SKIP</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -109,14 +112,14 @@
 <span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.milp.milp_models.milp_wordwise_impossible_xor_differential_model</span> <span class="kn">import</span> <span class="n">MilpWordwiseImpossibleXorDifferentialModel</span>
 <span class="gp">sage: </span><span class="n">milp</span> <span class="o">=</span> <span class="n">MilpWordwiseImpossibleXorDifferentialModel</span><span class="p">(</span><span class="n">aes</span><span class="p">)</span>
 <span class="gp">sage: </span><span class="n">milp</span><span class="o">.</span><span class="n">init_model_in_sage_milp_class</span><span class="p">()</span>
-<span class="gp">sage: </span><span class="n">milp</span><span class="o">.</span><span class="n">add_constraints_to_build_in_sage_milp_class</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">get_single_key_scenario_format_for_fixed_values</span><span class="p">(</span><span class="n">aes</span><span class="p">))</span>
+<span class="gp">sage: </span><span class="n">milp</span><span class="o">.</span><span class="n">add_constraints_to_build_in_sage_milp_class</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">get_single_key_scenario_format_for_fixed_values</span><span class="p">(</span><span class="n">aes</span><span class="p">))</span> <span class="c1"># doctest: +SKIP</span>
 </pre></div>
 </div>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="cipher_modules.models.milp.milp_models.milp_wordwise_impossible_xor_differential_model.MilpWordwiseImpossibleXorDifferentialModel.add_constraints_to_build_in_sage_milp_class_with_fixed_components">
-<span class="sig-name descname"><span class="pre">add_constraints_to_build_in_sage_milp_class_with_fixed_components</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component_id_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_bits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_words</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.milp.milp_models.milp_wordwise_impossible_xor_differential_model.MilpWordwiseImpossibleXorDifferentialModel.add_constraints_to_build_in_sage_milp_class_with_fixed_components" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="cipher_modules.models.milp.milp_models.milp_wordwise_impossible_xor_differential_model.MilpWordwiseImpossibleXorDifferentialModel.add_constraints_to_build_in_sage_milp_class_with_chosen_incompatible_components">
+<span class="sig-name descname"><span class="pre">add_constraints_to_build_in_sage_milp_class_with_chosen_incompatible_components</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component_id_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_bits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_words</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.milp.milp_models.milp_wordwise_impossible_xor_differential_model.MilpWordwiseImpossibleXorDifferentialModel.add_constraints_to_build_in_sage_milp_class_with_chosen_incompatible_components" title="Permalink to this definition">¶</a></dt>
 <dd><p>Take the constraints contained in self._model_constraints and add them to the build-in sage class.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -136,7 +139,7 @@
 <span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.milp.milp_models.milp_wordwise_impossible_xor_differential_model</span> <span class="kn">import</span> <span class="n">MilpWordwiseImpossibleXorDifferentialModel</span>
 <span class="gp">sage: </span><span class="n">milp</span> <span class="o">=</span> <span class="n">MilpWordwiseImpossibleXorDifferentialModel</span><span class="p">(</span><span class="n">aes</span><span class="p">)</span>
 <span class="gp">sage: </span><span class="n">milp</span><span class="o">.</span><span class="n">init_model_in_sage_milp_class</span><span class="p">()</span>
-<span class="gp">sage: </span><span class="n">milp</span><span class="o">.</span><span class="n">add_constraints_to_build_in_sage_milp_class_with_fixed_components</span><span class="p">([</span><span class="s2">&quot;intermediate_output_0_37&quot;</span><span class="p">],</span> <span class="n">get_single_key_scenario_format_for_fixed_values</span><span class="p">(</span><span class="n">aes</span><span class="p">))</span>
+<span class="gp">sage: </span><span class="n">milp</span><span class="o">.</span><span class="n">add_constraints_to_build_in_sage_milp_class_with_chosen_incompatible_components</span><span class="p">([</span><span class="s2">&quot;intermediate_output_0_37&quot;</span><span class="p">],</span> <span class="n">get_single_key_scenario_format_for_fixed_values</span><span class="p">(</span><span class="n">aes</span><span class="p">))</span> <span class="c1"># doctest: +SKIP</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -169,11 +172,9 @@ standard format (see <code class="xref py py-meth docutils literal notranslate">
 <span class="gp">sage: </span><span class="n">milp</span> <span class="o">=</span> <span class="n">MilpWordwiseDeterministicTruncatedXorDifferentialModel</span><span class="p">(</span><span class="n">aes</span><span class="p">)</span>
 <span class="gp">sage: </span><span class="n">milp</span><span class="o">.</span><span class="n">init_model_in_sage_milp_class</span><span class="p">()</span>
 <span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.utils</span> <span class="kn">import</span> <span class="n">integer_to_bit_list</span><span class="p">,</span> <span class="n">set_fixed_variables</span>
-<span class="gp">sage: </span><span class="n">plaintext</span> <span class="o">=</span> <span class="n">set_fixed_variables</span><span class="p">(</span><span class="n">component_id</span><span class="o">=</span><span class="s1">&#39;plaintext&#39;</span><span class="p">,</span> <span class="n">constraint_type</span><span class="o">=</span><span class="s1">&#39;equal&#39;</span><span class="p">,</span> <span class="n">bit_positions</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="mi">16</span><span class="p">),</span>
-<span class="go">                        bit_values=[0, 1, 0, 3] + [0] * 12)</span>
-<span class="gp">sage: </span><span class="n">key</span> <span class="o">=</span> <span class="n">set_fixed_variables</span><span class="p">(</span><span class="n">component_id</span><span class="o">=</span><span class="s1">&#39;key&#39;</span><span class="p">,</span> <span class="n">constraint_type</span><span class="o">=</span><span class="s1">&#39;equal&#39;</span><span class="p">,</span> <span class="n">bit_positions</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="mi">128</span><span class="p">),</span>
-<span class="go">                  bit_values=[0] * 128)</span>
-<span class="gp">sage: </span><span class="n">milp</span><span class="o">.</span><span class="n">build_wordwise_deterministic_truncated_xor_differential_trail_model</span><span class="p">(</span><span class="n">fixed_bits</span><span class="o">=</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">fixed_words</span><span class="o">=</span><span class="p">[</span><span class="n">plaintext</span><span class="p">])</span>
+<span class="gp">sage: </span><span class="n">plaintext</span> <span class="o">=</span> <span class="n">set_fixed_variables</span><span class="p">(</span><span class="n">component_id</span><span class="o">=</span><span class="s1">&#39;plaintext&#39;</span><span class="p">,</span> <span class="n">constraint_type</span><span class="o">=</span><span class="s1">&#39;equal&#39;</span><span class="p">,</span> <span class="n">bit_positions</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="mi">16</span><span class="p">),</span> <span class="n">bit_values</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="mi">12</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">key</span> <span class="o">=</span> <span class="n">set_fixed_variables</span><span class="p">(</span><span class="n">component_id</span><span class="o">=</span><span class="s1">&#39;key&#39;</span><span class="p">,</span> <span class="n">constraint_type</span><span class="o">=</span><span class="s1">&#39;equal&#39;</span><span class="p">,</span> <span class="n">bit_positions</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="mi">128</span><span class="p">),</span> <span class="n">bit_values</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="mi">128</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">milp</span><span class="o">.</span><span class="n">build_wordwise_deterministic_truncated_xor_differential_trail_model</span><span class="p">(</span><span class="n">fixed_bits</span><span class="o">=</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">fixed_words</span><span class="o">=</span><span class="p">[</span><span class="n">plaintext</span><span class="p">])</span> <span class="c1"># doctest: +SKIP</span>
 <span class="go">...</span>
 </pre></div>
 </div>
@@ -203,7 +204,7 @@ standard format (see <code class="xref py py-meth docutils literal notranslate">
 <span class="gp">sage: </span><span class="n">milp</span><span class="o">.</span><span class="n">_forward_cipher</span> <span class="o">=</span> <span class="n">aes</span><span class="o">.</span><span class="n">get_partial_cipher</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">keep_key_schedule</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="gp">sage: </span><span class="n">backward_cipher</span> <span class="o">=</span> <span class="n">milp</span><span class="o">.</span><span class="n">_cipher</span><span class="o">.</span><span class="n">cipher_partial_inverse</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">keep_key_schedule</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="gp">sage: </span><span class="n">milp</span><span class="o">.</span><span class="n">_backward_cipher</span> <span class="o">=</span> <span class="n">backward_cipher</span><span class="o">.</span><span class="n">add_suffix_to_components</span><span class="p">(</span><span class="s2">&quot;_backward&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">backward_cipher</span><span class="o">.</span><span class="n">get_all_components_ids</span><span class="p">()[</span><span class="o">-</span><span class="mi">1</span><span class="p">]])</span>
-<span class="gp">sage: </span><span class="n">milp</span><span class="o">.</span><span class="n">build_wordwise_impossible_xor_differential_trail_model</span><span class="p">()</span>
+<span class="gp">sage: </span><span class="n">milp</span><span class="o">.</span><span class="n">build_wordwise_impossible_xor_differential_trail_model</span><span class="p">()</span> <span class="c1"># doctest: +SKIP</span>
 <span class="go">...</span>
 </pre></div>
 </div>
@@ -221,13 +222,14 @@ standard format (see <code class="xref py py-meth docutils literal notranslate">
 
 <dl class="py method">
 <dt class="sig sig-object py" id="cipher_modules.models.milp.milp_models.milp_wordwise_impossible_xor_differential_model.MilpWordwiseImpossibleXorDifferentialModel.find_lowest_varied_patterns_wordwise_deterministic_truncated_xor_differential_trail">
-<span class="sig-name descname"><span class="pre">find_lowest_varied_patterns_wordwise_deterministic_truncated_xor_differential_trail</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fixed_bits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_words</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'GLPK'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.milp.milp_models.milp_wordwise_impossible_xor_differential_model.MilpWordwiseImpossibleXorDifferentialModel.find_lowest_varied_patterns_wordwise_deterministic_truncated_xor_differential_trail" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">find_lowest_varied_patterns_wordwise_deterministic_truncated_xor_differential_trail</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fixed_bits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_words</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'GLPK'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">external_solver_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.milp.milp_models.milp_wordwise_impossible_xor_differential_model.MilpWordwiseImpossibleXorDifferentialModel.find_lowest_varied_patterns_wordwise_deterministic_truncated_xor_differential_trail" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the solution representing a differential trail with the lowest number of unknown variables.</p>
 <p>INPUTS:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">solver_name</span></code> – <em>str</em>, the solver to call</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">fixed_bits</span></code> – <em>list of dict</em>, the bit variables to be fixed in standard format</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">fixed_words</span></code> – <em>list of dict</em>, the word variables to be fixed in standard format</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">external_solver_name</span></code> – <strong>string</strong> (default: None); if specified, the library will write the internal Sagemath MILP model as a .lp file and solve it outside of Sagemath, using the external solver.</p></li>
 </ul>
 <p>EXAMPLE:</p>
 <div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.utils</span> <span class="kn">import</span> <span class="n">get_single_key_scenario_format_for_fixed_values</span>
@@ -238,7 +240,7 @@ standard format (see <code class="xref py py-meth docutils literal notranslate">
 <span class="gp">sage: </span><span class="n">M</span><span class="o">.</span><span class="n">init_model_in_sage_milp_class</span><span class="p">()</span>
 <span class="gp">sage: </span><span class="n">trail</span> <span class="o">=</span> <span class="n">M</span><span class="o">.</span><span class="n">find_lowest_varied_patterns_wordwise_deterministic_truncated_xor_differential_trail</span><span class="p">(</span><span class="n">get_single_key_scenario_format_for_fixed_values</span><span class="p">(</span><span class="n">aes</span><span class="p">))</span> <span class="c1"># doctest: +SKIP</span>
 <span class="go">...</span>
-<span class="gp">sage: </span><span class="n">trail</span><span class="p">[</span><span class="s1">&#39;total_weight&#39;</span><span class="p">]</span>
+<span class="gp">sage: </span><span class="n">trail</span><span class="p">[</span><span class="s1">&#39;total_weight&#39;</span><span class="p">]</span> <span class="c1"># doctest: +SKIP</span>
 <span class="go">4.0</span>
 </pre></div>
 </div>
@@ -246,7 +248,7 @@ standard format (see <code class="xref py py-meth docutils literal notranslate">
 
 <dl class="py method">
 <dt class="sig sig-object py" id="cipher_modules.models.milp.milp_models.milp_wordwise_impossible_xor_differential_model.MilpWordwiseImpossibleXorDifferentialModel.find_one_wordwise_deterministic_truncated_xor_differential_trail">
-<span class="sig-name descname"><span class="pre">find_one_wordwise_deterministic_truncated_xor_differential_trail</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fixed_bits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_words</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'GLPK'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.milp.milp_models.milp_wordwise_impossible_xor_differential_model.MilpWordwiseImpossibleXorDifferentialModel.find_one_wordwise_deterministic_truncated_xor_differential_trail" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">find_one_wordwise_deterministic_truncated_xor_differential_trail</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fixed_bits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_words</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'GLPK'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">external_solver_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.milp.milp_models.milp_wordwise_impossible_xor_differential_model.MilpWordwiseImpossibleXorDifferentialModel.find_one_wordwise_deterministic_truncated_xor_differential_trail" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns one deterministic truncated XOR differential trail.</p>
 <p>INPUTS:</p>
 <ul class="simple">
@@ -255,6 +257,7 @@ standard format (see <code class="xref py py-meth docutils literal notranslate">
 standard format (see <code class="xref py py-meth docutils literal notranslate"><span class="pre">set_fixed_variables()</span></code>)</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">fixed_words</span></code> – <em>list of dict</em>, the word variables to be fixed in
 standard format (see <code class="xref py py-meth docutils literal notranslate"><span class="pre">set_fixed_variables()</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">external_solver_name</span></code> – <strong>string</strong> (default: None); if specified, the library will write the internal Sagemath MILP model as a .lp file and solve it outside of Sagemath, using the external solver.</p></li>
 </ul>
 <p>EXAMPLE:</p>
 <div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.utils</span> <span class="kn">import</span> <span class="n">set_fixed_variables</span>
@@ -264,9 +267,9 @@ standard format (see <code class="xref py py-meth docutils literal notranslate">
 <span class="gp">sage: </span><span class="n">M</span> <span class="o">=</span> <span class="n">MilpWordwiseDeterministicTruncatedXorDifferentialModel</span><span class="p">(</span><span class="n">aes</span><span class="p">)</span>
 <span class="gp">sage: </span><span class="n">plaintext</span> <span class="o">=</span> <span class="n">set_fixed_variables</span><span class="p">(</span><span class="n">component_id</span><span class="o">=</span><span class="s1">&#39;plaintext&#39;</span><span class="p">,</span> <span class="n">constraint_type</span><span class="o">=</span><span class="s1">&#39;equal&#39;</span><span class="p">,</span> <span class="n">bit_positions</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="mi">16</span><span class="p">),</span> <span class="n">bit_values</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">3</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="mi">12</span><span class="p">)</span>
 <span class="gp">sage: </span><span class="n">key</span> <span class="o">=</span> <span class="n">set_fixed_variables</span><span class="p">(</span><span class="n">component_id</span><span class="o">=</span><span class="s1">&#39;key&#39;</span><span class="p">,</span> <span class="n">constraint_type</span><span class="o">=</span><span class="s1">&#39;equal&#39;</span><span class="p">,</span> <span class="n">bit_positions</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="mi">128</span><span class="p">),</span> <span class="n">bit_values</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="mi">128</span><span class="p">)</span>
-<span class="gp">sage: </span><span class="n">trail</span> <span class="o">=</span> <span class="n">M</span><span class="o">.</span><span class="n">find_one_wordwise_deterministic_truncated_xor_differential_trail</span><span class="p">(</span><span class="n">fixed_bits</span><span class="o">=</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">fixed_words</span><span class="o">=</span><span class="p">[</span><span class="n">plaintext</span><span class="p">])</span>
+<span class="gp">sage: </span><span class="n">trail</span> <span class="o">=</span> <span class="n">M</span><span class="o">.</span><span class="n">find_one_wordwise_deterministic_truncated_xor_differential_trail</span><span class="p">(</span><span class="n">fixed_bits</span><span class="o">=</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">fixed_words</span><span class="o">=</span><span class="p">[</span><span class="n">plaintext</span><span class="p">])</span> <span class="c1"># doctest: +SKIP</span>
 <span class="go">...</span>
-<span class="gp">sage: </span><span class="n">trail</span><span class="p">[</span><span class="s1">&#39;status&#39;</span><span class="p">]</span>
+<span class="gp">sage: </span><span class="n">trail</span><span class="p">[</span><span class="s1">&#39;status&#39;</span><span class="p">]</span> <span class="c1"># doctest: +SKIP</span>
 <span class="go">&#39;SATISFIABLE&#39;</span>
 </pre></div>
 </div>
@@ -274,7 +277,7 @@ standard format (see <code class="xref py py-meth docutils literal notranslate">
 
 <dl class="py method">
 <dt class="sig sig-object py" id="cipher_modules.models.milp.milp_models.milp_wordwise_impossible_xor_differential_model.MilpWordwiseImpossibleXorDifferentialModel.find_one_wordwise_impossible_xor_differential_trail">
-<span class="sig-name descname"><span class="pre">find_one_wordwise_impossible_xor_differential_trail</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">middle_round</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_bits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_words</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'GLPK'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.milp.milp_models.milp_wordwise_impossible_xor_differential_model.MilpWordwiseImpossibleXorDifferentialModel.find_one_wordwise_impossible_xor_differential_trail" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">find_one_wordwise_impossible_xor_differential_trail</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">middle_round</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_bits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_words</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'GLPK'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">external_solver_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.milp.milp_models.milp_wordwise_impossible_xor_differential_model.MilpWordwiseImpossibleXorDifferentialModel.find_one_wordwise_impossible_xor_differential_trail" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns one wordwise impossible XOR differential trail.</p>
 <p>INPUTS:</p>
 <ul class="simple">
@@ -282,6 +285,7 @@ standard format (see <code class="xref py py-meth docutils literal notranslate">
 <li><p><code class="docutils literal notranslate"><span class="pre">middle_round</span></code> – <strong>integer</strong>; the round number for which the incompatibility occurs</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">fixed_bits</span></code> – <em>list of dict</em>, the bit variables to be fixed in standard format</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">fixed_words</span></code> – <em>list of dict</em>, the word variables to be fixed in standard format</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">external_solver_name</span></code> – <strong>string</strong> (default: None); if specified, the library will write the internal Sagemath MILP model as a .lp file and solve it outside of Sagemath, using the external solver.</p></li>
 </ul>
 <p>EXAMPLE:</p>
 <div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.utils</span> <span class="kn">import</span> <span class="n">get_single_key_scenario_format_for_fixed_values</span>
@@ -289,14 +293,14 @@ standard format (see <code class="xref py py-meth docutils literal notranslate">
 <span class="gp">sage: </span><span class="n">aes</span> <span class="o">=</span> <span class="n">AESBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 <span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.milp.milp_models.milp_wordwise_impossible_xor_differential_model</span> <span class="kn">import</span> <span class="n">MilpWordwiseImpossibleXorDifferentialModel</span>
 <span class="gp">sage: </span><span class="n">milp</span> <span class="o">=</span> <span class="n">MilpWordwiseImpossibleXorDifferentialModel</span><span class="p">(</span><span class="n">aes</span><span class="p">)</span>
-<span class="gp">sage: </span><span class="n">trail</span> <span class="o">=</span> <span class="n">milp</span><span class="o">.</span><span class="n">find_one_wordwise_impossible_xor_differential_trail</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">get_single_key_scenario_format_for_fixed_values</span><span class="p">(</span><span class="n">aes</span><span class="p">))</span>
+<span class="gp">sage: </span><span class="n">trail</span> <span class="o">=</span> <span class="n">milp</span><span class="o">.</span><span class="n">find_one_wordwise_impossible_xor_differential_trail</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">get_single_key_scenario_format_for_fixed_values</span><span class="p">(</span><span class="n">aes</span><span class="p">))</span> <span class="c1"># doctest: +SKIP</span>
 </pre></div>
 </div>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="cipher_modules.models.milp.milp_models.milp_wordwise_impossible_xor_differential_model.MilpWordwiseImpossibleXorDifferentialModel.find_one_wordwise_impossible_xor_differential_trail_with_fixed_component">
-<span class="sig-name descname"><span class="pre">find_one_wordwise_impossible_xor_differential_trail_with_fixed_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component_id_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_bits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_words</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'GLPK'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.milp.milp_models.milp_wordwise_impossible_xor_differential_model.MilpWordwiseImpossibleXorDifferentialModel.find_one_wordwise_impossible_xor_differential_trail_with_fixed_component" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="cipher_modules.models.milp.milp_models.milp_wordwise_impossible_xor_differential_model.MilpWordwiseImpossibleXorDifferentialModel.find_one_wordwise_impossible_xor_differential_trail_with_chosen_components">
+<span class="sig-name descname"><span class="pre">find_one_wordwise_impossible_xor_differential_trail_with_chosen_components</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component_id_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_bits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_words</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'GLPK'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">external_solver_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.milp.milp_models.milp_wordwise_impossible_xor_differential_model.MilpWordwiseImpossibleXorDifferentialModel.find_one_wordwise_impossible_xor_differential_trail_with_chosen_components" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns one wordwise impossible XOR differential trail.</p>
 <p>INPUTS:</p>
 <ul class="simple">
@@ -304,6 +308,7 @@ standard format (see <code class="xref py py-meth docutils literal notranslate">
 <li><p><code class="docutils literal notranslate"><span class="pre">component_id_list</span></code> – <strong>str</strong>; the list of component ids for which the incompatibility occurs</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">fixed_bits</span></code> – <em>list of dict</em>, the bit variables to be fixed in standard format</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">fixed_words</span></code> – <em>list of dict</em>, the word variables to be fixed in standard format</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">external_solver_name</span></code> – <strong>string</strong> (default: None); if specified, the library will write the internal Sagemath MILP model as a .lp file and solve it outside of Sagemath, using the external solver.</p></li>
 </ul>
 <p>EXAMPLE:</p>
 <div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.utils</span> <span class="kn">import</span> <span class="n">get_single_key_scenario_format_for_fixed_values</span>
@@ -311,20 +316,23 @@ standard format (see <code class="xref py py-meth docutils literal notranslate">
 <span class="gp">sage: </span><span class="n">aes</span> <span class="o">=</span> <span class="n">AESBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 <span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.milp.milp_models.milp_wordwise_impossible_xor_differential_model</span> <span class="kn">import</span> <span class="n">MilpWordwiseImpossibleXorDifferentialModel</span>
 <span class="gp">sage: </span><span class="n">milp</span> <span class="o">=</span> <span class="n">MilpWordwiseImpossibleXorDifferentialModel</span><span class="p">(</span><span class="n">aes</span><span class="p">)</span>
-<span class="gp">sage: </span><span class="n">trail</span> <span class="o">=</span> <span class="n">milp</span><span class="o">.</span><span class="n">find_one_wordwise_impossible_xor_differential_trail_with_fixed_component</span><span class="p">([</span><span class="s1">&#39;mix_column_0_21&#39;</span><span class="p">],</span> <span class="n">get_single_key_scenario_format_for_fixed_values</span><span class="p">(</span><span class="n">aes</span><span class="p">))</span>
+<span class="gp">sage: </span><span class="n">trail</span> <span class="o">=</span> <span class="n">milp</span><span class="o">.</span><span class="n">find_one_wordwise_impossible_xor_differential_trail_with_chosen_components</span><span class="p">([</span><span class="s1">&#39;mix_column_0_21&#39;</span><span class="p">],</span> <span class="n">get_single_key_scenario_format_for_fixed_values</span><span class="p">(</span><span class="n">aes</span><span class="p">))</span> <span class="c1"># doctest: +SKIP</span>
 </pre></div>
 </div>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="cipher_modules.models.milp.milp_models.milp_wordwise_impossible_xor_differential_model.MilpWordwiseImpossibleXorDifferentialModel.find_one_wordwise_impossible_xor_differential_trail_with_fully_automatic_model">
-<span class="sig-name descname"><span class="pre">find_one_wordwise_impossible_xor_differential_trail_with_fully_automatic_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fixed_bits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_words</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'GLPK'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.milp.milp_models.milp_wordwise_impossible_xor_differential_model.MilpWordwiseImpossibleXorDifferentialModel.find_one_wordwise_impossible_xor_differential_trail_with_fully_automatic_model" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">find_one_wordwise_impossible_xor_differential_trail_with_fully_automatic_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fixed_bits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_words</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_all_components</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'GLPK'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">external_solver_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.milp.milp_models.milp_wordwise_impossible_xor_differential_model.MilpWordwiseImpossibleXorDifferentialModel.find_one_wordwise_impossible_xor_differential_trail_with_fully_automatic_model" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns one wordwise impossible XOR differential trail.</p>
 <p>INPUTS:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">solver_name</span></code> – <em>str</em>, the solver to call</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">fixed_bits</span></code> – <em>list of dict</em>, the bit variables to be fixed in standard format</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">fixed_words</span></code> – <em>list of dict</em>, the word variables to be fixed in standard format</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">include_all_components</span></code> – <strong>boolean</strong> (default: <span class="math">False</span>); when set to <span class="math">True</span>, every component output can be a source
+of incompatibility; otherwise, only round outputs are considered</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">external_solver_name</span></code> – <strong>string</strong> (default: None); if specified, the library will write the internal Sagemath MILP model as a .lp file and solve it outside of Sagemath, using the external solver.</p></li>
 </ul>
 <p>EXAMPLE:</p>
 <div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.utils</span> <span class="kn">import</span> <span class="n">get_single_key_scenario_format_for_fixed_values</span>
@@ -332,7 +340,7 @@ standard format (see <code class="xref py py-meth docutils literal notranslate">
 <span class="gp">sage: </span><span class="n">aes</span> <span class="o">=</span> <span class="n">AESBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 <span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.milp.milp_models.milp_wordwise_impossible_xor_differential_model</span> <span class="kn">import</span> <span class="n">MilpWordwiseImpossibleXorDifferentialModel</span>
 <span class="gp">sage: </span><span class="n">milp</span> <span class="o">=</span> <span class="n">MilpWordwiseImpossibleXorDifferentialModel</span><span class="p">(</span><span class="n">aes</span><span class="p">)</span>
-<span class="gp">sage: </span><span class="n">trail</span> <span class="o">=</span> <span class="n">milp</span><span class="o">.</span><span class="n">find_one_wordwise_impossible_xor_differential_trail_with_fully_automatic_model</span><span class="p">(</span><span class="n">get_single_key_scenario_format_for_fixed_values</span><span class="p">(</span><span class="n">aes</span><span class="p">))</span>
+<span class="gp">sage: </span><span class="n">trail</span> <span class="o">=</span> <span class="n">milp</span><span class="o">.</span><span class="n">find_one_wordwise_impossible_xor_differential_trail_with_fully_automatic_model</span><span class="p">(</span><span class="n">get_single_key_scenario_format_for_fixed_values</span><span class="p">(</span><span class="n">aes</span><span class="p">))</span> <span class="c1"># doctest: +SKIP</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -461,18 +469,19 @@ using the MILP technique from <a class="reference external" href="https://github
 <span class="gp">sage: </span><span class="n">milp</span> <span class="o">=</span> <span class="n">MilpWordwiseDeterministicTruncatedXorDifferentialModel</span><span class="p">(</span><span class="n">cipher</span><span class="p">)</span>
 <span class="gp">sage: </span><span class="n">milp</span><span class="o">.</span><span class="n">init_model_in_sage_milp_class</span><span class="p">()</span>
 <span class="gp">sage: </span><span class="n">variables</span><span class="p">,</span> <span class="n">constraints</span> <span class="o">=</span> <span class="n">milp</span><span class="o">.</span><span class="n">input_wordwise_deterministic_truncated_xor_differential_constraints</span><span class="p">()</span>
-<span class="gp">sage: </span><span class="n">variables</span>
-<span class="go"> (&#39;x[xor_0_36_11]&#39;, x_1571),</span>
-<span class="go"> (&#39;x[xor_0_36_12]&#39;, x_1572),</span>
+<span class="go">...</span>
+<span class="gp">sage: </span><span class="n">variables</span> <span class="c1"># doctest: +SKIP</span>
+<span class="go"> (&#39;x_class[key_word_0_class]&#39;, x_480),</span>
+<span class="go"> (&#39;x_class[key_word_1_class]&#39;, x_481),</span>
 <span class="go"> ...</span>
 <span class="go"> (&#39;x[cipher_output_1_32_126]&#39;, x_3078),</span>
 <span class="go"> (&#39;x[cipher_output_1_32_127]&#39;, x_3079)]</span>
-<span class="gp">sage: </span><span class="n">constraints</span>
+<span class="gp">sage: </span><span class="n">constraints</span> <span class="c1"># doctest: +SKIP</span>
 <span class="go">[1 &lt;= 1 + x_0 - x_1 + x_2 + x_3 + x_4 + x_5 + x_6 + x_7 + x_8 + x_9,</span>
 <span class="go"> 1 &lt;= 1 + x_1 - x_9,</span>
 <span class="go"> ...</span>
-<span class="go"> x_2918 == 2*x_3060 + x_3061,</span>
-<span class="go"> x_2919 == 2*x_3070 + x_3071]</span>
+<span class="go"> x_3078 == 2*x_3044 + x_3045,</span>
+<span class="go"> x_3079 == 2*x_3054 + x_3055]</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -541,6 +550,11 @@ using the MILP technique from <a class="reference external" href="https://github
 </div>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="cipher_modules.models.milp.milp_models.milp_wordwise_impossible_xor_differential_model.MilpWordwiseImpossibleXorDifferentialModel.solver_names">
+<span class="sig-name descname"><span class="pre">solver_names</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.milp.milp_models.milp_wordwise_impossible_xor_differential_model.MilpWordwiseImpossibleXorDifferentialModel.solver_names" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="py property">
 <dt class="sig sig-object py" id="cipher_modules.models.milp.milp_models.milp_wordwise_impossible_xor_differential_model.MilpWordwiseImpossibleXorDifferentialModel.trunc_wordvar">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">trunc_wordvar</span></span><a class="headerlink" href="#cipher_modules.models.milp.milp_models.milp_wordwise_impossible_xor_differential_model.MilpWordwiseImpossibleXorDifferentialModel.trunc_wordvar" title="Permalink to this definition">¶</a></dt>
@@ -548,11 +562,12 @@ using the MILP technique from <a class="reference external" href="https://github
 
 <dl class="py method">
 <dt class="sig sig-object py" id="cipher_modules.models.milp.milp_models.milp_wordwise_impossible_xor_differential_model.MilpWordwiseImpossibleXorDifferentialModel.weight_constraints">
-<span class="sig-name descname"><span class="pre">weight_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">weight</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.milp.milp_models.milp_wordwise_impossible_xor_differential_model.MilpWordwiseImpossibleXorDifferentialModel.weight_constraints" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">weight_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">weight</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight_precision</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.milp.milp_models.milp_wordwise_impossible_xor_differential_model.MilpWordwiseImpossibleXorDifferentialModel.weight_constraints" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a list of variables and a list of constraints that fix the total weight to a specific value.</p>
 <p>INPUT:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">weight</span></code> – <strong>integer</strong>; the total weight. If negative, no constraints on the weight is added</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">weight_precision</span></code> – <strong>integer</strong> (default: <span class="math">2</span>); the number of decimals to use when rounding the weight of the trail.</p></li>
 </ul>
 <p>EXAMPLES:</p>
 <div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.simon_block_cipher</span> <span class="kn">import</span> <span class="n">SimonBlockCipher</span>
@@ -564,7 +579,7 @@ using the MILP technique from <a class="reference external" href="https://github
 <span class="gp">sage: </span><span class="n">variables</span>
 <span class="go">[(&#39;p[probability]&#39;, x_0)]</span>
 <span class="gp">sage: </span><span class="n">constraints</span>
-<span class="go">[x_0 == 100]</span>
+<span class="go">[x_0 == 1000]</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -611,7 +626,7 @@ using the MILP technique from <a class="reference external" href="https://github
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -637,7 +652,7 @@ using the MILP technique from <a class="reference external" href="https://github
     
   
   
-        <li class="nav-item nav-item-0"><a href="../../../../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives v3.1.0 documentation</a> &#187;</li>
 
         <li class="nav-item nav-item-this"><a href="">Milp wordwise impossible xor differential model</a></li> 
       </ul>

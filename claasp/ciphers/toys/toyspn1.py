@@ -1,30 +1,25 @@
-
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
 
 from claasp.cipher import Cipher
-from claasp.DTOs.component_state import ComponentState
-from claasp.utils.utils import get_number_of_rounds_from
-from claasp.name_mappings import INPUT_PLAINTEXT, INPUT_KEY
+from claasp.name_mappings import BLOCK_CIPHER, INPUT_PLAINTEXT, INPUT_KEY
 
-PARAMETERS_CONFIGURATION_LIST = [
-    {'block_bit_size': 6, 'key_bit_size': 6, 'number_of_rounds': 2}
-]
+PARAMETERS_CONFIGURATION_LIST = [{"block_bit_size": 6, "key_bit_size": 6, "number_of_rounds": 2}]
 
 
 class ToySPN1(Cipher):
@@ -96,58 +91,61 @@ class ToySPN1(Cipher):
         '0x6c'
 
     """
-    def __init__(self,
-                 block_bit_size=6,
-                 key_bit_size=6,
-                 rotation_layer=1,
-                 sbox = [0, 5, 3, 2, 6, 1, 4, 7], # Xoodoo S-box
-                 number_of_rounds=2):
-        self.sbox_bit_size = len(bin(len(sbox)))-3
+
+    def __init__(
+        self,
+        block_bit_size=6,
+        key_bit_size=6,
+        rotation_layer=1,
+        sbox=[0, 5, 3, 2, 6, 1, 4, 7],  # Xoodoo S-box
+        number_of_rounds=2,
+    ):
+        self.sbox_bit_size = len(bin(len(sbox))) - 3
         self.number_of_sboxes = block_bit_size // self.sbox_bit_size
-        super().__init__(family_name="toyspn1",
-                         cipher_type="block_cipher",
-                         cipher_inputs=[INPUT_PLAINTEXT, INPUT_KEY],
-                         cipher_inputs_bit_size=[block_bit_size, key_bit_size],
-                         cipher_output_bit_size=block_bit_size)
+        super().__init__(
+            family_name="toyspn1",
+            cipher_type=BLOCK_CIPHER,
+            cipher_inputs=[INPUT_PLAINTEXT, INPUT_KEY],
+            cipher_inputs_bit_size=[block_bit_size, key_bit_size],
+            cipher_output_bit_size=block_bit_size,
+        )
 
         xor_input1 = INPUT_PLAINTEXT
         xor_input2 = INPUT_KEY
         for _ in range(number_of_rounds):
             self.add_round()
 
-            self.add_round_key_output_component([INPUT_KEY], [[i for i in range(key_bit_size)]], key_bit_size)
+            self.add_round_key_output_component([INPUT_KEY], [list(range(key_bit_size))], key_bit_size)
 
             # XOR with round key
             xor = self.add_XOR_component(
-                 [xor_input1] + [xor_input2],
-                 [[i for i in range(block_bit_size)],
-                  [i for i in range(block_bit_size)]],
-                 block_bit_size)
+                [xor_input1] + [xor_input2],
+                [list(range(block_bit_size)), list(range(block_bit_size))],
+                block_bit_size,
+            )
 
             # S-box layer
             sbox_ids_list = []
             for ns in range(self.number_of_sboxes):
-                sbox_component = self.add_SBOX_component([xor.id],
-                                        [[ns*self.sbox_bit_size + i for i in range(self.sbox_bit_size)]],
-                                        self.sbox_bit_size,
-                                        sbox)
+                sbox_component = self.add_SBOX_component(
+                    [xor.id],
+                    [[ns * self.sbox_bit_size + i for i in range(self.sbox_bit_size)]],
+                    self.sbox_bit_size,
+                    sbox,
+                )
                 sbox_ids_list.append(sbox_component.id)
 
             # ROTATION layer
             rotate_component = self.add_rotate_component(
                 sbox_ids_list,
-                [[i for i in range(self.sbox_bit_size)] for _ in range(self.number_of_sboxes)],
+                [list(range(self.sbox_bit_size)) for _ in range(self.number_of_sboxes)],
                 block_bit_size,
-                rotation_layer)
+                rotation_layer,
+            )
 
-            self.add_round_output_component([rotate_component.id],
-                                            [[i for i in range(block_bit_size)]],
-                                            block_bit_size)
+            self.add_round_output_component([rotate_component.id], [list(range(block_bit_size))], block_bit_size)
 
             xor_input1 = rotate_component.id
             xor_input2 = INPUT_KEY
 
-        self.add_cipher_output_component(
-            [rotate_component.id],
-            [[i for i in range(block_bit_size)]],
-            block_bit_size)
+        self.add_cipher_output_component([rotate_component.id], [list(range(block_bit_size))], block_bit_size)

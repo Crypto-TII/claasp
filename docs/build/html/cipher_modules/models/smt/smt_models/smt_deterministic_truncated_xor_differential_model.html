@@ -1,22 +1,23 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Smt deterministic truncated xor differential model &#8212; CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</title>
+    <title>Smt deterministic truncated xor differential model &#8212; CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives v3.1.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/sage.css" />
     <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
     <script src="../../../../_static/jquery.js"></script>
     <script src="../../../../_static/underscore.js"></script>
+    <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../../../../_static/favicon.ico"/>
     <link rel="index" title="Index" href="../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../search.html" />
-    <link rel="next" title="Smt cipher model" href="smt_cipher_model.html" />
+    <link rel="next" title="Utils" href="../utils/utils.html" />
     <link rel="prev" title="Smt xor differential model" href="smt_xor_differential_model.html" />
     <link rel="icon" href="../../../../_static/sageicon.png" type="image/x-icon" />
     <script src="../../../../_static/thebe.js" type="text/javascript"></script>
@@ -33,7 +34,7 @@
           <a href="../../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="smt_cipher_model.html" title="Smt cipher model"
+          <a href="../utils/utils.html" title="Utils"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="smt_xor_differential_model.html" title="Smt xor differential model"
@@ -44,7 +45,7 @@
     
   
   
-        <li class="nav-item nav-item-0"><a href="../../../../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives v3.1.0 documentation</a> &#187;</li>
 
         <li class="nav-item nav-item-this"><a href="">Smt deterministic truncated xor differential model</a></li> 
       </ul>
@@ -56,11 +57,11 @@
           <div class="body" role="main">
             
   <section id="module-cipher_modules.models.smt.smt_models.smt_deterministic_truncated_xor_differential_model">
-<span id="smt-deterministic-truncated-xor-differential-model"></span><h1>Smt deterministic truncated xor differential model<a class="headerlink" href="#module-cipher_modules.models.smt.smt_models.smt_deterministic_truncated_xor_differential_model" title="Permalink to this headline">¶</a></h1>
+<span id="smt-deterministic-truncated-xor-differential-model"></span><h1>Smt deterministic truncated xor differential model<a class="headerlink" href="#module-cipher_modules.models.smt.smt_models.smt_deterministic_truncated_xor_differential_model" title="Permalink to this heading">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="cipher_modules.models.smt.smt_models.smt_deterministic_truncated_xor_differential_model.SmtDeterministicTruncatedXorDifferentialModel">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SmtDeterministicTruncatedXorDifferentialModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cipher</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">counter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'sequential'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.smt.smt_models.smt_deterministic_truncated_xor_differential_model.SmtDeterministicTruncatedXorDifferentialModel" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">claasp.cipher_modules.models.smt.smt_model.SmtModel</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">SmtModel</span></code></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="cipher_modules.models.smt.smt_models.smt_deterministic_truncated_xor_differential_model.SmtDeterministicTruncatedXorDifferentialModel.calculate_component_weight">
 <span class="sig-name descname"><span class="pre">calculate_component_weight</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_suffix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_values_dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.smt.smt_models.smt_deterministic_truncated_xor_differential_model.SmtDeterministicTruncatedXorDifferentialModel.calculate_component_weight" title="Permalink to this definition">¶</a></dt>
@@ -158,7 +159,7 @@
 
 <dl class="py method">
 <dt class="sig sig-object py" id="cipher_modules.models.smt.smt_models.smt_deterministic_truncated_xor_differential_model.SmtDeterministicTruncatedXorDifferentialModel.solve">
-<span class="sig-name descname"><span class="pre">solve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'z3'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.smt.smt_models.smt_deterministic_truncated_xor_differential_model.SmtDeterministicTruncatedXorDifferentialModel.solve" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">solve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Z3_EXT'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.smt.smt_models.smt_deterministic_truncated_xor_differential_model.SmtDeterministicTruncatedXorDifferentialModel.solve" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the solution of the model using the <code class="docutils literal notranslate"><span class="pre">solver_name</span></code> SMT solver.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -169,7 +170,7 @@
 <li><p><code class="docutils literal notranslate"><span class="pre">'xor_linear'</span></code></p></li>
 </ul>
 </li>
-<li><p><code class="docutils literal notranslate"><span class="pre">solver_name</span></code> – <strong>string</strong> (default: <span class="math">z3</span>); the name of the solver</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">solver_name</span></code> – <strong>string</strong> (default: <span class="math">Z3_EXT</span>); the name of the solver</p></li>
 </ul>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
@@ -183,7 +184,7 @@
 <span class="gp">sage: </span><span class="n">smt</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="s1">&#39;xor_differential&#39;</span><span class="p">)</span> <span class="c1"># random</span>
 <span class="go">{&#39;cipher_id&#39;: &#39;speck_p32_k64_o32_r4&#39;,</span>
 <span class="go"> &#39;model_type&#39;: &#39;xor_differential&#39;,</span>
-<span class="go"> &#39;solver_name&#39;: &#39;z3&#39;,</span>
+<span class="go"> &#39;solver_name&#39;: &#39;Z3_EXT&#39;,</span>
 <span class="go"> &#39;solving_time_seconds&#39;: 0.0,</span>
 <span class="go"> &#39;memory_megabytes&#39;: 0.09,</span>
 <span class="go"> &#39;components_values&#39;: {},</span>
@@ -230,8 +231,8 @@
   </div>
   <div>
     <h4>Next topic</h4>
-    <p class="topless"><a href="smt_cipher_model.html"
-                          title="next chapter">Smt cipher model</a></p>
+    <p class="topless"><a href="../utils/utils.html"
+                          title="next chapter">Utils</a></p>
   </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
@@ -249,7 +250,7 @@
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -264,7 +265,7 @@
           <a href="../../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="smt_cipher_model.html" title="Smt cipher model"
+          <a href="../utils/utils.html" title="Utils"
              >next</a> |</li>
         <li class="right" >
           <a href="smt_xor_differential_model.html" title="Smt xor differential model"
@@ -275,7 +276,7 @@
     
   
   
-        <li class="nav-item nav-item-0"><a href="../../../../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives v3.1.0 documentation</a> &#187;</li>
 
         <li class="nav-item nav-item-this"><a href="">Smt deterministic truncated xor differential model</a></li> 
       </ul>

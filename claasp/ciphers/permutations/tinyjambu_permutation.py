@@ -1,17 +1,16 @@
-
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
@@ -22,10 +21,10 @@ from copy import deepcopy
 from claasp.cipher import Cipher
 from claasp.utils.utils import get_inputs_parameter
 from claasp.DTOs.component_state import ComponentState
-from claasp.name_mappings import INPUT_PLAINTEXT, INPUT_KEY
+from claasp.name_mappings import INPUT_PLAINTEXT, INPUT_KEY, PERMUTATION
 
 STATE_SIZE = 128
-PARAMETERS_CONFIGURATION_LIST = [{'key_bit_size': 128, 'number_of_rounds': 640}]
+PARAMETERS_CONFIGURATION_LIST = [{"key_bit_size": 128, "number_of_rounds": 640}]
 
 
 class TinyJambuPermutation(Cipher):
@@ -51,12 +50,13 @@ class TinyJambuPermutation(Cipher):
     """
 
     def __init__(self, key_bit_size=128, number_of_rounds=640):
-
-        super().__init__(family_name="tinyjambu",
-                         cipher_type="permutation",
-                         cipher_inputs=[INPUT_KEY, INPUT_PLAINTEXT],
-                         cipher_inputs_bit_size=[key_bit_size, STATE_SIZE],
-                         cipher_output_bit_size=STATE_SIZE)
+        super().__init__(
+            family_name="tinyjambu",
+            cipher_type=PERMUTATION,
+            cipher_inputs=[INPUT_KEY, INPUT_PLAINTEXT],
+            cipher_inputs_bit_size=[key_bit_size, STATE_SIZE],
+            cipher_output_bit_size=STATE_SIZE,
+        )
 
         # state initialization
         state = []

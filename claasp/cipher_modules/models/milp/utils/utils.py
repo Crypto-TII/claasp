@@ -14,26 +14,34 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
+
 import datetime
 import pickle
 import re
+
 from subprocess import run
-
 from bitstring import BitArray
-from sage.arith.misc import is_power_of_two
-
-from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_large_sboxes import \
-    get_dictionary_that_contains_inequalities_for_large_sboxes
-from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_xor_with_n_input_bits import (
-    output_dictionary_that_contains_xor_inequalities,
-    update_dictionary_that_contains_xor_inequalities_between_n_input_bits)
 
 from sage.numerical.mip import MIPSolverException
 
-from claasp.cipher_modules.models.milp.utils.milp_name_mappings import MILP_BITWISE_DETERMINISTIC_TRUNCATED, \
-    MILP_WORDWISE_DETERMINISTIC_TRUNCATED, MILP_BACKWARD_SUFFIX, MILP_TRUNCATED_XOR_DIFFERENTIAL_OBJECTIVE, \
-    MILP_XOR_DIFFERENTIAL_OBJECTIVE, MILP_BITWISE_IMPOSSIBLE, MILP_WORDWISE_IMPOSSIBLE, MILP_BITWISE_IMPOSSIBLE_AUTO, \
-    MILP_WORDWISE_IMPOSSIBLE_AUTO
+from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_large_sboxes import (
+    get_dictionary_that_contains_inequalities_for_large_sboxes,
+)
+from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_xor_with_n_input_bits import (
+    output_dictionary_that_contains_xor_inequalities,
+    update_dictionary_that_contains_xor_inequalities_between_n_input_bits,
+)
+from claasp.cipher_modules.models.milp.utils.milp_name_mappings import (
+    MILP_BACKWARD_SUFFIX,
+    MILP_BITWISE_DETERMINISTIC_TRUNCATED,
+    MILP_BITWISE_IMPOSSIBLE_AUTO,
+    MILP_BITWISE_IMPOSSIBLE,
+    MILP_TRUNCATED_XOR_DIFFERENTIAL_OBJECTIVE,
+    MILP_WORDWISE_DETERMINISTIC_TRUNCATED,
+    MILP_WORDWISE_IMPOSSIBLE_AUTO,
+    MILP_WORDWISE_IMPOSSIBLE,
+    MILP_XOR_DIFFERENTIAL_OBJECTIVE,
+)
 from claasp.name_mappings import SBOX
 
 
@@ -59,23 +67,23 @@ def _get_data(data_keywords, lines):
 def _get_variables_value(internal_variables, read_file):
     variables_value = {}
     for key in internal_variables.keys():
-        index = int(re.search(r'\d+', str(internal_variables[key])).group()) + 1
-        match = re.search(r'[xyz]_%s[\s]+[\*]?[\s]*([0-9]*[.]?[0-9]+)' % index, read_file)
+        index = int(re.search(r"\d+", str(internal_variables[key])).group()) + 1
+        match = re.search(r"[xyz]_%s[\s]+[\*]?[\s]*([0-9]*[.]?[0-9]+)" % index, read_file)
         variables_value[key] = float(match.group(1)) if match else 0.0
     return variables_value
 
 
 def _parse_external_solver_output(model, solver_specs, model_type, solution_file_path, solver_process):
-    solve_time = _get_data(solver_specs['keywords']['time'], solver_process)
+    solve_time = _get_data(solver_specs["keywords"]["time"], solver_process)
 
-    status = 'UNSATISFIABLE'
+    status = "UNSATISFIABLE"
     objective_value = None
     components_values = None
 
-    if re.findall(solver_specs['keywords']['unsat_condition'], solver_process) == []:
-        status = 'SATISFIABLE'
+    if re.findall(solver_specs["keywords"]["unsat_condition"], solver_process) == []:
+        status = "SATISFIABLE"
 
-        with open(solution_file_path, 'r') as lp_file:
+        with open(solution_file_path, "r") as lp_file:
             read_file = lp_file.read()
 
         if model_type in [MILP_BITWISE_DETERMINISTIC_TRUNCATED, MILP_BITWISE_IMPOSSIBLE]:
@@ -85,8 +93,9 @@ def _parse_external_solver_output(model, solver_specs, model_type, solution_file
         elif model_type == MILP_BITWISE_IMPOSSIBLE_AUTO:
             components_variables = _get_variables_value(model.trunc_binvar, read_file)
             objective_variables = _get_variables_value(model.binary_variable, read_file)
-            inconsistent_component_var = \
-                [i for i in objective_variables.keys() if objective_variables[i] > 0 and "inconsistent" in i][0]
+            inconsistent_component_var = [
+                i for i in objective_variables.keys() if objective_variables[i] > 0 and "inconsistent" in i
+            ][0]
             objective_value = "_".join(inconsistent_component_var.split("_")[:-3])
         elif model_type in [MILP_WORDWISE_DETERMINISTIC_TRUNCATED, MILP_WORDWISE_IMPOSSIBLE]:
             components_variables = _get_variables_value(model.trunc_wordvar, read_file)
@@ -95,13 +104,14 @@ def _parse_external_solver_output(model, solver_specs, model_type, solution_file
         elif model_type == MILP_WORDWISE_IMPOSSIBLE_AUTO:
             components_variables = _get_variables_value(model.trunc_wordvar, read_file)
             objective_variables = _get_variables_value(model.binary_variable, read_file)
-            inconsistent_component_var = \
-                [i for i in objective_variables.keys() if objective_variables[i] > 0 and "inconsistent" in i][0]
+            inconsistent_component_var = [
+                i for i in objective_variables.keys() if objective_variables[i] > 0 and "inconsistent" in i
+            ][0]
             objective_value = "_".join(inconsistent_component_var.split("_")[:-3])
         else:
             components_variables = _get_variables_value(model.binary_variable, read_file)
             objective_variables = _get_variables_value(model.integer_variable, read_file)
-            objective_value = objective_variables[MILP_XOR_DIFFERENTIAL_OBJECTIVE] / float(10 ** model.weight_precision)
+            objective_value = objective_variables[MILP_XOR_DIFFERENTIAL_OBJECTIVE] / float(10**model.weight_precision)
 
         components_values = model._get_component_values(objective_variables, components_variables)
 
@@ -112,7 +122,6 @@ def _parse_external_solver_output(model, solver_specs, model_type, solution_file
 
 
 def generate_espresso_input(valid_points):
-
     input_size = len(valid_points[0])
 
     espresso_input = [f"# there are {input_size} input variables\n"]
@@ -127,7 +136,7 @@ def generate_espresso_input(valid_points):
     espresso_input.append("# end of the PLA data\n")
     espresso_input.append(".e")
 
-    return ''.join(espresso_input)
+    return "".join(espresso_input)
 
 
 def generate_product_of_sum_from_espresso(valid_points):
@@ -146,22 +155,21 @@ def generate_product_of_sum_from_espresso(valid_points):
     """
 
     espresso_input = generate_espresso_input(valid_points)
-    espresso_process = run(['espresso', '-epos', '-okiss'], input=espresso_input,
-                                          capture_output=True, text=True)
+    espresso_process = run(["espresso", "-epos", "-okiss"], input=espresso_input, capture_output=True, text=True)
     espresso_output = espresso_process.stdout.splitlines()
 
     return [line[:-2] for line in espresso_output[4:]]
 
 
 def output_espresso_dictionary(file_path):
-    read_file = open(file_path, 'rb')
+    read_file = open(file_path, "rb")
     dictio = pickle.load(read_file)
     read_file.close()
     return dictio
 
 
 def delete_espresso_dictionary(file_path):
-    write_file = open(file_path, 'wb')
+    write_file = open(file_path, "wb")
     pickle.dump({}, write_file)
     write_file.close()
 
@@ -197,8 +205,7 @@ def milp_less(model, a, b, big_m):
     """
     d = model.binary_variable
     a_less_b = d[str(a) + "_less_" + str(b) + "_dummy"]
-    constraints = [a <= b - 1 + big_m * (1 - a_less_b),
-                   a >= b - big_m * a_less_b]
+    constraints = [a <= b - 1 + big_m * (1 - a_less_b), a >= b - big_m * a_less_b]
 
     return a_less_b, constraints
 
@@ -239,9 +246,7 @@ def milp_and(model, a, b):
     d = model.binary_variable
     a_and_b = d[str(a) + "_and_" + str(b) + "_dummy"]
 
-    constraint = [a + b - 1 <= a_and_b,
-                  a_and_b <= a,
-                  a_and_b <= b]
+    constraint = [a + b - 1 <= a_and_b, a_and_b <= a, a_and_b <= b]
 
     return a_and_b, constraint
 
@@ -255,9 +260,7 @@ def milp_or(model, a, b):
     d = model.binary_variable
     a_or_b = d[str(a) + "_or_" + str(b) + "_dummy"]
 
-    constraint = [a + b >= a_or_b,
-                  a_or_b >= a,
-                  a_or_b >= b]
+    constraint = [a + b >= a_or_b, a_or_b >= a, a_or_b >= b]
 
     return a_or_b, constraint
 
@@ -294,9 +297,9 @@ def milp_generalized_and(model, var_list):
     """
     d = model.binary_variable
 
-    generalized_and_varname = ''
+    generalized_and_varname = ""
     for i in range(len(var_list)):
-        generalized_and_varname += str(var_list[i]) + '{}'.format('_and_' if i < len(var_list) - 1 else '_dummy')
+        generalized_and_varname += str(var_list[i]) + "{}".format("_and_" if i < len(var_list) - 1 else "_dummy")
 
     generalized_and = d[generalized_and_varname]
     constraint = [sum(var_list) - len(var_list) + 1 <= generalized_and]
@@ -410,10 +413,7 @@ def milp_xor(a, b, c):
         sage: a
         x_0
     """
-    constraints = [a + b >= c,
-                   a + c >= b,
-                   b + c >= a,
-                   a + b + c <= 2]
+    constraints = [a + b >= c, a + c >= b, b + c >= a, a + b + c <= 2]
 
     return constraints
 
@@ -445,7 +445,6 @@ def milp_generalized_xor(input_var_list, output_bit):
     update_dictionary_that_contains_xor_inequalities_between_n_input_bits(number_of_inputs)
     dict_inequalities = output_dictionary_that_contains_xor_inequalities()
     inequalities = dict_inequalities[number_of_inputs]
-
 
     for ineq in inequalities:
         constraint = 0
@@ -505,6 +504,8 @@ def milp_else(var_if, else_constraints, big_m):
                 constraints.append(rhs <= lhs + big_m * var_if)
 
     return constraints
+
+
 def milp_if_then_else(var_if, then_constraints, else_constraints, big_m):
     """
     Returns a list of variables and a list of constraints to model an if-then-else statement.
@@ -526,7 +527,7 @@ def milp_if_elif_else(model, var_if_list, then_constraints_list, else_constraint
     https://stackoverflow.com/questions/41009196/if-then-elseif-then-in-mixed-integer-linear-programming
     """
 
-    assert (len(var_if_list) == len(then_constraints_list))
+    assert len(var_if_list) == len(then_constraints_list)
     constraints = []
     num_cond = len(var_if_list)
 
@@ -535,11 +536,11 @@ def milp_if_elif_else(model, var_if_list, then_constraints_list, else_constraint
 
     else:
         d = model.binary_variable
-        decision_varname = ''
+        decision_varname = ""
         for i in range(num_cond):
-            decision_varname += str(var_if_list[i]) + '{}'.format('_and_' if i < num_cond - 1 else '_dummy')
+            decision_varname += str(var_if_list[i]) + "{}".format("_and_" if i < num_cond - 1 else "_dummy")
 
-        decision_var = [d[decision_varname + '_' + str(i)] for i in range(num_cond)]
+        decision_var = [d[decision_varname + "_" + str(i)] for i in range(num_cond)]
 
         for i in range(num_cond):
             decision_constraints = 0
@@ -547,13 +548,14 @@ def milp_if_elif_else(model, var_if_list, then_constraints_list, else_constraint
                 decision_constraints += 1 - var_if_list[j]
             decision_constraints += var_if_list[i]
             constraints.append(decision_constraints <= decision_var[i] + num_cond - 1)
-            constraints.append(1. / num_cond * decision_constraints >= decision_var[i])
+            constraints.append(1.0 / num_cond * decision_constraints >= decision_var[i])
 
             constraints.extend(milp_if_then(decision_var[i], then_constraints_list[i], big_m))
 
         constraints.extend(milp_else(sum(decision_var), else_constraints, big_m))
 
         return constraints
+
 
 def espresso_pos_to_constraints(espresso_inequalities, variables):
     constraints = []
@@ -566,6 +568,7 @@ def espresso_pos_to_constraints(espresso_inequalities, variables):
                 constraint += variables[pos]
         constraints.append(constraint >= 1)
     return constraints
+
 
 def milp_xor_truncated(model, input_1, input_2, output):
     """
@@ -604,12 +607,23 @@ def milp_xor_truncated(model, input_1, input_2, output):
     """
 
     x = model.binary_variable
-    espresso_inequalities = ['-1-000', '-0-100', '----11', '0-0-1-', '-0-0-1',
-                             '-1-1-1', '11----', '--1-0-', '1---0-', '--11--']
+    espresso_inequalities = [
+        "-1-000",
+        "-0-100",
+        "----11",
+        "0-0-1-",
+        "-0-0-1",
+        "-1-1-1",
+        "11----",
+        "--1-0-",
+        "1---0-",
+        "--11--",
+    ]
 
     all_vars = [x[i] for i in input_1 + input_2 + output]
 
     return espresso_pos_to_constraints(espresso_inequalities, all_vars)
+
 
 def milp_xor_truncated_wordwise(model, input_1, input_2, output):
     """
@@ -647,53 +661,99 @@ def milp_xor_truncated_wordwise(model, input_1, input_2, output):
 
     x = model.binary_variable
 
-    espresso_inequalities = ['0-00000000-0---------1--------', '-0--------0-00000000-1--------',
-                             '-1----------00000000-0--------', '--00000000-1---------0--------',
-                             '---------------------01-------', '--------------------0100000000',
-                             '---------------------0-1------', '--------------------1-1-------',
-                             '---------------------0--1-----', '--------------------1--1------',
-                             '---------------------0---1----', '--------------------1---1-----',
-                             '---------------------0----1---', '--------------------1----1----',
-                             '---------------------0-----1--', '--1---------0-------0-0-------',
-                             '--0---------1-------0-0-------', '---------------------0------1-',
-                             '---1---------0------0--0------', '---0---------1------0--0------',
-                             '----1---------0-----0---0-----', '----0---------1-----0---0-----',
-                             '--------------------1-----1---', '-----1---------0----0----0----',
-                             '-----0---------1----0----0----', '------1---------0---0-----0---',
-                             '------0---------1---0-----0---', '-------1---------0--0------0--',
-                             '-------0---------1--0------0--', '--------1---------0-0-------0-',
-                             '--------0---------1-0-------0-', '---------1---------00--------0',
-                             '---------0---------10--------0', '---------------------0-------1',
-                             '--------------------1------1--', '--------------------1-------1-',
-                             '--------------------1--------1', '0100000000--------------------',
-                             '----------0100000000----------', '---------0---------0---------1',
-                             '---------1---------1---------1', '1---------1----------0--------',
-                             '0---------0---------1---------', '-------0---------0---------1--',
-                             '------0---------0---------1---', '-----0---------0---------1----',
-                             '----0---------0---------1-----', '---0---------0---------1------',
-                             '--0---------0---------1-------', '--------0---------0---------1-',
-                             '--------1---------1---------1-', '--1---------1---------1-------',
-                             '------1---------1---------1---', '-----1---------1---------1----',
-                             '----1---------1---------1-----', '---1---------1---------1------',
-                             '-------1---------1---------1--', '----------1---------0---------',
-                             '1-------------------0---------', '-----------0------1-----------',
-                             '----------1-------1-----------', '-----------01-----------------',
-                             '----------1-1-----------------', '-----------0----1-------------',
-                             '----------1-----1-------------', '-----------0---1--------------',
-                             '----------1----1--------------', '-----------0--1---------------',
-                             '----------1---1---------------', '-----------0-1----------------',
-                             '----------1--1----------------', '-0------1---------------------',
-                             '-0-----1----------------------', '-0----1-----------------------',
-                             '-0---1------------------------', '-0--1-------------------------',
-                             '-0-1--------------------------', '-01---------------------------',
-                             '-----------0-----1------------', '----------1------1------------',
-                             '1-------1---------------------', '1------1----------------------',
-                             '1-----1-----------------------', '1----1------------------------',
-                             '1---1-------------------------', '1--1--------------------------',
-                             '1-1---------------------------', '-----------0-------1----------',
-                             '----------1--------1----------', '-0-------1--------------------',
-                             '1--------1--------------------']
-
+    espresso_inequalities = [
+        "0-00000000-0---------1--------",
+        "-0--------0-00000000-1--------",
+        "-1----------00000000-0--------",
+        "--00000000-1---------0--------",
+        "---------------------01-------",
+        "--------------------0100000000",
+        "---------------------0-1------",
+        "--------------------1-1-------",
+        "---------------------0--1-----",
+        "--------------------1--1------",
+        "---------------------0---1----",
+        "--------------------1---1-----",
+        "---------------------0----1---",
+        "--------------------1----1----",
+        "---------------------0-----1--",
+        "--1---------0-------0-0-------",
+        "--0---------1-------0-0-------",
+        "---------------------0------1-",
+        "---1---------0------0--0------",
+        "---0---------1------0--0------",
+        "----1---------0-----0---0-----",
+        "----0---------1-----0---0-----",
+        "--------------------1-----1---",
+        "-----1---------0----0----0----",
+        "-----0---------1----0----0----",
+        "------1---------0---0-----0---",
+        "------0---------1---0-----0---",
+        "-------1---------0--0------0--",
+        "-------0---------1--0------0--",
+        "--------1---------0-0-------0-",
+        "--------0---------1-0-------0-",
+        "---------1---------00--------0",
+        "---------0---------10--------0",
+        "---------------------0-------1",
+        "--------------------1------1--",
+        "--------------------1-------1-",
+        "--------------------1--------1",
+        "0100000000--------------------",
+        "----------0100000000----------",
+        "---------0---------0---------1",
+        "---------1---------1---------1",
+        "1---------1----------0--------",
+        "0---------0---------1---------",
+        "-------0---------0---------1--",
+        "------0---------0---------1---",
+        "-----0---------0---------1----",
+        "----0---------0---------1-----",
+        "---0---------0---------1------",
+        "--0---------0---------1-------",
+        "--------0---------0---------1-",
+        "--------1---------1---------1-",
+        "--1---------1---------1-------",
+        "------1---------1---------1---",
+        "-----1---------1---------1----",
+        "----1---------1---------1-----",
+        "---1---------1---------1------",
+        "-------1---------1---------1--",
+        "----------1---------0---------",
+        "1-------------------0---------",
+        "-----------0------1-----------",
+        "----------1-------1-----------",
+        "-----------01-----------------",
+        "----------1-1-----------------",
+        "-----------0----1-------------",
+        "----------1-----1-------------",
+        "-----------0---1--------------",
+        "----------1----1--------------",
+        "-----------0--1---------------",
+        "----------1---1---------------",
+        "-----------0-1----------------",
+        "----------1--1----------------",
+        "-0------1---------------------",
+        "-0-----1----------------------",
+        "-0----1-----------------------",
+        "-0---1------------------------",
+        "-0--1-------------------------",
+        "-0-1--------------------------",
+        "-01---------------------------",
+        "-----------0-----1------------",
+        "----------1------1------------",
+        "1-------1---------------------",
+        "1------1----------------------",
+        "1-----1-----------------------",
+        "1----1------------------------",
+        "1---1-------------------------",
+        "1--1--------------------------",
+        "1-1---------------------------",
+        "-----------0-------1----------",
+        "----------1--------1----------",
+        "-0-------1--------------------",
+        "1--------1--------------------",
+    ]
 
     all_vars = [x[i] for i in input_1 + input_2 + output]
     return espresso_pos_to_constraints(espresso_inequalities, all_vars)
@@ -703,14 +763,17 @@ def milp_xor_truncated_wordwise(model, input_1, input_2, output):
 def _get_component_values_for_impossible_models(model, objective_variables, components_variables):
     components_values = {}
     if model._forward_cipher == model._cipher:
-        inconsistent_component_var = \
-        [i for i in objective_variables.keys() if objective_variables[i] > 0 and "inconsistent" in i][0]
+        inconsistent_component_var = [
+            i for i in objective_variables.keys() if objective_variables[i] > 0 and "inconsistent" in i
+        ][0]
         inconsistent_component_id = "_".join(inconsistent_component_var.split("_")[:-3])
         full_cipher_components = model._cipher.get_all_components_ids()
         backward_components = model._backward_cipher.get_all_components_ids() + model._backward_cipher.inputs
         index = full_cipher_components.index(inconsistent_component_id)
-        updated_cipher_components = full_cipher_components[:index + 1] + [
-            c + MILP_BACKWARD_SUFFIX if c + MILP_BACKWARD_SUFFIX in backward_components else c for c in full_cipher_components[index:]]
+        updated_cipher_components = full_cipher_components[: index + 1] + [
+            c + MILP_BACKWARD_SUFFIX if c + MILP_BACKWARD_SUFFIX in backward_components else c
+            for c in full_cipher_components[index:]
+        ]
         list_component_ids = model._forward_cipher.inputs + updated_cipher_components
     elif model._incompatible_components != None:
         full_cipher_components = model._cipher.get_all_components_ids()
@@ -718,14 +781,20 @@ def _get_component_values_for_impossible_models(model, objective_variables, comp
 
         indices = []
         for id in model._incompatible_components:
-            backward_incompatible_component = model._backward_cipher.get_component_from_id(id + f"{MILP_BACKWARD_SUFFIX}")
-            input_ids, _ =  backward_incompatible_component._get_input_output_variables()
-            renamed_input_ids = set(["_".join(id.split("_")[:-2]) if MILP_BACKWARD_SUFFIX in id else "_".join(id.split("_")[:-1]) for id in input_ids])
+            backward_incompatible_component = model._backward_cipher.get_component_from_id(
+                id + f"{MILP_BACKWARD_SUFFIX}"
+            )
+            input_ids, _ = backward_incompatible_component._get_input_output_variables()
+            renamed_input_ids = {
+                "_".join(id.split("_")[:-2]) if MILP_BACKWARD_SUFFIX in id else "_".join(id.split("_")[:-1])
+                for id in input_ids
+            }
             indices += sorted(indices + [full_cipher_components.index(c) for c in renamed_input_ids])
 
-        updated_cipher_components = full_cipher_components[:indices[0]] + [
-            c + MILP_BACKWARD_SUFFIX if c + MILP_BACKWARD_SUFFIX in backward_components else c for c in
-            full_cipher_components[indices[0]:]]
+        updated_cipher_components = full_cipher_components[: indices[0]] + [
+            c + MILP_BACKWARD_SUFFIX if c + MILP_BACKWARD_SUFFIX in backward_components else c
+            for c in full_cipher_components[indices[0] :]
+        ]
         list_component_ids = model._forward_cipher.inputs + updated_cipher_components
     else:
         full_cipher_components = model._cipher.get_all_components_ids()
@@ -752,7 +821,8 @@ def _get_variables_values_as_string(component_id, components_variables, suffix, 
             diff_str += "*"
     return diff_str
 
-def _string_to_hex( string):
+
+def _string_to_hex(string):
     string = "0b" + string
     try:
         value = BitArray(string)
@@ -764,6 +834,7 @@ def _string_to_hex( string):
         value = string
     return value
 
+
 def _filter_fixed_variables(fixed_values, fixed_variable, id):
     fixed_values_to_keep = [variable for variable in fixed_values if variable["constraint_type"] == "equal"]
     if id in [value["component_id"] for value in fixed_values_to_keep]:
@@ -772,14 +843,15 @@ def _filter_fixed_variables(fixed_values, fixed_variable, id):
             bit_index = fixed_variable["bit_positions"].index(bit)
             del fixed_variable["bit_values"][bit_index]
             del fixed_variable["bit_positions"][bit_index]
-            
+
+
 def _set_weight_precision(model, analysis_type):
     if any(SBOX in item for item in model.non_linear_component_id):
         dict_product_of_sum = get_dictionary_that_contains_inequalities_for_large_sboxes(analysis=analysis_type)
         for id in model.non_linear_component_id:
             sb = tuple(model._cipher.get_component_from_id(id).description)
             for proba in dict_product_of_sum[str(sb)].keys():
-                if not is_power_of_two(proba):
+                if (proba & (proba - 1)) != 0:  # proba not power of two
                     model._has_non_integer_weight = True
                     break
             else:
@@ -787,7 +859,7 @@ def _set_weight_precision(model, analysis_type):
             break
 
     if model._has_non_integer_weight:
-        step = 1 / float(10 ** model.weight_precision)
+        step = 1 / float(10**model.weight_precision)
     else:
         step = 1
     return step

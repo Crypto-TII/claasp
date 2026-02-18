@@ -16,7 +16,7 @@
 # ****************************************************************************
 
 from claasp.cipher import Cipher
-from claasp.name_mappings import INPUT_PLAINTEXT
+from claasp.name_mappings import INPUT_PLAINTEXT, PERMUTATION
 from claasp.utils.utils import get_inputs_parameter
 from claasp.DTOs.component_state import ComponentState
 
@@ -52,14 +52,9 @@ GASTON_w = [0, 56, 31, 46, 43]
 # GASTON_w4 = 43
 
 # gaston round constant
-gaston_rc = [
-    0x00000000000000F0, 0x00000000000000E1, 0x00000000000000D2,
-    0x00000000000000C3, 0x00000000000000B4, 0x00000000000000A5,
-    0x0000000000000096, 0x0000000000000087, 0x0000000000000078,
-    0x0000000000000069, 0x000000000000005A, 0x000000000000004B
-]
+gaston_rc = [0xF0, 0xE1, 0xD2, 0xC3, 0xB4, 0xA5, 0x96, 0x87, 0x78, 0x69, 0x5A, 0x4B]
 
-PARAMETERS_CONFIGURATION_LIST = [{'number_of_rounds': 12}]
+PARAMETERS_CONFIGURATION_LIST = [{"number_of_rounds": 12}]
 
 
 class GastonPermutation(Cipher):
@@ -98,11 +93,13 @@ class GastonPermutation(Cipher):
     def __init__(self, number_of_rounds=12):
         self.state_bit_size = GASTON_NROWS * WORD_SIZE
 
-        super().__init__(family_name='gaston',
-                         cipher_type="permutation",
-                         cipher_inputs=[INPUT_PLAINTEXT],
-                         cipher_inputs_bit_size=[self.state_bit_size],
-                         cipher_output_bit_size=self.state_bit_size)
+        super().__init__(
+            family_name="gaston",
+            cipher_type=PERMUTATION,
+            cipher_inputs=[INPUT_PLAINTEXT],
+            cipher_inputs_bit_size=[self.state_bit_size],
+            cipher_output_bit_size=self.state_bit_size,
+        )
 
         # gaston state initialization
         state = []
@@ -207,7 +204,8 @@ class GastonPermutation(Cipher):
         and_comp = [None] * GASTON_NROWS
         for row in range(GASTON_NROWS):
             inputs_id, inputs_pos = get_inputs_parameter(
-                [state[(row + 2) % GASTON_NROWS], not_comp[(row + 1) % GASTON_NROWS]])
+                [state[(row + 2) % GASTON_NROWS], not_comp[(row + 1) % GASTON_NROWS]]
+            )
             self.add_AND_component(inputs_id, inputs_pos, WORD_SIZE)
             and_comp[row] = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))])
 

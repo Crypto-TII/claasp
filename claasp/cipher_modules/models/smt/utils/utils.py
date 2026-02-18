@@ -1,17 +1,16 @@
-
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
@@ -20,6 +19,7 @@
 # ------------------------ #
 #    - Build formulae -    #
 # ------------------------ #
+
 
 def smt_and(formulae):
     """
@@ -35,7 +35,7 @@ def smt_and(formulae):
         sage: smt_and(['a', 'c', 'e'])
         '(and a c e)'
     """
-    return f'(and {" ".join(formulae)})'
+    return f"(and {' '.join(formulae)})"
 
 
 def smt_assert(formula):
@@ -52,7 +52,7 @@ def smt_assert(formula):
         sage: smt_assert('(= a b c)')
         '(assert (= a b c))'
     """
-    return f'(assert {formula})'
+    return f"(assert {formula})"
 
 
 def smt_distinct(variable_0, variable_1):
@@ -70,7 +70,7 @@ def smt_distinct(variable_0, variable_1):
         sage: smt_distinct('a', 'q')
         '(distinct a q)'
     """
-    return f'(distinct {variable_0} {variable_1})'
+    return f"(distinct {variable_0} {variable_1})"
 
 
 def smt_equivalent(formulae):
@@ -87,7 +87,7 @@ def smt_equivalent(formulae):
         sage: smt_equivalent(['a', 'b', 'c', 'd'])
         '(= a b c d)'
     """
-    return f'(= {" ".join(formulae)})'
+    return f"(= {' '.join(formulae)})"
 
 
 def smt_implies(antecedent, consequent):
@@ -105,7 +105,7 @@ def smt_implies(antecedent, consequent):
         sage: smt_implies('(and a c)', '(or l f)')
         '(=> (and a c) (or l f))'
     """
-    return f'(=> {antecedent} {consequent})'
+    return f"(=> {antecedent} {consequent})"
 
 
 def smt_ite(condition, consequent, alternative):
@@ -124,7 +124,7 @@ def smt_ite(condition, consequent, alternative):
         sage: smt_ite('t', '(and a b)', '(and a e)')
         '(ite t (and a b) (and a e))'
     """
-    return f'(ite {condition} {consequent} {alternative})'
+    return f"(ite {condition} {consequent} {alternative})"
 
 
 def smt_not(formula):
@@ -141,7 +141,7 @@ def smt_not(formula):
         sage: smt_not('(xor a e)')
         '(not (xor a e))'
     """
-    return f'(not {formula})'
+    return f"(not {formula})"
 
 
 def smt_or(formulae):
@@ -158,7 +158,7 @@ def smt_or(formulae):
         sage: smt_or(['b', 'd', 'f'])
         '(or b d f)'
     """
-    return f'(or {" ".join(formulae)})'
+    return f"(or {' '.join(formulae)})"
 
 
 def smt_xor(formulae):
@@ -175,7 +175,7 @@ def smt_xor(formulae):
         sage: smt_xor(['b', 'd', 'f'])
         '(xor b d f)'
     """
-    return f'(xor {" ".join(formulae)})'
+    return f"(xor {' '.join(formulae)})"
 
 
 def smt_carry(x, y, previous_carry):
@@ -236,9 +236,9 @@ def get_component_hex_value(component, out_suffix, variable2value):
     value = 0
     for i in range(output_bit_size):
         value <<= 1
-        if f'{component.id}_{i}{out_suffix}' in variable2value:
-            value ^= variable2value[f'{component.id}_{i}{out_suffix}']
+        if f"{component.id}_{i}{out_suffix}" in variable2value:
+            value ^= variable2value[f"{component.id}_{i}{out_suffix}"]
         hex_digits = output_bit_size // 4 + (output_bit_size % 4 != 0)
-        hex_value = f'{value:0{hex_digits}x}'
+        hex_value = f"{value:#0{hex_digits + 2}x}"
 
     return hex_value

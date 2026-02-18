@@ -1,11 +1,11 @@
-# cipher_type
+# cipher types
 BLOCK_CIPHER = "block_cipher"
 STREAM_CIPHER = "stream_cipher"
 TWEAKABLE_BLOCK_CIPHER = "tweakable_block_cipher"
 PERMUTATION = "permutation"
 HASH_FUNCTION = "hash_function"
 
-# CIPHER INPUTS
+# cipher inputs
 INPUT_KEY = "key"
 INPUT_PLAINTEXT = "plaintext"
 INPUT_INITIALIZATION_VECTOR = "initialization_vector"
@@ -30,12 +30,16 @@ SBOX = "sbox"
 FSR = "fsr"
 
 # model types
-CIPHER = 'cipher'
-XOR_DIFFERENTIAL = 'xor_differential'
-XOR_LINEAR = 'xor_linear'
-DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL = 'deterministic_truncated_xor_differential'
-IMPOSSIBLE_XOR_DIFFERENTIAL = 'impossible_xor_differential'
-BOOMERANG_XOR_DIFFERENTIAL = 'boomerang_xor_differential'
+CIPHER = "cipher"
+XOR_DIFFERENTIAL = "xor_differential"
+XOR_LINEAR = "xor_linear"
+DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL = "deterministic_truncated_xor_differential"
+IMPOSSIBLE_XOR_DIFFERENTIAL = "impossible_xor_differential"
+BOOMERANG_XOR_DIFFERENTIAL = "boomerang_xor_differential"
 
 # cipher inverse
 CIPHER_INVERSE_SUFFIX = "_inverse"
+
+# models
+SATISFIABLE = "SATISFIABLE"
+UNSATISFIABLE = "UNSATISFIABLE"

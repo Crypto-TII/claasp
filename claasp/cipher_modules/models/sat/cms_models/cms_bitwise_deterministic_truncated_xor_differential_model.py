@@ -1,21 +1,19 @@
-
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
-
 
 """CryptoMiniSat model of Cipher.
 
@@ -44,17 +42,18 @@ For any further information, visit `CryptoMiniSat - XOR clauses
 <https://www.msoos.org/xor-clauses/>`_.
 """
 
-
-from claasp.cipher_modules.models.sat.sat_models.sat_bitwise_deterministic_truncated_xor_differential_model import \
-    SatBitwiseDeterministicTruncatedXorDifferentialModel
+from claasp.cipher_modules.models.sat.sat_models.sat_bitwise_deterministic_truncated_xor_differential_model import (
+    SatBitwiseDeterministicTruncatedXorDifferentialModel,
+)
 
 
 class CmsSatDeterministicTruncatedXorDifferentialModel(SatBitwiseDeterministicTruncatedXorDifferentialModel):
-
-    def __init__(self, cipher, counter='sequential', compact=False):
+    def __init__(self, cipher, counter="sequential", compact=False):
         super().__init__(cipher, counter, compact)
 
-        print("\n*** WARNING ***\n"
-              "At the best of the authors knowldege, deterministic truncated XOR differential model "
-              "cannot take any advantage of CryptoMiniSat. Therefore, the implementation is the same "
-              "of the SAT one.")
+        print(
+            "\n*** WARNING ***\n"
+            "At the best of the authors knowldege, deterministic truncated XOR differential model "
+            "cannot take any advantage of CryptoMiniSat. Therefore, the implementation is the same "
+            "of the SAT one."
+        )

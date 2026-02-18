@@ -1,22 +1,23 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Inverse cipher &#8212; CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</title>
+    <title>Inverse cipher &#8212; CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives v3.1.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/sage.css" />
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Generic functions" href="generic_functions.html" />
+    <link rel="next" title="Continuous diffusion analysis" href="continuous_diffusion_analysis.html" />
     <link rel="prev" title="Graph generator" href="graph_generator.html" />
     <link rel="icon" href="../_static/sageicon.png" type="image/x-icon" />
     <script src="../_static/thebe.js" type="text/javascript"></script>
@@ -33,7 +34,7 @@
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="generic_functions.html" title="Generic functions"
+          <a href="continuous_diffusion_analysis.html" title="Continuous diffusion analysis"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="graph_generator.html" title="Graph generator"
@@ -44,7 +45,7 @@
     
   
   
-        <li class="nav-item nav-item-0"><a href="../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives v3.1.0 documentation</a> &#187;</li>
 
         <li class="nav-item nav-item-this"><a href="">Inverse cipher</a></li> 
       </ul>
@@ -56,7 +57,7 @@
           <div class="body" role="main">
             
   <section id="module-cipher_modules.inverse_cipher">
-<span id="inverse-cipher"></span><h1>Inverse cipher<a class="headerlink" href="#module-cipher_modules.inverse_cipher" title="Permalink to this headline">¶</a></h1>
+<span id="inverse-cipher"></span><h1>Inverse cipher<a class="headerlink" href="#module-cipher_modules.inverse_cipher" title="Permalink to this heading">¶</a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="cipher_modules.inverse_cipher.add_bit_to_bit_list">
 <span class="sig-name descname"><span class="pre">add_bit_to_bit_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bit</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bit_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.inverse_cipher.add_bit_to_bit_list" title="Permalink to this definition">¶</a></dt>
@@ -220,7 +221,7 @@ INPUT:
 
 <dl class="py function">
 <dt class="sig sig-object py" id="cipher_modules.inverse_cipher.get_relative_position">
-<span class="sig-name descname"><span class="pre">get_relative_position</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_link</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">descendant</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.inverse_cipher.get_relative_position" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_relative_position</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_link</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intermediate_output</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.inverse_cipher.get_relative_position" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
@@ -266,10 +267,11 @@ each component input is defined before the current component.</p>
 <p>INPUT:
 - <code class="docutils literal notranslate"><span class="pre">cipher</span></code> – graph representation of a cipher as a python dictionary</p>
 <dl class="simple">
-<dt>EXAMPLE::</dt><dd><p>sage: from tii.graph_representations.creator import GraphRepresentationCreator
-sage: GR = GraphRepresentationCreator()
-sage: cipher_python_dictionary = GR.identity_block_cipher_creator()
-sage: sorted_cipher = GR.sort_cipher_graph(cipher_python_dictionary)</p>
+<dt>EXAMPLE::</dt><dd><p>sage: from claasp.ciphers.toys.identity_block_cipher import IdentityBlockCipher
+sage: from claasp.cipher_modules.inverse_cipher import sort_cipher_graph
+sage: identity = IdentityBlockCipher()
+sage: sort_cipher_graph(identity)
+identity_block_cipher_p32_k32_o32_r1</p>
 </dd>
 </dl>
 </dd></dl>
@@ -323,8 +325,8 @@ INPUT:
   </div>
   <div>
     <h4>Next topic</h4>
-    <p class="topless"><a href="generic_functions.html"
-                          title="next chapter">Generic functions</a></p>
+    <p class="topless"><a href="continuous_diffusion_analysis.html"
+                          title="next chapter">Continuous diffusion analysis</a></p>
   </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
@@ -342,7 +344,7 @@ INPUT:
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -357,7 +359,7 @@ INPUT:
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="generic_functions.html" title="Generic functions"
+          <a href="continuous_diffusion_analysis.html" title="Continuous diffusion analysis"
              >next</a> |</li>
         <li class="right" >
           <a href="graph_generator.html" title="Graph generator"
@@ -368,7 +370,7 @@ INPUT:
     
   
   
-        <li class="nav-item nav-item-0"><a href="../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives v3.1.0 documentation</a> &#187;</li>
 
         <li class="nav-item nav-item-this"><a href="">Inverse cipher</a></li> 
       </ul>

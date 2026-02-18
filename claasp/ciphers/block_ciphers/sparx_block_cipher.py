@@ -1,30 +1,29 @@
-
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
 
 from claasp.cipher import Cipher
-from claasp.name_mappings import INPUT_PLAINTEXT, INPUT_KEY
+from claasp.name_mappings import BLOCK_CIPHER, INPUT_PLAINTEXT, INPUT_KEY
 from claasp.utils.utils import get_number_of_rounds_from, extract_inputs
 
 PARAMETERS_CONFIGURATION_LIST = [
-    {'block_bit_size': 64, 'key_bit_size': 128, 'number_of_rounds': 8, 'steps': 3},
-    {'block_bit_size': 128, 'key_bit_size': 128, 'number_of_rounds': 8, 'steps': 4},
-    {'block_bit_size': 128, 'key_bit_size': 256, 'number_of_rounds': 10, 'steps': 4}
+    {"block_bit_size": 64, "key_bit_size": 128, "number_of_rounds": 8, "steps": 3},
+    {"block_bit_size": 128, "key_bit_size": 128, "number_of_rounds": 8, "steps": 4},
+    {"block_bit_size": 128, "key_bit_size": 256, "number_of_rounds": 10, "steps": 4},
 ]
 reference_code = """
 def sparx_encrypt(plaintext, key):
@@ -60,10 +59,10 @@ def sparx_encrypt(plaintext, key):
     def K_4_64(key, r):
         k = key[:]
 
-        #Update k[0]
+        # Update k[0]
         k[0] = arx_box(k[0])
 
-        #Update k[1]
+        # Update k[1]
         k0_high = k[0] // 2**16
         k0_low = k[0] % 2**16
 
@@ -72,10 +71,10 @@ def sparx_encrypt(plaintext, key):
 
         k[1] = ((k1_high + k0_high) % 2**16) * 2**16 + ((k1_low + k0_low) % 2**16)
 
-        #Update k[3]
-        k[3] = (k[3] // 2**16) * 2**16 + (k[3] + r) % 2**16 #can be changed?
+        # Update k[3]
+        k[3] = (k[3] // 2**16) * 2**16 + (k[3] + r) % 2**16  # can be changed?
 
-        #rotate words in key
+        # rotate words in key
         k = k[-1:] + k[:-1]
 
         return k
@@ -83,22 +82,22 @@ def sparx_encrypt(plaintext, key):
     def K_4_128(key, r):
         k = key[:]
 
-        #k1
+        # k1
         k1 = arx_box(k[0])
         k1_high = k1 // 2**16
         k1_low = k1 % 2**16
 
-        #k2
+        # k2
         k2_high = ((k[1] // 2**16) + k1_high) % 2**16
         k2_low = (k[1] + k1_low) % 2**16
         k2 = k2_high * 2**16 | k2_low
 
-        #k3
+        # k3
         k3 = arx_box(k[2])
         k3_high = k3 // 2**16
         k3_low = k3 % 2**16
 
-        #k0
+        # k0
         k0_high = (k[3] // 2**16 + k3_high) % 2**16
         k0_low = (k[3] + r + k3_low) % 2**16
         k0 = k0_high * 2**16 | k0_low
@@ -106,7 +105,6 @@ def sparx_encrypt(plaintext, key):
         return [k0, k1, k2, k3]
 
     def K_8_256(key, r):
-
         k3 = arx_box(key[0])
         k3_high = k3 // 2**16
         k3_low = k3 % 2**16
@@ -134,16 +132,16 @@ def sparx_encrypt(plaintext, key):
         return new_a * 2**16 + new_b
 
     if plaintext_size != 64 and plaintext_size != 128:
-        raise ValueError('Plaintext size must either be 64 or 128 bits.')
+        raise ValueError("Plaintext size must either be 64 or 128 bits.")
     elif plaintext_size == 64 and key_size != 128:
-        raise ValueError('Key size must be 128 bits with a plaintext of 64 bits.')
+        raise ValueError("Key size must be 128 bits with a plaintext of 64 bits.")
     elif plaintext_size == 128 and key_size != 128 and key_size != 256:
-        raise ValueError('Key size must be 128 or 256 bits with a plaintext of 128 bits.')
+        raise ValueError("Key size must be 128 or 256 bits with a plaintext of 128 bits.")
 
     c = bytearray_to_wordlist(plaintext, 32, plaintext_size)
     k = bytearray_to_wordlist(key, 32, key_size)
 
-    #assign the right functions
+    # assign the right functions
     if plaintext_size == 64:
         lambda_w = lambda_2
         key_permutation = K_4_64
@@ -172,8 +170,8 @@ def get_number_of_steps_from(block_bit_size, key_bit_size, steps):
     if steps == 0:
         s = None
         for parameters in PARAMETERS_CONFIGURATION_LIST:
-            if parameters['block_bit_size'] == block_bit_size and parameters['key_bit_size'] == key_bit_size:
-                s = parameters['steps']
+            if parameters["block_bit_size"] == block_bit_size and parameters["key_bit_size"] == key_bit_size:
+                s = parameters["steps"]
                 break
         if s is None:
             raise ValueError("No available number of steps for the given parameters.")
@@ -216,12 +214,14 @@ class SparxBlockCipher(Cipher):
         n = get_number_of_rounds_from(block_bit_size, key_bit_size, number_of_rounds, PARAMETERS_CONFIGURATION_LIST)
         s = get_number_of_steps_from(block_bit_size, key_bit_size, steps)
 
-        super().__init__(family_name="sparx",
-                         cipher_type="block_cipher",
-                         cipher_inputs=[INPUT_PLAINTEXT, INPUT_KEY],
-                         cipher_inputs_bit_size=[block_bit_size, key_bit_size],
-                         cipher_output_bit_size=block_bit_size,
-                         cipher_reference_code=reference_code.format(block_bit_size, key_bit_size, n, s))
+        super().__init__(
+            family_name="sparx",
+            cipher_type=BLOCK_CIPHER,
+            cipher_inputs=[INPUT_PLAINTEXT, INPUT_KEY],
+            cipher_inputs_bit_size=[block_bit_size, key_bit_size],
+            cipher_output_bit_size=block_bit_size,
+            cipher_reference_code=reference_code.format(block_bit_size, key_bit_size, n, s),
+        )
 
         data = [INPUT_PLAINTEXT], [list(range(block_bit_size))]
         key = [INPUT_KEY], [list(range(key_bit_size))]
@@ -230,15 +230,15 @@ class SparxBlockCipher(Cipher):
 
         for round_number in range(n):
             self.add_round()
-            new_data_words = \
-                [extract_inputs(*data, list(range(i * 32, (i + 1) * 32))) for i in range(self.word_number)]
+            new_data_words = [extract_inputs(*data, list(range(i * 32, (i + 1) * 32))) for i in range(self.word_number)]
 
             for i in range(self.word_number):
                 for t in range(s):
                     # c[i] ^ k[r]
                     key_id_list, key_bit_positions = extract_inputs(*key, list(range(t * 32, (t + 1) * 32)))
-                    xor_id = self.add_XOR_component(new_data_words[i][0] + key_id_list, new_data_words[i][1] +
-                                                    key_bit_positions, 32).id
+                    xor_id = self.add_XOR_component(
+                        new_data_words[i][0] + key_id_list, new_data_words[i][1] + key_bit_positions, 32
+                    ).id
                     # c[i] = arx_box(c[i] ^ k[r])
                     arx_input = [xor_id], [list(range(32))]
                     new_data_words[i] = self.arx_box(arx_input, 0)
@@ -254,12 +254,13 @@ class SparxBlockCipher(Cipher):
             data = lambda_w(data)
 
             if round_number == n - 1:
-                new_data_id_list = [''] * self.word_number
+                new_data_id_list = [""] * self.word_number
                 for i in range(self.word_number):
                     data_id_list, data_bit_positions = extract_inputs(*data, list(range(i * 32, (i + 1) * 32)))
                     key_id_list, key_bit_positions = extract_inputs(*key, list(range(i * 32, (i + 1) * 32)))
-                    new_data_id_list[i] = self.add_XOR_component(data_id_list + key_id_list, data_bit_positions +
-                                                                 key_bit_positions, 32).id
+                    new_data_id_list[i] = self.add_XOR_component(
+                        data_id_list + key_id_list, data_bit_positions + key_bit_positions, 32
+                    ).id
                 data = new_data_id_list, [list(range(32))] * self.word_number
 
             self.add_round_output_component(*data, block_bit_size)
@@ -304,7 +305,7 @@ class SparxBlockCipher(Cipher):
         new_key_id_list = k3_high[0] + [new_k0_low_id] + new_k1[0] + [new_k2_high_id, new_k2_low_id] + k2[0]
         new_key_bit_positions = k3_high[1] + [list(range(16))] + new_k1[1] + [list(range(16))] * 2 + k2[1]
 
-        self.add_intermediate_output_component(new_key_id_list, new_key_bit_positions, 128, 'key_permutation')
+        self.add_intermediate_output_component(new_key_id_list, new_key_bit_positions, 128, "key_permutation")
 
         return new_key_id_list, new_key_bit_positions
 
@@ -333,14 +334,15 @@ class SparxBlockCipher(Cipher):
         new_k0_high_id = self.add_MODADD_component(k3_high[0] + new_k3_high[0], k3_high[1] + new_k3_high[1], 16).id
 
         k3_low = extract_inputs(*key, list(range(112, 128)))
-        new_k0_low_id = self.add_MODADD_component(k3_low[0] + new_k3_low[0] + [r_id], k3_low[1] +
-                                                  new_k3_low[1] + [list(range(16))], 16).id
+        new_k0_low_id = self.add_MODADD_component(
+            k3_low[0] + new_k3_low[0] + [r_id], k3_low[1] + new_k3_low[1] + [list(range(16))], 16
+        ).id
 
         # Concatenate parts
         new_key_id_list = [new_k0_high_id, new_k0_low_id] + new_k1[0] + [new_k2_high_id, new_k2_low_id] + new_k3[0]
         new_key_bit_positions = [list(range(16))] * 2 + new_k1[1] + [list(range(16))] * 2 + new_k3[1]
 
-        self.add_intermediate_output_component(new_key_id_list, new_key_bit_positions, 128, 'key_permutation')
+        self.add_intermediate_output_component(new_key_id_list, new_key_bit_positions, 128, "key_permutation")
 
         return new_key_id_list, new_key_bit_positions
 
@@ -369,29 +371,36 @@ class SparxBlockCipher(Cipher):
         new_k0_high_id = self.add_MODADD_component(new_k7_high[0] + k5_low[0], new_k7_high[1] + k5_low[1], 16).id
 
         k5_high = extract_inputs(*key, list(range(176, 192)))
-        new_k0_low_id = self.add_MODADD_component(new_k7_low[0] + k5_high[0] + [r_id],
-                                                  new_k7_low[1] + k5_high[1] + [list(range(16))],
-                                                  16).id
+        new_k0_low_id = self.add_MODADD_component(
+            new_k7_low[0] + k5_high[0] + [r_id], new_k7_low[1] + k5_high[1] + [list(range(16))], 16
+        ).id
 
         # Concatenate parts
         k6_7 = extract_inputs(*key, list(range(192, 256)))
         k2_3 = extract_inputs(*key, list(range(64, 128)))
-        new_key_id_list = [new_k0_high_id, new_k0_low_id] + k6_7[0] + new_k3[0] +\
-                          [new_k4_high_id, new_k4_low_id] + k2_3[0] + new_k7[0]
-        new_key_bit_positions = [list(range(16))] * 2 + k6_7[1] + new_k3[1] + \
-                                [list(range(16))] * 2 + k2_3[1] + new_k7[1]
+        new_key_id_list = (
+            [new_k0_high_id, new_k0_low_id]
+            + k6_7[0]
+            + new_k3[0]
+            + [new_k4_high_id, new_k4_low_id]
+            + k2_3[0]
+            + new_k7[0]
+        )
+        new_key_bit_positions = (
+            [list(range(16))] * 2 + k6_7[1] + new_k3[1] + [list(range(16))] * 2 + k2_3[1] + new_k7[1]
+        )
 
-        self.add_intermediate_output_component(new_key_id_list, new_key_bit_positions, 256, 'key_permutation')
+        self.add_intermediate_output_component(new_key_id_list, new_key_bit_positions, 256, "key_permutation")
 
         return new_key_id_list, new_key_bit_positions
 
-    def arx_box(self, input, i):
+    def arx_box(self, arx_input, i):
         # a >>> 7
-        high_i_word = extract_inputs(*input, list(range(i * 32, (i * 32) + 16)))
+        high_i_word = extract_inputs(*arx_input, list(range(i * 32, (i * 32) + 16)))
         rrot_id = self.add_rotate_component(*high_i_word, 16, 7).id
 
         # new_a = (a >>> 7) + b
-        low_i_word = extract_inputs(*input, list(range((i * 32) + 16, (i + 1) * 32)))
+        low_i_word = extract_inputs(*arx_input, list(range((i * 32) + 16, (i + 1) * 32)))
         new_a = self.add_MODADD_component([rrot_id] + low_i_word[0], [list(range(16))] + low_i_word[1], 16).id
 
         # b <<< 2
@@ -438,9 +447,11 @@ class SparxBlockCipher(Cipher):
         data_3_id_list, data_3_bit_positions = extract_inputs(*data, list(range(96, 128)))
 
         # c[2] ^
-        c0 = self.add_XOR_component(data_2_id_list + [xor_b, xor_a],
-                                    data_2_bit_positions + [list(range(16)), list(range(16, 32))], 32).id
-        c1 = self.add_XOR_component(data_3_id_list + [xor_a, xor_b],
-                                    data_3_bit_positions + [list(range(16)), list(range(16, 32))], 32).id
+        c0 = self.add_XOR_component(
+            data_2_id_list + [xor_b, xor_a], data_2_bit_positions + [list(range(16)), list(range(16, 32))], 32
+        ).id
+        c1 = self.add_XOR_component(
+            data_3_id_list + [xor_a, xor_b], data_3_bit_positions + [list(range(16)), list(range(16, 32))], 32
+        ).id
 
         return [c0, c1] + high_data_id_list, [list(range(32))] * 2 + high_data_bit_positions

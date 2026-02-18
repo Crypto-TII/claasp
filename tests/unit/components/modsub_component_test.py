@@ -2,10 +2,11 @@ from claasp.ciphers.block_ciphers.raiden_block_cipher import RaidenBlockCipher
 from claasp.cipher_modules.models.cp.mzn_model import MznModel
 from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
 from claasp.cipher import Cipher
+from claasp.name_mappings import PERMUTATION
 
 
 def test_algebraic_polynomials():
-    cipher = Cipher("cipher_name", "permutation", ["input"], [8], 8)
+    cipher = Cipher("cipher_name", PERMUTATION, ["input"], [8], 8)
     cipher.add_round()
     cipher.add_MODSUB_component(["input", "input"], [[0, 1, 2, 3], [4, 5, 6, 7]], 4)
     modsub_component = cipher.get_component_from_id('modsub_0_0')

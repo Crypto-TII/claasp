@@ -1,23 +1,24 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Fsr component &#8212; CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</title>
+    <title>Fsr component &#8212; CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives v3.1.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/sage.css" />
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Modular component" href="modular_component.html" />
-    <link rel="prev" title="Theta xoodoo component" href="theta_xoodoo_component.html" />
+    <link rel="next" title="Word permutation component" href="word_permutation_component.html" />
+    <link rel="prev" title="Variable shift component" href="variable_shift_component.html" />
     <link rel="icon" href="../_static/sageicon.png" type="image/x-icon" />
     <script src="../_static/thebe.js" type="text/javascript"></script>
     <script src="../_static/thebe-sage.js" type="text/javascript"></script>
@@ -33,10 +34,10 @@
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="modular_component.html" title="Modular component"
+          <a href="word_permutation_component.html" title="Word permutation component"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="theta_xoodoo_component.html" title="Theta xoodoo component"
+          <a href="variable_shift_component.html" title="Variable shift component"
              accesskey="P">previous</a> |</li>
   
     
@@ -44,7 +45,7 @@
     
   
   
-        <li class="nav-item nav-item-0"><a href="../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives v3.1.0 documentation</a> &#187;</li>
 
         <li class="nav-item nav-item-this"><a href="">Fsr component</a></li> 
       </ul>
@@ -56,11 +57,68 @@
           <div class="body" role="main">
             
   <section id="module-components.fsr_component">
-<span id="fsr-component"></span><h1>Fsr component<a class="headerlink" href="#module-components.fsr_component" title="Permalink to this headline">¶</a></h1>
+<span id="fsr-component"></span><h1>Fsr component<a class="headerlink" href="#module-components.fsr_component" title="Permalink to this heading">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="components.fsr_component.FSR">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">FSR</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">current_round_number</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_round_number_of_components</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.fsr_component.FSR" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">claasp.component.Component</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Component</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="components.fsr_component.FSR.algebraic_polynomials">
+<span class="sig-name descname"><span class="pre">algebraic_polynomials</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.fsr_component.FSR.algebraic_polynomials" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of polynomials for the feedback shift registers.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">model</span></code> – <strong>model object</strong>; a model instance</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.stream_ciphers.a5_1_stream_cipher</span> <span class="kn">import</span> <span class="n">A51StreamCipher</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.algebraic.algebraic_model</span> <span class="kn">import</span> <span class="n">AlgebraicModel</span>
+<span class="gp">sage: </span><span class="n">a51</span> <span class="o">=</span> <span class="n">A51StreamCipher</span><span class="p">()</span>
+<span class="gp">sage: </span><span class="n">fsr_component</span> <span class="o">=</span> <span class="n">a51</span><span class="o">.</span><span class="n">get_component_from_id</span><span class="p">(</span><span class="s2">&quot;fsr_1_0&quot;</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">algebraic</span> <span class="o">=</span> <span class="n">AlgebraicModel</span><span class="p">(</span><span class="n">a51</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">A</span> <span class="o">=</span> <span class="n">fsr_component</span><span class="o">.</span><span class="n">algebraic_polynomials</span><span class="p">(</span><span class="n">algebraic</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">A</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="go">fsr_1_0_x1*fsr_1_0_x30*fsr_1_0_x53 + fsr_1_0_x1*fsr_1_0_x10*fsr_1_0_x53 + fsr_1_0_x1*fsr_1_0_x10*fsr_1_0_x30 + fsr_1_0_x0*fsr_1_0_x30*fsr_1_0_x53 + fsr_1_0_x0*fsr_1_0_x10*fsr_1_0_x53 + fsr_1_0_x0*fsr_1_0_x10*fsr_1_0_x30 + fsr_1_0_x1*fsr_1_0_x10 + fsr_1_0_x0*fsr_1_0_x10 + fsr_1_0_y0 + fsr_1_0_x1</span>
+
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.stream_ciphers.bivium_stream_cipher</span> <span class="kn">import</span> <span class="n">BiviumStreamCipher</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.algebraic.algebraic_model</span> <span class="kn">import</span> <span class="n">AlgebraicModel</span>
+<span class="gp">sage: </span><span class="n">bivium</span> <span class="o">=</span> <span class="n">BiviumStreamCipher</span><span class="p">(</span><span class="n">number_of_initialization_clocks</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keystream_bit_len</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">fsr_component</span> <span class="o">=</span> <span class="n">bivium</span><span class="o">.</span><span class="n">get_component_from_id</span><span class="p">(</span><span class="s2">&quot;fsr_0_1&quot;</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">algebraic</span> <span class="o">=</span> <span class="n">AlgebraicModel</span><span class="p">(</span><span class="n">bivium</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">B</span> <span class="o">=</span> <span class="n">fsr_component</span><span class="o">.</span><span class="n">algebraic_polynomials</span><span class="p">(</span><span class="n">algebraic</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">B</span><span class="p">[</span><span class="mi">92</span><span class="p">]</span>
+<span class="go">fsr_0_1_x94*fsr_0_1_x95 + fsr_0_1_y92 + fsr_0_1_x108 + fsr_0_1_x93 + fsr_0_1_x24</span>
+
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.stream_ciphers.trivium_stream_cipher</span> <span class="kn">import</span> <span class="n">TriviumStreamCipher</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.algebraic.algebraic_model</span> <span class="kn">import</span> <span class="n">AlgebraicModel</span>
+<span class="gp">sage: </span><span class="n">trivium</span> <span class="o">=</span> <span class="n">TriviumStreamCipher</span><span class="p">(</span><span class="n">number_of_initialization_clocks</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keystream_bit_len</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">fsr_component</span> <span class="o">=</span> <span class="n">trivium</span><span class="o">.</span><span class="n">get_component_from_id</span><span class="p">(</span><span class="s2">&quot;fsr_0_2&quot;</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">algebraic</span> <span class="o">=</span> <span class="n">AlgebraicModel</span><span class="p">(</span><span class="n">trivium</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">T</span> <span class="o">=</span> <span class="n">fsr_component</span><span class="o">.</span><span class="n">algebraic_polynomials</span><span class="p">(</span><span class="n">algebraic</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">T</span><span class="p">[</span><span class="mi">92</span><span class="p">]</span>
+<span class="go">fsr_0_2_x178*fsr_0_2_x179 + fsr_0_2_y92 + fsr_0_2_x222 + fsr_0_2_x177 + fsr_0_2_x24</span>
+
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.stream_ciphers.bluetooth_stream_cipher_e0</span> <span class="kn">import</span> <span class="n">BluetoothStreamCipherE0</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.algebraic.algebraic_model</span> <span class="kn">import</span> <span class="n">AlgebraicModel</span>
+<span class="gp">sage: </span><span class="n">e0</span> <span class="o">=</span> <span class="n">BluetoothStreamCipherE0</span><span class="p">(</span><span class="n">keystream_bit_len</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">fsr_component</span> <span class="o">=</span> <span class="n">e0</span><span class="o">.</span><span class="n">get_component_from_id</span><span class="p">(</span><span class="s2">&quot;fsr_0_16&quot;</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">algebraic</span> <span class="o">=</span> <span class="n">AlgebraicModel</span><span class="p">(</span><span class="n">e0</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">E</span> <span class="o">=</span> <span class="n">fsr_component</span><span class="o">.</span><span class="n">algebraic_polynomials</span><span class="p">(</span><span class="n">algebraic</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">E</span><span class="p">[</span><span class="mi">24</span><span class="p">]</span>
+<span class="go">fsr_0_16_y24 + fsr_0_16_x17 + fsr_0_16_x13 + fsr_0_16_x5 + fsr_0_16_x0</span>
+
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.stream_ciphers.snow3g_stream_cipher</span> <span class="kn">import</span> <span class="n">Snow3GStreamCipher</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.algebraic.algebraic_model</span> <span class="kn">import</span> <span class="n">AlgebraicModel</span>
+<span class="gp">sage: </span><span class="n">snow</span> <span class="o">=</span> <span class="n">Snow3GStreamCipher</span><span class="p">(</span><span class="n">number_of_initialization_clocks</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keystream_word_size</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">fsr_component</span> <span class="o">=</span> <span class="n">snow</span><span class="o">.</span><span class="n">get_component_from_id</span><span class="p">(</span><span class="s2">&quot;fsr_0_714&quot;</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">algebraic</span> <span class="o">=</span> <span class="n">AlgebraicModel</span><span class="p">(</span><span class="n">snow</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">S</span> <span class="o">=</span> <span class="n">fsr_component</span><span class="o">.</span><span class="n">algebraic_polynomials</span><span class="p">(</span><span class="n">algebraic</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">S</span><span class="p">[</span><span class="mi">480</span><span class="p">]</span>
+<span class="go">fsr_0_714_y480 + fsr_0_714_x352 + fsr_0_714_x64 + fsr_0_714_x0</span>
+</pre></div>
+</div>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="components.fsr_component.FSR.as_python_dictionary">
 <span class="sig-name descname"><span class="pre">as_python_dictionary</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#components.fsr_component.FSR.as_python_dictionary" title="Permalink to this definition">¶</a></dt>
@@ -199,13 +257,13 @@
         <div class="sphinxsidebarwrapper">
   <div>
     <h4>Previous topic</h4>
-    <p class="topless"><a href="theta_xoodoo_component.html"
-                          title="previous chapter">Theta xoodoo component</a></p>
+    <p class="topless"><a href="variable_shift_component.html"
+                          title="previous chapter">Variable shift component</a></p>
   </div>
   <div>
     <h4>Next topic</h4>
-    <p class="topless"><a href="modular_component.html"
-                          title="next chapter">Modular component</a></p>
+    <p class="topless"><a href="word_permutation_component.html"
+                          title="next chapter">Word permutation component</a></p>
   </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
@@ -223,7 +281,7 @@
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -238,10 +296,10 @@
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="modular_component.html" title="Modular component"
+          <a href="word_permutation_component.html" title="Word permutation component"
              >next</a> |</li>
         <li class="right" >
-          <a href="theta_xoodoo_component.html" title="Theta xoodoo component"
+          <a href="variable_shift_component.html" title="Variable shift component"
              >previous</a> |</li>
   
     
@@ -249,7 +307,7 @@
     
   
   
-        <li class="nav-item nav-item-0"><a href="../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives v3.1.0 documentation</a> &#187;</li>
 
         <li class="nav-item nav-item-this"><a href="">Fsr component</a></li> 
       </ul>

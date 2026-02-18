@@ -1,17 +1,16 @@
-
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
@@ -23,35 +22,35 @@ from sage.rings.finite_rings.finite_field_constructor import GF
 from sage.rings.polynomial.polynomial_ring_constructor import PolynomialRing
 
 from claasp.cipher import Cipher
-from claasp.name_mappings import INPUT_PLAINTEXT
+from claasp.name_mappings import INPUT_PLAINTEXT, PERMUTATION
 from claasp.DTOs.component_state import ComponentState
-from claasp.utils.utils import simplify_inputs, get_ci, calculate_inputs, create_new_state_for_calculation, \
-    layer_and_lane_initialization
+from claasp.utils.utils import (
+    simplify_inputs,
+    get_ci,
+    calculate_inputs,
+    create_new_state_for_calculation,
+    layer_and_lane_initialization,
+)
 
 LANE_NUM = 4
 PLANE_NUM = 3
 SBOX_SIZE = 3
 LANE_SIZE = 32
 SBOX = [0, 5, 3, 2, 6, 1, 4, 7]
-THETA_ROT = [{'x': 1, 'z': 5},
-             {'x': 1, 'z': 14}]
-RHOWEST_ROT = [{'x': 0, 'z': 0},
-               {'x': 1, 'z': 0},
-               {'x': 0, 'z': 11}]
-RHOEAST_ROT = [{'x': 0, 'z': 0},
-               {'x': 0, 'z': 1},
-               {'x': 2, 'z': 8}]
+THETA_ROT = [{"x": 1, "z": 5}, {"x": 1, "z": 14}]
+RHOWEST_ROT = [{"x": 0, "z": 0}, {"x": 1, "z": 0}, {"x": 0, "z": 11}]
+RHOEAST_ROT = [{"x": 0, "z": 0}, {"x": 0, "z": 1}, {"x": 2, "z": 8}]
 PLANE_SIZE = LANE_NUM * LANE_SIZE
-PARAMETERS_CONFIGURATION_LIST = [{'number_of_rounds': 12}]
-R = PolynomialRing(GF(2), 't')
+PARAMETERS_CONFIGURATION_LIST = [{"number_of_rounds": 12}]
+R = PolynomialRing(GF(2), "t")
 t = R.gen()
 QI = {
     0: 1,
-    6: 1 + t ** 2,
-    5: 1 + t + t ** 2,
-    4: t + t ** 2,
+    6: 1 + t**2,
+    5: 1 + t + t**2,
+    4: t + t**2,
     3: 1 + t,
-    2: t ** 2,
+    2: t**2,
     1: t,
 }
 SI = {
@@ -88,11 +87,13 @@ class XoodooInvertiblePermutation(Cipher):
     def __init__(self, number_of_rounds=12):
         self.state_bit_size = PLANE_NUM * PLANE_SIZE
 
-        super().__init__(family_name="xoodoo_invertible",
-                         cipher_type="permutation",
-                         cipher_inputs=[INPUT_PLAINTEXT],
-                         cipher_inputs_bit_size=[self.state_bit_size],
-                         cipher_output_bit_size=self.state_bit_size)
+        super().__init__(
+            family_name="xoodoo_invertible",
+            cipher_type=PERMUTATION,
+            cipher_inputs=[INPUT_PLAINTEXT],
+            cipher_inputs_bit_size=[self.state_bit_size],
+            cipher_output_bit_size=self.state_bit_size,
+        )
 
         planes = layer_and_lane_initialization()
 
@@ -152,20 +153,21 @@ class XoodooInvertiblePermutation(Cipher):
     def rhoeast_definition(self, planes):
         # Ai = Ai <<< (roheast_rot[i][x], rohwest_rot[i][z])
         for i in range(1, 3):
-            planes[i] = self.rotate_x_z(planes[i], RHOEAST_ROT[i]['x'], RHOEAST_ROT[i]['z'])
+            planes[i] = self.rotate_x_z(planes[i], RHOEAST_ROT[i]["x"], RHOEAST_ROT[i]["z"])
 
         return planes
 
     def rhowest_definition(self, planes):
         # Ai = Ai <<< (rohwest_rot[i][x], rohwest_rot[i][z])
         for i in range(1, 3):
-            planes[i] = self.rotate_x_z(planes[i], RHOWEST_ROT[i]['x'], RHOWEST_ROT[i]['z'])
+            planes[i] = self.rotate_x_z(planes[i], RHOWEST_ROT[i]["x"], RHOWEST_ROT[i]["z"])
 
     def rotate_x_z(self, plane, rotx, rotz):
         # x direction rotation
-        new_plane = ComponentState([deepcopy(plane.id[(j - rotx) % LANE_NUM]) for j in range(LANE_NUM)],
-                                   [deepcopy(plane.input_bit_positions[(j - rotx) % LANE_NUM])
-                                    for j in range(LANE_NUM)])
+        new_plane = ComponentState(
+            [deepcopy(plane.id[(j - rotx) % LANE_NUM]) for j in range(LANE_NUM)],
+            [deepcopy(plane.input_bit_positions[(j - rotx) % LANE_NUM]) for j in range(LANE_NUM)],
+        )
 
         # z direction rotation
         if rotz != 0:
@@ -192,8 +194,11 @@ class XoodooInvertiblePermutation(Cipher):
         self.add_theta_xoodoo_component(inputs_id, inputs_pos, PLANE_SIZE * PLANE_NUM)
         planes = []
         for i in range(PLANE_NUM):
-            planes.append(ComponentState([self.get_current_component_id() for _ in range(LANE_NUM)],
-                                         [[k + j * LANE_SIZE + i * PLANE_SIZE for k in range(LANE_SIZE)]
-                                          for j in range(LANE_NUM)]))
+            planes.append(
+                ComponentState(
+                    [self.get_current_component_id() for _ in range(LANE_NUM)],
+                    [[k + j * LANE_SIZE + i * PLANE_SIZE for k in range(LANE_SIZE)] for j in range(LANE_NUM)],
+                )
+            )
 
         return planes

@@ -1,30 +1,29 @@
-
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
 
 """
-
 Generator for LowMC constants.
 
 Adapted from the generate_matrices.py file the LowMC repo:
 https://github.com/LowMC/lowmc/blob/master/generate_matrices.py
 
 """
+
 import os
 
 blocksize = None
@@ -47,8 +46,10 @@ def main(args):
     keysize = int(args[1])
     rounds = int(args[2])
 
-    filename = os.path.dirname(os.path.realpath(__file__)) + '/lowmc_constants_p' + \
-        str(blocksize) + '_k' + str(keysize) + '_r' + str(rounds) + '.dat'
+    filename = (
+        os.path.dirname(os.path.realpath(__file__))
+        + f"/lowmc_constants_p{blocksize}_k{keysize}_r{rounds}.dat"
+    )
 
     gen = grain_ssg()
     linlayers = []
@@ -65,25 +66,25 @@ def main(args):
         mat = instantiate_matrix(blocksize, keysize, gen)
         roundkey_matrices.append(mat)
 
-    with open(filename, 'w') as matfile:
-        s = str(blocksize) + '\n' + str(keysize) + '\n' + str(rounds) + '\n'
+    with open(filename, "w") as matfile:
+        s = str(blocksize) + "\n" + str(keysize) + "\n" + str(rounds) + "\n"
 
         matfile.write(s)
         for r in range(rounds):
-            s = ''
+            s = ""
             for row in linlayers[r]:
-                s += ''.join(str(e) for e in row) + '\n'
+                s += "".join(str(e) for e in row) + "\n"
             matfile.write(s)
 
         for r in range(rounds):
-            s = ''
-            s += ''.join(str(e) for e in round_constants[r]) + '\n'
+            s = ""
+            s += "".join(str(e) for e in round_constants[r]) + "\n"
             matfile.write(s)
 
         for r in range(rounds + 1):
-            s = ''
+            s = ""
             for row in roundkey_matrices[r]:
-                s += ''.join(str(e) for e in row) + '\n'
+                s += "".join(str(e) for e in row) + "\n"
             matfile.write(s)
 
 
@@ -106,22 +107,34 @@ def grain_ssg():
     index = 0
     # Discard first 160 bits
     for _ in range(160):
-        state[index] ^= state[(index + 13) % 80] ^ state[(index + 23) % 80]\
-            ^ state[(index + 38) % 80] ^ state[(index + 51) % 80]\
+        state[index] ^= (
+            state[(index + 13) % 80]
+            ^ state[(index + 23) % 80]
+            ^ state[(index + 38) % 80]
+            ^ state[(index + 51) % 80]
             ^ state[(index + 62) % 80]
+        )
         index += 1
         index %= 80
     choice = False
     while True:
-        state[index] ^= state[(index + 13) % 80] ^ state[(index + 23) % 80]\
-            ^ state[(index + 38) % 80] ^ state[(index + 51) % 80]\
+        state[index] ^= (
+            state[(index + 13) % 80]
+            ^ state[(index + 23) % 80]
+            ^ state[(index + 38) % 80]
+            ^ state[(index + 51) % 80]
             ^ state[(index + 62) % 80]
+        )
         choice = state[index]
         index += 1
         index %= 80
-        state[index] ^= state[(index + 13) % 80] ^ state[(index + 23) % 80]\
-            ^ state[(index + 38) % 80] ^ state[(index + 51) % 80]\
+        state[index] ^= (
+            state[(index + 13) % 80]
+            ^ state[(index + 23) % 80]
+            ^ state[(index + 38) % 80]
+            ^ state[(index + 51) % 80]
             ^ state[(index + 62) % 80]
+        )
         if choice == 1:
             yield state[index]
         index += 1
@@ -131,7 +144,7 @@ def grain_ssg():
 def rank(matrix):
     """Determine the rank of a binary matrix."""
     # Copy matrix
-    mat = [[x for x in row] for row in matrix]
+    mat = [list(row) for row in matrix]
 
     rows_n = len(matrix)
     columns_m = len(matrix[0])
@@ -156,6 +169,7 @@ def xor_matrix_values(column, columns_m, mat, rows_n):
                 mat[row][j] ^= mat[column][j]
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import sys
+
     main(sys.argv[1:])

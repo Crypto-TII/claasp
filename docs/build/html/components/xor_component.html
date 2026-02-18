@@ -1,23 +1,24 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Xor component &#8212; CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</title>
+    <title>Xor component &#8212; CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives v3.1.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/sage.css" />
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Concatenate component" href="concatenate_component.html" />
-    <link rel="prev" title="Sigma component" href="sigma_component.html" />
+    <link rel="next" title="And component" href="and_component.html" />
+    <link rel="prev" title="Modsub component" href="modsub_component.html" />
     <link rel="icon" href="../_static/sageicon.png" type="image/x-icon" />
     <script src="../_static/thebe.js" type="text/javascript"></script>
     <script src="../_static/thebe-sage.js" type="text/javascript"></script>
@@ -33,10 +34,10 @@
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="concatenate_component.html" title="Concatenate component"
+          <a href="and_component.html" title="And component"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="sigma_component.html" title="Sigma component"
+          <a href="modsub_component.html" title="Modsub component"
              accesskey="P">previous</a> |</li>
   
     
@@ -44,7 +45,7 @@
     
   
   
-        <li class="nav-item nav-item-0"><a href="../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives v3.1.0 documentation</a> &#187;</li>
 
         <li class="nav-item nav-item-this"><a href="">Xor component</a></li> 
       </ul>
@@ -56,11 +57,11 @@
           <div class="body" role="main">
             
   <section id="module-components.xor_component">
-<span id="xor-component"></span><h1>Xor component<a class="headerlink" href="#module-components.xor_component" title="Permalink to this headline">¶</a></h1>
+<span id="xor-component"></span><h1>Xor component<a class="headerlink" href="#module-components.xor_component" title="Permalink to this heading">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="components.xor_component.XOR">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">XOR</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">current_round_number</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_round_number_of_components</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.xor_component.XOR" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">claasp.component.Component</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Component</span></code></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="components.xor_component.XOR.algebraic_polynomials">
 <span class="sig-name descname"><span class="pre">algebraic_polynomials</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.xor_component.XOR.algebraic_polynomials" title="Permalink to this definition">¶</a></dt>
@@ -70,7 +71,7 @@
 <li><p><code class="docutils literal notranslate"><span class="pre">model</span></code> – <strong>model object</strong>; a model instance</p></li>
 </ul>
 <p>EXAMPLES:</p>
-<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.fancy_block_cipher</span> <span class="kn">import</span> <span class="n">FancyBlockCipher</span>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.toys.fancy_block_cipher</span> <span class="kn">import</span> <span class="n">FancyBlockCipher</span>
 <span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.algebraic.algebraic_model</span> <span class="kn">import</span> <span class="n">AlgebraicModel</span>
 <span class="gp">sage: </span><span class="n">fancy</span> <span class="o">=</span> <span class="n">FancyBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="gp">sage: </span><span class="n">xor_component</span> <span class="o">=</span> <span class="n">fancy</span><span class="o">.</span><span class="n">get_component_from_id</span><span class="p">(</span><span class="s2">&quot;xor_0_7&quot;</span><span class="p">)</span>
@@ -163,7 +164,7 @@
 
 <dl class="py method">
 <dt class="sig sig-object py" id="components.xor_component.XOR.cp_deterministic_truncated_xor_differential_constraints">
-<span class="sig-name descname"><span class="pre">cp_deterministic_truncated_xor_differential_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inverse</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.xor_component.XOR.cp_deterministic_truncated_xor_differential_constraints" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">cp_deterministic_truncated_xor_differential_constraints</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#components.xor_component.XOR.cp_deterministic_truncated_xor_differential_constraints" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return list declarations and constraints for XOR component CP deterministic truncated XOR differential model.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -188,6 +189,28 @@
 <dd></dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="components.xor_component.XOR.cp_hybrid_deterministic_truncated_xor_differential_constraints">
+<span class="sig-name descname"><span class="pre">cp_hybrid_deterministic_truncated_xor_differential_constraints</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#components.xor_component.XOR.cp_hybrid_deterministic_truncated_xor_differential_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return list declarations and constraints for XOR component in the hybrid CP deterministic truncated
+XOR differential model.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p>None</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
+<span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">xor_component</span> <span class="o">=</span> <span class="n">speck</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">xor_component</span><span class="o">.</span><span class="n">cp_hybrid_deterministic_truncated_xor_differential_constraints</span><span class="p">()</span>
+<span class="go">([],</span>
+<span class="go"> [&#39;constraint if (modadd_0_1[0] &lt; 2) /\\ (key[48] &lt; 2) then xor_0_2[0] = (modadd_0_1[0] + key[48]) mod 2 elseif (modadd_0_1[0] + key[48] = modadd_0_1[0]) then xor_0_2[0] = modadd_0_1[0] elseif (modadd_0_1[0] + key[48] = key[48]) then xor_0_2[0] = key[48] else xor_0_2[0] = 2 endif;&#39;,</span>
+<span class="go">   ...</span>
+<span class="go">  &#39;constraint if (modadd_0_1[15] &lt; 2) /\\ (key[63] &lt; 2) then xor_0_2[15] = (modadd_0_1[15] + key[63]) mod 2 elseif (modadd_0_1[15] + key[63] = modadd_0_1[15]) then xor_0_2[15] = modadd_0_1[15] elseif (modadd_0_1[15] + key[63] = key[63]) then xor_0_2[15] = key[63] else xor_0_2[15] = 2 endif;&#39;])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="components.xor_component.XOR.cp_transform_xor_components_for_first_step">
 <span class="sig-name descname"><span class="pre">cp_transform_xor_components_for_first_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.xor_component.XOR.cp_transform_xor_components_for_first_step" title="Permalink to this definition">¶</a></dt>
 <dd><p>Transform a XOR component into components involving only one byte for CP.</p>
@@ -197,9 +220,9 @@
 </ul>
 <p>EXAMPLES:</p>
 <div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.aes_block_cipher</span> <span class="kn">import</span> <span class="n">AESBlockCipher</span>
-<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.cp.cp_model</span> <span class="kn">import</span> <span class="n">CpModel</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.cp.mzn_model</span> <span class="kn">import</span> <span class="n">MznModel</span>
 <span class="gp">sage: </span><span class="n">aes</span> <span class="o">=</span> <span class="n">AESBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
-<span class="gp">sage: </span><span class="n">cp</span> <span class="o">=</span> <span class="n">CpModel</span><span class="p">(</span><span class="n">aes</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">cp</span> <span class="o">=</span> <span class="n">MznModel</span><span class="p">(</span><span class="n">aes</span><span class="p">)</span>
 <span class="gp">sage: </span><span class="n">xor_component</span> <span class="o">=</span> <span class="n">aes</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">31</span><span class="p">)</span>
 <span class="gp">sage: </span><span class="n">xor_component</span><span class="o">.</span><span class="n">cp_transform_xor_components_for_first_step</span><span class="p">(</span><span class="n">cp</span><span class="p">)</span>
 <span class="go">([&#39;array[0..3] of var 0..1: xor_0_31;&#39;], [])</span>
@@ -217,15 +240,17 @@
 </ul>
 <p>EXAMPLES:</p>
 <div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.aes_block_cipher</span> <span class="kn">import</span> <span class="n">AESBlockCipher</span>
-<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.cp.cp_model</span> <span class="kn">import</span> <span class="n">CpModel</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.cp.mzn_model</span> <span class="kn">import</span> <span class="n">MznModel</span>
 <span class="gp">sage: </span><span class="n">aes</span> <span class="o">=</span> <span class="n">AESBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
-<span class="gp">sage: </span><span class="n">cp</span> <span class="o">=</span> <span class="n">CpModel</span><span class="p">(</span><span class="n">aes</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">cp</span> <span class="o">=</span> <span class="n">MznModel</span><span class="p">(</span><span class="n">aes</span><span class="p">)</span>
 <span class="gp">sage: </span><span class="n">xor_component</span> <span class="o">=</span> <span class="n">aes</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
 <span class="gp">sage: </span><span class="n">xor_component</span><span class="o">.</span><span class="n">cp_wordwise_deterministic_truncated_xor_differential_constraints</span><span class="p">(</span><span class="n">cp</span><span class="p">)</span>
-<span class="go">([],</span>
-<span class="go"> [&#39;constraint temp_0_0_value = key_value[0] /\\ temp_0_0_active = key_active[0];&#39;,</span>
+<span class="go">([&#39;var -2..255: xor_0_0_temp_0_0_value;&#39;,</span>
+<span class="go">  ...</span>
+<span class="go">  &#39;var 0..9: xor_0_0_bound_value_0_15 = if xor_0_0_temp_0_15_value + xor_0_0_temp_1_15_value &gt; 0 then ceil(log2(xor_0_0_temp_0_15_value + xor_0_0_temp_1_15_value)) else 0 endif;&#39;],</span>
+<span class="go"> [&#39;constraint xor_0_0_temp_0_0_value = key_value[0] /\\ xor_0_0_temp_0_0_active = key_active[0];&#39;,</span>
 <span class="go">   ...</span>
-<span class="go">  &#39;constraint if temp_0_15_active + temp_1_15_active &gt; 2 then xor_0_0_active[15] == 3 /\\ xor_0_0_value[15] = -2 elif temp_0_15_active + temp_1_15_active == 1 then xor_0_0_active[15] = 1 /\\ xor_0_0_value[15] = temp_0_15_value + temp_1_15_value elif temp_0_15_active + temp_1_15_active == 0 then xor_0_0_active[15] = 0 /\\ xor_0_0_value[15] = 0 elif temp_0_15_value + temp_1_15_value &lt; 0 then xor_0_0_active[15] = 2 /\\ xor_0_0_value[15] = -1 elif temp_0_15_value == temp_1_15_value then xor_0_0_active[15] = 0 /\\ xor_0_0_value[15] = 0 else xor_0_0_active[15] = 1 /\\ xor_0_0_value[15] = sum[(((floor(temp_0_15_value/(2**j)) + floor(temp_1_15_value/(2**j))) mod 2) * (2**j)) | j in 0..log2(temp_0_15_value + temp_1_15_value)] endif;&#39;])</span>
+<span class="go">  &#39;constraint if xor_0_0_temp_0_15_active + xor_0_0_temp_1_15_active &gt; 2 then xor_0_0_active[15] == 3 /\\ xor_0_0_value[15] = -2 elseif xor_0_0_temp_0_15_active + xor_0_0_temp_1_15_active == 1 then xor_0_0_active[15] = 1 /\\ xor_0_0_value[15] = xor_0_0_temp_0_15_value + xor_0_0_temp_1_15_value elseif xor_0_0_temp_0_15_active + xor_0_0_temp_1_15_active == 0 then xor_0_0_active[15] = 0 /\\ xor_0_0_value[15] = 0 elseif xor_0_0_temp_0_15_value + xor_0_0_temp_1_15_value &lt; 0 then xor_0_0_active[15] = 2 /\\ xor_0_0_value[15] = -1 elseif xor_0_0_temp_0_15_value == xor_0_0_temp_1_15_value then xor_0_0_active[15] = 0 /\\ xor_0_0_value[15] = 0 else xor_0_0_active[15] = 1 /\\ xor_0_0_value[15] = sum([(((floor(xor_0_0_temp_0_15_value/pow(2,j)) + floor(xor_0_0_temp_1_15_value/pow(2,j))) mod 2) * pow(2,j)) | j in 0..xor_0_0_bound_value_0_15]) endif;&#39;])</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -246,9 +271,9 @@
 </ul>
 <p>EXAMPLES:</p>
 <div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.aes_block_cipher</span> <span class="kn">import</span> <span class="n">AESBlockCipher</span>
-<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.cp.cp_model</span> <span class="kn">import</span> <span class="n">CpModel</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.cp.mzn_model</span> <span class="kn">import</span> <span class="n">MznModel</span>
 <span class="gp">sage: </span><span class="n">aes</span> <span class="o">=</span> <span class="n">AESBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
-<span class="gp">sage: </span><span class="n">cp</span> <span class="o">=</span> <span class="n">CpModel</span><span class="p">(</span><span class="n">aes</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">cp</span> <span class="o">=</span> <span class="n">MznModel</span><span class="p">(</span><span class="n">aes</span><span class="p">)</span>
 <span class="gp">sage: </span><span class="n">xor_component</span> <span class="o">=</span> <span class="n">aes</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">31</span><span class="p">)</span>
 <span class="gp">sage: </span><span class="n">xor_component</span><span class="o">.</span><span class="n">cp_xor_differential_propagation_first_step_constraints</span><span class="p">(</span><span class="n">cp</span><span class="p">,</span> <span class="n">cp</span><span class="o">.</span><span class="n">_variables_list</span><span class="p">)</span>
 <span class="go">([&#39;array[0..1, 1..2] of int: xor_truncated_table_2 = array2d(0..1, 1..2, [0,0,1,1]);&#39;],</span>
@@ -369,8 +394,8 @@ variables.</p>
 </ul>
 <p>EXAMPLES:</p>
 <div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.simon_block_cipher</span> <span class="kn">import</span> <span class="n">SimonBlockCipher</span>
-<span class="gp">sage: </span><span class="n">cipher</span> <span class="o">=</span> <span class="n">SimonBlockCipher</span><span class="p">(</span><span class="n">block_bit_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">key_bit_size</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 <span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model</span> <span class="kn">import</span> <span class="n">MilpBitwiseDeterministicTruncatedXorDifferentialModel</span>
+<span class="gp">sage: </span><span class="n">cipher</span> <span class="o">=</span> <span class="n">SimonBlockCipher</span><span class="p">(</span><span class="n">block_bit_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">key_bit_size</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 <span class="gp">sage: </span><span class="n">milp</span> <span class="o">=</span> <span class="n">MilpBitwiseDeterministicTruncatedXorDifferentialModel</span><span class="p">(</span><span class="n">cipher</span><span class="p">)</span>
 <span class="gp">sage: </span><span class="n">milp</span><span class="o">.</span><span class="n">init_model_in_sage_milp_class</span><span class="p">()</span>
 <span class="gp">sage: </span><span class="n">xor_component</span> <span class="o">=</span> <span class="n">cipher</span><span class="o">.</span><span class="n">get_component_from_id</span><span class="p">(</span><span class="s2">&quot;xor_0_5&quot;</span><span class="p">)</span>
@@ -382,8 +407,8 @@ variables.</p>
 <span class="go"> (&#39;x[xor_0_5_15_class_bit_0]&#39;, x_94),</span>
 <span class="go"> (&#39;x[xor_0_5_15_class_bit_1]&#39;, x_95)]</span>
 <span class="gp">sage: </span><span class="n">constraints</span>
-<span class="go">[1 &lt;= 1 - x_1 + x_33 + x_64 + x_65,</span>
-<span class="go"> 1 &lt;= 1 + x_1 - x_33 + x_64 + x_65,</span>
+<span class="go">[x_96 == 2*x_0 + x_1,</span>
+<span class="go"> x_97 == 2*x_2 + x_3,</span>
 <span class="go"> ...</span>
 <span class="go"> 1 &lt;= 1 - x_30 + x_94,</span>
 <span class="go"> 1 &lt;= 2 - x_62 - x_63]</span>
@@ -517,20 +542,20 @@ return 3</p>
 <span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model</span> <span class="kn">import</span> <span class="n">MilpWordwiseDeterministicTruncatedXorDifferentialModel</span>
 <span class="gp">sage: </span><span class="n">milp</span> <span class="o">=</span> <span class="n">MilpWordwiseDeterministicTruncatedXorDifferentialModel</span><span class="p">(</span><span class="n">cipher</span><span class="p">)</span>
 <span class="gp">sage: </span><span class="n">milp</span><span class="o">.</span><span class="n">init_model_in_sage_milp_class</span><span class="p">()</span>
-<span class="gp">sage: </span><span class="n">xor_component</span> <span class="o">=</span> <span class="n">cipher</span><span class="o">.</span><span class="n">get_component_from_id</span><span class="p">(</span><span class="s2">&quot;xor_0_32&quot;</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">xor_component</span> <span class="o">=</span> <span class="n">cipher</span><span class="o">.</span><span class="n">get_component_from_id</span><span class="p">(</span><span class="s2">&quot;xor_0_31&quot;</span><span class="p">)</span>
 <span class="gp">sage: </span><span class="n">variables</span><span class="p">,</span> <span class="n">constraints</span> <span class="o">=</span> <span class="n">xor_component</span><span class="o">.</span><span class="n">milp_wordwise_deterministic_truncated_xor_differential_sequential_constraints</span><span class="p">(</span><span class="n">milp</span><span class="p">)</span>
 <span class="gp">sage: </span><span class="n">variables</span>
-<span class="go">[(&#39;x[xor_0_31_word_0_class_bit_0]&#39;, x_0),</span>
-<span class="go"> (&#39;x[xor_0_31_word_0_class_bit_1]&#39;, x_1),</span>
+<span class="go">[(&#39;x[sbox_0_26_word_0_class_bit_0]&#39;, x_0),</span>
+<span class="go">(&#39;x[sbox_0_26_word_0_class_bit_1]&#39;, x_1),</span>
 <span class="go"> ...</span>
-<span class="go"> (&#39;x[xor_0_32_30]&#39;, x_118),</span>
-<span class="go"> (&#39;x[xor_0_32_31]&#39;, x_119)]</span>
+<span class="go">(&#39;x[xor_0_31_30]&#39;, x_158),</span>
+<span class="go">(&#39;x[xor_0_31_31]&#39;, x_159)]</span>
 <span class="gp">sage: </span><span class="n">constraints</span>
-<span class="go">[1 &lt;= 1 + x_0 + x_2 + x_3 + x_4 + x_5 + x_6 + x_7 + x_8 + x_9 + x_41 - x_81,</span>
-<span class="go"> 1 &lt;= 1 + x_1 + x_40 + x_42 + x_43 + x_44 + x_45 + x_46 + x_47 + x_48 + x_49 - x_81,</span>
+<span class="go">[1 &lt;= 1 + x_0 + x_2 + x_3 + x_4 + x_5 + x_6 + x_7 + x_8 + x_9 + x_41 - x_161,</span>
+<span class="go"> 1 &lt;= 1 + x_1 + x_40 + x_42 + x_43 + x_44 + x_45 + x_46 + x_47 + x_48 + x_49 - x_161,</span>
 <span class="go">...</span>
-<span class="go"> 1 &lt;= 1 + x_31 - x_39,</span>
-<span class="go"> 1 &lt;= 2 - x_30 - x_39]</span>
+<span class="go"> 1 &lt;= 1 + x_111 - x_119,</span>
+<span class="go"> 1 &lt;= 2 - x_110 - x_119]</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -543,13 +568,13 @@ in deterministic truncated XOR differential model.</p>
 <p>It follows a simplified model:
 if dX0 + dX1 &gt; 2</p>
 <blockquote>
-<div><p>then dY = 3
-elif dX0&lt;2 /dX1&lt;2</p>
-<blockquote>
-<div><p>then zeta Y = zetaX0 ^ zetaX1</p>
+<div><p>then dY = 3</p>
 </div></blockquote>
+<dl class="simple">
+<dt>elif dX0&lt;2 / dX1&lt;2</dt><dd><p>then zeta Y = zetaX0 ^ zetaX1</p>
+</dd>
+</dl>
 <p>else dY = 2</p>
-</div></blockquote>
 <p>INPUTS:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">model</span></code> – <strong>model object</strong>; a model instance</p></li>
@@ -619,9 +644,9 @@ elif dX0&lt;2 /dX1&lt;2</p>
 </ul>
 <p>EXAMPLES:</p>
 <div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
-<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.minizinc.minizinc_model</span> <span class="kn">import</span> <span class="n">MinizincModel</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.cp.mzn_model</span> <span class="kn">import</span> <span class="n">MznModel</span>
 <span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">22</span><span class="p">)</span>
-<span class="gp">sage: </span><span class="n">minizinc</span> <span class="o">=</span> <span class="n">MinizincModel</span><span class="p">(</span><span class="n">speck</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">minizinc</span> <span class="o">=</span> <span class="n">MznModel</span><span class="p">(</span><span class="n">speck</span><span class="p">)</span>
 <span class="gp">sage: </span><span class="n">xor_component</span> <span class="o">=</span> <span class="n">speck</span><span class="o">.</span><span class="n">get_component_from_id</span><span class="p">(</span><span class="s2">&quot;xor_0_2&quot;</span><span class="p">)</span>
 <span class="gp">sage: </span><span class="n">_</span><span class="p">,</span> <span class="n">xor_minizinc_constraints</span> <span class="o">=</span> <span class="n">xor_component</span><span class="o">.</span><span class="n">minizinc_constraints</span><span class="p">(</span><span class="n">minizinc</span><span class="p">)</span>
 <span class="gp">sage: </span><span class="n">xor_minizinc_constraints</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -666,9 +691,46 @@ elif dX0&lt;2 /dX1&lt;2</p>
 <dd></dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="components.xor_component.XOR.sat_bitwise_deterministic_truncated_xor_differential_constraints">
+<span class="sig-name descname"><span class="pre">sat_bitwise_deterministic_truncated_xor_differential_constraints</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#components.xor_component.XOR.sat_bitwise_deterministic_truncated_xor_differential_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of variables and a list of clauses representing XOR for SAT DETERMINISTIC TRUNCATED XOR DIFFERENTIAL model</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="../cipher_modules/models/sat/sat_model.html#sat-standard"><span class="std std-ref">SAT standard of Cipher</span></a> for the format.</p></li>
+<li><p><a class="reference internal" href="#components.xor_component.XOR.sat_constraints" title="components.xor_component.XOR.sat_constraints"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sat_constraints()</span></code></a> for the model.</p></li>
+</ul>
+</div>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p>None</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
+<span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">xor_component</span> <span class="o">=</span> <span class="n">speck</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">xor_component</span><span class="o">.</span><span class="n">sat_bitwise_deterministic_truncated_xor_differential_constraints</span><span class="p">()</span>
+<span class="go">([&#39;xor_0_2_0_0&#39;,</span>
+<span class="go">  &#39;xor_0_2_1_0&#39;,</span>
+<span class="go">  ...</span>
+<span class="go">  &#39;xor_0_2_14_1&#39;,</span>
+<span class="go">  &#39;xor_0_2_15_1&#39;],</span>
+<span class="go"> [&#39;xor_0_2_0_0 -modadd_0_1_0_0&#39;,</span>
+<span class="go">  &#39;xor_0_2_0_0 -key_48_0&#39;,</span>
+<span class="go">  ...</span>
+<span class="go">  &#39;key_63_1 xor_0_2_15_0 xor_0_2_15_1 -modadd_0_1_15_1&#39;,</span>
+<span class="go">  &#39;xor_0_2_15_0 -modadd_0_1_15_1 -key_63_1 -xor_0_2_15_1&#39;])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="components.xor_component.XOR.sat_constraints">
 <span class="sig-name descname"><span class="pre">sat_constraints</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#components.xor_component.XOR.sat_constraints" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a list of variables and a list of clauses for XOR operation in SAT CIPHER model.</p>
+<dd><p>Return a list of variables and a list of clauses representing XOR for SAT CIPHER model</p>
+<p>This method translates in CNF the constraint <code class="docutils literal notranslate"><span class="pre">z</span> <span class="pre">=</span> <span class="pre">Xor(x,</span> <span class="pre">y)</span></code>. In prefixed notation, it becomes:
+<code class="docutils literal notranslate"><span class="pre">And(Or(z,</span> <span class="pre">Not(x),</span> <span class="pre">y),</span> <span class="pre">Or(z,</span> <span class="pre">x,</span> <span class="pre">Not(y)),</span> <span class="pre">Or(z,</span> <span class="pre">Not(x),</span> <span class="pre">Not(y)),</span> <span class="pre">Or(z,</span> <span class="pre">x,</span> <span class="pre">y))</span></code>.
+This method supports XOR operation using more than two operands.</p>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
 <p><a class="reference internal" href="../cipher_modules/models/sat/sat_model.html#sat-standard"><span class="std std-ref">SAT standard of Cipher</span></a> for the format.</p>
@@ -684,9 +746,12 @@ elif dX0&lt;2 /dX1&lt;2</p>
 <span class="gp">sage: </span><span class="n">xor_component</span><span class="o">.</span><span class="n">sat_constraints</span><span class="p">()</span>
 <span class="go">([&#39;xor_0_2_0&#39;,</span>
 <span class="go">  &#39;xor_0_2_1&#39;,</span>
-<span class="go">  &#39;xor_0_2_2&#39;,</span>
 <span class="go">  ...</span>
-<span class="go">  &#39;xor_0_2_15 -modadd_0_1_15 key_63&#39;,</span>
+<span class="go">  &#39;xor_0_2_14&#39;,</span>
+<span class="go">  &#39;xor_0_2_15&#39;],</span>
+<span class="go"> [&#39;-xor_0_2_0 modadd_0_1_0 key_48&#39;,</span>
+<span class="go">  &#39;xor_0_2_0 -modadd_0_1_0 key_48&#39;,</span>
+<span class="go">  ...</span>
 <span class="go">  &#39;xor_0_2_15 modadd_0_1_15 -key_63&#39;,</span>
 <span class="go">  &#39;-xor_0_2_15 -modadd_0_1_15 -key_63&#39;])</span>
 </pre></div>
@@ -694,17 +759,51 @@ elif dX0&lt;2 /dX1&lt;2</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="components.xor_component.XOR.sat_semi_deterministic_truncated_xor_differential_constraints">
+<span class="sig-name descname"><span class="pre">sat_semi_deterministic_truncated_xor_differential_constraints</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#components.xor_component.XOR.sat_semi_deterministic_truncated_xor_differential_constraints" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="components.xor_component.XOR.sat_xor_differential_propagation_constraints">
 <span class="sig-name descname"><span class="pre">sat_xor_differential_propagation_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.xor_component.XOR.sat_xor_differential_propagation_constraints" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Return a list of variables and a list of clauses representing XOR for SAT XOR DIFFERENTIAL model</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="../cipher_modules/models/sat/sat_model.html#sat-standard"><span class="std std-ref">SAT standard of Cipher</span></a> for the format.</p></li>
+<li><p><a class="reference internal" href="#components.xor_component.XOR.sat_constraints" title="components.xor_component.XOR.sat_constraints"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sat_constraints()</span></code></a> for the model.</p></li>
+</ul>
+</div>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p>None</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
+<span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">xor_component</span> <span class="o">=</span> <span class="n">speck</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">xor_component</span><span class="o">.</span><span class="n">sat_xor_differential_propagation_constraints</span><span class="p">()</span>
+<span class="go">([&#39;xor_0_2_0&#39;,</span>
+<span class="go">  &#39;xor_0_2_1&#39;,</span>
+<span class="go">  ...</span>
+<span class="go">  &#39;xor_0_2_14&#39;,</span>
+<span class="go">  &#39;xor_0_2_15&#39;],</span>
+<span class="go"> [&#39;-xor_0_2_0 modadd_0_1_0 key_48&#39;,</span>
+<span class="go">  &#39;xor_0_2_0 -modadd_0_1_0 key_48&#39;,</span>
+<span class="go">  ...</span>
+<span class="go">  &#39;xor_0_2_15 modadd_0_1_15 -key_63&#39;,</span>
+<span class="go">  &#39;-xor_0_2_15 -modadd_0_1_15 -key_63&#39;])</span>
+</pre></div>
+</div>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="components.xor_component.XOR.sat_xor_linear_mask_propagation_constraints">
 <span class="sig-name descname"><span class="pre">sat_xor_linear_mask_propagation_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.xor_component.XOR.sat_xor_linear_mask_propagation_constraints" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a list of variables and a list of clauses for XOR operation in SAT XOR LINEAR model.</p>
+<dd><p>Return a list of variables and a list of clauses representing XOR for SAT XOR LINEAR model</p>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
-<p><a class="reference internal" href="../cipher_modules/models/sat/sat_model.html#sat-standard"><span class="std std-ref">SAT standard of Cipher</span></a> for the format.</p>
+<p><a class="reference internal" href="../cipher_modules/models/sat/sat_model.html#sat-standard"><span class="std std-ref">SAT standard of Cipher</span></a> for the format, <a class="reference internal" href="../references.html#lwr2016" id="id1"><span>[LWR2016]</span></a> for the algorithm.</p>
 </div>
 <p>INPUT:</p>
 <ul class="simple">
@@ -717,9 +816,12 @@ elif dX0&lt;2 /dX1&lt;2</p>
 <span class="gp">sage: </span><span class="n">xor_component</span><span class="o">.</span><span class="n">sat_xor_linear_mask_propagation_constraints</span><span class="p">()</span>
 <span class="go">([&#39;xor_0_2_0_i&#39;,</span>
 <span class="go">  &#39;xor_0_2_1_i&#39;,</span>
-<span class="go">  &#39;xor_0_2_2_i&#39;,</span>
 <span class="go">  ...</span>
-<span class="go">  &#39;xor_0_2_15_i -xor_0_2_15_o&#39;,</span>
+<span class="go">  &#39;xor_0_2_14_o&#39;,</span>
+<span class="go">  &#39;xor_0_2_15_o&#39;],</span>
+<span class="go"> [&#39;xor_0_2_0_i -xor_0_2_0_o&#39;,</span>
+<span class="go">  &#39;xor_0_2_16_i -xor_0_2_0_i&#39;,</span>
+<span class="go">  ...</span>
 <span class="go">  &#39;xor_0_2_31_i -xor_0_2_15_i&#39;,</span>
 <span class="go">  &#39;xor_0_2_15_o -xor_0_2_31_i&#39;])</span>
 </pre></div>
@@ -759,7 +861,10 @@ elif dX0&lt;2 /dX1&lt;2</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="components.xor_component.XOR.smt_constraints">
 <span class="sig-name descname"><span class="pre">smt_constraints</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#components.xor_component.XOR.smt_constraints" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a variable list and SMT-LIB list asserts representing XOR operation for SMT CIPHER model.</p>
+<dd><p>Return a variable list and SMT-LIB list asserts representing XOR for SMT CIPHER model</p>
+<p>Since the XOR operation is part of the SMT-LIB formalism, the operation can be modeled using the corresponding
+builtin operation, e.g. <code class="docutils literal notranslate"><span class="pre">z</span> <span class="pre">=</span> <span class="pre">XOR(x,</span> <span class="pre">y)</span></code> becomes <code class="docutils literal notranslate"><span class="pre">(assert</span> <span class="pre">(=</span> <span class="pre">z</span> <span class="pre">(xor</span> <span class="pre">x</span> <span class="pre">y)))</span></code>.
+This method support XOR operation using more than two inputs.</p>
 <p>INPUT:</p>
 <ul class="simple">
 <li><p>None</p></li>
@@ -786,12 +891,42 @@ elif dX0&lt;2 /dX1&lt;2</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="components.xor_component.XOR.smt_xor_differential_propagation_constraints">
 <span class="sig-name descname"><span class="pre">smt_xor_differential_propagation_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.xor_component.XOR.smt_xor_differential_propagation_constraints" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Return a variable list and SMT-LIB list asserts representing XOR for SMT XOR DIFFERENTIAL model</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="#components.xor_component.XOR.sat_constraints" title="components.xor_component.XOR.sat_constraints"><code class="xref py py-obj docutils literal notranslate"><span class="pre">smt_constraints()</span></code></a> for the model.</p>
+</div>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p>None</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.speck_block_cipher</span> <span class="kn">import</span> <span class="n">SpeckBlockCipher</span>
+<span class="gp">sage: </span><span class="n">speck</span> <span class="o">=</span> <span class="n">SpeckBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">xor_component</span> <span class="o">=</span> <span class="n">speck</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">xor_component</span><span class="o">.</span><span class="n">smt_xor_differential_propagation_constraints</span><span class="p">()</span>
+<span class="go">([&#39;xor_0_2_0&#39;,</span>
+<span class="go">  &#39;xor_0_2_1&#39;,</span>
+<span class="go">  ...</span>
+<span class="go">  &#39;xor_0_2_14&#39;,</span>
+<span class="go">  &#39;xor_0_2_15&#39;],</span>
+<span class="go"> [&#39;(assert (= xor_0_2_0 (xor modadd_0_1_0 key_48)))&#39;,</span>
+<span class="go">  &#39;(assert (= xor_0_2_1 (xor modadd_0_1_1 key_49)))&#39;,</span>
+<span class="go">  ...</span>
+<span class="go">  &#39;(assert (= xor_0_2_14 (xor modadd_0_1_14 key_62)))&#39;,</span>
+<span class="go">  &#39;(assert (= xor_0_2_15 (xor modadd_0_1_15 key_63)))&#39;])</span>
+</pre></div>
+</div>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="components.xor_component.XOR.smt_xor_linear_mask_propagation_constraints">
 <span class="sig-name descname"><span class="pre">smt_xor_linear_mask_propagation_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.xor_component.XOR.smt_xor_linear_mask_propagation_constraints" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a variable list and SMT-LIB list asserts for XOR operation in SMT XOR LINEAR model.</p>
+<dd><p>Return a variable list and SMT-LIB list asserts representing XOR for SMT XOR LINEAR model</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../references.html#lwr2016" id="id2"><span>[LWR2016]</span></a> for the algorithm.</p>
+</div>
 <p>INPUT:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">model</span></code> – <strong>model object</strong> (default: <span class="math">None</span>); a model instance</p></li>
@@ -885,13 +1020,13 @@ elif dX0&lt;2 /dX1&lt;2</p>
         <div class="sphinxsidebarwrapper">
   <div>
     <h4>Previous topic</h4>
-    <p class="topless"><a href="sigma_component.html"
-                          title="previous chapter">Sigma component</a></p>
+    <p class="topless"><a href="modsub_component.html"
+                          title="previous chapter">Modsub component</a></p>
   </div>
   <div>
     <h4>Next topic</h4>
-    <p class="topless"><a href="concatenate_component.html"
-                          title="next chapter">Concatenate component</a></p>
+    <p class="topless"><a href="and_component.html"
+                          title="next chapter">And component</a></p>
   </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
@@ -909,7 +1044,7 @@ elif dX0&lt;2 /dX1&lt;2</p>
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -924,10 +1059,10 @@ elif dX0&lt;2 /dX1&lt;2</p>
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="concatenate_component.html" title="Concatenate component"
+          <a href="and_component.html" title="And component"
              >next</a> |</li>
         <li class="right" >
-          <a href="sigma_component.html" title="Sigma component"
+          <a href="modsub_component.html" title="Modsub component"
              >previous</a> |</li>
   
     
@@ -935,7 +1070,7 @@ elif dX0&lt;2 /dX1&lt;2</p>
     
   
   
-        <li class="nav-item nav-item-0"><a href="../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives v3.1.0 documentation</a> &#187;</li>
 
         <li class="nav-item nav-item-this"><a href="">Xor component</a></li> 
       </ul>

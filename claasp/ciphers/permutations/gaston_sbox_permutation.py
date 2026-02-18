@@ -16,7 +16,7 @@
 # ****************************************************************************
 
 from claasp.cipher import Cipher
-from claasp.name_mappings import INPUT_PLAINTEXT
+from claasp.name_mappings import INPUT_PLAINTEXT, PERMUTATION
 from claasp.utils.utils import get_inputs_parameter
 from claasp.DTOs.component_state import ComponentState
 
@@ -52,17 +52,15 @@ GASTON_w = [0, 56, 31, 46, 43]
 # GASTON_w4 = 43
 
 # gaston round constant
-GASTON_rc = [
-    0x00000000000000F0, 0x00000000000000E1, 0x00000000000000D2,
-    0x00000000000000C3, 0x00000000000000B4, 0x00000000000000A5,
-    0x0000000000000096, 0x0000000000000087, 0x0000000000000078,
-    0x0000000000000069, 0x000000000000005A, 0x000000000000004B
+GASTON_rc = [0xF0, 0xE1, 0xD2, 0xC3, 0xB4, 0xA5, 0x96, 0x87, 0x78, 0x69, 0x5A, 0x4B]
+# fmt: off
+SBOX = [
+    0x00, 0x05, 0x0a, 0x0b, 0x14, 0x11, 0x16, 0x17, 0x09, 0x0c, 0x03, 0x02, 0x0d, 0x08, 0x0f, 0x0e,
+    0x12, 0x15, 0x18, 0x1b, 0x06, 0x01, 0x04, 0x07, 0x1a, 0x1d, 0x10, 0x13, 0x1e, 0x19, 0x1c, 0x1f,
 ]
+# fmt: on
 
-SBOX = [0, 5, 10, 11, 20, 17, 22, 23, 9, 12, 3, 2, 13, 8, 15, 14,
-        18, 21, 24, 27, 6, 1, 4, 7, 26, 29, 16, 19, 30, 25, 28, 31]
-
-PARAMETERS_CONFIGURATION_LIST = [{'number_of_rounds': 12}]
+PARAMETERS_CONFIGURATION_LIST = [{"number_of_rounds": 12}]
 
 
 class GastonSboxPermutation(Cipher):
@@ -102,11 +100,13 @@ class GastonSboxPermutation(Cipher):
     def __init__(self, number_of_rounds=12):
         self.state_bit_size = GASTON_NROWS * WORD_SIZE
 
-        super().__init__(family_name='gaston',
-                         cipher_type="permutation",
-                         cipher_inputs=[INPUT_PLAINTEXT],
-                         cipher_inputs_bit_size=[self.state_bit_size],
-                         cipher_output_bit_size=self.state_bit_size)
+        super().__init__(
+            family_name="gaston",
+            cipher_type=PERMUTATION,
+            cipher_inputs=[INPUT_PLAINTEXT],
+            cipher_inputs_bit_size=[self.state_bit_size],
+            cipher_output_bit_size=self.state_bit_size,
+        )
 
         # gaston state initialization
         state = []

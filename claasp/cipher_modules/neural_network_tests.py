@@ -334,7 +334,6 @@ class NeuralNetworkTests:
         d_array = np.uint8([b for b in int(d).to_bytes(input_lengths[index] // 8, byteorder='big')])
         other_inputs_np[index] = other_inputs_np[index] ^ np.broadcast_to(d_array, (
             nb_samples, input_lengths[index] // 8)).transpose()
-        print([(x.shape, x.dtype) for x in other_inputs_np])
         cipher_output = evaluator.evaluate_vectorized(self.cipher, base_inputs_np, intermediate_output=True)
         other_output = evaluator.evaluate_vectorized(self.cipher, other_inputs_np, intermediate_output=True)
 
@@ -366,7 +365,8 @@ class NeuralNetworkTests:
                                           dtype=np.uint8).reshape(-1,
                                                                   samples))  # requires input size to be a multiple of 8
             inputs_1.append(inputs_0[-1] ^ self._integer_to_np(input_differences[i], self.cipher.inputs_bit_size[i]))
-            inputs_1[-1][:, y == 0] ^= np.frombuffer(urandom(num_rand_samples * self.cipher.inputs_bit_size[i] // 8),
+            if num_rand_samples>0:
+                inputs_1[-1][:, y == 0] ^= np.frombuffer(urandom(num_rand_samples * self.cipher.inputs_bit_size[i] // 8),
                                                      dtype=np.uint8).reshape(-1, num_rand_samples)
 
         if number_of_rounds < self.cipher.number_of_rounds:
@@ -391,10 +391,14 @@ class NeuralNetworkTests:
 
     def get_neural_network(self, network_name, input_size, word_size=None, depth=1):
         from tensorflow.keras.optimizers import Adam
+        if input_size is None or input_size==0:
+            input_size = self.cipher.output_bit_size
+        if word_size is None or word_size == 0:
+            word_size = self.cipher.output_bit_size
+        input_size = int(input_size)
+        word_size = int(word_size)
+        depth = int(depth)
         if network_name == 'gohr_resnet':
-            if word_size is None or word_size == 0:
-                print("Word size not specified for ", network_name, ", defaulting to ciphertext size...")
-                word_size = self.cipher.output_bit_size
             neural_network = self._make_resnet(word_size=word_size, input_size=input_size, depth=depth)
         elif network_name == 'dbitnet':
             neural_network = self._make_dbitnet(input_size=input_size)
@@ -498,11 +502,11 @@ class NeuralNetworkTests:
             x_eval, y_eval = data_generator(samples=testing_samples, nr=nr)
             if save_prefix is None:
                 h = neural_network.fit(x, y, epochs=int(epochs), batch_size=bs,
-                                       validation_data=(x_eval, y_eval))
+                                       validation_data=(x_eval, y_eval), verbose=2)
             else:
                 h = neural_network.fit(x, y, epochs=int(epochs), batch_size=bs,
                                                validation_data=(x_eval, y_eval),
-                                               callbacks=[self.make_checkpoint(save_prefix + str(nr)+'.h5')])
+                                               callbacks=[self._make_checkpoint(save_prefix + str(nr)+'.h5')], verbose=2)
             acc[nr] = np.max(h.history["val_acc"])
             print(f'Validation accuracy at {nr} rounds :{acc[nr]}')
             nr +=1
@@ -700,7 +704,7 @@ class NeuralNetworkTests:
 
         print(f'Training {neural_net} on input difference {[hex(x) for x in input_difference]} ({self.cipher.inputs}), from round {nr}...')
         neural_results = self.train_neural_distinguisher(data_generator, nr, neural_network, training_samples,
-                                   testing_samples, number_of_epochs)
+                                   testing_samples, number_of_epochs, save_prefix=save_prefix)
 
         neural_distinguisher_test_results['test_results']['plaintext']['cipher_output'][
             'neural_distinguisher_test'].append({'accuracies': list(neural_results.values())})
@@ -958,7 +962,8 @@ class NeuralNetworkTests:
             else:
                 inputs1[input_index] = np.tile(inputs0[input_index], number_of_differences)
         round_outputs = encrypt(inputs1)['round_output']
-        scores = 0
+        scores = np.zeros(number_of_differences)
+        i = 1
         for i in range(1, len(round_outputs)):
             nr = i - 1
             C1 = round_outputs[nr]

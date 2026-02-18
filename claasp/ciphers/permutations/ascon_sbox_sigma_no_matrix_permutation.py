@@ -1,38 +1,37 @@
-
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
 
 from claasp.cipher import Cipher
-from claasp.name_mappings import INPUT_PLAINTEXT
+from claasp.name_mappings import INPUT_PLAINTEXT, PERMUTATION
 from claasp.utils.utils import get_inputs_parameter
 from claasp.DTOs.component_state import ComponentState
 
 WORD_NUM = 5
 SBOX_SIZE = 5
 WORD_SIZE = 64
-PARAMETERS_CONFIGURATION_LIST = [{'number_of_rounds': 12}]
-LINEAR_LAYER_ROT = [[19, 28],
-                    [61, 39],
-                    [1, 6],
-                    [10, 17],
-                    [7, 41]]
-ASCON_SBOX = [0x04, 0x0b, 0x1f, 0x14, 0x1a, 0x15, 0x09, 0x02, 0x1b, 0x05, 0x08, 0x12, 0x1d, 0x03, 0x06, 0x1c,
-              0x1e, 0x13, 0x07, 0x0e, 0x00, 0x0d, 0x11, 0x18, 0x10, 0x0c, 0x01, 0x19, 0x16, 0x0a, 0x0f, 0x17]
+PARAMETERS_CONFIGURATION_LIST = [{"number_of_rounds": 12}]
+LINEAR_LAYER_ROT = [[19, 28], [61, 39], [1, 6], [10, 17], [7, 41]]
+# fmt: off
+ASCON_SBOX = [
+    0x04, 0x0b, 0x1f, 0x14, 0x1a, 0x15, 0x09, 0x02, 0x1b, 0x05, 0x08, 0x12, 0x1d, 0x03, 0x06, 0x1c,
+    0x1e, 0x13, 0x07, 0x0e, 0x00, 0x0d, 0x11, 0x18, 0x10, 0x0c, 0x01, 0x19, 0x16, 0x0a, 0x0f, 0x17
+]
+# fmt: on
 
 
 class AsconSboxSigmaNoMatrixPermutation(Cipher):
@@ -59,11 +58,13 @@ class AsconSboxSigmaNoMatrixPermutation(Cipher):
     def __init__(self, number_of_rounds=12):
         self.state_bit_size = WORD_NUM * WORD_SIZE
 
-        super().__init__(family_name="ascon_sbox_sigma_no_matrix",
-                         cipher_type="permutation",
-                         cipher_inputs=[INPUT_PLAINTEXT],
-                         cipher_inputs_bit_size=[self.state_bit_size],
-                         cipher_output_bit_size=self.state_bit_size)
+        super().__init__(
+            family_name="ascon_sbox_sigma_no_matrix",
+            cipher_type=PERMUTATION,
+            cipher_inputs=[INPUT_PLAINTEXT],
+            cipher_inputs_bit_size=[self.state_bit_size],
+            cipher_output_bit_size=self.state_bit_size,
+        )
 
         # word initialization
         state = []
@@ -77,7 +78,7 @@ class AsconSboxSigmaNoMatrixPermutation(Cipher):
             self.add_round()
 
             # round parameter
-            ci = 0xf0 - r * 0x10 + r * 0x1
+            ci = 0xF0 - r * 0x10 + r * 0x1
 
             # round function
             if r == 12 - number_of_rounds:
@@ -120,8 +121,9 @@ class AsconSboxSigmaNoMatrixPermutation(Cipher):
         inputs_pos = []
         for i in range(WORD_NUM):
             inputs_pos += [[i]] * 64
-        self.add_intermediate_output_component(inputs_id * WORD_NUM, inputs_pos,
-                                               self.state_bit_size, "round_output_nonlinear")
+        self.add_intermediate_output_component(
+            inputs_id * WORD_NUM, inputs_pos, self.state_bit_size, "round_output_nonlinear"
+        )
 
         # linear layer
         # S[i] ^= rotr(S[i], rot0) ^ rotr(S[i], rot1)
@@ -131,9 +133,9 @@ class AsconSboxSigmaNoMatrixPermutation(Cipher):
             s1 = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))])
             self.add_rotate_component(inputs_id, inputs_pos, WORD_SIZE, LINEAR_LAYER_ROT[i][1])
             s2 = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))])
-            self.add_XOR_component(inputs_id + s1.id + s2.id,
-                                   inputs_pos + s1.input_bit_positions + s2.input_bit_positions,
-                                   WORD_SIZE)
+            self.add_XOR_component(
+                inputs_id + s1.id + s2.id, inputs_pos + s1.input_bit_positions + s2.input_bit_positions, WORD_SIZE
+            )
             state[i] = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))])
 
         return state

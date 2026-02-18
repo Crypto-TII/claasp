@@ -322,8 +322,7 @@ class AvalancheTests:
     def _generate_avalanche_probability_vectors(self, dict_intermediate_output_names, inputs,
                                                evaluated_inputs, input_diff, index_of_specific_input):
         inputs_prime = self._generate_inputs_prime(index_of_specific_input, input_diff, inputs)
-        evaluated_inputs_prime = evaluator.evaluate_vectorized(self._cipher, inputs_prime,
-                                                               intermediate_output=True, verbosity=False)
+        evaluated_inputs_prime = evaluator.evaluate_vectorized(self._cipher, inputs_prime, intermediate_output=True)
         intermediate_avalanche_probability_vectors = {}
         for intermediate_output_name in list(dict_intermediate_output_names.keys()):
             intermediate_avalanche_probability_vectors[intermediate_output_name] = \

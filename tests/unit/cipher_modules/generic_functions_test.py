@@ -1,6 +1,7 @@
 from bitstring import BitArray
-from claasp.cipher_modules.generic_functions import (ROTATE, SIGMA, THETA_KECCAK, THETA_XOODOO, SHIFT, fsr_binary,
-                                                     fsr_word)
+from claasp.cipher_modules.generic_functions import (ROTATE, SIGMA, THETA_KECCAK, THETA_XOODOO, SHIFT, idea_modmul,
+                                                     fsr_binary, fsr_word, index_list_to_expression_str,
+                                                     index_list_to_expression_str_word)
 
 def test_ROTATE():
     b = BitArray("0x8")
@@ -77,4 +78,30 @@ def test_fsr_word():
 
     assert fsr_word(state_in, LFSR_DESCR, word_size, number_of_clocks) == state_out
 
+def test_index_list_to_expression_str():
+    assert index_list_to_expression_str([[0], [1], [2, 3], []]) == 'x0 + x1 + x2*x3 + 1'
 
+def test_index_list_to_expression_str_word():
+    assert index_list_to_expression_str_word([[1, [0]], [1, [2]], [2, [11]], [1, []]]) == 'x0 + x2 + 2x11 + 1'
+
+
+def test_modmul():
+    # Standard modular multiplication: (3 * 5) mod 16 = 15
+    input_bits = BitArray(uint=3, length=4) + BitArray(uint=5, length=4)
+    result = idea_modmul(input_bits, 2, 16)
+    assert result.uint == 15
+
+    # Mapping: (0 * 1) mod 65537 with 0 representing 2^16
+    input_bits = BitArray(uint=0, length=16) + BitArray(uint=1, length=16)
+    result = idea_modmul(input_bits, 2, 65537)
+    assert result.uint == 0
+
+    # Multiplication by zero (different modulus)
+    input_bits = BitArray(uint=0, length=8) + BitArray(uint=123, length=8)
+    result = idea_modmul(input_bits, 2, 256)
+    assert result.uint == 0
+
+    # Mapping: (0 * 0) mod 65537 = 1
+    input_bits = BitArray(uint=0, length=16) + BitArray(uint=0, length=16)
+    result = idea_modmul(input_bits, 2, 65537)
+    assert result.uint == 1

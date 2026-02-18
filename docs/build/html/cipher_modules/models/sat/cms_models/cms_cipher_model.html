@@ -1,23 +1,24 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Cms cipher model &#8212; CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</title>
+    <title>Cms cipher model &#8212; CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives v3.1.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/sage.css" />
     <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
     <script src="../../../../_static/jquery.js"></script>
     <script src="../../../../_static/underscore.js"></script>
+    <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../../../../_static/favicon.ico"/>
     <link rel="index" title="Index" href="../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../search.html" />
-    <link rel="next" title="N window heuristic helper" href="../utils/n_window_heuristic_helper.html" />
-    <link rel="prev" title="Cms deterministic truncated xor differential model" href="cms_deterministic_truncated_xor_differential_model.html" />
+    <link rel="next" title="Cms bitwise deterministic truncated xor differential model" href="cms_bitwise_deterministic_truncated_xor_differential_model.html" />
+    <link rel="prev" title="Cms xor linear model" href="cms_xor_linear_model.html" />
     <link rel="icon" href="../../../../_static/sageicon.png" type="image/x-icon" />
     <script src="../../../../_static/thebe.js" type="text/javascript"></script>
     <script src="../../../../_static/thebe-sage.js" type="text/javascript"></script>
@@ -33,10 +34,10 @@
           <a href="../../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="../utils/n_window_heuristic_helper.html" title="N window heuristic helper"
+          <a href="cms_bitwise_deterministic_truncated_xor_differential_model.html" title="Cms bitwise deterministic truncated xor differential model"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="cms_deterministic_truncated_xor_differential_model.html" title="Cms deterministic truncated xor differential model"
+          <a href="cms_xor_linear_model.html" title="Cms xor linear model"
              accesskey="P">previous</a> |</li>
   
     
@@ -44,7 +45,7 @@
     
   
   
-        <li class="nav-item nav-item-0"><a href="../../../../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives v3.1.0 documentation</a> &#187;</li>
 
         <li class="nav-item nav-item-this"><a href="">Cms cipher model</a></li> 
       </ul>
@@ -56,9 +57,9 @@
           <div class="body" role="main">
             
   <section id="module-cipher_modules.models.sat.cms_models.cms_cipher_model">
-<span id="cms-cipher-model"></span><h1>Cms cipher model<a class="headerlink" href="#module-cipher_modules.models.sat.cms_models.cms_cipher_model" title="Permalink to this headline">¶</a></h1>
+<span id="cms-cipher-model"></span><h1>Cms cipher model<a class="headerlink" href="#module-cipher_modules.models.sat.cms_models.cms_cipher_model" title="Permalink to this heading">¶</a></h1>
 <section id="cms-cipher-model-of-a-cipher">
-<span id="cms-cipher-standard"></span><h2>CMS cipher model of a cipher<a class="headerlink" href="#cms-cipher-model-of-a-cipher" title="Permalink to this headline">¶</a></h2>
+<span id="cms-cipher-standard"></span><h2>CMS cipher model of a cipher<a class="headerlink" href="#cms-cipher-model-of-a-cipher" title="Permalink to this heading">¶</a></h2>
 <p>The target of this class is to override the methods of the superclass
 <a class="reference internal" href="../sat_models/sat_cipher_model.html#module-cipher_modules.models.sat.sat_models.sat_cipher_model" title="cipher_modules.models.sat.sat_models.sat_cipher_model"><code class="xref py py-class docutils literal notranslate"><span class="pre">Sat</span> <span class="pre">Cipher</span> <span class="pre">Model</span></code></a> to take the advantage given by
 the handling of XOR clauses in CryptoMiniSat SAT solver. Therefore, the
@@ -78,8 +79,8 @@ XOR operations were overridden.</p>
 <p>For any further information, visit <a class="reference external" href="https://www.msoos.org/xor-clauses/">CryptoMiniSat - XOR clauses</a>.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="cipher_modules.models.sat.cms_models.cms_cipher_model.CmsSatCipherModel">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">CmsSatCipherModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cipher</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window_size_weight_pr_vars</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">counter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'sequential'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compact</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.cms_models.cms_cipher_model.CmsSatCipherModel" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">claasp.cipher_modules.models.sat.sat_models.sat_cipher_model.SatCipherModel</span></code></p>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">CmsSatCipherModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cipher</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">counter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'sequential'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compact</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.cms_models.cms_cipher_model.CmsSatCipherModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">SatCipherModel</span></code></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="cipher_modules.models.sat.cms_models.cms_cipher_model.CmsSatCipherModel.build_cipher_model">
 <span class="sig-name descname"><span class="pre">build_cipher_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fixed_variables</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.cms_models.cms_cipher_model.CmsSatCipherModel.build_cipher_model" title="Permalink to this definition">¶</a></dt>
@@ -103,6 +104,11 @@ XOR operations were overridden.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="cipher_modules.models.sat.cms_models.cms_cipher_model.CmsSatCipherModel.build_generic_sat_model_from_dictionary">
+<span class="sig-name descname"><span class="pre">build_generic_sat_model_from_dictionary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fixed_variables</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">component_and_model_types</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.cms_models.cms_cipher_model.CmsSatCipherModel.build_generic_sat_model_from_dictionary" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="cipher_modules.models.sat.cms_models.cms_cipher_model.CmsSatCipherModel.calculate_component_weight">
 <span class="sig-name descname"><span class="pre">calculate_component_weight</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_suffix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_values_dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.cms_models.cms_cipher_model.CmsSatCipherModel.calculate_component_weight" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -114,7 +120,7 @@ XOR operations were overridden.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="cipher_modules.models.sat.cms_models.cms_cipher_model.CmsSatCipherModel.find_missing_bits">
-<span class="sig-name descname"><span class="pre">find_missing_bits</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fixed_values</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cryptominisat'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.cms_models.cms_cipher_model.CmsSatCipherModel.find_missing_bits" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">find_missing_bits</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fixed_values</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'CRYPTOMINISAT_EXT'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.cms_models.cms_cipher_model.CmsSatCipherModel.find_missing_bits" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the solution representing a generic flow of the cipher from plaintext and key to ciphertext.</p>
 <p>INPUT:</p>
 <ul class="simple">
@@ -139,7 +145,7 @@ XOR operations were overridden.</p>
 <span class="gp">sage: </span><span class="n">sat</span><span class="o">.</span><span class="n">find_missing_bits</span><span class="p">(</span><span class="n">fixed_values</span><span class="o">=</span><span class="p">[</span><span class="n">ciphertext</span><span class="p">])</span> <span class="c1"># random</span>
 <span class="go">{&#39;cipher_id&#39;: &#39;speck_p32_k64_o32_r22&#39;,</span>
 <span class="go"> &#39;model_type&#39;: &#39;cipher&#39;,</span>
-<span class="go"> &#39;solver_name&#39;: &#39;cryptominisat&#39;,</span>
+<span class="go"> &#39;solver_name&#39;: &#39;CRYPTOMINISAT_EXT&#39;,</span>
 <span class="go"> ...</span>
 <span class="go">  &#39;intermediate_output_21_11&#39;: {&#39;value&#39;: &#39;1411&#39;},</span>
 <span class="go">  &#39;cipher_output_21_12&#39;: {&#39;value&#39;: &#39;affec7ed&#39;}},</span>
@@ -152,7 +158,7 @@ XOR operations were overridden.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="cipher_modules.models.sat.cms_models.cms_cipher_model.CmsSatCipherModel.fix_variables_value_constraints">
-<span class="sig-name descname"><span class="pre">fix_variables_value_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fixed_variables</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.cms_models.cms_cipher_model.CmsSatCipherModel.fix_variables_value_constraints" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">fix_variables_value_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fixed_variables</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.cms_models.cms_cipher_model.CmsSatCipherModel.fix_variables_value_constraints" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return lists of variables and clauses for fixing variables in CIPHER model.</p>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
@@ -178,7 +184,7 @@ XOR operations were overridden.</p>
 <span class="gp">....: </span>   <span class="s1">&#39;bit_positions&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
 <span class="gp">....: </span>   <span class="s1">&#39;bit_values&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
 <span class="gp">....: </span><span class="p">}]</span>
-<span class="gp">sage: </span><span class="n">sat</span><span class="o">.</span><span class="n">fix_variables_value_constraints</span><span class="p">(</span><span class="n">fixed_variables</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">SatModel</span><span class="o">.</span><span class="n">fix_variables_value_constraints</span><span class="p">(</span><span class="n">fixed_variables</span><span class="p">)</span>
 <span class="go">[&#39;plaintext_0&#39;,</span>
 <span class="go"> &#39;-plaintext_1&#39;,</span>
 <span class="go"> &#39;plaintext_2&#39;,</span>
@@ -222,7 +228,7 @@ XOR operations were overridden.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="cipher_modules.models.sat.cms_models.cms_cipher_model.CmsSatCipherModel.solve">
-<span class="sig-name descname"><span class="pre">solve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cryptominisat'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.cms_models.cms_cipher_model.CmsSatCipherModel.solve" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">solve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'CRYPTOMINISAT_EXT'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.models.sat.cms_models.cms_cipher_model.CmsSatCipherModel.solve" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the solution of the model using the <code class="docutils literal notranslate"><span class="pre">solver_name</span></code> SAT solver.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -255,7 +261,7 @@ system.</p>
 <span class="gp">sage: </span><span class="n">sat</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="s1">&#39;cipher&#39;</span><span class="p">)</span> <span class="c1"># random</span>
 <span class="go">{&#39;cipher_id&#39;: &#39;tea_p64_k128_o64_r32&#39;,</span>
 <span class="go"> &#39;model_type&#39;: &#39;tea_p64_k128_o64_r32&#39;,</span>
-<span class="go"> &#39;solver_name&#39;: &#39;cryptominisat&#39;,</span>
+<span class="go"> &#39;solver_name&#39;: &#39;CRYPTOMINISAT_EXT&#39;,</span>
 <span class="go"> ...</span>
 <span class="go">  &#39;intermediate_output_31_15&#39;: {&#39;value&#39;: &#39;8ca8d5de0906f08e&#39;, &#39;weight&#39;: 0, &#39;sign&#39;: 1},</span>
 <span class="go">  &#39;cipher_output_31_16&#39;: {&#39;value&#39;: &#39;8ca8d5de0906f08e&#39;, &#39;weight&#39;: 0, &#39;sign&#39;: 1}},</span>
@@ -315,13 +321,13 @@ system.</p>
   </div>
   <div>
     <h4>Previous topic</h4>
-    <p class="topless"><a href="cms_deterministic_truncated_xor_differential_model.html"
-                          title="previous chapter">Cms deterministic truncated xor differential model</a></p>
+    <p class="topless"><a href="cms_xor_linear_model.html"
+                          title="previous chapter">Cms xor linear model</a></p>
   </div>
   <div>
     <h4>Next topic</h4>
-    <p class="topless"><a href="../utils/n_window_heuristic_helper.html"
-                          title="next chapter">N window heuristic helper</a></p>
+    <p class="topless"><a href="cms_bitwise_deterministic_truncated_xor_differential_model.html"
+                          title="next chapter">Cms bitwise deterministic truncated xor differential model</a></p>
   </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
@@ -339,7 +345,7 @@ system.</p>
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -354,10 +360,10 @@ system.</p>
           <a href="../../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="../utils/n_window_heuristic_helper.html" title="N window heuristic helper"
+          <a href="cms_bitwise_deterministic_truncated_xor_differential_model.html" title="Cms bitwise deterministic truncated xor differential model"
              >next</a> |</li>
         <li class="right" >
-          <a href="cms_deterministic_truncated_xor_differential_model.html" title="Cms deterministic truncated xor differential model"
+          <a href="cms_xor_linear_model.html" title="Cms xor linear model"
              >previous</a> |</li>
   
     
@@ -365,7 +371,7 @@ system.</p>
     
   
   
-        <li class="nav-item nav-item-0"><a href="../../../../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives 1.1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives v3.1.0 documentation</a> &#187;</li>
 
         <li class="nav-item nav-item-this"><a href="">Cms cipher model</a></li> 
       </ul>

@@ -1,26 +1,25 @@
-
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
 
 from claasp.cipher import Cipher
-from claasp.name_mappings import INPUT_PLAINTEXT, INPUT_KEY
+from claasp.name_mappings import BLOCK_CIPHER, INPUT_PLAINTEXT, INPUT_KEY
 
-PARAMETERS_CONFIGURATION_LIST = [{'block_bit_size': 64, 'key_bit_size': 128, 'number_of_rounds': 32}]
+PARAMETERS_CONFIGURATION_LIST = [{"block_bit_size": 64, "key_bit_size": 128, "number_of_rounds": 32}]
 reference_code = """
 def tea_encrypt(plaintext, key):
     from claasp.utils.integer_functions import bytearray_to_wordlist, wordlist_to_bytearray
@@ -79,28 +78,32 @@ class TeaBlockCipher(Cipher):
         'shift_0_0'
     """
 
-    def __init__(self, block_bit_size=64, key_bit_size=128, number_of_rounds=0, right_shift_amount=5,
-                 left_shift_amount=4):
+    def __init__(
+        self, block_bit_size=64, key_bit_size=128, number_of_rounds=0, right_shift_amount=5, left_shift_amount=4
+    ):
         self.word_size = block_bit_size // 2
 
         if number_of_rounds == 0:
             n = None
             for parameters in PARAMETERS_CONFIGURATION_LIST:
-                if parameters['block_bit_size'] == block_bit_size and parameters['key_bit_size'] == key_bit_size:
-                    n = parameters['number_of_rounds']
+                if parameters["block_bit_size"] == block_bit_size and parameters["key_bit_size"] == key_bit_size:
+                    n = parameters["number_of_rounds"]
                     break
             if n is None:
                 raise ValueError("No available number of rounds for the given parameters.")
         else:
             n = number_of_rounds
 
-        super().__init__(family_name="tea",
-                         cipher_type="block_cipher",
-                         cipher_inputs=[INPUT_PLAINTEXT, INPUT_KEY],
-                         cipher_inputs_bit_size=[block_bit_size, key_bit_size],
-                         cipher_output_bit_size=block_bit_size,
-                         cipher_reference_code=reference_code.format(block_bit_size, key_bit_size, n,
-                                                                     right_shift_amount, left_shift_amount))
+        super().__init__(
+            family_name="tea",
+            cipher_type=BLOCK_CIPHER,
+            cipher_inputs=[INPUT_PLAINTEXT, INPUT_KEY],
+            cipher_inputs_bit_size=[block_bit_size, key_bit_size],
+            cipher_output_bit_size=block_bit_size,
+            cipher_reference_code=reference_code.format(
+                block_bit_size, key_bit_size, n, right_shift_amount, left_shift_amount
+            ),
+        )
 
         data = [(INPUT_PLAINTEXT, list(range(i * self.word_size, (i + 1) * self.word_size))) for i in range(2)]
         key = [(INPUT_KEY, list(range(i * self.word_size, (i + 1) * self.word_size))) for i in range(4)]
@@ -119,13 +122,15 @@ class TeaBlockCipher(Cipher):
             sum1_id = self.add_MODADD_component([ls1_id, key[0][0]], [word_bit_positions, key[0][1]], self.word_size).id
 
             # sum = delta * (round+1)
-            round_constant_id = self.add_constant_component(self.word_size,
-                                                            ((round_number + 1) * 0x9E3779B9) % 2 ** self.word_size).id
+            round_constant_id = self.add_constant_component(
+                self.word_size, ((round_number + 1) * 0x9E3779B9) % 2**self.word_size
+            ).id
 
             # OPERAND 2
             # v1 + sum
-            sum2_id = self.add_MODADD_component([data[1][0], round_constant_id], [data[1][1], word_bit_positions],
-                                                self.word_size).id
+            sum2_id = self.add_MODADD_component(
+                [data[1][0], round_constant_id], [data[1][1], word_bit_positions], self.word_size
+            ).id
 
             # OPERAND 3
             # v1 >> r

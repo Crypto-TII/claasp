@@ -1,28 +1,26 @@
-
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
 
 from claasp.cipher_modules.models.milp.milp_model import MilpModel
-from claasp.name_mappings import (INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, LINEAR_LAYER, WORD_OPERATION, MIX_COLUMN)
+from claasp.name_mappings import CIPHER_OUTPUT, INTERMEDIATE_OUTPUT, LINEAR_LAYER, MIX_COLUMN, WORD_OPERATION
 
 
 class MilpCipherModel(MilpModel):
-
     def __init__(self, cipher, n_window_heuristic=None):
         super().__init__(cipher, n_window_heuristic)
 
@@ -54,15 +52,16 @@ class MilpCipherModel(MilpModel):
         variables = []
         self._variables_list = []
         constraints = self.fix_variables_value_constraints(fixed_variables)
-        component_types = [CIPHER_OUTPUT, INTERMEDIATE_OUTPUT, LINEAR_LAYER, MIX_COLUMN, WORD_OPERATION]
-        operation_types = ['NOT', 'ROTATE', 'SHIFT', 'XOR']
+        component_types = (CIPHER_OUTPUT, INTERMEDIATE_OUTPUT, LINEAR_LAYER, MIX_COLUMN, WORD_OPERATION)
+        operation_types = ("NOT", "ROTATE", "SHIFT", "XOR")
         self._model_constraints = constraints
 
         for component in self._cipher.get_all_components():
             operation = component.description[0]
             if component.type not in component_types or (
-                    WORD_OPERATION == component.type and operation not in operation_types):
-                print(f'{component.id} not yet implemented')
+                WORD_OPERATION == component.type and operation not in operation_types
+            ):
+                print(f"{component.id} not yet implemented")
             else:
                 variables, constraints = component.milp_constraints(self)
 

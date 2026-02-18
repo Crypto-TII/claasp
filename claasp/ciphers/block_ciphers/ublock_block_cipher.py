@@ -1,4 +1,3 @@
-
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
 #
@@ -19,32 +18,33 @@
 
 from claasp.cipher import Cipher
 from claasp.DTOs.component_state import ComponentState
-from claasp.name_mappings import INPUT_PLAINTEXT, INPUT_KEY
+from claasp.name_mappings import BLOCK_CIPHER, INPUT_PLAINTEXT, INPUT_KEY
 
 PARAMETERS_CONFIGURATION_LIST = [
-    {'block_bit_size': 128, 'key_bit_size': 128, 'r': 16},
-    {'block_bit_size': 128, 'key_bit_size': 256, 'r': 24},
-    {'block_bit_size': 256, 'key_bit_size': 256, 'r': 24},
+    {"block_bit_size": 128, "key_bit_size": 128, "r": 16},
+    {"block_bit_size": 128, "key_bit_size": 256, "r": 24},
+    {"block_bit_size": 256, "key_bit_size": 256, "r": 24},
 ]
 
-SBOX = [0x7, 0x4, 0x9, 0xc, 0xb, 0xa, 0xd, 0x8, 0xf, 0xe, 0x1, 0x6, 0x0, 0x3, 0x2, 0x5]
-SBOX_TK = [0x0, 0x2, 0x4, 0x6, 0x8, 0xa, 0xc, 0xe, 0x3, 0x1, 0x7, 0x5, 0xb, 0x9, 0xf, 0xd]
+SBOX = [0x7, 0x4, 0x9, 0xC, 0xB, 0xA, 0xD, 0x8, 0xF, 0xE, 0x1, 0x6, 0x0, 0x3, 0x2, 0x5]
+SBOX_TK = [0x0, 0x2, 0x4, 0x6, 0x8, 0xA, 0xC, 0xE, 0x3, 0x1, 0x7, 0x5, 0xB, 0x9, 0xF, 0xD]
 SBOX_SIZE = 4
-PL = [
-    [1, 3, 4, 6, 0, 2, 7, 5],
-    [2, 7, 8, 13, 3, 6, 9, 12, 1, 4, 15, 10, 14, 11, 5, 0]
-]
-PR = [
-    [2, 7, 5, 0, 1, 6, 4, 3],
-    [6, 11, 1, 12, 9, 4, 2, 15, 7, 0, 13, 10, 14, 3, 8, 5]
-]
+PL = [[1, 3, 4, 6, 0, 2, 7, 5], [2, 7, 8, 13, 3, 6, 9, 12, 1, 4, 15, 10, 14, 11, 5, 0]]
+PR = [[2, 7, 5, 0, 1, 6, 4, 3], [6, 11, 1, 12, 9, 4, 2, 15, 7, 0, 13, 10, 14, 3, 8, 5]]
 P_WORD_SIZE = 8
+# fmt: off
 PK = [
     [6, 0, 8, 13, 1, 15, 5, 10, 4, 9, 12, 2, 11, 3, 7, 14],
-    [10, 5, 15, 0, 2, 7, 8, 13, 14, 6, 4, 12, 1, 3, 11, 9, 24, 25, 26, 27, 28, 29, 30, 31, 16, 17, 18, 19, 20, 21, 22,
-     23],
-    [10, 5, 15, 0, 2, 7, 8, 13, 1, 14, 4, 12, 9, 11, 3, 6, 24, 25, 26, 27, 28, 29, 30, 31, 16, 17, 18, 19, 20, 21, 22,
-     23]
+    [
+        10, 5, 15, 0, 2, 7, 8, 13, 14, 6, 4, 12, 1, 3, 11, 9,
+        24, 25, 26, 27, 28, 29, 30, 31, 16, 17, 18, 19, 20,
+        21, 22, 23
+    ],
+    [
+        10, 5, 15, 0, 2, 7, 8, 13, 1, 14, 4, 12, 9, 11, 3, 6,
+        24, 25, 26, 27, 28, 29, 30, 31, 16, 17, 18, 19, 20,
+        21, 22, 23
+    ],
 ]
 PK_WORD_SIZE = 4
 RC = [
@@ -52,8 +52,10 @@ RC = [
     0x392d687c, 0xb3a7e2f6, 0xa7b3f6e2, 0x8e9adfcb, 0xdcc88d99, 0x786c293d, 0x30246175, 0xa1b5f0e4,
     0x8296d3c7, 0xc5d19480, 0x4a5e1b0f, 0x55410410, 0x6b7f3a2e, 0x17034652, 0xeffbbeaa, 0x1f0b4e5a,
 ]
+# fmt: on
 RC_SIZE = 32
 ROTATE_SIZE = 32
+
 
 class UblockBlockCipher(Cipher):
     """
@@ -111,11 +113,13 @@ class UblockBlockCipher(Cipher):
         if error == 1:
             return
 
-        super().__init__(family_name="ublock",
-                         cipher_type="block_cipher",
-                         cipher_inputs=[INPUT_PLAINTEXT, INPUT_KEY],
-                         cipher_inputs_bit_size=[self.block_bit_size, self.key_bit_size],
-                         cipher_output_bit_size=self.block_bit_size)
+        super().__init__(
+            family_name="ublock",
+            cipher_type=BLOCK_CIPHER,
+            cipher_inputs=[INPUT_PLAINTEXT, INPUT_KEY],
+            cipher_inputs_bit_size=[self.block_bit_size, self.key_bit_size],
+            cipher_output_bit_size=self.block_bit_size,
+        )
 
         state_left, state_right, key_0, key_1, key_2, key_3, round_key = self.round_initialization()
 
@@ -126,17 +130,21 @@ class UblockBlockCipher(Cipher):
             state_left, state_right = self.round_function(state_left, state_right, round_key)
             # round output
             self.add_round_key_output_component(round_key.id, round_key.input_bit_positions, self.block_bit_size)
-            if round_number < self.r-1:
-                self.add_round_output_component(state_left.id + state_right.id,
-                                            state_left.input_bit_positions + state_right.input_bit_positions,
-                                            self.block_bit_size)
+            if round_number < self.r - 1:
+                self.add_round_output_component(
+                    state_left.id + state_right.id,
+                    state_left.input_bit_positions + state_right.input_bit_positions,
+                    self.block_bit_size,
+                )
             # round_key schedule
             key_0, key_1, key_2, key_3, round_key = self.key_schedule(key_0, key_1, key_2, key_3, RC[round_number])
 
         # cipher output and round key output
-        self.add_XOR_component(state_left.id+state_right.id+round_key.id,
-                               state_left.input_bit_positions+state_right.input_bit_positions+round_key.input_bit_positions,
-                               self.block_bit_size)
+        self.add_XOR_component(
+            state_left.id + state_right.id + round_key.id,
+            state_left.input_bit_positions + state_right.input_bit_positions + round_key.input_bit_positions,
+            self.block_bit_size,
+        )
         cipher_output = ComponentState([self.get_current_component_id()], [list(range(self.block_bit_size))])
         self.add_round_key_output_component(round_key.id, round_key.input_bit_positions, self.block_bit_size)
         self.add_cipher_output_component(cipher_output.id, cipher_output.input_bit_positions, self.block_bit_size)
@@ -184,173 +192,227 @@ class UblockBlockCipher(Cipher):
         return left_state, right_state, key_0, key_1, key_2, key_3, round_key
 
     def round_function(self, state_left, state_right, round_key):
-
         # state xor round_key
-        self.add_XOR_component(state_left.id+state_right.id+round_key.id,
-                               state_left.input_bit_positions+state_right.input_bit_positions+round_key.input_bit_positions,
-                               self.block_bit_size)
+        self.add_XOR_component(
+            state_left.id + state_right.id + round_key.id,
+            state_left.input_bit_positions + state_right.input_bit_positions + round_key.input_bit_positions,
+            self.block_bit_size,
+        )
         state_left = ComponentState([self.get_current_component_id()], [list(range(self.half_block_bit_size))])
-        state_right = ComponentState([self.get_current_component_id()], [list(range(self.half_block_bit_size, self.block_bit_size))])
+        state_right = ComponentState(
+            [self.get_current_component_id()], [list(range(self.half_block_bit_size, self.block_bit_size))]
+        )
 
         # sbox_n(state_left)
-        id = []
+        ids = []
         window_size = SBOX_SIZE
         n = int(self.half_block_bit_size / window_size)
         for i in range(n):
-            self.add_SBOX_component(state_left.id, [state_left.input_bit_positions[0][i * window_size:(i + 1) * window_size]], window_size, SBOX)
-            id.append(self.get_current_component_id())
-        state_left = ComponentState(id, [list(range(window_size))] * n)
+            self.add_SBOX_component(
+                state_left.id,
+                [state_left.input_bit_positions[0][i * window_size : (i + 1) * window_size]],
+                window_size,
+                SBOX,
+            )
+            ids.append(self.get_current_component_id())
+        state_left = ComponentState(ids, [list(range(window_size))] * n)
 
         # sbox_n(state_right)
-        id = []
+        ids = []
         window_size = SBOX_SIZE
         n = int(self.half_block_bit_size / window_size)
         for i in range(n):
-            self.add_SBOX_component(state_right.id, [state_right.input_bit_positions[0][i * window_size:(i + 1) * window_size]], window_size, SBOX)
-            id.append(self.get_current_component_id())
-        state_right = ComponentState(id, [list(range(window_size))] * n)
+            self.add_SBOX_component(
+                state_right.id,
+                [state_right.input_bit_positions[0][i * window_size : (i + 1) * window_size]],
+                window_size,
+                SBOX,
+            )
+            ids.append(self.get_current_component_id())
+        state_right = ComponentState(ids, [list(range(window_size))] * n)
 
         # state_right = state_left xor state_right
-        self.add_XOR_component(state_left.id+state_right.id,
-                               state_left.input_bit_positions+state_right.input_bit_positions,
-                               self.half_block_bit_size)
+        self.add_XOR_component(
+            state_left.id + state_right.id,
+            state_left.input_bit_positions + state_right.input_bit_positions,
+            self.half_block_bit_size,
+        )
         state_right = ComponentState([self.get_current_component_id()], [list(range(self.half_block_bit_size))])
 
         # state_left = state_left xor (state_right <<<_32 4)
-        id = []
+        ids = []
         window_size = ROTATE_SIZE
         n = int(self.half_block_bit_size / window_size)
         for i in range(n):
-            self.add_rotate_component(state_right.id, [list(range(i * window_size, (i + 1) * window_size))],
-                                      window_size, -4)
-            id.append(self.get_current_component_id())
-        temp = ComponentState(id, [list(range(window_size))] * n)
-        self.add_XOR_component(state_left.id + temp.id,
-                               state_left.input_bit_positions + temp.input_bit_positions,
-                               self.half_block_bit_size)
+            self.add_rotate_component(
+                state_right.id, [list(range(i * window_size, (i + 1) * window_size))], window_size, -4
+            )
+            ids.append(self.get_current_component_id())
+        temp = ComponentState(ids, [list(range(window_size))] * n)
+        self.add_XOR_component(
+            state_left.id + temp.id, state_left.input_bit_positions + temp.input_bit_positions, self.half_block_bit_size
+        )
         state_left = ComponentState([self.get_current_component_id()], [list(range(self.half_block_bit_size))])
 
         # state_right = state_right xor (state_left <<<_32 8)
-        id = []
+        ids = []
         window_size = ROTATE_SIZE
         n = int(self.half_block_bit_size / window_size)
         for i in range(n):
-            self.add_rotate_component(state_left.id, [list(range(i * window_size, (i + 1) * window_size))],
-                                      window_size, -8)
-            id.append(self.get_current_component_id())
-        temp = ComponentState(id, [list(range(window_size))] * n)
-        self.add_XOR_component(temp.id + state_right.id,
-                               temp.input_bit_positions + state_right.input_bit_positions,
-                               self.half_block_bit_size)
+            self.add_rotate_component(
+                state_left.id, [list(range(i * window_size, (i + 1) * window_size))], window_size, -8
+            )
+            ids.append(self.get_current_component_id())
+        temp = ComponentState(ids, [list(range(window_size))] * n)
+        self.add_XOR_component(
+            temp.id + state_right.id,
+            temp.input_bit_positions + state_right.input_bit_positions,
+            self.half_block_bit_size,
+        )
         state_right = ComponentState([self.get_current_component_id()], [list(range(self.half_block_bit_size))])
 
         # state_left = state_left xor (state_right <<<_32 8)
-        id = []
+        ids = []
         window_size = ROTATE_SIZE
         n = int(self.half_block_bit_size / window_size)
         for i in range(n):
-            self.add_rotate_component(state_right.id, [list(range(i * window_size, (i + 1) * window_size))],
-                                      window_size, -8)
-            id.append(self.get_current_component_id())
-        temp = ComponentState(id, [list(range(window_size))] * n)
-        self.add_XOR_component(state_left.id + temp.id,
-                               state_left.input_bit_positions + temp.input_bit_positions,
-                               self.half_block_bit_size)
+            self.add_rotate_component(
+                state_right.id, [list(range(i * window_size, (i + 1) * window_size))], window_size, -8
+            )
+            ids.append(self.get_current_component_id())
+        temp = ComponentState(ids, [list(range(window_size))] * n)
+        self.add_XOR_component(
+            state_left.id + temp.id, state_left.input_bit_positions + temp.input_bit_positions, self.half_block_bit_size
+        )
         state_left = ComponentState([self.get_current_component_id()], [list(range(self.half_block_bit_size))])
 
         # state_right = state_right xor (state_left <<<_32 20)
-        id = []
+        ids = []
         window_size = ROTATE_SIZE
         n = int(self.half_block_bit_size / window_size)
         for i in range(n):
-            self.add_rotate_component(state_left.id, [list(range(i * window_size, (i + 1) * window_size))],
-                                      window_size, -20)
-            id.append(self.get_current_component_id())
-        temp = ComponentState(id, [list(range(window_size))] * n)
-        self.add_XOR_component(temp.id + state_right.id,
-                               temp.input_bit_positions + state_right.input_bit_positions,
-                               self.half_block_bit_size)
+            self.add_rotate_component(
+                state_left.id, [list(range(i * window_size, (i + 1) * window_size))], window_size, -20
+            )
+            ids.append(self.get_current_component_id())
+        temp = ComponentState(ids, [list(range(window_size))] * n)
+        self.add_XOR_component(
+            temp.id + state_right.id,
+            temp.input_bit_positions + state_right.input_bit_positions,
+            self.half_block_bit_size,
+        )
         state_right = ComponentState([self.get_current_component_id()], [list(range(self.half_block_bit_size))])
 
         # state_left = state_left xor state_right
-        self.add_XOR_component(state_left.id + state_right.id,
-                               state_left.input_bit_positions + state_right.input_bit_positions,
-                               self.half_block_bit_size)
+        self.add_XOR_component(
+            state_left.id + state_right.id,
+            state_left.input_bit_positions + state_right.input_bit_positions,
+            self.half_block_bit_size,
+        )
         state_left = ComponentState([self.get_current_component_id()], [list(range(self.half_block_bit_size))])
 
         # state_left = PL(state_left)
-        self.add_word_permutation_component(state_left.id, state_left.input_bit_positions, self.half_block_bit_size, self.pl, P_WORD_SIZE)
+        self.add_word_permutation_component(
+            state_left.id, state_left.input_bit_positions, self.half_block_bit_size, self.pl, P_WORD_SIZE
+        )
         state_left = ComponentState([self.get_current_component_id()], [list(range(self.half_block_bit_size))])
 
         # state_right = PR(state_right)
-        self.add_word_permutation_component(state_right.id, state_right.input_bit_positions, self.half_block_bit_size, self.pr, P_WORD_SIZE)
+        self.add_word_permutation_component(
+            state_right.id, state_right.input_bit_positions, self.half_block_bit_size, self.pr, P_WORD_SIZE
+        )
         state_right = ComponentState([self.get_current_component_id()], [list(range(self.half_block_bit_size))])
 
         return state_left, state_right
 
     def key_schedule(self, key_0, key_1, key_2, key_3, RC):
         # K0||K1 = PK(K0||K1)
-        self.add_word_permutation_component(key_0.id+key_1.id,
-                                            key_0.input_bit_positions+key_1.input_bit_positions,
-                                            self.key_block_size*2,
-                                            self.pk, PK_WORD_SIZE)
+        self.add_word_permutation_component(
+            key_0.id + key_1.id,
+            key_0.input_bit_positions + key_1.input_bit_positions,
+            self.key_block_size * 2,
+            self.pk,
+            PK_WORD_SIZE,
+        )
         key_0 = ComponentState([self.get_current_component_id()], [list(range(self.key_block_size))])
-        key_1 = ComponentState([self.get_current_component_id()], [list(range(self.key_block_size, self.key_block_size * 2))])
+        key_1 = ComponentState(
+            [self.get_current_component_id()], [list(range(self.key_block_size, self.key_block_size * 2))]
+        )
 
         # K2 = K2 xor sbox_k(K0 xor RC)
         self.add_constant_component(RC_SIZE, RC)
         round_constant = ComponentState([self.get_current_component_id()], [list(range(RC_SIZE))])
         if self.key_block_size == RC_SIZE:
-            self.add_XOR_component(key_0.id+round_constant.id, key_0.input_bit_positions+round_constant.input_bit_positions, RC_SIZE)
+            self.add_XOR_component(
+                key_0.id + round_constant.id, key_0.input_bit_positions + round_constant.input_bit_positions, RC_SIZE
+            )
             temp = ComponentState([self.get_current_component_id()], [list(range(self.key_block_size))])
-            id = []
+            ids = []
             window_size = SBOX_SIZE
             n = int(self.key_block_size / window_size)
             for i in range(n):
-                self.add_SBOX_component(temp.id, [list(range(i * window_size, (i + 1) * window_size))],
-                                        window_size, SBOX)
-                id.append(self.get_current_component_id())
-            temp = ComponentState(id, [list(range(window_size))] * n)
+                self.add_SBOX_component(
+                    temp.id, [list(range(i * window_size, (i + 1) * window_size))], window_size, SBOX
+                )
+                ids.append(self.get_current_component_id())
+            temp = ComponentState(ids, [list(range(window_size))] * n)
         else:
             key_0_left = ComponentState(key_0.id, [list(range(RC_SIZE))])
             key_0_right = ComponentState(key_0.id, [list(range(RC_SIZE, self.key_block_size))])
-            self.add_XOR_component(key_0_left.id + round_constant.id, key_0_left.input_bit_positions + round_constant.input_bit_positions, RC_SIZE)
+            self.add_XOR_component(
+                key_0_left.id + round_constant.id,
+                key_0_left.input_bit_positions + round_constant.input_bit_positions,
+                RC_SIZE,
+            )
             temp = ComponentState([self.get_current_component_id()], [list(range(RC_SIZE))])
-            id = []
+            ids = []
             window_size = SBOX_SIZE
             n = int(RC_SIZE / window_size)
             for i in range(n):
-                self.add_SBOX_component(temp.id, [list(range(i * window_size, (i + 1) * window_size))],
-                                        window_size, SBOX)
-                id.append(self.get_current_component_id())
-            n = int((self.key_block_size-RC_SIZE) / window_size)
+                self.add_SBOX_component(
+                    temp.id, [list(range(i * window_size, (i + 1) * window_size))], window_size, SBOX
+                )
+                ids.append(self.get_current_component_id())
+            n = int((self.key_block_size - RC_SIZE) / window_size)
             for i in range(n):
-                self.add_SBOX_component(key_0_right.id, [key_0_right.input_bit_positions[0][i * window_size: (i + 1) * window_size]],
-                                        window_size, SBOX)
-                id.append(self.get_current_component_id())
-            temp = ComponentState(id, [list(range(window_size))] * int(self.key_block_size/window_size))
-        self.add_XOR_component(key_2.id + temp.id, key_2.input_bit_positions + temp.input_bit_positions, self.key_block_size)
+                self.add_SBOX_component(
+                    key_0_right.id,
+                    [key_0_right.input_bit_positions[0][i * window_size : (i + 1) * window_size]],
+                    window_size,
+                    SBOX,
+                )
+                ids.append(self.get_current_component_id())
+            temp = ComponentState(ids, [list(range(window_size))] * int(self.key_block_size / window_size))
+        self.add_XOR_component(
+            key_2.id + temp.id, key_2.input_bit_positions + temp.input_bit_positions, self.key_block_size
+        )
         key_2 = ComponentState([self.get_current_component_id()], [list(range(self.key_block_size))])
 
         # K3 = K3 xor sbox_tk(K1)
-        id = []
+        ids = []
         window_size = SBOX_SIZE
         n = int(self.key_block_size / window_size)
         for i in range(n):
-            self.add_SBOX_component(key_1.id, [key_1.input_bit_positions[0][i * window_size:(i + 1) * window_size]],
-                                    window_size, SBOX_TK)
-            id.append(self.get_current_component_id())
-        temp = ComponentState(id, [list(range(window_size))] * n)
-        self.add_XOR_component(key_3.id + temp.id, key_3.input_bit_positions + temp.input_bit_positions, self.key_block_size)
+            self.add_SBOX_component(
+                key_1.id, [key_1.input_bit_positions[0][i * window_size : (i + 1) * window_size]], window_size, SBOX_TK
+            )
+            ids.append(self.get_current_component_id())
+        temp = ComponentState(ids, [list(range(window_size))] * n)
+        self.add_XOR_component(
+            key_3.id + temp.id, key_3.input_bit_positions + temp.input_bit_positions, self.key_block_size
+        )
         key_3 = ComponentState([self.get_current_component_id()], [list(range(self.key_block_size))])
 
         # K = K2 || K3 || K1 || K0
         if self.key_bit_size == self.block_bit_size:
-            round_key = ComponentState(key_2.id+key_3.id+key_1.id+key_0.id,
-                                       key_2.input_bit_positions+key_3.input_bit_positions+key_1.input_bit_positions+key_0.input_bit_positions)
+            round_key = ComponentState(
+                key_2.id + key_3.id + key_1.id + key_0.id,
+                key_2.input_bit_positions
+                + key_3.input_bit_positions
+                + key_1.input_bit_positions
+                + key_0.input_bit_positions,
+            )
         else:
-            round_key = ComponentState(key_2.id+key_3.id,
-                                       key_2.input_bit_positions+key_3.input_bit_positions)
+            round_key = ComponentState(key_2.id + key_3.id, key_2.input_bit_positions + key_3.input_bit_positions)
 
         return key_2, key_3, key_1, key_0, round_key
-
