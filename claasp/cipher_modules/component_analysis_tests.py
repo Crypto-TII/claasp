@@ -1087,19 +1087,22 @@ def has_maximal_branch_number(component):
 
 
 def calculate_weights_for_mix_column(component, format, type):
-    if format == 'word':
-        description = component.description
-        final_mtr, F = instantiate_matrix_over_correct_field(description[0], int(description[1]), int(description[2]),
-                                                             component.input_bit_size, component.output_bit_size)
-        if type == 'linear':
-            final_mtr = final_mtr.transpose()
     if format == 'bit':
-        final_mtr = binary_matrix_of_linear_component(component)
-        if not final_mtr:
+        # Use faster direct computation for binary matrices
+        binary_matrix = binary_matrix_of_linear_component(component)
+        if not binary_matrix:
             raise TypeError(f'Cannot compute the binary matrix of {component.id}')
-        if type == 'linear':
-            final_mtr = final_mtr.transpose()
-        F = final_mtr.base_ring()
+        # compute_branch_number_from_binary_matrix already returns the minimum weight
+        # Return as list to maintain interface compatibility with word-level calls
+        bn = compute_branch_number_from_binary_matrix(binary_matrix, type)
+        return [bn]
+    
+    # Word-level computation
+    description = component.description
+    final_mtr, F = instantiate_matrix_over_correct_field(description[0], int(description[1]), int(description[2]),
+                                                         component.input_bit_size, component.output_bit_size)
+    if type == 'linear':
+        final_mtr = final_mtr.transpose()
     n = final_mtr.nrows()
     id_matrix = identity_matrix(F, n)
     weights = []
@@ -1113,20 +1116,15 @@ def calculate_weights_for_mix_column(component, format, type):
 def calculate_weights_for_linear_layer(component, format, type):
     if format == 'word':
         print('format type cannot be \'word\' for a linear layer component')
-    mtr = binary_matrix_of_linear_component(component)
-    if not mtr:
+    
+    # Use faster direct computation for binary matrices
+    binary_matrix = binary_matrix_of_linear_component(component)
+    if not binary_matrix:
         raise TypeError(f'Cannot compute the binary matrix of {component.id}')
-    if type == 'linear':
-        mtr = mtr.transpose()
-    F = mtr.base_ring()
-    n = mtr.nrows()
-    id_matrix = identity_matrix(F, n)
-    weights = []
-    generator_matrix = Matrix(F, [list(a) + list(b) for a, b in zip(id_matrix, mtr)])
-    for i in range(n):
-        weights.append(generator_matrix[i].hamming_weight())
-
-    return weights
+    # compute_branch_number_from_binary_matrix already returns the minimum weight
+    # Return as list to maintain interface compatibility
+    bn = compute_branch_number_from_binary_matrix(binary_matrix, type)
+    return [bn]
 
 
 def int_to_poly(integer_value, word_size, variable):
@@ -1215,3 +1213,42 @@ def field_element_matrix_to_integer_matrix(matrix):
             int_matrix.append(matrix[i][j].integer_representation())
 
     return Matrix(matrix.nrows(), matrix.ncols(), int_matrix)
+
+def compute_branch_number_from_binary_matrix(binary_matrix, type='differential'):
+    """
+    Compute branch number directly from a binary matrix.
+    
+    Parameters:
+    - binary_matrix: Sage matrix over GF(2)
+    - type: 'differential' or 'linear'
+    
+    EXAMPLES::
+    
+        sage: from sage.all import Matrix, identity_matrix
+        sage: from sage.rings.finite_rings.finite_field_constructor import FiniteField as GF
+        sage: from claasp.cipher_modules.component_analysis_tests import compute_branch_number_from_binary_matrix
+        sage: F = GF(2)
+        sage: matrix = Matrix(F, [[1, 0], [1, 1]])
+        sage: compute_branch_number_from_binary_matrix(matrix, 'differential')
+        2
+    """
+    # For linear branch number, transpose the matrix
+    if type == 'linear':
+        matrix = binary_matrix.transpose()
+    else:
+        matrix = binary_matrix
+    
+    F = matrix.base_ring()  # Should be GF(2)
+    n = matrix.nrows()
+    
+    # Create generator matrix [I|M]
+    id_matrix = identity_matrix(F, n)
+    generator_matrix = Matrix(F, [list(a) + list(b) for a, b in zip(id_matrix, matrix)])
+    
+    # Compute Hamming weight of each row
+    weights = []
+    for i in range(n):
+        weights.append(generator_matrix[i].hamming_weight())
+    
+    # Branch number is the minimum weight
+    return min(weights)

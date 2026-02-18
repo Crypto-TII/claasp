@@ -146,8 +146,10 @@ def mix_column_generalized(input_vector, input_matrix, polynomial, word_size, ve
         input_vector_split.reverse()
         output_vector_split = Matrix(input_matrix) * vector(input_vector_split)
         output_vector_bit_array = BitArray()
-        for i in range(nb_cols):
-            output_vector_bit_array.append(f'0b{output_vector_split[i]:0{word_size}b}')
+        for i in range(nb_rows):
+            # Mask to word_size bits to ensure correct output length
+            masked_value = int(output_vector_split[i]) % (2 ** word_size)
+            output_vector_bit_array.append(f'0b{masked_value:0{word_size}b}')
         return output_vector_bit_array
 
     R = PolynomialRing(GF(2 ** word_size), 'x')
@@ -185,23 +187,12 @@ def mix_column_generalized(input_vector, input_matrix, polynomial, word_size, ve
 
 def add_padding(a, number_of_rows, res_vector, word_size):
     output_vector = BitArray()
-    # Padding when needed
+    # Padding when needed - Fixed to properly handle all word sizes including 1 and 2
     for row in range(number_of_rows):
         tmp = poly_to_int(res_vector[row], word_size, a)
-        if word_size == 8 and tmp < 16:
-            output_vector.append(BitArray(4))
-        if word_size in [4, 8]:
-            output_vector.append(hex(tmp))
-        if word_size == 3 and tmp < 2:
-            output_vector.append(BitArray(2))
-            output_vector.append(bin(tmp))
-        elif word_size == 3 and tmp < 4:
-            output_vector.append(BitArray(1))
-            output_vector.append(bin(tmp))
-        elif word_size not in [4, 8]:
-            if tmp < 2:
-                output_vector.append(BitArray(1))
-            output_vector.append(bin(tmp))
+        # Format tmp as a binary string with exactly word_size bits
+        binary_str = format(tmp, f'0{word_size}b')
+        output_vector.append(BitArray(bin=binary_str))
 
     return output_vector
 
