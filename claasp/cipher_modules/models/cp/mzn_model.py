@@ -42,6 +42,8 @@ from claasp.name_mappings import (
     UNSATISFIABLE,
     SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL,
     SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL_ONE_SOLUTION,
+    XOR_DIFFERENTIAL_LINEAR_ONE_SOLUTION,
+    XOR_DIFFERENTIAL_LINEAR_OPTIMAL_SOLUTION,
 )
 
 from claasp.cipher_modules.models.utils import write_model_to_file, convert_solver_solution_to_dictionary
@@ -181,22 +183,9 @@ class MznModel:
     def build_generic_cp_model_from_dictionary(self, component_and_model_types, fixed_variables=None):
         variables = []
         self._variables_list = []
-
-        fixed_constraints = []
-        if fixed_variables:
-            if hasattr(self, "fix_variables_value_xor_linear_constraints"):
-                fixed_constraints = self.fix_variables_value_xor_linear_constraints(fixed_variables)
-            elif any(
-                entry["model_type"] == "minizinc_xor_differential_propagation_constraints"
-                for entry in component_and_model_types
-            ) and hasattr(self, "solve_for_ARX"):
-                fixed_constraints = self.fix_variables_value_constraints_for_ARX(fixed_variables)
-            else:
-                fixed_constraints = self.fix_variables_value_constraints(fixed_variables)
-
+        self._model_constraints = []
         component_types = [CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER, MIX_COLUMN, SBOX, WORD_OPERATION]
         operation_types = ['AND', 'MODADD', 'MODSUB', 'NOT', 'OR', 'ROTATE', 'SHIFT', 'SHIFT_BY_VARIABLE_AMOUNT', 'XOR']
-        self._model_constraints = fixed_constraints
 
         for component_and_model_type in component_and_model_types:
             component = component_and_model_type["component_object"]
@@ -522,6 +511,7 @@ class MznModel:
             SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL_ONE_SOLUTION,
             "xor_differential_one_solution",
             "xor_linear_one_solution",
+            XOR_DIFFERENTIAL_LINEAR_ONE_SOLUTION,
             CIPHER,
         )
         found_name = False
@@ -882,6 +872,7 @@ class MznModel:
             "impossible_xor_differential_one_solution",
             "xor_differential_one_solution",
             "xor_linear_one_solution",
+            XOR_DIFFERENTIAL_LINEAR_ONE_SOLUTION,
             CIPHER,
         ):
             return solutions[0]
