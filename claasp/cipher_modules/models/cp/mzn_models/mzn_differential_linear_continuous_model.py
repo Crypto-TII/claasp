@@ -55,12 +55,10 @@ class MznDifferentialLinearContinuousModel(MznModel):
         self._variables_list.insert(0, get_continuous_operations())
         self.add_linear_mask_variables()
         
-
     def add_linear_mask_variables(self):
-        word_size = self._cipher.word_size
+        block_size = self._cipher.output_bit_size
         output_mask = (
-            f"array [0..1, 0..{word_size - 1}] "
-            f"of var 0..1: output_mask;"
+            f"array[0..{block_size - 1}] of var 0..1: output_mask;"
         )
         self._variables_list.append(output_mask)
 
@@ -99,58 +97,52 @@ class MznDifferentialLinearContinuousModel(MznModel):
         raise ValueError("cipher_output component not found")
     
     def _build_linear_mask_correlation_constraints(self):
-        word_size = self._cipher.word_size
+        block_size = self._cipher.output_bit_size
         cipher_output_id = self._get_cipher_output_id()
 
-        left_half = ", ".join([
-            f"if output_mask[0, {i}] = 0 then 1.0 "
-            f"else output_mask[0, {i}] * abs({cipher_output_id}[{i}]) endif"
-            for i in range(word_size)
-        ])
-        right_half = ", ".join([
-            f"if output_mask[1, {i}] = 0 then 1.0 "
-            f"else output_mask[1, {i}] * abs({cipher_output_id}[{word_size + i}]) endif"
-            for i in range(word_size)
+        active_bit_correlations_entries = ", ".join([
+            f"if output_mask[{i}] = 0 then 1.0 "
+            f"else output_mask[{i}] * abs({cipher_output_id}[{i}]) endif"
+            for i in range(block_size)
         ])
 
-        mask_corr_decl = (
-            f"array [1..{2 * word_size}] of var lower..upper: linear_mask_times_diff_lin_output = "
-            f"array1d(0..{word_size - 1}, [{left_half}]) ++ "
-            f"array1d(0..{word_size - 1}, [{right_half}]);"
+        active_bit_correlations_decl = (
+            f"array[0..{block_size - 1}] of var lower..upper: active_bit_correlations = "
+            f"array1d(0..{block_size - 1}, [{active_bit_correlations_entries}]);"
         )
-        self._variables_list.append(mask_corr_decl)
+        self._variables_list.append(active_bit_correlations_decl)
     
     def _build_difflin_corr_constraints(self):
-        self._variables_list.append("var lower..upper: diffLin_corr;")
-        self._variables_list.append("var float: diffLinComplement_corr;")
+        self._variables_list.append("var lower..upper: differential_linear_correlation;")
+        self._variables_list.append("var float: correlation_log2_approximation;")
 
         self._model_constraints.append(
-            "constraint diffLin_corr = product(linear_mask_times_diff_lin_output);"
+            "constraint differential_linear_correlation = product(active_bit_correlations);"
         )
         self._model_constraints.append(
-            "constraint diffLin_corr != 0.0;"
+            "constraint differential_linear_correlation != 0.0;"
         )
         self._model_constraints.append(
             "constraint sum(array1d(output_mask)) >= 1;"
         )
         self._model_constraints.append("""
-        constraint diffLinComplement_corr =
-        if diffLin_corr <= 0.001021453702391378 then
-        -19931.57001201849*diffLin_corr+29.89737278555626
-        elseif diffLin_corr <= 0.004151650554233785 /\ diffLin_corr > 0.001021453702391378 then
-        -584.962260272084*diffLin_corr+10.13570866882117
-        elseif diffLin_corr <= 0.01359667098324998 /\ diffLin_corr > 0.004151650554233785 then
-        -192.6450521799878*diffLin_corr+8.506944714410169
-        elseif diffLin_corr <= 0.05399137458004444 /\ diffLin_corr > 0.01359667098324998 then
-        -50.62607129324977*diffLin_corr+6.575959357916722
-        elseif diffLin_corr <= 0.1420480516058986 /\ diffLin_corr > 0.05399137458004444 then
-        -11.87410019056137*diffLin_corr+4.483687170396419
-        elseif diffLin_corr <= 0.2463455066216964 /\ diffLin_corr > 0.1420480516058986 then
-        -8.613130253286352*diffLin_corr+4.020472744461092
-        elseif diffLin_corr <= 0.595815289564374 /\ diffLin_corr > 0.2463455066216964 then
-        -3.761918786389538*diffLin_corr+2.825398597919413
-        elseif diffLin_corr <= 0.998000001 /\ diffLin_corr > 0.595815289564374 then
-        -1.444862453710759*diffLin_corr+1.44486100812744
+        constraint correlation_log2_approximation =
+        if differential_linear_correlation <= 0.001021453702391378 then
+        -19931.57001201849*differential_linear_correlation+29.89737278555626
+        elseif differential_linear_correlation <= 0.004151650554233785 /\\ differential_linear_correlation > 0.001021453702391378 then
+        -584.962260272084*differential_linear_correlation+10.13570866882117
+        elseif differential_linear_correlation <= 0.01359667098324998 /\\ differential_linear_correlation > 0.004151650554233785 then
+        -192.6450521799878*differential_linear_correlation+8.506944714410169
+        elseif differential_linear_correlation <= 0.05399137458004444 /\\ differential_linear_correlation > 0.01359667098324998 then
+        -50.62607129324977*differential_linear_correlation+6.575959357916722
+        elseif differential_linear_correlation <= 0.1420480516058986 /\\ differential_linear_correlation > 0.05399137458004444 then
+        -11.87410019056137*differential_linear_correlation+4.483687170396419
+        elseif differential_linear_correlation <= 0.2463455066216964 /\\ differential_linear_correlation > 0.1420480516058986 then
+        -8.613130253286352*differential_linear_correlation+4.020472744461092
+        elseif differential_linear_correlation <= 0.595815289564374 /\\ differential_linear_correlation > 0.2463455066216964 then
+        -3.761918786389538*differential_linear_correlation+2.825398597919413
+        elseif differential_linear_correlation <= 0.998000001 /\\ differential_linear_correlation > 0.595815289564374 then
+        -1.444862453710759*differential_linear_correlation+1.44486100812744
         else
         1=1
         endif;
@@ -163,7 +155,7 @@ class MznDifferentialLinearContinuousModel(MznModel):
         cipher_output_id = self._get_cipher_output_id()
         self._model_constraints.append(
             f"solve :: float_search({cipher_output_id}, 1e-12, smallest, indomain_min, complete) "
-            "minimize diffLinComplement_corr;"
+            "minimize correlation_log2_approximation;"
         )
 
         result = self.solve_for_ARX(solver_name=solver_name)
@@ -241,16 +233,16 @@ class MznDifferentialLinearContinuousModel(MznModel):
 
     def _parse_difflin_fields(self, result, parsed):
 
-        for field in ["diffLin_corr", "diffLinComplement_corr"]:
+        for field in ["differential_linear_correlation", "correlation_log2_approximation"]:
             try:
                 parsed[field] = float(result[field])
             except (KeyError, AttributeError, TypeError):
                 pass
 
         try:
-            corr = float(result["diffLin_corr"])
+            corr = float(result["differential_linear_correlation"])
             if not math.isclose(corr, 0.0, abs_tol=1e-9):
-                parsed["real_log2_exponent"] = -math.log2(abs(corr))
+                parsed["correlation_log2_absolute_value"] = -math.log2(abs(corr))
         except (KeyError, AttributeError, TypeError, ValueError):
             pass
 

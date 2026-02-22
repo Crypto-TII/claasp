@@ -486,12 +486,12 @@ def test_find_lowest_continuous_propagation():
         fixed_values=fixed_inputs,
         solver_name="scip"
     )
-    assert abs(result["diffLin_corr"]) > 0.0
-    assert -1.0 <= result["diffLin_corr"] <= 1.0
+    assert abs(result["differential_linear_correlation"]) > 0.0
+    assert -1.0 <= result["differential_linear_correlation"] <= 1.0
 
-    print(result["diffLin_corr"])
+    print(result["differential_linear_correlation"])
     print(result["output_mask"])
-    print(result["diffLinComplement_corr"])
+    print(result["correlation_log2_approximation"])
 
 
 def test_find_lowest_continuous_propagation_with_fixed_masks():
@@ -536,10 +536,8 @@ def test_find_lowest_continuous_propagation_with_fixed_masks():
         }
     ]   
     
-    mask_bits = [
-        [0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0]
-    ]
+    mask_bits = [0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,  
+                 0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0]  
 
     model.build_differential_linear_continuous_trail_model(
         fixed_values=fixed_inputs
@@ -548,33 +546,32 @@ def test_find_lowest_continuous_propagation_with_fixed_masks():
     model._build_linear_mask_correlation_constraints()
     model._build_difflin_corr_constraints()
 
-    for row in range(2):
-        for col in range(cipher.word_size):
-            model._model_constraints.append(
-                f"constraint output_mask[{row},{col}] = {mask_bits[row][col]};"
-            )
+    for bit_idx, bit_val in enumerate(mask_bits):
+        model._model_constraints.append(
+            f"constraint output_mask[{bit_idx}] = {bit_val};"
+        )
 
     cipher_output_id = model._get_cipher_output_id()
 
     model._model_constraints.append(
         f"solve :: float_search({cipher_output_id}, 1e-12, smallest, indomain_min, complete) "
-        "minimize diffLinComplement_corr;"
+        "minimize correlation_log2_approximation;"
     )
 
     result = model.solve_for_ARX("scip")
     result = model._parse_result(result, "scip")
 
-    correlation = result["diffLin_corr"]
-    real_exponent = result["real_log2_exponent"]
+    correlation = result["differential_linear_correlation"]
+    log2_absolute_value = result["correlation_log2_absolute_value"]
 
     tol_err_correlation_expected = 1e-6
     tol_exponent_expected = 0.1
 
-    expected_diffLin_corr = 0.7454814092873888
-    expected_diffLinComplement_corr = 0.42   
+    expected_differential_linear_correlation = 0.7454814092873888
+    expected_correlation_log2_approximation = 0.42   
 
-    assert abs(correlation - expected_diffLin_corr) < tol_err_correlation_expected
-    assert abs(real_exponent - expected_diffLinComplement_corr) < tol_exponent_expected
+    assert abs(correlation - expected_differential_linear_correlation) < tol_err_correlation_expected
+    assert abs(log2_absolute_value - expected_correlation_log2_approximation) < tol_exponent_expected
 
 
 
