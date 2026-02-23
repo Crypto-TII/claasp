@@ -64,8 +64,6 @@ ENV GUROBI_HOME=/opt/gurobi
 ENV PATH="/opt/gurobi/bin:${PATH}"
 ENV LD_LIBRARY_PATH="/opt/gurobi/lib:${LD_LIBRARY_PATH}"
 
-WORKDIR /opt
-
 # Installing Soplex (for SCIP)
 RUN wget https://github.com/scipopt/soplex/archive/refs/tags/release-603.tar.gz \
     && tar -xf release-603.tar.gz \
@@ -84,10 +82,9 @@ RUN wget https://github.com/ERGO-Code/HiGHS/releases/download/v1.10.0/source-arc
     && rm source-archive.tar.gz \
     && cd HiGHS \
     && cmake -B build -S . \
-    && cmake --build build -- -j4 \
-    && cmake --build build --target install
+    && cmake --build build -- -j4
 
-WORKDIR /opt
+ENV PATH="/opt/HiGHS/build/bin:${PATH}"
 
 # Installing TinyCThread for TPI support
 RUN git clone --depth 1 https://github.com/tinycthread/tinycthread.git \
@@ -159,7 +156,6 @@ RUN wget https://github.com/MiniZinc/MiniZincIDE/releases/download/2.9.4/MiniZin
 RUN mv MiniZincIDE-2.9.4-bundle-linux-x86_64 /MiniZinc \
     && rm MiniZincIDE-2.9.4-bundle-linux-x86_64.tgz
 
-
 # Copy all MiniZinc components to system locations
 RUN cp /MiniZinc/bin/* /usr/local/bin/
 RUN mkdir -p /usr/local/share/minizinc && cp -r /MiniZinc/share/minizinc/* /usr/local/share/minizinc/
@@ -175,7 +171,6 @@ RUN printf '%s\n' \
   && chmod +x /usr/local/bin/minizinc-wrapper \
   && ln -sf /usr/local/bin/minizinc-wrapper /usr/local/bin/minizinc
 
-
 # Installing Chuffed
 RUN wget https://github.com/chuffed/chuffed/archive/refs/tags/0.13.2.tar.gz \
     && tar -xf 0.13.2.tar.gz \
@@ -186,10 +181,7 @@ RUN cd chuffed-0.13.2 \
     && cmake --build build \
     && cmake --build build --target install
 
-
 # Installing Choco
-WORKDIR /opt
-
 RUN wget https://github.com/chocoteam/choco-solver/archive/refs/tags/v4.10.18.tar.gz \
     && tar -xf v4.10.18.tar.gz \
     && rm v4.10.18.tar.gz
@@ -218,8 +210,6 @@ RUN echo '\
 # Installing CryptoMiniSat
 # explicit commits are used instead of releases because
 # no semantic versioning is used for cadical and cadiback
-WORKDIR /opt
-
 RUN git clone https://github.com/meelgroup/cadical.git \
     && cd cadical \
     && git checkout f5ac6ffa6eaaf72b407f6fb591091c5ff02271d8 \
@@ -241,8 +231,6 @@ RUN git clone https://github.com/msoos/cryptominisat.git \
     && cmake --build build -- -j4 \
     && cmake --build build --target install
 
-WORKDIR /opt
-
 # Installing Kissat
 RUN wget https://github.com/arminbiere/kissat/archive/refs/tags/rel-3.0.0.tar.gz \
     && tar -xf rel-3.0.0.tar.gz \
@@ -252,8 +240,6 @@ RUN cd kissat-rel-3.0.0/ \
     && ./configure \
     && cd build/ \
     && make
-
-WORKDIR /opt
 
 ENV PATH="/opt/kissat-rel-3.0.0/build/:${PATH}"
 
@@ -265,8 +251,6 @@ RUN wget -O parkissat.tar.gz https://github.com/songfu1983/ParKissat-RS/archive/
 
 RUN cd ./ParKissat-RS-master/ \
     && make
-
-WORKDIR /opt
 
 ENV PATH="/opt/ParKissat-RS-master/:${PATH}"
 
@@ -280,8 +264,6 @@ RUN cd glucose-syrup/simp \
 
 RUN cd glucose-syrup/parallel \
     && make
-
-WORKDIR /opt
 
 ENV PATH="/opt/glucose-syrup/simp:/opt/glucose-syrup/parallel:${PATH}"
 
@@ -302,8 +284,6 @@ RUN cd minisat-releases-2.2.1/  \
     && cmake .. \
     && make
 
-WORKDIR /opt
-
 ENV PATH="/opt/minisat-releases-2.2.1/build:${PATH}"
 
 # Installing Espresso
@@ -314,8 +294,6 @@ RUN wget https://github.com/classabbyamp/espresso-logic/archive/refs/tags/1.1.ta
 RUN cd espresso-logic-1.1 \
     && cd espresso-src \
     && make
-
-WORKDIR /opt
 
 ENV PATH="/opt/espresso-logic-1.1/bin:${PATH}"
 
@@ -331,27 +309,21 @@ RUN cd cadical-rel-1.5.3 \
 ENV PATH="/opt/cadical-rel-1.5.3/build:${PATH}"
 
 # Installing Yices
-WORKDIR /opt
-
 RUN wget https://github.com/SRI-CSL/yices2/archive/refs/tags/yices-2.7.0.tar.gz \
     && tar -xf yices-2.7.0.tar.gz \
     && rm yices-2.7.0.tar.gz \
     && cd yices2-yices-2.7.0 \
     && autoconf \
     && ./configure --enable-thread-safety \
-    && make -j4 \
-    && make install
+    && make -j4
+
+ENV PATH="/opt/yices2-yices-2.7.0/build/x86_64-pc-linux-gnu-release/bin:${PATH}"
 
 COPY required_dependencies/sage_numerical_backends_gurobi-9.3.1.tar.gz /opt/
 RUN cd /opt/ && sage -pip install sage_numerical_backends_gurobi-9.3.1.tar.gz
 
 RUN apt-get install -y coinor-cbc coinor-libcbc-dev
 RUN sage -python -m pip install sage-numerical-backends-coin==9.0b12
-
-# clean image
-RUN rm -r /opt/choco-solver-4.10.18
-RUN rm -r /opt/chuffed-0.13.2
-RUN rm -r /opt/HiGHS
 
 
 FROM claasp-base AS claasp-lib
