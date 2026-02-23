@@ -8,37 +8,39 @@ ARG TARGETARCH
 # Install dependencies with apt-get
 RUN apt-get -q update
 RUN apt-get install --no-install-recommends -y \
-  libboost-program-options-dev \
-  libsqlite3-dev \
-  libstdc++-9-dev \
-  ca-certificates
+    libboost-program-options-dev \
+    libsqlite3-dev \
+    libstdc++-9-dev \
+    ca-certificates
 
 RUN apt-get install --no-install-recommends -y \
-  gfortran \
-  gcc \
-  g++
+    gfortran \
+    gcc \
+    g++
 
 RUN apt-get install --no-install-recommends -y \
-  openssl \
-  sudo \
-  zlib1g-dev
+    openssl \
+    sudo \
+    zlib1g-dev
 
 RUN apt-get install -y \
-  build-essential \
-  cmake \
-  git \
-  wget
+    autoconf \
+    build-essential \
+    cmake \
+    git \
+    gperf \
+    wget
 
 RUN apt-get update && apt-get install -y \
-  chromium-browser \
-  chromium-chromedriver
+    chromium-browser \
+    chromium-chromedriver
 
 RUN apt-get install -y \
-  dieharder=3.31.1.2-1build1 \
-  latexmk=1:4.76-1 \
-  python3-cryptominisat=5.8.0+dfsg1-2 \
-  sagemath=9.5-4 \
-  z3=4.8.12-1
+    dieharder=3.31.1.2-1build1 \
+    latexmk=1:4.76-1 \
+    python3-cryptominisat=5.8.0+dfsg1-2 \
+    sagemath=9.5-4 \
+    z3=4.8.12-1
 
 COPY docker/sitecustomize.py /usr/lib/python3.10/sitecustomize.py
 
@@ -81,10 +83,9 @@ RUN wget https://github.com/ERGO-Code/HiGHS/releases/download/v1.10.0/source-arc
     && tar -xf source-archive.tar.gz \
     && rm source-archive.tar.gz \
     && cd HiGHS \
-    && cmake -S. -B build \
-    && cmake --build build
-
-ENV PATH="${PATH}:/opt/HiGHS/build/bin"
+    && cmake -B build -S . \
+    && cmake --build build -- -j4 \
+    && cmake --build build --target install
 
 WORKDIR /opt
 
@@ -114,30 +115,31 @@ ENV LD_LIBRARY_PATH="/opt/scip-803/build/lib:/usr/local/lib:${LD_LIBRARY_PATH}"
 
 # Installing SageMath tools
 RUN sage -pip install bitstring==4.0.1 \
-  kaleido==1.0.0 \
-  keras==2.13.1 \
-  minizinc==0.5.0 \
-  pandas==1.5.2 \
-  prettytable==3.6.0 \
-  progress==1.6 \
-  pycosat==0.6.3 \
-  pygments==2.12.0 \
-  sage-package==0.0.7 \
-  setuptools==59.6.0 \
-  sphinx==5.0.0 \
-  sphinxcontrib-bibtex==2.5.0 \
-  tensorflow==2.13.0 \
-  plotly==6.2.0 \
-  pytest==7.2.1 \
-  pytest-cov==4.0.0 \
-  pytest-xdist==3.2.0 \
-  pytest-benchmark==4.0.0 \
-  networkx==2.8.8 \
-  numpy==1.24.3 \
-  joblib==1.4.2 \
-  gurobipy==11.0 \
-  pytest-isolate==0.0.11 \
-  psutil==7.1.3
+    gurobipy==11.0 \
+    joblib==1.4.2 \
+    kaleido==1.0.0 \
+    keras==2.13.1 \
+    minizinc==0.5.0 \
+    networkx==2.8.8 \
+    numpy==1.24.3 \
+    pandas==1.5.2 \
+    plotly==6.2.0 \
+    prettytable==3.6.0 \
+    progress==1.6 \
+    psutil==7.1.3 \
+    pycosat==0.6.3 \
+    pygments==2.12.0 \
+    pytest-benchmark==4.0.0 \
+    pytest-cov==4.0.0 \
+    pytest-isolate==0.0.11 \
+    pytest-xdist==3.2.0 \
+    pytest==7.2.1 \
+    ruff==0.15.2 \
+    sage-package==0.0.7 \
+    setuptools==59.6.0 \
+    sphinx==5.0.0 \
+    sphinxcontrib-bibtex==2.5.0 \
+    tensorflow==2.13.0
 
 # Installing nist sts
 RUN curl -O -s https://csrc.nist.gov/CSRC/media/Projects/Random-Bit-Generation/documents/sts-2_1_2.zip \
@@ -236,7 +238,7 @@ RUN git clone https://github.com/msoos/cryptominisat.git \
     && cd cryptominisat \
     && git checkout 34ec41b3bb0332bd313e51d131298d30c52aa71f \
     && cmake -DENABLE_TESTING=OFF -DIPASIR=ON -B build -S . \
-    && cmake --build build \
+    && cmake --build build -- -j4 \
     && cmake --build build --target install
 
 WORKDIR /opt
@@ -331,12 +333,14 @@ ENV PATH="/opt/cadical-rel-1.5.3/build:${PATH}"
 # Installing Yices
 WORKDIR /opt
 
-RUN wget https://yices.csl.sri.com/releases/2.6.4/yices-2.6.4-x86_64-pc-linux-gnu.tar.gz  \
-    && tar -xf yices-2.6.4-x86_64-pc-linux-gnu.tar.gz \
-    && rm yices-2.6.4-x86_64-pc-linux-gnu.tar.gz
-
-RUN cd yices-2.6.4 \
-    && ./install-yices
+RUN wget https://github.com/SRI-CSL/yices2/archive/refs/tags/yices-2.7.0.tar.gz \
+    && tar -xf yices-2.7.0.tar.gz \
+    && rm yices-2.7.0.tar.gz \
+    && cd yices2-yices-2.7.0 \
+    && autoconf \
+    && ./configure --enable-thread-safety \
+    && make -j4 \
+    && make install
 
 COPY required_dependencies/sage_numerical_backends_gurobi-9.3.1.tar.gz /opt/
 RUN cd /opt/ && sage -pip install sage_numerical_backends_gurobi-9.3.1.tar.gz
@@ -347,6 +351,7 @@ RUN sage -python -m pip install sage-numerical-backends-coin==9.0b12
 # clean image
 RUN rm -r /opt/choco-solver-4.10.18
 RUN rm -r /opt/chuffed-0.13.2
+RUN rm -r /opt/HiGHS
 
 
 FROM claasp-base AS claasp-lib
@@ -357,7 +362,6 @@ RUN adduser --uid 1000 ${NAME} \
     && echo "sage ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
 RUN chown -R ${NAME}:${NAME} /usr/local/bin/sts-2.1.2
-RUN pip install ruff --prefix /usr
 
 USER sage
 
