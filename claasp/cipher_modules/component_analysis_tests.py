@@ -1,16 +1,16 @@
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
@@ -23,9 +23,16 @@ from sage.rings.finite_rings.finite_field_constructor import FiniteField as GF
 from sage.rings.polynomial.polynomial_ring_constructor import PolynomialRing
 
 from claasp.component import linear_layer_to_binary_matrix
-from claasp.cipher_modules.generic_functions import (SHIFT, ROTATE, mix_column_generalized)
-from claasp.name_mappings import (SBOX, LINEAR_LAYER, MIX_COLUMN, WORD_OPERATION, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT,
-                                  CONSTANT)
+from claasp.cipher_modules.generic_functions import SHIFT, ROTATE, mix_column_generalized
+from claasp.name_mappings import (
+    CIPHER_OUTPUT,
+    CONSTANT,
+    INTERMEDIATE_OUTPUT,
+    LINEAR_LAYER,
+    MIX_COLUMN,
+    SBOX,
+    WORD_OPERATION,
+)
 
 import matplotlib.pyplot as plt
 from math import pi, log2
@@ -53,7 +60,7 @@ class CipherComponentsAnalysis:
         for cipher_round in self._cipher.rounds_as_list:
             for component in cipher_round.components:
                 for id_link, bit_positions in zip(component.input_id_links, component.input_bit_positions):
-                    all_variables_names.extend([f'{id_link}_{i}' for i in bit_positions])
+                    all_variables_names.extend([f"{id_link}_{i}" for i in bit_positions])
         all_variables_names = list(set(all_variables_names))
         boolean_polynomial_ring = BooleanPolynomialRing(len(all_variables_names), all_variables_names)
 
@@ -68,11 +75,8 @@ class CipherComponentsAnalysis:
                     components_analysis.append(result)
 
         output_dictionary = {
-            'input_parameters': {
-                'test_name': 'component_analysis',
-                'cipher': self._cipher
-            },
-            'test_results': components_analysis
+            "input_parameters": {"test_name": "component_analysis", "cipher": self._cipher},
+            "test_results": components_analysis,
         }
         return output_dictionary
 
@@ -104,17 +108,19 @@ class CipherComponentsAnalysis:
             self._collect_component_operations(component, tmp_cipher_operations)
 
         for operation in list(tmp_cipher_operations.keys()):
-            if operation not in [LINEAR_LAYER, MIX_COLUMN, 'fsr']:
-                tmp_cipher_operations[operation]["distinguisher"] = \
-                    list(set(tmp_cipher_operations[operation]["distinguisher"]))
-            if operation == 'fsr':
+            if operation not in [LINEAR_LAYER, MIX_COLUMN, "fsr"]:
+                tmp_cipher_operations[operation]["distinguisher"] = list(
+                    set(tmp_cipher_operations[operation]["distinguisher"])
+                )
+            if operation == "fsr":
                 tmp_list = []
                 for item in tmp_cipher_operations[operation]["distinguisher"]:
                     if item not in tmp_list:
                         tmp_list.append(item)
                 tmp_cipher_operations[operation]["distinguisher"] = tmp_list
-            tmp_cipher_operations[operation]["types"] = \
-                [[] for _ in range(len(tmp_cipher_operations[operation]["distinguisher"]))]
+            tmp_cipher_operations[operation]["types"] = [
+                [] for _ in range(len(tmp_cipher_operations[operation]["distinguisher"]))
+            ]
             self._collect_components_with_the_same_operation(operation, tmp_cipher_operations)
         cipher_operations = {}
         for operation in list(tmp_cipher_operations.keys()):
@@ -138,20 +144,20 @@ class CipherComponentsAnalysis:
             sage: CipherComponentsAnalysis(speck).print_component_analysis_as_radar_charts()
 
         """
-        if results==None:
-            results = self.component_analysis_tests()['test_results']
+        if results == None:
+            results = self.component_analysis_tests()["test_results"]
         SMALL_SIZE = 10
         MEDIUM_SIZE = 11
         BIG_SIZE = 12
 
-        plt.rc('font', size=BIG_SIZE)  # controls default text sizes
-        plt.rc('axes', titlesize=SMALL_SIZE)  # fontsize of the axes title
-        plt.rc('axes', labelsize=MEDIUM_SIZE)  # fontsize of the x and y labels
-        plt.rc('xtick', labelsize=SMALL_SIZE)  # fontsize of the tick labels
-        plt.rc('ytick', labelsize=SMALL_SIZE)  # fontsize of the tick labels
-        plt.rc('legend', fontsize=BIG_SIZE)  # legend fontsize
-        plt.rc('figure', titlesize=BIG_SIZE)  # fontsize of the figure title
-        plt.rcParams['figure.figsize'] = [20, 20]
+        plt.rc("font", size=BIG_SIZE)  # controls default text sizes
+        plt.rc("axes", titlesize=SMALL_SIZE)  # fontsize of the axes title
+        plt.rc("axes", labelsize=MEDIUM_SIZE)  # fontsize of the x and y labels
+        plt.rc("xtick", labelsize=SMALL_SIZE)  # fontsize of the tick labels
+        plt.rc("ytick", labelsize=SMALL_SIZE)  # fontsize of the tick labels
+        plt.rc("legend", fontsize=BIG_SIZE)  # legend fontsize
+        plt.rc("figure", titlesize=BIG_SIZE)  # fontsize of the figure title
+        plt.rcParams["figure.figsize"] = [20, 20]
 
         # remove XOR from results
         # results_without_xor = [results[i] for i in range(len(results)) if results[i]["description"][0] != "XOR"]
@@ -166,7 +172,7 @@ class CipherComponentsAnalysis:
         row = nb_plots // col
         if nb_plots % col != 0:
             row += nb_plots % col
-        positions = {8: -0.7, 3: -0.4} # positions of the text according to the numbers of properties
+        positions = {8: -0.7, 3: -0.4}  # positions of the text according to the numbers of properties
 
         for plot_number in range(nb_plots):
             categories = list(results[plot_number]["properties"].keys())
@@ -182,7 +188,7 @@ class CipherComponentsAnalysis:
             self._initialise_spider_plot(plot_number, results)
 
             # Draw one axe per variable + add labels
-            plt.xticks(angles[:-1], categories, color='grey', size=8)
+            plt.xticks(angles[:-1], categories, color="grey", size=8)
 
             # Draw ylabels
             ax.set_rlabel_position(30)
@@ -195,24 +201,24 @@ class CipherComponentsAnalysis:
 
             # Position of labels
             for label, rot in zip(ax.get_xticklabels(), angles):
-                if 90 < (rot * 180. / pi) < 270:
-                    label.set_rotation(rot * 180. / pi)
+                if 90 < (rot * 180.0 / pi) < 270:
+                    label.set_rotation(rot * 180.0 / pi)
                     label.set_horizontalalignment("right")
                     label.set_rotation_mode("anchor")
-                elif int(rot * 180. / pi) == 90 or int(rot * 180. / pi) == 270:
-                    label.set_rotation(rot * 180. / pi)
+                elif int(rot * 180.0 / pi) == 90 or int(rot * 180.0 / pi) == 270:
+                    label.set_rotation(rot * 180.0 / pi)
                     label.set_horizontalalignment("center")
                     label.set_rotation_mode("anchor")
                 else:
-                    label.set_rotation(rot * 180. / pi)
+                    label.set_rotation(rot * 180.0 / pi)
                     label.set_horizontalalignment("left")
                     label.set_rotation_mode("anchor")
 
             # Plot data
-            ax.plot(angles, values, linewidth=1, linestyle='solid')
+            ax.plot(angles, values, linewidth=1, linestyle="solid")
 
             # Fill area
-            ax.fill(angles, values, 'b', alpha=0.1)
+            ax.fill(angles, values, "b", alpha=0.1)
             self._fill_area(ax, categories, plot_number, positions, results)
 
         # Show the graph
@@ -221,9 +227,8 @@ class CipherComponentsAnalysis:
         else:
             plt.subplots_adjust(left=0.09, bottom=0.3, right=0.7, top=0.7, wspace=1, hspace=0.96)
         plt.show()
-        #print("The radar chart can be plot with the build-in method plt.show()")
-        #return plt
-
+        # print("The radar chart can be plot with the build-in method plt.show()")
+        # return plt
 
     def _AND_as_boolean_function(self, component, boolean_polynomial_ring):
         """
@@ -252,17 +257,22 @@ class CipherComponentsAnalysis:
         variables_names = []
         variables_names_positions = {}
         for input_number in range(number_of_inputs):
-            tmp = [component.input_id_links[input_number] + "_" + str(bit_position)
-                   for bit_position in component.input_bit_positions[input_number]]
+            tmp = [
+                component.input_id_links[input_number] + "_" + str(bit_position)
+                for bit_position in component.input_bit_positions[input_number]
+            ]
             variables_names += tmp
             if component.input_id_links[input_number] not in variables_names_positions:
-                variables_names_positions[component.input_id_links[input_number]] = \
-                    [tmp, component.input_bit_positions[input_number]]
+                variables_names_positions[component.input_id_links[input_number]] = [
+                    tmp,
+                    component.input_bit_positions[input_number],
+                ]
             else:  # Keys are unique in a python dico, so need to handle 2 same entries in input_id_link !
-                variables_names_positions[component.input_id_links[input_number]] = \
-                    [variables_names_positions[component.input_id_links[input_number]][0] + tmp,
-                     variables_names_positions[component.input_id_links[input_number]][1] +
-                     component.input_bit_positions[input_number]]
+                variables_names_positions[component.input_id_links[input_number]] = [
+                    variables_names_positions[component.input_id_links[input_number]][0] + tmp,
+                    variables_names_positions[component.input_id_links[input_number]][1]
+                    + component.input_bit_positions[input_number],
+                ]
 
         component_as_bf = []
         for input_number in range(output_bit_size):
@@ -282,7 +292,6 @@ class CipherComponentsAnalysis:
             return self._MODADD_as_boolean_function(component, boolean_polynomial_ring)
         else:
             return f"TODO: {component.id} not implemented yet"
-
 
     def _MODADD_as_boolean_function(self, component, boolean_polynomial_ring):
         """
@@ -311,18 +320,20 @@ class CipherComponentsAnalysis:
         variables_names = self._set_variables_names(component, number_of_inputs)
 
         if number_of_blocks == 2:
-            component_as_boolean_function = self._calculate_carry_for_two_blocks(boolean_polynomial_ring, output_bit_size,
-                                                                           variables_names)
+            component_as_boolean_function = self._calculate_carry_for_two_blocks(
+                boolean_polynomial_ring, output_bit_size, variables_names
+            )
 
         elif number_of_blocks == 3:
-            component_as_boolean_function = self._calculate_carry_for_three_blocks(boolean_polynomial_ring, output_bit_size,
-                                                                             variables_names)
+            component_as_boolean_function = self._calculate_carry_for_three_blocks(
+                boolean_polynomial_ring, output_bit_size, variables_names
+            )
         else:
             raise ValueError(
-                f'Expression of the output bits of MODADD with {component.description[1]} inputs not implemented yet')
+                f"Expression of the output bits of MODADD with {component.description[1]} inputs not implemented yet"
+            )
 
         return component_as_boolean_function
-
 
     def _calculate_carry_for_two_blocks(self, boolean_polynomial_ring, output_bit_size, variables_names):
         component_as_boolean_function = []
@@ -334,10 +345,12 @@ class CipherComponentsAnalysis:
             carry_right_part = 0
             for block_number in range(2):
                 tmp += boolean_polynomial_ring(two_first_blocks[input_number + output_bit_size * block_number])
-                carry_left_part *= \
-                    boolean_polynomial_ring(two_first_blocks[input_number + output_bit_size * block_number])
-                carry_right_part += \
-                    boolean_polynomial_ring(two_first_blocks[input_number + output_bit_size * block_number])
+                carry_left_part *= boolean_polynomial_ring(
+                    two_first_blocks[input_number + output_bit_size * block_number]
+                )
+                carry_right_part += boolean_polynomial_ring(
+                    two_first_blocks[input_number + output_bit_size * block_number]
+                )
             tmp += carries[input_number]
             component_as_boolean_function.append(tmp)
             carry = carry_left_part + carries[input_number] * carry_right_part
@@ -345,28 +358,29 @@ class CipherComponentsAnalysis:
 
         return component_as_boolean_function
 
-
     def _calculate_carry_for_three_blocks(self, boolean_polynomial_ring, output_bit_size, variables_names):
-        two_first_blocks = variables_names[:2 * output_bit_size]
-        component_as_boolean_function = self._calculate_carry_for_two_blocks(boolean_polynomial_ring, output_bit_size,
-                                                                       two_first_blocks)
+        two_first_blocks = variables_names[: 2 * output_bit_size]
+        component_as_boolean_function = self._calculate_carry_for_two_blocks(
+            boolean_polynomial_ring, output_bit_size, two_first_blocks
+        )
         # Handling the MODADD of first 2 block with the last block
         two_remaining_blocks = component_as_boolean_function + variables_names[-output_bit_size:]
-        component_as_boolean_function = self._calculate_carry_for_two_blocks(boolean_polynomial_ring, output_bit_size,
-                                                                       two_remaining_blocks)
+        component_as_boolean_function = self._calculate_carry_for_two_blocks(
+            boolean_polynomial_ring, output_bit_size, two_remaining_blocks
+        )
 
         return component_as_boolean_function
-
 
     def _set_variables_names(self, component, number_of_inputs):
         variables_names = []
         for input_number in range(number_of_inputs):
-            temporary_variables_names = [component.input_id_links[input_number] + "_" + str(bit_position)
-                                         for bit_position in component.input_bit_positions[input_number]]
+            temporary_variables_names = [
+                component.input_id_links[input_number] + "_" + str(bit_position)
+                for bit_position in component.input_bit_positions[input_number]
+            ]
             variables_names += temporary_variables_names
 
         return variables_names
-
 
     def _XOR_as_boolean_function(self, component, boolean_polynomial_ring):
         """
@@ -400,9 +414,10 @@ class CipherComponentsAnalysis:
             if component.input_id_links[i] not in variables_names_positions:
                 variables_names_positions[component.input_id_links[i]] = [tmp, component.input_bit_positions[i]]
             else:  # Keys are unique in a python dico, so need to handle 2 same entries in input_id_link !
-                variables_names_positions[component.input_id_links[i]] = \
-                    [variables_names_positions[component.input_id_links[i]][0] + tmp,
-                     variables_names_positions[component.input_id_links[i]][1] + component.input_bit_positions[i]]
+                variables_names_positions[component.input_id_links[i]] = [
+                    variables_names_positions[component.input_id_links[i]][0] + tmp,
+                    variables_names_positions[component.input_id_links[i]][1] + component.input_bit_positions[i],
+                ]
 
         component_as_bf = []
         for i in range(output_bit_size):
@@ -429,7 +444,7 @@ class CipherComponentsAnalysis:
             return self._word_operation_properties(operation, boolean_polynomial_ring)
         if (component.type == WORD_OPERATION) and (component.description[0] == "MODADD"):
             return self._word_operation_properties(operation, boolean_polynomial_ring)
-        if component.type == 'fsr':
+        if component.type == "fsr":
             return self._fsr_properties(operation)
 
         else:
@@ -470,14 +485,19 @@ class CipherComponentsAnalysis:
         """
 
         description = component.description
-        final_mtr, _ = instantiate_matrix_over_correct_field(description[0], int(description[1]), int(description[2]),
-                                                             component.input_bit_size, component.output_bit_size)
+        final_mtr, _ = instantiate_matrix_over_correct_field(
+            description[0],
+            int(description[1]),
+            int(description[2]),
+            component.input_bit_size,
+            component.output_bit_size,
+        )
 
         num_rows, num_cols = final_mtr.dimensions()
         for size in range(1, min(num_rows, num_cols) + 1):
             for i in range(num_rows - size + 1):
                 for j in range(num_cols - size + 1):
-                    submatrix = final_mtr[i:i + size, j:j + size]
+                    submatrix = final_mtr[i : i + size, j : j + size]
                     if submatrix.is_singular():
                         return False
         return True
@@ -508,9 +528,14 @@ class CipherComponentsAnalysis:
 
         """
         component = operation[0]
-        component_as_dictionary = {"type": component.type, "input_bit_size": component.input_bit_size,
-                                   "output_bit_size": component.output_bit_size, "description": component.description,
-                                   "number_of_occurrences": operation[1], "component_id_list": operation[2]}
+        component_as_dictionary = {
+            "type": component.type,
+            "input_bit_size": component.input_bit_size,
+            "output_bit_size": component.output_bit_size,
+            "description": component.description,
+            "number_of_occurrences": operation[1],
+            "component_id_list": operation[2],
+        }
         component_as_boolean_function = self._select_boolean_function(component, boolean_polynomial_ring)
 
         # Adding some properties of boolean function :
@@ -524,17 +549,17 @@ class CipherComponentsAnalysis:
         component_as_dictionary["properties"]["degree"] = {
             "value": degree_average,
             "min_possible_value": 1,
-            "max_possible_value": component.input_bit_size
+            "max_possible_value": component.input_bit_size,
         }
         component_as_dictionary["properties"]["nterms"] = {
             "value": numbers_of_terms_average,
             "min_possible_value": 1,
-            "max_possible_value": max(numbers_of_terms)
+            "max_possible_value": max(numbers_of_terms),
         }
         component_as_dictionary["properties"]["nvariables"] = {
             "value": numbers_of_variables_average,
             "min_possible_value": 1,
-            "max_possible_value": component.input_bit_size
+            "max_possible_value": component.input_bit_size,
         }
 
         return component_as_dictionary
@@ -561,8 +586,10 @@ class CipherComponentsAnalysis:
         for cipher_round in self._cipher.rounds_as_list:
             for component in cipher_round.components:
                 for i in range(len(component.input_id_links)):
-                    all_variables_names += [component.input_id_links[i] + "_" + str(bit_position)
-                                            for bit_position in component.input_bit_positions[i]]
+                    all_variables_names += [
+                        component.input_id_links[i] + "_" + str(bit_position)
+                        for bit_position in component.input_bit_positions[i]
+                    ]
 
         all_variables_names = list(set(all_variables_names))
 
@@ -595,7 +622,8 @@ class CipherComponentsAnalysis:
                 tmp_cipher_operations[component.description[0]] = {"all": [], "distinguisher": []}
             tmp_cipher_operations[component.description[0]]["all"].append(component)
             tmp_cipher_operations[component.description[0]]["distinguisher"].append(
-                (component.input_bit_size, component.description[1]))
+                (component.input_bit_size, component.description[1])
+            )
         elif component.type in [LINEAR_LAYER, MIX_COLUMN]:
             if component.type not in list(tmp_cipher_operations.keys()):
                 tmp_cipher_operations[component.type] = {"all": [], "distinguisher": []}
@@ -634,34 +662,44 @@ class CipherComponentsAnalysis:
 
         """
         component = operation[0]
-        dictio = {"type": component.type, "input_bit_size": component.input_bit_size,
-                  "output_bit_size": component.output_bit_size, "description": component.description,
-                  "bin_matrix": binary_matrix_of_linear_component(component), "number_of_occurrences": operation[1],
-                  "component_id_list": operation[2], "properties": {}}
+        dictio = {
+            "type": component.type,
+            "input_bit_size": component.input_bit_size,
+            "output_bit_size": component.output_bit_size,
+            "description": component.description,
+            "bin_matrix": binary_matrix_of_linear_component(component),
+            "number_of_occurrences": operation[1],
+            "component_id_list": operation[2],
+            "properties": {},
+        }
 
         # Adding some properties of the linear layer :
         dictio["properties"]["order"] = {
             "value": self._order_of_linear_component(component),
             "min_possible_value": 1,
-            "max_possible_value": pow(2, component.input_bit_size) - 1
+            "max_possible_value": pow(2, component.input_bit_size) - 1,
         }
         if component.input_bit_size <= 64:
-            dictio["properties"]["differential_branch_number"] = {"value": branch_number(component, 'differential', 'bit'),
-                                                                  "min_possible_value": 0,
-                                                                  "max_possible_value": component.input_bit_size}
-            dictio["properties"]["linear_branch_number"] = {"value": branch_number(component, 'linear', 'bit'),
-                                                            "min_possible_value": 0,
-                                                            "max_possible_value": component.input_bit_size}
+            dictio["properties"]["differential_branch_number"] = {
+                "value": branch_number(component, "differential", "bit"),
+                "min_possible_value": 0,
+                "max_possible_value": component.input_bit_size,
+            }
+            dictio["properties"]["linear_branch_number"] = {
+                "value": branch_number(component, "linear", "bit"),
+                "min_possible_value": 0,
+                "max_possible_value": component.input_bit_size,
+            }
         else:
             dictio["properties"]["differential_branch_number"] = {
                 "value": "input bit size too large",
                 "min_possible_value": 0,
-                "max_possible_value": component.input_bit_size
+                "max_possible_value": component.input_bit_size,
             }
             dictio["properties"]["linear_branch_number"] = {
                 "value": "input bit size too large",
                 "min_possible_value": 0,
-                "max_possible_value": component.input_bit_size
+                "max_possible_value": component.input_bit_size,
             }
 
         return dictio
@@ -686,7 +724,7 @@ class CipherComponentsAnalysis:
         """
         binary_matrix = binary_matrix_of_linear_component(component)
         if not binary_matrix:
-            raise TypeError(f'Cannot compute the binary matrix of {component.id}')
+            raise TypeError(f"Cannot compute the binary matrix of {component.id}")
         try:
             return binary_matrix.multiplicative_order()
         except Exception:
@@ -721,50 +759,52 @@ class CipherComponentsAnalysis:
         component = operation[0]
         sbox_table = component.description
         sbox = SBox(sbox_table)
-        dictio = {"type": component.type, "input_bit_size": component.input_bit_size,
-                  "output_bit_size": component.output_bit_size, "description": component.description,
-                  "number_of_occurrences": operation[1], "component_id_list": operation[2], "properties": {}}
+        dictio = {
+            "type": component.type,
+            "input_bit_size": component.input_bit_size,
+            "output_bit_size": component.output_bit_size,
+            "description": component.description,
+            "number_of_occurrences": operation[1],
+            "component_id_list": operation[2],
+            "properties": {},
+        }
 
         # Adding some properties of sbox :
         dictio["properties"]["boomerang_uniformity"] = {
             "value": sbox.boomerang_uniformity(),
             "min_possible_value": 2,
-            "max_possible_value": pow(2, component.input_bit_size)
+            "max_possible_value": pow(2, component.input_bit_size),
         }
         dictio["properties"]["differential_uniformity"] = {
             "value": sbox.differential_uniformity(),
             "min_possible_value": 2,
-            "max_possible_value": pow(2, component.input_bit_size)
+            "max_possible_value": pow(2, component.input_bit_size),
         }
-        dictio["properties"]["is_apn"] = {
-            "value": sbox.is_apn(),
-            "min_possible_value": 0,
-            "max_possible_value": 1
-        }
+        dictio["properties"]["is_apn"] = {"value": sbox.is_apn(), "min_possible_value": 0, "max_possible_value": 1}
         dictio["properties"]["is_balanced"] = {
             "value": sbox.is_balanced(),
             "min_possible_value": 0,
-            "max_possible_value": 1
+            "max_possible_value": 1,
         }
         dictio["properties"]["differential_branch_number"] = {
             "value": sbox.differential_branch_number(),
             "min_possible_value": 0,
-            "max_possible_value": component.input_bit_size
+            "max_possible_value": component.input_bit_size,
         }
         dictio["properties"]["linear_branch_number"] = {
             "value": sbox.linear_branch_number(),
             "min_possible_value": 0,
-            "max_possible_value": component.input_bit_size
+            "max_possible_value": component.input_bit_size,
         }
         dictio["properties"]["nonlinearity"] = {
             "value": sbox.nonlinearity(),
             "min_possible_value": 0,
-            "max_possible_value": pow(2, component.input_bit_size - 1)
+            "max_possible_value": pow(2, component.input_bit_size - 1),
         }
         dictio["properties"]["max_degree"] = {
             "value": sbox.max_degree(),
             "min_possible_value": 0,
-            "max_possible_value": component.input_bit_size
+            "max_possible_value": component.input_bit_size,
         }
 
         return dictio
@@ -821,7 +861,7 @@ class CipherComponentsAnalysis:
             "fsr_word_size": fsr_word_size,
             "description": component.description,
             "number_of_occurrences": operation[1],
-            "component_id_list": operation[2]
+            "component_id_list": operation[2],
         }
 
         desc = component.description
@@ -835,27 +875,29 @@ class CipherComponentsAnalysis:
             registers_len.append(r[0])
             d = max(len(term) if fsr_word_size == 1 else len(term[1]) for term in r[1])
             registers_feedback_relation_deg.append(d)
-            reg_type = 'non-linear' if d > 1 else 'linear'
+            reg_type = "non-linear" if d > 1 else "linear"
             registers_type.append(reg_type)
-            lin_flag = lin_flag or (reg_type == 'linear')
+            lin_flag = lin_flag or (reg_type == "linear")
 
-        component_dict.update({
-            'number_of_registers': len(registers_len),
-            'length_of_registers': registers_len,
-            'type_of_registers': registers_type,
-            'degree_of_feedback_relation_of_registers': registers_feedback_relation_deg
-        })
+        component_dict.update(
+            {
+                "number_of_registers": len(registers_len),
+                "length_of_registers": registers_len,
+                "type_of_registers": registers_type,
+                "degree_of_feedback_relation_of_registers": registers_feedback_relation_deg,
+            }
+        )
 
         if lin_flag:
             lfsrs_primitive = []
             exp = 0
-            R = GF(2)['x'] if fsr_word_size == 1 else GF(2 ** fsr_word_size)['x']
+            R = GF(2)["x"] if fsr_word_size == 1 else GF(2**fsr_word_size)["x"]
             x = R.gens()
             a = R.construction()[1].gen()
 
             for index, r in enumerate(desc[0]):
                 exp = exp + registers_len[index]
-                if registers_type[index] == 'linear':
+                if registers_type[index] == "linear":
                     p = R(1)
                     for term in r[1]:
                         if fsr_word_size == 1:
@@ -864,28 +906,35 @@ class CipherComponentsAnalysis:
                             m = 0
                             cf = "{0:b}".format(term[0])
                             for i in range(len(cf)):
-                                if cf[i] == '1':  m = m + pow(a, len(cf) - 1 - i)
+                                if cf[i] == "1":
+                                    m = m + pow(a, len(cf) - 1 - i)
                             m = m * x[0] ** (exp - term[1][0])
                             p += m
                     lfsr_connection_polynomials.append(str(p))
                     lfsrs_primitive.append(p.is_primitive())
-            component_dict.update({
-                "lfsr_connection_polynomials": lfsr_connection_polynomials,
-                "lfsr_polynomials_are_primitive": lfsrs_primitive
-            })
+            component_dict.update(
+                {
+                    "lfsr_connection_polynomials": lfsr_connection_polynomials,
+                    "lfsr_polynomials_are_primitive": lfsrs_primitive,
+                }
+            )
         return component_dict
 
     def _fill_area(self, ax, categories, plot_number, positions, results):
         text = ""
         for category in categories:
             if category in ["boomerang_uniformity", "differential_uniformity"]:
-                text += f"{category} = {int(results[plot_number]['properties'][category]['value'])} " \
-                        f"(best is {results[plot_number]['properties'][category]['min_possible_value']}, " \
-                        f"worst is {results[plot_number]['properties'][category]['max_possible_value']})\n"
+                text += (
+                    f"{category} = {int(results[plot_number]['properties'][category]['value'])} "
+                    f"(best is {results[plot_number]['properties'][category]['min_possible_value']}, "
+                    f"worst is {results[plot_number]['properties'][category]['max_possible_value']})\n"
+                )
             else:
-                text += f"{category} = {int(results[plot_number]['properties'][category]['value'])} " \
-                        f"(best is {results[plot_number]['properties'][category]['max_possible_value']}, " \
-                        f"worst is {results[plot_number]['properties'][category]['min_possible_value']})\n"
+                text += (
+                    f"{category} = {int(results[plot_number]['properties'][category]['value'])} "
+                    f"(best is {results[plot_number]['properties'][category]['max_possible_value']}, "
+                    f"worst is {results[plot_number]['properties'][category]['min_possible_value']})\n"
+                )
         # plt.text(0, positions[len(categories)], text, transform=ax.transAxes, size="small")
         plt.text(2, 0, text, transform=ax.transAxes, size="small")
 
@@ -893,11 +942,16 @@ class CipherComponentsAnalysis:
         is_component_word_operation = results[plot_number]["type"] == "word_operation"
         is_component_rotate_or_shift = results[plot_number]["description"][0] in ["ROTATE", "SHIFT"]
         if is_component_word_operation and is_component_rotate_or_shift:
-            title = results[plot_number]["description"][0] + f" {results[plot_number]['description'][1]}" + \
-                    f", {results[plot_number]['input_bit_size']} input bit size"
+            title = (
+                results[plot_number]["description"][0]
+                + f" {results[plot_number]['description'][1]}"
+                + f", {results[plot_number]['input_bit_size']} input bit size"
+            )
         elif is_component_word_operation and not is_component_rotate_or_shift:
-            title = results[plot_number]["description"][0] + \
-                    f", {results[plot_number]['description'][1]} inputs of {results[plot_number]['output_bit_size']} bits"
+            title = (
+                results[plot_number]["description"][0]
+                + f", {results[plot_number]['description'][1]} inputs of {results[plot_number]['output_bit_size']} bits"
+            )
         else:
             title = results[plot_number]["type"] + f", {results[plot_number]['input_bit_size']} input bit size"
         title += f", {results[plot_number]['number_of_occurrences']} occurrences"
@@ -911,14 +965,23 @@ class CipherComponentsAnalysis:
                 continue
             elif results[plot_number]["properties"][category]["value"] not in [False, True]:
                 if category in ["boomerang_uniformity", "differential_uniformity"]:
-                    values.append(1 - (log2(results[plot_number]["properties"][category]["value"]) / log2(
-                        results[plot_number]["properties"][category]["max_possible_value"])))
+                    values.append(
+                        1
+                        - (
+                            log2(results[plot_number]["properties"][category]["value"])
+                            / log2(results[plot_number]["properties"][category]["max_possible_value"])
+                        )
+                    )
                 else:
-                    values.append(log2(results[plot_number]["properties"][category]["value"]) / log2(
-                        results[plot_number]["properties"][category]["max_possible_value"]))
+                    values.append(
+                        log2(results[plot_number]["properties"][category]["value"])
+                        / log2(results[plot_number]["properties"][category]["max_possible_value"])
+                    )
             else:
-                values.append(results[plot_number]["properties"][category]["value"] / results[plot_number][
-                    "properties"][category]["max_possible_value"])
+                values.append(
+                    results[plot_number]["properties"][category]["value"]
+                    / results[plot_number]["properties"][category]["max_possible_value"]
+                )
         return values
 
     def _remove_components_with_strings_as_values(self, results_without_xor):
@@ -965,8 +1028,9 @@ def binary_matrix_of_linear_component(component):
             return linear_layer_to_binary_matrix(ROTATE, input_bit_size, output_bit_size, list_specific_inputs)
     elif component.type == MIX_COLUMN:
         list_specific_inputs = component.description
-        return linear_layer_to_binary_matrix(mix_column_generalized, input_bit_size, output_bit_size,
-                                             list_specific_inputs)
+        return linear_layer_to_binary_matrix(
+            mix_column_generalized, input_bit_size, output_bit_size, list_specific_inputs
+        )
     elif component.type == LINEAR_LAYER:
         return matrix(GF(2), component.input_bit_size, component.description)
     else:
@@ -1037,9 +1101,11 @@ def get_inverse_matrix_in_integer_representation(component):
         raise Exception(f"Component is not of type {MIX_COLUMN}")
 
     description = component.description
-    matrix, _ = instantiate_matrix_over_correct_field(description[0], int(description[1]), int(description[2]),
-                                                      component.input_bit_size, component.output_bit_size)
+    matrix, _ = instantiate_matrix_over_correct_field(
+        description[0], int(description[1]), int(description[2]), component.input_bit_size, component.output_bit_size
+    )
     return field_element_matrix_to_integer_matrix(matrix.inverse())
+
 
 def has_maximal_branch_number(component):
     """
@@ -1083,25 +1149,26 @@ def has_maximal_branch_number(component):
     output_word_size = component.output_bit_size // word_size
 
     if component.type == MIX_COLUMN:
-        return branch_number(component, 'linear', 'word') == (output_word_size + 1)
+        return branch_number(component, "linear", "word") == (output_word_size + 1)
 
 
 def calculate_weights_for_mix_column(component, format, type):
-    if format == 'bit':
+    if format == "bit":
         # Use faster direct computation for binary matrices
         binary_matrix = binary_matrix_of_linear_component(component)
         if not binary_matrix:
-            raise TypeError(f'Cannot compute the binary matrix of {component.id}')
+            raise TypeError(f"Cannot compute the binary matrix of {component.id}")
         # compute_branch_number_from_binary_matrix already returns the minimum weight
         # Return as list to maintain interface compatibility with word-level calls
         bn = compute_branch_number_from_binary_matrix(binary_matrix, type)
         return [bn]
-    
+
     # Word-level computation
     description = component.description
-    final_mtr, F = instantiate_matrix_over_correct_field(description[0], int(description[1]), int(description[2]),
-                                                         component.input_bit_size, component.output_bit_size)
-    if type == 'linear':
+    final_mtr, F = instantiate_matrix_over_correct_field(
+        description[0], int(description[1]), int(description[2]), component.input_bit_size, component.output_bit_size
+    )
+    if type == "linear":
         final_mtr = final_mtr.transpose()
     n = final_mtr.nrows()
     id_matrix = identity_matrix(F, n)
@@ -1114,13 +1181,13 @@ def calculate_weights_for_mix_column(component, format, type):
 
 
 def calculate_weights_for_linear_layer(component, format, type):
-    if format == 'word':
-        print('format type cannot be \'word\' for a linear layer component')
-    
+    if format == "word":
+        print("format type cannot be 'word' for a linear layer component")
+
     # Use faster direct computation for binary matrices
     binary_matrix = binary_matrix_of_linear_component(component)
     if not binary_matrix:
-        raise TypeError(f'Cannot compute the binary matrix of {component.id}')
+        raise TypeError(f"Cannot compute the binary matrix of {component.id}")
     # compute_branch_number_from_binary_matrix already returns the minimum weight
     # Return as list to maintain interface compatibility
     bn = compute_branch_number_from_binary_matrix(binary_matrix, type)
@@ -1134,6 +1201,7 @@ def int_to_poly(integer_value, word_size, variable):
             z = z + pow(variable, i)
 
     return z
+
 
 def instantiate_matrix_over_correct_field(matrix, polynomial_as_int, word_size, input_bit_size, output_bit_size):
     """
@@ -1158,13 +1226,13 @@ def instantiate_matrix_over_correct_field(matrix, polynomial_as_int, word_size, 
         ....: mix_column_component.input_bit_size, mix_column_component.output_bit_size)
 
     """
-    G = PolynomialRing(GF(2), 'x')
+    G = PolynomialRing(GF(2), "x")
     x = G.gen()
     irr_poly = int_to_poly(polynomial_as_int, word_size, x)
     if irr_poly:
-        F = GF(2 ** word_size, name='a', modulus=irr_poly)
+        F = GF(2**word_size, name="a", modulus=irr_poly)
     else:
-        F = GF(2 ** word_size)
+        F = GF(2**word_size)
     a = F.gen()
     input_word_size = input_bit_size // word_size
     output_word_size = output_bit_size // word_size
@@ -1176,6 +1244,7 @@ def instantiate_matrix_over_correct_field(matrix, polynomial_as_int, word_size, 
     final_mtr = Matrix(F, mtr)
 
     return final_mtr, F
+
 
 def field_element_matrix_to_integer_matrix(matrix):
     """
@@ -1214,16 +1283,18 @@ def field_element_matrix_to_integer_matrix(matrix):
 
     return Matrix(matrix.nrows(), matrix.ncols(), int_matrix)
 
-def compute_branch_number_from_binary_matrix(binary_matrix, type='differential'):
+
+def compute_branch_number_from_binary_matrix(binary_matrix, type="differential"):
     """
     Compute branch number directly from a binary matrix.
-    
-    Parameters:
-    - binary_matrix: Sage matrix over GF(2)
-    - type: 'differential' or 'linear'
-    
+
+    INPUT:
+
+    - ``binary_matrix`` -- Sage matrix over GF(2)
+    - ``type`` -- **string** (default: `"differential"`) differential or linear
+
     EXAMPLES::
-    
+
         sage: from sage.all import Matrix, identity_matrix
         sage: from sage.rings.finite_rings.finite_field_constructor import FiniteField as GF
         sage: from claasp.cipher_modules.component_analysis_tests import compute_branch_number_from_binary_matrix
@@ -1233,22 +1304,22 @@ def compute_branch_number_from_binary_matrix(binary_matrix, type='differential')
         2
     """
     # For linear branch number, transpose the matrix
-    if type == 'linear':
+    if type == "linear":
         matrix = binary_matrix.transpose()
     else:
         matrix = binary_matrix
-    
+
     F = matrix.base_ring()  # Should be GF(2)
     n = matrix.nrows()
-    
+
     # Create generator matrix [I|M]
     id_matrix = identity_matrix(F, n)
     generator_matrix = Matrix(F, [list(a) + list(b) for a, b in zip(id_matrix, matrix)])
-    
+
     # Compute Hamming weight of each row
     weights = []
     for i in range(n):
         weights.append(generator_matrix[i].hamming_weight())
-    
+
     # Branch number is the minimum weight
     return min(weights)
