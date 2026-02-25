@@ -1,6 +1,6 @@
 import numpy as np
 from claasp.cipher_modules.generic_functions_vectorized_bit import bit_vector_idea_modmul
-
+from claasp.cipher_modules.generic_functions_vectorized_bit import bit_vector_MODMUL
 
 def test_bit_vector_modmul():
     # Test 1: Standard IDEA multiplication (3 * 5) mod 65537 = 15
@@ -32,4 +32,24 @@ def test_bit_vector_modmul():
     result = bit_vector_idea_modmul([a, b], 2, 16, 65537)
     expected = np.zeros((16, 1), dtype=np.uint8)
     expected[15, 0] = 1  # Result is 1
+    assert np.array_equal(result, expected)
+
+def test_bit_vector_modmul_standard():
+    # Test (3 * 5) mod 16 = 15
+    a = np.zeros((4, 1), dtype=np.uint8)
+    a[2, 0] = 1
+    a[3, 0] = 1
+    b = np.zeros((4, 1), dtype=np.uint8)
+    b[1, 0] = 1
+    b[3, 0] = 1
+    result = bit_vector_MODMUL([a, b], 2, 4)
+    expected = np.zeros((4, 1), dtype=np.uint8)
+    expected[:, 0] = 1
+    assert np.array_equal(result, expected)
+    
+    # Test (4 * 4) mod 16 = 0
+    a = np.zeros((4, 1), dtype=np.uint8)
+    a[1, 0] = 1
+    result = bit_vector_MODMUL([a, a], 2, 4)
+    expected = np.zeros((4, 1), dtype=np.uint8)
     assert np.array_equal(result, expected)
