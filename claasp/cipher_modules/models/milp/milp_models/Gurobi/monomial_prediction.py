@@ -434,6 +434,89 @@ class MilpMonomialPredictionModel():
 
         self._model.update()
 
+    def add_modmul_constraints(self, component):
+        """
+        Modular multiplication constraints based on 3SDP-woU model.
+        """
+        output_vars = self.get_output_vars(component)
+        input_vars_concat = self.get_input_vars(component)
+        self._model.update()
+
+        total = len(input_vars_concat)
+        if total % 2 != 0:
+            raise ValueError("add_modmul_constraints: input length not even")
+        n = total // 2
+        x_bits = list(reversed(input_vars_concat[:n])) # index 0 is LSB
+        y_bits = list(reversed(input_vars_concat[n:2 * n]))
+        z_bits_out = list(reversed(output_vars))
+
+        tag = f"modmul_{component.id}"
+
+        # p_matrix[i][j]: truncation i + j < n
+        p_matrix = []
+        for i in range(n):
+            row = []
+            for j in range(n):
+                p_var = self._model.addVar(vtype=GRB.BINARY, name=f"{tag}_p_{i}_{j}") if i + j < n else None
+                row.append(p_var)
+            p_matrix.append(row)
+        self._model.update()
+
+        # Enforce 3SDP-woU COPY structure for partial products:
+        for i in range(n):
+            relevant_ps = [p_matrix[i][j] for j in range(n) if p_matrix[i][j] is not None]
+            if relevant_ps:
+                for p_var in relevant_ps:
+                    self._model.addConstr(x_bits[i] >= p_var)
+                self._model.addConstr(sum(relevant_ps) >= x_bits[i])
+            self.set_as_used_variables([x_bits[i]])
+
+        for j in range(n):
+            relevant_ps = [p_matrix[i][j] for i in range(n) if p_matrix[i][j] is not None]
+            if relevant_ps:
+                for p_var in relevant_ps:
+                    self._model.addConstr(y_bits[j] >= p_var)
+                self._model.addConstr(sum(relevant_ps) >= y_bits[j])
+            self.set_as_used_variables([y_bits[j]])
+
+        for i in range(n):
+            for j in range(n):
+                if p_matrix[i][j] is not None:
+                    self.set_as_used_variables([p_matrix[i][j]])
+
+        # z accumulator init to zero
+        z_acc = [self._model.addVar(vtype=GRB.BINARY, lb=0, ub=0, name=f"{tag}_zinit_{i}") for i in range(n)]
+        self._model.update()
+
+        # Cascade additions: z = z + (X * y[j] << j)
+        for j in range(n):
+            # shifted row = [0...0, p_0j, p_1j, ..., p_{n-1-j,j}]
+            shifted = []
+            for k in range(n):
+                if k < j:
+                    shifted.append(self._model.addVar(vtype=GRB.BINARY, lb=0, ub=0, name=f"{tag}_sh0_{k}_{j}"))
+                else:
+                    shifted.append(p_matrix[k - j][j])
+
+            next_z = z_bits_out if j == n - 1 else \
+                     [self._model.addVar(vtype=GRB.BINARY, name=f"{tag}_zacc_{j+1}_{i}") for i in range(n)]
+            self._model.update()
+
+            # Carry-ripple adder: next_z = z_acc + shifted
+            carry_vars = [self._model.addVar(vtype=GRB.BINARY, name=f"{tag}_c_{j}_{i}") for i in range(n - 1)]
+            carry_vars.append(self._model.addVar(vtype=GRB.BINARY, lb=0, ub=0, name=f"{tag}_czero_{j}"))
+            self._model.update()
+
+            for i in range(n):
+                c_in = carry_vars[i-1] if i > 0 else 0
+                s_i = self._model.addVar(vtype=GRB.INTEGER, lb=0, ub=3, name=f"{tag}_s_{j}_{i}")
+                self._model.addConstr(s_i == z_acc[i] + shifted[i] + c_in)
+                self._model.addConstr(next_z[i] + 2 * carry_vars[i] == s_i)
+                self.set_as_used_variables([z_acc[i], shifted[i], next_z[i], carry_vars[i], s_i])
+            z_acc = next_z
+
+        self._model.update()
+        
     def add_and_constraints(self, component):
         output_vars = self.get_output_vars(component)
         input_vars_concat = self.get_input_vars(component)
@@ -662,6 +745,8 @@ class MilpMonomialPredictionModel():
                         self.add_or_constraints(component)
                     elif component.description[0] == "MODADD":
                         self.add_modadd_constraints(component)
+                    elif "MODMUL" in component.description[0]:
+                        self.add_modmul_constraints(component)
                     else:
                         raise NotImplementedError(f"Component {component.description[0]} is not yet implemented")
                 else:
