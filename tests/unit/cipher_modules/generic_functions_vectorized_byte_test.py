@@ -267,6 +267,38 @@ def test_byte_vector_MODADD():
     modadd_result = byte_vector_MODADD(input_values)
     assert np.all(modadd_result == expected_result)
 
+def test_byte_vector_MODMUL():
+    bits = 48
+    A = [0xcafeca]
+    B = [0xdecade]
+    input_values = [integer_array_to_evaluate_vectorized_input(A, bits), integer_array_to_evaluate_vectorized_input(B, bits)]
+    expected_result = integer_array_to_evaluate_vectorized_input([(A[0]*B[0]) % (2**bits)], bits)
+    modmul_result = byte_vector_MODMUL(input_values, 2, bits)
+    assert np.all(modmul_result == expected_result)
+    
+    # Test smaller sizes 
+    bits = 16
+    A = [3]
+    B = [5]
+    input_values = [integer_array_to_evaluate_vectorized_input(A, bits), integer_array_to_evaluate_vectorized_input(B, bits)]
+    expected_result = integer_array_to_evaluate_vectorized_input([(A[0]*B[0]) % (2**bits)], bits)
+    modmul_result = byte_vector_MODMUL(input_values, 2, bits)
+    assert np.all(modmul_result == expected_result)
+    
+    # Test 3-inputs
+    bits = 16
+    A = [3]
+    B = [5]
+    C = [2]
+    input_values = [
+        integer_array_to_evaluate_vectorized_input(A, bits),
+        integer_array_to_evaluate_vectorized_input(B, bits),
+        integer_array_to_evaluate_vectorized_input(C, bits)
+    ]
+    expected_result = integer_array_to_evaluate_vectorized_input([(A[0]*B[0]*C[0]) % (2**bits)], bits)
+    modmul_result = byte_vector_MODMUL(input_values, 3, bits)
+    assert np.all(modmul_result == expected_result)
+
 def test_byte_vector_MODSUB():
     bits = 48
     A = [0xcafecafecafe]

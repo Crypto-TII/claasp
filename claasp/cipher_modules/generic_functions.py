@@ -547,6 +547,33 @@ def MODADD(input, number_of_inputs, modulus, verbosity=False):
 
     return output
 
+def MODMUL(input, number_of_inputs, modulus, verbosity=False):
+    """
+    The modulus is 2^w, where w=Floor(input_length/number_of_inputs).
+
+    INPUT:
+
+    - ``input`` -- **BitArray object**; BitArray
+    - ``number_of_inputs`` -- **integer**; specify in how many parts must the input be split
+    - ``modulus`` -- **integer**; the modulus for multiplication
+    - ``verbosity`` -- **boolean** (default: `False`); set this flag to True to print the input/output
+    """
+    block_len = input.len // number_of_inputs
+    output = input[0:block_len].uint
+    if modulus is None:
+        modulus = 2 ** block_len
+    for i in range(1, number_of_inputs):
+        output = (output * input[i * block_len:(i + 1) * block_len].uint) % modulus
+
+    output = BitArray(uint=output, length=block_len)
+    if verbosity:
+        print("MODMUL:")
+        print(number_of_inputs_expression.format(number_of_inputs))
+        print(input_expression.format(input.bin))
+        print(output_expression.format(output.bin))
+
+    return output
+
 
 def MODSUB(input, number_of_inputs, modulus, verbosity=False):
     """
