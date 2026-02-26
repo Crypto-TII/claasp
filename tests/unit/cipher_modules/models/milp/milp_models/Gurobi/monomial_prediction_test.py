@@ -146,3 +146,10 @@ def test_modmul_modeling_correctness_via_anf_exhaustive():
                 f"ModMul fail for n={n}, x={x}, y={y}: "
                 f"Expected {expected_z}, got {computed_z}"
             )
+
+@pytest.mark.skip(reason="Requires Gurobi license")
+def test_msx64_degree_upper_bound():
+    from claasp.ciphers.block_ciphers.msx_block_cipher import MSXBlockCipher
+    cipher = MSXBlockCipher(block_bit_size=64, key_bit_size=128, number_of_rounds=1)
+    milp = MilpMonomialPredictionModel(cipher)
+    assert milp.find_upper_bound_degree_of_specific_output_bit(32) == 32

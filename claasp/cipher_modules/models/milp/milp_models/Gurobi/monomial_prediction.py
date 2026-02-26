@@ -360,10 +360,28 @@ class MilpMonomialPredictionModel():
 
     def get_output_vars(self, component):
         output_vars = []
-        tmp = list(self._occurences[component.id].keys())
-        tmp.sort()
-        for i in tmp:
-            output_vars.append(self._model.getVarByName(f"{component.id}[{i}]"))
+        
+        # Components that iterate over bit indices (or where its required to track all output bits, even unused ones) must use the padded logic.
+        safe_components = ["MODADD", "MODMUL", "XOR", "AND"]
+        desc_str = str(component.description[0])
+        needs_padding = any(c in desc_str for c in safe_components)
+
+        if not needs_padding:
+            tmp = list(self._occurences[component.id].keys())
+            tmp.sort()
+            for i in tmp:
+                output_vars.append(self._model.getVarByName(f"{component.id}[{i}]"))
+        else:
+            # 3SDP-woU fix: Complete output allocation
+            # Unused bits must be created and strictly constrained to 0 to prevent weight leaks.
+            output_size = component.output_bit_size
+            for i in range(output_size):
+                var = self._model.getVarByName(f"{component.id}[{i}]")
+                if var is None:
+                    var = self._model.addVar(vtype=GRB.BINARY, name=f"{component.id}[{i}]_unused")
+                    self._model.addConstr(var == 0)
+                output_vars.append(var)
+                
         self._model.update()
         return output_vars
 
@@ -433,6 +451,7 @@ class MilpMonomialPredictionModel():
             self.set_as_used_variables([ai, bi, zi, t_i, s_i])
 
         self._model.update()
+
 
     def add_modmul_constraints(self, component):
         """
@@ -516,7 +535,7 @@ class MilpMonomialPredictionModel():
             z_acc = next_z
 
         self._model.update()
-        
+
     def add_and_constraints(self, component):
         output_vars = self.get_output_vars(component)
         input_vars_concat = self.get_input_vars(component)
@@ -730,6 +749,8 @@ class MilpMonomialPredictionModel():
                     self.add_linear_layer_constraints(component)
                 elif component.type in ["cipher_output", "intermediate_output"]:
                     self.add_intermediate_output_constraints(component)
+                elif component.type == "concatenate":
+                    self.add_concatenate_constraints(component)
                 elif component.type == "word_operation":
                     if component.description[0] == "XOR":
                         self.add_xor_constraints(component)
@@ -753,6 +774,14 @@ class MilpMonomialPredictionModel():
                     raise NotImplementedError(f"Component {component.description[0]} is not yet implemented")
 
         return self._model
+
+    def add_concatenate_constraints(self, component):
+        output_vars = self.get_output_vars(component)
+        input_vars_concat = self.get_input_vars(component)
+        for i in range(component.output_bit_size):
+            self._model.addConstr(output_vars[i] == input_vars_concat[i])
+            self.set_as_used_variables([input_vars_concat[i]])
+        self._model.update()
 
     def get_where_component_is_used(self, predecessors, input_id_link_needed, block_needed):
         occurences = {}
@@ -1436,7 +1465,7 @@ class MilpMonomialPredictionModel():
             for i in range(size):
                 var = self._model.getVarByName(f"{inp}[{i}]")
                 if var is not None:
-                    vars_target.append(var)
+                        vars_target.append(var)
 
         self._model.setObjective(sum(vars_target), GRB.MAXIMIZE)
         self._model.update()
