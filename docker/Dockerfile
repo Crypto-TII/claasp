@@ -7,7 +7,7 @@ ARG INSTALL_CLAASP_LIBRARY=false
 ARG TARGETARCH
 
 # Install dependencies with apt-get
-RUN apt-get -q update &&
+RUN apt-get -q update && \
     apt-get install --no-install-recommends -y \
     libboost-program-options-dev \
     libsqlite3-dev \
