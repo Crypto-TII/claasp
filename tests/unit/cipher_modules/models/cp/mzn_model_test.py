@@ -273,7 +273,7 @@ def test_build_generic_cp_model_from_dictionary_xor_linear():
     model._model_prefix.extend(variables)
     model._variables_list.extend(constraints)
     model._model_constraints.extend(model.final_xor_linear_constraints(weight))
-    model._model_constraints = model._model_prefix + model._variables_list + model._model_constraints
+    model._model_constraints = model._model_prefix + model._model_constraints
 
     result = model.solve(model_type="xor_linear_one_solution", solver_name="cp-sat")
     

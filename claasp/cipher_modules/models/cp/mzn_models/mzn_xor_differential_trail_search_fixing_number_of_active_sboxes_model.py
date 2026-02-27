@@ -78,7 +78,7 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
         self._model_prefix.extend(variables)
         self._variables_list.append(constraints)
         self._model_constraints.extend(self.final_xor_differential_constraints(weight))
-        self._model_constraints = self._model_prefix + self._variables_list + self._model_constraints
+        self._model_constraints = self._model_prefix + self._model_constraints
 
     def find_all_xor_differential_trails_with_fixed_weight(
         self,
@@ -483,7 +483,7 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
             for key in command_options["format"]:
                 command.extend(command_options[key])
 
-            model = table_of_solutions + "\n" + "\n".join(self._model_constraints) + "\n"
+            model =  table_of_solutions + "\n".join(self._variables_list) + "\n".join(self._model_constraints) + "\n"
             solver_process = subprocess.run(command, input=model, capture_output=True, text=True)
             if solver_process.returncode < 0:
                 raise ValueError("something went wrong with solver subprocess... sorry!")
