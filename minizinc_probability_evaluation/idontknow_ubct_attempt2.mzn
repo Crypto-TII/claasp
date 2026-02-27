@@ -175,6 +175,18 @@ int: nbit = 16;
 % array[0..nbit-1] of var 0..1: nR = array1d(0..nbit-1, [0,0,0,0,1,0,0,0,0,0,0,1,1,1,0,0]);
 % array[0..nbit-1] of var 0..1: dLL = array1d(0..nbit-1,[1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0]);
 
+% v_0 = (1,0,0,0) -> v_0/2^(30)
+% v_1 = A_0 *v_0 = (4,0,0,0) -> (4/2^{30},0,0,0)
+% v_2 = A_0 *v_1 = (16,0,0,0)
+% v_3 =
+% v_t = (prod A_i) * v_0 -> first column of (prod A_i)
+% ubct_value = sum(v_t[i]) = ||v_t||_1
+% ||v_t||_1 = || prod A_i * v_0||_1 <= ||prod A_i||_opt * ||v_0||_1 = ||prod A_i||_opt <= prod_i ||A_i||_opt
+% log(||v_t||_1) <= sum_i log(||A_i||_opt)
+% - log(||v_t||_1) => - sum_i log(||A_i||_opt)
+% ||A||_opt = sup_x s.t ||x||_1 = 1 ||A * x||_1
+% prob = log(||v_t||_1) = log (||prod A_i * v_0||_1) <= log( ||prod A_i||_opt ||v0||_1)
+
 array[0..nbit-1] of var 0..1: dL = array1d(0..nbit-1, [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]);
 array[0..nbit-1] of var 0..1: dR = array1d(0..nbit-1, [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]);
 array[0..nbit-1] of var 0..1: nL = array1d(0..nbit-1, [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]);
