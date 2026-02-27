@@ -1465,7 +1465,7 @@ class MilpMonomialPredictionModel():
             for i in range(size):
                 var = self._model.getVarByName(f"{inp}[{i}]")
                 if var is not None:
-                        vars_target.append(var)
+                    vars_target.append(var)
 
         self._model.setObjective(sum(vars_target), GRB.MAXIMIZE)
         self._model.update()

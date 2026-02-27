@@ -357,30 +357,32 @@ class MSXBlockCipher(Cipher):
 
             W0, W1, W2, W3 = W0_new, W1_new, W2_new, W3_new
 
-        shifted_blocks = [W0, W1, W2, W3]
-        total_shifts = self.n_rounds % 4
+        # shifted_blocks = [W0, W1, W2, W3]
+        # total_shifts = self.n_rounds % 4
         
-        aligned_blocks = shifted_blocks[-total_shifts:] + shifted_blocks[:-total_shifts] if total_shifts > 0 else shifted_blocks
-        O0, O1, O2, O3 = aligned_blocks
+        # aligned_blocks = shifted_blocks[-total_shifts:] + shifted_blocks[:-total_shifts] if total_shifts > 0 else shifted_blocks
+        # O0, O1, O2, O3 = aligned_blocks
         
         if i == self.n_rounds - 1:
-            W0_out = self._store_le_word(O0)
-            W1_out = self._store_le_word(O1)
-            W2_out = self._store_le_word(O2)
-            W3_out = self._store_le_word(O3)
+            W0_out = self._store_le_word(W0)
+            W1_out = self._store_le_word(W1)
+            W2_out = self._store_le_word(W2)
+            W3_out = self._store_le_word(W3)
+            # Output order W1+W2+W3+W0 matches the original alignment for 18 rounds
+            # (aligned_blocks with 2-shift: [W2,W3,W0,W1], output O3+O0+O1+O2 = W1+W2+W3+W0)
             self.add_cipher_output_component(
-                W3_out.id + W0_out.id + W1_out.id + W2_out.id,
-                W3_out.input_bit_positions + W0_out.input_bit_positions + W1_out.input_bit_positions + W2_out.input_bit_positions,
+                W1_out.id + W2_out.id + W3_out.id + W0_out.id,
+                W1_out.input_bit_positions + W2_out.input_bit_positions + W3_out.input_bit_positions + W0_out.input_bit_positions,
                 4 * self.word_size,
             )
         else:
-            W0_out = self._store_le_word(O0)
-            W1_out = self._store_le_word(O1)
-            W2_out = self._store_le_word(O2)
-            W3_out = self._store_le_word(O3)
+            W0_out = self._store_le_word(W0)
+            W1_out = self._store_le_word(W1)
+            W2_out = self._store_le_word(W2)
+            W3_out = self._store_le_word(W3)
             self.add_round_output_component(
-                W3_out.id + W0_out.id + W1_out.id + W2_out.id,
-                W3_out.input_bit_positions + W0_out.input_bit_positions + W1_out.input_bit_positions + W2_out.input_bit_positions,
+                W1_out.id + W2_out.id + W3_out.id + W0_out.id,
+                W1_out.input_bit_positions + W2_out.input_bit_positions + W3_out.input_bit_positions + W0_out.input_bit_positions,
                 4 * self.word_size,
             )
 
