@@ -1,4 +1,5 @@
-FROM ubuntu:22.04 AS claasp-base
+# Ubuntu 22.04
+FROM ubuntu@sha256:3ba65aa20f86a0fad9df2b2c259c613df006b2e6d0bfcc8a146afb8c525a9751 AS claasp-base
 
 ARG DEBIAN_FRONTEND=noninteractive
 ARG COPY_CLAASP_LIBRARY=false
@@ -6,36 +7,26 @@ ARG INSTALL_CLAASP_LIBRARY=false
 ARG TARGETARCH
 
 # Install dependencies with apt-get
-RUN apt-get -q update
-RUN apt-get install --no-install-recommends -y \
+RUN apt-get -q update &&
+    apt-get install --no-install-recommends -y \
     libboost-program-options-dev \
     libsqlite3-dev \
     libstdc++-9-dev \
-    ca-certificates
-
-RUN apt-get install --no-install-recommends -y \
+    ca-certificates \
     gfortran \
     gcc \
-    g++
-
-RUN apt-get install --no-install-recommends -y \
+    g++ \
     openssl \
     sudo \
-    zlib1g-dev
-
-RUN apt-get install -y \
+    zlib1g-dev \
     autoconf \
     build-essential \
     cmake \
     git \
     gperf \
-    wget
-
-RUN apt-get update && apt-get install -y \
+    wget \
     chromium-browser \
-    chromium-chromedriver
-
-RUN apt-get install -y \
+    chromium-chromedriver \
     dieharder=3.31.1.2-1build1 \
     latexmk=1:4.76-1 \
     python3-cryptominisat=5.8.0+dfsg1-2 \
