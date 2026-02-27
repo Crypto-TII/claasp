@@ -168,9 +168,10 @@ def test_backward_direction_distinguisher():
 
     input_difference = int(trail["components_values"]["bottom_fake_plaintext"]["value"], 16)
     output_difference1 = int(trail["components_values"]["bottom_plaintext"]["value"], 16)
+    output_difference1_string = bin(output_difference1)[2:].zfill(512)
 
     prob = shared_difference_paired_input_differential_linear_checker_permutation(
-        chacha_stream_cipher, input_difference, output_difference1, 1 << 8, 512, 1
+        chacha_stream_cipher, input_difference, output_difference1_string, 1 << 8, 512, 1
     )
 
     assert prob < 14
