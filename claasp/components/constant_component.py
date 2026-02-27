@@ -172,6 +172,20 @@ class Constant(Component):
 
         return cp_declarations, cp_constraints
 
+    def cp_continuous_differential_propagation_constraints(self, model):
+        size = self.output_bit_size
+
+        cp_declarations = [
+            f"array[0..{size - 1}] of var -1.0..1.0: {self.id};"
+        ]
+
+        cp_constraints = [
+            f"constraint {self.id}[{i}] = -1.0;"
+            for i in range(size)
+        ]
+
+        return cp_declarations, cp_constraints
+    
     def cp_deterministic_truncated_xor_differential_trail_constraints(self):
         return self.cp_xor_differential_propagation_constraints()
 
