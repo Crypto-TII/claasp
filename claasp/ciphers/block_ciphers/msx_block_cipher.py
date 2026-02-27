@@ -130,6 +130,7 @@ class MSXBlockCipher(Cipher):
 
     def _key_schedule_initialization_64(self):
         k = self._key_words_from_input(4)
+        
         C = [
             732050807, 568877293, 527446341, 505872366, 942805254, 634010619,
             1296924710, 3826869025, 515107230, 1130980195, 2149511253, 539907735,
@@ -143,23 +144,15 @@ class MSXBlockCipher(Cipher):
         self.add_XOR_component(t.id + Cc[0].id, t.input_bit_positions + Cc[0].input_bit_positions, self.word_size)
         st0 = ComponentState([self.get_current_component_id()], [list(range(self.word_size))])
 
-        def k_xor_const(kw, cst):
-            self.add_XOR_component(kw.id + cst.id, kw.input_bit_positions + cst.input_bit_positions, self.word_size)
-            return ComponentState([self.get_current_component_id()], [list(range(self.word_size))])
-
         st = [None] * 12
         st[0] = st0
-        st[1] = k_xor_const(k[2], Cc[1])
-        st[2] = k_xor_const(k[0], Cc[2])
-        st[3] = k_xor_const(k[3], Cc[3])
-        st[4] = k_xor_const(k[0], Cc[4])
-        st[5] = k_xor_const(k[1], Cc[5])
-        st[6] = k_xor_const(k[3], Cc[6])
-        st[7] = k_xor_const(k[0], Cc[7])
-        st[8] = k_xor_const(k[2], Cc[8])
-        st[9] = k_xor_const(k[1], Cc[9])
-        st[10] = k_xor_const(k[2], Cc[10])
-        st[11] = k_xor_const(k[3], Cc[11])
+        assign = [
+            (1, k[2], 1), (2, k[0], 2), (3, k[3], 3), (4, k[0], 4), (5, k[1], 5), (6, k[3], 6),
+            (7, k[0], 7), (8, k[2], 8), (9, k[1], 9), (10, k[2], 10), (11, k[3], 11)
+        ]
+        for idx, kw, ci in assign:
+            self.add_XOR_component(kw.id + Cc[ci].id, kw.input_bit_positions + Cc[ci].input_bit_positions, self.word_size)
+            st[idx] = ComponentState([self.get_current_component_id()], [list(range(self.word_size))])
         return st
 
     def _update_key_state_64(self, st, step):
@@ -288,27 +281,35 @@ class MSXBlockCipher(Cipher):
             if i == 0:
                 key_state = self._key_schedule_initialization_64()
                 rk_buffer.extend(key_state)
-                L, R = self.round_initialization_64()
+                W0, W1 = self.round_initialization_64()
 
             c_i = self._const32(self.CON + ((i & 0xFFFF) << 16))
             rk_group = next_rk_group()
-            if i % 2 == 0:
-                F_out = self.round_function(L, rk_group, c_i)
-                self.add_XOR_component(R.id + F_out.id, R.input_bit_positions + F_out.input_bit_positions, self.word_size)
-                R = ComponentState([self.get_current_component_id()], [list(range(self.word_size))])
-            else:
-                F_out = self.round_function(R, rk_group, c_i)
-                self.add_XOR_component(L.id + F_out.id, L.input_bit_positions + F_out.input_bit_positions, self.word_size)
-                L = ComponentState([self.get_current_component_id()], [list(range(self.word_size))])
+            # MSX-64 Feistel applies F to W1 (offset 32) exactly as the original code applied F to L.
+            F_out = self.round_function(W1, rk_group, c_i)
+            self.add_XOR_component(W0.id + F_out.id, W0.input_bit_positions + F_out.input_bit_positions, self.word_size)
+            W0_next = ComponentState([self.get_current_component_id()], [list(range(self.word_size))])
+            
+            W0_new = W1
+            W1_new = W0_next
+            W0, W1 = W0_new, W1_new
 
-            if i == self.n_rounds - 1:
-                L_out = self._store_le_word(L)
-                R_out = self._store_le_word(R)
-                self.add_cipher_output_component(L_out.id + R_out.id, L_out.input_bit_positions + R_out.input_bit_positions, 2 * self.word_size)
-            else:
-                L_out = self._store_le_word(L)
-                R_out = self._store_le_word(R)
-                self.add_round_output_component(L_out.id + R_out.id, L_out.input_bit_positions + R_out.input_bit_positions, 2 * self.word_size)
+        if i == self.n_rounds - 1:
+            W0_out = self._store_le_word(W0)
+            W1_out = self._store_le_word(W1)
+            self.add_cipher_output_component(
+                W1_out.id + W0_out.id,
+                W1_out.input_bit_positions + W0_out.input_bit_positions,
+                2 * self.word_size,
+            )
+        else:
+            W0_out = self._store_le_word(W0)
+            W1_out = self._store_le_word(W1)
+            self.add_round_output_component(
+                W1_out.id + W0_out.id,
+                W1_out.input_bit_positions + W0_out.input_bit_positions,
+                2 * self.word_size,
+            )
 
     def _build_cipher_128(self):
         rk_buffer = []
@@ -340,55 +341,50 @@ class MSXBlockCipher(Cipher):
             rk_group1 = next_rk_group()
             rk_group2 = next_rk_group()
 
-            if r_mod == 0:
-                F1 = self.round_function(W1, rk_group1, c_i)
-                self.add_XOR_component(W0.id + F1.id, W0.input_bit_positions + F1.input_bit_positions, self.word_size)
-                W0 = ComponentState([self.get_current_component_id()], [list(range(self.word_size))])
-                F2 = self.round_function(W3, rk_group2, c_i)
-                self.add_XOR_component(W2.id + F2.id, W2.input_bit_positions + F2.input_bit_positions, self.word_size)
-                W2 = ComponentState([self.get_current_component_id()], [list(range(self.word_size))])
-            elif r_mod == 1:
-                F1 = self.round_function(W0, rk_group1, c_i)
-                self.add_XOR_component(W3.id + F1.id, W3.input_bit_positions + F1.input_bit_positions, self.word_size)
-                W3 = ComponentState([self.get_current_component_id()], [list(range(self.word_size))])
-                F2 = self.round_function(W2, rk_group2, c_i)
-                self.add_XOR_component(W1.id + F2.id, W1.input_bit_positions + F2.input_bit_positions, self.word_size)
-                W1 = ComponentState([self.get_current_component_id()], [list(range(self.word_size))])
-            elif r_mod == 2:
-                F1 = self.round_function(W3, rk_group1, c_i)
-                self.add_XOR_component(W2.id + F1.id, W2.input_bit_positions + F1.input_bit_positions, self.word_size)
-                W2 = ComponentState([self.get_current_component_id()], [list(range(self.word_size))])
-                F2 = self.round_function(W1, rk_group2, c_i)
-                self.add_XOR_component(W0.id + F2.id, W0.input_bit_positions + F2.input_bit_positions, self.word_size)
-                W0 = ComponentState([self.get_current_component_id()], [list(range(self.word_size))])
-            else:
-                F1 = self.round_function(W2, rk_group1, c_i)
-                self.add_XOR_component(W1.id + F1.id, W1.input_bit_positions + F1.input_bit_positions, self.word_size)
-                W1 = ComponentState([self.get_current_component_id()], [list(range(self.word_size))])
-                F2 = self.round_function(W0, rk_group2, c_i)
-                self.add_XOR_component(W3.id + F2.id, W3.input_bit_positions + F2.input_bit_positions, self.word_size)
-                W3 = ComponentState([self.get_current_component_id()], [list(range(self.word_size))])
+            # F takes W1 XORs into W0, and then F takes W3 XORs into W2
+            F1 = self.round_function(W1, rk_group1, c_i)
+            self.add_XOR_component(W0.id + F1.id, W0.input_bit_positions + F1.input_bit_positions, self.word_size)
+            W0_next = ComponentState([self.get_current_component_id()], [list(range(self.word_size))])
+            
+            F2 = self.round_function(W3, rk_group2, c_i)
+            self.add_XOR_component(W2.id + F2.id, W2.input_bit_positions + F2.input_bit_positions, self.word_size)
+            W2_next = ComponentState([self.get_current_component_id()], [list(range(self.word_size))])
 
-            if i == self.n_rounds - 1:
-                W0_out = self._store_le_word(W0)
-                W1_out = self._store_le_word(W1)
-                W2_out = self._store_le_word(W2)
-                W3_out = self._store_le_word(W3)
-                self.add_cipher_output_component(
-                    W3_out.id + W0_out.id + W1_out.id + W2_out.id,
-                    W3_out.input_bit_positions + W0_out.input_bit_positions + W1_out.input_bit_positions + W2_out.input_bit_positions,
-                    4 * self.word_size,
-                )
-            else:
-                W0_out = self._store_le_word(W0)
-                W1_out = self._store_le_word(W1)
-                W2_out = self._store_le_word(W2)
-                W3_out = self._store_le_word(W3)
-                self.add_round_output_component(
-                    W3_out.id + W0_out.id + W1_out.id + W2_out.id,
-                    W3_out.input_bit_positions + W0_out.input_bit_positions + W1_out.input_bit_positions + W2_out.input_bit_positions,
-                    4 * self.word_size,
-                )
+            W0_new = W3
+            W1_new = W0_next
+            W2_new = W1
+            W3_new = W2_next
+
+            W0, W1, W2, W3 = W0_new, W1_new, W2_new, W3_new
+
+        # shifted_blocks = [W0, W1, W2, W3]
+        # total_shifts = self.n_rounds % 4
+        
+        # aligned_blocks = shifted_blocks[-total_shifts:] + shifted_blocks[:-total_shifts] if total_shifts > 0 else shifted_blocks
+        # O0, O1, O2, O3 = aligned_blocks
+        
+        if i == self.n_rounds - 1:
+            W0_out = self._store_le_word(W0)
+            W1_out = self._store_le_word(W1)
+            W2_out = self._store_le_word(W2)
+            W3_out = self._store_le_word(W3)
+            # Output order W1+W2+W3+W0 matches the original alignment for 18 rounds
+            # (aligned_blocks with 2-shift: [W2,W3,W0,W1], output O3+O0+O1+O2 = W1+W2+W3+W0)
+            self.add_cipher_output_component(
+                W1_out.id + W2_out.id + W3_out.id + W0_out.id,
+                W1_out.input_bit_positions + W2_out.input_bit_positions + W3_out.input_bit_positions + W0_out.input_bit_positions,
+                4 * self.word_size,
+            )
+        else:
+            W0_out = self._store_le_word(W0)
+            W1_out = self._store_le_word(W1)
+            W2_out = self._store_le_word(W2)
+            W3_out = self._store_le_word(W3)
+            self.add_round_output_component(
+                W1_out.id + W2_out.id + W3_out.id + W0_out.id,
+                W1_out.input_bit_positions + W2_out.input_bit_positions + W3_out.input_bit_positions + W0_out.input_bit_positions,
+                4 * self.word_size,
+            )
 
     def round_function(self, x: ComponentState, rk_group, c: ComponentState) -> ComponentState:
         n = self.word_size
@@ -439,13 +435,13 @@ class MSXBlockCipher(Cipher):
         return y
 
     def round_initialization_64(self):
-        L_bits = self._load_le_word(32)
-        self.add_concatenate_component([INPUT_PLAINTEXT] * len(L_bits), [[b] for b in L_bits], self.word_size)
-        L = ComponentState([self.get_current_component_id()], [list(range(self.word_size))])
-        R_bits = self._load_le_word(0)
-        self.add_concatenate_component([INPUT_PLAINTEXT] * len(R_bits), [[b] for b in R_bits], self.word_size)
-        R = ComponentState([self.get_current_component_id()], [list(range(self.word_size))])
-        return L, R
+        W0_bits = self._load_le_word(0)
+        self.add_concatenate_component([INPUT_PLAINTEXT] * len(W0_bits), [[b] for b in W0_bits], self.word_size)
+        W0 = ComponentState([self.get_current_component_id()], [list(range(self.word_size))])
+        W1_bits = self._load_le_word(32)
+        self.add_concatenate_component([INPUT_PLAINTEXT] * len(W1_bits), [[b] for b in W1_bits], self.word_size)
+        W1 = ComponentState([self.get_current_component_id()], [list(range(self.word_size))])
+        return W0, W1
 
     def round_initialization_128(self):
         W0_bits = self._load_le_word(0)

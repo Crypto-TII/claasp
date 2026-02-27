@@ -7,6 +7,8 @@ from claasp.ciphers.permutations.gimli_permutation import GimliPermutation
 from claasp.ciphers.permutations.ascon_permutation import AsconPermutation
 from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
 from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import *
+from claasp.name_mappings import BLOCK_CIPHER
+from claasp.cipher import Cipher
 
 """
 
@@ -110,3 +112,44 @@ def test_check_correctness_of_keycoeff_of_cube_monomial_or_superpoly():
     keycoeff = milp.find_keycoeff_of_cube_monomial_of_specific_output_bit(0, cube)
     res = check_correctness_of_keycoeff_of_cube_monomial_or_superpoly(cipher, 0, cube, keycoeff)
     assert res == True
+@pytest.mark.skip(reason="Requires Gurobi license")
+def test_modmul_modeling_correctness_via_anf_exhaustive():
+    """
+    Verify MODMUL modeling correctness by generating ANFs for all output bits
+    and comparing their evaluation against the actual product for all 3-bit inputs.
+    """
+    n = 3
+    cipher = Cipher("test_modmul_3", BLOCK_CIPHER, ["input"], [n * 2], n)
+    cipher.add_round()
+    cipher.add_MODMUL_component(
+        ["input", "input"],
+        [list(range(n)), list(range(n, 2 * n))],
+        n,
+        2**n
+    )
+    cipher.add_cipher_output_component(["modmul_0_0"], [list(range(n))], n)
+
+    milp = MilpMonomialPredictionModel(cipher)
+    anfs = [milp.find_anf_of_specific_output_bit(i) for i in range(n)]
+    for x in range(2**n):
+        for y in range(2**n):
+            subs = {}
+            for i in range(n):
+                subs[f"i{i}"] = (x >> (n - 1 - i)) & 1
+                subs[f"i{n + i}"] = (y >> (n - 1 - i)) & 1
+            res_bits = [int(anf.subs(subs)) for anf in anfs]
+            computed_z = 0
+            for bit in res_bits:
+                computed_z = (computed_z << 1) | bit
+            expected_z = (x * y) % (2**n)
+            assert computed_z == expected_z, (
+                f"ModMul fail for n={n}, x={x}, y={y}: "
+                f"Expected {expected_z}, got {computed_z}"
+            )
+
+@pytest.mark.skip(reason="Requires Gurobi license")
+def test_msx64_degree_upper_bound():
+    from claasp.ciphers.block_ciphers.msx_block_cipher import MSXBlockCipher
+    cipher = MSXBlockCipher(block_bit_size=64, key_bit_size=128, number_of_rounds=1)
+    milp = MilpMonomialPredictionModel(cipher)
+    assert milp.find_upper_bound_degree_of_specific_output_bit(0) == 32
