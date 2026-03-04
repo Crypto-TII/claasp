@@ -82,7 +82,7 @@ class TestNISTTests:
         """Test frequency test with biased data (should fail)."""
         result = NISTTests.frequency_test(all_zeros)
         
-        assert result['passed'] == False
+        assert result['passed'] is False
         assert result['p_value'] < 0.01
 
     def test_block_frequency_test_random(self, random_binary_sequence):
