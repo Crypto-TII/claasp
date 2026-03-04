@@ -74,7 +74,7 @@ import numpy as np
 import math
 from typing import Any, Dict, List, Optional
 from scipy import special as spc
-from scipy.stats import chi2, norm
+from scipy.stats import norm
 from scipy.fft import fft
 
 
@@ -337,7 +337,12 @@ class NISTTests:
         """
         # If already a numpy array with only 0s and 1s, return as-is (fast path)
         if isinstance(data, np.ndarray):
-            if data.dtype == np.uint8 and len(data) > 0 and np.all((data == 0) | (data == 1)):
+            if (
+                data.dtype == np.uint8
+                and len(data) > 0
+                and data.max() <= 1
+                and data.min() >= 0
+            ):
                 return data
         
         # Convert bytes/bytearray to binary array using numpy.unpackbits (very fast)
@@ -1153,8 +1158,6 @@ class NISTTests:
                 }
             }
 
-        import math
-
         def _overlap_pr(u, eta_val):
             if u == 0:
                 return math.exp(-eta_val)
@@ -1442,7 +1445,6 @@ class NISTTests:
             True
         """
         binary_data = NISTTests._ensure_binary_array(binary_data)
-        n = len(binary_data)
         # Convert to +1 and -1 (use float to avoid uint8 overflow)
         x = 2.0 * binary_data - 1.0
 
