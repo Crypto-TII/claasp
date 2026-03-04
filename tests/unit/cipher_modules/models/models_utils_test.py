@@ -24,9 +24,10 @@ from claasp.ciphers.permutations.salsa_permutation import SalsaPermutation
 
 NOT_EQUAL = 'not equal'
 
-def test_hex_to_bitlist(hex_str):
+def test_hex_to_bitlist():
     assert hex_to_bitlist("0xabc10") == hex_to_bitlist("0Xabc10")
     assert hex_to_bitlist("0xabc10") == [1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0]
+    
 
 def test_print_components_values():
     old_stdout = sys.stdout
