@@ -239,11 +239,29 @@ def repeat_input_difference(input_difference_, number_of_samples_, number_of_byt
 
 def test_compute_xor_differential_weight():
     from claasp.ciphers.block_ciphers.ublock_block_cipher import UblockBlockCipher
+    p = '0x04400000000000000044400000000000'
+    c = '0x00044004444404004400444044400040'
+    w = 31
+    s = "KISSAT_EXT"
+
     ublock = UblockBlockCipher(number_of_rounds=3)
     sat = SatXorDifferentialModel(ublock)
     weight, trails= sat.compute_xor_differential_weight(
-        plaintext='0x04400000000000000044400000000000',
-        ciphertext= '0x00044004444404004400444044400040',
-        upper_weight= 31
+        plaintext= p,
+        ciphertext= c,
+        upper_weight= w,
+        solver_name= s,
+        log= True
     )
     assert round(weight,4) == 25.7146 and len(trails) == 8
+
+    file_name = f"compute_sat_xor_differential_weight__trails__{ublock}_{p}_{c}__geq{0}_leq{w}__{s}solver.log"
+    with open(file_name, "r") as file:
+        file_content = file.read()
+    for trail in trails:
+        assert str(trail) in file_content
+    
+    file_name = f"compute_sat_xor_differential_weight__{ublock}_{p}_{c}__geq{0}_leq{w}__{s}solver.log"
+    with open(file_name, "r") as file:
+        file_content = file.read()
+    assert str(weight) in file_content

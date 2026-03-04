@@ -331,7 +331,7 @@ class SatXorDifferentialModel(SatModel):
             sage: from claasp.ciphers.block_ciphers.ublock_block_cipher import UblockBlockCipher
             sage: ublock = UblockBlockCipher(number_of_rounds=3)
             sage: sat = SatXorDifferentialModel(ublock)
-            sage: weight, trails= sat.compute_differential_characteristics(
+            sage: weight, trails= sat.compute_xor_differential_weight(
                 plaintext='0x04400000000000000044400000000000',
                 ciphertext= '0x00044004444404004400444044400040',
                 upper_weight= 28
@@ -343,34 +343,35 @@ class SatXorDifferentialModel(SatModel):
         if lower_weight is not None and lower_weight > upper_weight:
             raise ValueError("lower_weight must be <= upper_weight")
 
-        def weightAndDictionary(solutions_list):
-            if len(solutions_list) == 0:
-                return None, dict()
-            
-            d = dict() # key is the weight as float and value is the number of occurrences observed
+        def weights_dictionary(solutions_list):            
+            d = {} # key is the weight as float and value is the number of occurrences observed
             for trail in solutions_list:
                 w = int(trail["total_weight"])
                 d[w] = d.get(w, 0) + 1
-            summ = 0
-            for w in d.keys():
-                summ += d[w] * pow(2,-w)
-            if summ == 0:
-                weight = None
-            else:
-                weight = round(-log2(summ),4)
 
-            return weight, dict(sorted(d.items()))
+            return d
+        
+        def calculate_cumulative_weight(weights_dict):
+            cumulative_probability = 0
+            for w in weights_dict.keys():
+                cumulative_probability += weights_dict[w] * pow(2,-w)
+
+            weight = None
+            if cumulative_probability > 0:
+                weight = round(-log2(cumulative_probability),4)
+
+            return weight
 
         def create_file_names():
-            def options_to_filename(options):
+            def sanitize(options):
                 if options == None:
                     return ""
                 joined = "_".join(options)
                 return "_" + re.sub(r"[^a-zA-Z0-9._-]", "", joined)
 
             geq = lower_weight if lower_weight != None else 0
-            file_path_trails = f'compute_sat_xor_differential_probability__{self._cipher}_{plaintext}_{ciphertext}__geq{geq}_leq{upper_weight}__trails__{solver_name}solver{options_to_filename(options)}.data'
-            file_path_prob = f'compute_sat_xor_differential_probability__{self._cipher}_{plaintext}_{ciphertext}__geq{geq}_leq{upper_weight}__probability__{solver_name}solver{options_to_filename(options)}.data'
+            file_path_trails = f'compute_sat_xor_differential_weight__trails__{self._cipher}_{plaintext}_{ciphertext}__geq{geq}_leq{upper_weight}__{solver_name}solver{sanitize(options)}.log'
+            file_path_prob = f'compute_sat_xor_differential_weight__{self._cipher}_{plaintext}_{ciphertext}__geq{geq}_leq{upper_weight}__{solver_name}solver{sanitize(options)}.log'
             return file_path_trails, file_path_prob
         
         def save_log(solutions_list, solution):
@@ -378,9 +379,10 @@ class SatXorDifferentialModel(SatModel):
             with open(file_path_trails,"a") as f:
                 f.write(f"{str(solution)}\n")
             
-            weight, d = weightAndDictionary(solutions_list)
+            weights_dict = weights_dictionary(solutions_list)
+            weight = calculate_cumulative_weight(weights_dict)
             with open(file_path_prob,"a") as f:
-                f.write(f"{weight}\t{str(d)}\n")
+                f.write(f"{weight}\t{str(weights_dict)}\n")
         
         def clear_log():
             file_path_trails, file_path_prob = create_file_names()
@@ -404,12 +406,12 @@ class SatXorDifferentialModel(SatModel):
             )
             fixed_variables.append(plaintext_fix)
         
-            if INPUT_KEY in self._cipher.inputs:
-                input_size = self._cipher.inputs_bit_size[self._cipher.inputs.index(INPUT_KEY)]
-                key_fix = set_fixed_variables(INPUT_KEY, "equal", range(input_size), [0] * input_size)
-                fixed_variables.append(key_fix)
-            else:
-                raise("missing key_block_size inside cipher object cipher_inputs_bit_size")
+            if INPUT_KEY not in self._cipher.inputs:
+                raise ValueError("missing key_block_size inside cipher object cipher_inputs_bit_size")
+            input_size = self._cipher.inputs_bit_size[self._cipher.inputs.index(INPUT_KEY)]
+            key_fix = set_fixed_variables(INPUT_KEY, "equal", range(input_size), [0] * input_size)
+            fixed_variables.append(key_fix)
+                
 
             bits = hex_to_bitlist(ciphertext)
             expected_size = self._cipher.block_bit_size
@@ -422,9 +424,10 @@ class SatXorDifferentialModel(SatModel):
                 bit_values= bits,
             )
             fixed_variables.append(ciphertext_fix)
+            
             return fixed_variables
         
-        if log == True:
+        if log:
             clear_log()
 
         fixed_variables = fixed_components()
@@ -440,7 +443,7 @@ class SatXorDifferentialModel(SatModel):
             solution["building_time_seconds"] = end_building_time - start_building_time
             solution["test_name"] = f"find_xor_differential_trails_with_fix_plaintext_{plaintext}_ciphertext_{ciphertext}_weight_geq_{lower_weight}_leq_{upper_weight}"
             solutions_list.append(solution)
-            if log == True:
+            if log:
                 save_log(solutions_list,solution)
 
             literals = []
@@ -460,7 +463,8 @@ class SatXorDifferentialModel(SatModel):
             self._model_constraints.append(" ".join(literals))
             solution = self.solve(XOR_DIFFERENTIAL, solver_name=solver_name, options=options)
 
-        weight, _ = weightAndDictionary(solutions_list)
+        weights_dict = weights_dictionary(solutions_list)
+        weight = calculate_cumulative_weight(weights_dict)
         return weight, solutions_list
 
     def find_lowest_weight_xor_differential_trail(
