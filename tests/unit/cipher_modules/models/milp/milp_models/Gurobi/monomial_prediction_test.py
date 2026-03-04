@@ -5,7 +5,7 @@ from claasp.ciphers.stream_ciphers.trivium_stream_cipher import TriviumStreamCip
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.ciphers.permutations.gimli_permutation import GimliPermutation
 from claasp.ciphers.permutations.ascon_permutation import AsconPermutation
-from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
 from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import *
 from claasp.name_mappings import BLOCK_CIPHER
 from claasp.cipher import Cipher
@@ -48,7 +48,7 @@ def test_find_anf_of_specific_output_bit():
 @pytest.mark.skip(reason="Requires Gurobi license")
 def test_find_upper_bound_degree_of_specific_output_bit():
     # Return an upper bound on the degree of the anf of the chosen output bit
-    cipher = AESBlockCipher(number_of_rounds=2, word_size=2, state_size=2)
+    cipher = ToyAESBlockCipher(number_of_rounds=2, word_size=2, state_size=2)
     milp = MilpMonomialPredictionModel(cipher)
     degree = milp.find_upper_bound_degree_of_specific_output_bit(0, chosen_cipher_output="mix_column_0_7")
     assert degree == 2
