@@ -169,6 +169,31 @@ class SatXorDifferentialModel(SatModel):
         sat.build_cipher_model()
         self._variables_list.extend(sat._variables_list)
         self._model_constraints.extend(sat._model_constraints)
+    
+    def _constraints_to_negate_solution(self, solution): 
+        """
+        Return a string with constraints to prevent the model from rediscovering a given solution.
+
+        INPUT:
+
+        - ``solution`` -- **differential trail**; the trail that should be avoided
+
+        """
+        literals = []
+        for input_, bit_len in zip(self._cipher.inputs, self._cipher.inputs_bit_size):
+            value_to_avoid = int(solution["components_values"][input_]["value"], base=16)
+            minus = ["-" * (value_to_avoid >> i & 1) for i in reversed(range(bit_len))]
+            literals.extend([f"{minus[i]}{input_}_{i}" for i in range(bit_len)])
+        for component in self._cipher.get_all_components():
+            bit_len = component.output_bit_size
+            if component.type == SBOX or (
+                component.type == WORD_OPERATION
+                and component.description[0] in ("AND", "MODADD", "MODSUB", "OR", "SHIFT_BY_VARIABLE_AMOUNT")
+            ):
+                value_to_avoid = int(solution["components_values"][component.id]["value"], base=16)
+                minus = ["-" * (value_to_avoid >> i & 1) for i in reversed(range(bit_len))]
+                literals.extend([f"{minus[i]}{component.id}_{i}" for i in range(bit_len)])
+        return " ".join(literals)
 
     def find_all_xor_differential_trails_with_fixed_weight(
         self, fixed_weight, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT, options=None
@@ -219,28 +244,15 @@ class SatXorDifferentialModel(SatModel):
             self._sequential_counter_greater_or_equal(fixed_weight, "dummy_hw_1")
         end_building_time = time.time()
         solution = self.solve(XOR_DIFFERENTIAL, solver_name=solver_name, options=options)
-        solution["building_time_seconds"] = end_building_time - start_building_time
         solutions_list = []
         while solution["total_weight"] is not None:
-            solutions_list.append(solution)
-            literals = []
-            for input_, bit_len in zip(self._cipher.inputs, self._cipher.inputs_bit_size):
-                value_to_avoid = int(solution["components_values"][input_]["value"], base=16)
-                minus = ["-" * (value_to_avoid >> i & 1) for i in reversed(range(bit_len))]
-                literals.extend([f"{minus[i]}{input_}_{i}" for i in range(bit_len)])
-            for component in self._cipher.get_all_components():
-                bit_len = component.output_bit_size
-                if component.type == SBOX or (
-                    component.type == WORD_OPERATION
-                    and component.description[0] in ("AND", "MODADD", "MODSUB", "OR", "SHIFT_BY_VARIABLE_AMOUNT")
-                ):
-                    value_to_avoid = int(solution["components_values"][component.id]["value"], base=16)
-                    minus = ["-" * (value_to_avoid >> i & 1) for i in reversed(range(bit_len))]
-                    literals.extend([f"{minus[i]}{component.id}_{i}" for i in range(bit_len)])
-            self._model_constraints.append(" ".join(literals))
-            solution = self.solve(XOR_DIFFERENTIAL, solver_name=solver_name, options=options)
             solution["building_time_seconds"] = end_building_time - start_building_time
             solution["test_name"] = "find_all_xor_differential_trails_with_fixed_weight"
+            solutions_list.append(solution)
+            new_constraint = self._constraints_to_negate_solution(solution)
+            self._model_constraints.append(new_constraint)
+            solution = self.solve(XOR_DIFFERENTIAL, solver_name=solver_name, options=options)
+            
         return solutions_list
 
     def find_all_xor_differential_trails_with_weight_at_most(
@@ -334,7 +346,7 @@ class SatXorDifferentialModel(SatModel):
             sage: weight, trails= sat.compute_xor_differential_weight(
                 plaintext='0x04400000000000000044400000000000',
                 ciphertext= '0x00044004444404004400444044400040',
-                upper_weight= 28
+                upper_weight= 31
             )
             sage: weight == 25.7146 and len(trails) == 8
             True
@@ -374,10 +386,10 @@ class SatXorDifferentialModel(SatModel):
             file_path_prob = f'compute_sat_xor_differential_weight__{self._cipher}_{plaintext}_{ciphertext}__geq{geq}_leq{upper_weight}__{solver_name}solver{sanitize(options)}.log'
             return file_path_trails, file_path_prob
         
-        def save_log(solutions_list, solution):
+        def save_log(solutions_list):
             file_path_trails, file_path_prob = create_file_names()
             with open(file_path_trails,"a") as f:
-                f.write(f"{str(solution)}\n")
+                f.write(f"{str(solutions_list[-1])}\n")
             
             weights_dict = weights_dictionary(solutions_list)
             weight = calculate_cumulative_weight(weights_dict)
@@ -429,9 +441,7 @@ class SatXorDifferentialModel(SatModel):
         
         if log:
             clear_log()
-
         fixed_variables = fixed_components()
-
         start_building_time = time.time()
         self.build_xor_differential_trail_model(weight=upper_weight, fixed_variables=fixed_variables)
         if lower_weight != None and self._counter == self._sequential_counter:
@@ -444,23 +454,9 @@ class SatXorDifferentialModel(SatModel):
             solution["test_name"] = f"find_xor_differential_trails_with_fix_plaintext_{plaintext}_ciphertext_{ciphertext}_weight_geq_{lower_weight}_leq_{upper_weight}"
             solutions_list.append(solution)
             if log:
-                save_log(solutions_list,solution)
-
-            literals = []
-            for input_, bit_len in zip(self._cipher.inputs, self._cipher.inputs_bit_size):
-                value_to_avoid = int(solution["components_values"][input_]["value"], base=16)
-                minus = ["-" * (value_to_avoid >> i & 1) for i in reversed(range(bit_len))]
-                literals.extend([f"{minus[i]}{input_}_{i}" for i in range(bit_len)])
-            for component in self._cipher.get_all_components():
-                bit_len = component.output_bit_size
-                if component.type == SBOX or (
-                    component.type == WORD_OPERATION
-                    and component.description[0] in ("AND", "MODADD", "MODSUB", "OR", "SHIFT_BY_VARIABLE_AMOUNT")
-                ):
-                    value_to_avoid = int(solution["components_values"][component.id]["value"], base=16)
-                    minus = ["-" * (value_to_avoid >> i & 1) for i in reversed(range(bit_len))]
-                    literals.extend([f"{minus[i]}{component.id}_{i}" for i in range(bit_len)])
-            self._model_constraints.append(" ".join(literals))
+                save_log(solutions_list)
+            new_constraint = self._constraints_to_negate_solution(solution)
+            self._model_constraints.append(new_constraint)
             solution = self.solve(XOR_DIFFERENTIAL, solver_name=solver_name, options=options)
 
         weights_dict = weights_dictionary(solutions_list)
