@@ -37,6 +37,7 @@ def cleanup_test_reports():
         try:
             os.remove(png_file)
         except OSError:
+            # Best-effort cleanup: ignore errors if files were already removed or are in use.
             pass
 
 
