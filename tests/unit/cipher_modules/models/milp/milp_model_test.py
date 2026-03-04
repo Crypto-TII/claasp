@@ -13,6 +13,26 @@ from claasp.name_mappings import INPUT_PLAINTEXT, XOR_DIFFERENTIAL, XOR_LINEAR
 from claasp.cipher_modules.models.utils import set_fixed_variables
 
 
+def test_solver_names():
+    speck = SpeckBlockCipher(number_of_rounds=3)
+    milp = MilpModel(speck)
+    solver_names = milp.solver_names()
+    assert isinstance(solver_names, list)
+    assert len(solver_names) > 0
+    # Check that each entry has the required keys
+    for solver in solver_names:
+        assert 'solver_brand_name' in solver
+        assert 'solver_name' in solver
+        assert 'keywords' not in solver  # verbose=False by default
+    
+    # Test verbose mode
+    verbose_solver_names = milp.solver_names(verbose=True)
+    assert isinstance(verbose_solver_names, list)
+    # External solvers should have keywords when verbose=True
+    external_solvers = [s for s in verbose_solver_names if 'keywords' in s]
+    assert len(external_solvers) > 0
+
+
 def test_get_independent_input_output_variables():
     speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
     component = speck.get_component_from_id("xor_1_10")

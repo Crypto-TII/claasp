@@ -232,7 +232,7 @@ SAT_SOLVERS_EXTERNAL = [
         "solver_name": YICES_SAT_EXT,
         "keywords": {
             "command": {
-                "executable": "yices-sat",
+                "executable": "yices_sat",
                 "options": ["--stats", "--model"],
                 "input_file": "",
                 "solve": "",

@@ -6,6 +6,26 @@ from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_b
 from claasp.name_mappings import INPUT_PLAINTEXT
 
 
+def test_solver_names():
+    speck = SpeckBlockCipher(number_of_rounds=3)
+    smt = SmtModel(speck)
+    solver_names = smt.solver_names()
+    assert isinstance(solver_names, list)
+    assert len(solver_names) > 0
+    # Check that each entry has the required keys
+    for solver in solver_names:
+        assert 'solver_brand_name' in solver
+        assert 'solver_name' in solver
+        assert 'keywords' not in solver  # verbose=False by default
+    
+    # Test verbose mode
+    verbose_solver_names = smt.solver_names(verbose=True)
+    assert isinstance(verbose_solver_names, list)
+    # All SMT solvers are external, so they should have keywords when verbose=True
+    for solver in verbose_solver_names:
+        assert 'keywords' in solver
+
+
 def test_fix_variables_value_constraints():
     speck = SpeckBlockCipher(number_of_rounds=3)
     smt = SmtModel(speck)

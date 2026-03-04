@@ -82,7 +82,7 @@ class MznCipherModel(MznModel):
         self._model_constraints.extend(self.final_constraints())
 
         if not second:
-            self._model_constraints = self._model_prefix + self._variables_list + self._model_constraints
+            self._model_constraints = self._model_prefix + self._model_constraints
 
     def find_missing_bits(self, fixed_values=[], solver_name=SOLVER_DEFAULT, solver_external=True):
         self.build_cipher_model(fixed_variables=fixed_values)

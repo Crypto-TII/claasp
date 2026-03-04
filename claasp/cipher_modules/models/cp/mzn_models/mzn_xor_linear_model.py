@@ -181,7 +181,7 @@ class MznXorLinearModel(MznModel):
         self._model_prefix.extend(variables)
         self._variables_list.extend(constraints)
         self._model_constraints.extend(self.final_xor_linear_constraints(weight))
-        self._model_constraints = self._model_prefix + self._variables_list + self._model_constraints
+        self._model_constraints = self._model_prefix + self._model_constraints
 
     def final_xor_linear_constraints(self, weight):
         """
@@ -542,6 +542,7 @@ class MznXorLinearModel(MznModel):
         end = tm.time()
         build_time = end - start
         if solve_with_API:
+            # TODO: Add the logic of parse_output when using the solve_with_API parameter, since the asserts of the tests fail when active
             solution = self.solve_for_ARX(
                 solver_name=solver_name, timeout_in_seconds_=timelimit, processes_=num_of_processors
             )

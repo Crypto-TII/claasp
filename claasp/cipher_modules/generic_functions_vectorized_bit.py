@@ -344,6 +344,60 @@ def bit_vector_MODADD(input, number_of_inputs, output_bit_size, verbosity=False)
     return output
 
 
+def bit_vector_MODMUL(input, number_of_inputs, output_bit_size, verbosity=False):
+    """
+    Computes modular multiplication of binary inputs.
+
+    INPUT:
+
+    - ``input`` -- **list**; A list of binary numpy matrices to be multiplied, each with one row per bit, and one column per sample.
+    - ``number_of_inputs`` -- **integer**; is an integer representing the number of values to be multiplied together
+    - ``output_bit_size`` -- **integer**; is an integer representing the bit size of the output
+    - ``verbosity`` -- **boolean**; (default: `False`); set this flag to True to print the input/output
+    """
+    if number_of_inputs == len(input):
+        inputs_list = input
+    else:
+        input_concatenated = bit_vector_CONCAT(input)
+        inputs_list = [input_concatenated[i * output_bit_size:(i + 1) * output_bit_size] for i in range(number_of_inputs)]
+    
+    word_size = output_bit_size
+    modulus = 2**word_size
+    
+    val_out = bit_vector_to_integer(inputs_list[0])
+    a_calc = val_out.astype(object) if word_size > 32 else val_out.astype(np.uint64)
+    
+    for i in range(1, number_of_inputs):
+        val_next = bit_vector_to_integer(inputs_list[i])
+        b_calc = val_next.astype(object) if word_size > 32 else val_next.astype(np.uint64)
+        a_calc = (a_calc * b_calc) % modulus
+        
+    output = np.zeros(shape=(output_bit_size, inputs_list[0].shape[1]), dtype=np.uint8)
+    for i in range(output_bit_size):
+        bit_position = output_bit_size - 1 - i
+        output[bit_position] = (a_calc >> i) & 1
+
+    if DEBUG_MODE:
+        intInputs = [bit_vector_to_integer(input_concatenated[i * output_bit_size:(i + 1) * output_bit_size])
+                     for i in range(number_of_inputs)]
+        if word_size > 32:
+            a_check = intInputs[0].astype(object) if hasattr(intInputs[0], 'astype') else int(intInputs[0])
+            for i in range(1, number_of_inputs):
+                b_check = intInputs[i].astype(object) if hasattr(intInputs[i], 'astype') else int(intInputs[i])
+                a_check = (a_check * b_check) % modulus
+            X = a_check
+        else:
+            X = intInputs[0]
+            for i in range(1, number_of_inputs):
+                X = (X * intInputs[i]) % modulus
+        assert np.all(X == bit_vector_to_integer(output))
+
+    if verbosity:
+        print_component_info(input, output, "MODMUL:")
+
+    return output
+
+
 def bit_vector_MODSUB(input, number_of_inputs, output_bit_size, verbosity=False):
     """
     Computes the modular subtraction of 2 binary inputs

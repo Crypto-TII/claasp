@@ -191,13 +191,18 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
                 number_of_rounds, initial_round, middle_round, final_round, intermediate_components
             )
         )
-        set_of_constraints = self._variables_list + deterministic_truncated_xor_differential
+        set_of_constraints = deterministic_truncated_xor_differential
 
+        cleaned_variables = []
+        for variable in self._variables_list:
+            if variable not in cleaned_variables:
+                cleaned_variables.append(variable)
+        self._variables_list = cleaned_variables
+        
         cleaned_constraints = []
         for constraint in self._model_prefix + set_of_constraints:
             if constraint not in cleaned_constraints:
                 cleaned_constraints.append(constraint)
-
         self._model_constraints = cleaned_constraints
 
     def build_impossible_xor_differential_trail_model(
@@ -280,7 +285,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
                 number_of_rounds, initial_round, middle_round, final_round, intermediate_components, fully_automatic
             )
         )
-        set_of_constraints = self._variables_list + deterministic_truncated_xor_differential
+        set_of_constraints = deterministic_truncated_xor_differential
 
         self._model_constraints = self._model_prefix + self.clean_constraints(
             set_of_constraints, initial_round, middle_round, final_round, fully_automatic
@@ -1409,7 +1414,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
             number_of_rounds = self._cipher.number_of_rounds
             final_round = self._cipher.number_of_rounds
         command = self.get_command_for_solver_process(model_type, solver_name, processes_, timeout_in_seconds_)
-        model = "\n".join(self._model_constraints) + "\n"
+        model = "\n".join(self._variables_list + self._model_constraints) + "\n"
         start = time.time()
         solver_process = subprocess.run(command, input=model, capture_output=True, text=True)
         end = time.time()
