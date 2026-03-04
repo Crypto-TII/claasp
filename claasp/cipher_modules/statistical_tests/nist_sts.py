@@ -403,7 +403,7 @@ class NISTTests:
 
         return {
             'p_value': p_value,
-            'passed': p_value >= 0.01,
+            'passed': bool(p_value >= 0.01),
             'computational_information': {
                 'sn': float(sn),
                 'sn_over_n': float(sn) / n
@@ -462,7 +462,7 @@ class NISTTests:
 
         return {
             'p_value': p_value,
-            'passed': p_value >= 0.01,
+            'passed': bool(p_value >= 0.01),
             'computational_information': {
                 'block_size': int(block_size),
                 'num_blocks': int(num_blocks),
@@ -527,7 +527,7 @@ class NISTTests:
 
         return {
             'p_value': p_value,
-            'passed': p_value >= 0.01,
+            'passed': bool(p_value >= 0.01),
             'computational_information': {
                 'mode': int(mode),
                 'n': int(n),
@@ -589,7 +589,7 @@ class NISTTests:
 
         return {
             'p_value': p_value,
-            'passed': p_value >= 0.01,
+            'passed': bool(p_value >= 0.01),
             'computational_information': {
                 'n': int(n),
                 'pi': float(pi),
@@ -689,7 +689,7 @@ class NISTTests:
 
         return {
             'p_value': p_value,
-            'passed': p_value >= 0.01,
+            'passed': bool(p_value >= 0.01),
             'computational_information': {
                 'n': int(n),
                 'block_size': int(m),
@@ -813,7 +813,7 @@ class NISTTests:
 
         return {
             'p_value': p_value,
-            'passed': p_value >= 0.01,
+            'passed': bool(p_value >= 0.01),
             'computational_information': {
                 'm': int(m),
                 'q': int(q),
@@ -881,7 +881,7 @@ class NISTTests:
 
         return {
             'p_value': p_value,
-            'passed': p_value >= 0.01,
+            'passed': bool(p_value >= 0.01),
             'computational_information': {
                 'n': int(n),
                 'tau': float(tau),
@@ -1080,7 +1080,7 @@ class NISTTests:
 
         return {
             'p_value': p_value,
-            'passed': p_value >= 0.01,
+            'passed': bool(p_value >= 0.01),
             'computational_information': {
                 'LAMBDA': float(lambda_val),
                 'M': int(block_len),
@@ -1210,7 +1210,7 @@ class NISTTests:
 
         return {
             'p_value': p_value,
-            'passed': p_value >= 0.01,
+            'passed': bool(p_value >= 0.01),
             'computational_information': {
                 'n': int(n),
                 'm': int(m),
@@ -1336,7 +1336,7 @@ class NISTTests:
 
         return {
             'p_value': p_value,
-            'passed': p_value >= 0.01,
+            'passed': bool(p_value >= 0.01),
             'computational_information': {
                 'n': int(n),
                 'L': int(L),
@@ -1410,7 +1410,7 @@ class NISTTests:
 
         return {
             'p_value': p_value,
-            'passed': p_value >= 0.01,
+            'passed': bool(p_value >= 0.01),
             'computational_information': {
                 'm': int(m),
                 'apen': float(apen),
@@ -1811,7 +1811,7 @@ class NISTTests:
 
         return {
             'p_value': p_value,
-            'passed': p_value >= 0.01,
+            'passed': bool(p_value >= 0.01),
             'computational_information': {
                 'block_size': int(block_size),
                 'num_blocks': int(num_blocks),
@@ -1905,7 +1905,7 @@ class NISTTests:
             'bin_counts': bin_counts,
             'chi_squared': chi_squared if expected_count > 0 else 0.0,
             'uniformity_p_value': uniformity_p_value,
-            'passed': uniformity_p_value >= 0.0001
+            'passed': bool(uniformity_p_value >= 0.0001)
         }
 
     @staticmethod
@@ -2046,8 +2046,8 @@ class NISTTests:
                     if (test_name == 'serial' and isinstance(result, dict)
                             and 'p_value1' in result and 'p_value2' in result):
                         test_results.append([
-                            {'p_value': result['p_value1'], 'passed': result['p_value1'] >= alpha},
-                            {'p_value': result['p_value2'], 'passed': result['p_value2'] >= alpha},
+                            {'p_value': result['p_value1'], 'passed': bool(result['p_value1'] >= alpha)},
+                            {'p_value': result['p_value2'], 'passed': bool(result['p_value2'] >= alpha)},
                         ])
                     elif isinstance(result, list):
                         # Multiple results (e.g., cumulative sums, serial)
@@ -2090,7 +2090,7 @@ class NISTTests:
                                 per_sequence_details.append([
                                     {
                                         'p_value': p_value,
-                                        'passed': p_value >= alpha,
+                                        'passed': bool(p_value >= alpha),
                                         'testable': True,
                                         'num_cycles': res.get('num_cycles'),
                                         'computational_information': res.get('computational_information', {})
@@ -2136,7 +2136,7 @@ class NISTTests:
                             'passed_sequences': passed_count,
                             'total_sequences': sample_size,
                             'proportion': passed_count / sample_size,
-                            'passed': uniformity_result['passed'] and passed_count >= threshold
+                            'passed': bool(uniformity_result['passed'] and passed_count >= threshold)
                         })
 
                         results['detailed_results'][f"{test_name}_{state_names[state_idx]}"] = per_sequence_details
@@ -2192,7 +2192,7 @@ class NISTTests:
                         'passed_sequences': passed_count,
                         'total_sequences': len(subtest_p_values),
                         'proportion': passed_count / len(subtest_p_values) if len(subtest_p_values) > 0 else 0.0,
-                        'passed': uniformity_result['passed'] and passed_count >= 0.96 * len(subtest_p_values)
+                        'passed': bool(uniformity_result['passed'] and passed_count >= 0.96 * len(subtest_p_values))
                     })
 
                     results['detailed_results'][subtest_name] = per_sequence_details
@@ -2221,7 +2221,7 @@ class NISTTests:
                     'passed_sequences': passed_count,
                     'total_sequences': len(single_p_values),
                     'proportion': passed_count / len(single_p_values) if len(single_p_values) > 0 else 0.0,
-                    'passed': uniformity_result['passed'] and passed_count >= 0.96 * len(single_p_values)
+                    'passed': bool(uniformity_result['passed'] and passed_count >= 0.96 * len(single_p_values))
                 })
 
                 results['detailed_results'][test_name] = per_sequence_details
