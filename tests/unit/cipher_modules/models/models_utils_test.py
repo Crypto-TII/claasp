@@ -17,12 +17,16 @@ from claasp.cipher_modules.models.utils import (convert_solver_solution_to_dicti
                                                 get_related_key_scenario_format_for_fixed_values,
                                                 differential_truncated_checker_permutation,
                                                 differential_checker_permutation,
-                                                differential_truncated_checker_permutation_input_and_output_truncated)
+                                                differential_truncated_checker_permutation_input_and_output_truncated,
+                                                hex_to_bitlist)
 from claasp.ciphers.permutations.chacha_permutation import ROUND_MODE_HALF, ChachaPermutation
 from claasp.ciphers.permutations.salsa_permutation import SalsaPermutation
 
 NOT_EQUAL = 'not equal'
 
+def test_hex_to_bitlist(hex_str):
+    assert hex_to_bitlist("0xabc10") == hex_to_bitlist("0Xabc10")
+    assert hex_to_bitlist("0xabc10") == [1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0]
 
 def test_print_components_values():
     old_stdout = sys.stdout

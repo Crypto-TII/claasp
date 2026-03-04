@@ -1,4 +1,4 @@
-from claasp.cipher_modules.models.sat.utils.utils import cnf_or, cnf_xor_seq, hex_to_bitlist
+from claasp.cipher_modules.models.sat.utils.utils import cnf_or, cnf_xor_seq
 
 
 def test_cnf_or():
@@ -14,7 +14,3 @@ def test_cnf_xor_seq():
     assert xor_seq[-3] == "r_7 -i_1 d_7"
     assert xor_seq[-2] == "r_7 i_1 -d_7"
     assert xor_seq[-1] == "-r_7 -i_1 -d_7"
-
-def test_hex_to_bitlist(hex_str):
-    assert hex_to_bitlist("0xabc10") == hex_to_bitlist("0Xabc10")
-    assert hex_to_bitlist("0xabc10") == [1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0]
