@@ -15,13 +15,14 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-import time
+import time, re
+from math import log2, pow
 from copy import deepcopy
 
 from claasp.cipher_modules.models.sat import solvers
 from claasp.cipher_modules.models.sat.sat_model import SatModel
 from claasp.cipher_modules.models.sat.sat_models.sat_cipher_model import SatCipherModel
-from claasp.cipher_modules.models.utils import set_component_solution, get_single_key_scenario_format_for_fixed_values
+from claasp.cipher_modules.models.utils import set_component_solution, get_single_key_scenario_format_for_fixed_values, set_fixed_variables, hex_to_bitlist
 from claasp.name_mappings import (
     CIPHER_OUTPUT,
     CONSTANT,
@@ -31,6 +32,7 @@ from claasp.name_mappings import (
     SBOX,
     WORD_OPERATION,
     XOR_DIFFERENTIAL,
+    INPUT_KEY,
 )
 
 
@@ -299,6 +301,167 @@ class SatXorDifferentialModel(SatModel):
             solutions_list.extend(solutions)
 
         return solutions_list
+    
+    def compute_xor_differential_weight(
+        self, plaintext, ciphertext, upper_weight, lower_weight=None, solver_name=solvers.SOLVER_DEFAULT, options=None, log=False
+    ):
+        """
+        Return the aggregated differential weight and the list of solutions containing all the XOR differential trails having weight between ``lower_weight`` and ``upper_weight`` weight.
+        By default, the search is set in the single-key setting.
+        If the search don't have any solution the function will return (None, {}).
+
+        INPUT:
+
+        - ``upper_weight`` -- **integer**; the maximum weight of trails that can be found
+        - ``lower_weight`` -- **integer**; the minimum weight of trails  that can be found
+        - ``plaintext`` -- **string**; string containing hexadecimal representation of the plaintext for which to look for trails
+        - ``ciphertext`` -- **string**; string containing hexadecimal representation of the ciphertext for which to look for trails
+        - ``solver_name`` -- **string** (default: `CRYPTOMINISAT_EXT`); the name of the solver
+        - ``options`` -- **list of strings**; additional settings for the chosen solver
+        - ``log`` -- **boolean**; the flag to save intermediate values
+
+        .. SEEALSO::
+
+            :ref:`sat-solvers`
+
+        EXAMPLES::
+
+            # single-key setting
+            sage: from claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model import SatXorDifferentialModel
+            sage: from claasp.ciphers.block_ciphers.ublock_block_cipher import UblockBlockCipher
+            sage: ublock = UblockBlockCipher(number_of_rounds=3)
+            sage: sat = SatXorDifferentialModel(ublock)
+            sage: weight, trails= sat.compute_differential_characteristics(
+                plaintext='0x04400000000000000044400000000000',
+                ciphertext= '0x00044004444404004400444044400040',
+                upper_weight= 28
+            )
+            sage: weight == 25.7146 and len(trails) == 8
+            True
+        """
+
+        if lower_weight is not None and lower_weight > upper_weight:
+            raise ValueError("lower_weight must be <= upper_weight")
+
+        def weightAndDictionary(solutions_list):
+            if len(solutions_list) == 0:
+                return None, dict()
+            
+            d = dict() # key is the weight as float and value is the number of occurrences observed
+            for trail in solutions_list:
+                w = int(trail["total_weight"])
+                d[w] = d.get(w, 0) + 1
+            summ = 0
+            for w in d.keys():
+                summ += d[w] * pow(2,-w)
+            if summ == 0:
+                weight = None
+            else:
+                weight = round(-log2(summ),4)
+
+            return weight, dict(sorted(d.items()))
+
+        def create_file_names():
+            def options_to_filename(options):
+                if options == None:
+                    return ""
+                joined = "_".join(options)
+                return "_" + re.sub(r"[^a-zA-Z0-9._-]", "", joined)
+
+            geq = lower_weight if lower_weight != None else 0
+            file_path_trails = f'compute_sat_xor_differential_probability__{self._cipher}_{plaintext}_{ciphertext}__geq{geq}_leq{upper_weight}__trails__{solver_name}solver{options_to_filename(options)}.data'
+            file_path_prob = f'compute_sat_xor_differential_probability__{self._cipher}_{plaintext}_{ciphertext}__geq{geq}_leq{upper_weight}__probability__{solver_name}solver{options_to_filename(options)}.data'
+            return file_path_trails, file_path_prob
+        
+        def save_log(solutions_list, solution):
+            file_path_trails, file_path_prob = create_file_names()
+            with open(file_path_trails,"a") as f:
+                f.write(f"{str(solution)}\n")
+            
+            weight, d = weightAndDictionary(solutions_list)
+            with open(file_path_prob,"a") as f:
+                f.write(f"{weight}\t{str(d)}\n")
+        
+        def clear_log():
+            file_path_trails, file_path_prob = create_file_names()
+            with open(file_path_trails,"w") as f:
+                f.write("")
+            with open(file_path_prob,"w") as f:
+                f.write("")
+        
+        def fixed_components():
+            fixed_variables = []
+
+            bits = hex_to_bitlist(plaintext)
+            expected_size = self._cipher.block_bit_size
+            if len(bits) != expected_size:
+                raise ValueError("Plaintext size mismatch")
+            plaintext_fix = set_fixed_variables(
+                component_id="plaintext",
+                constraint_type="equal",
+                bit_positions=range(len(bits)),
+                bit_values= bits,
+            )
+            fixed_variables.append(plaintext_fix)
+        
+            if INPUT_KEY in self._cipher.inputs:
+                input_size = self._cipher.inputs_bit_size[self._cipher.inputs.index(INPUT_KEY)]
+                key_fix = set_fixed_variables(INPUT_KEY, "equal", range(input_size), [0] * input_size)
+                fixed_variables.append(key_fix)
+            else:
+                raise("missing key_block_size inside cipher object cipher_inputs_bit_size")
+
+            bits = hex_to_bitlist(ciphertext)
+            expected_size = self._cipher.block_bit_size
+            if len(bits) != expected_size:
+                raise ValueError("Ciphertext size mismatch")
+            ciphertext_fix = set_fixed_variables(
+                component_id= self._cipher.get_all_components_ids()[-1],
+                constraint_type="equal",
+                bit_positions=range(len(bits)),
+                bit_values= bits,
+            )
+            fixed_variables.append(ciphertext_fix)
+            return fixed_variables
+        
+        if log == True:
+            clear_log()
+
+        fixed_variables = fixed_components()
+
+        start_building_time = time.time()
+        self.build_xor_differential_trail_model(weight=upper_weight, fixed_variables=fixed_variables)
+        if lower_weight != None and self._counter == self._sequential_counter:
+            self._sequential_counter_greater_or_equal(lower_weight, "dummy_hw_1")
+        end_building_time = time.time()
+        solution = self.solve(XOR_DIFFERENTIAL, solver_name=solver_name, options=options)
+        solutions_list = []
+        while solution["total_weight"] is not None:
+            solution["building_time_seconds"] = end_building_time - start_building_time
+            solution["test_name"] = f"find_xor_differential_trails_with_fix_plaintext_{plaintext}_ciphertext_{ciphertext}_weight_geq_{lower_weight}_leq_{upper_weight}"
+            solutions_list.append(solution)
+            if log == True:
+                save_log(solutions_list,solution)
+
+            literals = []
+            for input_, bit_len in zip(self._cipher.inputs, self._cipher.inputs_bit_size):
+                value_to_avoid = int(solution["components_values"][input_]["value"], base=16)
+                minus = ["-" * (value_to_avoid >> i & 1) for i in reversed(range(bit_len))]
+                literals.extend([f"{minus[i]}{input_}_{i}" for i in range(bit_len)])
+            for component in self._cipher.get_all_components():
+                bit_len = component.output_bit_size
+                if component.type == SBOX or (
+                    component.type == WORD_OPERATION
+                    and component.description[0] in ("AND", "MODADD", "MODSUB", "OR", "SHIFT_BY_VARIABLE_AMOUNT")
+                ):
+                    value_to_avoid = int(solution["components_values"][component.id]["value"], base=16)
+                    minus = ["-" * (value_to_avoid >> i & 1) for i in reversed(range(bit_len))]
+                    literals.extend([f"{minus[i]}{component.id}_{i}" for i in range(bit_len)])
+            self._model_constraints.append(" ".join(literals))
+            solution = self.solve(XOR_DIFFERENTIAL, solver_name=solver_name, options=options)
+
+        weight, _ = weightAndDictionary(solutions_list)
+        return weight, solutions_list
 
     def find_lowest_weight_xor_differential_trail(
         self, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT, options=None

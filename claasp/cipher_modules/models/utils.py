@@ -37,6 +37,12 @@ from claasp.name_mappings import (
     INPUT_STATE,
 )
 
+def hex_to_bitlist(hex_str):
+    if not hex_str.startswith(("0x", "0X")):
+        raise ValueError("Hex string must start with 0x")
+    val_int = int(hex_str, 16)
+    bit_len = (len(hex_str) - 2) * 4
+    return integer_to_bit_list(val_int, bit_len, "big")
 
 def add_arcs(arcs, component, curr_input_bit_ids, input_bit_size, intermediate_output_arcs, previous_output_bit_ids):
     for i in range(input_bit_size):

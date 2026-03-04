@@ -236,3 +236,14 @@ def repeat_input_difference(input_difference_, number_of_samples_, number_of_byt
     column_array = np_array.reshape(-1, 1)
 
     return np.tile(column_array, (1, number_of_samples_))
+
+def test_compute_xor_differential_weight():
+    from claasp.ciphers.block_ciphers.ublock_block_cipher import UblockBlockCipher
+    ublock = UblockBlockCipher(number_of_rounds=3)
+    sat = SatXorDifferentialModel(ublock)
+    weight, trails= sat.compute_xor_differential_weight(
+        plaintext='0x04400000000000000044400000000000',
+        ciphertext= '0x00044004444404004400444044400040',
+        upper_weight= 31
+    )
+    assert round(weight,4) == 25.7146 and len(trails) == 8
