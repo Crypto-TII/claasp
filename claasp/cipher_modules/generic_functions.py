@@ -429,26 +429,6 @@ def constant_bool_func(component):
         print("TODO")  # what to do when the constant is not given as bin string or hexa string
 
 
-def concatenate_bool_func(component, BoolPolyRing):
-    """
-    INPUT:
-
-    - ``component`` -- **Component object**; component of a cipher
-    - ``BoolPolyRing`` -- **Boolean Polynomial Ring object**; Boolean Polynomial Ring
-    """
-    number_of_inputs = len(component.input_id_links)
-    variables_names = []
-    variables_names_positions = {}
-    for i in range(number_of_inputs):
-        tmp = [component.input_id_links[i] + "_" + str(j) for j in component.input_bit_positions[i]]
-        variables_names += tmp
-        variables_names_positions[component.input_id_links[i]] = [tmp, component.input_bit_positions[i]]
-
-    output_bit_size = component.output_bit_size
-
-    return variables_names_positions, [BoolPolyRing(variables_names[i]) for i in range(output_bit_size)]
-
-
 def AND(input, number_of_inputs, verbosity=False):
     """
     INPUT:

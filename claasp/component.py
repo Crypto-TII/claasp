@@ -28,7 +28,6 @@ from claasp.cipher_modules.models.sat.utils import constants
 from claasp.DTOs.power_of_2_word_based_dto import PowerOf2WordBasedDTO
 from claasp.name_mappings import (
     CIPHER_OUTPUT,
-    CONCATENATE,
     INTERMEDIATE_OUTPUT,
     LINEAR_LAYER,
     MIX_COLUMN,
@@ -495,7 +494,7 @@ class Component:
         return PowerOf2WordBasedDTO(word_size, fixed)
 
     def check_output_size(self, available_word_sizes, fixed, word_size):
-        if self._type in (CONCATENATE, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT):
+        if self._type in (INTERMEDIATE_OUTPUT, CIPHER_OUTPUT):
             word_size = self.output_size_for_concatenate(available_word_sizes, fixed, word_size)
             if word_size is None:
                 return None, fixed

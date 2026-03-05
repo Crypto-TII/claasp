@@ -164,9 +164,6 @@ class Cipher:
     def add_cipher_output_component(self, input_id_links, input_bit_positions, output_bit_size):
         return editor.add_cipher_output_component(self, input_id_links, input_bit_positions, output_bit_size)
 
-    def add_concatenate_component(self, input_id_links, input_bit_positions, output_bit_size):
-        return editor.add_concatenate_component(self, input_id_links, input_bit_positions, output_bit_size)
-
     def add_constant_component(self, output_bit_size, value):
         return editor.add_constant_component(self, output_bit_size, value)
 

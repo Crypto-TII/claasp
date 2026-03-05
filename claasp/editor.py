@@ -165,48 +165,7 @@ def add_component(cipher, component):
     cipher.rounds.add_component(component)
 
 
-def add_concatenate_component(cipher, input_id_links, input_bit_positions, output_bit_size):
-    """
-    Legacy helper kept for compatibility.
 
-    This now creates a rotate component with parameter 0, which preserves bit
-    order and behavior without relying on the legacy concatenate component.
-
-    INPUT:
-
-    - ``cipher`` -- **Cipher object**; an instance of the object cipher
-    - ``input_id_links`` -- **list**; the list of input_id links
-    - ``input_bit_positions`` -- **list**; the list of input_bits corresponding to the input_id links
-    - ``output_bit_size`` -- **integer**; the output bits of the component
-
-    EXAMPLES::
-
-        sage: from claasp.cipher import Cipher
-        sage: from claasp.name_mappings import PERMUTATION
-        sage: cipher = Cipher("cipher_name", PERMUTATION, ["input"], [4], 4)
-        sage: cipher.add_round()
-        sage: component_0_0 = cipher.add_concatenate_component(["input"], [[0,1,2,3]], 4)
-        sage: cipher.print()
-        cipher_id = cipher_name_i4_o4_r1
-        cipher_type = permutation
-        cipher_inputs = ['input']
-        cipher_inputs_bit_size = [4]
-        cipher_output_bit_size = 4
-        cipher_number_of_rounds = 1
-        <BLANKLINE>
-            # round = 0 - round component = 0
-            id = rot_0_0
-            type = word_operation
-            input_bit_size = 4
-            input_id_link = ['input']
-            input_bit_positions = [[0, 1, 2, 3]]
-            output_bit_size = 4
-            description = ['ROTATE', 0]
-        cipher_reference_code = None
-    """
-    if cipher.current_round_number is None:
-        print(CIPHER_ROUND_NOT_FOUND_ERROR)
-        return None
 
     new_component = Rotate(
         cipher.current_round_number,
