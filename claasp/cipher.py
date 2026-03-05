@@ -29,7 +29,7 @@ from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicMode
 from claasp.components.cipher_output_component import CipherOutput
 from claasp.compound_xor_differential_cipher import convert_to_compound_xor_cipher
 from claasp.rounds import Rounds
-from claasp.name_mappings import CIPHER_INVERSE_SUFFIX
+from claasp.name_mappings import CIPHER_INVERSE_SUFFIX, CIPHER_OUTPUT, CONCATENATE, CONSTANT, INTERMEDIATE_OUTPUT, MIX_COLUMN, SBOX, WORD_OPERATION
 
 
 tii_path = inspect.getfile(claasp)
@@ -1181,6 +1181,7 @@ class Cipher:
         """
         spn_components = {
             CIPHER_OUTPUT,
+            CONCATENATE,
             CONSTANT,
             INTERMEDIATE_OUTPUT,
             MIX_COLUMN,
@@ -1202,9 +1203,16 @@ class Cipher:
             sbox_size = set_of_sbox_sizes.pop()
         if len(set_of_mix_column_sizes) > 0:
             mix_column_size = set_of_mix_column_sizes.pop()
-        if sbox_size == 0 and mix_column_size == 0 or sbox_size != mix_column_size:
+        if sbox_size == 0 and mix_column_size == 0:
             return False
-        check_size = max([sbox_size, mix_column_size])
+        # For SPN ciphers, S-boxes and MixColumns can operate on different granularities
+        # (e.g., AES has 8-bit S-boxes and 32-bit MixColumns operating on 4 bytes)
+        # Check that if both exist, one divides the other (they're compatible)
+        if sbox_size > 0 and mix_column_size > 0:
+            if mix_column_size % sbox_size != 0 and sbox_size % mix_column_size != 0:
+                return False
+        # Use the smaller size as the base unit for checking rotations/shifts
+        check_size = min(sbox_size, mix_column_size) if sbox_size > 0 and mix_column_size > 0 else max(sbox_size, mix_column_size)
         for value in set_of_rotate_and_shift_values:
             if value % check_size != 0:
                 return False
