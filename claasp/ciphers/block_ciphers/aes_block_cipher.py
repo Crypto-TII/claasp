@@ -48,7 +48,7 @@ class AESBlockCipher(Cipher):
         True
     """
 
-    def __init__(self, number_of_rounds: int = 10, word_size: int = 8, state_size: int = 4, key_bit_size: int = 128):
+    def __init__(self, number_of_rounds: int = None, word_size: int = 8, state_size: int = 4, key_bit_size: int = 128):
         if key_bit_size not in (128, 192, 256):
             raise ValueError(f"Invalid key_bit_size: {key_bit_size}. Must be 128, 192, or 256.")
 
@@ -61,11 +61,21 @@ class AESBlockCipher(Cipher):
         # Nk = number of words in the key (4, 6, or 8 for AES-128, AES-192, AES-256)
         # Nr = number of rounds (10, 12, or 14 for AES-128, AES-192, AES-256)
         self.Nk = key_bit_size // 32  # 128->4, 192->6, 256->8
+        
+        # Auto-set number_of_rounds based on key size if not specified
+        if number_of_rounds is None:
+            if key_bit_size == 128:
+                number_of_rounds = 10
+            elif key_bit_size == 192:
+                number_of_rounds = 12
+            elif key_bit_size == 256:
+                number_of_rounds = 14
+        
         self.Nr = number_of_rounds    # Will be 10, 12, or 14 for standard AES
 
         # cipher dictionary initialize
         self.cipher_block_size = state_size**2 * word_size
-        self.key_block_size = self.cipher_block_size
+        self.key_block_size = key_bit_size
         self.nrounds = number_of_rounds
         self.sbox_bit_size = word_size
         self.num_sboxes = state_size**2
@@ -213,7 +223,7 @@ class AESBlockCipher(Cipher):
         self.add_round()
         first_add_round_key = self.add_XOR_component(
             [INPUT_KEY, INPUT_PLAINTEXT],
-            [list(range(self.key_block_size)), list(range(self.cipher_block_size))],
+            [list(range(self.cipher_block_size)), list(range(self.cipher_block_size))],
             int(self.cipher_block_size),
         )
         add_round_key = None
@@ -232,7 +242,7 @@ class AESBlockCipher(Cipher):
             self.add_intermediate_output_component(
                 [remaining_xors[i].id for i in range(self.num_rows)],
                 [list(range(self.row_size)) for _ in range(self.num_rows)],
-                self.key_block_size,
+                self.cipher_block_size,
                 "round_key_output",
             )
             add_round_key = self.create_round_key(

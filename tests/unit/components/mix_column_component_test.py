@@ -22,7 +22,7 @@ def test_algebraic_polynomials():
 
 
 def test_cp_create_component():
-    aes = AESBlockCipher(number_of_rounds=3)
+    aes = ToyAESBlockCipher(number_of_rounds=3)
     cp = MznModel(aes)
     mix_column_component_1 = aes.component_from(0, 21)
     mix_column_component_2 = aes.component_from(0, 22)

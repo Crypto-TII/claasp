@@ -286,7 +286,7 @@ def test_milp_bitwise_deterministic_truncated_xor_differential_constraints():
     assert str(constraints[-1]) == "x_15 == 0"
 
 def test_milp_wordwise_deterministic_truncated_xor_differential_constraints():
-    cipher = AESBlockCipher(number_of_rounds=3)
+    cipher = ToyAESBlockCipher(number_of_rounds=3)
     milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(cipher)
     milp.init_model_in_sage_milp_class()
     shift_component = SHIFT(0, 18, ['sbox_0_2', 'sbox_0_6', 'sbox_0_10', 'sbox_0_14'],
