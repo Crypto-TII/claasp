@@ -21,7 +21,6 @@ from copy import deepcopy
 
 from claasp.components.and_component import AND
 from claasp.components.cipher_output_component import CipherOutput
-from claasp.components.concatenate_component import Concatenate
 from claasp.components.constant_component import Constant
 from claasp.components.fsr_component import FSR
 from claasp.components.intermediate_output_component import IntermediateOutput
@@ -168,7 +167,10 @@ def add_component(cipher, component):
 
 def add_concatenate_component(cipher, input_id_links, input_bit_positions, output_bit_size):
     """
-    Add concatenate component to the current (last) round of the editor.
+    Legacy helper kept for compatibility.
+
+    This now creates a rotate component with parameter 0, which preserves bit
+    order and behavior without relying on the legacy concatenate component.
 
     INPUT:
 
@@ -183,7 +185,7 @@ def add_concatenate_component(cipher, input_id_links, input_bit_positions, outpu
         sage: from claasp.name_mappings import PERMUTATION
         sage: cipher = Cipher("cipher_name", PERMUTATION, ["input"], [4], 4)
         sage: cipher.add_round()
-        sage: concatenate_0_0 = cipher.add_concatenate_component(["input"], [[0,1,2,3]], 4)
+        sage: component_0_0 = cipher.add_concatenate_component(["input"], [[0,1,2,3]], 4)
         sage: cipher.print()
         cipher_id = cipher_name_i4_o4_r1
         cipher_type = permutation
@@ -193,25 +195,26 @@ def add_concatenate_component(cipher, input_id_links, input_bit_positions, outpu
         cipher_number_of_rounds = 1
         <BLANKLINE>
             # round = 0 - round component = 0
-            id = concatenate_0_0
-            type = concatenate
+            id = rot_0_0
+            type = word_operation
             input_bit_size = 4
             input_id_link = ['input']
             input_bit_positions = [[0, 1, 2, 3]]
             output_bit_size = 4
-            description = ['', 0]
+            description = ['ROTATE', 0]
         cipher_reference_code = None
     """
     if cipher.current_round_number is None:
         print(CIPHER_ROUND_NOT_FOUND_ERROR)
         return None
 
-    new_component = Concatenate(
+    new_component = Rotate(
         cipher.current_round_number,
         cipher.current_round_number_of_components,
         input_id_links,
         input_bit_positions,
         output_bit_size,
+        0,
     )
     add_component(cipher, new_component)
     return new_component

@@ -291,11 +291,10 @@ def test_print_evaluation_python_code():
     sys.stdout = old_stdout
     python_code = result.getvalue()
 
-    assert ("components_io['concatenate_0_0'] = [component_input.uint, concatenate_0_0_output.uint]" in python_code) \
-           is True
-    assert ("components_io['intermediate_output_0_1'] = [component_input.uint, intermediate_output_0_1_output.uint]"
+    assert ("components_io['intermediate_output_0_0'] = [component_input.uint, intermediate_output_0_0_output.uint]" in python_code) is True
+    assert ("components_io['cipher_output_0_1'] = [component_input.uint, cipher_output_0_1_output.uint]"
             in python_code) is True
-    assert ("component_input = select_bits(concatenate_0_2_output, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14,"
+    assert ("component_input = select_bits(plaintext_output, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14,"
             " 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31])" in python_code) is True
 
 

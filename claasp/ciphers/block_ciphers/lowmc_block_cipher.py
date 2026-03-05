@@ -251,10 +251,10 @@ class LowMCBlockCipher(Cipher):
 
         for r in range(number_of_rounds):
             # Nonlinear layer
-            sbox_layer = self.sbox_layer(plaintext_id)
+            sbox_layer_wiring = self.sbox_layer(plaintext_id)
 
             # Affine layer
-            linear_layer = self.linear_layer(sbox_layer, r)
+            linear_layer = self.linear_layer(sbox_layer_wiring, r)
             round_constant = self.add_round_constant(linear_layer, r)
 
             # Generate round key and add to the state
@@ -323,10 +323,11 @@ class LowMCBlockCipher(Cipher):
 
         return number_of_sboxes
 
-    def linear_layer(self, plaintext_id, round_number):
+    def linear_layer(self, sbox_layer_wiring, round_number):
+        input_id_links, input_bit_positions = sbox_layer_wiring
         return self.add_linear_layer_component(
-            [plaintext_id],
-            [list(range(self.block_bit_size))],
+            input_id_links,
+            input_bit_positions,
             self.block_bit_size,
             self.matrices_for_linear_layer[round_number],
         ).id
@@ -420,11 +421,10 @@ class LowMCBlockCipher(Cipher):
         for i in range(self.n_sbox):
             sbox_output[i] = self.add_SBOX_component([plaintext_id], [list(range(3 * i, 3 * (i + 1)))], 3, self.sbox).id
 
-        return self.add_concatenate_component(
+        return (
             sbox_output + [plaintext_id],
             [list(range(3))] * self.n_sbox + [list(range(3 * self.n_sbox, self.block_bit_size))],
-            self.block_bit_size,
-        ).id
+        )
 
     def update_key_register(self, key_id, round_number):
         rk_id = self.add_linear_layer_component(

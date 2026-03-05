@@ -106,12 +106,10 @@ class MSXBlockCipher(Cipher):
         b1 = ComponentState(w.id, [[i for i in range(16, 24)]])
         b2 = ComponentState(w.id, [[i for i in range(8, 16)]])
         b3 = ComponentState(w.id, [[i for i in range(0, 8)]])
-        self.add_concatenate_component(
+        return ComponentState(
             b0.id + b1.id + b2.id + b3.id,
             b0.input_bit_positions + b1.input_bit_positions + b2.input_bit_positions + b3.input_bit_positions,
-            self.word_size,
         )
-        return ComponentState([self.get_current_component_id()], [list(range(self.word_size))])
 
     def _key_words_from_input(self, num_words):
         words = []
@@ -120,11 +118,7 @@ class MSXBlockCipher(Cipher):
         for w in range(num_words):
             start = 32 * w
             k_bits = self._load_le_word(start)
-            self.add_concatenate_component(
-                [INPUT_KEY] * len(k_bits),
-                [[b] for b in k_bits],
-                self.word_size
-            )
+            self.add_intermediate_output_component([INPUT_KEY] * len(k_bits), [[b] for b in k_bits], self.word_size, "key_word")
             words.append(ComponentState([self.get_current_component_id()], [list(range(self.word_size))]))
         return words
 
@@ -391,9 +385,9 @@ class MSXBlockCipher(Cipher):
         x_low16 = ComponentState(x.id, [[i for i in range(16, 32)]])
         x_high16 = ComponentState(x.id, [[i for i in range(0, 16)]])
         zero16 = self._zero_bits(16)
-        self.add_concatenate_component(zero16.id + x_low16.id, zero16.input_bit_positions + x_low16.input_bit_positions, n)
+        self.add_intermediate_output_component(zero16.id + x_low16.id, zero16.input_bit_positions + x_low16.input_bit_positions, n, "x0")
         x0_32 = ComponentState([self.get_current_component_id()], [list(range(n))])
-        self.add_concatenate_component(zero16.id + x_high16.id, zero16.input_bit_positions + x_high16.input_bit_positions, n)
+        self.add_intermediate_output_component(zero16.id + x_high16.id, zero16.input_bit_positions + x_high16.input_bit_positions, n, "x1")
         x1_32 = ComponentState([self.get_current_component_id()], [list(range(n))])
 
         self.add_MODADD_component(x0_32.id + rk_group[0].id, x0_32.input_bit_positions + rk_group[0].input_bit_positions, n, self.mod32)
@@ -419,7 +413,7 @@ class MSXBlockCipher(Cipher):
 
         hi16_w0 = ComponentState(w0.id, [[i for i in range(0, 16)]])
         hi16_w1 = ComponentState(w1.id, [[i for i in range(0, 16)]])
-        self.add_concatenate_component(hi16_w1.id + hi16_w0.id, hi16_w1.input_bit_positions + hi16_w0.input_bit_positions, n)
+        self.add_intermediate_output_component(hi16_w1.id + hi16_w0.id, hi16_w1.input_bit_positions + hi16_w0.input_bit_positions, n, "y")
         y = ComponentState([self.get_current_component_id()], [list(range(n))])
 
         y_orig = y
@@ -436,24 +430,24 @@ class MSXBlockCipher(Cipher):
 
     def round_initialization_64(self):
         W0_bits = self._load_le_word(0)
-        self.add_concatenate_component([INPUT_PLAINTEXT] * len(W0_bits), [[b] for b in W0_bits], self.word_size)
+        self.add_intermediate_output_component([INPUT_PLAINTEXT] * len(W0_bits), [[b] for b in W0_bits], self.word_size, "w0")
         W0 = ComponentState([self.get_current_component_id()], [list(range(self.word_size))])
         W1_bits = self._load_le_word(32)
-        self.add_concatenate_component([INPUT_PLAINTEXT] * len(W1_bits), [[b] for b in W1_bits], self.word_size)
+        self.add_intermediate_output_component([INPUT_PLAINTEXT] * len(W1_bits), [[b] for b in W1_bits], self.word_size, "w1")
         W1 = ComponentState([self.get_current_component_id()], [list(range(self.word_size))])
         return W0, W1
 
     def round_initialization_128(self):
         W0_bits = self._load_le_word(0)
-        self.add_concatenate_component([INPUT_PLAINTEXT] * len(W0_bits), [[b] for b in W0_bits], self.word_size)
+        self.add_intermediate_output_component([INPUT_PLAINTEXT] * len(W0_bits), [[b] for b in W0_bits], self.word_size, "w0")
         W0 = ComponentState([self.get_current_component_id()], [list(range(self.word_size))])
         W1_bits = self._load_le_word(32)
-        self.add_concatenate_component([INPUT_PLAINTEXT] * len(W1_bits), [[b] for b in W1_bits], self.word_size)
+        self.add_intermediate_output_component([INPUT_PLAINTEXT] * len(W1_bits), [[b] for b in W1_bits], self.word_size, "w1")
         W1 = ComponentState([self.get_current_component_id()], [list(range(self.word_size))])
         W2_bits = self._load_le_word(64)
-        self.add_concatenate_component([INPUT_PLAINTEXT] * len(W2_bits), [[b] for b in W2_bits], self.word_size)
+        self.add_intermediate_output_component([INPUT_PLAINTEXT] * len(W2_bits), [[b] for b in W2_bits], self.word_size, "w2")
         W2 = ComponentState([self.get_current_component_id()], [list(range(self.word_size))])
         W3_bits = self._load_le_word(96)
-        self.add_concatenate_component([INPUT_PLAINTEXT] * len(W3_bits), [[b] for b in W3_bits], self.word_size)
+        self.add_intermediate_output_component([INPUT_PLAINTEXT] * len(W3_bits), [[b] for b in W3_bits], self.word_size, "w3")
         W3 = ComponentState([self.get_current_component_id()], [list(range(self.word_size))])
         return W0, W1, W2, W3

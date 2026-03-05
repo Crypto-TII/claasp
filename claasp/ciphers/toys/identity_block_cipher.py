@@ -74,28 +74,11 @@ class IdentityBlockCipher(Cipher):
             self.add_round()
 
             # key schedule
-            input_link = [key_input]
-            input_bit_positions = [list(range(key_bit_size))]
-            self.add_concatenate_component(input_link, input_bit_positions, key_bit_size)
-            key_input = self.get_current_component_id()
-
-            # add round key output component
-            input_link = [key_input]
-            input_bit_positions = [list(range(key_bit_size))]
-            self.add_round_key_output_component(input_link, input_bit_positions, key_bit_size)
+            self.add_round_key_output_component([key_input], [list(range(key_bit_size))], key_bit_size)
             # end key schedule
 
             # encryption start
-            input_link = [cipher_input]
-            input_bit_positions = [list(range(block_bit_size))]
-            self.add_concatenate_component(input_link, input_bit_positions, block_bit_size)
-            cipher_input = self.get_current_component_id()
-
-            # add cipher output component
-            input_link = [cipher_input]
-            input_bit_positions = [list(range(block_bit_size))]
-
             if current_round == number_of_rounds - 1:
-                self.add_cipher_output_component(input_link, input_bit_positions, block_bit_size)
+                self.add_cipher_output_component([cipher_input], [list(range(block_bit_size))], block_bit_size)
             else:
-                self.add_round_output_component(input_link, input_bit_positions, block_bit_size)
+                self.add_round_output_component([cipher_input], [list(range(block_bit_size))], block_bit_size)

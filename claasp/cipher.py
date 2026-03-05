@@ -29,7 +29,7 @@ from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicMode
 from claasp.components.cipher_output_component import CipherOutput
 from claasp.compound_xor_differential_cipher import convert_to_compound_xor_cipher
 from claasp.rounds import Rounds
-from claasp.name_mappings import CIPHER_INVERSE_SUFFIX, CIPHER_OUTPUT, CONCATENATE, CONSTANT, INTERMEDIATE_OUTPUT, MIX_COLUMN, SBOX, WORD_OPERATION
+from claasp.name_mappings import CIPHER_INVERSE_SUFFIX, CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, MIX_COLUMN, SBOX, WORD_OPERATION
 
 
 tii_path = inspect.getfile(claasp)
@@ -1181,7 +1181,6 @@ class Cipher:
         """
         spn_components = {
             CIPHER_OUTPUT,
-            CONCATENATE,
             CONSTANT,
             INTERMEDIATE_OUTPUT,
             MIX_COLUMN,
@@ -1205,9 +1204,12 @@ class Cipher:
             mix_column_size = set_of_mix_column_sizes.pop()
         if sbox_size == 0 and mix_column_size == 0:
             return False
-        # For SPN ciphers, S-boxes and MixColumns can operate on different granularities
-        # (e.g., AES has 8-bit S-boxes and 32-bit MixColumns operating on 4 bytes)
-        # Check that if both exist, one divides the other (they're compatible)
+        # For SPN ciphers, verify that S-box and MixColumn word sizes are compatible
+        # sbox_size is the S-box input_bit_size (e.g., 8 bits for AES)
+        # mix_column_size is the MixColumn word size from description[2] (e.g., 8 bits for AES)
+        # Note: MixColumn may take larger inputs (e.g., 32 bits = 4×8-bit words in AES),
+        # but we compare the word size granularity, not total input size
+        # Check that if both exist, one divides the other (they're compatible word sizes)
         if sbox_size > 0 and mix_column_size > 0:
             if mix_column_size % sbox_size != 0 and sbox_size % mix_column_size != 0:
                 return False
@@ -1252,8 +1254,11 @@ class Cipher:
         set_of_rotate_and_shift_values = set()
         for component in self._rounds.get_all_components():
             if component.type == SBOX:
+                # S-box word size is its input_bit_size
                 set_of_sbox_sizes.add(component.input_bit_size)
             if component.type == MIX_COLUMN:
+                # MixColumn word size is stored in description[2]
+                # (description = [matrix, polynomial, word_size])
                 set_of_mix_column_sizes.add(component.description[2])
             if component.type == WORD_OPERATION:
                 set_of_components.add(component.description[0])

@@ -37,21 +37,20 @@ class AESBlockCipher(Cipher):
     
     This implementation follows the FIPS-197 specification and pseudocode notation.
     
-    Algorithm 1: CIPHER(in, Nr, w)
-    Algorithm 2: KEYEXPANSION(key)
+        Algorithm 1: CIPHER(in, Nr, w)
+        Algorithm 2: KEYEXPANSION(key)
 
         Delegation behavior:
 
         - When ``word_size == 8`` and ``state_size == 4`` (default), this class uses
             the FIPS-197 implementation in this file.
         - When either ``word_size`` or ``state_size`` is non-default, construction
-            delegates to ``ToyAESBlockCipher`` for backward compatibility with older
-            non-standard AES-like configurations.
+            delegates to ``ToyAESBlockCipher``, to be used for testing/research purposes.
 
     INPUT:
 
     - ``key_bit_size`` -- **integer** (default: `128`); size of the key in bits (128, 192, or 256)
-    - ``number_of_rounds`` -- **integer** (default: computed from key size); number of rounds
+        - ``number_of_rounds`` -- **integer** (default: computed from key size); number of rounds
       - AES-128: Nr = 10 rounds
       - AES-192: Nr = 12 rounds
       - AES-256: Nr = 14 rounds
@@ -83,6 +82,13 @@ class AESBlockCipher(Cipher):
         sage: plaintext = 0x6bc1bee22e409f96e93d7e117393172a
         sage: ciphertext = 0xf3eed1bdb5d2a03c064b5a7e3db181f8
         sage: aes256.evaluate([key, plaintext]) == ciphertext
+        True
+
+        sage: # Non-standard word/state parameters delegate to ToyAESBlockCipher
+        sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
+        sage: aes_compat = AESBlockCipher(number_of_rounds=2, word_size=4, state_size=2)
+        sage: toy_aes = ToyAESBlockCipher(number_of_rounds=2, word_size=4, state_size=2)
+        sage: aes_compat.evaluate([0x1234, 0xabcd]) == toy_aes.evaluate([0x1234, 0xabcd])
         True
     """
 
@@ -285,19 +291,12 @@ class AESBlockCipher(Cipher):
                     [[byte_idx * 8 + i for i in range(8)]],
                     8, self.SBOX_LOOKUP_TABLE)
                 sbox_outputs.append(sbox_out)
-            
-            subword_result = self.add_concatenate_component(
-                [s.id for s in sbox_outputs],
-                [[i for i in range(8)]] * 4,
-                32)
-            
+
             # ⊕ Rcon[i/Nk]
             rcon_idx = word_idx // self.Nk
             constant = self.add_constant_component(32, int(self.Rcon[rcon_idx - 1], 16))
-            temp = self.add_XOR_component(
-                [subword_result.id, constant.id],
-                [list(range(32)), list(range(32))],
-                32)
+            temp_input_id_links = [s.id for s in sbox_outputs] + [constant.id]
+            temp_input_bit_positions = [[i for i in range(8)]] * 4 + [list(range(32))]
         elif self.Nk > 6 and word_idx % self.Nk == 4:
             # Line 12: temp ← SUBWORD(temp) for AES-256
             sbox_outputs = []
@@ -307,20 +306,19 @@ class AESBlockCipher(Cipher):
                     [[byte_idx * 8 + i for i in range(8)]],
                     8, self.SBOX_LOOKUP_TABLE)
                 sbox_outputs.append(sbox_out)
-            
-            temp = self.add_concatenate_component(
-                [s.id for s in sbox_outputs],
-                [[i for i in range(8)]] * 4,
-                32)
+
+            temp_input_id_links = [s.id for s in sbox_outputs]
+            temp_input_bit_positions = [[i for i in range(8)]] * 4
         else:
             # temp = w[i-1] (no transformation)
-            temp = prev_word
+            temp_input_id_links = [prev_word.id]
+            temp_input_bit_positions = [list(range(32))]
         
         # Line 14: w[i] ← w[i−Nk]⊕temp
         word_minus_nk = self.get_word(word_idx - self.Nk)
         new_word = self.add_XOR_component(
-            [word_minus_nk.id, temp.id],
-            [list(range(32)), list(range(32))],
+            [word_minus_nk.id] + temp_input_id_links,
+            [list(range(32))] + temp_input_bit_positions,
             32)
         
         # Store the generated word

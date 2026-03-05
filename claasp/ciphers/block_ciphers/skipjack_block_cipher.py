@@ -64,7 +64,7 @@ class SkipjackBlockCipher(Cipher):
     Based on official CLAASP documentation:
     - add_SBOX_component(input_id_links, input_bit_positions, output_bit_size, description)
     - add_XOR_component(input_id_links, input_bit_positions, output_bit_size)
-    - add_concatenate_component(input_id_links, input_bit_positions, output_bit_size)
+    - add_rotate_component(input_id_links, input_bit_positions, output_bit_size, parameter)
     
     Where:
     - input_id_links: list of strings ['comp1', 'comp2']
@@ -183,10 +183,11 @@ class SkipjackBlockCipher(Cipher):
         # Result: (g[4] << 8) | g[5]
         # In CLAASP concatenate: first input goes to MSB (high byte position)
         # So we need: [g[4], g[5]] where g[4] is high byte
-        self.add_concatenate_component(
+        self.add_rotate_component(
             [g_prev.id[0], g_out.id[0]],
             [g_prev.input_bit_positions[0], g_out.input_bit_positions[0]],
-            16
+            16,
+            0
         )
         return ComponentState([self.get_current_component_id()], [list(range(16))])
 
@@ -241,25 +242,22 @@ class SkipjackBlockCipher(Cipher):
         return w4, g_output, w3_new, w3
 
     def _add_round_output(self, w1, w2, w3, w4, round_number, total_rounds):
-        """Add round output: concatenate w1||w2||w3||w4"""
-        self.add_concatenate_component(
-            [w1.id[0], w2.id[0], w3.id[0], w4.id[0]],
-            [w1.input_bit_positions[0], w2.input_bit_positions[0], w3.input_bit_positions[0], w4.input_bit_positions[0]],
-            64
-        )
-        
+        """Add round output: wire w1||w2||w3||w4 directly."""
+        input_links = [w1.id[0], w2.id[0], w3.id[0], w4.id[0]]
+        input_positions = [w1.input_bit_positions[0], w2.input_bit_positions[0], w3.input_bit_positions[0], w4.input_bit_positions[0]]
+
         if round_number == total_rounds - 1:
             # Final cipher output
             self.add_cipher_output_component(
-                [self.get_current_component_id()],
-                [list(range(64))],
+                input_links,
+                input_positions,
                 64
             )
         else:
             # Intermediate output
             self.add_round_output_component(
-                [self.get_current_component_id()],
-                [list(range(64))],
+                input_links,
+                input_positions,
                 64
             )
             

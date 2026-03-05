@@ -22,7 +22,7 @@ def test_skipjack_block_cipher():
     
     # Test component structure
     components = skipjack.get_all_components()
-    assert len(components) == 576
+    assert len(components) == 544
     first_comp = skipjack.component_from(0, 0)
     assert first_comp is not None
     assert hasattr(first_comp, 'id')
