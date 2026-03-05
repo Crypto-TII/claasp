@@ -15,7 +15,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-import numpy as np
 import sys
 
 from claasp.cipher import Cipher
@@ -36,7 +35,6 @@ PL = [[1, 3, 4, 6, 0, 2, 7, 5], [2, 7, 8, 13, 3, 6, 9, 12, 1, 4, 15, 10, 14, 11,
 PR = [[2, 7, 5, 0, 1, 6, 4, 3], [6, 11, 1, 12, 9, 4, 2, 15, 7, 0, 13, 10, 14, 3, 8, 5]]
 P_WORD_SIZE = 8
 RC_SIZE = 32
-ROTATE_SIZE = 32
 # fmt: off
 PK = [
     [6, 0, 8, 13, 1, 15, 5, 10, 4, 9, 12, 2, 11, 3, 7, 14],
@@ -120,7 +118,10 @@ def generate_ublock_matrix(n, shift0, shift1, shift2, permutation_left, permutat
         for element in equation:
             matrix[i][element] = 1
 
-    linear_layer_matrix = np.array(matrix).T.tolist()
+    if nibblewise:
+        linear_layer_matrix = matrix
+    else:
+        linear_layer_matrix = [list(row) for row in zip(*matrix)]
 
     return linear_layer_matrix
 
@@ -137,6 +138,9 @@ class UblockSingleLinearLayerBlockCipher(Cipher):
     - ``key_bit_size`` -- **integer** (default: `128`); cipher round_key bit size of the cipher
     - ``number_of_rounds`` -- **integer** (default: `16`); number of rounds of the cipher. The cipher uses the
       corresponding amount given the other parameters (if available) when r is 0
+    - ``use_mix_column`` -- **boolean** (default: `False`); controls which internal linear transformation the
+      cipher uses, when set to True, the component is instantiated with a MixColumn-based transformation; when
+      False, a standard linear layer is used instead
 
     EXAMPLES::
 
@@ -155,10 +159,11 @@ class UblockSingleLinearLayerBlockCipher(Cipher):
         True
     """
 
-    def __init__(self, block_bit_size=128, key_bit_size=128, number_of_rounds=16):
+    def __init__(self, block_bit_size=128, key_bit_size=128, number_of_rounds=16, use_mix_column=False):
         self.key_block_size = key_bit_size // 4
         self.block_bit_size = block_bit_size
         self.key_bit_size = key_bit_size
+        self.use_mix_column = use_mix_column
 
         if self.block_bit_size == 128:
             self.pl = PL[0]
@@ -168,10 +173,7 @@ class UblockSingleLinearLayerBlockCipher(Cipher):
             elif self.key_bit_size == 256:
                 self.pk = PK[1]
             else:
-                print(
-                    "The round_key size of block size 128 should be 128 or 256.",
-                    file=sys.stderr,
-                )
+                print("The round_key size of block size 128 should be 128 or 256.", file=sys.stderr)
                 sys.exit(1)
         elif self.block_bit_size == 256:
             self.pl = PL[1]
@@ -179,10 +181,7 @@ class UblockSingleLinearLayerBlockCipher(Cipher):
             if self.key_bit_size == 256:
                 self.pk = PK[2]
             else:
-                print(
-                    "The round_key size of block size 256 should be 256.",
-                    file=sys.stderr,
-                )
+                print("The round_key size of block size 256 should be 256.", file=sys.stderr)
                 sys.exit(1)
         else:
             print("The block size should be 128 or 256.", file=sys.stderr)
@@ -243,13 +242,22 @@ class UblockSingleLinearLayerBlockCipher(Cipher):
             )
             ids.append(self.get_current_component_id())
         state = ComponentState(ids, [list(range(window_size))] * n)
-        # linear layer
-        self.add_linear_layer_component(
-            state.id,
-            state.input_bit_positions,
-            self.block_bit_size,
-            generate_ublock_matrix(self.block_bit_size, 4, 8, 20, self.pl, self.pr),
-        )
+        if self.use_mix_column:
+            # mix_column
+            self.add_mix_column_component(
+                state.id,
+                state.input_bit_positions,
+                self.block_bit_size,
+                [generate_ublock_matrix(self.block_bit_size // 4, 1, 2, 5, self.pl, self.pr, nibblewise=True), 0x13, 4],
+            )
+        else:
+            # linear layer
+            self.add_linear_layer_component(
+                state.id,
+                state.input_bit_positions,
+                self.block_bit_size,
+                generate_ublock_matrix(self.block_bit_size, 4, 8, 20, self.pl, self.pr),
+            )
         state = ComponentState([self.get_current_component_id()], [list(range(self.block_bit_size))])
 
         return state

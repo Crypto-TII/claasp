@@ -28,6 +28,7 @@ from claasp.components.intermediate_output_component import IntermediateOutput
 from claasp.components.linear_layer_component import LinearLayer
 from claasp.components.mix_column_component import MixColumn
 from claasp.components.modadd_component import MODADD
+from claasp.components.modmul_component import MODMUL
 from claasp.components.modsub_component import MODSUB
 from claasp.components.idea_modmul_component import IdeaModmul
 from claasp.components.not_component import NOT
@@ -546,6 +547,33 @@ def add_MODADD_component(cipher, input_id_links, input_bit_positions, output_bit
         return None
 
     new_component = MODADD(
+        cipher.current_round_number,
+        cipher.current_round_number_of_components,
+        input_id_links,
+        input_bit_positions,
+        output_bit_size,
+        modulus,
+    )
+    add_component(cipher, new_component)
+    return new_component
+
+
+def add_MODMUL_component(cipher, input_id_links, input_bit_positions, output_bit_size, modulus):
+    """
+    Use this function to create and add a modmul component to editor.
+
+    INPUT:
+
+    - ``cipher`` -- **Cipher object**; an instance of the object cipher
+    - ``input_id_links`` -- **list**; the list of input_id links
+    - ``input_bit_positions`` -- **list**; the list of input_bits corresponding to the input_id links
+    - ``output_bit_size`` -- **integer**; the output bits of the component
+    """
+    if cipher.current_round_number is None:
+        print(CIPHER_ROUND_NOT_FOUND_ERROR)
+        return None
+
+    new_component = MODMUL(
         cipher.current_round_number,
         cipher.current_round_number_of_components,
         input_id_links,
