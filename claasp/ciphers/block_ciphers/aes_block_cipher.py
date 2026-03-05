@@ -57,6 +57,12 @@ class AESBlockCipher(Cipher):
         if state_size not in (2, 3, 4):
             raise ValueError("state_size incorrect (should be in [2,3,4])")
 
+        # FIPS-197 AES parameters
+        # Nk = number of words in the key (4, 6, or 8 for AES-128, AES-192, AES-256)
+        # Nr = number of rounds (10, 12, or 14 for AES-128, AES-192, AES-256)
+        self.Nk = key_bit_size // 32  # 128->4, 192->6, 256->8
+        self.Nr = number_of_rounds    # Will be 10, 12, or 14 for standard AES
+
         # cipher dictionary initialize
         self.cipher_block_size = state_size**2 * word_size
         self.key_block_size = self.cipher_block_size

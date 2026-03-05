@@ -51,7 +51,7 @@ def test_cms_constraints():
 
 
 def test_cp_constraints():
-    aes = AESBlockCipher(number_of_rounds=3)
+    aes = ToyAESBlockCipher(number_of_rounds=3)
     mix_column_component = aes.component_from(0, 21)
     declarations, constraints = mix_column_component.cp_constraints()
 
@@ -64,7 +64,7 @@ def test_cp_constraints():
 
 
 def test_cp_deterministic_truncated_xor_differential_constraints():
-    aes = AESBlockCipher(number_of_rounds=3)
+    aes = ToyAESBlockCipher(number_of_rounds=3)
     mix_column_component = aes.component_from(0, 21)
     declarations, constraints = mix_column_component.cp_deterministic_truncated_xor_differential_constraints()
 
@@ -81,7 +81,7 @@ def test_cp_deterministic_truncated_xor_differential_constraints():
 
 
 def test_cp_xor_linear_mask_propagation_constraints():
-    aes = AESBlockCipher(number_of_rounds=3)
+    aes = ToyAESBlockCipher(number_of_rounds=3)
     mix_column_component = aes.component_from(0, 21)
     declarations, constraints = mix_column_component.cp_xor_linear_mask_propagation_constraints()
 
@@ -99,7 +99,7 @@ def test_cp_xor_linear_mask_propagation_constraints():
 
 
 def test_milp_constraints():
-    aes = AESBlockCipher(number_of_rounds=3)
+    aes = ToyAESBlockCipher(number_of_rounds=3)
     milp = MilpModel(aes)
     milp.init_model_in_sage_milp_class()
     mix_column_component = aes.component_from(0, 21)

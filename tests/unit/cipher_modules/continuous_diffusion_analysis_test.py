@@ -34,7 +34,7 @@ def test_continuous_tests_report(monkeypatch, tmp_path):
 
 
 def test_continuous_avalanche_factor():
-    aes = AESBlockCipher(number_of_rounds=5)
+    aes = ToyAESBlockCipher(number_of_rounds=5)
     cda = ContinuousDiffusionAnalysis(aes)
     result = cda.continuous_avalanche_factor(
         0.001,

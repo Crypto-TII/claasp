@@ -28,7 +28,7 @@ def test_find_lowest_weight_xor_differential_trail():
     ]
     solution = mzn.find_lowest_weight_xor_differential_trail(fixed_variables, CHUFFED, CHUFFED)
 
-    assert str(solution["cipher"]) == "aes_block_cipher_k128_p128_o128_r2"
+    assert str(solution["cipher"]) == "toyaes_block_cipher_k128_p128_o128_r2"
     assert solution["model_type"] == XOR_DIFFERENTIAL
     assert solution["solver_name"] == CHUFFED
     assert solution["total_weight"] == "30.0"
@@ -48,7 +48,7 @@ def test_find_one_xor_differential_trail():
     ]
     solution = mzn.find_one_xor_differential_trail(fixed_variables, CHUFFED, CHUFFED)
 
-    assert str(solution["cipher"]) == "aes_block_cipher_k128_p128_o128_r2"
+    assert str(solution["cipher"]) == "toyaes_block_cipher_k128_p128_o128_r2"
     assert solution["model_type"] == XOR_DIFFERENTIAL
     assert solution["solver_name"] == CHUFFED
     assert eval(solution["total_weight"]) >= 0.0
@@ -57,7 +57,7 @@ def test_find_one_xor_differential_trail():
 
     solution = mzn.find_one_xor_differential_trail(fixed_variables, CHUFFED, CHUFFED)
 
-    assert str(solution["cipher"]) == "aes_block_cipher_k128_p128_o128_r2"
+    assert str(solution["cipher"]) == "toyaes_block_cipher_k128_p128_o128_r2"
     assert solution["model_type"] == XOR_DIFFERENTIAL
     assert solution["solver_name"] == CHUFFED
     assert eval(solution["total_weight"]) >= 0.0
@@ -74,7 +74,7 @@ def test_find_one_xor_differential_trail_with_fixed_weight():
     ]
     solution = mzn.find_one_xor_differential_trail_with_fixed_weight(224, fixed_variables, CHUFFED, CHUFFED)
 
-    assert str(solution["cipher"]) == "aes_block_cipher_k128_p128_o128_r2"
+    assert str(solution["cipher"]) == "toyaes_block_cipher_k128_p128_o128_r2"
     assert solution["model_type"] == XOR_DIFFERENTIAL
     assert solution["solver_name"] == CHUFFED
     assert eval(solution["total_weight"]) == 224.0
@@ -92,7 +92,7 @@ def test_solve_full_two_steps_xor_differential_model():
         "xor_differential_one_solution", -1, fixed_variables, CHUFFED, CHUFFED
     )
 
-    assert str(constraints["cipher"]) == "aes_block_cipher_k128_p128_o128_r2"
+    assert str(constraints["cipher"]) == "toyaes_block_cipher_k128_p128_o128_r2"
     assert eval(constraints["components_values"]["intermediate_output_0_35"]["value"]) >= 0
     assert constraints["components_values"]["intermediate_output_0_35"]["weight"] == 0
     assert eval(constraints["components_values"]["xor_0_36"]["value"]) >= 0

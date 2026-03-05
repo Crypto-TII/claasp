@@ -28,7 +28,7 @@ def test_cp_inverse_constraints():
 
 
 def test_cp_xor_differential_first_step_constraints():
-    aes = AESBlockCipher(number_of_rounds=3)
+    aes = ToyAESBlockCipher(number_of_rounds=3)
     cp = MznModel(aes)
     rotate_component = aes.component_from(0, 18)
     declarations, constraints = rotate_component.cp_xor_differential_first_step_constraints(cp)

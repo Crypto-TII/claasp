@@ -63,7 +63,7 @@ def test_cp_constraints():
 
 
 def test_cp_deterministic_truncated_xor_differential_constraints():
-    aes = AESBlockCipher(number_of_rounds=3)
+    aes = ToyAESBlockCipher(number_of_rounds=5)
     sbox_component = aes.component_from(0, 1)
     declarations, constraints, sbox_mant = sbox_component.cp_deterministic_truncated_xor_differential_constraints(sbox_mant = [])
     print(constraints)
@@ -119,7 +119,7 @@ def test_cp_xor_linear_mask_propagation_constraints():
 
 
 def test_milp_large_xor_differential_probability_constraints():
-    aes = AESBlockCipher(number_of_rounds=3)
+    aes = ToyAESBlockCipher(number_of_rounds=3)
     milp = MilpModel(aes)
     milp.init_model_in_sage_milp_class()
     sbox_component = aes.component_from(0, 1)
@@ -138,7 +138,7 @@ def test_milp_large_xor_differential_probability_constraints():
 
 
 def test_milp_large_xor_linear_probability_constraints():
-    aes = AESBlockCipher(number_of_rounds=3)
+    aes = ToyAESBlockCipher(number_of_rounds=3)
     milp = MilpModel(aes)
     milp.init_model_in_sage_milp_class()
     sbox_component = aes.component_from(0, 1)
@@ -395,7 +395,7 @@ def test_milp_undisturbed_bits_bitwise_deterministic_truncated_xor_differential_
     assert trail['components_values']['sbox_0_4']['value'] == '???1'
 
 def test_milp_wordwise_deterministic_truncated_xor_differential_constraints():
-    aes = AESBlockCipher(number_of_rounds=2)
+    aes = ToyAESBlockCipher(number_of_rounds=5)
     milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(aes)
     milp.init_model_in_sage_milp_class()
     sbox_component = aes.component_from(0,1)
@@ -412,7 +412,7 @@ def test_milp_wordwise_deterministic_truncated_xor_differential_constraints():
     assert str(constraints[-1]) == 'x_0 <= x_2'
 
 def test_milp_wordwise_deterministic_truncated_xor_differential_simple_constraints():
-    aes = AESBlockCipher(number_of_rounds=2)
+    aes = ToyAESBlockCipher(number_of_rounds=5)
     milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(aes)
     milp.init_model_in_sage_milp_class()
     sbox_component = aes.component_from(0, 1)
