@@ -165,20 +165,6 @@ def add_component(cipher, component):
     cipher.rounds.add_component(component)
 
 
-
-
-    new_component = Rotate(
-        cipher.current_round_number,
-        cipher.current_round_number_of_components,
-        input_id_links,
-        input_bit_positions,
-        output_bit_size,
-        0,
-    )
-    add_component(cipher, new_component)
-    return new_component
-
-
 def add_constant_component(cipher, output_bit_size, value):
     """
     Use this function to create and add a constant component to editor.
