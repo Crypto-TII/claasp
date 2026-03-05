@@ -495,7 +495,7 @@ class Component:
 
     def check_output_size(self, available_word_sizes, fixed, word_size):
         if self._type in (INTERMEDIATE_OUTPUT, CIPHER_OUTPUT):
-            word_size = self.output_size_for_concatenate(available_word_sizes, fixed, word_size)
+            word_size = self.determine_passthrough_word_size(available_word_sizes, fixed, word_size)
             if word_size is None:
                 return None, fixed
         else:
@@ -507,7 +507,21 @@ class Component:
 
         return fixed, word_size
 
-    def output_size_for_concatenate(self, available_word_sizes, fixed, word_size):
+    def determine_passthrough_word_size(self, available_word_sizes, fixed, word_size):
+        """
+        Determine appropriate word size for passthrough components (INTERMEDIATE_OUTPUT, CIPHER_OUTPUT).
+        
+        These components forward data without transformation, so they need flexible word size handling
+        for word-based analysis compatibility.
+        
+        Args:
+            available_word_sizes: List of candidate word sizes for analysis
+            fixed: Whether the current word_size is fixed/required
+            word_size: Current word size being considered (may be None)
+            
+        Returns:
+            Compatible word_size for this component, or None if incompatible
+        """
         if word_size is None:
             word_sizes = [size for size in available_word_sizes if self._output_bit_size % size != 0]
             if word_sizes:
