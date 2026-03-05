@@ -385,10 +385,10 @@ class MSXBlockCipher(Cipher):
         x_low16 = ComponentState(x.id, [[i for i in range(16, 32)]])
         x_high16 = ComponentState(x.id, [[i for i in range(0, 16)]])
         zero16 = self._zero_bits(16)
-        self.add_intermediate_output_component(zero16.id + x_low16.id, zero16.input_bit_positions + x_low16.input_bit_positions, n, "x0")
-        x0_32 = ComponentState([self.get_current_component_id()], [list(range(n))])
-        self.add_intermediate_output_component(zero16.id + x_high16.id, zero16.input_bit_positions + x_high16.input_bit_positions, n, "x1")
-        x1_32 = ComponentState([self.get_current_component_id()], [list(range(n))])
+        # Directly concatenate zero16 and x_low16 without intermediate output
+        x0_32 = ComponentState(zero16.id + x_low16.id, zero16.input_bit_positions + x_low16.input_bit_positions)
+        # Directly concatenate zero16 and x_high16 without intermediate output
+        x1_32 = ComponentState(zero16.id + x_high16.id, zero16.input_bit_positions + x_high16.input_bit_positions)
 
         self.add_MODADD_component(x0_32.id + rk_group[0].id, x0_32.input_bit_positions + rk_group[0].input_bit_positions, n, self.mod32)
         t0 = ComponentState([self.get_current_component_id()], [list(range(n))])
@@ -413,8 +413,8 @@ class MSXBlockCipher(Cipher):
 
         hi16_w0 = ComponentState(w0.id, [[i for i in range(0, 16)]])
         hi16_w1 = ComponentState(w1.id, [[i for i in range(0, 16)]])
-        self.add_intermediate_output_component(hi16_w1.id + hi16_w0.id, hi16_w1.input_bit_positions + hi16_w0.input_bit_positions, n, "y")
-        y = ComponentState([self.get_current_component_id()], [list(range(n))])
+        # Directly concatenate w1 and w0 high bits without intermediate output
+        y = ComponentState(hi16_w1.id + hi16_w0.id, hi16_w1.input_bit_positions + hi16_w0.input_bit_positions)
 
         y_orig = y
         self.add_rotate_component(y_orig.id, y_orig.input_bit_positions, n, -13)
