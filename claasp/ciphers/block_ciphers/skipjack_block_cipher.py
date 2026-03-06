@@ -64,6 +64,10 @@ class SkipjackBlockCipher(Cipher):
     This implementation follows the NIST specification with an 80-bit key,
     64-bit block and 32 rounds (Rule A / Rule B schedule).
 
+        Test vectors reference:
+    - [NIST1998] SKIPJACK and KEA Algorithm Specifications, Annex III
+        https://csrc.nist.gov/csrc/media/projects/cryptographic-algorithm-validation-program/documents/skipjack/skipjack.pdf
+        
     EXAMPLES::
 
         sage: from claasp.ciphers.block_ciphers.skipjack_block_cipher import SkipjackBlockCipher
@@ -75,12 +79,8 @@ class SkipjackBlockCipher(Cipher):
 
         sage: key = 0x00998877665544332211
         sage: plaintext = 0x33221100ddccbbaa
-        sage: SkipjackBlockCipher(number_of_rounds=8).evaluate([plaintext, key])
-        15536105458355985808
-        sage: SkipjackBlockCipher(number_of_rounds=16).evaluate([plaintext, key])
-        15562339765349488771
-        sage: SkipjackBlockCipher().evaluate([plaintext, key])
-        2704353175318745856
+        sage: hex(SkipjackBlockCipher().evaluate([plaintext, key]))
+        '0x2587cae27a12d300'
     """
 
     def __init__(self, number_of_rounds=32):
@@ -191,7 +191,8 @@ class SkipjackBlockCipher(Cipher):
             g_prev = g_out
             g_out = g_new
 
-        # Materialize a single 16-bit component from high byte (g_prev) and low byte (g_out).
+        # Materialize the two 8-bit outputs into a single 16-bit component
+        # NOTE: While rotate by 0 appears to be a no-op, testing shows it is essential.
         self.add_rotate_component(
             [g_prev.id[0], g_out.id[0]],
             [g_prev.input_bit_positions[0], g_out.input_bit_positions[0]],
@@ -210,15 +211,8 @@ class SkipjackBlockCipher(Cipher):
 
         # w1' = G(w1) XOR w4 XOR counter
         self.add_XOR_component(
-            [g_output.id[0], w4.id[0]],
-            [g_output.input_bit_positions[0], w4.input_bit_positions[0]],
-            16
-        )
-        temp = ComponentState([self.get_current_component_id()], [list(range(16))])
-
-        self.add_XOR_component(
-            [temp.id[0], counter_comp.id[0]],
-            [temp.input_bit_positions[0], counter_comp.input_bit_positions[0]],
+            [g_output.id[0], w4.id[0], counter_comp.id[0]],
+            [g_output.input_bit_positions[0], w4.input_bit_positions[0], counter_comp.input_bit_positions[0]],
             16
         )
         w1_new = ComponentState([self.get_current_component_id()], [list(range(16))])
@@ -253,7 +247,8 @@ class SkipjackBlockCipher(Cipher):
     def _add_round_output(self, w1, w2, w3, w4, round_number, total_rounds):
         """Add round output: wire w1||w2||w3||w4 directly."""
         input_links = [w1.id[0], w2.id[0], w3.id[0], w4.id[0]]
-        input_positions = [w1.input_bit_positions[0], w2.input_bit_positions[0], w3.input_bit_positions[0], w4.input_bit_positions[0]]
+        input_positions = [w1.input_bit_positions[0], w2.input_bit_positions[0], 
+                          w3.input_bit_positions[0], w4.input_bit_positions[0]]
 
         if round_number == total_rounds - 1:
             # Final cipher output

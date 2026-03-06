@@ -251,10 +251,10 @@ class LowMCBlockCipher(Cipher):
 
         for r in range(number_of_rounds):
             # Nonlinear layer
-            sbox_layer_wiring = self.sbox_layer(plaintext_id)
+            sbox_layer = self.sbox_layer(plaintext_id)
 
             # Affine layer
-            linear_layer = self.linear_layer(sbox_layer_wiring, r)
+            linear_layer = self.linear_layer(sbox_layer, r)
             round_constant = self.add_round_constant(linear_layer, r)
 
             # Generate round key and add to the state
@@ -323,8 +323,8 @@ class LowMCBlockCipher(Cipher):
 
         return number_of_sboxes
 
-    def linear_layer(self, sbox_layer_wiring, round_number):
-        input_id_links, input_bit_positions = sbox_layer_wiring
+    def linear_layer(self, input_state, round_number):
+        input_id_links, input_bit_positions = input_state
         return self.add_linear_layer_component(
             input_id_links,
             input_bit_positions,
