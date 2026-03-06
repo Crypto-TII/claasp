@@ -21,8 +21,9 @@ def test_skipjack_block_cipher():
     assert skipjack.output_bit_size == 64
     
     # Test component structure
+    # Note: 496 components after removing rotate(0) materialization (was 544)
     components = skipjack.get_all_components()
-    assert len(components) == 544
+    assert len(components) == 496
     first_comp = skipjack.component_from(0, 0)
     assert first_comp is not None
     assert hasattr(first_comp, 'id')

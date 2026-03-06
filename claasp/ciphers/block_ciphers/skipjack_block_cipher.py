@@ -145,9 +145,16 @@ class SkipjackBlockCipher(Cipher):
         - bits [0:7] = high byte = g[0]
         - bits [8:15] = low byte = g[1]
         """
-        # Extract g[0] (high byte, bits 0-7) and g[1] (low byte, bits 8-15)
-        g0 = ComponentState(word.id, [word.input_bit_positions[0][0:8]])
-        g1 = ComponentState(word.id, [word.input_bit_positions[0][8:16]])
+        # Extract g[0] (high byte) and g[1] (low byte)
+        # Handle both layouts:
+        # 1) Single-ID 16-bit word: id=[x], positions=[[0..15]]
+        # 2) Multi-ID 2x8-bit word: id=[x_hi, x_lo], positions=[[0..7], [0..7]]
+        if len(word.id) == 1:
+            g0 = ComponentState(word.id, [word.input_bit_positions[0][0:8]])
+            g1 = ComponentState(word.id, [word.input_bit_positions[0][8:16]])
+        else:
+            g0 = ComponentState([word.id[0]], [word.input_bit_positions[0]])
+            g1 = ComponentState([word.id[1]], [word.input_bit_positions[1]])
 
         g_prev = g0  # g[0]
         g_out = g1   # g[1]
@@ -191,15 +198,9 @@ class SkipjackBlockCipher(Cipher):
             g_prev = g_out
             g_out = g_new
 
-        # Materialize the two 8-bit outputs into a single 16-bit component
-        # NOTE: While rotate by 0 appears to be a no-op, testing shows it is essential.
-        self.add_rotate_component(
-            [g_prev.id[0], g_out.id[0]],
-            [g_prev.input_bit_positions[0], g_out.input_bit_positions[0]],
-            16,
-            0
-        )
-        return ComponentState([self.get_current_component_id()], [list(range(16))])
+        # Return multi-ID ComponentState with [g_prev_id, g_out_id] as separate 8-bit components
+        return ComponentState([g_prev.id[0], g_out.id[0]], 
+                             [g_prev.input_bit_positions[0], g_out.input_bit_positions[0]])
 
     def _rule_a(self, w1, w2, w3, w4, counter, round_number):
         """Rule A: w1' = G(w1) XOR w4 XOR counter, w2' = G(w1), w3' = w2, w4' = w3"""
@@ -210,9 +211,10 @@ class SkipjackBlockCipher(Cipher):
         counter_comp = ComponentState([self.get_current_component_id()], [list(range(16))])
 
         # w1' = G(w1) XOR w4 XOR counter
+        # Both g_output and w4 can be multi-ID (2x8-bit), so flatten both.
         self.add_XOR_component(
-            [g_output.id[0], w4.id[0], counter_comp.id[0]],
-            [g_output.input_bit_positions[0], w4.input_bit_positions[0], counter_comp.input_bit_positions[0]],
+            g_output.id + w4.id + [counter_comp.id[0]],
+            g_output.input_bit_positions + w4.input_bit_positions + [counter_comp.input_bit_positions[0]],
             16
         )
         w1_new = ComponentState([self.get_current_component_id()], [list(range(16))])
@@ -228,9 +230,10 @@ class SkipjackBlockCipher(Cipher):
         counter_comp = ComponentState([self.get_current_component_id()], [list(range(16))])
 
         # w3' = w1 XOR w2 XOR counter
+        # w1 and w2 can be multi-ID, so flatten both for a full 16-bit XOR each.
         self.add_XOR_component(
-            [w1.id[0], w2.id[0]],
-            [w1.input_bit_positions[0], w2.input_bit_positions[0]],
+            w1.id + w2.id,
+            w1.input_bit_positions + w2.input_bit_positions,
             16
         )
         temp = ComponentState([self.get_current_component_id()], [list(range(16))])
@@ -245,10 +248,13 @@ class SkipjackBlockCipher(Cipher):
         return w4, g_output, w3_new, w3
 
     def _add_round_output(self, w1, w2, w3, w4, round_number, total_rounds):
-        """Add round output: wire w1||w2||w3||w4 directly."""
-        input_links = [w1.id[0], w2.id[0], w3.id[0], w4.id[0]]
-        input_positions = [w1.input_bit_positions[0], w2.input_bit_positions[0], 
-                          w3.input_bit_positions[0], w4.input_bit_positions[0]]
+        """Add round output: wire w1||w2||w3||w4 directly, flattening multi-ID states."""
+        # Flatten all multi-ID ComponentStates
+        input_links = []
+        input_positions = []
+        for w in [w1, w2, w3, w4]:
+            input_links.extend(w.id)
+            input_positions.extend(w.input_bit_positions)
 
         if round_number == total_rounds - 1:
             # Final cipher output
