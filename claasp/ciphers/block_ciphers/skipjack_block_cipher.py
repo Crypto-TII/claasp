@@ -59,16 +59,28 @@ SKIPJACK_FTABLE = [
 
 class SkipjackBlockCipher(Cipher):
     """
-    SKIPJACK NSA - 64-bit block, 80-bit key, 32 rounds
-    
-    Based on official CLAASP documentation:
-    - add_SBOX_component(input_id_links, input_bit_positions, output_bit_size, description)
-    - add_XOR_component(input_id_links, input_bit_positions, output_bit_size)
-    - add_rotate_component(input_id_links, input_bit_positions, output_bit_size, parameter)
-    
-    Where:
-    - input_id_links: list of strings ['comp1', 'comp2']
-    - input_bit_positions: list of lists [[bits1], [bits2]]
+    SKIPJACK block cipher.
+
+    This implementation follows the NIST specification with an 80-bit key,
+    64-bit block and 32 rounds (Rule A / Rule B schedule).
+
+    EXAMPLES::
+
+        sage: from claasp.ciphers.block_ciphers.skipjack_block_cipher import SkipjackBlockCipher
+        sage: cipher = SkipjackBlockCipher()
+        sage: cipher.id
+        'skipjack_p64_k80_o64_r32'
+        sage: cipher.number_of_rounds
+        32
+
+        sage: key = 0x00998877665544332211
+        sage: plaintext = 0x33221100ddccbbaa
+        sage: SkipjackBlockCipher(number_of_rounds=8).evaluate([plaintext, key])
+        15536105458355985808
+        sage: SkipjackBlockCipher(number_of_rounds=16).evaluate([plaintext, key])
+        15562339765349488771
+        sage: SkipjackBlockCipher().evaluate([plaintext, key])
+        2704353175318745856
     """
 
     def __init__(self, number_of_rounds=32):
@@ -179,10 +191,7 @@ class SkipjackBlockCipher(Cipher):
             g_prev = g_out
             g_out = g_new
 
-        # At the end: g_prev = g[4], g_out = g[5]
-        # Result: (g[4] << 8) | g[5]
-        # In CLAASP concatenate: first input goes to MSB (high byte position)
-        # So we need: [g[4], g[5]] where g[4] is high byte
+        # Materialize a single 16-bit component from high byte (g_prev) and low byte (g_out).
         self.add_rotate_component(
             [g_prev.id[0], g_out.id[0]],
             [g_prev.input_bit_positions[0], g_out.input_bit_positions[0]],
