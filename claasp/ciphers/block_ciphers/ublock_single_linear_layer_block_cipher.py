@@ -264,17 +264,22 @@ class UblockSingleLinearLayerBlockCipher(Cipher):
 
     def key_schedule(self, key_0, key_1, key_2, key_3, RC):
         # K0||K1 = PK(K0||K1)
-        self.add_word_permutation_component(
-            key_0.id + key_1.id,
-            key_0.input_bit_positions + key_1.input_bit_positions,
-            self.key_block_size * 2,
-            self.pk,
-            PK_WORD_SIZE,
+        key_permuted_ids = []
+        key_permuted_input_bit_positions = []
+        for word in self.pk:
+            if word < len(self.pk) // 2:
+                key_permuted_ids.append(key_0.id[0])
+                key_permuted_input_bit_positions.append(key_0.input_bit_positions[0][word * 4 : (word + 1) * 4])
+            else:
+                key_permuted_ids.append(key_1.id[0])
+                key_permuted_input_bit_positions.append(
+                    key_1.input_bit_positions[0][(word - len(self.pk) // 2) * 4 : (word - len(self.pk) // 2 + 1) * 4]
+                )
+        key_0 = ComponentState(
+            key_permuted_ids[: len(self.pk) // 2], key_permuted_input_bit_positions[: len(self.pk) // 2]
         )
-        key_0 = ComponentState([self.get_current_component_id()], [list(range(self.key_block_size))])
         key_1 = ComponentState(
-            [self.get_current_component_id()],
-            [list(range(self.key_block_size, self.key_block_size * 2))],
+            key_permuted_ids[len(self.pk) // 2 :], key_permuted_input_bit_positions[len(self.pk) // 2 :]
         )
 
         # K2 = K2 xor sbox_k(K0 xor RC)
@@ -297,8 +302,8 @@ class UblockSingleLinearLayerBlockCipher(Cipher):
                 ids.append(self.get_current_component_id())
             temp = ComponentState(ids, [list(range(window_size))] * n)
         else:
-            key_0_left = ComponentState(key_0.id, [list(range(RC_SIZE))])
-            key_0_right = ComponentState(key_0.id, [list(range(RC_SIZE, self.key_block_size))])
+            key_0_left = ComponentState(key_0.id[: len(self.pk) // 4], key_0.input_bit_positions[: len(self.pk) // 4])
+            key_0_right = ComponentState(key_0.id[len(self.pk) // 4 :], key_0.input_bit_positions[len(self.pk) // 4 :])
             self.add_XOR_component(
                 key_0_left.id + round_constant.id,
                 key_0_left.input_bit_positions + round_constant.input_bit_positions,
@@ -316,8 +321,8 @@ class UblockSingleLinearLayerBlockCipher(Cipher):
             n = (self.key_block_size - RC_SIZE) // window_size
             for i in range(n):
                 self.add_SBOX_component(
-                    key_0_right.id,
-                    [key_0_right.input_bit_positions[0][i * window_size : (i + 1) * window_size]],
+                    [key_0_right.id[i]],
+                    [key_0_right.input_bit_positions[i]],
                     window_size,
                     SBOX,
                 )
@@ -333,9 +338,7 @@ class UblockSingleLinearLayerBlockCipher(Cipher):
         window_size = SBOX_SIZE
         n = self.key_block_size // window_size
         for i in range(n):
-            self.add_SBOX_component(
-                key_1.id, [key_1.input_bit_positions[0][i * window_size : (i + 1) * window_size]], window_size, SBOX_TK
-            )
+            self.add_SBOX_component([key_1.id[i]], [key_1.input_bit_positions[i]], window_size, SBOX_TK)
             ids.append(self.get_current_component_id())
         temp = ComponentState(ids, [list(range(window_size))] * n)
         self.add_XOR_component(
