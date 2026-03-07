@@ -1696,6 +1696,92 @@ class MilpMonomialPredictionModel():
 
         return degrees
 
+    def find_degree_in_cube_vars_of_specific_output_bit(
+        self,
+        output_bit_index,
+        cube,
+        chosen_cipher_output=None,
+    ):
+        r"""
+        Compute an upper bound degree of the cipher output bit with respect to the given cube variables.
+
+        INPUT:
+
+        - ``output_bit_index`` -- **integer**
+          Index (0-based, counting from the most significant bit).
+
+        - ``cube`` -- **list of strings**
+          List of cube variable names (e.g. ``["p1", "p3", "p8"]``) to compute the degree over.
+
+        - ``chosen_cipher_output`` -- **string** (default: ``None``)
+          Optional component ID if the computation targets an intermediate output
+          instead of the final cipher output.
+
+        OUTPUT:
+
+        - **integer**
+          Upper bound degree of the given output bit in the given cube variables.
+          Returns ``-1`` if the model is infeasible.
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
+            sage: cipher = SimonBlockCipher(number_of_rounds=13)
+            sage: from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel
+            sage: milp = MilpMonomialPredictionModel(cipher)  # doctest: +SKIP
+            sage: cube = [f"p{i}" for i in range(1, 32)]
+            sage: d = milp.find_degree_in_cube_vars_of_specific_output_bit(16, cube)  # doctest: +SKIP
+            ...
+        """
+        self.build_generic_model_for_specific_output_bit(
+            output_bit_index, fixed_degree=None, which_var_degree=None, chosen_cipher_output=chosen_cipher_output
+        )
+        m = self._model
+        m.Params.OutputFlag = 0
+        m.setParam(GRB.Param.PoolSearchMode, 0)
+        m.setParam("MIPGap", 0)
+        m.setParam("OptimalityTol", 1e-9)
+
+        cube_verbose = self.var_list_to_input_positions(cube)
+        cube_set = {(a, b) for (a, b) in cube_verbose}
+
+        # Objective: maximize degree in the cube variables
+        cube_vars = [m.getVarByName(f"{inp_name}[{idx}]") for (inp_name, idx) in cube_verbose]
+        m.setObjective(sum(cube_vars), GRB.MAXIMIZE)
+
+        # Fix all other non-cube public input bits to 0
+        for (inp, sz) in zip(self._cipher.inputs, self._cipher.inputs_bit_size):
+            pref = inp[0]
+            if pref in {"p", "i"}:
+                for i in range(sz):
+                    if (inp, i) in cube_set:
+                        continue
+                    v = m.getVarByName(f"{inp}[{i}]")
+                    if v is not None:
+                        m.addConstr(v == 0)
+
+        m.update()
+        m.optimize()
+
+        if m.Status not in [GRB.OPTIMAL, GRB.SUBOPTIMAL]:
+            if verbosity:
+                print(f"[INFO] Model infeasible for output bit {output_bit_index}")
+            return -1
+
+        degree_in_cube_vars = int(round(m.ObjVal))
+
+        self._log_experiment(
+            "degree in cube vars",
+            {
+                "output_bit_index": output_bit_index,
+                "chosen_cipher_output": chosen_cipher_output,
+                "cube": cube
+            },
+            degree_in_cube_vars
+        )
+
+        return degree_in_cube_vars
+
     def find_upper_bound_degree_of_cube_monomial_of_specific_output_bit(
         self,
         output_bit_index,
@@ -1771,8 +1857,7 @@ class MilpMonomialPredictionModel():
         )
 
         return degree_upper_bound
-
-
+    
     def find_keycoeff_of_cube_monomial_of_specific_output_bit(
         self,
         output_bit_index,

@@ -153,3 +153,11 @@ def test_msx64_degree_upper_bound():
     cipher = MSXBlockCipher(block_bit_size=64, key_bit_size=128, number_of_rounds=1)
     milp = MilpMonomialPredictionModel(cipher)
     assert milp.find_upper_bound_degree_of_specific_output_bit(0) == 32
+
+@pytest.mark.skip(reason="Requires Gurobi license")
+def test_find_degree_in_cube_vars_of_specific_output_bit():
+    cipher = SimonBlockCipher(number_of_rounds=13)
+    milp = MilpMonomialPredictionModel(cipher)
+    cube = [f"p{i}" for i in range(1, 32)]
+    d = milp.find_degree_in_cube_vars_of_specific_output_bit(16, cube)
+    assert d == 30
