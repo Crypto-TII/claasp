@@ -94,11 +94,10 @@ def test_counter_based_modadd_semideterministic_probability_sample():
     array[0..31] of var 0..2: b =           array1d(0..31, [0, 0, 0, 0, 0, 0, 0, 0, 2, 1, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0]);
     array[0..31] of var 0..2: c =           array1d(0..31, [0, 0, 0, 2, 2, 2, 2, 2, 2, 1, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0]);
     
-var 0..31: p;
 array[0..31] of var {100, 41, 19, 9, 4, 2, 1, 0}: costs;
 var int: probability;
 
-constraint counter_based_modadd_semideterministic(a, b, c, delta_carry, p, costs, 32, probability);
+constraint counter_based_modadd_semideterministic(a, b, c, delta_carry, costs, 32, probability);
     solve minimize probability;
 """
     )
@@ -160,12 +159,11 @@ def test_counter_based_modadd_semideterministic_probability_700_sample():
     array[0..15] of var 0..2: b = array1d(0..15, [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0]);
     array[0..15] of var 0..2: c = array1d(0..15, [2, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0]);
 
-var 0..15: p;
 array[0..15] of var 0..2: delta_carry;
 array[0..15] of var {100, 41, 19, 9, 4, 2, 1, 0}: costs;
 var int: probability;
 
-constraint counter_based_modadd_semideterministic(a, b, c, delta_carry, p, costs, 16, probability);
+constraint counter_based_modadd_semideterministic(a, b, c, delta_carry, costs, 16, probability);
 solve minimize probability;
 """
     )

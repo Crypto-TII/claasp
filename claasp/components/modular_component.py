@@ -248,20 +248,18 @@ class Modular(Component):
         for i in range(num_add - 2):
             delta_carry = f"delta_carry_{output_id_link}_{i}" if num_add > 2 else f"delta_carry_{output_id_link}"
             costs = f"costs_{output_id_link}_{i}" if num_add > 2 else f"costs_{output_id_link}"
-            pivot_var = f"p_{output_id_link}_{i}" if num_add > 2 else f"p_{output_id_link}"
             stage_probability_var = f"{probability_var}_{i}" if num_add > 2 else probability_var
 
             cp_declarations.extend(
                 [
                     f"array[0..{input_len - 1}] of var 0..2: {delta_carry};",
                     f"array[0..{input_len - 1}] of var {{100, 41, 19, 9, 4, 2, 1, 0}}: {costs};",
-                    f"var 0..{input_len - 1}: {pivot_var};",
                     f"var int: {stage_probability_var};",
                 ]
             )
 
             cp_constraints.append(
-                f"constraint counter_based_modadd_semideterministic(pre_{output_id_link}_{i + 1}, pre_{output_id_link}_{num_add - 1}, pre_{output_id_link}_{num_add + i}, {delta_carry}, {pivot_var}, {costs}, {input_len}, {stage_probability_var});"
+                f"constraint counter_based_modadd_semideterministic(pre_{output_id_link}_{i + 1}, pre_{output_id_link}_{num_add - 1}, pre_{output_id_link}_{num_add + i}, {delta_carry}, {costs}, {input_len}, {stage_probability_var});"
             )
 
             if num_add > 2:
@@ -272,20 +270,18 @@ class Modular(Component):
             f"delta_carry_{output_id_link}_{final_index}" if num_add > 2 else f"delta_carry_{output_id_link}"
         )
         final_costs = f"costs_{output_id_link}_{final_index}" if num_add > 2 else f"costs_{output_id_link}"
-        final_pivot_var = f"p_{output_id_link}_{final_index}" if num_add > 2 else f"p_{output_id_link}"
         final_probability_var = f"{probability_var}_{final_index}" if num_add > 2 else probability_var
 
         cp_declarations.extend(
             [
                 f"array[0..{input_len - 1}] of var 0..2: {final_delta_carry};",
                 f"array[0..{input_len - 1}] of var {{100, 41, 19, 9, 4, 2, 1, 0}}: {final_costs};",
-                f"var 0..{input_len - 1}: {final_pivot_var};",
                 f"var int: {final_probability_var};",
             ]
         )
 
         cp_constraints.append(
-            f"constraint counter_based_modadd_semideterministic(pre_{output_id_link}_0, pre_{output_id_link}_{2 * num_add - 3}, {output_id_link}, {final_delta_carry}, {final_pivot_var}, {final_costs}, {input_len}, {final_probability_var});"
+            f"constraint counter_based_modadd_semideterministic(pre_{output_id_link}_0, pre_{output_id_link}_{2 * num_add - 3}, {output_id_link}, {final_delta_carry}, {final_costs}, {input_len}, {final_probability_var});"
         )
 
         if num_add > 2:
