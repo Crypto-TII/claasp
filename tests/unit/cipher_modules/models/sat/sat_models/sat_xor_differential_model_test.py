@@ -265,3 +265,23 @@ def test_compute_xor_differential_weight():
     with open(file_name, "r") as file:
         file_content = file.read()
     assert str(weight) in file_content
+
+
+    p = '0x8054A900'
+    c = '0x00400542'
+    r = 9
+    w = 39
+    s = "KISSAT_EXT"
+
+    speck = SpeckBlockCipher(block_bit_size= 32, key_bit_size= 64, number_of_rounds= r)
+    sat = SatXorDifferentialModel(speck)
+    weight, trails= sat.compute_xor_differential_weight(
+    plaintext= p,
+    ciphertext= c,
+    lower_weight= 30,
+    upper_weight= w,
+    solver_name= s
+    )
+
+    assert len(trails) == 27
+    assert round(weight,2) == 29.47 # matches the differential weight reported in Table 2 of https://eprint.iacr.org/2016/209.pdf

@@ -33,6 +33,7 @@ from claasp.name_mappings import (
     WORD_OPERATION,
     XOR_DIFFERENTIAL,
     INPUT_KEY,
+    INPUT_PLAINTEXT,
 )
 
 
@@ -361,7 +362,7 @@ class SatXorDifferentialModel(SatModel):
                 w = int(trail["total_weight"])
                 d[w] = d.get(w, 0) + 1
 
-            return d
+            return dict(sorted(d.items()))
         
         def calculate_cumulative_weight(weights_dict):
             cumulative_probability = 0
@@ -393,7 +394,7 @@ class SatXorDifferentialModel(SatModel):
             
             weights_dict = weights_dictionary(solutions_list)
             weight = calculate_cumulative_weight(weights_dict)
-            with open(file_path_prob,"a") as f:
+            with open(file_path_prob,"w") as f:
                 f.write(f"{weight}\t{str(weights_dict)}\n")
         
         def clear_log():
@@ -407,7 +408,9 @@ class SatXorDifferentialModel(SatModel):
             fixed_variables = []
 
             bits = hex_to_bitlist(plaintext)
-            expected_size = self._cipher.block_bit_size
+            if INPUT_PLAINTEXT not in self._cipher.inputs:
+                raise ValueError("missing block_bit_size inside cipher object cipher_inputs_bit_size")
+            expected_size = self._cipher.inputs_bit_size[self._cipher.inputs.index(INPUT_PLAINTEXT)]
             if len(bits) != expected_size:
                 raise ValueError("Plaintext size mismatch")
             plaintext_fix = set_fixed_variables(
@@ -426,7 +429,7 @@ class SatXorDifferentialModel(SatModel):
                 
 
             bits = hex_to_bitlist(ciphertext)
-            expected_size = self._cipher.block_bit_size
+            expected_size = self._cipher.output_bit_size
             if len(bits) != expected_size:
                 raise ValueError("Ciphertext size mismatch")
             ciphertext_fix = set_fixed_variables(
