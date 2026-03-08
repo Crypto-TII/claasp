@@ -39,6 +39,46 @@ def _split_components(cipher, top_rounds_end, middle_rounds_end):
     }
 
 
+def test_get_truncated_xor_differential_components_in_border():
+    speck = SpeckBlockCipher(number_of_rounds=6)
+    component_model_list = _split_components(speck, top_rounds_end=2, middle_rounds_end=2)
+    model = MznDifferentialLinearModel(
+        speck,
+        component_model_list,
+        middle_part_model="cp_semi_deterministic_truncated_xor_differential_constraints",
+    )
+
+    expected_border_components = set()
+    middle_components = set(component_model_list["middle_part_components"])
+    for bottom_component_id in component_model_list["bottom_part_components"]:
+        bottom_component = speck.get_component_from_id(bottom_component_id)
+        for input_id in bottom_component.input_id_links:
+            if input_id in middle_components:
+                expected_border_components.add(input_id)
+
+    assert set(model._get_truncated_xor_differential_components_in_border()) == expected_border_components
+
+
+def test_get_truncated_xor_differential_components_in_border_chacha_6_rounds():
+    chacha = ChachaPermutation(number_of_rounds=6, round_mode=ROUND_MODE_HALF)
+    component_model_list = _split_components(chacha, top_rounds_end=2, middle_rounds_end=4)
+    model = MznDifferentialLinearModel(
+        chacha,
+        component_model_list,
+        middle_part_model="cp_semi_deterministic_truncated_xor_differential_constraints",
+    )
+
+    expected_border_components = set()
+    middle_components = set(component_model_list["middle_part_components"])
+    for bottom_component_id in component_model_list["bottom_part_components"]:
+        bottom_component = chacha.get_component_from_id(bottom_component_id)
+        for input_id in bottom_component.input_id_links:
+            if input_id in middle_components:
+                expected_border_components.add(input_id)
+
+    assert set(model._get_truncated_xor_differential_components_in_border()) == expected_border_components
+
+
 def test_differential_linear_trail_with_fixed_weight_6_rounds_speck_cp():
     speck = SpeckBlockCipher(number_of_rounds=6)
     speck_3 = SpeckBlockCipher(number_of_rounds=3)

@@ -98,7 +98,8 @@ class MznDifferentialLinearModel(MznModel):
         self.raw_bit_bindings, self.raw_bit_bindings_for_intermediate_output = get_bit_bindings(cipher)
 
     def _validate_component_partitioning(self):
-        overlap = self.middle_part_component_ids & self.bottom_part_component_ids
+        allowed_overlapping_ids = set(self._get_truncated_xor_differential_components_in_border())
+        overlap = (self.middle_part_component_ids & self.bottom_part_component_ids) - allowed_overlapping_ids
         if overlap:
             raise ValueError(f"middle and bottom parts overlap: {sorted(overlap)}")
 
@@ -186,6 +187,18 @@ class MznDifferentialLinearModel(MznModel):
 
         return list(set(border_components))
 
+    def _get_truncated_xor_differential_components_in_border(self):
+        truncated_component_ids = set(self.middle_part_component_ids)
+        border_components = []
+
+        for linear_component_id in self.bottom_part_component_ids:
+            component_obj = self.cipher.get_component_from_id(linear_component_id)
+            for input_id in component_obj.input_id_links:
+                if input_id in truncated_component_ids:
+                    border_components.append(input_id)
+
+        return list(set(border_components))
+
     def _top_to_middle_connecting_constraints(self):
         constraints = []
         border_components = set(self._get_regular_xor_differential_components_in_border())
@@ -214,10 +227,11 @@ class MznDifferentialLinearModel(MznModel):
 
     def _middle_to_bottom_connecting_constraints(self):
         constraints = []
+        truncated_border_components = set(self._get_truncated_xor_differential_components_in_border())
 
         for output_bit_id, successor_bits in self.bit_bindings.items():
             source_component_id, _, _ = self._parse_linear_bit_id(output_bit_id)
-            if source_component_id not in self.middle_part_component_ids:
+            if source_component_id not in truncated_border_components:
                 continue
 
             source_bit_expr = output_bit_id.replace("_o[", "[")
