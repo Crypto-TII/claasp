@@ -221,6 +221,197 @@ def test_differential_linear_trail_with_fixed_weight_6_rounds_speck_cp():
 
 
 
+def test_differential_linear_trail_with_fixed_weight_6_rounds_speck_cp_case_2():
+    speck = SpeckBlockCipher(number_of_rounds=6)
+    middle_part_components = []
+    bottom_part_components = []
+    for round_number in range(2, 3):
+        middle_part_components.append(speck.get_components_in_round(round_number))
+    for round_number in range(3, 6):
+        bottom_part_components.append(speck.get_components_in_round(round_number))
+
+    middle_part_components = list(itertools.chain(*middle_part_components))
+    bottom_part_components = list(itertools.chain(*bottom_part_components))
+
+    middle_part_components = [component.id for component in middle_part_components]
+    bottom_part_components = [component.id for component in bottom_part_components]
+
+    def _component_bit_size(component_id):
+        if component_id == INPUT_PLAINTEXT:
+            return 32
+        if component_id == "key":
+            return 64
+        return speck.get_component_from_id(component_id).output_bit_size
+
+    def _value_to_bits(value, bit_size):
+        if value.startswith("0x"):
+            return integer_to_bit_list(int(value, 16), bit_size, "big")
+        return [2 if bit == "?" else int(bit) for bit in value]
+
+    def _fixed_from_value(component_id, value):
+        bit_size = _component_bit_size(component_id)
+        return set_fixed_variables(
+            component_id=component_id,
+            constraint_type="equal",
+            bit_positions=range(bit_size),
+            bit_values=_value_to_bits(value, bit_size),
+        )
+
+    fixed_components_values = {
+        "cipher_output_5_12_o": "0x00040004",
+        "constant_1_0": "0x0000",
+        "constant_2_0": "0000000000000000",
+        "constant_3_0_o": "0x0080",
+        "constant_4_0_o": "0x0001",
+        "constant_5_0_o": "0x0000",
+        "intermediate_output_0_5": "0x0000",
+        "intermediate_output_0_6": "0x00008000",
+        "intermediate_output_1_11": "0x0000",
+        "intermediate_output_1_12": "0x80008002",
+        "intermediate_output_2_11": "0000000000000000",
+        "intermediate_output_2_12": "21111111000000102111111100001000",
+        "intermediate_output_3_11_i": "0x4001",
+        "intermediate_output_3_11_o": "0x4001",
+        "intermediate_output_3_12_i": "0x00804001",
+        "intermediate_output_3_12_o": "0x00804001",
+        "intermediate_output_4_11_i": "0x0000",
+        "intermediate_output_4_11_o": "0x0000",
+        "intermediate_output_4_12_i": "0x00000001",
+        "intermediate_output_4_12_o": "0x00000001",
+        "intermediate_output_5_11_i": "0x0000",
+        "intermediate_output_5_11_o": "0x0000",
+        "key": "0x0000000000000000",
+        "modadd_0_1": "0x0000",
+        "modadd_1_2": "0x0000",
+        "modadd_1_7": "0x8000",
+        "modadd_2_2": "0000000000000000",
+        "modadd_2_7": "2111111100000010",
+        "modadd_3_2_i": "0x008000c0",
+        "modadd_3_2_o": "0x0080",
+        "modadd_3_7_i": "0x408160c1",
+        "modadd_3_7_o": "0x4081",
+        "modadd_4_2_i": "0x00010001",
+        "modadd_4_2_o": "0x0001",
+        "modadd_4_7_i": "0x00010001",
+        "modadd_4_7_o": "0x0001",
+        "modadd_5_2_i": "0x00000000",
+        "modadd_5_2_o": "0x0000",
+        "modadd_5_7_i": "0x00000000",
+        "modadd_5_7_o": "0x0000",
+        "plaintext": "0x00102000",
+        "rot_0_0": "0x2000",
+        "rot_0_3": "0x8000",
+        "rot_1_1": "0x0000",
+        "rot_1_4": "0x0000",
+        "rot_1_6": "0x0000",
+        "rot_1_9": "0x0002",
+        "rot_2_1": "0000000000000000",
+        "rot_2_4": "0000000000000000",
+        "rot_2_6": "0000000100000000",
+        "rot_2_9": "0000000000001010",
+        "rot_3_1_i": "0x4000",
+        "rot_3_1_o": "0x0080",
+        "rot_3_4_i": "0x0020",
+        "rot_3_4_o": "0x0080",
+        "rot_3_6_i": "0x40a0",
+        "rot_3_6_o": "0x4081",
+        "rot_3_9_i": "0x5000",
+        "rot_3_9_o": "0x4001",
+        "rot_4_1_i": "0x0080",
+        "rot_4_1_o": "0x0001",
+        "rot_4_4_i": "0x4000",
+        "rot_4_4_o": "0x0001",
+        "rot_4_6_i": "0x0080",
+        "rot_4_6_o": "0x0001",
+        "rot_4_9_i": "0x4000",
+        "rot_4_9_o": "0x0001",
+        "rot_5_1_i": "0x0000",
+        "rot_5_1_o": "0x0000",
+        "rot_5_4_i": "0x0000",
+        "rot_5_4_o": "0x0000",
+        "rot_5_6_i": "0x0000",
+        "rot_5_6_o": "0x0000",
+        "rot_5_9_i": "0x0001",
+        "rot_5_9_o": "0x0004",
+        "xor_0_2": "0x0000",
+        "xor_0_4": "0x8000",
+        "xor_1_10": "0x8002",
+        "xor_1_3": "0x0000",
+        "xor_1_5": "0x0000",
+        "xor_1_8": "0x8000",
+        "xor_2_10": "2111111100001000",
+        "xor_2_3": "0000000000000000",
+        "xor_2_5": "0000000000000000",
+        "xor_2_8": "2111111100000010",
+        "xor_3_10_i": "0x40014001",
+        "xor_3_10_o": "0x4001",
+        "xor_3_3_i": "0x00800080",
+        "xor_3_3_o": "0x0080",
+        "xor_3_5_i": "0x00800080",
+        "xor_3_5_o": "0x0080",
+        "xor_3_8_i": "0x40814081",
+        "xor_3_8_o": "0x4081",
+        "xor_4_10_i": "0x00010001",
+        "xor_4_10_o": "0x0001",
+        "xor_4_3_i": "0x00010001",
+        "xor_4_3_o": "0x0001",
+        "xor_4_5_i": "0x00010001",
+        "xor_4_5_o": "0x0001",
+        "xor_4_8_i": "0x00010001",
+        "xor_4_8_o": "0x0001",
+        "xor_5_10_i": "0x00040004",
+        "xor_5_10_o": "0x0004",
+        "xor_5_3_i": "0x00000000",
+        "xor_5_3_o": "0x0000",
+        "xor_5_5_i": "0x00000000",
+        "xor_5_5_o": "0x0000",
+        "xor_5_8_i": "0x00000000",
+        "xor_5_8_o": "0x0000",
+    }
+
+    fixed_values = []
+    seen_component_ids = set()
+    for component_id, value in fixed_components_values.items():
+        if component_id.endswith("_i"):
+            continue
+        normalized_component_id = component_id[:-2] if component_id.endswith("_o") else component_id
+        if normalized_component_id in seen_component_ids:
+            continue
+        seen_component_ids.add(normalized_component_id)
+        fixed_values.append(_fixed_from_value(normalized_component_id, value))
+
+    component_model_list = {
+        "middle_part_components": middle_part_components,
+        "bottom_part_components": bottom_part_components,
+    }
+
+    model = MznDifferentialLinearModel(
+        speck,
+        component_model_list,
+        middle_part_model="cp_semi_deterministic_truncated_xor_differential_constraints",
+    )
+
+    trail = model.find_lowest_weight_xor_differential_linear_trail(
+        fixed_values=fixed_values,
+        solver_name=CPSAT,
+        num_of_processors=4,
+        solve_external=True,
+    )
+
+    if isinstance(trail, list):
+        trail = trail[0]
+
+    assert trail["status"] == SATISFIABLE
+
+    for component_id, expected_value in fixed_components_values.items():
+        if component_id.endswith("_i"):
+            continue
+        assert trail["components_values"][component_id]["value"] == expected_value
+
+    
+    assert math.isclose(float(trail["total_weight"]), 14.9943534369, rel_tol=1e-9, abs_tol=1e-9)
+
+
 def test_differential_linear_trail_with_fixed_weight_4_rounds_chacha_golden():
     chacha = ChachaPermutation(number_of_rounds=8, round_mode=ROUND_MODE_HALF)
     component_model_list = _split_components(chacha, top_rounds_end=2, middle_rounds_end=4)
