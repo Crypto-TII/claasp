@@ -7,7 +7,7 @@ from claasp.cipher_modules.models.cp.mzn_models.mzn_semi_deterministic_truncated
 
 from claasp.cipher_modules.models.cp.solvers import CPSAT
 from claasp.cipher_modules.models.cp.solvers import CHUFFED
-from claasp.cipher_modules.models.utils import differential_truncated_checker_permutation, differential_truncated_checker_permutation1, differential_truncated_checker_permutation_input_and_output_truncated, integer_to_bit_list, set_fixed_variables
+from claasp.cipher_modules.models.utils import differential_truncated_checker_permutation_input_and_output_truncated, integer_to_bit_list, set_fixed_variables
 from claasp.cipher_modules.models.cp.minizinc_utils.usefulfunctions import MINIZINC_USEFUL_FUNCTIONS
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.ciphers.permutations.chacha_permutation import ROUND_MODE_HALF, ChachaPermutation
@@ -149,6 +149,32 @@ array[0..31] of var 0..2: modadd_0_0;
     result = instance.solve()
 
     assert result[metadata["probability_var"]] == 309
+
+
+def test_counter_based_modadd_semideterministic_probability_700_sample():
+    model = Model()
+    model.add_string(MINIZINC_USEFUL_FUNCTIONS)
+    model.add_string(
+        """
+    array[0..15] of var 0..2: a = array1d(0..15, [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0]);
+    array[0..15] of var 0..2: b = array1d(0..15, [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0]);
+    array[0..15] of var 0..2: c = array1d(0..15, [2, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0]);
+
+var 0..15: p;
+array[0..15] of var 0..2: delta_carry;
+array[0..15] of var {100, 41, 19, 9, 4, 2, 1, 0}: costs;
+var int: probability;
+
+constraint counter_based_modadd_semideterministic(a, b, c, delta_carry, p, costs, 16, probability);
+solve minimize probability;
+"""
+    )
+
+    solver = Solver.lookup("chuffed")
+    instance = Instance(solver, model)
+    result = instance.solve()
+
+    assert result["probability"] == 700
 
 
 

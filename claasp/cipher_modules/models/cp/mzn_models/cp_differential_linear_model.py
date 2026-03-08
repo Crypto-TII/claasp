@@ -328,8 +328,11 @@ class MznDifferentialLinearModel(MznModel):
                     output += '"0" ++ "\\n" ++'
             else:
                 output += f'"{component.id} = "++ show({component.id})++ "\\n" ++'
-                if probability_output and component.id in self.top_part_component_ids | self.bottom_part_component_ids:
-                    output += f"show({probability_output}) ++ \"\\n\" ++"
+                if probability_output:
+                    weight_output = probability_output
+                    if component.id in self.middle_part_component_ids and "/100" not in weight_output:
+                        weight_output = f"({weight_output})/100"
+                    output += f"show({weight_output}) ++ \"\\n\" ++"
                 else:
                     output += '"0" ++ "\\n" ++'
 
@@ -563,7 +566,7 @@ class MznDifferentialLinearModel(MznModel):
         self._model_constraints.extend(weight_constraints)
         self._model_constraints.extend(self._build_output_block(weight))
 
-        self._model_constraints = self._model_prefix + self._variables_list + self._model_constraints
+        self._model_constraints = self._model_prefix + self._model_constraints
 
     def find_one_differential_linear_trail_with_fixed_weight(
         self,
