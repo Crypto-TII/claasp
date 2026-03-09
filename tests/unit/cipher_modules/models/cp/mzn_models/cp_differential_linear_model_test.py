@@ -1,5 +1,6 @@
 import itertools
 import math
+import pytest
 
 from claasp.cipher_modules.models.cp.mzn_models.cp_differential_linear_model import MznDifferentialLinearModel
 from claasp.cipher_modules.models.cp.solvers import CPSAT
@@ -40,11 +41,21 @@ def _split_components(cipher, top_rounds_end, middle_rounds_end):
     }
 
 
-def test_get_truncated_xor_differential_components_in_border():
-    speck = SpeckBlockCipher(number_of_rounds=6)
-    component_model_list = _split_components(speck, top_rounds_end=2, middle_rounds_end=2)
+@pytest.mark.parametrize(
+    "cipher_cls,cipher_kwargs,top_rounds_end,middle_rounds_end",
+    [
+        (SpeckBlockCipher, {"number_of_rounds": 6}, 2, 2),
+        (ChachaPermutation, {"number_of_rounds": 6, "round_mode": ROUND_MODE_HALF}, 2, 4),
+    ],
+    ids=["speck_6_rounds", "chacha_6_rounds"],
+)
+def test_get_truncated_xor_differential_components_in_border(
+    cipher_cls, cipher_kwargs, top_rounds_end, middle_rounds_end
+):
+    cipher = cipher_cls(**cipher_kwargs)
+    component_model_list = _split_components(cipher, top_rounds_end=top_rounds_end, middle_rounds_end=middle_rounds_end)
     model = MznDifferentialLinearModel(
-        speck,
+        cipher,
         component_model_list,
         middle_part_model="cp_semi_deterministic_truncated_xor_differential_constraints",
     )
@@ -52,27 +63,7 @@ def test_get_truncated_xor_differential_components_in_border():
     expected_border_components = set()
     middle_components = set(component_model_list["middle_part_components"])
     for bottom_component_id in component_model_list["bottom_part_components"]:
-        bottom_component = speck.get_component_from_id(bottom_component_id)
-        for input_id in bottom_component.input_id_links:
-            if input_id in middle_components:
-                expected_border_components.add(input_id)
-
-    assert set(model._get_truncated_xor_differential_components_in_border()) == expected_border_components
-
-
-def test_get_truncated_xor_differential_components_in_border_chacha_6_rounds():
-    chacha = ChachaPermutation(number_of_rounds=6, round_mode=ROUND_MODE_HALF)
-    component_model_list = _split_components(chacha, top_rounds_end=2, middle_rounds_end=4)
-    model = MznDifferentialLinearModel(
-        chacha,
-        component_model_list,
-        middle_part_model="cp_semi_deterministic_truncated_xor_differential_constraints",
-    )
-
-    expected_border_components = set()
-    middle_components = set(component_model_list["middle_part_components"])
-    for bottom_component_id in component_model_list["bottom_part_components"]:
-        bottom_component = chacha.get_component_from_id(bottom_component_id)
+        bottom_component = cipher.get_component_from_id(bottom_component_id)
         for input_id in bottom_component.input_id_links:
             if input_id in middle_components:
                 expected_border_components.add(input_id)
@@ -490,7 +481,7 @@ def test_differential_linear_trail_6_rounds_speck_cp_case_2():
     )
 
     if isinstance(trail, list):
-        trail = trail[0]
+        trail = min(trail, key=lambda s: float(s["total_weight"]))
 
     assert trail["status"] == SATISFIABLE
 
@@ -628,14 +619,32 @@ def test_differential_linear_trail_with_fixed_weight_8_rounds_chacha_one_case():
     assert abs(math.log(absolute_correlation, 2)) <= float(trail["total_weight"]) + 1
 
 
-def test_diff_lin_chacha():
-    input_difference = 0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008000000000000000000000000
-    output_mask = 0x00010000000100010000000100030003000000800000008000000000000001800000000000000001000000010000000201000101010000000000010103000101
-    input_difference_as_string = bin(input_difference)[2:].zfill(512)
-    output_mask_as_string = bin(output_mask)[2:].zfill(512)
-    number_of_samples = 2**13
-    number_of_rounds = 6
+@pytest.mark.parametrize(
+    "input_difference,output_mask,number_of_samples,number_of_rounds,threshold",
+    [
+        (
+            0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008000000000000000000000000,
+            0x00010000000100010000000100030003000000800000008000000000000001800000000000000001000000010000000201000101010000000000010103000101,
+            2**13,
+            6,
+            3,
+        ),
+        (
+            0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000040000000,
+            0x00000001000000000000000101010181000080800000000000000000000800800000100000000101000000010000000000000000000000010100000100000101,
+            2**10,
+            8,
+            8,
+        ),
+    ],
+    ids=["chacha_6_rounds", "chacha_8_rounds"],
+)
+def test_diff_lin_chacha_permutation_cases(
+    input_difference, output_mask, number_of_samples, number_of_rounds, threshold
+):
     state_size = 512
+    input_difference_as_string = bin(input_difference)[2:].zfill(state_size)
+    output_mask_as_string = bin(output_mask)[2:].zfill(state_size)
     chacha = ChachaPermutation(number_of_rounds=number_of_rounds, round_mode=ROUND_MODE_HALF)
 
     correlation = truncated_differential_linear_checker_permutation(
@@ -647,26 +656,4 @@ def test_diff_lin_chacha():
     )
     absolute_correlation = abs(correlation)
 
-    assert abs(math.log(absolute_correlation, 2)) < 3
-
-
-def test_diff_lin_chacha_8():
-    input_difference = 0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000040000000
-    output_mask = 0x00000001000000000000000101010181000080800000000000000000000800800000100000000101000000010000000000000000000000010100000100000101
-    output_mask_as_string = bin(output_mask)[2:].zfill(512)
-    number_of_samples = 2**10
-    number_of_rounds = 8
-    state_size = 512
-    input_difference_as_string = bin(input_difference)[2:].zfill(512)
-    chacha = ChachaPermutation(number_of_rounds=number_of_rounds, round_mode=ROUND_MODE_HALF)
-
-    correlation = truncated_differential_linear_checker_permutation(
-        chacha,
-        input_difference_as_string,
-        output_mask_as_string,
-        number_of_samples,
-        state_size,
-    )
-    absolute_correlation = abs(correlation)
-
-    assert abs(math.log(absolute_correlation, 2)) < 8
+    assert abs(math.log(absolute_correlation, 2)) < threshold
