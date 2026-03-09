@@ -259,17 +259,28 @@ class MznDifferentialLinearModel(MznModel):
 
     def _build_weight_constraints(self, weight):
         declarations = ["var int: weight;"]
-        p_indices = []
-        pattern = re.compile(r"\bp\[(\d+)\]")
-        for constraint in self._model_constraints:
-            for match in pattern.findall(constraint):
-                p_indices.append(int(match))
 
-        if p_indices:
-            max_index = max(p_indices)
-            constraints = [f"constraint weight = sum([p[i] | i in 0..{max_index}]);"]
-        else:
-            constraints = ["constraint weight = 0;"]
+        def _sum_component_probability(component_ids):
+            terms = []
+            for component_id in sorted(component_ids):
+                probability_expr = self._component_probability_expression(component_id)
+                if probability_expr:
+                    terms.append(f"({probability_expr})")
+            if not terms:
+                return "0"
+            return "(" + " + ".join(terms) + ")"
+
+        # Keep model-assignment semantics consistent with _component_model_entries:
+        # if a component appears in both middle and bottom, it is modeled as bottom.
+        effective_middle_component_ids = self.middle_part_component_ids - self.bottom_part_component_ids
+
+        top_probability_sum = _sum_component_probability(self.top_part_component_ids)
+        middle_probability_sum = _sum_component_probability(effective_middle_component_ids)+"*100"
+        bottom_probability_sum = _sum_component_probability(self.bottom_part_component_ids)
+
+        constraints = [
+            f"constraint weight = {top_probability_sum} + {middle_probability_sum} + 2*{bottom_probability_sum};"
+        ]
 
         if weight != -1:
             constraints.append(f"constraint weight <= {100 * weight};")
