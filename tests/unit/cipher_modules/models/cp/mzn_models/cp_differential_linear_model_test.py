@@ -10,6 +10,7 @@ from claasp.cipher_modules.models.utils import (
     truncated_differential_linear_checker_permutation,
     differential_truncated_checker_single_key
 )
+from claasp.ciphers.block_ciphers.ballet_block_cipher import BalletBlockCipher
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation, ROUND_MODE_HALF
 from claasp.name_mappings import INPUT_PLAINTEXT, SATISFIABLE
@@ -221,21 +222,21 @@ def test_differential_linear_trail_with_fixed_weight_6_rounds_speck_cp():
 
 
 
-def test_differential_linear_trail_6_rounds_speck_cp_case_3():
-    speck = SpeckBlockCipher(number_of_rounds=10)
+def test_differential_linear_trail_6_rounds_ballet_cp_case():
+    ballet = BalletBlockCipher(number_of_rounds=6)
     middle_part_components = []
     bottom_part_components = []
-    for round_number in range(4, 6):
-        middle_part_components.append(speck.get_components_in_round(round_number))
-    for round_number in range(6, 10):
-        bottom_part_components.append(speck.get_components_in_round(round_number))
+    for round_number in range(2, 3):
+        middle_part_components.append(ballet.get_components_in_round(round_number))
+    for round_number in range(3, 6):
+        bottom_part_components.append(ballet.get_components_in_round(round_number))
 
     middle_part_components = list(itertools.chain(*middle_part_components))
     bottom_part_components = list(itertools.chain(*bottom_part_components))
 
     middle_part_components = [component.id for component in middle_part_components]
     bottom_part_components = [component.id for component in bottom_part_components]
-
+    cipher_output_component_id = ballet.get_all_components_ids()[-1]
 
     component_model_list = {
         "middle_part_components": middle_part_components,
@@ -243,29 +244,28 @@ def test_differential_linear_trail_6_rounds_speck_cp_case_3():
     }
 
     model = MznDifferentialLinearModel(
-        speck,
+        ballet,
         component_model_list,
         middle_part_model="cp_semi_deterministic_truncated_xor_differential_constraints",
     )
 
     plaintext_difference = set_fixed_variables(
-    component_id='plaintext',
-    constraint_type='not_equal',
-    bit_positions=range(32),
-    bit_values=(0,) * 32
+        component_id='plaintext',
+        constraint_type='not_equal',
+        bit_positions=range(ballet.block_bit_size),
+        bit_values=(0,) * ballet.block_bit_size
     )
     key_difference = set_fixed_variables(
         component_id='key',
         constraint_type='equal',
-        bit_positions=range(64),
-        bit_values=(0,) * 64
-        )
-
+        bit_positions=range(ballet.key_bit_size),
+        bit_values=(0,) * ballet.key_bit_size
+    )
     ciphertext_output_mask = set_fixed_variables(
-        component_id='cipher_output_9_12',
+        component_id=cipher_output_component_id,
         constraint_type='not_equal',
-        bit_positions=range(32),
-        bit_values=(0,) * 32
+        bit_positions=range(ballet.block_bit_size),
+        bit_values=(0,) * ballet.block_bit_size,
     )
 
     solutions = model.find_lowest_weight_xor_differential_linear_trail(
@@ -279,8 +279,36 @@ def test_differential_linear_trail_6_rounds_speck_cp_case_3():
         trail = min(solutions, key=lambda s: float(s["total_weight"]))
     else:
         trail = solutions
-
+    print(trail)
     assert trail["status"] == SATISFIABLE
+
+    import math
+    from claasp.cipher_modules.models.utils import differential_linear_checker_for_block_cipher_single_key
+
+    input_difference_str = trail["components_values"]["plaintext"]["value"]
+    cipher_output_key = next(k for k in trail["components_values"] if k.startswith("cipher_output_") and k.endswith("_o"))
+    output_mask_str = trail["components_values"][cipher_output_key]["value"]
+    print("Input difference:", input_difference_str)
+    print("Output mask:", output_mask_str)
+    print("Output component:", cipher_output_key)
+
+    input_difference = int(input_difference_str, 16)
+    output_mask = bin(int(output_mask_str, 16))[2:].zfill(ballet.block_bit_size)
+    fixed_key = int(trail["components_values"]["key"]["value"], 16)
+
+    corr = differential_linear_checker_for_block_cipher_single_key(
+        ballet,
+        input_difference,
+        output_mask,
+        1 << 14,
+        ballet.block_bit_size,
+        ballet.key_bit_size,
+        fixed_key,
+        seed=42
+    )
+
+    abs_corr = abs(corr)
+    print("Total Differential-Linear Correlation |log2|:", abs(math.log(abs_corr, 2)) if abs_corr > 0 else float("inf"))
 
 
 

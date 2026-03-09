@@ -93,7 +93,16 @@ class MznDifferentialLinearModel(MznModel):
         self._validate_component_partitioning()
         self._validate_arx_only_cipher()
 
-        format_func = lambda record: f"{record[0]}_{record[2]}[{record[1]}]"
+        # Only bottom-part components are modeled with linear input/output arrays
+        # (<component>_i / <component>_o). Top and middle components keep their
+        # plain state arrays (<component>), so mixed-part bindings must preserve
+        # that distinction.
+        def format_func(record):
+            component_id, bit_index, side = record
+            if component_id in self.bottom_part_component_ids:
+                return f"{component_id}_{side}[{bit_index}]"
+            return f"{component_id}[{bit_index}]"
+
         self.bit_bindings, self.bit_bindings_for_intermediate_output = get_bit_bindings(cipher, format_func)
         self.raw_bit_bindings, self.raw_bit_bindings_for_intermediate_output = get_bit_bindings(cipher)
 
@@ -115,8 +124,13 @@ class MznDifferentialLinearModel(MznModel):
     def _get_component_by_id(self, component_id):
         return self._cipher.get_component_from_id(component_id)
 
+    # TODO: Refactor this complex method
     def _parse_linear_bit_id(self, bit_id):
         match = re.match(r"^(.*)_(i|o)\[(\d+)\]$", bit_id)
+        if not match:
+            match = re.match(r"^(.*)\[(\d+)\]$", bit_id)
+            if match:
+                return match.group(1), None, int(match.group(2))
         if not match:
             raise ValueError(f"Invalid linear bit identifier: {bit_id}")
         return match.group(1), match.group(2), int(match.group(3))
