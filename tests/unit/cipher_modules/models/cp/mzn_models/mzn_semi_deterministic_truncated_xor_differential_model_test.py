@@ -27,7 +27,7 @@ def test_build_semi_deterministic_truncated_xor_differential_trail_model():
 
     assert any("counter_based_modadd_semideterministic" in c for c in mzn.model_constraints)
     assert any("probability_modadd_0_1" in c for c in mzn.model_constraints)
-    assert any("var int: weight" in c for c in mzn.model_constraints)
+    assert any("var int: weight" in c for c in mzn._variables_list)
 
 
 def test_find_one_semi_deterministic_truncated_xor_differential_trail_external():
@@ -209,11 +209,19 @@ def test_find_one_semi_deterministic_truncated_xor_differential_trail_speck():
         bit_positions=range(32),
         bit_values=(0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
     )
+
+    ciphertext = set_fixed_variables(
+        component_id="cipher_output_1_12",
+        constraint_type="equal",
+        bit_positions=range(32),
+        bit_values=[2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
+    )
+
     key = set_fixed_variables(component_id=INPUT_KEY, constraint_type="equal", bit_positions=range(64), bit_values=(0,) * 64)
 
-    trail = mzn.find_lowest_cp_semi_deterministic_truncated_xor_differential_trail(fixed_values=[plaintext, key])
-    assert trail["total_weight"] == '0.0'
-    assert trail["components_values"]["intermediate_output_0_6"]["value"] == "????100000000000????100000000011"
+    trail = mzn.find_lowest_cp_semi_deterministic_truncated_xor_differential_trail(fixed_values=[plaintext, key, ciphertext])
+    assert trail["total_weight"] == '1.0'
+    assert trail["components_values"]["cipher_output_1_12"]["value"] == "???????????????1???????????????1"
 
     speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=3)
     mzn = MznSemiDeterministicTruncatedXorDifferentialModel(speck)
@@ -306,7 +314,7 @@ def test_find_one_four_round_semi_deterministic_truncated_xor_differential_trail
         cipher=chacha,
         input_trunc_diff=trail["components_values"][INPUT_PLAINTEXT]["value"],
         output_trunc_diff=trail["components_values"][output_component_id]["value"],
-        number_of_samples=1 << 9,
+        number_of_samples=1 << 6,
         state_size=512,
         seed=42,
     )

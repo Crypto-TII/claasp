@@ -85,6 +85,18 @@ class MznSemiDeterministicTruncatedXorDifferentialModel(MznModel):
                     f"Component {component.id} does not support CP semi-deterministic truncated XOR differential model"
                 )
 
+        fixed_constraints = []
+        if fixed_variables:
+            if hasattr(self, "fix_variables_value_xor_linear_constraints"):
+                fixed_constraints = self.fix_variables_value_xor_linear_constraints(fixed_variables)
+            elif any(
+                entry["model_type"] == "minizinc_xor_differential_propagation_constraints"
+                for entry in component_and_model_types
+            ) and hasattr(self, "solve_for_ARX"):
+                fixed_constraints = self.fix_variables_value_constraints_for_ARX(fixed_variables)
+            else:
+                fixed_constraints = self.fix_variables_value_constraints(fixed_variables)
+
         self.build_generic_cp_model_from_dictionary(component_and_model_types, fixed_variables=fixed_variables)
 
         weight_var = "var int: weight;"
@@ -94,12 +106,12 @@ class MznSemiDeterministicTruncatedXorDifferentialModel(MznModel):
             weight_constraint = "constraint weight = 0;"
 
         self._variables_list = input_declarations + self._variables_list + [weight_var]
-        self._model_constraints = input_constraints + self._model_constraints
+        self._model_constraints = input_constraints + fixed_constraints + self._model_constraints
 
         self._model_constraints.append(weight_constraint)
         self.output_probability_per_round()
         self._model_constraints.extend(self._build_final_output_block(minimize))
-        self._model_constraints = self._model_prefix + self._variables_list + self._model_constraints
+        self._model_constraints = self._model_prefix + self._model_constraints
 
     def _build_final_output_block(self, minimize):
         cipher_inputs = self._cipher.inputs
