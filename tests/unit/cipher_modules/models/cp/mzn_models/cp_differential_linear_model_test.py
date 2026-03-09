@@ -154,7 +154,7 @@ def test_differential_linear_trail_with_fixed_weight_6_rounds_speck_cp():
     )
 
     trail = model.find_one_differential_linear_trail_with_fixed_weight(
-        weight=8,
+        weight=10,
         fixed_values=fixed_values,
         solver_name=CPSAT,
         num_of_processors=4,
@@ -221,7 +221,70 @@ def test_differential_linear_trail_with_fixed_weight_6_rounds_speck_cp():
 
 
 
-def test_differential_linear_trail_with_fixed_weight_6_rounds_speck_cp_case_2():
+def test_differential_linear_trail_6_rounds_speck_cp_case_3():
+    speck = SpeckBlockCipher(number_of_rounds=10)
+    middle_part_components = []
+    bottom_part_components = []
+    for round_number in range(4, 6):
+        middle_part_components.append(speck.get_components_in_round(round_number))
+    for round_number in range(6, 10):
+        bottom_part_components.append(speck.get_components_in_round(round_number))
+
+    middle_part_components = list(itertools.chain(*middle_part_components))
+    bottom_part_components = list(itertools.chain(*bottom_part_components))
+
+    middle_part_components = [component.id for component in middle_part_components]
+    bottom_part_components = [component.id for component in bottom_part_components]
+
+
+    component_model_list = {
+        "middle_part_components": middle_part_components,
+        "bottom_part_components": bottom_part_components,
+    }
+
+    model = MznDifferentialLinearModel(
+        speck,
+        component_model_list,
+        middle_part_model="cp_semi_deterministic_truncated_xor_differential_constraints",
+    )
+
+    plaintext_difference = set_fixed_variables(
+    component_id='plaintext',
+    constraint_type='not_equal',
+    bit_positions=range(32),
+    bit_values=(0,) * 32
+    )
+    key_difference = set_fixed_variables(
+        component_id='key',
+        constraint_type='equal',
+        bit_positions=range(64),
+        bit_values=(0,) * 64
+        )
+
+    ciphertext_output_mask = set_fixed_variables(
+        component_id='cipher_output_9_12',
+        constraint_type='not_equal',
+        bit_positions=range(32),
+        bit_values=(0,) * 32
+    )
+
+    solutions = model.find_lowest_weight_xor_differential_linear_trail(
+        fixed_values=[key_difference, plaintext_difference, ciphertext_output_mask],
+        solver_name=CPSAT,
+        num_of_processors=4,
+        solve_external=True,
+    )
+
+    if isinstance(solutions, list):
+        trail = min(solutions, key=lambda s: float(s["total_weight"]))
+    else:
+        trail = solutions
+
+    assert trail["status"] == SATISFIABLE
+
+
+
+def test_differential_linear_trail_6_rounds_speck_cp_case_2():
     speck = SpeckBlockCipher(number_of_rounds=6)
     middle_part_components = []
     bottom_part_components = []
