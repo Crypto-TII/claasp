@@ -17,7 +17,8 @@ from claasp.cipher_modules.models.utils import (convert_solver_solution_to_dicti
                                                 get_related_key_scenario_format_for_fixed_values,
                                                 differential_truncated_checker_permutation,
                                                 differential_checker_permutation,
-                                                differential_truncated_checker_permutation_input_and_output_truncated)
+                                                differential_truncated_checker_permutation_input_and_output_truncated,
+                                                linear_checker_for_block_cipher_single_key)
 from claasp.ciphers.permutations.chacha_permutation import ROUND_MODE_HALF, ChachaPermutation
 from claasp.ciphers.permutations.salsa_permutation import SalsaPermutation
 
@@ -406,5 +407,24 @@ def test_truncated_differential_linear_checker_permutation():
     print(f"Chacha truncated linear differential: correlation = {correlation:.6f}")
     assert math.isfinite(correlation)
     assert math.isclose(abs(correlation), theoretical_correlation, rel_tol=0.5)
+
+
+def test_linear_checker_for_block_cipher_single_key_zero_masks():
+    speck = SpeckBlockCipher(number_of_rounds=4)
+    block_size = speck.inputs_bit_size[0]
+    key_size = speck.inputs_bit_size[1]
+
+    correlation = linear_checker_for_block_cipher_single_key(
+        speck,
+        "0" * block_size,
+        "0" * block_size,
+        number_of_samples=1 << 10,
+        block_size=block_size,
+        key_size=key_size,
+        fixed_key=0,
+        seed=42,
+    )
+
+    assert correlation == 1
     
 
