@@ -454,6 +454,7 @@ def test_differential_linear_trail_with_fixed_weight_4_rounds_chacha_golden():
         solver_name=CADICAL_EXT,
         num_unknown_vars=8,
     )
+    print(trail)
     assert trail["status"] == SATISFIABLE
     assert trail["total_weight"] <= 12
 
