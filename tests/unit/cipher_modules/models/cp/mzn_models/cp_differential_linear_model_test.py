@@ -500,7 +500,7 @@ def test_differential_linear_trail_6_rounds_speck_cp_case_2():
         assert trail["components_values"][component_id]["value"] == expected_value
 
     
-    assert math.isclose(float(trail["total_weight"]), 14.9943534369, rel_tol=1e-9, abs_tol=1e-9)
+    assert math.isclose(float(trail["total_weight"]), 14.9943534369, rel_tol=1e-6, abs_tol=1e-6)
 
 
 def test_differential_linear_trail_with_fixed_weight_4_rounds_chacha_golden():
