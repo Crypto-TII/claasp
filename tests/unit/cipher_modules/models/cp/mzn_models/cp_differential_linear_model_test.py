@@ -538,10 +538,23 @@ def test_differential_linear_trail_with_fixed_weight_4_rounds_chacha_golden():
     assert trail["status"] == SATISFIABLE
     assert float(trail["total_weight"]) <= 12
 
-
 def test_differential_linear_trail_with_fixed_weight_8_rounds_chacha_one_case():
     chacha = ChachaPermutation(number_of_rounds=8, round_mode=ROUND_MODE_HALF)
-    component_model_list = _split_components(chacha, top_rounds_end=2, middle_rounds_end=3)
+    top_part_components = []
+    middle_part_components = []
+    bottom_part_components = []
+    for round_number in range(2):
+        top_part_components.append(chacha.get_components_in_round(round_number))
+    for round_number in range(2, 4):
+        middle_part_components.append(chacha.get_components_in_round(round_number))
+    for round_number in range(4, 8):
+        bottom_part_components.append(chacha.get_components_in_round(round_number))
+
+    middle_part_components = list(itertools.chain(*middle_part_components))
+    bottom_part_components = list(itertools.chain(*bottom_part_components))
+
+    middle_part_components = [component.id for component in middle_part_components]
+    bottom_part_components = [component.id for component in bottom_part_components]
 
     state_size = 512
     plaintext = set_fixed_variables(
@@ -549,25 +562,10 @@ def test_differential_linear_trail_with_fixed_weight_8_rounds_chacha_one_case():
         constraint_type="equal",
         bit_positions=list(range(state_size)),
         bit_values=integer_to_bit_list(
-            0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000040000000,
+            0x80000000800000000000000000000000800000000000000000000000000000008080000080000000000000000000000000000080800080000000000000000000,
             state_size,
             "big",
         ),
-    )
-
-    intermediate_output_2_24_string = "0000000000000000000000000000000000000000000000000000000000000000001000000010000000000?10000000100000010000000000000000000000000000000000010000000000000000000000?100000000000100000000000000000000000100000000000100000000000100001000100010001000100010001000100000001000000010001000000010000000000000000000000000010000000000000000000000?1000000000001000000000000000100000001000000000001000000000000000000000000000000000000000?100000001000100000001000000000000000000000000001000000000000000000000011000000000001000000"
-    intermediate_output_2_24_values = []
-    for character in intermediate_output_2_24_string:
-        if character == "?":
-            intermediate_output_2_24_values.append(2)
-        else:
-            intermediate_output_2_24_values.append(int(character))
-
-    intermediate_output_2_24 = set_fixed_variables(
-        component_id="intermediate_output_2_24",
-        constraint_type="equal",
-        bit_positions=list(range(state_size)),
-        bit_values=intermediate_output_2_24_values,
     )
 
     ciphertext = set_fixed_variables(
@@ -575,11 +573,16 @@ def test_differential_linear_trail_with_fixed_weight_8_rounds_chacha_one_case():
         constraint_type="equal",
         bit_positions=list(range(state_size)),
         bit_values=integer_to_bit_list(
-            0x00000001000000000000000101010181000080800000000000000000000800800000100000000101000000010000000000000000000000010100000100000101,
+            0x0000000100000000000000010000000004000000000800800000000000000000000000010008008000001000000000000000000000000101000000C000000001,
             state_size,
             "big",
         ),
     )
+
+    component_model_list = {
+        "middle_part_components": middle_part_components,
+        "bottom_part_components": bottom_part_components,
+    }
 
     model = MznDifferentialLinearModel(
         chacha,
@@ -588,15 +591,41 @@ def test_differential_linear_trail_with_fixed_weight_8_rounds_chacha_one_case():
     )
 
     trail = model.find_one_differential_linear_trail_with_fixed_weight(
-        weight=60,
-        fixed_values=[plaintext, ciphertext, intermediate_output_2_24],
+        weight=3,
+        fixed_values=[plaintext, ciphertext],
         solver_name=CPSAT,
         num_of_processors=4,
         solve_external=True,
     )
 
     assert trail["status"] == SATISFIABLE
-    assert float(trail["total_weight"]) <= 60
+    assert float(trail["total_weight"]) == 3
+    assert trail["components_values"][INPUT_PLAINTEXT]["value"] == (
+        "0x80000000800000000000000000000000800000000000000000000000000000008080000080000000000000000000000000000080800080000000000000000000"
+    )
+    cipher_output_key = "cipher_output_7_24"
+    if cipher_output_key not in trail["components_values"]:
+        cipher_output_key = "cipher_output_7_24_o"
+
+    assert trail["components_values"][cipher_output_key]["value"] == (
+        "0x0000000100000000000000010000000004000000000800800000000000000000000000010008008000001000000000000000000000000101000000c000000001"
+    )
+    assert float(trail["components_values"][cipher_output_key]["weight"]) == 0
+
+    input_difference_as_string = bin(int(trail["components_values"][INPUT_PLAINTEXT]["value"], 16))[2:].zfill(state_size)
+    output_mask_as_string = bin(int(trail["components_values"][cipher_output_key]["value"], 16))[2:].zfill(state_size)
+    correlation = truncated_differential_linear_checker_permutation(
+        chacha,
+        input_difference_as_string,
+        output_mask_as_string,
+        2**13,
+        state_size,
+        seed=42
+    )
+    absolute_correlation = abs(correlation)
+    assert absolute_correlation > 0
+    print(abs(math.log(absolute_correlation, 2)))
+    assert abs(math.log(absolute_correlation, 2)) <= float(trail["total_weight"]) + 1
 
 
 def test_diff_lin_chacha():
