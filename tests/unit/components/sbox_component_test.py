@@ -1,3 +1,7 @@
+import shutil
+
+import pytest
+
 from claasp.cipher_modules.models.cp.mzn_model import MznModel
 from claasp.cipher_modules.models.milp.milp_models.milp_xor_differential_model import MilpXorDifferentialModel
 from claasp.cipher_modules.models.milp.milp_models.milp_xor_linear_model import MilpXorLinearModel
@@ -14,6 +18,8 @@ from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_tr
     MilpBitwiseDeterministicTruncatedXorDifferentialModel
 from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import \
     MilpWordwiseDeterministicTruncatedXorDifferentialModel
+
+ESPRESSO_AVAILABLE = shutil.which("espresso") is not None
 
 X_0_X_8 = "x_0 <= x_8"
 X_O = "('x[xor_0_0_0]', x_0)"
@@ -250,6 +256,7 @@ def test_sat_constraints():
     assert constraints[-1] == '-xor_0_0_4 -xor_0_0_5 -xor_0_0_6 -xor_0_0_7 -sbox_0_2_3'
 
 
+@pytest.mark.skipif(not ESPRESSO_AVAILABLE, reason="espresso binary is not available")
 def test_sat_bitwise_deterministic_truncated_xor_differential_constraints():
     present = PresentBlockCipher(number_of_rounds=3)
     sbox_component = present.component_from(0, 2)
@@ -264,6 +271,7 @@ def test_sat_bitwise_deterministic_truncated_xor_differential_constraints():
     assert constraints[-1] == '-xor_0_0_4_0 sbox_0_2_3_0'
 
 
+@pytest.mark.skipif(not ESPRESSO_AVAILABLE, reason="espresso binary is not available")
 def test_sat_xor_differential_propagation_constraints():
     present = PresentBlockCipher(number_of_rounds=3)
     sbox_component = present.component_from(0, 2)
@@ -279,6 +287,7 @@ def test_sat_xor_differential_propagation_constraints():
     assert constraints[-1] == '-hw_sbox_0_2_0'
 
 
+@pytest.mark.skipif(not ESPRESSO_AVAILABLE, reason="espresso binary is not available")
 def test_sat_xor_linear_mask_propagation_constraints():
     present = PresentBlockCipher(number_of_rounds=3)
     sbox_component = present.component_from(0, 2)
@@ -313,6 +322,7 @@ def test_smt_constraints():
                               '(not sbox_0_1_1) sbox_0_1_2 (not sbox_0_1_3))))'
 
 
+@pytest.mark.skipif(not ESPRESSO_AVAILABLE, reason="espresso binary is not available")
 def test_smt_xor_differential_propagation_constraints():
     fancy = FancyBlockCipher(number_of_rounds=3)
     smt = SmtModel(fancy)
@@ -330,6 +340,7 @@ def test_smt_xor_differential_propagation_constraints():
     assert constraints[-1] == '(assert (or (not hw_sbox_0_5_0)))'
 
 
+@pytest.mark.skipif(not ESPRESSO_AVAILABLE, reason="espresso binary is not available")
 def test_smt_xor_linear_mask_propagation_constraints():
     present = PresentBlockCipher(number_of_rounds=3)
     sbox_component = present.component_from(0, 2)

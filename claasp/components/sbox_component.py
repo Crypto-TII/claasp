@@ -902,15 +902,15 @@ class SBOX(Component):
             sage: sbox_component = present.component_from(0, 1)
             sage: from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_large_sboxes import delete_dictionary_that_contains_inequalities_for_large_sboxes
             sage: delete_dictionary_that_contains_inequalities_for_large_sboxes()
-            sage: variables, constraints = sbox_component.milp_large_xor_differential_probability_constraints(milp.binary_variable, milp.integer_variable, milp._non_linear_component_id)
+            sage: variables, constraints = sbox_component.milp_large_xor_differential_probability_constraints(milp.binary_variable, milp.integer_variable, milp._non_linear_component_id)  # optional - espresso
             ...
-            sage: variables
+            sage: variables  # optional - espresso
              [('x[xor_0_0_0]', x_0),
              ('x[xor_0_0_1]', x_1),
              ...
              ('x[sbox_0_1_2]', x_6),
             ('x[sbox_0_1_3]', x_7)]
-            sage: constraints[:3]
+            sage: constraints[:3]  # optional - espresso
             [x_0 + x_1 + x_2 + x_3 <= 4*x_8,
              1 - x_0 - x_1 - x_2 - x_3 <= 4 - 4*x_8,
              x_4 <= x_8]
@@ -968,15 +968,15 @@ class SBOX(Component):
             sage: milp = MilpModel(aes)
             sage: milp.init_model_in_sage_milp_class()
             sage: sbox_component = aes.component_from(0, 1)
-            sage: variables, constraints = sbox_component.milp_large_xor_linear_probability_constraints(milp.binary_variable, milp.integer_variable, milp._non_linear_component_id) # very long
+            sage: variables, constraints = sbox_component.milp_large_xor_linear_probability_constraints(milp.binary_variable, milp.integer_variable, milp._non_linear_component_id) # very long  # optional - espresso
             ...
-            sage: variables
+            sage: variables  # optional - espresso
             [('x[sbox_0_1_0_i]', x_0),
              ('x[sbox_0_1_1_i]', x_1),
              ...
              ('x[sbox_0_1_6_o]', x_14),
              ('x[sbox_0_1_7_o]', x_15)]
-            sage: constraints
+            sage: constraints  # optional - espresso
             [x_0 + x_1 + x_2 + x_3 + x_4 + x_5 + x_6 + x_7 <= 8*x_16,
             1 - x_0 - x_1 - x_2 - x_3 - x_4 - x_5 - x_6 - x_7 <= 8 - 8*x_16,
             ...
@@ -1213,14 +1213,14 @@ class SBOX(Component):
             sage: milp = MilpXorDifferentialModel(present)
             sage: milp.init_model_in_sage_milp_class()
             sage: sbox_component = present.component_from(0, 1)
-            sage: variables, constraints = sbox_component.milp_xor_differential_propagation_constraints(milp)
-            sage: variables
+            sage: variables, constraints = sbox_component.milp_xor_differential_propagation_constraints(milp)  # optional - espresso
+            sage: variables  # optional - espresso
             [('x[xor_0_0_0]', x_0),
             ('x[xor_0_0_1]', x_1),
             ...
             ('x[sbox_0_1_2]', x_6),
             ('x[sbox_0_1_3]', x_7)]
-            sage: constraints
+            sage: constraints  # optional - espresso
             [x_0 + x_1 + x_2 + x_3 <= 4*x_8,
             1 - x_0 - x_1 - x_2 - x_3 <= 4 - 4*x_8,
             ...
@@ -1253,15 +1253,15 @@ class SBOX(Component):
             sage: milp = MilpXorLinearModel(present)
             sage: milp.init_model_in_sage_milp_class()
             sage: sbox_component = present.component_from(0, 1)
-            sage: variables, constraints = sbox_component.milp_xor_linear_mask_propagation_constraints(milp)
+            sage: variables, constraints = sbox_component.milp_xor_linear_mask_propagation_constraints(milp)  # optional - espresso
             ...
-            sage: variables
+            sage: variables  # optional - espresso
             [('x[sbox_0_1_0_i]', x_0),
             ('x[sbox_0_1_1_i]', x_1),
             ...
             ('x[sbox_0_1_2_o]', x_6),
             ('x[sbox_0_1_3_o]', x_7)]
-            sage: constraints
+            sage: constraints  # optional - espresso
             [x_0 + x_1 + x_2 + x_3 <= 4*x_8,
             1 - x_0 - x_1 - x_2 - x_3 <= 4 - 4*x_8,
             ...
@@ -1470,15 +1470,15 @@ class SBOX(Component):
             sage: milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(present)
             sage: milp.init_model_in_sage_milp_class()
             sage: sbox_component = present.component_from(0,1)
-            sage: variables, constraints = sbox_component.milp_undisturbed_bits_bitwise_deterministic_truncated_xor_differential_constraints(milp)
+            sage: variables, constraints = sbox_component.milp_undisturbed_bits_bitwise_deterministic_truncated_xor_differential_constraints(milp)  # optional - espresso
             ...
-            sage: variables
+            sage: variables  # optional - espresso
             [('x[xor_0_0_0_class_bit_0]', x_0),
              ('x[xor_0_0_0_class_bit_1]', x_1),
             ...
              ('x[sbox_0_1_3_class_bit_0]', x_14),
              ('x[sbox_0_1_3_class_bit_1]', x_15)]
-            sage: constraints
+            sage: constraints  # optional - espresso
             [x_16 == 2*x_0 + x_1,
              x_17 == 2*x_2 + x_3,
              ...
@@ -1491,7 +1491,7 @@ class SBOX(Component):
             sage: milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(ascon)
             sage: milp.init_model_in_sage_milp_class()
             sage: sbox_component = ascon.component_from(0, 3)
-            sage: variables, constraints = sbox_component.milp_undisturbed_bits_bitwise_deterministic_truncated_xor_differential_constraints(milp)
+            sage: variables, constraints = sbox_component.milp_undisturbed_bits_bitwise_deterministic_truncated_xor_differential_constraints(milp)  # optional - espresso
             ...
         """
 
@@ -1587,7 +1587,7 @@ class SBOX(Component):
             sage: from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
             sage: present = PresentBlockCipher(number_of_rounds=3)
             sage: sbox_component = present.component_from(0, 2)
-            sage: sbox_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
+            sage: sbox_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()  # optional - espresso
             (['sbox_0_2_0_0',
               'sbox_0_2_1_0',
               ...
@@ -1653,7 +1653,7 @@ class SBOX(Component):
             sage: present = PresentBlockCipher(number_of_rounds=3)
             sage: sbox_component = present.component_from(0, 2)
             sage: sat = SatModel(present)
-            sage: sbox_component.sat_xor_differential_propagation_constraints(sat)
+            sage: sbox_component.sat_xor_differential_propagation_constraints(sat)  # optional - espresso
             (['sbox_0_2_0',
               'sbox_0_2_1',
               ...
@@ -1714,7 +1714,7 @@ class SBOX(Component):
             sage: present = PresentBlockCipher(number_of_rounds=3)
             sage: sbox_component = present.component_from(0, 2)
             sage: sat = SatModel(present)
-            sage: sbox_component.sat_xor_linear_mask_propagation_constraints(sat)
+            sage: sbox_component.sat_xor_linear_mask_propagation_constraints(sat)  # optional - espresso
             (['sbox_0_2_0_i',
               'sbox_0_2_1_i',
               ...
@@ -1815,7 +1815,7 @@ class SBOX(Component):
             sage: fancy = FancyBlockCipher(number_of_rounds=3)
             sage: smt = SmtModel(fancy)
             sage: sbox_component = fancy.component_from(0, 5)
-            sage: sbox_component.smt_xor_differential_propagation_constraints(smt)
+            sage: sbox_component.smt_xor_differential_propagation_constraints(smt)  # optional - espresso
             (['sbox_0_5_0',
               'sbox_0_5_1',
               ...
@@ -1866,7 +1866,7 @@ class SBOX(Component):
             sage: present = PresentBlockCipher(number_of_rounds=3)
             sage: sbox_component = present.component_from(0, 2)
             sage: smt = SmtModel(present)
-            sage: sbox_component.smt_xor_linear_mask_propagation_constraints(smt)
+            sage: sbox_component.smt_xor_linear_mask_propagation_constraints(smt)  # optional - espresso
             (['sbox_0_2_0_i',
               'sbox_0_2_1_i',
               ...

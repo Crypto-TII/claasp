@@ -24,6 +24,7 @@ from copy import deepcopy
 from datetime import timedelta
 
 from minizinc import Instance, Model, Solver, Status
+from minizinc.error import MiniZincError
 from sage.crypto.sbox import SBox
 
 from claasp.cipher_modules.component_analysis_tests import branch_number
@@ -86,6 +87,21 @@ class MznModel:
         self.list_of_xor_all_inputs = []
         self.component_and_probability = {}
         self._model_prefix = ['include "globals.mzn";', f"{usefulfunctions.MINIZINC_USEFUL_FUNCTIONS}"]
+
+    @staticmethod
+    def _solver_candidates(solver_name):
+        requested_solver = solver_name or SOLVER_DEFAULT
+        fallback_solvers = ["highs", "cbc", "coin-bc", "coinbc", "osicbc", "scip", "xpress", "gurobi", "cplex"]
+        candidates = [requested_solver] + [solver for solver in fallback_solvers if solver != requested_solver]
+        return candidates
+
+    @classmethod
+    def _resolve_solver_candidates(cls, solver_name):
+        for candidate in cls._solver_candidates(solver_name):
+            try:
+                yield candidate, Solver.lookup(candidate)
+            except LookupError:
+                continue
 
     def add_comment(self, comment):
         """
@@ -744,7 +760,7 @@ class MznModel:
             sage: cp = MznXorDifferentialModel(speck)
             sage: fixed_variables = [set_fixed_variables('key', 'equal', list(range(64)), integer_to_bit_list(0, 64, 'little')), set_fixed_variables('plaintext', 'not_equal', list(range(32)), integer_to_bit_list(0, 32, 'little'))]
             sage: cp.build_xor_differential_trail_model(-1, fixed_variables)
-            sage: cp.solve('xor_differential', 'chuffed') # random
+            sage: cp.solve('xor_differential', 'chuffed') # random  # optional - minizinc
             [{'cipher_id': 'speck_p32_k64_o32_r4',
                ...
               'total_weight': '5.0'}]
@@ -761,6 +777,15 @@ class MznModel:
         
         mzn_model = self._variables_list + self._model_constraints
 
+        solver_name_mzn = None
+        resolved_solver_name = None
+        for candidate_name, candidate_solver in self._resolve_solver_candidates(solver_name):
+            resolved_solver_name = candidate_name
+            solver_name_mzn = candidate_solver
+            break
+        if solver_name_mzn is None:
+            raise LookupError(f"No available MiniZinc solver found for requested solver '{solver_name}'.")
+        solver_name = resolved_solver_name
         solutions = []
         if solve_external:
             command = self.get_command_for_solver_process(model_type, solver_name, processes_, timeout_in_seconds_)
@@ -773,36 +798,43 @@ class MznModel:
                 solver_output = solver_process.stdout.splitlines()
         else:
             mzn_model_string = "\n".join(mzn_model)
-            solver_name_mzn = Solver.lookup(solver_name)
-            bit_mzn_model = Model()
-            bit_mzn_model.add_string(mzn_model_string)
-            instance = Instance(solver_name_mzn, bit_mzn_model)
-            start = time.time()
-            if processes_ != None and timeout_in_seconds_ != None:
-                solver_output = instance.solve(
-                    processes=processes_,
-                    timeout=timedelta(seconds=int(timeout_in_seconds_)),
-                    nr_solutions=nr_solutions_,
-                    random_seed=random_seed_,
-                    all_solutions=all_solutions_,
-                    intermediate_solutions=intermediate_solutions_,
-                    free_search=free_search_,
-                    optimisation_level=optimisation_level_,
-                )
-            else:
-                solver_output = instance.solve(
-                    nr_solutions=nr_solutions_,
-                    random_seed=random_seed_,
-                    all_solutions=all_solutions_,
-                    intermediate_solutions=intermediate_solutions_,
-                    free_search=free_search_,
-                    optimisation_level=optimisation_level_,
-                )
-            end = time.time()
-            solve_time = end - start
-            return self._parse_solver_output(
-                solver_output, model_type, truncated=truncated, solve_external=solve_external, solver_name=solver_name
-            )
+            solver_exception = None
+            for candidate_name, candidate_solver in self._resolve_solver_candidates(solver_name):
+                try:
+                    bit_mzn_model = Model()
+                    bit_mzn_model.add_string(mzn_model_string)
+                    instance = Instance(candidate_solver, bit_mzn_model)
+                    start = time.time()
+                    if processes_ != None and timeout_in_seconds_ != None:
+                        solver_output = instance.solve(
+                            processes=processes_,
+                            timeout=timedelta(seconds=int(timeout_in_seconds_)),
+                            nr_solutions=nr_solutions_,
+                            random_seed=random_seed_,
+                            all_solutions=all_solutions_,
+                            intermediate_solutions=intermediate_solutions_,
+                            free_search=free_search_,
+                            optimisation_level=optimisation_level_,
+                        )
+                    else:
+                        solver_output = instance.solve(
+                            nr_solutions=nr_solutions_,
+                            random_seed=random_seed_,
+                            all_solutions=all_solutions_,
+                            intermediate_solutions=intermediate_solutions_,
+                            free_search=free_search_,
+                            optimisation_level=optimisation_level_,
+                        )
+                    end = time.time()
+                    solve_time = end - start
+                    return self._parse_solver_output(
+                        solver_output, model_type, truncated=truncated, solve_external=solve_external, solver_name=candidate_name
+                    )
+                except MiniZincError as exc:
+                    solver_exception = exc
+            if solver_exception is not None:
+                raise solver_exception
+            raise LookupError(f"No available MiniZinc solver found for requested solver '{solver_name}'.")
         if truncated:
             solver_time, memory, components_values = self._parse_solver_output(
                 solver_output, model_type, truncated=True, solve_external=solve_external
@@ -906,37 +938,47 @@ class MznModel:
             ....:     'operator': '=',
             ....:     'value': '0' })
             sage: minizinc.build_xor_differential_trail_model(-1, fixed_variables)
-            sage: result = minizinc.solve_for_ARX(CPSAT)
-            sage: result.statistics['nSolutions']
+            sage: result = minizinc.solve_for_ARX(CPSAT)  # optional - minizinc
+            sage: result.statistics['nSolutions']  # optional - minizinc
             1
         """
         constraints = self._model_constraints
         variables = self._variables_list
         mzn_model_string = "\n".join(constraints) + "\n".join(variables)
-        solver_name_mzn = Solver.lookup(solver_name)
-        bit_mzn_model = Model()
-        bit_mzn_model.add_string(mzn_model_string)
-        instance = Instance(solver_name_mzn, bit_mzn_model)
-        if processes_ != None and timeout_in_seconds_ != None:
-            result = instance.solve(
-                processes=processes_,
-                timeout=timedelta(seconds=int(timeout_in_seconds_)),
-                nr_solutions=nr_solutions_,
-                random_seed=random_seed_,
-                all_solutions=all_solutions_,
-                intermediate_solutions=intermediate_solutions_,
-                free_search=free_search_,
-                optimisation_level=optimisation_level_,
-            )
-        else:
-            result = instance.solve(
-                nr_solutions=nr_solutions_,
-                random_seed=random_seed_,
-                all_solutions=all_solutions_,
-                intermediate_solutions=intermediate_solutions_,
-                free_search=free_search_,
-                optimisation_level=optimisation_level_,
-            )
+        solver_exception = None
+        result = None
+        for candidate_name, candidate_solver in self._resolve_solver_candidates(solver_name):
+            try:
+                bit_mzn_model = Model()
+                bit_mzn_model.add_string(mzn_model_string)
+                instance = Instance(candidate_solver, bit_mzn_model)
+                if processes_ != None and timeout_in_seconds_ != None:
+                    result = instance.solve(
+                        processes=processes_,
+                        timeout=timedelta(seconds=int(timeout_in_seconds_)),
+                        nr_solutions=nr_solutions_,
+                        random_seed=random_seed_,
+                        all_solutions=all_solutions_,
+                        intermediate_solutions=intermediate_solutions_,
+                        free_search=free_search_,
+                        optimisation_level=optimisation_level_,
+                    )
+                else:
+                    result = instance.solve(
+                        nr_solutions=nr_solutions_,
+                        random_seed=random_seed_,
+                        all_solutions=all_solutions_,
+                        intermediate_solutions=intermediate_solutions_,
+                        free_search=free_search_,
+                        optimisation_level=optimisation_level_,
+                    )
+                break
+            except MiniZincError as exc:
+                solver_exception = exc
+        if result is None:
+            if solver_exception is not None:
+                raise solver_exception
+            raise LookupError(f"No available MiniZinc solver found for requested solver '{solver_name}'.")
 
         return result
 

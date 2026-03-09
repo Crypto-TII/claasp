@@ -47,6 +47,20 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
         self._first_step_find_all_solutions = []
         super().initialise_model()
 
+    @staticmethod
+    def _get_command_options_for_solver(solver_name):
+        for solver in CP_SOLVERS_EXTERNAL:
+            if solver_name == solver["solver_name"]:
+                return deepcopy(solver["keywords"]["command"])
+        return None
+
+    def _resolve_command_options_for_solver(self, solver_name):
+        for candidate_solver in self._solver_candidates(solver_name):
+            command_options = self._get_command_options_for_solver(candidate_solver)
+            if command_options is not None:
+                return candidate_solver, command_options
+        raise LookupError(f"No available MiniZinc command configuration for solver '{solver_name}'.")
+
     def build_xor_differential_trail_second_step_model(self, weight=-1, fixed_variables=[]):
         """
         Build the CP Model for the second step of the search of XOR differential trail of an SPN cipher.
@@ -169,7 +183,7 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
             ....: integer_to_bit_list(0, 128, 'little'))]
             sage: fixed_variables.append(set_fixed_variables('plaintext', 'not_equal', range(128),
             ....: integer_to_bit_list(0, 128, 'little')))
-            sage: cp.find_lowest_weight_xor_differential_trail(fixed_variables, 'chuffed', 'chuffed') # random
+            sage: cp.find_lowest_weight_xor_differential_trail(fixed_variables, 'chuffed', 'chuffed') # random  # optional - minizinc
             5
             {'cipher': 'aes_block_cipher_k128_p128_o128_r2',
              'model_type': 'xor_differential',
@@ -222,7 +236,7 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
             ....: integer_to_bit_list(0, 128, 'little'))]
             sage: fixed_variables.append(set_fixed_variables('plaintext', 'not_equal', range(128),
             ....: integer_to_bit_list(0, 128, 'little')))
-            sage: cp.find_one_xor_differential_trail(fixed_variables, 'chuffed', 'chuffed') # random
+            sage: cp.find_one_xor_differential_trail(fixed_variables, 'chuffed', 'chuffed') # random  # optional - minizinc
             {'cipher': 'aes_block_cipher_k128_p128_o128_r2',
              'model_type': 'xor_differential',
               ...
@@ -275,7 +289,7 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
             ....: integer_to_bit_list(0, 128, 'little'))]
             sage: fixed_variables.append(set_fixed_variables('plaintext', 'not_equal', range(128),
             ....: integer_to_bit_list(0, 128, 'little')))
-            sage: cp.find_one_xor_differential_trail_with_fixed_weight(224, fixed_variables, 'chuffed', 'chuffed') # random
+            sage: cp.find_one_xor_differential_trail_with_fixed_weight(224, fixed_variables, 'chuffed', 'chuffed') # random  # optional - minizinc
             {'cipher': 'aes_block_cipher_k128_p128_o128_r2',
              'model_type': 'xor_differential',
              'solver_name': 'chuffed',
@@ -314,9 +328,9 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
             sage: cp = MznXorDifferentialFixingNumberOfActiveSboxesModel(aes)
             sage: fixed_variables = [set_fixed_variables('key', 'not_equal', list(range(128)), (0,)*128)]
             sage: cp.build_xor_differential_trail_first_step_model(-1, fixed_variables)
-            sage: first_step_solution, solve_time = cp.solve_model('xor_differential_first_step', 'chuffed')
-            sage: table_of_solutions = cp.generate_table_of_solutions(first_step_solution)
-            sage: table_of_solutions[:26]
+            sage: first_step_solution, solve_time = cp.solve_model('xor_differential_first_step', 'chuffed')  # optional - minizinc
+            sage: table_of_solutions = cp.generate_table_of_solutions(first_step_solution)  # optional - minizinc
+            sage: table_of_solutions[:26]  # optional - minizinc
             'array [0..0, 1..40] of int'
         """
         cipher_name = self.cipher_id
@@ -428,7 +442,7 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
             sage: cp = MznXorDifferentialFixingNumberOfActiveSboxesModel(aes)
             sage: fixed_variables = [set_fixed_variables('key', 'not_equal', list(range(128)),
             ....: integer_to_bit_list(0, 128, 'little'))]
-            sage: cp.solve_full_two_steps_xor_differential_model('xor_differential_one_solution', -1, fixed_variables, 'chuffed', 'chuffed') # random
+            sage: cp.solve_full_two_steps_xor_differential_model('xor_differential_one_solution', -1, fixed_variables, 'chuffed', 'chuffed') # random  # optional - minizinc
             1
             {'cipher': 'aes_block_cipher_k128_p128_o128_r2',
               ...
@@ -454,9 +468,7 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
         end = tm.time()
         build_time += end - start
 
-        for i in range(len(CP_SOLVERS_EXTERNAL)):
-            if second_step_solver_name == CP_SOLVERS_EXTERNAL[i]["solver_name"]:
-                command_options = deepcopy(CP_SOLVERS_EXTERNAL[i]["keywords"]["command"])
+        second_step_solver_name, command_options = self._resolve_command_options_for_solver(second_step_solver_name)
 
         for attempt in range(10000):
             if weight == -1:
@@ -538,9 +550,7 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
              0.19837307929992676)]
         """
         start = tm.time()
-        for i in range(len(CP_SOLVERS_EXTERNAL)):
-            if solver_name == CP_SOLVERS_EXTERNAL[i]["solver_name"]:
-                command_options = deepcopy(CP_SOLVERS_EXTERNAL[i]["keywords"]["command"])
+        solver_name, command_options = self._resolve_command_options_for_solver(solver_name)
 
         if model_type == "xor_differential_first_step_find_all_solutions":
             model = "\n".join(self._first_step_find_all_solutions) + "\n"
@@ -600,9 +610,9 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
             sage: cp = MznXorDifferentialFixingNumberOfActiveSboxesModel(aes)
             sage: fixed_variables = [set_fixed_variables('key', 'not_equal', range(128), integer_to_bit_list(0, 128, 'little'))]
             sage: cp.build_xor_differential_trail_first_step_model(-1, fixed_variables)
-            sage: first_step_solution, solve_time = cp.solve_model('xor_differential_first_step','chuffed')
-            sage: cp.transform_first_step_model(0, first_step_solution[0])
-            sage: first_step_solution[0]
+            sage: first_step_solution, solve_time = cp.solve_model('xor_differential_first_step','chuffed')  # optional - minizinc
+            sage: cp.transform_first_step_model(0, first_step_solution[0])  # optional - minizinc
+            sage: first_step_solution[0]  # optional - minizinc
             '1'
         """
         self._first_step_find_all_solutions = []

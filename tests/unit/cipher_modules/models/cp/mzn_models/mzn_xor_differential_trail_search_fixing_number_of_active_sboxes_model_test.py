@@ -1,3 +1,6 @@
+import pytest
+from minizinc import Solver
+
 from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_trail_search_fixing_number_of_active_sboxes_model import (
     MznXorDifferentialFixingNumberOfActiveSboxesModel,
 )
@@ -5,6 +8,15 @@ from claasp.cipher_modules.models.cp.solvers import CHUFFED
 from claasp.cipher_modules.models.utils import set_fixed_variables
 from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
 from claasp.name_mappings import INPUT_KEY, INPUT_PLAINTEXT, XOR_DIFFERENTIAL
+
+
+try:
+    Solver.lookup(CHUFFED)
+    CHUFFED_AVAILABLE = True
+except LookupError:
+    CHUFFED_AVAILABLE = False
+
+pytestmark = pytest.mark.skipif(not CHUFFED_AVAILABLE, reason="MiniZinc solver 'chuffed' is not available")
 
 
 def test_find_all_xor_differential_trails_with_fixed_weight():
