@@ -15,7 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-
+import re
 import json
 import math
 import os
@@ -287,6 +287,39 @@ def set_fixed_variables(component_id, constraint_type, bit_positions, bit_values
         "bit_values": bit_values,
     }
 
+def join_and_sanitize_strings(l):
+    """
+    Join a list of strings using ``_`` and sanitize the resulting string so that it only
+    contains alphanumeric characters, ``.``, ``_`` or ``-``. The returned string is
+    prefixed with ``_``.
+
+    INPUT:
+
+    - ``l`` -- **list** (or ``None``); list of strings to be joined and sanitized. If ``None``,
+      an empty string is returned.
+
+    OUTPUT:
+
+    - **string**; a sanitized string obtained by joining the elements of ``l`` with ``_``,
+      removing all characters except ``[a-zA-Z0-9._-]``, and prefixing the result with ``_``.
+      If ``l`` is ``None``, the function returns ``""``.
+
+    EXAMPLES::
+
+        sage: from claasp.cipher_modules.models.utils import join_and_sanitize_strings
+        sage: join_and_sanitize_strings(['sat', 'xor-linear'])
+        '_sat_xor-linear'
+
+        sage: join_and_sanitize_strings(['model°', 'round#1'])
+        '_model_round1'
+
+        sage: join_and_sanitize_strings(None)
+        ''
+    """
+    if l is None:
+        return ""
+    joined = "_".join(l)
+    return "_" + re.sub(r"[^a-zA-Z0-9._-]", "", joined)
 
 def write_model_to_file(model_to_write, file_name):
     """

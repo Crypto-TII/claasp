@@ -15,14 +15,14 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-import time, re
+import time
 from math import log2, pow
 from copy import deepcopy
 
 from claasp.cipher_modules.models.sat import solvers
 from claasp.cipher_modules.models.sat.sat_model import SatModel
 from claasp.cipher_modules.models.sat.sat_models.sat_cipher_model import SatCipherModel
-from claasp.cipher_modules.models.utils import set_component_solution, get_single_key_scenario_format_for_fixed_values, set_fixed_variables, hex_to_bitlist
+from claasp.cipher_modules.models.utils import set_component_solution, get_single_key_scenario_format_for_fixed_values, set_fixed_variables, hex_to_bitlist, join_and_sanitize_strings
 from claasp.name_mappings import (
     CIPHER_OUTPUT,
     CONSTANT,
@@ -83,7 +83,7 @@ class SatXorDifferentialModel(SatModel):
             if component.type not in component_types or (
                 WORD_OPERATION == component.type and operation not in operation_types
             ):
-                print(f"{component.id} not yet implemented")
+                raise ValueError(f"{component.id} not yet implemented")
             else:
                 variables, constraints = component.sat_xor_differential_propagation_constraints(self)
 
@@ -315,6 +315,52 @@ class SatXorDifferentialModel(SatModel):
 
         return solutions_list
     
+    def _fixed_component_constraints(self, plaintext, ciphertext):
+        """
+        Return list of variables to fix plaintext to ``plaintext``, ciphertext to ``ciphertext`` and key to 0
+
+        INPUT:
+
+        - ``plaintext`` -- **string**; hexadecimal representation of plaintext to be fixed
+        - ``ciphertext`` -- **string**; hexadecimal representation of ciphertext to be fixed
+
+        """
+        fixed_variables = []
+
+        bits = hex_to_bitlist(plaintext)
+        if INPUT_PLAINTEXT not in self._cipher.inputs:
+            raise ValueError(f"missing {INPUT_PLAINTEXT} in _cipher.inputs")
+        expected_size = self._cipher.inputs_bit_size[self._cipher.inputs.index(INPUT_PLAINTEXT)]
+        if len(bits) != expected_size:
+            raise ValueError("Plaintext size mismatch")
+        plaintext_fix = set_fixed_variables(
+            component_id="plaintext",
+            constraint_type="equal",
+            bit_positions=range(len(bits)),
+            bit_values= bits,
+        )
+        fixed_variables.append(plaintext_fix)
+    
+        if INPUT_KEY not in self._cipher.inputs:
+            raise ValueError(f"missing {INPUT_KEY} in _cipher.inputs")
+        input_size = self._cipher.inputs_bit_size[self._cipher.inputs.index(INPUT_KEY)]
+        key_fix = set_fixed_variables(INPUT_KEY, "equal", range(input_size), [0] * input_size)
+        fixed_variables.append(key_fix)
+            
+        bits = hex_to_bitlist(ciphertext)
+        expected_size = self._cipher.output_bit_size
+        if len(bits) != expected_size:
+            raise ValueError("Ciphertext size mismatch")
+        ciphertext_fix = set_fixed_variables(
+            component_id= self._cipher.get_all_components_ids()[-1],
+            constraint_type="equal",
+            bit_positions=range(len(bits)),
+            bit_values= bits,
+        )
+        fixed_variables.append(ciphertext_fix)
+        
+        return fixed_variables
+
     def compute_xor_differential_weight(
         self, plaintext, ciphertext, upper_weight, lower_weight=None, solver_name=solvers.SOLVER_DEFAULT, options=None, log=False
     ):
@@ -345,10 +391,9 @@ class SatXorDifferentialModel(SatModel):
             sage: ublock = UblockBlockCipher(number_of_rounds=3)
             sage: sat = SatXorDifferentialModel(ublock)
             sage: weight, trails= sat.compute_xor_differential_weight(
-                plaintext='0x04400000000000000044400000000000',
-                ciphertext= '0x00044004444404004400444044400040',
-                upper_weight= 31
-            )
+            ....:    plaintext='0x04400000000000000044400000000000',
+            ....:    ciphertext= '0x00044004444404004400444044400040',
+            ....:    upper_weight= 31)
             sage: weight == 25.7146 and len(trails) == 8
             True
         """
@@ -376,15 +421,10 @@ class SatXorDifferentialModel(SatModel):
             return weight
 
         def create_file_names():
-            def sanitize(options):
-                if options == None:
-                    return ""
-                joined = "_".join(options)
-                return "_" + re.sub(r"[^a-zA-Z0-9._-]", "", joined)
-
             geq = lower_weight if lower_weight != None else 0
-            file_path_trails = f'compute_sat_xor_differential_weight__trails__{self._cipher}_{plaintext}_{ciphertext}__geq{geq}_leq{upper_weight}__{solver_name}solver{sanitize(options)}.log'
-            file_path_prob = f'compute_sat_xor_differential_weight__{self._cipher}_{plaintext}_{ciphertext}__geq{geq}_leq{upper_weight}__{solver_name}solver{sanitize(options)}.log'
+            cipher_info = f"{self._cipher}_{plaintext}_{ciphertext}__geq{geq}_leq{upper_weight}__{solver_name}solver{join_and_sanitize_strings(options)}"
+            file_path_trails = f'compute_sat_xor_differential_weight__trails__{cipher_info}.log'
+            file_path_prob = f'compute_sat_xor_differential_weight__{cipher_info}.log'
             return file_path_trails, file_path_prob
         
         def save_log(solutions_list):
@@ -403,48 +443,11 @@ class SatXorDifferentialModel(SatModel):
                 f.write("")
             with open(file_path_prob,"w") as f:
                 f.write("")
-        
-        def fixed_components():
-            fixed_variables = []
 
-            bits = hex_to_bitlist(plaintext)
-            if INPUT_PLAINTEXT not in self._cipher.inputs:
-                raise ValueError("missing block_bit_size inside cipher object cipher_inputs_bit_size")
-            expected_size = self._cipher.inputs_bit_size[self._cipher.inputs.index(INPUT_PLAINTEXT)]
-            if len(bits) != expected_size:
-                raise ValueError("Plaintext size mismatch")
-            plaintext_fix = set_fixed_variables(
-                component_id="plaintext",
-                constraint_type="equal",
-                bit_positions=range(len(bits)),
-                bit_values= bits,
-            )
-            fixed_variables.append(plaintext_fix)
-        
-            if INPUT_KEY not in self._cipher.inputs:
-                raise ValueError("missing key_block_size inside cipher object cipher_inputs_bit_size")
-            input_size = self._cipher.inputs_bit_size[self._cipher.inputs.index(INPUT_KEY)]
-            key_fix = set_fixed_variables(INPUT_KEY, "equal", range(input_size), [0] * input_size)
-            fixed_variables.append(key_fix)
-                
-
-            bits = hex_to_bitlist(ciphertext)
-            expected_size = self._cipher.output_bit_size
-            if len(bits) != expected_size:
-                raise ValueError("Ciphertext size mismatch")
-            ciphertext_fix = set_fixed_variables(
-                component_id= self._cipher.get_all_components_ids()[-1],
-                constraint_type="equal",
-                bit_positions=range(len(bits)),
-                bit_values= bits,
-            )
-            fixed_variables.append(ciphertext_fix)
-            
-            return fixed_variables
         
         if log:
             clear_log()
-        fixed_variables = fixed_components()
+        fixed_variables = self._fixed_component_constraints(plaintext, ciphertext)
         start_building_time = time.time()
         self.build_xor_differential_trail_model(weight=upper_weight, fixed_variables=fixed_variables)
         if lower_weight != None and self._counter == self._sequential_counter:
