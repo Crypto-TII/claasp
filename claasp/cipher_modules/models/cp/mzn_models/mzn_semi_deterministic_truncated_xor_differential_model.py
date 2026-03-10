@@ -51,6 +51,50 @@ class MznSemiDeterministicTruncatedXorDifferentialModel(MznModel):
 
         return cp_declarations, cp_constraints
 
+    @staticmethod
+    def _allowed_component_and_operations():
+        allowed_component_types = (CIPHER_OUTPUT, INTERMEDIATE_OUTPUT, WORD_OPERATION, CONSTANT)
+        allowed_operations = ("MODADD", "MODSUB", "XOR", "ROTATE", "SHIFT", "NOT")
+        return allowed_component_types, allowed_operations
+
+    def _build_component_and_model_types(self):
+        component_and_model_types = []
+        allowed_component_types, allowed_operations = self._allowed_component_and_operations()
+
+        for component in self._cipher.get_all_components():
+            operation = component.description[0]
+            is_supported_word_op = component.type != WORD_OPERATION or operation in allowed_operations
+            if component.type in allowed_component_types and is_supported_word_op:
+                component_and_model_types.append(
+                    {
+                        "component_object": component,
+                        "model_type": "cp_semi_deterministic_truncated_xor_differential_constraints",
+                    }
+                )
+                continue
+
+            raise NotImplementedError(
+                f"Component {component.id} does not support CP semi-deterministic truncated XOR differential model"
+            )
+
+        return component_and_model_types
+
+    def _build_fixed_constraints(self, fixed_variables, component_and_model_types):
+        if not fixed_variables:
+            return []
+
+        if hasattr(self, "fix_variables_value_xor_linear_constraints"):
+            return self.fix_variables_value_xor_linear_constraints(fixed_variables)
+
+        uses_arx = any(
+            entry["model_type"] == "minizinc_xor_differential_propagation_constraints"
+            for entry in component_and_model_types
+        )
+        if uses_arx and hasattr(self, "solve_for_ARX"):
+            return self.fix_variables_value_constraints_for_ARX(fixed_variables)
+
+        return self.fix_variables_value_constraints(fixed_variables)
+
     def build_cp_semi_deterministic_truncated_xor_differential_trail(
         self, fixed_variables=None, number_of_rounds=None, minimize=False
     ):
@@ -64,37 +108,8 @@ class MznSemiDeterministicTruncatedXorDifferentialModel(MznModel):
         self.initialise_model()
         input_declarations, input_constraints = self.input_deterministic_truncated_xor_differential_constraints()
 
-        component_and_model_types = []
-        allowed_component_types = (CIPHER_OUTPUT, INTERMEDIATE_OUTPUT, WORD_OPERATION, CONSTANT)
-        allowed_operations = ("MODADD", "MODSUB", "XOR", "ROTATE", "SHIFT", "NOT")
-
-        for component in self._cipher.get_all_components():
-            operation = component.description[0]
-            if component.type in allowed_component_types and (
-                component.type != WORD_OPERATION or operation in allowed_operations
-            ):
-                component_and_model_types.append(
-                    {
-                        "component_object": component,
-                        "model_type": "cp_semi_deterministic_truncated_xor_differential_constraints",
-                    }
-                )
-            else:
-                raise NotImplementedError(
-                    f"Component {component.id} does not support CP semi-deterministic truncated XOR differential model"
-                )
-
-        fixed_constraints = []
-        if fixed_variables:
-            if hasattr(self, "fix_variables_value_xor_linear_constraints"):
-                fixed_constraints = self.fix_variables_value_xor_linear_constraints(fixed_variables)
-            elif any(
-                entry["model_type"] == "minizinc_xor_differential_propagation_constraints"
-                for entry in component_and_model_types
-            ) and hasattr(self, "solve_for_ARX"):
-                fixed_constraints = self.fix_variables_value_constraints_for_ARX(fixed_variables)
-            else:
-                fixed_constraints = self.fix_variables_value_constraints(fixed_variables)
+        component_and_model_types = self._build_component_and_model_types()
+        fixed_constraints = self._build_fixed_constraints(fixed_variables, component_and_model_types)
 
         self.build_generic_cp_model_from_dictionary(component_and_model_types, fixed_variables=fixed_variables)
 

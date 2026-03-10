@@ -124,7 +124,6 @@ class MznDifferentialLinearModel(MznModel):
     def _get_component_by_id(self, component_id):
         return self._cipher.get_component_from_id(component_id)
 
-    # TODO: Refactor this complex method
     def _parse_linear_bit_id(self, bit_id):
         match = re.match(r"^(.*)_([io])\[(\d+)\]$", bit_id)
         if not match:
@@ -325,6 +324,31 @@ class MznDifferentialLinearModel(MznModel):
 
         return probability_expression
 
+    @staticmethod
+    def _append_probability_output(output, probability_output):
+        if probability_output:
+            return output + f"show({probability_output}) ++ \"\\n\" ++"
+        return output + '"0" ++ "\\n" ++'
+
+    def _component_output_header(self, component):
+        if component.id in self.bottom_part_component_ids:
+            if component.type == CONSTANT:
+                return f'"{component.id}_o = "++ show({component.id}_o)++ "\\n" ++ '
+            if CIPHER_OUTPUT in component.type:
+                return f'"{component.id}_o = "++ show({component.id}_i)++ "\\n" ++ '
+            return (
+                f'"{component.id}_i = "++ show({component.id}_i)++ "\\n" ++ '
+                f'"{component.id}_o = "++ show({component.id}_o)++ "\\n" ++ '
+            )
+        return f'"{component.id} = "++ show({component.id})++ "\\n" ++'
+
+    def _component_probability_output(self, component, probability_output):
+        if not probability_output:
+            return None
+        if component.id in self.middle_part_component_ids and "/100" not in probability_output:
+            return f"({probability_output})/100"
+        return probability_output
+
     def _build_output_block(self, weight):
         solve_directive = "solve minimize weight;" if weight == -1 else SOLVE_SATISFY
         constraints = [solve_directive]
@@ -336,30 +360,9 @@ class MznDifferentialLinearModel(MznModel):
         for component in self._cipher.get_all_components():
             probability_expr = self._component_probability_expression(component.id)
             probability_output = self._normalize_probability_expression_for_output(probability_expr)
-
-            if component.id in self.bottom_part_component_ids:
-                if component.type == CONSTANT:
-                    output += f'"{component.id}_o = "++ show({component.id}_o)++ "\\n" ++ '
-                elif CIPHER_OUTPUT in component.type:
-                    output += f'"{component.id}_o = "++ show({component.id}_i)++ "\\n" ++ '
-                else:
-                    output += (
-                        f'"{component.id}_i = "++ show({component.id}_i)++ "\\n" ++ '
-                        f'"{component.id}_o = "++ show({component.id}_o)++ "\\n" ++ '
-                    )
-                if probability_output:
-                    output += f"show({probability_output}) ++ \"\\n\" ++"
-                else:
-                    output += '"0" ++ "\\n" ++'
-            else:
-                output += f'"{component.id} = "++ show({component.id})++ "\\n" ++'
-                if probability_output:
-                    weight_output = probability_output
-                    if component.id in self.middle_part_component_ids and "/100" not in weight_output:
-                        weight_output = f"({weight_output})/100"
-                    output += f"show({weight_output}) ++ \"\\n\" ++"
-                else:
-                    output += '"0" ++ "\\n" ++'
+            output += self._component_output_header(component)
+            output_probability = self._component_probability_output(component, probability_output)
+            output = self._append_probability_output(output, output_probability)
 
         output += '"Trail weight = " ++ show(weight)];'
         constraints.append(output)
@@ -577,7 +580,6 @@ class MznDifferentialLinearModel(MznModel):
 
         probability_array_declaration = self._infer_probability_array_declaration()
 
-        #top_middle_constraints = self._top_to_middle_connecting_constraints()
         middle_bottom_constraints = self._middle_to_bottom_connecting_constraints()
         branch_constraints = self._branch_xor_linear_constraints_for_bottom_part()
 
@@ -590,7 +592,6 @@ class MznDifferentialLinearModel(MznModel):
 
         self._variables_list = declarations
 
-        #self._model_constraints.extend(top_middle_constraints)
         self._model_constraints.extend(middle_bottom_constraints)
         self._model_constraints.extend(branch_constraints)
         self._model_constraints.extend(weight_constraints)
