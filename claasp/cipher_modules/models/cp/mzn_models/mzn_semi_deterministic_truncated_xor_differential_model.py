@@ -34,15 +34,12 @@ class MznSemiDeterministicTruncatedXorDifferentialModel(MznModel):
         super().__init__(cipher)
 
     def input_deterministic_truncated_xor_differential_constraints(self):
-        number_of_rounds = self._cipher.number_of_rounds
-
         cp_constraints = []
         cp_declarations = [
             f"array[0..{bit_size - 1}] of var 0..2: {input_};"
             for input_, bit_size in zip(self._cipher.inputs, self._cipher.inputs_bit_size)
         ]
         cipher = self._cipher
-        rounds = number_of_rounds
         for component in cipher.get_all_components():
             output_id_link = component.id
             output_size = int(component.output_bit_size)
@@ -61,6 +58,8 @@ class MznSemiDeterministicTruncatedXorDifferentialModel(MznModel):
             fixed_variables = []
         if number_of_rounds is None:
             number_of_rounds = self._cipher.number_of_rounds
+        if number_of_rounds != self._cipher.number_of_rounds:
+            raise ValueError("number_of_rounds must match the cipher instance number_of_rounds")
 
         self.initialise_model()
         input_declarations, input_constraints = self.input_deterministic_truncated_xor_differential_constraints()
