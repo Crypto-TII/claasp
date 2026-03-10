@@ -126,7 +126,7 @@ class MznDifferentialLinearModel(MznModel):
 
     # TODO: Refactor this complex method
     def _parse_linear_bit_id(self, bit_id):
-        match = re.match(r"^(.*)_(i|o)\[(\d+)\]$", bit_id)
+        match = re.match(r"^(.*)_([io])\[(\d+)\]$", bit_id)
         if not match:
             match = re.match(r"^(.*)\[(\d+)\]$", bit_id)
             if match:
