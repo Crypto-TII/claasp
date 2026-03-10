@@ -859,25 +859,25 @@ class MznHadipourBoomerangModel(MznModel):
 
         #### ATTEMPT WITH LBCT EVALUATION -> UNSAT
         #### Second attempt: Constraint for the input of the LBCT
-        ## first attempt dL = 0100
-        dL = [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0]
-        for i in range(16):
-            self._model_constraints.extend([f"constraint pre_upper_modadd_2_7_0[{i}] = {dL[i]};"])
-        # NO SOLUTION FOUND -> UNSAT
-        ## second attempt dR = 8000
-        dR = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-        for i in range(16):
-            self._model_constraints.extend([f"constraint pre_upper_modadd_2_7_1[{i}] = {dR[i]};"])
-        ## NO SOLUTION FOUND -> UNSAT
-        ## third attempt nL = 8000
-        nL = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-        for i in range(16):
-            self._model_constraints.extend([f"constraint pre_lower_modadd_2_7_0[{i}] = {nL[i]};"])
-        ## NO SOLUTION FOUND -> UNSAT
-        ## fourth attempt nR = 8000
-        nR = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-        for i in range(16):
-            self._model_constraints.extend([f"constraint pre_lower_modadd_2_7_1[{i}] = {nR[i]};"])
+        # ## first attempt dL = 0100
+        # dL = [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0]
+        # for i in range(16):
+        #     self._model_constraints.extend([f"constraint pre_upper_modadd_2_7_0[{i}] = {dL[i]};"])
+        # # NO SOLUTION FOUND -> UNSAT
+        # ## second attempt dR = 8000
+        # dR = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        # for i in range(16):
+        #     self._model_constraints.extend([f"constraint pre_upper_modadd_2_7_1[{i}] = {dR[i]};"])
+        # ## NO SOLUTION FOUND -> UNSAT
+        # ## third attempt nL = 8000
+        # nL = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        # for i in range(16):
+        #     self._model_constraints.extend([f"constraint pre_lower_modadd_2_7_0[{i}] = {nL[i]};"])
+        # ## NO SOLUTION FOUND -> UNSAT
+        # ## fourth attempt nR = 8000
+        # nR = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        # for i in range(16):
+        #     self._model_constraints.extend([f"constraint pre_lower_modadd_2_7_1[{i}] = {nR[i]};"])
         ## THE BEST SOLUTION WITH THESE 4 CONDITIONS -> TOTAL WEIGHT -> 8
         ## I AM NOT UNDERSTANDING...... HOW IS IT POSSIBLE THAT IF I ADD CONSTRAINT THEN IT BECOMES SAT......
         ##### TODO: TRY TO FIX A THRESHOLD FOR THE PROBABILITY TO AVOID NUMERICAL MISTAKES FROM GUROBI
