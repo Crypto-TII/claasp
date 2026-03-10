@@ -377,7 +377,12 @@ class MznDifferentialLinearModel(MznModel):
         if not used_indices:
             return None
 
-        has_declaration = any(re.match(r"\s*array\[.*\]\s+of\s+var\s+.*:\s+p;", var) for var in self._variables_list)
+        def _is_probability_array_declaration(var):
+            # Normalize whitespace and avoid regex backtracking on untrusted or very long strings.
+            normalized = " ".join(var.strip().split())
+            return normalized.startswith("array[") and "] of var " in normalized and normalized.endswith(": p;")
+
+        has_declaration = any(_is_probability_array_declaration(var) for var in self._variables_list)
         if has_declaration:
             return None
 
