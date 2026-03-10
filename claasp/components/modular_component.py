@@ -217,6 +217,37 @@ class Modular(Component):
     def cp_deterministic_truncated_xor_differential_trail_constraints(self):
         return self.cp_deterministic_truncated_xor_differential_constraints()
 
+    @staticmethod
+    def _cp_semideterministic_stage_name(prefix, output_id_link, index, use_index_suffix):
+        if use_index_suffix:
+            return f"{prefix}_{output_id_link}_{index}"
+
+        return f"{prefix}_{output_id_link}"
+
+    @staticmethod
+    def _cp_append_semideterministic_stage(
+        cp_declarations,
+        cp_constraints,
+        left_input,
+        right_input,
+        output_var,
+        delta_carry,
+        costs,
+        input_len,
+        stage_probability_var,
+    ):
+        cp_declarations.extend(
+            [
+                f"array[0..{input_len - 1}] of var 0..2: {delta_carry};",
+                f"array[0..{input_len - 1}] of var {{100, 41, 19, 9, 4, 2, 1, 0}}: {costs};",
+                f"var int: {stage_probability_var};",
+            ]
+        )
+
+        cp_constraints.append(
+            f"constraint counter_based_modadd_semideterministic({left_input}, {right_input}, {output_var}, {delta_carry}, {costs}, {input_len}, {stage_probability_var});"
+        )
+
     def cp_semi_deterministic_truncated_xor_differential_constraints(self):
         """
         Return declarations, constraints, and metadata for modular addition/subtraction in the CP
@@ -244,47 +275,52 @@ class Modular(Component):
 
         probability_var = f"probability_{output_id_link}"
         stage_probability_vars = []
+        use_index_suffix = num_add > 2
 
         for i in range(num_add - 2):
-            delta_carry = f"delta_carry_{output_id_link}_{i}" if num_add > 2 else f"delta_carry_{output_id_link}"
-            costs = f"costs_{output_id_link}_{i}" if num_add > 2 else f"costs_{output_id_link}"
-            stage_probability_var = f"{probability_var}_{i}" if num_add > 2 else probability_var
-
-            cp_declarations.extend(
-                [
-                    f"array[0..{input_len - 1}] of var 0..2: {delta_carry};",
-                    f"array[0..{input_len - 1}] of var {{100, 41, 19, 9, 4, 2, 1, 0}}: {costs};",
-                    f"var int: {stage_probability_var};",
-                ]
+            delta_carry = self._cp_semideterministic_stage_name("delta_carry", output_id_link, i, use_index_suffix)
+            costs = self._cp_semideterministic_stage_name("costs", output_id_link, i, use_index_suffix)
+            stage_probability_var = self._cp_semideterministic_stage_name(
+                "probability", output_id_link, i, use_index_suffix
             )
 
-            cp_constraints.append(
-                f"constraint counter_based_modadd_semideterministic(pre_{output_id_link}_{i + 1}, pre_{output_id_link}_{num_add - 1}, pre_{output_id_link}_{num_add + i}, {delta_carry}, {costs}, {input_len}, {stage_probability_var});"
+            self._cp_append_semideterministic_stage(
+                cp_declarations,
+                cp_constraints,
+                f"pre_{output_id_link}_{i + 1}",
+                f"pre_{output_id_link}_{num_add - 1}",
+                f"pre_{output_id_link}_{num_add + i}",
+                delta_carry,
+                costs,
+                input_len,
+                stage_probability_var,
             )
 
-            if num_add > 2:
+            if use_index_suffix:
                 stage_probability_vars.append(stage_probability_var)
 
         final_index = num_add - 2
-        final_delta_carry = (
-            f"delta_carry_{output_id_link}_{final_index}" if num_add > 2 else f"delta_carry_{output_id_link}"
+        final_delta_carry = self._cp_semideterministic_stage_name(
+            "delta_carry", output_id_link, final_index, use_index_suffix
         )
-        final_costs = f"costs_{output_id_link}_{final_index}" if num_add > 2 else f"costs_{output_id_link}"
-        final_probability_var = f"{probability_var}_{final_index}" if num_add > 2 else probability_var
-
-        cp_declarations.extend(
-            [
-                f"array[0..{input_len - 1}] of var 0..2: {final_delta_carry};",
-                f"array[0..{input_len - 1}] of var {{100, 41, 19, 9, 4, 2, 1, 0}}: {final_costs};",
-                f"var int: {final_probability_var};",
-            ]
+        final_costs = self._cp_semideterministic_stage_name("costs", output_id_link, final_index, use_index_suffix)
+        final_probability_var = self._cp_semideterministic_stage_name(
+            "probability", output_id_link, final_index, use_index_suffix
         )
 
-        cp_constraints.append(
-            f"constraint counter_based_modadd_semideterministic(pre_{output_id_link}_0, pre_{output_id_link}_{2 * num_add - 3}, {output_id_link}, {final_delta_carry}, {final_costs}, {input_len}, {final_probability_var});"
+        self._cp_append_semideterministic_stage(
+            cp_declarations,
+            cp_constraints,
+            f"pre_{output_id_link}_0",
+            f"pre_{output_id_link}_{2 * num_add - 3}",
+            output_id_link,
+            final_delta_carry,
+            final_costs,
+            input_len,
+            final_probability_var,
         )
 
-        if num_add > 2:
+        if use_index_suffix:
             stage_probability_vars.append(final_probability_var)
             cp_declarations.append(f"var int: {probability_var};")
             cp_constraints.append(f"constraint {probability_var} = sum([{', '.join(stage_probability_vars)}]);")
