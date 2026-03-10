@@ -408,7 +408,10 @@ def test_truncated_differential_linear_checker_permutation():
     assert math.isclose(abs(correlation), theoretical_correlation, rel_tol=0.5)
     
 def test_differential_linear_continuous_checker_speck_block_cipher():
-
+    """
+    The expected values correspond to the continuous correlations of the
+    differential-linear part reported in Table 4 from [BGGMP2023]_.
+    """
     expected_cipher = [
         0.0, 0.5, 0.0, 0.984375, -0.96875, -0.9375, -0.875, -0.75,
         -0.5, -0.0, 1.0, -1.0, -1.0, -1.0, -1.0, -1.0,
@@ -448,7 +451,7 @@ def test_differential_linear_continuous_checker_speck_block_cipher():
         results.append((bit_pos, corr_adjusted))
 
     print("\n" + "="*55)
-    print(f"{'Bit Pos':<8} | {'Experimental':<15} | {'Teórico (Modelo)':<15}")
+    print(f"{'Bit Position':<8} | {'Experimental Corr.':<15} | {'Theoretical Corr.':<15}")
     print("="*55)
 
     tol_err = 0.05
