@@ -2,7 +2,7 @@ import itertools
 import math
 import pytest
 
-from claasp.cipher_modules.models.cp.mzn_models.cp_differential_linear_model import MznDifferentialLinearModel
+from claasp.cipher_modules.models.cp.mzn_models.mzn_differential_linear_model import MznDifferentialLinearModel
 from claasp.cipher_modules.models.cp.solvers import CPSAT
 from claasp.cipher_modules.models.utils import (
     differential_linear_checker_for_block_cipher_single_key,
