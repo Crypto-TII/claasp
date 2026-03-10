@@ -196,7 +196,7 @@ class MznHadipourBoomerangModel(MznModel):
         self._cp_xor_differential_constraints.append(cp_declarations_weight_lower)
 
         
-        new_declaration_middle = f'array[0..{len(middle_keys)}-1] of var 0..3200: middle_p;'
+        new_declaration_middle = f'array[0..{len(middle_keys)}-1] of var int: middle_p;'
         self._cp_xor_differential_constraints.append(new_declaration_middle)
 
         self.count_middle_p = 0
@@ -859,7 +859,7 @@ class MznHadipourBoomerangModel(MznModel):
 
         #### ATTEMPT WITH LBCT EVALUATION -> UNSAT
         #### Second attempt: Constraint for the input of the LBCT
-        # ## first attempt dL = 0100
+        ## first attempt dL = 0100
         # dL = [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0]
         # for i in range(16):
         #     self._model_constraints.extend([f"constraint pre_upper_modadd_2_7_0[{i}] = {dL[i]};"])
