@@ -135,7 +135,7 @@ MILP_SOLVERS_EXTERNAL = [
                 "format": ["executable", "output_file", "input_file"],
             },
             "time": r"[\s]+Timing [\s]+([0-9]*[.]?[0-9]+) \(total\)",
-            "unsat_condition": "[\s]+Status[\s]+Infeasible",
+            "unsat_condition": r"[\s]+Status[\s]+Infeasible",
         },
     },
 ]

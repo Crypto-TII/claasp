@@ -485,10 +485,10 @@ class SBOX(Component):
 
             sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
             sage: aes = AESBlockCipher(number_of_rounds=3)
-            sage: sbox_component = aes.component_from(0, 1)
+            sage: sbox_component = aes.component_from(0, 2)
             sage: declarations, constraints, sbox_mant = sbox_component.cp_deterministic_truncated_xor_differential_constraints(sbox_mant = [])
             sage: constraints
-            ['constraint table([xor_0_0[0]]++[xor_0_0[1]]++[xor_0_0[2]]++[xor_0_0[3]]++[xor_0_0[4]]++[xor_0_0[5]]++[xor_0_0[6]]++[xor_0_0[7]]++[sbox_0_1[0]]++[sbox_0_1[1]]++[sbox_0_1[2]]++[sbox_0_1[3]]++[sbox_0_1[4]]++[sbox_0_1[5]]++[sbox_0_1[6]]++[sbox_0_1[7]], table_sbox_0_1);']
+            ['constraint table([rot_0_1[0]]++[rot_0_1[1]]++[rot_0_1[2]]++[rot_0_1[3]]++[rot_0_1[4]]++[rot_0_1[5]]++[rot_0_1[6]]++[rot_0_1[7]]++[sbox_0_2[0]]++[sbox_0_2[1]]++[sbox_0_2[2]]++[sbox_0_2[3]]++[sbox_0_2[4]]++[sbox_0_2[5]]++[sbox_0_2[6]]++[sbox_0_2[7]], table_sbox_0_2);']
 
         """
         output_id_link = self.id
@@ -641,10 +641,10 @@ class SBOX(Component):
             sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
             sage: aes = AESBlockCipher(number_of_rounds=3)
             sage: cp = MznModel(aes)
-            sage: sbox_component = aes.component_from(0, 1)
+            sage: sbox_component = aes.component_from(0, 2)
             sage: sbox_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(cp)
             ([],
-             ['constraint if xor_0_0_value[0]==0 then sbox_0_1_active[0] = 0 else sbox_0_1_active[0] = 2 endif;'])
+             ['constraint if rot_0_1_value[0]==0 then sbox_0_2_active[0] = 0 else sbox_0_2_active[0] = 2 endif;'])
         """
         cp_declarations = []
         all_inputs = []
@@ -678,10 +678,10 @@ class SBOX(Component):
             sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
             sage: aes = AESBlockCipher(number_of_rounds=3)
             sage: cp = MznModel(aes)
-            sage: sbox_component = aes.component_from(0, 1)
+            sage: sbox_component = aes.component_from(0, 2)
             sage: sbox_component.cp_xor_differential_first_step_constraints(cp)
-            (['array[0..0] of var 0..1: sbox_0_1;'],
-             ['constraint sbox_0_1[0] = xor_0_0[0];'])
+            (['array[0..0] of var 0..1: sbox_0_2;'],
+             ['constraint sbox_0_2[0] = rot_0_1[0];'])
         """
         all_inputs = []
         word_size = model.word_size
@@ -902,15 +902,15 @@ class SBOX(Component):
             sage: sbox_component = present.component_from(0, 1)
             sage: from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_large_sboxes import delete_dictionary_that_contains_inequalities_for_large_sboxes
             sage: delete_dictionary_that_contains_inequalities_for_large_sboxes()
-            sage: variables, constraints = sbox_component.milp_large_xor_differential_probability_constraints(milp.binary_variable, milp.integer_variable, milp._non_linear_component_id)  # optional - espresso
+            sage: variables, constraints = sbox_component.milp_large_xor_differential_probability_constraints(milp.binary_variable, milp.integer_variable, milp._non_linear_component_id)
             ...
-            sage: variables  # optional - espresso
+            sage: variables
              [('x[xor_0_0_0]', x_0),
              ('x[xor_0_0_1]', x_1),
              ...
              ('x[sbox_0_1_2]', x_6),
             ('x[sbox_0_1_3]', x_7)]
-            sage: constraints[:3]  # optional - espresso
+            sage: constraints[:3]
             [x_0 + x_1 + x_2 + x_3 <= 4*x_8,
              1 - x_0 - x_1 - x_2 - x_3 <= 4 - 4*x_8,
              x_4 <= x_8]
@@ -967,16 +967,16 @@ class SBOX(Component):
             sage: aes = AESBlockCipher(number_of_rounds=3)
             sage: milp = MilpModel(aes)
             sage: milp.init_model_in_sage_milp_class()
-            sage: sbox_component = aes.component_from(0, 1)
-            sage: variables, constraints = sbox_component.milp_large_xor_linear_probability_constraints(milp.binary_variable, milp.integer_variable, milp._non_linear_component_id) # very long  # optional - espresso
+            sage: sbox_component = aes.component_from(0, 2)
+            sage: variables, constraints = sbox_component.milp_large_xor_linear_probability_constraints(milp.binary_variable, milp.integer_variable, milp._non_linear_component_id) # very long
             ...
-            sage: variables  # optional - espresso
-            [('x[sbox_0_1_0_i]', x_0),
-             ('x[sbox_0_1_1_i]', x_1),
+            sage: variables
+            [('x[sbox_0_2_0_i]', x_0),
+             ('x[sbox_0_2_1_i]', x_1),
              ...
-             ('x[sbox_0_1_6_o]', x_14),
-             ('x[sbox_0_1_7_o]', x_15)]
-            sage: constraints  # optional - espresso
+             ('x[sbox_0_2_6_o]', x_14),
+             ('x[sbox_0_2_7_o]', x_15)]
+            sage: constraints
             [x_0 + x_1 + x_2 + x_3 + x_4 + x_5 + x_6 + x_7 <= 8*x_16,
             1 - x_0 - x_1 - x_2 - x_3 - x_4 - x_5 - x_6 - x_7 <= 8 - 8*x_16,
             ...
@@ -1213,14 +1213,14 @@ class SBOX(Component):
             sage: milp = MilpXorDifferentialModel(present)
             sage: milp.init_model_in_sage_milp_class()
             sage: sbox_component = present.component_from(0, 1)
-            sage: variables, constraints = sbox_component.milp_xor_differential_propagation_constraints(milp)  # optional - espresso
-            sage: variables  # optional - espresso
+            sage: variables, constraints = sbox_component.milp_xor_differential_propagation_constraints(milp)
+            sage: variables
             [('x[xor_0_0_0]', x_0),
             ('x[xor_0_0_1]', x_1),
             ...
             ('x[sbox_0_1_2]', x_6),
             ('x[sbox_0_1_3]', x_7)]
-            sage: constraints  # optional - espresso
+            sage: constraints
             [x_0 + x_1 + x_2 + x_3 <= 4*x_8,
             1 - x_0 - x_1 - x_2 - x_3 <= 4 - 4*x_8,
             ...
@@ -1253,15 +1253,15 @@ class SBOX(Component):
             sage: milp = MilpXorLinearModel(present)
             sage: milp.init_model_in_sage_milp_class()
             sage: sbox_component = present.component_from(0, 1)
-            sage: variables, constraints = sbox_component.milp_xor_linear_mask_propagation_constraints(milp)  # optional - espresso
+            sage: variables, constraints = sbox_component.milp_xor_linear_mask_propagation_constraints(milp)
             ...
-            sage: variables  # optional - espresso
+            sage: variables
             [('x[sbox_0_1_0_i]', x_0),
             ('x[sbox_0_1_1_i]', x_1),
             ...
             ('x[sbox_0_1_2_o]', x_6),
             ('x[sbox_0_1_3_o]', x_7)]
-            sage: constraints  # optional - espresso
+            sage: constraints
             [x_0 + x_1 + x_2 + x_3 <= 4*x_8,
             1 - x_0 - x_1 - x_2 - x_3 <= 4 - 4*x_8,
             ...
@@ -1312,19 +1312,20 @@ class SBOX(Component):
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import MilpWordwiseDeterministicTruncatedXorDifferentialModel
             sage: milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(aes)
             sage: milp.init_model_in_sage_milp_class()
-            sage: sbox_component = aes.component_from(0,1)
+            sage: sbox_component = aes.component_from(0,2)
             sage: variables, constraints = sbox_component.milp_wordwise_deterministic_truncated_xor_differential_constraints(milp)
             sage: variables
-            [('x[xor_0_0_word_0_class_bit_0]', x_0),
-             ('x[xor_0_0_word_0_class_bit_1]', x_1),
-             ('x[sbox_0_1_word_0_class_bit_0]', x_2),
-             ('x[sbox_0_1_word_0_class_bit_1]', x_3)]
+            [('x[rot_0_1_word_0_class_bit_0]', x_0),
+            ('x[rot_0_1_word_0_class_bit_1]', x_1),
+            ('x[sbox_0_2_word_0_class_bit_0]', x_2),
+            ('x[sbox_0_2_word_0_class_bit_1]', x_3)]
             sage: constraints
             [x_0 + x_1 <= 1 + x_3,
-             x_2 <= x_0 + x_1,
-             ...
-             x_1 <= x_2,
-             x_0 <= x_2]
+            x_2 <= x_0 + x_1,
+            x_3 <= x_0,
+            x_3 <= x_1,
+            x_1 <= x_2,
+            x_0 <= x_2]
         """
         x = model.binary_variable
 
@@ -1373,17 +1374,12 @@ class SBOX(Component):
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import MilpWordwiseDeterministicTruncatedXorDifferentialModel
             sage: milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(aes)
             sage: milp.init_model_in_sage_milp_class()
-            sage: sbox_component = aes.component_from(0,1)
+            sage: sbox_component = aes.component_from(0,2)
             sage: variables, constraints = sbox_component.milp_wordwise_deterministic_truncated_xor_differential_simple_constraints(milp)
             sage: variables
-            [('x_class[xor_0_0_word_0_class]', x_0),
-             ('x_class[sbox_0_1_word_0_class]', x_1)]
+            [('x_class[rot_0_1_word_0_class]', x_0), ('x_class[sbox_0_2_word_0_class]', x_1)]
             sage: constraints
-            [x_0 <= 5 - 4*x_2,
-             2 - 4*x_2 <= x_0,
-             ...
-             x_0 <= x_1 + 4*x_4,
-             x_1 <= x_0 + 4*x_4]
+            [x_0 <= 5 - 4*x_2, 2 - 4*x_2 <= x_0, 1 <= 4 + x_0 - 4*x_3, 1 + x_0 - 4*x_3 <= 1, -1 + x_2 + x_3 <= x_4, x_4 <= x_2, x_4 <= x_3, x_1 <= 6 - 4*x_4, 2 <= 4 + x_1 - 4*x_4, x_0 <= x_1 + 4*x_4, x_1 <= x_0 + 4*x_4]
 
         """
         x_class = model.trunc_wordvar
@@ -1470,15 +1466,15 @@ class SBOX(Component):
             sage: milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(present)
             sage: milp.init_model_in_sage_milp_class()
             sage: sbox_component = present.component_from(0,1)
-            sage: variables, constraints = sbox_component.milp_undisturbed_bits_bitwise_deterministic_truncated_xor_differential_constraints(milp)  # optional - espresso
+            sage: variables, constraints = sbox_component.milp_undisturbed_bits_bitwise_deterministic_truncated_xor_differential_constraints(milp)
             ...
-            sage: variables  # optional - espresso
+            sage: variables
             [('x[xor_0_0_0_class_bit_0]', x_0),
              ('x[xor_0_0_0_class_bit_1]', x_1),
             ...
              ('x[sbox_0_1_3_class_bit_0]', x_14),
              ('x[sbox_0_1_3_class_bit_1]', x_15)]
-            sage: constraints  # optional - espresso
+            sage: constraints
             [x_16 == 2*x_0 + x_1,
              x_17 == 2*x_2 + x_3,
              ...
@@ -1491,7 +1487,7 @@ class SBOX(Component):
             sage: milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(ascon)
             sage: milp.init_model_in_sage_milp_class()
             sage: sbox_component = ascon.component_from(0, 3)
-            sage: variables, constraints = sbox_component.milp_undisturbed_bits_bitwise_deterministic_truncated_xor_differential_constraints(milp)  # optional - espresso
+            sage: variables, constraints = sbox_component.milp_undisturbed_bits_bitwise_deterministic_truncated_xor_differential_constraints(milp)
             ...
         """
 
@@ -1587,7 +1583,7 @@ class SBOX(Component):
             sage: from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
             sage: present = PresentBlockCipher(number_of_rounds=3)
             sage: sbox_component = present.component_from(0, 2)
-            sage: sbox_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()  # optional - espresso
+            sage: sbox_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
             (['sbox_0_2_0_0',
               'sbox_0_2_1_0',
               ...
@@ -1653,7 +1649,7 @@ class SBOX(Component):
             sage: present = PresentBlockCipher(number_of_rounds=3)
             sage: sbox_component = present.component_from(0, 2)
             sage: sat = SatModel(present)
-            sage: sbox_component.sat_xor_differential_propagation_constraints(sat)  # optional - espresso
+            sage: sbox_component.sat_xor_differential_propagation_constraints(sat)
             (['sbox_0_2_0',
               'sbox_0_2_1',
               ...
@@ -1714,7 +1710,7 @@ class SBOX(Component):
             sage: present = PresentBlockCipher(number_of_rounds=3)
             sage: sbox_component = present.component_from(0, 2)
             sage: sat = SatModel(present)
-            sage: sbox_component.sat_xor_linear_mask_propagation_constraints(sat)  # optional - espresso
+            sage: sbox_component.sat_xor_linear_mask_propagation_constraints(sat)
             (['sbox_0_2_0_i',
               'sbox_0_2_1_i',
               ...
@@ -1815,7 +1811,7 @@ class SBOX(Component):
             sage: fancy = FancyBlockCipher(number_of_rounds=3)
             sage: smt = SmtModel(fancy)
             sage: sbox_component = fancy.component_from(0, 5)
-            sage: sbox_component.smt_xor_differential_propagation_constraints(smt)  # optional - espresso
+            sage: sbox_component.smt_xor_differential_propagation_constraints(smt)
             (['sbox_0_5_0',
               'sbox_0_5_1',
               ...
@@ -1866,7 +1862,7 @@ class SBOX(Component):
             sage: present = PresentBlockCipher(number_of_rounds=3)
             sage: sbox_component = present.component_from(0, 2)
             sage: smt = SmtModel(present)
-            sage: sbox_component.smt_xor_linear_mask_propagation_constraints(smt)  # optional - espresso
+            sage: sbox_component.smt_xor_linear_mask_propagation_constraints(smt)
             (['sbox_0_2_0_i',
               'sbox_0_2_1_i',
               ...

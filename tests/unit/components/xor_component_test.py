@@ -10,6 +10,7 @@ from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_tr
 from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import \
     MilpWordwiseDeterministicTruncatedXorDifferentialModel
 
+
 def test_cp_build_truncated_table():
     assert cp_build_truncated_table(3) == 'array[0..4, 1..3] of int: xor_truncated_table_3 = ' \
                                           'array2d(0..4, 1..3, [0,0,0,0,1,1,1,0,1,1,1,0,1,1,1]);'
