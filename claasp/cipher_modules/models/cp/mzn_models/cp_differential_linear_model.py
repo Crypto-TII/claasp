@@ -370,18 +370,32 @@ class MznDifferentialLinearModel(MznModel):
         constraints.extend(self.mzn_output_directives)
         return constraints
 
-    def _infer_probability_array_declaration(self):
+    def _probability_value_upper_bound(self):
+        # Probability values are scaled by 100 in CP constraints. Use a model-dependent
+        # bound from cipher bit-sizes instead of a fixed constant.
+        max_component_bits = 0
+        for component in self._cipher.get_all_components():
+            max_component_bits = max(max_component_bits, int(component.output_bit_size))
+
+        max_input_bits = 0
+        if self._cipher.inputs_bit_size:
+            max_input_bits = max(int(bit_size) for bit_size in self._cipher.inputs_bit_size)
+
+        max_bits = max(1, max_component_bits, max_input_bits)
+        return 100 * max_bits
+
+    def _probability_array_declaration_from_component_map(self):
         used_indices = []
-        pattern = re.compile(r"\bp\[(\d+)\]")
-        for constraint in self._model_constraints:
-            for match in pattern.findall(constraint):
-                used_indices.append(int(match))
+        for probability_idx in self.component_and_probability.values():
+            if isinstance(probability_idx, (list, tuple)):
+                used_indices.extend(int(idx) for idx in probability_idx)
+            else:
+                used_indices.append(int(probability_idx))
 
         if not used_indices:
             return None
 
         def _is_probability_array_declaration(var):
-            # Normalize whitespace and avoid regex backtracking on untrusted or very long strings.
             normalized = " ".join(var.strip().split())
             return normalized.startswith("array[") and "] of var " in normalized and normalized.endswith(": p;")
 
@@ -390,7 +404,8 @@ class MznDifferentialLinearModel(MznModel):
             return None
 
         max_index = max(used_indices)
-        return f"array[0..{max_index}] of var 0..20000: p;"
+        upper_bound = self._probability_value_upper_bound()
+        return f"array[0..{max_index}] of var 0..{upper_bound}: p;"
 
     @staticmethod
     def _normalize_total_weight(solution):
@@ -578,7 +593,7 @@ class MznDifferentialLinearModel(MznModel):
         self.build_generic_cp_model_from_dictionary(model_entries)
         self._model_constraints = fixed_constraints + self._model_constraints
 
-        probability_array_declaration = self._infer_probability_array_declaration()
+        probability_array_declaration = self._probability_array_declaration_from_component_map()
 
         middle_bottom_constraints = self._middle_to_bottom_connecting_constraints()
         branch_constraints = self._branch_xor_linear_constraints_for_bottom_part()

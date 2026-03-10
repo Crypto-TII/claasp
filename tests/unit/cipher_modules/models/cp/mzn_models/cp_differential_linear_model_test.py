@@ -71,6 +71,39 @@ def test_get_truncated_xor_differential_components_in_border(
     assert set(model._get_truncated_xor_differential_components_in_border()) == expected_border_components
 
 
+def test_parse_linear_bit_id_handles_valid_and_invalid_formats():
+    speck = SpeckBlockCipher(number_of_rounds=6)
+    component_model_list = _split_components(speck, top_rounds_end=2, middle_rounds_end=3)
+    model = MznDifferentialLinearModel(
+        speck,
+        component_model_list,
+        middle_part_model="cp_semi_deterministic_truncated_xor_differential_constraints",
+    )
+
+    assert model._parse_linear_bit_id("xor_0_4_o[7]") == ("xor_0_4", "o", 7)
+    assert model._parse_linear_bit_id("plaintext[3]") == ("plaintext", None, 3)
+
+    with pytest.raises(ValueError, match="Invalid linear bit identifier"):
+        model._parse_linear_bit_id("invalid_bit_id")
+
+
+def test_component_and_probability_values_example_prints():
+    speck = SpeckBlockCipher(number_of_rounds=6)
+    component_model_list = _split_components(speck, top_rounds_end=2, middle_rounds_end=3)
+    model = MznDifferentialLinearModel(
+        speck,
+        component_model_list,
+        middle_part_model="cp_semi_deterministic_truncated_xor_differential_constraints",
+    )
+
+    model.build_xor_differential_linear_model(weight=0, fixed_variables=[])
+
+    print("component_and_probability:", model.component_and_probability)
+    print("component_and_probability.values():", list(model.component_and_probability.values()))
+
+    assert model.component_and_probability
+
+
 def test_differential_linear_trail_with_fixed_weight_6_rounds_speck_cp():
     speck = SpeckBlockCipher(number_of_rounds=6)
     speck_3 = SpeckBlockCipher(number_of_rounds=3)
