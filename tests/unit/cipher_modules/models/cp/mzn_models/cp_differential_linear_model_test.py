@@ -87,6 +87,32 @@ def test_parse_linear_bit_id_handles_valid_and_invalid_formats():
         model._parse_linear_bit_id("invalid_bit_id")
 
 
+def test_normalize_middle_part_components_values_hex_and_unknown_bits():
+    speck = SpeckBlockCipher(number_of_rounds=6)
+    component_model_list = _split_components(speck, top_rounds_end=2, middle_rounds_end=3)
+    model = MznDifferentialLinearModel(
+        speck,
+        component_model_list,
+        middle_part_model="cp_semi_deterministic_truncated_xor_differential_constraints",
+    )
+
+    # middle-part round for this split includes these components.
+    solution = {
+        "components_values": {
+            "modadd_2_7": {"value": "0x0001"},
+            "xor_2_10": {"value": "1?00?00000000001"},
+            "modadd_0_1": {"value": "0x0008"},
+        }
+    }
+
+    model._normalize_middle_part_components_values(solution)
+
+    assert solution["components_values"]["modadd_2_7"]["value"] == "0000000000000001"
+    assert solution["components_values"]["xor_2_10"]["value"] == "1200200000000001"
+    # Non-middle components are not touched.
+    assert solution["components_values"]["modadd_0_1"]["value"] == "0x0008"
+
+
 def test_component_and_probability_values_example_prints():
     speck = SpeckBlockCipher(number_of_rounds=6)
     component_model_list = _split_components(speck, top_rounds_end=2, middle_rounds_end=3)
