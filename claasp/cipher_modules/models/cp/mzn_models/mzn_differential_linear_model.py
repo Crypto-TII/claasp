@@ -15,7 +15,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-import math
 import re
 import time as tm
 
@@ -133,12 +132,6 @@ class MznDifferentialLinearModel(MznModel):
         if not match:
             raise ValueError(f"Invalid linear bit identifier: {bit_id}")
         return match.group(1), match.group(2), int(match.group(3))
-
-    def _input_bit_size(self, input_id):
-        for idx, cipher_input in enumerate(self._cipher.inputs):
-            if cipher_input == input_id:
-                return self._cipher.inputs_bit_size[idx]
-        raise ValueError(f"Unknown cipher input: {input_id}")
 
     def _component_model_entries(self):
         entries = []
@@ -421,48 +414,6 @@ class MznDifferentialLinearModel(MznModel):
             return
         super().set_component_solution_value(component_solution, truncated, value)
 
-    @staticmethod
-    def _bits_to_hex_string(bits):
-        bit_string = "".join(str(bit) for bit in bits)
-        if not bit_string:
-            return "0x0"
-        as_int = int(bit_string, 2)
-        hex_value = f"{as_int:x}"
-        expected_len = math.ceil(len(bit_string) / 4)
-        return "0x" + ("0" * (expected_len - len(hex_value))) + hex_value
-
-    def _default_component_bits(self, component_id):
-        if component_id in self._cipher.inputs:
-            return [0] * self._input_bit_size(component_id)
-        return [0] * self._get_component_by_id(component_id).output_bit_size
-
-    def _fixed_bits_lookup(self, fixed_values):
-        fixed_lookup = {}
-        for fixed_value in fixed_values:
-            component_id = fixed_value["component_id"]
-            bits = self._default_component_bits(component_id)
-            for bit_position, bit_value in zip(fixed_value["bit_positions"], fixed_value["bit_values"]):
-                bits[bit_position] = bit_value
-            fixed_lookup[component_id] = bits
-        return fixed_lookup
-
-    def _build_fallback_components_values(self, fixed_values):
-        components_values = {}
-        fixed_lookup = self._fixed_bits_lookup(fixed_values)
-
-        all_component_ids = [*self._cipher.inputs, *self._cipher.get_all_components_ids()]
-        for component_id in all_component_ids:
-            bits = fixed_lookup.get(component_id, self._default_component_bits(component_id))
-            if component_id in self.middle_part_component_ids:
-                value = "".join(str(bit) for bit in bits)
-            elif any(bit == 2 for bit in bits):
-                value = "".join("2" if bit == 2 else str(bit) for bit in bits)
-            else:
-                value = self._bits_to_hex_string(bits)
-            components_values[component_id] = {"value": value, "weight": 0}
-
-        return components_values
-
     def _normalize_middle_part_components_values(self, solution):
         if not isinstance(solution, dict):
             return
@@ -575,10 +526,6 @@ class MznDifferentialLinearModel(MznModel):
             return
         if solution.get("status") != "SATISFIABLE":
             return
-        components_values = solution.get("components_values", {})
-        if not components_values:
-            solution["components_values"] = self._build_fallback_components_values(fixed_values)
-
         self._normalize_middle_part_components_values(solution)
 
 
