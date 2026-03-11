@@ -5,7 +5,7 @@ from claasp.ciphers.stream_ciphers.trivium_stream_cipher import TriviumStreamCip
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.ciphers.permutations.gimli_permutation import GimliPermutation
 from claasp.ciphers.permutations.ascon_permutation import AsconPermutation
-from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher as AESBlockCipher
 from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import *
 from claasp.name_mappings import BLOCK_CIPHER
 from claasp.cipher import Cipher

@@ -475,7 +475,7 @@ class CipherComponentsAnalysis:
             sage: CipherComponentsAnalysis(midori)._is_mds(mix_column_component)
             False
 
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher as AESBlockCipher
             sage: from claasp.cipher_modules.component_analysis_tests import CipherComponentsAnalysis
             sage: aes = AESBlockCipher(number_of_rounds=3)
             sage: mix_column_component = aes.get_component_from_id('mix_column_1_20')
@@ -1050,7 +1050,7 @@ def branch_number(component, type, format):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+        sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher as AESBlockCipher
         sage: from claasp.cipher_modules.component_analysis_tests import branch_number
         sage: aes = AESBlockCipher(number_of_rounds=3)
         sage: mix_column_component = aes.get_component_from_id('mix_column_1_20')
@@ -1078,7 +1078,7 @@ def get_inverse_matrix_in_integer_representation(component):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+        sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher as AESBlockCipher
         sage: from claasp.cipher_modules.component_analysis_tests import get_inverse_matrix_in_integer_representation
         sage: aes = AESBlockCipher(number_of_rounds=3)
         sage: mix_column_component = aes.get_component_from_id('mix_column_1_20')
@@ -1136,7 +1136,7 @@ def has_maximal_branch_number(component):
         sage: has_maximal_branch_number(mix_column_component)
         False
 
-        sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+        sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher as AESBlockCipher
         sage: from claasp.cipher_modules.component_analysis_tests import has_maximal_branch_number
         sage: aes = AESBlockCipher(number_of_rounds=3)
         sage: mix_column_component = aes.get_component_from_id('mix_column_1_20')
@@ -1256,7 +1256,7 @@ def field_element_matrix_to_integer_matrix(matrix):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+        sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher as AESBlockCipher
         sage: from claasp.cipher_modules.component_analysis_tests import instantiate_matrix_over_correct_field, field_element_matrix_to_integer_matrix
         sage: aes = AESBlockCipher(number_of_rounds=3)
         sage: mix_column_component = aes.get_component_from_id('mix_column_1_20')

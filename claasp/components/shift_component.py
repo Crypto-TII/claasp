@@ -230,7 +230,7 @@ class SHIFT(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher as AESBlockCipher
             sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
             sage: from claasp.components.shift_component import SHIFT
             sage: aes = AESBlockCipher(number_of_rounds=3)
@@ -314,7 +314,7 @@ class SHIFT(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher as AESBlockCipher
             sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
             sage: from claasp.components.shift_component import SHIFT
             sage: aes = AESBlockCipher(number_of_rounds=3)
@@ -575,7 +575,7 @@ class SHIFT(Component):
 
         EXAMPLE::
 
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher as AESBlockCipher
             sage: cipher = AESBlockCipher(number_of_rounds=3)
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import MilpWordwiseDeterministicTruncatedXorDifferentialModel
             sage: milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(cipher)

@@ -207,7 +207,7 @@ class NOT(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher as AESBlockCipher
             sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
             sage: from claasp.components.not_component import NOT
             sage: aes = AESBlockCipher()

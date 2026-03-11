@@ -3,7 +3,7 @@ from claasp.cipher_modules.models.cp.mzn_models.mzn_wordwise_deterministic_trunc
 )
 from claasp.cipher_modules.models.cp.solvers import CHUFFED
 from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
-from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher as AESBlockCipher
 
 
 def test_find_one_wordwise_deterministic_truncated_xor_differential_trail():

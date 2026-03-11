@@ -411,7 +411,7 @@ class Cipher:
 
         TEST::
 
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher as AESBlockCipher
             sage: key = 0x2b7e151628aed2a6abf7158809cf4f3c
             sage: plaintext = 0x6bc1bee22e409f96e93d7e117393172a
             sage: cipher = AESBlockCipher(number_of_rounds=2)
@@ -1174,7 +1174,7 @@ class Cipher:
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher as AESBlockCipher
             sage: aes = AESBlockCipher(number_of_rounds=2)
             sage: aes.is_spn()
             True

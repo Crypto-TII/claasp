@@ -233,7 +233,7 @@ class MznModel:
         EXAMPLES::
 
             sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher as AESBlockCipher
             sage: aes = AESBlockCipher(number_of_rounds=3)
             sage: cp = MznModel(aes)
             sage: mix_column = aes.component_from(0, 21)

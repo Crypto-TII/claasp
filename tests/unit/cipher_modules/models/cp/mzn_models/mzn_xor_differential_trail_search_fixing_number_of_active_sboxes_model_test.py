@@ -3,7 +3,7 @@ from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_trail_searc
 )
 from claasp.cipher_modules.models.cp.solvers import CHUFFED
 from claasp.cipher_modules.models.utils import set_fixed_variables
-from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher as AESBlockCipher
 from claasp.name_mappings import INPUT_KEY, INPUT_PLAINTEXT, XOR_DIFFERENTIAL
 
 

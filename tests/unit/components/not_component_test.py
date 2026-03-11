@@ -1,7 +1,7 @@
 from claasp.components.not_component import NOT
 from claasp.cipher_modules.models.cp.mzn_model import MznModel
 from claasp.cipher_modules.models.milp.milp_model import MilpModel
-from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher as AESBlockCipher
 from claasp.ciphers.permutations.gift_permutation import GiftPermutation
 from claasp.ciphers.permutations.ascon_permutation import AsconPermutation
 from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
