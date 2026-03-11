@@ -7,7 +7,7 @@ import numpy as np
 
 from claasp.cipher_modules.models.milp.milp_models.milp_xor_linear_model import MilpXorLinearModel
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-from claasp.cipher_modules.models.utils import (convert_solver_solution_to_dictionary, truncated_differential_linear_checker_permutation, integer_to_bit_list,
+from claasp.cipher_modules.models.utils import (convert_solver_solution_to_dictionary, differential_linear_checker_for_block_cipher_single_key, truncated_differential_linear_checker_permutation, integer_to_bit_list,
                                                 set_fixed_variables, to_bias_for_xor_linear_trail,
                                                 to_probability_for_xor_linear_trail,
                                                 to_correlation_for_xor_linear_trail,
@@ -427,4 +427,58 @@ def test_linear_checker_for_block_cipher_single_key_zero_masks():
 
     assert correlation == 1
     
+def test_differential_linear_continuous_checker_speck_block_cipher():
+    """
+    The expected values correspond to the continuous correlations of the
+    differential-linear part reported in Table 4 from [BGGMP2023]_.
+    """
+    expected_cipher = [
+        0.0, 0.5, 0.0, 0.984375, -0.96875, -0.9375, -0.875, -0.75,
+        -0.5, -0.0, 1.0, -1.0, -1.0, -1.0, -1.0, -1.0,
+        0.0, -0.5, 0.0, 0.984375, -0.96875, -0.9375, -0.875, -0.75,
+        -0.5, -0.0, 1.0, -1.0, -1.0, -1.0, -1.0, 1.0
+    ]
+    expected_cipher_aligned = expected_cipher[::-1]
 
+    speck_cipher = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=1)
+    input_difference = 0x10005000
+
+    number_of_samples = 1 << 17
+    block_size = speck_cipher.inputs_bit_size[0]
+    key_size = speck_cipher.inputs_bit_size[1]
+
+    results = []
+    fixed_key = 0x00000000
+    seed = 29
+
+    for bit_pos in range(32):
+        msb_pos = block_size - 1 - bit_pos
+        mask_str = ['x'] * block_size 
+        mask_str[msb_pos] = '1'
+        output_mask = ''.join(mask_str)
+
+        experimental_corr = differential_linear_checker_for_block_cipher_single_key(
+            speck_cipher,
+            input_difference,
+            output_mask,
+            number_of_samples,
+            block_size,
+            key_size,
+            fixed_key,
+            seed
+        )
+        corr_adjusted = -experimental_corr
+        results.append((bit_pos, corr_adjusted))
+
+    print("\n" + "="*55)
+    print(f"{'Bit Position':<8} | {'Experimental Corr.':<15} | {'Theoretical Corr.':<15}")
+    print("="*55)
+
+    tol_err = 0.05
+
+    for bit, exp_corr in reversed(results):
+        theo_corr = expected_cipher_aligned[bit]
+        print(f"{bit:<8} | {exp_corr: .4f}        | {theo_corr: .4f}")
+        assert math.isclose(exp_corr, theo_corr, abs_tol=tol_err)
+
+    print("-" * 55 + "\n")
