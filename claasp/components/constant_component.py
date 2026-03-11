@@ -25,10 +25,23 @@ from claasp.name_mappings import CONSTANT
 
 def constant_to_repr(val, output_size):
     _val = int(val, 0)
-    if output_size % 8 != 0:
-        s = output_size + (8 - (output_size % 8))
+    val_str = str(val).lower()
+    if val_str.startswith("0x"):
+        represented_bits = (len(val_str) - 2) * 4
+    elif val_str.startswith("0b"):
+        represented_bits = len(val_str) - 2
     else:
-        s = output_size
+        represented_bits = _val.bit_length()
+
+    if represented_bits > output_size:
+        _val >>= represented_bits - output_size
+
+    if output_size > 0:
+        _val &= (1 << output_size) - 1
+
+    s = output_size
+    if s % 8 != 0:
+        s += 8 - (s % 8)
     ret = [(_val >> s - (8 * (i + 1))) & 0xFF for i in range(s // 8)]
 
     return ret
