@@ -38,14 +38,14 @@ def test_aes_8_2_block_cipher():
     assert aes.evaluate([key, plaintext]) == ciphertext
     assert aes.evaluate_vectorized([key, plaintext], evaluate_api=True) == ciphertext
 
-# def test_aes_4_4_block_cipher():
-#     aes = ToyAESBlockCipher(word_size=4, state_size=4)
-#     key = 0x2b7e151628aed2a6
-#     plaintext = 0x6bc1bee22e409f96
-#     ciphertext = 0x0e51ff61dac37a78
-#     assert aes.evaluate([key, plaintext]) == ciphertext
-#     assert aes.evaluate_vectorized([key, plaintext], evaluate_api=True) == ciphertext
-#
+def test_aes_4_4_block_cipher():
+    aes = ToyAESBlockCipher(word_size=4, state_size=4)
+    key = 0x2b7e151628aed2a6
+    plaintext = 0x6bc1bee22e409f96
+    ciphertext = 0x0e51ff61dac37a78
+    assert aes.evaluate([key, plaintext]) == ciphertext
+    assert aes.evaluate_vectorized([key, plaintext], evaluate_api=True) == ciphertext
+
 # def test_aes_4_3_block_cipher():
 #     aes = ToyAESBlockCipher(word_size=4, state_size=3)
 #     key = 0b100111100101111110011110010111110000
