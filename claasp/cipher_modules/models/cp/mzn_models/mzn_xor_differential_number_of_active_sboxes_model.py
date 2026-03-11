@@ -34,10 +34,10 @@ def build_xor_truncated_table(numadd):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher as AESBlockCipher
+        sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
         sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_number_of_active_sboxes_model import (
         ....: build_xor_truncated_table)
-        sage: aes = AESBlockCipher()
+        sage: aes = ToyAESBlockCipher()
         sage: build_xor_truncated_table(3)
         'array[0..4, 1..3] of int: xor_truncated_table_3 = array2d(0..4, 1..3, [0,0,0,0,1,1,1,0,1,1,1,0,1,1,1]);'
     """
@@ -74,9 +74,9 @@ class MznXorDifferentialNumberOfActiveSboxesModel(MznModel):
 
             sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_number_of_active_sboxes_model import (
             ....: MznXorDifferentialNumberOfActiveSboxesModel)
-            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher as AESBlockCipher
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
             sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
-            sage: aes = AESBlockCipher(number_of_rounds=2)
+            sage: aes = ToyAESBlockCipher(number_of_rounds=2)
             sage: cp = MznXorDifferentialNumberOfActiveSboxesModel(aes)
             sage: fixed_variables = [set_fixed_variables('key', 'not_equal', range(128),
             ....: integer_to_bit_list(0, 128, 'little'))]
@@ -116,9 +116,9 @@ class MznXorDifferentialNumberOfActiveSboxesModel(MznModel):
 
             sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_number_of_active_sboxes_model import (
             ....: MznXorDifferentialNumberOfActiveSboxesModel)
-            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher as AESBlockCipher
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
             sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
-            sage: aes = AESBlockCipher(number_of_rounds=2)
+            sage: aes = ToyAESBlockCipher(number_of_rounds=2)
             sage: cp = MznXorDifferentialNumberOfActiveSboxesModel(aes)
             sage: fixed_variables = [set_fixed_variables('key', 'not_equal', range(128),
             ....: integer_to_bit_list(0, 128, 'little'))]
@@ -175,8 +175,8 @@ class MznXorDifferentialNumberOfActiveSboxesModel(MznModel):
 
             sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_number_of_active_sboxes_model import (
             ....: MznXorDifferentialNumberOfActiveSboxesModel)
-            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher as AESBlockCipher
-            sage: aes = AESBlockCipher(number_of_rounds=3)
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
+            sage: aes = ToyAESBlockCipher(number_of_rounds=3)
             sage: cp = MznXorDifferentialNumberOfActiveSboxesModel(aes)
             sage: old_xor_components = deepcopy(cp.list_of_xor_components)
             sage: xor_component1 = aes.component_from(0, 32)
@@ -221,10 +221,10 @@ class MznXorDifferentialNumberOfActiveSboxesModel(MznModel):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher as AESBlockCipher
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
             sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_number_of_active_sboxes_model import (
             ....: MznXorDifferentialNumberOfActiveSboxesModel)
-            sage: aes = AESBlockCipher()
+            sage: aes = ToyAESBlockCipher()
             sage: cp = MznXorDifferentialNumberOfActiveSboxesModel(aes)
             sage: cp.final_xor_differential_first_step_constraints()
             ['constraint number_of_active_sBoxes = ;',
@@ -317,8 +317,8 @@ class MznXorDifferentialNumberOfActiveSboxesModel(MznModel):
 
             sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_number_of_active_sboxes_model import (
             ....: MznXorDifferentialNumberOfActiveSboxesModel)
-            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher as AESBlockCipher
-            sage: aes = AESBlockCipher()
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
+            sage: aes = ToyAESBlockCipher()
             sage: cp = MznXorDifferentialNumberOfActiveSboxesModel(aes)
             sage: cp.input_xor_differential_first_step_constraints()
             ['var 1..200: number_of_active_sBoxes;',
@@ -362,8 +362,8 @@ class MznXorDifferentialNumberOfActiveSboxesModel(MznModel):
 
             sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_number_of_active_sboxes_model import (
             ....: MznXorDifferentialNumberOfActiveSboxesModel)
-            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher as AESBlockCipher
-            sage: aes = AESBlockCipher(number_of_rounds=3)
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
+            sage: aes = ToyAESBlockCipher(number_of_rounds=3)
             sage: cp = MznXorDifferentialNumberOfActiveSboxesModel(aes)
             sage: xor_component = aes.component_from(0, 32)
             sage: cp.xor_xor_differential_first_step_constraints(xor_component)

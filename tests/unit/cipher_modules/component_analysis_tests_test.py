@@ -6,7 +6,7 @@ from claasp.cipher_modules.component_analysis_tests import (
 )
 from claasp.ciphers.stream_ciphers.bluetooth_stream_cipher_e0 import BluetoothStreamCipherE0
 from claasp.ciphers.stream_ciphers.trivium_stream_cipher import TriviumStreamCipher
-from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher as AESBlockCipher
+from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
 from sage.all import Matrix, identity_matrix
 from sage.rings.finite_rings.finite_field_constructor import FiniteField as GF
 
@@ -22,13 +22,13 @@ def test_component_analysis_tests():
     components_analysis = CipherComponentsAnalysis(fancy).component_analysis_tests()
     assert len(components_analysis["test_results"]) == 9
 
-    aes = AESBlockCipher(word_size=8, state_size=2, number_of_rounds=2)
+    aes = ToyAESBlockCipher(word_size=8, state_size=2, number_of_rounds=2)
     result = CipherComponentsAnalysis(aes).component_analysis_tests()
     assert len(result["test_results"]) == 7
 
 
 def test_print_component_analysis_as_radar_charts():
-    aes = AESBlockCipher(word_size=8, state_size=4, number_of_rounds=2)
+    aes = ToyAESBlockCipher(word_size=8, state_size=4, number_of_rounds=2)
     CipherComponentsAnalysis(aes).print_component_analysis_as_radar_charts()
 
 
@@ -113,7 +113,7 @@ def test_branch_number_with_bit_format():
     This test ensures that the optimized binary matrix computation path is
     being used correctly when branch_number is called with format='bit'.
     """
-    aes = AESBlockCipher(number_of_rounds=3)
+    aes = ToyAESBlockCipher(number_of_rounds=3)
     # Find a mix_column component - iterate through rounds to get the first one
     mix_column_component = None
     for round_obj in aes.rounds_as_list:

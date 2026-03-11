@@ -2,12 +2,12 @@ from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_impossible_xor_
     MilpWordwiseImpossibleXorDifferentialModel,
 )
 from claasp.cipher_modules.models.utils import set_fixed_variables
-from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher as AESBlockCipher
+from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
 from claasp.name_mappings import INPUT_KEY, INPUT_PLAINTEXT, SATISFIABLE
 
 
 def test_build_wordwise_impossible_xor_differential_trail_model():
-    aes = AESBlockCipher(number_of_rounds=2)
+    aes = ToyAESBlockCipher(number_of_rounds=2)
     milp = MilpWordwiseImpossibleXorDifferentialModel(aes)
     milp.init_model_in_sage_milp_class()
     milp._forward_cipher = aes.get_partial_cipher(0, 1, keep_key_schedule=True)
@@ -27,7 +27,7 @@ def test_build_wordwise_impossible_xor_differential_trail_model():
 
 
 def test_find_one_wordwise_impossible_xor_differential_trail_model():
-    aes = AESBlockCipher(number_of_rounds=2)
+    aes = ToyAESBlockCipher(number_of_rounds=2)
     milp = MilpWordwiseImpossibleXorDifferentialModel(aes)
     plaintext = set_fixed_variables(
         component_id=INPUT_PLAINTEXT,
@@ -53,7 +53,7 @@ def test_find_one_wordwise_impossible_xor_differential_trail_model():
 
 
 def test_find_one_wordwise_impossible_xor_differential_trail_model_with_fixed_components():
-    aes = AESBlockCipher(number_of_rounds=2)
+    aes = ToyAESBlockCipher(number_of_rounds=2)
     milp = MilpWordwiseImpossibleXorDifferentialModel(aes)
     plaintext = set_fixed_variables(
         component_id=INPUT_PLAINTEXT,
@@ -79,7 +79,7 @@ def test_find_one_wordwise_impossible_xor_differential_trail_model_with_fixed_co
 
 
 def test_find_one_wordwise_impossible_xor_differential_trail_with_fully_automatic_model():
-    aes = AESBlockCipher(number_of_rounds=2)
+    aes = ToyAESBlockCipher(number_of_rounds=2)
     milp = MilpWordwiseImpossibleXorDifferentialModel(aes)
     plaintext = set_fixed_variables(
         component_id=INPUT_PLAINTEXT,
@@ -111,7 +111,7 @@ def test_find_one_wordwise_impossible_xor_differential_trail_with_fully_automati
 
 
 def test_find_one_wordwise_impossible_xor_differential_trail_model_with_external_solver():
-    aes = AESBlockCipher(number_of_rounds=2)
+    aes = ToyAESBlockCipher(number_of_rounds=2)
     milp = MilpWordwiseImpossibleXorDifferentialModel(aes)
     plaintext = set_fixed_variables(
         component_id=INPUT_PLAINTEXT,
@@ -137,7 +137,7 @@ def test_find_one_wordwise_impossible_xor_differential_trail_model_with_external
 
 
 def test_find_one_wordwise_impossible_xor_differential_trail_with_fully_automatic_model_with_external_solver():
-    aes = AESBlockCipher(number_of_rounds=2)
+    aes = ToyAESBlockCipher(number_of_rounds=2)
     milp = MilpWordwiseImpossibleXorDifferentialModel(aes)
     plaintext = set_fixed_variables(
         component_id=INPUT_PLAINTEXT,

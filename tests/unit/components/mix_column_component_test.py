@@ -2,7 +2,7 @@ import pytest
 
 from claasp.cipher_modules.models.cp.mzn_model import MznModel
 from claasp.cipher_modules.models.milp.milp_model import MilpModel
-from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher as AESBlockCipher
+from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
 from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
 from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
 
@@ -22,7 +22,7 @@ def test_algebraic_polynomials():
 
 
 def test_cp_create_component():
-    aes = AESBlockCipher(number_of_rounds=3)
+    aes = ToyAESBlockCipher(number_of_rounds=3)
     cp = MznModel(aes)
     mix_column_component_1 = aes.component_from(0, 21)
     mix_column_component_2 = aes.component_from(0, 22)
@@ -51,7 +51,7 @@ def test_cms_constraints():
 
 
 def test_cp_constraints():
-    aes = AESBlockCipher(number_of_rounds=3)
+    aes = ToyAESBlockCipher(number_of_rounds=3)
     mix_column_component = aes.component_from(0, 21)
     declarations, constraints = mix_column_component.cp_constraints()
 
@@ -64,7 +64,7 @@ def test_cp_constraints():
 
 
 def test_cp_deterministic_truncated_xor_differential_constraints():
-    aes = AESBlockCipher(number_of_rounds=3)
+    aes = ToyAESBlockCipher(number_of_rounds=3)
     mix_column_component = aes.component_from(0, 21)
     declarations, constraints = mix_column_component.cp_deterministic_truncated_xor_differential_constraints()
 
@@ -81,7 +81,7 @@ def test_cp_deterministic_truncated_xor_differential_constraints():
 
 
 def test_cp_xor_linear_mask_propagation_constraints():
-    aes = AESBlockCipher(number_of_rounds=3)
+    aes = ToyAESBlockCipher(number_of_rounds=3)
     mix_column_component = aes.component_from(0, 21)
     declarations, constraints = mix_column_component.cp_xor_linear_mask_propagation_constraints()
 
@@ -99,7 +99,7 @@ def test_cp_xor_linear_mask_propagation_constraints():
 
 
 def test_milp_constraints():
-    aes = AESBlockCipher(number_of_rounds=3)
+    aes = ToyAESBlockCipher(number_of_rounds=3)
     milp = MilpModel(aes)
     milp.init_model_in_sage_milp_class()
     mix_column_component = aes.component_from(0, 21)

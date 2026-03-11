@@ -56,8 +56,8 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher as AESBlockCipher
-            sage: aes = AESBlockCipher(number_of_rounds=2)
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
+            sage: aes = ToyAESBlockCipher(number_of_rounds=2)
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_impossible_xor_differential_model import MilpWordwiseImpossibleXorDifferentialModel
             sage: milp = MilpWordwiseImpossibleXorDifferentialModel(aes)
             sage: milp.init_model_in_sage_milp_class()
@@ -90,8 +90,8 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
         EXAMPLES::
 
             sage: from claasp.cipher_modules.models.utils import get_single_key_scenario_format_for_fixed_values
-            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher as AESBlockCipher
-            sage: aes = AESBlockCipher(number_of_rounds=2)
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
+            sage: aes = ToyAESBlockCipher(number_of_rounds=2)
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_impossible_xor_differential_model import MilpWordwiseImpossibleXorDifferentialModel
             sage: milp = MilpWordwiseImpossibleXorDifferentialModel(aes)
             sage: milp.init_model_in_sage_milp_class()
@@ -187,8 +187,8 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
         EXAMPLES::
 
             sage: from claasp.cipher_modules.models.utils import get_single_key_scenario_format_for_fixed_values
-            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher as AESBlockCipher
-            sage: aes = AESBlockCipher(number_of_rounds=2)
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
+            sage: aes = ToyAESBlockCipher(number_of_rounds=2)
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_impossible_xor_differential_model import MilpWordwiseImpossibleXorDifferentialModel
             sage: milp = MilpWordwiseImpossibleXorDifferentialModel(aes)
             sage: milp.init_model_in_sage_milp_class()
@@ -324,8 +324,8 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
         EXAMPLES::
 
             sage: from claasp.cipher_modules.models.utils import get_single_key_scenario_format_for_fixed_values
-            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher as AESBlockCipher
-            sage: aes = AESBlockCipher(number_of_rounds=2)
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
+            sage: aes = ToyAESBlockCipher(number_of_rounds=2)
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_impossible_xor_differential_model import MilpWordwiseImpossibleXorDifferentialModel
             sage: milp = MilpWordwiseImpossibleXorDifferentialModel(aes)
             sage: milp.init_model_in_sage_milp_class()
@@ -385,8 +385,8 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
         EXAMPLE::
 
             sage: from claasp.cipher_modules.models.utils import get_single_key_scenario_format_for_fixed_values
-            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher as AESBlockCipher
-            sage: aes = AESBlockCipher(number_of_rounds=2)
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
+            sage: aes = ToyAESBlockCipher(number_of_rounds=2)
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_impossible_xor_differential_model import MilpWordwiseImpossibleXorDifferentialModel
             sage: milp = MilpWordwiseImpossibleXorDifferentialModel(aes)
             sage: trail = milp.find_one_wordwise_impossible_xor_differential_trail(1, get_single_key_scenario_format_for_fixed_values(aes)) # doctest: +SKIP
@@ -422,8 +422,8 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
         EXAMPLE::
 
             sage: from claasp.cipher_modules.models.utils import get_single_key_scenario_format_for_fixed_values
-            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher as AESBlockCipher
-            sage: aes = AESBlockCipher(number_of_rounds=2)
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
+            sage: aes = ToyAESBlockCipher(number_of_rounds=2)
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_impossible_xor_differential_model import MilpWordwiseImpossibleXorDifferentialModel
             sage: milp = MilpWordwiseImpossibleXorDifferentialModel(aes)
             sage: trail = milp.find_one_wordwise_impossible_xor_differential_trail_with_chosen_components(['mix_column_0_21'], get_single_key_scenario_format_for_fixed_values(aes)) # doctest: +SKIP
@@ -467,8 +467,8 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
         EXAMPLE::
 
             sage: from claasp.cipher_modules.models.utils import get_single_key_scenario_format_for_fixed_values
-            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher as AESBlockCipher
-            sage: aes = AESBlockCipher(number_of_rounds=2)
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
+            sage: aes = ToyAESBlockCipher(number_of_rounds=2)
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_impossible_xor_differential_model import MilpWordwiseImpossibleXorDifferentialModel
             sage: milp = MilpWordwiseImpossibleXorDifferentialModel(aes)
             sage: trail = milp.find_one_wordwise_impossible_xor_differential_trail_with_fully_automatic_model(get_single_key_scenario_format_for_fixed_values(aes)) # doctest: +SKIP

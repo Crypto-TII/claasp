@@ -62,9 +62,9 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
 
             sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_trail_search_fixing_number_of_active_sboxes_model import (
             ....: MznXorDifferentialFixingNumberOfActiveSboxesModel)
-            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher as AESBlockCipher
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
             sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
-            sage: aes = AESBlockCipher(number_of_rounds=2)
+            sage: aes = ToyAESBlockCipher(number_of_rounds=2)
             sage: cp = MznXorDifferentialFixingNumberOfActiveSboxesModel(aes)
             sage: fixed_variables = [set_fixed_variables('key', 'not_equal', range(128),
             ....: integer_to_bit_list(0, 128, 'little'))]
@@ -105,11 +105,11 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher as AESBlockCipher
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
             sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_trail_search_fixing_number_of_active_sboxes_model import (
             ....: MznXorDifferentialFixingNumberOfActiveSboxesModel)
             sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
-            sage: aes = AESBlockCipher(number_of_rounds=2)
+            sage: aes = ToyAESBlockCipher(number_of_rounds=2)
             sage: cp = MznXorDifferentialFixingNumberOfActiveSboxesModel(aes)
             sage: fixed_variables = [set_fixed_variables('key', 'equal', range(128),
             ....: integer_to_bit_list(0, 128, 'little'))]
@@ -159,11 +159,11 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher as AESBlockCipher
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
             sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_trail_search_fixing_number_of_active_sboxes_model import (
             ....: MznXorDifferentialFixingNumberOfActiveSboxesModel)
             sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
-            sage: aes = AESBlockCipher(number_of_rounds=2)
+            sage: aes = ToyAESBlockCipher(number_of_rounds=2)
             sage: cp = MznXorDifferentialFixingNumberOfActiveSboxesModel(aes)
             sage: fixed_variables = [set_fixed_variables('key', 'equal', range(128),
             ....: integer_to_bit_list(0, 128, 'little'))]
@@ -212,11 +212,11 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher as AESBlockCipher
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
             sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_trail_search_fixing_number_of_active_sboxes_model import (
             ....: MznXorDifferentialFixingNumberOfActiveSboxesModel)
             sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
-            sage: aes = AESBlockCipher(number_of_rounds=2)
+            sage: aes = ToyAESBlockCipher(number_of_rounds=2)
             sage: cp = MznXorDifferentialFixingNumberOfActiveSboxesModel(aes)
             sage: fixed_variables = [set_fixed_variables('key', 'equal', range(128),
             ....: integer_to_bit_list(0, 128, 'little'))]
@@ -265,11 +265,11 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher as AESBlockCipher
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
             sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_trail_search_fixing_number_of_active_sboxes_model import (
             ....: MznXorDifferentialFixingNumberOfActiveSboxesModel)
             sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
-            sage: aes = AESBlockCipher(number_of_rounds=2)
+            sage: aes = ToyAESBlockCipher(number_of_rounds=2)
             sage: cp = MznXorDifferentialFixingNumberOfActiveSboxesModel(aes)
             sage: fixed_variables = [set_fixed_variables('key', 'equal', range(128),
             ....: integer_to_bit_list(0, 128, 'little'))]
@@ -308,9 +308,9 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
             sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_trail_search_fixing_number_of_active_sboxes_model import (
             ....:     MznXorDifferentialFixingNumberOfActiveSboxesModel,
             ....: )
-            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher as AESBlockCipher
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
             sage: from claasp.cipher_modules.models.utils import set_fixed_variables
-            sage: aes = AESBlockCipher(number_of_rounds=2)
+            sage: aes = ToyAESBlockCipher(number_of_rounds=2)
             sage: cp = MznXorDifferentialFixingNumberOfActiveSboxesModel(aes)
             sage: fixed_variables = [set_fixed_variables('key', 'not_equal', list(range(128)), (0,)*128)]
             sage: cp.build_xor_differential_trail_first_step_model(-1, fixed_variables)
@@ -373,10 +373,10 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher as AESBlockCipher
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
             sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_trail_search_fixing_number_of_active_sboxes_model import (
             ....:     MznXorDifferentialFixingNumberOfActiveSboxesModel)
-            sage: aes = AESBlockCipher(number_of_rounds=2)
+            sage: aes = ToyAESBlockCipher(number_of_rounds=2)
             sage: cp = MznXorDifferentialFixingNumberOfActiveSboxesModel(aes)
             sage: cp.input_xor_differential_constraints()
             (['array[0..127] of var 0..1: key;',
@@ -422,9 +422,9 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
 
             sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_trail_search_fixing_number_of_active_sboxes_model import (
             ....: MznXorDifferentialFixingNumberOfActiveSboxesModel)
-            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher as AESBlockCipher
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
             sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
-            sage: aes = AESBlockCipher(number_of_rounds=2)
+            sage: aes = ToyAESBlockCipher(number_of_rounds=2)
             sage: cp = MznXorDifferentialFixingNumberOfActiveSboxesModel(aes)
             sage: fixed_variables = [set_fixed_variables('key', 'not_equal', list(range(128)),
             ....: integer_to_bit_list(0, 128, 'little'))]
@@ -520,9 +520,9 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
 
             sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_trail_search_fixing_number_of_active_sboxes_model import (
             ....: MznXorDifferentialFixingNumberOfActiveSboxesModel)
-            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher as AESBlockCipher
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
             sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
-            sage: aes = AESBlockCipher(number_of_rounds=2)
+            sage: aes = ToyAESBlockCipher(number_of_rounds=2)
             sage: cp = MznXorDifferentialFixingNumberOfActiveSboxesModel(aes)
             sage: fixed_variables = [set_fixed_variables('key', 'not_equal', list(range(128)),
             ....: integer_to_bit_list(0, 128, 'little'))]
@@ -594,9 +594,9 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
             sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_trail_search_fixing_number_of_active_sboxes_model import (
             ....:     MznXorDifferentialFixingNumberOfActiveSboxesModel,
             ....: )
-            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher as AESBlockCipher
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
             sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
-            sage: aes = AESBlockCipher(number_of_rounds=2)
+            sage: aes = ToyAESBlockCipher(number_of_rounds=2)
             sage: cp = MznXorDifferentialFixingNumberOfActiveSboxesModel(aes)
             sage: fixed_variables = [set_fixed_variables('key', 'not_equal', range(128), integer_to_bit_list(0, 128, 'little'))]
             sage: cp.build_xor_differential_trail_first_step_model(-1, fixed_variables)

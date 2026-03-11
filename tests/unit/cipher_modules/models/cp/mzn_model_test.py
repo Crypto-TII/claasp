@@ -1,6 +1,6 @@
 import pytest
 
-from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher as AESBlockCipher
+from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
 from claasp.cipher_modules.models.cp.mzn_model import MznModel
@@ -40,7 +40,7 @@ def test_solver_names():
 
 @pytest.mark.filterwarnings("ignore::DeprecationWarning:")
 def test_build_mix_column_truncated_table():
-    aes = AESBlockCipher(number_of_rounds=3)
+    aes = ToyAESBlockCipher(number_of_rounds=3)
     mzn = MznModel(aes)
     mix_column = aes.component_from(0, 21)
     assert (

@@ -4,7 +4,7 @@ from plotly.basedatatypes import BaseFigure
 
 from claasp.cipher_modules.continuous_diffusion_analysis import ContinuousDiffusionAnalysis
 from claasp.cipher_modules.report import Report
-from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher as AESBlockCipher
+from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 
 
@@ -34,7 +34,7 @@ def test_continuous_tests_report(monkeypatch, tmp_path):
 
 
 def test_continuous_avalanche_factor():
-    aes = AESBlockCipher(number_of_rounds=5)
+    aes = ToyAESBlockCipher(number_of_rounds=5)
     cda = ContinuousDiffusionAnalysis(aes)
     result = cda.continuous_avalanche_factor(
         0.001,

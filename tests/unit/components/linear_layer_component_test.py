@@ -1,5 +1,5 @@
 from claasp.cipher_modules.models.milp.milp_model import MilpModel
-from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher as AESBlockCipher
+from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
 from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
 from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
 from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
@@ -328,7 +328,7 @@ def test_milp_wordwise_deterministic_truncated_xor_differential_constraints():
     assert str(constraints[-2]) == '1 <= 1 + x_7 - x_8'
     assert str(constraints[-1]) == '1 <= 1 + x_1 - x_2'
 
-    cipher = AESBlockCipher(number_of_rounds=2)
+    cipher = ToyAESBlockCipher(number_of_rounds=2)
     cipher_inverse = cipher.cipher_inverse()
     milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(cipher_inverse)
     milp.init_model_in_sage_milp_class()

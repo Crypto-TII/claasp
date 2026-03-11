@@ -1,5 +1,5 @@
 from claasp.cipher_modules.models.cp.mzn_model import MznModel
-from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher as AESBlockCipher
+from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 
 
@@ -16,7 +16,7 @@ def test_cp_constraints():
 
 
 def test_cp_wordwise_deterministic_truncated_xor_differential_constraints():
-    aes = AESBlockCipher(number_of_rounds=3)
+    aes = ToyAESBlockCipher(number_of_rounds=3)
     cp = MznModel(aes)
     output_component = aes.component_from(0, 35)
     declarations, constraints = output_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(cp)

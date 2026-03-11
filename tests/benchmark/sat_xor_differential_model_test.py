@@ -1,11 +1,11 @@
 from claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model import SatXorDifferentialModel
 from claasp.cipher_modules.models.utils import set_fixed_variables
-from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher as AESBlockCipher
+from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.name_mappings import INPUT_KEY, INPUT_PLAINTEXT
 
 SPECK = SpeckBlockCipher()
-AES = AESBlockCipher()
+AES = ToyAESBlockCipher()
 
 
 def test_build_xor_differential_trail_model_with_speck_cipher(benchmark):
