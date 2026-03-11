@@ -1,4 +1,4 @@
-from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher as AESBlockCipher
 
 
 def test_aes_block_cipher():
