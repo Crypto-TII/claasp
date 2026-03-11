@@ -29,7 +29,22 @@ from sage.crypto.sbox import SBox
 from claasp.cipher_modules.component_analysis_tests import branch_number
 from claasp.cipher_modules.models.cp.minizinc_utils import usefulfunctions
 from claasp.cipher_modules.models.cp.solvers import CP_SOLVERS_INTERNAL, CP_SOLVERS_EXTERNAL, SOLVER_DEFAULT
-from claasp.name_mappings import SBOX, CIPHER, CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER, MIX_COLUMN, WORD_OPERATION, SATISFIABLE, UNSATISFIABLE
+from claasp.name_mappings import (
+    SBOX,
+    CIPHER,
+    CIPHER_OUTPUT,
+    CONSTANT,
+    INTERMEDIATE_OUTPUT,
+    LINEAR_LAYER,
+    MIX_COLUMN,
+    WORD_OPERATION,
+    SATISFIABLE,
+    UNSATISFIABLE,
+    SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL,
+    SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL_ONE_SOLUTION,
+    XOR_DIFFERENTIAL_LINEAR_ONE_SOLUTION,
+    XOR_DIFFERENTIAL_LINEAR_OPTIMAL_SOLUTION,
+)
 
 from claasp.cipher_modules.models.utils import write_model_to_file, convert_solver_solution_to_dictionary
 
@@ -65,6 +80,7 @@ class MznModel:
         self.output_postfix = "y"
         self.carries_vars = []
         self.probability_modadd_vars_per_round = [[] for _ in range(self._cipher.number_of_rounds)]
+        self.component_probability_var = {}
         
     def initialise_model(self):
         self._variables_list = []
@@ -85,6 +101,9 @@ class MznModel:
         self.list_of_xor_components = []
         self.list_of_xor_all_inputs = []
         self.component_and_probability = {}
+        self.probability_vars = []
+        self.probability_modadd_vars_per_round = [[] for _ in range(self._cipher.number_of_rounds)]
+        self.component_probability_var = {}
         self._model_prefix = ['include "globals.mzn";', f"{usefulfunctions.MINIZINC_USEFUL_FUNCTIONS}"]
 
     def add_comment(self, comment):
@@ -164,22 +183,9 @@ class MznModel:
     def build_generic_cp_model_from_dictionary(self, component_and_model_types, fixed_variables=None):
         variables = []
         self._variables_list = []
-
-        fixed_constraints = []
-        if fixed_variables:
-            if hasattr(self, "fix_variables_value_xor_linear_constraints"):
-                fixed_constraints = self.fix_variables_value_xor_linear_constraints(fixed_variables)
-            elif any(
-                entry["model_type"] == "minizinc_xor_differential_propagation_constraints"
-                for entry in component_and_model_types
-            ) and hasattr(self, "solve_for_ARX"):
-                fixed_constraints = self.fix_variables_value_constraints_for_ARX(fixed_variables)
-            else:
-                fixed_constraints = self.fix_variables_value_constraints(fixed_variables)
-
+        self._model_constraints = []
         component_types = [CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER, MIX_COLUMN, SBOX, WORD_OPERATION]
         operation_types = ['AND', 'MODADD', 'MODSUB', 'NOT', 'OR', 'ROTATE', 'SHIFT', 'SHIFT_BY_VARIABLE_AMOUNT', 'XOR']
-        self._model_constraints = fixed_constraints
 
         for component_and_model_type in component_and_model_types:
             component = component_and_model_type["component_object"]
@@ -190,9 +196,31 @@ class MznModel:
                 print(f'{component.id} not yet implemented')
             else:
                 cp_generic_propagation_constraints = getattr(component, model_type)
-                variables, constraints = cp_generic_propagation_constraints(self)
+                try:
+                    result = cp_generic_propagation_constraints()
+                except TypeError:
+                    result = cp_generic_propagation_constraints(self)
+
+                if len(result) == 2:
+                    variables, constraints = result
+                    metadata = {}
+                elif len(result) == 3:
+                    variables, constraints, metadata = result
+                else:
+                    raise ValueError("Unexpected return value from component generator")
+
                 self._model_constraints.extend(constraints)
                 self._variables_list.extend(variables)
+
+                if metadata:
+                    probability_var = metadata.get("probability_var")
+                    if probability_var:
+                        self.probability_vars.append(probability_var)
+                        self.component_probability_var[component.id] = probability_var
+                        if hasattr(self._cipher, "get_round_from_component_id"):
+                            round_index = self._cipher.get_round_from_component_id(component.id)
+                            if round_index < len(self.probability_modadd_vars_per_round):
+                                self.probability_modadd_vars_per_round[round_index].append(probability_var)
 
     def build_mix_column_truncated_table(self, component):
         """
@@ -374,7 +402,7 @@ class MznModel:
                 logic_operator = " \\/ "
             else:
                 raise ValueError(CONSTRAINT_TYPE_ERROR)
-            if bit_values[0] not in [0,1]:
+            if bit_values[0] not in [0, 1, 2]:
                 variables_values = []
                 for v in bit_values:
                     variables_values.extend([(v[0], i) for i in v[1]])
@@ -480,8 +508,10 @@ class MznModel:
             "deterministic_truncated_xor_differential_one_solution",
             "differential_pair_one_solution",
             "impossible_xor_differential_one_solution",
+            SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL_ONE_SOLUTION,
             "xor_differential_one_solution",
             "xor_linear_one_solution",
+            XOR_DIFFERENTIAL_LINEAR_ONE_SOLUTION,
             CIPHER,
         )
         found_name = False
@@ -525,10 +555,13 @@ class MznModel:
 
     def output_probability_per_round(self):
         for mzn_probability_modadd_vars in self.probability_modadd_vars_per_round:
-            mzn_probability_vars_per_round = "++".join(mzn_probability_modadd_vars)
+            if not mzn_probability_modadd_vars:
+                continue
+            mzn_probability_vars_per_round = ", ".join(mzn_probability_modadd_vars)
+            mzn_probability_sum = ", ".join(mzn_probability_modadd_vars)
             self.mzn_output_directives.append(
                 f'output ["\\n"++"Probability {mzn_probability_vars_per_round}:'
-                f' "++show(sum({mzn_probability_vars_per_round}))++"\\n"];'
+                f' "++show(sum([{mzn_probability_sum}]))++"\\n"];'
             )
 
     def parse_solver_information(self, output_to_parse, truncated=False, solve_external=True):
@@ -602,7 +635,7 @@ class MznModel:
         def set_solution_values_internal(solution):
             components_values = {}
             values = solution.__dict__["_output_item"].splitlines()
-            total_weight = 0
+            total_weight = "0"
             for i in range(len(values)):
                 curr_val = values[i]
                 if "Trail weight" in curr_val:
@@ -699,7 +732,7 @@ class MznModel:
             hex_value = ("0x" + "0" * (math.ceil(len(value) / 4) - len(hex_value))) + hex_value
             component_solution["value"] = hex_value
         else:
-            component_solution["value"] = value
+            component_solution["value"] = value.replace("2", "?")
 
     def solve(
         self,
@@ -753,6 +786,8 @@ class MznModel:
         if model_type in (
             "deterministic_truncated_xor_differential_one_solution",
             "deterministic_truncated_xor_differential",
+            SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL_ONE_SOLUTION,
+            SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL,
             "impossible_xor_differential_attack",
             "impossible_xor_differential_one_solution",
             "impossible_xor_differential",
@@ -835,9 +870,11 @@ class MznModel:
             )
         if model_type in (
             "deterministic_truncated_one_solution",
+            SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL_ONE_SOLUTION,
             "impossible_xor_differential_one_solution",
             "xor_differential_one_solution",
             "xor_linear_one_solution",
+            XOR_DIFFERENTIAL_LINEAR_ONE_SOLUTION,
             CIPHER,
         ):
             return solutions[0]

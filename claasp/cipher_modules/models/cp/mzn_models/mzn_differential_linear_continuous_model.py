@@ -30,6 +30,18 @@ class MznDifferentialLinearContinuousModel(MznModel):
         self.added_component_ids = set() 
         operation_types = ["MODADD", "ROTATE", "XOR"]
         component_types = [CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, WORD_OPERATION]
+
+        fixed_constraints = []
+        if fixed_values:
+            if hasattr(self, "fix_variables_value_xor_linear_constraints"):
+                fixed_constraints = self.fix_variables_value_xor_linear_constraints(fixed_values)
+            elif any(
+                entry["model_type"] == "minizinc_xor_differential_propagation_constraints"
+                for entry in component_and_model_types
+            ) and hasattr(self, "solve_for_ARX"):
+                fixed_constraints = self.fix_variables_value_constraints_for_ARX(fixed_values)
+            else:
+                fixed_constraints = self.fix_variables_value_constraints(fixed_values)
         
         for component in self._cipher.get_all_components():
             operation = component.description[0]
@@ -48,6 +60,10 @@ class MznDifferentialLinearContinuousModel(MznModel):
             component_and_model_types, 
             fixed_variables=fixed_values
         )
+
+        # Ensure fixed-value constraints are explicitly included even when
+        # generic model builder does not prepend them.
+        self._model_constraints = fixed_constraints + self._model_constraints
 
         self.init_input_declarations()
 

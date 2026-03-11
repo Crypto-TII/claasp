@@ -390,6 +390,9 @@ class MixColumn(LinearLayer):
     def cp_deterministic_truncated_xor_differential_trail_constraints(self):
         return self.cp_deterministic_truncated_xor_differential_constraints()
 
+    def cp_semi_deterministic_truncated_xor_differential_constraints(self):
+        raise NotImplementedError("Semi-deterministic CP model not supported for MIX_COLUMN component yet")
+
     def cp_xor_differential_propagation_first_step_constraints(self, model):
         """
         Return declarations and constraints for MIX COLUMN component for the CP xor differential first step model.

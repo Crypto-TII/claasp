@@ -111,6 +111,9 @@ class IntermediateOutput(CipherOutput):
 
         return variables, constraints
 
+    def cp_semi_deterministic_truncated_xor_differential_constraints(self):
+        return self.cp_constraints()
+
     def get_bit_based_vectorized_python_code(self, params, convert_output_to_bytes):
         code = []
         intermediate_output_params = [

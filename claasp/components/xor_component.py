@@ -369,6 +369,9 @@ class XOR(Component):
     def cp_deterministic_truncated_xor_differential_trail_constraints(self):
         return self.cp_deterministic_truncated_xor_differential_constraints()
 
+    def cp_semi_deterministic_truncated_xor_differential_constraints(self):
+        return self.cp_deterministic_truncated_xor_differential_constraints()
+
     def cp_wordwise_deterministic_truncated_xor_differential_constraints(self, model):
         r"""
         Return lists declarations and constraints for XOR component CP wordwise deterministic truncated XOR differential model.

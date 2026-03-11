@@ -189,6 +189,9 @@ class Constant(Component):
     def cp_deterministic_truncated_xor_differential_trail_constraints(self):
         return self.cp_xor_differential_propagation_constraints()
 
+    def cp_semi_deterministic_truncated_xor_differential_constraints(self):
+        return self.cp_xor_differential_propagation_constraints()
+
     def cp_wordwise_deterministic_truncated_xor_differential_constraints(self, model):
         """
         Return lists of declarations and constraints for CONSTANT component for CP wordwise deterministic truncated xor differential.

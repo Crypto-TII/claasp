@@ -802,7 +802,22 @@ def differential_linear_checker_for_block_cipher_single_key(
     cipher, input_difference, output_mask, number_of_samples, block_size, key_size, fixed_key, seed=None
 ):
     """
-    Verifies experimentally differential-linear distinguishers for block ciphers using the vectorized evaluator
+    Verify experimentally differential-linear distinguishers for block ciphers using the vectorized evaluator.
+
+    INPUT:
+
+    - ``cipher`` -- **Cipher object**; cipher instance providing ``evaluate_vectorized``
+    - ``input_difference`` -- **integer**; input XOR difference
+    - ``output_mask`` -- **string**; output linear mask as a bitstring of length ``block_size``
+    - ``number_of_samples`` -- **integer**; number of random plaintext pairs
+    - ``block_size`` -- **integer**; block size in bits (must be multiple of 8)
+    - ``key_size`` -- **integer**; key size in bits (must be multiple of 8)
+    - ``fixed_key`` -- **integer**; fixed key value for the single-key scenario
+    - ``seed`` -- **integer** (default: `None`); seed for reproducible random sampling
+
+    OUTPUT:
+
+    - This method returns a **float**; the empirical correlation in the interval ``[-1, 1]``
     """
     if block_size % 8 != 0:
         raise ValueError("State size must be a multiple of 8.")
@@ -818,10 +833,69 @@ def differential_linear_checker_for_block_cipher_single_key(
     ciphertext1 = cipher.evaluate_vectorized([plaintext1, fixed_key_data])
     ciphertext2 = cipher.evaluate_vectorized([plaintext2, fixed_key_data])
     ciphertext3 = ciphertext1[0] ^ ciphertext2[0]
-    bit_positions_ciphertext = _extract_bit_positions_msb(output_mask)
+    bit_positions_ciphertext = _extract_bit_positions_msb(output_mask, ('1'))
     ccc = _extract_bits_msb(ciphertext3.T, bit_positions_ciphertext)
     parities = np.bitwise_xor.reduce(ccc, axis=0)
     count = np.count_nonzero(parities == 0)
+    corr = 2 * count / number_of_samples * 1.0 - 1
+    return corr
+
+
+def linear_checker_for_block_cipher_single_key(
+    cipher, input_mask, output_mask, number_of_samples, block_size, key_size, fixed_key, seed=None
+):
+    """
+    Verify experimentally linear distinguishers for block ciphers in a single-key scenario.
+
+    INPUT:
+
+    - ``cipher`` -- **Cipher object**; cipher instance providing ``evaluate_vectorized``
+    - ``input_mask`` -- **string**; input linear mask as a bitstring of length ``block_size``
+    - ``output_mask`` -- **string**; output linear mask as a bitstring of length ``block_size``
+    - ``number_of_samples`` -- **integer**; number of random plaintext samples
+    - ``block_size`` -- **integer**; block size in bits (must be multiple of 8)
+    - ``key_size`` -- **integer**; key size in bits (must be multiple of 8)
+    - ``fixed_key`` -- **integer**; fixed key value for the single-key scenario
+    - ``seed`` -- **integer** (default: `None`); seed for reproducible random sampling
+
+    OUTPUT:
+
+    - This method returns a **float**; the empirical correlation in the interval ``[-1, 1]``
+    """
+    if block_size % 8 != 0:
+        raise ValueError("State size must be a multiple of 8.")
+    if key_size % 8 != 0:
+        raise ValueError("Key size must be a multiple of 8.")
+    if len(input_mask) != block_size:
+        raise ValueError("Input mask length must be equal to block_size.")
+    if len(output_mask) != block_size:
+        raise ValueError("Output mask length must be equal to block_size.")
+
+    state_num_bytes = int(block_size / 8)
+    key_num_bytes = int(key_size / 8)
+
+    rng = np.random.default_rng(seed)
+    fixed_key_data = _repeat_input_difference(fixed_key, number_of_samples, key_num_bytes)
+    plaintext = rng.integers(low=0, high=256, size=(state_num_bytes, number_of_samples), dtype=np.uint8)
+    ciphertext = cipher.evaluate_vectorized([plaintext, fixed_key_data])[0]
+
+    input_positions = _extract_bit_positions_msb(input_mask, ("1",))
+    output_positions = _extract_bit_positions_msb(output_mask, ("1",))
+
+    if input_positions:
+        input_bits = _extract_bits_msb(plaintext, input_positions)
+        input_parity = np.bitwise_xor.reduce(input_bits, axis=0)
+    else:
+        input_parity = np.zeros(number_of_samples, dtype=np.uint8)
+
+    if output_positions:
+        output_bits = _extract_bits_msb(ciphertext.T, output_positions)
+        output_parity = np.bitwise_xor.reduce(output_bits, axis=0)
+    else:
+        output_parity = np.zeros(number_of_samples, dtype=np.uint8)
+
+    total_parity = input_parity ^ output_parity
+    count = np.count_nonzero(total_parity == 0)
     corr = 2 * count / number_of_samples * 1.0 - 1
     return corr
 
@@ -830,7 +904,20 @@ def differential_checker_permutation(
     cipher, input_difference, output_difference, number_of_samples, state_size, seed=None
 ):
     """
-    Verifies experimentally differential distinguishers for permutations using the vectorized evaluator
+    Verify experimentally differential distinguishers for permutations using the vectorized evaluator.
+
+    INPUT:
+
+    - ``cipher`` -- **Cipher object**; permutation instance providing ``evaluate_vectorized``
+    - ``input_difference`` -- **integer**; input XOR difference
+    - ``output_difference`` -- **integer**; expected output XOR difference
+    - ``number_of_samples`` -- **integer**; number of random plaintext pairs
+    - ``state_size`` -- **integer**; permutation state size in bits (must be multiple of 8)
+    - ``seed`` -- **integer** (default: `None`); seed for reproducible random sampling
+
+    OUTPUT:
+
+    - This method returns a **float**; the empirical probability weight ``log2(matches / number_of_samples)``
     """
     if state_size % 8 != 0:
         raise ValueError("State size must be a multiple of 8.")
@@ -855,7 +942,20 @@ def differential_truncated_checker_permutation(
     cipher, input_difference, output_difference, number_of_samples, state_size, seed=None
 ):
     """
-    Verifies experimentally differential-truncated distinguishers for permutations in the single-key scenario
+    Verify experimentally differential-truncated distinguishers for permutations.
+
+    INPUT:
+
+    - ``cipher`` -- **Cipher object**; permutation instance providing ``evaluate_vectorized``
+    - ``input_difference`` -- **integer**; input XOR difference
+    - ``output_difference`` -- **string**; truncated output pattern over ``{'0','1','?','2'}``
+    - ``number_of_samples`` -- **integer**; number of random plaintext pairs
+    - ``state_size`` -- **integer**; permutation state size in bits (must be multiple of 8)
+    - ``seed`` -- **integer** (default: `None`); seed for reproducible random sampling
+
+    OUTPUT:
+
+    - This method returns a **float**; the empirical probability weight, or ``-inf`` if no match is found
     """
     if state_size % 8 != 0:
         raise ValueError("State size must be a multiple of 8.")
@@ -893,7 +993,22 @@ def differential_truncated_checker_single_key(
     cipher, input_difference, output_difference, number_of_samples, state_size, fixed_key, key_size, seed=None
 ):
     """
-    Verifies experimentally differential-truncated distinguishers for block_ciphers in the single-key scenario
+    Verify experimentally differential-truncated distinguishers for block ciphers in the single-key scenario.
+
+    INPUT:
+
+    - ``cipher`` -- **Cipher object**; cipher instance providing ``evaluate_vectorized``
+    - ``input_difference`` -- **integer**; input XOR difference
+    - ``output_difference`` -- **string**; truncated output pattern over ``{'0','1','?','2'}``
+    - ``number_of_samples`` -- **integer**; number of random plaintext pairs
+    - ``state_size`` -- **integer**; block size in bits (must be multiple of 8)
+    - ``fixed_key`` -- **integer**; fixed key value for the single-key scenario
+    - ``key_size`` -- **integer**; key size in bits (must be multiple of 8)
+    - ``seed`` -- **integer** (default: `None`); seed for reproducible random sampling
+
+    OUTPUT:
+
+    - This method returns a **float**; the empirical probability weight ``log2(matches / number_of_samples)``
     """
     if state_size % 8 != 0:
         raise ValueError("State size must be a multiple of 8.")
@@ -927,7 +1042,20 @@ def shared_difference_paired_input_differential_checker_permutation(
     cipher, input_difference, output_difference, number_of_samples, state_size, seed=None
 ):
     """
-    Verifies experimentally SharedDifferencePairedInputDifferential distinguishers for permutations using the vectorized evaluator
+    Verify experimentally shared-difference paired-input differential distinguishers for permutations.
+
+    INPUT:
+
+    - ``cipher`` -- **Cipher object**; permutation instance providing ``evaluate_vectorized``
+    - ``input_difference`` -- **integer**; paired input XOR difference
+    - ``output_difference`` -- **integer**; expected paired output XOR difference
+    - ``number_of_samples`` -- **integer**; number of sampled paired inputs
+    - ``state_size`` -- **integer**; permutation state size in bits (must be multiple of 8)
+    - ``seed`` -- **integer** (default: `None`); seed for reproducible random sampling
+
+    OUTPUT:
+
+    - This method returns a **float**; the empirical probability weight ``log2(matches / number_of_samples)``
     """
     if state_size % 8 != 0:
         raise ValueError("State size must be a multiple of 8.")
@@ -961,7 +1089,20 @@ def shared_difference_paired_input_differential_linear_checker_permutation(
     cipher, input_difference, output_mask, number_of_samples, state_size, seed=None
 ):
     """
-    This method helps to verify experimentally SharedDifferencePairedInputDifferentialLinear distinguishers for permutations using the vectorized evaluator
+    Verify experimentally shared-difference paired-input differential-linear distinguishers for permutations.
+
+    INPUT:
+
+    - ``cipher`` -- **Cipher object**; permutation instance providing ``evaluate_vectorized``
+    - ``input_difference`` -- **integer**; paired input XOR difference
+    - ``output_mask`` -- **string**; output linear mask as a bitstring of length ``state_size``
+    - ``number_of_samples`` -- **integer**; number of sampled paired inputs
+    - ``state_size`` -- **integer**; permutation state size in bits (must be multiple of 8)
+    - ``seed`` -- **integer** (default: `None`); seed for reproducible random sampling
+
+    OUTPUT:
+
+    - This method returns a **float**; the empirical correlation in the interval ``[-1, 1]``
     """
     if state_size % 8 != 0:
         raise ValueError("State size must be a multiple of 8.")
@@ -1044,15 +1185,20 @@ def differential_truncated_checker_permutation_input_and_output_truncated(
     seed=None,
 ):
     """
-    Verifies experimentally differential-truncated distinguishers for permutations
-    cipher -- the permutation to be evaluated
-    input_trunc_diff -- **string**; a string of length = state_size over {'0','1','2','?'},
-                        where '2'/'?' means truncated difference.
-    output_trunc_diff -- **string**; a string of length = state_size over {'0','1','?', '2'},
-                         where '?' means truncated difference.
-    number_of_samples -- **integer**; the number of samples to be used in the experiment
-    state_size -- **integer**; the size of the state in bits
-    seed -- **integer**; the seed for the random number generator
+    Verify experimentally differential-truncated distinguishers for permutations with truncated input and output.
+
+    INPUT:
+
+    - ``cipher`` -- **Cipher object**; permutation instance providing ``evaluate_vectorized``
+    - ``input_trunc_diff`` -- **string**; input truncated pattern over ``{'0','1','2','?'}``
+    - ``output_trunc_diff`` -- **string**; output truncated pattern over ``{'0','1','2','?'}``
+    - ``number_of_samples`` -- **integer**; number of random plaintext pairs
+    - ``state_size`` -- **integer**; permutation state size in bits (must be multiple of 8)
+    - ``seed`` -- **integer** (default: `None`); seed for reproducible random sampling
+
+    OUTPUT:
+
+    - This method returns a **float**; the empirical probability weight, or ``-inf`` if no match is found
     """
     if state_size % 8 != 0:
         raise ValueError("State size must be a multiple of 8.")
@@ -1095,17 +1241,20 @@ def truncated_differential_linear_checker_permutation(
     seed=None,
 ):
     """
-    Verifies experimentally truncated-differential-linear distinguishers for permutations
-    cipher -- the permutation to be evaluated
+    Verify experimentally truncated-differential-linear distinguishers for permutations.
 
     INPUT:
 
-    - ``input_trunc_diff`` -- **string**; a string of length = state_size over {'0','1','2','?'}
-                        where '2'/'?' means truncated difference
-    - ``output_mask`` -- **string**; a string of length = state_size over {'0','1'}
-    - ``number_of_samples`` -- **integer**; the number of samples to be used in the experiment
-    - ``state_size`` -- **integer**; the size of the state in bits
-    - ``seed`` -- **integer**; the seed for the random number generator
+    - ``cipher`` -- **Cipher object**; permutation instance providing ``evaluate_vectorized``
+    - ``input_trunc_diff`` -- **string**; input truncated pattern over ``{'0','1','2','?'}``
+    - ``output_mask`` -- **string**; output linear mask as a bitstring of length ``state_size``
+    - ``number_of_samples`` -- **integer**; number of random plaintext pairs
+    - ``state_size`` -- **integer**; permutation state size in bits (must be multiple of 8)
+    - ``seed`` -- **integer** (default: `None`); seed for reproducible random sampling
+
+    OUTPUT:
+
+    - This method returns a **float**; the empirical correlation in the interval ``[-1, 1]``
     """
     if state_size % 8 != 0:
         raise ValueError("State size must be a multiple of 8.")

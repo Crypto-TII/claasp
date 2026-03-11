@@ -529,6 +529,9 @@ class SBOX(Component):
     def cp_deterministic_truncated_xor_differential_trail_constraints(self, sbox_mant, inverse=False):
         return self.cp_deterministic_truncated_xor_differential_constraints(sbox_mant, inverse)
 
+    def cp_semi_deterministic_truncated_xor_differential_constraints(self, sbox_mant=None, inverse=False):
+        raise NotImplementedError("Semi-deterministic CP model not supported for SBOX component yet")
+
     def cp_hybrid_deterministic_truncated_xor_differential_constraints(
         self, sbox_mant, inverse=False, list_of_component_number=[]
     ):

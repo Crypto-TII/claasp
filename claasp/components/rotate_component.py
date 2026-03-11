@@ -178,6 +178,9 @@ class Rotate(Component):
     def cp_deterministic_truncated_xor_differential_trail_constraints(self):
         return self.cp_constraints()
 
+    def cp_semi_deterministic_truncated_xor_differential_constraints(self):
+        return self.cp_constraints()
+
     def cp_inverse_constraints(self):
         """
         Return lists of declarations and constraints for ROTATE component for CP INVERSE CIPHER model.
