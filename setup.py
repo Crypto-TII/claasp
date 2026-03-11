@@ -63,7 +63,8 @@ setup(
             'cipher_modules/generic_bit_based_c_functions.c',
             'cipher_modules/generic_bit_based_c_functions.h',
             'cipher_modules/generic_word_based_c_functions.c',
-            'cipher_modules/generic_word_based_c_functions.h'
+            'cipher_modules/generic_word_based_c_functions.h',
+            'cipher_modules/statistical_tests/nist_sts_templates/*'
         ]
     },
     classifiers=[
