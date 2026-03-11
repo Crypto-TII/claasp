@@ -521,7 +521,7 @@ class MznDifferentialLinearModel(MznModel):
 
         return parsed
 
-    def _ensure_components_values(self, solution, fixed_values):
+    def _ensure_components_values(self, solution):
         if not isinstance(solution, dict):
             return
         if solution.get("status") != "SATISFIABLE":
@@ -588,7 +588,7 @@ class MznDifferentialLinearModel(MznModel):
             for partial_solution in solution:
                 partial_solution["model_type"] = XOR_DIFFERENTIAL_LINEAR_ONE_SOLUTION
                 self._normalize_total_weight(partial_solution)
-                self._ensure_components_values(partial_solution, fixed_values)
+                self._ensure_components_values(partial_solution)
                 partial_solution["building_time_seconds"] = build_time
                 partial_solution["test_name"] = "find_one_differential_linear_trail_with_fixed_weight"
             if len(solution) == 1:
@@ -597,7 +597,7 @@ class MznDifferentialLinearModel(MznModel):
 
         solution["model_type"] = XOR_DIFFERENTIAL_LINEAR_ONE_SOLUTION
         self._normalize_total_weight(solution)
-        self._ensure_components_values(solution, fixed_values)
+        self._ensure_components_values(solution)
         solution["building_time_seconds"] = build_time
         solution["test_name"] = "find_one_differential_linear_trail_with_fixed_weight"
 
@@ -629,7 +629,7 @@ class MznDifferentialLinearModel(MznModel):
             for partial_solution in solution:
                 partial_solution["model_type"] = XOR_DIFFERENTIAL_LINEAR_OPTIMAL_SOLUTION
                 self._normalize_total_weight(partial_solution)
-                self._ensure_components_values(partial_solution, fixed_values)
+                self._ensure_components_values(partial_solution)
                 partial_solution["building_time_seconds"] = build_time
                 partial_solution["test_name"] = "find_lowest_weight_xor_differential_linear_trail"
             if len(solution) == 1:
@@ -638,7 +638,7 @@ class MznDifferentialLinearModel(MznModel):
 
         solution["model_type"] = XOR_DIFFERENTIAL_LINEAR_OPTIMAL_SOLUTION
         self._normalize_total_weight(solution)
-        self._ensure_components_values(solution, fixed_values)
+        self._ensure_components_values(solution)
         solution["building_time_seconds"] = build_time
         solution["test_name"] = "find_lowest_weight_xor_differential_linear_trail"
 
