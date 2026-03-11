@@ -49,44 +49,16 @@ class OR(MultiInputNonlinearLogicalOperator):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.permutations.gift_permutation import GiftPermutation
+            sage: from claasp.ciphers.toys.or_block_cipher import OrBlockCipher
             sage: from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
-            sage: gift = GiftPermutation(number_of_rounds=1)
-            sage: or_component = gift.get_component_from_id("or_0_4")
-            sage: algebraic = AlgebraicModel(gift)
-            sage: or_component.algebraic_polynomials(algebraic)
-            [or_0_4_x0*or_0_4_x32 + or_0_4_y0 + or_0_4_x32 + or_0_4_x0,
-             or_0_4_x1*or_0_4_x33 + or_0_4_y1 + or_0_4_x33 + or_0_4_x1,
-             or_0_4_x2*or_0_4_x34 + or_0_4_y2 + or_0_4_x34 + or_0_4_x2,
-             or_0_4_x3*or_0_4_x35 + or_0_4_y3 + or_0_4_x35 + or_0_4_x3,
-             or_0_4_x4*or_0_4_x36 + or_0_4_y4 + or_0_4_x36 + or_0_4_x4,
-             or_0_4_x5*or_0_4_x37 + or_0_4_y5 + or_0_4_x37 + or_0_4_x5,
-             or_0_4_x6*or_0_4_x38 + or_0_4_y6 + or_0_4_x38 + or_0_4_x6,
-             or_0_4_x7*or_0_4_x39 + or_0_4_y7 + or_0_4_x39 + or_0_4_x7,
-             or_0_4_x8*or_0_4_x40 + or_0_4_y8 + or_0_4_x40 + or_0_4_x8,
-             or_0_4_x9*or_0_4_x41 + or_0_4_y9 + or_0_4_x41 + or_0_4_x9,
-             or_0_4_x10*or_0_4_x42 + or_0_4_y10 + or_0_4_x42 + or_0_4_x10,
-             or_0_4_x11*or_0_4_x43 + or_0_4_y11 + or_0_4_x43 + or_0_4_x11,
-             or_0_4_x12*or_0_4_x44 + or_0_4_y12 + or_0_4_x44 + or_0_4_x12,
-             or_0_4_x13*or_0_4_x45 + or_0_4_y13 + or_0_4_x45 + or_0_4_x13,
-             or_0_4_x14*or_0_4_x46 + or_0_4_y14 + or_0_4_x46 + or_0_4_x14,
-             or_0_4_x15*or_0_4_x47 + or_0_4_y15 + or_0_4_x47 + or_0_4_x15,
-             or_0_4_x16*or_0_4_x48 + or_0_4_y16 + or_0_4_x48 + or_0_4_x16,
-             or_0_4_x17*or_0_4_x49 + or_0_4_y17 + or_0_4_x49 + or_0_4_x17,
-             or_0_4_x18*or_0_4_x50 + or_0_4_y18 + or_0_4_x50 + or_0_4_x18,
-             or_0_4_x19*or_0_4_x51 + or_0_4_y19 + or_0_4_x51 + or_0_4_x19,
-             or_0_4_x20*or_0_4_x52 + or_0_4_y20 + or_0_4_x52 + or_0_4_x20,
-             or_0_4_x21*or_0_4_x53 + or_0_4_y21 + or_0_4_x53 + or_0_4_x21,
-             or_0_4_x22*or_0_4_x54 + or_0_4_y22 + or_0_4_x54 + or_0_4_x22,
-             or_0_4_x23*or_0_4_x55 + or_0_4_y23 + or_0_4_x55 + or_0_4_x23,
-             or_0_4_x24*or_0_4_x56 + or_0_4_y24 + or_0_4_x56 + or_0_4_x24,
-             or_0_4_x25*or_0_4_x57 + or_0_4_y25 + or_0_4_x57 + or_0_4_x25,
-             or_0_4_x26*or_0_4_x58 + or_0_4_y26 + or_0_4_x58 + or_0_4_x26,
-             or_0_4_x27*or_0_4_x59 + or_0_4_y27 + or_0_4_x59 + or_0_4_x27,
-             or_0_4_x28*or_0_4_x60 + or_0_4_y28 + or_0_4_x60 + or_0_4_x28,
-             or_0_4_x29*or_0_4_x61 + or_0_4_y29 + or_0_4_x61 + or_0_4_x29,
-             or_0_4_x30*or_0_4_x62 + or_0_4_y30 + or_0_4_x62 + or_0_4_x30,
-             or_0_4_x31*or_0_4_x63 + or_0_4_y31 + or_0_4_x63 + or_0_4_x31]
+            sage: cipher = OrBlockCipher(block_bit_size=32)
+            sage: or_component = cipher.get_component_from_id("or_0_0")
+            sage: algebraic = AlgebraicModel(cipher)
+            sage: polys = or_component.algebraic_polynomials(algebraic)
+            sage: len(polys)
+            32
+            sage: polys[0]
+            or_0_0_x0*or_0_0_x32 + or_0_0_y0 + or_0_0_x32 + or_0_0_x0
 
         """
         ninputs = self.input_bit_size
@@ -181,22 +153,22 @@ class OR(MultiInputNonlinearLogicalOperator):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.permutations.gift_permutation import GiftPermutation
+                        sage: from claasp.ciphers.toys.or_block_cipher import OrBlockCipher
             sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
-            sage: gift = GiftPermutation()
-            sage: or_component = gift.component_from(39, 6)
-            sage: cp = MznModel(gift)
+                        sage: cipher = OrBlockCipher(block_bit_size=32)
+                        sage: or_component = cipher.component_from(0, 0)
+                        sage: cp = MznModel(cipher)
             sage: declarations, constraints = or_component.cp_xor_linear_mask_propagation_constraints(cp)
             sage: declarations
-            ['array[0..31] of var 0..3200: p_or_39_6;',
-             'array[0..63] of var 0..1:or_39_6_i;',
-             'array[0..31] of var 0..1:or_39_6_o;']
-           sage: constraints
-           ['constraint table([or_39_6_i[0]]++[or_39_6_i[32]]++[or_39_6_o[0]]++[p_or_39_6[0]],and2inputs_LAT);',
-            'constraint table([or_39_6_i[1]]++[or_39_6_i[33]]++[or_39_6_o[1]]++[p_or_39_6[1]],and2inputs_LAT);',
+                        ['array[0..31] of var 0..3200: p_or_0_0;',
+                         'array[0..63] of var 0..1:or_0_0_i;',
+                         'array[0..31] of var 0..1:or_0_0_o;']
+                        sage: constraints
+                        ['constraint table([or_0_0_i[0]]++[or_0_0_i[32]]++[or_0_0_o[0]]++[p_or_0_0[0]],and2inputs_LAT);',
+                        'constraint table([or_0_0_i[1]]++[or_0_0_i[33]]++[or_0_0_o[1]]++[p_or_0_0[1]],and2inputs_LAT);',
             ...
-            'constraint table([or_39_6_i[31]]++[or_39_6_i[63]]++[or_39_6_o[31]]++[p_or_39_6[31]],and2inputs_LAT);',
-            'constraint p[0] = sum(p_or_39_6);']
+                        'constraint table([or_0_0_i[31]]++[or_0_0_i[63]]++[or_0_0_o[31]]++[p_or_0_0[31]],and2inputs_LAT);',
+                        'constraint p[0] = sum(p_or_0_0);']
 
         """
         cp_declarations = [
@@ -273,20 +245,19 @@ class OR(MultiInputNonlinearLogicalOperator):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.permutations.gift_permutation import GiftPermutation
-            sage: gift = GiftPermutation(number_of_rounds=3)
-            sage: or_component = gift.component_from(0, 4)
+                        sage: from claasp.components.or_component import OR
+                        sage: or_component = OR(0, 0, ['input1', 'input2'], [list(range(32)), list(range(32))], 32)
             sage: or_component.sat_constraints()
-            (['or_0_4_0',
-              'or_0_4_1',
+                        (['or_0_0_0',
+                            'or_0_0_1',
               ...
-              'or_0_4_30',
-              'or_0_4_31'],
-             ['or_0_4_0 -xor_0_3_0',
-              'or_0_4_0 -xor_0_1_0',
+                            'or_0_0_30',
+                            'or_0_0_31'],
+                         ['or_0_0_0 -input1_0',
+                            'or_0_0_0 -input2_0',
               ...
-              'or_0_4_31 -xor_0_1_31',
-              '-or_0_4_31 xor_0_3_31 xor_0_1_31'])
+                            'or_0_0_31 -input2_31',
+                            '-or_0_0_31 input1_31 input2_31'])
         """
         input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
@@ -310,20 +281,19 @@ class OR(MultiInputNonlinearLogicalOperator):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.permutations.gift_permutation import GiftPermutation
-            sage: gift = GiftPermutation(number_of_rounds=3)
-            sage: or_component = gift.component_from(0, 4)
+                        sage: from claasp.components.or_component import OR
+                        sage: or_component = OR(0, 0, ['input1', 'input2'], [list(range(32)), list(range(32))], 32)
             sage: or_component.smt_constraints()
-            (['or_0_4_0',
-              'or_0_4_1',
+                        (['or_0_0_0',
+                            'or_0_0_1',
               ...
-              'or_0_4_30',
-              'or_0_4_31'],
-             ['(assert (= or_0_4_0 (or xor_0_3_0 xor_0_1_0)))',
-              '(assert (= or_0_4_1 (or xor_0_3_1 xor_0_1_1)))',
+                            'or_0_0_30',
+                            'or_0_0_31'],
+                         ['(assert (= or_0_0_0 (or input1_0 input2_0)))',
+                            '(assert (= or_0_0_1 (or input1_1 input2_1)))',
               ...
-              '(assert (= or_0_4_30 (or xor_0_3_30 xor_0_1_30)))',
-              '(assert (= or_0_4_31 (or xor_0_3_31 xor_0_1_31)))'])
+                            '(assert (= or_0_0_30 (or input1_30 input2_30)))',
+                            '(assert (= or_0_0_31 (or input1_31 input2_31)))'])
         """
         input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
