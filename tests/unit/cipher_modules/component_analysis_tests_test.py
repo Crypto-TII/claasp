@@ -175,3 +175,24 @@ def test_branch_number_with_bit_format():
 
     # Verify they are computed (actual values depend on the matrix)
     assert diff_bn_bit >= 1 and lin_bn_bit >= 1 and diff_bn_word >= 1
+
+
+def test_branch_number_with_word_format_exact_mix_column():
+    """Test exact word-level branch number for AES mix_column component."""
+    aes = AESBlockCipher(number_of_rounds=3)
+    mix_column_component = None
+    for round_obj in aes.rounds_as_list:
+        for component in round_obj.components:
+            if component.type == "mix_column":
+                mix_column_component = component
+                break
+        if mix_column_component:
+            break
+
+    assert mix_column_component is not None, "No mix_column component found in AES"
+
+    diff_bn_word = branch_number(mix_column_component, "differential", "word")
+    lin_bn_word = branch_number(mix_column_component, "linear", "word")
+
+    assert diff_bn_word == 5, f"Expected AES mix_column differential word branch number 5, got {diff_bn_word}"
+    assert lin_bn_word == 5, f"Expected AES mix_column linear word branch number 5, got {lin_bn_word}"
