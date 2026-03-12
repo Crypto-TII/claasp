@@ -1,3 +1,4 @@
+import pytest
 from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
 from claasp.cipher_modules.component_analysis_tests import (
     CipherComponentsAnalysis,
@@ -14,6 +15,17 @@ from claasp.ciphers.stream_ciphers.trivium_stream_cipher import TriviumStreamCip
 from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
 from sage.all import Matrix, identity_matrix
 from sage.rings.finite_rings.finite_field_constructor import FiniteField as GF
+
+
+@pytest.fixture(scope="module")
+def aes_mix_column_component():
+    """Module-scoped fixture: AES MixColumn component (cipher instantiated once)."""
+    aes = AESBlockCipher(number_of_rounds=3)
+    for round_obj in aes.rounds_as_list:
+        for component in round_obj.components:
+            if component.type == "mix_column":
+                return component
+    raise RuntimeError("No mix_column component found in AES")
 
 
 def test_get_all_operations():
@@ -108,21 +120,34 @@ def test_compute_branch_number_from_binary_matrix_larger_matrix():
 
 
 def test_compute_branch_number_from_binary_matrix_large_128_fast_case():
-    """Test branch number on large 128x128 matrices that should terminate quickly."""
+    """Test branch number on large 128x128 matrices using bounded enumeration.
+
+    Uses method='bounded' explicitly: the bounded search exits as soon as best==2
+    is found at weight 1, so it is O(n) regardless of matrix size.
+    The sage (LinearCode) path does NOT short-circuit and would be very slow on
+    a 128x256 generator matrix, so it is NOT appropriate for large matrices.
+    """
     F = GF(2)
 
-    # Identity reaches branch number 2 at weight-1, so this should be fast.
+    # Identity: BN=2 is found at weight-1 (each row has exactly one output bit),
+    # so bounded search exits after seeing the first column.
     identity_128 = identity_matrix(F, 128)
-    bn_identity = compute_branch_number_from_binary_matrix(identity_128, "differential")
+    bn_identity = compute_branch_number_from_binary_matrix(
+        identity_128, "differential", method="bounded"
+    )
     assert bn_identity == 2, f"Expected branch number 2 for 128x128 identity, got {bn_identity}"
 
-    # Permutation matrix also has one-hot columns, so branch number is 2 and fast to detect.
+    # Permutation matrix: same argument - one-hot columns give BN=2 immediately.
     permutation_128 = identity_matrix(F, 128)[::-1, :]
-    bn_permutation = compute_branch_number_from_binary_matrix(permutation_128, "differential")
+    bn_permutation = compute_branch_number_from_binary_matrix(
+        permutation_128, "differential", method="bounded"
+    )
     assert bn_permutation == 2, f"Expected branch number 2 for 128x128 permutation matrix, got {bn_permutation}"
 
-    # Linear branch number should also be 2 on these matrices.
-    bn_identity_linear = compute_branch_number_from_binary_matrix(identity_128, "linear")
+    # Linear mode: same early-exit applies on the transpose.
+    bn_identity_linear = compute_branch_number_from_binary_matrix(
+        identity_128, "linear", method="bounded"
+    )
     assert bn_identity_linear == 2, f"Expected linear branch number 2 for 128x128 identity, got {bn_identity_linear}"
 
 
@@ -141,24 +166,13 @@ def test_compute_branch_number_from_binary_matrix_type_parameter():
     assert isinstance(bn_lin, int) and bn_lin > 0
 
 
-def test_branch_number_with_bit_format():
+def test_branch_number_with_bit_format(aes_mix_column_component):
     """Test branch_number function with format='bit' on mix_column component.
 
     This test ensures that the optimized binary matrix computation path is
     being used correctly when branch_number is called with format='bit'.
     """
-    aes = AESBlockCipher(number_of_rounds=3)
-    # Find a mix_column component - iterate through rounds to get the first one
-    mix_column_component = None
-    for round_obj in aes.rounds_as_list:
-        for component in round_obj.components:
-            if component.type == "mix_column":
-                mix_column_component = component
-                break
-        if mix_column_component:
-            break
-
-    assert mix_column_component is not None, "No mix_column component found in AES"
+    mix_column_component = aes_mix_column_component
 
     # Test differential branch number with bit format
     diff_bn_bit = branch_number(mix_column_component, "differential", "bit")
@@ -178,23 +192,12 @@ def test_branch_number_with_bit_format():
         f"Expected positive integer for differential branch number (word), got {diff_bn_word}"
     )
 
-    # Verify they are computed (actual values depend on the matrix)
     assert diff_bn_bit >= 1 and lin_bn_bit >= 1 and diff_bn_word >= 1
 
 
-def test_branch_number_with_word_format_exact_mix_column():
+def test_branch_number_with_word_format_exact_mix_column(aes_mix_column_component):
     """Test exact word-level branch number for AES mix_column component."""
-    aes = AESBlockCipher(number_of_rounds=3)
-    mix_column_component = None
-    for round_obj in aes.rounds_as_list:
-        for component in round_obj.components:
-            if component.type == "mix_column":
-                mix_column_component = component
-                break
-        if mix_column_component:
-            break
-
-    assert mix_column_component is not None, "No mix_column component found in AES"
+    mix_column_component = aes_mix_column_component
 
     diff_bn_word = branch_number(mix_column_component, "differential", "word")
     lin_bn_word = branch_number(mix_column_component, "linear", "word")
