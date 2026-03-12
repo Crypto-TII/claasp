@@ -36,6 +36,7 @@ from claasp.name_mappings import (
 
 import matplotlib.pyplot as plt
 from math import pi, log2
+from itertools import combinations
 
 
 class CipherComponentsAnalysis:
@@ -1284,14 +1285,15 @@ def field_element_matrix_to_integer_matrix(matrix):
     return Matrix(matrix.nrows(), matrix.ncols(), int_matrix)
 
 
-def compute_branch_number_from_binary_matrix(binary_matrix, type="differential"):
+def compute_branch_number_from_binary_matrix(binary_matrix, type="differential", max_input_weight=3):
     """
-    Compute branch number directly from a binary matrix.
+    Compute branch number from a binary matrix using bounded search on input weight.
 
     INPUT:
 
-    - ``binary_matrix`` -- Sage matrix over GF(2)
+    - ``binary_matrix`` -- Sage matrix over GF(2) or list of lists over {0,1}
     - ``type`` -- **string** (default: `"differential"`) differential or linear
+    - ``max_input_weight`` -- **integer** (default: ``3``); maximum input weight explored
 
     EXAMPLES::
 
@@ -1302,24 +1304,90 @@ def compute_branch_number_from_binary_matrix(binary_matrix, type="differential")
         sage: matrix = Matrix(F, [[1, 0], [1, 1]])
         sage: compute_branch_number_from_binary_matrix(matrix, 'differential')
         2
+
+        sage: matrix = Matrix(F, [[1, 1], [1, 1]])
+        sage: compute_branch_number_from_binary_matrix(matrix, 'differential')
+        2
+
+        sage: matrix = Matrix(F, [[1, 1], [1, 1]])
+        sage: compute_branch_number_from_binary_matrix(matrix, 'linear')
+        2
+
+    NOTE:
+
+    This function computes the exact branch number whenever the minimizing input
+    has Hamming weight at most ``max_input_weight``. Otherwise, it returns the
+    best value found within the explored weights.
     """
-    # For linear branch number, transpose the matrix
-    if type == "linear":
-        matrix = binary_matrix.transpose()
+    if hasattr(binary_matrix, "nrows"):
+        matrix = binary_matrix.transpose() if type == "linear" else binary_matrix
+        n = matrix.nrows()
+        ncols = matrix.ncols()
+        cell_at = lambda row_idx, col_idx: int(matrix[row_idx][col_idx]) & 1
     else:
-        matrix = binary_matrix
+        if not binary_matrix or not binary_matrix[0]:
+            raise ValueError("binary_matrix must be a non-empty square matrix")
+        base_matrix = binary_matrix
+        if type == "linear":
+            base_matrix = [list(row) for row in zip(*base_matrix)]
+        n = len(base_matrix)
+        ncols = len(base_matrix[0])
+        cell_at = lambda row_idx, col_idx: int(base_matrix[row_idx][col_idx]) & 1
 
-    F = matrix.base_ring()  # Should be GF(2)
-    n = matrix.nrows()
+    if n != ncols:
+        raise ValueError("Branch number requires a square binary matrix")
+    if max_input_weight < 1:
+        raise ValueError("max_input_weight must be at least 1")
 
-    # Create generator matrix [I|M]
-    id_matrix = identity_matrix(F, n)
-    generator_matrix = Matrix(F, [list(a) + list(b) for a, b in zip(id_matrix, matrix)])
+    limit = min(max_input_weight, n)
+    columns = []
+    for col_idx in range(n):
+        col_mask = 0
+        for row_idx in range(n):
+            bit = cell_at(row_idx, col_idx)
+            col_mask |= bit << row_idx
+        columns.append(col_mask)
 
-    # Compute Hamming weight of each row
-    weights = []
-    for i in range(n):
-        weights.append(generator_matrix[i].hamming_weight())
+    best = (2 * n) + 1
 
-    # Branch number is the minimum weight
-    return min(weights)
+    for col in columns:
+        candidate = 1 + col.bit_count()
+        if candidate < best:
+            best = candidate
+    if best == 2 or limit == 1:
+        return best
+
+    if 2 < best:
+        for i, j in combinations(range(n), 2):
+            candidate = 2 + (columns[i] ^ columns[j]).bit_count()
+            if candidate < best:
+                best = candidate
+                if best == 2:
+                    return best
+    if limit == 2 or 3 >= best:
+        return best
+
+    if 3 < best:
+        for i, j, k in combinations(range(n), 3):
+            candidate = 3 + (columns[i] ^ columns[j] ^ columns[k]).bit_count()
+            if candidate < best:
+                best = candidate
+                if best == 2:
+                    return best
+    if limit == 3 or 4 >= best:
+        return best
+
+    for weight in range(4, limit + 1):
+        if weight >= best:
+            break
+        for indices in combinations(range(n), weight):
+            output_mask = 0
+            for index in indices:
+                output_mask ^= columns[index]
+            candidate = weight + output_mask.bit_count()
+            if candidate < best:
+                best = candidate
+                if best == 2:
+                    return best
+
+    return best

@@ -61,6 +61,11 @@ def test_compute_branch_number_from_binary_matrix_differential():
     bn = compute_branch_number_from_binary_matrix(matrix, "differential")
     assert bn == 2, f"Expected branch number 2, got {bn}"
 
+    # Regression case: minimum is reached by a weight-2 input (not by a single row)
+    matrix = Matrix(F, [[1, 1], [1, 1]])
+    bn = compute_branch_number_from_binary_matrix(matrix, "differential")
+    assert bn == 2, f"Expected branch number 2 for [[1,1],[1,1]], got {bn}"
+
 
 def test_compute_branch_number_from_binary_matrix_linear():
     """Test linear branch number computation from binary matrix."""
@@ -76,6 +81,11 @@ def test_compute_branch_number_from_binary_matrix_linear():
     bn = compute_branch_number_from_binary_matrix(matrix, "linear")
     assert bn == 2, f"Expected branch number 2 (linear), got {bn}"
 
+    # Regression case in linear mode
+    matrix = Matrix(F, [[1, 1], [1, 1]])
+    bn = compute_branch_number_from_binary_matrix(matrix, "linear")
+    assert bn == 2, f"Expected branch number 2 for [[1,1],[1,1]] (linear), got {bn}"
+
 
 def test_compute_branch_number_from_binary_matrix_larger_matrix():
     """Test branch number computation for larger matrices."""
@@ -90,6 +100,25 @@ def test_compute_branch_number_from_binary_matrix_larger_matrix():
     matrix = Matrix(F, [[1, 1, 0, 0], [1, 0, 1, 0], [0, 1, 0, 1], [1, 1, 1, 1]])
     bn = compute_branch_number_from_binary_matrix(matrix, "differential")
     assert isinstance(bn, int) and bn > 0, f"Expected positive integer branch number, got {bn}"
+
+
+def test_compute_branch_number_from_binary_matrix_large_128_fast_case():
+    """Test branch number on large 128x128 matrices that should terminate quickly."""
+    F = GF(2)
+
+    # Identity reaches branch number 2 at weight-1, so this should be fast.
+    identity_128 = identity_matrix(F, 128)
+    bn_identity = compute_branch_number_from_binary_matrix(identity_128, "differential")
+    assert bn_identity == 2, f"Expected branch number 2 for 128x128 identity, got {bn_identity}"
+
+    # Permutation matrix also has one-hot columns, so branch number is 2 and fast to detect.
+    permutation_128 = identity_matrix(F, 128)[::-1, :]
+    bn_permutation = compute_branch_number_from_binary_matrix(permutation_128, "differential")
+    assert bn_permutation == 2, f"Expected branch number 2 for 128x128 permutation matrix, got {bn_permutation}"
+
+    # Linear branch number should also be 2 on these matrices.
+    bn_identity_linear = compute_branch_number_from_binary_matrix(identity_128, "linear")
+    assert bn_identity_linear == 2, f"Expected linear branch number 2 for 128x128 identity, got {bn_identity_linear}"
 
 
 def test_compute_branch_number_from_binary_matrix_type_parameter():
