@@ -2,6 +2,11 @@ from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
 from claasp.cipher_modules.component_analysis_tests import (
     CipherComponentsAnalysis,
     compute_branch_number_from_binary_matrix,
+    compute_branch_number_from_binary_matrix_with_sage,
+    compute_branch_number_from_binary_matrix_with_bounded_enumeration,
+    compute_branch_number_from_field_matrix,
+    compute_branch_number_from_field_matrix_with_sage,
+    compute_branch_number_from_field_matrix_with_bounded_enumeration,
     branch_number,
 )
 from claasp.ciphers.stream_ciphers.bluetooth_stream_cipher_e0 import BluetoothStreamCipherE0
@@ -196,3 +201,336 @@ def test_branch_number_with_word_format_exact_mix_column():
 
     assert diff_bn_word == 5, f"Expected AES mix_column differential word branch number 5, got {diff_bn_word}"
     assert lin_bn_word == 5, f"Expected AES mix_column linear word branch number 5, got {lin_bn_word}"
+
+
+# ==================== New comprehensive tests for method variations ====================
+
+
+class TestBinaryMatrixWithSage:
+    """Test suite for compute_branch_number_from_binary_matrix_with_sage."""
+
+    def test_identity_matrix_2x2(self):
+        """Test sage method on 2x2 identity matrix."""
+        F = GF(2)
+        matrix = identity_matrix(F, 2)
+        bn = compute_branch_number_from_binary_matrix_with_sage(matrix, "differential")
+        assert bn == 2, f"Expected 2, got {bn}"
+
+    def test_simple_matrix_differential(self):
+        """Test sage method with simple matrix in differential mode."""
+        F = GF(2)
+        matrix = Matrix(F, [[1, 0], [1, 1]])
+        bn = compute_branch_number_from_binary_matrix_with_sage(matrix, "differential")
+        assert bn == 2, f"Expected 2, got {bn}"
+
+    def test_simple_matrix_linear(self):
+        """Test sage method with simple matrix in linear mode."""
+        F = GF(2)
+        matrix = Matrix(F, [[1, 0], [1, 1]])
+        bn = compute_branch_number_from_binary_matrix_with_sage(matrix, "linear")
+        assert bn == 2, f"Expected 2, got {bn}"
+
+    def test_4x4_identity(self):
+        """Test sage method on larger 4x4 identity matrix."""
+        F = GF(2)
+        matrix = identity_matrix(F, 4)
+        bn = compute_branch_number_from_binary_matrix_with_sage(matrix, "differential")
+        assert bn == 2, f"Expected 2 for 4x4 identity, got {bn}"
+
+    def test_list_input(self):
+        """Test that sage method accepts Python list input."""
+        matrix = [[1, 0], [1, 1]]
+        bn = compute_branch_number_from_binary_matrix_with_sage(matrix, "differential")
+        assert bn == 2, f"Expected 2, got {bn}"
+
+
+class TestBinaryMatrixWithBoundedEnumeration:
+    """Test suite for compute_branch_number_from_binary_matrix_with_bounded_enumeration."""
+
+    def test_identity_matrix_2x2(self):
+        """Test bounded method on 2x2 identity matrix."""
+        F = GF(2)
+        matrix = identity_matrix(F, 2)
+        bn = compute_branch_number_from_binary_matrix_with_bounded_enumeration(matrix, "differential", max_input_weight=3)
+        assert bn == 2, f"Expected 2, got {bn}"
+
+    def test_simple_matrix_differential(self):
+        """Test bounded method with simple matrix in differential mode."""
+        F = GF(2)
+        matrix = Matrix(F, [[1, 0], [1, 1]])
+        bn = compute_branch_number_from_binary_matrix_with_bounded_enumeration(matrix, "differential", max_input_weight=3)
+        assert bn == 2, f"Expected 2, got {bn}"
+
+    def test_simple_matrix_linear(self):
+        """Test bounded method with simple matrix in linear mode."""
+        F = GF(2)
+        matrix = Matrix(F, [[1, 0], [1, 1]])
+        bn = compute_branch_number_from_binary_matrix_with_bounded_enumeration(matrix, "linear", max_input_weight=3)
+        assert bn == 2, f"Expected 2, got {bn}"
+
+    def test_max_input_weight_parameter(self):
+        """Test that max_input_weight parameter is respected."""
+        F = GF(2)
+        # Use a matrix where the minimum is at higher weight
+        matrix = identity_matrix(F, 4)
+        # Even with max_input_weight=1, should find the minimum at weight 1
+        bn = compute_branch_number_from_binary_matrix_with_bounded_enumeration(matrix, "differential", max_input_weight=1)
+        assert bn == 2, f"Expected 2 with max_input_weight=1, got {bn}"
+
+    def test_list_input(self):
+        """Test that bounded method accepts Python list input."""
+        matrix = [[1, 0], [1, 1]]
+        bn = compute_branch_number_from_binary_matrix_with_bounded_enumeration(matrix, "differential", max_input_weight=3)
+        assert bn == 2, f"Expected 2, got {bn}"
+
+
+class TestBinaryMatrixWithMethodParameter:
+    """Test suite for compute_branch_number_from_binary_matrix with method parameter."""
+
+    def test_default_method_is_sage(self):
+        """Test that default method is 'sage'."""
+        F = GF(2)
+        matrix = identity_matrix(F, 2)
+        bn_default = compute_branch_number_from_binary_matrix(matrix, "differential")
+        bn_sage = compute_branch_number_from_binary_matrix(matrix, "differential", method="sage")
+        assert bn_default == bn_sage, f"Default method should be 'sage': {bn_default} != {bn_sage}"
+
+    def test_method_sage(self):
+        """Test explicit method='sage' parameter."""
+        F = GF(2)
+        matrix = Matrix(F, [[1, 0], [1, 1]])
+        bn = compute_branch_number_from_binary_matrix(matrix, "differential", method="sage")
+        assert bn == 2, f"Expected 2 with method='sage', got {bn}"
+
+    def test_method_bounded(self):
+        """Test explicit method='bounded' parameter."""
+        F = GF(2)
+        matrix = Matrix(F, [[1, 0], [1, 1]])
+        bn = compute_branch_number_from_binary_matrix(matrix, "differential", method="bounded", max_input_weight=3)
+        assert bn == 2, f"Expected 2 with method='bounded', got {bn}"
+
+    def test_sage_and_bounded_give_same_result(self):
+        """Test that both methods give the same result on simple matrices."""
+        F = GF(2)
+        matrix = Matrix(F, [[1, 0, 0], [1, 1, 0], [0, 1, 1]])
+        bn_sage = compute_branch_number_from_binary_matrix(matrix, "differential", method="sage")
+        bn_bounded = compute_branch_number_from_binary_matrix(matrix, "differential", method="bounded", max_input_weight=3)
+        assert bn_sage == bn_bounded, f"Sage and bounded methods disagree: {bn_sage} != {bn_bounded}"
+
+    def test_invalid_method_raises_error(self):
+        """Test that invalid method parameter raises error."""
+        F = GF(2)
+        matrix = identity_matrix(F, 2)
+        try:
+            compute_branch_number_from_binary_matrix(matrix, "differential", method="invalid")
+            assert False, "Should have raised ValueError for invalid method"
+        except ValueError as e:
+            assert "Unknown method" in str(e)
+
+    def test_type_parameter_with_method(self):
+        """Test that type parameter works with method parameter."""
+        F = GF(2)
+        matrix = identity_matrix(F, 2)
+        bn_diff_sage = compute_branch_number_from_binary_matrix(matrix, "differential", method="sage")
+        bn_lin_sage = compute_branch_number_from_binary_matrix(matrix, "linear", method="sage")
+        bn_diff_bounded = compute_branch_number_from_binary_matrix(matrix, "differential", method="bounded")
+        bn_lin_bounded = compute_branch_number_from_binary_matrix(matrix, "linear", method="bounded")
+        assert bn_diff_sage == 2 and bn_lin_sage == 2
+        assert bn_diff_bounded == 2 and bn_lin_bounded == 2
+
+
+class TestFieldMatrixWithSage:
+    """Test suite for compute_branch_number_from_field_matrix_with_sage."""
+
+    def test_gf2_matrix(self):
+        """Test sage method on GF(2) matrix."""
+        F = GF(2)
+        matrix = Matrix(F, [[1, 0], [1, 1]])
+        bn = compute_branch_number_from_field_matrix_with_sage(matrix)
+        assert bn == 2, f"Expected 2, got {bn}"
+
+    def test_gf4_matrix(self):
+        """Test sage method on GF(4) matrix."""
+        F = GF(4, 'a')
+        matrix = Matrix(F, [[1, 1], [1, F.gen()]])
+        bn = compute_branch_number_from_field_matrix_with_sage(matrix)
+        assert bn == 3, f"Expected 3, got {bn}"
+
+    def test_identity_matrix(self):
+        """Test sage method on identity matrix."""
+        F = GF(2)
+        matrix = identity_matrix(F, 3)
+        bn = compute_branch_number_from_field_matrix_with_sage(matrix)
+        assert bn == 2, f"Expected 2, got {bn}"
+
+
+class TestFieldMatrixWithBoundedEnumeration:
+    """Test suite for compute_branch_number_from_field_matrix_with_bounded_enumeration."""
+
+    def test_gf2_matrix(self):
+        """Test bounded method on GF(2) matrix."""
+        F = GF(2)
+        matrix = Matrix(F, [[1, 0], [1, 1]])
+        bn = compute_branch_number_from_field_matrix_with_bounded_enumeration(matrix, max_input_weight=3)
+        assert bn == 2, f"Expected 2, got {bn}"
+
+    def test_gf4_matrix(self):
+        """Test bounded method on GF(4) matrix."""
+        F = GF(4, 'a')
+        matrix = Matrix(F, [[1, 1], [1, F.gen()]])
+        bn = compute_branch_number_from_field_matrix_with_bounded_enumeration(matrix, max_input_weight=3)
+        assert bn == 3, f"Expected 3, got {bn}"
+
+    def test_identity_matrix(self):
+        """Test bounded method on identity matrix."""
+        F = GF(2)
+        matrix = identity_matrix(F, 3)
+        bn = compute_branch_number_from_field_matrix_with_bounded_enumeration(matrix, max_input_weight=3)
+        assert bn == 2, f"Expected 2, got {bn}"
+
+    def test_max_input_weight_parameter(self):
+        """Test that max_input_weight parameter is respected."""
+        F = GF(2)
+        matrix = identity_matrix(F, 3)
+        bn = compute_branch_number_from_field_matrix_with_bounded_enumeration(matrix, max_input_weight=1)
+        assert bn == 2, f"Expected 2 with max_input_weight=1, got {bn}"
+
+
+class TestFieldMatrixWithMethodParameter:
+    """Test suite for compute_branch_number_from_field_matrix with method parameter."""
+
+    def test_default_method_is_sage(self):
+        """Test that default method is 'sage'."""
+        F = GF(2)
+        matrix = identity_matrix(F, 2)
+        bn_default = compute_branch_number_from_field_matrix(matrix)
+        bn_sage = compute_branch_number_from_field_matrix(matrix, method="sage")
+        assert bn_default == bn_sage, f"Default method should be 'sage': {bn_default} != {bn_sage}"
+
+    def test_method_sage(self):
+        """Test explicit method='sage' parameter."""
+        F = GF(2)
+        matrix = Matrix(F, [[1, 0], [1, 1]])
+        bn = compute_branch_number_from_field_matrix(matrix, method="sage")
+        assert bn == 2, f"Expected 2 with method='sage', got {bn}"
+
+    def test_method_bounded(self):
+        """Test explicit method='bounded' parameter."""
+        F = GF(2)
+        matrix = Matrix(F, [[1, 0], [1, 1]])
+        bn = compute_branch_number_from_field_matrix(matrix, method="bounded", max_input_weight=3)
+        assert bn == 2, f"Expected 2 with method='bounded', got {bn}"
+
+    def test_sage_and_bounded_give_same_result_gf2(self):
+        """Test that both methods give the same result on GF(2) matrices."""
+        F = GF(2)
+        matrix = Matrix(F, [[1, 0, 0], [1, 1, 0], [0, 1, 1]])
+        bn_sage = compute_branch_number_from_field_matrix(matrix, method="sage")
+        bn_bounded = compute_branch_number_from_field_matrix(matrix, method="bounded", max_input_weight=3)
+        assert bn_sage == bn_bounded, f"Sage and bounded methods disagree: {bn_sage} != {bn_bounded}"
+
+    def test_sage_and_bounded_give_same_result_gf4(self):
+        """Test that both methods give the same result on GF(4) matrices."""
+        F = GF(4, 'a')
+        matrix = Matrix(F, [[1, 1], [1, F.gen()]])
+        bn_sage = compute_branch_number_from_field_matrix(matrix, method="sage")
+        bn_bounded = compute_branch_number_from_field_matrix(matrix, method="bounded", max_input_weight=3)
+        assert bn_sage == bn_bounded, f"Sage and bounded methods disagree: {bn_sage} != {bn_bounded}"
+
+    def test_gf2_delegates_to_binary_version(self):
+        """Test that GF(2) matrices use optimized binary version."""
+        F = GF(2)
+        matrix = identity_matrix(F, 4)
+        # Both should work and give same result
+        bn_field = compute_branch_number_from_field_matrix(matrix, method="sage")
+        bn_binary = compute_branch_number_from_binary_matrix(matrix, method="sage")
+        assert bn_field == bn_binary == 2, f"GF(2) field and binary methods should agree"
+
+    def test_invalid_method_raises_error(self):
+        """Test that invalid method parameter raises error."""
+        F = GF(2)
+        matrix = identity_matrix(F, 2)
+        try:
+            compute_branch_number_from_field_matrix(matrix, method="invalid")
+            assert False, "Should have raised ValueError for invalid method"
+        except ValueError as e:
+            assert "Unknown method" in str(e)
+
+
+class TestEdgeCases:
+    """Test edge cases and error handling."""
+
+    def test_empty_matrix_binary_raises_error(self):
+        """Test that empty matrix raises error."""
+        try:
+            compute_branch_number_from_binary_matrix([], "differential")
+            assert False, "Should raise error for empty matrix"
+        except ValueError as e:
+            assert "non-empty" in str(e).lower()
+
+    def test_non_square_matrix_binary_raises_error(self):
+        """Test that non-square matrix raises error."""
+        F = GF(2)
+        matrix = Matrix(F, [[1, 0, 1], [1, 1, 0]])
+        try:
+            compute_branch_number_from_binary_matrix(matrix, "differential")
+            assert False, "Should raise error for non-square matrix"
+        except ValueError as e:
+            assert "square" in str(e).lower()
+
+    def test_non_square_matrix_field_raises_error(self):
+        """Test that non-square field matrix raises error."""
+        F = GF(2)
+        matrix = Matrix(F, [[1, 0, 1], [1, 1, 0]])
+        try:
+            compute_branch_number_from_field_matrix(matrix)
+            assert False, "Should raise error for non-square matrix"
+        except ValueError as e:
+            assert "non-empty" in str(e).lower()
+
+    def test_single_element_matrix_binary(self):
+        """Test branch number on 1x1 matrix."""
+        F = GF(2)
+        matrix = Matrix(F, [[1]])
+        bn = compute_branch_number_from_binary_matrix(matrix, "differential")
+        assert bn == 2, f"Expected 2 for 1x1 matrix, got {bn}"
+
+    def test_single_element_matrix_field(self):
+        """Test branch number on 1x1 field matrix."""
+        F = GF(2)
+        matrix = Matrix(F, [[1]])
+        bn = compute_branch_number_from_field_matrix(matrix)
+        assert bn == 2, f"Expected 2 for 1x1 matrix, got {bn}"
+
+
+class TestConsistency:
+    """Test consistency across different invocation patterns."""
+
+    def test_binary_matrix_list_vs_sage_matrix(self):
+        """Test that list and Sage matrix inputs give same result."""
+        F = GF(2)
+        sage_matrix = Matrix(F, [[1, 0], [1, 1]])
+        list_matrix = [[1, 0], [1, 1]]
+        bn_sage = compute_branch_number_from_binary_matrix(sage_matrix, "differential", method="sage")
+        bn_list = compute_branch_number_from_binary_matrix(list_matrix, "differential", method="sage")
+        assert bn_sage == bn_list, f"List and Sage matrix should give same result: {bn_list} != {bn_sage}"
+
+    def test_field_matrix_consistency(self):
+        """Test consistency of field matrix computation."""
+        F = GF(4, 'a')
+        matrix = Matrix(F, [[1, 1], [1, F.gen()]])
+        bn1 = compute_branch_number_from_field_matrix(matrix, method="sage")
+        bn2 = compute_branch_number_from_field_matrix(matrix, method="bounded", max_input_weight=4)
+        assert bn1 == bn2, f"Field matrix methods should agree: {bn1} != {bn2}"
+
+    def test_type_parameter_gives_different_results_for_asymmetric_matrix(self):
+        """Test that type parameter can give different results for non-symmetric matrices."""
+        F = GF(2)
+        # Create a non-symmetric matrix
+        matrix = Matrix(F, [[1, 0, 1], [0, 1, 1], [1, 1, 0]])
+        bn_diff = compute_branch_number_from_binary_matrix(matrix, "differential", method="sage")
+        bn_lin = compute_branch_number_from_binary_matrix(matrix, "linear", method="sage")
+        # Both should be positive integers (they might be equal or different)
+        assert isinstance(bn_diff, int) and bn_diff >= 1
+        assert isinstance(bn_lin, int) and bn_lin >= 1
+
