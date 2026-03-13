@@ -1172,9 +1172,9 @@ def calculate_weights_for_mix_column(component, format, type):
     )
     if type == "linear":
         final_mtr = final_mtr.transpose()
-    # Use bounded enumeration: the sage/GAP method only works for fields defined
-    # by Conway polynomials, but cipher fields (e.g. AES GF(2^8) with the Rijndael
-    # polynomial) are Givaro-based and incompatible with GAP.
+    # The exact sage path now supports custom-modulus fields by remapping them
+    # to an isomorphic Conway-defined field, but bounded enumeration is still
+    # preferable here for performance on common cipher MixColumn matrices.
     bn = compute_branch_number_from_field_matrix(final_mtr, method="bounded")
     return [bn]
 
@@ -1199,6 +1199,34 @@ def _update_best_branch_number(candidate, best):
     return best, False
 
 
+def _map_matrix_to_conway_field(matrix):
+    """
+    Return an isomorphic copy of ``matrix`` over a Conway-defined finite field.
+
+    This preserves the branch number while converting the matrix into a field
+    representation that GAP can handle through Sage's ``LinearCode`` backend.
+    """
+    field = matrix.base_ring()
+    if field.degree() == 1:
+        return matrix
+
+    conway_field = GF(field.order(), name="c")
+    if field == conway_field:
+        return matrix
+
+    roots = field.modulus().roots(conway_field, multiplicities=False)
+    if not roots:
+        raise NotImplementedError(
+            "Could not construct an isomorphism from the source field to a Conway-defined field."
+        )
+
+    homomorphism = field.hom([roots[0]], conway_field)
+    return Matrix(
+        conway_field,
+        [[homomorphism(matrix[i][j]) for j in range(matrix.ncols())] for i in range(matrix.nrows())],
+    )
+
+
 def compute_branch_number_from_field_matrix_with_sage(matrix):
     """
     Compute the exact branch number of a field matrix using Sage's LinearCode.
@@ -1217,14 +1245,9 @@ def compute_branch_number_from_field_matrix_with_sage(matrix):
 
     NOTE:
 
-    This function may fail on some finite fields because Sage delegates
-    ``LinearCode.minimum_distance()`` to GAP. GAP supports Givaro elements only
-    when the field is defined by Conway polynomials. Cipher fields built with a
-    custom irreducible polynomial (for example AES GF(2^8)) can raise
-    ``NotImplementedError``.
-
-    If you want automatic fallback behavior, use
-    ``compute_branch_number_from_field_matrix(..., method='sage')``.
+    If the source field is defined by a custom irreducible polynomial and GAP
+    rejects that representation, the matrix is transparently remapped to an
+    isomorphic Conway-defined field before the exact branch number is computed.
 
     EXAMPLES::
 
@@ -1249,12 +1272,18 @@ def compute_branch_number_from_field_matrix_with_sage(matrix):
     generator_matrix = Matrix(F, [list(id_matrix[i]) + list(rows[i]) for i in range(input_size)])
 
     from sage.coding.linear_code import LinearCode
-    # NOTE: minimum_distance() uses GAP internally. GAP only supports Givaro fields
-    # defined by Conway polynomials. Fields constructed with custom irreducible
-    # polynomials (e.g. AES's GF(2^8) with the Rijndael polynomial) will raise
-    # NotImplementedError here. Use compute_branch_number_from_field_matrix_with_bounded_enumeration
-    # for such fields.
-    return int(LinearCode(generator_matrix).minimum_distance())
+    try:
+        return int(LinearCode(generator_matrix).minimum_distance())
+    except NotImplementedError:
+        mapped_matrix = _map_matrix_to_conway_field(matrix)
+        mapped_field = mapped_matrix.base_ring()
+        mapped_identity = identity_matrix(mapped_field, input_size)
+        mapped_rows = [mapped_matrix.row(i) for i in range(input_size)]
+        mapped_generator_matrix = Matrix(
+            mapped_field,
+            [list(mapped_identity[i]) + list(mapped_rows[i]) for i in range(input_size)],
+        )
+        return int(LinearCode(mapped_generator_matrix).minimum_distance())
 
 
 def compute_branch_number_from_field_matrix_with_bounded_enumeration(matrix, max_input_weight=3):
@@ -1372,9 +1401,11 @@ def compute_branch_number_from_field_matrix(matrix, max_input_weight=3, method="
     - ``method`` -- **string** (default: ``"sage"``); computation method:
 
             * ``"sage"`` -- tries Sage's LinearCode for exact computation first.
-                If Sage/GAP raises a backend limitation error (for example on Givaro
-                fields with non-Conway polynomials), the function automatically falls
-                back to ``"bounded"`` and emits a ``RuntimeWarning``.
+                If the field representation is incompatible with GAP, the matrix
+                is remapped to an isomorphic Conway-defined field transparently.
+                If the exact path still fails for some other backend/runtime
+                reason, the function falls back to ``"bounded"`` and emits a
+                ``RuntimeWarning``.
       * ``"bounded"`` -- uses bounded enumeration up to max_input_weight.
         Recommended for cipher fields using custom irreducible polynomials.
 
@@ -1402,7 +1433,8 @@ def compute_branch_number_from_field_matrix(matrix, max_input_weight=3, method="
     COMPUTATION STRATEGY:
 
      1. **Exact path (primary):** Tries Sage's LinearCode minimum_distance() for exact
-         computation of the branch number.
+         computation of the branch number, remapping to an isomorphic Conway field
+         when required by GAP.
     2. **Optimized GF(2) path:** Automatically detects GF(2) matrices when method="sage"
        and delegates to specialized `compute_branch_number_from_binary_matrix()` for
        faster bitwise computation.

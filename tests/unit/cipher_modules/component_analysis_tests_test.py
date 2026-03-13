@@ -16,6 +16,7 @@ from claasp.ciphers.stream_ciphers.trivium_stream_cipher import TriviumStreamCip
 from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
 from sage.all import Matrix, identity_matrix
 from sage.rings.finite_rings.finite_field_constructor import FiniteField as GF
+from sage.rings.polynomial.polynomial_ring_constructor import PolynomialRing
 
 
 @pytest.fixture(scope="module")
@@ -407,6 +408,15 @@ class TestFieldMatrixWithSage:
         """Test sage method on identity matrix."""
         F = GF(2)
         matrix = identity_matrix(F, 3)
+        bn = compute_branch_number_from_field_matrix_with_sage(matrix)
+        assert bn == 2, f"Expected 2, got {bn}"
+
+    def test_custom_modulus_field(self):
+        """Test sage method on a custom-modulus field via Conway remapping."""
+        R = PolynomialRing(GF(2), "x")
+        x = R.gen()
+        F = GF(2**8, name="a", modulus=x**8 + x**4 + x**3 + x + 1)
+        matrix = Matrix(F, [[F.gen(), F.gen() + 1], [1, 0]])
         bn = compute_branch_number_from_field_matrix_with_sage(matrix)
         assert bn == 2, f"Expected 2, got {bn}"
 
