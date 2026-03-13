@@ -1167,7 +1167,7 @@ def calculate_weights_for_mix_column(component, format, type):
 
     # Word-level computation
     description = component.description
-    final_mtr, F = instantiate_matrix_over_correct_field(
+    final_mtr, _ = instantiate_matrix_over_correct_field(
         description[0], int(description[1]), int(description[2]), component.input_bit_size, component.output_bit_size
     )
     if type == "linear":
@@ -1264,7 +1264,6 @@ def compute_branch_number_from_field_matrix_with_sage(matrix):
         raise ValueError("Branch number requires a non-empty matrix")
 
     input_size = matrix.nrows()
-    output_size = matrix.ncols()
     F = matrix.base_ring()
 
     id_matrix = identity_matrix(F, input_size)
@@ -1284,6 +1283,77 @@ def compute_branch_number_from_field_matrix_with_sage(matrix):
             [list(mapped_identity[i]) + list(mapped_rows[i]) for i in range(input_size)],
         )
         return int(LinearCode(mapped_generator_matrix).minimum_distance())
+
+
+def _initialize_field_enumeration(matrix, max_input_weight):
+    if matrix.nrows() <= 0 or matrix.ncols() <= 0:
+        raise ValueError("Branch number requires a non-empty matrix")
+    if max_input_weight < 1:
+        raise ValueError("max_input_weight must be at least 1")
+
+    input_size = matrix.nrows()
+    output_size = matrix.ncols()
+    rows = [matrix.row(i) for i in range(input_size)]
+    non_zero_elements = [element for element in matrix.base_ring() if element != 0]
+    limit = min(max_input_weight, input_size)
+    best = (input_size + output_size) + 1
+    return rows, non_zero_elements, limit, best
+
+
+def _search_field_weight_1(rows, best):
+    for row in rows:
+        candidate = 1 + row.hamming_weight()
+        best, exit_early = _update_best_branch_number(candidate, best)
+        if exit_early:
+            return best, True
+    return best, False
+
+
+def _search_field_weight_2(rows, non_zero_elements, best):
+    if 2 >= best:
+        return best, True
+    for i, j in combinations(range(len(rows)), 2):
+        left = rows[i]
+        right = rows[j]
+        for coeff in non_zero_elements:
+            candidate = 2 + (left + coeff * right).hamming_weight()
+            best, exit_early = _update_best_branch_number(candidate, best)
+            if exit_early:
+                return best, True
+    return best, False
+
+
+def _search_field_weight_3(rows, non_zero_elements, best):
+    if 3 >= best:
+        return best, True
+    for i, j, k in combinations(range(len(rows)), 3):
+        first = rows[i]
+        second = rows[j]
+        third = rows[k]
+        for coeff_second, coeff_third in product(non_zero_elements, repeat=2):
+            candidate = 3 + (first + coeff_second * second + coeff_third * third).hamming_weight()
+            best, exit_early = _update_best_branch_number(candidate, best)
+            if exit_early:
+                return best, True
+    return best, False
+
+
+def _search_field_weight_4_plus(rows, non_zero_elements, limit, best):
+    for weight in range(4, limit + 1):
+        if weight >= best:
+            break
+        for indices in combinations(range(len(rows)), weight):
+            base_row = rows[indices[0]]
+            remaining_rows = [rows[i] for i in indices[1:]]
+            for coeffs in product(non_zero_elements, repeat=weight - 1):
+                output = base_row
+                for coeff, row in zip(coeffs, remaining_rows):
+                    output += coeff * row
+                candidate = weight + output.hamming_weight()
+                best, exit_early = _update_best_branch_number(candidate, best)
+                if exit_early:
+                    return best, True
+    return best, False
 
 
 def compute_branch_number_from_field_matrix_with_bounded_enumeration(matrix, max_input_weight=3):
@@ -1316,70 +1386,105 @@ def compute_branch_number_from_field_matrix_with_bounded_enumeration(matrix, max
         2
 
     """
-    if matrix.nrows() <= 0 or matrix.ncols() <= 0:
-        raise ValueError("Branch number requires a non-empty matrix")
-    if max_input_weight < 1:
-        raise ValueError("max_input_weight must be at least 1")
+    rows, non_zero_elements, limit, best = _initialize_field_enumeration(matrix, max_input_weight)
 
-    input_size = matrix.nrows()
-    output_size = matrix.ncols()
-    F = matrix.base_ring()
-
-    rows = [matrix.row(i) for i in range(input_size)]
-    non_zero_elements = [element for element in F if element != 0]
-    limit = min(max_input_weight, input_size)
-
-    best = (input_size + output_size) + 1
-
-    for row in rows:
-        candidate = 1 + row.hamming_weight()
-        best, exit_early = _update_best_branch_number(candidate, best)
-        if exit_early:
-            return best
+    best, done = _search_field_weight_1(rows, best)
+    if done:
+        return best
     if limit == 1:
         return best
 
-    if 2 < best:
-        for i, j in combinations(range(input_size), 2):
-            left = rows[i]
-            right = rows[j]
-            for coeff in non_zero_elements:
-                candidate = 2 + (left + coeff * right).hamming_weight()
-                best, exit_early = _update_best_branch_number(candidate, best)
-                if exit_early:
-                    return best
+    best, done = _search_field_weight_2(rows, non_zero_elements, best)
+    if done:
+        return best
     if limit == 2 or 3 >= best:
         return best
 
-    if 3 < best:
-        for i, j, k in combinations(range(input_size), 3):
-            first = rows[i]
-            second = rows[j]
-            third = rows[k]
-            for coeff_second, coeff_third in product(non_zero_elements, repeat=2):
-                candidate = 3 + (first + coeff_second * second + coeff_third * third).hamming_weight()
-                best, exit_early = _update_best_branch_number(candidate, best)
-                if exit_early:
-                    return best
+    best, done = _search_field_weight_3(rows, non_zero_elements, best)
+    if done:
+        return best
     if limit == 3 or 4 >= best:
         return best
 
+    best, _ = _search_field_weight_4_plus(rows, non_zero_elements, limit, best)
+
+    return best
+
+
+def _prepare_binary_matrix(binary_matrix, type):
+    if hasattr(binary_matrix, "nrows"):
+        matrix = binary_matrix.transpose() if type == "linear" else binary_matrix
+    else:
+        if not binary_matrix or not binary_matrix[0]:
+            raise ValueError("binary_matrix must be a non-empty square matrix")
+        base_matrix = binary_matrix
+        if type == "linear":
+            base_matrix = [list(row) for row in zip(*base_matrix)]
+        matrix = Matrix(GF(2), base_matrix)
+
+    n = matrix.nrows()
+    ncols = matrix.ncols()
+    if n != ncols:
+        raise ValueError("Branch number requires a square binary matrix")
+    return matrix, n
+
+
+def _build_binary_column_masks(matrix, n):
+    columns = []
+    for col_idx in range(n):
+        col_mask = 0
+        for row_idx in range(n):
+            col_mask |= (int(matrix[row_idx][col_idx]) & 1) << row_idx
+        columns.append(col_mask)
+    return columns
+
+
+def _search_binary_weight_1(columns, best):
+    for col in columns:
+        candidate = 1 + col.bit_count()
+        if candidate < best:
+            best = candidate
+    return best
+
+
+def _search_binary_weight_2(columns, best):
+    if 2 >= best:
+        return best, True
+    for i, j in combinations(range(len(columns)), 2):
+        candidate = 2 + (columns[i] ^ columns[j]).bit_count()
+        if candidate < best:
+            best = candidate
+            if best == 2:
+                return best, True
+    return best, False
+
+
+def _search_binary_weight_3(columns, best):
+    if 3 >= best:
+        return best, True
+    for i, j, k in combinations(range(len(columns)), 3):
+        candidate = 3 + (columns[i] ^ columns[j] ^ columns[k]).bit_count()
+        if candidate < best:
+            best = candidate
+            if best == 2:
+                return best, True
+    return best, False
+
+
+def _search_binary_weight_4_plus(columns, limit, best):
     for weight in range(4, limit + 1):
         if weight >= best:
             break
-        for indices in combinations(range(input_size), weight):
-            base_row = rows[indices[0]]
-            remaining_rows = [rows[i] for i in indices[1:]]
-            for coeffs in product(non_zero_elements, repeat=weight - 1):
-                output = base_row
-                for coeff, row in zip(coeffs, remaining_rows):
-                    output += coeff * row
-                candidate = weight + output.hamming_weight()
-                best, exit_early = _update_best_branch_number(candidate, best)
-                if exit_early:
-                    return best
-
-    return best
+        for indices in combinations(range(len(columns)), weight):
+            output_mask = 0
+            for index in indices:
+                output_mask ^= columns[index]
+            candidate = weight + output_mask.bit_count()
+            if candidate < best:
+                best = candidate
+                if best == 2:
+                    return best, True
+    return best, False
 
 
 def compute_branch_number_from_field_matrix(matrix, max_input_weight=3, method="sage"):
@@ -1464,7 +1569,7 @@ def compute_branch_number_from_field_matrix(matrix, max_input_weight=3, method="
             return compute_branch_number_from_binary_matrix(binary_matrix, type="differential", method="sage")
         try:
             return compute_branch_number_from_field_matrix_with_sage(matrix)
-        except (NotImplementedError, RuntimeError, ImportError) as error:
+        except (RuntimeError, ImportError) as error:
             warnings.warn(
                 f"Sage method failed ({error}); falling back to bounded enumeration.",
                 RuntimeWarning,
@@ -1679,79 +1784,32 @@ def compute_branch_number_from_binary_matrix_with_bounded_enumeration(binary_mat
         2
 
     """
-    if hasattr(binary_matrix, "nrows"):
-        matrix = binary_matrix.transpose() if type == "linear" else binary_matrix
-        n = matrix.nrows()
-        ncols = matrix.ncols()
-    else:
-        if not binary_matrix or not binary_matrix[0]:
-            raise ValueError("binary_matrix must be a non-empty square matrix")
-        base_matrix = binary_matrix
-        if type == "linear":
-            base_matrix = [list(row) for row in zip(*base_matrix)]
-        n = len(base_matrix)
-        ncols = len(base_matrix[0])
-        # Convert to Sage matrix
-        matrix = Matrix(GF(2), base_matrix)
-
-    if n != ncols:
-        raise ValueError("Branch number requires a square binary matrix")
+    matrix, n = _prepare_binary_matrix(binary_matrix, type)
     if max_input_weight < 1:
         raise ValueError("max_input_weight must be at least 1")
 
-    # Bounded search on input weights
-    cell_at = lambda row_idx, col_idx: int(matrix[row_idx][col_idx]) & 1
-
     limit = min(max_input_weight, n)
-    columns = []
-    for col_idx in range(n):
-        col_mask = 0
-        for row_idx in range(n):
-            bit = cell_at(row_idx, col_idx)
-            col_mask |= bit << row_idx
-        columns.append(col_mask)
+    columns = _build_binary_column_masks(matrix, n)
 
     best = (2 * n) + 1
 
-    for col in columns:
-        candidate = 1 + col.bit_count()
-        if candidate < best:
-            best = candidate
+    best = _search_binary_weight_1(columns, best)
     if best == 2 or limit == 1:
         return best
 
-    if 2 < best:
-        for i, j in combinations(range(n), 2):
-            candidate = 2 + (columns[i] ^ columns[j]).bit_count()
-            if candidate < best:
-                best = candidate
-                if best == 2:
-                    return best
+    best, done = _search_binary_weight_2(columns, best)
+    if done:
+        return best
     if limit == 2 or 3 >= best:
         return best
 
-    if 3 < best:
-        for i, j, k in combinations(range(n), 3):
-            candidate = 3 + (columns[i] ^ columns[j] ^ columns[k]).bit_count()
-            if candidate < best:
-                best = candidate
-                if best == 2:
-                    return best
+    best, done = _search_binary_weight_3(columns, best)
+    if done:
+        return best
     if limit == 3 or 4 >= best:
         return best
 
-    for weight in range(4, limit + 1):
-        if weight >= best:
-            break
-        for indices in combinations(range(n), weight):
-            output_mask = 0
-            for index in indices:
-                output_mask ^= columns[index]
-            candidate = weight + output_mask.bit_count()
-            if candidate < best:
-                best = candidate
-                if best == 2:
-                    return best
+    best, _ = _search_binary_weight_4_plus(columns, limit, best)
 
     return best
 
@@ -1811,7 +1869,7 @@ def compute_branch_number_from_binary_matrix(binary_matrix, type="differential",
     if method == "sage":
         try:
             return compute_branch_number_from_binary_matrix_with_sage(binary_matrix, type)
-        except (NotImplementedError, RuntimeError, ImportError) as error:
+        except (RuntimeError, ImportError) as error:
             warnings.warn(
                 f"Sage method failed ({error}); falling back to bounded enumeration.",
                 RuntimeWarning,

@@ -560,6 +560,49 @@ class TestMapMatrixToConwayField:
         assert mapped is matrix
 
 
+class TestInternalEnumerationHelpers:
+    """Targeted tests to cover helper-level enumeration branches."""
+
+    def test_search_binary_weight2_early_stop_when_best_is_two(self):
+        best, done = cat_module._search_binary_weight_2([0b01, 0b10], 2)
+        assert best == 2 and done is True
+
+    def test_search_binary_weight3_early_stop_when_best_is_three(self):
+        best, done = cat_module._search_binary_weight_3([0b001, 0b010, 0b100], 3)
+        assert best == 3 and done is True
+
+    def test_search_binary_weight4_plus_break_on_best_threshold(self):
+        best, done = cat_module._search_binary_weight_4_plus([0b01, 0b10, 0b11, 0b00], limit=5, best=4)
+        assert best == 4 and done is False
+
+    def test_search_field_weight2_early_stop_when_best_is_two(self):
+        F = GF(4, 'a')
+        rows = [Matrix(F, [[1, 0]]).row(0), Matrix(F, [[0, 1]]).row(0)]
+        best, done = cat_module._search_field_weight_2(rows, [x for x in F if x != 0], 2)
+        assert best == 2 and done is True
+
+    def test_search_field_weight3_early_stop_when_best_is_three(self):
+        F = GF(4, 'a')
+        rows = [
+            Matrix(F, [[1, 0, 0]]).row(0),
+            Matrix(F, [[0, 1, 0]]).row(0),
+            Matrix(F, [[0, 0, 1]]).row(0),
+        ]
+        best, done = cat_module._search_field_weight_3(rows, [x for x in F if x != 0], 3)
+        assert best == 3 and done is True
+
+    def test_search_field_weight4_plus_break_on_best_threshold(self):
+        F = GF(4, 'a')
+        rows = [
+            Matrix(F, [[1, 0, 0, 0]]).row(0),
+            Matrix(F, [[0, 1, 0, 0]]).row(0),
+            Matrix(F, [[0, 0, 1, 0]]).row(0),
+            Matrix(F, [[0, 0, 0, 1]]).row(0),
+        ]
+        best, done = cat_module._search_field_weight_4_plus(rows, [x for x in F if x != 0], limit=5, best=4)
+        assert best == 4 and done is False
+
+
 class TestEdgeCases:
     """Test edge cases and error handling."""
 
