@@ -1171,7 +1171,10 @@ def calculate_weights_for_mix_column(component, format, type):
     )
     if type == "linear":
         final_mtr = final_mtr.transpose()
-    bn = compute_branch_number_from_field_matrix(final_mtr)
+    # Use bounded enumeration: the sage/GAP method only works for fields defined
+    # by Conway polynomials, but cipher fields (e.g. AES GF(2^8) with the Rijndael
+    # polynomial) are Givaro-based and incompatible with GAP.
+    bn = compute_branch_number_from_field_matrix(final_mtr, method="bounded")
     return [bn]
 
 
@@ -1234,6 +1237,11 @@ def compute_branch_number_from_field_matrix_with_sage(matrix):
     generator_matrix = Matrix(F, [list(id_matrix[i]) + list(rows[i]) for i in range(input_size)])
 
     from sage.coding.linear_code import LinearCode
+    # NOTE: minimum_distance() uses GAP internally. GAP only supports Givaro fields
+    # defined by Conway polynomials. Fields constructed with custom irreducible
+    # polynomials (e.g. AES's GF(2^8) with the Rijndael polynomial) will raise
+    # NotImplementedError here. Use compute_branch_number_from_field_matrix_with_bounded_enumeration
+    # for such fields.
     return int(LinearCode(generator_matrix).minimum_distance())
 
 
@@ -1348,8 +1356,12 @@ def compute_branch_number_from_field_matrix(matrix, max_input_weight=3, method="
     - ``max_input_weight`` -- **integer** (default: ``3``); fallback search bound for bounded enumeration
     - ``method`` -- **string** (default: ``"sage"``); computation method:
 
-      * ``"sage"`` -- uses Sage's LinearCode for exact computation (recommended)
-      * ``"bounded"`` -- uses bounded enumeration up to max_input_weight
+      * ``"sage"`` -- uses Sage's LinearCode for exact computation. Requires the
+        field to be defined by a Conway polynomial (e.g. ``GF(4, 'a')`` or
+        ``GF(2^8)`` without a custom modulus). Will raise ``NotImplementedError``
+        for Givaro fields with non-Conway polynomials, such as AES's GF(2^8).
+      * ``"bounded"`` -- uses bounded enumeration up to max_input_weight.
+        Recommended for cipher fields using custom irreducible polynomials.
 
     OUTPUT:
 
