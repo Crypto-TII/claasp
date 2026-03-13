@@ -1,5 +1,6 @@
 import pytest
 import matplotlib.pyplot as plt
+import claasp.cipher_modules.component_analysis_tests as cat_module
 from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
 from claasp.cipher_modules.component_analysis_tests import (
     CipherComponentsAnalysis,
@@ -452,6 +453,22 @@ class TestFieldMatrixWithBoundedEnumeration:
         bn = compute_branch_number_from_field_matrix_with_bounded_enumeration(matrix, max_input_weight=1)
         assert bn == 2, f"Expected 2 with max_input_weight=1, got {bn}"
 
+    def test_gf16_matrix_reaches_weight_four_path(self):
+        """Exercise bounded enumeration path beyond weight 3 on a 4x4 field matrix."""
+        F = GF(2**4, name="a")
+        a = F.gen()
+        matrix = Matrix(
+            F,
+            [
+                [a**2 + a, a**3 + a**2, a**3 + a**2 + a + 1, a**3 + a**2 + a],
+                [a**3 + a, a**2 + 1, a + 1, a**3 + a**2 + a],
+                [a + 1, a**3 + a**2, a**3 + a**2, a**3 + a**2 + a + 1],
+                [a**3, 1, a**3 + a, a**3 + a**2 + a + 1],
+            ],
+        )
+        bn = compute_branch_number_from_field_matrix_with_bounded_enumeration(matrix, max_input_weight=4)
+        assert bn == 5, f"Expected 5 for GF(16) test matrix with max_input_weight=4, got {bn}"
+
 
 class TestFieldMatrixWithMethodParameter:
     """Test suite for compute_branch_number_from_field_matrix with method parameter."""
@@ -513,6 +530,35 @@ class TestFieldMatrixWithMethodParameter:
         except ValueError as e:
             assert "Unknown method" in str(e)
 
+    def test_sage_fallback_to_bounded_emits_warning(self, monkeypatch):
+        """Test field wrapper warning path when Sage backend fails."""
+        F = GF(4, 'a')
+        matrix = Matrix(F, [[1, 1], [1, F.gen()]])
+
+        def raise_runtime_error(_matrix):
+            raise RuntimeError("forced failure")
+
+        monkeypatch.setattr(cat_module, "compute_branch_number_from_field_matrix_with_sage", raise_runtime_error)
+        with pytest.warns(RuntimeWarning, match="falling back to bounded enumeration"):
+            bn = compute_branch_number_from_field_matrix(matrix, method="sage")
+        assert bn == 3
+
+
+class TestMapMatrixToConwayField:
+    """Test helper behavior for field remapping utility."""
+
+    def test_degree_one_field_returns_input_matrix(self):
+        F = GF(2)
+        matrix = Matrix(F, [[1, 0], [1, 1]])
+        mapped = cat_module._map_matrix_to_conway_field(matrix)
+        assert mapped is matrix
+
+    def test_already_conway_field_returns_input_matrix(self):
+        F = GF(4, name="c")
+        matrix = Matrix(F, [[1, 1], [1, F.gen()]])
+        mapped = cat_module._map_matrix_to_conway_field(matrix)
+        assert mapped is matrix
+
 
 class TestEdgeCases:
     """Test edge cases and error handling."""
@@ -559,6 +605,34 @@ class TestEdgeCases:
         matrix = Matrix(F, [[1]])
         bn = compute_branch_number_from_field_matrix(matrix)
         assert bn == 2, f"Expected 2 for 1x1 matrix, got {bn}"
+
+    def test_binary_bounded_invalid_max_input_weight_raises_error(self):
+        F = GF(2)
+        matrix = Matrix(F, [[1, 0], [1, 1]])
+        with pytest.raises(ValueError, match="max_input_weight"):
+            compute_branch_number_from_binary_matrix_with_bounded_enumeration(
+                matrix,
+                "differential",
+                max_input_weight=0,
+            )
+
+    def test_field_bounded_invalid_max_input_weight_raises_error(self):
+        F = GF(2)
+        matrix = Matrix(F, [[1, 0], [1, 1]])
+        with pytest.raises(ValueError, match="max_input_weight"):
+            compute_branch_number_from_field_matrix_with_bounded_enumeration(matrix, max_input_weight=0)
+
+    def test_binary_wrapper_fallback_to_bounded_emits_warning(self, monkeypatch):
+        F = GF(2)
+        matrix = Matrix(F, [[1, 0], [1, 1]])
+
+        def raise_runtime_error(_binary_matrix, _type):
+            raise RuntimeError("forced failure")
+
+        monkeypatch.setattr(cat_module, "compute_branch_number_from_binary_matrix_with_sage", raise_runtime_error)
+        with pytest.warns(RuntimeWarning, match="falling back to bounded enumeration"):
+            bn = compute_branch_number_from_binary_matrix(matrix, "differential", method="sage")
+        assert bn == 2
 
 
 class TestConsistency:
