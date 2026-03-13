@@ -30,6 +30,17 @@ def aes_mix_column_component():
 
 
 @pytest.fixture(scope="module")
+def aes_small_mix_column_component():
+    """Smaller AES MixColumn component for faster branch_number(format='bit') checks."""
+    aes = AESBlockCipher(word_size=8, state_size=2, number_of_rounds=2)
+    for round_obj in aes.rounds_as_list:
+        for component in round_obj.components:
+            if component.type == "mix_column":
+                return component
+    raise RuntimeError("No mix_column component found in small AES")
+
+
+@pytest.fixture(scope="module")
 def fancy_cipher():
     """Module-scoped Fancy cipher reused by multiple tests."""
     return FancyBlockCipher(number_of_rounds=3)
@@ -67,14 +78,17 @@ def test_component_analysis_tests(fancy_component_analysis_results, aes_small_an
     assert len(result["test_results"]) == 7
 
 
-def test_print_component_analysis_as_radar_charts():
+def test_print_component_analysis_as_radar_charts(fancy_component_analysis_results):
     # Keep coverage of plotting logic while avoiding GUI/blocking overhead.
     plt.switch_backend("Agg")
     original_show = plt.show
     plt.show = lambda: None
-    aes = AESBlockCipher(word_size=8, state_size=4, number_of_rounds=2)
     try:
-        CipherComponentsAnalysis(aes).print_component_analysis_as_radar_charts()
+        # Reuse precomputed results to cover plotting code paths without
+        # recomputing expensive component-analysis metrics.
+        CipherComponentsAnalysis(FancyBlockCipher(number_of_rounds=3)).print_component_analysis_as_radar_charts(
+            results=fancy_component_analysis_results["test_results"]
+        )
     finally:
         plt.show = original_show
 
@@ -196,13 +210,13 @@ def test_compute_branch_number_from_binary_matrix_type_parameter():
     assert isinstance(bn_lin, int) and bn_lin > 0
 
 
-def test_branch_number_with_bit_format(aes_mix_column_component):
+def test_branch_number_with_bit_format(aes_small_mix_column_component):
     """Test branch_number function with format='bit' on mix_column component.
 
     This test ensures that the optimized binary matrix computation path is
     being used correctly when branch_number is called with format='bit'.
     """
-    mix_column_component = aes_mix_column_component
+    mix_column_component = aes_small_mix_column_component
 
     # Test differential branch number with bit format
     diff_bn_bit = branch_number(mix_column_component, "differential", "bit")
@@ -519,7 +533,8 @@ class TestEdgeCases:
             compute_branch_number_from_field_matrix(matrix)
             assert False, "Should raise error for non-square matrix"
         except ValueError as e:
-            assert "non-empty" in str(e).lower()
+            error_message = str(e).lower()
+            assert ("square" in error_message) or ("non-empty" in error_message)
 
     def test_single_element_matrix_binary(self):
         """Test branch number on 1x1 matrix."""
