@@ -2,13 +2,13 @@ from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_t
     MilpWordwiseDeterministicTruncatedXorDifferentialModel,
 )
 from claasp.cipher_modules.models.utils import get_single_key_scenario_format_for_fixed_values, set_fixed_variables
-from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
 from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
 from claasp.name_mappings import INPUT_KEY, INPUT_PLAINTEXT, SATISFIABLE
 
 
 def test_build_wordwise_deterministic_truncated_xor_differential_trail_model():
-    aes = AESBlockCipher(number_of_rounds=2)
+    aes = ToyAESBlockCipher(number_of_rounds=2)
     milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(aes)
     milp.init_model_in_sage_milp_class()
     milp.build_wordwise_deterministic_truncated_xor_differential_trail_model()
@@ -22,7 +22,7 @@ def test_build_wordwise_deterministic_truncated_xor_differential_trail_model():
 
 
 def test_find_one_wordwise_deterministic_truncated_xor_differential_trail_model():
-    aes = AESBlockCipher(number_of_rounds=2)
+    aes = ToyAESBlockCipher(number_of_rounds=2)
     milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(aes)
     plaintext = set_fixed_variables(
         component_id=INPUT_PLAINTEXT, constraint_type="equal", bit_positions=range(16), bit_values=[0, 1, 0, 3] + [0] * 12

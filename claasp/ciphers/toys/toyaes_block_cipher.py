@@ -22,7 +22,7 @@ from claasp.name_mappings import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
 PARAMETERS_CONFIGURATION_LIST = [{"word_size": 8, "state_size": 4, "number_of_rounds": 10}]
 
 
-class AESBlockCipher(Cipher):
+class ToyAESBlockCipher(Cipher):
     """
     Return a cipher object of AES Block Cipher.
 
@@ -35,8 +35,8 @@ class AESBlockCipher(Cipher):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-        sage: aes = AESBlockCipher()
+        sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
+        sage: aes = ToyAESBlockCipher()
         sage: key = 0x2b7e151628aed2a6abf7158809cf4f3c
         sage: plaintext = 0x6bc1bee22e409f96e93d7e117393172a
         sage: ciphertext = 0x3ad77bb40d7a3660a89ecaf32466ef97

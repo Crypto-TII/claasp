@@ -3,11 +3,11 @@ from claasp.cipher_modules.models.cp.mzn_models.mzn_wordwise_deterministic_trunc
 )
 from claasp.cipher_modules.models.cp.solvers import CHUFFED
 from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
-from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
 
 
 def test_find_one_wordwise_deterministic_truncated_xor_differential_trail():
-    aes = AESBlockCipher(number_of_rounds=2)
+    aes = ToyAESBlockCipher(number_of_rounds=2)
     mzn = MznWordwiseDeterministicTruncatedXorDifferentialModel(aes)
     fixed_variables = [set_fixed_variables("key_value", "equal", range(16), (0,) * 16)]
     mzn.build_deterministic_truncated_xor_differential_trail_model(fixed_variables, wordwise=True)
@@ -21,7 +21,7 @@ def test_find_one_wordwise_deterministic_truncated_xor_differential_trail():
 
 """
 def test_build_wordwise_deterministic_truncated_xor_differential_trail_model():
-    aes = AESBlockCipher(number_of_rounds=2)
+    aes = ToyAESBlockCipher(number_of_rounds=2)
     mzn = MznWordwiseDeterministicTruncatedXorDifferentialModel(aes)
     fixed_variables = [set_fixed_variables('key_value', 'equal', range(16), (0,) * 16)]
     mzn.build_wordwise_deterministic_truncated_xor_differential_trail_model(fixed_variables)
@@ -34,7 +34,7 @@ def test_build_wordwise_deterministic_truncated_xor_differential_trail_model():
 
 
 def test_find_one_wordwise_deterministic_truncated_xor_differential_trail():
-    aes = AESBlockCipher(number_of_rounds=2)
+    aes = ToyAESBlockCipher(number_of_rounds=2)
     mzn = MznWordwiseDeterministicTruncatedXorDifferentialModel(aes)
     plaintext = set_fixed_variables(component_id='plaintext_value', constraint_type='not_equal',
                                     bit_positions=range(16), bit_values=(0,) * 16)

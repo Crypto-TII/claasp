@@ -1,6 +1,6 @@
 from claasp.components.and_component import AND
 from claasp.cipher_modules.models.cp.mzn_model import MznModel
-from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
 from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
 from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
 from claasp.components.and_component import cp_xor_differential_probability_ddt, cp_xor_linear_probability_lat
@@ -27,7 +27,7 @@ def test_cp_constraints():
 
 
 def test_cp_wordwise_deterministic_truncated_xor_differential_constraints():
-    aes = AESBlockCipher()
+    aes = ToyAESBlockCipher()
     cp = MznModel(aes)
     and_component = AND(0, 18, ['sbox_0_2', 'sbox_0_6', 'sbox_0_10', 'sbox_0_14'],
                         [[0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7],

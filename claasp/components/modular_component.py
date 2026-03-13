@@ -362,9 +362,9 @@ class Modular(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
             sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
-            sage: aes = AESBlockCipher(number_of_rounds=5)
+            sage: aes = ToyAESBlockCipher(number_of_rounds=5)
             sage: cp = MznModel(aes)
             sage: xor_component = aes.component_from(0, 0)
             sage: xor_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(cp)
