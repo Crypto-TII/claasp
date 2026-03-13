@@ -1,4 +1,5 @@
 import pytest
+import matplotlib.pyplot as plt
 from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
 from claasp.cipher_modules.component_analysis_tests import (
     CipherComponentsAnalysis,
@@ -28,25 +29,54 @@ def aes_mix_column_component():
     raise RuntimeError("No mix_column component found in AES")
 
 
-def test_get_all_operations():
-    fancy = FancyBlockCipher(number_of_rounds=3)
-    cipher_operations = CipherComponentsAnalysis(fancy).get_all_operations()
+@pytest.fixture(scope="module")
+def fancy_cipher():
+    """Module-scoped Fancy cipher reused by multiple tests."""
+    return FancyBlockCipher(number_of_rounds=3)
+
+
+@pytest.fixture(scope="module")
+def fancy_analysis(fancy_cipher):
+    """Module-scoped analysis object for Fancy cipher."""
+    return CipherComponentsAnalysis(fancy_cipher)
+
+
+@pytest.fixture(scope="module")
+def fancy_component_analysis_results(fancy_analysis):
+    """Compute Fancy component analysis once; reused across tests."""
+    return fancy_analysis.component_analysis_tests()
+
+
+@pytest.fixture(scope="module")
+def aes_small_analysis_results():
+    """Compute small AES component analysis once; reused across tests."""
+    aes = AESBlockCipher(word_size=8, state_size=2, number_of_rounds=2)
+    return CipherComponentsAnalysis(aes).component_analysis_tests()
+
+
+def test_get_all_operations(fancy_analysis):
+    cipher_operations = fancy_analysis.get_all_operations()
     assert list(cipher_operations.keys()) == ["sbox", "linear_layer", "XOR", "AND", "MODADD", "ROTATE", "SHIFT"]
 
 
-def test_component_analysis_tests():
-    fancy = FancyBlockCipher(number_of_rounds=3)
-    components_analysis = CipherComponentsAnalysis(fancy).component_analysis_tests()
+def test_component_analysis_tests(fancy_component_analysis_results, aes_small_analysis_results):
+    components_analysis = fancy_component_analysis_results
     assert len(components_analysis["test_results"]) == 9
 
-    aes = AESBlockCipher(word_size=8, state_size=2, number_of_rounds=2)
-    result = CipherComponentsAnalysis(aes).component_analysis_tests()
+    result = aes_small_analysis_results
     assert len(result["test_results"]) == 7
 
 
 def test_print_component_analysis_as_radar_charts():
+    # Keep coverage of plotting logic while avoiding GUI/blocking overhead.
+    plt.switch_backend("Agg")
+    original_show = plt.show
+    plt.show = lambda: None
     aes = AESBlockCipher(word_size=8, state_size=4, number_of_rounds=2)
-    CipherComponentsAnalysis(aes).print_component_analysis_as_radar_charts()
+    try:
+        CipherComponentsAnalysis(aes).print_component_analysis_as_radar_charts()
+    finally:
+        plt.show = original_show
 
 
 def test_fsr_properties():
