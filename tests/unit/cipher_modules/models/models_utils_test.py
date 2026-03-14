@@ -4,6 +4,7 @@ import sys
 from io import StringIO
 import pickle
 import numpy as np
+import time
 
 from claasp.cipher_modules.models.milp.milp_models.milp_xor_linear_model import MilpXorLinearModel
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
@@ -487,3 +488,100 @@ def test_differential_linear_continuous_checker_speck_block_cipher():
         assert math.isclose(exp_corr, theo_corr, abs_tol=tol_err)
 
     print("-" * 55 + "\n")
+
+def test_differential_linear_continuous_checker_speck_block_cipher_gpu_vs_cpu():
+    """
+    Compares CPU vs GPU performance for differential-linear checker on Speck.
+    Uses the same expected correlations from Table 4 of [BGGMP2023]_.
+    Varies number_of_samples to highlight GPU speedup at larger sample sizes.
+    If CPU exceeds 2 minutes total, it is marked as timed out and skipped.
+    """
+    import time
+    import signal
+
+    expected_cipher = [
+        0.0, 0.5, 0.0, 0.984375, -0.96875, -0.9375, -0.875, -0.75,
+        -0.5, -0.0, 1.0, -1.0, -1.0, -1.0, -1.0, -1.0,
+        0.0, -0.5, 0.0, 0.984375, -0.96875, -0.9375, -0.875, -0.75,
+        -0.5, -0.0, 1.0, -1.0, -1.0, -1.0, -1.0, 1.0
+    ]
+    expected_cipher_aligned = expected_cipher[::-1]
+
+    speck_cipher = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=1)
+    input_difference = 0x10005000
+    block_size = speck_cipher.inputs_bit_size[0]
+    key_size = speck_cipher.inputs_bit_size[1]
+    fixed_key = 0x00000000
+    seed = 29
+    tol_err = 0.05
+    CPU_TIMEOUT = 120  # 2 minutes
+
+    print("\n")
+    for exp in [15, 17, 20, 22]:
+        number_of_samples = 1 << exp
+        results_cpu = []
+        results_gpu = []
+
+        time_cpu_total = 0
+        time_gpu_total = 0
+        cpu_timed_out = False
+
+        for bit_pos in range(32):
+            msb_pos = block_size - 1 - bit_pos
+            mask_str = ['x'] * block_size
+            mask_str[msb_pos] = '1'
+            output_mask = ''.join(mask_str)
+
+            if not cpu_timed_out:
+                start = time.time()
+                corr_cpu = differential_linear_checker_for_block_cipher_single_key(
+                    speck_cipher, input_difference, output_mask,
+                    number_of_samples, block_size, key_size, fixed_key, seed,
+                    use_gpu=False
+                )
+                time_cpu_total += time.time() - start
+                results_cpu.append((bit_pos, -corr_cpu))
+                if time_cpu_total > CPU_TIMEOUT:
+                    cpu_timed_out = True
+            else:
+                results_cpu.append((bit_pos, None))
+
+            start = time.time()
+            corr_gpu = differential_linear_checker_for_block_cipher_single_key(
+                speck_cipher, input_difference, output_mask,
+                number_of_samples, block_size, key_size, fixed_key, seed,
+                use_gpu=True
+            )
+            time_gpu_total += time.time() - start
+            results_gpu.append((bit_pos, -corr_gpu))
+
+        if cpu_timed_out:
+            speedup_str = f">={CPU_TIMEOUT/time_gpu_total:.2f}x (CPU timed out at {CPU_TIMEOUT}s)"
+        else:
+            speedup_str = f"{time_cpu_total/time_gpu_total:.2f}x"
+
+        print("=" * 75)
+        print(f"  samples=2^{exp} ({number_of_samples:>9}) | CPU={time_cpu_total:.2f}s {'(TIMEOUT)' if cpu_timed_out else ''} | GPU={time_gpu_total:.2f}s | speedup={speedup_str}")
+        print("=" * 75)
+        print(f"{'Bit':<5} | {'CPU corr':>10} | {'GPU corr':>10} | {'Theoretical':>12} | {'CPU ok':>6} | {'GPU ok':>6}")
+        print("-" * 75)
+
+        for (bit, exp_corr_cpu), (_, exp_corr_gpu) in zip(reversed(results_cpu), reversed(results_gpu)):
+            theo_corr = expected_cipher_aligned[bit]
+            if exp_corr_cpu is None:
+                cpu_ok = "SKIP"
+                cpu_str = "TIMEOUT"
+            else:
+                cpu_ok = "✓" if math.isclose(exp_corr_cpu, theo_corr, abs_tol=tol_err) else "✗"
+                cpu_str = f"{exp_corr_cpu:>10.4f}"
+            gpu_ok = "✓" if math.isclose(exp_corr_gpu, theo_corr, abs_tol=tol_err) else "✗"
+            print(f"{bit:<5} | {cpu_str:>10} | {exp_corr_gpu:>10.4f} | {theo_corr:>12.4f} | {cpu_ok:>6} | {gpu_ok:>6}")
+
+        print("-" * 75)
+
+        for bit, exp_corr_gpu in reversed(results_gpu):
+            theo_corr = expected_cipher_aligned[bit]
+            assert math.isclose(exp_corr_gpu, theo_corr, abs_tol=tol_err), \
+                f"GPU fallo en Bit {bit}: Exp={exp_corr_gpu:.4f} vs Theo={theo_corr:.4f}"
+
+        print()

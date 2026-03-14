@@ -101,6 +101,25 @@ def evaluate_vectorized(
     cipher_output = f_module.evaluate(cipher_input, intermediate_output)
     return cipher_output
 
+def evaluate_vectorized_gpu(
+    cipher,
+    cipher_input,
+    intermediate_output=False,
+    verbosity=False,
+    evaluate_api=False,
+):
+    python_code_string = (
+        code_generator.generate_byte_based_vectorized_gpu_python_code_string(
+            cipher,
+            store_intermediate_outputs=intermediate_output,
+            verbosity=verbosity,
+            integers_inputs_and_outputs=evaluate_api,
+        )
+    )
+    f_module = ModuleType("evaluate_gpu")
+    exec(python_code_string, f_module.__dict__)
+    cipher_output = f_module.evaluate(cipher_input, intermediate_output)
+    return cipher_output
 
 def evaluate_with_intermediate_outputs_continuous_diffusion_analysis(
     cipher,

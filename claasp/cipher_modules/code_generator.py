@@ -396,6 +396,55 @@ def generate_byte_based_vectorized_python_code_string(cipher, store_intermediate
 
     return '\n'.join(code)
 
+def generate_byte_based_vectorized_gpu_python_code_string(cipher, store_intermediate_outputs=False, verbosity=False, integers_inputs_and_outputs=False):
+    """
+    Return string python code needed to evaluate a cipher using a GPU-accelerated vectorized implementation.
+    Requires CuPy and CUDA. Same interface as generate_byte_based_vectorized_python_code_string.
+    """
+    cipher.sort_cipher()
+
+    code = ['import cupy as cp',
+            'from claasp.cipher_modules.generic_functions_vectorized_byte_gpu import *\n',
+            'integers_inputs_and_outputs=' + str(integers_inputs_and_outputs) + '\n',
+            'def evaluate(input, store_intermediate_outputs):', '  intermediateOutputs={}']
+    output_bit_sizes = {}
+    code.append('  if integers_inputs_and_outputs:\n'
+                '    input = cipher_inputs_to_evaluate_vectorized_inputs(input, ' + str(cipher.inputs_bit_size) + ')')
+    for i in range(len(cipher.inputs)):
+        code.append(f'  {cipher.inputs[i]}=cp.asarray(input[{i}])')
+        output_bit_sizes[cipher.inputs[i]] = cipher.inputs_bit_size[i]
+    cipher_descriptions = []
+    for component in cipher.get_all_components():
+        cipher_descriptions.append(component.description)
+    for component in cipher.get_all_components():
+        formatted_component_inputs = prepare_input_byte_based_vectorized_python_code_string(output_bit_sizes, component)
+        output_bit_sizes[component.id] = component.output_bit_size
+        component_types_allowed = ['constant', 'linear_layer', 'concatenate', 'mix_column',
+                                   'sbox', 'cipher_output', 'intermediate_output', 'fsr']
+        component_descriptions_allowed = ['ROTATE', 'SHIFT', 'SHIFT_BY_VARIABLE_AMOUNT', 'NOT', 'XOR',
+                                          'MODADD', 'MODMUL', 'MODSUB', 'IDEA_MODMUL', 'OR', 'AND']
+        if component.type in component_types_allowed or (component.type == 'word_operation' and
+                                                         component.description[0] in component_descriptions_allowed):
+            code.extend(component.get_byte_based_vectorized_python_code(formatted_component_inputs))
+
+        name = component.id
+
+        if verbosity and component.type != 'constant':
+            code.append(f'  byte_vector_print_as_hex_values("{name}_input", {formatted_component_inputs})')
+            code.append(f'  byte_vector_print_as_hex_values("{name}_output", {name})')
+
+    if store_intermediate_outputs:
+        code.append('  return intermediateOutputs')
+    elif CIPHER_INVERSE_SUFFIX in cipher.id:
+        if ['plaintext'] in cipher_descriptions:
+            code.append('  return intermediateOutputs["plaintext"]')
+        else:
+            code.append('  last_inter_output = [output for output in list(intermediateOutputs.keys()) if \'intermediate_output\' in output][0]')
+            code.append('  return intermediateOutputs[last_inter_output]')
+    else:
+        code.append('  return intermediateOutputs["cipher_output"]')
+
+    return '\n'.join(code)
 
 def prepare_input_byte_based_vectorized_python_code_string(bit_sizes, component):
     params = None

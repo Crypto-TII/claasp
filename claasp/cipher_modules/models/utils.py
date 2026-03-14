@@ -838,7 +838,7 @@ def _repeat_input_difference(input_difference, num_samples, num_bytes):
 
 
 def differential_linear_checker_for_block_cipher_single_key(
-    cipher, input_difference, output_mask, number_of_samples, block_size, key_size, fixed_key, seed=None
+    cipher, input_difference, output_mask, number_of_samples, block_size, key_size, fixed_key, seed=None, use_gpu=False
 ):
     """
     Verify experimentally differential-linear distinguishers for block ciphers using the vectorized evaluator.
@@ -869,9 +869,18 @@ def differential_linear_checker_for_block_cipher_single_key(
     input_difference_data = _repeat_input_difference(input_difference, number_of_samples, state_num_bytes)
     plaintext1 = rng.integers(low=0, high=256, size=(state_num_bytes, number_of_samples), dtype=np.uint8)
     plaintext2 = plaintext1 ^ input_difference_data
-    ciphertext1 = cipher.evaluate_vectorized([plaintext1, fixed_key_data])
-    ciphertext2 = cipher.evaluate_vectorized([plaintext2, fixed_key_data])
-    ciphertext3 = ciphertext1[0] ^ ciphertext2[0]
+    if use_gpu:
+        try:
+            import cupy as cp
+        except ImportError:
+            raise ImportError("CuPy is required for use_gpu=True. Install with: pip install cupy-cuda12x")
+        ciphertext1 = cipher.evaluate_vectorized_gpu([plaintext1, fixed_key_data])
+        ciphertext2 = cipher.evaluate_vectorized_gpu([plaintext2, fixed_key_data])
+        ciphertext3 = cp.asnumpy(ciphertext1[0]) ^ cp.asnumpy(ciphertext2[0])
+    else:
+        ciphertext1 = cipher.evaluate_vectorized([plaintext1, fixed_key_data])
+        ciphertext2 = cipher.evaluate_vectorized([plaintext2, fixed_key_data])
+        ciphertext3 = ciphertext1[0] ^ ciphertext2[0]
     bit_positions_ciphertext = _extract_bit_positions_msb(output_mask, ('1'))
     ccc = _extract_bits_msb(ciphertext3.T, bit_positions_ciphertext)
     parities = np.bitwise_xor.reduce(ccc, axis=0)

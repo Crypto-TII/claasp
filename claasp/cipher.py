@@ -926,6 +926,29 @@ class Cipher:
         """
         return evaluator.evaluate_vectorized(self, cipher_input, intermediate_output, verbosity, evaluate_api)
 
+    def evaluate_vectorized_gpu(
+        self,
+        cipher_input,
+        intermediate_output=False,
+        verbosity=False,
+        evaluate_api=False,
+        bit_based=False,
+    ):
+        """
+        Return the output of the cipher for multiple inputs using GPU acceleration via CuPy.
+
+        Same interface as evaluate_vectorized but uses GPU for computation.
+        Requires CuPy and CUDA to be installed.
+
+        INPUT:
+
+        - ``cipher_input`` -- **list**; block cipher inputs (ndarray of uint8)
+        - ``intermediate_output`` -- **boolean** (default: `False`)
+        - ``verbosity`` -- **boolean** (default: `False`)
+        - ``evaluate_api`` -- **boolean** (default: `False`)
+        """
+        return evaluator.evaluate_vectorized_gpu(self, cipher_input, intermediate_output, verbosity, evaluate_api)
+    
     def evaluate_with_intermediate_outputs_continuous_diffusion_analysis(
         self,
         cipher_input,
