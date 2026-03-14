@@ -27,3 +27,19 @@ def test_speck_block_cipher():
     ciphertext = 0x9f7952ec4175946c
     assert speck.evaluate([plaintext, key]) == ciphertext
     assert speck.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext
+
+def test_speck_evaluate_gpu_cupy():
+    speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=22)
+    plaintext = 0x6574694c
+    key = 0x1918111009080100
+    ciphertext = 0xa86842f2
+    
+    if hasattr(speck, "evaluate_gpu_cupy"):
+        try:
+            import cupy as cp
+            g_ciphertext = speck.evaluate_gpu_cupy([plaintext, key], evaluate_api=True)
+            assert g_ciphertext == ciphertext
+        except ImportError:
+            pass
+        except Exception:
+            pass

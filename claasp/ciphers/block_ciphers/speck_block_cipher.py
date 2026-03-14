@@ -115,6 +115,116 @@ class SpeckBlockCipher(Cipher):
                 p1.id + p2.id, p1.input_bit_positions + p2.input_bit_positions, block_bit_size
             )
 
+    def evaluate_gpu_cupy(self, cipher_input, evaluate_api=False):
+        """
+        Return the output of Speck-32/64 for multiple inputs using CuPy.
+
+        INPUT:
+
+        - ``cipher_input`` -- **list**; block cipher inputs
+        - ``evaluate_api`` -- **boolean** (default: `False`); if set to True, takes integer inputs and returns integer
+          outputs
+        """
+        import importlib
+        import numpy as np
+
+        if self.inputs_bit_size != [32, 64] or self.output_bit_size != 32:
+            raise NotImplementedError("evaluate_gpu_cupy is implemented only for Speck-32/64.")
+
+        try:
+            cp = importlib.import_module("cupy")
+        except ImportError as exc:
+            raise ImportError("evaluate_gpu_cupy requires cupy.") from exc
+
+        try:
+            if cp.cuda.runtime.getDeviceCount() == 0:
+                raise RuntimeError("No GPUs available")
+            cp.cuda.Device(0).use()
+        except Exception as exc:
+            raise RuntimeError("CUDA is not available.") from exc
+
+        if evaluate_api:
+            from claasp.cipher_modules.generic_functions_vectorized_byte import cipher_inputs_to_evaluate_vectorized_inputs
+            cipher_input = cipher_inputs_to_evaluate_vectorized_inputs(cipher_input, self.inputs_bit_size)
+
+        plaintext = np.asarray(cipher_input[0], dtype=np.uint8)
+        key = np.asarray(cipher_input[1], dtype=np.uint8)
+
+        if plaintext.shape[0] != 4 or key.shape[0] != 8:
+            raise ValueError("evaluate_gpu_cupy expects 4 plaintext rows and 8 key rows.")
+        if plaintext.shape[1] != key.shape[1]:
+            raise ValueError("evaluate_gpu_cupy expects the same number of plaintext and key samples.")
+
+        number_of_samples = plaintext.shape[1]
+        if number_of_samples == 0:
+            outputs = [np.empty((0, 4), dtype=np.uint8)]
+            if evaluate_api:
+                from claasp.cipher_modules.generic_functions_vectorized_byte import evaluate_vectorized_outputs_to_integers
+                return evaluate_vectorized_outputs_to_integers(outputs, self.output_bit_size)
+            return outputs
+
+        plaintext_words = np.empty((2, number_of_samples), dtype=np.uint16)
+        plaintext_words[0] = (plaintext[0].astype(np.uint16) << 8) | plaintext[1].astype(np.uint16)
+        plaintext_words[1] = (plaintext[2].astype(np.uint16) << 8) | plaintext[3].astype(np.uint16)
+
+        key_words = np.empty((4, number_of_samples), dtype=np.uint16)
+        key_words[0] = (key[0].astype(np.uint16) << 8) | key[1].astype(np.uint16)
+        key_words[1] = (key[2].astype(np.uint16) << 8) | key[3].astype(np.uint16)
+        key_words[2] = (key[4].astype(np.uint16) << 8) | key[5].astype(np.uint16)
+        key_words[3] = (key[6].astype(np.uint16) << 8) | key[7].astype(np.uint16)
+
+        device_plaintext_words = cp.asarray(plaintext_words)
+        device_key_words = cp.asarray(key_words)
+
+        left_word = device_plaintext_words[0]
+        right_word = device_plaintext_words[1]
+
+        l2 = device_key_words[0]
+        l1 = device_key_words[1]
+        l0 = device_key_words[2]
+        round_key = device_key_words[3]
+
+        mask = cp.uint16(0xFFFF)
+
+        try:
+            for round_number in range(self.number_of_rounds):
+                left_word = ((left_word >> 7) | (left_word << 9)) & mask
+                left_word = (left_word + right_word) & mask
+                left_word ^= round_key
+
+                right_word = ((right_word << 2) | (right_word >> 14)) & mask
+                right_word ^= left_word
+
+                if round_number < self.number_of_rounds - 1:
+                    new_l_word = ((l0 >> 7) | (l0 << 9)) & mask
+                    new_l_word = (new_l_word + round_key) & mask
+                    new_l_word ^= cp.uint16(round_number)
+
+                    round_key = ((round_key << 2) | (round_key >> 14)) & mask
+                    round_key ^= new_l_word
+
+                    l0 = l1
+                    l1 = l2
+                    l2 = new_l_word
+
+            cp.cuda.runtime.deviceSynchronize()
+        except Exception as exc:
+            raise RuntimeError(f"CUDA execution failed: {exc}") from exc
+
+        ciphertext_words = cp.asnumpy(cp.stack((left_word, right_word)))
+        ciphertext = np.empty((number_of_samples, 4), dtype=np.uint8)
+        ciphertext[:, 0] = np.uint8(ciphertext_words[0] >> 8)
+        ciphertext[:, 1] = np.uint8(ciphertext_words[0] & 0xFF)
+        ciphertext[:, 2] = np.uint8(ciphertext_words[1] >> 8)
+        ciphertext[:, 3] = np.uint8(ciphertext_words[1] & 0xFF)
+
+        outputs = [ciphertext]
+        if evaluate_api:
+            from claasp.cipher_modules.generic_functions_vectorized_byte import evaluate_vectorized_outputs_to_integers
+            return evaluate_vectorized_outputs_to_integers(outputs, self.output_bit_size)
+
+        return outputs
+
     def key_initialization(self, key_bit_size):
         l_schedule = []
         key_schedule = []

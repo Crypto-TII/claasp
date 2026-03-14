@@ -830,8 +830,16 @@ def differential_linear_checker_for_block_cipher_single_key(
     input_difference_data = _repeat_input_difference(input_difference, number_of_samples, state_num_bytes)
     plaintext1 = rng.integers(low=0, high=256, size=(state_num_bytes, number_of_samples), dtype=np.uint8)
     plaintext2 = plaintext1 ^ input_difference_data
-    ciphertext1 = cipher.evaluate_vectorized([plaintext1, fixed_key_data])
-    ciphertext2 = cipher.evaluate_vectorized([plaintext2, fixed_key_data])
+    if hasattr(cipher, "evaluate_gpu_cupy"):
+        try:
+            ciphertext1 = cipher.evaluate_gpu_cupy([plaintext1, fixed_key_data])
+            ciphertext2 = cipher.evaluate_gpu_cupy([plaintext2, fixed_key_data])
+        except Exception:
+            ciphertext1 = cipher.evaluate_vectorized([plaintext1, fixed_key_data])
+            ciphertext2 = cipher.evaluate_vectorized([plaintext2, fixed_key_data])
+    else:
+        ciphertext1 = cipher.evaluate_vectorized([plaintext1, fixed_key_data])
+        ciphertext2 = cipher.evaluate_vectorized([plaintext2, fixed_key_data])
     ciphertext3 = ciphertext1[0] ^ ciphertext2[0]
     bit_positions_ciphertext = _extract_bit_positions_msb(output_mask, ('1'))
     ccc = _extract_bits_msb(ciphertext3.T, bit_positions_ciphertext)
@@ -1268,8 +1276,16 @@ def truncated_differential_linear_checker_permutation(
     input_mask = _sample_truncated_difference_from_string(input_trunc_diff, number_of_samples, state_size, rng)
     plaintext_data2 = plaintext_data1 ^ input_mask
 
-    ciphertext1 = cipher.evaluate_vectorized([plaintext_data1])
-    ciphertext2 = cipher.evaluate_vectorized([plaintext_data2])
+    if hasattr(cipher, "evaluate_gpu_cupy"):
+        try:
+            ciphertext1 = cipher.evaluate_gpu_cupy([plaintext_data1])
+            ciphertext2 = cipher.evaluate_gpu_cupy([plaintext_data2])
+        except Exception:
+            ciphertext1 = cipher.evaluate_vectorized([plaintext_data1])
+            ciphertext2 = cipher.evaluate_vectorized([plaintext_data2])
+    else:
+        ciphertext1 = cipher.evaluate_vectorized([plaintext_data1])
+        ciphertext2 = cipher.evaluate_vectorized([plaintext_data2])
 
     ciphertext3 = ciphertext1[0] ^ ciphertext2[0]
     bit_positions_ciphertext = _extract_bit_positions_msb(output_mask, ('1'))

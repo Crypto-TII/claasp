@@ -819,6 +819,14 @@ class Cipher:
 
         return partial_cipher_inverse
 
+    def evaluate_gpu_cupy(self, cipher_input, evaluate_api=False):
+        """
+        Return the output of the cipher for multiple inputs utilizing the GPU.
+        This base method raises a NotImplementedError, and is meant to be overridden
+        by specific cipher subclasses (e.g. SpeckBlockCipher).
+        """
+        raise NotImplementedError(f"evaluate_gpu_cupy is not implemented for {self.__class__.__name__}.")
+
     def evaluate_vectorized(
         self,
         cipher_input,
