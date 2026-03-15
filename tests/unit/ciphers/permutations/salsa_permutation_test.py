@@ -34,3 +34,4 @@ def test_salsa_permutation():
                  'ca00a74b2ad6bc331c5c1dda24c7ee928277', 16)
     assert salsa.evaluate([plaintext], verbosity=False) == output
     assert salsa.evaluate_vectorized([plaintext], evaluate_api=True) == output
+    assert salsa.evaluate_vectorized_gpu([plaintext], evaluate_api=True) == output

@@ -19,5 +19,6 @@ def test_grain_core_permutation():
     state_output = 0xf0f3fa8999f72655ecfb
     assert grain_core.evaluate([state]) == state_output
     assert grain_core.evaluate_vectorized([state], evaluate_api=True) == state_output
+    assert grain_core.evaluate_vectorized_gpu([state], evaluate_api=True) == state_output
 
     assert grain_core.test_against_reference_code(2) is True

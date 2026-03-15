@@ -21,6 +21,7 @@ def test_simon_block_cipher():
     assert simon.evaluate([plaintext, key]) == ciphertext
     assert simon.test_against_reference_code(2) is True
     assert simon.evaluate_vectorized([plaintext, key], evaluate_api = True) == ciphertext
+    assert simon.evaluate_vectorized_gpu([plaintext, key], evaluate_api = True) == ciphertext
 
 
     simon = SimonBlockCipher(block_bit_size=48, key_bit_size=72)
@@ -30,6 +31,7 @@ def test_simon_block_cipher():
     assert simon.evaluate([plaintext, key]) == ciphertext
     assert simon.test_against_reference_code(2) is True
     assert simon.evaluate_vectorized([plaintext, key], evaluate_api = True) == ciphertext
+    assert simon.evaluate_vectorized_gpu([plaintext, key], evaluate_api = True) == ciphertext
 
 
     simon = SimonBlockCipher(block_bit_size=48, key_bit_size=96)
@@ -39,6 +41,7 @@ def test_simon_block_cipher():
     assert simon.evaluate([plaintext, key]) == ciphertext
     assert simon.test_against_reference_code(2) is True
     assert simon.evaluate_vectorized([plaintext, key], evaluate_api = True) == ciphertext
+    assert simon.evaluate_vectorized_gpu([plaintext, key], evaluate_api = True) == ciphertext
 
 
     simon = SimonBlockCipher(block_bit_size=128, key_bit_size=256)
@@ -48,3 +51,4 @@ def test_simon_block_cipher():
     assert simon.evaluate([plaintext, key]) == ciphertext
     assert simon.test_against_reference_code(2) is True
     assert simon.evaluate_vectorized([plaintext, key], evaluate_api = True) == ciphertext
+    assert simon.evaluate_vectorized_gpu([plaintext, key], evaluate_api = True) == ciphertext

@@ -38,6 +38,7 @@ def test_ublock_block_cipher():
     ciphertext = 0x32122bedd023c429023470e1158c147d
     assert ublock.evaluate([plaintext, key]) == ciphertext
     assert ublock.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext
+    assert ublock.evaluate_vectorized_gpu([plaintext, key], evaluate_api=True) == ciphertext
 
     ublock = UblockBlockCipher(block_bit_size=128, key_bit_size=256)
     plaintext = 0x0123456789abcdeffedcba9876543210
@@ -45,6 +46,7 @@ def test_ublock_block_cipher():
     ciphertext = 0x64accd6e34cac84d384cd4ba7aeadd19
     assert ublock.evaluate([plaintext, key]) == ciphertext
     assert ublock.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext
+    assert ublock.evaluate_vectorized_gpu([plaintext, key], evaluate_api=True) == ciphertext
 
     ublock = UblockBlockCipher(block_bit_size=256, key_bit_size=256)
     plaintext = 0x0123456789abcdeffedcba9876543210000102030405060708090a0b0c0d0e0f
@@ -52,3 +54,4 @@ def test_ublock_block_cipher():
     ciphertext = 0xd8e9351c5f4d27ea842135ca1640ad4b0ce119bc25c03e7c329ea8fe93e7bdfe
     assert ublock.evaluate([plaintext, key]) == ciphertext
     assert ublock.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext
+    assert ublock.evaluate_vectorized_gpu([plaintext, key], evaluate_api=True) == ciphertext

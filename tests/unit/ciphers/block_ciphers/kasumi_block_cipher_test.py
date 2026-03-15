@@ -8,3 +8,4 @@ def test_kasumi_block_cipher_test_vector():
     ciphertext = 0x514896226caa4f20
     assert kasumi.evaluate([key, plaintext]) == ciphertext
     assert kasumi.evaluate_vectorized([key, plaintext], evaluate_api = True) == ciphertext
+    assert kasumi.evaluate_vectorized_gpu([key, plaintext], evaluate_api = True) == ciphertext

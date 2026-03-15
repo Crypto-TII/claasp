@@ -11,15 +11,18 @@ def test_twine_block_cipher():
     ciphertext = 0x7393C133CDE3F8DB
     assert twine.evaluate([plaintext, key]) == ciphertext
     assert twine.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext
+    assert twine.evaluate_vectorized_gpu([plaintext, key], evaluate_api=True) == ciphertext
 
     plaintext = 0x123456789ABCDEF
     key = 0x00112233445566778899
     ciphertext = 0x7C1F0F80B1DF9C28
     assert twine.evaluate([plaintext, key]) == ciphertext
     assert twine.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext
+    assert twine.evaluate_vectorized_gpu([plaintext, key], evaluate_api=True) == ciphertext
 
     twine = TwineBlockCipher(key_bit_size=128, number_of_rounds=36)
     key = 0x00112233445566778899AABBCCDDEEFF
     ciphertext = 0x979FF9B379B5A9B8
     assert twine.evaluate([plaintext, key]) == ciphertext
     assert twine.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext
+    assert twine.evaluate_vectorized_gpu([plaintext, key], evaluate_api=True) == ciphertext

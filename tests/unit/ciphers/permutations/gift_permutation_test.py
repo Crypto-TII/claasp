@@ -20,6 +20,7 @@ def test_gift_permutation():
     ciphertext = 0xA94AF7F9BA181DF9B2B00EB7DBFA93DF
     assert gift.evaluate([plaintext, key]) == ciphertext
     assert gift.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext
+    assert gift.evaluate_vectorized_gpu([plaintext, key], evaluate_api=True) == ciphertext
 
     key1 = 0x000102030405060708090A0B0C0D0E0F
     plaintext1 = 0x000102030405060708090A0B0C0D0E0F

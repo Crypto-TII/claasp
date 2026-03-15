@@ -39,6 +39,7 @@ def test_ballet_block_cipher():
     ciphertext = 0xc1c2e89c1581d166f3c87b5999f87a9f
     assert ballet.evaluate([plaintext, key]) == ciphertext
     assert ballet.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext
+    assert ballet.evaluate_vectorized_gpu([plaintext, key], evaluate_api=True) == ciphertext
 
     ballet = BalletBlockCipher(block_bit_size=128, key_bit_size=256)
     plaintext = 0xc419afdd747886b9f8e6890a3db19fa3
@@ -46,6 +47,7 @@ def test_ballet_block_cipher():
     ciphertext = 0x636f07e9df66d2ec34d0ad3bb87e0f79
     assert ballet.evaluate([plaintext, key]) == ciphertext
     assert ballet.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext
+    assert ballet.evaluate_vectorized_gpu([plaintext, key], evaluate_api=True) == ciphertext
 
     ballet = BalletBlockCipher(block_bit_size=256, key_bit_size=256)
     plaintext = 0xfdc0bf9c6bfeb2ffd160128e5190af6cdad291114d953986de472ad8be6ea8c7
@@ -53,3 +55,4 @@ def test_ballet_block_cipher():
     ciphertext = 0x2d07ee91d634c27f3155f9e575bdc634acaa611e3654c4ce06ea130e9bc394ee
     assert ballet.evaluate([plaintext, key]) == ciphertext
     assert ballet.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext
+    assert ballet.evaluate_vectorized_gpu([plaintext, key], evaluate_api=True) == ciphertext

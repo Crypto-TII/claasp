@@ -25,3 +25,4 @@ def test_sparkle_permutation():
                      '6842374b2f159938253a2349c67f524daf0', 16)
     assert sparkle.evaluate([plaintext]) == ciphertext
     assert sparkle.evaluate_vectorized([plaintext], evaluate_api=True) == ciphertext
+    assert sparkle.evaluate_vectorized_gpu([plaintext], evaluate_api=True) == ciphertext

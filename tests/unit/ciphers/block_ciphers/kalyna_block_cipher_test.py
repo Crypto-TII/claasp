@@ -13,3 +13,4 @@ def test_kalyna_block_cipher():
     ciphertext = 0x06ADD2B439EAC9E120AC9B777D1CBF81
     assert kalyna.evaluate([key, plaintext]) == ciphertext
     assert kalyna.evaluate_vectorized([key, plaintext], evaluate_api=True) == ciphertext
+    assert kalyna.evaluate_vectorized_gpu([key, plaintext], evaluate_api=True) == ciphertext

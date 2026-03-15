@@ -24,3 +24,4 @@ def test_xoodoo_sbox_permutation():
     ciphertext = 0x8ad1373a05425c035bfc32401109245109e890a183e9f075929b003c79f22441b0bc1a7e93626968389900d2a8027958
     assert xoodoo_permutation_sbox.evaluate([plaintext]) == ciphertext
     assert xoodoo_permutation_sbox.evaluate_vectorized([plaintext], evaluate_api=True) == ciphertext
+    assert xoodoo_permutation_sbox.evaluate_vectorized_gpu([plaintext], evaluate_api=True) == ciphertext

@@ -21,6 +21,7 @@ def test_tea_block_cipher():
     assert tea.evaluate([plaintext, key]) == ciphertext
     assert tea.test_against_reference_code(2) is True
     assert tea.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext
+    assert tea.evaluate_vectorized_gpu([plaintext, key], evaluate_api=True) == ciphertext
 
     tea = TeaBlockCipher(32, 64, 32)
     plaintext = 0xb779ee0a
@@ -29,3 +30,4 @@ def test_tea_block_cipher():
     assert tea.evaluate([plaintext, key]) == ciphertext
     assert tea.test_against_reference_code(2) is True
     assert tea.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext
+    assert tea.evaluate_vectorized_gpu([plaintext, key], evaluate_api=True) == ciphertext

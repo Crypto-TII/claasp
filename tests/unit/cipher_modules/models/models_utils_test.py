@@ -582,6 +582,6 @@ def test_differential_linear_continuous_checker_speck_block_cipher_gpu_vs_cpu():
         for bit, exp_corr_gpu in reversed(results_gpu):
             theo_corr = expected_cipher_aligned[bit]
             assert math.isclose(exp_corr_gpu, theo_corr, abs_tol=tol_err), \
-                f"GPU fallo en Bit {bit}: Exp={exp_corr_gpu:.4f} vs Theo={theo_corr:.4f}"
+                f"GPU failed at Bit {bit}: Exp={exp_corr_gpu:.4f} vs Theo={theo_corr:.4f}"
 
         print()

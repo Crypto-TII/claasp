@@ -32,3 +32,4 @@ def test_ascon_permutation():
     ciphertext = 0x0e87fa7d4b40022e94f14f2525499af530a1d1621866701c4b419cf3ae4c9962b11ce0a087175b71
     assert ascon.evaluate([plaintext]) == ciphertext
     assert ascon.evaluate_vectorized([plaintext], evaluate_api=True) == ciphertext
+    assert ascon.evaluate_vectorized_gpu([plaintext], evaluate_api=True) == ciphertext

@@ -23,6 +23,7 @@ def test_skinny_block_cipher():
     ciphertext = 0xBB39DFB2429B8AC7
     assert skinny.evaluate([plaintext, key]) == ciphertext
     assert skinny.evaluate_vectorized([plaintext, key], evaluate_api = True) == ciphertext
+    assert skinny.evaluate_vectorized_gpu([plaintext, key], evaluate_api = True) == ciphertext
 
     # Skinny-64-128
     skinny = SkinnyBlockCipher(block_bit_size=64, key_bit_size=128, number_of_rounds=36)
@@ -31,6 +32,7 @@ def test_skinny_block_cipher():
     ciphertext = 0x6CEDA1F43DE92B9E
     assert skinny.evaluate([plaintext, key]) == ciphertext
     assert skinny.evaluate_vectorized([plaintext, key], evaluate_api = True) == ciphertext
+    assert skinny.evaluate_vectorized_gpu([plaintext, key], evaluate_api = True) == ciphertext
 
     # Skinny-64-192
     skinny = SkinnyBlockCipher(block_bit_size=64, key_bit_size=192, number_of_rounds=40)
@@ -39,6 +41,7 @@ def test_skinny_block_cipher():
     ciphertext = 0xDD2CF1A8F330303C
     assert skinny.evaluate([plaintext, key]) == ciphertext
     assert skinny.evaluate_vectorized([plaintext, key], evaluate_api = True) == ciphertext
+    assert skinny.evaluate_vectorized_gpu([plaintext, key], evaluate_api = True) == ciphertext
 
     # Skinny-128-128
     skinny = SkinnyBlockCipher(block_bit_size=128, key_bit_size=128, number_of_rounds=40)
@@ -47,6 +50,7 @@ def test_skinny_block_cipher():
     ciphertext = 0x22FF30D498EA62D7E45B476E33675B74
     assert skinny.evaluate([plaintext, key]) == ciphertext
     assert skinny.evaluate_vectorized([plaintext, key], evaluate_api = True) == ciphertext
+    assert skinny.evaluate_vectorized_gpu([plaintext, key], evaluate_api = True) == ciphertext
 
     # Skinny-128-256
     skinny = SkinnyBlockCipher(block_bit_size=128, key_bit_size=256, number_of_rounds=48)
@@ -55,6 +59,7 @@ def test_skinny_block_cipher():
     ciphertext = 0xB731D98A4BDE147A7ED4A6F16B9B587F
     assert skinny.evaluate([plaintext, key]) == ciphertext
     assert skinny.evaluate_vectorized([plaintext, key], evaluate_api = True) == ciphertext
+    assert skinny.evaluate_vectorized_gpu([plaintext, key], evaluate_api = True) == ciphertext
 
     # Skinny-128-384
     skinny = SkinnyBlockCipher(block_bit_size=128, key_bit_size=384, number_of_rounds=56)
@@ -63,3 +68,4 @@ def test_skinny_block_cipher():
     ciphertext = 0x94ECF589E2017C601B38C6346A10DCFA
     assert skinny.evaluate([plaintext, key]) == ciphertext
     assert skinny.evaluate_vectorized([plaintext, key], evaluate_api = True) == ciphertext
+    assert skinny.evaluate_vectorized_gpu([plaintext, key], evaluate_api = True) == ciphertext

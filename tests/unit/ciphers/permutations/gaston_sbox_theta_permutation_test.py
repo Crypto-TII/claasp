@@ -20,3 +20,4 @@ def test_gaston_sbox_theta_permutation():
     ciphertext = 0x3117D51B14937067338F17F773C13F79DFB86E0868D252AB0D461D35EB863DE708BCE3E354C7231A
     assert gaston.evaluate([plaintext]) == ciphertext
     assert gaston.evaluate_vectorized([plaintext], evaluate_api=True) == ciphertext
+    assert gaston.evaluate_vectorized_gpu([plaintext], evaluate_api=True) == ciphertext

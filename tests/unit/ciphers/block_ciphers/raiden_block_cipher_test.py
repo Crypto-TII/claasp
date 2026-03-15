@@ -20,6 +20,7 @@ def test_raiden_block_cipher():
     ciphertext = 0x99bf13c039b49812
     assert raiden.evaluate([plaintext, key]) == ciphertext
     assert raiden.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext
+    assert raiden.evaluate_vectorized_gpu([plaintext, key], evaluate_api=True) == ciphertext
 
     assert raiden.test_against_reference_code(2) is True
 
@@ -30,3 +31,4 @@ def test_raiden_block_cipher():
     assert raiden.evaluate([plaintext, key]) == ciphertext
     assert raiden.test_against_reference_code(2) is True
     assert raiden.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext
+    assert raiden.evaluate_vectorized_gpu([plaintext, key], evaluate_api=True) == ciphertext

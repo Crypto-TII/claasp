@@ -21,3 +21,4 @@ def test_keccak_invertible_permutation():
                      '0000000000000000000000', 16)
     assert keccak.evaluate([plaintext]) == ciphertext
     assert keccak.evaluate_vectorized([plaintext], evaluate_api=True) == ciphertext
+    assert keccak.evaluate_vectorized_gpu([plaintext], evaluate_api=True) == ciphertext

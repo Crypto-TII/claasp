@@ -36,6 +36,7 @@ def test_skipjack_block_cipher():
     ciphertext_8 = 0xd79b5599be50dd90
     assert skipjack_8.evaluate([plaintext, key]) == ciphertext_8
     assert skipjack_8.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext_8
+    assert skipjack_8.evaluate_vectorized_gpu([plaintext, key], evaluate_api=True) == ciphertext_8
     
     # Test intermediate output at 16 rounds to verify Rule A and Rule B phases together
     skipjack_16 = SkipjackBlockCipher(number_of_rounds=16)
@@ -44,12 +45,14 @@ def test_skipjack_block_cipher():
     assert skipjack_16.id == 'skipjack_p64_k80_o64_r16'
     assert skipjack_16.evaluate([plaintext, key]) == ciphertext_16
     assert skipjack_16.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext_16
+    assert skipjack_16.evaluate_vectorized_gpu([plaintext, key], evaluate_api=True) == ciphertext_16
     
     # Test final output after full 32 rounds to verify second Rule B phase completion
     skipjack_32 = SkipjackBlockCipher()
     ciphertext_32 = 0x2587cae27a12d300
     assert skipjack_32.evaluate([plaintext, key]) == ciphertext_32
     assert skipjack_32.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext_32
+    assert skipjack_32.evaluate_vectorized_gpu([plaintext, key], evaluate_api=True) == ciphertext_32
 
 
 def test_skipjack_all_rounds():

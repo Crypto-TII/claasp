@@ -157,6 +157,7 @@ def test_idea_cipher_evaluation():
     
     # Verify evaluate_vectorized produces same result
     assert idea.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext
+    assert idea.evaluate_vectorized_gpu([plaintext, key], evaluate_api=True) == ciphertext
 
     # Test that different inputs produce different outputs
     plaintext2 = 0xf129a6601ef62a47
@@ -165,6 +166,7 @@ def test_idea_cipher_evaluation():
 
     assert ciphertext2 != ciphertext, "Different inputs should produce different outputs"
     assert idea.evaluate_vectorized([plaintext2, key2], evaluate_api=True) == ciphertext2
+    assert idea.evaluate_vectorized_gpu([plaintext2, key2], evaluate_api=True) == ciphertext2
 
 
 def test_idea_cipher_official_vector():
@@ -213,6 +215,7 @@ def test_idea_cipher_all_zeros_plaintext():
         f"All-zero plaintext test vector mismatch: expected {hex(expected_ciphertext)}, got {hex(actual_ciphertext)}"
     )
     assert cipher.evaluate_vectorized([plaintext, key], evaluate_api=True) == expected_ciphertext
+    assert cipher.evaluate_vectorized_gpu([plaintext, key], evaluate_api=True) == expected_ciphertext
 
 
 # NESSIE test vectors from https://github.com/bozhu/IDEA-Python/blob/master/test.py
@@ -271,3 +274,4 @@ def test_idea_cipher_nessie_vectors(key, plaintext, expected_ciphertext):
         f"  Got: {hex(actual_ciphertext)}"
     )
     assert cipher.evaluate_vectorized([plaintext, key], evaluate_api=True) == expected_ciphertext
+    assert cipher.evaluate_vectorized_gpu([plaintext, key], evaluate_api=True) == expected_ciphertext

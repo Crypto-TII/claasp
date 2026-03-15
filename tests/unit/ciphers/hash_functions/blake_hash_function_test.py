@@ -22,6 +22,7 @@ def test_blake_hash_function():
     assert blake.evaluate([message, state]) == digest
     assert blake.test_against_reference_code(2) is True
     assert blake.evaluate_vectorized([message, state], evaluate_api=True) == digest
+    assert blake.evaluate_vectorized_gpu([message, state], evaluate_api=True) == digest
 
     blake = BlakeHashFunction(block_bit_size=1024, state_bit_size=1024, word_size=64)
     message = 0x0080000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000008
@@ -30,3 +31,4 @@ def test_blake_hash_function():
     assert blake.evaluate([message, state]) == digest
     assert blake.test_against_reference_code(2) is True
     assert blake.evaluate_vectorized([message, state], evaluate_api=True) == digest
+    assert blake.evaluate_vectorized_gpu([message, state], evaluate_api=True) == digest

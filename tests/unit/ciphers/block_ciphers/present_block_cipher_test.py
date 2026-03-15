@@ -20,6 +20,7 @@ def test_present_block_cipher():
     ciphertext = 0xa1e546ae14c26565
     assert present.evaluate([plaintext, key]) == ciphertext
     assert present.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext
+    assert present.evaluate_vectorized_gpu([plaintext, key], evaluate_api=True) == ciphertext
 
     assert present.test_against_reference_code(2) is True
 
@@ -30,3 +31,4 @@ def test_present_block_cipher():
     assert present.evaluate([plaintext, key]) == ciphertext
     assert present.test_against_reference_code(2) is True
     assert present.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext
+    assert present.evaluate_vectorized_gpu([plaintext, key], evaluate_api=True) == ciphertext

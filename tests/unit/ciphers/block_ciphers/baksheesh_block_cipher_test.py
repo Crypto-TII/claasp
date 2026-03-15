@@ -24,6 +24,7 @@ def test_baksheesh_block_cipher():
     ciphertext = 0x806F0CF45B94F0370206975FE78AC10F
     assert baksheesh.evaluate([plaintext, key]) == ciphertext
     assert baksheesh.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext
+    assert baksheesh.evaluate_vectorized_gpu([plaintext, key], evaluate_api=True) == ciphertext
 
     # Test 6
     baksheesh = BaksheeshBlockCipher()
@@ -32,6 +33,7 @@ def test_baksheesh_block_cipher():
     ciphertext = 0xAE654B5333B876584F8E8DD54F4E490A
     assert baksheesh.evaluate([plaintext, key]) == ciphertext
     assert baksheesh.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext
+    assert baksheesh.evaluate_vectorized_gpu([plaintext, key], evaluate_api=True) == ciphertext
 
     # Test 7
     baksheesh = BaksheeshBlockCipher()
@@ -40,6 +42,7 @@ def test_baksheesh_block_cipher():
     ciphertext = 0x3DBBDF7FE254CC0BE396A753442DCCAD
     assert baksheesh.evaluate([plaintext, key]) == ciphertext
     assert baksheesh.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext
+    assert baksheesh.evaluate_vectorized_gpu([plaintext, key], evaluate_api=True) == ciphertext
 
     # Test 8
     baksheesh = BaksheeshBlockCipher()
@@ -48,3 +51,4 @@ def test_baksheesh_block_cipher():
     ciphertext = 0xFC7E61FEE3D587308CA7BC594EBF3244
     assert baksheesh.evaluate([plaintext, key]) == ciphertext
     assert baksheesh.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext
+    assert baksheesh.evaluate_vectorized_gpu([plaintext, key], evaluate_api=True) == ciphertext

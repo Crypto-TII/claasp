@@ -404,6 +404,7 @@ def generate_byte_based_vectorized_gpu_python_code_string(cipher, store_intermed
     cipher.sort_cipher()
 
     code = ['import cupy as cp',
+            'import numpy as np',
             'from claasp.cipher_modules.generic_functions_vectorized_byte_gpu import *\n',
             'integers_inputs_and_outputs=' + str(integers_inputs_and_outputs) + '\n',
             'def evaluate(input, store_intermediate_outputs):', '  intermediateOutputs={}']

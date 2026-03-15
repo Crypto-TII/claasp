@@ -17,3 +17,4 @@ def test_aradi_block_cipher_sbox():
     ciphertext = 0x3f09abf400e3bd7403260defb7c53912
     assert aradi.evaluate([plaintext, key]) == ciphertext
     assert aradi.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext
+    assert aradi.evaluate_vectorized_gpu([plaintext, key], evaluate_api=True) == ciphertext

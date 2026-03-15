@@ -8,6 +8,7 @@ def test_prince_block_cipher():
     ciphertext = 0x818665aa0d02dfda
     assert prince.evaluate([plaintext, key]) == ciphertext
     assert prince.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext
+    assert prince.evaluate_vectorized_gpu([plaintext, key], evaluate_api=True) == ciphertext
 
     present = PrinceBlockCipher()
     plaintext = 0xffffffffffffffff
@@ -15,3 +16,4 @@ def test_prince_block_cipher():
     ciphertext = 0x604ae6ca03c20ada
     assert present.evaluate([plaintext, key]) == ciphertext
     assert present.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext
+    assert present.evaluate_vectorized_gpu([plaintext, key], evaluate_api=True) == ciphertext

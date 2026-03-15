@@ -61,3 +61,4 @@ def test_toy_chacha_permutation():
     output = int('0xe023858e713feb86a730656ac909f76a', 16)
     assert chacha.evaluate([plaintext], verbosity=False) == output
     assert chacha.evaluate_vectorized([plaintext], evaluate_api=True) == output
+    assert chacha.evaluate_vectorized_gpu([plaintext], evaluate_api=True) == output

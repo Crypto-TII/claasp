@@ -21,6 +21,7 @@ def test_ublock_single_linear_layer_block_cipher():
     ciphertext = 0x32122BEDD023C429023470E1158C147D
     assert ublock.evaluate([plaintext, key]) == ciphertext
     assert ublock.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext
+    assert ublock.evaluate_vectorized_gpu([plaintext, key], evaluate_api=True) == ciphertext
 
     ublock = UblockSingleLinearLayerBlockCipher(block_bit_size=128, key_bit_size=256, number_of_rounds=24)
     plaintext = 0x0123456789ABCDEFFEDCBA9876543210
@@ -28,6 +29,7 @@ def test_ublock_single_linear_layer_block_cipher():
     ciphertext = 0x64ACCD6E34CAC84D384CD4BA7AEADD19
     assert ublock.evaluate([plaintext, key]) == ciphertext
     assert ublock.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext
+    assert ublock.evaluate_vectorized_gpu([plaintext, key], evaluate_api=True) == ciphertext
 
     ublock = UblockSingleLinearLayerBlockCipher(block_bit_size=256, key_bit_size=256, number_of_rounds=24)
     plaintext = 0x0123456789ABCDEFFEDCBA9876543210000102030405060708090A0B0C0D0E0F
@@ -35,6 +37,7 @@ def test_ublock_single_linear_layer_block_cipher():
     ciphertext = 0xD8E9351C5F4D27EA842135CA1640AD4B0CE119BC25C03E7C329EA8FE93E7BDFE
     assert ublock.evaluate([plaintext, key]) == ciphertext
     assert ublock.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext
+    assert ublock.evaluate_vectorized_gpu([plaintext, key], evaluate_api=True) == ciphertext
 
     # test mix column version
     ublock = UblockSingleLinearLayerBlockCipher(block_bit_size=128, key_bit_size=128, use_mix_column=True)
@@ -43,6 +46,7 @@ def test_ublock_single_linear_layer_block_cipher():
     ciphertext = 0x32122BEDD023C429023470E1158C147D
     assert ublock.evaluate([plaintext, key]) == ciphertext
     assert ublock.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext
+    assert ublock.evaluate_vectorized_gpu([plaintext, key], evaluate_api=True) == ciphertext
 
     ublock = UblockSingleLinearLayerBlockCipher(block_bit_size=128, key_bit_size=256, number_of_rounds=24, use_mix_column=True)
     plaintext = 0x0123456789ABCDEFFEDCBA9876543210
@@ -50,6 +54,7 @@ def test_ublock_single_linear_layer_block_cipher():
     ciphertext = 0x64ACCD6E34CAC84D384CD4BA7AEADD19
     assert ublock.evaluate([plaintext, key]) == ciphertext
     assert ublock.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext
+    assert ublock.evaluate_vectorized_gpu([plaintext, key], evaluate_api=True) == ciphertext
 
     ublock = UblockSingleLinearLayerBlockCipher(block_bit_size=256, key_bit_size=256, number_of_rounds=24, use_mix_column=True)
     plaintext = 0x0123456789ABCDEFFEDCBA9876543210000102030405060708090A0B0C0D0E0F
@@ -57,3 +62,4 @@ def test_ublock_single_linear_layer_block_cipher():
     ciphertext = 0xD8E9351C5F4D27EA842135CA1640AD4B0CE119BC25C03E7C329EA8FE93E7BDFE
     assert ublock.evaluate([plaintext, key]) == ciphertext
     assert ublock.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext
+    assert ublock.evaluate_vectorized_gpu([plaintext, key], evaluate_api=True) == ciphertext

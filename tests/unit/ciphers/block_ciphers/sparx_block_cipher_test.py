@@ -21,6 +21,7 @@ def test_sparx_block_cipher():
     assert sparx.evaluate([plaintext, key]) == ciphertext
     assert sparx.test_against_reference_code(2) is True
     assert sparx.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext
+    assert sparx.evaluate_vectorized_gpu([plaintext, key], evaluate_api=True) == ciphertext
 
     sparx = SparxBlockCipher(block_bit_size=128)
     plaintext = 0x0123456789abcdeffedcba9876543210
@@ -29,6 +30,7 @@ def test_sparx_block_cipher():
     assert sparx.evaluate([plaintext, key]) == ciphertext
     assert sparx.test_against_reference_code(2) is True
     assert sparx.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext
+    assert sparx.evaluate_vectorized_gpu([plaintext, key], evaluate_api=True) == ciphertext
 
     sparx = SparxBlockCipher(block_bit_size=128, key_bit_size=256)
     plaintext = 0x0123456789abcdeffedcba9876543210
@@ -37,3 +39,4 @@ def test_sparx_block_cipher():
     assert sparx.evaluate([plaintext, key]) == ciphertext
     assert sparx.test_against_reference_code(2) is True
     assert sparx.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext
+    assert sparx.evaluate_vectorized_gpu([plaintext, key], evaluate_api=True) == ciphertext

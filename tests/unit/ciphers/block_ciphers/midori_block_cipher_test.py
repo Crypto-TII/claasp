@@ -23,6 +23,7 @@ def test_midori_block_cipher():
     ciphertext = 0x66bcdc6270d901cd
     assert midori.evaluate([plaintext, key]) == ciphertext
     assert midori.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext
+    assert midori.evaluate_vectorized_gpu([plaintext, key], evaluate_api=True) == ciphertext
     assert midori.test_against_reference_code(2) is True
 
     midori = MidoriBlockCipher(block_bit_size=128)
@@ -32,3 +33,4 @@ def test_midori_block_cipher():
     assert midori.evaluate([plaintext, key]) == ciphertext
     assert midori.test_against_reference_code(2) is True
     assert midori.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext
+    assert midori.evaluate_vectorized_gpu([plaintext, key], evaluate_api=True) == ciphertext

@@ -13,6 +13,7 @@ def test_aes_block_cipher():
     ciphertext = 0x3ad77bb40d7a3660a89ecaf32466ef97
     assert aes.evaluate([key, plaintext]) == ciphertext
     assert aes.evaluate_vectorized([key, plaintext], evaluate_api=True) == ciphertext
+    assert aes.evaluate_vectorized_gpu([key, plaintext], evaluate_api=True) == ciphertext
 
 def test_aes128_block_cipher():
     aes = ToyAESBlockCipher()
@@ -21,6 +22,7 @@ def test_aes128_block_cipher():
     ciphertext = 0x3ad77bb40d7a3660a89ecaf32466ef97
     assert aes.evaluate([key, plaintext]) == ciphertext
     assert aes.evaluate_vectorized([key, plaintext], evaluate_api=True) == ciphertext
+    assert aes.evaluate_vectorized_gpu([key, plaintext], evaluate_api=True) == ciphertext
 
 def test_aes_8_3_block_cipher():
     aes = ToyAESBlockCipher(word_size=8, state_size=3)
@@ -29,6 +31,7 @@ def test_aes_8_3_block_cipher():
     ciphertext = 0xf8666f8d0ba0dcfced
     assert aes.evaluate([key, plaintext]) == ciphertext
     assert aes.evaluate_vectorized([key, plaintext], evaluate_api=True) == ciphertext
+    assert aes.evaluate_vectorized_gpu([key, plaintext], evaluate_api=True) == ciphertext
 
 def test_aes_8_2_block_cipher():
     aes = ToyAESBlockCipher(word_size=8, state_size=2)
@@ -37,6 +40,7 @@ def test_aes_8_2_block_cipher():
     ciphertext = 0xdbbdd038
     assert aes.evaluate([key, plaintext]) == ciphertext
     assert aes.evaluate_vectorized([key, plaintext], evaluate_api=True) == ciphertext
+    assert aes.evaluate_vectorized_gpu([key, plaintext], evaluate_api=True) == ciphertext
 
 def test_aes_4_4_block_cipher():
     aes = ToyAESBlockCipher(word_size=4, state_size=4)
@@ -45,6 +49,7 @@ def test_aes_4_4_block_cipher():
     ciphertext = 0x0e51ff61dac37a78
     assert aes.evaluate([key, plaintext]) == ciphertext
     assert aes.evaluate_vectorized([key, plaintext], evaluate_api=True) == ciphertext
+    assert aes.evaluate_vectorized_gpu([key, plaintext], evaluate_api=True) == ciphertext
 
 def test_aes_4_3_block_cipher():
     aes = ToyAESBlockCipher(word_size=4, state_size=3)
@@ -70,6 +75,7 @@ def test_aes_3_4_block_cipher():
     ciphertext = 0x33d9c96fe11c
     assert aes.evaluate([key, plaintext]) == ciphertext
     assert aes.evaluate_vectorized([key, plaintext], evaluate_api=True) == ciphertext
+    assert aes.evaluate_vectorized_gpu([key, plaintext], evaluate_api=True) == ciphertext
 
 def test_aes_3_3_block_cipher():
     aes = ToyAESBlockCipher(word_size=3, state_size=3)
@@ -78,6 +84,7 @@ def test_aes_3_3_block_cipher():
     ciphertext = 0x0595c25b
     assert aes.evaluate([key, plaintext]) == ciphertext
     assert aes.evaluate_vectorized([key, plaintext], evaluate_api=True) == ciphertext
+    assert aes.evaluate_vectorized_gpu([key, plaintext], evaluate_api=True) == ciphertext
 
 def test_aes_3_2_block_cipher():
     aes = ToyAESBlockCipher(word_size=3, state_size=2)
@@ -86,6 +93,7 @@ def test_aes_3_2_block_cipher():
     ciphertext = 0x2c8
     assert aes.evaluate([key, plaintext]) == ciphertext
     assert aes.evaluate_vectorized([key, plaintext], evaluate_api=True) == ciphertext
+    assert aes.evaluate_vectorized_gpu([key, plaintext], evaluate_api=True) == ciphertext
 
 def test_aes_2_4_block_cipher():
     aes = ToyAESBlockCipher(word_size=2, state_size=4)
@@ -94,6 +102,7 @@ def test_aes_2_4_block_cipher():
     ciphertext = 0x41bed50e
     assert aes.evaluate([key, plaintext]) == ciphertext
     assert aes.evaluate_vectorized([key, plaintext], evaluate_api=True) == ciphertext
+    assert aes.evaluate_vectorized_gpu([key, plaintext], evaluate_api=True) == ciphertext
 
 def test_aes_2_3_block_cipher():
     aes = ToyAESBlockCipher(word_size=2, state_size=3)
@@ -102,6 +111,7 @@ def test_aes_2_3_block_cipher():
     ciphertext = 0x00de3c
     assert aes.evaluate([key, plaintext]) == ciphertext
     assert aes.evaluate_vectorized([key, plaintext], evaluate_api=True) == ciphertext
+    assert aes.evaluate_vectorized_gpu([key, plaintext], evaluate_api=True) == ciphertext
 
 def test_aes_2_2_block_cipher():
     aes = ToyAESBlockCipher(word_size=2, state_size=2)
@@ -110,3 +120,4 @@ def test_aes_2_2_block_cipher():
     ciphertext = 0x1f
     assert aes.evaluate([key, plaintext]) == ciphertext
     assert aes.evaluate_vectorized([key, plaintext], evaluate_api=True) == ciphertext
+    assert aes.evaluate_vectorized_gpu([key, plaintext], evaluate_api=True) == ciphertext

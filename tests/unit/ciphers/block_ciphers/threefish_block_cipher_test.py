@@ -21,6 +21,7 @@ def test_threefish_block_cipher():
     ciphertext = 0x94EEEA8B1F2ADA84ADF103313EAE6670952419A1F4B16D53D83F13E63C9F6B11
     assert threefish.evaluate([plaintext, key, tweak]) == ciphertext
     assert threefish.evaluate_vectorized([plaintext, key, tweak], evaluate_api = True) == ciphertext
+    assert threefish.evaluate_vectorized_gpu([plaintext, key, tweak], evaluate_api = True) == ciphertext
 
     plaintext = 0xF8F9FAFBFCFDFEFFF0F1F2F3F4F5F6F7E8E9EAEBECEDEEEFE0E1E2E3E4E5E6E7
     key = 0x17161514131211101F1E1D1C1B1A191827262524232221202F2E2D2C2B2A2928
@@ -29,6 +30,7 @@ def test_threefish_block_cipher():
     assert threefish.evaluate([plaintext, key, tweak]) == ciphertext
     assert threefish.test_against_reference_code(2) is True
     assert threefish.evaluate_vectorized([plaintext, key, tweak], evaluate_api = True) == ciphertext
+    assert threefish.evaluate_vectorized_gpu([plaintext, key, tweak], evaluate_api = True) == ciphertext
 
     threefish = ThreefishBlockCipher(block_bit_size=512, key_bit_size=512)
     plaintext = 0x0
@@ -38,6 +40,7 @@ def test_threefish_block_cipher():
                      '0E7F7E9A380A56139ABF1BE7B6D4AA11EB47E', 16)
     assert threefish.evaluate([plaintext, key, tweak]) == ciphertext
     assert threefish.evaluate_vectorized([plaintext, key, tweak], evaluate_api = True) == ciphertext
+    assert threefish.evaluate_vectorized_gpu([plaintext, key, tweak], evaluate_api = True) == ciphertext
 
     plaintext = int('0xF8F9FAFBFCFDFEFFF0F1F2F3F4F5F6F7E8E9EAEBECEDEEEFE0E1E2E3E4E5E6E7D8D9DADBDCDDDEDFD0D1D2D3D4D5'
                     'D6D7C8C9CACBCCCDCECFC0C1C2C3C4C5C6C7', 16)
@@ -49,3 +52,4 @@ def test_threefish_block_cipher():
     assert threefish.evaluate([plaintext, key, tweak]) == ciphertext
     assert threefish.test_against_reference_code(2) is True
     assert threefish.evaluate_vectorized([plaintext, key, tweak], evaluate_api = True) == ciphertext
+    assert threefish.evaluate_vectorized_gpu([plaintext, key, tweak], evaluate_api = True) == ciphertext

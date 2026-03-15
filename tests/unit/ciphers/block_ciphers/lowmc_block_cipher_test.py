@@ -15,6 +15,7 @@ def test_lowmc_block_cipher():
     ciphertext = 0XCAE1713F0BD2A6362F9F0ACC49976A02
     assert lowmc.evaluate([plaintext, key]) == ciphertext
     assert lowmc.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext
+    assert lowmc.evaluate_vectorized_gpu([plaintext, key], evaluate_api=True) == ciphertext
 
     # Vectorsets for Picnic-L3-30
     lowmc = LowMCBlockCipher(block_bit_size=192, key_bit_size=192, number_of_rounds=4)
@@ -27,6 +28,7 @@ def test_lowmc_block_cipher():
     ciphertext = 0XF8F7A225DE77123129107A20F5543AFA7833076653BA2B29
     assert lowmc.evaluate([plaintext, key]) == ciphertext
     assert lowmc.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext
+    assert lowmc.evaluate_vectorized_gpu([plaintext, key], evaluate_api=True) == ciphertext
 
 
     # Vectorsets for Picnic-L5-38
@@ -36,6 +38,7 @@ def test_lowmc_block_cipher():
     ciphertext = 0X8E416601CC582CE3A114ECBD6C2F669B2974F9F56C3FE1129FA525081CC9F8C0
     assert lowmc.evaluate([plaintext, key]) == ciphertext
     assert lowmc.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext
+    assert lowmc.evaluate_vectorized_gpu([plaintext, key], evaluate_api=True) == ciphertext
 
 
 
@@ -48,6 +51,7 @@ def test_lowmc_block_cipher():
     ciphertext = 0xb43b65f7c535006cf27e86f551bd01580 >> 7
     assert lowmc.evaluate([plaintext, key]) == ciphertext
     assert lowmc.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext
+    assert lowmc.evaluate_vectorized_gpu([plaintext, key], evaluate_api=True) == ciphertext
 
 
     # Vectorsets for Picnic3-L3-4
@@ -57,6 +61,7 @@ def test_lowmc_block_cipher():
     ciphertext = 0x869870ae6547ad0afef27793170d96bc78e040096944808f
     assert lowmc.evaluate([plaintext, key]) == ciphertext
     assert lowmc.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext
+    assert lowmc.evaluate_vectorized_gpu([plaintext, key], evaluate_api=True) == ciphertext
 
 
     # Vectorsets for Picnic3-L5-4
@@ -68,3 +73,4 @@ def test_lowmc_block_cipher():
     ciphertext = 0x4448c70ac3863021be232c63381687cd5defb50ba28d7b268e19727baebc679a >> 1
     assert lowmc.evaluate([plaintext, key]) == ciphertext
     assert lowmc.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext
+    assert lowmc.evaluate_vectorized_gpu([plaintext, key], evaluate_api=True) == ciphertext

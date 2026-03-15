@@ -25,3 +25,4 @@ def test_spongent_pi_precomputation_permutation():
     ciphertext = 0x8675478f97cafe723bf668c5e573ae9b582131499660
     assert spongentpi.evaluate([plaintext]) == ciphertext
     assert spongentpi.evaluate_vectorized([plaintext], evaluate_api=True) == ciphertext
+    assert spongentpi.evaluate_vectorized_gpu([plaintext], evaluate_api=True) == ciphertext

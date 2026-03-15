@@ -24,3 +24,4 @@ def test_fancy_block_cipher():
     ciphertext = 0xfedcba
     assert fancy.evaluate([plaintext, key]) == ciphertext
     assert fancy.evaluate_vectorized([plaintext, key], evaluate_api = True) == ciphertext
+    assert fancy.evaluate_vectorized_gpu([plaintext, key], evaluate_api = True) == ciphertext

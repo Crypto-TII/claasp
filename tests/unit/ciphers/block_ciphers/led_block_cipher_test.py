@@ -24,12 +24,14 @@ def test_led_block_cipher():
     ciphertext = 0x39C2401003A0C798
     assert led.evaluate([plaintext, key]) == ciphertext
     assert led.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext
+    assert led.evaluate_vectorized_gpu([plaintext, key], evaluate_api=True) == ciphertext
 
     plaintext = 0x0123456789ABCDEF
     key = 0x0123456789ABCDEF
     ciphertext = 0xA003551E3893FC58
     assert led.evaluate([plaintext, key]) == ciphertext
     assert led.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext
+    assert led.evaluate_vectorized_gpu([plaintext, key], evaluate_api=True) == ciphertext
 
     led = LedBlockCipher(key_bit_size=128, number_of_rounds=48)
 
@@ -38,9 +40,11 @@ def test_led_block_cipher():
     ciphertext = 0x3DECB2A0850CDBA1
     assert led.evaluate([plaintext, key]) == ciphertext
     assert led.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext
+    assert led.evaluate_vectorized_gpu([plaintext, key], evaluate_api=True) == ciphertext
 
     plaintext = 0x0123456789ABCDEF
     key = 0x0123456789ABCDEF0123456789ABCDEF
     ciphertext = 0xD6B824587F014FC2
     assert led.evaluate([plaintext, key]) == ciphertext
     assert led.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext
+    assert led.evaluate_vectorized_gpu([plaintext, key], evaluate_api=True) == ciphertext

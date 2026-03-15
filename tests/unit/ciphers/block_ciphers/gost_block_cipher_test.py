@@ -23,3 +23,4 @@ def test_gost_block_cipher():
     ciphertext = 0x4EE901E5C2D8CA3D
     assert gost.evaluate([plaintext, key]) == ciphertext
     assert gost.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext
+    assert gost.evaluate_vectorized_gpu([plaintext, key], evaluate_api=True) == ciphertext

@@ -21,6 +21,7 @@ def test_xtea_block_cipher():
     assert xtea.evaluate([plaintext, key]) == ciphertext
     assert xtea.test_against_reference_code(2) is True
     assert xtea.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext
+    assert xtea.evaluate_vectorized_gpu([plaintext, key], evaluate_api=True) == ciphertext
 
     xtea = XTeaBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=32)
     plaintext = 0xb779ee0a
@@ -29,3 +30,4 @@ def test_xtea_block_cipher():
     assert xtea.evaluate([plaintext, key]) == ciphertext
     assert xtea.test_against_reference_code(2) is True
     assert xtea.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext
+    assert xtea.evaluate_vectorized_gpu([plaintext, key], evaluate_api=True) == ciphertext
