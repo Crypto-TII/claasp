@@ -74,8 +74,15 @@ class MilpMonomialPredictionModel():
 
     def get_unused_variables(self):
         self.get_all_variables_as_list()
+        # Collect all global input names to protect them from pruning (as they might be constrained later in D&C copies)
+        input_bits = set()
+        for inp_name in self._cipher.inputs:
+            sz = self._cipher.inputs_bit_size[self._cipher.inputs.index(inp_name)]
+            for i in range(sz):
+                input_bits.add(f"{inp_name}[{i}]")
+
         for variable in self._variables_as_list:
-            if variable not in self._used_variables:
+            if variable not in self._used_variables and variable not in input_bits:
                 self._unused_variables.append(variable)
 
     def set_unused_variables_to_zero(self):
@@ -789,10 +796,23 @@ class MilpMonomialPredictionModel():
     def build_generic_model_for_specific_output_bit(self, output_bit_index, fixed_degree=None,
                                                     which_var_degree=None,
                                                     chosen_cipher_output=None,
-                                                    skip_components=None):
+                                                    skip_components=None,
+                                                    do_pruning=True):
+        import time
+        from claasp.name_mappings import INTERMEDIATE_OUTPUT
         start = time.time()
+        if skip_components is None:
+            # Only skip intermediate outputs that are truly sinks (no consumers) and not targeted.
+            # This prevents diversion to dead-end taps while preserving cipher paths (e.g. Trivium keystream bits).
+            G = create_networkx_graph_from_input_ids(self._cipher)
+            skip_components = set([
+                n for n, d in G.out_degree() if d == 0 
+                and self._cipher.get_component_from_id(n).type == INTERMEDIATE_OUTPUT
+            ])
+            if chosen_cipher_output in skip_components:
+                skip_components.remove(chosen_cipher_output)
 
-        if chosen_cipher_output != None:
+        if chosen_cipher_output is not None:
             input_id_link_needed = chosen_cipher_output
         else:
             input_id_link_needed = self.get_cipher_output_component_id()
@@ -849,7 +869,8 @@ class MilpMonomialPredictionModel():
             self._model.addConstr(sum(vars_to_constrain) == fixed_degree,
                                   name=f"degree_{var_input_name}_{fixed_degree}")
 
-        self.set_unused_variables_to_zero()
+        if do_pruning:
+            self.set_unused_variables_to_zero()
         self.create_all_copies()
         self._model.update()
         if verbosity:
@@ -859,7 +880,7 @@ class MilpMonomialPredictionModel():
         self._model.update()
 
 
-    def build_model_with_input_output_constraints(self, output_indices, chosen_cipher_output=None, skip_components=None):
+    def build_model_with_input_output_constraints(self, output_indices, chosen_cipher_output=None, skip_components=None, do_pruning=True):
         """
         Builds a Gurobi model based on build_generic_model_for_specific_output_bit 
         but allows multiple output bits to be set to 1.
@@ -870,7 +891,17 @@ class MilpMonomialPredictionModel():
             chosen_cipher_output (str, optional): ID of the output component. Defaults to cipher output.
         """
         import time
+        from claasp.name_mappings import INTERMEDIATE_OUTPUT
         start = time.time()
+        
+        if skip_components is None:
+            G = create_networkx_graph_from_input_ids(self._cipher)
+            skip_components = set([
+                n for n, d in G.out_degree() if d == 0 
+                and self._cipher.get_component_from_id(n).type == INTERMEDIATE_OUTPUT
+            ])
+            if chosen_cipher_output in skip_components:
+                skip_components.remove(chosen_cipher_output)
         
         # build_generic_model does NOT call build_gurobi_model() at start, 
         # it calls add_constraints which calls build_gurobi_model.
@@ -920,9 +951,8 @@ class MilpMonomialPredictionModel():
                 else:
                     self._model.addConstr(output_vars[i] == 0)
 
-        # Skip fixed_degree logic from generic model as not requested/relevant here
-        
-        self.set_unused_variables_to_zero()
+        if do_pruning:
+            self.set_unused_variables_to_zero()
         self.create_all_copies()
         self._model.update()
 
@@ -976,12 +1006,8 @@ class MilpMonomialPredictionModel():
             print(f"########## solving_time : {solving_time}")
 
     def anf_list_to_boolean_poly(self, anf_list):
-        variables = []
-        for index, input_name in enumerate(self._cipher.inputs):
-            bit_size = self._cipher.inputs_bit_size[index]
-            variables.extend([f"{input_name[0]}{i}" for i in range(bit_size)])
-
-        B = BooleanPolynomialRing(names=variables)
+        B = self.get_boolean_polynomial_ring()
+        variables = B.variable_names()
         var_map = {str(v): B(str(v)) for v in variables}
 
         poly = B(0)
@@ -1007,9 +1033,13 @@ class MilpMonomialPredictionModel():
 
     def get_boolean_polynomial_ring(self):
         variables = []
+        prefix_totals = {}
         for index, input_name in enumerate(self._cipher.inputs):
             bit_size = self._cipher.inputs_bit_size[index]
-            variables.extend([f"{input_name[0]}{i}" for i in range(bit_size)])
+            prefix = input_name[0]
+            start = prefix_totals.get(prefix, 0)
+            variables.extend([f"{prefix}{i}" for i in range(start, start + bit_size)])
+            prefix_totals[prefix] = start + bit_size
         R = BooleanPolynomialRing(names=variables)
         return R
 
@@ -1024,20 +1054,34 @@ class MilpMonomialPredictionModel():
         For example, ``['p1', 'k8']`` → ``[('plaintext', 1), ('key', 8)]``.
         """
         input_map = {}
+        idx_offset = {}
+        current_offset = {}
         for index, input_name in enumerate(self._cipher.inputs):
+            prefix = input_name[0]
             bit_size = self._cipher.inputs_bit_size[index]
-            prefix = input_name[0]  # e.g., 'p' for plaintext, 'k' for key
-            input_map[prefix] = (input_name, bit_size)
+            offset = current_offset.get(prefix, 0)
+            input_map[f"{prefix}_{offset}"] = (input_name, bit_size, offset)
+            current_offset[prefix] = offset + bit_size
 
         results = []
         for var in var_list:
             prefix = var[0]
-            index = int(var[1:])
-            input_name, bit_size = input_map[prefix]
-
-            if index >= bit_size:
-                raise ValueError(f"Index {index} out of range for input '{input_name}' (size {bit_size})")
-            results.append((input_name, index))
+            total_idx = int(var[1:])
+            
+            # Find which input component this total_idx belongs to
+            found = False
+            curr = 0
+            for index, input_name in enumerate(self._cipher.inputs):
+                if input_name[0] == prefix:
+                    bit_size = self._cipher.inputs_bit_size[index]
+                    if curr <= total_idx < curr + bit_size:
+                        results.append((input_name, total_idx - curr))
+                        found = True
+                        break
+                    curr += bit_size
+            if not found:
+                 raise ValueError(f"Variable {var} out of range for prefix {prefix}")
+        return results
         return results
 
     def re_init(self):
@@ -1953,12 +1997,10 @@ class MilpMonomialPredictionModel():
             if "key" in inp.lower():
                 key_input_indices.append(i)
         
-        # Fallback for key input identification
-        if not key_input_indices and len(self._cipher.inputs) > 1:
-            key_input_indices = [1] # Typical for block ciphers [plaintext, key]
+        has_key = len(key_input_indices) > 0
         
         # For permutations without key, create a minimal ring for constant polynomials
-        if not key_input_indices:
+        if not has_key:
             if verbosity:
                 print("[INFO] No key input found (permutation). Result will be constant 0 or 1.")
             # Create minimal ring with 1 variable (we won't use it, just for type compatibility)
@@ -1995,15 +2037,15 @@ class MilpMonomialPredictionModel():
             raise ValueError(
                 f"Middle round {middle_round} out of valid range (1 to {self._cipher.number_of_rounds - 1})")
         
-        remaining_rounds = self._cipher.number_of_rounds - middle_round
-        cipher1 = self._cipher.__class__(number_of_rounds=middle_round)
-        cipher2 = self._cipher.__class__(number_of_rounds=remaining_rounds)
+        from copy import deepcopy
+        cipher_copy = deepcopy(self._cipher)
+        cipher1 = cipher_copy.get_partial_cipher(0, middle_round - 1)
+        cipher2 = cipher_copy.get_partial_cipher(middle_round, self._cipher.number_of_rounds - 1)
         
         # Support independent round keys
         if "key" not in self._cipher.inputs:
             if verbosity:
                 print("Propagating remove_key_schedule to sub-ciphers.")
-            cipher1 = cipher1.remove_key_schedule()
             cipher2 = cipher2.remove_key_schedule()
         
         model1 = MilpMonomialPredictionModel(cipher1)
@@ -2018,12 +2060,12 @@ class MilpMonomialPredictionModel():
         
         mid_round_obj = self._cipher.rounds_as_list[middle_round - 1]
         round_output_comp = None
-        for c in mid_round_obj.components:
-            if c.type == INTERMEDIATE_OUTPUT and c.description == ["round_output"]:
-                round_output_comp = c
+        for comp in mid_round_obj.components:
+            if comp.type == INTERMEDIATE_OUTPUT and "round_output" in comp.description:
+                round_output_comp = comp
                 break
-                
-        if round_output_comp is None:
+        
+        if not round_output_comp:
             # Fallback
             c_idx = middle_round + self._cipher.components_before_round_starts + 1
             round_output_comp = self._cipher.get_component_from_id(f"intermediate_output_{middle_round}_{c_idx}")
@@ -2031,15 +2073,13 @@ class MilpMonomialPredictionModel():
         if round_output_comp is None:
             raise ValueError(f"Could not find round_output component at round {middle_round}")
 
-        # CORRECT APPROACH: Skip ALL round_output components.
-        # When round_output at middle_round IS excluded, xor_1_8/xor_1_10's 'original' variables
-        # have only ONE downstream consumer (the next round). So original == the clean boundary bit.
-        # (If we kept round_output, original would also fan into round_output, creating 2 consumers
-        #  and spoiling the clean state boundary.)
+        # CORRECT APPROACH: Skip ONLY sink intermediate_output components.
+        # This prevents diversion while preserving internal state links (like keystream buffers).
         skip_for_enum = set()
+        G = create_networkx_graph_from_input_ids(self._cipher)
         for rnd in self._cipher.rounds_as_list:
             for c in rnd.components:
-                if c.type == INTERMEDIATE_OUTPUT:
+                if c.type == INTERMEDIATE_OUTPUT and G.out_degree(c.id) == 0:
                     skip_for_enum.add(c.id)
                 
         # if verbosity:
@@ -2133,21 +2173,21 @@ class MilpMonomialPredictionModel():
                     src = self._model.getVarByName(f"{link_id}[{pos}]")
                     if src is not None:
                         mid_vars_list.append(src)
+                    else:
+                        dummy = self._model.addVar(vtype=GRB.BINARY, name=f"dead_end_{link_id}[{pos}]")
+                        self._model.addConstr(dummy == 0)
+                        mid_vars_list.append(dummy)
         
+        self._model.update()
         if len(mid_vars_list) != bit_size:
-            raise ValueError(f"Could not collect {bit_size} mid-state bits at round {middle_round}")
+            raise ValueError(f"Could not collect {bit_size} mid-state bits at round {middle_round}. Found {len(mid_vars_list)}.")
         
         # 4. Enumerate Middle States using Callback (full cipher model, both endpoints fixed)
         feasible_states = set()
 
         def mid_state_callback(model, where):
             if where == GRB.Callback.MIPSOL:
-                vals = model.cbGetSolution(mid_vars_list)
-                # vals may be a list or single value; ensure it's iterable
-                if not hasattr(vals, '__iter__'):
-                    vals = [vals]
-                state = tuple(1 if float(v) > 0.5 else 0 for v in vals)
-
+                state = tuple(round(model.cbGetSolution(v)) for v in mid_vars_list)
                 if state not in feasible_states:
                     feasible_states.add(state)
                     # Add lazy constraint to forbid this exact mid-state
@@ -2165,101 +2205,78 @@ class MilpMonomialPredictionModel():
         self._model.setParam(GRB.Param.PoolSearchMode, 2)
         self._model.setParam(GRB.Param.PoolSolutions, 2000000000)
         # self._model.setParam(GRB.Param.OutputFlag, 0)
-        
         self._model.setObjective(0.0, GRB.MAXIMIZE)
         self._model.optimize(mid_state_callback)
         
         # 5. Per-State Counting (Polynomial Reconstruction)
         # model1 and model2 are already created above.
 
-
-
         total_poly = B(0)
 
-        def get_key_masks(m_model, m_cipher):
-            masks = []
-            if m_model.Status not in [GRB.OPTIMAL, GRB.SUBOPTIMAL]:
-                return masks
-            
-            # Find all key variables in this sub-cipher
-            m_key_vars = []
-            for idx, inp in enumerate(m_cipher.inputs):
-                if "key" in inp.lower():
-                    m_key_size = m_cipher.inputs_bit_size[idx]
-                    for i in range(m_key_size):
-                        v = m_model.getVarByName(f"{inp}[{i}]")
-                        if v is not None:
-                            m_key_vars.append(v)
-            
-            if not m_key_vars: 
-                # If no key input found
-                return [0] * m_model.SolCount 
+        def get_input_masks(active_model, wrapper_model, sub_cipher):
+            solCount = active_model.SolCount
+            # Collect all inputs that ARE NOT intermediate state
+            inputs = []
+            for prio, inp_name in enumerate(sub_cipher.inputs):
+                if inp_name.startswith("intermediate_output"):
+                    continue
+                # Find matching variables in wrapper_model (metadata holder)
+                if inp_name in wrapper_model._variables:
+                    for idx in sorted(wrapper_model._variables[inp_name].keys()):
+                        orig_var = wrapper_model._variables[inp_name][idx]["original"]
+                        copy_var = active_model.getVarByName(orig_var.VarName)
+                        # Append the variable (or None if missing) to keep indices consistent with build_bit_map
+                        inputs.append(copy_var)
 
-            # Retrieve all solutions
-            for sol_idx in range(m_model.SolCount):
-                 m_model.Params.SolutionNumber = sol_idx
-                 mask = 0
-                 # Build the binary mask over all sub-cipher keys
-                 for bit_i, v in enumerate(m_key_vars):
-                      if v.Xn > 0.5:
-                           mask |= (1 << bit_i)
-                 masks.append(mask)
-            return masks
+            masks_parity = {}
+            for sn in range(solCount):
+                active_model.setParam(GRB.Param.SolutionNumber, sn)
+                mask = 0
+                for i, var in enumerate(inputs):
+                    if var is not None and var.Xn > 0.5:
+                        mask |= (1 << i)
+                masks_parity[mask] = masks_parity.get(mask, 0) ^ 1
+            
+            # Return only masks with odd parity
+            return {m: p for m, p in masks_parity.items() if p == 1}
 
-        # Calculate map from sub-cipher key bit index to global cipher key bit index
-        def build_key_index_map(sub_cipher, global_cipher, start_round, end_round):
-            """Returns a dict mapping the local flat key bit index to the global flat key bit index."""
+        # Map bit name "inp_name[idx]" to its position in the ring B
+        ring_var_map = {}
+        curr_ring_idx = 0
+        for i in key_input_indices:
+            inp_name = self._cipher.inputs[i]
+            size = self._cipher.inputs_bit_size[i]
+            for b in range(size):
+                ring_var_map[f"{inp_name}[{b}]"] = curr_ring_idx
+                curr_ring_idx += 1
+
+        def build_bit_map(sub_cipher, wrapper_model):
             mapping = {}
-            if "key" in global_cipher.inputs:
-                # Normal key schedule (key is shared globally) -> 1:1 mapping if names match
-                # This simplistic mapping assumes a single global key input named 'key'
-                key_size = 0
-                for gi, ginp in enumerate(global_cipher.inputs):
-                    if "key" in ginp.lower():
-                        key_size += global_cipher.inputs_bit_size[gi]
-                for i in range(key_size):
-                    mapping[i] = i
-                return mapping
-            
-            # Independent round keys: Need to handle 'key_0_2', 'key_1_2', etc. format
-            global_keys = []
-            for gi, ginp in enumerate(global_cipher.inputs):
-                 if "key" in ginp.lower():
-                     for b in range(global_cipher.inputs_bit_size[gi]):
-                          global_keys.append(f"{ginp}[{b}]")
-            
-            sub_keys = []
-            for si, sinp in enumerate(sub_cipher.inputs):
-                 if "key" in sinp.lower():
-                     parts = sinp.split('_')
-                     if len(parts) >= 3 and parts[0] == "key" and parts[1].isdigit():
-                         local_r = int(parts[1])
-                         global_r = local_r + start_round
-                         global_name = f"key_{global_r}_{parts[2]}"
-                     else:
-                         global_name = sinp # fallback
-                         
-                     for b in range(sub_cipher.inputs_bit_size[si]):
-                          sub_keys.append(f"{global_name}[{b}]")
-
-            for sub_i, key_str in enumerate(sub_keys):
-                 if key_str in global_keys:
-                     mapping[sub_i] = global_keys.index(key_str)
+            bit_pos = 0
+            for i, inp_name in enumerate(sub_cipher.inputs):
+                if inp_name.startswith("intermediate_output"): continue
+                if inp_name in wrapper_model._variables:
+                    for b in sorted(wrapper_model._variables[inp_name].keys()):
+                        global_name = f"{inp_name}[{b}]"
+                        # If this bit is in our ring, map its position in the mask to its index in k_vars
+                        if global_name in ring_var_map:
+                            mapping[bit_pos] = ring_var_map[global_name]
+                        bit_pos += 1
             return mapping
 
-        map1 = build_key_index_map(cipher1, self._cipher, 0, middle_round)
-        map2 = build_key_index_map(cipher2, self._cipher, middle_round, self._cipher.number_of_rounds)
+        map1 = None # Will be built after models are constructed
+        map2 = None
 
         skip_m1 = set([c.id for rnd in cipher1.rounds_as_list for c in rnd.components if c.type == INTERMEDIATE_OUTPUT])
         skip_m2 = set([c.id for rnd in cipher2.rounds_as_list for c in rnd.components if c.type == INTERMEDIATE_OUTPUT])
 
         # Prepare Output for Model 2: Target bit must be 1 (Static)
-        model2.build_generic_model_for_specific_output_bit(output_bit_index)
+        model2.build_generic_model_for_specific_output_bit(output_bit_index, skip_components=skip_m2, do_pruning=True)
         
         # Build Model 1 Static Base (cipher1): cube-in -> any output (keys free)
         # output_indices=None means output vars are created but NOT constrained — 
         # we will add per-state output constraints dynamically in the loop below.
-        model1.build_model_with_input_output_constraints(None)
+        model1.build_model_with_input_output_constraints(None, skip_components=skip_m1, do_pruning=True)
         
         # Add cube/non-cube INPUT constraints to model1 (these are STATIC constraints)
         cube_locs = model1.var_list_to_input_positions(cube)
@@ -2278,6 +2295,9 @@ class MilpMonomialPredictionModel():
                                 model1._model.addConstr(v == 0)
         
         model1._model.update()
+
+        map1 = build_bit_map(cipher1, model1)
+        map2 = build_bit_map(cipher2, model2)
 
         # Add MAXIMIZE objective to prioritize maximum degree keys (matching mitm_speck.cpp)
         keys_m1 = []
@@ -2339,20 +2359,17 @@ class MilpMonomialPredictionModel():
             
             # Solve Model 1 copy
             m1_core.optimize()
-            
             sol_left = m1_core.SolCount
             if verbosity:
                 print(f"  Model 1 SolCount: {sol_left}")
             
-            masks1 = get_key_masks(m1_core, cipher1)
+            masks1 = get_input_masks(m1_core, model1, cipher1)
             c1 = sol_left % 2
             
-            # Dispose to free memory
-            m1_core.dispose()
-            
-            if not masks1:
+            if sol_left == 0:
                 if verbosity:
                     print("  Model 1 infeasible")
+                m1_core.dispose()
                 continue
 
             # --- Model 2: Middle State -> Target Output ---
@@ -2376,47 +2393,39 @@ class MilpMonomialPredictionModel():
             if verbosity:
                 print(f"  Model 2 SolCount: {sol_right}")
             c2 = sol_right % 2
-            masks2 = get_key_masks(m2_core, cipher2)
-            m2_core.dispose()
-
-            if not masks2:
+            masks2 = get_input_masks(m2_core, model2, cipher2)
+            
+            if sol_right == 0:
+                m1_core.dispose()
+                m2_core.dispose()
                 continue
 
             state_str = "".join(map(str, state))
             # print(f"State {state_str}: M1={sol_left}, M2={sol_right}")
             total_raw_solutions += sol_left * sol_right
 
-
             parity += c1 * c2
             # print(f"Parity: {parity}")
             # Combine Results
             if not has_key:
-                # Permutation: just count parity
-                count = len(masks1) * len(masks2)
-                total_poly += B(count % 2)
+                total_poly += B(c1 * c2)
 
             else:
-                for m1 in masks1:
-                    for m2 in masks2:
-                        # Translate m1 and m2 bits to global m_total using map1 and map2
-                        m_total = 0
-                        
-                        # Map bits from m1
-                        for sub_bit, global_bit in map1.items():
-                            if (m1 >> sub_bit) & 1:
-                                m_total |= (1 << global_bit)
-                                
-                        # Map bits from m2
-                        for sub_bit, global_bit in map2.items():
-                            if (m2 >> sub_bit) & 1:
-                                m_total |= (1 << global_bit)
-                                
-                        # Convert integer mask to monomial
+                for m1, p1 in masks1.items():
+                    for m2, p2 in masks2.items():
                         mon = B(1)
-                        for i in range(key_size):
-                            if (m_total >> i) & 1:
-                                mon *= k_vars[i]
+                        # Map bits from m1
+                        for sub_bit, ring_idx in map1.items():
+                            if (m1 >> sub_bit) & 1:
+                                mon *= k_vars[ring_idx]
+                        # Map bits from m2
+                        for sub_bit, ring_idx in map2.items():
+                            if (m2 >> sub_bit) & 1:
+                                mon *= k_vars[ring_idx]
                         total_poly += mon
+            
+            m1_core.dispose()
+            m2_core.dispose()
             
         
         if verbosity:
