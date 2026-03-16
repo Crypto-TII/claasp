@@ -195,8 +195,9 @@ class MznHadipourBoomerangModel(MznModel):
                 
         self._cp_xor_differential_constraints.append(cp_declarations_weight_lower)
 
-        
-        new_declaration_middle = f'array[0..{len(middle_keys)}-1] of var int: middle_p;'
+        ## TODO
+        ## tried to fix bounds for middle_p
+        new_declaration_middle = f'array[0..{len(middle_keys)}-1] of var 0..3200: middle_p;'
         self._cp_xor_differential_constraints.append(new_declaration_middle)
 
         self.count_middle_p = 0
@@ -1032,12 +1033,14 @@ class MznHadipourBoomerangModel(MznModel):
         # # lower_xor_2_8 = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] = 2^15 = 32768
         # # lower_xor_2_9 = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] = 2^15 = 32768
 
-
-        # prob = speck32_64_bct_distinguisher_verifier(split_and_convert(delta_up), split_and_convert(nabla_lo), nr=number_rounds, n=2 ** 22 )
-        # print(f'prob = {prob}')
-        # if prob > 0:
-        #     exponent = math.log(prob, 2)
-        #     print(f'2^{exponent}')
+        delta_up = [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        nabla_lo = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0]
+        number_rounds = 4
+        prob = speck32_64_bct_distinguisher_verifier(split_and_convert(delta_up), split_and_convert(nabla_lo), nr=number_rounds, n=2 ** 24 )
+        print(f'prob = {prob}')
+        if prob > 0:
+            exponent = math.log(prob, 2)
+            print(f'2^{exponent}')
 
         self.write_minizinc_model_to_file(".")
 

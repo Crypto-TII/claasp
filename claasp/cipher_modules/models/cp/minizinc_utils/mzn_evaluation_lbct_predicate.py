@@ -340,7 +340,7 @@ predicate lbct_compute(
     array[int] of var 0..1: nR,
     array[int] of var 0..1: nLL,
     int: branchSize,
-    var int: lbct_minus_log_2
+    var 0..3200: lbct_minus_log_2
 ) =
 let {
     array[1..branchSize-1,0..7] of var float: dp_lbct;
