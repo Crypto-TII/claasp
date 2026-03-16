@@ -8,7 +8,7 @@ from decimal import Decimal
 from claasp.cipher import Cipher
 from claasp.ciphers.block_ciphers.lblock_block_cipher import LBlockBlockCipher
 from claasp.ciphers.block_ciphers.tea_block_cipher import TeaBlockCipher
-from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
 from claasp.ciphers.block_ciphers.xtea_block_cipher import XTeaBlockCipher
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation
@@ -65,7 +65,7 @@ def test_algebraic_tests():
                                   'max_degree_of_equations': [2],
                                   'test_passed': [True]}}
 
-    aes = AESBlockCipher(word_size=4, state_size=2, number_of_rounds=1)
+    aes = ToyAESBlockCipher(word_size=4, state_size=2, number_of_rounds=1)
     d = AlgebraicTests(aes).algebraic_tests(5)
     compare_result = {'input_parameters': {'cipher': aes,
                                            'timeout_in_seconds': 5,
@@ -198,7 +198,7 @@ def test_get_round_from_component_id():
 
 
 def test_is_algebraically_secure():
-    aes = AESBlockCipher(word_size=4, state_size=2, number_of_rounds = 1)
+    aes = ToyAESBlockCipher(word_size=4, state_size=2, number_of_rounds = 1)
     assert aes.is_algebraically_secure(200) is False
 
 
@@ -224,7 +224,7 @@ def test_is_shift_arx():
 
 
 def test_is_spn():
-    aes = AESBlockCipher(number_of_rounds=2)
+    aes = ToyAESBlockCipher(number_of_rounds=2)
     assert aes.is_spn() is True
 
 
@@ -405,7 +405,7 @@ def test_cipher_inverse():
 
     key = 0x2b7e151628aed2a6abf7158809cf4f3c
     plaintext = 0x6bc1bee22e409f96e93d7e117393172a
-    cipher = AESBlockCipher(number_of_rounds=2)
+    cipher = ToyAESBlockCipher(number_of_rounds=2)
     ciphertext = cipher.evaluate([key, plaintext])
     cipher_inv = cipher.cipher_inverse()
     assert cipher_inv.evaluate([ciphertext, key]) == plaintext

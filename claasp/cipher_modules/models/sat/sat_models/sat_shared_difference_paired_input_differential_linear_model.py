@@ -30,7 +30,7 @@ from claasp.cipher_modules.models.utils import set_component_solution, get_bit_b
 
 
 class SharedDifferencePairedInputDifferentialLinearModel(SatModel):
-    """
+    r"""
     Model for finding high-order differential-linear distinguishers based on SAT encoding.
 
     This model combines three propagation techniques:
@@ -48,7 +48,7 @@ class SharedDifferencePairedInputDifferentialLinearModel(SatModel):
     """
 
     def __init__(self, cipher, dict_of_components):
-        """
+        r"""
         Initializes the model with cipher and components.
 
         INPUT:
@@ -298,7 +298,7 @@ class SharedDifferencePairedInputDifferentialLinearModel(SatModel):
     def find_one_shared_difference_paired_input_differential_linear_trail_with_fixed_weight(
         self, weight, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT, options=None
     ):
-        """
+        r"""
         Finds a high-order differential-linear trail with fixed weight using paired inputs and a shared difference.
 
         This method searches for trails satisfying:

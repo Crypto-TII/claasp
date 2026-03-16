@@ -151,7 +151,7 @@ def byte_vector_select_all_words(unformated_inputs, real_bits, real_inputs, numb
             if number_of_output_bits % 8 > 0:
                 left_byte_mask = 2 ** (number_of_output_bits % 8) - 1
             else:
-                left_byte_mask = 0xffff
+                left_byte_mask = 0xff
             output[i][0, :] &= left_byte_mask
         else:
             output[i] = np.zeros(shape=(words_per_input, max_number_of_columns), dtype=np.uint8)
@@ -352,6 +352,56 @@ def byte_vector_MODADD(input):
             c = reduce(lambda a, b: a + b, [c, b])
             b = carry.copy()
     return c
+
+
+def byte_vector_MODMUL(input, number_of_inputs, output_bit_size):
+    """
+    Computes the result of the MODMUL operation.
+
+    INPUT:
+
+    - ``input`` -- **list**; A list of numpy byte matrices to be multiplied, each with one row per byte, and one column per sample.
+    - ``number_of_inputs`` -- **integer**; is an integer representing the number of values to be multiplied together
+    - ``output_bit_size`` -- **integer**; is an integer representing the bit size of the output
+    """
+    
+    # Each input[i] is a numpy array of shape (num_bytes, num_samples) with dtype uint8
+    # We first pad or trim inputs to match output_bit_size / 8
+    num_bytes = get_number_of_bytes_needed_for_bit_size(output_bit_size)
+    
+    # Process inputs to integers
+    int_inputs = []
+    for count in range(number_of_inputs):
+        a = input[count]
+        # Make sure input has correct length
+        if a.shape[0] < num_bytes:
+            a_padded = np.zeros((num_bytes, a.shape[1]), dtype=np.uint8)
+            a_padded[-a.shape[0]:] = a
+            a = a_padded
+        elif a.shape[0] > num_bytes:
+            a = a[-num_bytes:]
+            
+        shifts = np.flip(np.array([i * 8 for i in range(num_bytes)], dtype=object))
+        val = np.sum(a << shifts[:, np.newaxis], axis=0)
+        int_inputs.append(val)
+        
+    word_size = output_bit_size
+    modulus = 2**word_size
+    
+    a_calc = int_inputs[0].astype(object) if word_size > 32 else int_inputs[0].astype(np.uint64)
+    for i in range(1, number_of_inputs):
+        b_calc = int_inputs[i].astype(object) if word_size > 32 else int_inputs[i].astype(np.uint64)
+        a_calc = (a_calc * b_calc) % modulus
+    
+    result = a_calc
+    
+    # Convert result back to byte array (big endian)
+    output = np.zeros(shape=(num_bytes, input[0].shape[1]), dtype=np.uint8)
+    for i in range(num_bytes):
+        shift = (num_bytes - 1 - i) * 8
+        output[i, :] = (result >> shift) & 0xff
+        
+    return output
 
 def byte_vector_idea_modmul(input, modulus, word_size):
     """

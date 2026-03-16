@@ -271,6 +271,26 @@ class XOR(Component):
 
         return cp_declarations, cp_constraints
 
+    def cp_continuous_differential_propagation_constraints(self, model):
+
+        input_id_links = self.input_id_links
+        output_id_link = self.id
+        input_bit_positions = self.input_bit_positions
+        input_len = self.output_bit_size
+
+        cp_declarations = []
+        cp_constraints = []
+
+        cp_declarations.append(f"array[0..{input_len - 1}] of var -1.0..1.0: x1_{output_id_link};")
+        cp_declarations.append(f"array[0..{input_len - 1}] of var -1.0..1.0: x2_{output_id_link};")
+        cp_declarations.append(f"array[0..{input_len - 1}] of var -1.0..1.0: {output_id_link};")
+
+        cp_constraints.append(
+            f"constraint {output_id_link} = continuous_xor(x1_{output_id_link}, x2_{output_id_link},{output_id_link});"
+        )
+
+        return cp_declarations, cp_constraints
+        
     def cp_deterministic_truncated_xor_differential_constraints(self):
         r"""
         Return list declarations and constraints for XOR component CP deterministic truncated XOR differential model.
@@ -349,6 +369,9 @@ class XOR(Component):
     def cp_deterministic_truncated_xor_differential_trail_constraints(self):
         return self.cp_deterministic_truncated_xor_differential_constraints()
 
+    def cp_semi_deterministic_truncated_xor_differential_constraints(self):
+        return self.cp_deterministic_truncated_xor_differential_constraints()
+
     def cp_wordwise_deterministic_truncated_xor_differential_constraints(self, model):
         r"""
         Return lists declarations and constraints for XOR component CP wordwise deterministic truncated XOR differential model.
@@ -359,9 +382,9 @@ class XOR(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
             sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
-            sage: aes = AESBlockCipher(number_of_rounds=5)
+            sage: aes = ToyAESBlockCipher(number_of_rounds=2)
             sage: cp = MznModel(aes)
             sage: xor_component = aes.component_from(0, 0)
             sage: xor_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(cp)
@@ -495,9 +518,9 @@ class XOR(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
             sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
-            sage: aes = AESBlockCipher(number_of_rounds=3)
+            sage: aes = ToyAESBlockCipher(number_of_rounds=3)
             sage: cp = MznModel(aes)
             sage: xor_component = aes.component_from(2, 31)
             sage: xor_component.cp_xor_differential_propagation_first_step_constraints(cp, cp._variables_list)
@@ -882,8 +905,8 @@ class XOR(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: cipher = AESBlockCipher(number_of_rounds=2)
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
+            sage: cipher = ToyAESBlockCipher(number_of_rounds=2)
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import MilpWordwiseDeterministicTruncatedXorDifferentialModel
             sage: milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
@@ -945,8 +968,8 @@ class XOR(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: cipher = AESBlockCipher(number_of_rounds=2)
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
+            sage: cipher = ToyAESBlockCipher(number_of_rounds=2)
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import MilpWordwiseDeterministicTruncatedXorDifferentialModel
             sage: milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
@@ -1016,8 +1039,8 @@ class XOR(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: cipher = AESBlockCipher(number_of_rounds=2)
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
+            sage: cipher = ToyAESBlockCipher(number_of_rounds=2)
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import MilpWordwiseDeterministicTruncatedXorDifferentialModel
             sage: milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
@@ -1444,9 +1467,9 @@ class XOR(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
             sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
-            sage: aes = AESBlockCipher(number_of_rounds=3)
+            sage: aes = ToyAESBlockCipher(number_of_rounds=3)
             sage: cp = MznModel(aes)
             sage: xor_component = aes.component_from(0, 31)
             sage: xor_component.cp_transform_xor_components_for_first_step(cp)

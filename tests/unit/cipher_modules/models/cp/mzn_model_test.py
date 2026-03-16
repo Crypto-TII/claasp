@@ -1,6 +1,6 @@
 import pytest
 
-from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
 from claasp.cipher_modules.models.cp.mzn_model import MznModel
@@ -40,7 +40,7 @@ def test_solver_names():
 
 @pytest.mark.filterwarnings("ignore::DeprecationWarning:")
 def test_build_mix_column_truncated_table():
-    aes = AESBlockCipher(number_of_rounds=3)
+    aes = ToyAESBlockCipher(number_of_rounds=3)
     mzn = MznModel(aes)
     mix_column = aes.component_from(0, 21)
     assert (
@@ -273,7 +273,7 @@ def test_build_generic_cp_model_from_dictionary_xor_linear():
     model._model_prefix.extend(variables)
     model._variables_list.extend(constraints)
     model._model_constraints.extend(model.final_xor_linear_constraints(weight))
-    model._model_constraints = model._model_prefix + model._variables_list + model._model_constraints
+    model._model_constraints = model._model_prefix + model._model_constraints
 
     result = model.solve(model_type="xor_linear_one_solution", solver_name="cp-sat")
     

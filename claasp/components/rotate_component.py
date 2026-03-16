@@ -148,7 +148,37 @@ class Rotate(Component):
 
         return cp_declarations, cp_constraints
 
+    def cp_continuous_differential_propagation_constraints(self, model):
+
+        output_id_link = self.id
+        input_len = self.output_bit_size
+        rot_val = self.description[1]
+
+        cp_declarations = []
+        cp_constraints = []
+
+        cp_declarations.append(
+            f"array[0..{input_len - 1}] of var -1.0..1.0: x1_{output_id_link};"
+        )
+        cp_declarations.append(
+            f"array[0..{input_len - 1}] of var -1.0..1.0: {output_id_link};"
+        )
+
+        if rot_val > 0:
+            cp_constraints.append(
+                f"constraint {output_id_link} = continuous_RRot(x1_{output_id_link}, {rot_val}, {output_id_link});"
+            )
+        else:
+            cp_constraints.append(
+                f"constraint {output_id_link} = continuous_LRot(x1_{output_id_link}, {abs(rot_val)}, {output_id_link});"
+            )
+
+        return cp_declarations, cp_constraints
+        
     def cp_deterministic_truncated_xor_differential_trail_constraints(self):
+        return self.cp_constraints()
+
+    def cp_semi_deterministic_truncated_xor_differential_constraints(self):
         return self.cp_constraints()
 
     def cp_inverse_constraints(self):
@@ -230,9 +260,9 @@ class Rotate(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
             sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
-            sage: aes = AESBlockCipher(number_of_rounds=3)
+            sage: aes = ToyAESBlockCipher(number_of_rounds=3)
             sage: cp = MznModel(aes)
             sage: rotate_component = aes.component_from(0, 18)
             sage: rotate_component.cp_xor_differential_first_step_constraints(cp)
@@ -417,8 +447,8 @@ class Rotate(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: cipher = AESBlockCipher(number_of_rounds=3)
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
+            sage: cipher = ToyAESBlockCipher(number_of_rounds=3)
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import MilpWordwiseDeterministicTruncatedXorDifferentialModel
             sage: milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(cipher)
             sage: milp.init_model_in_sage_milp_class()

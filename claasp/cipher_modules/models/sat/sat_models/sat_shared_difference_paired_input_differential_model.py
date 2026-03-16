@@ -40,7 +40,7 @@ def add_prefix_id_to_components(cipher, prefix):
 
 class SharedDifferencePairedInputDifferentialModel(SatModel):
     def __init__(self, cipher):
-        """
+        r"""
         Initialize the SharedDifferencePairedInputDifferentialModel object.
 
         This model duplicates the `cipher` and modifies component identifiers for differential
@@ -62,7 +62,7 @@ class SharedDifferencePairedInputDifferentialModel(SatModel):
             sage: from claasp.cipher_modules.models.sat.sat_models.sat_shared_difference_paired_input_differential_model import SharedDifferencePairedInputDifferentialModel
             sage: speck = SpeckBlockCipher(number_of_rounds=5)
             sage: model = SharedDifferencePairedInputDifferentialModel(speck)
-        """
+        r"""
         cipher1 = cipher
         cipher2 = deepcopy(cipher)
         add_prefix_id_to_components(cipher1, "cipher1")
@@ -74,7 +74,7 @@ class SharedDifferencePairedInputDifferentialModel(SatModel):
         super().__init__(self.duplicate_round_cipher)
 
     def build_shared_difference_paired_input_differential_model(self, weight=-1, fixed_variables=[]):
-        """
+        r"""
         Build the SAT model for searching high-order XOR differential distinguishers involving paired inputs
         and shared difference. The distinguisher follows the mathematical form:
 
@@ -116,7 +116,7 @@ class SharedDifferencePairedInputDifferentialModel(SatModel):
     def find_one_shared_difference_paired_input_differential_trail_with_fixed_weight(
         self, weight, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT, options=None
     ):
-        """
+        r"""
         Return a single solution representing a high-order XOR differential trail for paired inputs (`x`, `y`)
         and repeated shared difference (`a`) with a fixed weight. The solution satisfies the mathematical condition:
 

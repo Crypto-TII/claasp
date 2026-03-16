@@ -1,6 +1,8 @@
+import math
+
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.cipher_modules.models.sat.sat_models.sat_xor_linear_model import SatXorLinearModel
-from claasp.cipher_modules.models.utils import set_fixed_variables
+from claasp.cipher_modules.models.utils import set_fixed_variables, linear_checker_for_block_cipher_single_key
 
 
 def test_branch_xor_linear_constraints():
@@ -32,7 +34,25 @@ def test_find_lowest_weight_xor_linear_trail():
     trail = sat.find_lowest_weight_xor_linear_trail()
 
     assert trail["total_weight"] == 3.0
+    input_mask = bin(int(trail["components_values"]["plaintext"]["value"], 16))[2:].zfill(32)
+    output_mask = bin(int(trail["components_values"]["cipher_output_3_12_o"]["value"], 16))[2:].zfill(32)
 
+    corr = linear_checker_for_block_cipher_single_key(
+        speck,
+        input_mask,
+        output_mask,
+        number_of_samples=2**14,
+        block_size=32,
+        key_size=64,
+        fixed_key=0,
+        seed=None,
+    )
+    empirical_weight = abs(math.log(abs(corr), 2)) if corr != 0 else float("inf")
+    theoretical_weight = float(trail["total_weight"])
+    assert math.isfinite(empirical_weight)
+    # With only 4096 samples this is noisy; enforce a soft upper bound vs. theory.
+    assert empirical_weight <= theoretical_weight + 2.0
+    
 
 def test_find_one_xor_linear_trail():
     speck = SpeckBlockCipher(number_of_rounds=4)
