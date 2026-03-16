@@ -461,6 +461,8 @@ class SatDifferentialLinearModel(SatModel):
         start_time = time.time()
 
         self.build_xor_differential_linear_model(weight, num_unknown_vars, unknown_window_size_configuration)
+        if self._counter == self._sequential_counter:
+            self._sequential_counter_greater_or_equal(weight, "dummy_hw_1")
         constraints = self.fix_variables_value_constraints(
             fixed_values, self.regular_components, self.truncated_components, self.linear_components
         )
