@@ -234,14 +234,13 @@ class UblockSingleLinearLayerBlockCipher(Cipher):
         state = ComponentState([self.get_current_component_id()], [list(range(self.block_bit_size))])
         # sbox(state)
         ids = []
-        window_size = SBOX_SIZE
-        n = self.block_bit_size // window_size
+        n = self.block_bit_size // SBOX_SIZE
         for i in range(n):
             self.add_SBOX_component(
-                state.id, [state.input_bit_positions[0][i * window_size : (i + 1) * window_size]], window_size, SBOX
+                state.id, [state.input_bit_positions[0][i * SBOX_SIZE : (i + 1) * SBOX_SIZE]], SBOX_SIZE, SBOX
             )
             ids.append(self.get_current_component_id())
-        state = ComponentState(ids, [list(range(window_size))] * n)
+        state = ComponentState(ids, [list(range(SBOX_SIZE))] * n)
         if self.use_mix_column:
             # mix_column
             self.add_mix_column_component(
@@ -293,14 +292,11 @@ class UblockSingleLinearLayerBlockCipher(Cipher):
             )
             temp = ComponentState([self.get_current_component_id()], [list(range(self.key_block_size))])
             ids = []
-            window_size = SBOX_SIZE
-            n = int(self.key_block_size / window_size)
+            n = self.key_block_size // SBOX_SIZE
             for i in range(n):
-                self.add_SBOX_component(
-                    temp.id, [list(range(i * window_size, (i + 1) * window_size))], window_size, SBOX
-                )
+                self.add_SBOX_component(temp.id, [list(range(i * SBOX_SIZE, (i + 1) * SBOX_SIZE))], SBOX_SIZE, SBOX)
                 ids.append(self.get_current_component_id())
-            temp = ComponentState(ids, [list(range(window_size))] * n)
+            temp = ComponentState(ids, [list(range(SBOX_SIZE))] * n)
         else:
             key_0_left = ComponentState(key_0.id[: len(self.pk) // 4], key_0.input_bit_positions[: len(self.pk) // 4])
             key_0_right = ComponentState(key_0.id[len(self.pk) // 4 :], key_0.input_bit_positions[len(self.pk) // 4 :])
@@ -311,23 +307,15 @@ class UblockSingleLinearLayerBlockCipher(Cipher):
             )
             temp = ComponentState([self.get_current_component_id()], [list(range(RC_SIZE))])
             ids = []
-            window_size = SBOX_SIZE
-            n = RC_SIZE // window_size
+            n = RC_SIZE // SBOX_SIZE
             for i in range(n):
-                self.add_SBOX_component(
-                    temp.id, [list(range(i * window_size, (i + 1) * window_size))], window_size, SBOX
-                )
+                self.add_SBOX_component(temp.id, [list(range(i * SBOX_SIZE, (i + 1) * SBOX_SIZE))], SBOX_SIZE, SBOX)
                 ids.append(self.get_current_component_id())
-            n = (self.key_block_size - RC_SIZE) // window_size
+            n = (self.key_block_size - RC_SIZE) // SBOX_SIZE
             for i in range(n):
-                self.add_SBOX_component(
-                    [key_0_right.id[i]],
-                    [key_0_right.input_bit_positions[i]],
-                    window_size,
-                    SBOX,
-                )
+                self.add_SBOX_component([key_0_right.id[i]], [key_0_right.input_bit_positions[i]], SBOX_SIZE, SBOX)
                 ids.append(self.get_current_component_id())
-            temp = ComponentState(ids, [list(range(window_size))] * int(self.key_block_size / window_size))
+            temp = ComponentState(ids, [list(range(SBOX_SIZE))] * (self.key_block_size // SBOX_SIZE))
         self.add_XOR_component(
             key_2.id + temp.id, key_2.input_bit_positions + temp.input_bit_positions, self.key_block_size
         )
@@ -335,12 +323,28 @@ class UblockSingleLinearLayerBlockCipher(Cipher):
 
         # K3 = K3 xor sbox_tk(K1)
         ids = []
-        window_size = SBOX_SIZE
-        n = self.key_block_size // window_size
+        positions = []
+        n = self.key_block_size // SBOX_SIZE
         for i in range(n):
-            self.add_SBOX_component([key_1.id[i]], [key_1.input_bit_positions[i]], window_size, SBOX_TK)
-            ids.append(self.get_current_component_id())
-        temp = ComponentState(ids, [list(range(window_size))] * n)
+            ids.append(key_1.id[i])
+            positions.append(key_1.input_bit_positions[i][1:] + key_1.input_bit_positions[i][:1])
+        temp_shifted = ComponentState(ids, positions)
+        ids_to_xor = []
+        positions_to_xor = []
+        for id, positions in zip(temp_shifted.id, temp_shifted.input_bit_positions):
+            ids_to_xor.append(id)
+            positions_to_xor.append([positions[2]])
+        for id, positions in zip(temp_shifted.id, temp_shifted.input_bit_positions):
+            ids_to_xor.append(id)
+            positions_to_xor.append([positions[3]])
+        self.add_XOR_component(ids_to_xor, positions_to_xor, n)
+        id_to_mix = self.get_current_component_id()
+        ids_temp = []
+        positions_temp = []
+        for i, (shifted_id, shifted_positions) in enumerate(zip(temp_shifted.id, temp_shifted.input_bit_positions)):
+            ids_temp.extend([shifted_id, id_to_mix, shifted_id])
+            positions_temp.extend([shifted_positions[:2], [i], shifted_positions[3:]])
+        temp = ComponentState(ids_temp, positions_temp)
         self.add_XOR_component(
             key_3.id + temp.id, key_3.input_bit_positions + temp.input_bit_positions, self.key_block_size
         )
