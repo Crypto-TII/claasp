@@ -186,5 +186,4 @@ def test_find_superpoly_by_divide_and_conquer_speck():
         middle_round=2,
         cube=cube
     )
-    R = milp.get_boolean_polynomial_ring()
     assert str(res) == "k²7*k²8 + k²7*k³6 + k²7*k³13 + k²8*k³5 + k²8*k³12 + k²8 + k³5*k³6 + k³5*k³13 + k³6*k³12 + k³6 + k³12*k³13 + k³13"
