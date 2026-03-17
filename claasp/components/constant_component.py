@@ -24,11 +24,51 @@ from claasp.name_mappings import CONSTANT
 
 
 def constant_to_repr(val, output_size):
+    """
+    Convert a constant literal into the byte-oriented representation used by
+    byte-based vectorized evaluation.
+
+    If the literal representation contains more bits than ``output_size``, the
+    most-significant ``output_size`` bits are kept (scalar-compatible behavior).
+
+    For ``0x`` and ``0b`` literals, the represented width is taken from the
+    literal itself:
+
+    - ``0x1234`` is treated as a 16-bit value (``0001 0010 0011 0100``)
+    - ``0b1001000110100`` is treated as a 13-bit value
+
+    EXAMPLES::
+
+        sage: from claasp.components.constant_component import constant_to_repr
+        sage: constant_to_repr("0x1000", 12)
+        [1, 0]
+        sage: # 0x1234 is interpreted as 16 bits: 0001 0010 0011 0100
+        sage: constant_to_repr("0x1234", 5)
+        [2]
+        sage: # Same numeric value, but explicit 13-bit binary literal
+        sage: constant_to_repr("0b1001000110100", 5)
+        [18]
+        sage: constant_to_repr("0b101100", 4)
+        [11]
+    """
     _val = int(val, 0)
-    if output_size % 8 != 0:
-        s = output_size + (8 - (output_size % 8))
+    val_str = str(val).lower()
+    if val_str.startswith("0x"):
+        represented_bits = (len(val_str) - 2) * 4
+    elif val_str.startswith("0b"):
+        represented_bits = len(val_str) - 2
     else:
-        s = output_size
+        represented_bits = _val.bit_length()
+
+    if represented_bits > output_size:
+        _val >>= represented_bits - output_size
+
+    if output_size > 0:
+        _val &= (1 << output_size) - 1
+
+    s = output_size
+    if s % 8 != 0:
+        s += 8 - (s % 8)
     ret = [(_val >> s - (8 * (i + 1))) & 0xFF for i in range(s // 8)]
 
     return ret
