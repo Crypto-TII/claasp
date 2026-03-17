@@ -46,21 +46,22 @@ def test_aes_4_4_block_cipher():
     assert aes.evaluate([key, plaintext]) == ciphertext
     assert aes.evaluate_vectorized([key, plaintext], evaluate_api=True) == ciphertext
 
-# def test_aes_4_3_block_cipher():
-#     aes = ToyAESBlockCipher(word_size=4, state_size=3)
-#     key = 0b100111100101111110011110010111110000
-#     plaintext = 0b100111100101111110011110010111110000
-#     ciphertext = 0x3a54a9d02
-#     assert aes.evaluate([key, plaintext]) == ciphertext
-#     assert aes.evaluate_vectorized([key, plaintext], evaluate_api=True) == ciphertext
-#
-# def test_aes_4_2_block_cipher():
-#     aes = ToyAESBlockCipher(word_size=4, state_size=2)
-#     key = 0x2b7e
-#     plaintext = 0x6bc1
-#     ciphertext = 0xa1fe
-#     assert aes.evaluate([key, plaintext]) == ciphertext
-#     assert aes.evaluate_vectorized([key, plaintext], evaluate_api=True) == ciphertext
+def test_aes_4_3_block_cipher():
+    aes = ToyAESBlockCipher(word_size=4, state_size=3)
+    key = 0b100111100101111110011110010111110000
+    plaintext = 0b100111100101111110011110010111110000
+    ciphertext = 0x3a54a9d02
+    assert aes.evaluate([key, plaintext]) == ciphertext
+    assert aes.evaluate_vectorized([key, plaintext], evaluate_api=True) == ciphertext
+
+
+def test_aes_4_2_block_cipher():
+    aes = ToyAESBlockCipher(word_size=4, state_size=2)
+    key = 0x2b7e
+    plaintext = 0x6bc1
+    ciphertext = 0xa1fe
+    assert aes.evaluate([key, plaintext]) == ciphertext
+    assert aes.evaluate_vectorized([key, plaintext], evaluate_api=True) == ciphertext
 
 def test_aes_3_4_block_cipher():
     aes = ToyAESBlockCipher(word_size=3, state_size=4)
