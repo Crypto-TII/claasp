@@ -1204,7 +1204,6 @@ class MilpMonomialPredictionModel():
             if not found:
                  raise ValueError(f"Variable {var} out of range for prefix {prefix}")
         return results
-        return results
 
     def re_init(self):
         self._variables = None
