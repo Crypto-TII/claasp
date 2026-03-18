@@ -100,6 +100,13 @@ class MznModel:
         self.modadd_twoterms_mant = []
         self.input_sbox = []
         self.table_of_solutions_length = 0
+        self.list_of_xor_components = []
+        self.list_of_xor_all_inputs = []
+        self.component_and_probability = {}
+        self.probability_vars = []
+        self.probability_modadd_vars_per_round = [[] for _ in range(self._cipher.number_of_rounds)]
+        self.component_probability_var = {}
+        self._model_prefix = ['include "globals.mzn";', f"{usefulfunctions.MINIZINC_USEFUL_FUNCTIONS}"]
 
     def _solve_instance(
         self,
@@ -143,13 +150,6 @@ class MznModel:
                 category=DeprecationWarning,
             )
             return instance.solve(timeout=time_delta, **solve_kwargs)
-        self.list_of_xor_components = []
-        self.list_of_xor_all_inputs = []
-        self.component_and_probability = {}
-        self.probability_vars = []
-        self.probability_modadd_vars_per_round = [[] for _ in range(self._cipher.number_of_rounds)]
-        self.component_probability_var = {}
-        self._model_prefix = ['include "globals.mzn";', f"{usefulfunctions.MINIZINC_USEFUL_FUNCTIONS}"]
 
     def add_comment(self, comment):
         """
