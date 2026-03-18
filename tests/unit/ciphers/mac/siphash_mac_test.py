@@ -1,3 +1,14 @@
+"""Unit tests for SipHash MAC vectors.
+
+REFERENCES:
+
+Aumasson, J. P., & Bernstein, D. J. (2012). SipHash: a fast short-input PRF.
+https://cr.yp.to/siphash/siphash-20120918.pdf [AumassonBernstein2012]_.
+
+SipHash reference implementation and official test vectors (vectors_sip64, vectors_sip128):
+https://github.com/veorq/SipHash/blob/master/vectors.h [SipHashVectors]_.
+"""
+
 import pytest
 
 from claasp.ciphers.mac.siphash_mac import SiphashMAC
@@ -33,8 +44,11 @@ def test_siphash_mac_parameterization():
 
 
 def test_siphash24_vector_from_paper_page_19_and_vectors_h():
-    # Reference: https://cr.yp.to/siphash/siphash-20120918.pdf (page 19 test vector)
-    # Reference: https://github.com/veorq/SipHash/blob/master/vectors.h (vectors_sip64[15])
+    """Validate the page-19 SipHash-2-4 vector (vectors_sip64[15]).
+
+    References: [AumassonBernstein2012]_ (https://cr.yp.to/siphash/siphash-20120918.pdf),
+    [SipHashVectors]_ (https://github.com/veorq/SipHash/blob/master/vectors.h).
+    """
     key_bytes = list(range(16))
     message_bytes = list(range(15))
     expected_le_bytes = [0xE5, 0x45, 0xBE, 0x49, 0x61, 0xCA, 0x29, 0xA1]
@@ -56,7 +70,10 @@ def test_siphash24_vector_from_paper_page_19_and_vectors_h():
     ],
 )
 def test_siphash24_vectors_h_selected(message_size, expected_le_bytes):
-    # Reference: https://github.com/veorq/SipHash/blob/master/vectors.h (vectors_sip64)
+    """Validate `vectors_sip64[0]` and `vectors_sip64[63]` from [SipHashVectors]_.
+
+    URL: https://github.com/veorq/SipHash/blob/master/vectors.h
+    """
     key = _int_from_bytes_big_endian(range(16))
     message = _int_from_bytes_big_endian(range(message_size)) if message_size > 0 else 0
     expected = _siphash64_expected_from_le_bytes(expected_le_bytes)
@@ -66,7 +83,10 @@ def test_siphash24_vectors_h_selected(message_size, expected_le_bytes):
 
 
 def test_siphash128_vectors_h_selected():
-    # Reference: https://github.com/veorq/SipHash/blob/master/vectors.h (vectors_sip128[15])
+    """Validate `vectors_sip128[15]` from [SipHashVectors]_.
+
+    URL: https://github.com/veorq/SipHash/blob/master/vectors.h
+    """
     key = _int_from_bytes_big_endian(range(16))
     message = _int_from_bytes_big_endian(range(15))
     expected_le_bytes = [
