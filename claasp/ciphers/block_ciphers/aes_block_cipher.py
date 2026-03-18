@@ -77,9 +77,7 @@ class AESBlockCipher(Cipher):
 
     """
 
-    def __init__(self, key_bit_size=128, number_of_rounds=None, word_size=8, state_size=4):
-        if word_size != 8 or state_size != 4:
-            raise ValueError("AESBlockCipher supports only FIPS-197 parameters: word_size=8 and state_size=4.")
+    def __init__(self, key_bit_size=128, number_of_rounds=None):
 
         # Determine Nk (number of 32-bit words in key) and Nr (number of rounds)
         # FIPS-197 Table 1

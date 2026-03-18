@@ -110,6 +110,6 @@ def test_aes_invalid_key_size():
         assert "Invalid key_bit_size" in str(e)
 
 
-def test_aes_rejects_non_standard_word_or_state_size():
-    with pytest.raises(ValueError, match="supports only FIPS-197 parameters"):
+def test_aes_rejects_removed_non_standard_parameters():
+    with pytest.raises(TypeError, match="unexpected keyword argument 'word_size'"):
         AESBlockCipher(number_of_rounds=2, word_size=4, state_size=2)
