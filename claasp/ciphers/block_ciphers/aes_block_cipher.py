@@ -254,7 +254,7 @@ class AESBlockCipher(Cipher):
             # ROTWORD
             rotated = self.add_rotate_component(
                 [prev_word.id] * 4,
-                [[i for i in range(byte_idx * 8, (byte_idx + 1) * 8)] for byte_idx in range(4)],
+                [list(range(byte_idx * 8, (byte_idx + 1) * 8)) for byte_idx in range(4)],
                 32, -8)
             
             # SUBWORD
@@ -270,7 +270,7 @@ class AESBlockCipher(Cipher):
             rcon_idx = word_idx // self.Nk
             constant = self.add_constant_component(32, int(self.Rcon[rcon_idx - 1], 16))
             temp_input_id_links = [s.id for s in sbox_outputs] + [constant.id]
-            temp_input_bit_positions = [[i for i in range(8)]] * 4 + [list(range(32))]
+            temp_input_bit_positions = [list(range(8))] * 4 + [list(range(32))]
         elif self.Nk > 6 and word_idx % self.Nk == 4:
             # Line 12: temp ← SUBWORD(temp) for AES-256
             sbox_outputs = []
@@ -282,7 +282,7 @@ class AESBlockCipher(Cipher):
                 sbox_outputs.append(sbox_out)
 
             temp_input_id_links = [s.id for s in sbox_outputs]
-            temp_input_bit_positions = [[i for i in range(8)]] * 4
+            temp_input_bit_positions = [list(range(8))] * 4
         else:
             # temp = w[i-1] (no transformation)
             temp_input_id_links = [prev_word.id]
@@ -367,7 +367,7 @@ class AESBlockCipher(Cipher):
             rotation_component = self.add_rotate_component(
                 [sbox_layer_components[i].id for i in
                  range(j, j + self.NUM_ROWS * (self.NUM_ROWS - 1) + 1, self.NUM_ROWS)],
-                [[i for i in range(self.SBOX_BIT_SIZE)] for _ in range(self.NUM_ROWS)],
+                [list(range(self.SBOX_BIT_SIZE)) for _ in range(self.NUM_ROWS)],
                 self.WORD_BIT_SIZE,
                 -self.SBOX_BIT_SIZE * j)
             shift_row_layer_components.append(rotation_component)
@@ -393,7 +393,7 @@ class AESBlockCipher(Cipher):
         for j in range(self.NUM_ROWS):
             mix_column_component = self.add_mix_column_component(
                 [shift_row_layer_components[i].id for i in range(self.NUM_ROWS)],
-                [[i for i in range(j * self.SBOX_BIT_SIZE, (j + 1) * self.SBOX_BIT_SIZE)] for _ in
+                [list(range(j * self.SBOX_BIT_SIZE, (j + 1) * self.SBOX_BIT_SIZE)) for _ in
                  range(self.NUM_ROWS)],
                 self.WORD_BIT_SIZE,
                 self.MIX_COLUMN)
@@ -412,8 +412,8 @@ class AESBlockCipher(Cipher):
         # Algorithm 1 Step 03: Initial round whitening (round_number == -1): plaintext XOR round key
         if s == INPUT_PLAINTEXT:
             s_id_list = [s] + [rk.id for rk in w]
-            s_input_position_lists = [[i for i in range(self.CIPHER_BLOCK_SIZE)]] + \
-                                     [[i for i in range(self.WORD_BIT_SIZE)] for _ in range(self.Nb)]
+            s_input_position_lists = [list(range(self.CIPHER_BLOCK_SIZE))] + \
+                                     [list(range(self.WORD_BIT_SIZE)) for _ in range(self.Nb)]
         else:        
             # For final round (round_number == Nr-1), we receive shift_row components
             # For other rounds, we receive mix_column components
@@ -426,15 +426,15 @@ class AESBlockCipher(Cipher):
                 shift_rows_input_position_lists = []
                 for i in range(self.NUM_ROWS):
                     shift_rows_input_position_lists.extend(
-                        [[j for j in range(i * self.SBOX_BIT_SIZE, (i + 1) * self.SBOX_BIT_SIZE)] for _ in
+                        [list(range(i * self.SBOX_BIT_SIZE, (i + 1) * self.SBOX_BIT_SIZE)) for _ in
                         range(self.NUM_ROWS)])
                 s_id_list = shift_rows_ids + [w[i].id for i in range(self.NUM_ROWS)]
-                s_input_position_lists = shift_rows_input_position_lists + [[i for i in range(self.WORD_BIT_SIZE)] for _ in range(self.NUM_ROWS)]
+                s_input_position_lists = shift_rows_input_position_lists + [list(range(self.WORD_BIT_SIZE)) for _ in range(self.NUM_ROWS)]
                 
             else:
                 # Algorithm 1 Step 08: Non-final round case
                 s_id_list = [s[i].id for i in range(self.NUM_ROWS)] + [w[i].id for i in range(self.NUM_ROWS)]
-                s_input_position_lists = [[i for i in range(self.WORD_BIT_SIZE)] for _ in range(2 * self.NUM_ROWS)]
+                s_input_position_lists = [list(range(self.WORD_BIT_SIZE)) for _ in range(2 * self.NUM_ROWS)]
             
         s = self.add_XOR_component(s_id_list, s_input_position_lists, self.CIPHER_BLOCK_SIZE)
         return s
@@ -443,17 +443,17 @@ class AESBlockCipher(Cipher):
         """Output the state after the round."""
         if round_number == self.Nr - 1:
             self.add_cipher_output_component([state_component.id],
-                                             [[i for i in range(self.CIPHER_BLOCK_SIZE)]],
+                                             [list(range(self.CIPHER_BLOCK_SIZE))],
                                              self.CIPHER_BLOCK_SIZE)
         else:
             self.add_intermediate_output_component([state_component.id],
-                                                   [[i for i in range(self.CIPHER_BLOCK_SIZE)]],
+                                                   [list(range(self.CIPHER_BLOCK_SIZE))],
                                                    self.CIPHER_BLOCK_SIZE,
                                                    f"state_after_round_{round_number}")
     
     def add_keyschedule_round_output(self, w):
         """Output the round key schedule."""
         self.add_intermediate_output_component([w[i].id for i in range(self.NUM_ROWS)],
-                                              [[i for i in range(self.WORD_BIT_SIZE)] for _ in range(self.NUM_ROWS)],
+                                              [list(range(self.WORD_BIT_SIZE)) for _ in range(self.NUM_ROWS)],
                                               self.CIPHER_BLOCK_SIZE,
                                               "round_key_output")
