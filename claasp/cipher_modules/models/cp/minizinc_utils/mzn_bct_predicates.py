@@ -1,5 +1,5 @@
 def get_bct_operations():
-    bct_string = """
+    bct_string = r"""
     include \"table.mzn\";
     int:num_workers = 4;
     int: num_rows = 16;

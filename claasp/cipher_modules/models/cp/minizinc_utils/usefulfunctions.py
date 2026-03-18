@@ -1,4 +1,4 @@
-MINIZINC_USEFUL_FUNCTIONS = """
+MINIZINC_USEFUL_FUNCTIONS = r"""
 include "globals.mzn";
 
 % XOR of 2 arrays
