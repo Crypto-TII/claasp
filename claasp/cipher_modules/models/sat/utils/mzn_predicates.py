@@ -17,7 +17,7 @@
 
 
 def get_word_operations():
-    functions_with_window_size = r"""
+    functions_with_window_size = """
     % Left rotation of X by val positions
     function array[int] of var bool: LRot(array[int] of var bool: X, int: val)=
     let {

@@ -1,6 +1,6 @@
 def get_bct_operations():
-    bct_string = r"""
-    include \"table.mzn\";
+    bct_string = """
+  include "table.mzn";
     int:num_workers = 4;
     int: num_rows = 16;
     int: num_cols = 9;

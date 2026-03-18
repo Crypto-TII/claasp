@@ -816,7 +816,7 @@ class MznModel:
             if processes_ != None and timeout_in_seconds_ != None:
                 solver_output = instance.solve(
                     processes=processes_,
-                    timeout=timedelta(seconds=int(timeout_in_seconds_)),
+                    time_limit=timedelta(seconds=int(timeout_in_seconds_)),
                     nr_solutions=nr_solutions_,
                     random_seed=random_seed_,
                     all_solutions=all_solutions_,
@@ -957,7 +957,7 @@ class MznModel:
         if processes_ != None and timeout_in_seconds_ != None:
             result = instance.solve(
                 processes=processes_,
-                timeout=timedelta(seconds=int(timeout_in_seconds_)),
+                time_limit=timedelta(seconds=int(timeout_in_seconds_)),
                 nr_solutions=nr_solutions_,
                 random_seed=random_seed_,
                 all_solutions=all_solutions_,
