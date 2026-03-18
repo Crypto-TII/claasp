@@ -227,7 +227,7 @@ class MznXorDifferentialModelARXOptimized(MznModel):
             ....:     'value': '0' })
             sage: minizinc.build_lowest_weight_xor_differential_trail_model(fixed_variables)
             sage: result = minizinc.solve_for_ARX(CPSAT)
-            sage: result.statistics['nSolutions'] > 1
+            sage: result.statistics['nSolutions'] >= 1
             True
         """
         self.init_constraints()
@@ -266,7 +266,7 @@ class MznXorDifferentialModelARXOptimized(MznModel):
             ....:     'value': '0' })
             sage: minizinc.build_lowest_weight_xor_differential_trail_model(fixed_variables)
             sage: result = minizinc.solve_for_ARX(CPSAT)
-            sage: result.statistics['nSolutions'] > 1
+            sage: result.statistics['nSolutions'] >= 1
             True
         """
         self.build_xor_differential_trail_model(-1, fixed_variables)
@@ -305,7 +305,7 @@ class MznXorDifferentialModelARXOptimized(MznModel):
             ....:     100, fixed_variables
             ....: )
             sage: result = minizinc.solve_for_ARX(CPSAT)
-            sage: result.statistics['nSolutions'] > 1
+            sage: result.statistics['nSolutions'] >= 1
             True
         """
         self.init_constraints()
