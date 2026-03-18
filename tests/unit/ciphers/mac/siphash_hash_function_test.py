@@ -1,6 +1,6 @@
 import pytest
 
-from claasp.ciphers.hash_functions.siphash_hash_function import SiphashHashFunction
+from claasp.ciphers.mac.siphash_hash_function import SiphashHashFunction
 
 
 def _int_from_bytes_big_endian(byte_values):

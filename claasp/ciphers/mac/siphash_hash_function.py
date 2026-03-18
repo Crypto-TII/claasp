@@ -56,7 +56,7 @@ class SiphashHashFunction(Cipher):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.hash_functions.siphash_hash_function import SiphashHashFunction
+        sage: from claasp.ciphers.mac.siphash_hash_function import SiphashHashFunction
         sage: key = 0x000102030405060708090a0b0c0d0e0f
 
         sage: # Reference: vectors.h vectors_sip64[0]
