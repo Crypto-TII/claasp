@@ -30,7 +30,7 @@ PARAMETERS_CONFIGURATION_LIST = [
 ]
 
 
-class SiphashHashFunction(Cipher):
+class SiphashMAC(Cipher):
     """
     Return a cipher object of SipHash.
 
@@ -56,48 +56,48 @@ class SiphashHashFunction(Cipher):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.mac.siphash_hash_function import SiphashHashFunction
+        sage: from claasp.ciphers.mac.siphash_mac import SiphashMAC
         sage: key = 0x000102030405060708090a0b0c0d0e0f
 
         sage: # Reference: vectors.h vectors_sip64[0]
-        sage: siphash_empty = SiphashHashFunction(message_byte_size=0)
+        sage: siphash_empty = SiphashMAC(message_byte_size=0)
         sage: siphash_empty.evaluate([key, 0]) == 0x726fdb47dd0e0e31
         True
 
         sage: # Reference: vectors.h vectors_sip64[7]
-        sage: siphash_7 = SiphashHashFunction(message_byte_size=7)
+        sage: siphash_7 = SiphashMAC(message_byte_size=7)
         sage: message_7 = 0x00010203040506
         sage: siphash_7.evaluate([key, message_7]) == 0xab0200f58b01d137
         True
 
         sage: # Reference: vectors.h vectors_sip64[8]
-        sage: siphash_8 = SiphashHashFunction(message_byte_size=8)
+        sage: siphash_8 = SiphashMAC(message_byte_size=8)
         sage: message_8 = 0x0001020304050607
         sage: siphash_8.evaluate([key, message_8]) == 0x93f5f5799a932462
         True
 
         sage: # Reference: siphash-20120918.pdf, page 19
         sage: # Also in vectors.h as vectors_sip64[15]
-        sage: siphash = SiphashHashFunction(message_byte_size=15)
+        sage: siphash = SiphashMAC(message_byte_size=15)
         sage: message = 0x000102030405060708090a0b0c0d0e
         sage: digest = 0xa129ca6149be45e5
         sage: siphash.evaluate([key, message]) == digest
         True
 
         sage: # Reference: vectors.h vectors_sip64[63]
-        sage: siphash_63 = SiphashHashFunction(message_byte_size=63)
+        sage: siphash_63 = SiphashMAC(message_byte_size=63)
         sage: message_63 = 0x000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e
         sage: siphash_63.evaluate([key, message_63]) == 0x958a324ceb064572
         True
 
         sage: # Parametrization example: SipHash-1-3 with empty message
-        sage: siphash_13 = SiphashHashFunction(message_byte_size=0, compression_rounds=1, finalization_rounds=3)
+        sage: siphash_13 = SiphashMAC(message_byte_size=0, compression_rounds=1, finalization_rounds=3)
         sage: siphash_13.output_bit_size
         64
 
         sage: # Parametrization example: 128-bit output (SipHash-2-4-128)
         sage: # Reference: vectors.h vectors_sip128[15]
-        sage: siphash_128 = SiphashHashFunction(message_byte_size=15, output_bit_size=128)
+        sage: siphash_128 = SiphashMAC(message_byte_size=15, output_bit_size=128)
         sage: digest_128 = 0x11a8b03399e99354d9c3cf970fec087e
         sage: siphash_128.evaluate([key, message]) == digest_128
         True

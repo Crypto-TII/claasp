@@ -1,6 +1,6 @@
 import pytest
 
-from claasp.ciphers.mac.siphash_hash_function import SiphashHashFunction
+from claasp.ciphers.mac.siphash_mac import SiphashMAC
 
 
 def _int_from_bytes_big_endian(byte_values):
@@ -18,12 +18,12 @@ def _siphash128_expected_from_le_bytes(byte_values):
     return (first_word << 64) | second_word
 
 
-def test_siphash_hash_function_parameterization():
-    siphash = SiphashHashFunction(message_byte_size=16, compression_rounds=1, finalization_rounds=3, output_bit_size=64)
+def test_siphash_mac_parameterization():
+    siphash = SiphashMAC(message_byte_size=16, compression_rounds=1, finalization_rounds=3, output_bit_size=64)
     assert siphash.type == 'hash_function'
     assert siphash.family_name == 'siphash'
 
-    siphash_128 = SiphashHashFunction(
+    siphash_128 = SiphashMAC(
         message_byte_size=16,
         compression_rounds=2,
         finalization_rounds=4,
@@ -39,7 +39,7 @@ def test_siphash24_vector_from_paper_page_19_and_vectors_h():
     message_bytes = list(range(15))
     expected_le_bytes = [0xE5, 0x45, 0xBE, 0x49, 0x61, 0xCA, 0x29, 0xA1]
 
-    siphash = SiphashHashFunction(message_byte_size=15, compression_rounds=2, finalization_rounds=4, output_bit_size=64)
+    siphash = SiphashMAC(message_byte_size=15, compression_rounds=2, finalization_rounds=4, output_bit_size=64)
     key = _int_from_bytes_big_endian(key_bytes)
     message = _int_from_bytes_big_endian(message_bytes)
     expected = _siphash64_expected_from_le_bytes(expected_le_bytes)
@@ -61,7 +61,7 @@ def test_siphash24_vectors_h_selected(message_size, expected_le_bytes):
     message = _int_from_bytes_big_endian(range(message_size)) if message_size > 0 else 0
     expected = _siphash64_expected_from_le_bytes(expected_le_bytes)
 
-    siphash = SiphashHashFunction(message_byte_size=message_size, compression_rounds=2, finalization_rounds=4)
+    siphash = SiphashMAC(message_byte_size=message_size, compression_rounds=2, finalization_rounds=4)
     assert siphash.evaluate([key, message]) == expected
 
 
@@ -89,5 +89,5 @@ def test_siphash128_vectors_h_selected():
     ]
     expected = _siphash128_expected_from_le_bytes(expected_le_bytes)
 
-    siphash_128 = SiphashHashFunction(message_byte_size=15, compression_rounds=2, finalization_rounds=4, output_bit_size=128)
+    siphash_128 = SiphashMAC(message_byte_size=15, compression_rounds=2, finalization_rounds=4, output_bit_size=128)
     assert siphash_128.evaluate([key, message]) == expected
