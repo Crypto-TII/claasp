@@ -40,13 +40,6 @@ class AESBlockCipher(Cipher):
         Algorithm 1: CIPHER(in, Nr, w)
         Algorithm 2: KEYEXPANSION(key)
 
-        Delegation behavior:
-
-        - When ``word_size == 8`` and ``state_size == 4`` (default), this class uses
-            the FIPS-197 implementation in this file.
-        - When either ``word_size`` or ``state_size`` is non-default, construction
-            delegates to ``ToyAESBlockCipher``, to be used for testing/research purposes.
-
     INPUT:
 
     - ``key_bit_size`` -- **integer** (default: `128`); size of the key in bits (128, 192, or 256)
@@ -54,8 +47,6 @@ class AESBlockCipher(Cipher):
       - AES-128: Nr = 10 rounds
       - AES-192: Nr = 12 rounds
       - AES-256: Nr = 14 rounds
-        - ``word_size`` -- **integer** (default: `8`); if different from `8`, delegates to ``ToyAESBlockCipher``
-        - ``state_size`` -- **integer** (default: `4`); if different from `4`, delegates to ``ToyAESBlockCipher``
 
     EXAMPLES::
 
@@ -84,26 +75,11 @@ class AESBlockCipher(Cipher):
         sage: aes256.evaluate([key, plaintext]) == ciphertext
         True
 
-        sage: # Non-standard word/state parameters delegate to ToyAESBlockCipher
-        sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
-        sage: aes_compat = AESBlockCipher(number_of_rounds=2, word_size=4, state_size=2)
-        sage: toy_aes = ToyAESBlockCipher(number_of_rounds=2, word_size=4, state_size=2)
-        sage: aes_compat.evaluate([0x1234, 0xabcd]) == toy_aes.evaluate([0x1234, 0xabcd])
-        True
     """
 
     def __init__(self, key_bit_size=128, number_of_rounds=None, word_size=8, state_size=4):
         if word_size != 8 or state_size != 4:
-            from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
-
-            toy_rounds = 10 if number_of_rounds is None else number_of_rounds
-            toy_cipher = ToyAESBlockCipher(number_of_rounds=toy_rounds, word_size=word_size, state_size=state_size)
-
-            self.__dict__ = toy_cipher.__dict__.copy()
-            self._family_name = "aes_block_cipher"
-            self.Nk = None
-            self.Nr = toy_rounds
-            return
+            raise ValueError("AESBlockCipher supports only FIPS-197 parameters: word_size=8 and state_size=4.")
 
         # Determine Nk (number of 32-bit words in key) and Nr (number of rounds)
         # FIPS-197 Table 1

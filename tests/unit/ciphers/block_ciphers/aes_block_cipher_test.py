@@ -1,5 +1,4 @@
 from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
 import pytest
 
 def test_aes128_block_cipher():
@@ -111,15 +110,6 @@ def test_aes_invalid_key_size():
         assert "Invalid key_bit_size" in str(e)
 
 
-def test_aes_delegates_to_toy_aes_for_non_standard_parameters():
-    aes_compat = AESBlockCipher(number_of_rounds=2, word_size=4, state_size=2)
-    toy_aes = ToyAESBlockCipher(number_of_rounds=2, word_size=4, state_size=2)
-
-    key = 0x1234
-    plaintext = 0xabcd
-
-    assert aes_compat.evaluate([key, plaintext]) == toy_aes.evaluate([key, plaintext])
-    assert aes_compat.inputs_bit_size == toy_aes.inputs_bit_size
-    assert aes_compat.output_bit_size == toy_aes.output_bit_size
-    assert aes_compat.Nk is None
-    assert aes_compat.Nr == 2
+def test_aes_rejects_non_standard_word_or_state_size():
+    with pytest.raises(ValueError, match="supports only FIPS-197 parameters"):
+        AESBlockCipher(number_of_rounds=2, word_size=4, state_size=2)
