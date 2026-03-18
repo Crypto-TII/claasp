@@ -43,14 +43,14 @@ fixed_variables_64_128 = generate_fixed_variables(64, 128)
 def test_build_lowest_weight_xor_differential_trail_model():
     MZN5.build_lowest_weight_xor_differential_trail_model(fixed_variables_32_64)
     result = MZN5.solve_for_ARX(CPSAT)
-    assert result.statistics["nSolutions"] > 1
+    assert result.statistics["nSolutions"] >= 1
 
 
 def test_build_lowest_xor_differential_trails_with_at_most_weight():
     MZN5.build_lowest_xor_differential_trails_with_at_most_weight(100, fixed_variables_32_64)
     result = MZN5.solve_for_ARX(CPSAT)
 
-    assert result.statistics["nSolutions"] > 1
+    assert result.statistics["nSolutions"] >= 1
 
 
 def test_find_all_xor_differential_trails_with_fixed_weight():

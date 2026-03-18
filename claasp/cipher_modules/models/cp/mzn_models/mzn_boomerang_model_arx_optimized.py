@@ -272,7 +272,9 @@ class MznBoomerangModelARXOptimized(MznXorDifferentialModelARXOptimized):
             parsed_result["total_weight"] = total_weight
             parsed_result["statistics"] = result.statistics
             parsed_result = {**self.parse_components_with_solution(result, result.solution), **parsed_result}
-        parsed_result["statistics"]["flatTime"] = parsed_result["statistics"]["flatTime"].total_seconds()
-        parsed_result["statistics"]["time"] = parsed_result["statistics"]["time"].total_seconds()
+        if "flatTime" in parsed_result["statistics"] and hasattr(parsed_result["statistics"]["flatTime"], "total_seconds"):
+            parsed_result["statistics"]["flatTime"] = parsed_result["statistics"]["flatTime"].total_seconds()
+        if "time" in parsed_result["statistics"] and hasattr(parsed_result["statistics"]["time"], "total_seconds"):
+            parsed_result["statistics"]["time"] = parsed_result["statistics"]["time"].total_seconds()
 
         return parsed_result

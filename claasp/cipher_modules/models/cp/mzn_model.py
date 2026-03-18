@@ -20,10 +20,12 @@ import math
 import os
 import subprocess
 import time
+import warnings
 from copy import deepcopy
 from datetime import timedelta
 
 from minizinc import Instance, Model, Solver, Status
+from minizinc.error import MiniZincError
 from sage.crypto.sbox import SBox
 
 from claasp.cipher_modules.component_analysis_tests import branch_number
@@ -98,6 +100,49 @@ class MznModel:
         self.modadd_twoterms_mant = []
         self.input_sbox = []
         self.table_of_solutions_length = 0
+
+    def _solve_instance(
+        self,
+        instance,
+        timeout_in_seconds_=None,
+        processes_=None,
+        nr_solutions_=None,
+        random_seed_=None,
+        all_solutions_=False,
+        intermediate_solutions_=False,
+        free_search_=False,
+        optimisation_level_=None,
+    ):
+        solve_kwargs = {
+            "nr_solutions": nr_solutions_,
+            "random_seed": random_seed_,
+            "all_solutions": all_solutions_,
+            "intermediate_solutions": intermediate_solutions_,
+            "free_search": free_search_,
+            "optimisation_level": optimisation_level_,
+        }
+
+        if processes_ is not None:
+            solve_kwargs["processes"] = processes_
+
+        if timeout_in_seconds_ is None:
+            return instance.solve(**solve_kwargs)
+
+        time_delta = timedelta(seconds=int(timeout_in_seconds_))
+
+        try:
+            return instance.solve(time_limit=time_delta, **solve_kwargs)
+        except MiniZincError as exc:
+            if "--time_limit" not in str(exc):
+                raise
+
+        with warnings.catch_warnings():
+            warnings.filterwarnings(
+                "ignore",
+                message=r".*'timeout' parameter is deprecated.*",
+                category=DeprecationWarning,
+            )
+            return instance.solve(timeout=time_delta, **solve_kwargs)
         self.list_of_xor_components = []
         self.list_of_xor_all_inputs = []
         self.component_and_probability = {}
@@ -813,26 +858,17 @@ class MznModel:
             bit_mzn_model.add_string(mzn_model_string)
             instance = Instance(solver_name_mzn, bit_mzn_model)
             start = time.time()
-            if processes_ != None and timeout_in_seconds_ != None:
-                solver_output = instance.solve(
-                    processes=processes_,
-                    time_limit=timedelta(seconds=int(timeout_in_seconds_)),
-                    nr_solutions=nr_solutions_,
-                    random_seed=random_seed_,
-                    all_solutions=all_solutions_,
-                    intermediate_solutions=intermediate_solutions_,
-                    free_search=free_search_,
-                    optimisation_level=optimisation_level_,
-                )
-            else:
-                solver_output = instance.solve(
-                    nr_solutions=nr_solutions_,
-                    random_seed=random_seed_,
-                    all_solutions=all_solutions_,
-                    intermediate_solutions=intermediate_solutions_,
-                    free_search=free_search_,
-                    optimisation_level=optimisation_level_,
-                )
+            solver_output = self._solve_instance(
+                instance,
+                timeout_in_seconds_=timeout_in_seconds_,
+                processes_=processes_,
+                nr_solutions_=nr_solutions_,
+                random_seed_=random_seed_,
+                all_solutions_=all_solutions_,
+                intermediate_solutions_=intermediate_solutions_,
+                free_search_=free_search_,
+                optimisation_level_=optimisation_level_,
+            )
             end = time.time()
             solve_time = end - start
             return self._parse_solver_output(
@@ -954,26 +990,17 @@ class MznModel:
         bit_mzn_model = Model()
         bit_mzn_model.add_string(mzn_model_string)
         instance = Instance(solver_name_mzn, bit_mzn_model)
-        if processes_ != None and timeout_in_seconds_ != None:
-            result = instance.solve(
-                processes=processes_,
-                time_limit=timedelta(seconds=int(timeout_in_seconds_)),
-                nr_solutions=nr_solutions_,
-                random_seed=random_seed_,
-                all_solutions=all_solutions_,
-                intermediate_solutions=intermediate_solutions_,
-                free_search=free_search_,
-                optimisation_level=optimisation_level_,
-            )
-        else:
-            result = instance.solve(
-                nr_solutions=nr_solutions_,
-                random_seed=random_seed_,
-                all_solutions=all_solutions_,
-                intermediate_solutions=intermediate_solutions_,
-                free_search=free_search_,
-                optimisation_level=optimisation_level_,
-            )
+        result = self._solve_instance(
+            instance,
+            timeout_in_seconds_=timeout_in_seconds_,
+            processes_=processes_,
+            nr_solutions_=nr_solutions_,
+            random_seed_=random_seed_,
+            all_solutions_=all_solutions_,
+            intermediate_solutions_=intermediate_solutions_,
+            free_search_=free_search_,
+            optimisation_level_=optimisation_level_,
+        )
 
         return result
 
