@@ -17,6 +17,7 @@
 
 import time
 import sys
+from copy import deepcopy
 from sage.crypto.sbox import SBox
 from collections import Counter
 from sage.rings.polynomial.pbori.pbori import BooleanPolynomialRing
@@ -31,7 +32,7 @@ from sage.all import GF
 verbosity = False
 
 
-class MilpMonomialPredictionModel():
+class MilpMonomialPredictionModel:
     """
 
     Given a number of rounds of a chosen cipher and a chosen output bit, this module produces a model that can either:
@@ -105,7 +106,7 @@ class MilpMonomialPredictionModel():
                         tmp2 = "_".join(tmp1)
                         self._used_variables.append(tmp2)
                 self._unused_variables = [x for x in self._unused_variables if x != v.VarName]
-            except:
+            except Exception:
                 continue
 
     def create_all_copies(self):
@@ -114,7 +115,7 @@ class MilpMonomialPredictionModel():
                 copies = self._variables[name][bit_position]["copies"]
                 original_var = self._variables[name][bit_position]["original"]
 
-                if copies != []:
+                if copies:
                     for i in range(len(copies)):
                         self._model.addConstr(original_var >= copies[i])
                     self._model.addConstr(sum(copies[i] for i in range(len(copies))) >= original_var)
@@ -854,7 +855,7 @@ class MilpMonomialPredictionModel():
 
     def order_predecessors(self, used_predecessors):
         for component_id in self._cipher.inputs:
-            if component_id in list(self._occurences.keys()):
+            if component_id in self._occurences:
                 used_predecessors.remove(component_id)
         tmp = {}
         final = {}
@@ -863,7 +864,7 @@ class MilpMonomialPredictionModel():
             for component_id in used_predecessors:
                 if int(component_id.split("_")[-2]) == r:
                     tmp[r][component_id] = int(component_id.split("_")[-1])
-            final[r] = {k: v for k, v in sorted(tmp[r].items(), key=lambda item: item[1])}
+            final[r] = dict(sorted(tmp[r].items(), key=lambda item: item[1]))
 
         used_predecessors_sorted = []
         for r in range(self._cipher.number_of_rounds):
@@ -871,7 +872,7 @@ class MilpMonomialPredictionModel():
 
         l = []
         for component_id in self._cipher.inputs:
-            if component_id in list(self._occurences.keys()):
+            if component_id in self._occurences:
                 l.append(component_id)
         used_predecessors_sorted = l + used_predecessors_sorted
         return used_predecessors_sorted
@@ -885,7 +886,7 @@ class MilpMonomialPredictionModel():
         for component_id in used_predecessors_sorted:
             all_vars[component_id] = {}
             if component_id != cipher_id:
-                for pos in list(occurences[component_id].keys()):
+                for pos in occurences[component_id]:
                     all_vars[component_id][pos] = {}
                     all_vars[component_id][pos]["original"] = self._model.addVar(vtype=GRB.BINARY,
                                                                                  name=component_id + f"[{pos}]")
@@ -903,24 +904,22 @@ class MilpMonomialPredictionModel():
 
     def find_index_second_input(self):
         occurences = self._occurences
-        return len(list(occurences[self._cipher.inputs[0]].keys()))
+        return len(occurences[self._cipher.inputs[0]])
 
     def build_generic_model_for_specific_output_bit(self, output_bit_index, fixed_degree=None,
                                                     which_var_degree=None,
                                                     chosen_cipher_output=None,
                                                     skip_components=None,
                                                     do_pruning=True):
-        import time
-        from claasp.name_mappings import INTERMEDIATE_OUTPUT
         start = time.time()
         if skip_components is None:
             # Only skip intermediate outputs that are truly sinks (no consumers) and not targeted.
             # This prevents diversion to dead-end taps while preserving cipher paths (e.g. Trivium keystream bits).
             G = create_networkx_graph_from_input_ids(self._cipher)
-            skip_components = set([
+            skip_components = {
                 n for n, d in G.out_degree() if d == 0 
                 and self._cipher.get_component_from_id(n).type == INTERMEDIATE_OUTPUT
-            ])
+            }
             if chosen_cipher_output in skip_components:
                 skip_components.remove(chosen_cipher_output)
 
@@ -1021,10 +1020,10 @@ class MilpMonomialPredictionModel():
         
         if skip_components is None:
             G = create_networkx_graph_from_input_ids(self._cipher)
-            skip_components = set([
+            skip_components = {
                 n for n, d in G.out_degree() if d == 0 
                 and self._cipher.get_component_from_id(n).type == INTERMEDIATE_OUTPUT
-            ])
+            }
             if chosen_cipher_output in skip_components:
                 skip_components.remove(chosen_cipher_output)
 
@@ -1087,7 +1086,7 @@ class MilpMonomialPredictionModel():
 
     def get_solutions(self):
         start = time.time()
-        solCount = self._model.SolCount
+        sol_count = self._model.SolCount
         inputs = []
         for prio, inp_name in enumerate(self._cipher.inputs):
             if inp_name not in self._variables:
@@ -1098,7 +1097,7 @@ class MilpMonomialPredictionModel():
         inputs.sort(key=lambda t: (t[0], t[1], t[2]))
 
         mono_set = set()
-        for sn in range(solCount):
+        for sn in range(sol_count):
             self._model.setParam(GRB.Param.SolutionNumber, sn)
             toks = []
             for _, prefix, idx, var in inputs:
@@ -1112,7 +1111,7 @@ class MilpMonomialPredictionModel():
         end = time.time()
         printing_time = end - start
         if verbosity:
-            print('Number of solutions (might cancel each other) found: ' + str(solCount))
+            print('Number of solutions (might cancel each other) found: ' + str(sol_count))
             print(f"########## printing_time : {printing_time}")
             print(f'Number of monomials found: {len(mono_set)}')
         monomials_list = sorted(mono_set)
@@ -1176,7 +1175,6 @@ class MilpMonomialPredictionModel():
         For example, ``['p1', 'k8']`` → ``[('plaintext', 1), ('key', 8)]``.
         """
         input_map = {}
-        idx_offset = {}
         current_offset = {}
         for index, input_name in enumerate(self._cipher.inputs):
             prefix = input_name[0]
@@ -1202,7 +1200,7 @@ class MilpMonomialPredictionModel():
                         break
                     curr += bit_size
             if not found:
-                 raise ValueError(f"Variable {var} out of range for prefix {prefix}")
+                raise ValueError(f"Variable {var} out of range for prefix {prefix}")
         return results
 
     def re_init(self):
@@ -2238,7 +2236,6 @@ class MilpMonomialPredictionModel():
             raise ValueError(
                 f"Middle round {middle_round} out of valid range (1 to {self._cipher.number_of_rounds - 1})")
         
-        from copy import deepcopy
         cipher_copy = deepcopy(self._cipher)
         cipher1 = cipher_copy.get_partial_cipher(0, middle_round - 1)
         cipher2 = cipher_copy.get_partial_cipher(middle_round, self._cipher.number_of_rounds - 1)
@@ -2253,7 +2250,6 @@ class MilpMonomialPredictionModel():
         model2 = MilpMonomialPredictionModel(cipher2)
 
         # Identify `round_output` tap at middle_round
-        from claasp.name_mappings import INTERMEDIATE_OUTPUT, CIPHER_OUTPUT
         
         mid_round_obj = self._cipher.rounds_as_list[middle_round - 1]
         round_output_comp = None
@@ -2334,7 +2330,7 @@ class MilpMonomialPredictionModel():
                             for c_id in used_predecessors:
                                 if int(c_id.split("_")[-2]) == r:
                                     tmp[r][c_id] = int(c_id.split("_")[-1])
-                            final[r] = {k: v for k, v in sorted(tmp[r].items(), key=lambda item: item[1])}
+                            final[r] = dict(sorted(tmp[r].items(), key=lambda item: item[1]))
                         
                         used_predecessors_sorted = []
                         for r in range(self._cipher.number_of_rounds):
@@ -2354,7 +2350,7 @@ class MilpMonomialPredictionModel():
                         else:
                             mid_vars_list.append(var_dict["original"])
                     else:
-                        mid_vars_list.append(var_dict["copies"][-1])
+                        mid_vars_list.append(var_dict.get("copies", [var_dict["original"]])[-1])
                 else:
                     src = self._model.getVarByName(f"{link_id}[{pos}]")
                     if src is not None:
@@ -2403,7 +2399,7 @@ class MilpMonomialPredictionModel():
         total_poly = B(0)
 
         def get_input_masks(active_model, wrapper_model, sub_cipher):
-            solCount = active_model.SolCount
+            sol_count = active_model.SolCount
             # Collect all inputs that ARE NOT intermediate state
             inputs = []
             for prio, inp_name in enumerate(sub_cipher.inputs):
@@ -2416,7 +2412,7 @@ class MilpMonomialPredictionModel():
                         inputs.append(copy_var)
 
             masks_parity = {}
-            for sn in range(solCount):
+            for sn in range(sol_count):
                 active_model.setParam(GRB.Param.SolutionNumber, sn)
                 mask = 0
                 for i, var in enumerate(inputs):
@@ -2476,10 +2472,9 @@ class MilpMonomialPredictionModel():
             if "key" in inp_name.lower():
                 if inp_name in model1._variables:
                     for i in range(size):
-                        if i in model1._variables[inp_name]:
-                            v = model1._variables[inp_name][i]["original"]
-                            if v is not None:
-                                keys_m1.append(v)
+                        v = model1._variables[inp_name].get(i, {}).get("original")
+                        if v is not None:
+                            keys_m1.append(v)
         if keys_m1:
              model1._model.setObjective(sum(keys_m1), GRB.MAXIMIZE)
         model1._model.update()
@@ -2489,10 +2484,9 @@ class MilpMonomialPredictionModel():
             if "key" in inp_name.lower():
                 if inp_name in model2._variables:
                     for i in range(size):
-                        if i in model2._variables[inp_name]:
-                            v = model2._variables[inp_name][i]["original"]
-                            if v is not None:
-                                keys_m2.append(v)
+                        v = model2._variables[inp_name].get(i, {}).get("original")
+                        if v is not None:
+                            keys_m2.append(v)
         if keys_m2:
              model2._model.setObjective(sum(keys_m2), GRB.MAXIMIZE)
         model2._model.update()
