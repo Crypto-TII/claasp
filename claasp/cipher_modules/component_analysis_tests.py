@@ -1338,6 +1338,14 @@ def _search_field_weight_3(rows, non_zero_elements, best):
     return best, False
 
 
+def _evaluate_field_weight_4_plus_combination(base_row, remaining_rows, coeffs, weight, best):
+    output = base_row
+    for coeff, row in zip(coeffs, remaining_rows):
+        output += coeff * row
+    candidate = weight + output.hamming_weight()
+    return _update_best_branch_number(candidate, best)
+
+
 def _search_field_weight_4_plus(rows, non_zero_elements, limit, best):
     for weight in range(4, limit + 1):
         if weight >= best:
@@ -1346,11 +1354,9 @@ def _search_field_weight_4_plus(rows, non_zero_elements, limit, best):
             base_row = rows[indices[0]]
             remaining_rows = [rows[i] for i in indices[1:]]
             for coeffs in product(non_zero_elements, repeat=weight - 1):
-                output = base_row
-                for coeff, row in zip(coeffs, remaining_rows):
-                    output += coeff * row
-                candidate = weight + output.hamming_weight()
-                best, exit_early = _update_best_branch_number(candidate, best)
+                best, exit_early = _evaluate_field_weight_4_plus_combination(
+                    base_row, remaining_rows, coeffs, weight, best
+                )
                 if exit_early:
                     return best, True
     return best, False
@@ -1678,10 +1684,17 @@ def field_element_matrix_to_integer_matrix(matrix):
 
     """
 
+    def _field_element_to_int(element):
+        if hasattr(element, "to_integer"):
+            return element.to_integer()
+        if hasattr(element, "integer_representation"):
+            return element.integer_representation()
+        return int(element)
+
     int_matrix = []
     for i in range(matrix.nrows()):
         for j in range(matrix.ncols()):
-            int_matrix.append(matrix[i][j].integer_representation())
+            int_matrix.append(_field_element_to_int(matrix[i][j]))
 
     return Matrix(matrix.nrows(), matrix.ncols(), int_matrix)
 
