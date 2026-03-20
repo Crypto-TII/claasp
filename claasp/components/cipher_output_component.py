@@ -128,9 +128,9 @@ class CipherOutput(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
             sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
-            sage: aes = AESBlockCipher(number_of_rounds=3)
+            sage: aes = ToyAESBlockCipher(number_of_rounds=3)
             sage: cp = MznModel(aes)
             sage: output_component = aes.component_from(0, 35)
             sage: output_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(cp)
@@ -176,9 +176,9 @@ class CipherOutput(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
             sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
-            sage: aes = AESBlockCipher(number_of_rounds=3)
+            sage: aes = ToyAESBlockCipher(number_of_rounds=3)
             sage: cp = MznModel(aes)
             sage: output_component = aes.component_from(0, 35)
             sage: output_component.cp_xor_differential_propagation_first_step_constraints(cp)
@@ -377,8 +377,8 @@ class CipherOutput(Component):
 
         EXAMPLE::
 
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: aes = AESBlockCipher(number_of_rounds=2)
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
+            sage: aes = ToyAESBlockCipher(number_of_rounds=2)
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import MilpWordwiseDeterministicTruncatedXorDifferentialModel
             sage: milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(aes)
             sage: milp.init_model_in_sage_milp_class()

@@ -15,6 +15,7 @@ from claasp.cipher_modules.component_analysis_tests import (
 from claasp.ciphers.stream_ciphers.bluetooth_stream_cipher_e0 import BluetoothStreamCipherE0
 from claasp.ciphers.stream_ciphers.trivium_stream_cipher import TriviumStreamCipher
 from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
 from sage.all import Matrix, identity_matrix
 from sage.rings.finite_rings.finite_field_constructor import FiniteField as GF
 from sage.rings.polynomial.polynomial_ring_constructor import PolynomialRing
@@ -34,7 +35,7 @@ def aes_mix_column_component():
 @pytest.fixture(scope="module")
 def aes_small_mix_column_component():
     """Smaller AES MixColumn component for faster branch_number(format='bit') checks."""
-    aes = AESBlockCipher(word_size=8, state_size=2, number_of_rounds=2)
+    aes = ToyAESBlockCipher(word_size=8, state_size=2, number_of_rounds=2)
     for round_obj in aes.rounds_as_list:
         for component in round_obj.components:
             if component.type == "mix_column":
@@ -63,7 +64,7 @@ def fancy_component_analysis_results(fancy_analysis):
 @pytest.fixture(scope="module")
 def aes_small_analysis_results():
     """Compute small AES component analysis once; reused across tests."""
-    aes = AESBlockCipher(word_size=8, state_size=2, number_of_rounds=2)
+    aes = ToyAESBlockCipher(word_size=8, state_size=2, number_of_rounds=2)
     return CipherComponentsAnalysis(aes).component_analysis_tests()
 
 
@@ -75,7 +76,6 @@ def test_get_all_operations(fancy_analysis):
 def test_component_analysis_tests(fancy_component_analysis_results, aes_small_analysis_results):
     components_analysis = fancy_component_analysis_results
     assert len(components_analysis["test_results"]) == 9
-
     result = aes_small_analysis_results
     assert len(result["test_results"]) == 7
 

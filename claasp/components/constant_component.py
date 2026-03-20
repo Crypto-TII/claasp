@@ -24,11 +24,51 @@ from claasp.name_mappings import CONSTANT
 
 
 def constant_to_repr(val, output_size):
+    """
+    Convert a constant literal into the byte-oriented representation used by
+    byte-based vectorized evaluation.
+
+    If the literal representation contains more bits than ``output_size``, the
+    most-significant ``output_size`` bits are kept (scalar-compatible behavior).
+
+    For ``0x`` and ``0b`` literals, the represented width is taken from the
+    literal itself:
+
+    - ``0x1234`` is treated as a 16-bit value (``0001 0010 0011 0100``)
+    - ``0b1001000110100`` is treated as a 13-bit value
+
+    EXAMPLES::
+
+        sage: from claasp.components.constant_component import constant_to_repr
+        sage: constant_to_repr("0x1000", 12)
+        [1, 0]
+        sage: # 0x1234 is interpreted as 16 bits: 0001 0010 0011 0100
+        sage: constant_to_repr("0x1234", 5)
+        [2]
+        sage: # Same numeric value, but explicit 13-bit binary literal
+        sage: constant_to_repr("0b1001000110100", 5)
+        [18]
+        sage: constant_to_repr("0b101100", 4)
+        [11]
+    """
     _val = int(val, 0)
-    if output_size % 8 != 0:
-        s = output_size + (8 - (output_size % 8))
+    val_str = str(val).lower()
+    if val_str.startswith("0x"):
+        represented_bits = (len(val_str) - 2) * 4
+    elif val_str.startswith("0b"):
+        represented_bits = len(val_str) - 2
     else:
-        s = output_size
+        represented_bits = _val.bit_length()
+
+    if represented_bits > output_size:
+        _val >>= represented_bits - output_size
+
+    if output_size > 0:
+        _val &= (1 << output_size) - 1
+
+    s = output_size
+    if s % 8 != 0:
+        s += 8 - (s % 8)
     ret = [(_val >> s - (8 * (i + 1))) & 0xFF for i in range(s // 8)]
 
     return ret
@@ -202,10 +242,10 @@ class Constant(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
             sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
             sage: from claasp.components.constant_component import Constant
-            sage: aes = AESBlockCipher(number_of_rounds=3)
+            sage: aes = ToyAESBlockCipher(number_of_rounds=3)
             sage: cp = MznModel(aes)
             sage: constant_component = Constant(0, 18, 16, 0xAB01)
             sage: constant_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(cp)
@@ -242,9 +282,9 @@ class Constant(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
             sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
-            sage: aes = AESBlockCipher(number_of_rounds=3)
+            sage: aes = ToyAESBlockCipher(number_of_rounds=3)
             sage: cp = MznModel(aes)
             sage: constant_component = aes.component_from(0, 30)
             sage: constant_component.cp_xor_differential_propagation_first_step_constraints(cp)
@@ -362,9 +402,9 @@ class Constant(Component):
 
         EXAMPLE::
 
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
             sage: from claasp.components.constant_component import Constant
-            sage: aes = AESBlockCipher(number_of_rounds=3)
+            sage: aes = ToyAESBlockCipher(number_of_rounds=3)
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import MilpWordwiseDeterministicTruncatedXorDifferentialModel
             sage: milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(aes)
             sage: milp.init_model_in_sage_milp_class()

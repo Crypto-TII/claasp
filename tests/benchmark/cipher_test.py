@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 
-from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 
 from claasp.cipher_modules.avalanche_tests import AvalancheTests
@@ -9,7 +9,7 @@ from claasp.cipher_modules.generic_functions_vectorized_byte import get_number_o
 
 
 speck = SpeckBlockCipher()
-aes = AESBlockCipher()
+aes = ToyAESBlockCipher()
 
 
 def test_evaluate_with_speck_cipher(benchmark):
