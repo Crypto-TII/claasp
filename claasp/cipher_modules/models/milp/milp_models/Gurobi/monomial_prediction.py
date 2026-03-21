@@ -377,34 +377,43 @@ class MilpMonomialPredictionModel:
         needs_padding = any(c in desc_str for c in safe_components)
 
         if not needs_padding:
-            tmp = list(self._occurences[component.id].keys())
-            tmp.sort()
-            
-            # Optimized: Use _variables dict if available (created by create_gurobi_vars_from_all_components)
-            if component.id in self._variables:
-                 vars_dict = self._variables[component.id]
-                 for i in tmp:
-                      if i in vars_dict:
-                           output_vars.append(vars_dict[i]["original"])
-                      else:
-                           # Fallback to name search if for some reason not in dict (should not happen)
-                           output_vars.append(self._model.getVarByName(f"{component.id}[{i}]"))
-            else:
-                 # Fallback for legacy calls or unitialized dict
-                 for i in tmp:
-                    output_vars.append(self._model.getVarByName(f"{component.id}[{i}]"))
+            output_vars = self._get_unpadded_output_vars(component)
         else:
-            # 3SDP-woU fix: Complete output allocation
-            # Unused bits must be created and strictly constrained to 0 to prevent weight leaks.
-            output_size = component.output_bit_size
-            for i in range(output_size):
-                var = self._model.getVarByName(f"{component.id}[{i}]")
-                if var is None:
-                    var = self._model.addVar(vtype=GRB.BINARY, name=f"{component.id}[{i}]_unused")
-                    self._model.addConstr(var == 0)
-                output_vars.append(var)
+            output_vars = self._get_padded_output_vars(component)
                 
         self._model.update()
+        return output_vars
+
+    def _get_unpadded_output_vars(self, component):
+        output_vars = []
+        tmp = sorted(self._occurences[component.id].keys())
+        
+        # Optimized: Use _variables dict if available (created by create_gurobi_vars_from_all_components)
+        if component.id in self._variables:
+            vars_dict = self._variables[component.id]
+            for i in tmp:
+                if i in vars_dict:
+                    output_vars.append(vars_dict[i]["original"])
+                else:
+                    # Fallback to name search if for some reason not in dict (should not happen)
+                    output_vars.append(self._model.getVarByName(f"{component.id}[{i}]"))
+        else:
+            # Fallback for legacy calls or unitialized dict
+            for i in tmp:
+                output_vars.append(self._model.getVarByName(f"{component.id}[{i}]"))
+        return output_vars
+
+    def _get_padded_output_vars(self, component):
+        output_vars = []
+        # 3SDP-woU fix: Complete output allocation
+        # Unused bits must be created and strictly constrained to 0 to prevent weight leaks.
+        output_size = component.output_bit_size
+        for i in range(output_size):
+            var = self._model.getVarByName(f"{component.id}[{i}]")
+            if var is None:
+                var = self._model.addVar(vtype=GRB.BINARY, name=f"{component.id}[{i}]_unused")
+                self._model.addConstr(var == 0)
+            output_vars.append(var)
         return output_vars
 
 
@@ -759,47 +768,55 @@ class MilpMonomialPredictionModel:
         used_predecessors_sorted = self.order_predecessors(list(self._occurences.keys()))
         self._used_predecessors_sorted = used_predecessors_sorted
         for component_id in used_predecessors_sorted:
-            if component_id not in self._cipher.inputs:
-                # Skip components in the exclusion set (e.g., dead-end round_output tap at middle_round)
-                if skip_components and component_id in skip_components:
-                    continue
-                component = self._cipher.get_component_from_id(component_id)
-                print(f"---> {component.id}") if verbosity else None
-                if component.type == "sbox":
-                    self.add_sbox_constraints(component)
-                elif component.type == "fsr":
-                    self.add_fsr_constraints(component)
-                elif component.type == "constant":
-                    self.add_constant_constraints(component)
-                elif component.type in ["linear_layer", "mix_column"]:
-                    self.add_linear_layer_constraints(component)
-                elif component.type in ["cipher_output", "intermediate_output"]:
-                    self.add_intermediate_output_constraints(component)
-                elif component.type == "concatenate":
-                    self.add_concatenate_constraints(component)
-                elif component.type == "word_operation":
-                    if component.description[0] == "XOR":
-                        self.add_xor_constraints(component)
-                    elif component.description[0] == "ROTATE":
-                        self.add_rotate_constraints(component)
-                    elif component.description[0] == "SHIFT":
-                        self.add_shift_constraints(component)
-                    elif component.description[0] == "AND":
-                        self.add_and_constraints(component)
-                    elif component.description[0] == "NOT":
-                        self.add_not_constraints(component)
-                    elif component.description[0] == "OR":
-                        self.add_or_constraints(component)
-                    elif component.description[0] == "MODADD":
-                        self.add_modadd_constraints(component)
-                    elif "MODMUL" in component.description[0]:
-                        self.add_modmul_constraints(component)
-                    else:
-                        raise NotImplementedError(f"Component {component.description[0]} is not yet implemented")
-                else:
-                    raise NotImplementedError(f"Component {component.description[0]} is not yet implemented")
+            if component_id in self._cipher.inputs:
+                continue
+            # Skip components in the exclusion set (e.g., dead-end round_output tap at middle_round)
+            if skip_components and component_id in skip_components:
+                continue
+            component = self._cipher.get_component_from_id(component_id)
+            print(f"---> {component.id}") if verbosity else None
+            self._dispatch_constraints(component)
 
         return self._model
+
+    def _dispatch_constraints(self, component):
+        if component.type == "sbox":
+            self.add_sbox_constraints(component)
+        elif component.type == "fsr":
+            self.add_fsr_constraints(component)
+        elif component.type == "constant":
+            self.add_constant_constraints(component)
+        elif component.type in ["linear_layer", "mix_column"]:
+            self.add_linear_layer_constraints(component)
+        elif component.type in ["cipher_output", "intermediate_output"]:
+            self.add_intermediate_output_constraints(component)
+        elif component.type == "concatenate":
+            self.add_concatenate_constraints(component)
+        elif component.type == "word_operation":
+            self._add_word_operation_constraints(component)
+        else:
+            raise NotImplementedError(f"Component {component.type} is not yet implemented")
+
+    def _add_word_operation_constraints(self, component):
+        op = component.description[0]
+        if op == "XOR":
+            self.add_xor_constraints(component)
+        elif op == "ROTATE":
+            self.add_rotate_constraints(component)
+        elif op == "SHIFT":
+            self.add_shift_constraints(component)
+        elif op == "AND":
+            self.add_and_constraints(component)
+        elif op == "NOT":
+            self.add_not_constraints(component)
+        elif op == "OR":
+            self.add_or_constraints(component)
+        elif op == "MODADD":
+            self.add_modadd_constraints(component)
+        elif "MODMUL" in op:
+            self.add_modmul_constraints(component)
+        else:
+            raise NotImplementedError(f"Word operation {op} is not yet implemented")
 
     def add_concatenate_constraints(self, component):
         output_vars = self.get_output_vars(component)
@@ -813,36 +830,44 @@ class MilpMonomialPredictionModel:
         occurences = {}
         ids = self._cipher.inputs + predecessors
         for name in ids:
-            for component_id in predecessors:
-                if component_id in self._cipher.inputs:
-                    continue
-                # Skip components in the exclusion set (e.g., dead-end round_output tap at middle_round)
-                if skip_components and component_id in skip_components:
-                    continue
-                component = self._cipher.get_component_from_id(component_id)
-                if name in component.input_id_links:
-                    indexes = [i for i, j in enumerate(component.input_id_links) if j == name]
-                    if name not in occurences.keys():
-                        occurences[name] = []
-                    for index in indexes:
-                        occurences[name].append(component.input_bit_positions[index])
+            self._fill_occurences_for_name(name, predecessors, skip_components, occurences)
+            
+        self._fill_occurences_for_link_needed(input_id_link_needed, block_needed, occurences)
+        self._fill_occurences_for_cipher_output(input_id_link_needed, occurences)
+
+        occurences_final = {comp_id: self.find_copy_indexes(pos_list) 
+                           for comp_id, pos_list in occurences.items()}
+
+        self._occurences = occurences_final
+        return occurences_final
+
+    def _fill_occurences_for_name(self, name, predecessors, skip_components, occurences):
+        for component_id in predecessors:
+            if component_id in self._cipher.inputs:
+                continue
+            # Skip components in the exclusion set (e.g., dead-end round_output tap at middle_round)
+            if skip_components and component_id in skip_components:
+                continue
+            component = self._cipher.get_component_from_id(component_id)
+            if name in component.input_id_links:
+                indexes = [i for i, j in enumerate(component.input_id_links) if j == name]
+                if name not in occurences:
+                    occurences[name] = []
+                for index in indexes:
+                    occurences[name].append(component.input_bit_positions[index])
+
+    def _fill_occurences_for_link_needed(self, input_id_link_needed, block_needed, occurences):
         if input_id_link_needed in self._cipher.inputs:
             occurences[input_id_link_needed] = [block_needed]
         else:
             component = self._cipher.get_component_from_id(input_id_link_needed)
             occurences[input_id_link_needed] = [[i for i in range(component.output_bit_size)]]
 
+    def _fill_occurences_for_cipher_output(self, input_id_link_needed, occurences):
         cipher_id = self.get_cipher_output_component_id()
         if input_id_link_needed == cipher_id:
             component = self._cipher.get_component_from_id(cipher_id)
             occurences[cipher_id] = [[i for i in range(component.output_bit_size)]]
-
-        occurences_final = {}
-        for component_id in occurences.keys():
-            occurences_final[component_id] = self.find_copy_indexes(occurences[component_id])
-
-        self._occurences = occurences_final
-        return occurences_final
 
     def find_copy_indexes(self, input_bit_positions):
         l = {}
@@ -998,51 +1023,57 @@ class MilpMonomialPredictionModel:
         This method extends the base model generation by allowing multiple output bits 
         to be explicitly constrained to 1, or by leaving all output bits unconstrained 
         (free variables) if ``output_indices`` is set to ``None``.
-        
-        INPUT:
-
-        - ``output_indices`` -- **list of integers** or **None**
-          Indices of the output bits to be fixed to 1. All other output bits in the block 
-          will be fixed to 0. If ``None``, the output variables are created but left unconstrained.
-
-        - ``chosen_cipher_output`` -- **string** (default: ``None``)
-          The ID of the specific output component to target. If ``None``, defaults to the 
-          primary cipher output.
-
-        - ``skip_components`` -- **set of strings** (default: ``None``)
-          A set of component IDs to exclude from the MILP graph. If ``None``, it automatically 
-          excludes terminal intermediate output components to prevent path diversion.
-
-        - ``do_pruning`` -- **boolean** (default: ``True``)
-          If ``True``, unused variables in the model are aggressively set to zero to optimize 
-          solver performance.
         """
-        
         if skip_components is None:
-            G = create_networkx_graph_from_input_ids(self._cipher)
-            skip_components = {
-                n for n, d in G.out_degree() if d == 0 
-                and self._cipher.get_component_from_id(n).type == INTERMEDIATE_OUTPUT
-            }
-            if chosen_cipher_output in skip_components:
-                skip_components.remove(chosen_cipher_output)
+            skip_components = self._get_default_skip_components(chosen_cipher_output)
 
-        if chosen_cipher_output is not None:
-             input_id_link_needed = chosen_cipher_output
-        else:
-             input_id_link_needed = self.get_cipher_output_component_id()
+        input_id_link_needed = chosen_cipher_output if chosen_cipher_output is not None else self.get_cipher_output_component_id()
              
         component = self._cipher.get_component_from_id(input_id_link_needed)
         block_needed = list(range(component.output_bit_size))
         
+        predecessors = self._get_predecessors_for_link(input_id_link_needed)
+            
+        self.add_constraints(predecessors, input_id_link_needed, block_needed, skip_components=skip_components)
+        
+        var_from_block_needed = self._get_vars_from_block_needed(input_id_link_needed, block_needed)
+
+        # Map to dictionary, then create a distinct list variable to avoid shadowing
+        output_vars_dict = self._model.addVars(list(range(len(block_needed))), vtype=GRB.BINARY, name="output")
+        self._variables["output"] = output_vars_dict
+        output_vars = list(output_vars_dict.values())
+        self._model.update()
+
+        for i in range(len(block_needed)):
+            self._model.addConstr(output_vars[i] == var_from_block_needed[i])
+            self.set_as_used_variables([output_vars[i], var_from_block_needed[i]])
+            
+        self._apply_output_indices_constraints(output_indices, output_vars, block_needed)
+
+        if do_pruning:
+            self.set_unused_variables_to_zero()
+        self.create_all_copies()
+        self._model.update()
+
+    def _get_default_skip_components(self, chosen_cipher_output):
+        G = create_networkx_graph_from_input_ids(self._cipher)
+        skip_components = {
+            n for n, d in G.out_degree() if d == 0 
+            and self._cipher.get_component_from_id(n).type == INTERMEDIATE_OUTPUT
+        }
+        if chosen_cipher_output in skip_components:
+            skip_components.remove(chosen_cipher_output)
+        return skip_components
+
+    def _get_predecessors_for_link(self, input_id_link_needed):
         G = create_networkx_graph_from_input_ids(self._cipher)
         predecessors = list(_get_predecessors_subgraph(G, [input_id_link_needed]))
         for input_id in self._cipher.inputs + ['']:
             if input_id in predecessors:
                 predecessors.remove(input_id)
-            
-        self.add_constraints(predecessors, input_id_link_needed, block_needed, skip_components=skip_components)
-        
+        return predecessors
+
+    def _get_vars_from_block_needed(self, input_id_link_needed, block_needed):
         var_from_block_needed = []
         if input_id_link_needed in self._variables:
             for i in block_needed:
@@ -1051,31 +1082,14 @@ class MilpMonomialPredictionModel:
             # Fallback if component not populated in variables
             for i in block_needed:
                  var_from_block_needed.append(self._model.getVarByName(f"{input_id_link_needed}[{i}]"))
+        return var_from_block_needed
 
-        # Map to dictionary, then create a distinct list variable to avoid shadowing
-        output_vars = self._model.addVars(list(range(len(block_needed))), vtype=GRB.BINARY, name="output")
-        self._variables["output"] = output_vars
-        output_vars = list(output_vars.values())
-        self._model.update()
-
-        for i in range(len(block_needed)):
-            self._model.addConstr(output_vars[i] == var_from_block_needed[i])
-            self.set_as_used_variables([output_vars[i], var_from_block_needed[i]])
-            
-        # Set constraints: specified indices to 1, others to 0
+    def _apply_output_indices_constraints(self, output_indices, output_vars, block_needed):
         if output_indices is not None:
             output_set = set(output_indices)
-            
             for i in range(len(block_needed)):
-                if i in output_set:
-                    self._model.addConstr(output_vars[i] == 1)
-                else:
-                    self._model.addConstr(output_vars[i] == 0)
-
-        if do_pruning:
-            self.set_unused_variables_to_zero()
-        self.create_all_copies()
-        self._model.update()
+                val = 1 if i in output_set else 0
+                self._model.addConstr(output_vars[i] == val)
 
 
 
@@ -2469,24 +2483,22 @@ class MilpMonomialPredictionModel:
 
         keys_m1 = []
         for inp_name, size in zip(cipher1.inputs, cipher1.inputs_bit_size):
-            if "key" in inp_name.lower():
-                if inp_name in model1._variables:
-                    for i in range(size):
-                        v = model1._variables[inp_name].get(i, {}).get("original")
-                        if v is not None:
-                            keys_m1.append(v)
+            if "key" in inp_name.lower() and inp_name in model1._variables:
+                for i in range(size):
+                    v = model1._variables[inp_name].get(i, {}).get("original")
+                    if v is not None:
+                        keys_m1.append(v)
         if keys_m1:
              model1._model.setObjective(sum(keys_m1), GRB.MAXIMIZE)
         model1._model.update()
 
         keys_m2 = []
         for inp_name, size in zip(cipher2.inputs, cipher2.inputs_bit_size):
-            if "key" in inp_name.lower():
-                if inp_name in model2._variables:
-                    for i in range(size):
-                        v = model2._variables[inp_name].get(i, {}).get("original")
-                        if v is not None:
-                            keys_m2.append(v)
+            if "key" in inp_name.lower() and inp_name in model2._variables:
+                for i in range(size):
+                    v = model2._variables[inp_name].get(i, {}).get("original")
+                    if v is not None:
+                        keys_m2.append(v)
         if keys_m2:
              model2._model.setObjective(sum(keys_m2), GRB.MAXIMIZE)
         model2._model.update()
