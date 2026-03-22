@@ -702,8 +702,11 @@ class Cipher:
         for round in self.rounds_as_list:
             partial_cipher.rounds_as_list.append(deepcopy(round))
 
-        removed_components_ids, intermediate_outputs = remove_components_from_rounds(
-            partial_cipher, start_round, end_round, keep_key_schedule
+        removed_components_ids, intermediate_outputs = prune_components_outside_round_range(
+            partial_cipher,
+            start_round,
+            end_round,
+            keep_key_schedule
         )
 
         if start_round > 0:
