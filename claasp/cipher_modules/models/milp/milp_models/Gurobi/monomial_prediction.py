@@ -2418,33 +2418,33 @@ class MilpMonomialPredictionModel:
             self._apply_state_to_inputs(m_core, model_wrap, state)
         return m_core
 
-    def _compute_monomial(self, m1, m2, map1, map2, B, k_vars):
-        mon = B(1)
+    def _compute_monomial(self, m1, m2, map1, map2, boolean_ring, k_vars):
+        mon = boolean_ring(1)
         for sub_bit, ring_idx in map1.items():
             if (m1 >> sub_bit) & 1: mon *= k_vars[ring_idx]
         for sub_bit, ring_idx in map2.items():
             if (m2 >> sub_bit) & 1: mon *= k_vars[ring_idx]
         return mon
 
-    def _accumulate_poly(self, c1, masks1, c2, masks2, map1, map2, total_poly, total_raw, has_key, B, k_vars):
+    def _accumulate_poly(self, c1, masks1, c2, masks2, map1, map2, total_poly, total_raw, has_key, boolean_ring, k_vars):
         total_raw += c1 * c2
         if not has_key:
-            total_poly += B(c1 * c2)
+            total_poly += boolean_ring(c1 * c2)
             return total_poly, total_raw
             
         for m1 in masks1:
             for m2 in masks2:
-                total_poly += self._compute_monomial(m1, m2, map1, map2, B, k_vars)
+                total_poly += self._compute_monomial(m1, m2, map1, map2, boolean_ring, k_vars)
         return total_poly, total_raw
 
-    def _process_single_feasible_state(self, state, model1, cipher1, model2, cipher2, map1, map2, has_key, B, k_vars):
+    def _process_single_feasible_state(self, state, model1, cipher1, model2, cipher2, map1, map2, has_key, boolean_ring, k_vars):
         m1_core = self._setup_core_model(model1, state, apply_to_inputs=False)
         m1_core.optimize()
         c1 = m1_core.SolCount
         
         if c1 == 0:
             m1_core.dispose()
-            return B(0), 0, c1
+            return boolean_ring(0), 0, c1
         
         masks1 = self._get_input_masks(m1_core, model1, cipher1)
 
@@ -2455,11 +2455,11 @@ class MilpMonomialPredictionModel:
         if c2 == 0:
             m1_core.dispose()
             m2_core.dispose()
-            return B(0), 0, c1*c2
+            return boolean_ring(0), 0, c1*c2
         
         masks2 = self._get_input_masks(m2_core, model2, cipher2)
         
-        poly_delta, raw = self._accumulate_poly(c1, masks1, c2, masks2, map1, map2, B(0), 0, has_key, B, k_vars)
+        poly_delta, raw = self._accumulate_poly(c1, masks1, c2, masks2, map1, map2, boolean_ring(0), 0, has_key, boolean_ring, k_vars)
         m1_core.dispose()
         m2_core.dispose()
         return poly_delta, raw, c1*c2
