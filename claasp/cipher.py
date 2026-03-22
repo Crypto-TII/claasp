@@ -25,6 +25,7 @@ from claasp import editor
 from claasp.cipher_modules import code_generator
 from claasp.cipher_modules import tester, evaluator
 from claasp.cipher_modules.inverse_cipher import *
+from claasp.cipher_modules.inverse_cipher import _prune_components_outside_round_range
 from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
 from claasp.components.cipher_output_component import CipherOutput
 from claasp.compound_xor_differential_cipher import convert_to_compound_xor_cipher
@@ -702,12 +703,23 @@ class Cipher:
         for round in self.rounds_as_list:
             partial_cipher.rounds_as_list.append(deepcopy(round))
 
-        removed_components_ids, intermediate_outputs = prune_components_outside_round_range(
+        removed_components_ids, intermediate_outputs = _prune_components_outside_round_range(
             partial_cipher,
             start_round,
             end_round,
             keep_key_schedule
         )
+
+        if not keep_key_schedule:
+            key_schedule_component_ids = get_key_schedule_component_ids(self)
+            for current_round in partial_cipher.rounds_as_list:
+                for component in current_round.components:
+                    for input_id_link in component.input_id_links:
+                        if input_id_link in key_schedule_component_ids and input_id_link not in partial_cipher.inputs:
+                            partial_cipher.inputs.append(input_id_link)
+                            partial_cipher.inputs_bit_size.append(
+                                self.get_component_from_id(input_id_link).output_bit_size
+                            )
 
         if start_round > 0:
             for input_type in set([input for input in self.inputs if INPUT_KEY not in input]):
