@@ -2188,7 +2188,6 @@ class MilpMonomialPredictionModel:
         return key_input_indices, True, B, B.gens()
 
     def _get_split_ciphers(self, middle_round, verbosity):
-        from copy import deepcopy
         if not (0 < middle_round < self._cipher.number_of_rounds):
             raise ValueError(f"Middle round {middle_round} out of valid range (1 to {self._cipher.number_of_rounds - 1})")
         
