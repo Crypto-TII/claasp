@@ -2225,7 +2225,7 @@ class MilpMonomialPredictionModel:
 
     def _constrain_cube_and_public_vars(self, cube, key_input_indices):
         cube_verbose = self.var_list_to_input_positions(cube)
-        cube_vars_set = set(f"{term[0]}[{term[1]}]" for term in cube_verbose)
+        cube_vars_set = {f"{term[0]}[{term[1]}]" for term in cube_verbose}
         
         for var_name in cube_vars_set:
             var_term = self._model.getVarByName(var_name)
@@ -2263,38 +2263,42 @@ class MilpMonomialPredictionModel:
                 return idx
         return -1
 
+    def _get_mid_var_for_link(self, var_dict, link_id, middle_round, skip_for_enum):
+        if not skip_for_enum:
+            return var_dict.get("copies", [var_dict["original"]])[-1]
+            
+        escape_idx = self._get_escape_idx(link_id, middle_round, skip_for_enum)
+        if escape_idx <= 0:
+            return var_dict["original"]
+        elif escape_idx < len(var_dict.get("copies", [])):
+            return var_dict["copies"][escape_idx]
+        return var_dict["original"]
+
+    def _resolve_mid_var(self, link_id, pos, skip_for_enum, middle_round):
+        if link_id in self._variables and pos in self._variables[link_id]:
+            return self._get_mid_var_for_link(self._variables[link_id][pos], link_id, middle_round, skip_for_enum)
+        
+        src = self._model.getVarByName(f"{link_id}[{pos}]")
+        if src is not None:
+            return src
+            
+        dummy = self._model.addVar(vtype=GRB.BINARY, name=f"dead_end_{link_id}[{pos}]")
+        self._model.addConstr(dummy == 0)
+        return dummy
+
     def _identify_mid_vars_list(self, round_output_comp, skip_for_enum, middle_round):
         mid_vars_list = []
         for link_idx, link_id in enumerate(round_output_comp.input_id_links):
             for pos in round_output_comp.input_bit_positions[link_idx]:
-                if link_id in self._variables and pos in self._variables[link_id]:
-                    var_dict = self._variables[link_id][pos]
-                    if skip_for_enum:
-                        escape_idx = self._get_escape_idx(link_id, middle_round, skip_for_enum)
-                        if escape_idx <= 0:
-                            mid_vars_list.append(var_dict["original"])
-                        elif escape_idx < len(var_dict.get("copies", [])):
-                            mid_vars_list.append(var_dict["copies"][escape_idx])
-                        else:
-                            mid_vars_list.append(var_dict["original"])
-                    else:
-                        mid_vars_list.append(var_dict.get("copies", [var_dict["original"]])[-1])
-                else:
-                    src = self._model.getVarByName(f"{link_id}[{pos}]")
-                    if src is not None:
-                        mid_vars_list.append(src)
-                    else:
-                        dummy = self._model.addVar(vtype=GRB.BINARY, name=f"dead_end_{link_id}[{pos}]")
-                        self._model.addConstr(dummy == 0)
-                        mid_vars_list.append(dummy)
+                v = self._resolve_mid_var(link_id, pos, skip_for_enum, middle_round)
+                mid_vars_list.append(v)
         
         self._model.update()
         if len(mid_vars_list) != round_output_comp.output_bit_size:
-            raise ValueError(f"Could not collect mid-state bits")
+            raise ValueError("Could not collect mid-state bits")
         return mid_vars_list
 
     def _enumerate_feasible_states(self, mid_vars_list, verbosity):
-        import sys
         feasible_states = set()
 
         def mid_state_callback(model, where):
@@ -2345,49 +2349,130 @@ class MilpMonomialPredictionModel:
                     bit_pos += 1
         return mapping
 
+    def _add_left_model_constraints(self, model_wrap, inp_name, size, cube_set):
+        if inp_name not in model_wrap._variables:
+            return
+        for i in range(size):
+            if i in model_wrap._variables[inp_name]:
+                v = model_wrap._variables[inp_name][i]["original"]
+                if v is not None:
+                    val = 1 if (inp_name, i) in cube_set else 0
+                    model_wrap._model.addConstr(v == val)
+
+    def _prepare_left_model(self, model_wrap, cipher, cube):
+        model_wrap.build_model_with_input_output_constraints(None, do_pruning=True)
+        cube_locs = model_wrap.var_list_to_input_positions(cube)
+        cube_set = {(p[0], p[1]) for p in cube_locs}
+        
+        for inp_name, size in zip(cipher.inputs, cipher.inputs_bit_size):
+            if "key" not in inp_name.lower():
+                self._add_left_model_constraints(model_wrap, inp_name, size, cube_set)
+
+    def _get_model_key_vars(self, model_wrap, cipher):
+        keys = []
+        for inp_name, size in zip(cipher.inputs, cipher.inputs_bit_size):
+            if "key" in inp_name.lower() and inp_name in model_wrap._variables:
+                for i in range(size):
+                    v = model_wrap._variables[inp_name].get(i, {}).get("original")
+                    if v is not None:
+                        keys.append(v)
+        return keys
+
     def _prepare_model_for_counting(self, model_wrap, cipher, is_model1, cube, output_bit_index):
         if is_model1:
-            model_wrap.build_model_with_input_output_constraints(None, do_pruning=True)
-            cube_locs = model_wrap.var_list_to_input_positions(cube)
-            cube_set = set((p[0], p[1]) for p in cube_locs)
-            
-            for inp_name, size in zip(cipher.inputs, cipher.inputs_bit_size):
-                if "key" in inp_name.lower(): continue
-                if inp_name in model_wrap._variables:
-                    for i in range(size):
-                        if i in model_wrap._variables[inp_name]:
-                            v = model_wrap._variables[inp_name][i]["original"]
-                            if v is not None:
-                                model_wrap._model.addConstr(v == (1 if (inp_name, i) in cube_set else 0))
+            self._prepare_left_model(model_wrap, cipher, cube)
         else:
             model_wrap.build_generic_model_for_specific_output_bit(output_bit_index, do_pruning=True)
         
         model_wrap._model.update()
-        keys_m = [
-            model_wrap._variables[inp_name].get(i, {}).get("original")
-            for inp_name, size in zip(cipher.inputs, cipher.inputs_bit_size)
-            if "key" in inp_name.lower() and inp_name in model_wrap._variables
-            for i in range(size)
-        ]
-        keys_m = [v for v in keys_m if v is not None]
+        keys_m = self._get_model_key_vars(model_wrap, cipher)
         if keys_m:
             model_wrap._model.setObjective(sum(keys_m), GRB.MAXIMIZE)
         model_wrap._model.update()
+
+    def _apply_state_to_outputs(self, m_core, state):
+        for i, val in enumerate(state):
+             v_copy = m_core.getVarByName(f"output[{i}]")
+             if v_copy is not None: m_core.addConstr(v_copy == val)
+
+    def _apply_state_to_inputs(self, m_core, model_wrap, state):
+        inp_name = model_wrap._cipher.inputs[0]
+        if inp_name not in model_wrap._variables:
+            return
+        for i, val in enumerate(state):
+            if i in model_wrap._variables[inp_name]:
+                v_orig = model_wrap._variables[inp_name][i]["original"]
+                if v_orig is not None:
+                    v_copy = m_core.getVarByName(v_orig.VarName)
+                    if v_copy is not None: m_core.addConstr(v_copy == val)
+
+    def _setup_core_model(self, model_wrap, state, apply_to_inputs=False):
+        m_core = model_wrap._model.copy()
+        m_core.setParam(GRB.Param.PoolSearchMode, 2)
+        m_core.setParam(GRB.Param.PoolSolutions, 2000000000)
+        m_core.setParam(GRB.Param.OutputFlag, 0)
+        m_core.setParam(GRB.Param.MIPFocus, 3)
+        
+        if not apply_to_inputs:
+            self._apply_state_to_outputs(m_core, state)
+        else:
+            self._apply_state_to_inputs(m_core, model_wrap, state)
+        return m_core
+
+    def _compute_monomial(self, m1, m2, map1, map2, B, k_vars):
+        mon = B(1)
+        for sub_bit, ring_idx in map1.items():
+            if (m1 >> sub_bit) & 1: mon *= k_vars[ring_idx]
+        for sub_bit, ring_idx in map2.items():
+            if (m2 >> sub_bit) & 1: mon *= k_vars[ring_idx]
+        return mon
+
+    def _accumulate_poly(self, c1, masks1, c2, masks2, map1, map2, total_poly, total_raw, has_key, B, k_vars):
+        total_raw += c1 * c2
+        if not has_key:
+            total_poly += B(c1 * c2)
+            return total_poly, total_raw
+            
+        for m1 in masks1:
+            for m2 in masks2:
+                total_poly += self._compute_monomial(m1, m2, map1, map2, B, k_vars)
+        return total_poly, total_raw
+
+    def _process_single_feasible_state(self, state, model1, cipher1, model2, cipher2, map1, map2, has_key, B, k_vars):
+        m1_core = self._setup_core_model(model1, state, apply_to_inputs=False)
+        m1_core.optimize()
+        c1 = m1_core.SolCount
+        
+        if c1 == 0:
+            m1_core.dispose()
+            return B(0), 0, c1
+        
+        masks1 = self._get_input_masks(m1_core, model1, cipher1)
+
+        m2_core = self._setup_core_model(model2, state, apply_to_inputs=True)
+        m2_core.optimize()
+        c2 = m2_core.SolCount
+        
+        if c2 == 0:
+            m1_core.dispose()
+            m2_core.dispose()
+            return B(0), 0, c1*c2
+        
+        masks2 = self._get_input_masks(m2_core, model2, cipher2)
+        
+        poly_delta, raw = self._accumulate_poly(c1, masks1, c2, masks2, map1, map2, B(0), 0, has_key, B, k_vars)
+        m1_core.dispose()
+        m2_core.dispose()
+        return poly_delta, raw, c1*c2
 
     def find_coefficient_of_cube_by_divide_and_conquer(
             self, output_bit_index, middle_round, cube, chosen_cipher_output=None, verbosity=False):
         """
         Compute the superpoly (coefficient of the cube monomial) in terms of key variables.
         """
-        import sys
-        
-        # 1. Setup Key Variables
         key_input_indices, has_key, B, k_vars = self._setup_key_variables_and_ring()
-
-        # 2. Setup Split Ciphers
         cipher1, cipher2 = self._get_split_ciphers(middle_round, verbosity)
 
-        # 3. MILP Models setup
         from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel
         model1 = MilpMonomialPredictionModel(cipher1)
         model2 = MilpMonomialPredictionModel(cipher2)
@@ -2395,17 +2480,14 @@ class MilpMonomialPredictionModel:
         round_output_comp = self._get_round_output_comp(middle_round)
         skip_for_enum = self._get_skip_for_enum()
 
-        # 4. Build Full Cipher Enumeration Model
         self.build_generic_model_for_specific_output_bit(
             output_bit_index, None, None, chosen_cipher_output, skip_components=skip_for_enum
         )
         self._constrain_cube_and_public_vars(cube, key_input_indices)
 
-        # 5. Get Mid-state vars and Enumerate Middle States
         mid_vars_list = self._identify_mid_vars_list(round_output_comp, skip_for_enum, middle_round)
         feasible_states = self._enumerate_feasible_states(mid_vars_list, verbosity)
 
-        # 6. Prepare mapping for counting
         ring_var_map = {}
         curr_ring_idx = 0
         for i in key_input_indices:
@@ -2427,73 +2509,15 @@ class MilpMonomialPredictionModel:
                 print(f"Processing state {idx+1}/{len(feasible_states)}...")
                 sys.stdout.flush()
 
-            m1_core = model1._model.copy()
-            m1_core.setParam(GRB.Param.PoolSearchMode, 2)
-            m1_core.setParam(GRB.Param.PoolSolutions, 2000000000)
-            m1_core.setParam(GRB.Param.OutputFlag, 0)
-            m1_core.setParam(GRB.Param.MIPFocus, 3)
-            
-            for i, val in enumerate(state):
-                 v_copy = m1_core.getVarByName(f"output[{i}]")
-                 if v_copy is not None:
-                     m1_core.addConstr(v_copy == val)
-            
-            m1_core.optimize()
-            sol_left = m1_core.SolCount
-            
-            if sol_left == 0:
-                m1_core.dispose()
-                continue
-            
-            masks1 = self._get_input_masks(m1_core, model1, cipher1)
-            c1 = sol_left % 2
-
-            m2_core = model2._model.copy()
-            m2_core.setParam(GRB.Param.PoolSearchMode, 2)
-            m2_core.setParam(GRB.Param.PoolSolutions, 2000000000)
-            m2_core.setParam(GRB.Param.OutputFlag, 0)
-            m2_core.setParam(GRB.Param.MIPFocus, 3)
-            
-            inp_state_name = cipher2.inputs[0]
-            for i, val in enumerate(state):
-                if inp_state_name in model2._variables and i in model2._variables[inp_state_name]:
-                    v_orig = model2._variables[inp_state_name][i]["original"]
-                    if v_orig is not None:
-                        v_copy = m2_core.getVarByName(v_orig.VarName)
-                        if v_copy is not None:
-                            m2_core.addConstr(v_copy == val)
-                            
-            m2_core.optimize()
-            sol_right = m2_core.SolCount
-            
-            if sol_right == 0:
-                m1_core.dispose()
-                m2_core.dispose()
-                continue
-            
-            masks2 = self._get_input_masks(m2_core, model2, cipher2)
-            c2 = sol_right % 2
-            
-            total_raw_solutions += sol_left * sol_right
-            parity += c1 * c2
-            
-            if not has_key:
-                total_poly += B(c1 * c2)
-            else:
-                for m1, p1 in masks1.items():
-                    for m2, p2 in masks2.items():
-                        mon = B(1)
-                        for sub_bit, ring_idx in map1.items():
-                            if (m1 >> sub_bit) & 1: mon *= k_vars[ring_idx]
-                        for sub_bit, ring_idx in map2.items():
-                            if (m2 >> sub_bit) & 1: mon *= k_vars[ring_idx]
-                        total_poly += mon
-            
-            m1_core.dispose()
-            m2_core.dispose()
+            poly_delta, raw, prod = self._process_single_feasible_state(
+                state, model1, cipher1, model2, cipher2, map1, map2, has_key, B, k_vars
+            )
+            total_poly += poly_delta
+            total_raw_solutions += raw
+            parity += prod
 
         if verbosity:
-            print(f"Final Parity: {parity}")
+            print(f"Final Parity: {parity % 2}")
             print(f"Total counted solutions (with multiplicity): {total_raw_solutions}")
         
         return total_poly
