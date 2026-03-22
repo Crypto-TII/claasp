@@ -388,7 +388,7 @@ class MilpMonomialPredictionModel:
         output_vars = []
         tmp = sorted(self._occurences[component.id].keys())
         
-        # Optimized: Use _variables dict if available (created by create_gurobi_vars_from_all_components)
+        # Use _variables dict if available (created by create_gurobi_vars_from_all_components)
         if component.id in self._variables:
             vars_dict = self._variables[component.id]
             for i in tmp:
@@ -443,7 +443,7 @@ class MilpMonomialPredictionModel:
         b_bits = input_vars_concat[n:2 * n]
         z_bits = output_vars
 
-        # Rerverse endianess : index 0 corresponds to LSB now
+        # Rerverse endianess
         a_bits = list(reversed(a_bits))
         b_bits = list(reversed(b_bits))
         z_bits = list(reversed(z_bits))
@@ -937,7 +937,6 @@ class MilpMonomialPredictionModel:
                                                     do_pruning=True):
         start = time.time()
         if skip_components is None:
-            # Only skip intermediate outputs that are truly sinks (no consumers) and not targeted.
             # This prevents diversion to dead-end taps while preserving cipher paths (e.g. Trivium keystream bits).
             G = create_networkx_graph_from_input_ids(self._cipher)
             skip_components = {
