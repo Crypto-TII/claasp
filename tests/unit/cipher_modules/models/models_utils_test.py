@@ -18,7 +18,7 @@ from claasp.cipher_modules.models.utils import (convert_solver_solution_to_dicti
                                                 differential_truncated_checker_permutation,
                                                 differential_checker_permutation,
                                                 differential_truncated_checker_permutation_input_and_output_truncated,
-                                                hex_to_bitlist)
+                                                hex_to_bitlist,
                                                 linear_checker_for_block_cipher_single_key)
 from claasp.ciphers.permutations.chacha_permutation import ROUND_MODE_HALF, ChachaPermutation
 from claasp.ciphers.permutations.salsa_permutation import SalsaPermutation
