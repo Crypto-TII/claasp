@@ -221,7 +221,7 @@ class SatDifferentialLinearModel(SatModel):
             for hw_variable in hw_variables:
                 if linear_component_id in hw_variable:
                     hw_linear_variables.append(hw_variable)
-        hw_variables.extend(hw_linear_variables)
+        hw_variables.extend(list(dict.fromkeys(hw_linear_variables)))
         if weight == 0:
             return [], [f"-{var}" for var in hw_variables]
 

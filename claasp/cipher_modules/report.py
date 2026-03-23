@@ -13,6 +13,7 @@ from plotly.subplots import make_subplots
 from claasp.cipher_modules.component_analysis_tests import CipherComponentsAnalysis
 from claasp.cipher_modules.statistical_tests.dieharder_statistical_tests import DieharderTests
 from claasp.cipher_modules.statistical_tests.nist_statistical_tests import NISTStatisticalTests
+from claasp.cipher_modules.statistical_tests.nist_statistical_tests_report import NISTStatisticalTestsReport
 
 
 def _print_colored_state(state, verbose, file):
@@ -744,13 +745,8 @@ class Report:
                                                    show_graph=show_graph)
 
             elif 'nist' in self.test_name:
-                for dict in self.test_report['test_results']:
-                    NISTStatisticalTests._generate_chart_round(dict,
-                                                               output_directory,
-                                                               show_graph=show_graph)
-                NISTStatisticalTests._generate_chart_all(self.test_report['test_results'],
-                                                         output_directory,
-                                                         show_graph=show_graph)
+                reporter = NISTStatisticalTestsReport(self.test_report, output_dir=output_directory)
+                reporter.generate_charts(output_dir=output_directory)
 
         elif 'algebraic' in self.test_name:
 

@@ -165,6 +165,9 @@ class NOT(Component):
     def cp_deterministic_truncated_xor_differential_trail_constraints(self):
         return self.cp_deterministic_truncated_xor_differential_constraints()
 
+    def cp_semi_deterministic_truncated_xor_differential_constraints(self):
+        return self.cp_deterministic_truncated_xor_differential_trail_constraints()
+
     def cp_wordwise_deterministic_truncated_xor_differential_constraints(self, model):
         cp_declarations = []
         all_inputs_value = []
@@ -204,10 +207,10 @@ class NOT(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
             sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
             sage: from claasp.components.not_component import NOT
-            sage: aes = AESBlockCipher()
+            sage: aes = ToyAESBlockCipher()
             sage: cp = MznModel(aes)
             sage: not_component = NOT(0, 18, ['sbox_0_2', 'sbox_0_6', 'sbox_0_10', 'sbox_0_14'], [[0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7]], 32)
             sage: not_component.cp_xor_differential_first_step_constraints(cp)

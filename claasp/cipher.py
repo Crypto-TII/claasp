@@ -411,10 +411,10 @@ class Cipher:
 
         TEST::
 
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
             sage: key = 0x2b7e151628aed2a6abf7158809cf4f3c
             sage: plaintext = 0x6bc1bee22e409f96e93d7e117393172a
-            sage: cipher = AESBlockCipher(number_of_rounds=2)
+            sage: cipher = ToyAESBlockCipher(number_of_rounds=2)
             sage: ciphertext = cipher.evaluate([key, plaintext])
             sage: cipher_inv = cipher.cipher_inverse()
             sage: cipher_inv.evaluate([ciphertext, key]) == plaintext
@@ -1174,8 +1174,8 @@ class Cipher:
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: aes = AESBlockCipher(number_of_rounds=2)
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
+            sage: aes = ToyAESBlockCipher(number_of_rounds=2)
             sage: aes.is_spn()
             True
         """

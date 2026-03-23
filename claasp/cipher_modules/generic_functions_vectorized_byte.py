@@ -146,12 +146,34 @@ def byte_vector_select_all_words(unformated_inputs, real_bits, real_inputs, numb
     for i in range(number_of_inputs):
         pos = 0
         number_of_output_bits = np.sum([len(x) for x in real_bits[i]])
-        if len(real_inputs[i]) == 1 and np.all(real_bits[i][0] == list(range(actual_inputs_bits[real_inputs[i][0]]))):
-            output[i] = unformated_inputs[real_inputs[i][0]]
-            if number_of_output_bits % 8 > 0:
-                left_byte_mask = 2 ** (number_of_output_bits % 8) - 1
-            else:
-                left_byte_mask = 0xffff
+        idx = real_inputs[i][0] if len(real_inputs[i]) == 1 else None
+        expected_rows = (
+            get_number_of_bytes_needed_for_bit_size(actual_inputs_bits[idx])
+            if idx is not None
+            else None
+        )
+        if number_of_output_bits % 8 > 0:
+            left_byte_mask = 2 ** (number_of_output_bits % 8) - 1
+            left_padding_mask = (~left_byte_mask) & 0xff
+        else:
+            left_byte_mask = 0xff
+            left_padding_mask = 0
+
+        is_canonical_for_bit_size = (
+            idx is not None
+            and (
+                left_padding_mask == 0
+                or np.all((unformated_inputs[idx][0, :] & left_padding_mask) == 0)
+            )
+        )
+
+        if (
+            len(real_inputs[i]) == 1
+            and np.all(real_bits[i][0] == list(range(actual_inputs_bits[idx])))
+            and unformated_inputs[idx].shape[0] == expected_rows
+            and is_canonical_for_bit_size
+        ):
+            output[i] = np.array(unformated_inputs[idx], copy=True)
             output[i][0, :] &= left_byte_mask
         else:
             output[i] = np.zeros(shape=(words_per_input, max_number_of_columns), dtype=np.uint8)

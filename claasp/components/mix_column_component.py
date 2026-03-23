@@ -123,9 +123,9 @@ class MixColumn(LinearLayer):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
             sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
-            sage: aes = AESBlockCipher(number_of_rounds=3)
+            sage: aes = ToyAESBlockCipher(number_of_rounds=3)
             sage: cp = MznModel(aes)
             sage: mix_column_component = aes.component_from(0, 21)
             sage: mix_column_component._cp_build_truncated_table(cp.word_size)
@@ -166,9 +166,9 @@ class MixColumn(LinearLayer):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
             sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
-            sage: aes = AESBlockCipher(number_of_rounds=3)
+            sage: aes = ToyAESBlockCipher(number_of_rounds=3)
             sage: cp = MznModel(aes)
             sage: mix_column_component_1 = aes.component_from(0, 21)
             sage: mix_column_component_2 = aes.component_from(0, 22)
@@ -341,8 +341,8 @@ class MixColumn(LinearLayer):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: aes = AESBlockCipher(number_of_rounds=3)
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
+            sage: aes = ToyAESBlockCipher(number_of_rounds=3)
             sage: mix_column_component = aes.component_from(0, 21)
             sage: mix_column_component.cp_constraints()
             ([],
@@ -369,8 +369,8 @@ class MixColumn(LinearLayer):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: aes = AESBlockCipher(number_of_rounds=3)
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
+            sage: aes = ToyAESBlockCipher(number_of_rounds=3)
             sage: mix_column_component = aes.component_from(0, 21)
             sage: mix_column_component.cp_deterministic_truncated_xor_differential_constraints()
             ([],
@@ -390,6 +390,9 @@ class MixColumn(LinearLayer):
     def cp_deterministic_truncated_xor_differential_trail_constraints(self):
         return self.cp_deterministic_truncated_xor_differential_constraints()
 
+    def cp_semi_deterministic_truncated_xor_differential_constraints(self):
+        raise NotImplementedError("Semi-deterministic CP model not supported for MIX_COLUMN component yet")
+
     def cp_xor_differential_propagation_first_step_constraints(self, model):
         """
         Return declarations and constraints for MIX COLUMN component for the CP xor differential first step model.
@@ -400,9 +403,9 @@ class MixColumn(LinearLayer):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
             sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
-            sage: aes = AESBlockCipher(number_of_rounds=3)
+            sage: aes = ToyAESBlockCipher(number_of_rounds=3)
             sage: cp = MznModel(aes)
             sage: mix_column_component = aes.component_from(0, 21)
             sage: mix_column_component.cp_xor_differential_propagation_first_step_constraints(cp)
@@ -483,8 +486,8 @@ class MixColumn(LinearLayer):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: aes = AESBlockCipher(number_of_rounds=3)
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
+            sage: aes = ToyAESBlockCipher(number_of_rounds=3)
             sage: mix_column_component = aes.component_from(0, 21)
             sage: mix_column_component.cp_xor_linear_mask_propagation_constraints()
             (['array[0..31] of var 0..1:mix_column_0_21_i;',
@@ -586,9 +589,9 @@ class MixColumn(LinearLayer):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
             sage: from claasp.cipher_modules.models.milp.milp_model import MilpModel
-            sage: aes = AESBlockCipher(number_of_rounds=3)
+            sage: aes = ToyAESBlockCipher(number_of_rounds=3)
             sage: milp = MilpModel(aes)
             sage: milp.init_model_in_sage_milp_class()
             sage: mix_column_component = aes.component_from(0, 21)
@@ -670,8 +673,8 @@ class MixColumn(LinearLayer):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: aes = AESBlockCipher(number_of_rounds=2)
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
+            sage: aes = ToyAESBlockCipher(number_of_rounds=2)
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import MilpWordwiseDeterministicTruncatedXorDifferentialModel
             sage: milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(aes)
             sage: milp.init_model_in_sage_milp_class()

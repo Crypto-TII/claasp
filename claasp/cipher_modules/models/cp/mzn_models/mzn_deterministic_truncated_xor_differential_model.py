@@ -392,9 +392,9 @@ class MznDeterministicTruncatedXorDifferentialModel(MznModel):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
             sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_deterministic_truncated_xor_differential_model import MznDeterministicTruncatedXorDifferentialModel
-            sage: aes = AESBlockCipher()
+            sage: aes = ToyAESBlockCipher()
             sage: cp = MznDeterministicTruncatedXorDifferentialModel(aes)
             sage: cp.input_deterministic_truncated_xor_differential_constraints()
             (['array[0..127] of var 0..2: key;',
