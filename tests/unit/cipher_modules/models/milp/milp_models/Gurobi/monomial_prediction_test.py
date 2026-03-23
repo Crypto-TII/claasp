@@ -54,7 +54,7 @@ def test_find_upper_bound_degree_of_specific_output_bit():
     assert degree == 2
 
 @pytest.mark.skip(reason="Requires Gurobi license")
-def test_find_superpoly_of_specific_output_bit():
+def test_find_superpoly_of_specific_output_bit():   
     cipher = SimonBlockCipher(number_of_rounds=3)
     milp = MilpMonomialPredictionModel(cipher)
     R = milp.get_boolean_polynomial_ring()
@@ -161,3 +161,29 @@ def test_find_degree_in_cube_vars_of_specific_output_bit():
     cube = [f"p{i}" for i in range(1, 32)]
     d = milp.find_degree_in_cube_vars_of_specific_output_bit(16, cube)
     assert d == 30
+
+@pytest.mark.skip(reason="Requires Gurobi license")
+def test_find_coefficient_of_cube_by_divide_and_conquer_gaston():
+    cipher = GastonPermutation(number_of_rounds=3)
+    milp = MilpMonomialPredictionModel(cipher)
+    cube = [f"p{i}" for i in range(256, 264)]
+    coeff = milp.find_coefficient_of_cube_by_divide_and_conquer(
+        output_bit_index=61,
+        middle_round=1,
+        cube=cube
+    )
+    assert coeff == 1
+
+@pytest.mark.skip(reason="Requires Gurobi license")
+def test_find_superpoly_by_divide_and_conquer_speck():
+    cipher = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=6)
+    cipher = cipher.remove_key_schedule()
+    milp = MilpMonomialPredictionModel(cipher)
+    inactive_bits = [24, 26]
+    cube = [f"p{i}" for i in range(32) if i not in inactive_bits]
+    res = milp.find_coefficient_of_cube_by_divide_and_conquer(
+        output_bit_index=15,
+        middle_round=2,
+        cube=cube
+    )
+    assert str(res) == "k²7*k²8 + k²7*k³6 + k²7*k³13 + k²8*k³5 + k²8*k³12 + k²8 + k³5*k³6 + k³5*k³13 + k³6*k³12 + k³6 + k³12*k³13 + k³13"
