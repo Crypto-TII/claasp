@@ -388,6 +388,20 @@ class SatDifferentialLinearModel(SatModel):
 
         return components_solutions, total_weight_diff + 2 * total_weight_lin
 
+    def _sequential_counter_greater_or_equal(self, weight, dummy_id):
+        hw_variables = [var_id for var_id in self._variables_list if var_id.startswith("hw_")]
+
+        linear_component_ids = [linear_component["component_id"] for linear_component in self.linear_components]
+        hw_linear_variables = []
+        for linear_component_id in linear_component_ids:
+            for hw_variable in hw_variables:
+                if linear_component_id in hw_variable:
+                    hw_linear_variables.append(hw_variable)
+        hw_variables.extend(list(dict.fromkeys(hw_linear_variables)))
+        variables, constraints = self._sequential_counter_algorithm(hw_variables, weight, dummy_id, greater_or_equal=True)
+        self._variables_list.extend(variables)
+        self._model_constraints.extend(constraints)
+
     def find_one_differential_linear_trail_with_fixed_weight(
         self,
         weight,
@@ -455,7 +469,7 @@ class SatDifferentialLinearModel(SatModel):
             ....:     solver_name="CADICAL_EXT",
             ....:     num_unknown_vars=2
             ....: )
-            sage: trail["status"] == 'SATISFIABLE'
+            sage: trail["total_weight"] == 10
             True
         """
         start_time = time.time()
