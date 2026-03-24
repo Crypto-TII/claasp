@@ -1905,22 +1905,35 @@ def remove_key_schedule(cipher, keep_round_key_injection=True):
         components_to_remove = {}
         for round_ in cipher_without_key_schedule.rounds_as_list:
             for component in round_.components:
-                if any("key" in id for id in component.input_id_links):
-                    key_index = next(
-                        (i for i, link in enumerate(component.input_id_links) if "key" in link),
-                        None,
-                    )
-                    component.input_id_links.pop(key_index)
-                    component.input_bit_positions.pop(key_index)
+                key_indices = [
+                    i
+                    for i, link in enumerate(component.input_id_links)
+                    if (link == INPUT_KEY) or link.startswith("key_")
+                ]
+                if key_indices:
+                    for key_index in reversed(key_indices):
+                        component.input_id_links.pop(key_index)
+                        component.input_bit_positions.pop(key_index)
+
+                    component._input._bit_size = sum(len(positions) for positions in component.input_bit_positions)
+
                     if len(component.input_bit_positions) == 1:
                         components_to_remove[component.id] = component.input_id_links[0]
                         cipher_without_key_schedule.remove_round_component_from_id(round_.id, component.id)
 
         for round_ in cipher_without_key_schedule.rounds_as_list:
             for component in round_.components:
-                for i, id in enumerate(component.input_id_links):
-                    if id in components_to_remove:
-                        component.input_id_links[i] = components_to_remove[id]
+                for i, input_id in enumerate(component.input_id_links):
+                    while input_id in components_to_remove:
+                        input_id = components_to_remove[input_id]
+                    component.input_id_links[i] = input_id
+
+                component._input._bit_size = sum(len(positions) for positions in component.input_bit_positions)
+
+                if component.type == "word_operation" and component.description[0] == "XOR":
+                    total_input_bits = component.input_bit_size
+                    if total_input_bits % component.output_bit_size == 0:
+                        component.description[1] = max(1, total_input_bits // component.output_bit_size)
 
     return cipher_without_key_schedule
 
