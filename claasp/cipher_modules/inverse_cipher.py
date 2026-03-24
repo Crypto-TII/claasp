@@ -1453,6 +1453,15 @@ def _remove_non_key_components_from_rounds(cipher, list_of_rounds, key_schedule_
 def _prune_components_outside_round_range(
     cipher, start_round, end_round, keep_key_schedule
 ):
+    """
+    Prunes components outside the specified round range.
+
+    INPUT:
+    - ``cipher`` -- the cipher object
+    - ``start_round`` -- the starting round index
+    - ``end_round`` -- the ending round index
+    - ``keep_key_schedule`` -- boolean indicating whether to keep key schedule components
+    """
     list_of_rounds = cipher.rounds_as_list[:start_round] + cipher.rounds_as_list[end_round + 1 :]
     key_schedule_component_ids = get_key_schedule_component_ids(cipher)
     key_schedule_components = [

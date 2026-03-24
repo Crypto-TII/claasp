@@ -711,52 +711,82 @@ class Cipher:
         )
 
         if not keep_key_schedule:
-            key_schedule_component_ids = get_key_schedule_component_ids(self)
-            for current_round in partial_cipher.rounds_as_list:
-                for component in current_round.components:
-                    for input_id_link in component.input_id_links:
-                        if input_id_link in key_schedule_component_ids and input_id_link not in partial_cipher.inputs:
-                            partial_cipher.inputs.append(input_id_link)
-                            partial_cipher.inputs_bit_size.append(
-                                self.get_component_from_id(input_id_link).output_bit_size
-                            )
+            self._add_missing_key_schedule_inputs(partial_cipher)
 
         if start_round > 0:
-            for input_type in set([input for input in self.inputs if INPUT_KEY not in input]):
-                removed_components_ids.append(input_type)
-                input_index = partial_cipher.inputs.index(input_type)
-                partial_cipher.inputs.pop(input_index)
-                partial_cipher.inputs_bit_size.pop(input_index)
-
-            partial_cipher.inputs.insert(0, intermediate_outputs[start_round - 1].id)
-            partial_cipher.inputs_bit_size.insert(0, intermediate_outputs[start_round - 1].output_bit_size)
-            update_input_links_from_rounds(
-                partial_cipher.rounds_as_list[start_round : end_round + 1],
+            self._rewire_partial_cipher_inputs_from_start_round(
+                partial_cipher,
+                start_round,
+                end_round,
                 removed_components_ids,
                 intermediate_outputs,
             )
 
         if end_round < self.number_of_rounds - 1:
-            removed_components_ids.append(CIPHER_OUTPUT)
-            last_round = partial_cipher.rounds_as_list[end_round]
-            for component in last_round.components:
-                if component.description == ["round_output"]:
-                    last_round.remove_component(component)
-                    new_cipher_output = Component(
-                        component.id,
-                        CIPHER_OUTPUT,
-                        Input(
-                            component.output_bit_size,
-                            component.input_id_links,
-                            component.input_bit_positions,
-                        ),
-                        component.output_bit_size,
-                        [CIPHER_OUTPUT],
-                    )
-                    new_cipher_output.__class__ = CipherOutput
-                    last_round.add_component(new_cipher_output)
+            self._replace_partial_cipher_last_round_output(partial_cipher, end_round, removed_components_ids)
 
         return partial_cipher
+
+    def _rewire_partial_cipher_inputs_from_start_round(
+        self,
+        partial_cipher,
+        start_round,
+        end_round,
+        removed_components_ids,
+        intermediate_outputs,
+    ):
+        """Replace initial inputs with the previous round output and rewire links."""
+        for input_type in {cipher_input for cipher_input in self.inputs if INPUT_KEY not in cipher_input}:
+            removed_components_ids.append(input_type)
+            input_index = partial_cipher.inputs.index(input_type)
+            partial_cipher.inputs.pop(input_index)
+            partial_cipher.inputs_bit_size.pop(input_index)
+
+        previous_round_output = intermediate_outputs[start_round - 1]
+        partial_cipher.inputs.insert(0, previous_round_output.id)
+        partial_cipher.inputs_bit_size.insert(0, previous_round_output.output_bit_size)
+        update_input_links_from_rounds(
+            partial_cipher.rounds_as_list[start_round : end_round + 1],
+            removed_components_ids,
+            intermediate_outputs,
+        )
+
+    def _add_missing_key_schedule_inputs(self, partial_cipher):
+        """Add key-schedule inputs referenced by remaining components."""
+        key_schedule_component_ids = set(get_key_schedule_component_ids(self))
+        existing_inputs = set(partial_cipher.inputs)
+        all_input_links = (
+            input_id_link
+            for current_round in partial_cipher.rounds_as_list
+            for component in current_round.components
+            for input_id_link in component.input_id_links
+        )
+
+        for input_id_link in all_input_links:
+            if input_id_link in key_schedule_component_ids and input_id_link not in existing_inputs:
+                partial_cipher.inputs.append(input_id_link)
+                partial_cipher.inputs_bit_size.append(self.get_component_from_id(input_id_link).output_bit_size)
+                existing_inputs.add(input_id_link)
+
+    def _replace_partial_cipher_last_round_output(self, partial_cipher, end_round, removed_components_ids):
+        removed_components_ids.append(CIPHER_OUTPUT)
+        last_round = partial_cipher.rounds_as_list[end_round]
+        for component in last_round.components:
+            if component.description == ["round_output"]:
+                last_round.remove_component(component)
+                new_cipher_output = Component(
+                    component.id,
+                    CIPHER_OUTPUT,
+                    Input(
+                        component.output_bit_size,
+                        component.input_id_links,
+                        component.input_bit_positions,
+                    ),
+                    component.output_bit_size,
+                    [CIPHER_OUTPUT],
+                )
+                new_cipher_output.__class__ = CipherOutput
+                last_round.add_component(new_cipher_output)
 
     def add_suffix_to_components(self, suffix, component_id_list=None):
         renamed_inputs = self.inputs
