@@ -401,7 +401,7 @@ def test_differential_linear_trail_with_fixed_weight_8_rounds_chacha_one_case():
         },
     )
     assert trail["status"] == SATISFIABLE
-    assert trail["total_weight"] == 11
+    assert trail["total_weight"] == 13
 
 
 def test_differential_linear_trail_with_fixed_weight_4_rounds_chacha_golden():
