@@ -300,8 +300,9 @@ def test_get_partial_cipher_removes_picture_component_subset_for_speck():
 
     partial_cipher = cipher.get_partial_cipher(start_round=0, end_round=1, keep_key_schedule=False)
     partial_component_ids = {component.id for component in partial_cipher.get_all_components()}
-
+    expected_partial_component_ids = {'rot_0_3', 'xor_0_2', 'rot_1_6', 'modadd_1_7', 'xor_0_4', 'xor_1_10', 'intermediate_output_1_12', 'rot_0_0', 'intermediate_output_0_6', 'modadd_0_1', 'rot_1_9', 'xor_1_8'}
     assert picture_component_ids.isdisjoint(partial_component_ids)
+    assert expected_partial_component_ids == partial_component_ids
 
 #
 # def test_impossible_differential_search():
