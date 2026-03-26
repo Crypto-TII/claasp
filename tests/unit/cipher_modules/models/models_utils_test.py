@@ -585,3 +585,47 @@ def test_differential_linear_continuous_checker_speck_block_cipher_gpu_vs_cpu():
                 f"GPU failed at Bit {bit}: Exp={exp_corr_gpu:.4f} vs Theo={theo_corr:.4f}"
 
         print()
+
+def test_differential_linear_distinguisher_speck32_9rounds_gpu():
+    """
+    Experimental verification of the 9-round differential-linear distinguisher
+    for Speck32/64 from DL Distinguisher 3 of [BGGMP2023]_.
+
+    Practical correlation: 2^-7.3
+    Input difference: 0xa8400010 
+    Output mask: 0x2050204
+    GPU limit: 2^25 samples (RTX 3050 4GB VRAM)
+    """
+    import time
+
+    speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=9)
+    input_difference = 0xa8400010
+    out_mask_int = 0x2050204
+    block_size = speck.inputs_bit_size[0]
+    key_size = speck.inputs_bit_size[1]
+    fixed_key = 0x00000000
+    seed = 42
+
+    mask_str = format(out_mask_int, '032b')
+    output_mask = ''.join('1' if b == '1' else 'x' for b in mask_str)
+
+    practical_corr = 2**-7.3  
+    theoretical_corr = 2**-11.42  
+
+    number_of_samples = 1 << 25
+
+    start = time.time()
+    corr = differential_linear_checker_for_block_cipher_single_key(
+        speck, input_difference, output_mask,
+        number_of_samples, block_size, key_size, fixed_key, seed,
+        use_gpu=True
+    )
+    t = time.time() - start
+    exp_corr = -corr
+
+    print(f"\n  Speck32/64 - 9-round DL Distinguisher 3 [BGGMP2023]")
+    print(f"  Input diff: {hex(input_difference)} | Output mask: {hex(out_mask_int)}")
+    print(f"  samples=2^25 | exp={exp_corr:.6f} | practical={practical_corr:.6f} | theo={theoretical_corr:.6f} | time={t:.2f}s")
+
+    assert math.isclose(exp_corr, practical_corr, rel_tol=0.3), \
+        f"Correlation {exp_corr:.6f} too far from practical {practical_corr:.6f}"

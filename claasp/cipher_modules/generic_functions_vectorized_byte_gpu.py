@@ -13,10 +13,13 @@ def unpackbits_gpu(x):
 
 
 def packbits_gpu(x):
-    """Replace np.packbits(x, axis=0) using native CuPy operations."""
-    shifts = cp.arange(7, -1, -1, dtype=cp.int32)
-    x_reshaped = x.reshape(-1, 8, x.shape[1])
-    return cp.sum(x_reshaped * (2 ** shifts)[cp.newaxis, :, cp.newaxis], axis=1).astype(cp.uint8)
+    """Replace np.packbits(x, axis=0) using native CuPy operations - memory efficient."""
+    n_bits, n_samples = x.shape[0], x.shape[1]
+    n_bytes = n_bits // 8
+    result = cp.zeros((n_bytes, n_samples), dtype=cp.uint8)
+    for i in range(8):
+        result += x[i::8] << (7 - i)
+    return result
 
 def byte_vector_XOR(input):
     input = [cp.asarray(x) for x in input]

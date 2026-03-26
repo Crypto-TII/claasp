@@ -108,6 +108,7 @@ def evaluate_vectorized_gpu(
     verbosity=False,
     evaluate_api=False,
 ):
+    import cupy as cp
     python_code_string = (
         code_generator.generate_byte_based_vectorized_gpu_python_code_string(
             cipher,
@@ -119,6 +120,8 @@ def evaluate_vectorized_gpu(
     f_module = ModuleType("evaluate_gpu")
     exec(python_code_string, f_module.__dict__)
     cipher_output = f_module.evaluate(cipher_input, intermediate_output)
+
+    cp.get_default_memory_pool().free_all_blocks()
     return cipher_output
 
 def evaluate_with_intermediate_outputs_continuous_diffusion_analysis(

@@ -947,6 +947,97 @@ def linear_checker_for_block_cipher_single_key(
     corr = 2 * count / number_of_samples * 1.0 - 1
     return corr
 
+def differential_checker_for_block_cipher_single_key(
+    cipher, input_difference, output_difference, number_of_samples, block_size, key_size, fixed_key, seed=None, use_gpu=False
+):
+    """
+    Verify experimentally differential distinguishers for block ciphers using the vectorized evaluator.
+
+    INPUT:
+
+    - ``cipher`` -- **Cipher object**; cipher instance providing ``evaluate_vectorized``
+    - ``input_difference`` -- **integer**; input XOR difference
+    - ``output_difference`` -- **integer**; expected output XOR difference
+    - ``number_of_samples`` -- **integer**; number of random plaintext pairs
+    - ``block_size`` -- **integer**; block size in bits (must be multiple of 8)
+    - ``key_size`` -- **integer**; key size in bits (must be multiple of 8)
+    - ``fixed_key`` -- **integer**; fixed key value for the single-key scenario
+    - ``seed`` -- **integer** (default: `None`); seed for reproducible random sampling
+    - ``use_gpu`` -- **boolean** (default: `False`); use GPU acceleration via CuPy
+
+    OUTPUT:
+
+    - This method returns a **float**; the empirical probability weight ``log2(matches / number_of_samples)``,
+      or ``-inf`` if no matches are found
+    """
+    if block_size % 8 != 0:
+        raise ValueError("Block size must be a multiple of 8.")
+    if key_size % 8 != 0:
+        raise ValueError("Key size must be a multiple of 8.")
+
+    state_num_bytes = int(block_size / 8)
+    key_num_bytes = int(key_size / 8)
+
+    if use_gpu:
+        try:
+            import cupy as cp
+        except ImportError:
+            raise ImportError("CuPy is required for use_gpu=True. Install with: pip install cupy-cuda12x")
+
+        # Generate everything on GPU
+        rng_gpu = cp.random.default_rng(seed)
+        plaintext1_gpu = rng_gpu.integers(low=0, high=256, size=(state_num_bytes, number_of_samples), dtype=cp.uint8)
+
+        # input_difference on GPU
+        in_diff_bytes = cp.frombuffer(input_difference.to_bytes(state_num_bytes, "big"), dtype=cp.uint8)
+        input_diff_gpu = cp.broadcast_to(in_diff_bytes[:, cp.newaxis], (state_num_bytes, number_of_samples))
+        plaintext2_gpu = plaintext1_gpu ^ input_diff_gpu
+
+        # output_difference on GPU
+        out_diff_bytes = cp.frombuffer(output_difference.to_bytes(state_num_bytes, "big"), dtype=cp.uint8)
+        output_diff_gpu = cp.broadcast_to(out_diff_bytes[:, cp.newaxis], (state_num_bytes, number_of_samples))
+
+        # key on GPU
+        key_bytes = cp.frombuffer(fixed_key.to_bytes(key_num_bytes, "big"), dtype=cp.uint8)
+        fixed_key_gpu = cp.broadcast_to(key_bytes[:, cp.newaxis], (key_num_bytes, number_of_samples))
+
+        # evaluate_vectorized_gpu needs CPU numpy arrays as input
+        pt1_cpu = cp.asnumpy(plaintext1_gpu)
+        pt2_cpu = cp.asnumpy(plaintext2_gpu)
+        fk_cpu = cp.asnumpy(fixed_key_gpu)
+
+        ciphertext1 = cipher.evaluate_vectorized_gpu([pt1_cpu, fk_cpu])
+        ciphertext2 = cipher.evaluate_vectorized_gpu([pt2_cpu, fk_cpu])
+
+        # Back to GPU for post-cipher operations
+        ct1_gpu = cp.asarray(ciphertext1[0])
+        ct2_gpu = cp.asarray(ciphertext2[0])
+        diff_output_gpu = ct1_gpu ^ ct2_gpu
+
+        # Compare with expected output difference on GPU
+        matches_gpu = cp.all(diff_output_gpu == output_diff_gpu.T, axis=1)
+        total = int(cp.sum(matches_gpu))
+
+    else:
+        rng = np.random.default_rng(seed)
+        fixed_key_data = _repeat_input_difference(fixed_key, number_of_samples, key_num_bytes)
+        input_difference_data = _repeat_input_difference(input_difference, number_of_samples, state_num_bytes)
+        output_difference_data = _repeat_input_difference(output_difference, number_of_samples, state_num_bytes)
+        plaintext1 = rng.integers(low=0, high=256, size=(state_num_bytes, number_of_samples), dtype=np.uint8)
+        plaintext2 = plaintext1 ^ input_difference_data
+
+        ciphertext1 = cipher.evaluate_vectorized([plaintext1, fixed_key_data])
+        ciphertext2 = cipher.evaluate_vectorized([plaintext2, fixed_key_data])
+        ct1 = ciphertext1[0]
+        ct2 = ciphertext2[0]
+
+        diff_output = ct1 ^ ct2
+        matches = np.all(diff_output == output_difference_data.T, axis=1)
+        total = int(matches.sum())
+
+    if total == 0:
+        return float('-inf')
+    return math.log2(total / number_of_samples)
 
 def differential_checker_permutation(
     cipher, input_difference, output_difference, number_of_samples, state_size, seed=None
