@@ -347,6 +347,40 @@ D3_TEST_IDS = [
 ]
 
 
+ROUND_COUNT_CASES = [
+    (128, 128, 10),
+    (128, 160, 11),
+    (128, 192, 12),
+    (128, 224, 13),
+    (128, 256, 14),
+    (160, 128, 11),
+    (160, 160, 11),
+    (160, 192, 12),
+    (160, 224, 13),
+    (160, 256, 14),
+    (192, 128, 12),
+    (192, 160, 12),
+    (192, 192, 12),
+    (192, 224, 13),
+    (192, 256, 14),
+    (224, 128, 13),
+    (224, 160, 13),
+    (224, 192, 13),
+    (224, 224, 13),
+    (224, 256, 14),
+    (256, 128, 14),
+    (256, 160, 14),
+    (256, 192, 14),
+    (256, 224, 14),
+    (256, 256, 14),
+]
+
+ROUND_COUNT_IDS = [
+    f"b{block_bit_size}_k{key_bit_size}_rounds_{expected_rounds}"
+    for block_bit_size, key_bit_size, expected_rounds in ROUND_COUNT_CASES
+]
+
+
 class TestRijndaelBlockCipher:
     """Test class for Rijndael block cipher."""
 
@@ -380,7 +414,7 @@ class TestRijndaelBlockCipher:
         rijndael = RijndaelBlockCipher(block_bit_size=128, key_bit_size=256)
         key = 0x2b7e151628aed2a6abf7158809cf4f3c762e7160f38b4da56a784d9045190cfe
         plaintext = 0x3243f6a8885a308d313198a2e0370734
-        expected = 0x3243f6a8885a308d313198a2e0370734
+        expected = 0x1a6e6c2c662e7da6501ffb62bc9e93f3
         assert rijndael.evaluate([key, plaintext]) == expected
 
     def test_rijndael_default_construction(self):
@@ -397,6 +431,19 @@ class TestRijndaelBlockCipher:
         """Test that 256-bit key gives correct number of rounds."""
         rijndael = RijndaelBlockCipher(key_bit_size=256)
         assert rijndael.number_of_rounds == 14  # 256-bit key gives 8 words, so 8+6=14
+
+    @pytest.mark.parametrize(
+        "block_bit_size,key_bit_size,expected_rounds",
+        ROUND_COUNT_CASES,
+        ids=ROUND_COUNT_IDS,
+    )
+    def test_rijndael_round_count_table(self, block_bit_size, key_bit_size, expected_rounds):
+        """Check the Rijndael round count table for all supported block/key sizes."""
+        rijndael = RijndaelBlockCipher(
+            block_bit_size=block_bit_size,
+            key_bit_size=key_bit_size,
+        )
+        assert rijndael.number_of_rounds == expected_rounds
 
     def test_rijndael_invalid_block_size(self):
         """Test that invalid block size raises error."""

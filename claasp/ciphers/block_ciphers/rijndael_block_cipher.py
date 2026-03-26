@@ -16,36 +16,37 @@
 # ****************************************************************************
 
 
+from claasp.DTOs.component_state import ComponentState
 from claasp.cipher import Cipher
-from claasp.name_mappings import INPUT_KEY, INPUT_PLAINTEXT, BLOCK_CIPHER
+from claasp.name_mappings import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
 
 
 PARAMETERS_CONFIGURATION_LIST = [
-    {'block_bit_size': 128, 'key_bit_size': 128},
-    {'block_bit_size': 128, 'key_bit_size': 160},
-    {'block_bit_size': 128, 'key_bit_size': 192},
-    {'block_bit_size': 128, 'key_bit_size': 224},
-    {'block_bit_size': 128, 'key_bit_size': 256},
-    {'block_bit_size': 160, 'key_bit_size': 128},
-    {'block_bit_size': 160, 'key_bit_size': 160},
-    {'block_bit_size': 160, 'key_bit_size': 192},
-    {'block_bit_size': 160, 'key_bit_size': 224},
-    {'block_bit_size': 160, 'key_bit_size': 256},
-    {'block_bit_size': 192, 'key_bit_size': 128},
-    {'block_bit_size': 192, 'key_bit_size': 160},
-    {'block_bit_size': 192, 'key_bit_size': 192},
-    {'block_bit_size': 192, 'key_bit_size': 224},
-    {'block_bit_size': 192, 'key_bit_size': 256},
-    {'block_bit_size': 224, 'key_bit_size': 128},
-    {'block_bit_size': 224, 'key_bit_size': 160},
-    {'block_bit_size': 224, 'key_bit_size': 192},
-    {'block_bit_size': 224, 'key_bit_size': 224},
-    {'block_bit_size': 224, 'key_bit_size': 256},
-    {'block_bit_size': 256, 'key_bit_size': 128},
-    {'block_bit_size': 256, 'key_bit_size': 160},
-    {'block_bit_size': 256, 'key_bit_size': 192},
-    {'block_bit_size': 256, 'key_bit_size': 224},
-    {'block_bit_size': 256, 'key_bit_size': 256},
+    {'block_bit_size': 128, 'key_bit_size': 128, 'number_of_rounds': 10},
+    {'block_bit_size': 128, 'key_bit_size': 160, 'number_of_rounds': 11},
+    {'block_bit_size': 128, 'key_bit_size': 192, 'number_of_rounds': 12},
+    {'block_bit_size': 128, 'key_bit_size': 224, 'number_of_rounds': 13},
+    {'block_bit_size': 128, 'key_bit_size': 256, 'number_of_rounds': 14},
+    {'block_bit_size': 160, 'key_bit_size': 128, 'number_of_rounds': 11},
+    {'block_bit_size': 160, 'key_bit_size': 160, 'number_of_rounds': 11},
+    {'block_bit_size': 160, 'key_bit_size': 192, 'number_of_rounds': 12},
+    {'block_bit_size': 160, 'key_bit_size': 224, 'number_of_rounds': 13},
+    {'block_bit_size': 160, 'key_bit_size': 256, 'number_of_rounds': 14},
+    {'block_bit_size': 192, 'key_bit_size': 128, 'number_of_rounds': 12},
+    {'block_bit_size': 192, 'key_bit_size': 160, 'number_of_rounds': 12},
+    {'block_bit_size': 192, 'key_bit_size': 192, 'number_of_rounds': 12},
+    {'block_bit_size': 192, 'key_bit_size': 224, 'number_of_rounds': 13},
+    {'block_bit_size': 192, 'key_bit_size': 256, 'number_of_rounds': 14},
+    {'block_bit_size': 224, 'key_bit_size': 128, 'number_of_rounds': 13},
+    {'block_bit_size': 224, 'key_bit_size': 160, 'number_of_rounds': 13},
+    {'block_bit_size': 224, 'key_bit_size': 192, 'number_of_rounds': 13},
+    {'block_bit_size': 224, 'key_bit_size': 224, 'number_of_rounds': 13},
+    {'block_bit_size': 224, 'key_bit_size': 256, 'number_of_rounds': 14},
+    {'block_bit_size': 256, 'key_bit_size': 128, 'number_of_rounds': 14},
+    {'block_bit_size': 256, 'key_bit_size': 160, 'number_of_rounds': 14},
+    {'block_bit_size': 256, 'key_bit_size': 192, 'number_of_rounds': 14},
+    {'block_bit_size': 256, 'key_bit_size': 224, 'number_of_rounds': 14},
+    {'block_bit_size': 256, 'key_bit_size': 256, 'number_of_rounds': 14},
 ]
 
 
@@ -53,122 +54,325 @@ class RijndaelBlockCipher(Cipher):
     """
     Return a cipher object of Rijndael Block Cipher.
 
-    This implementation supports Rijndael block sizes 128, 160, 192, 224, and 256 bits, and
-    key sizes 128, 160, 192, 224, and 256 bits.
+    The implementation follows the Rijndael terminology used in the main
+    references: the state has 4 rows and ``state_columns`` columns, the key
+    schedule has ``key_columns`` words, and the number of rounds is
+    ``max(state_columns, key_columns) + 6``. Internally the construction uses
+    ``ComponentState`` objects to keep the state and key words explicit.
 
-        Algorithm 1: CIPHER(in, Nr, w)
-        Algorithm 2: KEYEXPANSION(key)
+    REFERENCES:
+
+    Daemen, J., & Rijmen, V. (2002). A Specification for Rijndael, the AES
+    Algorithm. https://asmaes.sourceforge.net/rijndael/rijndaelImplementation.pdf
+    [RijndaelSpec]_.
+
+    Daemen, J., & Rijmen, V. (2001). The Design of Rijndael AES -- The
+    Advanced Encryption Standard.
+    https://cs.ru.nl/~joan/papers/JDA_VRI_Rijndael_2002.pdf [RijndaelDesign]_.
 
     INPUT:
 
-                - ``block_bit_size`` -- **integer** (default: `128`); block size in bits
-                    (128, 160, 192, 224, or 256)
-                - ``key_bit_size`` -- **integer** (default: `128`); key size in bits
-                    (128, 160, 192, 224, or 256)
-        - ``number_of_rounds`` -- **integer** (default: computed from key size); number of rounds
+    - ``block_bit_size`` -- **integer** (default: `128`); block size in bits
+      (128, 160, 192, 224, or 256)
+    - ``key_bit_size`` -- **integer** (default: `128`); key size in bits
+      (128, 160, 192, 224, or 256)
+    - ``number_of_rounds`` -- **integer** (default: computed from block/key
+      sizes); override for the number of rounds
 
     EXAMPLES::
 
         sage: from claasp.ciphers.block_ciphers.rijndael_block_cipher import RijndaelBlockCipher
-        sage: # Rijndael-128 with 128-bit key
-        sage: rijndael128 = RijndaelBlockCipher(block_bit_size=128, key_bit_size=128)
+        sage: rijndael = RijndaelBlockCipher(block_bit_size=128, key_bit_size=128)
         sage: key = 0x2b7e151628aed2a6abf7158809cf4f3c
         sage: plaintext = 0x3243f6a8885a308d313198a2e0370734
         sage: ciphertext = 0x3925841d02dc09fbdc118597196a0b32
-        sage: rijndael128.evaluate([key, plaintext]) == ciphertext
+        sage: rijndael.evaluate([key, plaintext]) == ciphertext
         True
 
+        sage: from random import Random
+        sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+        sage: samples = Random(int(20260326))
+        sage: for key_bit_size in (128, 192, 256):
+        ....:     aes = AESBlockCipher(key_bit_size=key_bit_size)
+        ....:     rijndael = RijndaelBlockCipher(block_bit_size=128, key_bit_size=key_bit_size)
+        ....:     key = samples.getrandbits(key_bit_size)
+        ....:     plaintext = samples.getrandbits(128)
+        ....:     aes.evaluate([key, plaintext]) == rijndael.evaluate([key, plaintext])
+        True
+        True
+        True
     """
 
     def __init__(self, block_bit_size=128, key_bit_size=128, number_of_rounds=None):
-
         valid_sizes = [128, 160, 192, 224, 256]
         if block_bit_size not in valid_sizes:
             raise ValueError(f"block_bit_size must be one of {valid_sizes}, got {block_bit_size}")
         if key_bit_size not in valid_sizes:
             raise ValueError(f"key_bit_size must be one of {valid_sizes}, got {key_bit_size}")
 
-        self.Nb = block_bit_size // 32
-        self.Nk = key_bit_size // 32
-        self.Nr = (max(self.Nb, self.Nk) + 6) if number_of_rounds is None else number_of_rounds
-        
-        super().__init__(family_name="rijndael",
-                                cipher_type=BLOCK_CIPHER,
-                                cipher_inputs=[INPUT_KEY, INPUT_PLAINTEXT],
-                                cipher_inputs_bit_size=[key_bit_size, block_bit_size],
-                                cipher_output_bit_size=block_bit_size)
+        self.block_bit_size = block_bit_size
+        self.key_bit_size = key_bit_size
+        self.state_rows = 4
+        self.word_bit_size = 32
+        self.byte_bit_size = 8
+        self.state_columns = block_bit_size // self.word_bit_size
+        self.key_columns = key_bit_size // self.word_bit_size
+        self.rounds_count = max(self.state_columns, self.key_columns) + 6
+        if number_of_rounds is not None:
+            self.rounds_count = number_of_rounds
 
-        # Rijndael notation and constants
-        self.CIPHER_BLOCK_SIZE = block_bit_size  # State size in bits
-        self.KEY_BLOCK_SIZE = key_bit_size  # Key size in bits
-        self.SBOX_BIT_SIZE = 8  # S-box operates on bytes
-        self.NUM_SBOXES = self.Nb * 4
-        self.WORD_BIT_SIZE = 32  # Word size in bits
-        self.NUM_ROWS = 4  # State has 4 rows
-        self.ROW_SHIFTS = self._get_row_shifts(self.Nb)
-        
-        # S-box as defined in FIPS-197 Section 5.1.1
-        self.SBOX_LOOKUP_TABLE = [
-                0x63, 0x7C, 0x77, 0x7B, 0xF2, 0x6B, 0x6F, 0xC5, 0x30, 0x01, 0x67, 0x2B, 0xFE, 0xD7, 0xAB, 0x76,
-                0xCA, 0x82, 0xC9, 0x7D, 0xFA, 0x59, 0x47, 0xF0, 0xAD, 0xD4, 0xA2, 0xAF, 0x9C, 0xA4, 0x72, 0xC0,
-                0xB7, 0xFD, 0x93, 0x26, 0x36, 0x3F, 0xF7, 0xCC, 0x34, 0xA5, 0xE5, 0xF1, 0x71, 0xD8, 0x31, 0x15,
-                0x04, 0xC7, 0x23, 0xC3, 0x18, 0x96, 0x05, 0x9A, 0x07, 0x12, 0x80, 0xE2, 0xEB, 0x27, 0xB2, 0x75,
-                0x09, 0x83, 0x2C, 0x1A, 0x1B, 0x6E, 0x5A, 0xA0, 0x52, 0x3B, 0xD6, 0xB3, 0x29, 0xE3, 0x2F, 0x84,
-                0x53, 0xD1, 0x00, 0xED, 0x20, 0xFC, 0xB1, 0x5B, 0x6A, 0xCB, 0xBE, 0x39, 0x4A, 0x4C, 0x58, 0xCF,
-                0xD0, 0xEF, 0xAA, 0xFB, 0x43, 0x4D, 0x33, 0x85, 0x45, 0xF9, 0x02, 0x7F, 0x50, 0x3C, 0x9F, 0xA8,
-                0x51, 0xA3, 0x40, 0x8F, 0x92, 0x9D, 0x38, 0xF5, 0xBC, 0xB6, 0xDA, 0x21, 0x10, 0xFF, 0xF3, 0xD2,
-                0xCD, 0x0C, 0x13, 0xEC, 0x5F, 0x97, 0x44, 0x17, 0xC4, 0xA7, 0x7E, 0x3D, 0x64, 0x5D, 0x19, 0x73,
-                0x60, 0x81, 0x4F, 0xDC, 0x22, 0x2A, 0x90, 0x88, 0x46, 0xEE, 0xB8, 0x14, 0xDE, 0x5E, 0x0B, 0xDB,
-                0xE0, 0x32, 0x3A, 0x0A, 0x49, 0x06, 0x24, 0x5C, 0xC2, 0xD3, 0xAC, 0x62, 0x91, 0x95, 0xE4, 0x79,
-                0xE7, 0xC8, 0x37, 0x6D, 0x8D, 0xD5, 0x4E, 0xA9, 0x6C, 0x56, 0xF4, 0xEA, 0x65, 0x7A, 0xAE, 0x08,
-                0xBA, 0x78, 0x25, 0x2E, 0x1C, 0xA6, 0xB4, 0xC6, 0xE8, 0xDD, 0x74, 0x1F, 0x4B, 0xBD, 0x8B, 0x8A,
-                0x70, 0x3E, 0xB5, 0x66, 0x48, 0x03, 0xF6, 0x0E, 0x61, 0x35, 0x57, 0xB9, 0x86, 0xC1, 0x1D, 0x9E,
-                0xE1, 0xF8, 0x98, 0x11, 0x69, 0xD9, 0x8E, 0x94, 0x9B, 0x1E, 0x87, 0xE9, 0xCE, 0x55, 0x28, 0xDF,
-                0x8C, 0xA1, 0x89, 0x0D, 0xBF, 0xE6, 0x42, 0x68, 0x41, 0x99, 0x2D, 0x0F, 0xB0, 0x54, 0xBB, 0x16,
-            ]
-        
-        # Rcon: Round constants for key expansion (FIPS-197 Section 5.2)
-        # Rcon[i] = (RC[i], 0x00, 0x00, 0x00) where RC[i] = x^(i-1) in GF(2^8)
-        self.Rcon = self._generate_rcon(self.Nb * (self.Nr + 1) // self.Nk + 1)
-        
-        # MixColumns transformation matrix (FIPS-197 Section 5.1.3)
-        # Operates in GF(2^8) with irreducible polynomial m(x) = x^8 + x^4 + x^3 + x + 1 (0x11b)
-        self.MIX_COLUMN = [
-            [[0x02, 0x03, 0x01, 0x01],
-             [0x01, 0x02, 0x03, 0x01], 
-             [0x01, 0x01, 0x02, 0x03], 
-             [0x03, 0x01, 0x01, 0x02]], 
-             0x11b,  # Irreducible polynomial
-             self.SBOX_BIT_SIZE]
+        super().__init__(
+            family_name="rijndael",
+            cipher_type=BLOCK_CIPHER,
+            cipher_inputs=[INPUT_KEY, INPUT_PLAINTEXT],
+            cipher_inputs_bit_size=[key_bit_size, block_bit_size],
+            cipher_output_bit_size=block_bit_size,
+        )
 
-        # FIPS-197 Algorithm 2: KEYEXPANSION(key)
-        # Key schedule will be generated during cipher construction
+        self.row_shifts = self._get_row_shifts(self.state_columns)
+        self.sbox_lookup_table = [
+            0x63, 0x7C, 0x77, 0x7B, 0xF2, 0x6B, 0x6F, 0xC5, 0x30, 0x01, 0x67, 0x2B, 0xFE, 0xD7, 0xAB, 0x76,
+            0xCA, 0x82, 0xC9, 0x7D, 0xFA, 0x59, 0x47, 0xF0, 0xAD, 0xD4, 0xA2, 0xAF, 0x9C, 0xA4, 0x72, 0xC0,
+            0xB7, 0xFD, 0x93, 0x26, 0x36, 0x3F, 0xF7, 0xCC, 0x34, 0xA5, 0xE5, 0xF1, 0x71, 0xD8, 0x31, 0x15,
+            0x04, 0xC7, 0x23, 0xC3, 0x18, 0x96, 0x05, 0x9A, 0x07, 0x12, 0x80, 0xE2, 0xEB, 0x27, 0xB2, 0x75,
+            0x09, 0x83, 0x2C, 0x1A, 0x1B, 0x6E, 0x5A, 0xA0, 0x52, 0x3B, 0xD6, 0xB3, 0x29, 0xE3, 0x2F, 0x84,
+            0x53, 0xD1, 0x00, 0xED, 0x20, 0xFC, 0xB1, 0x5B, 0x6A, 0xCB, 0xBE, 0x39, 0x4A, 0x4C, 0x58, 0xCF,
+            0xD0, 0xEF, 0xAA, 0xFB, 0x43, 0x4D, 0x33, 0x85, 0x45, 0xF9, 0x02, 0x7F, 0x50, 0x3C, 0x9F, 0xA8,
+            0x51, 0xA3, 0x40, 0x8F, 0x92, 0x9D, 0x38, 0xF5, 0xBC, 0xB6, 0xDA, 0x21, 0x10, 0xFF, 0xF3, 0xD2,
+            0xCD, 0x0C, 0x13, 0xEC, 0x5F, 0x97, 0x44, 0x17, 0xC4, 0xA7, 0x7E, 0x3D, 0x64, 0x5D, 0x19, 0x73,
+            0x60, 0x81, 0x4F, 0xDC, 0x22, 0x2A, 0x90, 0x88, 0x46, 0xEE, 0xB8, 0x14, 0xDE, 0x5E, 0x0B, 0xDB,
+            0xE0, 0x32, 0x3A, 0x0A, 0x49, 0x06, 0x24, 0x5C, 0xC2, 0xD3, 0xAC, 0x62, 0x91, 0x95, 0xE4, 0x79,
+            0xE7, 0xC8, 0x37, 0x6D, 0x8D, 0xD5, 0x4E, 0xA9, 0x6C, 0x56, 0xF4, 0xEA, 0x65, 0x7A, 0xAE, 0x08,
+            0xBA, 0x78, 0x25, 0x2E, 0x1C, 0xA6, 0xB4, 0xC6, 0xE8, 0xDD, 0x74, 0x1F, 0x4B, 0xBD, 0x8B, 0x8A,
+            0x70, 0x3E, 0xB5, 0x66, 0x48, 0x03, 0xF6, 0x0E, 0x61, 0x35, 0x57, 0xB9, 0x86, 0xC1, 0x1D, 0x9E,
+            0xE1, 0xF8, 0x98, 0x11, 0x69, 0xD9, 0x8E, 0x94, 0x9B, 0x1E, 0x87, 0xE9, 0xCE, 0x55, 0x28, 0xDF,
+            0x8C, 0xA1, 0x89, 0x0D, 0xBF, 0xE6, 0x42, 0x68, 0x41, 0x99, 0x2D, 0x0F, 0xB0, 0x54, 0xBB, 0x16,
+        ]
+        self.mix_column_description = [
+            [
+                [0x02, 0x03, 0x01, 0x01],
+                [0x01, 0x02, 0x03, 0x01],
+                [0x01, 0x01, 0x02, 0x03],
+                [0x03, 0x01, 0x01, 0x02],
+            ],
+            0x11B,
+            self.byte_bit_size,
+        ]
+        self.round_constants = self._generate_round_constants()
         self.key_words = {}
-        
-        # FIPS-197 Algorithm 1: CIPHER(in, w)
-        # Build the cipher rounds
-        self.CIPHER()
 
-    def evaluate(self, cipher_input, intermediate_output=False, verbosity=False):
-        # Keep compatibility with the historical k256 vector in this repository.
-        if (
-            self.KEY_BLOCK_SIZE == 256
-            and len(cipher_input) >= 2
-            and cipher_input[0] == 0x2b7e151628aed2a6abf7158809cf4f3c762e7160f38b4da56a784d9045190cfe
-            and cipher_input[1] == 0x3243f6a8885a308d313198a2e0370734
-        ):
-            return 0x3243f6a8885a308d313198a2e0370734
-        return super().evaluate(cipher_input, intermediate_output=intermediate_output, verbosity=verbosity)
+        self._build_cipher()
+
+    def _build_cipher(self):
+        state = ComponentState([INPUT_PLAINTEXT], [list(range(self.block_bit_size))])
+
+        for round_index in range(self.rounds_count):
+            self.add_round()
+
+            if round_index == 0:
+                self._expand_key_schedule()
+                initial_round_key = self._get_round_key_state(0)
+                state = self._add_round_key(state, initial_round_key)
+
+            state = self._sub_bytes(state)
+            state = self._shift_rows(state)
+
+            if round_index < self.rounds_count - 1:
+                state = self._mix_columns(state)
+
+            round_key = self._get_round_key_state(round_index + 1)
+            state = self._add_round_key(state, round_key)
+            self._emit_round_key_output(round_key)
+
+            if round_index == self.rounds_count - 1:
+                self._emit_cipher_output(state)
+            else:
+                self._emit_round_output(state, round_index)
+
+    def _expand_key_schedule(self):
+        total_words = self.state_columns * (self.rounds_count + 1)
+        for word_index in range(self.key_columns):
+            start_bit = word_index * self.word_bit_size
+            self.key_words[word_index] = ComponentState(
+                [INPUT_KEY],
+                [[start_bit + bit for bit in range(self.word_bit_size)]],
+            )
+
+        for word_index in range(self.key_columns, total_words):
+            self.key_words[word_index] = self._generate_key_word(word_index)
+
+    def _generate_key_word(self, word_index):
+        temp_word = self.key_words[word_index - 1]
+
+        if word_index % self.key_columns == 0:
+            temp_word = self._xor_word_with_constant(
+                self._sub_word(self._rotate_word(temp_word)),
+                self.round_constants[(word_index // self.key_columns) - 1],
+            )
+        elif self.key_columns > 6 and word_index % self.key_columns == 4:
+            temp_word = self._sub_word(temp_word)
+
+        return self._xor_words(self.key_words[word_index - self.key_columns], temp_word)
+
+    def _get_round_key_state(self, round_index):
+        start_word_index = round_index * self.state_columns
+        round_key_words = [
+            self.key_words[start_word_index + offset]
+            for offset in range(self.state_columns)
+        ]
+        return ComponentState(
+            [word.id[0] for word in round_key_words],
+            [word.input_bit_positions[0] for word in round_key_words],
+        )
+
+    def _rotate_word(self, word_state):
+        rotated_word = self.add_rotate_component(
+            word_state.id,
+            word_state.input_bit_positions,
+            self.word_bit_size,
+            -self.byte_bit_size,
+        )
+        return ComponentState([rotated_word.id], [list(range(self.word_bit_size))])
+
+    def _sub_word(self, word_state):
+        substituted_bytes = []
+        for byte_index in range(4):
+            byte_start = byte_index * self.byte_bit_size
+            substituted_bytes.append(
+                self.add_SBOX_component(
+                    word_state.id,
+                    [list(range(byte_start, byte_start + self.byte_bit_size))],
+                    self.byte_bit_size,
+                    self.sbox_lookup_table,
+                )
+            )
+
+        substituted_word = self.add_intermediate_output_component(
+            [component.id for component in substituted_bytes],
+            [list(range(self.byte_bit_size)) for _ in substituted_bytes],
+            self.word_bit_size,
+            "sub_word",
+        )
+        return ComponentState([substituted_word.id], [list(range(self.word_bit_size))])
+
+    def _xor_word_with_constant(self, word_state, constant_value):
+        constant_component = self.add_constant_component(self.word_bit_size, constant_value)
+        xor_component = self.add_XOR_component(
+            word_state.id + [constant_component.id],
+            word_state.input_bit_positions + [list(range(self.word_bit_size))],
+            self.word_bit_size,
+        )
+        return ComponentState([xor_component.id], [list(range(self.word_bit_size))])
+
+    def _xor_words(self, left_word, right_word):
+        xor_component = self.add_XOR_component(
+            left_word.id + right_word.id,
+            left_word.input_bit_positions + right_word.input_bit_positions,
+            self.word_bit_size,
+        )
+        return ComponentState([xor_component.id], [list(range(self.word_bit_size))])
+
+    def _sub_bytes(self, state):
+        substituted_bytes = []
+        for column_index in range(self.state_columns):
+            for row_index in range(self.state_rows):
+                byte_index = column_index * self.state_rows + row_index
+                byte_start = byte_index * self.byte_bit_size
+                substituted_bytes.append(
+                    self.add_SBOX_component(
+                        state.id,
+                        [list(range(byte_start, byte_start + self.byte_bit_size))],
+                        self.byte_bit_size,
+                        self.sbox_lookup_table,
+                    )
+                )
+
+        substituted_state = self.add_intermediate_output_component(
+            [component.id for component in substituted_bytes],
+            [list(range(self.byte_bit_size)) for _ in substituted_bytes],
+            self.block_bit_size,
+            "sub_bytes",
+        )
+        return ComponentState([substituted_state.id], [list(range(self.block_bit_size))])
+
+    def _shift_rows(self, state):
+        shifted_bit_positions = []
+        for column_index in range(self.state_columns):
+            for row_index in range(self.state_rows):
+                source_column = (column_index + self.row_shifts[row_index]) % self.state_columns
+                byte_index = source_column * self.state_rows + row_index
+                byte_start = byte_index * self.byte_bit_size
+                shifted_bit_positions.append(list(range(byte_start, byte_start + self.byte_bit_size)))
+
+        shifted_state = self.add_intermediate_output_component(
+            [state.id[0]] * self.state_rows * self.state_columns,
+            shifted_bit_positions,
+            self.block_bit_size,
+            "shift_rows",
+        )
+        return ComponentState([shifted_state.id], [list(range(self.block_bit_size))])
+
+    def _mix_columns(self, state):
+        mixed_columns = []
+        for column_index in range(self.state_columns):
+            bit_start = column_index * self.word_bit_size
+            mixed_columns.append(
+                self.add_mix_column_component(
+                    state.id,
+                    [list(range(bit_start, bit_start + self.word_bit_size))],
+                    self.word_bit_size,
+                    self.mix_column_description,
+                )
+            )
+
+        mixed_state = self.add_intermediate_output_component(
+            [component.id for component in mixed_columns],
+            [list(range(self.word_bit_size)) for _ in mixed_columns],
+            self.block_bit_size,
+            "mix_columns",
+        )
+        return ComponentState([mixed_state.id], [list(range(self.block_bit_size))])
+
+    def _add_round_key(self, state, round_key):
+        round_state = self.add_XOR_component(
+            state.id + round_key.id,
+            state.input_bit_positions + round_key.input_bit_positions,
+            self.block_bit_size,
+        )
+        return ComponentState([round_state.id], [list(range(self.block_bit_size))])
+
+    def _emit_round_output(self, state, round_index):
+        self.add_intermediate_output_component(
+            state.id,
+            state.input_bit_positions,
+            self.block_bit_size,
+            f"state_after_round_{round_index}",
+        )
+
+    def _emit_round_key_output(self, round_key):
+        self.add_intermediate_output_component(
+            round_key.id,
+            round_key.input_bit_positions,
+            self.block_bit_size,
+            "round_key_output",
+        )
+
+    def _emit_cipher_output(self, state):
+        self.add_cipher_output_component(
+            state.id,
+            state.input_bit_positions,
+            self.block_bit_size,
+        )
 
     @staticmethod
-    def _get_row_shifts(nb):
-        if nb in [4, 5, 6]:
+    def _get_row_shifts(state_columns):
+        if state_columns in [4, 5, 6]:
             return [0, 1, 2, 3]
-        if nb == 7:
+        if state_columns == 7:
             return [0, 1, 2, 4]
-        if nb == 8:
+        if state_columns == 8:
             return [0, 1, 3, 4]
-        raise ValueError(f"Unsupported Nb value: {nb}")
+        raise ValueError(f"Unsupported number of state columns: {state_columns}")
 
     @staticmethod
     def _xtime(byte_value):
@@ -177,310 +381,11 @@ class RijndaelBlockCipher(Cipher):
             byte_value ^= 0x11B
         return byte_value & 0xFF
 
-    def _generate_rcon(self, count):
-        rcon_words = []
-        rc = 0x01
-        for _ in range(count):
-            rcon_words.append(hex(rc << 24))
-            rc = self._xtime(rc)
-        return rcon_words
-    
-    def KEYEXPANSION(self):
-        """
-        KEYEXPANSION - Generate the key schedule.
-        FIPS-197 Algorithm 2: KEYEXPANSION(byte key[4*Nk], word w[Nb*(Nr+1)], Nk)
-        
-        Generates all key words w[0..Nb*(Nr+1)-1] needed for the cipher.
-        - w[0..Nk-1]: Direct extraction from input key
-        - w[Nk..Nb*(Nr+1)-1]: Generated via key expansion algorithm
-        """
-        # Generate ALL key words needed for the entire cipher
-        # FIPS-197: KeyExpansion generates w[0..Nb*(Nr+1)-1]
-        total_words = self.Nb * (self.Nr + 1)
-        for word_idx in range(self.Nk, total_words):
-            self.generate_key_word(word_idx)
-    
-    def CIPHER(self):
-        """
-        CIPHER - Main encryption algorithm.
-        FIPS-197 Algorithm 1: CIPHER(byte in[4*Nb], byte out[4*Nb], word w[Nb*(Nr+1)])
-        
-        Algorithm structure:
-            01: begin
-            02:   state ← in
-            03:   ADDROUNDKEY(state, w[0, Nb-1])      // Initial round whitening
-            04:   for round = 1 step 1 to Nr-1
-            05:     SUBBYTES(state)
-            06:     SHIFTROWS(state)
-            07:     MIXCOLUMNS(state)
-            08:     ADDROUNDKEY(state, w[round*Nb, (round+1)*Nb-1])
-            09:   end for
-            10:   SUBBYTES(state)                      // Final round
-            11:     SHIFTROWS(state)
-            12:     ADDROUNDKEY(state, w[Nr*Nb, (Nr+1)*Nb-1])
-            13:   out ← state
-            14: end
-        """
-        for round_number in range(self.Nr):
-            
-            self.add_round()
-            
-            if round_number == 0:
-                # FIPS-197 Algorithm 2: Generate key schedule before encryption
-                self.KEYEXPANSION()
-                
-                # FIPS-197 Algorithm 1, Lines 02-03: Initial round whitening
-                # Get the round key for the initial round: w[0..Nb-1]
-                w_0_3 = self.get_round_key_components(0)
-                
-                # Line 02: state ← in (plaintext input)
-                state = INPUT_PLAINTEXT
-                # Line 03: state ← ADDROUNDKEY(state, w[0..3])
-                state = self.ADDROUNDKEY(state, w_0_3, -1)
-
-            # Round transformation (Lines 05-08 for rounds 1..Nr-1, Lines 10-12 for final round)
-            # FIPS-197 Algorithm 1, Line 05/10: state ← SUBBYTES(state)
-            state = self.SUBBYTES(state)
-            
-            # FIPS-197 Algorithm 1, Line 06/11: state ← SHIFTROWS(state)
-            state = self.SHIFTROWS(state)
-            
-            # FIPS-197 Algorithm 1, Line 07: state ← MIXCOLUMNS(state) (not in final round)
-            state = self.MIXCOLUMNS(round_number, state)
-            
-            # FIPS-197 Algorithm 1, Line 08/12: state ← ADDROUNDKEY(state, w[round*Nb..(round+1)*Nb-1])
-            w = self.get_round_key_components(round_number + 1)
-            state = self.ADDROUNDKEY(state, w, round_number)
-
-            # Line 13: out ← state
-            self.add_keyschedule_round_output(w)
-            self.add_round_output(state, round_number)
-    
-    def get_round_key_components(self, round_number):
-        """Get the Nb words for round key: w[Nb*round..Nb*round+Nb-1]."""
-        start_word_idx = self.Nb * round_number
-        round_key_words = []
-        for word_offset in range(self.Nb):
-            word_idx = start_word_idx + word_offset
-            word = self.get_word(word_idx)
-            round_key_words.append(word)
-        return round_key_words
-    
-    def generate_key_word(self, word_idx):
-        """
-        Generate a single word w[word_idx] according to FIPS-197 Algorithm 2.
-        w[i] = w[i-Nk] ⊕ temp
-        """
-        # Line 08: temp ← w[i−1]
-        prev_word = self.get_word(word_idx - 1)
-        
-        # Lines 09-13: Determine temp based on i mod Nk
-        if word_idx % self.Nk == 0:
-            # Line 10: temp ← SUBWORD(ROTWORD(temp))⊕Rcon[i/Nk]
-            
-            # ROTWORD
-            rotated = self.add_rotate_component(
-                [prev_word.id] * 4,
-                [list(range(byte_idx * 8, (byte_idx + 1) * 8)) for byte_idx in range(4)],
-                32, -8)
-            
-            # SUBWORD
-            sbox_outputs = []
-            for byte_idx in range(4):
-                sbox_out = self.add_SBOX_component(
-                    [rotated.id],
-                    [[byte_idx * 8 + i for i in range(8)]],
-                    8, self.SBOX_LOOKUP_TABLE)
-                sbox_outputs.append(sbox_out)
-
-            # ⊕ Rcon[i/Nk]
-            rcon_idx = word_idx // self.Nk
-            constant = self.add_constant_component(32, int(self.Rcon[rcon_idx - 1], 16))
-            temp_input_id_links = [s.id for s in sbox_outputs] + [constant.id]
-            temp_input_bit_positions = [list(range(8))] * 4 + [list(range(32))]
-        elif self.Nk > 6 and word_idx % self.Nk == 4:
-            # Line 12: temp ← SUBWORD(temp) for AES-256
-            sbox_outputs = []
-            for byte_idx in range(4):
-                sbox_out = self.add_SBOX_component(
-                    [prev_word.id],
-                    [[byte_idx * 8 + i for i in range(8)]],
-                    8, self.SBOX_LOOKUP_TABLE)
-                sbox_outputs.append(sbox_out)
-
-            temp_input_id_links = [s.id for s in sbox_outputs]
-            temp_input_bit_positions = [list(range(8))] * 4
-        else:
-            # temp = w[i-1] (no transformation)
-            temp_input_id_links = [prev_word.id]
-            temp_input_bit_positions = [list(range(32))]
-        
-        # Line 14: w[i] ← w[i−Nk]⊕temp
-        word_minus_nk = self.get_word(word_idx - self.Nk)
-        new_word = self.add_XOR_component(
-            [word_minus_nk.id] + temp_input_id_links,
-            [list(range(32))] + temp_input_bit_positions,
-            32)
-        
-        # Store the generated word
-        self.key_words[word_idx] = new_word
-        return new_word
-    
-    def get_word(self, word_idx):
-        """
-        Get word w[word_idx].
-        For word_idx < Nk: Extract from input key (FIPS-197 Algorithm 2, Lines 03-06)
-        For word_idx >= Nk: Return previously generated word
-        """
-        if word_idx in self.key_words:
-            return self.key_words[word_idx]
-        
-        if word_idx < self.Nk:
-            # Lines 03-06: w[i] ← key[4*i..4*i+3] for 0 ≤ i < Nk
-            start_bit = word_idx * 32
-            word_component = self.add_intermediate_output_component(
-                [INPUT_KEY],
-                [[start_bit + i for i in range(32)]],
-                32,
-                f"key_word_{word_idx}")
-            self.key_words[word_idx] = word_component
-            return word_component
-        else:
-            raise KeyError(f"Word w[{word_idx}] not found in key_words dictionary")
-
-    def SBOX(self, s, r, c):
-        """
-        Apply SBOX lookup table to the byte at s[r,c] in the 4×Nb state matrix.
-        
-        Returns:
-            Component representing SBOX(s[r,c])
-        """
-        # Column-major byte indexing: byte_idx = c*4 + r
-        byte_idx = c * self.NUM_ROWS + r
-        start_bit = byte_idx * self.SBOX_BIT_SIZE
-        return self.add_SBOX_component(
-            [s.id],
-            [[start_bit + i for i in range(self.SBOX_BIT_SIZE)]],
-            self.SBOX_BIT_SIZE, self.SBOX_LOOKUP_TABLE)
-
-    def SUBBYTES(self, s):
-        """
-        SUBBYTES transformation - Apply S-box to each byte of state.
-        Pseudocode expanding Algorithm 1 Step 05 as described in FIPS-197 Section 5.1.1:
-        SUBBYTES(s)
-            for 0 ≤ r < 4 and 0 ≤ c < 4
-                s[r,c] = SBOX(s[r,c]) 
-            return s
-        """
-        s_output = []
-        for c in range(self.Nb):
-            for r in range(self.NUM_ROWS):
-                s_rc = self.SBOX(s, r, c)
-                s_output.append(s_rc)
-        return s_output
-
-    def SHIFTROWS(self, sbox_layer_components):
-        """
-        SHIFTROWS transformation - Cyclically shift rows.
-        Pseudocode expanding Algorithm 1 Step 06 as described in Rijndael specification
-        SHIFTROWS(s)
-            for 0 ≤ r < 4 and 0 ≤ c < Nb
-                s{r,c} = s{r,(c+shift[r]) mod Nb}
-            return s
-
-        """
-        shift_row_layer_components = []
-        for j in range(self.NUM_ROWS):
-            rotation_component = self.add_rotate_component(
-                [sbox_layer_components[i].id for i in
-                 range(j, j + self.NUM_ROWS * (self.Nb - 1) + 1, self.NUM_ROWS)],
-                [list(range(self.SBOX_BIT_SIZE)) for _ in range(self.Nb)],
-                self.SBOX_BIT_SIZE * self.Nb,
-                -self.SBOX_BIT_SIZE * self.ROW_SHIFTS[j])
-            shift_row_layer_components.append(rotation_component)
-        return shift_row_layer_components
-
-    def MIXCOLUMNS(self, round_number, shift_row_layer_components):
-        """
-        MIXCOLUMNS transformation - Mix columns.
-        Pseudocode expanding Algorithm 1 Step 07 as described in FIPS-197 Section 5.1.3 
-        MIXCOLUMNS(s)
-            for 0 ≤ c < Nb
-                ⎡s{0,c}⎤    ⎡02 03 01 01⎤   ⎡s{0,c}⎤
-                ⎢s{1,c}|    ⎢01 02 03 01|   ⎢s{1,c}|
-                ⎢s{2,c}| =  ⎢01 01 02 03| * ⎢s{2,c}| 
-                ⎣s{3,c}⎦    ⎣03 01 01 02⎦   ⎣s{3,c}⎦
-            return s
-        """
-        if round_number == self.Nr - 1:
-            # Final round: no MIXCOLUMNS
-            return shift_row_layer_components
-        
-        mix_column_layer_components = []
-        for j in range(self.Nb):
-            mix_column_component = self.add_mix_column_component(
-                [shift_row_layer_components[i].id for i in range(self.NUM_ROWS)],
-                [list(range(j * self.SBOX_BIT_SIZE, (j + 1) * self.SBOX_BIT_SIZE)) for _ in
-                 range(self.NUM_ROWS)],
-                self.WORD_BIT_SIZE,
-                self.MIX_COLUMN)
-            mix_column_layer_components.append(mix_column_component)
-        return mix_column_layer_components
-
-    def ADDROUNDKEY(self, s, w, round_number):
-        """
-        ADDROUNDKEY transformation - XOR state with round key.
-        Pseudocode expanding Algorithm 1 Step 03, 08, 12 as described in FIPS-197 Section 5.1.4
-        ADDROUNDKEY(s,w)
-            for 0 ≤ c < Nb
-                [s{0,c},s{1,c},s{2,c},s{3,c}] = [s{0,c},s{1,c},s{2,c},s{3,c}]⊕[w(4*round+c)]
-            return s
-        """
-        # Algorithm 1 Step 03: Initial round whitening (round_number == -1): plaintext XOR round key
-        if s == INPUT_PLAINTEXT:
-            s_id_list = [s] + [rk.id for rk in w]
-            s_input_position_lists = [list(range(self.CIPHER_BLOCK_SIZE))] + \
-                                     [list(range(self.WORD_BIT_SIZE)) for _ in range(self.Nb)]
-        else:        
-            # For final round (round_number == Nr-1), we receive shift_row components
-            # For other rounds, we receive mix_column components
-            
-            if round_number == self.Nr - 1:
-                # Algorithm 1 Step 12: Final round case
-                shift_rows_ids = []
-                for col in range(self.Nb):
-                    shift_rows_ids.extend([s[row].id for row in range(self.NUM_ROWS)])
-                shift_rows_input_position_lists = []
-                for col in range(self.Nb):
-                    shift_rows_input_position_lists.extend(
-                        [list(range(col * self.SBOX_BIT_SIZE, (col + 1) * self.SBOX_BIT_SIZE)) for _ in
-                        range(self.NUM_ROWS)])
-                s_id_list = shift_rows_ids + [w[i].id for i in range(self.Nb)]
-                s_input_position_lists = shift_rows_input_position_lists + [list(range(self.WORD_BIT_SIZE)) for _ in range(self.Nb)]
-                
-            else:
-                # Algorithm 1 Step 08: Non-final round case
-                s_id_list = [s[i].id for i in range(self.Nb)] + [w[i].id for i in range(self.Nb)]
-                s_input_position_lists = [list(range(self.WORD_BIT_SIZE)) for _ in range(2 * self.Nb)]
-            
-        s = self.add_XOR_component(s_id_list, s_input_position_lists, self.CIPHER_BLOCK_SIZE)
-        return s
-
-    def add_round_output(self, state_component, round_number):
-        """Output the state after the round."""
-        if round_number == self.Nr - 1:
-            self.add_cipher_output_component([state_component.id],
-                                             [list(range(self.CIPHER_BLOCK_SIZE))],
-                                             self.CIPHER_BLOCK_SIZE)
-        else:
-            self.add_intermediate_output_component([state_component.id],
-                                                   [list(range(self.CIPHER_BLOCK_SIZE))],
-                                                   self.CIPHER_BLOCK_SIZE,
-                                                   f"state_after_round_{round_number}")
-    
-    def add_keyschedule_round_output(self, w):
-        """Output the round key schedule."""
-        self.add_intermediate_output_component([w[i].id for i in range(self.Nb)],
-                                              [list(range(self.WORD_BIT_SIZE)) for _ in range(self.Nb)],
-                                              self.CIPHER_BLOCK_SIZE,
-                                              "round_key_output")
+    def _generate_round_constants(self):
+        round_constants = []
+        rc_value = 0x01
+        constant_count = self.state_columns * (self.rounds_count + 1) // self.key_columns + 1
+        for _ in range(constant_count):
+            round_constants.append(rc_value << 24)
+            rc_value = self._xtime(rc_value)
+        return round_constants
