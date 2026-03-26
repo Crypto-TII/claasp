@@ -37,7 +37,12 @@ from claasp.name_mappings import (
 import matplotlib.pyplot as plt
 from math import pi, log2
 from itertools import combinations, product
+import re
+import shutil
+import subprocess
+import tempfile
 import warnings
+from pathlib import Path
 
 
 class CipherComponentsAnalysis:
@@ -1445,6 +1450,254 @@ def _build_binary_column_masks(matrix, n):
     return columns
 
 
+MZN_BRANCH_NUMBER_MODEL_GENERAL = r"""
+int: n;
+int: word_size;
+constraint word_size >= 1 /\ n mod word_size = 0;
+
+array [0..n-1, 0..n-1] of 0..1: M;
+
+int: num_words = n div word_size;
+
+array [0..n-1] of var bool: X;
+array [0..n-1] of var bool: Y;
+
+array [0..num_words-1] of var bool: X_active;
+array [0..num_words-1] of var bool: Y_active;
+
+var int: num_active_words_in;
+var int: num_active_words_out;
+
+constraint forall(i in 0..n-1)(
+    Y[i] = xorall([X[j] | j in 0..n-1 where M[i, j] = 1])
+);
+
+constraint forall(w in 0..num_words-1)(
+    X_active[w] = exists(X[w * word_size .. w * word_size + word_size - 1])
+);
+
+constraint forall(w in 0..num_words-1)(
+    Y_active[w] = exists(Y[w * word_size .. w * word_size + word_size - 1])
+);
+
+constraint num_active_words_in = sum(X_active);
+constraint num_active_words_out = sum(Y_active);
+
+var 1..2*num_words: obj = sum(X_active) + sum(Y_active);
+
+solve minimize obj;
+
+output [
+  "Branch number: ", show(obj), "\\n",
+  "Input: ", show(X), "\\n",
+  "Output: ", show(Y), "\\n"
+];
+"""
+
+
+MINIZINC_BRANCH_NUMBER_SOLVER_ORDER = ("ortools", "cbc", "coin-bc", "highs", "scip", "chuffed", "gecode")
+
+
+def _to_dzn_matrix_literal_from_binary_matrix(binary_matrix, original_word_size):
+    bit_n = len(binary_matrix)
+    if bit_n == 0 or any(len(row) != bit_n for row in binary_matrix):
+        raise ValueError("binary_matrix must be non-empty and square")
+    if bit_n % original_word_size != 0:
+        raise ValueError(
+            "binary matrix size must be a multiple of original_word_size "
+            f"(got size={bit_n}, original_word_size={original_word_size})"
+        )
+
+    flat = ", ".join(str(v) for row in binary_matrix for v in row)
+    return (
+        f"n = {bit_n};\n"
+        f"word_size = {original_word_size};\n"
+        f"M = array2d(0..n-1, 0..n-1, [{flat}]);\n"
+    )
+
+
+def _parse_branch_number_from_minizinc_stdout(stdout):
+    match = re.search(r"Branch number:\s*(\d+)", stdout)
+    if not match:
+        raise RuntimeError(
+            "Could not parse branch number from MiniZinc output.\n"
+            f"MiniZinc output was:\n{stdout}"
+        )
+    return int(match.group(1))
+
+
+def _candidate_minizinc_solvers(primary_solver):
+    ordered = [primary_solver]
+    for solver in MINIZINC_BRANCH_NUMBER_SOLVER_ORDER:
+        if solver != primary_solver:
+            ordered.append(solver)
+    return ordered
+
+
+def _run_minizinc_branch_number(minizinc_bin, solver, model_path, data_path, timeout_seconds, threads):
+    command = [minizinc_bin, "--solver", solver, "--free-search", str(model_path), str(data_path)]
+    solver_key = solver.replace("-", "").lower()
+    if threads and solver_key in ("ortools", "chuffed", "gecode"):
+        command.extend(["-p", str(threads)])
+    return subprocess.run(
+        command,
+        check=False,
+        capture_output=True,
+        text=True,
+        timeout=timeout_seconds,
+    )
+
+
+def _compute_branch_number_from_expanded_binary_matrix_with_minizinc(
+    binary_matrix,
+    original_word_size,
+    solver="ortools",
+    minizinc_bin="minizinc",
+    timeout_seconds=None,
+    threads=2,
+):
+    """
+    Solve branch number from a bit-level matrix while preserving original field word grouping.
+
+    INPUT:
+
+    - ``binary_matrix`` -- expanded GF(2) matrix (square, 0/1 entries)
+    - ``original_word_size`` -- **integer**; word grouping used in MiniZinc objective
+
+    NOTE:
+
+    This helper is shared by:
+      * native binary matrices (``original_word_size=1``), and
+      * GF(2^w) matrices after expansion to GF(2) (``original_word_size=w``).
+    """
+    if shutil.which(minizinc_bin) is None:
+        raise FileNotFoundError(f"MiniZinc executable '{minizinc_bin}' was not found in PATH")
+
+    with tempfile.TemporaryDirectory(prefix="branch_bn_mzn_general_") as tmpdir:
+        tmp_path = Path(tmpdir)
+        model_path = tmp_path / "branch_number_general.mzn"
+        data_path = tmp_path / "instance.dzn"
+
+        model_path.write_text(MZN_BRANCH_NUMBER_MODEL_GENERAL, encoding="utf-8")
+        data_path.write_text(
+            _to_dzn_matrix_literal_from_binary_matrix(
+                binary_matrix,
+                original_word_size=original_word_size,
+            ),
+            encoding="utf-8",
+        )
+
+        attempts = []
+        for candidate_solver in _candidate_minizinc_solvers(solver):
+            try:
+                result = _run_minizinc_branch_number(
+                    minizinc_bin=minizinc_bin,
+                    solver=candidate_solver,
+                    model_path=model_path,
+                    data_path=data_path,
+                    timeout_seconds=timeout_seconds,
+                    threads=threads,
+                )
+            except subprocess.TimeoutExpired:
+                attempts.append((candidate_solver, None))
+                continue
+
+            attempts.append((candidate_solver, result))
+
+            if result.returncode == 0:
+                return _parse_branch_number_from_minizinc_stdout(result.stdout)
+
+            if candidate_solver == "gecode" and "libGL.so.1" in result.stderr:
+                continue
+
+        failure_lines = ["MiniZinc failed for all attempted solvers:"]
+        for used_solver, result in attempts:
+            if result is None:
+                failure_lines.append(f"- solver={used_solver}, timeout")
+                continue
+            failure_lines.append(f"- solver={used_solver}, exit_code={result.returncode}")
+            if result.stderr.strip():
+                failure_lines.append(f"  stderr: {result.stderr.strip()}")
+            if result.stdout.strip():
+                failure_lines.append(f"  stdout: {result.stdout.strip()}")
+        raise RuntimeError("\n".join(failure_lines))
+
+
+def _poly_over_gf2_to_int(polynomial):
+    coeffs = polynomial.list()
+    value = 0
+    for idx, coeff in enumerate(coeffs):
+        if int(coeff) & 1:
+            value |= 1 << idx
+    return value
+
+
+def _validate_irreducible_polynomial(word_size, irreducible_polynomial):
+    if word_size < 1:
+        raise ValueError("word_size must be >= 1")
+
+    if irreducible_polynomial <= 0:
+        raise ValueError("irreducible_polynomial must be positive")
+
+    if irreducible_polynomial.bit_length() != word_size + 1:
+        raise ValueError(
+            "irreducible_polynomial must have degree exactly word_size "
+            f"(expected bit_length={word_size + 1}, got {irreducible_polynomial.bit_length()})."
+        )
+
+    if (irreducible_polynomial & 1) == 0:
+        raise ValueError("irreducible_polynomial must have non-zero constant term")
+
+
+def _gf2_mul_mod(a, b, word_size, mod_poly):
+    mask = (1 << word_size) - 1
+    aa = a & mask
+    bb = b & mask
+    res = 0
+
+    for _ in range(word_size):
+        if bb & 1:
+            res ^= aa
+        bb >>= 1
+        carry = aa & (1 << (word_size - 1))
+        aa = (aa << 1) & mask
+        if carry:
+            aa ^= mod_poly & mask
+
+    return res & mask
+
+
+def _gf2w_multiply_bit_matrix(a, word_size, irreducible_polynomial):
+    block = [[0] * word_size for _ in range(word_size)]
+
+    for j in range(word_size):
+        basis = 1 << j
+        product = _gf2_mul_mod(a, basis, word_size, irreducible_polynomial)
+        for i in range(word_size):
+            block[i][j] = (product >> i) & 1
+
+    return block
+
+
+def _expand_field_matrix_to_binary_matrix(matrix, word_size, irreducible_polynomial):
+    n = len(matrix)
+    bit_n = word_size * n
+    bit_matrix = [[0] * bit_n for _ in range(bit_n)]
+
+    for i in range(n):
+        for j in range(n):
+            block = _gf2w_multiply_bit_matrix(
+                matrix[i][j],
+                word_size=word_size,
+                irreducible_polynomial=irreducible_polynomial,
+            )
+            for bi in range(word_size):
+                for bj in range(word_size):
+                    bit_matrix[i * word_size + bi][j * word_size + bj] = block[bi][bj]
+
+    return bit_matrix
+
+
 def _search_binary_weight_1(columns, best):
     for col in columns:
         candidate = 1 + col.bit_count()
@@ -1493,7 +1746,86 @@ def _search_binary_weight_4_plus(columns, limit, best):
     return best, False
 
 
-def compute_branch_number_from_field_matrix(matrix, max_input_weight=3, method="sage"):
+def compute_branch_number_from_field_matrix_with_minizinc(
+    matrix,
+    solver="ortools",
+    minizinc_bin="minizinc",
+    timeout_seconds=None,
+    threads=2,
+):
+    """
+    Compute branch number of a GF(2^w) field matrix using MiniZinc.
+
+    INPUT:
+
+    - ``matrix`` -- Sage matrix over GF(2^w)
+    - ``solver`` -- **string** (default: ``"ortools"``); preferred MiniZinc solver
+    - ``minizinc_bin`` -- **string** (default: ``"minizinc"``); MiniZinc executable
+    - ``timeout_seconds`` -- **integer** or ``None``; timeout for each solver attempt
+    - ``threads`` -- **integer** (default: ``2``); thread count for supported solvers
+
+    OUTPUT:
+
+    - **integer** -- the exact branch number
+
+    EXAMPLES::
+
+        sage: import shutil
+        sage: from sage.all import GF, Matrix
+        sage: from claasp.cipher_modules.component_analysis_tests import compute_branch_number_from_field_matrix_with_minizinc
+        sage: if shutil.which("minizinc") is None:
+        ....:     print("MiniZinc not available")
+        ....: else:
+        ....:     F = GF(4, 'a')
+        ....:     M = Matrix(F, [[1, 1], [1, F.gen()]])
+        ....:     compute_branch_number_from_field_matrix_with_minizinc(M)
+        3
+    """
+    if matrix.nrows() <= 0 or matrix.ncols() <= 0:
+        raise ValueError("Branch number requires a non-empty matrix")
+    if matrix.nrows() != matrix.ncols():
+        raise ValueError("Branch number requires a square matrix")
+
+    field = matrix.base_ring()
+    if field.characteristic() != 2:
+        raise ValueError("MiniZinc branch-number method supports only fields with characteristic 2")
+
+    if field.order() == 2:
+        binary_matrix = [[int(matrix[i][j]) for j in range(matrix.ncols())] for i in range(matrix.nrows())]
+        return compute_branch_number_from_binary_matrix_with_minizinc(
+            binary_matrix,
+            type="differential",
+            solver=solver,
+            minizinc_bin=minizinc_bin,
+            timeout_seconds=timeout_seconds,
+            threads=threads,
+        )
+
+    word_size = field.degree()
+    irreducible_polynomial = _poly_over_gf2_to_int(field.modulus())
+    _validate_irreducible_polynomial(word_size, irreducible_polynomial)
+
+    int_matrix = field_element_matrix_to_integer_matrix(matrix)
+    normalized_matrix = [
+        [int(int_matrix[i][j]) for j in range(int_matrix.ncols())]
+        for i in range(int_matrix.nrows())
+    ]
+    binary_matrix = _expand_field_matrix_to_binary_matrix(
+        normalized_matrix,
+        word_size=word_size,
+        irreducible_polynomial=irreducible_polynomial,
+    )
+    return _compute_branch_number_from_expanded_binary_matrix_with_minizinc(
+        binary_matrix=binary_matrix,
+        original_word_size=word_size,
+        solver=solver,
+        minizinc_bin=minizinc_bin,
+        timeout_seconds=timeout_seconds,
+        threads=threads,
+    )
+
+
+def compute_branch_number_from_field_matrix(matrix, max_input_weight=3, method="minizinc"):
     """
     Compute the branch number of a matrix over a finite field with selectable method.
 
@@ -1509,16 +1841,19 @@ def compute_branch_number_from_field_matrix(matrix, max_input_weight=3, method="
 
     - ``matrix`` -- Sage matrix over a finite field (GF(2^m) or similar)
     - ``max_input_weight`` -- **integer** (default: ``3``); fallback search bound for bounded enumeration
-    - ``method`` -- **string** (default: ``"sage"``); computation method:
+    - ``method`` -- **string** (default: ``"minizinc"``); computation method:
 
+            * ``"minizinc"`` -- tries MiniZinc exact computation first.
+                If MiniZinc cannot run (missing executable/solver/runtime issue),
+                falls back to ``"sage"`` and then to ``"bounded"``.
             * ``"sage"`` -- tries Sage's LinearCode for exact computation first.
                 If the field representation is incompatible with GAP, the matrix
                 is remapped to an isomorphic Conway-defined field transparently.
                 If the exact path still fails for some other backend/runtime
                 reason, the function falls back to ``"bounded"`` and emits a
                 ``RuntimeWarning``.
-      * ``"bounded"`` -- uses bounded enumeration up to max_input_weight.
-        Recommended for cipher fields using custom irreducible polynomials.
+            * ``"bounded"`` -- uses bounded enumeration up to max_input_weight.
+              Recommended for cipher fields using custom irreducible polynomials.
 
     OUTPUT:
 
@@ -1531,7 +1866,7 @@ def compute_branch_number_from_field_matrix(matrix, max_input_weight=3, method="
         sage: # GF(4) matrix: expected branch number is 3
         sage: F = GF(4, 'a')
         sage: M = Matrix(F, [[1, 1], [1, F.gen()]])
-        sage: compute_branch_number_from_field_matrix(M)  # default sage method
+        sage: compute_branch_number_from_field_matrix(M)  # default minizinc method
         3
         sage: compute_branch_number_from_field_matrix(M, method='bounded')
         3
@@ -1543,15 +1878,13 @@ def compute_branch_number_from_field_matrix(matrix, max_input_weight=3, method="
 
     COMPUTATION STRATEGY:
 
-     1. **Exact path (primary):** Tries Sage's LinearCode minimum_distance() for exact
-         computation of the branch number, remapping to an isomorphic Conway field
-         when required by GAP.
-    2. **Optimized GF(2) path:** Automatically detects GF(2) matrices when method="sage"
-       and delegates to specialized `compute_branch_number_from_binary_matrix()` for
-       faster bitwise computation.
-     3. **Fallback bounded enumeration:** When method="bounded" (or when ``"sage"``
-         backend fails), performs bounded search up to ``max_input_weight``.
-         May return underestimate if minimum is at weight > max_input_weight.
+     1. **Exact path (primary):** Tries MiniZinc exact optimization first.
+    2. **Exact Sage fallback:** If MiniZinc is unavailable or fails at runtime,
+       tries Sage's LinearCode minimum_distance(), remapping to an isomorphic
+       Conway field when required by GAP.
+    3. **Fallback bounded enumeration:** When method="bounded" (or when exact
+       backends fail), performs bounded search up to ``max_input_weight``.
+       May return underestimate if minimum is at weight > max_input_weight.
 
     NOTE:
 
@@ -1565,7 +1898,21 @@ def compute_branch_number_from_field_matrix(matrix, max_input_weight=3, method="
     higher weight, the function returns a lower bound. Current default (max_input_weight=3)
     is appropriate for most ciphers but may miss minima at weight 4+.
     """
-    if method == "sage":
+    if method == "minizinc":
+        try:
+            return compute_branch_number_from_field_matrix_with_minizinc(matrix)
+        except (RuntimeError, ImportError, FileNotFoundError, subprocess.SubprocessError, OSError) as error:
+            warnings.warn(
+                f"MiniZinc method failed ({error}); falling back to Sage method.",
+                RuntimeWarning,
+                stacklevel=2,
+            )
+            return compute_branch_number_from_field_matrix(
+                matrix,
+                max_input_weight=max_input_weight,
+                method="sage",
+            )
+    elif method == "sage":
         # Check if field is GF(2) and use optimized binary version
         F = matrix.base_ring()
         if F.order() == 2:
@@ -1585,7 +1932,7 @@ def compute_branch_number_from_field_matrix(matrix, max_input_weight=3, method="
     elif method == "bounded":
         return compute_branch_number_from_field_matrix_with_bounded_enumeration(matrix, max_input_weight)
     else:
-        raise ValueError(f"Unknown method '{method}'. Must be 'sage' or 'bounded'.")
+        raise ValueError(f"Unknown method '{method}'. Must be 'minizinc', 'sage' or 'bounded'.")
 
 
 def calculate_weights_for_linear_layer(component, format, type):
@@ -1827,7 +2174,49 @@ def compute_branch_number_from_binary_matrix_with_bounded_enumeration(binary_mat
     return best
 
 
-def compute_branch_number_from_binary_matrix(binary_matrix, type="differential", max_input_weight=3, method="sage"):
+def compute_branch_number_from_binary_matrix_with_minizinc(
+    binary_matrix,
+    type="differential",
+    solver="ortools",
+    minizinc_bin="minizinc",
+    timeout_seconds=None,
+    threads=2,
+):
+    """
+    Compute exact branch number of a binary matrix using MiniZinc.
+
+    INPUT:
+
+    - ``binary_matrix`` -- Sage matrix over GF(2) or Python list of lists with entries in {0,1}
+    - ``type`` -- **string** (default: ``"differential"``); ``"linear"`` uses transpose
+    - ``solver`` -- **string** (default: ``"ortools"``); preferred MiniZinc solver
+    - ``minizinc_bin`` -- **string** (default: ``"minizinc"``); MiniZinc executable
+    - ``timeout_seconds`` -- **integer** or ``None``; timeout for each solver attempt
+    - ``threads`` -- **integer** (default: ``2``); thread count for supported solvers
+
+    OUTPUT:
+
+    - **integer** -- the exact branch number
+
+    NOTE:
+
+    This function is for binary input matrices. For GF(2^w) matrices, use
+    ``compute_branch_number_from_field_matrix_with_minizinc`` which expands the
+    matrix to GF(2) and still preserves word grouping in the MiniZinc model.
+    """
+    matrix, n = _prepare_binary_matrix(binary_matrix, type)
+    normalized = [[int(matrix[i][j]) for j in range(n)] for i in range(n)]
+    return _compute_branch_number_from_expanded_binary_matrix_with_minizinc(
+        binary_matrix=normalized,
+        original_word_size=1,
+        solver=solver,
+        minizinc_bin=minizinc_bin,
+        timeout_seconds=timeout_seconds,
+        threads=threads,
+    )
+
+
+def compute_branch_number_from_binary_matrix(binary_matrix, type="differential", max_input_weight=3, method="minizinc"):
     """
     Compute the branch number of a binary matrix with selectable computation method.
 
@@ -1843,12 +2232,15 @@ def compute_branch_number_from_binary_matrix(binary_matrix, type="differential",
       * ``"linear"`` -- transposes matrix before computing
 
     - ``max_input_weight`` -- **integer** (default: ``3``); fallback search bound for bounded enumeration
-    - ``method`` -- **string** (default: ``"sage"``); computation method:
+    - ``method`` -- **string** (default: ``"minizinc"``); computation method:
 
+            * ``"minizinc"`` -- tries MiniZinc exact computation first.
+                If MiniZinc cannot run (missing executable/solver/runtime issue),
+                falls back to ``"sage"`` and then to ``"bounded"``.
             * ``"sage"`` -- tries Sage's LinearCode for exact computation first.
                 If Sage raises a backend/runtime error, the function automatically
                 falls back to ``"bounded"`` and emits a ``RuntimeWarning``.
-      * ``"bounded"`` -- uses bounded enumeration up to max_input_weight
+            * ``"bounded"`` -- uses bounded enumeration up to max_input_weight
 
     OUTPUT:
 
@@ -1860,7 +2252,7 @@ def compute_branch_number_from_binary_matrix(binary_matrix, type="differential",
         sage: from claasp.cipher_modules.component_analysis_tests import compute_branch_number_from_binary_matrix
         sage: F = GF(2)
         sage: matrix = Matrix(F, [[1, 0], [1, 1]])
-        sage: compute_branch_number_from_binary_matrix(matrix, 'differential')  # default sage method
+        sage: compute_branch_number_from_binary_matrix(matrix, 'differential')  # default minizinc method
         2
         sage: compute_branch_number_from_binary_matrix(matrix, 'differential', method='bounded')
         2
@@ -1869,7 +2261,11 @@ def compute_branch_number_from_binary_matrix(binary_matrix, type="differential",
 
     COMPUTATION STRATEGY:
 
-        When method="sage" (default):
+        When method="minizinc" (default):
+            - Tries MiniZinc exact optimization first
+            - Falls back to Sage exact method, then bounded enumeration
+
+    When method="sage":
             - Tries Sage's LinearCode.minimum_distance() for exact computation
             - Falls back to bounded enumeration if Sage backend fails
 
@@ -1879,7 +2275,22 @@ def compute_branch_number_from_binary_matrix(binary_matrix, type="differential",
       - Useful for testing and comparing performance
 
     """
-    if method == "sage":
+    if method == "minizinc":
+        try:
+            return compute_branch_number_from_binary_matrix_with_minizinc(binary_matrix, type)
+        except (RuntimeError, ImportError, FileNotFoundError, subprocess.SubprocessError, OSError) as error:
+            warnings.warn(
+                f"MiniZinc method failed ({error}); falling back to Sage method.",
+                RuntimeWarning,
+                stacklevel=2,
+            )
+            return compute_branch_number_from_binary_matrix(
+                binary_matrix,
+                type=type,
+                max_input_weight=max_input_weight,
+                method="sage",
+            )
+    elif method == "sage":
         try:
             return compute_branch_number_from_binary_matrix_with_sage(binary_matrix, type)
         except (RuntimeError, ImportError) as error:
@@ -1894,4 +2305,4 @@ def compute_branch_number_from_binary_matrix(binary_matrix, type="differential",
     elif method == "bounded":
         return compute_branch_number_from_binary_matrix_with_bounded_enumeration(binary_matrix, type, max_input_weight)
     else:
-        raise ValueError(f"Unknown method '{method}'. Must be 'sage' or 'bounded'.")
+        raise ValueError(f"Unknown method '{method}'. Must be 'minizinc', 'sage' or 'bounded'.")

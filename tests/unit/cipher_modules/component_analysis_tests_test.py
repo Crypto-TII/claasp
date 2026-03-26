@@ -1,3 +1,6 @@
+import os
+import shutil
+
 import pytest
 import matplotlib.pyplot as plt
 import claasp.cipher_modules.component_analysis_tests as cat_module
@@ -7,9 +10,11 @@ from claasp.cipher_modules.component_analysis_tests import (
     compute_branch_number_from_binary_matrix,
     compute_branch_number_from_binary_matrix_with_sage,
     compute_branch_number_from_binary_matrix_with_bounded_enumeration,
+    compute_branch_number_from_binary_matrix_with_minizinc,
     compute_branch_number_from_field_matrix,
     compute_branch_number_from_field_matrix_with_sage,
     compute_branch_number_from_field_matrix_with_bounded_enumeration,
+    compute_branch_number_from_field_matrix_with_minizinc,
     branch_number,
 )
 from claasp.ciphers.stream_ciphers.bluetooth_stream_cipher_e0 import BluetoothStreamCipherE0
@@ -333,16 +338,201 @@ class TestBinaryMatrixWithBoundedEnumeration:
         assert bn == 2, f"Expected 2, got {bn}"
 
 
+class TestBinaryMatrixWithMiniZinc:
+    """Test suite for compute_branch_number_from_binary_matrix_with_minizinc."""
+
+    def test_identity_matrix_2x2(self):
+        if shutil.which("minizinc") is None:
+            pytest.skip("MiniZinc not available in PATH")
+        F = GF(2)
+        matrix = identity_matrix(F, 2)
+        bn = compute_branch_number_from_binary_matrix_with_minizinc(matrix, "differential")
+        assert bn == 2
+
+    def test_simple_matrix_linear(self):
+        if shutil.which("minizinc") is None:
+            pytest.skip("MiniZinc not available in PATH")
+        F = GF(2)
+        matrix = Matrix(F, [[1, 0], [1, 1]])
+        bn = compute_branch_number_from_binary_matrix_with_minizinc(matrix, "linear")
+        assert bn == 2
+
+
+def _matrix_from_ints_over_gf2w(entries, word_size, polynomial):
+    if word_size == 1:
+        F = GF(2)
+        return Matrix(F, entries)
+
+    R = PolynomialRing(GF(2), "x")
+    x = R.gen()
+    irr_poly = 0
+    for i in range(word_size + 1):
+        if (polynomial >> i) & 1:
+            irr_poly += x**i
+    F = GF(2**word_size, name="a", modulus=irr_poly)
+    converted = [[F.from_integer(int(value)) for value in row] for row in entries]
+    return Matrix(F, converted)
+
+
+# Each test case is a tuple:
+# (case_name, matrix_entries_as_integers, field_word_size, irreducible_polynomial_as_int, expected_branch_number)
+_MINIZINC_FIELD_DEMO_CASES = [
+    ("GF(2) zero 2x2", [[0, 0], [0, 0]], 1, 0b11, 1),
+    ("GF(2) identity 2x2", [[1, 0], [0, 1]], 1, 0b11, 2),
+    ("GF(4) identity 2x2", [[1, 0], [0, 1]], 2, 0b111, 2),
+    ("GF(4) MDS 2x2", [[1, 1], [1, 2]], 2, 0b111, 3),
+    ("GF(16) identity 2x2", [[1, 0], [0, 1]], 4, 0b10011, 2),
+    ("ToyAES MDS w=2 n=2", [[0x02, 0x03], [0x03, 0x02]], 2, 0x7, 3),
+    ("ToyAES MDS w=2 n=3", [[0x01, 0x02, 0x02], [0x02, 0x01, 0x02], [0x02, 0x02, 0x01]], 2, 0x7, 4),
+    (
+        "ToyAES MDS w=2 n=4",
+        [
+            [0x02, 0x03, 0x01, 0x01],
+            [0x01, 0x02, 0x03, 0x01],
+            [0x01, 0x01, 0x02, 0x03],
+            [0x03, 0x01, 0x01, 0x02],
+        ],
+        2,
+        0x7,
+        3,
+    ),
+    ("ToyAES MDS w=3 n=2", [[0x02, 0x03], [0x03, 0x02]], 3, 0xB, 3),
+    ("ToyAES MDS w=3 n=3", [[0x01, 0x02, 0x05], [0x05, 0x06, 0x05], [0x05, 0x05, 0x01]], 3, 0xB, 4),
+    (
+        "ToyAES MDS w=3 n=4",
+        [
+            [0x01, 0x07, 0x05, 0x05],
+            [0x07, 0x02, 0x01, 0x03],
+            [0x06, 0x03, 0x01, 0x02],
+            [0x07, 0x05, 0x05, 0x07],
+        ],
+        3,
+        0xB,
+        5,
+    ),
+    ("ToyAES MDS w=4 n=2", [[0x02, 0x03], [0x03, 0x02]], 4, 0x13, 3),
+    ("ToyAES MDS w=4 n=3", [[0x08, 0x03, 0x04], [0x0A, 0x06, 0x09], [0x03, 0x04, 0x0C]], 4, 0x13, 4),
+    (
+        "ToyAES MDS w=4 n=4",
+        [
+            [0x02, 0x03, 0x01, 0x01],
+            [0x01, 0x02, 0x03, 0x01],
+            [0x01, 0x01, 0x02, 0x03],
+            [0x03, 0x01, 0x01, 0x02],
+        ],
+        4,
+        0x13,
+        5,
+    ),
+    ("ToyAES MDS w=8 n=2", [[0x02, 0x03], [0x03, 0x02]], 8, 0x11B, 3),
+    ("ToyAES MDS w=8 n=3", [[0x01, 0x02, 0x05], [0x05, 0x06, 0x05], [0x05, 0x05, 0x01]], 8, 0x11B, 4),
+    (
+        "ToyAES MDS w=8 n=4",
+        [
+            [0x02, 0x03, 0x01, 0x01],
+            [0x01, 0x02, 0x03, 0x01],
+            [0x01, 0x01, 0x02, 0x03],
+            [0x03, 0x01, 0x01, 0x02],
+        ],
+        8,
+        0x11B,
+        5,
+    ),
+    (
+        "uBlock GF(16) 32x32",
+        [
+            [1, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 1, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 1, 1],
+            [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0, 1, 1],
+            [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1],
+            [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 0],
+            [0, 0, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+            [1, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+            [1, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+            [1, 1, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1],
+            [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 1],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0],
+            [0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+            [1, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1],
+            [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1, 0],
+            [1, 1, 0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+            [1, 1, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+            [1, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1],
+            [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 1],
+            [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1],
+            [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 1],
+            [0, 1, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [1, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+        ],
+        4,
+        0x13,
+        8,
+    ),
+]
+
+
+@pytest.mark.parametrize("_name,entries,word_size,poly,expected", _MINIZINC_FIELD_DEMO_CASES)
+def test_compute_branch_number_from_field_matrix_with_minizinc_demo_cases(_name, entries, word_size, poly, expected):
+    if shutil.which("minizinc") is None:
+        pytest.skip("MiniZinc not available in PATH")
+    matrix = _matrix_from_ints_over_gf2w(entries, word_size, poly)
+    timeout = 900 if _name == "uBlock GF(16) 32x32" else None
+    got = compute_branch_number_from_field_matrix_with_minizinc(matrix, timeout_seconds=timeout)
+    assert got == expected, f"{_name}: expected {expected}, got {got}"
+
+
+class TestBranchNumberMethodConsistency:
+    def test_binary_methods_agree(self):
+        F = GF(2)
+        matrix = Matrix(F, [[1, 0, 0], [1, 1, 0], [0, 1, 1]])
+
+        bn_sage = compute_branch_number_from_binary_matrix(matrix, "differential", method="sage")
+        bn_bounded = compute_branch_number_from_binary_matrix(matrix, "differential", method="bounded", max_input_weight=3)
+        assert bn_sage == bn_bounded
+
+        if shutil.which("minizinc") is None:
+            pytest.skip("MiniZinc not available in PATH")
+        bn_minizinc = compute_branch_number_from_binary_matrix(matrix, "differential", method="minizinc")
+        assert bn_minizinc == bn_sage
+
+    def test_field_methods_agree(self):
+        F = GF(4, 'a')
+        matrix = Matrix(F, [[1, 1], [1, F.gen()]])
+
+        bn_sage = compute_branch_number_from_field_matrix(matrix, method="sage")
+        bn_bounded = compute_branch_number_from_field_matrix(matrix, method="bounded", max_input_weight=3)
+        assert bn_sage == bn_bounded
+
+        if shutil.which("minizinc") is None:
+            pytest.skip("MiniZinc not available in PATH")
+        bn_minizinc = compute_branch_number_from_field_matrix(matrix, method="minizinc")
+        assert bn_minizinc == bn_sage
+
+
 class TestBinaryMatrixWithMethodParameter:
     """Test suite for compute_branch_number_from_binary_matrix with method parameter."""
 
-    def test_default_method_is_sage(self):
-        """Test that default method is 'sage'."""
+    def test_default_method_is_minizinc(self, monkeypatch):
+        """Test that default method dispatches to MiniZinc path."""
         F = GF(2)
         matrix = identity_matrix(F, 2)
+
+        def fake_minizinc(_matrix, _type, solver="ortools", minizinc_bin="minizinc", timeout_seconds=None, threads=2):
+            return 37
+
+        monkeypatch.setattr(cat_module, "compute_branch_number_from_binary_matrix_with_minizinc", fake_minizinc)
         bn_default = compute_branch_number_from_binary_matrix(matrix, "differential")
-        bn_sage = compute_branch_number_from_binary_matrix(matrix, "differential", method="sage")
-        assert bn_default == bn_sage, f"Default method should be 'sage': {bn_default} != {bn_sage}"
+        assert bn_default == 37
 
     def test_method_sage(self):
         """Test explicit method='sage' parameter."""
@@ -473,13 +663,17 @@ class TestFieldMatrixWithBoundedEnumeration:
 class TestFieldMatrixWithMethodParameter:
     """Test suite for compute_branch_number_from_field_matrix with method parameter."""
 
-    def test_default_method_is_sage(self):
-        """Test that default method is 'sage'."""
+    def test_default_method_is_minizinc(self, monkeypatch):
+        """Test that default method dispatches to MiniZinc path."""
         F = GF(2)
         matrix = identity_matrix(F, 2)
+
+        def fake_minizinc(_matrix, solver="ortools", minizinc_bin="minizinc", timeout_seconds=None, threads=2):
+            return 41
+
+        monkeypatch.setattr(cat_module, "compute_branch_number_from_field_matrix_with_minizinc", fake_minizinc)
         bn_default = compute_branch_number_from_field_matrix(matrix)
-        bn_sage = compute_branch_number_from_field_matrix(matrix, method="sage")
-        assert bn_default == bn_sage, f"Default method should be 'sage': {bn_default} != {bn_sage}"
+        assert bn_default == 41
 
     def test_method_sage(self):
         """Test explicit method='sage' parameter."""
