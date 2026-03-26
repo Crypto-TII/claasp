@@ -3,6 +3,7 @@ from random import getrandbits
 from claasp.cipher import Cipher
 from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+from claasp.ciphers.block_ciphers.ublock_block_cipher import UblockBlockCipher
 from claasp.editor import remove_permutations, remove_rotations
 from claasp.name_mappings import PERMUTATION
 
@@ -58,6 +59,22 @@ def test_remove_key_schedule():
                                                                                                       14, 15]],
                                                                              'output_bit_size': 16,
                                                                              'description': ['ROTATE', 7]}
+
+
+def test_remove_key_schedule_without_round_key_injection_evaluate():
+    ublock = UblockBlockCipher(number_of_rounds=2)
+    plaintext = 0x80000000000000000000000000000000
+
+    removed_without_injection = ublock.remove_key_schedule(keep_round_key_injection=False)
+    removed_with_injection = ublock.remove_key_schedule(keep_round_key_injection=True)
+
+    assert removed_without_injection.inputs == ['plaintext']
+
+    output_without_injection = removed_without_injection.evaluate([plaintext], intermediate_output=True)[0]
+    zero_round_key_inputs = [plaintext] + [0] * (len(removed_with_injection.inputs) - 1)
+    output_with_zero_injections = removed_with_injection.evaluate(zero_round_key_inputs, intermediate_output=True)[0]
+
+    assert output_without_injection == output_with_zero_injections
 
 
 def test_remove_permutations():

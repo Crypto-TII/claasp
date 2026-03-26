@@ -1430,7 +1430,38 @@ def sort_cipher_graph(cipher):
     return cipher
 
 
-def remove_components_from_rounds(cipher, start_round, end_round, keep_key_schedule):
+def _remove_key_schedule_components(cipher, key_schedule_components):
+    for current_round in cipher.rounds_as_list:
+        for key_component in set(key_schedule_components).intersection(current_round.components):
+            cipher.rounds.remove_round_component(current_round.id, key_component)
+
+
+def _remove_non_key_components_from_rounds(cipher, list_of_rounds, key_schedule_components):
+    removed_component_ids = []
+    intermediate_outputs = {}
+
+    for current_round in list_of_rounds:
+        for component in set(current_round.components) - set(key_schedule_components):
+            if component.type == INTERMEDIATE_OUTPUT and component.description == ["round_output"]:
+                intermediate_outputs[current_round.id] = component
+            cipher.rounds.remove_round_component(current_round.id, component)
+            removed_component_ids.append(component.id)
+
+    return removed_component_ids, intermediate_outputs
+
+
+def _prune_components_outside_round_range(
+    cipher, start_round, end_round, keep_key_schedule
+):
+    """
+    Prunes components outside the specified round range.
+
+    INPUT:
+    - ``cipher`` -- the cipher object
+    - ``start_round`` -- the starting round index
+    - ``end_round`` -- the ending round index
+    - ``keep_key_schedule`` -- boolean indicating whether to keep key schedule components
+    """
     list_of_rounds = cipher.rounds_as_list[:start_round] + cipher.rounds_as_list[end_round + 1 :]
     key_schedule_component_ids = get_key_schedule_component_ids(cipher)
     key_schedule_components = [
@@ -1438,18 +1469,11 @@ def remove_components_from_rounds(cipher, start_round, end_round, keep_key_sched
     ]
 
     if not keep_key_schedule:
-        for current_round in cipher.rounds_as_list:
-            for key_component in set(key_schedule_components).intersection(current_round.components):
-                cipher.rounds.remove_round_component(current_round.id, key_component)
+        _remove_key_schedule_components(cipher, key_schedule_components)
 
-    removed_component_ids = []
-    intermediate_outputs = {}
-    for current_round in list_of_rounds:
-        for component in set(current_round.components) - set(key_schedule_components):
-            if component.type == INTERMEDIATE_OUTPUT and component.description == ["round_output"]:
-                intermediate_outputs[current_round.id] = component
-            cipher.rounds.remove_round_component(current_round.id, component)
-            removed_component_ids.append(component.id)
+    removed_component_ids, intermediate_outputs = _remove_non_key_components_from_rounds(
+        cipher, list_of_rounds, key_schedule_components
+    )
 
     return removed_component_ids, intermediate_outputs
 

@@ -130,6 +130,7 @@ class TriviumStreamCipher(Cipher):
         ]
         triv_state = self.add_FSR_component(state0_id, state0_pos, self.state_bit_size,
                                             NLFSR_DESCR + [self.number_of_initialization_clocks]).id
+        self.add_round_output_component([triv_state], [list(range(self.state_bit_size))], self.state_bit_size)
         return triv_state
 
     def trivium_key_stream(self, state, clock_number, key_stream):
