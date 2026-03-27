@@ -493,8 +493,7 @@ def test_compute_branch_number_from_field_matrix_with_minizinc_demo_cases(_name,
     if shutil.which("minizinc") is None:
         pytest.skip("MiniZinc not available in PATH")
     matrix = _matrix_from_ints_over_gf2w(entries, word_size, poly)
-    timeout = 900 if _name == "uBlock GF(16) 32x32" else None
-    got = compute_branch_number_from_field_matrix_with_minizinc(matrix, timeout_seconds=timeout)
+    got = compute_branch_number_from_field_matrix_with_minizinc(matrix)
     assert got == expected, f"{_name}: expected {expected}, got {got}"
 
 
@@ -731,8 +730,8 @@ class TestFieldMatrixWithMethodParameter:
         except ValueError as e:
             assert "Unknown method" in str(e)
 
-    def test_sage_fallback_to_bounded_emits_warning(self, monkeypatch):
-        """Test field wrapper warning path when Sage backend fails."""
+    def test_sage_method_failure_raises_runtime_error(self, monkeypatch):
+        """Test field wrapper raises clear error when Sage backend fails."""
         F = GF(4, 'a')
         matrix = Matrix(F, [[1, 1], [1, F.gen()]])
 
@@ -740,9 +739,8 @@ class TestFieldMatrixWithMethodParameter:
             raise RuntimeError("forced failure")
 
         monkeypatch.setattr(cat_module, "compute_branch_number_from_field_matrix_with_sage", raise_runtime_error)
-        with pytest.warns(RuntimeWarning, match="falling back to bounded enumeration"):
-            bn = compute_branch_number_from_field_matrix(matrix, method="sage")
-        assert bn == 3
+        with pytest.raises(RuntimeError, match="method='sage'.*forced failure"):
+            compute_branch_number_from_field_matrix(matrix, method="sage")
 
 
 class TestMapMatrixToConwayField:
@@ -866,7 +864,7 @@ class TestEdgeCases:
         with pytest.raises(ValueError, match="max_input_weight"):
             compute_branch_number_from_field_matrix_with_bounded_enumeration(matrix, max_input_weight=0)
 
-    def test_binary_wrapper_fallback_to_bounded_emits_warning(self, monkeypatch):
+    def test_binary_wrapper_sage_method_failure_raises_runtime_error(self, monkeypatch):
         F = GF(2)
         matrix = Matrix(F, [[1, 0], [1, 1]])
 
@@ -874,9 +872,8 @@ class TestEdgeCases:
             raise RuntimeError("forced failure")
 
         monkeypatch.setattr(cat_module, "compute_branch_number_from_binary_matrix_with_sage", raise_runtime_error)
-        with pytest.warns(RuntimeWarning, match="falling back to bounded enumeration"):
-            bn = compute_branch_number_from_binary_matrix(matrix, "differential", method="sage")
-        assert bn == 2
+        with pytest.raises(RuntimeError, match="method='sage'.*forced failure"):
+            compute_branch_number_from_binary_matrix(matrix, "differential", method="sage")
 
 
 class TestConsistency:
