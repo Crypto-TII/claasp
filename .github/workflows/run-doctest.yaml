@@ -31,9 +31,19 @@ jobs:
         chmod g+w /home/runner/_work/claasp/ -R
         rm -rf /home/runner/_work/claasp_backup
 
-    - name: Run test
+    - name: Build doctest image
       run: |
-            cd /home/runner/_work/claasp
-            make test
+        cd /home/runner/_work/claasp
+        rm -rf build claasp.egg-info
+        docker build -f docker/Dockerfile --target claasp-base -t claasp:doctest .
+
+    - name: Run test in Docker
+      run: |
+        docker run --rm \
+          -e PYTHONPATH=/home/sage/tii-claasp \
+          --mount type=bind,source=/home/runner/_work/claasp,target=/home/sage/tii-claasp \
+          -w /home/sage/tii-claasp \
+          claasp:doctest \
+          sh -lc 'make install && make test'
       env:
         GUROBI_COMPUTE_SERVER: ${{ secrets.GUROBI_COMPUTE_SERVER }}
