@@ -101,6 +101,16 @@ RUN wget https://github.com/scipopt/scip/archive/refs/tags/v803.tar.gz \
 ENV PATH="${PATH}:/opt/scip-803/build/bin"
 ENV LD_LIBRARY_PATH="/opt/scip-803/build/lib:/usr/local/lib:${LD_LIBRARY_PATH}"
 
+# Installing OR-Tools CP-SAT backend for MiniZinc
+ARG ORTOOLS_SHORT_VERSION=9.9
+ARG ORTOOLS_LONG_VERSION=9.9.3963
+RUN wget https://github.com/google/or-tools/releases/download/v${ORTOOLS_SHORT_VERSION}/or-tools_amd64_ubuntu-22.04_cpp_v${ORTOOLS_LONG_VERSION}.tar.gz \
+    && tar -zxf or-tools_amd64_ubuntu-22.04_cpp_v${ORTOOLS_LONG_VERSION}.tar.gz \
+    && rm or-tools_amd64_ubuntu-22.04_cpp_v${ORTOOLS_LONG_VERSION}.tar.gz
+
+ENV PATH="/opt/or-tools_x86_64_Ubuntu-22.04_cpp_v${ORTOOLS_LONG_VERSION}/bin:${PATH}"
+ENV FZN_ORTOOLS="/opt/or-tools_x86_64_Ubuntu-22.04_cpp_v${ORTOOLS_LONG_VERSION}/bin/fzn-cp-sat"
+
 # Installing SageMath tools
 RUN sage -pip install bitstring==4.0.1 \
     gurobipy==11.0 \
@@ -162,6 +172,24 @@ RUN printf '%s\n' \
   > /usr/local/bin/minizinc-wrapper \
   && chmod +x /usr/local/bin/minizinc-wrapper \
   && ln -sf /usr/local/bin/minizinc-wrapper /usr/local/bin/minizinc
+
+# Register OR-Tools CP-SAT as a MiniZinc solver
+RUN printf '%s\n' \
+        '{' \
+        '  "name": "OR-Tools CP-SAT",' \
+        "  \"version\": \"${ORTOOLS_LONG_VERSION}\"," \
+        '  "id": "com.google.ortools.sat",' \
+        "  \"executable\": \"/opt/or-tools_x86_64_Ubuntu-22.04_cpp_v${ORTOOLS_LONG_VERSION}/bin/fzn-cp-sat\"," \
+        "  \"mznlib\": \"/opt/or-tools_x86_64_Ubuntu-22.04_cpp_v${ORTOOLS_LONG_VERSION}/share/minizinc\"," \
+        '  "tags": ["cp", "int", "float", "ortools"],' \
+        '  "stdFlags": ["-a", "-n", "-s", "-p", "-r", "-f", "-t"],' \
+        '  "supportsMzn": false,' \
+        '  "supportsFzn": true,' \
+        '  "needsSolns2Out": true,' \
+        '  "needsMznExecutable": false,' \
+        '  "needsStdlibDir": false,' \
+        '  "isGUIApplication": false' \
+        '}' > /usr/local/share/minizinc/solvers/ortools.msc
 
 # Installing Chuffed
 RUN wget https://github.com/chuffed/chuffed/archive/refs/tags/0.13.2.tar.gz \

@@ -370,7 +370,14 @@ def _matrix_from_ints_over_gf2w(entries, word_size, polynomial):
         if (polynomial >> i) & 1:
             irr_poly += x**i
     F = GF(2**word_size, name="a", modulus=irr_poly)
-    converted = [[F.from_integer(int(value)) for value in row] for row in entries]
+
+    # Sage finite field APIs differ by version: some expose from_integer, others fetch_int.
+    if hasattr(F, "from_integer"):
+        to_field = lambda v: F.from_integer(int(v))
+    else:
+        to_field = lambda v: F.fetch_int(int(v))
+
+    converted = [[to_field(value) for value in row] for row in entries]
     return Matrix(F, converted)
 
 
