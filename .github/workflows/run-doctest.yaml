@@ -13,7 +13,7 @@ concurrency:
 
 jobs:
   run-doctest:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
     - name: Checkout
       uses: actions/checkout@v2
@@ -21,19 +21,8 @@ jobs:
         persist-credentials: false
         fetch-depth: 0
 
-    - name: Fix Directory Structure
-      run: |
-        mkdir /home/runner/_work/claasp_backup
-        mv -f /home/runner/_work/claasp/claasp/* /home/runner/_work/claasp_backup
-        rm -rf /home/runner/_work/claasp/
-        mkdir /home/runner/_work/claasp
-        mv -f /home/runner/_work/claasp_backup/* /home/runner/_work/claasp
-        chmod g+w /home/runner/_work/claasp/ -R
-        rm -rf /home/runner/_work/claasp_backup
-
     - name: Build doctest image
       run: |
-        cd /home/runner/_work/claasp
         rm -rf build claasp.egg-info
         docker build -f docker/Dockerfile --target claasp-base -t claasp:doctest .
 
@@ -41,7 +30,7 @@ jobs:
       run: |
         docker run --rm \
           -e PYTHONPATH=/home/sage/tii-claasp \
-          --mount type=bind,source=/home/runner/_work/claasp,target=/home/sage/tii-claasp \
+          --mount type=bind,source=${{ github.workspace }},target=/home/sage/tii-claasp \
           -w /home/sage/tii-claasp \
           claasp:doctest \
           sh -lc 'make install && make test'
