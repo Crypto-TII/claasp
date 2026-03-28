@@ -789,8 +789,6 @@ class MilpMonomialPredictionModel:
             self.add_linear_layer_constraints(component)
         elif component.type in ["cipher_output", "intermediate_output"]:
             self.add_intermediate_output_constraints(component)
-        elif component.type == "concatenate":
-            self.add_concatenate_constraints(component)
         elif component.type == "word_operation":
             self._add_word_operation_constraints(component)
         else:
@@ -816,14 +814,6 @@ class MilpMonomialPredictionModel:
             self.add_modmul_constraints(component)
         else:
             raise NotImplementedError(f"Word operation {op} is not yet implemented")
-
-    def add_concatenate_constraints(self, component):
-        output_vars = self.get_output_vars(component)
-        input_vars_concat = self.get_input_vars(component)
-        for i in range(component.output_bit_size):
-            self._model.addConstr(output_vars[i] == input_vars_concat[i])
-            self.set_as_used_variables([input_vars_concat[i]])
-        self._model.update()
 
     def get_where_component_is_used(self, predecessors, input_id_link_needed, block_needed, skip_components=None):
         occurences = {}
