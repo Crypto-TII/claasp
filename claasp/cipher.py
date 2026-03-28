@@ -367,8 +367,8 @@ class Cipher:
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.identity_block_cipher import IdentityBlockCipher as identity
-            sage: identity().evaluate([0x01234567,0x89ABCDEF])
+            sage: from claasp.ciphers.toys.identity_cipher import IdentityCipher as identity
+            sage: identity().evaluate([0x01234567])
             19088743
         """
         return evaluator.evaluate(self, cipher_input, intermediate_output, verbosity)
@@ -1474,7 +1474,7 @@ class Cipher:
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.identity_block_cipher import IdentityBlockCipher as identity
+            sage: from claasp.ciphers.toys.identity_cipher import IdentityCipher as identity
             sage: identity().print_evaluation_python_code() # random
             from copy import copy
             from bitstring import BitArray
@@ -1532,10 +1532,10 @@ class Cipher:
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.identity_block_cipher import IdentityBlockCipher as identity
+            sage: from claasp.ciphers.toys.identity_cipher import IdentityCipher as identity
             sage: identity = identity()
             sage: identity.file_name
-            'identity_block_cipher_p32_k32_o32_r1.py'
+            'identity_cipher_p32_o32_r1.py'
             sage: identity.print_evaluation_python_code_to_file(identity.id + 'evaluation.py') # doctest: +SKIP
         """
         original_stdout = sys.stdout  # Save a reference to the original standard output
