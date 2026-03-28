@@ -16,7 +16,7 @@ from claasp.ciphers.permutations.keccak_invertible_permutation import KeccakInve
 from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
 from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
 from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
-from claasp.ciphers.toys.identity_block_cipher import IdentityBlockCipher
+from claasp.ciphers.single_component_ciphers.identity_cipher import IdentityCipher
 from claasp.ciphers.permutations.ascon_sbox_sigma_permutation import AsconSboxSigmaPermutation
 from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
 from claasp.ciphers.block_ciphers.skinny_block_cipher import SkinnyBlockCipher
@@ -404,21 +404,19 @@ def test_print_evaluation_python_code():
     old_stdout = sys.stdout
     result = StringIO()
     sys.stdout = result
-    IdentityBlockCipher().print_evaluation_python_code(verbosity=True)
+    IdentityCipher().print_evaluation_python_code(verbosity=True)
     sys.stdout = old_stdout
     python_code = result.getvalue()
 
-    assert ("components_io['concatenate_0_0'] = [component_input.uint, concatenate_0_0_output.uint]" in python_code) \
-           is True
-    assert ("components_io['intermediate_output_0_1'] = [component_input.uint, intermediate_output_0_1_output.uint]"
-            in python_code) is True
-    assert ("component_input = select_bits(concatenate_0_2_output, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14,"
-            " 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31])" in python_code) is True
+    assert "def evaluate(input):" in python_code
+    assert "components_io['cipher_output_0_0'] = [component_input.uint, cipher_output_0_0_output.uint]" in python_code
+    assert ("component_input = select_bits(plaintext_output, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,"
+        " 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31])" in python_code)
 
 
 def test_print_evaluation_python_code_to_file():
-    identity = IdentityBlockCipher()
-    assert identity.file_name == 'identity_block_cipher_p32_k32_o32_r1.py'
+    identity = IdentityCipher()
+    assert identity.file_name == 'identity_cipher_p32_o32_r1.py'
     identity.print_evaluation_python_code_to_file(identity.id + EVALUATION_PY)
     assert os.path.isfile(identity.id + EVALUATION_PY)
     os.remove(identity.id + EVALUATION_PY)

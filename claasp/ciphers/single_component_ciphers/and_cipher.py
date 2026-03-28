@@ -5,16 +5,7 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
-
 
 from claasp.ciphers.single_component_ciphers._base import (
     SingleComponentCipher,
@@ -27,41 +18,19 @@ from claasp.name_mappings import BLOCK_CIPHER
 PARAMETERS_CONFIGURATION_LIST = [{"word_bit_size": 4, "number_of_inputs": 2}]
 
 
-class XorBlockCipher(SingleComponentCipher):
-    """
-    Return a single-round cipher made of a single XOR component.
-
-    INPUT:
-
-    - ``word_bit_size`` -- **integer** (default: `4`); bit size of each XOR operand and of the output
-    - ``number_of_inputs`` -- **integer** (default: `2`); number of XOR operands
-
-    EXAMPLES::
-
-        sage: from claasp.ciphers.single_component_ciphers.xor_block_cipher import XorBlockCipher
-        sage: xor = XorBlockCipher(word_bit_size=4, number_of_inputs=2)
-        sage: xor.type
-        'block_cipher'
-
-        sage: xor.component_from(0, 0).id
-        'xor_0_0'
-
-        sage: xor.evaluate([0b1010, 0b1100])
-        6
-    """
-
+class AndCipher(SingleComponentCipher):
     def __init__(self, word_bit_size=4, number_of_inputs=2):
         cipher_inputs, cipher_inputs_bit_size = build_block_cipher_inputs(word_bit_size, number_of_inputs)
         super().__init__(
-            family_name="xor_block_cipher",
+            family_name="and_cipher",
             cipher_type=BLOCK_CIPHER,
             cipher_inputs=cipher_inputs,
             cipher_inputs_bit_size=cipher_inputs_bit_size,
             cipher_output_bit_size=word_bit_size,
         )
-        xor_component = self.add_XOR_component(
+        and_component = self.add_AND_component(
             cipher_inputs,
             equal_input_bit_positions(word_bit_size, number_of_inputs),
             word_bit_size,
         )
-        add_cipher_output_from_component(self, xor_component)
+        add_cipher_output_from_component(self, and_component)
