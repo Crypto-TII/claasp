@@ -309,7 +309,7 @@ RUN wget https://github.com/SRI-CSL/yices2/archive/refs/tags/yices-2.7.0.tar.gz 
     && ./configure --enable-thread-safety \
     && make -j4
 
-ENV PATH="/opt/yices2-yices-2.7.0/build/x86_64-pc-linux-gnu-release/dist/bin:${PATH}"
+ENV PATH="/opt/yices2-yices-2.7.0/build/x86_64-pc-linux-gnu-release/bin:${PATH}"
 
 COPY required_dependencies/sage_numerical_backends_gurobi-9.3.1.tar.gz /opt/
 RUN cd /opt/ && sage -pip install sage_numerical_backends_gurobi-9.3.1.tar.gz
