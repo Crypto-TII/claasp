@@ -195,24 +195,24 @@ class XOR(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
+            sage: from claasp.ciphers.single_component_ciphers.xor_cipher import XorCipher
             sage: from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
-            sage: fancy = FancyBlockCipher(number_of_rounds=1)
-            sage: xor_component = fancy.get_component_from_id("xor_0_7")
-            sage: algebraic = AlgebraicModel(fancy)
+            sage: cipher = XorCipher(word_bit_size=12, number_of_inputs=2)
+            sage: xor_component = cipher.get_component_from_id('xor_0_0')
+            sage: algebraic = AlgebraicModel(cipher)
             sage: xor_component.algebraic_polynomials(algebraic)
-            [xor_0_7_y0 + xor_0_7_x12 + xor_0_7_x0,
-             xor_0_7_y1 + xor_0_7_x13 + xor_0_7_x1,
-             xor_0_7_y2 + xor_0_7_x14 + xor_0_7_x2,
-             xor_0_7_y3 + xor_0_7_x15 + xor_0_7_x3,
-             xor_0_7_y4 + xor_0_7_x16 + xor_0_7_x4,
-             xor_0_7_y5 + xor_0_7_x17 + xor_0_7_x5,
-             xor_0_7_y6 + xor_0_7_x18 + xor_0_7_x6,
-             xor_0_7_y7 + xor_0_7_x19 + xor_0_7_x7,
-             xor_0_7_y8 + xor_0_7_x20 + xor_0_7_x8,
-             xor_0_7_y9 + xor_0_7_x21 + xor_0_7_x9,
-             xor_0_7_y10 + xor_0_7_x22 + xor_0_7_x10,
-             xor_0_7_y11 + xor_0_7_x23 + xor_0_7_x11]
+            [xor_0_0_y0 + xor_0_0_x12 + xor_0_0_x0,
+             xor_0_0_y1 + xor_0_0_x13 + xor_0_0_x1,
+             xor_0_0_y2 + xor_0_0_x14 + xor_0_0_x2,
+             xor_0_0_y3 + xor_0_0_x15 + xor_0_0_x3,
+             xor_0_0_y4 + xor_0_0_x16 + xor_0_0_x4,
+             xor_0_0_y5 + xor_0_0_x17 + xor_0_0_x5,
+             xor_0_0_y6 + xor_0_0_x18 + xor_0_0_x6,
+             xor_0_0_y7 + xor_0_0_x19 + xor_0_0_x7,
+             xor_0_0_y8 + xor_0_0_x20 + xor_0_0_x8,
+             xor_0_0_y9 + xor_0_0_x21 + xor_0_0_x9,
+             xor_0_0_y10 + xor_0_0_x22 + xor_0_0_x10,
+             xor_0_0_y11 + xor_0_0_x23 + xor_0_0_x11]
         """
         ninputs = self.input_bit_size
         noutputs = self.output_bit_size
@@ -246,17 +246,17 @@ class XOR(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: speck = SpeckBlockCipher(number_of_rounds=3)
-            sage: xor_component = speck.component_from(0,2)
-            sage: xor_component.cms_constraints()
-            (['xor_0_2_0',
-              'xor_0_2_1',
-              'xor_0_2_2',
-              ...
-              'x -xor_0_2_13 modadd_0_1_13 key_61',
-              'x -xor_0_2_14 modadd_0_1_14 key_62',
-              'x -xor_0_2_15 modadd_0_1_15 key_63'])
+                        sage: from claasp.ciphers.single_component_ciphers.xor_cipher import XorCipher
+                        sage: cipher = XorCipher(word_bit_size=16, number_of_inputs=2)
+                        sage: xor_component = cipher.get_component_from_id('xor_0_0')
+                        sage: xor_component.cms_constraints()
+                        (['xor_0_0_0',
+                            'xor_0_0_1',
+                            'xor_0_0_2',
+                            ...
+                            'x -xor_0_0_13 plaintext_13 key_13',
+                            'x -xor_0_0_14 plaintext_14 key_14',
+                            'x -xor_0_0_15 plaintext_15 key_15'])
         """
         input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
@@ -284,14 +284,14 @@ class XOR(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: speck = SpeckBlockCipher(number_of_rounds=5)
-            sage: xor_component = speck.component_from(0, 2)
-            sage: xor_component.cp_constraints()
-            ([],
-             ['constraint xor_0_2[0] = (modadd_0_1[0] + key[48]) mod 2;',
-              ...
-              'constraint xor_0_2[15] = (modadd_0_1[15] + key[63]) mod 2;'])
+                        sage: from claasp.ciphers.single_component_ciphers.xor_cipher import XorCipher
+                        sage: cipher = XorCipher(word_bit_size=16, number_of_inputs=2)
+                        sage: xor_component = cipher.get_component_from_id('xor_0_0')
+                        sage: xor_component.cp_constraints()
+                        ([],
+                         ['constraint xor_0_0[0] = (plaintext[0] + key[0]) mod 2;',
+                            ...
+                            'constraint xor_0_0[15] = (plaintext[15] + key[15]) mod 2;'])
         """
         cp_declarations = []
         all_inputs = []
@@ -334,14 +334,14 @@ class XOR(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: speck = SpeckBlockCipher(number_of_rounds=5)
-            sage: xor_component = speck.component_from(0, 2)
-            sage: xor_component.cp_deterministic_truncated_xor_differential_constraints()
-            ([],
-             ['constraint if ((modadd_0_1[0] < 2) /\\ (key[48]< 2)) then xor_0_2[0] = (modadd_0_1[0] + key[48]) mod 2 else xor_0_2[0] = 2 endif;',
-               ...
-              'constraint if ((modadd_0_1[15] < 2) /\\ (key[63]< 2)) then xor_0_2[15] = (modadd_0_1[15] + key[63]) mod 2 else xor_0_2[15] = 2 endif;'])
+                        sage: from claasp.ciphers.single_component_ciphers.xor_cipher import XorCipher
+                        sage: cipher = XorCipher(word_bit_size=16, number_of_inputs=2)
+                        sage: xor_component = cipher.get_component_from_id('xor_0_0')
+                        sage: xor_component.cp_deterministic_truncated_xor_differential_constraints()
+                        ([],
+                         ['constraint if ((plaintext[0] < 2) /\\ (key[0]< 2)) then xor_0_0[0] = (plaintext[0] + key[0]) mod 2 else xor_0_0[0] = 2 endif;',
+                             ...
+                            'constraint if ((plaintext[15] < 2) /\\ (key[15]< 2)) then xor_0_0[15] = (plaintext[15] + key[15]) mod 2 else xor_0_0[15] = 2 endif;'])
         """
         cp_declarations = []
         all_inputs = []
@@ -369,14 +369,14 @@ class XOR(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: speck = SpeckBlockCipher(number_of_rounds=5)
-            sage: xor_component = speck.component_from(0, 2)
-            sage: xor_component.cp_hybrid_deterministic_truncated_xor_differential_constraints()
-            ([],
-             ['constraint if (modadd_0_1[0] < 2) /\\ (key[48] < 2) then xor_0_2[0] = (modadd_0_1[0] + key[48]) mod 2 elseif (modadd_0_1[0] + key[48] = modadd_0_1[0]) then xor_0_2[0] = modadd_0_1[0] elseif (modadd_0_1[0] + key[48] = key[48]) then xor_0_2[0] = key[48] else xor_0_2[0] = 2 endif;',
-               ...
-              'constraint if (modadd_0_1[15] < 2) /\\ (key[63] < 2) then xor_0_2[15] = (modadd_0_1[15] + key[63]) mod 2 elseif (modadd_0_1[15] + key[63] = modadd_0_1[15]) then xor_0_2[15] = modadd_0_1[15] elseif (modadd_0_1[15] + key[63] = key[63]) then xor_0_2[15] = key[63] else xor_0_2[15] = 2 endif;'])
+                        sage: from claasp.ciphers.single_component_ciphers.xor_cipher import XorCipher
+                        sage: cipher = XorCipher(word_bit_size=16, number_of_inputs=2)
+                        sage: xor_component = cipher.get_component_from_id('xor_0_0')
+                        sage: xor_component.cp_hybrid_deterministic_truncated_xor_differential_constraints()
+                        ([],
+                         ['constraint if (plaintext[0] < 2) /\\ (key[0] < 2) then xor_0_0[0] = (plaintext[0] + key[0]) mod 2 elseif (plaintext[0] + key[0] = plaintext[0]) then xor_0_0[0] = plaintext[0] elseif (plaintext[0] + key[0] = key[0]) then xor_0_0[0] = key[0] else xor_0_0[0] = 2 endif;',
+                             ...
+                            'constraint if (plaintext[15] < 2) /\\ (key[15] < 2) then xor_0_0[15] = (plaintext[15] + key[15]) mod 2 elseif (plaintext[15] + key[15] = plaintext[15]) then xor_0_0[15] = plaintext[15] elseif (plaintext[15] + key[15] = key[15]) then xor_0_0[15] = key[15] else xor_0_0[15] = 2 endif;'])
         """
         cp_declarations = []
         all_inputs = [
@@ -592,15 +592,15 @@ class XOR(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=22)
-            sage: xor_component = speck.component_from(0, 2)
-            sage: xor_component.cp_xor_linear_mask_propagation_constraints()
-            (['array[0..31] of var 0..1: xor_0_2_i;',
-              'array[0..15] of var 0..1: xor_0_2_o;'],
-             ['constraint xor_0_2_o[0] = xor_0_2_i[0];',
-              ...
-              'constraint xor_0_2_o[15] = xor_0_2_i[31];'])
+                        sage: from claasp.ciphers.single_component_ciphers.xor_cipher import XorCipher
+                        sage: cipher = XorCipher(word_bit_size=16, number_of_inputs=2)
+                        sage: xor_component = cipher.get_component_from_id('xor_0_0')
+                        sage: xor_component.cp_xor_linear_mask_propagation_constraints()
+                        (['array[0..31] of var 0..1: xor_0_0_i;',
+                            'array[0..15] of var 0..1: xor_0_0_o;'],
+                         ['constraint xor_0_0_o[0] = xor_0_0_i[0];',
+                            ...
+                            'constraint xor_0_0_o[15] = xor_0_0_i[31];'])
         """
         cp_declarations = [
             f"array[0..{self.input_bit_size - 1}] of var 0..1: {self.id}_i;",
@@ -657,20 +657,19 @@ class XOR(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
+            sage: from claasp.ciphers.single_component_ciphers.xor_cipher import XorCipher
             sage: from claasp.cipher_modules.models.milp.milp_model import MilpModel
-            sage: simon = SimonBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
-            sage: milp = MilpModel(simon)
+            sage: cipher = XorCipher(word_bit_size=16, number_of_inputs=2)
+            sage: milp = MilpModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
-            sage: xor_component = simon.get_component_from_id("xor_0_5")
+            sage: xor_component = cipher.get_component_from_id('xor_0_0')
             sage: variables, constraints = xor_component.milp_constraints(milp)
-            ...
             sage: variables
-            [('x[and_0_4_0]', x_0),
-            ('x[and_0_4_1]', x_1),
+            [('x[plaintext_0]', x_0),
+            ('x[plaintext_1]', x_1),
             ...
-            ('x[xor_0_5_14]', x_46),
-            ('x[xor_0_5_15]', x_47)]
+            ('x[xor_0_0_14]', x_46),
+            ('x[xor_0_0_15]', x_47)]
             sage: constraints[:4]
             [x_32 <= x_0 + x_16,
              x_16 <= x_0 + x_32,
@@ -714,19 +713,19 @@ class XOR(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
+            sage: from claasp.ciphers.single_component_ciphers.xor_cipher import XorCipher
             sage: from claasp.cipher_modules.models.milp.milp_model import MilpModel
-            sage: simon = SimonBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
-            sage: milp = MilpModel(simon)
+            sage: cipher = XorCipher(word_bit_size=16, number_of_inputs=2)
+            sage: milp = MilpModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
-            sage: xor_component = simon.get_component_from_id("xor_0_5")
+            sage: xor_component = cipher.get_component_from_id('xor_0_0')
             sage: variables, constraints = xor_component.milp_xor_linear_constraints(milp)
             sage: variables
-            [('x[xor_0_5_0_i]', x_0),
-            ('x[xor_0_5_1_i]', x_1),
+            [('x[xor_0_0_0_i]', x_0),
+            ('x[xor_0_0_1_i]', x_1),
             ...
-            ('x[xor_0_5_14_o]', x_46),
-            ('x[xor_0_5_15_o]', x_47)]
+            ('x[xor_0_0_14_o]', x_46),
+            ('x[xor_0_0_15_o]', x_47)]
             sage: constraints
             [x_32 == x_0,
             x_33 == x_1,
@@ -785,19 +784,19 @@ class XOR(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
+            sage: from claasp.ciphers.single_component_ciphers.xor_cipher import XorCipher
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import MilpBitwiseDeterministicTruncatedXorDifferentialModel
-            sage: cipher = SimonBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
+            sage: cipher = XorCipher(word_bit_size=16, number_of_inputs=2)
             sage: milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
-            sage: xor_component = cipher.get_component_from_id("xor_0_5")
+            sage: xor_component = cipher.get_component_from_id('xor_0_0')
             sage: variables, constraints = xor_component.milp_bitwise_deterministic_truncated_xor_differential_binary_constraints(milp)
             sage: variables
-            [('x[and_0_4_0_class_bit_0]', x_0),
-             ('x[and_0_4_0_class_bit_1]', x_1),
+            [('x[plaintext_0_class_bit_0]', x_0),
+             ('x[plaintext_0_class_bit_1]', x_1),
              ...
-             ('x[xor_0_5_15_class_bit_0]', x_94),
-             ('x[xor_0_5_15_class_bit_1]', x_95)]
+             ('x[xor_0_0_15_class_bit_0]', x_94),
+             ('x[xor_0_0_15_class_bit_1]', x_95)]
             sage: constraints
             [x_96 == 2*x_0 + x_1,
              x_97 == 2*x_2 + x_3,
@@ -852,19 +851,19 @@ class XOR(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
-            sage: cipher = SimonBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
+            sage: from claasp.ciphers.single_component_ciphers.xor_cipher import XorCipher
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import MilpBitwiseDeterministicTruncatedXorDifferentialModel
+            sage: cipher = XorCipher(word_bit_size=16, number_of_inputs=2)
             sage: milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
-            sage: xor_component = cipher.get_component_from_id("xor_0_5")
+            sage: xor_component = cipher.get_component_from_id('xor_0_0')
             sage: variables, constraints = xor_component.milp_bitwise_deterministic_truncated_xor_differential_constraints(milp)
             sage: variables
-            [('x_class[and_0_4_0]', x_0),
-             ('x_class[and_0_4_1]', x_1),
+            [('x_class[plaintext_0]', x_0),
+             ('x_class[plaintext_1]', x_1),
             ...
-             ('x_class[xor_0_5_14]', x_46),
-             ('x_class[xor_0_5_15]', x_47)]
+             ('x_class[xor_0_0_14]', x_46),
+             ('x_class[xor_0_0_15]', x_47)]
             sage: constraints
             [x_0 <= 3 - 2*x_48,
              2 - 2*x_48 <= x_0,
@@ -1148,14 +1147,14 @@ class XOR(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: from claasp.ciphers.single_component_ciphers.xor_cipher import XorCipher
             sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
-            sage: speck = SpeckBlockCipher(number_of_rounds=22)
-            sage: minizinc = MznModel(speck)
-            sage: xor_component = speck.get_component_from_id("xor_0_2")
+            sage: cipher = XorCipher(word_bit_size=16, number_of_inputs=2)
+            sage: minizinc = MznModel(cipher)
+            sage: xor_component = cipher.get_component_from_id('xor_0_0')
             sage: _, xor_minizinc_constraints = xor_component.minizinc_constraints(minizinc)
             sage: xor_minizinc_constraints[0]
-            'constraint xor_word(\narray1d(0..16-1, [xor_0_2_x16,xor_0_2_x17,xor_0_2_x18,xor_0_2_x19,xor_0_2_x20,xor_0_2_x21,xor_0_2_x22,xor_0_2_x23,xor_0_2_x24,xor_0_2_x25,xor_0_2_x26,xor_0_2_x27,xor_0_2_x28,xor_0_2_x29,xor_0_2_x30,xor_0_2_x31]),\narray1d(0..16-1, [xor_0_2_x0,xor_0_2_x1,xor_0_2_x2,xor_0_2_x3,xor_0_2_x4,xor_0_2_x5,xor_0_2_x6,xor_0_2_x7,xor_0_2_x8,xor_0_2_x9,xor_0_2_x10,xor_0_2_x11,xor_0_2_x12,xor_0_2_x13,xor_0_2_x14,xor_0_2_x15]),\narray1d(0..16-1, [xor_0_2_y0,xor_0_2_y1,xor_0_2_y2,xor_0_2_y3,xor_0_2_y4,xor_0_2_y5,xor_0_2_y6,xor_0_2_y7,xor_0_2_y8,xor_0_2_y9,xor_0_2_y10,xor_0_2_y11,xor_0_2_y12,xor_0_2_y13,xor_0_2_y14,xor_0_2_y15]))=true;\n'
+            'constraint xor_word(\narray1d(0..16-1, [xor_0_0_x16,xor_0_0_x17,xor_0_0_x18,xor_0_0_x19,xor_0_0_x20,xor_0_0_x21,xor_0_0_x22,xor_0_0_x23,xor_0_0_x24,xor_0_0_x25,xor_0_0_x26,xor_0_0_x27,xor_0_0_x28,xor_0_0_x29,xor_0_0_x30,xor_0_0_x31]),\narray1d(0..16-1, [xor_0_0_x0,xor_0_0_x1,xor_0_0_x2,xor_0_0_x3,xor_0_0_x4,xor_0_0_x5,xor_0_0_x6,xor_0_0_x7,xor_0_0_x8,xor_0_0_x9,xor_0_0_x10,xor_0_0_x11,xor_0_0_x12,xor_0_0_x13,xor_0_0_x14,xor_0_0_x15]),\narray1d(0..16-1, [xor_0_0_y0,xor_0_0_y1,xor_0_0_y2,xor_0_0_y3,xor_0_0_y4,xor_0_0_y5,xor_0_0_y6,xor_0_0_y7,xor_0_0_y8,xor_0_0_y9,xor_0_0_y10,xor_0_0_y11,xor_0_0_y12,xor_0_0_y13,xor_0_0_y14,xor_0_0_y15]))=true;\n'
         """
 
         def create_block_of_xor_constraints(input_vars_1_temp, input_vars_2_temp, output_varstrs_temp, i):
@@ -1235,20 +1234,20 @@ class XOR(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: speck = SpeckBlockCipher(number_of_rounds=3)
-            sage: xor_component = speck.component_from(0, 2)
-            sage: xor_component.sat_constraints()
-            (['xor_0_2_0',
-              'xor_0_2_1',
-              ...
-              'xor_0_2_14',
-              'xor_0_2_15'],
-             ['-xor_0_2_0 modadd_0_1_0 key_48',
-              'xor_0_2_0 -modadd_0_1_0 key_48',
-              ...
-              'xor_0_2_15 modadd_0_1_15 -key_63',
-              '-xor_0_2_15 -modadd_0_1_15 -key_63'])
+                        sage: from claasp.ciphers.single_component_ciphers.xor_cipher import XorCipher
+                        sage: cipher = XorCipher(word_bit_size=16, number_of_inputs=2)
+                        sage: xor_component = cipher.get_component_from_id('xor_0_0')
+                        sage: xor_component.sat_constraints()
+                        (['xor_0_0_0',
+                            'xor_0_0_1',
+                            ...
+                            'xor_0_0_14',
+                            'xor_0_0_15'],
+                         ['-xor_0_0_0 plaintext_0 key_0',
+                            'xor_0_0_0 -plaintext_0 key_0',
+                            ...
+                            'xor_0_0_15 plaintext_15 -key_15',
+                            '-xor_0_0_15 -plaintext_15 -key_15'])
         """
         input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
@@ -1276,20 +1275,20 @@ class XOR(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: speck = SpeckBlockCipher(number_of_rounds=3)
-            sage: xor_component = speck.component_from(0, 2)
-            sage: xor_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
-            (['xor_0_2_0_0',
-              'xor_0_2_1_0',
-              ...
-              'xor_0_2_14_1',
-              'xor_0_2_15_1'],
-             ['xor_0_2_0_0 -modadd_0_1_0_0',
-              'xor_0_2_0_0 -key_48_0',
-              ...
-              'key_63_1 xor_0_2_15_0 xor_0_2_15_1 -modadd_0_1_15_1',
-              'xor_0_2_15_0 -modadd_0_1_15_1 -key_63_1 -xor_0_2_15_1'])
+                        sage: from claasp.ciphers.single_component_ciphers.xor_cipher import XorCipher
+                        sage: cipher = XorCipher(word_bit_size=16, number_of_inputs=2)
+                        sage: xor_component = cipher.get_component_from_id('xor_0_0')
+                        sage: xor_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
+                        (['xor_0_0_0_0',
+                            'xor_0_0_1_0',
+                            ...
+                            'xor_0_0_14_1',
+                            'xor_0_0_15_1'],
+                         ['xor_0_0_0_0 -plaintext_0_0',
+                            'xor_0_0_0_0 -key_0_0',
+                            ...
+                            'key_15_1 xor_0_0_15_0 xor_0_0_15_1 -plaintext_15_1',
+                            'xor_0_0_15_0 -plaintext_15_1 -key_15_1 -xor_0_0_15_1'])
         """
         in_ids_0, in_ids_1 = self._generate_input_double_ids()
         out_len, out_ids_0, out_ids_1 = self._generate_output_double_ids()
@@ -1322,20 +1321,20 @@ class XOR(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: speck = SpeckBlockCipher(number_of_rounds=3)
-            sage: xor_component = speck.component_from(0, 2)
-            sage: xor_component.sat_xor_differential_propagation_constraints()
-            (['xor_0_2_0',
-              'xor_0_2_1',
-              ...
-              'xor_0_2_14',
-              'xor_0_2_15'],
-             ['-xor_0_2_0 modadd_0_1_0 key_48',
-              'xor_0_2_0 -modadd_0_1_0 key_48',
-              ...
-              'xor_0_2_15 modadd_0_1_15 -key_63',
-              '-xor_0_2_15 -modadd_0_1_15 -key_63'])
+                        sage: from claasp.ciphers.single_component_ciphers.xor_cipher import XorCipher
+                        sage: cipher = XorCipher(word_bit_size=16, number_of_inputs=2)
+                        sage: xor_component = cipher.get_component_from_id('xor_0_0')
+                        sage: xor_component.sat_xor_differential_propagation_constraints()
+                        (['xor_0_0_0',
+                            'xor_0_0_1',
+                            ...
+                            'xor_0_0_14',
+                            'xor_0_0_15'],
+                         ['-xor_0_0_0 plaintext_0 key_0',
+                            'xor_0_0_0 -plaintext_0 key_0',
+                            ...
+                            'xor_0_0_15 plaintext_15 -key_15',
+                            '-xor_0_0_15 -plaintext_15 -key_15'])
         """
         return self.sat_constraints()
 
@@ -1353,20 +1352,20 @@ class XOR(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: speck = SpeckBlockCipher(number_of_rounds=3)
-            sage: xor_component = speck.component_from(0, 2)
-            sage: xor_component.sat_xor_linear_mask_propagation_constraints()
-            (['xor_0_2_0_i',
-              'xor_0_2_1_i',
-              ...
-              'xor_0_2_14_o',
-              'xor_0_2_15_o'],
-             ['xor_0_2_0_i -xor_0_2_0_o',
-              'xor_0_2_16_i -xor_0_2_0_i',
-              ...
-              'xor_0_2_31_i -xor_0_2_15_i',
-              'xor_0_2_15_o -xor_0_2_31_i'])
+                        sage: from claasp.ciphers.single_component_ciphers.xor_cipher import XorCipher
+                        sage: cipher = XorCipher(word_bit_size=16, number_of_inputs=2)
+                        sage: xor_component = cipher.get_component_from_id('xor_0_0')
+                        sage: xor_component.sat_xor_linear_mask_propagation_constraints()
+                        (['xor_0_0_0_i',
+                            'xor_0_0_1_i',
+                            ...
+                            'xor_0_0_14_o',
+                            'xor_0_0_15_o'],
+                         ['xor_0_0_0_i -xor_0_0_0_o',
+                            'xor_0_0_16_i -xor_0_0_0_i',
+                            ...
+                            'xor_0_0_31_i -xor_0_0_15_i',
+                            'xor_0_0_15_o -xor_0_0_31_i'])
         """
         _, input_bit_ids = self._generate_component_input_ids()
         out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
@@ -1393,20 +1392,20 @@ class XOR(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: speck = SpeckBlockCipher(number_of_rounds=3)
-            sage: xor_component = speck.component_from(0, 2)
-            sage: xor_component.smt_constraints()
-            (['xor_0_2_0',
-              'xor_0_2_1',
-              ...
-              'xor_0_2_14',
-              'xor_0_2_15'],
-             ['(assert (= xor_0_2_0 (xor modadd_0_1_0 key_48)))',
-              '(assert (= xor_0_2_1 (xor modadd_0_1_1 key_49)))',
-              ...
-              '(assert (= xor_0_2_14 (xor modadd_0_1_14 key_62)))',
-              '(assert (= xor_0_2_15 (xor modadd_0_1_15 key_63)))'])
+                        sage: from claasp.ciphers.single_component_ciphers.xor_cipher import XorCipher
+                        sage: cipher = XorCipher(word_bit_size=16, number_of_inputs=2)
+                        sage: xor_component = cipher.get_component_from_id('xor_0_0')
+                        sage: xor_component.smt_constraints()
+                        (['xor_0_0_0',
+                            'xor_0_0_1',
+                            ...
+                            'xor_0_0_14',
+                            'xor_0_0_15'],
+                         ['(assert (= xor_0_0_0 (xor plaintext_0 key_0)))',
+                            '(assert (= xor_0_0_1 (xor plaintext_1 key_1)))',
+                            ...
+                            '(assert (= xor_0_0_14 (xor plaintext_14 key_14)))',
+                            '(assert (= xor_0_0_15 (xor plaintext_15 key_15)))'])
         """
         input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
@@ -1432,20 +1431,20 @@ class XOR(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: speck = SpeckBlockCipher(number_of_rounds=3)
-            sage: xor_component = speck.component_from(0, 2)
-            sage: xor_component.smt_xor_differential_propagation_constraints()
-            (['xor_0_2_0',
-              'xor_0_2_1',
-              ...
-              'xor_0_2_14',
-              'xor_0_2_15'],
-             ['(assert (= xor_0_2_0 (xor modadd_0_1_0 key_48)))',
-              '(assert (= xor_0_2_1 (xor modadd_0_1_1 key_49)))',
-              ...
-              '(assert (= xor_0_2_14 (xor modadd_0_1_14 key_62)))',
-              '(assert (= xor_0_2_15 (xor modadd_0_1_15 key_63)))'])
+                        sage: from claasp.ciphers.single_component_ciphers.xor_cipher import XorCipher
+                        sage: cipher = XorCipher(word_bit_size=16, number_of_inputs=2)
+                        sage: xor_component = cipher.get_component_from_id('xor_0_0')
+                        sage: xor_component.smt_xor_differential_propagation_constraints()
+                        (['xor_0_0_0',
+                            'xor_0_0_1',
+                            ...
+                            'xor_0_0_14',
+                            'xor_0_0_15'],
+                         ['(assert (= xor_0_0_0 (xor plaintext_0 key_0)))',
+                            '(assert (= xor_0_0_1 (xor plaintext_1 key_1)))',
+                            ...
+                            '(assert (= xor_0_0_14 (xor plaintext_14 key_14)))',
+                            '(assert (= xor_0_0_15 (xor plaintext_15 key_15)))'])
         """
         return self.smt_constraints()
 
@@ -1463,20 +1462,20 @@ class XOR(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: speck = SpeckBlockCipher(number_of_rounds=3)
-            sage: xor_component = speck.component_from(0, 2)
-            sage: xor_component.smt_xor_linear_mask_propagation_constraints()
-            (['xor_0_2_0_o',
-              'xor_0_2_1_o',
-              ...
-              'xor_0_2_30_i',
-              'xor_0_2_31_i'],
-             ['(assert (= xor_0_2_0_o xor_0_2_0_i xor_0_2_16_i))',
-              '(assert (= xor_0_2_1_o xor_0_2_1_i xor_0_2_17_i))',
-              ...
-              '(assert (= xor_0_2_14_o xor_0_2_14_i xor_0_2_30_i))',
-              '(assert (= xor_0_2_15_o xor_0_2_15_i xor_0_2_31_i))'])
+                        sage: from claasp.ciphers.single_component_ciphers.xor_cipher import XorCipher
+                        sage: cipher = XorCipher(word_bit_size=16, number_of_inputs=2)
+                        sage: xor_component = cipher.get_component_from_id('xor_0_0')
+                        sage: xor_component.smt_xor_linear_mask_propagation_constraints()
+                        (['xor_0_0_0_o',
+                            'xor_0_0_1_o',
+                            ...
+                            'xor_0_0_30_i',
+                            'xor_0_0_31_i'],
+                         ['(assert (= xor_0_0_0_o xor_0_0_0_i xor_0_0_16_i))',
+                            '(assert (= xor_0_0_1_o xor_0_0_1_i xor_0_0_17_i))',
+                            ...
+                            '(assert (= xor_0_0_14_o xor_0_0_14_i xor_0_0_30_i))',
+                            '(assert (= xor_0_0_15_o xor_0_0_15_i xor_0_0_31_i))'])
         """
         _, input_bit_ids = self._generate_component_input_ids()
         out_suffix = constants.OUTPUT_BIT_ID_SUFFIX

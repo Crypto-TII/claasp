@@ -1,8 +1,6 @@
 from claasp.cipher_modules.models.cp.mzn_model import MznModel
 from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
-from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
-from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
+from claasp.ciphers.single_component_ciphers.xor_cipher import XorCipher
 from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
 from claasp.components.xor_component import cp_build_truncated_table, generic_with_constant_sign_linear_constraints
 from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import \
@@ -24,34 +22,34 @@ def test_generic_with_constant_sign_linear_constraints():
 
 
 def test_algebraic_polynomials():
-    fancy = FancyBlockCipher(number_of_rounds=1)
-    xor_component = fancy.get_component_from_id("xor_0_7")
-    algebraic = AlgebraicModel(fancy)
+    cipher = XorCipher(word_bit_size=12, number_of_inputs=2)
+    xor_component = cipher.get_component_from_id("xor_0_0")
+    algebraic = AlgebraicModel(cipher)
     algebraic_polynomials = xor_component.algebraic_polynomials(algebraic)
 
-    assert str(algebraic_polynomials) == '[xor_0_7_y0 + xor_0_7_x12 + xor_0_7_x0,' \
-                                         ' xor_0_7_y1 + xor_0_7_x13 + xor_0_7_x1,' \
-                                         ' xor_0_7_y2 + xor_0_7_x14 + xor_0_7_x2,' \
-                                         ' xor_0_7_y3 + xor_0_7_x15 + xor_0_7_x3,' \
-                                         ' xor_0_7_y4 + xor_0_7_x16 + xor_0_7_x4,' \
-                                         ' xor_0_7_y5 + xor_0_7_x17 + xor_0_7_x5,' \
-                                         ' xor_0_7_y6 + xor_0_7_x18 + xor_0_7_x6,' \
-                                         ' xor_0_7_y7 + xor_0_7_x19 + xor_0_7_x7,' \
-                                         ' xor_0_7_y8 + xor_0_7_x20 + xor_0_7_x8,' \
-                                         ' xor_0_7_y9 + xor_0_7_x21 + xor_0_7_x9,' \
-                                         ' xor_0_7_y10 + xor_0_7_x22 + xor_0_7_x10,' \
-                                         ' xor_0_7_y11 + xor_0_7_x23 + xor_0_7_x11]'
+    assert str(algebraic_polynomials) == '[xor_0_0_y0 + xor_0_0_x12 + xor_0_0_x0,' \
+                                         ' xor_0_0_y1 + xor_0_0_x13 + xor_0_0_x1,' \
+                                         ' xor_0_0_y2 + xor_0_0_x14 + xor_0_0_x2,' \
+                                         ' xor_0_0_y3 + xor_0_0_x15 + xor_0_0_x3,' \
+                                         ' xor_0_0_y4 + xor_0_0_x16 + xor_0_0_x4,' \
+                                         ' xor_0_0_y5 + xor_0_0_x17 + xor_0_0_x5,' \
+                                         ' xor_0_0_y6 + xor_0_0_x18 + xor_0_0_x6,' \
+                                         ' xor_0_0_y7 + xor_0_0_x19 + xor_0_0_x7,' \
+                                         ' xor_0_0_y8 + xor_0_0_x20 + xor_0_0_x8,' \
+                                         ' xor_0_0_y9 + xor_0_0_x21 + xor_0_0_x9,' \
+                                         ' xor_0_0_y10 + xor_0_0_x22 + xor_0_0_x10,' \
+                                         ' xor_0_0_y11 + xor_0_0_x23 + xor_0_0_x11]'
 
-    fancy = FancyBlockCipher(number_of_rounds=2)
-    xor_component = fancy.get_component_from_id("xor_1_13")
-    algebraic = AlgebraicModel(fancy)
+    cipher = XorCipher(word_bit_size=6, number_of_inputs=3)
+    xor_component = cipher.get_component_from_id("xor_0_0")
+    algebraic = AlgebraicModel(cipher)
     algebraic_polynomials = xor_component.algebraic_polynomials(algebraic)
-    assert str(algebraic_polynomials) == '[xor_1_13_y0 + xor_1_13_x12 + xor_1_13_x6 + xor_1_13_x0,' \
-                                         ' xor_1_13_y1 + xor_1_13_x13 + xor_1_13_x7 + xor_1_13_x1,' \
-                                         ' xor_1_13_y2 + xor_1_13_x14 + xor_1_13_x8 + xor_1_13_x2,' \
-                                         ' xor_1_13_y3 + xor_1_13_x15 + xor_1_13_x9 + xor_1_13_x3,' \
-                                         ' xor_1_13_y4 + xor_1_13_x16 + xor_1_13_x10 + xor_1_13_x4,' \
-                                         ' xor_1_13_y5 + xor_1_13_x17 + xor_1_13_x11 + xor_1_13_x5]'
+    assert str(algebraic_polynomials) == '[xor_0_0_y0 + xor_0_0_x12 + xor_0_0_x6 + xor_0_0_x0,' \
+                                         ' xor_0_0_y1 + xor_0_0_x13 + xor_0_0_x7 + xor_0_0_x1,' \
+                                         ' xor_0_0_y2 + xor_0_0_x14 + xor_0_0_x8 + xor_0_0_x2,' \
+                                         ' xor_0_0_y3 + xor_0_0_x15 + xor_0_0_x9 + xor_0_0_x3,' \
+                                         ' xor_0_0_y4 + xor_0_0_x16 + xor_0_0_x10 + xor_0_0_x4,' \
+                                         ' xor_0_0_y5 + xor_0_0_x17 + xor_0_0_x11 + xor_0_0_x5]'
 
 
 def test_cp_xor_differential_propagation_first_step_constraints():
@@ -67,31 +65,31 @@ def test_cp_xor_differential_propagation_first_step_constraints():
 
 
 def test_smt_constraints():
-    speck = SpeckBlockCipher(number_of_rounds=3)
-    xor_component = speck.component_from(0, 2)
+    cipher = XorCipher(word_bit_size=16, number_of_inputs=2)
+    xor_component = cipher.get_component_from_id('xor_0_0')
     output_bit_ids, constraints = xor_component.smt_constraints()
 
-    assert output_bit_ids[0] == 'xor_0_2_0'
-    assert output_bit_ids[1] == 'xor_0_2_1'
-    assert output_bit_ids[-2] == 'xor_0_2_14'
-    assert output_bit_ids[-1] == 'xor_0_2_15'
+    assert output_bit_ids[0] == 'xor_0_0_0'
+    assert output_bit_ids[1] == 'xor_0_0_1'
+    assert output_bit_ids[-2] == 'xor_0_0_14'
+    assert output_bit_ids[-1] == 'xor_0_0_15'
 
-    assert constraints[0] == '(assert (= xor_0_2_0 (xor modadd_0_1_0 key_48)))'
-    assert constraints[1] == '(assert (= xor_0_2_1 (xor modadd_0_1_1 key_49)))'
-    assert constraints[-2] == '(assert (= xor_0_2_14 (xor modadd_0_1_14 key_62)))'
-    assert constraints[-1] == '(assert (= xor_0_2_15 (xor modadd_0_1_15 key_63)))'
+    assert constraints[0] == '(assert (= xor_0_0_0 (xor plaintext_0 key_0)))'
+    assert constraints[1] == '(assert (= xor_0_0_1 (xor plaintext_1 key_1)))'
+    assert constraints[-2] == '(assert (= xor_0_0_14 (xor plaintext_14 key_14)))'
+    assert constraints[-1] == '(assert (= xor_0_0_15 (xor plaintext_15 key_15)))'
 
 def test_milp_bitwise_deterministic_truncated_xor_differential_binary_constraints():
-    cipher = SimonBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
+    cipher = XorCipher(word_bit_size=16, number_of_inputs=2)
     milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(cipher)
     milp.init_model_in_sage_milp_class()
-    xor_component = cipher.get_component_from_id("xor_0_5")
+    xor_component = cipher.get_component_from_id("xor_0_0")
     variables, constraints = xor_component.milp_bitwise_deterministic_truncated_xor_differential_binary_constraints(milp)
 
-    assert str(variables[0]) == "('x[and_0_4_0_class_bit_0]', x_0)"
-    assert str(variables[1]) == "('x[and_0_4_0_class_bit_1]', x_1)"
-    assert str(variables[-2]) == "('x[xor_0_5_15_class_bit_0]', x_94)"
-    assert str(variables[-1]) == "('x[xor_0_5_15_class_bit_1]', x_95)"
+    assert str(variables[0]) == "('x[plaintext_0_class_bit_0]', x_0)"
+    assert str(variables[1]) == "('x[plaintext_0_class_bit_1]', x_1)"
+    assert str(variables[-2]) == "('x[xor_0_0_15_class_bit_0]', x_94)"
+    assert str(variables[-1]) == "('x[xor_0_0_15_class_bit_1]', x_95)"
 
     assert str(constraints[0]) == 'x_96 == 2*x_0 + x_1'
     assert str(constraints[1]) == 'x_97 == 2*x_2 + x_3'
@@ -100,17 +98,16 @@ def test_milp_bitwise_deterministic_truncated_xor_differential_binary_constraint
 
 
 def test_milp_bitwise_deterministic_truncated_xor_differential_constraints():
-    cipher = SimonBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
+    cipher = XorCipher(word_bit_size=16, number_of_inputs=2)
     milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(cipher)
     milp.init_model_in_sage_milp_class()
-    xor_component = cipher.get_component_from_id("xor_0_5")
+    xor_component = cipher.get_component_from_id("xor_0_0")
     variables, constraints = xor_component.milp_bitwise_deterministic_truncated_xor_differential_constraints(milp)
 
-
-    assert str(variables[0]) == "('x_class[and_0_4_0]', x_0)"
-    assert str(variables[1]) == "('x_class[and_0_4_1]', x_1)"
-    assert str(variables[-2]) == "('x_class[xor_0_5_14]', x_46)"
-    assert str(variables[-1]) == "('x_class[xor_0_5_15]', x_47)"
+    assert str(variables[0]) == "('x_class[plaintext_0]', x_0)"
+    assert str(variables[1]) == "('x_class[plaintext_1]', x_1)"
+    assert str(variables[-2]) == "('x_class[xor_0_0_14]', x_46)"
+    assert str(variables[-1]) == "('x_class[xor_0_0_15]', x_47)"
 
     assert str(constraints[0]) == 'x_0 <= 3 - 2*x_48'
     assert str(constraints[1]) == '2 - 2*x_48 <= x_0'

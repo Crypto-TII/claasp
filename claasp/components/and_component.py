@@ -221,7 +221,6 @@ class AND(MultiInputNonlinearLogicalOperator):
 
         EXAMPLES::
 
-            sage: import warnings; warnings.filterwarnings('ignore')
             sage: from claasp.ciphers.single_component_ciphers.and_cipher import AndCipher
             sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
             sage: cipher = AndCipher(word_bit_size=12, number_of_inputs=2)
@@ -382,9 +381,8 @@ class AND(MultiInputNonlinearLogicalOperator):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.single_component_ciphers.and_cipher import AndCipher
-            sage: cipher = AndCipher(word_bit_size=12, number_of_inputs=2)
-            sage: and_component = cipher.get_component_from_id('and_0_0')
+            sage: from claasp.components.and_component import AND
+            sage: and_component = AND(0, 0, ['plaintext', 'key'], [list(range(12)), list(range(12))], 12)
             sage: and_component.sat_constraints()
             (['and_0_0_0',
               'and_0_0_1',
@@ -419,9 +417,8 @@ class AND(MultiInputNonlinearLogicalOperator):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.single_component_ciphers.and_cipher import AndCipher
-            sage: cipher = AndCipher(word_bit_size=12, number_of_inputs=2)
-            sage: and_component = cipher.get_component_from_id('and_0_0')
+            sage: from claasp.components.and_component import AND
+            sage: and_component = AND(0, 0, ['plaintext', 'key'], [list(range(12)), list(range(12))], 12)
             sage: and_component.smt_constraints()
             (['and_0_0_0',
               'and_0_0_1',
