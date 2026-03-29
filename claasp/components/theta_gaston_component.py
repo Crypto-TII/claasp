@@ -39,6 +39,27 @@ def _matrix_cache_path(cipher_id):
 
 
 class ThetaGaston(LinearLayer):
+    """
+    Construct a Theta-Gaston component.
+
+
+    INPUT:
+
+    - Parameters follow this class constructor (``__init__``) signature.
+    - Required parameters should not be ``None``.
+    - ``0`` is valid for round/component indices and numeric parameters when semantically meaningful.
+    - For list parameters, pass Python lists; ``[]`` is valid only when explicitly supported by the component semantics.
+    EXAMPLES::
+
+        sage: from claasp.components.theta_gaston_component import ThetaGaston
+        sage: component = ThetaGaston(0, 0, ['input'], [[i for i in range(320)]], 320, [1, 18, 23, 25, 32, 52, 60, 63])
+        sage: print(component.id)
+        theta_gaston_0_0
+        sage: print(component.type)
+        linear_layer
+        sage: print(component.input_bit_size)
+        320
+    """
     def __init__(
         self,
         current_round_number,

@@ -61,6 +61,27 @@ def update_constraints_for_more_than_one_bit(
 
 
 class LinearLayer(Component):
+    """
+    Construct a linear layer component.
+
+
+    INPUT:
+
+    - Parameters follow this class constructor (``__init__``) signature.
+    - Required parameters should not be ``None``.
+    - ``0`` is valid for round/component indices and numeric parameters when semantically meaningful.
+    - For list parameters, pass Python lists; ``[]`` is valid only when explicitly supported by the component semantics.
+    EXAMPLES::
+
+        sage: from claasp.components.linear_layer_component import LinearLayer
+        sage: component = LinearLayer(0, 0, ['input'], [[0, 1, 2, 3]], 4, [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
+        sage: print(component.id)
+        linear_layer_0_0
+        sage: print(component.type)
+        linear_layer
+        sage: print(len(component.description))
+        4
+    """
     def __init__(
         self,
         current_round_number,

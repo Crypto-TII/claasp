@@ -76,6 +76,38 @@ def free_input(code):
 
 
 class Component:
+    """
+    Construct a generic component.
+
+    INPUT:
+
+    - ``component_id`` -- **string**; unique component identifier (for example,
+        ``'xor_0_0'``). Required and should not be ``None``.
+    - ``component_type`` -- **string**; component category (for example,
+        ``'word_operation'``). Required and should not be ``None``.
+    - ``component_input`` -- **Input**; instance of :class:`claasp.input.Input`.
+        Required and should not be ``None``.
+        ``component_input.id_links`` must be a list.
+        ``component_input.bit_positions`` must be a list of lists and should not be empty.
+        ``component_input.id_links`` and ``component_input.bit_positions`` must have the same length.
+    - ``output_bit_size`` -- **integer**; output width in bits. ``0`` is allowed
+        when the component semantics allows it.
+    - ``description`` -- **object**; component-specific metadata (typically a
+        list). Required and should not be ``None``.
+
+    EXAMPLES::
+
+            sage: from claasp.component import Component
+            sage: from claasp.input import Input
+            sage: component_input = Input(4, ['input'], [[0, 1, 2, 3]])
+            sage: component = Component('xor_0_0', 'word_operation', component_input, 4, ['XOR', 2])
+            sage: print(component.id)
+            xor_0_0
+            sage: print(component.type)
+            word_operation
+            sage: print(component.output_bit_size)
+            4
+    """
     def __init__(
         self,
         component_id,

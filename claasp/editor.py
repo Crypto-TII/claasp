@@ -1224,7 +1224,7 @@ def add_shift_rows_component(cipher, input_id_links, input_bit_positions, rotati
     - ``input_bit_positions`` -- **list**; the list of input_bits corresponding to the input_id links
     - ``rotation_amount`` -- **integer** (default: `1`); number of words to rotate, positive for right rotation and
       negative for left rotation
-        - ``word_bit_size`` -- **integer** (default: `8`); size of each word in bits
+    - ``word_bit_size`` -- **integer** (default: `8`); size of each word in bits
     - ``number_of_words`` -- **integer** (default: `4`); total number of words in the state
 
     EXAMPLES::

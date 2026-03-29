@@ -22,6 +22,27 @@ from claasp.components.multi_input_non_linear_logical_operator_component import 
 
 
 class OR(MultiInputNonlinearLogicalOperator):
+    """
+    Construct an OR component.
+
+
+    INPUT:
+
+    - Parameters follow this class constructor (``__init__``) signature.
+    - Required parameters should not be ``None``.
+    - ``0`` is valid for round/component indices and numeric parameters when semantically meaningful.
+    - For list parameters, pass Python lists; ``[]`` is valid only when explicitly supported by the component semantics.
+    EXAMPLES::
+
+        sage: from claasp.components.or_component import OR
+        sage: component = OR(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2)
+        sage: print(component.id)
+        or_0_0
+        sage: print(component.type)
+        word_operation
+        sage: print(component.description)
+        ['OR', 2]
+    """
     def __init__(
         self,
         current_round_number,

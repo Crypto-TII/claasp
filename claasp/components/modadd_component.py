@@ -118,6 +118,27 @@ def smt_modadd_seq(outputs_ids, inputs_ids, carries_ids):
 
 
 class MODADD(Modular):
+    """
+    Construct a modular addition component.
+
+
+    INPUT:
+
+    - Parameters follow this class constructor (``__init__``) signature.
+    - Required parameters should not be ``None``.
+    - ``0`` is valid for round/component indices and numeric parameters when semantically meaningful.
+    - For list parameters, pass Python lists; ``[]`` is valid only when explicitly supported by the component semantics.
+    EXAMPLES::
+
+        sage: from claasp.components.modadd_component import MODADD
+        sage: component = MODADD(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2, 2)
+        sage: print(component.id)
+        modadd_0_0
+        sage: print(component.type)
+        word_operation
+        sage: print(component.description)
+        ['MODADD', 2, 2]
+    """
     def __init__(
         self,
         current_round_number,

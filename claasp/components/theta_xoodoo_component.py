@@ -23,6 +23,27 @@ from claasp.cipher_modules.generic_functions import THETA_XOODOO
 
 
 class ThetaXoodoo(LinearLayer):
+    """
+    Construct a Theta-Xoodoo component.
+
+
+    INPUT:
+
+    - Parameters follow this class constructor (``__init__``) signature.
+    - Required parameters should not be ``None``.
+    - ``0`` is valid for round/component indices and numeric parameters when semantically meaningful.
+    - For list parameters, pass Python lists; ``[]`` is valid only when explicitly supported by the component semantics.
+    EXAMPLES::
+
+        sage: from claasp.components.theta_xoodoo_component import ThetaXoodoo
+        sage: component = ThetaXoodoo(0, 0, ['input'], [[i for i in range(3 * 4 * 32)]], 3 * 4 * 32)
+        sage: print(component.id)
+        theta_xoodoo_0_0
+        sage: print(component.type)
+        linear_layer
+        sage: print(component.input_bit_size)
+        384
+    """
     def __init__(
         self,
         current_round_number,

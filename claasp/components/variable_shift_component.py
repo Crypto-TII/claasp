@@ -26,6 +26,27 @@ from claasp.name_mappings import WORD_OPERATION
 
 
 class VariableShift(Component):
+    """
+    Construct a variable shift component.
+
+
+    INPUT:
+
+    - Parameters follow this class constructor (``__init__``) signature.
+    - Required parameters should not be ``None``.
+    - ``0`` is valid for round/component indices and numeric parameters when semantically meaningful.
+    - For list parameters, pass Python lists; ``[]`` is valid only when explicitly supported by the component semantics.
+    EXAMPLES::
+
+        sage: from claasp.components.variable_shift_component import VariableShift
+        sage: component = VariableShift(0, 0, ['input1', 'input2'], [[0, 1], [0, 1, 2, 3]], 4, 1)
+        sage: print(component.id)
+        var_shift_0_0
+        sage: print(component.type)
+        word_operation
+        sage: print(component.description)
+        ['SHIFT_BY_VARIABLE_AMOUNT', 1]
+    """
     def __init__(
         self,
         current_round_number,

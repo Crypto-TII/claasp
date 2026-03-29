@@ -265,6 +265,27 @@ def _mzn_update_sbox_mant_for_deterministic_truncated_xor_differential(
 
 
 class SBOX(Component):
+    """
+    Construct an S-box component.
+
+
+    INPUT:
+
+    - Parameters follow this class constructor (``__init__``) signature.
+    - Required parameters should not be ``None``.
+    - ``0`` is valid for round/component indices and numeric parameters when semantically meaningful.
+    - For list parameters, pass Python lists; ``[]`` is valid only when explicitly supported by the component semantics.
+    EXAMPLES::
+
+        sage: from claasp.components.sbox_component import SBOX
+        sage: component = SBOX(0, 0, ['input'], [[0, 1, 2]], 3, [0, 1, 2, 3, 4, 5, 6, 7])
+        sage: print(component.id)
+        sbox_0_0
+        sage: print(component.type)
+        sbox
+        sage: print(len(component.description))
+        8
+    """
     sboxes_ddt_templates = {}
     sboxes_lat_templates = {}
 

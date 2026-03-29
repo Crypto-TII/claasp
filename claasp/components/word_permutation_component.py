@@ -20,6 +20,27 @@ from claasp.components.mix_column_component import MixColumn
 
 
 class WordPermutation(MixColumn):
+    """
+    Construct a word permutation component.
+
+
+    INPUT:
+
+    - Parameters follow this class constructor (``__init__``) signature.
+    - Required parameters should not be ``None``.
+    - ``0`` is valid for round/component indices and numeric parameters when semantically meaningful.
+    - For list parameters, pass Python lists; ``[]`` is valid only when explicitly supported by the component semantics.
+    EXAMPLES::
+
+        sage: from claasp.components.word_permutation_component import WordPermutation
+        sage: component = WordPermutation(0, 0, ['input'], [[0, 1, 2, 3]], 0, [1, 0], 2)
+        sage: print(component.id)
+        mix_column_0_0
+        sage: print(component.type)
+        mix_column
+        sage: print(component.description[2])
+        2
+    """
     def __init__(
         self,
         current_round_number,

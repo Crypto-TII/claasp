@@ -21,6 +21,27 @@ from claasp.name_mappings import WORD_OPERATION
 
 
 class ShiftRows(Rotate):
+    """
+    Construct a ShiftRows component.
+
+
+    INPUT:
+
+    - Parameters follow this class constructor (``__init__``) signature.
+    - Required parameters should not be ``None``.
+    - ``0`` is valid for round/component indices and numeric parameters when semantically meaningful.
+    - For list parameters, pass Python lists; ``[]`` is valid only when explicitly supported by the component semantics.
+    EXAMPLES::
+
+        sage: from claasp.components.shift_rows_component import ShiftRows
+        sage: component = ShiftRows(0, 0, ['input'], [[0, 1, 2, 3]], 4, 2)
+        sage: print(component.id)
+        shift_rows_0_0
+        sage: print(component.type)
+        word_operation
+        sage: print(component.description)
+        ['ROTATE', 2]
+    """
     def __init__(
         self,
         current_round_number,

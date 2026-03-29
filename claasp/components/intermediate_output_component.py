@@ -50,6 +50,27 @@ def update_xor_linear_constraints_for_more_than_one_bit(constraints, intermediat
 
 
 class IntermediateOutput(CipherOutput):
+    """
+    Construct an intermediate output component.
+
+
+    INPUT:
+
+    - Parameters follow this class constructor (``__init__``) signature.
+    - Required parameters should not be ``None``.
+    - ``0`` is valid for round/component indices and numeric parameters when semantically meaningful.
+    - For list parameters, pass Python lists; ``[]`` is valid only when explicitly supported by the component semantics.
+    EXAMPLES::
+
+        sage: from claasp.components.intermediate_output_component import IntermediateOutput
+        sage: component = IntermediateOutput(0, 0, ['input'], [[0, 1, 2, 3]], 4, 'round_output')
+        sage: print(component.id)
+        intermediate_output_0_0
+        sage: print(component.type)
+        intermediate_output
+        sage: print(component.description)
+        ['round_output']
+    """
     def __init__(
         self,
         current_round_number,

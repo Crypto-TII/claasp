@@ -24,12 +24,30 @@ from claasp.cipher_modules.models.sat.utils import utils as sat_utils
 class IdeaModmul(Modular):
     """
     Component for modular multiplication (a * b) mod M.
-    
+
     This component implements modular multiplication with automatic
     0 <-> 2^n mapping for moduli of the form 2^n + 1:
     - Input: 0 is treated as 2^n before multiplication
     - Output: 2^n is mapped back to 0 after reduction
     - Implements multiplicative group structure where 0 represents 2^n
+
+
+    INPUT:
+
+    - Parameters follow this class constructor (``__init__``) signature.
+    - Required parameters should not be ``None``.
+    - ``0`` is valid for round/component indices and numeric parameters when semantically meaningful.
+    - For list parameters, pass Python lists; ``[]`` is valid only when explicitly supported by the component semantics.
+    EXAMPLES::
+
+        sage: from claasp.components.idea_modmul_component import IdeaModmul
+        sage: component = IdeaModmul(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2, 5)
+        sage: print(component.id)
+        idea_modmul_0_0
+        sage: print(component.type)
+        word_operation
+        sage: print(component.description)
+        ['IDEA_MODMUL', 2, 5]
     """
     
     def __init__(

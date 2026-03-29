@@ -24,6 +24,27 @@ from claasp.name_mappings import WORD_OPERATION
 
 
 class Rotate(Component):
+    """
+    Construct a rotate component.
+
+
+    INPUT:
+
+    - Parameters follow this class constructor (``__init__``) signature.
+    - Required parameters should not be ``None``.
+    - ``0`` is valid for round/component indices and numeric parameters when semantically meaningful.
+    - For list parameters, pass Python lists; ``[]`` is valid only when explicitly supported by the component semantics.
+    EXAMPLES::
+
+        sage: from claasp.components.rotate_component import Rotate
+        sage: component = Rotate(0, 0, ['input'], [[0, 1]], 2, -1)
+        sage: print(component.id)
+        rot_0_0
+        sage: print(component.type)
+        word_operation
+        sage: print(component.description)
+        ['ROTATE', -1]
+    """
     def __init__(
         self,
         current_round_number,

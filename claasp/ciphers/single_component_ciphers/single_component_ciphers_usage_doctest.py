@@ -94,11 +94,11 @@ EXAMPLES::
     True
 
     sage: from claasp.ciphers.single_component_ciphers.variable_rotate_cipher import VariableRotateCipher
-    sage: VariableRotateCipher(bit_size=8, amount_bit_size=3, parameter=1).evaluate([0xA5, 0])
+    sage: VariableRotateCipher(bit_size=8, amount_bit_size=3, direction=1).evaluate([0xA5, 0])
     165
 
     sage: from claasp.ciphers.single_component_ciphers.variable_shift_cipher import VariableShiftCipher
-    sage: VariableShiftCipher(bit_size=8, amount_bit_size=3, parameter=1).evaluate([0xA5, 0])
+    sage: VariableShiftCipher(bit_size=8, amount_bit_size=3, direction=1).evaluate([0xA5, 0])
     165
 
     sage: from claasp.ciphers.single_component_ciphers.word_permutation_cipher import WordPermutationCipher

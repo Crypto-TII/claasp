@@ -24,6 +24,27 @@ from claasp.name_mappings import WORD_OPERATION
 
 
 class SHIFT(Component):
+    """
+    Construct a SHIFT component.
+
+
+    INPUT:
+
+    - Parameters follow this class constructor (``__init__``) signature.
+    - Required parameters should not be ``None``.
+    - ``0`` is valid for round/component indices and numeric parameters when semantically meaningful.
+    - For list parameters, pass Python lists; ``[]`` is valid only when explicitly supported by the component semantics.
+    EXAMPLES::
+
+        sage: from claasp.components.shift_component import SHIFT
+        sage: component = SHIFT(0, 0, ['input'], [[0, 1]], 2, -1)
+        sage: print(component.id)
+        shift_0_0
+        sage: print(component.type)
+        word_operation
+        sage: print(component.description)
+        ['SHIFT', -1]
+    """
     def __init__(
         self,
         current_round_number,

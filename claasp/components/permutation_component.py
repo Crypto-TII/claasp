@@ -20,6 +20,27 @@ from claasp.components.linear_layer_component import LinearLayer
 
 
 class Permutation(LinearLayer):
+    """
+    Construct a permutation component.
+
+
+    INPUT:
+
+    - Parameters follow this class constructor (``__init__``) signature.
+    - Required parameters should not be ``None``.
+    - ``0`` is valid for round/component indices and numeric parameters when semantically meaningful.
+    - For list parameters, pass Python lists; ``[]`` is valid only when explicitly supported by the component semantics.
+    EXAMPLES::
+
+        sage: from claasp.components.permutation_component import Permutation
+        sage: component = Permutation(0, 0, ['input'], [[0, 1, 2, 3]], 4, [1, 3, 2, 0])
+        sage: print(component.id)
+        linear_layer_0_0
+        sage: print(component.type)
+        linear_layer
+        sage: print(component.description[0])
+        [0, 1, 0, 0]
+    """
     def __init__(
         self,
         current_round_number,

@@ -20,6 +20,27 @@ from claasp.components.modular_component import Modular
 
 
 class MODMUL(Modular):
+    """
+    Construct a modular multiplication component.
+
+
+    INPUT:
+
+    - Parameters follow this class constructor (``__init__``) signature.
+    - Required parameters should not be ``None``.
+    - ``0`` is valid for round/component indices and numeric parameters when semantically meaningful.
+    - For list parameters, pass Python lists; ``[]`` is valid only when explicitly supported by the component semantics.
+    EXAMPLES::
+
+        sage: from claasp.components.modmul_component import MODMUL
+        sage: component = MODMUL(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2, 2)
+        sage: print(component.id)
+        modmul_0_0
+        sage: print(component.type)
+        word_operation
+        sage: print(component.description)
+        ['MODMUL', 2, 2]
+    """
     def __init__(
         self,
         current_round_number,

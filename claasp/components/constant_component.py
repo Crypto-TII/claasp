@@ -75,6 +75,27 @@ def constant_to_repr(val, output_size):
 
 
 class Constant(Component):
+    """
+    Construct a constant component.
+
+
+    INPUT:
+
+    - Parameters follow this class constructor (``__init__``) signature.
+    - Required parameters should not be ``None``.
+    - ``0`` is valid for round/component indices and numeric parameters when semantically meaningful.
+    - For list parameters, pass Python lists; ``[]`` is valid only when explicitly supported by the component semantics.
+    EXAMPLES::
+
+        sage: from claasp.components.constant_component import Constant
+        sage: component = Constant(0, 0, 7, 0x8)
+        sage: print(component.id)
+        constant_0_0
+        sage: print(component.type)
+        constant
+        sage: print(component.description)
+        ['0b0001000']
+    """
     def __init__(self, current_round_number, current_round_number_of_components, output_bit_size, value):
         component_id = f"{CONSTANT}_{current_round_number}_{current_round_number_of_components}"
         component_type = CONSTANT

@@ -23,6 +23,27 @@ from claasp.cipher_modules.generic_functions import THETA_KECCAK
 
 
 class ThetaKeccak(LinearLayer):
+    """
+    Construct a Theta-Keccak component.
+
+
+    INPUT:
+
+    - Parameters follow this class constructor (``__init__``) signature.
+    - Required parameters should not be ``None``.
+    - ``0`` is valid for round/component indices and numeric parameters when semantically meaningful.
+    - For list parameters, pass Python lists; ``[]`` is valid only when explicitly supported by the component semantics.
+    EXAMPLES::
+
+        sage: from claasp.components.theta_keccak_component import ThetaKeccak
+        sage: component = ThetaKeccak(0, 0, ['input'], [[i for i in range(25)]], 25)
+        sage: print(component.id)
+        theta_keccak_0_0
+        sage: print(component.type)
+        linear_layer
+        sage: print(component.input_bit_size)
+        25
+    """
     def __init__(
         self,
         current_round_number,

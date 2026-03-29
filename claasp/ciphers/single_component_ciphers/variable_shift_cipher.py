@@ -5,7 +5,7 @@
 from claasp.ciphers.single_component_ciphers._base import SingleComponentCipher, add_cipher_output_from_component
 from claasp.name_mappings import HASH_FUNCTION, INPUT_KEY, INPUT_PLAINTEXT
 
-PARAMETERS_CONFIGURATION_LIST = [{"bit_size": 8, "amount_bit_size": 3, "parameter": 1}]
+PARAMETERS_CONFIGURATION_LIST = [{"bit_size": 8, "amount_bit_size": 3, "direction": 1}]
 
 
 class VariableShiftCipher(SingleComponentCipher):
@@ -16,7 +16,7 @@ class VariableShiftCipher(SingleComponentCipher):
 
     - ``bit_size`` -- **integer** (default: `8`); input and output bit size
     - ``amount_bit_size`` -- **integer** (default: `3`); bit size of the shift amount input
-    - ``parameter`` -- **integer** (default: `1`); direction (positive = left, negative = right)
+    - ``direction`` -- **integer** (default: `1`); direction (positive = left, negative = right)
 
     EXAMPLES::
 
@@ -29,7 +29,7 @@ class VariableShiftCipher(SingleComponentCipher):
         sage: cipher.number_of_rounds
         1
     """
-    def __init__(self, bit_size=8, amount_bit_size=3, parameter=1):
+    def __init__(self, bit_size=8, amount_bit_size=3, direction=1):
         super().__init__(
             family_name="variable_shift_cipher",
             cipher_type=HASH_FUNCTION,
@@ -41,6 +41,6 @@ class VariableShiftCipher(SingleComponentCipher):
             [INPUT_PLAINTEXT, INPUT_KEY],
             [list(range(bit_size)), list(range(amount_bit_size))],
             bit_size,
-            parameter,
+            direction,
         )
         add_cipher_output_from_component(self, var_shift_component)

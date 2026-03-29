@@ -137,6 +137,27 @@ def get_milp_constraints_from_inequalities(inequalities, input_vars, number_of_i
 
 
 class XOR(Component):
+    """
+    Construct an XOR component.
+
+
+    INPUT:
+
+    - Parameters follow this class constructor (``__init__``) signature.
+    - Required parameters should not be ``None``.
+    - ``0`` is valid for round/component indices and numeric parameters when semantically meaningful.
+    - For list parameters, pass Python lists; ``[]`` is valid only when explicitly supported by the component semantics.
+    EXAMPLES::
+
+        sage: from claasp.components.xor_component import XOR
+        sage: component = XOR(0, 0, ['input1', 'input2', 'input2'], [[0, 1], [0, 1], [2, 3]], 2)
+        sage: print(component.id)
+        xor_0_0
+        sage: print(component.type)
+        word_operation
+        sage: print(component.description)
+        ['XOR', 3]
+    """
     def __init__(
         self,
         current_round_number,

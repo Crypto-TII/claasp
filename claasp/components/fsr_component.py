@@ -71,6 +71,28 @@ def _words_array_to_bits(word_array, word_gf):
 
 
 class FSR(Component):
+    """
+    Construct an FSR component.
+
+
+    INPUT:
+
+    - Parameters follow this class constructor (``__init__``) signature.
+    - Required parameters should not be ``None``.
+    - ``0`` is valid for round/component indices and numeric parameters when semantically meaningful.
+    - For list parameters, pass Python lists; ``[]`` is valid only when explicitly supported by the component semantics.
+    EXAMPLES::
+
+        sage: from claasp.components.fsr_component import FSR
+        sage: fsr_description = [[[[5, [[4], [5], [6, 7]]], [7, [[0], [8], [1, 2]]]], 1]]
+        sage: component = FSR(0, 0, ['input'], [[0, 1, 2, 3, 4, 5, 6, 7, 8]], 0, fsr_description)
+        sage: print(component.id)
+        fsr_0_0
+        sage: print(component.type)
+        fsr
+        sage: print(component.output_bit_size)
+        0
+    """
     def __init__(
         self,
         current_round_number,

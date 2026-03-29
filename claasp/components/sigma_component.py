@@ -23,6 +23,27 @@ from claasp.components.linear_layer_component import LinearLayer
 
 
 class Sigma(LinearLayer):
+    """
+    Construct a sigma component.
+
+
+    INPUT:
+
+    - Parameters follow this class constructor (``__init__``) signature.
+    - Required parameters should not be ``None``.
+    - ``0`` is valid for round/component indices and numeric parameters when semantically meaningful.
+    - For list parameters, pass Python lists; ``[]`` is valid only when explicitly supported by the component semantics.
+    EXAMPLES::
+
+        sage: from claasp.components.sigma_component import Sigma
+        sage: component = Sigma(0, 0, ['input'], [[0, 1, 2, 3]], 4, [1, 3])
+        sage: print(component.id)
+        sigma_0_0
+        sage: print(component.type)
+        linear_layer
+        sage: print(component.input_bit_size)
+        4
+    """
     def __init__(
         self,
         current_round_number,

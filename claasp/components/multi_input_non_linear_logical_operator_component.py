@@ -28,6 +28,27 @@ from claasp.name_mappings import WORD_OPERATION
 
 
 class MultiInputNonlinearLogicalOperator(Component):
+    """
+    Construct a generic multi-input non-linear logical operator component.
+
+
+    INPUT:
+
+    - Parameters follow this class constructor (``__init__``) signature.
+    - Required parameters should not be ``None``.
+    - ``0`` is valid for round/component indices and numeric parameters when semantically meaningful.
+    - For list parameters, pass Python lists; ``[]`` is valid only when explicitly supported by the component semantics.
+    EXAMPLES::
+
+        sage: from claasp.components.multi_input_non_linear_logical_operator_component import MultiInputNonlinearLogicalOperator
+        sage: component = MultiInputNonlinearLogicalOperator(0, 0, ['a', 'b'], [[0, 1], [0, 1]], 2, 'and')
+        sage: print(component.id)
+        and_0_0
+        sage: print(component.type)
+        word_operation
+        sage: print(component.description)
+        ['AND', 2]
+    """
     def __init__(
         self,
         current_round_number,

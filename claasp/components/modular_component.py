@@ -71,6 +71,27 @@ def generic_sign_linear_constraints(inputs, outputs):
 
 
 class Modular(Component):
+    """
+    Construct a generic modular arithmetic component.
+
+
+    INPUT:
+
+    - Parameters follow this class constructor (``__init__``) signature.
+    - Required parameters should not be ``None``.
+    - ``0`` is valid for round/component indices and numeric parameters when semantically meaningful.
+    - For list parameters, pass Python lists; ``[]`` is valid only when explicitly supported by the component semantics.
+    EXAMPLES::
+
+        sage: from claasp.components.modular_component import Modular
+        sage: component = Modular(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2, 'modadd', 4)
+        sage: print(component.id)
+        modadd_0_0
+        sage: print(component.type)
+        word_operation
+        sage: print(component.description)
+        ['MODADD', 2, 4]
+    """
     def __init__(
         self,
         current_round_number,

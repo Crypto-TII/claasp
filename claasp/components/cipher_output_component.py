@@ -24,6 +24,27 @@ from claasp.name_mappings import CIPHER_OUTPUT, INTERMEDIATE_OUTPUT
 
 
 class CipherOutput(Component):
+    """
+    Construct a cipher output component.
+
+
+    INPUT:
+
+    - Parameters follow this class constructor (``__init__``) signature.
+    - Required parameters should not be ``None``.
+    - ``0`` is valid for round/component indices and numeric parameters when semantically meaningful.
+    - For list parameters, pass Python lists; ``[]`` is valid only when explicitly supported by the component semantics.
+    EXAMPLES::
+
+        sage: from claasp.components.cipher_output_component import CipherOutput
+        sage: component = CipherOutput(0, 0, ['input'], [[0, 1, 2, 3]], 4)
+        sage: print(component.id)
+        cipher_output_0_0
+        sage: print(component.type)
+        cipher_output
+        sage: print(component.description)
+        ['cipher_output']
+    """
     def __init__(
         self,
         current_round_number,

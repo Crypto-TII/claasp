@@ -83,6 +83,27 @@ def cp_get_all_inputs(word_size, input_bit_positions, input_id_link, numb_of_inp
 
 
 class MixColumn(LinearLayer):
+    """
+    Construct a MixColumn component.
+
+
+    INPUT:
+
+    - Parameters follow this class constructor (``__init__``) signature.
+    - Required parameters should not be ``None``.
+    - ``0`` is valid for round/component indices and numeric parameters when semantically meaningful.
+    - For list parameters, pass Python lists; ``[]`` is valid only when explicitly supported by the component semantics.
+    EXAMPLES::
+
+        sage: from claasp.components.mix_column_component import MixColumn
+        sage: component = MixColumn(0, 0, ['input'], [[0, 1, 2, 3]], 4, [[[2, 3], [3, 2]], 1, 3])
+        sage: print(component.id)
+        mix_column_0_0
+        sage: print(component.type)
+        mix_column
+        sage: print(component.description[1])
+        1
+    """
     def __init__(
         self,
         current_round_number,
@@ -276,7 +297,7 @@ class MixColumn(LinearLayer):
             E = FiniteField(2**deg_of_extension)
 
         init_matrix = self.description[0]
-        M = Matrix(E, [[E.fetch_int(value) for value in row] for row in init_matrix])
+        M = Matrix(E, [[E.from_integer(value) for value in row] for row in init_matrix])
 
         ninput_words = M.ncols()
         noutput_words = M.nrows()
@@ -546,7 +567,7 @@ class MixColumn(LinearLayer):
                 for element in row:
                     if element not in mul_tables:
                         mul_tables[element] = [
-                            (F.fetch_int(i) * F.fetch_int(element)).integer_representation()
+                            (F.from_integer(i) * F.from_integer(element)).integer_representation()
                             for i in range(2**input_size)
                         ]
             params_mix_column = [
@@ -573,7 +594,7 @@ class MixColumn(LinearLayer):
                 for element in row:
                     if element not in mul_tables:
                         mul_tables[element] = [
-                            (F.fetch_int(i) * F.fetch_int(element)).integer_representation()
+                            (F.from_integer(i) * F.from_integer(element)).integer_representation()
                             for i in range(2**input_size)
                         ]
             return [f"  {self.id}=byte_vector_mix_column({params} , {matrix}, {mul_tables}, {input_size})"]
