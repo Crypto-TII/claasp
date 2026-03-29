@@ -64,12 +64,13 @@ def test_cp_inverse_constraints():
 
 
 def test_cp_wordwise_deterministic_truncated_xor_differential_constraints():
-    aes = ToyAESBlockCipher(number_of_rounds=3)
-    cp = MznModel(aes)
+    class DummyModel:
+        word_size = 8
+    
     shift_component = SHIFT(0, 18, ['sbox_0_2', 'sbox_0_6', 'sbox_0_10', 'sbox_0_14'],
                             [[0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7],
                              [0, 1, 2, 3, 4, 5, 6, 7]], 32, -8)
-    declarations, constraints = shift_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(cp)
+    declarations, constraints = shift_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(DummyModel())
 
     assert declarations == []
 
@@ -78,12 +79,13 @@ def test_cp_wordwise_deterministic_truncated_xor_differential_constraints():
 
 
 def test_cp_xor_differential_first_step_constraints():
-    aes = ToyAESBlockCipher(number_of_rounds=3)
-    cp = MznModel(aes)
+    class DummyModel:
+        word_size = 8
+    
     shift_component = SHIFT(0, 18, ['sbox_0_2', 'sbox_0_6', 'sbox_0_10', 'sbox_0_14'],
                             [[0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7],
                              [0, 1, 2, 3, 4, 5, 6, 7]], 32, -8)
-    declarations, constraints = shift_component.cp_xor_differential_first_step_constraints(cp)
+    declarations, constraints = shift_component.cp_xor_differential_first_step_constraints(DummyModel())
 
     assert declarations == ['array[0..3] of var 0..1: shift_0_18;']
 
