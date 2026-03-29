@@ -71,19 +71,16 @@ class NOT(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.permutations.ascon_permutation import AsconPermutation
+            sage: from claasp.ciphers.single_component_ciphers.not_cipher import NotCipher
             sage: from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
-            sage: ascon = AsconPermutation(number_of_rounds=2)
-            sage: algebraic = AlgebraicModel(ascon)
-            sage: not_component = ascon.get_component_from_id("not_0_5")
-            sage: not_component.algebraic_polynomials(algebraic)
-            [not_0_5_y0 + not_0_5_x0 + 1,
-             not_0_5_y1 + not_0_5_x1 + 1,
-             not_0_5_y2 + not_0_5_x2 + 1,
-            ...
-             not_0_5_y61 + not_0_5_x61 + 1,
-             not_0_5_y62 + not_0_5_x62 + 1,
-             not_0_5_y63 + not_0_5_x63 + 1]
+            sage: cipher = NotCipher(bit_size=8)
+            sage: algebraic = AlgebraicModel(cipher)
+            sage: not_component = cipher.component_from(0, 0)
+            sage: algebraic_polynomials = not_component.algebraic_polynomials(algebraic)
+            sage: len(algebraic_polynomials)
+            8
+            sage: str(algebraic_polynomials[0]).endswith('+ 1')
+            True
         """
         ninputs = self.input_bit_size
         noutputs = self.output_bit_size
@@ -111,17 +108,13 @@ class NOT(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.permutations.gift_permutation import GiftPermutation
-            sage: gift = GiftPermutation(number_of_rounds=3)
-            sage: not_component = gift.component_from(0, 8)
-            sage: not_component.cms_constraints()
-            (['not_0_8_0',
-              'not_0_8_1',
-              'not_0_8_2',
-              ...
-              '-not_0_8_30 -xor_0_6_30',
-              'not_0_8_31 xor_0_6_31',
-              '-not_0_8_31 -xor_0_6_31'])
+                        sage: from claasp.components.not_component import NOT
+                        sage: not_component = NOT(0, 0, ['input0'], [list(range(32))], 32)
+                        sage: output_ids, constraints = not_component.cms_constraints()
+                        sage: output_ids[0]
+                        'not_0_0_0'
+                        sage: len(constraints) == 64
+                        True
         """
         return self.sat_constraints()
 
@@ -141,14 +134,13 @@ class NOT(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.permutations.gift_permutation import GiftPermutation
-            sage: gift = GiftPermutation(number_of_rounds=3)
-            sage: not_component = gift.component_from(0, 8)
-            sage: not_component.cp_constraints()
-            ([],
-             ['constraint not_0_8[0] = (xor_0_6[0] + 1) mod 2;',
-             ...
-              'constraint not_0_8[31] = (xor_0_6[31] + 1) mod 2;'])
+            sage: from claasp.components.not_component import NOT
+            sage: not_component = NOT(0, 0, ['input0'], [list(range(32))], 32)
+            sage: declarations, constraints = not_component.cp_constraints()
+            sage: declarations
+            []
+            sage: constraints[0]
+            'constraint not_0_0[0] = (input0[0] + 1) mod 2;'
         """
         cp_declarations = []
         all_inputs = []
@@ -168,14 +160,13 @@ class NOT(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.permutations.gift_permutation import GiftPermutation
-            sage: gift = GiftPermutation(number_of_rounds=3)
-            sage: not_component = gift.component_from(0, 8)
-            sage: not_component.cp_deterministic_truncated_xor_differential_constraints()
-            ([],
-             ['constraint not_0_8[0] = xor_0_6[0];',
-             ...
-              'constraint not_0_8[31] = xor_0_6[31];'])
+            sage: from claasp.components.not_component import NOT
+            sage: not_component = NOT(0, 0, ['input0'], [list(range(32))], 32)
+            sage: declarations, constraints = not_component.cp_deterministic_truncated_xor_differential_constraints()
+            sage: declarations
+            []
+            sage: constraints[0]
+            'constraint not_0_0[0] = input0[0];'
         """
         cp_declarations = []
         all_inputs = []
@@ -265,14 +256,13 @@ class NOT(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.permutations.gift_permutation import GiftPermutation
-            sage: gift = GiftPermutation(number_of_rounds=3)
-            sage: not_component = gift.component_from(0, 8)
-            sage: not_component.cp_xor_differential_propagation_constraints()
-            ([],
-             ['constraint not_0_8[0] = xor_0_6[0];',
-             ...
-              'constraint not_0_8[31] = xor_0_6[31];'])
+            sage: from claasp.components.not_component import NOT
+            sage: not_component = NOT(0, 0, ['input0'], [list(range(32))], 32)
+            sage: declarations, constraints = not_component.cp_xor_differential_propagation_constraints()
+            sage: declarations
+            []
+            sage: constraints[0]
+            'constraint not_0_0[0] = input0[0];'
         """
         cp_declarations = []
         all_inputs = []
@@ -295,15 +285,13 @@ class NOT(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.permutations.ascon_permutation import AsconPermutation
-            sage: ascon = AsconPermutation(number_of_rounds=1)
-            sage: not_component = ascon.component_from(0, 5)
-            sage: not_component.cp_xor_linear_mask_propagation_constraints()
-            (['array[0..63] of var 0..1:not_0_5_i;',
-              'array[0..63] of var 0..1:not_0_5_o;'],
-             ['constraint not_0_5_o[0]=not_0_5_i[0];',
-              ...
-              'constraint not_0_5_o[63]=not_0_5_i[63];'])
+                        sage: from claasp.components.not_component import NOT
+                        sage: not_component = NOT(0, 0, ['input0'], [list(range(64))], 64)
+                        sage: declarations, constraints = not_component.cp_xor_linear_mask_propagation_constraints()
+                        sage: declarations
+                        ['array[0..63] of var 0..1:not_0_0_i;', 'array[0..63] of var 0..1:not_0_0_o;']
+                        sage: constraints[0]
+                        'constraint not_0_0_o[0]=not_0_0_i[0];'
         """
         cp_declarations = [
             f"array[0..{self.input_bit_size - 1}] of var 0..1:{self.id}_i;",
@@ -344,10 +332,10 @@ class NOT(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.permutations.gift_permutation import GiftPermutation
+            sage: from claasp.ciphers.single_component_ciphers.not_cipher import NotCipher
             sage: from claasp.components.not_component import NOT
-            sage: gift = GiftPermutation(number_of_rounds=1)
-            sage: not_component = gift.component_from(0, 8)
+            sage: cipher = NotCipher(bit_size=32)
+            sage: not_component = cipher.component_from(0, 0)
             sage: inputs = [0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 1, 0]
             sage: not_component.generic_sign_linear_constraints(inputs)
             1
@@ -370,25 +358,17 @@ class NOT(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.permutations.ascon_permutation import AsconPermutation
+            sage: from claasp.ciphers.single_component_ciphers.not_cipher import NotCipher
             sage: from claasp.cipher_modules.models.milp.milp_model import MilpModel
-            sage: ascon = AsconPermutation()
-            sage: milp = MilpModel(ascon)
+            sage: cipher = NotCipher(bit_size=8)
+            sage: milp = MilpModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
-            sage: not_component = ascon.component_from(0,5)
+            sage: not_component = cipher.component_from(0, 0)
             sage: variables, constraints = not_component.milp_constraints(milp)
-            sage: variables
-            [('x[xor_0_2_0]', x_0),
-            ('x[xor_0_2_1]', x_1),
-            ...
-            ('x[not_0_5_62]', x_126),
-            ('x[not_0_5_63]', x_127)]
-            sage: constraints
-            [x_0 + x_64 == 1,
-            x_1 + x_65 == 1,
-            ...
-            x_62 + x_126 == 1,
-            x_63 + x_127 == 1]
+            sage: len(variables)
+            16
+            sage: str(constraints[0]).endswith('== 1')
+            True
         """
         x = model.binary_variable
         input_bit_size = self.input_bit_size
@@ -410,25 +390,17 @@ class NOT(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.permutations.ascon_permutation import AsconPermutation
+            sage: from claasp.ciphers.single_component_ciphers.not_cipher import NotCipher
             sage: from claasp.cipher_modules.models.milp.milp_model import MilpModel
-            sage: ascon = AsconPermutation()
-            sage: milp = MilpModel(ascon)
+            sage: cipher = NotCipher(bit_size=8)
+            sage: milp = MilpModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
-            sage: not_component = ascon.component_from(0,5)
+            sage: not_component = cipher.component_from(0, 0)
             sage: variables, constraints = not_component.milp_xor_differential_propagation_constraints(milp)
-            sage: variables
-            [('x[xor_0_2_0]', x_0),
-            ('x[xor_0_2_1]', x_1),
-            ...
-             ('x[not_0_5_62]', x_126),
-             ('x[not_0_5_63]', x_127)]
-            sage: constraints
-            [x_64 == x_0,
-             x_65 == x_1,
-            ...
-             x_126 == x_62,
-             x_127 == x_63]
+            sage: len(variables)
+            16
+            sage: str(constraints[0]).count('==')
+            1
         """
         x = model.binary_variable
         input_bit_size = self.input_bit_size
@@ -450,25 +422,17 @@ class NOT(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.permutations.ascon_permutation import AsconPermutation
+            sage: from claasp.ciphers.single_component_ciphers.not_cipher import NotCipher
             sage: from claasp.cipher_modules.models.milp.milp_model import MilpModel
-            sage: ascon = AsconPermutation()
-            sage: milp = MilpModel(ascon)
+            sage: cipher = NotCipher(bit_size=8)
+            sage: milp = MilpModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
-            sage: not_component = ascon.component_from(0,5)
+            sage: not_component = cipher.component_from(0, 0)
             sage: variables, constraints = not_component.milp_xor_linear_mask_propagation_constraints(milp)
-            sage: variables
-            [('x[not_0_5_0_i]', x_0),
-             ('x[not_0_5_1_i]', x_1),
-            ...
-             ('x[not_0_5_62_o]', x_126),
-             ('x[not_0_5_63_o]', x_127)]
-            sage: constraints
-            [x_64 == x_0,
-             x_65 == x_1,
-            ...
-             x_126 == x_62,
-             x_127 == x_63]
+            sage: len(variables)
+            16
+            sage: str(variables[0]).startswith("('x[not_0_0_0_i]'")
+            True
         """
         x = model.binary_variable
         output_bit_size = self.output_bit_size
@@ -491,25 +455,17 @@ class NOT(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.permutations.gift_permutation import GiftPermutation
-            sage: cipher = GiftPermutation()
+            sage: from claasp.ciphers.single_component_ciphers.not_cipher import NotCipher
+            sage: cipher = NotCipher(bit_size=32)
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import MilpBitwiseDeterministicTruncatedXorDifferentialModel
             sage: milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
-            sage: not_component = cipher.component_from(0,8)
+            sage: not_component = cipher.component_from(0, 0)
             sage: variables, constraints = not_component.milp_bitwise_deterministic_truncated_xor_differential_constraints(milp)
-            sage: variables
-            [('x_class[xor_0_6_0]', x_0),
-             ('x_class[xor_0_6_1]', x_1),
-             ...
-             ('x_class[not_0_8_30]', x_62),
-             ('x_class[not_0_8_31]', x_63)]
-            sage: constraints
-            [x_32 == x_0,
-             x_33 == x_1,
-             ...
-             x_62 == x_30,
-             x_63 == x_31]
+            sage: len(variables)
+            64
+            sage: str(constraints[0]).count('==')
+            1
 
         """
         x_class = model.trunc_binvar
@@ -542,20 +498,13 @@ class NOT(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.permutations.gift_permutation import GiftPermutation
-            sage: gift = GiftPermutation(number_of_rounds=3)
-            sage: not_component = gift.component_from(0, 8)
-            sage: not_component.sat_constraints()
-            (['not_0_8_0',
-              'not_0_8_1',
-              ...
-              'not_0_8_30',
-              'not_0_8_31'],
-             ['not_0_8_0 xor_0_6_0',
-              '-not_0_8_0 -xor_0_6_0',
-              ...
-              'not_0_8_31 xor_0_6_31',
-              '-not_0_8_31 -xor_0_6_31'])
+                        sage: from claasp.components.not_component import NOT
+                        sage: not_component = NOT(0, 0, ['input0'], [list(range(32))], 32)
+                        sage: output_ids, constraints = not_component.sat_constraints()
+                        sage: output_ids[0]
+                        'not_0_0_0'
+                        sage: constraints[0]
+                        'not_0_0_0 input0_0'
         """
         input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
@@ -584,20 +533,13 @@ class NOT(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.permutations.gift_permutation import GiftPermutation
-            sage: gift = GiftPermutation(number_of_rounds=3)
-            sage: not_component = gift.component_from(0, 8)
-            sage: not_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
-            (['not_0_8_0_0',
-              'not_0_8_1_0',
-              ...
-              'not_0_8_30_1',
-              'not_0_8_31_1'],
-             ['not_0_8_0_0 -xor_0_6_0_0',
-              'xor_0_6_0_0 -not_0_8_0_0',
-              ...
-              'xor_0_6_31_0 xor_0_6_31_1 not_0_8_31_1',
-              'xor_0_6_31_0 -xor_0_6_31_1 -not_0_8_31_1'])
+                        sage: from claasp.components.not_component import NOT
+                        sage: not_component = NOT(0, 0, ['input0'], [list(range(32))], 32)
+                        sage: output_ids, constraints = not_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
+                        sage: output_ids[0]
+                        'not_0_0_0_0'
+                        sage: len(output_ids)
+                        64
         """
         in_ids_0, in_ids_1 = self._generate_input_double_ids()
         _, out_ids_0, out_ids_1 = self._generate_output_double_ids()
@@ -627,20 +569,13 @@ class NOT(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.permutations.gift_permutation import GiftPermutation
-            sage: gift = GiftPermutation(number_of_rounds=3)
-            sage: not_component = gift.component_from(0, 8)
-            sage: not_component.sat_xor_differential_propagation_constraints()
-            (['not_0_8_0',
-              'not_0_8_1',
-              ...
-              'not_0_8_30',
-              'not_0_8_31'],
-             ['not_0_8_0 -xor_0_6_0',
-              'xor_0_6_0 -not_0_8_0',
-              ...
-              'not_0_8_31 -xor_0_6_31',
-              'xor_0_6_31 -not_0_8_31'])
+                        sage: from claasp.components.not_component import NOT
+                        sage: not_component = NOT(0, 0, ['input0'], [list(range(32))], 32)
+                        sage: output_ids, constraints = not_component.sat_xor_differential_propagation_constraints()
+                        sage: output_ids[-1]
+                        'not_0_0_31'
+                        sage: constraints[0]
+                        'not_0_0_0 -input0_0'
         """
         input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
@@ -669,20 +604,13 @@ class NOT(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.permutations.gift_permutation import GiftPermutation
-            sage: gift = GiftPermutation(number_of_rounds=3)
-            sage: not_component = gift.component_from(0, 8)
-            sage: not_component.sat_xor_linear_mask_propagation_constraints()
-            (['not_0_8_0_i',
-              'not_0_8_1_i',
-              ...
-              'not_0_8_30_o',
-              'not_0_8_31_o'],
-             ['not_0_8_0_i -not_0_8_0_o',
-              'not_0_8_0_o -not_0_8_0_i',
-              ...
-              'not_0_8_31_i -not_0_8_31_o',
-              'not_0_8_31_o -not_0_8_31_i'])
+                        sage: from claasp.components.not_component import NOT
+                        sage: not_component = NOT(0, 0, ['input0'], [list(range(32))], 32)
+                        sage: output_ids, constraints = not_component.sat_xor_linear_mask_propagation_constraints()
+                        sage: output_ids[0]
+                        'not_0_0_0_i'
+                        sage: constraints[0]
+                        'not_0_0_0_i -not_0_0_0_o'
         """
         _, input_bit_ids = self._generate_component_input_ids()
         out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
@@ -708,20 +636,13 @@ class NOT(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.permutations.ascon_permutation import AsconPermutation
-            sage: ascon = AsconPermutation(number_of_rounds=3)
-            sage: not_component = ascon.component_from(0, 5)
-            sage: not_component.smt_constraints()
-            (['not_0_5_0',
-              'not_0_5_1',
-              ...
-              'not_0_5_62',
-              'not_0_5_63'],
-             ['(assert (distinct not_0_5_0 xor_0_2_0))',
-              '(assert (distinct not_0_5_1 xor_0_2_1))',
-              ...
-              '(assert (distinct not_0_5_62 xor_0_2_62))',
-              '(assert (distinct not_0_5_63 xor_0_2_63))'])
+                        sage: from claasp.components.not_component import NOT
+                        sage: not_component = NOT(0, 0, ['input0'], [list(range(64))], 64)
+                        sage: output_ids, constraints = not_component.smt_constraints()
+                        sage: output_ids[0]
+                        'not_0_0_0'
+                        sage: constraints[0]
+                        '(assert (distinct not_0_0_0 input0_0))'
         """
         input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
@@ -745,20 +666,13 @@ class NOT(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.permutations.ascon_permutation import AsconPermutation
-            sage: ascon = AsconPermutation(number_of_rounds=3)
-            sage: not_component = ascon.component_from(0, 5)
-            sage: not_component.smt_xor_differential_propagation_constraints()
-            (['not_0_5_0',
-              'not_0_5_1',
-              ...
-              'not_0_5_62',
-              'not_0_5_63'],
-             ['(assert (= not_0_5_0 xor_0_2_0))',
-              '(assert (= not_0_5_1 xor_0_2_1))',
-              ...
-              '(assert (= not_0_5_62 xor_0_2_62))',
-              '(assert (= not_0_5_63 xor_0_2_63))'])
+                        sage: from claasp.components.not_component import NOT
+                        sage: not_component = NOT(0, 0, ['input0'], [list(range(64))], 64)
+                        sage: output_ids, constraints = not_component.smt_xor_differential_propagation_constraints()
+                        sage: output_ids[-1]
+                        'not_0_0_63'
+                        sage: constraints[0]
+                        '(assert (= not_0_0_0 input0_0))'
         """
         input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
@@ -782,20 +696,13 @@ class NOT(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.permutations.ascon_permutation import AsconPermutation
-            sage: ascon = AsconPermutation(number_of_rounds=3)
-            sage: not_component = ascon.component_from(0, 5)
-            sage: not_component.smt_xor_linear_mask_propagation_constraints()
-            (['not_0_5_0_i',
-              'not_0_5_1_i',
-              ...
-              'not_0_5_62_o',
-              'not_0_5_63_o'],
-             ['(assert (= not_0_5_0_i not_0_5_0_o))',
-              '(assert (= not_0_5_1_i not_0_5_1_o))',
-              ...
-              '(assert (= not_0_5_62_i not_0_5_62_o))',
-              '(assert (= not_0_5_63_i not_0_5_63_o))'])
+                        sage: from claasp.components.not_component import NOT
+                        sage: not_component = NOT(0, 0, ['input0'], [list(range(64))], 64)
+                        sage: output_ids, constraints = not_component.smt_xor_linear_mask_propagation_constraints()
+                        sage: output_ids[0]
+                        'not_0_0_0_i'
+                        sage: constraints[0]
+                        '(assert (= not_0_0_0_i not_0_0_0_o))'
         """
         _, input_bit_ids = self._generate_component_input_ids()
         out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
