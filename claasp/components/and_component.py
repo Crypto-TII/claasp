@@ -382,18 +382,15 @@ class AND(MultiInputNonlinearLogicalOperator):
         EXAMPLES::
 
             sage: from claasp.components.and_component import AND
-            sage: and_component = AND(0, 0, ['plaintext', 'key'], [list(range(12)), list(range(12))], 12)
+            sage: and_component = AND(0, 0, ['plaintext', 'key'], [list(range(2)), list(range(2))], 2)
             sage: and_component.sat_constraints()
-            (['and_0_0_0',
-              'and_0_0_1',
-              ...
-              'and_0_0_10',
-              'and_0_0_11'],
-             ['-and_0_0_0 plaintext_0',
-              '-and_0_0_0 key_0',
-              ...
-              '-and_0_0_11 key_11',
-              'and_0_0_11 -plaintext_11 -key_11'])
+            (['and_0_0_0', 'and_0_0_1'],
+            ['-and_0_0_0 plaintext_0',
+            '-and_0_0_0 key_0',
+            'and_0_0_0 -plaintext_0 -key_0',
+            '-and_0_0_1 plaintext_1',
+            '-and_0_0_1 key_1',
+            'and_0_0_1 -plaintext_1 -key_1'])
         """
         input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
@@ -418,18 +415,11 @@ class AND(MultiInputNonlinearLogicalOperator):
         EXAMPLES::
 
             sage: from claasp.components.and_component import AND
-            sage: and_component = AND(0, 0, ['plaintext', 'key'], [list(range(12)), list(range(12))], 12)
+            sage: and_component = AND(0, 0, ['plaintext', 'key'], [list(range(2)), list(range(2))], 2)
             sage: and_component.smt_constraints()
-            (['and_0_0_0',
-              'and_0_0_1',
-              ...
-              'and_0_0_10',
-              'and_0_0_11'],
-             ['(assert (= and_0_0_0 (and plaintext_0 key_0)))',
-              '(assert (= and_0_0_1 (and plaintext_1 key_1)))',
-              ...
-              '(assert (= and_0_0_10 (and plaintext_10 key_10)))',
-              '(assert (= and_0_0_11 (and plaintext_11 key_11)))'])
+            (['and_0_0_0', 'and_0_0_1'],
+            ['(assert (= and_0_0_0 (and plaintext_0 key_0)))',
+            '(assert (= and_0_0_1 (and plaintext_1 key_1)))'])
         """
         input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
