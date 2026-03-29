@@ -247,15 +247,10 @@ class XOR(Component):
         EXAMPLES::
 
             sage: from claasp.components.xor_component import XOR
-            sage: xor_component = XOR(0, 0, ['plaintext', 'key'], [list(range(16)), list(range(16))], 16)
+            sage: xor_component = XOR(0, 0, ['plaintext', 'key'], [list(range(2)), list(range(2))], 2)
             sage: xor_component.cms_constraints()
-            (['xor_0_0_0',
-                'xor_0_0_1',
-                'xor_0_0_2',
-                ...
-                'x -xor_0_0_13 plaintext_13 key_13',
-                'x -xor_0_0_14 plaintext_14 key_14',
-                'x -xor_0_0_15 plaintext_15 key_15'])
+            (['xor_0_0_0', 'xor_0_0_1'],
+            ['x -xor_0_0_0 plaintext_0 key_0', 'x -xor_0_0_1 plaintext_1 key_1'])
         """
         input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
@@ -284,12 +279,11 @@ class XOR(Component):
         EXAMPLES::
 
             sage: from claasp.components.xor_component import XOR
-            sage: xor_component = XOR(0, 0, ['plaintext', 'key'], [list(range(16)), list(range(16))], 16)
+            sage: xor_component = XOR(0, 0, ['plaintext', 'key'], [list(range(2)), list(range(2))], 2)
             sage: xor_component.cp_constraints()
             ([],
-                ['constraint xor_0_0[0] = (plaintext[0] + key[0]) mod 2;',
-                ...
-                'constraint xor_0_0[15] = (plaintext[15] + key[15]) mod 2;'])
+            ['constraint xor_0_0[0] = (plaintext[0] + key[0]) mod 2;',
+            'constraint xor_0_0[1] = (plaintext[1] + key[1]) mod 2;'])
         """
         cp_declarations = []
         all_inputs = []
@@ -333,12 +327,11 @@ class XOR(Component):
         EXAMPLES::
 
             sage: from claasp.components.xor_component import XOR
-            sage: xor_component = XOR(0, 0, ['plaintext', 'key'], [list(range(16)), list(range(16))], 16)
+            sage: xor_component = XOR(0, 0, ['plaintext', 'key'], [list(range(2)), list(range(2))], 2)
             sage: xor_component.cp_deterministic_truncated_xor_differential_constraints()
             ([],
-             ['constraint if ((plaintext[0] < 2) /\\ (key[0]< 2)) then xor_0_0[0] = (plaintext[0] + key[0]) mod 2 else xor_0_0[0] = 2 endif;',
-                 ...
-                'constraint if ((plaintext[15] < 2) /\\ (key[15]< 2)) then xor_0_0[15] = (plaintext[15] + key[15]) mod 2 else xor_0_0[15] = 2 endif;'])
+            ['constraint if ((plaintext[0] < 2) /\\ (key[0]< 2)) then xor_0_0[0] = (plaintext[0] + key[0]) mod 2 else xor_0_0[0] = 2 endif;',
+            'constraint if ((plaintext[1] < 2) /\\ (key[1]< 2)) then xor_0_0[1] = (plaintext[1] + key[1]) mod 2 else xor_0_0[1] = 2 endif;'])
         """
         cp_declarations = []
         all_inputs = []
@@ -367,12 +360,11 @@ class XOR(Component):
         EXAMPLES::
 
             sage: from claasp.components.xor_component import XOR
-            sage: xor_component = XOR(0, 0, ['plaintext', 'key'], [list(range(16)), list(range(16))], 16)
+            sage: xor_component = XOR(0, 0, ['plaintext', 'key'], [list(range(2)), list(range(2))], 2)
             sage: xor_component.cp_hybrid_deterministic_truncated_xor_differential_constraints()
             ([],
              ['constraint if (plaintext[0] < 2) /\\ (key[0] < 2) then xor_0_0[0] = (plaintext[0] + key[0]) mod 2 elseif (plaintext[0] + key[0] = plaintext[0]) then xor_0_0[0] = plaintext[0] elseif (plaintext[0] + key[0] = key[0]) then xor_0_0[0] = key[0] else xor_0_0[0] = 2 endif;',
-                 ...
-                'constraint if (plaintext[15] < 2) /\\ (key[15] < 2) then xor_0_0[15] = (plaintext[15] + key[15]) mod 2 elseif (plaintext[15] + key[15] = plaintext[15]) then xor_0_0[15] = plaintext[15] elseif (plaintext[15] + key[15] = key[15]) then xor_0_0[15] = key[15] else xor_0_0[15] = 2 endif;'])
+              'constraint if (plaintext[1] < 2) /\\ (key[1] < 2) then xor_0_0[1] = (plaintext[1] + key[1]) mod 2 elseif (plaintext[1] + key[1] = plaintext[1]) then xor_0_0[1] = plaintext[1] elseif (plaintext[1] + key[1] = key[1]) then xor_0_0[1] = key[1] else xor_0_0[1] = 2 endif;'])
         """
         cp_declarations = []
         all_inputs = [
@@ -588,14 +580,15 @@ class XOR(Component):
 
         EXAMPLES::
 
-                sage: from claasp.components.xor_component import XOR
-                sage: xor_component = XOR(0, 0, ['plaintext', 'key'], [list(range(16)), list(range(16))], 16)
-                sage: xor_component.cp_xor_linear_mask_propagation_constraints()
-                (['array[0..31] of var 0..1: xor_0_0_i;',
-                     'array[0..15] of var 0..1: xor_0_0_o;'],
-                 ['constraint xor_0_0_o[0] = xor_0_0_i[0];',
-                     ...
-                     'constraint xor_0_0_o[15] = xor_0_0_i[31];'])
+            sage: from claasp.components.xor_component import XOR
+            sage: xor_component = XOR(0, 0, ['plaintext', 'key'], [list(range(2)), list(range(2))], 2)
+            sage: xor_component.cp_xor_linear_mask_propagation_constraints()
+            (['array[0..3] of var 0..1: xor_0_0_i;',
+            'array[0..1] of var 0..1: xor_0_0_o;'],
+            ['constraint xor_0_0_o[0] = xor_0_0_i[0];',
+            'constraint xor_0_0_o[0] = xor_0_0_i[2];',
+            'constraint xor_0_0_o[1] = xor_0_0_i[1];',
+            'constraint xor_0_0_o[1] = xor_0_0_i[3];'])
         """
         cp_declarations = [
             f"array[0..{self.input_bit_size - 1}] of var 0..1: {self.id}_i;",
@@ -654,7 +647,7 @@ class XOR(Component):
 
             sage: from claasp.ciphers.single_component_ciphers.xor_cipher import XorCipher
             sage: from claasp.cipher_modules.models.milp.milp_model import MilpModel
-            sage: cipher = XorCipher(word_bit_size=16, number_of_inputs=2)
+            sage: cipher = XorCipher(word_bit_size=2, number_of_inputs=2)
             sage: milp = MilpModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
             sage: xor_component = cipher.get_component_from_id('xor_0_0')
@@ -662,14 +655,15 @@ class XOR(Component):
             sage: variables
             [('x[plaintext_0]', x_0),
             ('x[plaintext_1]', x_1),
-            ...
-            ('x[xor_0_0_14]', x_46),
-            ('x[xor_0_0_15]', x_47)]
+             ('x[key_0]', x_2),
+             ('x[key_1]', x_3),
+             ('x[xor_0_0_0]', x_4),
+             ('x[xor_0_0_1]', x_5)]
             sage: constraints[:4]
-            [x_32 <= x_0 + x_16,
-             x_16 <= x_0 + x_32,
-             x_0 <= x_16 + x_32,
-             x_0 + x_16 + x_32 <= 2]
+            [x_4 <= x_0 + x_2,
+             x_2 <= x_0 + x_4,
+             x_0 <= x_2 + x_4,
+             x_0 + x_2 + x_4 <= 2]
         """
         x = model.binary_variable
         input_vars, output_vars = self._get_input_output_variables()
@@ -710,7 +704,7 @@ class XOR(Component):
 
             sage: from claasp.ciphers.single_component_ciphers.xor_cipher import XorCipher
             sage: from claasp.cipher_modules.models.milp.milp_model import MilpModel
-            sage: cipher = XorCipher(word_bit_size=16, number_of_inputs=2)
+            sage: cipher = XorCipher(word_bit_size=2, number_of_inputs=2)
             sage: milp = MilpModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
             sage: xor_component = cipher.get_component_from_id('xor_0_0')
@@ -718,16 +712,15 @@ class XOR(Component):
             sage: variables
             [('x[xor_0_0_0_i]', x_0),
             ('x[xor_0_0_1_i]', x_1),
-            ...
-            ('x[xor_0_0_14_o]', x_46),
-            ('x[xor_0_0_15_o]', x_47)]
+            ('x[xor_0_0_2_i]', x_2),
+            ('x[xor_0_0_3_i]', x_3),
+            ('x[xor_0_0_0_o]', x_4),
+            ('x[xor_0_0_1_o]', x_5)]
             sage: constraints
-            [x_32 == x_0,
-            x_33 == x_1,
-            x_34 == x_2,
-            ...
-            x_46 == x_30,
-            x_47 == x_31]
+            [x_4 == x_0,
+            x_5 == x_1,
+            x_4 == x_2,
+            x_5 == x_3]
         """
         x = model.binary_variable
         output_bit_size = self.output_bit_size
@@ -781,7 +774,7 @@ class XOR(Component):
 
             sage: from claasp.ciphers.single_component_ciphers.xor_cipher import XorCipher
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import MilpBitwiseDeterministicTruncatedXorDifferentialModel
-            sage: cipher = XorCipher(word_bit_size=16, number_of_inputs=2)
+            sage: cipher = XorCipher(word_bit_size=2, number_of_inputs=2)
             sage: milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
             sage: xor_component = cipher.get_component_from_id('xor_0_0')
@@ -790,14 +783,11 @@ class XOR(Component):
             [('x[plaintext_0_class_bit_0]', x_0),
              ('x[plaintext_0_class_bit_1]', x_1),
              ...
-             ('x[xor_0_0_15_class_bit_0]', x_94),
-             ('x[xor_0_0_15_class_bit_1]', x_95)]
-            sage: constraints
-            [x_96 == 2*x_0 + x_1,
-             x_97 == 2*x_2 + x_3,
-             ...
-             1 <= 1 - x_30 + x_94,
-             1 <= 2 - x_62 - x_63]
+             ('x[xor_0_0_1_class_bit_0]', x_10),
+             ('x[xor_0_0_1_class_bit_1]', x_11)]
+            sage: constraints[:2]
+            [x_12 == 2*x_0 + x_1,
+             x_13 == 2*x_2 + x_3]
 
         """
 
@@ -848,7 +838,7 @@ class XOR(Component):
 
             sage: from claasp.ciphers.single_component_ciphers.xor_cipher import XorCipher
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import MilpBitwiseDeterministicTruncatedXorDifferentialModel
-            sage: cipher = XorCipher(word_bit_size=16, number_of_inputs=2)
+            sage: cipher = XorCipher(word_bit_size=2, number_of_inputs=2)
             sage: milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
             sage: xor_component = cipher.get_component_from_id('xor_0_0')
@@ -857,14 +847,11 @@ class XOR(Component):
             [('x_class[plaintext_0]', x_0),
              ('x_class[plaintext_1]', x_1),
             ...
-             ('x_class[xor_0_0_14]', x_46),
-             ('x_class[xor_0_0_15]', x_47)]
-            sage: constraints
-            [x_0 <= 3 - 2*x_48,
-             2 - 2*x_48 <= x_0,
-            ...
-            x_47 <= 2 + 4*x_95,
-            2 <= x_47 + 4*x_95]
+             ('x_class[xor_0_0_0]', x_4),
+             ('x_class[xor_0_0_1]', x_5)]
+            sage: constraints[:2]
+            [x_0 <= 3 - 2*x_6,
+             2 - 2*x_6 <= x_0]
 
         """
 
@@ -1144,12 +1131,12 @@ class XOR(Component):
 
             sage: from claasp.ciphers.single_component_ciphers.xor_cipher import XorCipher
             sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
-            sage: cipher = XorCipher(word_bit_size=16, number_of_inputs=2)
+            sage: cipher = XorCipher(word_bit_size=2, number_of_inputs=2)
             sage: minizinc = MznModel(cipher)
             sage: xor_component = cipher.get_component_from_id('xor_0_0')
             sage: _, xor_minizinc_constraints = xor_component.minizinc_constraints(minizinc)
             sage: xor_minizinc_constraints[0]
-            'constraint xor_word(\narray1d(0..16-1, [xor_0_0_x16,xor_0_0_x17,xor_0_0_x18,xor_0_0_x19,xor_0_0_x20,xor_0_0_x21,xor_0_0_x22,xor_0_0_x23,xor_0_0_x24,xor_0_0_x25,xor_0_0_x26,xor_0_0_x27,xor_0_0_x28,xor_0_0_x29,xor_0_0_x30,xor_0_0_x31]),\narray1d(0..16-1, [xor_0_0_x0,xor_0_0_x1,xor_0_0_x2,xor_0_0_x3,xor_0_0_x4,xor_0_0_x5,xor_0_0_x6,xor_0_0_x7,xor_0_0_x8,xor_0_0_x9,xor_0_0_x10,xor_0_0_x11,xor_0_0_x12,xor_0_0_x13,xor_0_0_x14,xor_0_0_x15]),\narray1d(0..16-1, [xor_0_0_y0,xor_0_0_y1,xor_0_0_y2,xor_0_0_y3,xor_0_0_y4,xor_0_0_y5,xor_0_0_y6,xor_0_0_y7,xor_0_0_y8,xor_0_0_y9,xor_0_0_y10,xor_0_0_y11,xor_0_0_y12,xor_0_0_y13,xor_0_0_y14,xor_0_0_y15]))=true;\n'
+            'constraint xor_word(\narray1d(0..2-1, [xor_0_0_x2,xor_0_0_x3]),\narray1d(0..2-1, [xor_0_0_x0,xor_0_0_x1]),\narray1d(0..2-1, [xor_0_0_y0,xor_0_0_y1]))=true;\n'
         """
 
         def create_block_of_xor_constraints(input_vars_1_temp, input_vars_2_temp, output_varstrs_temp, i):
@@ -1229,19 +1216,18 @@ class XOR(Component):
 
         EXAMPLES::
 
-                sage: from claasp.components.xor_component import XOR
-                sage: xor_component = XOR(0, 0, ['plaintext', 'key'], [list(range(16)), list(range(16))], 16)
-                sage: xor_component.sat_constraints()
-                (['xor_0_0_0',
-                     'xor_0_0_1',
-                     ...
-                     'xor_0_0_14',
-                     'xor_0_0_15'],
-                 ['-xor_0_0_0 plaintext_0 key_0',
-                     'xor_0_0_0 -plaintext_0 key_0',
-                     ...
-                     'xor_0_0_15 plaintext_15 -key_15',
-                     '-xor_0_0_15 -plaintext_15 -key_15'])
+            sage: from claasp.components.xor_component import XOR
+            sage: xor_component = XOR(0, 0, ['plaintext', 'key'], [list(range(2)), list(range(2))], 2)
+            sage: xor_component.sat_constraints()
+            (['xor_0_0_0', 'xor_0_0_1'],
+            ['-xor_0_0_0 plaintext_0 key_0',
+            'xor_0_0_0 -plaintext_0 key_0',
+            'xor_0_0_0 plaintext_0 -key_0',
+            '-xor_0_0_0 -plaintext_0 -key_0',
+            '-xor_0_0_1 plaintext_1 key_1',
+            'xor_0_0_1 -plaintext_1 key_1',
+            'xor_0_0_1 plaintext_1 -key_1',
+            '-xor_0_0_1 -plaintext_1 -key_1'])
         """
         input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
@@ -1269,19 +1255,24 @@ class XOR(Component):
 
         EXAMPLES::
 
-                sage: from claasp.components.xor_component import XOR
-                sage: xor_component = XOR(0, 0, ['plaintext', 'key'], [list(range(16)), list(range(16))], 16)
-                sage: xor_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
-                (['xor_0_0_0_0',
-                     'xor_0_0_1_0',
-                     ...
-                     'xor_0_0_14_1',
-                     'xor_0_0_15_1'],
-                 ['xor_0_0_0_0 -plaintext_0_0',
-                     'xor_0_0_0_0 -key_0_0',
-                     ...
-                     'key_15_1 xor_0_0_15_0 xor_0_0_15_1 -plaintext_15_1',
-                     'xor_0_0_15_0 -plaintext_15_1 -key_15_1 -xor_0_0_15_1'])
+            sage: from claasp.components.xor_component import XOR
+            sage: xor_component = XOR(0, 0, ['plaintext', 'key'], [list(range(2)), list(range(2))], 2)
+            sage: xor_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
+            (['xor_0_0_0_0', 'xor_0_0_1_0', 'xor_0_0_0_1', 'xor_0_0_1_1'],
+            ['xor_0_0_0_0 -plaintext_0_0',
+            'xor_0_0_0_0 -key_0_0',
+            'plaintext_0_0 key_0_0 -xor_0_0_0_0',
+            'plaintext_0_1 key_0_1 xor_0_0_0_0 -xor_0_0_0_1',
+            'plaintext_0_1 xor_0_0_0_0 xor_0_0_0_1 -key_0_1',
+            'key_0_1 xor_0_0_0_0 xor_0_0_0_1 -plaintext_0_1',
+            'xor_0_0_0_0 -plaintext_0_1 -key_0_1 -xor_0_0_0_1',
+            'xor_0_0_1_0 -plaintext_1_0',
+            'xor_0_0_1_0 -key_1_0',
+            'plaintext_1_0 key_1_0 -xor_0_0_1_0',
+            'plaintext_1_1 key_1_1 xor_0_0_1_0 -xor_0_0_1_1',
+            'plaintext_1_1 xor_0_0_1_0 xor_0_0_1_1 -key_1_1',
+            'key_1_1 xor_0_0_1_0 xor_0_0_1_1 -plaintext_1_1',
+            'xor_0_0_1_0 -plaintext_1_1 -key_1_1 -xor_0_0_1_1'])
         """
         in_ids_0, in_ids_1 = self._generate_input_double_ids()
         out_len, out_ids_0, out_ids_1 = self._generate_output_double_ids()
@@ -1314,19 +1305,18 @@ class XOR(Component):
 
         EXAMPLES::
 
-                sage: from claasp.components.xor_component import XOR
-                sage: xor_component = XOR(0, 0, ['plaintext', 'key'], [list(range(16)), list(range(16))], 16)
-                sage: xor_component.sat_xor_differential_propagation_constraints()
-                (['xor_0_0_0',
-                     'xor_0_0_1',
-                     ...
-                     'xor_0_0_14',
-                     'xor_0_0_15'],
-                 ['-xor_0_0_0 plaintext_0 key_0',
-                     'xor_0_0_0 -plaintext_0 key_0',
-                     ...
-                     'xor_0_0_15 plaintext_15 -key_15',
-                     '-xor_0_0_15 -plaintext_15 -key_15'])
+            sage: from claasp.components.xor_component import XOR
+            sage: xor_component = XOR(0, 0, ['plaintext', 'key'], [list(range(2)), list(range(2))], 2)
+            sage: xor_component.sat_xor_differential_propagation_constraints()
+            (['xor_0_0_0', 'xor_0_0_1'],
+            ['-xor_0_0_0 plaintext_0 key_0',
+            'xor_0_0_0 -plaintext_0 key_0',
+            'xor_0_0_0 plaintext_0 -key_0',
+            '-xor_0_0_0 -plaintext_0 -key_0',
+            '-xor_0_0_1 plaintext_1 key_1',
+            'xor_0_0_1 -plaintext_1 key_1',
+            'xor_0_0_1 plaintext_1 -key_1',
+            '-xor_0_0_1 -plaintext_1 -key_1'])
         """
         return self.sat_constraints()
 
@@ -1345,18 +1335,20 @@ class XOR(Component):
         EXAMPLES::
 
             sage: from claasp.components.xor_component import XOR
-            sage: xor_component = XOR(0, 0, ['plaintext', 'key'], [list(range(16)), list(range(16))], 16)
+            sage: xor_component = XOR(0, 0, ['plaintext', 'key'], [list(range(2)), list(range(2))], 2)
             sage: xor_component.sat_xor_linear_mask_propagation_constraints()
             (['xor_0_0_0_i',
                     'xor_0_0_1_i',
-                    ...
-                    'xor_0_0_14_o',
-                    'xor_0_0_15_o'],
+                    'xor_0_0_2_i',
+                    'xor_0_0_3_i',
+                    'xor_0_0_0_o',
+                    'xor_0_0_1_o'],
                 ['xor_0_0_0_i -xor_0_0_0_o',
-                    'xor_0_0_16_i -xor_0_0_0_i',
-                    ...
-                    'xor_0_0_31_i -xor_0_0_15_i',
-                    'xor_0_0_15_o -xor_0_0_31_i'])
+                    'xor_0_0_2_i -xor_0_0_0_i',
+                    'xor_0_0_0_o -xor_0_0_2_i',
+                    'xor_0_0_1_i -xor_0_0_1_o',
+                    'xor_0_0_3_i -xor_0_0_1_i',
+                    'xor_0_0_1_o -xor_0_0_3_i'])
         """
         _, input_bit_ids = self._generate_component_input_ids()
         out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
@@ -1383,19 +1375,12 @@ class XOR(Component):
 
         EXAMPLES::
 
-                sage: from claasp.components.xor_component import XOR
-                sage: xor_component = XOR(0, 0, ['plaintext', 'key'], [list(range(16)), list(range(16))], 16)
-                sage: xor_component.smt_constraints()
-                (['xor_0_0_0',
-                     'xor_0_0_1',
-                     ...
-                     'xor_0_0_14',
-                     'xor_0_0_15'],
-                 ['(assert (= xor_0_0_0 (xor plaintext_0 key_0)))',
-                     '(assert (= xor_0_0_1 (xor plaintext_1 key_1)))',
-                     ...
-                     '(assert (= xor_0_0_14 (xor plaintext_14 key_14)))',
-                     '(assert (= xor_0_0_15 (xor plaintext_15 key_15)))'])
+            sage: from claasp.components.xor_component import XOR
+            sage: xor_component = XOR(0, 0, ['plaintext', 'key'], [list(range(2)), list(range(2))], 2)
+            sage: xor_component.smt_constraints()
+            (['xor_0_0_0', 'xor_0_0_1'],
+            ['(assert (= xor_0_0_0 (xor plaintext_0 key_0)))',
+            '(assert (= xor_0_0_1 (xor plaintext_1 key_1)))'])
         """
         input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
@@ -1421,19 +1406,12 @@ class XOR(Component):
 
         EXAMPLES::
 
-                sage: from claasp.components.xor_component import XOR
-                sage: xor_component = XOR(0, 0, ['plaintext', 'key'], [list(range(16)), list(range(16))], 16)
-                sage: xor_component.smt_xor_differential_propagation_constraints()
-                (['xor_0_0_0',
-                     'xor_0_0_1',
-                     ...
-                     'xor_0_0_14',
-                     'xor_0_0_15'],
-                 ['(assert (= xor_0_0_0 (xor plaintext_0 key_0)))',
-                     '(assert (= xor_0_0_1 (xor plaintext_1 key_1)))',
-                     ...
-                     '(assert (= xor_0_0_14 (xor plaintext_14 key_14)))',
-                     '(assert (= xor_0_0_15 (xor plaintext_15 key_15)))'])
+            sage: from claasp.components.xor_component import XOR
+            sage: xor_component = XOR(0, 0, ['plaintext', 'key'], [list(range(2)), list(range(2))], 2)
+            sage: xor_component.smt_xor_differential_propagation_constraints()
+            (['xor_0_0_0', 'xor_0_0_1'],
+            ['(assert (= xor_0_0_0 (xor plaintext_0 key_0)))',
+            '(assert (= xor_0_0_1 (xor plaintext_1 key_1)))'])
         """
         return self.smt_constraints()
 
@@ -1451,19 +1429,17 @@ class XOR(Component):
 
         EXAMPLES::
 
-                sage: from claasp.components.xor_component import XOR
-                sage: xor_component = XOR(0, 0, ['plaintext', 'key'], [list(range(16)), list(range(16))], 16)
-                sage: xor_component.smt_xor_linear_mask_propagation_constraints()
-                (['xor_0_0_0_o',
-                     'xor_0_0_1_o',
-                     ...
-                     'xor_0_0_30_i',
-                     'xor_0_0_31_i'],
-                 ['(assert (= xor_0_0_0_o xor_0_0_0_i xor_0_0_16_i))',
-                     '(assert (= xor_0_0_1_o xor_0_0_1_i xor_0_0_17_i))',
-                     ...
-                     '(assert (= xor_0_0_14_o xor_0_0_14_i xor_0_0_30_i))',
-                     '(assert (= xor_0_0_15_o xor_0_0_15_i xor_0_0_31_i))'])
+            sage: from claasp.components.xor_component import XOR
+            sage: xor_component = XOR(0, 0, ['plaintext', 'key'], [list(range(2)), list(range(2))], 2)
+            sage: xor_component.smt_xor_linear_mask_propagation_constraints()
+            (['xor_0_0_0_o',
+            'xor_0_0_1_o',
+            'xor_0_0_0_i',
+            'xor_0_0_1_i',
+            'xor_0_0_2_i',
+            'xor_0_0_3_i'],
+            ['(assert (= xor_0_0_0_o xor_0_0_0_i xor_0_0_2_i))',
+            '(assert (= xor_0_0_1_o xor_0_0_1_i xor_0_0_3_i))'])
         """
         _, input_bit_ids = self._generate_component_input_ids()
         out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
