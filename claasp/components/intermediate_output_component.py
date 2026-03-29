@@ -56,10 +56,13 @@ class IntermediateOutput(CipherOutput):
 
     INPUT:
 
-    - Parameters follow this class constructor (``__init__``) signature.
-    - Required parameters should not be ``None``.
-    - ``0`` is valid for round/component indices and numeric parameters when semantically meaningful.
-    - For list parameters, pass Python lists; ``[]`` is valid only when explicitly supported by the component semantics.
+    - ``current_round_number`` -- **integer**; round index where the component is created. ``0`` is valid.
+    - ``current_round_number_of_components`` -- **integer**; index of the component inside the round. ``0`` is valid.
+    - ``input_id_links`` -- **list**; input component identifiers (usually strings). Must align with ``input_bit_positions``.
+    - ``input_bit_positions`` -- **list**; bit positions for each input identifier (list of lists). Must align with ``input_id_links``.
+    - ``output_bit_size`` -- **integer**; output size in bits. ``0`` is valid only when supported by the component semantics.
+    - ``output_tag`` -- **string**; output label/tag stored in the component description.
+
     EXAMPLES::
 
         sage: from claasp.components.intermediate_output_component import IntermediateOutput

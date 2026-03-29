@@ -39,10 +39,22 @@ class MODSUB(Modular):
 
     INPUT:
 
-    - Parameters follow this class constructor (``__init__``) signature.
-    - Required parameters should not be ``None``.
-    - ``0`` is valid for round/component indices and numeric parameters when semantically meaningful.
-    - For list parameters, pass Python lists; ``[]`` is valid only when explicitly supported by the component semantics.
+    - ``current_round_number`` -- **integer**; round index where the component is created. ``0`` is valid.
+    - ``current_round_number_of_components`` -- **integer**; index of the component inside the round. ``0`` is valid.
+    - ``input_id_links`` -- **list**; input component identifiers (usually strings). Must align with ``input_bit_positions``.
+    - ``input_bit_positions`` -- **list**; bit positions for each input identifier (list of lists). Must align with ``input_id_links``.
+    - ``output_bit_size`` -- **integer**; output size in bits. ``0`` is valid only when supported by the component semantics.
+    - ``modulus`` -- **integer**; modulus used by modular arithmetic operations. Must be greater than ``0``.
+
+    NOTE:
+
+        The number of operands is automatically inferred as
+        ``sum(len(p) for p in input_bit_positions) / output_bit_size``.
+        However, **only 2 operands are supported** by the bit-vector evaluator and the SAT/CMS
+        constraint methods (attempting more will raise an ``AssertionError`` at runtime).
+        The algebraic model handles more than 2 operands via left-to-right sequential subtraction:
+        ``a0 - a1 - a2 - ...`` (i.e. ``((a0 - a1) - a2) - ...``).
+
     EXAMPLES::
 
         sage: from claasp.components.modsub_component import MODSUB
@@ -51,8 +63,11 @@ class MODSUB(Modular):
         modsub_0_0
         sage: print(component.type)
         word_operation
-        sage: print(component.description)
+        sage: print(component.description)  # 4 total bits / output_bit_size 2 = 2 operands
         ['MODSUB', 2, 2]
+        sage: component3 = MODSUB(0, 1, ['a', 'b', 'c'], [[0, 1], [0, 1], [0, 1]], 2, 4)
+        sage: print(component3.description)  # 6 total bits / output_bit_size 2 = 3 operands
+        ['MODSUB', 3, 4]
     """
     def __init__(
         self,

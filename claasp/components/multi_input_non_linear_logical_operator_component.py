@@ -34,10 +34,20 @@ class MultiInputNonlinearLogicalOperator(Component):
 
     INPUT:
 
-    - Parameters follow this class constructor (``__init__``) signature.
-    - Required parameters should not be ``None``.
-    - ``0`` is valid for round/component indices and numeric parameters when semantically meaningful.
-    - For list parameters, pass Python lists; ``[]`` is valid only when explicitly supported by the component semantics.
+    - ``current_round_number`` -- **integer**; round index where the component is created. ``0`` is valid.
+    - ``current_round_number_of_components`` -- **integer**; index of the component inside the round. ``0`` is valid.
+    - ``input_id_links`` -- **list**; input component identifiers (usually strings). Must align with ``input_bit_positions``.
+    - ``input_bit_positions`` -- **list**; bit positions for each input identifier (list of lists). Must align with ``input_id_links``.
+    - ``output_bit_size`` -- **integer**; output size in bits. ``0`` is valid only when supported by the component semantics.
+    - ``operation`` -- **string**; operation name used to build the component description/id (for example ``'and'``).
+
+    NOTE:
+
+        The number of operands is automatically inferred as
+        ``sum(len(p) for p in input_bit_positions) / output_bit_size``.
+        For example, two input groups of 2 bits each with ``output_bit_size=2`` give a 2-input operation;
+        three input groups of 2 bits each give a 3-input operation.
+
     EXAMPLES::
 
         sage: from claasp.components.multi_input_non_linear_logical_operator_component import MultiInputNonlinearLogicalOperator
@@ -48,6 +58,9 @@ class MultiInputNonlinearLogicalOperator(Component):
         word_operation
         sage: print(component.description)
         ['AND', 2]
+        sage: component3 = MultiInputNonlinearLogicalOperator(0, 1, ['a', 'b', 'c'], [[0, 1], [0, 1], [0, 1]], 2, 'and')
+        sage: print(component3.description)  # 6 total bits / output_bit_size 2 = 3 operands
+        ['AND', 3]
     """
     def __init__(
         self,
