@@ -1,6 +1,5 @@
 from claasp.components.and_component import AND
 from claasp.cipher_modules.models.cp.mzn_model import MznModel
-from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
 from claasp.ciphers.single_component_ciphers.and_cipher import AndCipher
 from claasp.components.and_component import cp_xor_differential_probability_ddt, cp_xor_linear_probability_lat
 from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import \
@@ -25,12 +24,13 @@ def test_cp_constraints():
 
 
 def test_cp_wordwise_deterministic_truncated_xor_differential_constraints():
-    aes = ToyAESBlockCipher()
-    cp = MznModel(aes)
+    class DummyModel:
+        word_size = 8
+
     and_component = AND(0, 18, ['sbox_0_2', 'sbox_0_6', 'sbox_0_10', 'sbox_0_14'],
                         [[0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7],
                          [0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7]], 32)
-    declarations, constraints = and_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(cp)
+    declarations, constraints = and_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(DummyModel())
 
     assert declarations == []
 

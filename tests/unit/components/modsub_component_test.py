@@ -1,7 +1,6 @@
-from claasp.ciphers.block_ciphers.raiden_block_cipher import RaidenBlockCipher
-from claasp.cipher_modules.models.cp.mzn_model import MznModel
 from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
 from claasp.cipher import Cipher
+from claasp.components.modsub_component import MODSUB
 from claasp.name_mappings import PERMUTATION
 
 
@@ -25,8 +24,7 @@ def test_algebraic_polynomials():
 
 
 def test_cms_constraints():
-    raiden = RaidenBlockCipher(number_of_rounds=3)
-    modsub_component = raiden.component_from(0, 7)
+    modsub_component = MODSUB(0, 7, ['modadd_0_4', 'plaintext'], [list(range(32)), list(range(32, 64))], 32, 2 ** 32)
     output_bit_ids, constraints = modsub_component.cms_constraints()
 
     assert output_bit_ids[0] == 'temp_carry_plaintext_32'
@@ -39,8 +37,7 @@ def test_cms_constraints():
 
 
 def test_cp_constraints():
-    raiden = RaidenBlockCipher(number_of_rounds=3)
-    modsub_component = raiden.component_from(0, 7)
+    modsub_component = MODSUB(0, 7, ['modadd_0_4', 'plaintext'], [list(range(32)), list(range(32, 64))], 32, 2 ** 32)
     output_bit_ids, constraints = modsub_component.cp_constraints()
 
     assert output_bit_ids[0] == 'array[0..31] of var 0..1: constant_modsub_0_7= array1d(0..31,[0, 0, 0, 0, 0, 0, 0, ' \
@@ -57,9 +54,13 @@ def test_cp_constraints():
 
 
 def test_cp_xor_differential_propagation_constraints():
-    raiden = RaidenBlockCipher(number_of_rounds=3)
-    modsub_component = raiden.component_from(0, 7)
-    cp_model = MznModel(raiden)
+    class DummyModel:
+        c = 0
+        component_and_probability = {}
+        modadd_twoterms_mant = []
+
+    modsub_component = MODSUB(0, 7, ['modadd_0_4', 'plaintext'], [list(range(32)), list(range(32, 64))], 32, 2 ** 32)
+    cp_model = DummyModel()
     output_bit_ids, constraints = modsub_component.cp_xor_differential_propagation_constraints(cp_model)
 
     assert output_bit_ids[0] == 'array[0..31] of var 0..1: pre_modsub_0_7_0;'
@@ -76,8 +77,7 @@ def test_cp_xor_differential_propagation_constraints():
 
 
 def test_sat_constraints():
-    raiden = RaidenBlockCipher(number_of_rounds=3)
-    modsub_component = raiden.component_from(0, 7)
+    modsub_component = MODSUB(0, 7, ['modadd_0_4', 'plaintext'], [list(range(32)), list(range(32, 64))], 32, 2 ** 32)
     output_bit_ids, constraints = modsub_component.sat_constraints()
 
     assert output_bit_ids[0] == 'temp_carry_plaintext_32'
@@ -89,8 +89,7 @@ def test_sat_constraints():
 
 
 def test_smt_constraints():
-    raiden = RaidenBlockCipher(number_of_rounds=3)
-    modsub_component = raiden.component_from(0, 7)
+    modsub_component = MODSUB(0, 7, ['modadd_0_4', 'plaintext'], [list(range(32)), list(range(32, 64))], 32, 2 ** 32)
     output_bit_ids, constraints = modsub_component.smt_constraints()
 
     assert output_bit_ids[0] == 'temp_carry_plaintext_32'
