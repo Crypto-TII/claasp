@@ -36,8 +36,6 @@ class IdentityCipher(SingleComponentCipher):
 
     EXAMPLES::
 
-        sage: import warnings
-        sage: warnings.filterwarnings('ignore', category=SyntaxWarning)
         sage: from claasp.ciphers.single_component_ciphers.identity_cipher import IdentityCipher
         sage: identity = IdentityCipher()
         sage: identity.type

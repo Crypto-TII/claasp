@@ -73,12 +73,12 @@ class NOT(Component):
 
             sage: from claasp.ciphers.single_component_ciphers.not_cipher import NotCipher
             sage: from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
-            sage: cipher = NotCipher(bit_size=8)
+            sage: cipher = NotCipher(bit_size=2)
             sage: algebraic = AlgebraicModel(cipher)
             sage: not_component = cipher.component_from(0, 0)
             sage: algebraic_polynomials = not_component.algebraic_polynomials(algebraic)
             sage: len(algebraic_polynomials)
-            8
+            2
             sage: str(algebraic_polynomials[0]).endswith('+ 1')
             True
         """
@@ -108,13 +108,13 @@ class NOT(Component):
 
         EXAMPLES::
 
-                        sage: from claasp.components.not_component import NOT
-                        sage: not_component = NOT(0, 0, ['input0'], [list(range(32))], 32)
-                        sage: output_ids, constraints = not_component.cms_constraints()
-                        sage: output_ids[0]
-                        'not_0_0_0'
-                        sage: len(constraints) == 64
-                        True
+            sage: from claasp.components.not_component import NOT
+            sage: not_component = NOT(0, 0, ['input0'], [list(range(32))], 32)
+            sage: output_ids, constraints = not_component.cms_constraints()
+            sage: output_ids[0]
+            'not_0_0_0'
+            sage: len(constraints) == 64
+            True
         """
         return self.sat_constraints()
 
@@ -223,14 +223,14 @@ class NOT(Component):
 
             sage: from claasp.components.not_component import NOT
             sage: class DummyModel:
-            ....:     word_size = 8
-            sage: not_component = NOT(0, 18, ['input0', 'input1', 'input2', 'input3'], [[0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7]], 32)
+            ....:     word_size = 2
+            sage: not_component = NOT(0, 18, ['input0'], [list(range(8))], 8)
             sage: not_component.cp_xor_differential_first_step_constraints(DummyModel())
             (['array[0..3] of var 0..1: not_0_18;'],
              ['constraint not_0_18[0] = input0[0];',
-              'constraint not_0_18[1] = input1[0];',
-              'constraint not_0_18[2] = input2[0];',
-              'constraint not_0_18[3] = input3[0];'])
+            'constraint not_0_18[1] = input0[1];',
+            'constraint not_0_18[2] = input0[2];',
+            'constraint not_0_18[3] = input0[3];'])
         """
         word_size = model.word_size
         cp_declarations = [f"array[0..{(self.output_bit_size - 1) // model.word_size}] of var 0..1: {self.id};"]
@@ -285,13 +285,13 @@ class NOT(Component):
 
         EXAMPLES::
 
-                        sage: from claasp.components.not_component import NOT
-                        sage: not_component = NOT(0, 0, ['input0'], [list(range(64))], 64)
-                        sage: declarations, constraints = not_component.cp_xor_linear_mask_propagation_constraints()
-                        sage: declarations
-                        ['array[0..63] of var 0..1:not_0_0_i;', 'array[0..63] of var 0..1:not_0_0_o;']
-                        sage: constraints[0]
-                        'constraint not_0_0_o[0]=not_0_0_i[0];'
+            sage: from claasp.components.not_component import NOT
+            sage: not_component = NOT(0, 0, ['input0'], [list(range(64))], 64)
+            sage: declarations, constraints = not_component.cp_xor_linear_mask_propagation_constraints()
+            sage: declarations
+            ['array[0..63] of var 0..1:not_0_0_i;', 'array[0..63] of var 0..1:not_0_0_o;']
+            sage: constraints[0]
+            'constraint not_0_0_o[0]=not_0_0_i[0];'
         """
         cp_declarations = [
             f"array[0..{self.input_bit_size - 1}] of var 0..1:{self.id}_i;",
@@ -360,13 +360,13 @@ class NOT(Component):
 
             sage: from claasp.ciphers.single_component_ciphers.not_cipher import NotCipher
             sage: from claasp.cipher_modules.models.milp.milp_model import MilpModel
-            sage: cipher = NotCipher(bit_size=8)
+            sage: cipher = NotCipher(bit_size=2)
             sage: milp = MilpModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
             sage: not_component = cipher.component_from(0, 0)
             sage: variables, constraints = not_component.milp_constraints(milp)
             sage: len(variables)
-            16
+            4
             sage: str(constraints[0]).endswith('== 1')
             True
         """
@@ -392,13 +392,13 @@ class NOT(Component):
 
             sage: from claasp.ciphers.single_component_ciphers.not_cipher import NotCipher
             sage: from claasp.cipher_modules.models.milp.milp_model import MilpModel
-            sage: cipher = NotCipher(bit_size=8)
+            sage: cipher = NotCipher(bit_size=2)
             sage: milp = MilpModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
             sage: not_component = cipher.component_from(0, 0)
             sage: variables, constraints = not_component.milp_xor_differential_propagation_constraints(milp)
             sage: len(variables)
-            16
+            4
             sage: str(constraints[0]).count('==')
             1
         """
@@ -424,13 +424,13 @@ class NOT(Component):
 
             sage: from claasp.ciphers.single_component_ciphers.not_cipher import NotCipher
             sage: from claasp.cipher_modules.models.milp.milp_model import MilpModel
-            sage: cipher = NotCipher(bit_size=8)
+            sage: cipher = NotCipher(bit_size=2)
             sage: milp = MilpModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
             sage: not_component = cipher.component_from(0, 0)
             sage: variables, constraints = not_component.milp_xor_linear_mask_propagation_constraints(milp)
             sage: len(variables)
-            16
+            4
             sage: str(variables[0]).startswith("('x[not_0_0_0_i]'")
             True
         """
@@ -498,13 +498,13 @@ class NOT(Component):
 
         EXAMPLES::
 
-                        sage: from claasp.components.not_component import NOT
-                        sage: not_component = NOT(0, 0, ['input0'], [list(range(32))], 32)
-                        sage: output_ids, constraints = not_component.sat_constraints()
-                        sage: output_ids[0]
-                        'not_0_0_0'
-                        sage: constraints[0]
-                        'not_0_0_0 input0_0'
+            sage: from claasp.components.not_component import NOT
+            sage: not_component = NOT(0, 0, ['input0'], [list(range(32))], 32)
+            sage: output_ids, constraints = not_component.sat_constraints()
+            sage: output_ids[0]
+            'not_0_0_0'
+            sage: constraints[0]
+            'not_0_0_0 input0_0'
         """
         input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
@@ -533,13 +533,13 @@ class NOT(Component):
 
         EXAMPLES::
 
-                        sage: from claasp.components.not_component import NOT
-                        sage: not_component = NOT(0, 0, ['input0'], [list(range(32))], 32)
-                        sage: output_ids, constraints = not_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
-                        sage: output_ids[0]
-                        'not_0_0_0_0'
-                        sage: len(output_ids)
-                        64
+            sage: from claasp.components.not_component import NOT
+            sage: not_component = NOT(0, 0, ['input0'], [list(range(32))], 32)
+            sage: output_ids, constraints = not_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
+            sage: output_ids[0]
+            'not_0_0_0_0'
+            sage: len(output_ids)
+            64
         """
         in_ids_0, in_ids_1 = self._generate_input_double_ids()
         _, out_ids_0, out_ids_1 = self._generate_output_double_ids()
@@ -569,13 +569,13 @@ class NOT(Component):
 
         EXAMPLES::
 
-                        sage: from claasp.components.not_component import NOT
-                        sage: not_component = NOT(0, 0, ['input0'], [list(range(32))], 32)
-                        sage: output_ids, constraints = not_component.sat_xor_differential_propagation_constraints()
-                        sage: output_ids[-1]
-                        'not_0_0_31'
-                        sage: constraints[0]
-                        'not_0_0_0 -input0_0'
+            sage: from claasp.components.not_component import NOT
+            sage: not_component = NOT(0, 0, ['input0'], [list(range(32))], 32)
+            sage: output_ids, constraints = not_component.sat_xor_differential_propagation_constraints()
+            sage: output_ids[-1]
+            'not_0_0_31'
+            sage: constraints[0]
+            'not_0_0_0 -input0_0'
         """
         input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
@@ -604,13 +604,13 @@ class NOT(Component):
 
         EXAMPLES::
 
-                        sage: from claasp.components.not_component import NOT
-                        sage: not_component = NOT(0, 0, ['input0'], [list(range(32))], 32)
-                        sage: output_ids, constraints = not_component.sat_xor_linear_mask_propagation_constraints()
-                        sage: output_ids[0]
-                        'not_0_0_0_i'
-                        sage: constraints[0]
-                        'not_0_0_0_i -not_0_0_0_o'
+            sage: from claasp.components.not_component import NOT
+            sage: not_component = NOT(0, 0, ['input0'], [list(range(32))], 32)
+            sage: output_ids, constraints = not_component.sat_xor_linear_mask_propagation_constraints()
+            sage: output_ids[0]
+            'not_0_0_0_i'
+            sage: constraints[0]
+            'not_0_0_0_i -not_0_0_0_o'
         """
         _, input_bit_ids = self._generate_component_input_ids()
         out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
@@ -636,13 +636,13 @@ class NOT(Component):
 
         EXAMPLES::
 
-                        sage: from claasp.components.not_component import NOT
-                        sage: not_component = NOT(0, 0, ['input0'], [list(range(64))], 64)
-                        sage: output_ids, constraints = not_component.smt_constraints()
-                        sage: output_ids[0]
-                        'not_0_0_0'
-                        sage: constraints[0]
-                        '(assert (distinct not_0_0_0 input0_0))'
+            sage: from claasp.components.not_component import NOT
+            sage: not_component = NOT(0, 0, ['input0'], [list(range(64))], 64)
+            sage: output_ids, constraints = not_component.smt_constraints()
+            sage: output_ids[0]
+            'not_0_0_0'
+            sage: constraints[0]
+            '(assert (distinct not_0_0_0 input0_0))'
         """
         input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
@@ -666,13 +666,13 @@ class NOT(Component):
 
         EXAMPLES::
 
-                        sage: from claasp.components.not_component import NOT
-                        sage: not_component = NOT(0, 0, ['input0'], [list(range(64))], 64)
-                        sage: output_ids, constraints = not_component.smt_xor_differential_propagation_constraints()
-                        sage: output_ids[-1]
-                        'not_0_0_63'
-                        sage: constraints[0]
-                        '(assert (= not_0_0_0 input0_0))'
+            sage: from claasp.components.not_component import NOT
+            sage: not_component = NOT(0, 0, ['input0'], [list(range(64))], 64)
+            sage: output_ids, constraints = not_component.smt_xor_differential_propagation_constraints()
+            sage: output_ids[-1]
+            'not_0_0_63'
+            sage: constraints[0]
+            '(assert (= not_0_0_0 input0_0))'
         """
         input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
@@ -696,13 +696,13 @@ class NOT(Component):
 
         EXAMPLES::
 
-                        sage: from claasp.components.not_component import NOT
-                        sage: not_component = NOT(0, 0, ['input0'], [list(range(64))], 64)
-                        sage: output_ids, constraints = not_component.smt_xor_linear_mask_propagation_constraints()
-                        sage: output_ids[0]
-                        'not_0_0_0_i'
-                        sage: constraints[0]
-                        '(assert (= not_0_0_0_i not_0_0_0_o))'
+            sage: from claasp.components.not_component import NOT
+            sage: not_component = NOT(0, 0, ['input0'], [list(range(64))], 64)
+            sage: output_ids, constraints = not_component.smt_xor_linear_mask_propagation_constraints()
+            sage: output_ids[0]
+            'not_0_0_0_i'
+            sage: constraints[0]
+            '(assert (= not_0_0_0_i not_0_0_0_o))'
         """
         _, input_bit_ids = self._generate_component_input_ids()
         out_suffix = constants.OUTPUT_BIT_ID_SUFFIX

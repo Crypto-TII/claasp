@@ -117,36 +117,13 @@ class Constant(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
+            sage: from claasp.ciphers.single_component_ciphers.constant_cipher import ConstantCipher
             sage: from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
-            sage: fancy = FancyBlockCipher(number_of_rounds=1)
-            sage: constant_component = fancy.get_component_from_id("constant_0_10")
-            sage: algebraic = AlgebraicModel(fancy)
+            sage: cipher = ConstantCipher(output_bit_size=4, value=0x1)
+            sage: constant_component = cipher.get_component_from_id('constant_0_0')
+            sage: algebraic = AlgebraicModel(cipher)
             sage: constant_component.algebraic_polynomials(algebraic)
-            [constant_0_10_y0,
-             constant_0_10_y1 + 1,
-             constant_0_10_y2,
-             constant_0_10_y3 + 1,
-             constant_0_10_y4 + 1,
-             constant_0_10_y5 + 1,
-             constant_0_10_y6,
-             constant_0_10_y7 + 1,
-             constant_0_10_y8,
-             constant_0_10_y9,
-             constant_0_10_y10 + 1,
-             constant_0_10_y11 + 1,
-             constant_0_10_y12 + 1,
-             constant_0_10_y13,
-             constant_0_10_y14 + 1,
-             constant_0_10_y15 + 1,
-             constant_0_10_y16,
-             constant_0_10_y17 + 1,
-             constant_0_10_y18 + 1,
-             constant_0_10_y19 + 1,
-             constant_0_10_y20 + 1,
-             constant_0_10_y21 + 1,
-             constant_0_10_y22 + 1,
-             constant_0_10_y23 + 1]
+            [constant_0_0_y0 + 1, constant_0_0_y1, constant_0_0_y2, constant_0_0_y3]
         """
         noutputs = self.output_bit_size
         constant = int(self.description[0], 16)
@@ -175,17 +152,10 @@ class Constant(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: speck = SpeckBlockCipher(number_of_rounds=3)
-            sage: constant_component = speck.component_from(2, 0)
+            sage: from claasp.components.constant_component import Constant
+            sage: constant_component = Constant(0, 0, 4, 0x1)
             sage: constant_component.cms_constraints()
-            (['constant_2_0_0',
-              'constant_2_0_1',
-              'constant_2_0_2',
-              ...
-              '-constant_2_0_13',
-              '-constant_2_0_14',
-              'constant_2_0_15'])
+            (['constant_0_0_0', 'constant_0_0_1', 'constant_0_0_2', 'constant_0_0_3'], ['-constant_0_0_0', '-constant_0_0_1', '-constant_0_0_2', 'constant_0_0_3'])
         """
         return self.sat_constraints()
 
@@ -205,27 +175,10 @@ class Constant(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: speck = SpeckBlockCipher(number_of_rounds=3)
-            sage: constant_component = speck.component_from(2, 0)
+            sage: from claasp.components.constant_component import Constant
+            sage: constant_component = Constant(0, 0, 4, 0x1)
             sage: constant_component.cp_constraints()
-            (['array[0..15] of var 0..1: constant_2_0;'],
-             ['constraint constant_2_0[0] = 0;',
-             'constraint constant_2_0[1] = 0;',
-             'constraint constant_2_0[2] = 0;',
-             'constraint constant_2_0[3] = 0;',
-             'constraint constant_2_0[4] = 0;',
-             'constraint constant_2_0[5] = 0;',
-             'constraint constant_2_0[6] = 0;',
-             'constraint constant_2_0[7] = 0;',
-             'constraint constant_2_0[8] = 0;',
-             'constraint constant_2_0[9] = 0;',
-             'constraint constant_2_0[10] = 0;',
-             'constraint constant_2_0[11] = 0;',
-             'constraint constant_2_0[12] = 0;',
-             'constraint constant_2_0[13] = 0;',
-             'constraint constant_2_0[14] = 0;',
-             'constraint constant_2_0[15] = 1;'])
+            (['array[0..3] of var 0..1: constant_0_0;'], ['constraint constant_0_0[0] = 0;', 'constraint constant_0_0[1] = 0;', 'constraint constant_0_0[2] = 0;', 'constraint constant_0_0[3] = 1;'])
         """
         cp_declarations = [f"array[0..{self.output_bit_size - 1}] of var 0..1: {self.id};"]
         value = int(self.description[0], 16)
@@ -265,13 +218,10 @@ class Constant(Component):
         EXAMPLES::
 
             sage: from claasp.components.constant_component import Constant
-            sage: class DummyModel:
-            ....:     word_size = 8
-            sage: constant_component = Constant(0, 18, 16, 0xAB01)
+            sage: DummyModel = type("DummyModel", (), {"word_size": 4})
+            sage: constant_component = Constant(0, 18, 4, 0x1)
             sage: constant_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(DummyModel())
-            (['array[0..1] of var 0..1: constant_0_18_active = array1d(0..1, [0,0]);',
-              'array[0..1] of var 0..1: constant_0_18_value = array1d(0..1, [0,0]);'],
-             [])
+            (['array[0..0] of var 0..1: constant_0_18_active = array1d(0..0, [0]);', 'array[0..0] of var 0..1: constant_0_18_value = array1d(0..0, [0]);'], [])
         """
         output_bit_size = self.output_bit_size
         word_size = model.word_size
@@ -303,11 +253,10 @@ class Constant(Component):
         EXAMPLES::
 
             sage: from claasp.components.constant_component import Constant
-            sage: class DummyModel:
-            ....:     word_size = 8
-            sage: constant_component = Constant(0, 30, 32, 0x00000000)
+            sage: DummyModel = type("DummyModel", (), {"word_size": 4})
+            sage: constant_component = Constant(0, 30, 4, 0x0)
             sage: constant_component.cp_xor_differential_propagation_first_step_constraints(DummyModel())
-            (['array[0..3] of var 0..1: constant_0_30 = array1d(0..3, [0,0,0,0]);'], [])
+            (['array[0..0] of var 0..1: constant_0_30 = array1d(0..0, [0]);'], [])
         """
         cp_declarations = [
             f"array[0..{(self.output_bit_size - 1) // model.word_size}] of var 0..1: "
@@ -329,27 +278,10 @@ class Constant(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=22)
-            sage: constant_component = speck.component_from(2, 0)
+            sage: from claasp.components.constant_component import Constant
+            sage: constant_component = Constant(0, 0, 4, 0x1)
             sage: constant_component.cp_xor_differential_propagation_constraints()
-            (['array[0..15] of var 0..2: constant_2_0;'],
-             ['constraint constant_2_0[0] = 0;',
-             'constraint constant_2_0[1] = 0;',
-             'constraint constant_2_0[2] = 0;',
-             'constraint constant_2_0[3] = 0;',
-             'constraint constant_2_0[4] = 0;',
-             'constraint constant_2_0[5] = 0;',
-             'constraint constant_2_0[6] = 0;',
-             'constraint constant_2_0[7] = 0;',
-             'constraint constant_2_0[8] = 0;',
-             'constraint constant_2_0[9] = 0;',
-             'constraint constant_2_0[10] = 0;',
-             'constraint constant_2_0[11] = 0;',
-             'constraint constant_2_0[12] = 0;',
-             'constraint constant_2_0[13] = 0;',
-             'constraint constant_2_0[14] = 0;',
-             'constraint constant_2_0[15] = 0;'])
+            (['array[0..3] of var 0..2: constant_0_0;'], ['constraint constant_0_0[0] = 0;', 'constraint constant_0_0[1] = 0;', 'constraint constant_0_0[2] = 0;', 'constraint constant_0_0[3] = 0;'])
         """
         cp_declarations = [f"array[0..{self.output_bit_size - 1}] of var 0..2: {self.id};"]
         cp_constraints = [f"constraint {self.id}[{i}] = 0;" for i in range(self.output_bit_size)]
@@ -366,12 +298,10 @@ class Constant(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=22)
-            sage: constant_component = speck.component_from(2, 0)
+            sage: from claasp.components.constant_component import Constant
+            sage: constant_component = Constant(0, 0, 4, 0x1)
             sage: constant_component.cp_xor_linear_mask_propagation_constraints()
-            (['array[0..15] of var 0..1: constant_2_0_o;'],
-             [])
+            (['array[0..3] of var 0..1: constant_0_0_o;'], [])
         """
         cp_declarations = [f"array[0..{self.output_bit_size - 1}] of var 0..1: {self.id}_o;"]
         cp_constraints = []
@@ -421,21 +351,17 @@ class Constant(Component):
 
         EXAMPLE::
 
-            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
-            sage: from claasp.components.constant_component import Constant
-            sage: aes = ToyAESBlockCipher(number_of_rounds=3)
+            sage: from claasp.ciphers.single_component_ciphers.constant_cipher import ConstantCipher
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import MilpWordwiseDeterministicTruncatedXorDifferentialModel
-            sage: milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(aes)
+            sage: cipher = ConstantCipher(output_bit_size=4, value=0x1)
+            sage: milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
-            sage: constant_component = aes.get_component_from_id("constant_0_30")
+            sage: constant_component = cipher.get_component_from_id('constant_0_0')
             sage: variables, constraints = constant_component.milp_wordwise_deterministic_truncated_xor_differential_constraints(milp)
             sage: variables
-            [('x_class[constant_0_30_word_0_class]', x_0),
-             ('x_class[constant_0_30_word_1_class]', x_1),
-             ('x_class[constant_0_30_word_2_class]', x_2),
-             ('x_class[constant_0_30_word_3_class]', x_3)]
+            [('x_class[constant_0_0_word_0_class]', x_0)]
             sage: constraints
-            [x_0 == 0, x_1 == 0, x_2 == 0, x_3 == 0]
+            [x_0 == 0]
 
         """
         x_class = model.trunc_wordvar
@@ -452,25 +378,17 @@ class Constant(Component):
 
         EXAMPLE::
 
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
+            sage: from claasp.ciphers.single_component_ciphers.constant_cipher import ConstantCipher
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import MilpBitwiseDeterministicTruncatedXorDifferentialModel
-            sage: milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(speck)
+            sage: cipher = ConstantCipher(output_bit_size=4, value=0x1)
+            sage: milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
-            sage: constant_component = speck.get_component_from_id("constant_1_0")
+            sage: constant_component = cipher.get_component_from_id('constant_0_0')
             sage: variables, constraints = constant_component.milp_bitwise_deterministic_truncated_xor_differential_constraints(milp)
             sage: variables
-            [('x_class[constant_1_0_0]', x_0),
-            ('x_class[constant_1_0_1]', x_1),
-            ...
-            ('x_class[constant_1_0_14]', x_14),
-            ('x_class[constant_1_0_15]', x_15)]
+            [('x_class[constant_0_0_0]', x_0), ('x_class[constant_0_0_1]', x_1), ('x_class[constant_0_0_2]', x_2), ('x_class[constant_0_0_3]', x_3)]
             sage: constraints
-            [x_0 == 0,
-            x_1 == 0,
-            ...
-            x_14 == 0,
-            x_15 == 0]
+            [x_0 == 0, x_1 == 0, x_2 == 0, x_3 == 0]
 
         """
         x_class = model.trunc_binvar
@@ -491,25 +409,17 @@ class Constant(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: from claasp.ciphers.single_component_ciphers.constant_cipher import ConstantCipher
             sage: from claasp.cipher_modules.models.milp.milp_model import MilpModel
-            sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
-            sage: milp = MilpModel(speck)
+            sage: cipher = ConstantCipher(output_bit_size=4, value=0x1)
+            sage: milp = MilpModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
-            sage: constant_component = speck.get_component_from_id("constant_1_0")
+            sage: constant_component = cipher.get_component_from_id('constant_0_0')
             sage: variables, constraints = constant_component.milp_xor_differential_propagation_constraints(milp)
             sage: variables
-            [('x[constant_1_0_0]', x_0),
-            ('x[constant_1_0_1]', x_1),
-            ...
-            ('x[constant_1_0_14]', x_14),
-            ('x[constant_1_0_15]', x_15)]
+            [('x[constant_0_0_0]', x_0), ('x[constant_0_0_1]', x_1), ('x[constant_0_0_2]', x_2), ('x[constant_0_0_3]', x_3)]
             sage: constraints
-            [x_0 == 0,
-            x_1 == 0,
-            ...
-            x_14 == 0,
-            x_15 == 0]
+            [x_0 == 0, x_1 == 0, x_2 == 0, x_3 == 0]
         """
         x = model.binary_variable
         input_vars, output_vars = self._get_input_output_variables()
@@ -528,19 +438,15 @@ class Constant(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: from claasp.ciphers.single_component_ciphers.constant_cipher import ConstantCipher
             sage: from claasp.cipher_modules.models.milp.milp_model import MilpModel
-            sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=3)
-            sage: milp = MilpModel(speck)
+            sage: cipher = ConstantCipher(output_bit_size=4, value=0x1)
+            sage: milp = MilpModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
-            sage: constant_component = speck.get_component_from_id("constant_2_0")
+            sage: constant_component = cipher.get_component_from_id('constant_0_0')
             sage: variables, constraints = constant_component.milp_xor_linear_mask_propagation_constraints(milp)
             sage: variables
-            [('x[constant_2_0_0_o]', x_0),
-            ('x[constant_2_0_1_o]', x_1),
-            ...
-            ('x[constant_2_0_14_o]', x_14),
-            ('x[constant_2_0_15_o]', x_15)]
+            [('x[constant_0_0_0_o]', x_0), ('x[constant_0_0_1_o]', x_1), ('x[constant_0_0_2_o]', x_2), ('x[constant_0_0_3_o]', x_3)]
             sage: constraints
             []
         """
@@ -564,14 +470,14 @@ class Constant(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
+            sage: from claasp.ciphers.single_component_ciphers.constant_cipher import ConstantCipher
             sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model_arx_optimized import MznXorDifferentialModelARXOptimized
-            sage: fancy = FancyBlockCipher(number_of_rounds=1)
-            sage: minizinc = MznXorDifferentialModelARXOptimized(fancy)
-            sage: constant_component = fancy.get_component_from_id("constant_0_10")
+            sage: cipher = ConstantCipher(output_bit_size=4, value=0x1)
+            sage: minizinc = MznXorDifferentialModelARXOptimized(cipher)
+            sage: constant_component = cipher.get_component_from_id('constant_0_0')
             sage: _, constant_xor_differential_constraints = constant_component.minizinc_xor_differential_propagation_constraints(minizinc)
-            sage: constant_xor_differential_constraints[6]
-            'constraint constant_0_10_y6 = 0;'
+            sage: constant_xor_differential_constraints[0]
+            'constraint constant_0_0_y0 = 0;'
         """
         var_names = self._define_var(model.input_postfix, model.output_postfix, model.data_type)
         constant_component_string = []
@@ -597,20 +503,10 @@ class Constant(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: speck = SpeckBlockCipher(number_of_rounds=3)
-            sage: constant_component = speck.component_from(2, 0)
+            sage: from claasp.components.constant_component import Constant
+            sage: constant_component = Constant(0, 0, 4, 0x1)
             sage: constant_component.sat_constraints()
-            (['constant_2_0_0',
-              'constant_2_0_1',
-              ...
-              'constant_2_0_14',
-              'constant_2_0_15'],
-             ['-constant_2_0_0',
-              '-constant_2_0_1',
-              ...
-              '-constant_2_0_14',
-              'constant_2_0_15'])
+            (['constant_0_0_0', 'constant_0_0_1', 'constant_0_0_2', 'constant_0_0_3'], ['-constant_0_0_0', '-constant_0_0_1', '-constant_0_0_2', 'constant_0_0_3'])
         """
         _, output_bit_ids = self._generate_output_ids()
         value = int(self.description[0], 16)
@@ -638,20 +534,10 @@ class Constant(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: speck = SpeckBlockCipher(number_of_rounds=3)
-            sage: constant_component = speck.component_from(2, 0)
+            sage: from claasp.components.constant_component import Constant
+            sage: constant_component = Constant(0, 0, 4, 0x1)
             sage: constant_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
-            (['constant_2_0_0_0',
-              'constant_2_0_1_0',
-              ...
-              'constant_2_0_14_1',
-              'constant_2_0_15_1'],
-             ['-constant_2_0_0_0',
-              '-constant_2_0_1_0',
-              ...
-              '-constant_2_0_14_1',
-              '-constant_2_0_15_1'])
+            (['constant_0_0_0_0', 'constant_0_0_1_0', 'constant_0_0_2_0', 'constant_0_0_3_0', 'constant_0_0_0_1', 'constant_0_0_1_1', 'constant_0_0_2_1', 'constant_0_0_3_1'], ['-constant_0_0_0_0', '-constant_0_0_1_0', '-constant_0_0_2_0', '-constant_0_0_3_0', '-constant_0_0_0_1', '-constant_0_0_1_1', '-constant_0_0_2_1', '-constant_0_0_3_1'])
         """
         _, out_ids_0, out_ids_1 = self._generate_output_double_ids()
         constraints = [f"-{out_id}" for out_id in out_ids_0] + [f"-{out_id}" for out_id in out_ids_1]
@@ -677,20 +563,10 @@ class Constant(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: speck = SpeckBlockCipher(number_of_rounds=3)
-            sage: constant_component = speck.component_from(2, 0)
+            sage: from claasp.components.constant_component import Constant
+            sage: constant_component = Constant(0, 0, 4, 0x1)
             sage: constant_component.sat_xor_differential_propagation_constraints()
-            (['constant_2_0_0',
-              'constant_2_0_1',
-              ...
-              'constant_2_0_14',
-              'constant_2_0_15'],
-             ['-constant_2_0_0',
-              '-constant_2_0_1',
-              ...
-              '-constant_2_0_14',
-              '-constant_2_0_15'])
+            (['constant_0_0_0', 'constant_0_0_1', 'constant_0_0_2', 'constant_0_0_3'], ['-constant_0_0_0', '-constant_0_0_1', '-constant_0_0_2', '-constant_0_0_3'])
         """
         _, output_bit_ids = self._generate_output_ids()
         constraints = [f"-{output_bit_id}" for output_bit_id in output_bit_ids]
@@ -713,17 +589,10 @@ class Constant(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: speck = SpeckBlockCipher(number_of_rounds=3)
-            sage: constant_component = speck.component_from(2, 0)
+            sage: from claasp.components.constant_component import Constant
+            sage: constant_component = Constant(0, 0, 4, 0x1)
             sage: constant_component.sat_xor_linear_mask_propagation_constraints()
-            (['constant_2_0_0_o',
-              'constant_2_0_1_o',
-              'constant_2_0_2_o',
-              ...
-              'constant_2_0_14_o',
-              'constant_2_0_15_o'],
-             [])
+            (['constant_0_0_0_o', 'constant_0_0_1_o', 'constant_0_0_2_o', 'constant_0_0_3_o'], [])
         """
         out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
         _, output_bit_ids = self._generate_output_ids(suffix=out_suffix)
@@ -742,20 +611,10 @@ class Constant(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.tea_block_cipher import TeaBlockCipher
-            sage: tea = TeaBlockCipher(number_of_rounds=3)
-            sage: constant_component = tea.component_from(0, 2)
+            sage: from claasp.components.constant_component import Constant
+            sage: constant_component = Constant(0, 0, 4, 0x1)
             sage: constant_component.smt_constraints()
-            (['constant_0_2_0',
-              'constant_0_2_1',
-              ...
-              'constant_0_2_30',
-              'constant_0_2_31'],
-             ['(assert constant_0_2_0)',
-              '(assert (not constant_0_2_1))',
-              ...
-              '(assert (not constant_0_2_30))',
-              '(assert constant_0_2_31)'])
+            (['constant_0_0_0', 'constant_0_0_1', 'constant_0_0_2', 'constant_0_0_3'], ['(assert (not constant_0_0_0))', '(assert (not constant_0_0_1))', '(assert (not constant_0_0_2))', '(assert constant_0_0_3)'])
         """
         _, output_bit_ids = self._generate_output_ids()
         value = int(self.description[0], 16)
@@ -779,20 +638,10 @@ class Constant(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.tea_block_cipher import TeaBlockCipher
-            sage: tea = TeaBlockCipher(number_of_rounds=3)
-            sage: constant_component = tea.component_from(0, 2)
+            sage: from claasp.components.constant_component import Constant
+            sage: constant_component = Constant(0, 0, 4, 0x1)
             sage: constant_component.smt_xor_differential_propagation_constraints()
-            (['constant_0_2_0',
-              'constant_0_2_1',
-              ...
-              'constant_0_2_30',
-              'constant_0_2_31'],
-             ['(assert (not constant_0_2_0))',
-              '(assert (not constant_0_2_1))',
-              ...
-              '(assert (not constant_0_2_30))',
-              '(assert (not constant_0_2_31))'])
+            (['constant_0_0_0', 'constant_0_0_1', 'constant_0_0_2', 'constant_0_0_3'], ['(assert (not constant_0_0_0))', '(assert (not constant_0_0_1))', '(assert (not constant_0_0_2))', '(assert (not constant_0_0_3))'])
         """
         _, output_bit_ids = self._generate_output_ids()
         constraints = [smt_utils.smt_assert(smt_utils.smt_not(output_bit_id)) for output_bit_id in output_bit_ids]
@@ -811,17 +660,10 @@ class Constant(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.tea_block_cipher import TeaBlockCipher
-            sage: tea = TeaBlockCipher(number_of_rounds=3)
-            sage: constant_component = tea.component_from(0, 2)
+            sage: from claasp.components.constant_component import Constant
+            sage: constant_component = Constant(0, 0, 4, 0x1)
             sage: constant_component.smt_xor_linear_mask_propagation_constraints()
-            (['constant_0_2_0_o',
-              'constant_0_2_1_o',
-              'constant_0_2_2_o',
-              ...
-              'constant_0_2_30_o',
-              'constant_0_2_31_o'],
-             [])
+            (['constant_0_0_0_o', 'constant_0_0_1_o', 'constant_0_0_2_o', 'constant_0_0_3_o'], [])
         """
         out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
         _, output_bit_ids = self._generate_output_ids(out_suffix)

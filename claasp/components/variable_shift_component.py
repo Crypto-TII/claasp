@@ -80,17 +80,13 @@ class VariableShift(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.raiden_block_cipher import RaidenBlockCipher
-            sage: raiden = RaidenBlockCipher(number_of_rounds=3)
-            sage: variable_shift_component = raiden.component_from(0, 2)
-            sage: variable_shift_component.cms_constraints()
-            (['var_shift_0_2_0',
-              'var_shift_0_2_1',
-              'var_shift_0_2_2',
-              ...
-              '-var_shift_0_2_31 state_3_var_shift_0_2_31',
-              '-var_shift_0_2_31 -key_91',
-              'var_shift_0_2_31 -state_3_var_shift_0_2_31 key_91'])
+            sage: from claasp.components.variable_shift_component import VariableShift
+            sage: variable_shift_component = VariableShift(0, 2, ['plaintext', 'key'], [list(range(4)), list(range(4))], 4, 1)
+            sage: output_ids, constraints = variable_shift_component.cms_constraints()
+            sage: output_ids[0]
+            'var_shift_0_2_0'
+            sage: constraints[-1]
+            'var_shift_0_2_3 -state_0_var_shift_0_2_3 key_2'
         """
         return self.sat_constraints()
 
@@ -104,17 +100,13 @@ class VariableShift(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.raiden_block_cipher import RaidenBlockCipher
-            sage: raiden = RaidenBlockCipher(number_of_rounds=3)
-            sage: variable_shift_component = raiden.component_from(0, 2)
-            sage: variable_shift_component.cp_constraints()
-            (['array[0..31] of var 0..1: pre_var_shift_0_2;',
-              'var int: shift_amount_var_shift_0_2;'],
-             ['constraint pre_var_shift_0_2[0]=key[0];',
-              ...
-              'constraint pre_var_shift_0_2[31]=key[31];',
-              'constraint bitArrayToInt([key[i]|i in 91..95],shift_amount_var_shift_0_2);',
-              'constraint var_shift_0_2=LShift(pre_var_shift_0_2,shift_amount_var_shift_0_2);'])
+            sage: from claasp.components.variable_shift_component import VariableShift
+            sage: variable_shift_component = VariableShift(0, 2, ['plaintext', 'key'], [list(range(4)), list(range(4))], 4, 1)
+            sage: declarations, constraints = variable_shift_component.cp_constraints()
+            sage: declarations
+            ['array[0..3] of var 0..1: pre_var_shift_0_2;', 'var int: shift_amount_var_shift_0_2;']
+            sage: constraints[-1]
+            'constraint var_shift_0_2=RShift(pre_var_shift_0_2,shift_amount_var_shift_0_2);'
         """
         output_size = int(self.output_bit_size)
         input_id_link = self.input_id_links
@@ -197,14 +189,25 @@ class VariableShift(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.raiden_block_cipher import RaidenBlockCipher
+            sage: from claasp.ciphers.single_component_ciphers.variable_shift_cipher import VariableShiftCipher
             sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
-            sage: raiden = RaidenBlockCipher(number_of_rounds=16)
-            sage: minizinc = MznModel(raiden)
-            sage: variable_shift_component = raiden.component_from(0, 2)
-            sage: _, mzn_shift_by_variable_amount_constraints = variable_shift_component.minizinc_xor_differential_propagation_constraints(minizinc)
-            sage: mzn_shift_by_variable_amount_constraints[0]
-            'constraint LSHIFT_BY_VARIABLE_AMOUNT(array1d(0..32-1, [var_shift_0_2_x0,var_shift_0_2_x1,var_shift_0_2_x2,var_shift_0_2_x3,var_shift_0_2_x4,var_shift_0_2_x5,var_shift_0_2_x6,var_shift_0_2_x7,var_shift_0_2_x8,var_shift_0_2_x9,var_shift_0_2_x10,var_shift_0_2_x11,var_shift_0_2_x12,var_shift_0_2_x13,var_shift_0_2_x14,var_shift_0_2_x15,var_shift_0_2_x16,var_shift_0_2_x17,var_shift_0_2_x18,var_shift_0_2_x19,var_shift_0_2_x20,var_shift_0_2_x21,var_shift_0_2_x22,var_shift_0_2_x23,var_shift_0_2_x24,var_shift_0_2_x25,var_shift_0_2_x26,var_shift_0_2_x27,var_shift_0_2_x28,var_shift_0_2_x29,var_shift_0_2_x30,var_shift_0_2_x31]), 2147483648*var_shift_0_2_x63+1073741824*var_shift_0_2_x62+536870912*var_shift_0_2_x61+268435456*var_shift_0_2_x60+134217728*var_shift_0_2_x59+67108864*var_shift_0_2_x58+33554432*var_shift_0_2_x57+16777216*var_shift_0_2_x56+8388608*var_shift_0_2_x55+4194304*var_shift_0_2_x54+2097152*var_shift_0_2_x53+1048576*var_shift_0_2_x52+524288*var_shift_0_2_x51+262144*var_shift_0_2_x50+131072*var_shift_0_2_x49+65536*var_shift_0_2_x48+32768*var_shift_0_2_x47+16384*var_shift_0_2_x46+8192*var_shift_0_2_x45+4096*var_shift_0_2_x44+2048*var_shift_0_2_x43+1024*var_shift_0_2_x42+512*var_shift_0_2_x41+256*var_shift_0_2_x40+128*var_shift_0_2_x39+64*var_shift_0_2_x38+32*var_shift_0_2_x37+16*var_shift_0_2_x36+8*var_shift_0_2_x35+4*var_shift_0_2_x34+2*var_shift_0_2_x33+1*var_shift_0_2_x32)=array1d(0..32-1, [var_shift_0_2_y0,var_shift_0_2_y1,var_shift_0_2_y2,var_shift_0_2_y3,var_shift_0_2_y4,var_shift_0_2_y5,var_shift_0_2_y6,var_shift_0_2_y7,var_shift_0_2_y8,var_shift_0_2_y9,var_shift_0_2_y10,var_shift_0_2_y11,var_shift_0_2_y12,var_shift_0_2_y13,var_shift_0_2_y14,var_shift_0_2_y15,var_shift_0_2_y16,var_shift_0_2_y17,var_shift_0_2_y18,var_shift_0_2_y19,var_shift_0_2_y20,var_shift_0_2_y21,var_shift_0_2_y22,var_shift_0_2_y23,var_shift_0_2_y24,var_shift_0_2_y25,var_shift_0_2_y26,var_shift_0_2_y27,var_shift_0_2_y28,var_shift_0_2_y29,var_shift_0_2_y30,var_shift_0_2_y31]);\n'
+            sage: cipher = VariableShiftCipher(bit_size=4, amount_bit_size=4, direction=-1)
+            sage: minizinc = MznModel(cipher)
+            sage: variable_shift_component = cipher.get_component_from_id('var_shift_0_0')
+            sage: variable_shift_component.minizinc_xor_differential_propagation_constraints(minizinc)
+            (['var bool: var_shift_0_0_x0;',
+            'var bool: var_shift_0_0_x1;',
+            'var bool: var_shift_0_0_x2;',
+            'var bool: var_shift_0_0_x3;',
+            'var bool: var_shift_0_0_x4;',
+            'var bool: var_shift_0_0_x5;',
+            'var bool: var_shift_0_0_x6;',
+            'var bool: var_shift_0_0_x7;',
+            'var bool: var_shift_0_0_y0;',
+            'var bool: var_shift_0_0_y1;',
+            'var bool: var_shift_0_0_y2;',
+            'var bool: var_shift_0_0_y3;'],
+            ['constraint LSHIFT_BY_VARIABLE_AMOUNT(array1d(0..4-1, [var_shift_0_0_x0,var_shift_0_0_x1,var_shift_0_0_x2,var_shift_0_0_x3]), 8*var_shift_0_0_x7+4*var_shift_0_0_x6+2*var_shift_0_0_x5+1*var_shift_0_0_x4)=array1d(0..4-1, [var_shift_0_0_y0,var_shift_0_0_y1,var_shift_0_0_y2,var_shift_0_0_y3]);\n'])
         """
         if self.description[0].lower() != "shift_by_variable_amount":
             raise ValueError("component must be bitwise rotation")
@@ -254,20 +257,13 @@ class VariableShift(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.raiden_block_cipher import RaidenBlockCipher
-            sage: raiden = RaidenBlockCipher(number_of_rounds=3)
-            sage: variable_shift_component = raiden.component_from(0, 2)
-            sage: variable_shift_component.sat_constraints()
-            (['var_shift_0_2_0',
-              'var_shift_0_2_1',
-              ...
-              'var_shift_0_2_30',
-              'var_shift_0_2_31'],
-             ['-state_0_var_shift_0_2_0 key_0 key_95',
-              'state_0_var_shift_0_2_0 -key_0 key_95',
-              ...
-              '-var_shift_0_2_31 -key_91',
-              'var_shift_0_2_31 -state_3_var_shift_0_2_31 key_91'])
+            sage: from claasp.components.variable_shift_component import VariableShift
+            sage: variable_shift_component = VariableShift(0, 2, ['plaintext', 'key'], [list(range(4)), list(range(4))], 4, 1)
+            sage: output_ids, constraints = variable_shift_component.sat_constraints()
+            sage: output_ids[0]
+            'var_shift_0_2_0'
+            sage: constraints[-1]
+            'var_shift_0_2_3 -state_0_var_shift_0_2_3 key_2'
         """
         input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
@@ -324,20 +320,25 @@ class VariableShift(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.raiden_block_cipher import RaidenBlockCipher
-            sage: raiden = RaidenBlockCipher(number_of_rounds=3)
-            sage: variable_shift_component = raiden.component_from(0, 2)
+            sage: from claasp.components.variable_shift_component import VariableShift
+            sage: variable_shift_component = VariableShift(0, 2, ['plaintext', 'key'], [list(range(4)), list(range(4))], 4, 1)
             sage: variable_shift_component.smt_constraints()
             (['state_0_var_shift_0_2_0',
-              'state_0_var_shift_0_2_1',
-              ...
-              'var_shift_0_2_30',
-              'var_shift_0_2_31'],
-             ['(assert (ite key_95 (= state_0_var_shift_0_2_0 key_1) (= state_0_var_shift_0_2_0 key_0)))',
-              '(assert (ite key_95 (= state_0_var_shift_0_2_1 key_2) (= state_0_var_shift_0_2_1 key_1)))',
-              ...
-              '(assert (ite key_91 (not var_shift_0_2_30) (= var_shift_0_2_30 state_3_var_shift_0_2_30)))',
-              '(assert (ite key_91 (not var_shift_0_2_31) (= var_shift_0_2_31 state_3_var_shift_0_2_31)))'])
+            'state_0_var_shift_0_2_1',
+            'state_0_var_shift_0_2_2',
+            'state_0_var_shift_0_2_3',
+            'var_shift_0_2_0',
+            'var_shift_0_2_1',
+            'var_shift_0_2_2',
+            'var_shift_0_2_3'],
+            ['(assert (ite key_3 (= state_0_var_shift_0_2_0 plaintext_1) (= state_0_var_shift_0_2_0 plaintext_0)))',
+            '(assert (ite key_3 (= state_0_var_shift_0_2_1 plaintext_2) (= state_0_var_shift_0_2_1 plaintext_1)))',
+            '(assert (ite key_3 (= state_0_var_shift_0_2_2 plaintext_3) (= state_0_var_shift_0_2_2 plaintext_2)))',
+            '(assert (ite key_3 (not state_0_var_shift_0_2_3) (= state_0_var_shift_0_2_3 plaintext_3)))',
+            '(assert (ite key_2 (= var_shift_0_2_0 state_0_var_shift_0_2_2) (= var_shift_0_2_0 state_0_var_shift_0_2_0)))',
+            '(assert (ite key_2 (= var_shift_0_2_1 state_0_var_shift_0_2_3) (= var_shift_0_2_1 state_0_var_shift_0_2_1)))',
+            '(assert (ite key_2 (not var_shift_0_2_2) (= var_shift_0_2_2 state_0_var_shift_0_2_2)))',
+            '(assert (ite key_2 (not var_shift_0_2_3) (= var_shift_0_2_3 state_0_var_shift_0_2_3)))'])
         """
         input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()

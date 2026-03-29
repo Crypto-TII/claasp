@@ -1,5 +1,4 @@
 from claasp.components.constant_component import Constant
-from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 
 
 def test_cp_wordwise_deterministic_truncated_xor_differential_constraints():
@@ -16,8 +15,7 @@ def test_cp_wordwise_deterministic_truncated_xor_differential_constraints():
 
 
 def test_cp_xor_linear_mask_propagation_constraints():
-    speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=22)
-    constant_component = speck.component_from(2, 0)
+    constant_component = Constant(2, 0, 16, 0x0000)
     declarations, constraints = constant_component.cp_xor_linear_mask_propagation_constraints()
 
     assert declarations == ['array[0..15] of var 0..1: constant_2_0_o;']
