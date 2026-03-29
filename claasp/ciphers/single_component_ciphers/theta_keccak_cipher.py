@@ -18,8 +18,6 @@ class ThetaKeccakCipher(SingleComponentCipher):
 
     EXAMPLES::
 
-        sage: import warnings
-        sage: warnings.filterwarnings('ignore', category=SyntaxWarning)
         sage: from claasp.ciphers.single_component_ciphers.theta_keccak_cipher import ThetaKeccakCipher
         sage: cipher = ThetaKeccakCipher()
         sage: cipher.family_name

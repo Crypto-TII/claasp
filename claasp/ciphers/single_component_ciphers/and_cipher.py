@@ -29,8 +29,6 @@ class AndCipher(SingleComponentCipher):
 
     EXAMPLES::
 
-        sage: import warnings
-        sage: warnings.filterwarnings('ignore', category=SyntaxWarning)
         sage: from claasp.ciphers.single_component_ciphers.and_cipher import AndCipher
         sage: cipher = AndCipher()
         sage: cipher.family_name

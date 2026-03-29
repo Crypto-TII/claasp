@@ -74,7 +74,7 @@ EXAMPLES::
     10
 
     sage: from claasp.ciphers.single_component_ciphers.shift_rows_cipher import ShiftRowsCipher
-    sage: isinstance(ShiftRowsCipher(bit_size=16, parameter=4).evaluate([0x1234]), int)
+    sage: isinstance(ShiftRowsCipher(word_bit_size=8, rotation_amount=1, number_of_words=4).evaluate([0x12345678]), int)
     True
 
     sage: from claasp.ciphers.single_component_ciphers.sigma_cipher import SigmaCipher
@@ -106,7 +106,7 @@ EXAMPLES::
     True
 
     sage: from claasp.ciphers.single_component_ciphers.mix_column_cipher import MixColumnCipher
-    sage: isinstance(MixColumnCipher(word_size=4, number_of_words=4).evaluate([0xABCD]), int)
+    sage: isinstance(MixColumnCipher(word_size=4).evaluate([0xABCD]), int)
     True
 
     sage: from claasp.ciphers.single_component_ciphers.fsr_cipher import FsrCipher

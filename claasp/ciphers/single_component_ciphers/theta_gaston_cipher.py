@@ -19,8 +19,6 @@ class ThetaGastonCipher(SingleComponentCipher):
 
     EXAMPLES::
 
-        sage: import warnings
-        sage: warnings.filterwarnings('ignore', category=SyntaxWarning)
         sage: from claasp.ciphers.single_component_ciphers.theta_gaston_cipher import ThetaGastonCipher
         sage: cipher = ThetaGastonCipher()
         sage: cipher.family_name

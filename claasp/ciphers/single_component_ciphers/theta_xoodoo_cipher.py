@@ -18,8 +18,6 @@ class ThetaXoodooCipher(SingleComponentCipher):
 
     EXAMPLES::
 
-        sage: import warnings
-        sage: warnings.filterwarnings('ignore', category=SyntaxWarning)
         sage: from claasp.ciphers.single_component_ciphers.theta_xoodoo_cipher import ThetaXoodooCipher
         sage: cipher = ThetaXoodooCipher()
         sage: cipher.family_name

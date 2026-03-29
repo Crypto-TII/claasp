@@ -25,8 +25,6 @@ class ModaddCipher(SingleComponentCipher):
 
     EXAMPLES::
 
-        sage: import warnings
-        sage: warnings.filterwarnings('ignore', category=SyntaxWarning)
         sage: from claasp.ciphers.single_component_ciphers.modadd_cipher import ModaddCipher
         sage: cipher = ModaddCipher()
         sage: cipher.family_name

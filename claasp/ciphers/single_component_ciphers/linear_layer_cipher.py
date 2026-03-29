@@ -19,8 +19,6 @@ class LinearLayerCipher(SingleComponentCipher):
 
     EXAMPLES::
 
-        sage: import warnings
-        sage: warnings.filterwarnings('ignore', category=SyntaxWarning)
         sage: from claasp.ciphers.single_component_ciphers.linear_layer_cipher import LinearLayerCipher
         sage: cipher = LinearLayerCipher()
         sage: cipher.family_name

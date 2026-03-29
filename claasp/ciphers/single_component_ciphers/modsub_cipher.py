@@ -25,8 +25,6 @@ class ModsubCipher(SingleComponentCipher):
 
     EXAMPLES::
 
-        sage: import warnings
-        sage: warnings.filterwarnings('ignore', category=SyntaxWarning)
         sage: from claasp.ciphers.single_component_ciphers.modsub_cipher import ModsubCipher
         sage: cipher = ModsubCipher()
         sage: cipher.family_name

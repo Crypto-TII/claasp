@@ -254,8 +254,16 @@ class Cipher:
     def add_SHIFT_component(self, input_id_links, input_bit_positions, output_bit_size, parameter):
         return editor.add_SHIFT_component(self, input_id_links, input_bit_positions, output_bit_size, parameter)
 
-    def add_shift_rows_component(self, input_id_links, input_bit_positions, output_bit_size, parameter):
-        return editor.add_shift_rows_component(self, input_id_links, input_bit_positions, output_bit_size, parameter)
+    def add_shift_rows_component(self, input_id_links, input_bit_positions, rotation_amount=1, word_bit_size=8,
+                                 number_of_words=4):
+        return editor.add_shift_rows_component(
+            self,
+            input_id_links,
+            input_bit_positions,
+            rotation_amount,
+            word_bit_size,
+            number_of_words,
+        )
 
     def add_sigma_component(
         self,

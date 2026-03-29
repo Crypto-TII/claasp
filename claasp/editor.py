@@ -1212,47 +1212,52 @@ def add_SHIFT_component(cipher, input_id_links, input_bit_positions, output_bit_
     return new_component
 
 
-def add_shift_rows_component(cipher, input_id_links, input_bit_positions, output_bit_size, parameter):
+def add_shift_rows_component(cipher, input_id_links, input_bit_positions, rotation_amount=1, word_bit_size=8,
+                             number_of_words=4):
     """
-    Use this function to create rotate component in editor.
+    Use this function to create a ShiftRows component in editor.
 
     INPUT:
 
     - ``cipher`` -- **Cipher object**; an instance of the object cipher
     - ``input_id_links`` -- **list**; the list of input_id links
     - ``input_bit_positions`` -- **list**; the list of input_bits corresponding to the input_id links
-    - ``output_bit_size`` -- **integer**; the output bits of the component
-    - ``parameter`` -- **integer**; the number of word to be shifted, positive for right rotation and negative for left
-      rotation
+    - ``rotation_amount`` -- **integer** (default: `1`); number of words to rotate, positive for right rotation and
+      negative for left rotation
+        - ``word_bit_size`` -- **integer** (default: `8`); size of each word in bits
+    - ``number_of_words`` -- **integer** (default: `4`); total number of words in the state
 
     EXAMPLES::
 
         sage: from claasp.cipher import Cipher
         sage: from claasp.name_mappings import PERMUTATION
-        sage: cipher = Cipher("cipher_name", PERMUTATION, ["input"], [4], 4)
+        sage: cipher = Cipher("cipher_name", PERMUTATION, ["input"], [32], 32)
         sage: cipher.add_round()
-        sage: shift_row_0_0 = cipher.add_shift_rows_component(["input"], [[0,1,2,3]], 4, 2)
+        sage: shift_row_0_0 = cipher.add_shift_rows_component(["input"], [list(range(32))], 1, 8, 4)
         sage: cipher.print()
-        cipher_id = cipher_name_i4_o4_r1
+        cipher_id = cipher_name_i32_o32_r1
         cipher_type = permutation
         cipher_inputs = ['input']
-        cipher_inputs_bit_size = [4]
-        cipher_output_bit_size = 4
+        cipher_inputs_bit_size = [32]
+        cipher_output_bit_size = 32
         cipher_number_of_rounds = 1
         <BLANKLINE>
             # round = 0 - round component = 0
             id = shift_rows_0_0
             type = word_operation
-            input_bit_size = 4
+            input_bit_size = 32
             input_id_link = ['input']
-            input_bit_positions = [[0, 1, 2, 3]]
-            output_bit_size = 4
-            description = ['ROTATE', 2]
+            input_bit_positions = [[0, 1, 2, ..., 31]]
+            output_bit_size = 32
+            description = ['ROTATE', 8]
         cipher_reference_code = None
     """
     if cipher.current_round_number is None:
         print(CIPHER_ROUND_NOT_FOUND_ERROR)
         return None
+
+    output_bit_size = word_bit_size * number_of_words
+    parameter = rotation_amount * word_bit_size
 
     new_component = ShiftRows(
         cipher.current_round_number,

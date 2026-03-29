@@ -19,8 +19,6 @@ class FsrCipher(SingleComponentCipher):
 
     EXAMPLES::
 
-        sage: import warnings
-        sage: warnings.filterwarnings('ignore', category=SyntaxWarning)
         sage: from claasp.ciphers.single_component_ciphers.fsr_cipher import FsrCipher
         sage: cipher = FsrCipher()
         sage: cipher.family_name

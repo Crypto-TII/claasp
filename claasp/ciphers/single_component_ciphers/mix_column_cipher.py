@@ -5,7 +5,9 @@
 from claasp.ciphers.single_component_ciphers._base import SingleComponentCipher, add_cipher_output_from_component
 from claasp.name_mappings import HASH_FUNCTION, INPUT_PLAINTEXT
 
-PARAMETERS_CONFIGURATION_LIST = [{"word_size": 4, "number_of_words": 4}]
+PARAMETERS_CONFIGURATION_LIST = [{"word_size": 4, "matrix": None, "irreducible_polynomial": 0}]
+
+_DEFAULT_MATRIX = [[1 if i == j else 0 for j in range(4)] for i in range(4)]
 
 
 class MixColumnCipher(SingleComponentCipher):
@@ -14,13 +16,14 @@ class MixColumnCipher(SingleComponentCipher):
 
     INPUT:
 
-    - ``word_size`` -- **integer** (default: `4`); bit size of each word
-    - ``number_of_words`` -- **integer** (default: `4`); number of words (columns)
+    - ``word_size`` -- **integer** (default: `4`); bit size of each word (element of GF(2^word_size))
+    - ``matrix`` -- **list of lists** (default: `None`); matrix with integer entries (each integer is a binary
+      polynomial); defaults to the 4x4 identity matrix
+    - ``irreducible_polynomial`` -- **integer** (default: `0`); integer representation of the irreducible polynomial
+      over GF(2) used for field arithmetic; ``0`` means XOR-only (no field multiplication)
 
     EXAMPLES::
 
-        sage: import warnings
-        sage: warnings.filterwarnings('ignore', category=SyntaxWarning)
         sage: from claasp.ciphers.single_component_ciphers.mix_column_cipher import MixColumnCipher
         sage: cipher = MixColumnCipher()
         sage: cipher.family_name
@@ -30,10 +33,11 @@ class MixColumnCipher(SingleComponentCipher):
         sage: cipher.number_of_rounds
         1
     """
-    def __init__(self, word_size=4, number_of_words=4):
-        bit_size = word_size * number_of_words
-        matrix = [[1 if i == j else 0 for j in range(number_of_words)] for i in range(number_of_words)]
-        description = [matrix, 0, word_size]
+    def __init__(self, word_size=4, matrix=None, irreducible_polynomial=0):
+        if matrix is None:
+            matrix = _DEFAULT_MATRIX
+        bit_size = word_size * len(matrix)
+        description = [matrix, irreducible_polynomial, word_size]
         super().__init__(
             family_name="mix_column_cipher",
             cipher_type=HASH_FUNCTION,

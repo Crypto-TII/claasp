@@ -20,8 +20,6 @@ class WordPermutationCipher(SingleComponentCipher):
 
     EXAMPLES::
 
-        sage: import warnings
-        sage: warnings.filterwarnings('ignore', category=SyntaxWarning)
         sage: from claasp.ciphers.single_component_ciphers.word_permutation_cipher import WordPermutationCipher
         sage: cipher = WordPermutationCipher()
         sage: cipher.family_name

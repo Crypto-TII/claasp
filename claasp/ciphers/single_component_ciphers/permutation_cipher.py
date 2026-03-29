@@ -19,8 +19,6 @@ class PermutationCipher(SingleComponentCipher):
 
     EXAMPLES::
 
-        sage: import warnings
-        sage: warnings.filterwarnings('ignore', category=SyntaxWarning)
         sage: from claasp.ciphers.single_component_ciphers.permutation_cipher import PermutationCipher
         sage: cipher = PermutationCipher()
         sage: cipher.family_name
