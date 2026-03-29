@@ -9,6 +9,28 @@ PARAMETERS_CONFIGURATION_LIST = [{"word_size": 4, "number_of_words": 4, "permuta
 
 
 class WordPermutationCipher(SingleComponentCipher):
+    """
+    Return a cipher object containing a single word permutation.
+
+    INPUT:
+
+    - ``word_size`` -- **integer** (default: `4`); bit size of each word
+    - ``number_of_words`` -- **integer** (default: `4`); number of words
+    - ``permutation_description`` -- **list** (default: `None`); word permutation; defaults to a cyclic left shift
+
+    EXAMPLES::
+
+        sage: import warnings
+        sage: warnings.filterwarnings('ignore', category=SyntaxWarning)
+        sage: from claasp.ciphers.single_component_ciphers.word_permutation_cipher import WordPermutationCipher
+        sage: cipher = WordPermutationCipher()
+        sage: cipher.family_name
+        'word_permutation_cipher'
+        sage: cipher.type
+        'permutation'
+        sage: cipher.number_of_rounds
+        1
+    """
     def __init__(self, word_size=4, number_of_words=4, permutation_description=None):
         if permutation_description is None:
             permutation_description = [1, 2, 3, 0]

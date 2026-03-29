@@ -9,6 +9,27 @@ PARAMETERS_CONFIGURATION_LIST = [{"output_bit_size": 3, "value": 0b010}]
 
 
 class ConstantCipher(SingleComponentCipher):
+    """
+    Return a cipher object containing a single constant component.
+
+    INPUT:
+
+    - ``output_bit_size`` -- **integer** (default: `3`); number of output bits
+    - ``value`` -- **integer** (default: `0b010`); constant value to output
+
+    EXAMPLES::
+
+        sage: import warnings
+        sage: warnings.filterwarnings('ignore', category=SyntaxWarning)
+        sage: from claasp.ciphers.single_component_ciphers.constant_cipher import ConstantCipher
+        sage: cipher = ConstantCipher()
+        sage: cipher.family_name
+        'constant_cipher'
+        sage: cipher.type
+        'hash_function'
+        sage: cipher.number_of_rounds
+        1
+    """
     def __init__(self, output_bit_size=3, value=0b010):
         super().__init__(
             family_name="constant_cipher",

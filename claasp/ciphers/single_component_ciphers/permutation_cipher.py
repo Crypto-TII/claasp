@@ -9,6 +9,27 @@ PARAMETERS_CONFIGURATION_LIST = [{"bit_size": 8, "permutation_description": [7, 
 
 
 class PermutationCipher(SingleComponentCipher):
+    """
+    Return a cipher object containing a single bit permutation.
+
+    INPUT:
+
+    - ``bit_size`` -- **integer** (default: `8`); input and output bit size
+    - ``permutation_description`` -- **list** (default: `None`); permutation as a list; defaults to bit reversal
+
+    EXAMPLES::
+
+        sage: import warnings
+        sage: warnings.filterwarnings('ignore', category=SyntaxWarning)
+        sage: from claasp.ciphers.single_component_ciphers.permutation_cipher import PermutationCipher
+        sage: cipher = PermutationCipher()
+        sage: cipher.family_name
+        'permutation_cipher'
+        sage: cipher.type
+        'permutation'
+        sage: cipher.number_of_rounds
+        1
+    """
     def __init__(self, bit_size=8, permutation_description=None):
         if permutation_description is None:
             permutation_description = list(reversed(range(bit_size)))

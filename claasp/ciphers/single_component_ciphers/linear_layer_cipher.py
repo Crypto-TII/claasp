@@ -9,6 +9,27 @@ PARAMETERS_CONFIGURATION_LIST = [{"bit_size": 4, "description": [[1, 0, 0, 0], [
 
 
 class LinearLayerCipher(SingleComponentCipher):
+    """
+    Return a cipher object containing a single linear layer (matrix multiplication over GF(2)).
+
+    INPUT:
+
+    - ``bit_size`` -- **integer** (default: `4`); input and output bit size
+    - ``description`` -- **list of lists** (default: `None`); binary matrix; defaults to the identity
+
+    EXAMPLES::
+
+        sage: import warnings
+        sage: warnings.filterwarnings('ignore', category=SyntaxWarning)
+        sage: from claasp.ciphers.single_component_ciphers.linear_layer_cipher import LinearLayerCipher
+        sage: cipher = LinearLayerCipher()
+        sage: cipher.family_name
+        'linear_layer_cipher'
+        sage: cipher.type
+        'permutation'
+        sage: cipher.number_of_rounds
+        1
+    """
     def __init__(self, bit_size=4, description=None):
         if description is None:
             description = [[1 if i == j else 0 for j in range(bit_size)] for i in range(bit_size)]

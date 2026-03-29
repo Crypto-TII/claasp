@@ -14,6 +14,28 @@ PARAMETERS_CONFIGURATION_LIST = [{"word_bit_size": 16, "number_of_inputs": 2, "m
 
 
 class IdeaModmulCipher(SingleComponentCipher):
+    """
+    Return a cipher object containing a single IDEA multiplication modulo ``2^n + 1``.
+
+    INPUT:
+
+    - ``word_bit_size`` -- **integer** (default: `16`); bit size of each input word
+    - ``number_of_inputs`` -- **integer** (default: `2`); number of inputs
+    - ``modulus`` -- **integer** (default: `None`); modulus; defaults to ``2^word_bit_size + 1``
+
+    EXAMPLES::
+
+        sage: import warnings
+        sage: warnings.filterwarnings('ignore', category=SyntaxWarning)
+        sage: from claasp.ciphers.single_component_ciphers.idea_modmul_cipher import IdeaModmulCipher
+        sage: cipher = IdeaModmulCipher()
+        sage: cipher.family_name
+        'idea_modmul_cipher'
+        sage: cipher.type
+        'block_cipher'
+        sage: cipher.number_of_rounds
+        1
+    """
     def __init__(self, word_bit_size=16, number_of_inputs=2, modulus=None):
         if modulus is None:
             modulus = (1 << word_bit_size) + 1

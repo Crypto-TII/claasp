@@ -9,6 +9,27 @@ PARAMETERS_CONFIGURATION_LIST = [{"bit_size": 8, "parameter": 1}]
 
 
 class ShiftCipher(SingleComponentCipher):
+    """
+    Return a cipher object containing a single logical shift.
+
+    INPUT:
+
+    - ``bit_size`` -- **integer** (default: `8`); input and output bit size
+    - ``parameter`` -- **integer** (default: `1`); shift amount (positive = left, negative = right)
+
+    EXAMPLES::
+
+        sage: import warnings
+        sage: warnings.filterwarnings('ignore', category=SyntaxWarning)
+        sage: from claasp.ciphers.single_component_ciphers.shift_cipher import ShiftCipher
+        sage: cipher = ShiftCipher()
+        sage: cipher.family_name
+        'shift_cipher'
+        sage: cipher.type
+        'hash_function'
+        sage: cipher.number_of_rounds
+        1
+    """
     def __init__(self, bit_size=8, parameter=1):
         super().__init__(
             family_name="shift_cipher",

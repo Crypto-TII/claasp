@@ -9,6 +9,26 @@ PARAMETERS_CONFIGURATION_LIST = [{"bit_size": 4}]
 
 
 class NotCipher(SingleComponentCipher):
+    """
+    Return a cipher object containing a single bitwise NOT operation.
+
+    INPUT:
+
+    - ``bit_size`` -- **integer** (default: `4`); input and output bit size
+
+    EXAMPLES::
+
+        sage: import warnings
+        sage: warnings.filterwarnings('ignore', category=SyntaxWarning)
+        sage: from claasp.ciphers.single_component_ciphers.not_cipher import NotCipher
+        sage: cipher = NotCipher()
+        sage: cipher.family_name
+        'not_cipher'
+        sage: cipher.type
+        'permutation'
+        sage: cipher.number_of_rounds
+        1
+    """
     def __init__(self, bit_size=4):
         super().__init__(
             family_name="not_cipher",

@@ -9,6 +9,26 @@ PARAMETERS_CONFIGURATION_LIST = [{"bit_size": 8}]
 
 
 class ReverseCipher(SingleComponentCipher):
+    """
+    Return a cipher object containing a single bit-reversal permutation.
+
+    INPUT:
+
+    - ``bit_size`` -- **integer** (default: `8`); input and output bit size
+
+    EXAMPLES::
+
+        sage: import warnings
+        sage: warnings.filterwarnings('ignore', category=SyntaxWarning)
+        sage: from claasp.ciphers.single_component_ciphers.reverse_cipher import ReverseCipher
+        sage: cipher = ReverseCipher()
+        sage: cipher.family_name
+        'reverse_cipher'
+        sage: cipher.type
+        'permutation'
+        sage: cipher.number_of_rounds
+        1
+    """
     def __init__(self, bit_size=8):
         super().__init__(
             family_name="reverse_cipher",

@@ -9,6 +9,28 @@ PARAMETERS_CONFIGURATION_LIST = [{"bit_size": 8, "amount_bit_size": 3, "paramete
 
 
 class VariableRotateCipher(SingleComponentCipher):
+    """
+    Return a cipher object containing a single variable rotation (amount given as input).
+
+    INPUT:
+
+    - ``bit_size`` -- **integer** (default: `8`); input and output bit size
+    - ``amount_bit_size`` -- **integer** (default: `3`); bit size of the rotation amount input
+    - ``parameter`` -- **integer** (default: `1`); direction (positive = left, negative = right)
+
+    EXAMPLES::
+
+        sage: import warnings
+        sage: warnings.filterwarnings('ignore', category=SyntaxWarning)
+        sage: from claasp.ciphers.single_component_ciphers.variable_rotate_cipher import VariableRotateCipher
+        sage: cipher = VariableRotateCipher()
+        sage: cipher.family_name
+        'variable_rotate_cipher'
+        sage: cipher.type
+        'hash_function'
+        sage: cipher.number_of_rounds
+        1
+    """
     def __init__(self, bit_size=8, amount_bit_size=3, parameter=1):
         super().__init__(
             family_name="variable_rotate_cipher",

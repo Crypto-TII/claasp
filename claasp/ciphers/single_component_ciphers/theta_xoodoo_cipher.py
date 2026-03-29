@@ -9,6 +9,26 @@ PARAMETERS_CONFIGURATION_LIST = [{"bit_size": 384}]
 
 
 class ThetaXoodooCipher(SingleComponentCipher):
+    """
+    Return a cipher object containing a single Theta-Xoodoo operation.
+
+    INPUT:
+
+    - ``bit_size`` -- **integer** (default: `384`); input and output bit size
+
+    EXAMPLES::
+
+        sage: import warnings
+        sage: warnings.filterwarnings('ignore', category=SyntaxWarning)
+        sage: from claasp.ciphers.single_component_ciphers.theta_xoodoo_cipher import ThetaXoodooCipher
+        sage: cipher = ThetaXoodooCipher()
+        sage: cipher.family_name
+        'theta_xoodoo_cipher'
+        sage: cipher.type
+        'permutation'
+        sage: cipher.number_of_rounds
+        1
+    """
     def __init__(self, bit_size=384):
         super().__init__(
             family_name="theta_xoodoo_cipher",

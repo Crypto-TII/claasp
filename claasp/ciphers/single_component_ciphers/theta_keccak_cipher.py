@@ -9,6 +9,26 @@ PARAMETERS_CONFIGURATION_LIST = [{"bit_size": 25}]
 
 
 class ThetaKeccakCipher(SingleComponentCipher):
+    """
+    Return a cipher object containing a single Theta-Keccak operation.
+
+    INPUT:
+
+    - ``bit_size`` -- **integer** (default: `25`); input and output bit size
+
+    EXAMPLES::
+
+        sage: import warnings
+        sage: warnings.filterwarnings('ignore', category=SyntaxWarning)
+        sage: from claasp.ciphers.single_component_ciphers.theta_keccak_cipher import ThetaKeccakCipher
+        sage: cipher = ThetaKeccakCipher()
+        sage: cipher.family_name
+        'theta_keccak_cipher'
+        sage: cipher.type
+        'permutation'
+        sage: cipher.number_of_rounds
+        1
+    """
     def __init__(self, bit_size=25):
         super().__init__(
             family_name="theta_keccak_cipher",

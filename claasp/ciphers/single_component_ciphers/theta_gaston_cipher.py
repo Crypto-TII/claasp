@@ -9,6 +9,27 @@ PARAMETERS_CONFIGURATION_LIST = [{"bit_size": 320, "rotation_amounts_parameter":
 
 
 class ThetaGastonCipher(SingleComponentCipher):
+    """
+    Return a cipher object containing a single Theta-Gaston operation.
+
+    INPUT:
+
+    - ``bit_size`` -- **integer** (default: `320`); input and output bit size
+    - ``rotation_amounts_parameter`` -- **list** (default: `None`); rotation amounts; defaults to ``[1, 18, 23, 25, 32, 52, 60, 63]``
+
+    EXAMPLES::
+
+        sage: import warnings
+        sage: warnings.filterwarnings('ignore', category=SyntaxWarning)
+        sage: from claasp.ciphers.single_component_ciphers.theta_gaston_cipher import ThetaGastonCipher
+        sage: cipher = ThetaGastonCipher()
+        sage: cipher.family_name
+        'theta_gaston_cipher'
+        sage: cipher.type
+        'hash_function'
+        sage: cipher.number_of_rounds
+        1
+    """
     def __init__(self, bit_size=320, rotation_amounts_parameter=None):
         if rotation_amounts_parameter is None:
             rotation_amounts_parameter = [1, 18, 23, 25, 32, 52, 60, 63]
