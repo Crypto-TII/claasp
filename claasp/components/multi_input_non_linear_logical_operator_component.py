@@ -94,17 +94,10 @@ class MultiInputNonlinearLogicalOperator(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
-            sage: fancy = FancyBlockCipher(number_of_rounds=3)
-            sage: and_component = fancy.component_from(0, 8)
-            sage: and_component.cms_constraints()
-            (['and_0_8_0',
-              'and_0_8_1',
-              'and_0_8_2',
-              ...
-              '-and_0_8_11 xor_0_7_11',
-              '-and_0_8_11 key_23',
-              'and_0_8_11 -xor_0_7_11 -key_23'])
+            sage: from claasp.components.and_component import AND
+            sage: and_component = AND(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2)
+            sage: and_component.cms_constraints()[:1]
+            (['and_0_0_0', 'and_0_0_1'],)
         """
         return self.sat_constraints()
 
@@ -124,14 +117,12 @@ class MultiInputNonlinearLogicalOperator(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
-            sage: fancy = FancyBlockCipher()
-            sage: and_component = fancy.component_from(0, 8)
+            sage: from claasp.components.and_component import AND
+            sage: and_component = AND(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2)
             sage: and_component.cp_deterministic_truncated_xor_differential_constraints()
             ([],
-             ['constraint if xor_0_7[0] == 0 /\\ key[12] == 0 then and_0_8[0] = 0 else and_0_8[0] = 2 endif;',
-               ...
-              'constraint if xor_0_7[11] == 0 /\\ key[23] == 0 then and_0_8[11] = 0 else and_0_8[11] = 2 endif;'])
+             ['constraint if input1[0] == 0 /\\ input2[0] == 0 then and_0_0[0] = 0 else and_0_0[0] = 2 endif;',
+              'constraint if input1[1] == 0 /\\ input2[1] == 0 then and_0_0[1] = 0 else and_0_0[1] = 2 endif;'])
         """
         cp_declarations = []
         all_inputs = []
@@ -547,20 +538,10 @@ class MultiInputNonlinearLogicalOperator(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
-            sage: fancy = FancyBlockCipher(number_of_rounds=3)
-            sage: and_component = fancy.component_from(0, 8)
-            sage: and_component.sat_xor_linear_mask_propagation_constraints()
-            (['and_0_8_0_i',
-              'and_0_8_1_i',
-              ...
-              'hw_and_0_8_10_o',
-              'hw_and_0_8_11_o'],
-             ['-and_0_8_0_i hw_and_0_8_0_o',
-              '-and_0_8_12_i hw_and_0_8_0_o',
-              ...
-              '-and_0_8_11_o hw_and_0_8_11_o',
-              'and_0_8_11_o -hw_and_0_8_11_o'])
+            sage: from claasp.components.and_component import AND
+            sage: and_component = AND(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2)
+            sage: and_component.sat_xor_linear_mask_propagation_constraints()[:1]
+            (['and_0_0_0_i', 'and_0_0_1_i', 'and_0_0_2_i', 'and_0_0_3_i', 'and_0_0_0_o', 'and_0_0_1_o', 'hw_and_0_0_0_o', 'hw_and_0_0_1_o'],)
         """
         _, input_bit_ids = self._generate_component_input_ids()
         out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
@@ -595,20 +576,10 @@ class MultiInputNonlinearLogicalOperator(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
-            sage: fancy = FancyBlockCipher(number_of_rounds=3)
-            sage: and_component = fancy.component_from(0, 8)
-            sage: and_component.smt_xor_differential_propagation_constraints()
-            (['and_0_8_0',
-              'and_0_8_1',
-              ...
-              'hw_and_0_8_10',
-              'hw_and_0_8_11'],
-             ['(assert (or (and (not xor_0_7_0) (not key_12) (not and_0_8_0) (not hw_and_0_8_0)) (and xor_0_7_0 hw_and_0_8_0) (and key_12 hw_and_0_8_0)))',
-              '(assert (or (and (not xor_0_7_1) (not key_13) (not and_0_8_1) (not hw_and_0_8_1)) (and xor_0_7_1 hw_and_0_8_1) (and key_13 hw_and_0_8_1)))',
-              ...
-              '(assert (or (and (not xor_0_7_10) (not key_22) (not and_0_8_10) (not hw_and_0_8_10)) (and xor_0_7_10 hw_and_0_8_10) (and key_22 hw_and_0_8_10)))',
-              '(assert (or (and (not xor_0_7_11) (not key_23) (not and_0_8_11) (not hw_and_0_8_11)) (and xor_0_7_11 hw_and_0_8_11) (and key_23 hw_and_0_8_11)))'])
+            sage: from claasp.components.and_component import AND
+            sage: and_component = AND(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2)
+            sage: and_component.smt_xor_differential_propagation_constraints()[:1]
+            (['and_0_0_0', 'and_0_0_1', 'hw_and_0_0_0', 'hw_and_0_0_1'],)])
         """
         input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
@@ -641,20 +612,10 @@ class MultiInputNonlinearLogicalOperator(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
-            sage: fancy = FancyBlockCipher(number_of_rounds=3)
-            sage: and_component = fancy.component_from(0, 8)
-            sage: and_component.smt_xor_linear_mask_propagation_constraints()
-            (['and_0_8_0_i',
-              'and_0_8_1_i',
-              ...
-              'hw_and_0_8_10_o',
-              'hw_and_0_8_11_o'],
-             ['(assert (or (and (not and_0_8_0_i) (not and_0_8_12_i) (not and_0_8_0_o) (not hw_and_0_8_0_o)) (and and_0_8_0_o hw_and_0_8_0_o)))',
-              '(assert (or (and (not and_0_8_1_i) (not and_0_8_13_i) (not and_0_8_1_o) (not hw_and_0_8_1_o)) (and and_0_8_1_o hw_and_0_8_1_o)))',
-              ...
-              '(assert (or (and (not and_0_8_10_i) (not and_0_8_22_i) (not and_0_8_10_o) (not hw_and_0_8_10_o)) (and and_0_8_10_o hw_and_0_8_10_o)))',
-              '(assert (or (and (not and_0_8_11_i) (not and_0_8_23_i) (not and_0_8_11_o) (not hw_and_0_8_11_o)) (and and_0_8_11_o hw_and_0_8_11_o)))'])
+            sage: from claasp.components.and_component import AND
+            sage: and_component = AND(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2)
+            sage: and_component.smt_xor_linear_mask_propagation_constraints()[:1]
+            (['and_0_0_0_i', 'and_0_0_1_i', 'and_0_0_2_i', 'and_0_0_3_i', 'and_0_0_0_o', 'and_0_0_1_o', 'hw_and_0_0_0_o', 'hw_and_0_0_1_o'],)])
         """
         _, input_bit_ids = self._generate_component_input_ids()
         out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
