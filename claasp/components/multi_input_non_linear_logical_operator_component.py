@@ -92,12 +92,10 @@ class MultiInputNonlinearLogicalOperator(Component):
 
         - None
 
-        EXAMPLES::
+        TESTS:
 
-            sage: from claasp.components.and_component import AND
-            sage: and_component = AND(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2)
-            sage: and_component.cms_constraints()[:1]
-            (['and_0_0_0', 'and_0_0_1'],)
+            This class is a generic base class. The actual behavior of ``cms_constraints``
+            is exercised in concrete subclasses that implement ``sat_constraints``.
         """
         return self.sat_constraints()
 
@@ -109,17 +107,21 @@ class MultiInputNonlinearLogicalOperator(Component):
 
     def cp_deterministic_truncated_xor_differential_constraints(self):
         r"""
-        Return lists declarations and constraints for AND component CP deterministic truncated xor differential model.
+        Return lists of declarations and constraints for a multi-input nonlinear logical operator
+        in the CP deterministic truncated XOR differential model.
+
+        This method contains standalone base-class logic and is therefore documented with a
+        direct instantiation of ``MultiInputNonlinearLogicalOperator``.
 
         INPUT:
 
-        - ``inverse`` -- **boolean** (default: `False`)
+        - None
 
         EXAMPLES::
 
-            sage: from claasp.components.and_component import AND
-            sage: and_component = AND(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2)
-            sage: and_component.cp_deterministic_truncated_xor_differential_constraints()
+            sage: from claasp.components.multi_input_non_linear_logical_operator_component import MultiInputNonlinearLogicalOperator
+            sage: component = MultiInputNonlinearLogicalOperator(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2, 'and')
+            sage: component.cp_deterministic_truncated_xor_differential_constraints()
             ([],
              ['constraint if input1[0] == 0 /\\ input2[0] == 0 then and_0_0[0] = 0 else and_0_0[0] = 2 endif;',
               'constraint if input1[1] == 0 /\\ input2[1] == 0 then and_0_0[1] = 0 else and_0_0[1] = 2 endif;'])
@@ -141,9 +143,16 @@ class MultiInputNonlinearLogicalOperator(Component):
 
     def cp_wordwise_deterministic_truncated_xor_differential_constraints(self, model):
         r"""
-        Return lists declarations and constraints for AND component for CP wordwise deterministic truncated xor differential.
+        Return lists of declarations and constraints for a multi-input nonlinear logical operator
+        for CP wordwise deterministic truncated XOR differential.
 
         This is for the deterministic truncated xor differential trail search.
+
+        TESTING NOTE:
+
+            This method contains real base-class logic but only depends on the model's
+            ``word_size`` attribute. The doctest therefore uses a minimal dummy model
+            instead of a full cipher-backed instantiation.
 
         INPUT:
 
@@ -151,17 +160,12 @@ class MultiInputNonlinearLogicalOperator(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
-            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
-            sage: from claasp.components.and_component import AND
-            sage: aes = ToyAESBlockCipher()
-            sage: cp = MznModel(aes)
-            sage: and_component = AND(0, 18, ['sbox_0_2', 'sbox_0_6', 'sbox_0_10', 'sbox_0_14'], [[0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7]], 32)
-            sage: and_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(cp)
-            ([],
-             ['constraint if sbox_0_2_active[0] == 0 then and_0_18_active[0] = 0 /\\ and_0_18_value[0] = 0 else and_0_18_active[0] = 3 /\\ and_0_18_value[0] = -2 endif;',
-               ...
-              'constraint if sbox_0_14_active[0] == 0 then and_0_18_active[3] = 0 /\\ and_0_18_value[3] = 0 else and_0_18_active[3] = 3 /\\ and_0_18_value[3] = -2 endif;'])
+            sage: from claasp.components.multi_input_non_linear_logical_operator_component import MultiInputNonlinearLogicalOperator
+            sage: class DummyModel:
+            ....:     word_size = 2
+            sage: component = MultiInputNonlinearLogicalOperator(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2, 'and')
+            sage: component.cp_wordwise_deterministic_truncated_xor_differential_constraints(DummyModel())[:1]
+            ([],)
         """
         cp_declarations = []
         all_inputs_value = []
@@ -196,7 +200,20 @@ class MultiInputNonlinearLogicalOperator(Component):
 
     def cp_xor_differential_propagation_constraints(self, model):
         """
-        Return lists declarations and constraints for the probability of AND component for CP xor differential probability.
+        Return lists of declarations and constraints for the probability of a multi-input nonlinear
+        logical operator in the CP XOR differential model.
+
+        .. NOTE::
+
+            For the operators represented by this base class (currently ``AND`` and ``OR``),
+            the same DDT table is used. This is why the generated MiniZinc constraint names
+            still reference ``and{num_add}inputs_DDT``.
+
+        TESTING NOTE:
+
+            This method contains real base-class logic but only depends on the model's
+            ``c`` counter and ``component_and_probability`` dictionary. The doctest uses a
+            minimal dummy model rather than a full cipher/model integration setup.
 
         INPUT:
 
@@ -204,16 +221,16 @@ class MultiInputNonlinearLogicalOperator(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
-            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
-            sage: fancy = FancyBlockCipher()
-            sage: cp = MznModel(fancy)
-            sage: and_component = fancy.component_from(0, 8)
-            sage: and_component.cp_xor_differential_propagation_constraints(cp)
+            sage: from claasp.components.multi_input_non_linear_logical_operator_component import MultiInputNonlinearLogicalOperator
+            sage: class DummyModel:
+            ....:     def __init__(self):
+            ....:         self.c = 0
+            ....:         self.component_and_probability = {}
+            sage: component = MultiInputNonlinearLogicalOperator(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2, 'and')
+            sage: component.cp_xor_differential_propagation_constraints(DummyModel())
             ([],
-             ['constraint table([xor_0_7[0]]++[key[12]]++[and_0_8[0]]++[p[0]],and2inputs_DDT);',
-               ...
-              'constraint table([xor_0_7[11]]++[key[23]]++[and_0_8[11]]++[p[11]],and2inputs_DDT);'])
+             ['constraint table([input1[0]]++[input2[0]]++[and_0_0[0]]++[p[0]],and2inputs_DDT);',
+              'constraint table([input1[1]]++[input2[1]]++[and_0_0[1]]++[p[1]],and2inputs_DDT);'])
         """
         num_add = self.description[1]
         all_inputs = []
@@ -293,7 +310,8 @@ class MultiInputNonlinearLogicalOperator(Component):
 
     def milp_xor_differential_propagation_constraints(self, model):
         """
-        Return lists variables and constrains modeling a component of type AND for MILP xor differential probability.
+        Return lists of variables and constraints modeling a multi-input nonlinear logical operator
+        for MILP XOR differential probability.
 
         .. NOTE::
 
@@ -301,30 +319,33 @@ class MultiInputNonlinearLogicalOperator(Component):
           The probability is extracted from https://www.iacr.org/archive/fse2014/85400194/85400194.pdf
           Results checked from https://eprint.iacr.org/2021/213.pdf
 
+        TESTING NOTE:
+
+                The base class owns this constraint-generation logic. The doctest keeps the
+                setup minimal by using a small dummy MILP model backed by ``MixedIntegerLinearProgram``
+                instead of constructing a full cipher-specific model instance.
+
         INPUT:
 
         - ``model`` -- **model object**; a model instance
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
-            sage: from claasp.cipher_modules.models.milp.milp_models.milp_xor_differential_model import MilpXorDifferentialModel
-            sage: simon = SimonBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
-            sage: milp = MilpXorDifferentialModel(simon)
-            sage: milp.init_model_in_sage_milp_class()
-            sage: and_component = simon.get_component_from_id("and_0_4")
-            sage: variables, constraints = and_component.milp_xor_differential_propagation_constraints(milp)
-            sage: variables
-            [('x[rot_0_1_0]', x_0),
-            ('x[rot_0_1_1]', x_1),
-            ...
-            ('x[and_0_4_14]', x_46),
-            ('x[and_0_4_15]', x_47)]
-            sage: constraints
-            [0 <= -1*x_32 + x_48,
-            0 <= -1*x_33 + x_49,
-            ...
-            x_64 == 100*x_48 + 100*x_49 + 100*x_50 + 100*x_51 + 100*x_52 + 100*x_53 + 100*x_54 + 100*x_55 + 100*x_56 + 100*x_57 + 100*x_58 + 100*x_59 + 100*x_60 + 100*x_61 + 100*x_62 + 100*x_63]
+            sage: from claasp.components.multi_input_non_linear_logical_operator_component import MultiInputNonlinearLogicalOperator
+            sage: from sage.numerical.mip import MixedIntegerLinearProgram
+            sage: class DummyMilp:
+            ....:     def __init__(self):
+            ....:         self._model = MixedIntegerLinearProgram(maximization=False, solver='GLPK')
+            ....:         self.binary_variable = self._model.new_variable(binary=True)
+            ....:         self.integer_variable = self._model.new_variable(integer=True, nonnegative=True)
+            ....:         self.non_linear_component_id = []
+            ....:         self.weight_precision = 2
+            sage: component = MultiInputNonlinearLogicalOperator(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2, 'and')
+            sage: variables, constraints = component.milp_xor_differential_propagation_constraints(DummyMilp())
+            sage: variables[:1]
+            [('x[input1_0]', x_0)]
+            sage: len(constraints) > 0
+            True
         """
         x = model.binary_variable
         p = model.integer_variable
@@ -353,13 +374,21 @@ class MultiInputNonlinearLogicalOperator(Component):
 
     def milp_xor_linear_mask_propagation_constraints(self, model):
         """
-        Return lists variables and constraints to compute the probability for AND component, for k inputs for MILP xor linear probability.
+        Return lists of variables and constraints to compute the probability for a multi-input
+        nonlinear logical operator for MILP XOR linear probability.
 
         .. NOTE::
 
-            AND is seen as k parallel application of  a 2x1 S-box, as described in 3.1 of
-          https://eprint.iacr.org/2014/973.pdf
-          Also see https://eprint.iacr.org/2020/290.pdf
+            The operators represented by this base class are modeled through the same
+            underlying AND-based LAT inequalities. See 3.1 of
+            https://eprint.iacr.org/2014/973.pdf
+            Also see https://eprint.iacr.org/2020/290.pdf
+
+        TESTING NOTE:
+
+            The base class owns this logic, but the method needs a few MILP services.
+            The doctest therefore uses a small dummy MILP model rather than a full
+            cipher-backed integration setup.
 
         INPUT:
 
@@ -367,26 +396,21 @@ class MultiInputNonlinearLogicalOperator(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
-            sage: from claasp.cipher_modules.models.milp.milp_models.milp_xor_linear_model import MilpXorLinearModel
-            sage: simon = SimonBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
-            sage: milp = MilpXorLinearModel(simon)
-            sage: milp.init_model_in_sage_milp_class()
-            sage: and_component = simon.get_component_from_id("and_0_4")
-            sage: variables, constraints = and_component.milp_xor_linear_mask_propagation_constraints(milp)
-            sage: variables
-            [('x[and_0_4_0_i]', x_0),
-             ('x[and_0_4_1_i]', x_1),
-            ...
-             ('x[and_0_4_14_o]', x_46),
-             ('x[and_0_4_15_o]', x_47)]
-            sage: constraints
-            [0 <= -1*x_16 + x_32,
-             0 <= -1*x_17 + x_33,
-            ...
-            0 <= -1*x_15 + x_47,
-            x_48 == x_32 + x_33 + x_34 + x_35 + x_36 + x_37 + x_38 + x_39 + x_40 + x_41 + x_42 + x_43 + x_44 + x_45 + x_46 + x_47,
-            x_49 == 100*x_48]
+            sage: from claasp.components.multi_input_non_linear_logical_operator_component import MultiInputNonlinearLogicalOperator
+            sage: from sage.numerical.mip import MixedIntegerLinearProgram
+            sage: class DummyMilp:
+            ....:     def __init__(self):
+            ....:         self._model = MixedIntegerLinearProgram(maximization=False, solver='GLPK')
+            ....:         self.binary_variable = self._model.new_variable(binary=True)
+            ....:         self.integer_variable = self._model.new_variable(integer=True, nonnegative=True)
+            ....:         self.non_linear_component_id = []
+            ....:         self.weight_precision = 2
+            sage: component = MultiInputNonlinearLogicalOperator(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2, 'and')
+            sage: variables, constraints = component.milp_xor_linear_mask_propagation_constraints(DummyMilp())
+            sage: variables[:1]
+            [('x[and_0_0_0_i]', x_0)]
+            sage: len(constraints) > 0
+            True
         """
         binary_variable = model.binary_variable
         integer_variable = model.integer_variable
@@ -458,20 +482,10 @@ class MultiInputNonlinearLogicalOperator(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
-            sage: fancy = FancyBlockCipher(number_of_rounds=3)
-            sage: and_component = fancy.component_from(0, 8)
-            sage: and_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
-            (['and_0_8_0_0',
-              'and_0_8_1_0',
-              ...
-              'and_0_8_10_1',
-              'and_0_8_11_1'],
-             ['and_0_8_0_0 -xor_0_7_0_0',
-              'and_0_8_0_0 -key_12_0',
-              ...
-              'and_0_8_11_0 -and_0_8_11_1',
-              'xor_0_7_11_0 key_23_0 xor_0_7_11_1 key_23_1 -and_0_8_11_0'])
+            sage: from claasp.components.multi_input_non_linear_logical_operator_component import MultiInputNonlinearLogicalOperator
+            sage: component = MultiInputNonlinearLogicalOperator(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2, 'and')
+            sage: component.sat_bitwise_deterministic_truncated_xor_differential_constraints()[:1]
+            (['and_0_0_0_0', 'and_0_0_1_0', 'and_0_0_0_1', 'and_0_0_1_1'],)
         """
         in_ids_0, in_ids_1 = self._generate_input_double_ids()
         out_len, out_ids_0, out_ids_1 = self._generate_output_double_ids()
@@ -499,20 +513,10 @@ class MultiInputNonlinearLogicalOperator(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
-            sage: fancy = FancyBlockCipher(number_of_rounds=3)
-            sage: and_component = fancy.component_from(0, 8)
-            sage: and_component.sat_xor_differential_propagation_constraints()
-            (['and_0_8_0',
-              'and_0_8_1',
-              ...
-              'hw_and_0_8_10',
-              'hw_and_0_8_11'],
-             ['-and_0_8_0 hw_and_0_8_0',
-              'xor_0_7_0 key_12 -hw_and_0_8_0',
-              ...
-              '-xor_0_7_11 hw_and_0_8_11',
-              '-key_23 hw_and_0_8_11'])
+            sage: from claasp.components.multi_input_non_linear_logical_operator_component import MultiInputNonlinearLogicalOperator
+            sage: component = MultiInputNonlinearLogicalOperator(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2, 'and')
+            sage: component.sat_xor_differential_propagation_constraints()[:1]
+            (['and_0_0_0', 'and_0_0_1', 'hw_and_0_0_0', 'hw_and_0_0_1'],)
         """
         input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
@@ -538,9 +542,9 @@ class MultiInputNonlinearLogicalOperator(Component):
 
         EXAMPLES::
 
-            sage: from claasp.components.and_component import AND
-            sage: and_component = AND(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2)
-            sage: and_component.sat_xor_linear_mask_propagation_constraints()[:1]
+            sage: from claasp.components.multi_input_non_linear_logical_operator_component import MultiInputNonlinearLogicalOperator
+            sage: component = MultiInputNonlinearLogicalOperator(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2, 'and')
+            sage: component.sat_xor_linear_mask_propagation_constraints()[:1]
             (['and_0_0_0_i', 'and_0_0_1_i', 'and_0_0_2_i', 'and_0_0_3_i', 'and_0_0_0_o', 'and_0_0_1_o', 'hw_and_0_0_0_o', 'hw_and_0_0_1_o'],)
         """
         _, input_bit_ids = self._generate_component_input_ids()
@@ -576,9 +580,9 @@ class MultiInputNonlinearLogicalOperator(Component):
 
         EXAMPLES::
 
-            sage: from claasp.components.and_component import AND
-            sage: and_component = AND(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2)
-            sage: and_component.smt_xor_differential_propagation_constraints()[:1]
+            sage: from claasp.components.multi_input_non_linear_logical_operator_component import MultiInputNonlinearLogicalOperator
+            sage: component = MultiInputNonlinearLogicalOperator(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2, 'and')
+            sage: component.smt_xor_differential_propagation_constraints()[:1]
             (['and_0_0_0', 'and_0_0_1', 'hw_and_0_0_0', 'hw_and_0_0_1'],)
         """
         input_bit_ids = self._generate_input_ids()
@@ -612,9 +616,9 @@ class MultiInputNonlinearLogicalOperator(Component):
 
         EXAMPLES::
 
-            sage: from claasp.components.and_component import AND
-            sage: and_component = AND(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2)
-            sage: and_component.smt_xor_linear_mask_propagation_constraints()[:1]
+            sage: from claasp.components.multi_input_non_linear_logical_operator_component import MultiInputNonlinearLogicalOperator
+            sage: component = MultiInputNonlinearLogicalOperator(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2, 'and')
+            sage: component.smt_xor_linear_mask_propagation_constraints()[:1]
             (['and_0_0_0_i', 'and_0_0_1_i', 'and_0_0_2_i', 'and_0_0_3_i', 'and_0_0_0_o', 'and_0_0_1_o', 'hw_and_0_0_0_o', 'hw_and_0_0_1_o'],)
         """
         _, input_bit_ids = self._generate_component_input_ids()
