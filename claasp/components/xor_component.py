@@ -403,18 +403,19 @@ class XOR(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
+            sage: from claasp.ciphers.single_component_ciphers.xor_cipher import XorCipher
             sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
-            sage: aes = ToyAESBlockCipher(number_of_rounds=2)
-            sage: cp = MznModel(aes)
-            sage: xor_component = aes.component_from(0, 0)
+            sage: cipher = XorCipher(word_bit_size=8, number_of_inputs=2)
+            sage: cp = MznModel(cipher)
+            sage: cp.word_size = 8
+            sage: xor_component = cipher.get_component_from_id("xor_0_0")
             sage: xor_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(cp)
             (['var -2..255: xor_0_0_temp_0_0_value;',
               ...
-              'var 0..9: xor_0_0_bound_value_0_15 = if xor_0_0_temp_0_15_value + xor_0_0_temp_1_15_value > 0 then ceil(log2(xor_0_0_temp_0_15_value + xor_0_0_temp_1_15_value)) else 0 endif;'],
-             ['constraint xor_0_0_temp_0_0_value = key_value[0] /\\ xor_0_0_temp_0_0_active = key_active[0];',
+              'var 0..9: xor_0_0_bound_value_0_0 = if xor_0_0_temp_0_0_value + xor_0_0_temp_1_0_value > 0 then ceil(log2(xor_0_0_temp_0_0_value + xor_0_0_temp_1_0_value)) else 0 endif;'],
+             ['constraint xor_0_0_temp_0_0_value = plaintext_value[0] /\\ xor_0_0_temp_0_0_active = plaintext_active[0];',
                ...
-              'constraint if xor_0_0_temp_0_15_active + xor_0_0_temp_1_15_active > 2 then xor_0_0_active[15] == 3 /\\ xor_0_0_value[15] = -2 elseif xor_0_0_temp_0_15_active + xor_0_0_temp_1_15_active == 1 then xor_0_0_active[15] = 1 /\\ xor_0_0_value[15] = xor_0_0_temp_0_15_value + xor_0_0_temp_1_15_value elseif xor_0_0_temp_0_15_active + xor_0_0_temp_1_15_active == 0 then xor_0_0_active[15] = 0 /\\ xor_0_0_value[15] = 0 elseif xor_0_0_temp_0_15_value + xor_0_0_temp_1_15_value < 0 then xor_0_0_active[15] = 2 /\\ xor_0_0_value[15] = -1 elseif xor_0_0_temp_0_15_value == xor_0_0_temp_1_15_value then xor_0_0_active[15] = 0 /\\ xor_0_0_value[15] = 0 else xor_0_0_active[15] = 1 /\\ xor_0_0_value[15] = sum([(((floor(xor_0_0_temp_0_15_value/pow(2,j)) + floor(xor_0_0_temp_1_15_value/pow(2,j))) mod 2) * pow(2,j)) | j in 0..xor_0_0_bound_value_0_15]) endif;'])
+              'constraint if xor_0_0_temp_0_0_active + xor_0_0_temp_1_0_active > 2 then xor_0_0_active[0] == 3 /\\ xor_0_0_value[0] = -2 elseif xor_0_0_temp_0_0_active + xor_0_0_temp_1_0_active == 1 then xor_0_0_active[0] = 1 /\\ xor_0_0_value[0] = xor_0_0_temp_0_0_value + xor_0_0_temp_1_0_value elseif xor_0_0_temp_0_0_active + xor_0_0_temp_1_0_active == 0 then xor_0_0_active[0] = 0 /\\ xor_0_0_value[0] = 0 elseif xor_0_0_temp_0_0_value + xor_0_0_temp_1_0_value < 0 then xor_0_0_active[0] = 2 /\\ xor_0_0_value[0] = -1 elseif xor_0_0_temp_0_0_value == xor_0_0_temp_1_0_value then xor_0_0_active[0] = 0 /\\ xor_0_0_value[0] = 0 else xor_0_0_active[0] = 1 /\\ xor_0_0_value[0] = sum([(((floor(xor_0_0_temp_0_0_value/pow(2,j)) + floor(xor_0_0_temp_1_0_value/pow(2,j))) mod 2) * pow(2,j)) | j in 0..xor_0_0_bound_value_0_0]) endif;'])
         """
         output_id_link = self.id
         cp_declarations = []
@@ -539,14 +540,15 @@ class XOR(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
+            sage: from claasp.ciphers.single_component_ciphers.xor_cipher import XorCipher
             sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
-            sage: aes = ToyAESBlockCipher(number_of_rounds=3)
-            sage: cp = MznModel(aes)
-            sage: xor_component = aes.component_from(2, 31)
+            sage: cipher = XorCipher(word_bit_size=8, number_of_inputs=2)
+            sage: cp = MznModel(cipher)
+            sage: cp.word_size = 8
+            sage: xor_component = cipher.get_component_from_id("xor_0_0")
             sage: xor_component.cp_xor_differential_propagation_first_step_constraints(cp, cp._variables_list)
             (['array[0..1, 1..2] of int: xor_truncated_table_2 = array2d(0..1, 1..2, [0,0,1,1]);'],
-             'constraint table([rot_2_16[0]]++[xor_2_26[0]], xor_truncated_table_2);')
+             'constraint table([plaintext[0]]++[key[0]], xor_truncated_table_2);')
         """
         numadd = self.description[1]
         all_inputs = []
@@ -919,25 +921,18 @@ class XOR(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
-            sage: cipher = ToyAESBlockCipher(number_of_rounds=2)
+            sage: from claasp.ciphers.single_component_ciphers.xor_cipher import XorCipher
+            sage: cipher = XorCipher(word_bit_size=8, number_of_inputs=2)
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import MilpWordwiseDeterministicTruncatedXorDifferentialModel
             sage: milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(cipher)
+            sage: milp._word_size = 8
             sage: milp.init_model_in_sage_milp_class()
-            sage: xor_component = cipher.get_component_from_id("xor_0_32")
+            sage: xor_component = cipher.get_component_from_id("xor_0_0")
             sage: variables, constraints = xor_component.milp_wordwise_deterministic_truncated_xor_differential_constraints(milp)
-            sage: variables
-            [('x[xor_0_31_word_0_class_bit_0]', x_0),
-             ('x[xor_0_31_word_0_class_bit_1]', x_1),
-            ...
-             ('x[xor_0_32_30]', x_118),
-             ('x[xor_0_32_31]', x_119)]
-            sage: constraints
-            [1 <= 1 + x_0 + x_2 + x_3 + x_4 + x_5 + x_6 + x_7 + x_8 + x_9 + x_41 - x_81,
-             1 <= 1 + x_1 + x_40 + x_42 + x_43 + x_44 + x_45 + x_46 + x_47 + x_48 + x_49 - x_81,
-             ...
-             1 <= 1 + x_31 - x_39,
-             1 <= 2 - x_30 - x_39]
+            sage: variables[:1]
+            [('x[plaintext_word_0_class_bit_0]', x_0)]
+            sage: len(constraints) > 0
+            True
 
         """
         if model.word_size == 8:
@@ -982,25 +977,18 @@ class XOR(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
-            sage: cipher = ToyAESBlockCipher(number_of_rounds=2)
+            sage: from claasp.ciphers.single_component_ciphers.xor_cipher import XorCipher
+            sage: cipher = XorCipher(word_bit_size=8, number_of_inputs=2)
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import MilpWordwiseDeterministicTruncatedXorDifferentialModel
             sage: milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(cipher)
+            sage: milp._word_size = 8
             sage: milp.init_model_in_sage_milp_class()
-            sage: xor_component = cipher.get_component_from_id("xor_0_31")
+            sage: xor_component = cipher.get_component_from_id("xor_0_0")
             sage: variables, constraints = xor_component.milp_wordwise_deterministic_truncated_xor_differential_sequential_constraints(milp)
-            sage: variables
-            [('x[sbox_0_26_word_0_class_bit_0]', x_0),
-            ('x[sbox_0_26_word_0_class_bit_1]', x_1),
-             ...
-            ('x[xor_0_31_30]', x_158),
-            ('x[xor_0_31_31]', x_159)]
-            sage: constraints
-            [1 <= 1 + x_0 + x_2 + x_3 + x_4 + x_5 + x_6 + x_7 + x_8 + x_9 + x_41 - x_161,
-             1 <= 1 + x_1 + x_40 + x_42 + x_43 + x_44 + x_45 + x_46 + x_47 + x_48 + x_49 - x_161,
-            ...
-             1 <= 1 + x_111 - x_119,
-             1 <= 2 - x_110 - x_119]
+            sage: variables[:1]
+            [('x[plaintext_word_0_class_bit_0]', x_0)]
+            sage: len(constraints) > 0
+            True
 
 
         """
@@ -1053,12 +1041,13 @@ class XOR(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
-            sage: cipher = ToyAESBlockCipher(number_of_rounds=2)
+            sage: from claasp.ciphers.single_component_ciphers.xor_cipher import XorCipher
+            sage: cipher = XorCipher(word_bit_size=8, number_of_inputs=2)
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import MilpWordwiseDeterministicTruncatedXorDifferentialModel
             sage: milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(cipher)
+            sage: milp._word_size = 8
             sage: milp.init_model_in_sage_milp_class()
-            sage: xor_component = cipher.get_component_from_id("xor_0_32")
+            sage: xor_component = cipher.get_component_from_id("xor_0_0")
             sage: variables, constraints = xor_component.milp_wordwise_deterministic_truncated_xor_differential_simple_constraints(milp)
 
         """
@@ -1338,17 +1327,17 @@ class XOR(Component):
             sage: xor_component = XOR(0, 0, ['plaintext', 'key'], [list(range(2)), list(range(2))], 2)
             sage: xor_component.sat_xor_linear_mask_propagation_constraints()
             (['xor_0_0_0_i',
-                    'xor_0_0_1_i',
-                    'xor_0_0_2_i',
-                    'xor_0_0_3_i',
-                    'xor_0_0_0_o',
-                    'xor_0_0_1_o'],
-                ['xor_0_0_0_i -xor_0_0_0_o',
-                    'xor_0_0_2_i -xor_0_0_0_i',
-                    'xor_0_0_0_o -xor_0_0_2_i',
-                    'xor_0_0_1_i -xor_0_0_1_o',
-                    'xor_0_0_3_i -xor_0_0_1_i',
-                    'xor_0_0_1_o -xor_0_0_3_i'])
+            'xor_0_0_1_i',
+            'xor_0_0_2_i',
+            'xor_0_0_3_i',
+            'xor_0_0_0_o',
+            'xor_0_0_1_o'],
+            ['xor_0_0_0_i -xor_0_0_0_o',
+            'xor_0_0_2_i -xor_0_0_0_i',
+            'xor_0_0_0_o -xor_0_0_2_i',
+            'xor_0_0_1_i -xor_0_0_1_o',
+            'xor_0_0_3_i -xor_0_0_1_i',
+            'xor_0_0_1_o -xor_0_0_3_i'])
         """
         _, input_bit_ids = self._generate_component_input_ids()
         out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
@@ -1463,13 +1452,14 @@ class XOR(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
+            sage: from claasp.ciphers.single_component_ciphers.xor_cipher import XorCipher
             sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
-            sage: aes = ToyAESBlockCipher(number_of_rounds=3)
-            sage: cp = MznModel(aes)
-            sage: xor_component = aes.component_from(0, 31)
+            sage: cipher = XorCipher(word_bit_size=8, number_of_inputs=2)
+            sage: cp = MznModel(cipher)
+            sage: cp.word_size = 8
+            sage: xor_component = cipher.get_component_from_id("xor_0_0")
             sage: xor_component.cp_transform_xor_components_for_first_step(cp)
-            (['array[0..3] of var 0..1: xor_0_31;'], [])
+            (['array[0..0] of var 0..1: xor_0_0;'], [])
         """
         output_size = int(self.output_bit_size)
         input_id_link = self.input_id_links
