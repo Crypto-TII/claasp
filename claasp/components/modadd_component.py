@@ -171,17 +171,13 @@ class MODADD(Modular):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
+            sage: from claasp.ciphers.single_component_ciphers.modadd_cipher import ModaddCipher
             sage: from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
-            sage: fancy = FancyBlockCipher(number_of_rounds=2)
-            sage: modadd_component = fancy.get_component_from_id("modadd_1_9")
-            sage: algebraic = AlgebraicModel(fancy)
-            sage: modadd_component.algebraic_polynomials(algebraic)
-            [modadd_1_9_c0_0,
-             modadd_1_9_o0_0 + modadd_1_9_c0_0 + modadd_1_9_x6 + modadd_1_9_x0,
-             ...
-             modadd_1_9_o0_4*modadd_1_9_c1_4 + modadd_1_9_x16*modadd_1_9_c1_4 + modadd_1_9_x16*modadd_1_9_o0_4 + modadd_1_9_c1_5,
-             modadd_1_9_c1_5 + modadd_1_9_o0_5 + modadd_1_9_y5 + modadd_1_9_x17]
+            sage: cipher = ModaddCipher(word_bit_size=4, number_of_inputs=2, modulus=16)
+            sage: modadd_component = cipher.get_component_from_id("modadd_0_0")
+            sage: algebraic = AlgebraicModel(cipher)
+            sage: len(modadd_component.algebraic_polynomials(algebraic))
+            8
         """
         component_id = self.id
         ninput_words = self.description[1]
