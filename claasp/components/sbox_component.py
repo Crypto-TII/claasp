@@ -318,18 +318,13 @@ class SBOX(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
+            sage: from claasp.ciphers.single_component_ciphers.sbox_cipher import SboxCipher
             sage: from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
-            sage: fancy = FancyBlockCipher(number_of_rounds=1)
-            sage: sbox_component = fancy.component_from(0, 0)
-            sage: algebraic = AlgebraicModel(fancy)
-            sage: algebraic_polynomials = sbox_component.algebraic_polynomials(algebraic)
-            sage: algebraic_polynomials
-            [sbox_0_0_y2 + sbox_0_0_x1,
-             sbox_0_0_x0*sbox_0_0_y0 + sbox_0_0_x0*sbox_0_0_x3,
-             ...
-             sbox_0_0_y1*sbox_0_0_y3 + sbox_0_0_x0*sbox_0_0_x2,
-             sbox_0_0_y2*sbox_0_0_y3 + sbox_0_0_x1*sbox_0_0_x2]
+            sage: cipher = SboxCipher(bit_size=2, lookup_table=[0, 1, 3, 2])
+            sage: sbox_component = cipher.get_component_from_id("sbox_0_0")
+            sage: algebraic = AlgebraicModel(cipher)
+            sage: len(sbox_component.algebraic_polynomials(algebraic))
+            7
         """
         if self.type != "sbox":
             raise ValueError("component must be of a type sbox")
