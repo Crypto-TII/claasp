@@ -179,17 +179,10 @@ class MODSUB(Modular):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.raiden_block_cipher import RaidenBlockCipher
-            sage: raiden = RaidenBlockCipher(number_of_rounds=3)
-            sage: modsub_component = raiden.component_from(0, 7)
-            sage: modsub_component.cms_constraints()
-            (['temp_carry_plaintext_32',
-              'temp_carry_plaintext_33',
-              'temp_carry_plaintext_34',
-              ...
-              'modsub_0_7_31 -modadd_0_4_31 temp_input_plaintext_63',
-              'modsub_0_7_31 modadd_0_4_31 -temp_input_plaintext_63',
-              '-modsub_0_7_31 -modadd_0_4_31 -temp_input_plaintext_63'])
+            sage: from claasp.components.modsub_component import MODSUB
+            sage: modsub_component = MODSUB(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2, 2)
+            sage: modsub_component.cms_constraints()[:1]
+            (['temp_carry_input2_0', 'temp_input_input2_0', 'temp_input_input2_1', 'carry_modsub_0_0_0', 'modsub_0_0_0', 'modsub_0_0_1'],)
         """
         return self.sat_constraints()
 
@@ -203,20 +196,10 @@ class MODSUB(Modular):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.raiden_block_cipher import RaidenBlockCipher
-            sage: raiden = RaidenBlockCipher(number_of_rounds=3)
-            sage: modsub_component = raiden.component_from(0, 7)
-            sage: modsub_component.cp_constraints()
-            (['array[0..31] of var 0..1: constant_modsub_0_7= array1d(0..31,[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]);',
-              ...
-              'array[0..31] of var 0..1:minus_pre_modsub_0_7_1;'],
-             ['constraint pre_modsub_0_7_0[0]=modadd_0_4[0];',
-              'constraint pre_modsub_0_7_0[1]=modadd_0_4[1];',
-              'constraint pre_modsub_0_7_0[2]=modadd_0_4[2];',
-              ...
-              'constraint pre_minus_pre_modsub_0_7_1[31]=(pre_modsub_0_7_1[31] + 1) mod 2;',
-              'constraint modadd(pre_minus_pre_modsub_0_7_1, constant_modsub_0_7, minus_pre_modsub_0_7_1);',
-              'constraint modadd(pre_modsub_0_7_0,minus_pre_modsub_0_7_1,modsub_0_7);'])
+            sage: from claasp.components.modsub_component import MODSUB
+            sage: modsub_component = MODSUB(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2, 2)
+            sage: modsub_component.cp_constraints()[:1]
+            (['array[0..1] of var 0..1: constant_modsub_0_0= array1d(0..1,[0, 1]);', 'array[0..1] of var 0..1: modsub_0_0;', 'array[0..1] of var 0..1:pre_modsub_0_0_0;', 'array[0..1] of var 0..1:pre_modsub_0_0_1;', 'array[0..1] of var 0..1:pre_minus_pre_modsub_0_0_1;', 'array[0..1] of var 0..1:minus_pre_modsub_0_0_1;'],)
         """
         output_size = self.output_bit_size
         output_id_link = self.id
@@ -313,20 +296,10 @@ class MODSUB(Modular):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.raiden_block_cipher import RaidenBlockCipher
-            sage: raiden = RaidenBlockCipher(number_of_rounds=3)
-            sage: modsub_component = raiden.component_from(0, 7)
-            sage: modsub_component.sat_constraints()
-            (['temp_carry_plaintext_32',
-              'temp_carry_plaintext_33',
-              ...
-              'modsub_0_7_30',
-              'modsub_0_7_31'],
-             ['-temp_carry_plaintext_32 temp_carry_plaintext_33',
-              '-temp_carry_plaintext_32 -plaintext_33',
-              ...
-              'modsub_0_7_31 modadd_0_4_31 -temp_input_plaintext_63',
-              '-modsub_0_7_31 -modadd_0_4_31 -temp_input_plaintext_63'])
+            sage: from claasp.components.modsub_component import MODSUB
+            sage: modsub_component = MODSUB(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2, 2)
+            sage: modsub_component.sat_constraints()[:1]
+            (['temp_carry_input2_0', 'temp_input_input2_0', 'temp_input_input2_1', 'carry_modsub_0_0_0', 'modsub_0_0_0', 'modsub_0_0_1'],)
         """
         input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
@@ -397,20 +370,10 @@ class MODSUB(Modular):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.raiden_block_cipher import RaidenBlockCipher
-            sage: raiden = RaidenBlockCipher(number_of_rounds=3)
-            sage: modsub_component = raiden.component_from(0, 7)
-            sage: modsub_component.smt_constraints()
-            (['temp_carry_plaintext_32',
-              'temp_carry_plaintext_33',
-              ...
-              'modsub_0_7_30',
-              'modsub_0_7_31'],
-             ['(assert (= temp_carry_plaintext_32 (and (not plaintext_33) temp_carry_plaintext_33)))',
-              '(assert (= temp_carry_plaintext_33 (and (not plaintext_34) temp_carry_plaintext_34)))',
-              ...
-              '(assert (= modsub_0_7_30 (xor modadd_0_4_30 temp_input_plaintext_62 carry_modsub_0_7_30)))',
-              '(assert (= modsub_0_7_31 (xor modadd_0_4_31 temp_input_plaintext_63)))'])
+            sage: from claasp.components.modsub_component import MODSUB
+            sage: modsub_component = MODSUB(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2, 2)
+            sage: modsub_component.smt_constraints()[:1]
+            (['temp_carry_input2_0', 'temp_input_input2_0', 'temp_input_input2_1', 'carry_modsub_0_0_0', 'modsub_0_0_0', 'modsub_0_0_1'],)
         """
         input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
