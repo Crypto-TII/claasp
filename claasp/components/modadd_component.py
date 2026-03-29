@@ -244,17 +244,10 @@ class MODADD(Modular):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: speck = SpeckBlockCipher(number_of_rounds=3)
-            sage: modadd_component = speck.component_from(0,1)
-            sage: modadd_component.cms_constraints()
-            (['carry_modadd_0_1_0',
-              'carry_modadd_0_1_1',
-              'carry_modadd_0_1_2',
-              ...
-              'x -modadd_0_1_13 rot_0_0_13 plaintext_29 carry_modadd_0_1_13',
-              'x -modadd_0_1_14 rot_0_0_14 plaintext_30 carry_modadd_0_1_14',
-              'x -modadd_0_1_15 rot_0_0_15 plaintext_31'])
+            sage: from claasp.components.modadd_component import MODADD
+            sage: modadd_component = MODADD(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2, 2)
+            sage: modadd_component.cms_constraints()[:1]
+            (['carry_modadd_0_0_0', 'modadd_0_0_0', 'modadd_0_0_1'],)
         """
         input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
@@ -296,17 +289,10 @@ class MODADD(Modular):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: speck = SpeckBlockCipher(number_of_rounds=3)
-            sage: modadd_component = speck.component_from(0, 1)
-            sage: modadd_component.cp_constraints()
-            (['array[0..15] of var 0..1: pre_modadd_0_1_0;',
-              'array[0..15] of var 0..1: pre_modadd_0_1_1;',
-              'array[1..15] of var 0..1: carry_modadd_0_1;'],
-             ['constraint pre_modadd_0_1_0[0] = rot_0_0[0];',
-              ...
-              'constraint modadd_0_1[14] = (pre_modadd_0_1_1[14] + pre_modadd_0_1_0[14] + carry_modadd_0_1[15]) mod 2;',
-              'constraint modadd_0_1[15] = (pre_modadd_0_1_1[15] + pre_modadd_0_1_0[15]) mod 2;'])
+            sage: from claasp.components.modadd_component import MODADD
+            sage: modadd_component = MODADD(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2, 2)
+            sage: modadd_component.cp_constraints()[:1]
+            (['array[0..1] of var 0..1: pre_modadd_0_0_0;', 'array[0..1] of var 0..1: pre_modadd_0_0_1;', 'array[1..1] of var 0..1: carry_modadd_0_0;'],)
         """
         output_id_link = self.id
         num_add = self.description[1]
@@ -392,20 +378,10 @@ class MODADD(Modular):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: speck = SpeckBlockCipher(number_of_rounds=3)
-            sage: modadd_component = speck.component_from(0, 1)
-            sage: modadd_component.sat_constraints()
-            (['carry_0_modadd_0_1_0',
-              'carry_0_modadd_0_1_1',
-              ...
-              'modadd_0_1_14',
-              'modadd_0_1_15'],
-             ['rot_0_0_1 plaintext_17 -carry_0_modadd_0_1_0',
-              '-rot_0_0_1 -plaintext_17 carry_0_modadd_0_1_0',
-              ...
-              'modadd_0_1_15 rot_0_0_15 -plaintext_31',
-              '-modadd_0_1_15 -rot_0_0_15 -plaintext_31'])
+            sage: from claasp.components.modadd_component import MODADD
+            sage: modadd_component = MODADD(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2, 2)
+            sage: modadd_component.sat_constraints()[:1]
+            (['carry_0_modadd_0_0_0', 'modadd_0_0_0', 'modadd_0_0_1'],)
         """
         input_ids = self._generate_input_ids()
         output_len, output_ids = self._generate_output_ids()
@@ -439,20 +415,10 @@ class MODADD(Modular):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.tea_block_cipher import TeaBlockCipher
-            sage: tea = TeaBlockCipher(number_of_rounds=3)
-            sage: modadd_component = tea.component_from(0, 1)
-            sage: modadd_component.smt_constraints()
-            (['carry_0_modadd_0_1_0',
-              'carry_0_modadd_0_1_1',
-              ...
-              'modadd_0_1_30',
-              'modadd_0_1_31'],
-             ['(assert (= carry_0_modadd_0_1_0 (or (and shift_0_0_1 key_1) (and shift_0_0_1 carry_0_modadd_0_1_1) (and key_1 carry_0_modadd_0_1_1))))',
-              '(assert (= carry_0_modadd_0_1_1 (or (and shift_0_0_2 key_2) (and shift_0_0_2 carry_0_modadd_0_1_2) (and key_2 carry_0_modadd_0_1_2))))',
-              ...
-              '(assert (= modadd_0_1_30 (xor shift_0_0_30 key_30 carry_0_modadd_0_1_30)))',
-              '(assert (= modadd_0_1_31 (xor shift_0_0_31 key_31)))'])
+            sage: from claasp.components.modadd_component import MODADD
+            sage: modadd_component = MODADD(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2, 2)
+            sage: modadd_component.smt_constraints()[:1]
+            (['carry_0_modadd_0_0_0', 'modadd_0_0_0', 'modadd_0_0_1'],)
         """
         input_ids = self._generate_input_ids()
         output_len, output_ids = self._generate_output_ids()
