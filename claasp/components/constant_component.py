@@ -264,13 +264,11 @@ class Constant(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
-            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
             sage: from claasp.components.constant_component import Constant
-            sage: aes = ToyAESBlockCipher(number_of_rounds=3)
-            sage: cp = MznModel(aes)
+            sage: class DummyModel:
+            ....:     word_size = 8
             sage: constant_component = Constant(0, 18, 16, 0xAB01)
-            sage: constant_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(cp)
+            sage: constant_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(DummyModel())
             (['array[0..1] of var 0..1: constant_0_18_active = array1d(0..1, [0,0]);',
               'array[0..1] of var 0..1: constant_0_18_value = array1d(0..1, [0,0]);'],
              [])
@@ -304,12 +302,11 @@ class Constant(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
-            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
-            sage: aes = ToyAESBlockCipher(number_of_rounds=3)
-            sage: cp = MznModel(aes)
-            sage: constant_component = aes.component_from(0, 30)
-            sage: constant_component.cp_xor_differential_propagation_first_step_constraints(cp)
+            sage: from claasp.components.constant_component import Constant
+            sage: class DummyModel:
+            ....:     word_size = 8
+            sage: constant_component = Constant(0, 30, 32, 0x00000000)
+            sage: constant_component.cp_xor_differential_propagation_first_step_constraints(DummyModel())
             (['array[0..3] of var 0..1: constant_0_30 = array1d(0..3, [0,0,0,0]);'], [])
         """
         cp_declarations = [

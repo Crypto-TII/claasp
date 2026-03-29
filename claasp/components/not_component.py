@@ -230,18 +230,16 @@ class NOT(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
-            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
             sage: from claasp.components.not_component import NOT
-            sage: aes = ToyAESBlockCipher()
-            sage: cp = MznModel(aes)
-            sage: not_component = NOT(0, 18, ['sbox_0_2', 'sbox_0_6', 'sbox_0_10', 'sbox_0_14'], [[0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7]], 32)
-            sage: not_component.cp_xor_differential_first_step_constraints(cp)
+            sage: class DummyModel:
+            ....:     word_size = 8
+            sage: not_component = NOT(0, 18, ['input0', 'input1', 'input2', 'input3'], [[0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7]], 32)
+            sage: not_component.cp_xor_differential_first_step_constraints(DummyModel())
             (['array[0..3] of var 0..1: not_0_18;'],
-             ['constraint not_0_18[0] = sbox_0_2[0];',
-              'constraint not_0_18[1] = sbox_0_6[0];',
-              'constraint not_0_18[2] = sbox_0_10[0];',
-              'constraint not_0_18[3] = sbox_0_14[0];'])
+             ['constraint not_0_18[0] = input0[0];',
+              'constraint not_0_18[1] = input1[0];',
+              'constraint not_0_18[2] = input2[0];',
+              'constraint not_0_18[3] = input3[0];'])
         """
         word_size = model.word_size
         cp_declarations = [f"array[0..{(self.output_bit_size - 1) // model.word_size}] of var 0..1: {self.id};"]

@@ -1,8 +1,7 @@
-from claasp.cipher_modules.models.cp.mzn_model import MznModel
-from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
+from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
 from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
+from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
 
 
 def test_algebraic_polynomials():
@@ -29,9 +28,12 @@ def test_cp_inverse_constraints():
 
 def test_cp_xor_differential_first_step_constraints():
     aes = ToyAESBlockCipher(number_of_rounds=3)
-    cp = MznModel(aes)
     rotate_component = aes.component_from(0, 18)
-    declarations, constraints = rotate_component.cp_xor_differential_first_step_constraints(cp)
+    
+    class DummyModel:
+        word_size = 8
+    
+    declarations, constraints = rotate_component.cp_xor_differential_first_step_constraints(DummyModel())
 
     assert declarations == ['array[0..3] of var 0..1: rot_0_18;']
 

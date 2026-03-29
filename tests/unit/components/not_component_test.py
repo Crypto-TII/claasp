@@ -1,7 +1,5 @@
 from claasp.components.not_component import NOT
-from claasp.cipher_modules.models.cp.mzn_model import MznModel
 from claasp.cipher_modules.models.milp.milp_model import MilpModel
-from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
 from claasp.ciphers.permutations.gift_permutation import GiftPermutation
 from claasp.ciphers.permutations.ascon_permutation import AsconPermutation
 from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
@@ -58,19 +56,20 @@ def test_cp_deterministic_truncated_xor_differential_constraints():
 
 
 def test_cp_xor_differential_first_step_constraints():
-    aes = ToyAESBlockCipher()
-    cp = MznModel(aes)
-    not_component = NOT(0, 18, ['sbox_0_2', 'sbox_0_6', 'sbox_0_10', 'sbox_0_14'],
-                               [[0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7],
-                                [0, 1, 2, 3, 4, 5, 6, 7]], 32)
-    declarations, constraints = not_component.cp_xor_differential_first_step_constraints(cp)
+    class DummyModel:
+        word_size = 8
+
+    not_component = NOT(0, 18, ['plaintext', 'key', 'input3', 'input4'],
+                        [[0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7],
+                         [0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7]], 32)
+    declarations, constraints = not_component.cp_xor_differential_first_step_constraints(DummyModel())
 
     assert declarations == ['array[0..3] of var 0..1: not_0_18;']
 
-    assert constraints == ['constraint not_0_18[0] = sbox_0_2[0];',
-                           'constraint not_0_18[1] = sbox_0_6[0];',
-                           'constraint not_0_18[2] = sbox_0_10[0];',
-                           'constraint not_0_18[3] = sbox_0_14[0];']
+    assert constraints == ['constraint not_0_18[0] = plaintext[0];',
+                           'constraint not_0_18[1] = key[0];',
+                           'constraint not_0_18[2] = input3[0];',
+                           'constraint not_0_18[3] = input4[0];']
 
 
 def test_cp_xor_differential_propagation_constraints():
