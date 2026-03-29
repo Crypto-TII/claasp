@@ -579,7 +579,7 @@ class MultiInputNonlinearLogicalOperator(Component):
             sage: from claasp.components.and_component import AND
             sage: and_component = AND(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2)
             sage: and_component.smt_xor_differential_propagation_constraints()[:1]
-            (['and_0_0_0', 'and_0_0_1', 'hw_and_0_0_0', 'hw_and_0_0_1'],)])
+            (['and_0_0_0', 'and_0_0_1', 'hw_and_0_0_0', 'hw_and_0_0_1'],)
         """
         input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
@@ -615,7 +615,7 @@ class MultiInputNonlinearLogicalOperator(Component):
             sage: from claasp.components.and_component import AND
             sage: and_component = AND(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2)
             sage: and_component.smt_xor_linear_mask_propagation_constraints()[:1]
-            (['and_0_0_0_i', 'and_0_0_1_i', 'and_0_0_2_i', 'and_0_0_3_i', 'and_0_0_0_o', 'and_0_0_1_o', 'hw_and_0_0_0_o', 'hw_and_0_0_1_o'],)])
+            (['and_0_0_0_i', 'and_0_0_1_i', 'and_0_0_2_i', 'and_0_0_3_i', 'and_0_0_0_o', 'and_0_0_1_o', 'hw_and_0_0_0_o', 'hw_and_0_0_1_o'],)
         """
         _, input_bit_ids = self._generate_component_input_ids()
         out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
