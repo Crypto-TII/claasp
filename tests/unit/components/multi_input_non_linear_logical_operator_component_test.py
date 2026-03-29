@@ -1,60 +1,57 @@
 from claasp.cipher_modules.models.cp.mzn_model import MznModel
 from claasp.cipher_modules.models.milp.milp_models.milp_xor_differential_model import MilpXorDifferentialModel
 from claasp.cipher_modules.models.milp.milp_models.milp_xor_linear_model import MilpXorLinearModel
-from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
-from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
+from claasp.ciphers.single_component_ciphers.and_cipher import AndCipher
 
 
 def test_cms_constraints():
-    fancy = FancyBlockCipher(number_of_rounds=3)
-    and_component = fancy.component_from(0, 8)
+    cipher = AndCipher(word_bit_size=12, number_of_inputs=2)
+    and_component = cipher.component_from(0, 0)
     output_bit_ids, constraints = and_component.cms_constraints()
 
-    assert output_bit_ids[0] == 'and_0_8_0'
-    assert output_bit_ids[1] == 'and_0_8_1'
-    assert output_bit_ids[2] == 'and_0_8_2'
+    assert output_bit_ids[0] == 'and_0_0_0'
+    assert output_bit_ids[1] == 'and_0_0_1'
+    assert output_bit_ids[2] == 'and_0_0_2'
 
-    assert constraints[-3] == '-and_0_8_11 xor_0_7_11'
-    assert constraints[-2] == '-and_0_8_11 key_23'
-    assert constraints[-1] == 'and_0_8_11 -xor_0_7_11 -key_23'
+    assert constraints[-3] == '-and_0_0_11 plaintext_11'
+    assert constraints[-2] == '-and_0_0_11 key_11'
+    assert constraints[-1] == 'and_0_0_11 -plaintext_11 -key_11'
 
 
 def test_cp_deterministic_truncated_xor_differential_constraints():
-    fancy = FancyBlockCipher()
-    and_component = fancy.component_from(0, 8)
+    cipher = AndCipher(word_bit_size=12, number_of_inputs=2)
+    and_component = cipher.component_from(0, 0)
     declarations, constraints = and_component.cp_deterministic_truncated_xor_differential_constraints()
 
     assert declarations == []
 
-    assert constraints[0] == 'constraint if xor_0_7[0] == 0 /\\ key[12] == 0 then and_0_8[0] = 0 else ' \
-                             'and_0_8[0] = 2 endif;'
-    assert constraints[-1] == 'constraint if xor_0_7[11] == 0 /\\ key[23] == 0 then and_0_8[11] = 0 else ' \
-                              'and_0_8[11] = 2 endif;'
+    assert constraints[0] == 'constraint if plaintext[0] == 0 /\\ key[0] == 0 then and_0_0[0] = 0 else and_0_0[0] = 2 endif;'
+    assert constraints[-1] == 'constraint if plaintext[11] == 0 /\\ key[11] == 0 then and_0_0[11] = 0 else and_0_0[11] = 2 endif;'
 
 
 def test_cp_xor_differential_propagation_constraints():
-    fancy = FancyBlockCipher()
-    cp = MznModel(fancy)
-    and_component = fancy.component_from(0, 8)
+    cipher = AndCipher(word_bit_size=12, number_of_inputs=2)
+    cp = MznModel(cipher)
+    and_component = cipher.component_from(0, 0)
     declarations, constraints = and_component.cp_xor_differential_propagation_constraints(cp)
 
     assert declarations == []
 
-    assert constraints[0] == 'constraint table([xor_0_7[0]]++[key[12]]++[and_0_8[0]]++[p[0]],and2inputs_DDT);'
-    assert constraints[-1] == 'constraint table([xor_0_7[11]]++[key[23]]++[and_0_8[11]]++[p[11]],and2inputs_DDT);'
+    assert constraints[0] == 'constraint table([plaintext[0]]++[key[0]]++[and_0_0[0]]++[p[0]],and2inputs_DDT);'
+    assert constraints[-1] == 'constraint table([plaintext[11]]++[key[11]]++[and_0_0[11]]++[p[11]],and2inputs_DDT);'
 
 
 def test_milp_xor_differential_propagation_constraints():
-    simon = SimonBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
-    milp = MilpXorDifferentialModel(simon)
+    cipher = AndCipher(word_bit_size=16, number_of_inputs=2)
+    milp = MilpXorDifferentialModel(cipher)
     milp.init_model_in_sage_milp_class()
-    and_component = simon.get_component_from_id("and_0_4")
+    and_component = cipher.get_component_from_id("and_0_0")
     variables, constraints = and_component.milp_xor_differential_propagation_constraints(milp)
 
-    assert str(variables[0]) == "('x[rot_0_1_0]', x_0)"
-    assert str(variables[1]) == "('x[rot_0_1_1]', x_1)"
-    assert str(variables[-2]) == "('x[and_0_4_14]', x_46)"
-    assert str(variables[-1]) == "('x[and_0_4_15]', x_47)"
+    assert str(variables[0]) == "('x[plaintext_0]', x_0)"
+    assert str(variables[1]) == "('x[plaintext_1]', x_1)"
+    assert str(variables[-2]) == "('x[and_0_0_14]', x_46)"
+    assert str(variables[-1]) == "('x[and_0_0_15]', x_47)"
 
     assert str(constraints[0]) == "0 <= -1*x_32 + x_48"
     assert str(constraints[1]) == "0 <= -1*x_33 + x_49"
@@ -64,16 +61,16 @@ def test_milp_xor_differential_propagation_constraints():
 
 
 def test_milp_xor_linear_mask_propagation_constraints():
-    simon = SimonBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
-    milp = MilpXorLinearModel(simon)
+    cipher = AndCipher(word_bit_size=16, number_of_inputs=2)
+    milp = MilpXorLinearModel(cipher)
     milp.init_model_in_sage_milp_class()
-    and_component = simon.get_component_from_id("and_0_4")
+    and_component = cipher.get_component_from_id("and_0_0")
     variables, constraints = and_component.milp_xor_linear_mask_propagation_constraints(milp)
 
-    assert str(variables[0]) == "('x[and_0_4_0_i]', x_0)"
-    assert str(variables[1]) == "('x[and_0_4_1_i]', x_1)"
-    assert str(variables[-2]) == "('x[and_0_4_14_o]', x_46)"
-    assert str(variables[-1]) == "('x[and_0_4_15_o]', x_47)"
+    assert str(variables[0]) == "('x[and_0_0_0_i]', x_0)"
+    assert str(variables[1]) == "('x[and_0_0_1_i]', x_1)"
+    assert str(variables[-2]) == "('x[and_0_0_14_o]', x_46)"
+    assert str(variables[-1]) == "('x[and_0_0_15_o]', x_47)"
 
     assert str(constraints[0]) == "0 <= -1*x_16 + x_32"
     assert str(constraints[1]) == "0 <= -1*x_17 + x_33"
@@ -84,96 +81,88 @@ def test_milp_xor_linear_mask_propagation_constraints():
 
 
 def test_sat_constraints():
-    fancy = FancyBlockCipher(number_of_rounds=3)
-    and_component = fancy.component_from(0, 8)
+    cipher = AndCipher(word_bit_size=12, number_of_inputs=2)
+    and_component = cipher.component_from(0, 0)
     output_bit_ids, constraints = and_component.sat_constraints()
 
-    assert output_bit_ids[0] == 'and_0_8_0'
-    assert output_bit_ids[1] == 'and_0_8_1'
-    assert output_bit_ids[2] == 'and_0_8_2'
+    assert output_bit_ids[0] == 'and_0_0_0'
+    assert output_bit_ids[1] == 'and_0_0_1'
+    assert output_bit_ids[2] == 'and_0_0_2'
 
-    assert constraints[-3] == '-and_0_8_11 xor_0_7_11'
-    assert constraints[-2] == '-and_0_8_11 key_23'
-    assert constraints[-1] == 'and_0_8_11 -xor_0_7_11 -key_23'
+    assert constraints[-3] == '-and_0_0_11 plaintext_11'
+    assert constraints[-2] == '-and_0_0_11 key_11'
+    assert constraints[-1] == 'and_0_0_11 -plaintext_11 -key_11'
 
 
 def test_sat_bitwise_deterministic_truncated_xor_differential_constraints():
-    fancy = FancyBlockCipher(number_of_rounds=3)
-    and_component = fancy.component_from(0, 8)
+    cipher = AndCipher(word_bit_size=12, number_of_inputs=2)
+    and_component = cipher.component_from(0, 0)
     output_bit_ids, constraints = and_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
 
-    assert output_bit_ids[0] == 'and_0_8_0_0'
-    assert output_bit_ids[7] == 'and_0_8_7_0'
-    assert output_bit_ids[14] == 'and_0_8_2_1'
+    assert output_bit_ids[0] == 'and_0_0_0_0'
+    assert output_bit_ids[7] == 'and_0_0_7_0'
+    assert output_bit_ids[14] == 'and_0_0_2_1'
 
-    assert constraints[-14] == 'and_0_8_9_0 -and_0_8_9_1'
-    assert constraints[-7] == 'xor_0_7_10_0 key_22_0 xor_0_7_10_1 key_22_1 -and_0_8_10_0'
-    assert constraints[-1] == 'xor_0_7_11_0 key_23_0 xor_0_7_11_1 key_23_1 -and_0_8_11_0'
+    assert constraints[-14] == 'and_0_0_9_0 -and_0_0_9_1'
+    assert constraints[-7] == 'plaintext_10_0 key_10_0 plaintext_10_1 key_10_1 -and_0_0_10_0'
+    assert constraints[-1] == 'plaintext_11_0 key_11_0 plaintext_11_1 key_11_1 -and_0_0_11_0'
     
 
 def test_sat_xor_differential_propagation_constraints():
-    fancy = FancyBlockCipher(number_of_rounds=3)
-    and_component = fancy.component_from(0, 8)
+    cipher = AndCipher(word_bit_size=12, number_of_inputs=2)
+    and_component = cipher.component_from(0, 0)
     output_bit_ids, constraints = and_component.sat_xor_differential_propagation_constraints()
 
-    assert output_bit_ids[0] == 'and_0_8_0'
-    assert output_bit_ids[1] == 'and_0_8_1'
-    assert output_bit_ids[2] == 'and_0_8_2'
+    assert output_bit_ids[0] == 'and_0_0_0'
+    assert output_bit_ids[1] == 'and_0_0_1'
+    assert output_bit_ids[2] == 'and_0_0_2'
 
-    assert constraints[-3] == 'xor_0_7_11 key_23 -hw_and_0_8_11'
-    assert constraints[-2] == '-xor_0_7_11 hw_and_0_8_11'
-    assert constraints[-1] == '-key_23 hw_and_0_8_11'
+    assert constraints[-3] == 'plaintext_11 key_11 -hw_and_0_0_11'
+    assert constraints[-2] == '-plaintext_11 hw_and_0_0_11'
+    assert constraints[-1] == '-key_11 hw_and_0_0_11'
 
 
 def test_sat_xor_linear_mask_propagation_constraints():
-    fancy = FancyBlockCipher(number_of_rounds=3)
-    and_component = fancy.component_from(0, 8)
+    cipher = AndCipher(word_bit_size=12, number_of_inputs=2)
+    and_component = cipher.component_from(0, 0)
     output_bit_ids, constraints = and_component.sat_xor_linear_mask_propagation_constraints()
 
-    assert output_bit_ids[0] == 'and_0_8_0_i'
-    assert output_bit_ids[1] == 'and_0_8_1_i'
-    assert output_bit_ids[2] == 'and_0_8_2_i'
+    assert output_bit_ids[0] == 'and_0_0_0_i'
+    assert output_bit_ids[1] == 'and_0_0_1_i'
+    assert output_bit_ids[2] == 'and_0_0_2_i'
 
-    assert constraints[-3] == '-and_0_8_23_i hw_and_0_8_11_o'
-    assert constraints[-2] == '-and_0_8_11_o hw_and_0_8_11_o'
-    assert constraints[-1] == 'and_0_8_11_o -hw_and_0_8_11_o'
+    assert constraints[-3] == '-and_0_0_23_i hw_and_0_0_11_o'
+    assert constraints[-2] == '-and_0_0_11_o hw_and_0_0_11_o'
+    assert constraints[-1] == 'and_0_0_11_o -hw_and_0_0_11_o'
 
 
 def test_smt_xor_differential_propagation_constraints():
-    fancy = FancyBlockCipher(number_of_rounds=3)
-    and_component = fancy.component_from(0, 8)
+    cipher = AndCipher(word_bit_size=12, number_of_inputs=2)
+    and_component = cipher.component_from(0, 0)
     output_bit_ids, constraints = and_component.smt_xor_differential_propagation_constraints()
 
-    assert output_bit_ids[0] == 'and_0_8_0'
-    assert output_bit_ids[1] == 'and_0_8_1'
-    assert output_bit_ids[-2] == 'hw_and_0_8_10'
-    assert output_bit_ids[-1] == 'hw_and_0_8_11'
+    assert output_bit_ids[0] == 'and_0_0_0'
+    assert output_bit_ids[1] == 'and_0_0_1'
+    assert output_bit_ids[-2] == 'hw_and_0_0_10'
+    assert output_bit_ids[-1] == 'hw_and_0_0_11'
 
-    assert constraints[0] == '(assert (or (and (not xor_0_7_0) (not key_12) (not and_0_8_0) (not hw_and_0_8_0)) ' \
-                             '(and xor_0_7_0 hw_and_0_8_0) (and key_12 hw_and_0_8_0)))'
-    assert constraints[1] == '(assert (or (and (not xor_0_7_1) (not key_13) (not and_0_8_1) (not hw_and_0_8_1)) ' \
-                             '(and xor_0_7_1 hw_and_0_8_1) (and key_13 hw_and_0_8_1)))'
-    assert constraints[-2] == '(assert (or (and (not xor_0_7_10) (not key_22) (not and_0_8_10) (not hw_and_0_8_10)) ' \
-                              '(and xor_0_7_10 hw_and_0_8_10) (and key_22 hw_and_0_8_10)))'
-    assert constraints[-1] == '(assert (or (and (not xor_0_7_11) (not key_23) (not and_0_8_11) (not hw_and_0_8_11)) ' \
-                              '(and xor_0_7_11 hw_and_0_8_11) (and key_23 hw_and_0_8_11)))'
+    assert constraints[0] == '(assert (or (and (not plaintext_0) (not key_0) (not and_0_0_0) (not hw_and_0_0_0)) (and plaintext_0 hw_and_0_0_0) (and key_0 hw_and_0_0_0)))'
+    assert constraints[1] == '(assert (or (and (not plaintext_1) (not key_1) (not and_0_0_1) (not hw_and_0_0_1)) (and plaintext_1 hw_and_0_0_1) (and key_1 hw_and_0_0_1)))'
+    assert constraints[-2] == '(assert (or (and (not plaintext_10) (not key_10) (not and_0_0_10) (not hw_and_0_0_10)) (and plaintext_10 hw_and_0_0_10) (and key_10 hw_and_0_0_10)))'
+    assert constraints[-1] == '(assert (or (and (not plaintext_11) (not key_11) (not and_0_0_11) (not hw_and_0_0_11)) (and plaintext_11 hw_and_0_0_11) (and key_11 hw_and_0_0_11)))'
 
 
 def test_smt_xor_linear_mask_propagation_constraints():
-    fancy = FancyBlockCipher(number_of_rounds=3)
-    and_component = fancy.component_from(0, 8)
+    cipher = AndCipher(word_bit_size=12, number_of_inputs=2)
+    and_component = cipher.component_from(0, 0)
     output_bit_ids, constraints = and_component.smt_xor_linear_mask_propagation_constraints()
 
-    assert output_bit_ids[0] == 'and_0_8_0_i'
-    assert output_bit_ids[1] == 'and_0_8_1_i'
-    assert output_bit_ids[-2] == 'hw_and_0_8_10_o'
-    assert output_bit_ids[-1] == 'hw_and_0_8_11_o'
+    assert output_bit_ids[0] == 'and_0_0_0_i'
+    assert output_bit_ids[1] == 'and_0_0_1_i'
+    assert output_bit_ids[-2] == 'hw_and_0_0_10_o'
+    assert output_bit_ids[-1] == 'hw_and_0_0_11_o'
 
-    assert constraints[0] == '(assert (or (and (not and_0_8_0_i) (not and_0_8_12_i) (not and_0_8_0_o) ' \
-                             '(not hw_and_0_8_0_o)) (and and_0_8_0_o hw_and_0_8_0_o)))'
-    assert constraints[1] == '(assert (or (and (not and_0_8_1_i) (not and_0_8_13_i) (not and_0_8_1_o) ' \
-                             '(not hw_and_0_8_1_o)) (and and_0_8_1_o hw_and_0_8_1_o)))'
-    assert constraints[-2] == '(assert (or (and (not and_0_8_10_i) (not and_0_8_22_i) (not and_0_8_10_o) ' \
-                              '(not hw_and_0_8_10_o)) (and and_0_8_10_o hw_and_0_8_10_o)))'
-    assert constraints[-1] == '(assert (or (and (not and_0_8_11_i) (not and_0_8_23_i) (not and_0_8_11_o) ' \
-                              '(not hw_and_0_8_11_o)) (and and_0_8_11_o hw_and_0_8_11_o)))'
+    assert constraints[0] == '(assert (or (and (not and_0_0_0_i) (not and_0_0_12_i) (not and_0_0_0_o) (not hw_and_0_0_0_o)) (and and_0_0_0_o hw_and_0_0_0_o)))'
+    assert constraints[1] == '(assert (or (and (not and_0_0_1_i) (not and_0_0_13_i) (not and_0_0_1_o) (not hw_and_0_0_1_o)) (and and_0_0_1_o hw_and_0_0_1_o)))'
+    assert constraints[-2] == '(assert (or (and (not and_0_0_10_i) (not and_0_0_22_i) (not and_0_0_10_o) (not hw_and_0_0_10_o)) (and and_0_0_10_o hw_and_0_0_10_o)))'
+    assert constraints[-1] == '(assert (or (and (not and_0_0_11_i) (not and_0_0_23_i) (not and_0_0_11_o) (not hw_and_0_0_11_o)) (and and_0_0_11_o hw_and_0_0_11_o)))'

@@ -155,24 +155,16 @@ class AND(MultiInputNonlinearLogicalOperator):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
+            sage: from claasp.ciphers.single_component_ciphers.and_cipher import AndCipher
             sage: from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
-            sage: fancy = FancyBlockCipher(number_of_rounds=1)
-            sage: and_component = fancy.get_component_from_id("and_0_8")
-            sage: algebraic = AlgebraicModel(fancy)
+            sage: cipher = AndCipher(word_bit_size=4, number_of_inputs=2)
+            sage: and_component = cipher.get_component_from_id("and_0_0")
+            sage: algebraic = AlgebraicModel(cipher)
             sage: and_component.algebraic_polynomials(algebraic)
-            [and_0_8_x0*and_0_8_x12 + and_0_8_y0,
-             and_0_8_x1*and_0_8_x13 + and_0_8_y1,
-             and_0_8_x2*and_0_8_x14 + and_0_8_y2,
-             and_0_8_x3*and_0_8_x15 + and_0_8_y3,
-             and_0_8_x4*and_0_8_x16 + and_0_8_y4,
-             and_0_8_x5*and_0_8_x17 + and_0_8_y5,
-             and_0_8_x6*and_0_8_x18 + and_0_8_y6,
-             and_0_8_x7*and_0_8_x19 + and_0_8_y7,
-             and_0_8_x8*and_0_8_x20 + and_0_8_y8,
-             and_0_8_x9*and_0_8_x21 + and_0_8_y9,
-             and_0_8_x10*and_0_8_x22 + and_0_8_y10,
-             and_0_8_x11*and_0_8_x23 + and_0_8_y11]
+            [and_0_0_x0*and_0_0_x4 + and_0_0_y0,
+             and_0_0_x1*and_0_0_x5 + and_0_0_y1,
+             and_0_0_x2*and_0_0_x6 + and_0_0_y2,
+             and_0_0_x3*and_0_0_x7 + and_0_0_y3]
         """
         ninputs = self.input_bit_size
         noutputs = self.output_bit_size
@@ -200,14 +192,13 @@ class AND(MultiInputNonlinearLogicalOperator):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
-            sage: fancy = FancyBlockCipher()
-            sage: and_component = fancy.component_from(0, 8)
+            sage: from claasp.components.and_component import AND
+            sage: and_component = AND(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2)
             sage: and_component.cp_constraints()
             ([],
-             ['constraint and_0_8[0] = xor_0_7[0] * key[12];',
+             ['constraint and_0_0[0] = input1[0] * input2[0];',
               ...
-              'constraint and_0_8[11] = xor_0_7[11] * key[23];'])
+              'constraint and_0_0[1] = input1[1] * input2[1];'])
         """
         cp_declarations = []
         all_inputs = []
