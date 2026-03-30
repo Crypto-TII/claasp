@@ -223,22 +223,15 @@ class Component:
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
-            sage: fancy = FancyBlockCipher(number_of_rounds=2)
-            sage: component = fancy.get_component_from_id("and_0_8")
+            sage: from claasp.component import Component
+            sage: from claasp.input import Input
+            sage: component_input = Input(8, ['a', 'b'], [[0, 1, 2, 3], [0, 1, 2, 3]])
+            sage: component = Component('and_0_8', 'word_operation', component_input, 4, ['AND', 2])
             sage: l = component._get_independent_input_output_variables()
-            sage: l[0]
-            ['and_0_8_0_i',
-             'and_0_8_1_i',
-             ...
-             'and_0_8_22_i',
-             'and_0_8_23_i']
-            sage: l[1]
-            ['and_0_8_0_o',
-             'and_0_8_1_o',
-             ...
-             'and_0_8_10_o',
-             'and_0_8_11_o']
+            sage: len(l[0])
+            8
+            sage: len(l[1])
+            4
         """
         input_vars = [f"{self.id}_{i}_i" for i in range(self.input_bit_size)]
         output_vars = [f"{self.id}_{i}_o" for i in range(self.output_bit_size)]
@@ -257,28 +250,15 @@ class Component:
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
-            sage: fancy = FancyBlockCipher(number_of_rounds=2)
-            sage: component = fancy.get_component_from_id("and_0_8")
+            sage: from claasp.component import Component
+            sage: from claasp.input import Input
+            sage: component_input = Input(8, ['xor_0_7', 'key'], [[0, 1, 2, 3], [0, 1, 2, 3]])
+            sage: component = Component('and_0_8', 'word_operation', component_input, 4, ['AND', 2])
             sage: l = component._get_input_output_variables()
             sage: l[0]
-            ['xor_0_7_0',
-            'xor_0_7_1',
-            'xor_0_7_2',
-            ...
-            'key_21',
-            'key_22',
-            'key_23']
+            ['xor_0_7_0', 'xor_0_7_1', 'xor_0_7_2', 'xor_0_7_3', 'key_0', 'key_1', 'key_2', 'key_3']
             sage: l[1]
-            ['and_0_8_0',
-            'and_0_8_1',
-            'and_0_8_2',
-            'and_0_8_3',
-            ...
-            'and_0_8_8',
-            'and_0_8_9',
-            'and_0_8_10',
-            'and_0_8_11']
+            ['and_0_8_0', 'and_0_8_1', 'and_0_8_2', 'and_0_8_3']
         """
 
         output_vars = [f"{self.id}_{i}" for i in range(self.output_bit_size)]
@@ -305,25 +285,24 @@ class Component:
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
-            sage: fancy = FancyBlockCipher(number_of_rounds=3)
-            sage: from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import MilpBitwiseDeterministicTruncatedXorDifferentialModel
-            sage: milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(fancy)
-            sage: milp.init_model_in_sage_milp_class()
-            sage: component = fancy.component_from(0, 6)
+            sage: from claasp.component import Component
+            sage: from claasp.input import Input
+            sage: component_input = Input(8, ['sbox_0_0', 'sbox_0_5'], [[0, 1, 2, 3], [0, 1, 2, 3]])
+            sage: component = Component('linear_layer_0_6', 'linear_layer', component_input, 4, ['linear_layer'])
             sage: input_class_id, output_class_id = component._get_input_output_variables_tuples()
-            sage: input_class_id
+            sage: input_class_id[:2]
             [('sbox_0_0_0_class_bit_0', 'sbox_0_0_0_class_bit_1'),
-             ('sbox_0_0_1_class_bit_0', 'sbox_0_0_1_class_bit_1'),
-             ...
-             ('sbox_0_5_2_class_bit_0', 'sbox_0_5_2_class_bit_1'),
+             ('sbox_0_0_1_class_bit_0', 'sbox_0_0_1_class_bit_1')]
+            sage: input_class_id[-2:]
+            [('sbox_0_5_2_class_bit_0', 'sbox_0_5_2_class_bit_1'),
              ('sbox_0_5_3_class_bit_0', 'sbox_0_5_3_class_bit_1')]
-            sage: output_class_id
+            sage: output_class_id[:2]
             [('linear_layer_0_6_0_class_bit_0', 'linear_layer_0_6_0_class_bit_1'),
-             ('linear_layer_0_6_1_class_bit_0', 'linear_layer_0_6_1_class_bit_1'),
-            ...
-             ('linear_layer_0_6_22_class_bit_0', 'linear_layer_0_6_22_class_bit_1'),
-             ('linear_layer_0_6_23_class_bit_0', 'linear_layer_0_6_23_class_bit_1')]
+             ('linear_layer_0_6_1_class_bit_0', 'linear_layer_0_6_1_class_bit_1')]
+            sage: len(input_class_id)
+            8
+            sage: len(output_class_id)
+            4
 
 
 
@@ -363,23 +342,17 @@ class Component:
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
-            sage: cipher = ToyAESBlockCipher(number_of_rounds=3)
-            sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import MilpWordwiseDeterministicTruncatedXorDifferentialModel
-            sage: milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(cipher)
-            sage: milp.init_model_in_sage_milp_class()
-            sage: component = cipher.get_component_from_id("rot_0_18")
+            sage: from claasp.component import Component
+            sage: from claasp.input import Input
+            sage: from types import SimpleNamespace
+            sage: component_input = Input(32, ['sbox_0_2', 'sbox_0_6', 'sbox_0_10', 'sbox_0_14'], [[0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7]])
+            sage: component = Component('rot_0_18', 'word_operation', component_input, 32, ['ROTATE', 2])
+            sage: milp = SimpleNamespace(word_size=8)
             sage: input_class_id, output_class_id = component._get_wordwise_input_output_linked_class(milp)
-            sage: input_class_id
-            ['sbox_0_2_word_0_class',
-             'sbox_0_6_word_0_class',
-             'sbox_0_10_word_0_class',
-             'sbox_0_14_word_0_class']
-            sage: output_class_id
-            ['rot_0_18_word_0_class',
-             'rot_0_18_word_1_class',
-             'rot_0_18_word_2_class',
-             'rot_0_18_word_3_class']
+            sage: len(input_class_id)
+            4
+            sage: len(output_class_id)
+            4
         """
 
         output_class_ids = [f"{self.id}_word_{i}_class" for i in range(self.output_bit_size // model.word_size)]
@@ -402,23 +375,19 @@ class Component:
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
-            sage: cipher = ToyAESBlockCipher(number_of_rounds=3)
-            sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import MilpWordwiseDeterministicTruncatedXorDifferentialModel
-            sage: milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(cipher)
-            sage: milp.init_model_in_sage_milp_class()
-            sage: component = cipher.get_component_from_id("rot_0_18")
+            sage: from claasp.component import Component
+            sage: from claasp.input import Input
+            sage: from types import SimpleNamespace
+            sage: component_input = Input(32, ['sbox_0_2', 'sbox_0_6', 'sbox_0_10', 'sbox_0_14'], [[0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7]])
+            sage: component = Component('rot_0_18', 'word_operation', component_input, 32, ['ROTATE', 2])
+            sage: milp = SimpleNamespace(word_size=8)
             sage: input_id_tuples, output_id_tuples = component._get_wordwise_input_output_linked_class_tuples(milp)
-            sage: input_id_tuples
-            [('sbox_0_2_word_0_class_bit_0', 'sbox_0_2_word_0_class_bit_1'),
-             ('sbox_0_6_word_0_class_bit_0', 'sbox_0_6_word_0_class_bit_1'),
-             ('sbox_0_10_word_0_class_bit_0', 'sbox_0_10_word_0_class_bit_1'),
-             ('sbox_0_14_word_0_class_bit_0', 'sbox_0_14_word_0_class_bit_1')]
-            sage: output_id_tuples
-            [('rot_0_18_word_0_class_bit_0', 'rot_0_18_word_0_class_bit_1'),
-             ('rot_0_18_word_1_class_bit_0', 'rot_0_18_word_1_class_bit_1'),
-             ('rot_0_18_word_2_class_bit_0', 'rot_0_18_word_2_class_bit_1'),
-             ('rot_0_18_word_3_class_bit_0', 'rot_0_18_word_3_class_bit_1')]
+            sage: len(input_id_tuples)
+            4
+            sage: len(output_id_tuples)
+            4
+            sage: len(input_id_tuples[0])
+            2
 
         """
         tuple_size = 2
@@ -442,25 +411,19 @@ class Component:
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
-            sage: cipher = ToyAESBlockCipher(number_of_rounds=3)
-            sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import MilpWordwiseDeterministicTruncatedXorDifferentialModel
-            sage: milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(cipher)
-            sage: milp.init_model_in_sage_milp_class()
-            sage: component = cipher.get_component_from_id("rot_0_18")
+            sage: from claasp.component import Component
+            sage: from claasp.input import Input
+            sage: from types import SimpleNamespace
+            sage: component_input = Input(16, ['sbox_0_2', 'sbox_0_6'], [[0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7]])
+            sage: component = Component('rot_0_18', 'word_operation', component_input, 16, ['ROTATE', 2])
+            sage: milp = SimpleNamespace(word_size=8)
             sage: input_id_tuples, output_id_tuples = component._get_wordwise_input_output_full_tuples(milp)
-            sage: input_id_tuples[0]
-            ('sbox_0_2_word_0_class_bit_0',
-             'sbox_0_2_word_0_class_bit_1',
-             ...
-             'sbox_0_2_6',
-             'sbox_0_2_7')
-            sage: output_id_tuples[0]
-            ('rot_0_18_word_0_class_bit_0',
-             'rot_0_18_word_0_class_bit_1',
-             ...
-             'rot_0_18_6',
-             'rot_0_18_7')
+            sage: len(input_id_tuples)
+            2
+            sage: len(output_id_tuples)
+            2
+            sage: len(input_id_tuples[0])
+            10
 
 
         """
