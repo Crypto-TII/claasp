@@ -188,6 +188,24 @@ class Constant(Component):
         return cp_declarations, cp_constraints
 
     def cp_continuous_differential_propagation_constraints(self, model):
+        """
+        Return CP declarations and constraints for continuous differential propagation.
+
+        INPUT:
+
+        - ``model`` -- **model object**; a model instance (unused by this component)
+
+        OUTPUT:
+
+        - ``tuple`` -- pair ``(cp_declarations, cp_constraints)``
+
+        EXAMPLES::
+
+            sage: from claasp.components.constant_component import Constant
+            sage: constant_component = Constant(0, 0, 4, 0x1)
+            sage: constant_component.cp_continuous_differential_propagation_constraints(object())
+            (['array[0..3] of var -1.0..1.0: constant_0_0;'], ['constraint constant_0_0[0] = -1.0;', 'constraint constant_0_0[1] = -1.0;', 'constraint constant_0_0[2] = -1.0;', 'constraint constant_0_0[3] = -1.0;'])
+        """
         size = self.output_bit_size
 
         cp_declarations = [
@@ -309,6 +327,24 @@ class Constant(Component):
         return cp_declarations, cp_constraints
 
     def get_bit_based_c_code(self, verbosity):
+        """
+        Return C code lines that initialize this constant as a bitstring.
+
+        INPUT:
+
+        - ``verbosity`` -- **boolean**; when ``True`` include debug print lines
+
+        OUTPUT:
+
+        - ``list`` -- C code lines
+
+        EXAMPLES::
+
+            sage: from claasp.components.constant_component import Constant
+            sage: constant_component = Constant(0, 0, 8, 0x1f)
+            sage: constant_component.get_bit_based_c_code(False)
+            ['\tBitString *constant_0_0 = bitstring_from_hex_string("0x1f", 8);']
+        """
         constant_code = [
             f'\tBitString *{self.id} = bitstring_from_hex_string("'
             f'{int(self.description[0], 16):#0{(self.output_bit_size // 4) + 2}x}", '
@@ -323,15 +359,75 @@ class Constant(Component):
         return constant_code
 
     def get_bit_based_vectorized_python_code(self, params, convert_output_to_bytes):
+        """
+        Return vectorized Python code for the bit-based constant representation.
+
+        INPUT:
+
+        - ``params`` -- **list**; evaluation parameters (unused by this component)
+        - ``convert_output_to_bytes`` -- **boolean**; output conversion flag (unused)
+
+        OUTPUT:
+
+        - ``list`` -- Python code lines
+
+        EXAMPLES::
+
+            sage: from claasp.components.constant_component import Constant
+            sage: constant_component = Constant(0, 0, 4, 0x9)
+            sage: constant_component.get_bit_based_vectorized_python_code([], False)
+            ['  constant_0_0 = np.array([1, 0, 0, 1], dtype=np.uint8).reshape(4, 1)']
+        """
         value = int(self.description[0], 0)
         bits = list(map(int, f"{value:0{self.output_bit_size}b}"))
         return [f"  {self.id} = np.array({bits}, dtype=np.uint8).reshape({self.output_bit_size}, 1)"]
 
     def get_byte_based_vectorized_python_code(self, params):
+        """
+        Return vectorized Python code for the byte-based constant representation.
+
+        INPUT:
+
+        - ``params`` -- **list**; evaluation parameters (unused by this component)
+
+        OUTPUT:
+
+        - ``list`` -- Python code lines
+
+        EXAMPLES::
+
+            sage: from claasp.components.constant_component import Constant
+            sage: constant_component = Constant(0, 0, 12, 0x1000)
+            sage: constant_component.get_byte_based_vectorized_python_code([])
+            ['  constant_0_0 = np.array([1, 0], dtype=np.uint8).reshape(2, 1)']
+        """
         val = constant_to_repr(self.description[0], self.output_bit_size)
         return [f"  {self.id} = np.array({val}, dtype=np.uint8).reshape({len(val)}, 1)"]
 
     def get_word_based_c_code(self, verbosity, word_size, wordstring_variables):
+        """
+        Return C code lines that initialize this constant as a wordstring.
+
+        INPUT:
+
+        - ``verbosity`` -- **boolean**; when ``True`` include debug print lines
+        - ``word_size`` -- **integer**; word size in bits
+        - ``wordstring_variables`` -- **list**; accumulator list of generated wordstring variable names
+
+        OUTPUT:
+
+        - ``list`` -- C code lines
+
+        EXAMPLES::
+
+            sage: from claasp.components.constant_component import Constant
+            sage: constant_component = Constant(0, 0, 8, 0x1f)
+            sage: vars_list = []
+            sage: constant_component.get_word_based_c_code(False, 4, vars_list)
+            ['\tWordString *constant_0_0 = wordstring_from_hex_string("0x1f", 2);']
+            sage: vars_list
+            ['constant_0_0']
+        """
         constant_code = [
             f'\tWordString *{self.id} = wordstring_from_hex_string("'
             f'{int(self.description[0], 16):#0{(self.output_bit_size // 4) + 2}x}", '
