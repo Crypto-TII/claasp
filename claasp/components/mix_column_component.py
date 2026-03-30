@@ -41,6 +41,15 @@ from claasp.cipher_modules.component_analysis_tests import (
 )
 
 
+def _field_from_int(field, value):
+    """Convert an integer to a field element across Sage versions."""
+    if hasattr(field, "from_integer"):
+        return field.from_integer(value)
+    if hasattr(field, "fetch_int"):
+        return field.fetch_int(value)
+    return field(value)
+
+
 def add_xor_components(word_size, output_id_link_1, output_id_link_2, output_size, list_of_xor_components):
     for i in range(output_size // word_size):
         input_id_link = [output_id_link_1, output_id_link_2, f"output_xor_{output_id_link_1}_{output_id_link_2}"]
@@ -300,7 +309,7 @@ class MixColumn(LinearLayer):
             E = FiniteField(2**deg_of_extension)
 
         init_matrix = self.description[0]
-        M = Matrix(E, [[E.from_integer(value) for value in row] for row in init_matrix])
+        M = Matrix(E, [[_field_from_int(E, value) for value in row] for row in init_matrix])
 
         ninput_words = M.ncols()
         noutput_words = M.nrows()
