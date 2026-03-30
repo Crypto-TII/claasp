@@ -398,8 +398,7 @@ class SatXorDifferentialModel(SatModel):
             True
         """
 
-        if lower_weight is not None and lower_weight > upper_weight:
-            raise ValueError("lower_weight must be <= upper_weight")
+        assert lower_weight is not None and lower_weight > upper_weight, "lower_weight must be <= upper_weight"
 
         def weights_dictionary(solutions_list):            
             d = {} # key is the weight as float and value is the number of occurrences observed
@@ -421,7 +420,7 @@ class SatXorDifferentialModel(SatModel):
             return weight
 
         def create_file_names():
-            geq = lower_weight if lower_weight != None else 0
+            geq = lower_weight if lower_weight is not None else 0
             cipher_info = f"{self._cipher}_{plaintext}_{ciphertext}__geq{geq}_leq{upper_weight}__{solver_name}solver{join_and_sanitize_strings(options)}"
             file_path_trails = f'compute_sat_xor_differential_weight__trails__{cipher_info}.log'
             file_path_prob = f'compute_sat_xor_differential_weight__{cipher_info}.log'
@@ -450,7 +449,7 @@ class SatXorDifferentialModel(SatModel):
         fixed_variables = self._fixed_component_constraints(plaintext, ciphertext)
         start_building_time = time.time()
         self.build_xor_differential_trail_model(weight=upper_weight, fixed_variables=fixed_variables)
-        if lower_weight != None and self._counter == self._sequential_counter:
+        if lower_weight is not None and self._counter == self._sequential_counter:
             self._sequential_counter_greater_or_equal(lower_weight, "dummy_hw_1")
         end_building_time = time.time()
         solution = self.solve(XOR_DIFFERENTIAL, solver_name=solver_name, options=options)

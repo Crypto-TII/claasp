@@ -1,4 +1,5 @@
 import numpy as np
+from os import remove
 
 from claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model import SatXorDifferentialModel
 from claasp.cipher_modules.models.sat.solvers import CADICAL_EXT, KISSAT_EXT, PARKISSAT_EXT
@@ -260,11 +261,13 @@ def test_compute_xor_differential_weight():
         file_content = file.read()
     for trail in trails:
         assert str(trail) in file_content
+    remove(file_name)
     
     file_name = f"compute_sat_xor_differential_weight__{ublock}_{p}_{c}__geq{0}_leq{w}__{s}solver.log"
     with open(file_name, "r") as file:
         file_content = file.read()
     assert str(weight) in file_content
+    remove(file_name)
 
 
     p = '0x8054A900'
