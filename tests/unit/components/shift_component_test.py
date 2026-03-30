@@ -9,6 +9,10 @@ from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_t
 from claasp.ciphers.single_component_ciphers.shift_cipher import ShiftCipher
 
 
+def make_shift_component(bit_size=32, parameter=4):
+    return SHIFT(0, 0, ['plaintext'], [list(range(bit_size))], bit_size, parameter)
+
+
 def test_algebraic_polynomials():
     cipher = ShiftCipher(bit_size=6, parameter=3)
     shift_component = cipher.component_from(0, 0)
@@ -21,8 +25,7 @@ def test_algebraic_polynomials():
 
 
 def test_cms_constraints():
-    cipher = ShiftCipher(bit_size=32, parameter=4)
-    shift_component = cipher.component_from(0, 0)
+    shift_component = make_shift_component(bit_size=32, parameter=4)
     output_bit_ids, constraints = shift_component.cms_constraints()
 
     assert output_bit_ids[0] == 'shift_0_0_0'
@@ -31,8 +34,7 @@ def test_cms_constraints():
 
 
 def test_cp_constraints():
-    cipher = ShiftCipher(bit_size=32, parameter=4)
-    shift_component = cipher.component_from(0, 0)
+    shift_component = make_shift_component(bit_size=32, parameter=4)
     declarations, constraints = shift_component.cp_constraints()
 
     assert declarations == []
@@ -41,8 +43,7 @@ def test_cp_constraints():
 
 
 def test_cp_inverse_constraints():
-    cipher = ShiftCipher(bit_size=32, parameter=4)
-    shift_component = cipher.component_from(0, 0)
+    shift_component = make_shift_component(bit_size=32, parameter=4)
     declarations, constraints = shift_component.cp_inverse_constraints()
 
     assert declarations == []
@@ -81,8 +82,7 @@ def test_cp_xor_differential_first_step_constraints():
 
 
 def test_cp_xor_linear_mask_propagation_constraints():
-    cipher = ShiftCipher(bit_size=32, parameter=4)
-    shift_component = cipher.component_from(0, 0)
+    shift_component = make_shift_component(bit_size=32, parameter=4)
     declarations, constraints = shift_component.cp_xor_linear_mask_propagation_constraints()
 
     assert declarations == ['array[0..31] of var 0..1: shift_0_0_i;', 'array[0..31] of var 0..1: shift_0_0_o;']
@@ -130,8 +130,7 @@ def test_minizinc_constraints():
 
 
 def test_sat_constraints():
-    cipher = ShiftCipher(bit_size=32, parameter=4)
-    shift_component = cipher.component_from(0, 0)
+    shift_component = make_shift_component(bit_size=32, parameter=4)
     output_bit_ids, constraints = shift_component.sat_constraints()
 
     assert output_bit_ids[0] == 'shift_0_0_0'
@@ -140,8 +139,7 @@ def test_sat_constraints():
 
 
 def test_sat_bitwise_deterministic_truncated_xor_differential_constraints():
-    cipher = ShiftCipher(bit_size=32, parameter=4)
-    shift_component = cipher.component_from(0, 0)
+    shift_component = make_shift_component(bit_size=32, parameter=4)
     output_bit_ids, constraints = shift_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
 
     assert output_bit_ids[0] == 'shift_0_0_0_0'
@@ -150,8 +148,7 @@ def test_sat_bitwise_deterministic_truncated_xor_differential_constraints():
 
 
 def test_sat_xor_linear_mask_propagation_constraints():
-    cipher = ShiftCipher(bit_size=32, parameter=4)
-    shift_component = cipher.component_from(0, 0)
+    shift_component = make_shift_component(bit_size=32, parameter=4)
     output_bit_ids, constraints = shift_component.sat_xor_linear_mask_propagation_constraints()
 
     assert output_bit_ids[0] == 'shift_0_0_0_i'
@@ -160,8 +157,7 @@ def test_sat_xor_linear_mask_propagation_constraints():
 
 
 def test_smt_constraints():
-    cipher = ShiftCipher(bit_size=32, parameter=4)
-    shift_component = cipher.component_from(0, 0)
+    shift_component = make_shift_component(bit_size=32, parameter=4)
     output_bit_ids, constraints = shift_component.smt_constraints()
 
     assert output_bit_ids[0] == 'shift_0_0_0'
@@ -169,8 +165,7 @@ def test_smt_constraints():
     assert constraints[0].startswith('(assert ')
     assert constraints[-1].startswith('(assert ')
 
-    cipher = ShiftCipher(bit_size=32, parameter=-5)
-    shift_component = cipher.component_from(0, 0)
+    shift_component = make_shift_component(bit_size=32, parameter=-5)
     output_bit_ids, constraints = shift_component.smt_constraints()
 
     assert output_bit_ids[0] == 'shift_0_0_0'
@@ -179,8 +174,7 @@ def test_smt_constraints():
 
 
 def test_smt_xor_linear_mask_propagation_constraints():
-    cipher = ShiftCipher(bit_size=32, parameter=4)
-    shift_component = cipher.component_from(0, 0)
+    shift_component = make_shift_component(bit_size=32, parameter=4)
     output_bit_ids, constraints = shift_component.smt_xor_linear_mask_propagation_constraints()
 
     assert output_bit_ids[0] == 'shift_0_0_0_i'
@@ -188,8 +182,7 @@ def test_smt_xor_linear_mask_propagation_constraints():
     assert constraints[0].startswith('(assert ')
     assert constraints[-1].startswith('(assert ')
 
-    cipher = ShiftCipher(bit_size=32, parameter=-5)
-    shift_component = cipher.component_from(0, 0)
+    shift_component = make_shift_component(bit_size=32, parameter=-5)
     output_bit_ids, constraints = shift_component.smt_xor_linear_mask_propagation_constraints()
 
     assert output_bit_ids[0] == 'shift_0_0_0_i'

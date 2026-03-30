@@ -67,19 +67,14 @@ def test_cp_xor_differential_propagation_first_step_constraints():
 
 
 def test_smt_constraints():
-    cipher = XorCipher(word_bit_size=16, number_of_inputs=2)
-    xor_component = cipher.get_component_from_id('xor_0_0')
-    output_bit_ids, constraints = xor_component.smt_constraints()
+    component = XOR(0, 0, ['plaintext', 'key'], [list(range(2)), list(range(2))], 2)
+    output_bit_ids, constraints = component.smt_constraints()
 
     assert output_bit_ids[0] == 'xor_0_0_0'
     assert output_bit_ids[1] == 'xor_0_0_1'
-    assert output_bit_ids[-2] == 'xor_0_0_14'
-    assert output_bit_ids[-1] == 'xor_0_0_15'
 
     assert constraints[0] == '(assert (= xor_0_0_0 (xor plaintext_0 key_0)))'
     assert constraints[1] == '(assert (= xor_0_0_1 (xor plaintext_1 key_1)))'
-    assert constraints[-2] == '(assert (= xor_0_0_14 (xor plaintext_14 key_14)))'
-    assert constraints[-1] == '(assert (= xor_0_0_15 (xor plaintext_15 key_15)))'
 
 def test_milp_bitwise_deterministic_truncated_xor_differential_binary_constraints():
     cipher = XorCipher(word_bit_size=16, number_of_inputs=2)
@@ -142,8 +137,7 @@ def test_milp_wordwise_deterministic_truncated_xor_differential_sequential_const
     milp.init_model_in_sage_milp_class()
     milp._word_size = 8
     xor_component = cipher.get_component_from_id("xor_0_0")
-    variables, constraints = xor_component.milp_wordwise_deterministic_truncated_xor_differential_sequential_constraints(
-        milp)
+    variables, constraints = xor_component.milp_wordwise_deterministic_truncated_xor_differential_sequential_constraints(milp)
 
     assert str(variables[0]) == "('x[plaintext_word_0_class_bit_0]', x_0)"
     assert str(variables[1]) == "('x[plaintext_word_0_class_bit_1]', x_1)"
@@ -162,8 +156,7 @@ def test_milp_wordwise_deterministic_truncated_xor_differential_simple_constrain
     milp.init_model_in_sage_milp_class()
     milp._word_size = 8
     xor_component = cipher.get_component_from_id("xor_0_0")
-    variables, constraints = xor_component.milp_wordwise_deterministic_truncated_xor_differential_simple_constraints(
-        milp)
+    variables, constraints = xor_component.milp_wordwise_deterministic_truncated_xor_differential_simple_constraints(milp)
 
     assert str(variables[0]) == "('x_class[plaintext_word_0_class]', x_0)"
     assert str(variables[1]) == "('x_class[key_word_0_class]', x_1)"

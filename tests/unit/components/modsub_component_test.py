@@ -64,8 +64,7 @@ def test_cp_xor_differential_propagation_constraints():
     output_bit_ids, constraints = modsub_component.cp_xor_differential_propagation_constraints(cp_model)
 
     assert output_bit_ids[0] == 'array[0..31] of var 0..1: pre_modsub_0_7_0;'
-    assert output_bit_ids[
-               -1] == 'array[0..31] of var 0..1: eq_modsub_0_7 = Eq(Shi_pre_modsub_0_7_1, Shi_pre_modsub_0_7_0, Shi_modsub_0_7);'
+    assert output_bit_ids[-1] == 'array[0..31] of var 0..1: eq_modsub_0_7 = Eq(Shi_pre_modsub_0_7_1, Shi_pre_modsub_0_7_0, Shi_modsub_0_7);'
 
     assert constraints[0] == 'constraint pre_modsub_0_7_0[0] = modadd_0_4[0];'
     assert constraints[1] == 'constraint pre_modsub_0_7_0[1] = modadd_0_4[1];'
