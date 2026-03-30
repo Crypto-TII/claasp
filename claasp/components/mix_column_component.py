@@ -621,7 +621,7 @@ class MixColumn(LinearLayer):
                 for element in row:
                     if element not in mul_tables:
                         mul_tables[element] = [
-                            (F.from_integer(i) * F.from_integer(element)).integer_representation()
+                            (_field_from_int(F, i) * _field_from_int(F, element)).integer_representation()
                             for i in range(2**input_size)
                         ]
             params_mix_column = [
@@ -667,7 +667,7 @@ class MixColumn(LinearLayer):
                 for element in row:
                     if element not in mul_tables:
                         mul_tables[element] = [
-                            (F.from_integer(i) * F.from_integer(element)).integer_representation()
+                            (_field_from_int(F, i) * _field_from_int(F, element)).integer_representation()
                             for i in range(2**input_size)
                         ]
             return [f"  {self.id}=byte_vector_mix_column({params} , {matrix}, {mul_tables}, {input_size})"]
@@ -692,8 +692,8 @@ class MixColumn(LinearLayer):
             sage: variables, constraints = mix_column_component.milp_constraints(milp)
             sage: len(variables)
             8
-            sage: len(constraints) > 0
-            True
+            sage: constraints
+            [x_4 == x_0, x_5 == x_1, x_6 == x_2, x_7 == x_3]
         """
         bin_matrix = binary_matrix_of_linear_component(self)
         matrix_transposed = [[bin_matrix[i][j] for i in range(bin_matrix.nrows())] for j in range(bin_matrix.ncols())]

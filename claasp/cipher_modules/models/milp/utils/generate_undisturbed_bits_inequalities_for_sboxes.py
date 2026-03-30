@@ -107,7 +107,7 @@ def update_dictionary_that_contains_inequalities_for_sboxes_with_undisturbed_bit
         dictio = {}
 
     if str(sbox) not in dictio.keys():
-        print("Adding sbox inequalities in pre-saved dictionary")
+        # Compute and persist inequalities the first time this S-box is requested.
         dict_product_of_sum = generate_dict_product_of_sum_from_espresso(sbox, valid_points)
         dictio[str(sbox)] = dict_product_of_sum
 

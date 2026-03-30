@@ -516,6 +516,7 @@ class VariableShift(Component):
 
             sage: from claasp.components.variable_shift_component import VariableShift
             sage: variable_shift_component = VariableShift(0, 2, ['plaintext', 'key'], [list(range(4)), list(range(4))], 4, 1)
+            sage: variables, constraints = variable_shift_component.smt_constraints()
             sage: variables
             ['state_0_var_shift_0_2_0',
             'state_0_var_shift_0_2_1',

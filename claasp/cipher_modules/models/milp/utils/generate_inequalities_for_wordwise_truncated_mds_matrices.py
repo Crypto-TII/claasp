@@ -75,9 +75,7 @@ def update_dictionary_that_contains_wordwise_truncated_mds_inequalities(wordsize
         dictio[wordsize] = {}
 
     if dimensions not in dictio[wordsize].keys():
-        print(
-            f"Adding wordwise mds inequalities for {dimensions[0]} x {dimensions[1]} matrices for words of {wordsize} bits in pre-saved dictionary"
-        )
+        # Precompute inequalities for this (wordsize, dimensions) pair and cache them.
         valid_points = generate_valid_points_for_truncated_mds_matrix(dimensions)
         inequalities = milp_utils.generate_product_of_sum_from_espresso(valid_points)
         dictio[wordsize][dimensions] = inequalities

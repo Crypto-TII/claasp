@@ -78,7 +78,7 @@ def update_dictionary_that_contains_wordwise_truncated_input_inequalities(wordsi
         dictio = {}
 
     if wordsize not in dictio.keys():
-        print(f"Adding inequalities for truncated words of size {wordsize} bits in pre-saved dictionary")
+        # Precompute input-pattern inequalities for this wordsize and cache them.
         valid_points = generate_valid_points_input_words(wordsize)
         inequalities = generate_product_of_sum_from_espresso(valid_points)
         dictio[wordsize] = inequalities
@@ -202,9 +202,7 @@ def update_dictionary_that_contains_wordwise_truncated_xor_inequalities_between_
         dictio[wordsize] = {}
 
     if number_of_inputs not in dictio[wordsize].keys():
-        print(
-            f"Adding wordwise xor inequalities between {number_of_inputs} inputs of size {wordsize} in pre-saved dictionary"
-        )
+        # Precompute inequalities for this (wordsize, number_of_inputs) pair and cache them.
         valid_points = generate_valid_points_for_xor_between_n_input_words(wordsize, number_of_inputs)
         inequalities = milp_utils.generate_product_of_sum_from_espresso(valid_points)
         dictio[wordsize][number_of_inputs] = inequalities

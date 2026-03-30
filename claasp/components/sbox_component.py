@@ -1366,7 +1366,6 @@ class SBOX(Component):
             sage: from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_large_sboxes import delete_dictionary_that_contains_inequalities_for_large_sboxes
             sage: delete_dictionary_that_contains_inequalities_for_large_sboxes()
             sage: variables, constraints = sbox_component.milp_large_xor_differential_probability_constraints(milp.binary_variable, milp.integer_variable, milp._non_linear_component_id)
-            Adding sbox inequalities in pre-saved dictionary
             sage: variables
             [('x[plaintext_0]', x_0),
              ('x[plaintext_1]', x_1),

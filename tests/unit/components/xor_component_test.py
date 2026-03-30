@@ -1,7 +1,7 @@
 from claasp.cipher_modules.models.cp.mzn_model import MznModel
 from claasp.ciphers.single_component_ciphers.xor_cipher import XorCipher
 from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
-from claasp.components.xor_component import cp_build_truncated_table, generic_with_constant_sign_linear_constraints
+from claasp.components.xor_component import XOR, cp_build_truncated_table, generic_with_constant_sign_linear_constraints
 from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import \
     MilpBitwiseDeterministicTruncatedXorDifferentialModel
 from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import \
