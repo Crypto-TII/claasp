@@ -107,6 +107,8 @@ class Component:
             word_operation
             sage: print(component.output_bit_size)
             4
+            sage: print(component.description)
+            ['XOR', 2]
     """
     def __init__(
         self,

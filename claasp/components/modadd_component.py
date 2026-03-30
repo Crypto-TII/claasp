@@ -176,8 +176,15 @@ class MODADD(Modular):
             sage: cipher = ModaddCipher(word_bit_size=4, number_of_inputs=2, modulus=16)
             sage: modadd_component = cipher.get_component_from_id("modadd_0_0")
             sage: algebraic = AlgebraicModel(cipher)
-            sage: len(modadd_component.algebraic_polynomials(algebraic))
-            8
+            sage: modadd_component.algebraic_polynomials(algebraic)
+            [modadd_0_0_c0_0,
+            modadd_0_0_c0_0 + modadd_0_0_y0 + modadd_0_0_x4 + modadd_0_0_x0,
+            modadd_0_0_x4*modadd_0_0_c0_0 + modadd_0_0_x0*modadd_0_0_c0_0 + modadd_0_0_x0*modadd_0_0_x4 + modadd_0_0_c0_1,
+            modadd_0_0_c0_1 + modadd_0_0_y1 + modadd_0_0_x5 + modadd_0_0_x1,
+            modadd_0_0_x5*modadd_0_0_c0_1 + modadd_0_0_x1*modadd_0_0_c0_1 + modadd_0_0_x1*modadd_0_0_x5 + modadd_0_0_c0_2,
+            modadd_0_0_c0_2 + modadd_0_0_y2 + modadd_0_0_x6 + modadd_0_0_x2,
+            modadd_0_0_x6*modadd_0_0_c0_2 + modadd_0_0_x2*modadd_0_0_c0_2 + modadd_0_0_x2*modadd_0_0_x6 + modadd_0_0_c0_3,
+            modadd_0_0_c0_3 + modadd_0_0_y3 + modadd_0_0_x7 + modadd_0_0_x3]
         """
         component_id = self.id
         ninput_words = self.description[1]

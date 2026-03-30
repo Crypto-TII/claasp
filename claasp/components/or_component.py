@@ -128,15 +128,16 @@ class OR(MultiInputNonlinearLogicalOperator):
         EXAMPLES::
 
             sage: from claasp.components.or_component import OR
-            sage: or_component = OR(0, 9, ['xor_0_7', 'key'], [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]], 12)
+            sage: or_component = OR(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2)
             sage: or_component.cp_constraints()
-            (['array[0..11] of var 0..1: or_0_9;',
-            'array[0..11] of var 0..1:pre_or_0_9_0;',
-            'array[0..11] of var 0..1:pre_or_0_9_1;'],
-            ['constraint pre_or_0_9_0[0]=xor_0_7[0];',
-             ...
-            'constraint pre_or_0_9_1[11]=key[23];',
-            'constraint or(pre_or_0_9_0, pre_or_0_9_1, or_0_9);'])
+            (['array[0..1] of var 0..1: or_0_0;',
+            'array[0..1] of var 0..1:pre_or_0_0_0;',
+            'array[0..1] of var 0..1:pre_or_0_0_1;'],
+            ['constraint pre_or_0_0_0[0]=input1[0];',
+            'constraint pre_or_0_0_0[1]=input1[1];',
+            'constraint pre_or_0_0_1[0]=input2[0];',
+            'constraint pre_or_0_0_1[1]=input2[1];',
+            'constraint or(pre_or_0_0_0, pre_or_0_0_1, or_0_0);'])
         """
         input_id_link = self.input_id_links
         numb_of_inp = len(input_id_link)
@@ -202,7 +203,6 @@ class OR(MultiInputNonlinearLogicalOperator):
              'constraint table([or_0_0_i[2]]++[or_0_0_i[6]]++[or_0_0_o[2]]++[p_or_0_0[2]],and2inputs_LAT);',
              'constraint table([or_0_0_i[3]]++[or_0_0_i[7]]++[or_0_0_o[3]]++[p_or_0_0[3]],and2inputs_LAT);',
              'constraint p[0] = sum(p_or_0_0);']
-
         """
         cp_declarations = [
             f"array[0..{self.output_bit_size - 1}] of var 0..{100 * self.output_bit_size}: p_{self.id};",
@@ -239,11 +239,17 @@ class OR(MultiInputNonlinearLogicalOperator):
         EXAMPLES::
 
             sage: from claasp.components.or_component import OR
-            sage: or_component = OR(31, 14, ['xor_0_7', 'key'], [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]], 12)
-            sage: input = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-            sage: output = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
+            sage: or_component = OR(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2)
+            sage: input = [0, 0, 0, 1]
+            sage: output = [0, 1]
             sage: or_component.generic_sign_linear_constraints(input, output)
             1
+            sage: from claasp.components.or_component import OR
+            sage: or_component = OR(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2)
+            sage: input = [0, 0, 0, 1]
+            sage: output = [1, 1]
+            sage: or_component.generic_sign_linear_constraints(input, output)
+            -1
         """
         sign = +1
         input_size = int(self.input_bit_size)
@@ -278,23 +284,16 @@ class OR(MultiInputNonlinearLogicalOperator):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.single_component_ciphers.or_cipher import OrCipher
-            sage: cipher = OrCipher(word_bit_size=4, number_of_inputs=2)
-            sage: or_component = cipher.get_component_from_id("or_0_0")
-            sage: or_component.sat_constraints()
-            (['or_0_0_0', 'or_0_0_1', 'or_0_0_2', 'or_0_0_3'],
-             ['or_0_0_0 -plaintext_0',
-              'or_0_0_0 -key_0',
-              '-or_0_0_0 plaintext_0 key_0',
-              'or_0_0_1 -plaintext_1',
-              'or_0_0_1 -key_1',
-              '-or_0_0_1 plaintext_1 key_1',
-              'or_0_0_2 -plaintext_2',
-              'or_0_0_2 -key_2',
-              '-or_0_0_2 plaintext_2 key_2',
-              'or_0_0_3 -plaintext_3',
-              'or_0_0_3 -key_3',
-              '-or_0_0_3 plaintext_3 key_3'])
+            sage: from claasp.components.or_component import OR
+            sage: component = OR(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2)
+            sage: component.sat_constraints()
+            (['or_0_0_0', 'or_0_0_1'],
+            ['or_0_0_0 -input1_0',
+            'or_0_0_0 -input2_0',
+            '-or_0_0_0 input1_0 input2_0',
+            'or_0_0_1 -input1_1',
+            'or_0_0_1 -input2_1',
+            '-or_0_0_1 input1_1 input2_1'])
         """
         input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
@@ -318,15 +317,12 @@ class OR(MultiInputNonlinearLogicalOperator):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.single_component_ciphers.or_cipher import OrCipher
-            sage: cipher = OrCipher(word_bit_size=4, number_of_inputs=2)
-            sage: or_component = cipher.get_component_from_id("or_0_0")
-            sage: or_component.smt_constraints()
-            (['or_0_0_0', 'or_0_0_1', 'or_0_0_2', 'or_0_0_3'],
-             ['(assert (= or_0_0_0 (or plaintext_0 key_0)))',
-              '(assert (= or_0_0_1 (or plaintext_1 key_1)))',
-              '(assert (= or_0_0_2 (or plaintext_2 key_2)))',
-              '(assert (= or_0_0_3 (or plaintext_3 key_3)))'])
+            sage: from claasp.components.or_component import OR
+            sage: component = OR(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2)
+            sage: component.smt_constraints()
+            (['or_0_0_0', 'or_0_0_1'],
+            ['(assert (= or_0_0_0 (or input1_0 input2_0)))',
+            '(assert (= or_0_0_1 (or input1_1 input2_1)))'])
         """
         input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()

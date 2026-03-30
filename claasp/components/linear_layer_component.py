@@ -117,9 +117,11 @@ class LinearLayer(Component):
             sage: cipher = LinearLayerCipher(bit_size=4, description=[[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
             sage: linear_layer_component = cipher.get_component_from_id("linear_layer_0_0")
             sage: algebraic = AlgebraicModel(cipher)
-            sage: L = linear_layer_component.algebraic_polynomials(algebraic)
-            sage: L[0]
-            linear_layer_0_0_y0 + linear_layer_0_0_x0
+            sage: linear_layer_component.algebraic_polynomials(algebraic)
+            [linear_layer_0_0_y0 + linear_layer_0_0_x0,
+            linear_layer_0_0_y1 + linear_layer_0_0_x1,
+            linear_layer_0_0_y2 + linear_layer_0_0_x2,
+            linear_layer_0_0_y3 + linear_layer_0_0_x3]
         """
         noutputs = self.output_bit_size
         ninputs = self.input_bit_size
@@ -144,13 +146,16 @@ class LinearLayer(Component):
 
         EXAMPLES::
 
-                        sage: from claasp.components.linear_layer_component import LinearLayer
-                        sage: linear_layer_component = LinearLayer(0, 0, ['in'], [[0, 1, 2, 3]], 4, [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
-                        sage: variables, constraints = linear_layer_component.cms_constraints()
-                        sage: variables
-                        ['linear_layer_0_0_0', 'linear_layer_0_0_1', 'linear_layer_0_0_2', 'linear_layer_0_0_3']
-                        sage: constraints[-1]
-                        'x -linear_layer_0_0_3 in_3'
+            sage: from claasp.components.linear_layer_component import LinearLayer
+            sage: linear_layer_component = LinearLayer(0, 0, ['in'], [[0, 1, 2, 3]], 4, [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
+            sage: variables, constraints = linear_layer_component.cms_constraints()
+            sage: variables
+            ['linear_layer_0_0_0', 'linear_layer_0_0_1', 'linear_layer_0_0_2', 'linear_layer_0_0_3']
+            sage: constraints
+            ['x -linear_layer_0_0_0 in_0',
+            'x -linear_layer_0_0_1 in_1',
+            'x -linear_layer_0_0_2 in_2',
+            'x -linear_layer_0_0_3 in_3']
         """
         input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
@@ -180,13 +185,24 @@ class LinearLayer(Component):
 
         EXAMPLES::
 
-                        sage: from claasp.components.linear_layer_component import LinearLayer
-                        sage: linear_layer_component = LinearLayer(0, 0, ['in'], [[0, 1, 2, 3]], 4, [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
-                        sage: variables, constraints = linear_layer_component.cms_xor_linear_mask_propagation_constraints()
-                        sage: len(variables)
-                        12
-                        sage: constraints[-1]
-                        'x -linear_layer_0_0_3_o dummy_3_linear_layer_0_0_3_o'
+            sage: from claasp.components.linear_layer_component import LinearLayer
+            sage: linear_layer_component = LinearLayer(0, 0, ['in'], [[0, 1, 2, 3]], 4, [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
+            sage: variables, constraints = linear_layer_component.cms_xor_linear_mask_propagation_constraints()
+            sage: len(variables)
+            12
+            sage: constraints
+            ['linear_layer_0_0_0_i -dummy_0_linear_layer_0_0_0_o',
+            'dummy_0_linear_layer_0_0_0_o -linear_layer_0_0_0_i',
+            'linear_layer_0_0_1_i -dummy_1_linear_layer_0_0_1_o',
+            'dummy_1_linear_layer_0_0_1_o -linear_layer_0_0_1_i',
+            'linear_layer_0_0_2_i -dummy_2_linear_layer_0_0_2_o',
+            'dummy_2_linear_layer_0_0_2_o -linear_layer_0_0_2_i',
+            'linear_layer_0_0_3_i -dummy_3_linear_layer_0_0_3_o',
+            'dummy_3_linear_layer_0_0_3_o -linear_layer_0_0_3_i',
+            'x -linear_layer_0_0_0_o dummy_0_linear_layer_0_0_0_o',
+            'x -linear_layer_0_0_1_o dummy_1_linear_layer_0_0_1_o',
+            'x -linear_layer_0_0_2_o dummy_2_linear_layer_0_0_2_o',
+            'x -linear_layer_0_0_3_o dummy_3_linear_layer_0_0_3_o']
         """
         input_bit_len, input_bit_ids = self._generate_component_input_ids()
         out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
@@ -296,10 +312,9 @@ class LinearLayer(Component):
             sage: declarations, constraints = linear_layer_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(DummyModel())
             sage: declarations
             []
-            sage: len(constraints)
-            2
-            sage: constraints[0].startswith('constraint if ((in_active[0]')
-            True
+            sage: constraints
+            ['constraint if ((in_active[0]== 0)) then linear_layer_0_0_active[0] = 0 /\\ linear_layer_0_0_value[0] = 0 elselinear_layer_0_0_active[0] = 3 /\\ linear_layer_0_0_value[0] = -2 endif;',
+            'constraint if ((in_active[1]== 0)) then linear_layer_0_0_active[1] = 0 /\\ linear_layer_0_0_value[1] = 0 elselinear_layer_0_0_active[1] = 3 /\\ linear_layer_0_0_value[1] = -2 endif;']
         """
         cp_declarations = []
         all_inputs_value = []
@@ -408,10 +423,17 @@ class LinearLayer(Component):
             sage: milp.init_model_in_sage_milp_class()
             sage: linear_layer_component = cipher.get_component_from_id("linear_layer_0_0")
             sage: variables, constraints = linear_layer_component.milp_constraints(milp)
-            sage: len(variables)
-            8
-            sage: len(constraints)
-            4
+            sage: variables
+            [('x[plaintext_0]', x_0),
+            ('x[plaintext_1]', x_1),
+            ('x[plaintext_2]', x_2),
+            ('x[plaintext_3]', x_3),
+            ('x[linear_layer_0_0_0]', x_4),
+            ('x[linear_layer_0_0_1]', x_5),
+            ('x[linear_layer_0_0_2]', x_6),
+            ('x[linear_layer_0_0_3]', x_7)]
+            sage: constraints
+            [x_4 == x_0, x_5 == x_1, x_6 == x_2, x_7 == x_3]
         """
         x = model.binary_variable
         input_vars, output_vars = self._get_input_output_variables()
@@ -465,10 +487,17 @@ class LinearLayer(Component):
             sage: milp.init_model_in_sage_milp_class()
             sage: linear_layer_component = cipher.get_component_from_id("linear_layer_0_0")
             sage: variables, constraints = linear_layer_component.milp_xor_linear_mask_propagation_constraints(milp)
-            sage: len(variables)
-            8
-            sage: len(constraints)
-            4
+            sage: variables
+            [('x[linear_layer_0_0_0_i]', x_0),
+            ('x[linear_layer_0_0_1_i]', x_1),
+            ('x[linear_layer_0_0_2_i]', x_2),
+            ('x[linear_layer_0_0_3_i]', x_3),
+            ('x[linear_layer_0_0_0_o]', x_4),
+            ('x[linear_layer_0_0_1_o]', x_5),
+            ('x[linear_layer_0_0_2_o]', x_6),
+            ('x[linear_layer_0_0_3_o]', x_7)]
+            sage: constraints
+            [x_4 == x_0, x_5 == x_1, x_6 == x_2, x_7 == x_3]
         """
         x = model.binary_variable
         input_vars, output_vars = self._get_independent_input_output_variables()
@@ -519,12 +548,17 @@ class LinearLayer(Component):
             sage: milp.init_model_in_sage_milp_class()
             sage: linear_layer_component = cipher.get_component_from_id("linear_layer_0_0")
             sage: variables, constraints = linear_layer_component.milp_bitwise_deterministic_truncated_xor_differential_constraints(milp)
-            sage: len(variables)
-            8
-            sage: len(constraints)
-            4
-
-
+            sage: variables
+            [('x_class[plaintext_0]', x_0),
+            ('x_class[plaintext_1]', x_1),
+            ('x_class[plaintext_2]', x_2),
+            ('x_class[plaintext_3]', x_3),
+            ('x_class[linear_layer_0_0_0]', x_4),
+            ('x_class[linear_layer_0_0_1]', x_5),
+            ('x_class[linear_layer_0_0_2]', x_6),
+            ('x_class[linear_layer_0_0_3]', x_7)]
+            sage: constraints
+            [x_4 == x_0, x_5 == x_1, x_6 == x_2, x_7 == x_3]
         """
         x_class = model.trunc_binvar
 
@@ -582,11 +616,28 @@ class LinearLayer(Component):
             sage: milp.init_model_in_sage_milp_class()
             sage: linear_layer_component = cipher.get_component_from_id("linear_layer_0_0")
             sage: variables, constraints = linear_layer_component.milp_bitwise_deterministic_truncated_xor_differential_binary_constraints(milp)
-            sage: len(variables)
-            8
-            sage: len(constraints) > 0
-            True
-
+            sage: variables
+            [('x_class[plaintext_0]', x_0),
+            ('x_class[plaintext_1]', x_1),
+            ('x_class[plaintext_2]', x_2),
+            ('x_class[plaintext_3]', x_3),
+            ('x_class[linear_layer_0_0_0]', x_4),
+            ('x_class[linear_layer_0_0_1]', x_5),
+            ('x_class[linear_layer_0_0_2]', x_6),
+            ('x_class[linear_layer_0_0_3]', x_7)]
+            sage: constraints
+            [x_0 == 2*x_8 + x_9,
+            x_1 == 2*x_10 + x_11,
+            x_2 == 2*x_12 + x_13,
+            x_3 == 2*x_14 + x_15,
+            x_4 == 2*x_16 + x_17,
+            x_5 == 2*x_18 + x_19,
+            x_6 == 2*x_20 + x_21,
+            x_7 == 2*x_22 + x_23,
+            x_4 == x_0,
+            x_5 == x_1,
+            x_6 == x_2,
+            x_7 == x_3]
         """
         x_class = model.trunc_binvar
         x = model.binary_variable
@@ -657,15 +708,45 @@ class LinearLayer(Component):
             sage: milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
             sage: linear_layer_component = cipher.get_component_from_id("linear_layer_0_0")
-            sage: import contextlib, io
-            sage: stream = io.StringIO()
-            sage: with contextlib.redirect_stdout(stream):
-            ....:     variables, constraints = linear_layer_component.milp_wordwise_deterministic_truncated_xor_differential_constraints(milp)
-            sage: len(variables) > 0
-            True
-            sage: len(constraints) > 0
-            True
-
+            sage: variables, constraints = linear_layer_component.milp_wordwise_deterministic_truncated_xor_differential_constraints(milp)
+            sage: variables
+            [('x[plaintext_word_0_class_bit_0]', x_0),
+            ('x[plaintext_word_0_class_bit_1]', x_1),
+            ('x[plaintext_0]', x_2),
+            ('x[plaintext_1]', x_3),
+            ('x[plaintext_2]', x_4),
+            ('x[plaintext_3]', x_5),
+            ('x[plaintext_word_1_class_bit_0]', x_6),
+            ('x[plaintext_word_1_class_bit_1]', x_7),
+            ('x[plaintext_4]', x_8),
+            ('x[plaintext_5]', x_9),
+            ('x[plaintext_6]', x_10),
+            ('x[plaintext_7]', x_11),
+            ('x[linear_layer_0_0_word_0_class_bit_0]', x_12),
+            ('x[linear_layer_0_0_word_0_class_bit_1]', x_13),
+            ('x[linear_layer_0_0_0]', x_14),
+            ('x[linear_layer_0_0_1]', x_15),
+            ('x[linear_layer_0_0_2]', x_16),
+            ('x[linear_layer_0_0_3]', x_17),
+            ('x[linear_layer_0_0_word_1_class_bit_0]', x_18),
+            ('x[linear_layer_0_0_word_1_class_bit_1]', x_19),
+            ('x[linear_layer_0_0_4]', x_20),
+            ('x[linear_layer_0_0_5]', x_21),
+            ('x[linear_layer_0_0_6]', x_22),
+            ('x[linear_layer_0_0_7]', x_23)]
+            sage: constraints
+            [x_12 == x_0,
+            x_13 == x_1,
+            x_14 == x_2,
+            x_15 == x_3,
+            x_16 == x_4,
+            x_17 == x_5,
+            x_18 == x_6,
+            x_19 == x_7,
+            x_20 == x_8,
+            x_21 == x_9,
+            x_22 == x_10,
+            x_23 == x_11]
         """
         x = model.binary_variable
 
@@ -678,7 +759,7 @@ class LinearLayer(Component):
         if M.ncols() > model.word_size and [len(input) for input in self.input_bit_positions] != [
             model.word_size
         ] * len(self.input_bit_positions):
-            self.print()
+            # self.print()
             # truncated matrix
             matrix = [
                 [
@@ -752,8 +833,20 @@ class LinearLayer(Component):
             sage: from claasp.components.linear_layer_component import LinearLayer
             sage: linear_layer_component = LinearLayer(0, 0, ['in'], [[0, 1, 2, 3]], 4, [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
             sage: variables, constraints = linear_layer_component.sat_constraints()
-            sage: constraints[-1]
-            'linear_layer_0_0_3 -in_3'
+            sage: variables
+            ['linear_layer_0_0_0',
+            'linear_layer_0_0_1',
+            'linear_layer_0_0_2',
+            'linear_layer_0_0_3']
+            sage: constraints
+            ['-linear_layer_0_0_0 in_0',
+            'linear_layer_0_0_0 -in_0',
+            '-linear_layer_0_0_1 in_1',
+            'linear_layer_0_0_1 -in_1',
+            '-linear_layer_0_0_2 in_2',
+            'linear_layer_0_0_2 -in_2',
+            '-linear_layer_0_0_3 in_3',
+            'linear_layer_0_0_3 -in_3']
         """
         input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
@@ -784,10 +877,32 @@ class LinearLayer(Component):
             sage: from claasp.components.linear_layer_component import LinearLayer
             sage: linear_layer_component = LinearLayer(0, 0, ['in'], [[0, 1, 2, 3]], 4, [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
             sage: variables, constraints = linear_layer_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
-            sage: len(variables)
-            8
-            sage: len(constraints) > 0
-            True
+            sage: variables
+            ['linear_layer_0_0_0_0',
+            'linear_layer_0_0_1_0',
+            'linear_layer_0_0_2_0',
+            'linear_layer_0_0_3_0',
+            'linear_layer_0_0_0_1',
+            'linear_layer_0_0_1_1',
+            'linear_layer_0_0_2_1',
+            'linear_layer_0_0_3_1']
+            sage: constraints
+            ['linear_layer_0_0_0_0 -in_0_0',
+            'in_0_0 -linear_layer_0_0_0_0',
+            'linear_layer_0_0_0_1 -in_0_1',
+            'in_0_1 -linear_layer_0_0_0_1',
+            'linear_layer_0_0_1_0 -in_1_0',
+            'in_1_0 -linear_layer_0_0_1_0',
+            'linear_layer_0_0_1_1 -in_1_1',
+            'in_1_1 -linear_layer_0_0_1_1',
+            'linear_layer_0_0_2_0 -in_2_0',
+            'in_2_0 -linear_layer_0_0_2_0',
+            'linear_layer_0_0_2_1 -in_2_1',
+            'in_2_1 -linear_layer_0_0_2_1',
+            'linear_layer_0_0_3_0 -in_3_0',
+            'in_3_0 -linear_layer_0_0_3_0',
+            'linear_layer_0_0_3_1 -in_3_1',
+            'in_3_1 -linear_layer_0_0_3_1']
         """
         in_ids_0, in_ids_1 = self._generate_input_double_ids()
         _, out_ids_0, out_ids_1 = self._generate_output_double_ids()
@@ -826,8 +941,20 @@ class LinearLayer(Component):
             sage: from claasp.components.linear_layer_component import LinearLayer
             sage: linear_layer_component = LinearLayer(0, 0, ['in'], [[0, 1, 2, 3]], 4, [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
             sage: variables, constraints = linear_layer_component.sat_xor_differential_propagation_constraints()
-            sage: constraints[-1]
-            'linear_layer_0_0_3 -in_3'
+            sage: variables
+            ['linear_layer_0_0_0',
+            'linear_layer_0_0_1',
+            'linear_layer_0_0_2',
+            'linear_layer_0_0_3']
+            sage: constraints
+            ['-linear_layer_0_0_0 in_0',
+            'linear_layer_0_0_0 -in_0',
+            '-linear_layer_0_0_1 in_1',
+            'linear_layer_0_0_1 -in_1',
+            '-linear_layer_0_0_2 in_2',
+            'linear_layer_0_0_2 -in_2',
+            '-linear_layer_0_0_3 in_3',
+            'linear_layer_0_0_3 -in_3']
         """
         return self.sat_constraints()
 
@@ -850,8 +977,36 @@ class LinearLayer(Component):
             sage: from claasp.components.linear_layer_component import LinearLayer
             sage: linear_layer_component = LinearLayer(0, 0, ['in'], [[0, 1, 2, 3]], 4, [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
             sage: variables, constraints = linear_layer_component.sat_xor_linear_mask_propagation_constraints()
-            sage: constraints[-1]
-            'linear_layer_0_0_3_o -dummy_3_linear_layer_0_0_3_o'
+            sage: variables
+            ['linear_layer_0_0_0_i',
+            'linear_layer_0_0_1_i',
+            'linear_layer_0_0_2_i',
+            'linear_layer_0_0_3_i',
+            'dummy_0_linear_layer_0_0_0_o',
+            'dummy_1_linear_layer_0_0_1_o',
+            'dummy_2_linear_layer_0_0_2_o',
+            'dummy_3_linear_layer_0_0_3_o',
+            'linear_layer_0_0_0_o',
+            'linear_layer_0_0_1_o',
+            'linear_layer_0_0_2_o',
+            'linear_layer_0_0_3_o']
+            sage: constraints
+            ['linear_layer_0_0_0_i -dummy_0_linear_layer_0_0_0_o',
+            'dummy_0_linear_layer_0_0_0_o -linear_layer_0_0_0_i',
+            'linear_layer_0_0_1_i -dummy_1_linear_layer_0_0_1_o',
+            'dummy_1_linear_layer_0_0_1_o -linear_layer_0_0_1_i',
+            'linear_layer_0_0_2_i -dummy_2_linear_layer_0_0_2_o',
+            'dummy_2_linear_layer_0_0_2_o -linear_layer_0_0_2_i',
+            'linear_layer_0_0_3_i -dummy_3_linear_layer_0_0_3_o',
+            'dummy_3_linear_layer_0_0_3_o -linear_layer_0_0_3_i',
+            '-linear_layer_0_0_0_o dummy_0_linear_layer_0_0_0_o',
+            'linear_layer_0_0_0_o -dummy_0_linear_layer_0_0_0_o',
+            '-linear_layer_0_0_1_o dummy_1_linear_layer_0_0_1_o',
+            'linear_layer_0_0_1_o -dummy_1_linear_layer_0_0_1_o',
+            '-linear_layer_0_0_2_o dummy_2_linear_layer_0_0_2_o',
+            'linear_layer_0_0_2_o -dummy_2_linear_layer_0_0_2_o',
+            '-linear_layer_0_0_3_o dummy_3_linear_layer_0_0_3_o',
+            'linear_layer_0_0_3_o -dummy_3_linear_layer_0_0_3_o']
         """
         input_bit_len, input_bit_ids = self._generate_component_input_ids()
         out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
@@ -888,8 +1043,16 @@ class LinearLayer(Component):
             sage: from claasp.components.linear_layer_component import LinearLayer
             sage: linear_layer_component = LinearLayer(0, 0, ['in'], [[0, 1, 2, 3]], 4, [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
             sage: variables, constraints = linear_layer_component.smt_constraints()
-            sage: constraints[-1]
-            '(assert (= linear_layer_0_0_3 in_3))'
+            sage: variables
+            ['linear_layer_0_0_0',
+            'linear_layer_0_0_1',
+            'linear_layer_0_0_2',
+            'linear_layer_0_0_3']
+            sage: constraints
+            ['(assert (= linear_layer_0_0_0 in_0))',
+            '(assert (= linear_layer_0_0_1 in_1))',
+            '(assert (= linear_layer_0_0_2 in_2))',
+            '(assert (= linear_layer_0_0_3 in_3))']
         """
         input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
@@ -920,9 +1083,8 @@ class LinearLayer(Component):
 
             sage: from claasp.components.linear_layer_component import LinearLayer
             sage: linear_layer_component = LinearLayer(0, 0, ['in'], [[0, 1, 2, 3]], 4, [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
-            sage: variables, constraints = linear_layer_component.smt_constraints()
-            sage: constraints[-1]
-            '(assert (= linear_layer_0_0_3 in_3))'
+            sage: linear_layer_component.smt_xor_differential_propagation_constraints(None) == linear_layer_component.smt_constraints()
+            True
         """
         return self.smt_constraints()
 
@@ -941,8 +1103,28 @@ class LinearLayer(Component):
             sage: from claasp.components.linear_layer_component import LinearLayer
             sage: linear_layer_component = LinearLayer(0, 0, ['in'], [[0, 1, 2, 3]], 4, [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
             sage: variables, constraints = linear_layer_component.smt_xor_linear_mask_propagation_constraints()
-            sage: constraints[-1]
-            '(assert (= linear_layer_0_0_3_o dummy_3_linear_layer_0_0_3_o))'
+            sage: variables
+            ['linear_layer_0_0_0_i',
+            'linear_layer_0_0_1_i',
+            'linear_layer_0_0_2_i',
+            'linear_layer_0_0_3_i',
+            'dummy_0_linear_layer_0_0_0_o',
+            'dummy_1_linear_layer_0_0_1_o',
+            'dummy_2_linear_layer_0_0_2_o',
+            'dummy_3_linear_layer_0_0_3_o',
+            'linear_layer_0_0_0_o',
+            'linear_layer_0_0_1_o',
+            'linear_layer_0_0_2_o',
+            'linear_layer_0_0_3_o']
+            sage: constraints
+            ['(assert (= linear_layer_0_0_0_i dummy_0_linear_layer_0_0_0_o))',
+            '(assert (= linear_layer_0_0_1_i dummy_1_linear_layer_0_0_1_o))',
+            '(assert (= linear_layer_0_0_2_i dummy_2_linear_layer_0_0_2_o))',
+            '(assert (= linear_layer_0_0_3_i dummy_3_linear_layer_0_0_3_o))',
+            '(assert (= linear_layer_0_0_0_o dummy_0_linear_layer_0_0_0_o))',
+            '(assert (= linear_layer_0_0_1_o dummy_1_linear_layer_0_0_1_o))',
+            '(assert (= linear_layer_0_0_2_o dummy_2_linear_layer_0_0_2_o))',
+            '(assert (= linear_layer_0_0_3_o dummy_3_linear_layer_0_0_3_o))']
         """
         input_bit_len, input_bit_ids = self._generate_component_input_ids()
         out_suffix = constants.OUTPUT_BIT_ID_SUFFIX

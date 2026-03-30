@@ -84,10 +84,10 @@ class VariableRotate(Component):
             sage: component = VariableRotate(0, 0, ['input'], [[0, 1, 2, 3]], 4, 1)
             sage: wordstring_variables = []
             sage: code = component.get_word_based_c_code(False, 4, wordstring_variables)
-            sage: len(code) > 0
-            True
-            sage: 'var_rot_0_0' in wordstring_variables
-            True
+            sage: code
+            ['\tinput -> list = (Word[]) {input -> list[0]};',
+            '\tinput -> string_size = 1;',
+            '\tWordString *var_rot_0_0 = RIGHT_ROTATE_BY_VARIABLE_AMOUNT(input);']
         """
         variable_rotate_code = []
 

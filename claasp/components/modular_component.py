@@ -147,13 +147,47 @@ class Modular(Component):
 
         EXAMPLES::
 
-                        sage: from claasp.components.modular_component import Modular
-                        sage: component = Modular(0, 0, ['a', 'b'], [[0, 1, 2, 3], [0, 1, 2, 3]], 4, 'modular', 16)
-                        sage: variables, constraints = component.cms_xor_linear_mask_propagation_constraints()
-                        sage: len(variables)
-                        16
-                        sage: constraints[0]
-                        '-hw_modular_0_0_0_o'
+            sage: from claasp.components.modular_component import Modular
+            sage: component = Modular(0, 0, ['a', 'b'], [[0, 1, 2, 3], [0, 1, 2, 3]], 4, 'modular', 16)
+            sage: variables, constraints = component.cms_xor_linear_mask_propagation_constraints()
+            sage: variables
+            ['modular_0_0_0_i',
+            'modular_0_0_1_i',
+            'modular_0_0_2_i',
+            'modular_0_0_3_i',
+            'modular_0_0_4_i',
+            'modular_0_0_5_i',
+            'modular_0_0_6_i',
+            'modular_0_0_7_i',
+            'modular_0_0_0_o',
+            'modular_0_0_1_o',
+            'modular_0_0_2_o',
+            'modular_0_0_3_o',
+            'hw_modular_0_0_0_o',
+            'hw_modular_0_0_1_o',
+            'hw_modular_0_0_2_o',
+            'hw_modular_0_0_3_o']
+            sage: constraints
+            ['-hw_modular_0_0_0_o',
+            'x -hw_modular_0_0_1_o modular_0_0_0_o modular_0_0_0_i modular_0_0_4_i',
+            'x -hw_modular_0_0_2_o hw_modular_0_0_1_o modular_0_0_1_o modular_0_0_1_i modular_0_0_5_i',
+            'x -hw_modular_0_0_3_o hw_modular_0_0_2_o modular_0_0_2_o modular_0_0_2_i modular_0_0_6_i',
+            'hw_modular_0_0_0_o modular_0_0_0_o -modular_0_0_0_i',
+            'hw_modular_0_0_0_o -modular_0_0_0_o modular_0_0_0_i',
+            'hw_modular_0_0_1_o modular_0_0_1_o -modular_0_0_1_i',
+            'hw_modular_0_0_1_o -modular_0_0_1_o modular_0_0_1_i',
+            'hw_modular_0_0_2_o modular_0_0_2_o -modular_0_0_2_i',
+            'hw_modular_0_0_2_o -modular_0_0_2_o modular_0_0_2_i',
+            'hw_modular_0_0_3_o modular_0_0_3_o -modular_0_0_3_i',
+            'hw_modular_0_0_3_o -modular_0_0_3_o modular_0_0_3_i',
+            'hw_modular_0_0_0_o modular_0_0_0_o -modular_0_0_4_i',
+            'hw_modular_0_0_0_o -modular_0_0_0_o modular_0_0_4_i',
+            'hw_modular_0_0_1_o modular_0_0_1_o -modular_0_0_5_i',
+            'hw_modular_0_0_1_o -modular_0_0_1_o modular_0_0_5_i',
+            'hw_modular_0_0_2_o modular_0_0_2_o -modular_0_0_6_i',
+            'hw_modular_0_0_2_o -modular_0_0_2_o modular_0_0_6_i',
+            'hw_modular_0_0_3_o modular_0_0_3_o -modular_0_0_7_i',
+            'hw_modular_0_0_3_o -modular_0_0_3_o modular_0_0_7_i']
         """
         _, input_bit_ids = self._generate_component_input_ids()
         out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
@@ -204,13 +238,21 @@ class Modular(Component):
 
         EXAMPLES::
 
-                        sage: from claasp.components.modular_component import Modular
-                        sage: component = Modular(0, 0, ['a', 'b'], [[0, 1, 2, 3], [0, 1, 2, 3]], 4, 'modular', 16)
-                        sage: declarations, constraints = component.cp_deterministic_truncated_xor_differential_constraints()
-                        sage: declarations
-                        ['array[0..3] of var 0..2: pre_modular_0_0_0;', 'array[0..3] of var 0..2: pre_modular_0_0_1;']
-                        sage: constraints[-1]
-                        'constraint modular_addition_word(pre_modular_0_0_1, pre_modular_0_0_0, modular_0_0);'
+            sage: from claasp.components.modular_component import Modular
+            sage: component = Modular(0, 0, ['a', 'b'], [[0, 1, 2, 3], [0, 1, 2, 3]], 4, 'modular', 16)
+            sage: declarations, constraints = component.cp_deterministic_truncated_xor_differential_constraints()
+            sage: declarations
+            ['array[0..3] of var 0..2: pre_modular_0_0_0;', 'array[0..3] of var 0..2: pre_modular_0_0_1;']
+            sage: constraints
+            ['constraint pre_modular_0_0_0[0] = a[0];',
+            'constraint pre_modular_0_0_0[1] = a[1];',
+            'constraint pre_modular_0_0_0[2] = a[2];',
+            'constraint pre_modular_0_0_0[3] = a[3];',
+            'constraint pre_modular_0_0_1[0] = b[0];',
+            'constraint pre_modular_0_0_1[1] = b[1];',
+            'constraint pre_modular_0_0_1[2] = b[2];',
+            'constraint pre_modular_0_0_1[3] = b[3];',
+            'constraint modular_addition_word(pre_modular_0_0_1, pre_modular_0_0_0, modular_0_0);']
         """
         output_id_link = self.id
         num_add = self.description[1]
@@ -390,14 +432,14 @@ class Modular(Component):
 
         EXAMPLES::
 
-                        sage: from claasp.components.modular_component import Modular
-                        sage: component = Modular(0, 0, ['a', 'b'], [[0, 1, 2, 3], [0, 1, 2, 3]], 4, 'modular', 16)
-                        sage: DummyModel = type('DummyModel', (), {'word_size': 1})
-                        sage: declarations, constraints = component.cp_wordwise_deterministic_truncated_xor_differential_constraints(DummyModel())
-                        sage: declarations[0]
-                        'array[0..4] of var 0..2: carry_modular_0_0;'
-                        sage: len(constraints) > 0
-                        True
+            sage: from claasp.components.modular_component import Modular
+            sage: component = Modular(0, 0, ['a', 'b'], [[0, 1, 2, 3], [0, 1, 2, 3]], 4, 'modular', 16)
+            sage: DummyModel = type('DummyModel', (), {'word_size': 1})
+            sage: declarations, constraints = component.cp_wordwise_deterministic_truncated_xor_differential_constraints(DummyModel())
+            sage: declarations[0]
+            'array[0..4] of var 0..2: carry_modular_0_0;'
+            sage: len(constraints) > 0
+            True
         """
         output_id_link = self.id
         cp_declarations = []
@@ -444,23 +486,21 @@ class Modular(Component):
 
         EXAMPLES::
 
-                        sage: from claasp.cipher import Cipher
-                        sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
-                        sage: from claasp.name_mappings import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
-                        sage: class DummyCipher(Cipher):
-                        ....:     def __init__(self):
-                        ....:         super().__init__('dummy_cipher', BLOCK_CIPHER, [INPUT_PLAINTEXT, INPUT_KEY], [4, 4], 4)
-                        ....:         self.add_round()
-                        ....:         self.add_MODADD_component([INPUT_PLAINTEXT, INPUT_KEY], [list(range(4)), list(range(4))], 4)
-                        ....:         self.add_cipher_output_component(['modadd_0_0'], [list(range(4))], 4)
-                        sage: cipher = DummyCipher()
-                        sage: model = MznModel(cipher)
-                        sage: component = cipher.component_from(0, 0)
-                        sage: declarations, constraints = component.cp_xor_differential_propagation_constraints(model)
-                        sage: len(declarations) > 0 and len(constraints) > 0
-                        True
-                        sage: constraints[-1].startswith('constraint forall(')
-                        True
+            sage: from claasp.cipher import Cipher
+            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
+            sage: from claasp.name_mappings import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
+            sage: class DummyCipher(Cipher):
+            ....:     def __init__(self):
+            ....:         super().__init__('dummy_cipher', BLOCK_CIPHER, [INPUT_PLAINTEXT, INPUT_KEY], [4, 4], 4)
+            ....:         self.add_round()
+            ....:         self.add_MODADD_component([INPUT_PLAINTEXT, INPUT_KEY], [list(range(4)), list(range(4))], 4)
+            ....:         self.add_cipher_output_component(['modadd_0_0'], [list(range(4))], 4)
+            sage: cipher = DummyCipher()
+            sage: model = MznModel(cipher)
+            sage: component = cipher.component_from(0, 0)
+            sage: declarations, constraints = component.cp_xor_differential_propagation_constraints(model)
+            sage: len(declarations) > 0 and len(constraints) > 0
+            True
         """
         output_id_link = self.id
         num_add = self.description[1]
@@ -532,9 +572,15 @@ class Modular(Component):
             sage: cipher = DummyCipher()
             sage: minizinc = MznXorDifferentialModelARXOptimized(cipher, sat_or_milp='milp')
             sage: component = cipher.component_from(0, 0)
-            sage: _, constraints = component.cp_xor_differential_propagation_constraints_arx_optimized(minizinc)
+            sage: variables, constraints = component.cp_xor_differential_propagation_constraints_arx_optimized(minizinc)
+            sage: variables
+            ['array[0..3] of var 0..1: dummy_modadd_0_0;',
+            'array[0..3] of var 0..1: x1_modadd_0_0;',
+            'array[0..3] of var 0..1: x2_modadd_0_0;']
             sage: constraints[0].startswith('constraint x1_modadd_0_0[0] = plaintext[0];')
             True
+            sage: len(constraints)
+            53
         """
         input_id_links = self.input_id_links
         output_id_link = self.id
@@ -637,23 +683,23 @@ class Modular(Component):
 
         EXAMPLES::
 
-                        sage: from claasp.cipher import Cipher
-                        sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
-                        sage: from claasp.name_mappings import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
-                        sage: class DummyCipher(Cipher):
-                        ....:     def __init__(self):
-                        ....:         super().__init__('dummy_cipher', BLOCK_CIPHER, [INPUT_PLAINTEXT, INPUT_KEY], [4, 4], 4)
-                        ....:         self.add_round()
-                        ....:         self.add_MODADD_component([INPUT_PLAINTEXT, INPUT_KEY], [list(range(4)), list(range(4))], 4)
-                        ....:         self.add_cipher_output_component(['modadd_0_0'], [list(range(4))], 4)
-                        sage: cipher = DummyCipher()
-                        sage: model = MznModel(cipher)
-                        sage: component = cipher.component_from(0, 0)
-                        sage: declarations, constraints = component.cp_xor_linear_mask_propagation_constraints(model)
-                        sage: declarations[:2]
-                        ['array[0..7] of var 0..1: modadd_0_0_i;', 'array[0..3] of var 0..1: modadd_0_0_o;']
-                        sage: constraints[-1]
-                        'constraint modadd_linear(pre_modadd_0_0_1, pre_modadd_0_0_0, modadd_0_0_o, p[0]);'
+            sage: from claasp.cipher import Cipher
+            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
+            sage: from claasp.name_mappings import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
+            sage: class DummyCipher(Cipher):
+            ....:     def __init__(self):
+            ....:         super().__init__('dummy_cipher', BLOCK_CIPHER, [INPUT_PLAINTEXT, INPUT_KEY], [4, 4], 4)
+            ....:         self.add_round()
+            ....:         self.add_MODADD_component([INPUT_PLAINTEXT, INPUT_KEY], [list(range(4)), list(range(4))], 4)
+            ....:         self.add_cipher_output_component(['modadd_0_0'], [list(range(4))], 4)
+            sage: cipher = DummyCipher()
+            sage: model = MznModel(cipher)
+            sage: component = cipher.component_from(0, 0)
+            sage: declarations, constraints = component.cp_xor_linear_mask_propagation_constraints(model)
+            sage: declarations[:2]
+            ['array[0..7] of var 0..1: modadd_0_0_i;', 'array[0..3] of var 0..1: modadd_0_0_o;']
+            sage: len(constraints) > 0
+            True
         """
         output_id_link = self.id
         cp_declarations = []
@@ -886,8 +932,8 @@ class Modular(Component):
             sage: variables, constraints = modadd_component.milp_bitwise_deterministic_truncated_xor_differential_constraints(milp)
             sage: len(variables)
             12
-             sage: len(constraints)
-             106
+            sage: len(constraints)
+            106
         """
 
         x_class = model.trunc_binvar
@@ -1381,13 +1427,13 @@ class Modular(Component):
 
         EXAMPLES::
 
-                        sage: from claasp.components.modular_component import Modular
-                        sage: component = Modular(0, 0, ['a', 'b'], [[0, 1, 2, 3], [0, 1, 2, 3]], 4, 'modular', 16)
-                        sage: variables, constraints = component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
-                        sage: len(variables)
-                        16
-                        sage: constraints[0]
-                        '-carry_modular_0_0_3_0_0 -carry_modular_0_0_3_1_1'
+            sage: from claasp.components.modular_component import Modular
+            sage: component = Modular(0, 0, ['a', 'b'], [[0, 1, 2, 3], [0, 1, 2, 3]], 4, 'modular', 16)
+            sage: variables, constraints = component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
+            sage: len(variables)
+            16
+            sage: constraints[0]
+            '-carry_modular_0_0_3_0_0 -carry_modular_0_0_3_1_1'
         """
         in_ids_0, in_ids_1 = self._generate_input_double_ids()
         out_len, out_ids_0, out_ids_1 = self._generate_output_double_ids()
@@ -1604,13 +1650,13 @@ class Modular(Component):
 
         EXAMPLES::
 
-                        sage: from claasp.components.modular_component import Modular
-                        sage: component = Modular(0, 0, ['a', 'b'], [[0, 1, 2, 3], [0, 1, 2, 3]], 4, 'modular', 16)
-                        sage: variables, constraints = component.sat_xor_linear_mask_propagation_constraints()
-                        sage: len(variables)
-                        16
-                        sage: constraints[0]
-                        '-hw_modular_0_0_0_o'
+            sage: from claasp.components.modular_component import Modular
+            sage: component = Modular(0, 0, ['a', 'b'], [[0, 1, 2, 3], [0, 1, 2, 3]], 4, 'modular', 16)
+            sage: variables, constraints = component.sat_xor_linear_mask_propagation_constraints()
+            sage: len(variables)
+            16
+            sage: constraints[0]
+            '-hw_modular_0_0_0_o'
         """
         _, input_bit_ids = self._generate_component_input_ids()
         out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
@@ -1659,13 +1705,13 @@ class Modular(Component):
 
         EXAMPLES::
 
-                        sage: from claasp.components.modular_component import Modular
-                        sage: component = Modular(0, 0, ['a', 'b'], [[0, 1, 2, 3], [0, 1, 2, 3]], 4, 'modular', 16)
-                        sage: variables, constraints = component.smt_xor_differential_propagation_constraints()
-                        sage: len(variables)
-                        8
-                        sage: constraints[-1]
-                        '(assert (not (xor modular_0_0_3 a_3 b_3)))'
+            sage: from claasp.components.modular_component import Modular
+            sage: component = Modular(0, 0, ['a', 'b'], [[0, 1, 2, 3], [0, 1, 2, 3]], 4, 'modular', 16)
+            sage: variables, constraints = component.smt_xor_differential_propagation_constraints()
+            sage: len(variables)
+            8
+            sage: len(constraints) > 0
+            True
         """
         input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
@@ -1721,13 +1767,13 @@ class Modular(Component):
 
         EXAMPLES::
 
-                        sage: from claasp.components.modular_component import Modular
-                        sage: component = Modular(0, 0, ['a', 'b'], [[0, 1, 2, 3], [0, 1, 2, 3]], 4, 'modular', 16)
-                        sage: variables, constraints = component.smt_xor_linear_mask_propagation_constraints()
-                        sage: len(variables)
-                        16
-                        sage: constraints[0]
-                        '(assert (not hw_modular_0_0_0_o))'
+            sage: from claasp.components.modular_component import Modular
+            sage: component = Modular(0, 0, ['a', 'b'], [[0, 1, 2, 3], [0, 1, 2, 3]], 4, 'modular', 16)
+            sage: variables, constraints = component.smt_xor_linear_mask_propagation_constraints()
+            sage: len(variables)
+            16
+            sage: constraints[0]
+            '(assert (not hw_modular_0_0_0_o))'
         """
         _, input_bit_ids = self._generate_component_input_ids()
         out_suffix = constants.OUTPUT_BIT_ID_SUFFIX

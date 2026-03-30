@@ -98,23 +98,20 @@ class MODSUB(Modular):
 
         EXAMPLES::
 
-            sage: from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
-            sage: from claasp.cipher import Cipher
-            sage: from claasp.name_mappings import PERMUTATION
-            sage: cipher = Cipher("cipher_name", PERMUTATION, ["input"], [8], 8)
-            sage: cipher.add_round()
-            sage: modsub_0_0 = cipher.add_MODSUB_component(["input","input"], [[0,1,2,3],[4,5,6,7]], 4)
-            sage: modsub_component = cipher.get_component_from_id('modsub_0_0')
-            sage: algebraic = AlgebraicModel(cipher)
-            sage: modsub_component.algebraic_polynomials(algebraic)
-            [modsub_0_0_b0_0,
-             modsub_0_0_b0_0 + modsub_0_0_y0 + modsub_0_0_x4 + modsub_0_0_x0,
-             modsub_0_0_x4*modsub_0_0_b0_0 + modsub_0_0_x0*modsub_0_0_b0_0 + modsub_0_0_x0*modsub_0_0_x4 + modsub_0_0_b0_1 + modsub_0_0_b0_0 + modsub_0_0_x4,
-             modsub_0_0_b0_1 + modsub_0_0_y1 + modsub_0_0_x5 + modsub_0_0_x1,
-             modsub_0_0_x5*modsub_0_0_b0_1 + modsub_0_0_x1*modsub_0_0_b0_1 + modsub_0_0_x1*modsub_0_0_x5 + modsub_0_0_b0_2 + modsub_0_0_b0_1 + modsub_0_0_x5,
-             modsub_0_0_b0_2 + modsub_0_0_y2 + modsub_0_0_x6 + modsub_0_0_x2,
-             modsub_0_0_x6*modsub_0_0_b0_2 + modsub_0_0_x2*modsub_0_0_b0_2 + modsub_0_0_x2*modsub_0_0_x6 + modsub_0_0_b0_3 + modsub_0_0_b0_2 + modsub_0_0_x6,
-             modsub_0_0_b0_3 + modsub_0_0_y3 + modsub_0_0_x7 + modsub_0_0_x3]
+                sage: from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
+                sage: from claasp.ciphers.single_component_ciphers.modsub_cipher import ModsubCipher
+                sage: cipher = ModsubCipher()
+                sage: modsub_component = cipher.get_component_from_id('modsub_0_0')
+                sage: algebraic = AlgebraicModel(cipher)
+                sage: modsub_component.algebraic_polynomials(algebraic)
+                [modsub_0_0_b0_0,
+                modsub_0_0_b0_0 + modsub_0_0_y0 + modsub_0_0_x4 + modsub_0_0_x0,
+                modsub_0_0_x4*modsub_0_0_b0_0 + modsub_0_0_x0*modsub_0_0_b0_0 + modsub_0_0_x0*modsub_0_0_x4 + modsub_0_0_b0_1 + modsub_0_0_b0_0 + modsub_0_0_x4,
+                modsub_0_0_b0_1 + modsub_0_0_y1 + modsub_0_0_x5 + modsub_0_0_x1,
+                modsub_0_0_x5*modsub_0_0_b0_1 + modsub_0_0_x1*modsub_0_0_b0_1 + modsub_0_0_x1*modsub_0_0_x5 + modsub_0_0_b0_2 + modsub_0_0_b0_1 + modsub_0_0_x5,
+                modsub_0_0_b0_2 + modsub_0_0_y2 + modsub_0_0_x6 + modsub_0_0_x2,
+                modsub_0_0_x6*modsub_0_0_b0_2 + modsub_0_0_x2*modsub_0_0_b0_2 + modsub_0_0_x2*modsub_0_0_x6 + modsub_0_0_b0_3 + modsub_0_0_b0_2 + modsub_0_0_x6,
+                modsub_0_0_b0_3 + modsub_0_0_y3 + modsub_0_0_x7 + modsub_0_0_x3]
 
         """
         component_id = self.id

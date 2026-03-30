@@ -89,10 +89,38 @@ class VariableShift(Component):
             sage: from claasp.components.variable_shift_component import VariableShift
             sage: variable_shift_component = VariableShift(0, 2, ['plaintext', 'key'], [list(range(4)), list(range(4))], 4, 1)
             sage: output_ids, constraints = variable_shift_component.cms_constraints()
-            sage: output_ids[0]
-            'var_shift_0_2_0'
-            sage: len(constraints) > 0
-            True
+            sage: output_ids
+            ['var_shift_0_2_0', 'var_shift_0_2_1', 'var_shift_0_2_2', 'var_shift_0_2_3']
+            sage: constraints
+            ['-state_0_var_shift_0_2_0 plaintext_0 key_3',
+            'state_0_var_shift_0_2_0 -plaintext_0 key_3',
+            '-state_0_var_shift_0_2_0 plaintext_1 -key_3',
+            'state_0_var_shift_0_2_0 -plaintext_1 -key_3',
+            '-state_0_var_shift_0_2_1 plaintext_1 key_3',
+            'state_0_var_shift_0_2_1 -plaintext_1 key_3',
+            '-state_0_var_shift_0_2_1 plaintext_2 -key_3',
+            'state_0_var_shift_0_2_1 -plaintext_2 -key_3',
+            '-state_0_var_shift_0_2_2 plaintext_2 key_3',
+            'state_0_var_shift_0_2_2 -plaintext_2 key_3',
+            '-state_0_var_shift_0_2_2 plaintext_3 -key_3',
+            'state_0_var_shift_0_2_2 -plaintext_3 -key_3',
+            '-state_0_var_shift_0_2_3 plaintext_3',
+            '-state_0_var_shift_0_2_3 -key_3',
+            'state_0_var_shift_0_2_3 -plaintext_3 key_3',
+            '-var_shift_0_2_0 state_0_var_shift_0_2_0 key_2',
+            'var_shift_0_2_0 -state_0_var_shift_0_2_0 key_2',
+            '-var_shift_0_2_0 state_0_var_shift_0_2_2 -key_2',
+            'var_shift_0_2_0 -state_0_var_shift_0_2_2 -key_2',
+            '-var_shift_0_2_1 state_0_var_shift_0_2_1 key_2',
+            'var_shift_0_2_1 -state_0_var_shift_0_2_1 key_2',
+            '-var_shift_0_2_1 state_0_var_shift_0_2_3 -key_2',
+            'var_shift_0_2_1 -state_0_var_shift_0_2_3 -key_2',
+            '-var_shift_0_2_2 state_0_var_shift_0_2_2',
+            '-var_shift_0_2_2 -key_2',
+            'var_shift_0_2_2 -state_0_var_shift_0_2_2 key_2',
+            '-var_shift_0_2_3 state_0_var_shift_0_2_3',
+            '-var_shift_0_2_3 -key_2',
+            'var_shift_0_2_3 -state_0_var_shift_0_2_3 key_2']
         """
         return self.sat_constraints()
 
@@ -115,10 +143,16 @@ class VariableShift(Component):
             sage: from claasp.components.variable_shift_component import VariableShift
             sage: variable_shift_component = VariableShift(0, 2, ['plaintext', 'key'], [list(range(4)), list(range(4))], 4, 1)
             sage: declarations, constraints = variable_shift_component.cp_constraints()
-            sage: declarations  # doctest: +SKIP
-            ['array[0..3] of var 0..1: pre_var_shift_0_2;', 'var int: shift_amount_var_shift_0_2;']
-            sage: len(constraints) > 0
-            True
+            sage: declarations
+            ['array[0..3] of var 0..1: pre_var_shift_0_2;',
+            'var int: shift_amount_var_shift_0_2;']
+            sage: constraints
+            ['constraint pre_var_shift_0_2[0]=plaintext[0];',
+            'constraint pre_var_shift_0_2[1]=plaintext[1];',
+            'constraint pre_var_shift_0_2[2]=plaintext[2];',
+            'constraint pre_var_shift_0_2[3]=plaintext[3];',
+            'constraint bitArrayToInt([key[i]|i in 2..3],shift_amount_var_shift_0_2);',
+            'constraint var_shift_0_2=RShift(pre_var_shift_0_2,shift_amount_var_shift_0_2);']
         """
         output_size = int(self.output_bit_size)
         input_id_link = self.input_id_links
@@ -175,10 +209,8 @@ class VariableShift(Component):
             sage: from claasp.components.variable_shift_component import VariableShift
             sage: component = VariableShift(0, 0, ['input1', 'input2'], [[0, 1], [0, 1, 2, 3]], 4, 1)
             sage: code = component.get_bit_based_vectorized_python_code(['input1_0_1', 'input2_0_3'], False)
-            sage: len(code) > 0
-            True
-            sage: 'bit_vector_SHIFT_BY_VARIABLE_AMOUNT' in code[0]
-            True
+            sage: code
+            ['  var_shift_0_0 = bit_vector_SHIFT_BY_VARIABLE_AMOUNT([input1_0_1,input2_0_3 ], 4, 1)']
         """
         return [
             f"  {self.id} = bit_vector_SHIFT_BY_VARIABLE_AMOUNT([{','.join(params)} ], "
@@ -204,10 +236,8 @@ class VariableShift(Component):
             sage: from claasp.components.variable_shift_component import VariableShift
             sage: component = VariableShift(0, 0, ['input1', 'input2'], [[0, 1], [0, 1, 2, 3]], 4, 1)
             sage: code = component.get_byte_based_vectorized_python_code('input_concat')
-            sage: len(code) > 0
-            True
-            sage: 'byte_vector_SHIFT_BY_VARIABLE_AMOUNT' in code[0]
-            True
+            sage: code
+            ['  var_shift_0_0 = byte_vector_SHIFT_BY_VARIABLE_AMOUNT(input_concat, 4, 1)']
         """
         return [
             f"  {self.id} = byte_vector_SHIFT_BY_VARIABLE_AMOUNT({params}, "
@@ -236,10 +266,10 @@ class VariableShift(Component):
             sage: component = VariableShift(0, 0, ['input1', 'input2'], [[0, 1], [0, 1, 2, 3]], 4, 1)
             sage: wordstring_variables = []
             sage: code = component.get_word_based_c_code(False, 4, wordstring_variables)
-            sage: len(code) > 0
-            True
-            sage: 'var_shift_0_0' in wordstring_variables
-            True
+            sage: code
+            ['\tinput -> list = (Word[]) {input1 -> list[0], input2 -> list[0]};',
+            '\tinput -> string_size = 2;',
+            '\tWordString *var_shift_0_0 = RIGHT_SHIFT_BY_VARIABLE_AMOUNT(input);']
         """
         variable_shift_code = []
 
@@ -317,12 +347,21 @@ class VariableShift(Component):
             sage: minizinc = MznModel(cipher)
             sage: variable_shift_component = cipher.get_component_from_id('var_shift_0_0')
             sage: var_names, constraints = variable_shift_component.minizinc_xor_differential_propagation_constraints(minizinc)
-            sage: len(var_names) > 0
-            True
-            sage: len(constraints) > 0
-            True
-            sage: all('constraint' in c for c in constraints)
-            True
+            sage: var_names
+            ['var bool: var_shift_0_0_x0;',
+            'var bool: var_shift_0_0_x1;',
+            'var bool: var_shift_0_0_x2;',
+            'var bool: var_shift_0_0_x3;',
+            'var bool: var_shift_0_0_x4;',
+            'var bool: var_shift_0_0_x5;',
+            'var bool: var_shift_0_0_x6;',
+            'var bool: var_shift_0_0_x7;',
+            'var bool: var_shift_0_0_y0;',
+            'var bool: var_shift_0_0_y1;',
+            'var bool: var_shift_0_0_y2;',
+            'var bool: var_shift_0_0_y3;']
+            sage: constraints
+            ['constraint LSHIFT_BY_VARIABLE_AMOUNT(array1d(0..4-1, [var_shift_0_0_x0,var_shift_0_0_x1,var_shift_0_0_x2,var_shift_0_0_x3]), 8*var_shift_0_0_x7+4*var_shift_0_0_x6+2*var_shift_0_0_x5+1*var_shift_0_0_x4)=array1d(0..4-1, [var_shift_0_0_y0,var_shift_0_0_y1,var_shift_0_0_y2,var_shift_0_0_y3]);\n']
         """
         if self.description[0].lower() != "shift_by_variable_amount":
             raise ValueError("component must be bitwise rotation")
@@ -381,10 +420,38 @@ class VariableShift(Component):
             sage: from claasp.components.variable_shift_component import VariableShift
             sage: variable_shift_component = VariableShift(0, 2, ['plaintext', 'key'], [list(range(4)), list(range(4))], 4, 1)
             sage: output_ids, constraints = variable_shift_component.sat_constraints()
-            sage: output_ids[0]
-            'var_shift_0_2_0'
-            sage: len(constraints) > 0
-            True
+            sage: output_ids
+            ['var_shift_0_2_0', 'var_shift_0_2_1', 'var_shift_0_2_2', 'var_shift_0_2_3']
+            sage: constraints
+            ['-state_0_var_shift_0_2_0 plaintext_0 key_3',
+            'state_0_var_shift_0_2_0 -plaintext_0 key_3',
+            '-state_0_var_shift_0_2_0 plaintext_1 -key_3',
+            'state_0_var_shift_0_2_0 -plaintext_1 -key_3',
+            '-state_0_var_shift_0_2_1 plaintext_1 key_3',
+            'state_0_var_shift_0_2_1 -plaintext_1 key_3',
+            '-state_0_var_shift_0_2_1 plaintext_2 -key_3',
+            'state_0_var_shift_0_2_1 -plaintext_2 -key_3',
+            '-state_0_var_shift_0_2_2 plaintext_2 key_3',
+            'state_0_var_shift_0_2_2 -plaintext_2 key_3',
+            '-state_0_var_shift_0_2_2 plaintext_3 -key_3',
+            'state_0_var_shift_0_2_2 -plaintext_3 -key_3',
+            '-state_0_var_shift_0_2_3 plaintext_3',
+            '-state_0_var_shift_0_2_3 -key_3',
+            'state_0_var_shift_0_2_3 -plaintext_3 key_3',
+            '-var_shift_0_2_0 state_0_var_shift_0_2_0 key_2',
+            'var_shift_0_2_0 -state_0_var_shift_0_2_0 key_2',
+            '-var_shift_0_2_0 state_0_var_shift_0_2_2 -key_2',
+            'var_shift_0_2_0 -state_0_var_shift_0_2_2 -key_2',
+            '-var_shift_0_2_1 state_0_var_shift_0_2_1 key_2',
+            'var_shift_0_2_1 -state_0_var_shift_0_2_1 key_2',
+            '-var_shift_0_2_1 state_0_var_shift_0_2_3 -key_2',
+            'var_shift_0_2_1 -state_0_var_shift_0_2_3 -key_2',
+            '-var_shift_0_2_2 state_0_var_shift_0_2_2',
+            '-var_shift_0_2_2 -key_2',
+            'var_shift_0_2_2 -state_0_var_shift_0_2_2 key_2',
+            '-var_shift_0_2_3 state_0_var_shift_0_2_3',
+            '-var_shift_0_2_3 -key_2',
+            'var_shift_0_2_3 -state_0_var_shift_0_2_3 key_2']  
         """
         input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
@@ -449,13 +516,24 @@ class VariableShift(Component):
 
             sage: from claasp.components.variable_shift_component import VariableShift
             sage: variable_shift_component = VariableShift(0, 2, ['plaintext', 'key'], [list(range(4)), list(range(4))], 4, 1)
-            sage: variables, constraints = variable_shift_component.smt_constraints()
-            sage: len(variables) > 0
-            True
-            sage: len(constraints) > 0
-            True
-            sage: all('(assert' in c for c in constraints)
-            True
+            sage: variables
+            ['state_0_var_shift_0_2_0',
+            'state_0_var_shift_0_2_1',
+            'state_0_var_shift_0_2_2',
+            'state_0_var_shift_0_2_3',
+            'var_shift_0_2_0',
+            'var_shift_0_2_1',
+            'var_shift_0_2_2',
+            'var_shift_0_2_3']
+            sage: constraints
+            ['(assert (ite key_3 (= state_0_var_shift_0_2_0 plaintext_1) (= state_0_var_shift_0_2_0 plaintext_0)))',
+            '(assert (ite key_3 (= state_0_var_shift_0_2_1 plaintext_2) (= state_0_var_shift_0_2_1 plaintext_1)))',
+            '(assert (ite key_3 (= state_0_var_shift_0_2_2 plaintext_3) (= state_0_var_shift_0_2_2 plaintext_2)))',
+            '(assert (ite key_3 (not state_0_var_shift_0_2_3) (= state_0_var_shift_0_2_3 plaintext_3)))',
+            '(assert (ite key_2 (= var_shift_0_2_0 state_0_var_shift_0_2_2) (= var_shift_0_2_0 state_0_var_shift_0_2_0)))',
+            '(assert (ite key_2 (= var_shift_0_2_1 state_0_var_shift_0_2_3) (= var_shift_0_2_1 state_0_var_shift_0_2_1)))',
+            '(assert (ite key_2 (not var_shift_0_2_2) (= var_shift_0_2_2 state_0_var_shift_0_2_2)))',
+            '(assert (ite key_2 (not var_shift_0_2_3) (= var_shift_0_2_3 state_0_var_shift_0_2_3)))']
         """
         input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
