@@ -398,7 +398,7 @@ class SatXorDifferentialModel(SatModel):
             True
         """
 
-        assert lower_weight is None or lower_weight > upper_weight, "lower_weight must be <= upper_weight"
+        assert lower_weight is None or lower_weight <= upper_weight, "lower_weight must be <= upper_weight"
 
         def weights_dictionary(solutions_list):            
             d = {} # key is the weight as float and value is the number of occurrences observed
