@@ -15,7 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-
+import re
 import json
 import math
 import os
@@ -37,6 +37,12 @@ from claasp.name_mappings import (
     INPUT_STATE,
 )
 
+def hex_to_bitlist(hex_str):
+    if not hex_str.startswith(("0x", "0X")):
+        raise ValueError("Hex string must start with 0x")
+    val_int = int(hex_str, 16)
+    bit_len = (len(hex_str) - 2) * 4
+    return integer_to_bit_list(val_int, bit_len, "big")
 
 def add_arcs(arcs, component, curr_input_bit_ids, input_bit_size, intermediate_output_arcs, previous_output_bit_ids):
     for i in range(input_bit_size):
@@ -281,6 +287,39 @@ def set_fixed_variables(component_id, constraint_type, bit_positions, bit_values
         "bit_values": bit_values,
     }
 
+def join_and_sanitize_strings(l):
+    """
+    Join a list of strings using ``_`` and sanitize the resulting string so that it only
+    contains alphanumeric characters, ``.``, ``_`` or ``-``. The returned string is
+    prefixed with ``_``.
+
+    INPUT:
+
+    - ``l`` -- **list** (or ``None``); list of strings to be joined and sanitized. If ``None``,
+      an empty string is returned.
+
+    OUTPUT:
+
+    - **string**; a sanitized string obtained by joining the elements of ``l`` with ``_``,
+      removing all characters except ``[a-zA-Z0-9._-]``, and prefixing the result with ``_``.
+      If ``l`` is ``None``, the function returns ``""``.
+
+    EXAMPLES::
+
+        sage: from claasp.cipher_modules.models.utils import join_and_sanitize_strings
+        sage: join_and_sanitize_strings(['sat', 'xor-linear'])
+        '_sat_xor-linear'
+
+        sage: join_and_sanitize_strings(['model°', 'round#1'])
+        '_model_round1'
+
+        sage: join_and_sanitize_strings(None)
+        ''
+    """
+    if l is None:
+        return ""
+    joined = "_".join(l)
+    return "_" + re.sub(r"[^a-zA-Z0-9._-]", "", joined)
 
 def write_model_to_file(model_to_write, file_name):
     """
