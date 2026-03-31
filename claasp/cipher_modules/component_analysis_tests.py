@@ -1494,7 +1494,19 @@ output [
 """
 
 
-MINIZINC_BRANCH_NUMBER_SOLVER_ORDER = ("ortools", "cbc", "coin-bc", "highs", "scip", "chuffed", "gecode")
+MINIZINC_BRANCH_NUMBER_SOLVER_ORDER = ("ortools", "cp-sat", "cbc", "coin-bc", "highs", "scip", "chuffed", "gecode")
+
+
+def _minizinc_solver_alias_candidates(solver):
+    solver_name = str(solver).strip()
+    solver_key = solver_name.replace("-", "").replace("_", "").lower()
+
+    if solver_key in ("ortools", "cpsat"):
+        if solver_name == "cp-sat":
+            return ("cp-sat", "ortools")
+        return ("ortools", "cp-sat")
+
+    return (solver_name,)
 
 
 def _to_dzn_matrix_literal_from_binary_matrix(binary_matrix, original_word_size):
@@ -1527,8 +1539,8 @@ def _parse_branch_number_from_minizinc_stdout(stdout):
 
 def _run_minizinc_branch_number(minizinc_bin, solver, model_path, data_path, timeout_seconds, threads):
     command = [minizinc_bin, "--solver", solver, "--free-search", str(model_path), str(data_path)]
-    solver_key = solver.replace("-", "").lower()
-    if threads and solver_key in ("ortools", "chuffed", "gecode"):
+    solver_key = solver.replace("-", "").replace("_", "").lower()
+    if threads and solver_key in ("ortools", "cpsat", "chuffed", "gecode"):
         command.extend(["-p", str(threads)])
     return subprocess.run(
         command,
@@ -1581,23 +1593,33 @@ def _compute_branch_number_from_expanded_binary_matrix_with_minizinc(
             encoding="utf-8",
         )
 
-        result = _run_minizinc_branch_number(
-            minizinc_bin=minizinc_bin,
-            solver=solver,
-            model_path=model_path,
-            data_path=data_path,
-            timeout_seconds=None,
-            threads=threads,
-        )
+        attempted_solvers = []
+        failure_lines = []
 
-        if result.returncode == 0:
-            return _parse_branch_number_from_minizinc_stdout(result.stdout)
+        for solver_candidate in _minizinc_solver_alias_candidates(solver):
+            attempted_solvers.append(solver_candidate)
+            result = _run_minizinc_branch_number(
+                minizinc_bin=minizinc_bin,
+                solver=solver_candidate,
+                model_path=model_path,
+                data_path=data_path,
+                timeout_seconds=None,
+                threads=threads,
+            )
 
-        failure_lines = [f"MiniZinc failed with solver '{solver}' (exit_code={result.returncode})."]
-        if result.stderr.strip():
-            failure_lines.append(f"stderr: {result.stderr.strip()}")
-        if result.stdout.strip():
-            failure_lines.append(f"stdout: {result.stdout.strip()}")
+            if result.returncode == 0:
+                return _parse_branch_number_from_minizinc_stdout(result.stdout)
+
+            failure_lines.append(
+                f"MiniZinc failed with solver '{solver_candidate}' (exit_code={result.returncode})."
+            )
+            if result.stderr.strip():
+                failure_lines.append(f"stderr: {result.stderr.strip()}")
+            if result.stdout.strip():
+                failure_lines.append(f"stdout: {result.stdout.strip()}")
+
+        attempts = ", ".join(f"'{s}'" for s in attempted_solvers)
+        failure_lines.insert(0, f"MiniZinc failed for all attempted solvers: {attempts}.")
         raise RuntimeError("\n".join(failure_lines))
 
 

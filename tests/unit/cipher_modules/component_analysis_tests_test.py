@@ -1,5 +1,6 @@
 import os
 import shutil
+from types import SimpleNamespace
 
 import pytest
 import matplotlib.pyplot as plt
@@ -356,6 +357,43 @@ class TestBinaryMatrixWithMiniZinc:
         matrix = Matrix(F, [[1, 0], [1, 1]])
         bn = compute_branch_number_from_binary_matrix_with_minizinc(matrix, "linear")
         assert bn == 2
+
+    @pytest.mark.parametrize(
+        "requested_solver,expected_attempt_order",
+        [
+            ("ortools", ["ortools", "cp-sat"]),
+            ("cp-sat", ["cp-sat", "ortools"]),
+        ],
+    )
+    def test_solver_alias_fallback_between_ortools_and_cp_sat(
+        self, monkeypatch, requested_solver, expected_attempt_order
+    ):
+        attempted = []
+
+        def fake_run_minizinc_branch_number(
+            minizinc_bin,
+            solver,
+            model_path,
+            data_path,
+            timeout_seconds,
+            threads,
+        ):
+            del minizinc_bin, model_path, data_path, timeout_seconds, threads
+            attempted.append(solver)
+            if solver == expected_attempt_order[-1]:
+                return SimpleNamespace(returncode=0, stdout="Branch number: 2\n", stderr="")
+            return SimpleNamespace(returncode=1, stdout="", stderr=f"Unknown solver {solver}")
+
+        monkeypatch.setattr(cat_module.shutil, "which", lambda _bin: "/usr/bin/minizinc")
+        monkeypatch.setattr(cat_module, "_run_minizinc_branch_number", fake_run_minizinc_branch_number)
+
+        result = compute_branch_number_from_binary_matrix_with_minizinc(
+            [[1, 0], [0, 1]],
+            solver=requested_solver,
+        )
+
+        assert result == 2
+        assert attempted == expected_attempt_order
 
 
 def _matrix_from_ints_over_gf2w(entries, word_size, polynomial):
