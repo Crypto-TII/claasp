@@ -914,6 +914,396 @@ class TestEdgeCases:
             compute_branch_number_from_binary_matrix(matrix, "differential", method="sage")
 
 
+class TestNewCodeCoverageTargets:
+    def test_minizinc_solver_alias_candidates_default_passthrough(self):
+        assert cat_module._minizinc_solver_alias_candidates("chuffed") == ("chuffed",)
+
+    def test_to_dzn_matrix_literal_input_validation_errors(self):
+        with pytest.raises(ValueError, match="non-empty and square"):
+            cat_module._to_dzn_matrix_literal_from_binary_matrix([[1, 0], [1]], original_word_size=1)
+
+        with pytest.raises(ValueError, match="multiple of original_word_size"):
+            cat_module._to_dzn_matrix_literal_from_binary_matrix([[1, 0], [0, 1]], original_word_size=3)
+
+    def test_parse_branch_number_from_minizinc_stdout_error(self):
+        with pytest.raises(RuntimeError, match="Could not parse branch number"):
+            cat_module._parse_branch_number_from_minizinc_stdout("no branch number here")
+
+    def test_run_minizinc_branch_number_thread_flag_selection(self, monkeypatch):
+        captured = {}
+
+        def fake_run(command, check, capture_output, text, timeout):
+            captured["command"] = command
+            captured["check"] = check
+            captured["capture_output"] = capture_output
+            captured["text"] = text
+            captured["timeout"] = timeout
+            return SimpleNamespace(returncode=0, stdout="Branch number: 2\n", stderr="")
+
+        monkeypatch.setattr(cat_module.subprocess, "run", fake_run)
+
+        cat_module._run_minizinc_branch_number(
+            minizinc_bin="minizinc",
+            solver="cp-sat",
+            model_path="m.mzn",
+            data_path="i.dzn",
+            timeout_seconds=None,
+            threads=4,
+        )
+        assert "-p" in captured["command"]
+
+        cat_module._run_minizinc_branch_number(
+            minizinc_bin="minizinc",
+            solver="cbc",
+            model_path="m.mzn",
+            data_path="i.dzn",
+            timeout_seconds=None,
+            threads=4,
+        )
+        assert "-p" not in captured["command"]
+
+    def test_compute_from_expanded_binary_matrix_timeout_not_supported(self):
+        with pytest.raises(ValueError, match="timeout_seconds is not supported"):
+            cat_module._compute_branch_number_from_expanded_binary_matrix_with_minizinc(
+                binary_matrix=[[1]],
+                original_word_size=1,
+                timeout_seconds=1,
+            )
+
+    def test_compute_from_expanded_binary_matrix_missing_minizinc_binary(self, monkeypatch):
+        monkeypatch.setattr(cat_module.shutil, "which", lambda _bin: None)
+        with pytest.raises(FileNotFoundError, match="was not found in PATH"):
+            cat_module._compute_branch_number_from_expanded_binary_matrix_with_minizinc(
+                binary_matrix=[[1]],
+                original_word_size=1,
+            )
+
+    def test_compute_from_expanded_binary_matrix_reports_solver_failures(self, monkeypatch):
+        monkeypatch.setattr(cat_module.shutil, "which", lambda _bin: "/usr/bin/minizinc")
+
+        def fake_run_minizinc_branch_number(**_kwargs):
+            return SimpleNamespace(returncode=1, stdout="solver stdout", stderr="solver stderr")
+
+        monkeypatch.setattr(cat_module, "_run_minizinc_branch_number", fake_run_minizinc_branch_number)
+        with pytest.raises(RuntimeError, match="failed for all attempted solvers") as exc_info:
+            cat_module._compute_branch_number_from_expanded_binary_matrix_with_minizinc(
+                binary_matrix=[[1, 0], [0, 1]],
+                original_word_size=1,
+                solver="chuffed",
+            )
+        error_text = str(exc_info.value)
+        assert "stderr: solver stderr" in error_text
+        assert "stdout: solver stdout" in error_text
+
+    def test_compute_from_expanded_binary_matrix_failure_without_solver_streams(self, monkeypatch):
+        monkeypatch.setattr(cat_module.shutil, "which", lambda _bin: "/usr/bin/minizinc")
+
+        def fake_run_minizinc_branch_number(**_kwargs):
+            return SimpleNamespace(returncode=1, stdout="", stderr="")
+
+        monkeypatch.setattr(cat_module, "_run_minizinc_branch_number", fake_run_minizinc_branch_number)
+        with pytest.raises(RuntimeError, match="failed for all attempted solvers") as exc_info:
+            cat_module._compute_branch_number_from_expanded_binary_matrix_with_minizinc(
+                binary_matrix=[[1, 0], [0, 1]],
+                original_word_size=1,
+                solver="chuffed",
+            )
+        assert "stderr:" not in str(exc_info.value)
+        assert "stdout:" not in str(exc_info.value)
+
+    @pytest.mark.parametrize(
+        "word_size,poly,expected_message",
+        [
+            (0, 0b11, "word_size must be >= 1"),
+            (2, 0, "irreducible_polynomial must be positive"),
+            (3, 0b111, "degree exactly word_size"),
+            (3, 0b1000, "non-zero constant term"),
+        ],
+    )
+    def test_validate_irreducible_polynomial_errors(self, word_size, poly, expected_message):
+        with pytest.raises(ValueError, match=expected_message):
+            cat_module._validate_irreducible_polynomial(word_size, poly)
+
+    def test_compute_branch_number_from_field_matrix_with_sage_empty_matrix(self):
+        empty = Matrix(GF(2), 0, 0)
+        with pytest.raises(ValueError, match="non-empty matrix"):
+            compute_branch_number_from_field_matrix_with_sage(empty)
+
+    def test_initialize_field_enumeration_empty_matrix(self):
+        empty = Matrix(GF(2), 0, 0)
+        with pytest.raises(ValueError, match="non-empty matrix"):
+            cat_module._initialize_field_enumeration(empty, 1)
+
+    def test_map_matrix_to_conway_field_raises_if_no_roots(self, monkeypatch):
+        class FakeModulus:
+            def roots(self, _target_field, multiplicities=False):
+                del multiplicities
+                return []
+
+        class FakeField:
+            def degree(self):
+                return 2
+
+            def order(self):
+                return 4
+
+            def __eq__(self, _other):
+                return False
+
+            def modulus(self):
+                return FakeModulus()
+
+        class FakeMatrix:
+            def base_ring(self):
+                return FakeField()
+
+        monkeypatch.setattr(cat_module, "GF", lambda _order, name="c": object())
+
+        with pytest.raises(NotImplementedError, match="Could not construct an isomorphism"):
+            cat_module._map_matrix_to_conway_field(FakeMatrix())
+
+    def test_field_search_helpers_explicit_early_exit_paths(self, monkeypatch):
+        monkeypatch.setattr(cat_module, "_update_best_branch_number", lambda _candidate, _best: (2, True))
+        F = GF(4, 'a')
+
+        rows2 = [Matrix(F, [[1, 0]]).row(0), Matrix(F, [[0, 1]]).row(0)]
+        best2, done2 = cat_module._search_field_weight_2(rows2, [x for x in F if x != 0], 99)
+        assert best2 == 2 and done2 is True
+
+        rows3 = [
+            Matrix(F, [[1, 0, 0]]).row(0),
+            Matrix(F, [[0, 1, 0]]).row(0),
+            Matrix(F, [[0, 0, 1]]).row(0),
+        ]
+        best3, done3 = cat_module._search_field_weight_3(rows3, [x for x in F if x != 0], 99)
+        assert best3 == 2 and done3 is True
+
+        rows4 = [
+            Matrix(F, [[1, 0, 0, 0]]).row(0),
+            Matrix(F, [[0, 1, 0, 0]]).row(0),
+            Matrix(F, [[0, 0, 1, 0]]).row(0),
+            Matrix(F, [[0, 0, 0, 1]]).row(0),
+        ]
+        best4, done4 = cat_module._search_field_weight_4_plus(rows4, [x for x in F if x != 0], limit=4, best=99)
+        assert best4 == 2 and done4 is True
+
+    def test_field_bounded_enumeration_return_guards(self, monkeypatch):
+        F = GF(2)
+        matrix = Matrix(F, [[0, 0], [0, 0]])
+        assert compute_branch_number_from_field_matrix_with_bounded_enumeration(matrix, max_input_weight=1) == 1
+
+        monkeypatch.setattr(cat_module, "_search_field_weight_1", lambda rows, best: (best, False))
+        monkeypatch.setattr(cat_module, "_search_field_weight_2", lambda rows, nz, best: (7, True))
+        assert compute_branch_number_from_field_matrix_with_bounded_enumeration(matrix, max_input_weight=2) == 7
+
+        matrix3 = Matrix(F, [[0, 0, 0], [0, 0, 0], [0, 0, 0]])
+        monkeypatch.setattr(cat_module, "_search_field_weight_2", lambda rows, nz, best: (7, False))
+        monkeypatch.setattr(cat_module, "_search_field_weight_3", lambda rows, nz, best: (6, True))
+        assert compute_branch_number_from_field_matrix_with_bounded_enumeration(matrix3, max_input_weight=3) == 6
+
+    def test_prepare_binary_matrix_linear_list_path(self):
+        matrix, n = cat_module._prepare_binary_matrix([[1, 0], [0, 1]], type="linear")
+        assert n == 2
+        assert int(matrix[0][0]) == 1 and int(matrix[1][1]) == 1
+
+    def test_search_binary_weight_two_and_four_plus_early_return(self):
+        best2, done2 = cat_module._search_binary_weight_2([0b1, 0b1], 9)
+        assert best2 == 2 and done2 is True
+
+        class WeirdMask:
+            def __rxor__(self, _other):
+                return self
+
+            def __xor__(self, _other):
+                return self
+
+            def bit_count(self):
+                return -2
+
+        weird_columns = [WeirdMask(), WeirdMask(), WeirdMask(), WeirdMask()]
+        best4, done4 = cat_module._search_binary_weight_4_plus(weird_columns, limit=4, best=9)
+        assert best4 == 2 and done4 is True
+
+    def test_search_binary_weight_two_three_and_four_plus_non_early_paths(self):
+        best2, done2 = cat_module._search_binary_weight_2([0b001, 0b011, 0b101], 10)
+        assert best2 == 3 and done2 is False
+
+        best3, done3 = cat_module._search_binary_weight_3([0b001, 0b011, 0b101], 10)
+        assert best3 == 6 and done3 is False
+
+        best4, done4 = cat_module._search_binary_weight_4_plus([0b001, 0b011, 0b101, 0b111], limit=4, best=10)
+        assert best4 == 4 and done4 is False
+
+    def test_search_binary_weight_three_and_four_plus_no_update_paths(self):
+        best3, done3 = cat_module._search_binary_weight_3([0b001, 0b011, 0b101], 4)
+        assert best3 == 4 and done3 is False
+
+        best4, done4 = cat_module._search_binary_weight_4_plus(
+            [0b0001, 0b0010, 0b0100, 0b1000],
+            limit=4,
+            best=5,
+        )
+        assert best4 == 5 and done4 is False
+
+    def test_search_binary_weight_three_loop_and_early_return(self):
+        class WeirdMask:
+            def __xor__(self, _other):
+                return self
+
+            def bit_count(self):
+                return -1
+
+        weird_columns = [WeirdMask(), WeirdMask(), WeirdMask()]
+        best, done = cat_module._search_binary_weight_3(weird_columns, 10)
+        assert best == 2 and done is True
+
+    def test_compute_branch_number_from_field_matrix_with_minizinc_errors(self):
+        with pytest.raises(ValueError, match="non-empty matrix"):
+            compute_branch_number_from_field_matrix_with_minizinc(Matrix(GF(2), 0, 0))
+
+        with pytest.raises(ValueError, match="characteristic 2"):
+            compute_branch_number_from_field_matrix_with_minizinc(Matrix(GF(3), [[1, 0], [0, 1]]))
+
+    def test_field_wrapper_minizinc_and_sage_error_wrapping(self, monkeypatch):
+        F = GF(2)
+        matrix = Matrix(F, [[1, 0], [0, 1]])
+
+        monkeypatch.setattr(
+            cat_module,
+            "compute_branch_number_from_field_matrix_with_minizinc",
+            lambda _matrix: (_ for _ in ()).throw(OSError("forced minizinc failure")),
+        )
+        with pytest.raises(RuntimeError, match="method='minizinc'.*forced minizinc failure"):
+            compute_branch_number_from_field_matrix(matrix, method="minizinc")
+
+        monkeypatch.setattr(
+            cat_module,
+            "compute_branch_number_from_binary_matrix",
+            lambda *_args, **_kwargs: (_ for _ in ()).throw(OSError("forced sage failure")),
+        )
+        with pytest.raises(RuntimeError, match="method='sage'.*forced sage failure"):
+            compute_branch_number_from_field_matrix(matrix, method="sage")
+
+    def test_calculate_weights_for_linear_layer_word_and_missing_matrix(self, monkeypatch, capsys):
+        fake_component = SimpleNamespace(id="lin_0", type="linear_layer")
+
+        monkeypatch.setattr(cat_module, "binary_matrix_of_linear_component", lambda _component: None)
+        with pytest.raises(TypeError, match="Cannot compute the binary matrix"):
+            cat_module.calculate_weights_for_linear_layer(fake_component, "word", "differential")
+        captured = capsys.readouterr()
+        assert "format type cannot be 'word'" in captured.out
+
+    def test_instantiate_matrix_over_correct_field_without_custom_polynomial(self):
+        matrix, field = cat_module.instantiate_matrix_over_correct_field(
+            [[1, 0], [0, 1]],
+            polynomial_as_int=0,
+            word_size=2,
+            input_bit_size=4,
+            output_bit_size=4,
+        )
+        assert matrix.nrows() == 2 and matrix.ncols() == 2
+        assert field.order() == 4
+
+    def test_field_element_matrix_to_integer_matrix_int_fallback(self):
+        class IntOnly:
+            def __init__(self, value):
+                self.value = value
+
+            def __int__(self):
+                return self.value
+
+        class FakeMatrix:
+            def nrows(self):
+                return 1
+
+            def ncols(self):
+                return 2
+
+            def __getitem__(self, i):
+                del i
+                return [IntOnly(3), IntOnly(5)]
+
+        out = cat_module.field_element_matrix_to_integer_matrix(FakeMatrix())
+        assert int(out[0][0]) == 3 and int(out[0][1]) == 5
+
+    def test_field_element_matrix_to_integer_matrix_to_integer_path(self):
+        class WithToInteger:
+            def __init__(self, value):
+                self.value = value
+
+            def to_integer(self):
+                return self.value
+
+        class FakeMatrix:
+            def nrows(self):
+                return 1
+
+            def ncols(self):
+                return 1
+
+            def __getitem__(self, i):
+                del i
+                return [WithToInteger(9)]
+
+        out = cat_module.field_element_matrix_to_integer_matrix(FakeMatrix())
+        assert int(out[0][0]) == 9
+
+    def test_binary_matrix_with_sage_list_validation_paths(self):
+        with pytest.raises(ValueError, match="non-empty square"):
+            compute_branch_number_from_binary_matrix_with_sage([], "differential")
+
+        with pytest.raises(ValueError, match="square"):
+            compute_branch_number_from_binary_matrix_with_sage([[1, 0, 1], [0, 1, 0]], "linear")
+
+    def test_binary_bounded_enumeration_late_paths_and_wrapper_errors(self, monkeypatch):
+        matrix = [
+            [1, 0, 0, 0],
+            [0, 1, 0, 0],
+            [0, 0, 1, 0],
+            [0, 0, 0, 1],
+        ]
+
+        monkeypatch.setattr(cat_module, "_search_binary_weight_1", lambda _cols, _best: 5)
+        monkeypatch.setattr(cat_module, "_search_binary_weight_2", lambda _cols, _best: (8, False))
+        monkeypatch.setattr(cat_module, "_search_binary_weight_3", lambda _cols, _best: (7, False))
+        monkeypatch.setattr(cat_module, "_search_binary_weight_4_plus", lambda _cols, _limit, _best: (6, False))
+        got = compute_branch_number_from_binary_matrix_with_bounded_enumeration(matrix, max_input_weight=4)
+        assert got == 6
+
+        monkeypatch.setattr(
+            cat_module,
+            "compute_branch_number_from_binary_matrix_with_minizinc",
+            lambda *_args, **_kwargs: (_ for _ in ()).throw(OSError("forced minizinc failure")),
+        )
+        with pytest.raises(RuntimeError, match="method='minizinc'.*forced minizinc failure"):
+            compute_branch_number_from_binary_matrix(matrix, method="minizinc")
+
+    def test_binary_bounded_enumeration_guard_returns(self, monkeypatch):
+        matrix2 = [[1, 0], [0, 1]]
+        matrix3 = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
+        matrix4 = [
+            [1, 0, 0, 0],
+            [0, 1, 0, 0],
+            [0, 0, 1, 0],
+            [0, 0, 0, 1],
+        ]
+
+        monkeypatch.setattr(cat_module, "_search_binary_weight_1", lambda _cols, _best: 5)
+
+        monkeypatch.setattr(cat_module, "_search_binary_weight_2", lambda _cols, _best: (4, True))
+        assert compute_branch_number_from_binary_matrix_with_bounded_enumeration(matrix4, max_input_weight=4) == 4
+
+        monkeypatch.setattr(cat_module, "_search_binary_weight_2", lambda _cols, _best: (4, False))
+        assert compute_branch_number_from_binary_matrix_with_bounded_enumeration(matrix2, max_input_weight=2) == 4
+
+        monkeypatch.setattr(cat_module, "_search_binary_weight_2", lambda _cols, _best: (6, False))
+        monkeypatch.setattr(cat_module, "_search_binary_weight_3", lambda _cols, _best: (5, True))
+        assert compute_branch_number_from_binary_matrix_with_bounded_enumeration(matrix3, max_input_weight=3) == 5
+
+        monkeypatch.setattr(cat_module, "_search_binary_weight_3", lambda _cols, _best: (4, False))
+        assert compute_branch_number_from_binary_matrix_with_bounded_enumeration(matrix3, max_input_weight=3) == 4
+
+
 class TestConsistency:
     """Test consistency across different invocation patterns."""
 

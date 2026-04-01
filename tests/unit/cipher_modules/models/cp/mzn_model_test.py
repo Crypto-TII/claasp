@@ -1,8 +1,10 @@
 import pytest
+from types import SimpleNamespace
 
 from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
+import claasp.cipher_modules.models.cp.mzn_model as mzn_model_module
 from claasp.cipher_modules.models.cp.mzn_model import MznModel
 from claasp.ciphers.block_ciphers.raiden_block_cipher import RaidenBlockCipher
 from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model import MznXorDifferentialModel
@@ -16,6 +18,44 @@ from claasp.cipher_modules.models.cp.mzn_models.mzn_deterministic_truncated_xor_
 from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_linear_model import MznXorLinearModel
 from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list, get_bit_bindings
 from minizinc import Model, Solver, Instance, Status
+
+
+class _FakeDuration:
+    def __init__(self, seconds):
+        self._seconds = seconds
+
+    def total_seconds(self):
+        return self._seconds
+
+
+@pytest.mark.parametrize(
+    "statistics,expected_time",
+    [
+        ({"solveTime": _FakeDuration(1.25), "nSolutions": 0}, 1.25),
+        ({"time": _FakeDuration(2.5), "nSolutions": 0}, 2.5),
+        ({"flatTime": _FakeDuration(3.75), "nSolutions": 0}, 3.75),
+        ({"initTime": _FakeDuration(4.0), "nSolutions": 0}, 4.0),
+        ({"nSolutions": 0}, 0),
+    ],
+)
+def test_parse_solver_output_time_stat_fallbacks(monkeypatch, statistics, expected_time):
+    speck = SpeckBlockCipher(number_of_rounds=1)
+    model = MznModel(speck)
+
+    def fake_convert(_cipher, _model_type, _solver_name, time, memory, _components_values, _total_weight):
+        return {"time": time, "memory": memory}
+
+    monkeypatch.setattr(mzn_model_module, "convert_solver_solution_to_dictionary", fake_convert)
+
+    output = SimpleNamespace(statistics=statistics, status=None, solution=None)
+    parsed = model._parse_solver_output(
+        output,
+        model_type="xor_differential_one_solution",
+        solve_external=False,
+        solver_name="cp-sat",
+    )
+
+    assert parsed["time"] == expected_time
 
 
 def test_solver_names():
