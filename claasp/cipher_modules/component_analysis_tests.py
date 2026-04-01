@@ -1889,7 +1889,7 @@ def compute_branch_number_from_field_matrix(matrix, max_input_weight=3, method="
     if method == "minizinc":
         try:
             return compute_branch_number_from_field_matrix_with_minizinc(matrix)
-        except (RuntimeError, ImportError, FileNotFoundError, subprocess.SubprocessError, OSError) as error:
+        except (RuntimeError, ImportError, subprocess.SubprocessError, OSError) as error:
             raise RuntimeError(
                 f"Branch-number computation failed with method='minizinc': {error}"
             ) from error
@@ -1902,13 +1902,13 @@ def compute_branch_number_from_field_matrix(matrix, max_input_weight=3, method="
             binary_matrix = [[int(matrix[i][j]) for j in range(output_size)] for i in range(input_size)]
             try:
                 return compute_branch_number_from_binary_matrix(binary_matrix, type="differential", method="sage")
-            except (RuntimeError, ImportError, FileNotFoundError, subprocess.SubprocessError, OSError) as error:
+            except (RuntimeError, ImportError, subprocess.SubprocessError, OSError) as error:
                 raise RuntimeError(
                     f"Branch-number computation failed with method='sage': {error}"
                 ) from error
         try:
             return compute_branch_number_from_field_matrix_with_sage(matrix)
-        except (RuntimeError, ImportError, FileNotFoundError, subprocess.SubprocessError, OSError) as error:
+        except (RuntimeError, ImportError, subprocess.SubprocessError, OSError) as error:
             raise RuntimeError(
                 f"Branch-number computation failed with method='sage': {error}"
             ) from error
@@ -2244,14 +2244,14 @@ def compute_branch_number_from_binary_matrix(binary_matrix, type="differential",
     if method == "minizinc":
         try:
             return compute_branch_number_from_binary_matrix_with_minizinc(binary_matrix, type)
-        except (RuntimeError, ImportError, FileNotFoundError, subprocess.SubprocessError, OSError) as error:
+        except (RuntimeError, ImportError, subprocess.SubprocessError, OSError) as error:
             raise RuntimeError(
                 f"Branch-number computation failed with method='minizinc': {error}"
             ) from error
     elif method == "sage":
         try:
             return compute_branch_number_from_binary_matrix_with_sage(binary_matrix, type)
-        except (RuntimeError, ImportError, FileNotFoundError, subprocess.SubprocessError, OSError) as error:
+        except (RuntimeError, ImportError, subprocess.SubprocessError, OSError) as error:
             raise RuntimeError(
                 f"Branch-number computation failed with method='sage': {error}"
             ) from error
