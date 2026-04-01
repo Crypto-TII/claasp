@@ -259,7 +259,7 @@ def test_branch_number_with_word_format_exact_mix_column(aes_mix_column_componen
     assert lin_bn_word == 5, f"Expected AES mix_column linear word branch number 5, got {lin_bn_word}"
 
 
-# ==================== New comprehensive tests for method variations ====================
+# ==================== Method-variation and consistency tests ====================
 
 
 class TestBinaryMatrixWithSage:
@@ -915,7 +915,29 @@ class TestEdgeCases:
             compute_branch_number_from_binary_matrix(matrix, "differential", method="sage")
 
 
-class TestNewCodeCoverageTargets:
+class TestBranchNumberHelperEdgePaths:
+    """Focused tests for branch-number helper edge paths and error handling."""
+
+    IDENTITY2 = [[1, 0], [0, 1]]
+    IDENTITY3 = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
+    IDENTITY4 = [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [0, 0, 0, 1],
+    ]
+
+    @staticmethod
+    def _set_minizinc_found(monkeypatch):
+        monkeypatch.setattr(cat_module.shutil, "which", lambda _bin: "/usr/bin/minizinc")
+
+    @staticmethod
+    def _raise_error(error):
+        def _raiser(*_args, **_kwargs):
+            raise error
+
+        return _raiser
+
     def test_minizinc_solver_alias_candidates_default_passthrough(self):
         assert cat_module._minizinc_solver_alias_candidates("chuffed") == ("chuffed",)
 
@@ -980,7 +1002,7 @@ class TestNewCodeCoverageTargets:
             )
 
     def test_compute_from_expanded_binary_matrix_reports_solver_failures(self, monkeypatch):
-        monkeypatch.setattr(cat_module.shutil, "which", lambda _bin: "/usr/bin/minizinc")
+        self._set_minizinc_found(monkeypatch)
 
         def fake_run_minizinc_branch_number(**_kwargs):
             return SimpleNamespace(returncode=1, stdout="solver stdout", stderr="solver stderr")
@@ -988,7 +1010,7 @@ class TestNewCodeCoverageTargets:
         monkeypatch.setattr(cat_module, "_run_minizinc_branch_number", fake_run_minizinc_branch_number)
         with pytest.raises(RuntimeError, match="failed for all attempted solvers") as exc_info:
             cat_module._compute_branch_number_from_expanded_binary_matrix_with_minizinc(
-                binary_matrix=[[1, 0], [0, 1]],
+                binary_matrix=self.IDENTITY2,
                 original_word_size=1,
                 solver="chuffed",
             )
@@ -997,7 +1019,7 @@ class TestNewCodeCoverageTargets:
         assert "stdout: solver stdout" in error_text
 
     def test_compute_from_expanded_binary_matrix_failure_without_solver_streams(self, monkeypatch):
-        monkeypatch.setattr(cat_module.shutil, "which", lambda _bin: "/usr/bin/minizinc")
+        self._set_minizinc_found(monkeypatch)
 
         def fake_run_minizinc_branch_number(**_kwargs):
             return SimpleNamespace(returncode=1, stdout="", stderr="")
@@ -1005,7 +1027,7 @@ class TestNewCodeCoverageTargets:
         monkeypatch.setattr(cat_module, "_run_minizinc_branch_number", fake_run_minizinc_branch_number)
         with pytest.raises(RuntimeError, match="failed for all attempted solvers") as exc_info:
             cat_module._compute_branch_number_from_expanded_binary_matrix_with_minizinc(
-                binary_matrix=[[1, 0], [0, 1]],
+                binary_matrix=self.IDENTITY2,
                 original_word_size=1,
                 solver="chuffed",
             )
@@ -1172,7 +1194,7 @@ class TestNewCodeCoverageTargets:
         monkeypatch.setattr(
             cat_module,
             "compute_branch_number_from_field_matrix_with_minizinc",
-            lambda _matrix: (_ for _ in ()).throw(OSError("forced minizinc failure")),
+            self._raise_error(OSError("forced minizinc failure")),
         )
         with pytest.raises(RuntimeError, match="method='minizinc'.*forced minizinc failure"):
             compute_branch_number_from_field_matrix(matrix, method="minizinc")
@@ -1180,21 +1202,24 @@ class TestNewCodeCoverageTargets:
         monkeypatch.setattr(
             cat_module,
             "compute_branch_number_from_binary_matrix",
-            lambda *_args, **_kwargs: (_ for _ in ()).throw(OSError("forced sage failure")),
+            self._raise_error(OSError("forced sage failure")),
         )
         with pytest.raises(RuntimeError, match="method='sage'.*forced sage failure"):
             compute_branch_number_from_field_matrix(matrix, method="sage")
 
     def test_calculate_weights_for_linear_layer_word_and_missing_matrix(self, monkeypatch):
         fake_component = SimpleNamespace(id="lin_0", type="linear_layer")
-        printed = []
+        printed_lines = []
 
-        monkeypatch.setattr(builtins, "print", lambda *args, **kwargs: printed.append(" ".join(str(a) for a in args)))
+        def fake_print(*args, **_kwargs):
+            printed_lines.append(" ".join(str(arg) for arg in args))
+
+        monkeypatch.setattr(builtins, "print", fake_print)
 
         monkeypatch.setattr(cat_module, "binary_matrix_of_linear_component", lambda _component: None)
         with pytest.raises(TypeError, match="Cannot compute the binary matrix"):
             cat_module.calculate_weights_for_linear_layer(fake_component, "word", "differential")
-        assert any("format type cannot be 'word'" in line for line in printed)
+        assert any("format type cannot be 'word'" in line for line in printed_lines)
 
     def test_instantiate_matrix_over_correct_field_without_custom_polynomial(self):
         matrix, field = cat_module.instantiate_matrix_over_correct_field(
@@ -1259,12 +1284,7 @@ class TestNewCodeCoverageTargets:
             compute_branch_number_from_binary_matrix_with_sage([[1, 0, 1], [0, 1, 0]], "linear")
 
     def test_binary_bounded_enumeration_late_paths_and_wrapper_errors(self, monkeypatch):
-        matrix = [
-            [1, 0, 0, 0],
-            [0, 1, 0, 0],
-            [0, 0, 1, 0],
-            [0, 0, 0, 1],
-        ]
+        matrix = self.IDENTITY4
 
         monkeypatch.setattr(cat_module, "_search_binary_weight_1", lambda _cols, _best: 5)
         monkeypatch.setattr(cat_module, "_search_binary_weight_2", lambda _cols, _best: (8, False))
@@ -1276,20 +1296,15 @@ class TestNewCodeCoverageTargets:
         monkeypatch.setattr(
             cat_module,
             "compute_branch_number_from_binary_matrix_with_minizinc",
-            lambda *_args, **_kwargs: (_ for _ in ()).throw(OSError("forced minizinc failure")),
+            self._raise_error(OSError("forced minizinc failure")),
         )
         with pytest.raises(RuntimeError, match="method='minizinc'.*forced minizinc failure"):
             compute_branch_number_from_binary_matrix(matrix, method="minizinc")
 
     def test_binary_bounded_enumeration_guard_returns(self, monkeypatch):
-        matrix2 = [[1, 0], [0, 1]]
-        matrix3 = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
-        matrix4 = [
-            [1, 0, 0, 0],
-            [0, 1, 0, 0],
-            [0, 0, 1, 0],
-            [0, 0, 0, 1],
-        ]
+        matrix2 = self.IDENTITY2
+        matrix3 = self.IDENTITY3
+        matrix4 = self.IDENTITY4
 
         monkeypatch.setattr(cat_module, "_search_binary_weight_1", lambda _cols, _best: 5)
 

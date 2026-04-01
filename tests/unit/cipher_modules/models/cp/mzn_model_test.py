@@ -29,7 +29,7 @@ class _FakeDuration:
 
 
 @pytest.mark.parametrize(
-    "statistics,expected_time",
+    "solver_stats,expected_time",
     [
         ({"solveTime": _FakeDuration(1.25), "nSolutions": 0}, 1.25),
         ({"time": _FakeDuration(2.5), "nSolutions": 0}, 2.5),
@@ -38,16 +38,16 @@ class _FakeDuration:
         ({"nSolutions": 0}, 0),
     ],
 )
-def test_parse_solver_output_time_stat_fallbacks(monkeypatch, statistics, expected_time):
+def test_parse_solver_output_time_stat_fallbacks(monkeypatch, solver_stats, expected_time):
     speck = SpeckBlockCipher(number_of_rounds=1)
     model = MznModel(speck)
 
-    def fake_convert(_cipher, _model_type, _solver_name, time, memory, _components_values, _total_weight):
+    def fake_convert_to_dictionary(_cipher, _model_type, _solver_name, time, memory, _components_values, _total_weight):
         return {"time": time, "memory": memory}
 
-    monkeypatch.setattr(mzn_model_module, "convert_solver_solution_to_dictionary", fake_convert)
+    monkeypatch.setattr(mzn_model_module, "convert_solver_solution_to_dictionary", fake_convert_to_dictionary)
 
-    output = SimpleNamespace(statistics=statistics, status=None, solution=None)
+    output = SimpleNamespace(statistics=solver_stats, status=None, solution=None)
     parsed = model._parse_solver_output(
         output,
         model_type="xor_differential_one_solution",
