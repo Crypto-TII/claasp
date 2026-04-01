@@ -334,50 +334,50 @@ array[0..7,0..1] of 0..1: valid_state_lbct = array2d(0..7,0..1,
 ]);
 
 predicate lbct_compute(
-    array[int] of var 0..1: dL,
-    array[int] of var 0..1: dR,
-    array[int] of var 0..1: nL,
-    array[int] of var 0..1: nR,
-    array[int] of var 0..1: nLL,
+    array[0..15] of var 0..1: dL,
+    array[0..15] of var 0..1: dR,
+    array[0..15] of var 0..1: nL,
+    array[0..15] of var 0..1: nR,
+    array[0..15] of var 0..1: nLL,
     int: branchSize,
-    var 0..3200: lbct_minus_log_2
+    var 0..3200: lbct_minus_log_2,
+    var 0..3200: upper_bound_lbct
 ) =
 let {
-    array[1..branchSize-1,0..7] of var float: dp_lbct;
+    array[1..branchSize-1,0..7] of var 0.0..1.0: dp_lbct;
     array[1..branchSize-1] of var 0..31: tmp0;
-    var float: lbct_value;
+    var 0.0..1.0: lbct_value;
 } in
 (
-    tmp0[1] = nLL[branchSize-1]*16 + nR[branchSize-1]*8 + nL[branchSize-1]*4 + dR[branchSize-1]*2 + dL[branchSize-1]
-    /\\
-
+    (
+        tmp0[1] == nLL[branchSize-1]*16 + nR[branchSize-1]*8 + nL[branchSize-1]*4 + dR[branchSize-1]*2 + dL[branchSize-1]
+    ) /\\
     forall(j in 0..7)(
-        dp_lbct[1,j] = tables_lbct[tmp0[1],j,0]/2^(30)
-    )
-    /\\
-
+        dp_lbct[1,j] == int2float(tables_lbct[tmp0[1],j,0]) / 4.0
+    ) /\\
     forall(i in 2..branchSize-1)(
-        tmp0[i] = nLL[branchSize-i]*16 + nR[branchSize-i]*8 + nL[branchSize-i]*4 + dR[branchSize-i]*2 + dL[branchSize-i]
-        /\\
-        forall(j in 0..7)(
-            dp_lbct[i,j] = sum(k in 0..7)(
-                dp_lbct[i-1,k] * tables_lbct[tmp0[i],j,k]
-            )
+        tmp0[i] == nLL[branchSize-i]*16 + nR[branchSize-i]*8 + nL[branchSize-i]*4 + dR[branchSize-i]*2 + dL[branchSize-i]
+    ) /\\
+    forall(i in 2..branchSize-1, j in 0..7)(
+            dp_lbct[i,j] == sum(k in 0..7)(
+                 dp_lbct[i-1,k] * int2float(tables_lbct[tmp0[i],j,k]) 
+            ) / 4.0
+    ) /\\
+    (
+        lbct_value == sum(state in 0..7)(
+                                        if ((valid_state_lbct[state,0] + valid_state_lbct[state,1] + nLL[1] + nR[1] + nL[1]) mod 2 == 0)
+                                            then dp_lbct[branchSize-1,state]
+                                        else
+                                            0
+                                        endif
         )
+    ) /\\
+    (
+        approx_prob_log(lbct_value,lbct_minus_log_2)
+    ) /\\
+    (
+        approx_prob_log_upper_bound(lbct_value,upper_bound_lbct)
     )
-    /\\
-
-    lbct_value =
-            sum(state in 0..7)(
-            if (valid_state_lbct[state,0]
-              + valid_state_lbct[state,1]
-              + nLL[1] + nR[1] + nL[1]) mod 2 = 0
-            then dp_lbct[branchSize-1,state]
-            else 0
-            endif
-        )
-    /\\
-    approx_prob_log(lbct_value,lbct_minus_log_2)
 );
     """
     return lbct_string
