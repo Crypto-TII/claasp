@@ -44,6 +44,9 @@ import tempfile
 from pathlib import Path
 
 
+BRANCH_NUMBER_NON_EMPTY_MATRIX_MSG = "Branch number requires a non-empty matrix"
+
+
 class CipherComponentsAnalysis:
     def __init__(self, cipher):
         self._cipher = cipher
@@ -1265,7 +1268,7 @@ def compute_branch_number_from_field_matrix_with_sage(matrix):
 
     """
     if matrix.nrows() <= 0 or matrix.ncols() <= 0:
-        raise ValueError("Branch number requires a non-empty matrix")
+        raise ValueError(BRANCH_NUMBER_NON_EMPTY_MATRIX_MSG)
 
     input_size = matrix.nrows()
     F = matrix.base_ring()
@@ -1291,7 +1294,7 @@ def compute_branch_number_from_field_matrix_with_sage(matrix):
 
 def _initialize_field_enumeration(matrix, max_input_weight):
     if matrix.nrows() <= 0 or matrix.ncols() <= 0:
-        raise ValueError("Branch number requires a non-empty matrix")
+        raise ValueError(BRANCH_NUMBER_NON_EMPTY_MATRIX_MSG)
     if max_input_weight < 1:
         raise ValueError("max_input_weight must be at least 1")
 
@@ -1782,7 +1785,7 @@ def compute_branch_number_from_field_matrix_with_minizinc(
         3
     """
     if matrix.nrows() <= 0 or matrix.ncols() <= 0:
-        raise ValueError("Branch number requires a non-empty matrix")
+        raise ValueError(BRANCH_NUMBER_NON_EMPTY_MATRIX_MSG)
     if matrix.nrows() != matrix.ncols():
         raise ValueError("Branch number requires a square matrix")
 
