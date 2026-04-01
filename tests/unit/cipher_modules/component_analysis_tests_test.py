@@ -1,5 +1,6 @@
 import os
 import shutil
+import builtins
 from types import SimpleNamespace
 
 import pytest
@@ -1184,14 +1185,16 @@ class TestNewCodeCoverageTargets:
         with pytest.raises(RuntimeError, match="method='sage'.*forced sage failure"):
             compute_branch_number_from_field_matrix(matrix, method="sage")
 
-    def test_calculate_weights_for_linear_layer_word_and_missing_matrix(self, monkeypatch, capsys):
+    def test_calculate_weights_for_linear_layer_word_and_missing_matrix(self, monkeypatch):
         fake_component = SimpleNamespace(id="lin_0", type="linear_layer")
+        printed = []
+
+        monkeypatch.setattr(builtins, "print", lambda *args, **kwargs: printed.append(" ".join(str(a) for a in args)))
 
         monkeypatch.setattr(cat_module, "binary_matrix_of_linear_component", lambda _component: None)
         with pytest.raises(TypeError, match="Cannot compute the binary matrix"):
             cat_module.calculate_weights_for_linear_layer(fake_component, "word", "differential")
-        captured = capsys.readouterr()
-        assert "format type cannot be 'word'" in captured.out
+        assert any("format type cannot be 'word'" in line for line in printed)
 
     def test_instantiate_matrix_over_correct_field_without_custom_polynomial(self):
         matrix, field = cat_module.instantiate_matrix_over_correct_field(
