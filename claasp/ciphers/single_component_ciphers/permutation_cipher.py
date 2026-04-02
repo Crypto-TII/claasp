@@ -10,7 +10,7 @@ PARAMETERS_CONFIGURATION_LIST = [{"bit_size": 8, "permutation_description": [7, 
 
 class PermutationCipher(SingleComponentCipher):
     """
-    Return a cipher object containing a single bit permutation.
+    Return a cipher object containing a single bitwise permutation component.
 
     INPUT:
 

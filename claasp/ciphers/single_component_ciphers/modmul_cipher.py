@@ -15,7 +15,7 @@ PARAMETERS_CONFIGURATION_LIST = [{"word_bit_size": 4, "number_of_inputs": 2, "mo
 
 class ModmulCipher(SingleComponentCipher):
     """
-    Return a cipher object containing a single modular multiplication.
+    Return a cipher object containing a single modular multiplication component (with modulo ``2^n``).
 
     INPUT:
 

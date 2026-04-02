@@ -10,7 +10,7 @@ PARAMETERS_CONFIGURATION_LIST = [{"word_bit_size": 8, "rotation_amount": 1, "num
 
 class ShiftRowsCipher(SingleComponentCipher):
     """
-    Return a cipher object containing a single ShiftRows operation.
+    Return a cipher object containing a single ShiftRows component.
 
     INPUT:
 

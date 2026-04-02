@@ -10,7 +10,7 @@ PARAMETERS_CONFIGURATION_LIST = [{"bit_size": 384}]
 
 class ThetaXoodooCipher(SingleComponentCipher):
     """
-    Return a cipher object containing a single Theta-Xoodoo operation.
+    Return a cipher object containing a single Theta-Xoodoo component.
 
     INPUT:
 

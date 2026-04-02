@@ -10,7 +10,7 @@ PARAMETERS_CONFIGURATION_LIST = [{"bit_size": 4}]
 
 class NotCipher(SingleComponentCipher):
     """
-    Return a cipher object containing a single bitwise NOT operation.
+    Return a cipher object containing a single bitwise NOT component.
 
     INPUT:
 

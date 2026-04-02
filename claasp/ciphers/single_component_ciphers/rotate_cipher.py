@@ -10,7 +10,7 @@ PARAMETERS_CONFIGURATION_LIST = [{"bit_size": 8, "parameter": 1}]
 
 class RotateCipher(SingleComponentCipher):
     """
-    Return a cipher object containing a single rotation.
+    Return a cipher object containing a single rotation component.
 
     INPUT:
 

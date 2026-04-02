@@ -10,7 +10,7 @@ PARAMETERS_CONFIGURATION_LIST = [{"bit_size": 8, "parameter": 1}]
 
 class ShiftCipher(SingleComponentCipher):
     """
-    Return a cipher object containing a single logical shift.
+    Return a cipher object containing a single logical shift component.
 
     INPUT:
 

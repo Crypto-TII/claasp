@@ -10,7 +10,7 @@ PARAMETERS_CONFIGURATION_LIST = [{"bit_size": 8}]
 
 class ReverseCipher(SingleComponentCipher):
     """
-    Return a cipher object containing a single bit-reversal permutation.
+    Return a cipher object containing a single bit-reversal permutation component.
 
     INPUT:
 

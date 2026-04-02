@@ -10,7 +10,7 @@ PARAMETERS_CONFIGURATION_LIST = [{"bit_size": 8, "amount_bit_size": 3, "directio
 
 class VariableRotateCipher(SingleComponentCipher):
     """
-    Return a cipher object containing a single variable rotation (amount given as input).
+    Return a cipher object containing a single variable rotation component (rotation amount given as input).
 
     INPUT:
 

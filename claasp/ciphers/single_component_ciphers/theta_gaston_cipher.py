@@ -10,7 +10,7 @@ PARAMETERS_CONFIGURATION_LIST = [{"bit_size": 320, "rotation_amounts_parameter":
 
 class ThetaGastonCipher(SingleComponentCipher):
     """
-    Return a cipher object containing a single Theta-Gaston operation.
+    Return a cipher object containing a single Theta-Gaston component.
 
     INPUT:
 

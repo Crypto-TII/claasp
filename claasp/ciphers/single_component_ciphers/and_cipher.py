@@ -20,7 +20,7 @@ PARAMETERS_CONFIGURATION_LIST = [{"word_bit_size": 4, "number_of_inputs": 2}]
 
 class AndCipher(SingleComponentCipher):
     """
-    Return a cipher object containing a single bitwise AND operation.
+    Return a cipher object containing a single bitwise AND component.
 
     INPUT:
 

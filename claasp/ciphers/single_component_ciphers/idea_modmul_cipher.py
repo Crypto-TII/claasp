@@ -15,7 +15,7 @@ PARAMETERS_CONFIGURATION_LIST = [{"word_bit_size": 16, "number_of_inputs": 2, "m
 
 class IdeaModmulCipher(SingleComponentCipher):
     """
-    Return a cipher object containing a single IDEA multiplication modulo ``2^n + 1``.
+    Return a cipher object containing a single modular multiplication component (as used in the IDEA cipher, modulo ``2^n + 1``).
 
     INPUT:
 

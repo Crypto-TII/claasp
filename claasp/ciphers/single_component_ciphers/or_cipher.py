@@ -15,7 +15,7 @@ PARAMETERS_CONFIGURATION_LIST = [{"word_bit_size": 4, "number_of_inputs": 2}]
 
 class OrCipher(SingleComponentCipher):
     """
-    Return a cipher object containing a single bitwise OR operation.
+    Return a cipher object containing a single bitwise OR component.
 
     INPUT:
 

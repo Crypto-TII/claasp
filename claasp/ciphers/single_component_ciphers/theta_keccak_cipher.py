@@ -10,7 +10,7 @@ PARAMETERS_CONFIGURATION_LIST = [{"bit_size": 25}]
 
 class ThetaKeccakCipher(SingleComponentCipher):
     """
-    Return a cipher object containing a single Theta-Keccak operation.
+    Return a cipher object containing a single Theta-Keccak component.
 
     INPUT:
 

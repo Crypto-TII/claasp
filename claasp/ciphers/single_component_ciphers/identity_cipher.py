@@ -24,7 +24,7 @@ PARAMETERS_CONFIGURATION_LIST = [{"block_bit_size": 32}]
 
 class IdentityCipher(SingleComponentCipher):
     """
-    Return a cipher object containing the graph representation of the Identity permutation.
+    Return a cipher object with no component, thus representing the Identity function.
 
     The identity permutation returns the message itself, i.e.
     IdentityPermutation(m) = m.

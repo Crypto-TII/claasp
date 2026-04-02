@@ -10,7 +10,7 @@ PARAMETERS_CONFIGURATION_LIST = [{"bit_size": 8, "amount_bit_size": 3, "directio
 
 class VariableShiftCipher(SingleComponentCipher):
     """
-    Return a cipher object containing a single variable shift (amount given as input).
+    Return a cipher object containing a single variable shift component (shift amount given as input).
 
     INPUT:
 

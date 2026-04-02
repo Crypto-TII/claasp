@@ -10,7 +10,7 @@ PARAMETERS_CONFIGURATION_LIST = [{"bit_size": 4, "description": [[1, 0, 0, 0], [
 
 class LinearLayerCipher(SingleComponentCipher):
     """
-    Return a cipher object containing a single linear layer (matrix multiplication over GF(2)).
+    Return a cipher object containing a single linear layer component (matrix multiplication over GF(2)).
 
     INPUT:
 

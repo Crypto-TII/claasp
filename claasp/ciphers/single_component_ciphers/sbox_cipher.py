@@ -10,7 +10,7 @@ PARAMETERS_CONFIGURATION_LIST = [{"bit_size": 4, "lookup_table": [0, 1, 2, 3, 4,
 
 class SboxCipher(SingleComponentCipher):
     """
-    Return a cipher object containing a single S-box lookup.
+    Return a cipher object containing a single S-box component.
 
     INPUT:
 

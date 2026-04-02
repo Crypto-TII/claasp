@@ -12,7 +12,7 @@ _DEFAULT_MATRIX = [[1 if i == j else 0 for j in range(4)] for i in range(4)]
 
 class MixColumnCipher(SingleComponentCipher):
     """
-    Return a cipher object containing a single MixColumn operation.
+    Return a cipher object containing a single MixColumn component.
 
     INPUT:
 

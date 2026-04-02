@@ -10,7 +10,7 @@ PARAMETERS_CONFIGURATION_LIST = [{"word_size": 4, "number_of_words": 4, "permuta
 
 class WordPermutationCipher(SingleComponentCipher):
     """
-    Return a cipher object containing a single word permutation.
+    Return a cipher object containing a single wordwise permutation component.
 
     INPUT:
 

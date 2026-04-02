@@ -10,7 +10,7 @@ PARAMETERS_CONFIGURATION_LIST = [{"bit_size": 8, "rotation_amounts_parameter": [
 
 class SigmaCipher(SingleComponentCipher):
     """
-    Return a cipher object containing a single sigma operation (XOR of multiple rotations).
+    Return a cipher object containing a single sigma component (XOR of multiple rotations).
 
     INPUT:
 
