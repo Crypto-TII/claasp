@@ -28,7 +28,6 @@ from claasp.cipher_modules.models.sat.utils import constants
 from claasp.DTOs.power_of_2_word_based_dto import PowerOf2WordBasedDTO
 from claasp.name_mappings import (
     CIPHER_OUTPUT,
-    CONCATENATE,
     INTERMEDIATE_OUTPUT,
     LINEAR_LAYER,
     MIX_COLUMN,
@@ -592,8 +591,7 @@ class Component:
         return PowerOf2WordBasedDTO(word_size, fixed)
 
     def check_output_size(self, available_word_sizes, fixed, word_size):
-        if self._type in (CONCATENATE, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT):
-            word_size = self.output_size_for_concatenate(available_word_sizes, fixed, word_size)
+        if self._type in (INTERMEDIATE_OUTPUT, CIPHER_OUTPUT):
             if word_size is None:
                 return None, fixed
         else:
@@ -604,24 +602,6 @@ class Component:
                 return None, fixed
 
         return fixed, word_size
-
-    def output_size_for_concatenate(self, available_word_sizes, fixed, word_size):
-        if word_size is None:
-            word_sizes = [size for size in available_word_sizes if self._output_bit_size % size != 0]
-            if word_sizes:
-                word_size = word_sizes[0]
-        else:
-            word_sizes = [
-                size
-                for size in available_word_sizes[available_word_sizes.index(word_size) :]
-                if self._output_bit_size % size != 0
-            ]
-            if (fixed and self._output_bit_size % word_size != 0) or (not fixed and not word_sizes):
-                word_size = None
-            elif not fixed:
-                word_size = word_sizes[0]
-
-        return word_size
 
     def is_forbidden(self, forbidden_types, forbidden_descriptions):
         if self._type in forbidden_types:

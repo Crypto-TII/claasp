@@ -62,11 +62,23 @@ def mathsat_parser(output_to_parse):
 def yices_parser(output_to_parse):
     tmp_dict = {}
     for line in output_to_parse[1:]:
-        if line.startswith("(="):
-            solution = line[1:-1].split(" ")
-            var_name = solution[1]
-            var_value = 1 if solution[-1] == "true" else 0
-            tmp_dict[var_name] = var_value
+        stripped_line = line.strip()
+
+        # Yices may print models either as "(= var value)" (older format)
+        # or as "(define-fun var () Bool value)" (newer format, e.g. 2.7.x).
+        equal_match = re.search(r"\(=\s+(\S+)\s+(true|false)\)", stripped_line)
+        if equal_match:
+            var_name, bool_value = equal_match.groups()
+            tmp_dict[var_name] = 1 if bool_value == "true" else 0
+            continue
+
+        define_fun_match = re.search(
+            r"\(define-fun\s+(\S+)\s+\(\)\s+Bool\s+(true|false)\)",
+            stripped_line,
+        )
+        if define_fun_match:
+            var_name, bool_value = define_fun_match.groups()
+            tmp_dict[var_name] = 1 if bool_value == "true" else 0
 
     return tmp_dict
 

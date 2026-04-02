@@ -1,4 +1,5 @@
 import numpy as np
+from os import remove
 
 from claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model import SatXorDifferentialModel
 from claasp.cipher_modules.models.sat.solvers import CADICAL_EXT, KISSAT_EXT, PARKISSAT_EXT
@@ -236,3 +237,54 @@ def repeat_input_difference(input_difference_, number_of_samples_, number_of_byt
     column_array = np_array.reshape(-1, 1)
 
     return np.tile(column_array, (1, number_of_samples_))
+
+def test_compute_xor_differential_weight():
+    from claasp.ciphers.block_ciphers.ublock_block_cipher import UblockBlockCipher
+    p = '0x04400000000000000044400000000000'
+    c = '0x00044004444404004400444044400040'
+    w = 31
+    s = "KISSAT_EXT"
+
+    ublock = UblockBlockCipher(number_of_rounds=3)
+    sat = SatXorDifferentialModel(ublock)
+    weight, trails= sat.compute_xor_differential_weight(
+        plaintext= p,
+        ciphertext= c,
+        upper_weight= w,
+        solver_name= s,
+        log= True
+    )
+    assert round(weight,4) == 25.7146 and len(trails) == 8
+
+    file_name = f"compute_sat_xor_differential_weight__trails__{ublock}_{p}_{c}__geq{0}_leq{w}__{s}solver.log"
+    with open(file_name, "r") as file:
+        file_content = file.read()
+    for trail in trails:
+        assert str(trail) in file_content
+    remove(file_name)
+    
+    file_name = f"compute_sat_xor_differential_weight__{ublock}_{p}_{c}__geq{0}_leq{w}__{s}solver.log"
+    with open(file_name, "r") as file:
+        file_content = file.read()
+    assert str(weight) in file_content
+    remove(file_name)
+
+
+    p = '0x8054A900'
+    c = '0x00400542'
+    r = 9
+    w = 39
+    s = "KISSAT_EXT"
+
+    speck = SpeckBlockCipher(block_bit_size= 32, key_bit_size= 64, number_of_rounds= r)
+    sat = SatXorDifferentialModel(speck)
+    weight, trails= sat.compute_xor_differential_weight(
+    plaintext= p,
+    ciphertext= c,
+    lower_weight= 30,
+    upper_weight= w,
+    solver_name= s
+    )
+
+    assert len(trails) == 27
+    assert round(weight,2) == 29.47 # matches the differential weight reported in Table 2 of https://eprint.iacr.org/2016/209.pdf
