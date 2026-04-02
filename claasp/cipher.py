@@ -165,6 +165,9 @@ class Cipher:
     def add_cipher_output_component(self, input_id_links, input_bit_positions, output_bit_size):
         return editor.add_cipher_output_component(self, input_id_links, input_bit_positions, output_bit_size)
 
+    def add_concatenate_component(self, input_id_links, input_bit_positions, output_bit_size):
+        return editor.add_concatenate_component(self, input_id_links, input_bit_positions, output_bit_size)
+
     def add_constant_component(self, output_bit_size, value):
         return editor.add_constant_component(self, output_bit_size, value)
 
@@ -251,8 +254,16 @@ class Cipher:
     def add_SHIFT_component(self, input_id_links, input_bit_positions, output_bit_size, parameter):
         return editor.add_SHIFT_component(self, input_id_links, input_bit_positions, output_bit_size, parameter)
 
-    def add_shift_rows_component(self, input_id_links, input_bit_positions, output_bit_size, parameter):
-        return editor.add_shift_rows_component(self, input_id_links, input_bit_positions, output_bit_size, parameter)
+    def add_shift_rows_component(self, input_id_links, input_bit_positions, rotation_amount=1, word_bit_size=8,
+                                 number_of_words=4):
+        return editor.add_shift_rows_component(
+            self,
+            input_id_links,
+            input_bit_positions,
+            rotation_amount,
+            word_bit_size,
+            number_of_words,
+        )
 
     def add_sigma_component(
         self,
@@ -364,10 +375,9 @@ class Cipher:
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.identity_cipher import IdentityCipher as identity
-            sage: message = 0x01234567
-            sage: identity().evaluate([message]) == message
-            True
+            sage: from claasp.ciphers.single_component_ciphers.identity_cipher import IdentityCipher as identity
+            sage: identity().evaluate([0x01234567])
+            19088743
         """
         return evaluator.evaluate(self, cipher_input, intermediate_output, verbosity)
 
@@ -1472,7 +1482,7 @@ class Cipher:
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.identity_cipher import IdentityCipher as identity
+            sage: from claasp.ciphers.single_component_ciphers.identity_cipher import IdentityCipher as identity
             sage: identity().print_evaluation_python_code() # random
             from copy import copy
             from bitstring import BitArray
@@ -1487,20 +1497,32 @@ class Cipher:
                 components_io = {}
                 component_input = BitArray(1)
             <BLANKLINE>
-                # round: 0, component: 0, component_id: intermediate_output_0_0
+                # round: 0, component: 0, component_id: concatenate_0_0
                 component_input = select_bits(key_output, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31])
                 output_bit_size = 32
-                intermediate_output_0_0_output = component_input
-                intermediate_output['round_key_output'].append(intermediate_output_0_0_output.uint)
-                components_io['intermediate_output_0_0'] = [component_input.uint, intermediate_output_0_0_output.uint]
+                concatenate_0_0_output = component_input
+                components_io['concatenate_0_0'] = [component_input.uint, concatenate_0_0_output.uint]
             <BLANKLINE>
-                # round: 0, component: 1, component_id: cipher_output_0_1
+                # round: 0, component: 1, component_id: intermediate_output_0_1
+                component_input = select_bits(concatenate_0_0_output, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31])
+                output_bit_size = 32
+                intermediate_output_0_1_output = component_input
+                intermediate_output['round_key_output'].append(intermediate_output_0_1_output.uint)
+                components_io['intermediate_output_0_1'] = [component_input.uint, intermediate_output_0_1_output.uint]
+            <BLANKLINE>
+                # round: 0, component: 2, component_id: concatenate_0_2
                 component_input = select_bits(plaintext_output, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31])
                 output_bit_size = 32
-                cipher_output_0_1_output = component_input
-                intermediate_output['cipher_output'].append(cipher_output_0_1_output.uint)
-                cipher_output = cipher_output_0_1_output.uint
-                components_io['cipher_output_0_1'] = [component_input.uint, cipher_output_0_1_output.uint]
+                concatenate_0_2_output = component_input
+                components_io['concatenate_0_2'] = [component_input.uint, concatenate_0_2_output.uint]
+            <BLANKLINE>
+                # round: 0, component: 3, component_id: cipher_output_0_3
+                component_input = select_bits(concatenate_0_2_output, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31])
+                output_bit_size = 32
+                cipher_output_0_3_output = component_input
+                intermediate_output['cipher_output'].append(cipher_output_0_3_output.uint)
+                cipher_output = cipher_output_0_3_output.uint
+                components_io['cipher_output_0_3'] = [component_input.uint, cipher_output_0_3_output.uint]
             <BLANKLINE>
                 return cipher_output, intermediate_output, components_io
             <BLANKLINE>
@@ -1518,7 +1540,7 @@ class Cipher:
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.identity_cipher import IdentityCipher as identity
+            sage: from claasp.ciphers.single_component_ciphers.identity_cipher import IdentityCipher as identity
             sage: identity = identity()
             sage: identity.file_name
             'identity_cipher_p32_o32_r1.py'

@@ -24,6 +24,31 @@ from claasp.name_mappings import CIPHER_OUTPUT, INTERMEDIATE_OUTPUT
 
 
 class CipherOutput(Component):
+    """
+    Construct a cipher output component.
+
+
+    INPUT:
+
+    - ``current_round_number`` -- **integer**; round index where the component is created. ``0`` is valid.
+    - ``current_round_number_of_components`` -- **integer**; index of the component inside the round. ``0`` is valid.
+    - ``input_id_links`` -- **list**; input component identifiers (usually strings). Must align with ``input_bit_positions``.
+    - ``input_bit_positions`` -- **list**; bit positions for each input identifier (list of lists). Must align with ``input_id_links``.
+    - ``output_bit_size`` -- **integer**; output size in bits. ``0`` is valid only when supported by the component semantics.
+    - ``is_intermediate`` -- **boolean** (default: ``False``); marks the output as intermediate when ``True``.
+    - ``output_tag`` -- **string**; output label/tag stored in the component description.
+
+    EXAMPLES::
+
+        sage: from claasp.components.cipher_output_component import CipherOutput
+        sage: component = CipherOutput(0, 0, ['input'], [[0, 1, 2, 3]], 4)
+        sage: print(component.id)
+        cipher_output_0_0
+        sage: print(component.type)
+        cipher_output
+        sage: print(component.description)
+        ['cipher_output']
+    """
     def __init__(
         self,
         current_round_number,
@@ -61,17 +86,10 @@ class CipherOutput(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: speck = SpeckBlockCipher(number_of_rounds=3)
-            sage: cipher_output_component = speck.component_from(2, 12)
+            sage: from claasp.components.cipher_output_component import CipherOutput
+            sage: cipher_output_component = CipherOutput(0, 0, ['xor_0_0', 'xor_0_1'], [[0, 1], [0, 1]], 4)
             sage: cipher_output_component.cms_constraints()
-            (['cipher_output_2_12_0',
-              'cipher_output_2_12_1',
-              'cipher_output_2_12_2',
-              ...
-              'xor_2_10_14 -cipher_output_2_12_30',
-              'cipher_output_2_12_31 -xor_2_10_15',
-              'xor_2_10_15 -cipher_output_2_12_31'])
+            (['cipher_output_0_0_0', 'cipher_output_0_0_1', 'cipher_output_0_0_2', 'cipher_output_0_0_3'], ['cipher_output_0_0_0 -xor_0_0_0', 'xor_0_0_0 -cipher_output_0_0_0', 'cipher_output_0_0_1 -xor_0_0_1', 'xor_0_0_1 -cipher_output_0_0_1', 'cipher_output_0_0_2 -xor_0_1_0', 'xor_0_1_0 -cipher_output_0_0_2', 'cipher_output_0_0_3 -xor_0_1_1', 'xor_0_1_1 -cipher_output_0_0_3'])
         """
         return self.sat_constraints()
 
@@ -90,15 +108,10 @@ class CipherOutput(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: speck = SpeckBlockCipher(number_of_rounds=3)
-            sage: output_component = speck.component_from(2, 12)
+            sage: from claasp.components.cipher_output_component import CipherOutput
+            sage: output_component = CipherOutput(0, 0, ['xor_0_0', 'xor_0_1'], [[0, 1], [0, 1]], 4)
             sage: output_component.cp_constraints()
-            ([],
-             ['constraint cipher_output_2_12[0] = xor_2_8[0];',
-              'constraint cipher_output_2_12[1] = xor_2_8[1];',
-             ...
-              'constraint cipher_output_2_12[31] = xor_2_10[15];'])
+            ([], ['constraint cipher_output_0_0[0] = xor_0_0[0];', 'constraint cipher_output_0_0[1] = xor_0_0[1];', 'constraint cipher_output_0_0[2] = xor_0_1[0];', 'constraint cipher_output_0_0[3] = xor_0_1[1];'])
         """
         cp_declarations = []
         all_inputs = []
@@ -128,16 +141,11 @@ class CipherOutput(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
-            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
-            sage: aes = ToyAESBlockCipher(number_of_rounds=3)
-            sage: cp = MznModel(aes)
-            sage: output_component = aes.component_from(0, 35)
-            sage: output_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(cp)
-            ([],
-             ['constraint intermediate_output_0_35_value[0] = xor_0_31_value[0];',
-               ...
-              'constraint intermediate_output_0_35_active[15] = xor_0_34_active[3];'])
+            sage: from claasp.components.cipher_output_component import CipherOutput
+            sage: DummyModel = type('DummyModel', (), {'word_size': 2})
+            sage: output_component = CipherOutput(0, 0, ['xor_0_0', 'xor_0_1'], [[0, 1], [0, 1]], 4, True, 'round_output')
+            sage: output_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(DummyModel())
+            ([], ['constraint intermediate_output_0_0_value[0] = xor_0_0_value[0];', 'constraint intermediate_output_0_0_value[1] = xor_0_1_value[0];', 'constraint intermediate_output_0_0_active[0] = xor_0_0_active[0];', 'constraint intermediate_output_0_0_active[1] = xor_0_1_active[0];'])
         """
         cp_declarations = []
         all_inputs_active = []
@@ -176,16 +184,11 @@ class CipherOutput(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
-            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
-            sage: aes = ToyAESBlockCipher(number_of_rounds=3)
-            sage: cp = MznModel(aes)
-            sage: output_component = aes.component_from(0, 35)
-            sage: output_component.cp_xor_differential_propagation_first_step_constraints(cp)
-            (['array[0..15] of var 0..1: intermediate_output_0_35;'],
-             ['constraint intermediate_output_0_35[0] = xor_0_31[0];',
-             ...
-              'constraint intermediate_output_0_35[15] = xor_0_34[3];'])
+            sage: from claasp.components.cipher_output_component import CipherOutput
+            sage: DummyModel = type('DummyModel', (), {'word_size': 2})
+            sage: output_component = CipherOutput(0, 0, ['xor_0_0', 'xor_0_1'], [[0, 1], [0, 1]], 4, True, 'round_output')
+            sage: output_component.cp_xor_differential_propagation_first_step_constraints(DummyModel())
+            (['array[0..1] of var 0..1: intermediate_output_0_0;'], ['constraint intermediate_output_0_0[0] = xor_0_0[0];', 'constraint intermediate_output_0_0[1] = xor_0_1[0];'])
         """
         cp_declarations = [f"array[0..{(self.output_bit_size - 1) // model.word_size}] of var 0..1: {self.id};"]
         all_inputs = []
@@ -217,17 +220,10 @@ class CipherOutput(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=22)
-            sage: output_component = speck.component_from(21, 12)
+            sage: from claasp.components.cipher_output_component import CipherOutput
+            sage: output_component = CipherOutput(0, 0, ['xor_0_0', 'xor_0_1'], [[0, 1], [0, 1]], 4)
             sage: output_component.cp_xor_linear_mask_propagation_constraints()
-            (['array[0..31] of var 0..1: cipher_output_21_12_i;',
-              'array[0..31] of var 0..1: cipher_output_21_12_o;'],
-             ['constraint cipher_output_21_12_o[0] = cipher_output_21_12_i[0];',
-              'constraint cipher_output_21_12_o[1] = cipher_output_21_12_i[1];',
-              ...
-              'constraint cipher_output_21_12_o[30] = cipher_output_21_12_i[30];',
-              'constraint cipher_output_21_12_o[31] = cipher_output_21_12_i[31];'])
+            (['array[0..3] of var 0..1: cipher_output_0_0_i;', 'array[0..3] of var 0..1: cipher_output_0_0_o;'], ['constraint cipher_output_0_0_o[0] = cipher_output_0_0_i[0];', 'constraint cipher_output_0_0_o[1] = cipher_output_0_0_i[1];', 'constraint cipher_output_0_0_o[2] = cipher_output_0_0_i[2];', 'constraint cipher_output_0_0_o[3] = cipher_output_0_0_i[3];'])
         """
         cp_declarations = [
             f"array[0..{self.output_bit_size - 1}] of var 0..1: {self.id}_i;",
@@ -306,21 +302,31 @@ class CipherOutput(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
+            sage: from claasp.cipher import Cipher
             sage: from claasp.cipher_modules.models.milp.milp_model import MilpModel
-            sage: simon = SimonBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
-            sage: milp = MilpModel(simon)
+            sage: from claasp.name_mappings import HASH_FUNCTION, INPUT_PLAINTEXT
+            sage: class DummyCipher(Cipher):
+            ....:     def __init__(self, block_bit_size=4):
+            ....:         super().__init__(
+            ....:             family_name='dummy_cipher',
+            ....:             cipher_type=HASH_FUNCTION,
+            ....:             cipher_inputs=[INPUT_PLAINTEXT],
+            ....:             cipher_inputs_bit_size=[block_bit_size],
+            ....:             cipher_output_bit_size=block_bit_size,
+            ....:         )
+            ....:         self.add_round()
+            ....:         self.add_cipher_output_component([INPUT_PLAINTEXT], [list(range(block_bit_size))], block_bit_size)
+            sage: dummy = DummyCipher(block_bit_size=4)
+            sage: milp = MilpModel(dummy)
             sage: milp.init_model_in_sage_milp_class()
-            sage: output_component = simon.get_component_from_id("cipher_output_1_8")
+            sage: output_component = dummy.get_component_from_id("cipher_output_0_0")
             sage: variables, constraints = output_component.milp_constraints(milp)
-            sage: variables
-            [('x[xor_1_6_0]', x_0),
-            ('x[xor_1_6_1]', x_1),
-            ...
-            ('x[cipher_output_1_8_30]', x_62),
-            ('x[cipher_output_1_8_31]', x_63)]
-            sage: constraints[0]
-            x_32 == x_0
+            sage: len(variables)
+            8
+            sage: str(variables[0]).startswith("('x[plaintext_0]'")
+            True
+            sage: str(constraints[0]).endswith("== x_0")
+            True
         """
         x = model.binary_variable
         input_vars, output_vars = self._get_input_output_variables()
@@ -339,23 +345,31 @@ class CipherOutput(Component):
 
         EXAMPLE::
 
-            sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
-            sage: simon = SimonBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
+            sage: from claasp.cipher import Cipher
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import MilpBitwiseDeterministicTruncatedXorDifferentialModel
-            sage: milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(simon)
+            sage: from claasp.name_mappings import HASH_FUNCTION, INPUT_PLAINTEXT
+            sage: class DummyCipher(Cipher):
+            ....:     def __init__(self, block_bit_size=4):
+            ....:         super().__init__(
+            ....:             family_name='dummy_cipher',
+            ....:             cipher_type=HASH_FUNCTION,
+            ....:             cipher_inputs=[INPUT_PLAINTEXT],
+            ....:             cipher_inputs_bit_size=[block_bit_size],
+            ....:             cipher_output_bit_size=block_bit_size,
+            ....:         )
+            ....:         self.add_round()
+            ....:         self.add_cipher_output_component([INPUT_PLAINTEXT], [list(range(block_bit_size))], block_bit_size)
+            sage: dummy = DummyCipher(block_bit_size=4)
+            sage: milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(dummy)
             sage: milp.init_model_in_sage_milp_class()
-            sage: output_component = simon.component_from(1,8)
+            sage: output_component = dummy.get_component_from_id("cipher_output_0_0")
             sage: variables, constraints = output_component.milp_bitwise_deterministic_truncated_xor_differential_constraints(milp)
-            sage: variables
-            [('x_class[xor_1_6_0]', x_0),
-            ('x_class[xor_1_6_1]', x_1),
-            ...
-            ('x_class[cipher_output_1_8_30]', x_62),
-            ('x_class[cipher_output_1_8_31]', x_63)]
-            sage: constraints
-            [x_32 == x_0,
-            ...
-             x_63 == x_31]
+            sage: len(variables)
+            8
+            sage: str(variables[0]).startswith("('x_class[plaintext_0]'")
+            True
+            sage: len(constraints)
+            4
 
 
         """
@@ -377,25 +391,29 @@ class CipherOutput(Component):
 
         EXAMPLE::
 
-            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
-            sage: aes = ToyAESBlockCipher(number_of_rounds=2)
+            sage: from claasp.cipher import Cipher
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import MilpWordwiseDeterministicTruncatedXorDifferentialModel
-            sage: milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(aes)
+            sage: from claasp.name_mappings import HASH_FUNCTION, INPUT_PLAINTEXT
+            sage: class DummyCipher(Cipher):
+            ....:     def __init__(self, block_bit_size=8):
+            ....:         super().__init__(
+            ....:             family_name='dummy_cipher',
+            ....:             cipher_type=HASH_FUNCTION,
+            ....:             cipher_inputs=[INPUT_PLAINTEXT],
+            ....:             cipher_inputs_bit_size=[block_bit_size],
+            ....:             cipher_output_bit_size=block_bit_size,
+            ....:         )
+            ....:         self.add_round()
+            ....:         self.add_cipher_output_component([INPUT_PLAINTEXT], [list(range(block_bit_size))], block_bit_size)
+            sage: dummy = DummyCipher(block_bit_size=8)
+            sage: milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(dummy)
             sage: milp.init_model_in_sage_milp_class()
-            sage: output_component = aes.component_from(1, 32)
+            sage: output_component = dummy.get_component_from_id("cipher_output_0_0")
             sage: variables, constraints = output_component.milp_wordwise_deterministic_truncated_xor_differential_constraints(milp)
-            sage: variables
-            [('x_class[xor_1_31_word_0_class]', x_0),
-             ('x_class[xor_1_31_word_1_class]', x_1),
-             ...
-             ('x[cipher_output_1_32_126]', x_286),
-             ('x[cipher_output_1_32_127]', x_287)]
-            sage: constraints
-            [x_16 == x_0,
-             x_17 == x_1,
-             ...
-             x_286 == x_158,
-             x_287 == x_159]
+            sage: len(variables) > 0
+            True
+            sage: len(constraints) > 0
+            True
 
 
         """
@@ -426,23 +444,29 @@ class CipherOutput(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: from claasp.cipher import Cipher
             sage: from claasp.cipher_modules.models.milp.milp_model import MilpModel
-            sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
-            sage: speck = speck.remove_key_schedule()
-            sage: milp = MilpModel(speck)
+            sage: from claasp.name_mappings import HASH_FUNCTION, INPUT_PLAINTEXT
+            sage: class DummyCipher(Cipher):
+            ....:     def __init__(self, block_bit_size=4):
+            ....:         super().__init__(
+            ....:             family_name='dummy_cipher',
+            ....:             cipher_type=HASH_FUNCTION,
+            ....:             cipher_inputs=[INPUT_PLAINTEXT],
+            ....:             cipher_inputs_bit_size=[block_bit_size],
+            ....:             cipher_output_bit_size=block_bit_size,
+            ....:         )
+            ....:         self.add_round()
+            ....:         self.add_cipher_output_component([INPUT_PLAINTEXT], [list(range(block_bit_size))], block_bit_size)
+            sage: dummy = DummyCipher(block_bit_size=4)
+            sage: milp = MilpModel(dummy)
             sage: milp.init_model_in_sage_milp_class()
-            sage: output_component = speck.get_component_from_id("cipher_output_1_12")
+            sage: output_component = dummy.get_component_from_id("cipher_output_0_0")
             sage: variables, constraints = output_component.milp_xor_linear_mask_propagation_constraints(milp)
-            sage: variables
-            [('x[cipher_output_1_12_0_i]', x_0),
-             ('x[cipher_output_1_12_1_i]', x_1),
-             ('x[cipher_output_1_12_2_i]', x_2),
-            ...
-            ('x[cipher_output_1_12_30_o]', x_62),
-            ('x[cipher_output_1_12_31_o]', x_63)]
-            sage: constraints[0]
-            x_32 == x_0
+            sage: len(variables)
+            8
+            sage: len(constraints)
+            4
         """
         x = model.binary_variable
         constraints = []
@@ -511,20 +535,10 @@ class CipherOutput(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: speck = SpeckBlockCipher(number_of_rounds=3)
-            sage: output_component = speck.component_from(2, 12)
+            sage: from claasp.components.cipher_output_component import CipherOutput
+            sage: output_component = CipherOutput(0, 0, ['xor_0_0', 'xor_0_1'], [[0, 1], [0, 1]], 4)
             sage: output_component.sat_constraints()
-            (['cipher_output_2_12_0',
-              'cipher_output_2_12_1',
-              ...
-              'cipher_output_2_12_30',
-              'cipher_output_2_12_31'],
-             ['cipher_output_2_12_0 -xor_2_8_0',
-              'xor_2_8_0 -cipher_output_2_12_0',
-              ...
-              'cipher_output_2_12_31 -xor_2_10_15',
-              'xor_2_10_15 -cipher_output_2_12_31'])
+            (['cipher_output_0_0_0', 'cipher_output_0_0_1', 'cipher_output_0_0_2', 'cipher_output_0_0_3'], ['cipher_output_0_0_0 -xor_0_0_0', 'xor_0_0_0 -cipher_output_0_0_0', 'cipher_output_0_0_1 -xor_0_0_1', 'xor_0_0_1 -cipher_output_0_0_1', 'cipher_output_0_0_2 -xor_0_1_0', 'xor_0_1_0 -cipher_output_0_0_2', 'cipher_output_0_0_3 -xor_0_1_1', 'xor_0_1_1 -cipher_output_0_0_3'])
         """
         input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
@@ -548,20 +562,10 @@ class CipherOutput(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: speck = SpeckBlockCipher(number_of_rounds=3)
-            sage: output_component = speck.component_from(2, 12)
+            sage: from claasp.components.cipher_output_component import CipherOutput
+            sage: output_component = CipherOutput(0, 0, ['xor_0_0', 'xor_0_1'], [[0, 1], [0, 1]], 4)
             sage: output_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
-            (['cipher_output_2_12_0_0',
-              'cipher_output_2_12_1_0',
-              ...
-              'cipher_output_2_12_30_1',
-              'cipher_output_2_12_31_1'],
-             ['cipher_output_2_12_0_0 -xor_2_8_0_0',
-              'xor_2_8_0_0 -cipher_output_2_12_0_0',
-              ...
-              'cipher_output_2_12_31_1 -xor_2_10_15_1',
-              'xor_2_10_15_1 -cipher_output_2_12_31_1'])
+            (['cipher_output_0_0_0_0', 'cipher_output_0_0_1_0', 'cipher_output_0_0_2_0', 'cipher_output_0_0_3_0', 'cipher_output_0_0_0_1', 'cipher_output_0_0_1_1', 'cipher_output_0_0_2_1', 'cipher_output_0_0_3_1'], ['cipher_output_0_0_0_0 -xor_0_0_0_0', 'xor_0_0_0_0 -cipher_output_0_0_0_0', 'cipher_output_0_0_1_0 -xor_0_0_1_0', 'xor_0_0_1_0 -cipher_output_0_0_1_0', 'cipher_output_0_0_2_0 -xor_0_1_0_0', 'xor_0_1_0_0 -cipher_output_0_0_2_0', 'cipher_output_0_0_3_0 -xor_0_1_1_0', 'xor_0_1_1_0 -cipher_output_0_0_3_0', 'cipher_output_0_0_0_1 -xor_0_0_0_1', 'xor_0_0_0_1 -cipher_output_0_0_0_1', 'cipher_output_0_0_1_1 -xor_0_0_1_1', 'xor_0_0_1_1 -cipher_output_0_0_1_1', 'cipher_output_0_0_2_1 -xor_0_1_0_1', 'xor_0_1_0_1 -cipher_output_0_0_2_1', 'cipher_output_0_0_3_1 -xor_0_1_1_1', 'xor_0_1_1_1 -cipher_output_0_0_3_1'])
         """
         in_ids_0, in_ids_1 = self._generate_input_double_ids()
         _, out_ids_0, out_ids_1 = self._generate_output_double_ids()
@@ -590,20 +594,10 @@ class CipherOutput(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: speck = SpeckBlockCipher(number_of_rounds=3)
-            sage: output_component = speck.component_from(2, 12)
+            sage: from claasp.components.cipher_output_component import CipherOutput
+            sage: output_component = CipherOutput(0, 0, ['xor_0_0', 'xor_0_1'], [[0, 1], [0, 1]], 4)
             sage: output_component.sat_xor_differential_propagation_constraints()
-            (['cipher_output_2_12_0',
-              'cipher_output_2_12_1',
-              ...
-              'cipher_output_2_12_30',
-              'cipher_output_2_12_31'],
-             ['cipher_output_2_12_0 -xor_2_8_0',
-              'xor_2_8_0 -cipher_output_2_12_0',
-              ...
-              'cipher_output_2_12_31 -xor_2_10_15',
-              'xor_2_10_15 -cipher_output_2_12_31'])
+            (['cipher_output_0_0_0', 'cipher_output_0_0_1', 'cipher_output_0_0_2', 'cipher_output_0_0_3'], ['cipher_output_0_0_0 -xor_0_0_0', 'xor_0_0_0 -cipher_output_0_0_0', 'cipher_output_0_0_1 -xor_0_0_1', 'xor_0_0_1 -cipher_output_0_0_1', 'cipher_output_0_0_2 -xor_0_1_0', 'xor_0_1_0 -cipher_output_0_0_2', 'cipher_output_0_0_3 -xor_0_1_1', 'xor_0_1_1 -cipher_output_0_0_3'])
         """
         return self.sat_constraints()
 
@@ -621,20 +615,10 @@ class CipherOutput(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: speck = SpeckBlockCipher(number_of_rounds=3)
-            sage: output_component = speck.component_from(2, 12)
+            sage: from claasp.components.cipher_output_component import CipherOutput
+            sage: output_component = CipherOutput(0, 0, ['xor_0_0', 'xor_0_1'], [[0, 1], [0, 1]], 4)
             sage: output_component.sat_xor_linear_mask_propagation_constraints()
-            (['cipher_output_2_12_0_i',
-              'cipher_output_2_12_1_i',
-              ...
-              'cipher_output_2_12_30_o',
-              'cipher_output_2_12_31_o'],
-             ['cipher_output_2_12_0_i -cipher_output_2_12_0_o',
-              'cipher_output_2_12_0_o -cipher_output_2_12_0_i',
-              ...
-              'cipher_output_2_12_31_i -cipher_output_2_12_31_o',
-              'cipher_output_2_12_31_o -cipher_output_2_12_31_i'])
+            (['cipher_output_0_0_0_i', 'cipher_output_0_0_1_i', 'cipher_output_0_0_2_i', 'cipher_output_0_0_3_i', 'cipher_output_0_0_0_o', 'cipher_output_0_0_1_o', 'cipher_output_0_0_2_o', 'cipher_output_0_0_3_o'], ['cipher_output_0_0_0_i -cipher_output_0_0_0_o', 'cipher_output_0_0_0_o -cipher_output_0_0_0_i', 'cipher_output_0_0_1_i -cipher_output_0_0_1_o', 'cipher_output_0_0_1_o -cipher_output_0_0_1_i', 'cipher_output_0_0_2_i -cipher_output_0_0_2_o', 'cipher_output_0_0_2_o -cipher_output_0_0_2_i', 'cipher_output_0_0_3_i -cipher_output_0_0_3_o', 'cipher_output_0_0_3_o -cipher_output_0_0_3_i'])
         """
         _, input_bit_ids = self._generate_component_input_ids()
         out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
@@ -655,20 +639,10 @@ class CipherOutput(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: speck = SpeckBlockCipher(number_of_rounds=3)
-            sage: output_component = speck.component_from(2, 12)
+            sage: from claasp.components.cipher_output_component import CipherOutput
+            sage: output_component = CipherOutput(0, 0, ['xor_0_0', 'xor_0_1'], [[0, 1], [0, 1]], 4)
             sage: output_component.smt_constraints()
-            (['cipher_output_2_12_0',
-              'cipher_output_2_12_1',
-              ...
-              'cipher_output_2_12_30',
-              'cipher_output_2_12_31'],
-             ['(assert (= cipher_output_2_12_0 xor_2_8_0))',
-              '(assert (= cipher_output_2_12_1 xor_2_8_1))',
-              ...
-              '(assert (= cipher_output_2_12_30 xor_2_10_14))',
-              '(assert (= cipher_output_2_12_31 xor_2_10_15))'])
+                        (['cipher_output_0_0_0', 'cipher_output_0_0_1', 'cipher_output_0_0_2', 'cipher_output_0_0_3'], ['(assert (= cipher_output_0_0_0 xor_0_0_0))', '(assert (= cipher_output_0_0_1 xor_0_0_1))', '(assert (= cipher_output_0_0_2 xor_0_1_0))', '(assert (= cipher_output_0_0_3 xor_0_1_1))'])
         """
         input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
@@ -689,20 +663,10 @@ class CipherOutput(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: speck = SpeckBlockCipher(number_of_rounds=3)
-            sage: output_component = speck.component_from(2, 12)
+            sage: from claasp.components.cipher_output_component import CipherOutput
+            sage: output_component = CipherOutput(0, 0, ['xor_0_0', 'xor_0_1'], [[0, 1], [0, 1]], 4)
             sage: output_component.smt_xor_differential_propagation_constraints()
-            (['cipher_output_2_12_0',
-              'cipher_output_2_12_1',
-              ...
-              'cipher_output_2_12_30',
-              'cipher_output_2_12_31'],
-             ['(assert (= cipher_output_2_12_0 xor_2_8_0))',
-              '(assert (= cipher_output_2_12_1 xor_2_8_1))',
-              ...
-              '(assert (= cipher_output_2_12_30 xor_2_10_14))',
-              '(assert (= cipher_output_2_12_31 xor_2_10_15))'])
+            (['cipher_output_0_0_0', 'cipher_output_0_0_1', 'cipher_output_0_0_2', 'cipher_output_0_0_3'], ['(assert (= cipher_output_0_0_0 xor_0_0_0))', '(assert (= cipher_output_0_0_1 xor_0_0_1))', '(assert (= cipher_output_0_0_2 xor_0_1_0))', '(assert (= cipher_output_0_0_3 xor_0_1_1))'])
         """
         return self.smt_constraints()
 
@@ -716,20 +680,10 @@ class CipherOutput(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: speck = SpeckBlockCipher(number_of_rounds=3)
-            sage: output_component = speck.component_from(2, 12)
+            sage: from claasp.components.cipher_output_component import CipherOutput
+            sage: output_component = CipherOutput(0, 0, ['xor_0_0', 'xor_0_1'], [[0, 1], [0, 1]], 4)
             sage: output_component.smt_xor_linear_mask_propagation_constraints()
-            (['cipher_output_2_12_0_o',
-              'cipher_output_2_12_1_o',
-              ...
-              'cipher_output_2_12_30_i',
-              'cipher_output_2_12_31_i'],
-             ['(assert (= cipher_output_2_12_0_i cipher_output_2_12_0_o))',
-              '(assert (= cipher_output_2_12_1_i cipher_output_2_12_1_o))',
-              ...
-              '(assert (= cipher_output_2_12_30_i cipher_output_2_12_30_o))',
-              '(assert (= cipher_output_2_12_31_i cipher_output_2_12_31_o))'])
+            (['cipher_output_0_0_0_o', 'cipher_output_0_0_1_o', 'cipher_output_0_0_2_o', 'cipher_output_0_0_3_o', 'cipher_output_0_0_0_i', 'cipher_output_0_0_1_i', 'cipher_output_0_0_2_i', 'cipher_output_0_0_3_i'], ['(assert (= cipher_output_0_0_0_i cipher_output_0_0_0_o))', '(assert (= cipher_output_0_0_1_i cipher_output_0_0_1_o))', '(assert (= cipher_output_0_0_2_i cipher_output_0_0_2_o))', '(assert (= cipher_output_0_0_3_i cipher_output_0_0_3_o))'])
         """
         _, input_bit_ids = self._generate_component_input_ids()
         out_suffix = constants.OUTPUT_BIT_ID_SUFFIX

@@ -50,6 +50,30 @@ def update_xor_linear_constraints_for_more_than_one_bit(constraints, intermediat
 
 
 class IntermediateOutput(CipherOutput):
+    """
+    Construct an intermediate output component.
+
+
+    INPUT:
+
+    - ``current_round_number`` -- **integer**; round index where the component is created. ``0`` is valid.
+    - ``current_round_number_of_components`` -- **integer**; index of the component inside the round. ``0`` is valid.
+    - ``input_id_links`` -- **list**; input component identifiers (usually strings). Must align with ``input_bit_positions``.
+    - ``input_bit_positions`` -- **list**; bit positions for each input identifier (list of lists). Must align with ``input_id_links``.
+    - ``output_bit_size`` -- **integer**; output size in bits. ``0`` is valid only when supported by the component semantics.
+    - ``output_tag`` -- **string**; output label/tag stored in the component description.
+
+    EXAMPLES::
+
+        sage: from claasp.components.intermediate_output_component import IntermediateOutput
+        sage: component = IntermediateOutput(0, 0, ['input'], [[0, 1, 2, 3]], 4, 'round_output')
+        sage: print(component.id)
+        intermediate_output_0_0
+        sage: print(component.type)
+        intermediate_output
+        sage: print(component.description)
+        ['round_output']
+    """
     def __init__(
         self,
         current_round_number,
@@ -82,21 +106,25 @@ class IntermediateOutput(CipherOutput):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_linear_model import MznXorLinearModel
-            sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
-            sage: speck_without_key_schedule = speck.remove_key_schedule()
-            sage: cp = MznXorLinearModel(speck_without_key_schedule)
-            sage: intermediate_component = speck.get_component_from_id("intermediate_output_0_6")
-            sage: variables, constraints = intermediate_component.cp_xor_linear_mask_propagation_constraints(cp)
-            sage: constraints
-            ['constraint intermediate_output_0_6_o[0] = intermediate_output_0_6_i[0];',
-             'constraint intermediate_output_0_6_o[1] = intermediate_output_0_6_i[1];',
-             'constraint intermediate_output_0_6_o[2] = intermediate_output_0_6_i[2];',
-             ...
-             'constraint intermediate_output_0_6_i[29] = xor_0_4_o[13];',
-             'constraint intermediate_output_0_6_i[30] = xor_0_4_o[14];',
-             'constraint intermediate_output_0_6_i[31] = xor_0_4_o[15];']
+            sage: from claasp.components.intermediate_output_component import IntermediateOutput
+            sage: intermediate_component = IntermediateOutput(0, 0, ['xor_0_0'], [[0, 1, 2, 3]], 4, 'round_output')
+            sage: DummyModel = type('DummyModel', (), {
+            ....:     'bit_bindings_for_intermediate_output': {
+            ....:         'intermediate_output_0_0': {
+            ....:             'intermediate_output_0_0_0_i': ['xor_0_0_0_o'],
+            ....:             'intermediate_output_0_0_1_i': ['xor_0_0_1_o'],
+            ....:             'intermediate_output_0_0_2_i': ['xor_0_0_2_o'],
+            ....:             'intermediate_output_0_0_3_i': ['xor_0_0_3_o'],
+            ....:         }
+            ....:     }
+            ....: })
+            sage: variables, constraints = intermediate_component.cp_xor_linear_mask_propagation_constraints(DummyModel())
+            sage: len(variables)
+            2
+            sage: len(constraints)
+            8
+            sage: constraints[0]
+            'constraint intermediate_output_0_0_o[0] = intermediate_output_0_0_i[0];'
         """
         variables, constraints = super().cp_xor_linear_mask_propagation_constraints(model)
         bit_bindings = model.bit_bindings_for_intermediate_output[self.id]
@@ -153,24 +181,46 @@ class IntermediateOutput(CipherOutput):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: from claasp.cipher import Cipher
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_xor_linear_model import MilpXorLinearModel
-            sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
-            sage: speck_without_key_schedule = speck.remove_key_schedule()
-            sage: milp = MilpXorLinearModel(speck_without_key_schedule)
+            sage: from claasp.name_mappings import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
+            sage: class DummyCipher(Cipher):
+            ....:     def __init__(self, block_bit_size=4):
+            ....:         super().__init__(
+            ....:             family_name='dummy_cipher',
+            ....:             cipher_type=BLOCK_CIPHER,
+            ....:             cipher_inputs=[INPUT_PLAINTEXT, INPUT_KEY],
+            ....:             cipher_inputs_bit_size=[block_bit_size, block_bit_size],
+            ....:             cipher_output_bit_size=block_bit_size,
+            ....:         )
+            ....:         self.add_round()
+            ....:         xor_component = self.add_XOR_component(
+            ....:             [INPUT_PLAINTEXT, INPUT_KEY],
+            ....:             [list(range(block_bit_size)), list(range(block_bit_size))],
+            ....:             block_bit_size,
+            ....:         )
+            ....:         self.add_intermediate_output_component(
+            ....:             [xor_component.id],
+            ....:             [list(range(block_bit_size))],
+            ....:             block_bit_size,
+            ....:             'round_output',
+            ....:         )
+            ....:         self.add_cipher_output_component(
+            ....:             [xor_component.id],
+            ....:             [list(range(block_bit_size))],
+            ....:             block_bit_size,
+            ....:         )
+            sage: dummy = DummyCipher(block_bit_size=4)
+            sage: milp = MilpXorLinearModel(dummy)
             sage: milp.init_model_in_sage_milp_class()
-            sage: intermediate_component = speck.get_component_from_id("intermediate_output_0_6")
+            sage: intermediate_component = dummy.get_component_from_id("intermediate_output_0_1")
             sage: variables, constraints = intermediate_component.milp_xor_linear_mask_propagation_constraints(milp)
-            ...
-            sage: variables
-            [('x[intermediate_output_0_6_0_i]', x_0),
-             ('x[intermediate_output_0_6_1_i]', x_1),
-             ('x[intermediate_output_0_6_2_i]', x_2),
-            ...
-            ('x[xor_0_4_14_o]', x_110),
-            ('x[xor_0_4_15_o]', x_111)]
-            sage: constraints[0]
-            x_32 == x_0
+            sage: len(variables)
+            12
+            sage: len(constraints)
+            8
+            sage: str(constraints[0]).endswith("== x_0")
+            True
         """
         binary_variable = model.binary_variable
         variables, constraints = super().milp_xor_linear_mask_propagation_constraints(model)
@@ -198,23 +248,40 @@ class IntermediateOutput(CipherOutput):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: from claasp.cipher import Cipher
             sage: from claasp.cipher_modules.models.sat.sat_models.sat_xor_linear_model import SatXorLinearModel
-            sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
-            sage: speck_without_key_schedule = speck.remove_key_schedule()
-            sage: sat = SatXorLinearModel(speck_without_key_schedule)
-            sage: intermediate_component = speck.get_component_from_id("intermediate_output_0_6")
+            sage: from claasp.name_mappings import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
+            sage: class DummyCipher(Cipher):
+            ....:     def __init__(self, block_bit_size=4):
+            ....:         super().__init__(
+            ....:             family_name='dummy_cipher',
+            ....:             cipher_type=BLOCK_CIPHER,
+            ....:             cipher_inputs=[INPUT_PLAINTEXT, INPUT_KEY],
+            ....:             cipher_inputs_bit_size=[block_bit_size, block_bit_size],
+            ....:             cipher_output_bit_size=block_bit_size,
+            ....:         )
+            ....:         self.add_round()
+            ....:         xor_component = self.add_XOR_component(
+            ....:             [INPUT_PLAINTEXT, INPUT_KEY],
+            ....:             [list(range(block_bit_size)), list(range(block_bit_size))],
+            ....:             block_bit_size,
+            ....:         )
+            ....:         self.add_intermediate_output_component(
+            ....:             [xor_component.id],
+            ....:             [list(range(block_bit_size))],
+            ....:             block_bit_size,
+            ....:             'round_output',
+            ....:         )
+            ....:         self.add_cipher_output_component(
+            ....:             [xor_component.id],
+            ....:             [list(range(block_bit_size))],
+            ....:             block_bit_size,
+            ....:         )
+            sage: dummy = DummyCipher(block_bit_size=4)
+            sage: sat = SatXorLinearModel(dummy)
+            sage: intermediate_component = dummy.get_component_from_id("intermediate_output_0_1")
             sage: intermediate_component.sat_xor_linear_mask_propagation_constraints(sat)
-            (['intermediate_output_0_6_0_i',
-              'intermediate_output_0_6_1_i',
-              ...
-              'intermediate_output_0_6_30_o',
-              'intermediate_output_0_6_31_o'],
-             ['intermediate_output_0_6_0_i -intermediate_output_0_6_0_o',
-              'intermediate_output_0_6_0_o -intermediate_output_0_6_0_i',
-              ...
-              'intermediate_output_0_6_31_i -xor_0_4_15_o',
-              'xor_0_4_15_o -intermediate_output_0_6_31_i'])
+            (['intermediate_output_0_1_0_i', 'intermediate_output_0_1_1_i', 'intermediate_output_0_1_2_i', 'intermediate_output_0_1_3_i', 'intermediate_output_0_1_0_o', 'intermediate_output_0_1_1_o', 'intermediate_output_0_1_2_o', 'intermediate_output_0_1_3_o'], ['intermediate_output_0_1_0_i -intermediate_output_0_1_0_o', 'intermediate_output_0_1_0_o -intermediate_output_0_1_0_i', 'intermediate_output_0_1_1_i -intermediate_output_0_1_1_o', 'intermediate_output_0_1_1_o -intermediate_output_0_1_1_i', 'intermediate_output_0_1_2_i -intermediate_output_0_1_2_o', 'intermediate_output_0_1_2_o -intermediate_output_0_1_2_i', 'intermediate_output_0_1_3_i -intermediate_output_0_1_3_o', 'intermediate_output_0_1_3_o -intermediate_output_0_1_3_i', 'intermediate_output_0_1_0_i -xor_0_0_0_o', 'xor_0_0_0_o -intermediate_output_0_1_0_i', 'intermediate_output_0_1_1_i -xor_0_0_1_o', 'xor_0_0_1_o -intermediate_output_0_1_1_i', 'intermediate_output_0_1_2_i -xor_0_0_2_o', 'xor_0_0_2_o -intermediate_output_0_1_2_i', 'intermediate_output_0_1_3_i -xor_0_0_3_o', 'xor_0_0_3_o -intermediate_output_0_1_3_i'])
         """
         variables, constraints = super().sat_xor_linear_mask_propagation_constraints(model)
         bit_bindings = model.bit_bindings_for_intermediate_output[self.id]
@@ -241,23 +308,40 @@ class IntermediateOutput(CipherOutput):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: from claasp.cipher import Cipher
             sage: from claasp.cipher_modules.models.smt.smt_models.smt_xor_linear_model import SmtXorLinearModel
-            sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
-            sage: speck_without_key_schedule = speck.remove_key_schedule()
-            sage: smt = SmtXorLinearModel(speck_without_key_schedule)
-            sage: intermediate_component = speck.get_component_from_id("intermediate_output_0_6")
+            sage: from claasp.name_mappings import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
+            sage: class DummyCipher(Cipher):
+            ....:     def __init__(self, block_bit_size=4):
+            ....:         super().__init__(
+            ....:             family_name='dummy_cipher',
+            ....:             cipher_type=BLOCK_CIPHER,
+            ....:             cipher_inputs=[INPUT_PLAINTEXT, INPUT_KEY],
+            ....:             cipher_inputs_bit_size=[block_bit_size, block_bit_size],
+            ....:             cipher_output_bit_size=block_bit_size,
+            ....:         )
+            ....:         self.add_round()
+            ....:         xor_component = self.add_XOR_component(
+            ....:             [INPUT_PLAINTEXT, INPUT_KEY],
+            ....:             [list(range(block_bit_size)), list(range(block_bit_size))],
+            ....:             block_bit_size,
+            ....:         )
+            ....:         self.add_intermediate_output_component(
+            ....:             [xor_component.id],
+            ....:             [list(range(block_bit_size))],
+            ....:             block_bit_size,
+            ....:             'round_output',
+            ....:         )
+            ....:         self.add_cipher_output_component(
+            ....:             [xor_component.id],
+            ....:             [list(range(block_bit_size))],
+            ....:             block_bit_size,
+            ....:         )
+            sage: dummy = DummyCipher(block_bit_size=4)
+            sage: smt = SmtXorLinearModel(dummy)
+            sage: intermediate_component = dummy.get_component_from_id("intermediate_output_0_1")
             sage: intermediate_component.smt_xor_linear_mask_propagation_constraints(smt)
-            (['intermediate_output_0_6_0_o',
-              'intermediate_output_0_6_1_o',
-              ...
-              'intermediate_output_0_6_30_i',
-              'intermediate_output_0_6_31_i'],
-             ['(assert (= intermediate_output_0_6_0_i intermediate_output_0_6_0_o))',
-              '(assert (= intermediate_output_0_6_1_i intermediate_output_0_6_1_o))',
-              ...
-              '(assert (= intermediate_output_0_6_30_i xor_0_4_14_o))',
-              '(assert (= intermediate_output_0_6_31_i xor_0_4_15_o))'])
+            (['intermediate_output_0_1_0_o', 'intermediate_output_0_1_1_o', 'intermediate_output_0_1_2_o', 'intermediate_output_0_1_3_o', 'intermediate_output_0_1_0_i', 'intermediate_output_0_1_1_i', 'intermediate_output_0_1_2_i', 'intermediate_output_0_1_3_i'], ['(assert (= intermediate_output_0_1_0_i intermediate_output_0_1_0_o))', '(assert (= intermediate_output_0_1_1_i intermediate_output_0_1_1_o))', '(assert (= intermediate_output_0_1_2_i intermediate_output_0_1_2_o))', '(assert (= intermediate_output_0_1_3_i intermediate_output_0_1_3_o))', '(assert (= intermediate_output_0_1_0_i xor_0_0_0_o))', '(assert (= intermediate_output_0_1_1_i xor_0_0_1_o))', '(assert (= intermediate_output_0_1_2_i xor_0_0_2_o))', '(assert (= intermediate_output_0_1_3_i xor_0_0_3_o))'])
         """
         variables, constraints = super().smt_xor_linear_mask_propagation_constraints(model)
         bit_bindings = model.bit_bindings_for_intermediate_output[self.id]

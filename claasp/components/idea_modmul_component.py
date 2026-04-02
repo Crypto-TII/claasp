@@ -24,12 +24,33 @@ from claasp.cipher_modules.models.sat.utils import utils as sat_utils
 class IdeaModmul(Modular):
     """
     Component for modular multiplication (a * b) mod M.
-    
+
     This component implements modular multiplication with automatic
     0 <-> 2^n mapping for moduli of the form 2^n + 1:
     - Input: 0 is treated as 2^n before multiplication
     - Output: 2^n is mapped back to 0 after reduction
     - Implements multiplicative group structure where 0 represents 2^n
+
+
+    INPUT:
+
+    - ``current_round_number`` -- **integer**; round index where the component is created. ``0`` is valid.
+    - ``current_round_number_of_components`` -- **integer**; index of the component inside the round. ``0`` is valid.
+    - ``input_id_links`` -- **list**; input component identifiers (usually strings). Must align with ``input_bit_positions``.
+    - ``input_bit_positions`` -- **list**; bit positions for each input identifier (list of lists). Must align with ``input_id_links``.
+    - ``output_bit_size`` -- **integer**; output size in bits. ``0`` is valid only when supported by the component semantics.
+    - ``modulus`` -- **integer**; modulus used by modular arithmetic operations. Must be greater than ``0``.
+
+    EXAMPLES::
+
+        sage: from claasp.components.idea_modmul_component import IdeaModmul
+        sage: component = IdeaModmul(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2, 5)
+        sage: print(component.id)
+        idea_modmul_0_0
+        sage: print(component.type)
+        word_operation
+        sage: print(component.description)
+        ['IDEA_MODMUL', 2, 5]
     """
     
     def __init__(

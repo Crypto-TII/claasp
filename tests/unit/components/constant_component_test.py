@@ -1,15 +1,12 @@
 from claasp.components.constant_component import Constant
-from claasp.cipher_modules.models.cp.mzn_model import MznModel
-from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
-from claasp.ciphers.block_ciphers.tea_block_cipher import TeaBlockCipher
-from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 
 
 def test_cp_wordwise_deterministic_truncated_xor_differential_constraints():
-    aes = ToyAESBlockCipher(number_of_rounds=3)
-    cp = MznModel(aes)
+    class DummyModel:
+        word_size = 8
+
     constant_component = Constant(0, 18, 16, 0xAB01)
-    declarations, constraints = constant_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(cp)
+    declarations, constraints = constant_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(DummyModel())
 
     assert declarations == ['array[0..1] of var 0..1: constant_0_18_active = array1d(0..1, [0,0]);',
                             'array[0..1] of var 0..1: constant_0_18_value = array1d(0..1, [0,0]);']
@@ -18,8 +15,7 @@ def test_cp_wordwise_deterministic_truncated_xor_differential_constraints():
 
 
 def test_cp_xor_linear_mask_propagation_constraints():
-    speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=22)
-    constant_component = speck.component_from(2, 0)
+    constant_component = Constant(2, 0, 16, 0x0000)
     declarations, constraints = constant_component.cp_xor_linear_mask_propagation_constraints()
 
     assert declarations == ['array[0..15] of var 0..1: constant_2_0_o;']
@@ -28,8 +24,7 @@ def test_cp_xor_linear_mask_propagation_constraints():
 
 
 def test_smt_constraints():
-    tea = TeaBlockCipher(number_of_rounds=3)
-    constant_component = tea.component_from(0, 2)
+    constant_component = Constant(0, 2, 32, 0x9d9eec79)
     output_bit_ids, constraints = constant_component.smt_constraints()
 
     assert output_bit_ids[0] == 'constant_0_2_0'
@@ -44,8 +39,7 @@ def test_smt_constraints():
 
 
 def test_smt_xor_differential_propagation_constraints():
-    tea = TeaBlockCipher(number_of_rounds=3)
-    constant_component = tea.component_from(0, 2)
+    constant_component = Constant(0, 2, 32, 0x00000000)
     output_bit_ids, constraints = constant_component.smt_xor_differential_propagation_constraints()
 
     assert output_bit_ids[0] == 'constant_0_2_0'
@@ -60,8 +54,7 @@ def test_smt_xor_differential_propagation_constraints():
 
 
 def test_smt_xor_linear_mask_propagation_constraints():
-    tea = TeaBlockCipher(number_of_rounds=3)
-    constant_component = tea.component_from(0, 2)
+    constant_component = Constant(0, 2, 32, 0xDEADBEEF)
     output_bit_ids, constraints = constant_component.smt_xor_linear_mask_propagation_constraints()
 
     assert output_bit_ids[0] == 'constant_0_2_0_o'

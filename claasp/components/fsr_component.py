@@ -71,6 +71,31 @@ def _words_array_to_bits(word_array, word_gf):
 
 
 class FSR(Component):
+    """
+    Construct an FSR component.
+
+
+    INPUT:
+
+    - ``current_round_number`` -- **integer**; round index where the component is created. ``0`` is valid.
+    - ``current_round_number_of_components`` -- **integer**; index of the component inside the round. ``0`` is valid.
+    - ``input_id_links`` -- **list**; input component identifiers (usually strings). Must align with ``input_bit_positions``.
+    - ``input_bit_positions`` -- **list**; bit positions for each input identifier (list of lists). Must align with ``input_id_links``.
+    - ``output_bit_size`` -- **integer**; output size in bits. ``0`` is valid only when supported by the component semantics.
+    - ``description`` -- **list**; component-specific metadata used by the implementation.
+
+    EXAMPLES::
+
+        sage: from claasp.components.fsr_component import FSR
+        sage: fsr_description = [[[[5, [[4], [5], [6, 7]]], [7, [[0], [8], [1, 2]]]], 1]]
+        sage: component = FSR(0, 0, ['input'], [[0, 1, 2, 3, 4, 5, 6, 7, 8]], 0, fsr_description)
+        sage: print(component.id)
+        fsr_0_0
+        sage: print(component.type)
+        fsr
+        sage: print(component.output_bit_size)
+        0
+    """
     def __init__(
         self,
         current_round_number,
@@ -99,50 +124,28 @@ class FSR(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.stream_ciphers.a5_1_stream_cipher import A51StreamCipher
+            sage: from claasp.ciphers.single_component_ciphers.fsr_cipher import FsrCipher
             sage: from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
-            sage: a51 = A51StreamCipher()
-            sage: fsr_component = a51.get_component_from_id("fsr_1_0")
-            sage: algebraic = AlgebraicModel(a51)
-            sage: A = fsr_component.algebraic_polynomials(algebraic)
-            sage: A[0]
-            fsr_1_0_x1*fsr_1_0_x30*fsr_1_0_x53 + fsr_1_0_x1*fsr_1_0_x10*fsr_1_0_x53 + fsr_1_0_x1*fsr_1_0_x10*fsr_1_0_x30 + fsr_1_0_x0*fsr_1_0_x30*fsr_1_0_x53 + fsr_1_0_x0*fsr_1_0_x10*fsr_1_0_x53 + fsr_1_0_x0*fsr_1_0_x10*fsr_1_0_x30 + fsr_1_0_x1*fsr_1_0_x10 + fsr_1_0_x0*fsr_1_0_x10 + fsr_1_0_y0 + fsr_1_0_x1
+            sage: binary_cipher = FsrCipher(register_size=4)
+            sage: fsr_component = binary_cipher.get_component_from_id("fsr_0_0")
+            sage: algebraic = AlgebraicModel(binary_cipher)
+            sage: binary = fsr_component.algebraic_polynomials(algebraic)
+            sage: [str(p) for p in binary]
+            ['fsr_0_0_y0 + fsr_0_0_x1', 'fsr_0_0_y1 + fsr_0_0_x2', 'fsr_0_0_y2 + fsr_0_0_x3', 'fsr_0_0_y3 + fsr_0_0_x1 + fsr_0_0_x0']
 
-            sage: from claasp.ciphers.stream_ciphers.bivium_stream_cipher import BiviumStreamCipher
-            sage: from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
-            sage: bivium = BiviumStreamCipher(number_of_initialization_clocks=1, keystream_bit_len=1)
-            sage: fsr_component = bivium.get_component_from_id("fsr_0_1")
-            sage: algebraic = AlgebraicModel(bivium)
-            sage: B = fsr_component.algebraic_polynomials(algebraic)
-            sage: B[92]
-            fsr_0_1_x94*fsr_0_1_x95 + fsr_0_1_y92 + fsr_0_1_x108 + fsr_0_1_x93 + fsr_0_1_x24
+            sage: clocked_cipher = FsrCipher(register_size=4, description=[[[4, [[0], [1]], [[0]]]], 1])
+            sage: fsr_component = clocked_cipher.get_component_from_id("fsr_0_0")
+            sage: algebraic = AlgebraicModel(clocked_cipher)
+            sage: clocked = fsr_component.algebraic_polynomials(algebraic)
+            sage: [str(p) for p in clocked]
+            ['fsr_0_0_x0*fsr_0_0_x1 + fsr_0_0_y0', 'fsr_0_0_x0*fsr_0_0_x2 + fsr_0_0_x0*fsr_0_0_x1 + fsr_0_0_y1 + fsr_0_0_x1', 'fsr_0_0_x0*fsr_0_0_x3 + fsr_0_0_x0*fsr_0_0_x2 + fsr_0_0_y2 + fsr_0_0_x2', 'fsr_0_0_x0*fsr_0_0_x3 + fsr_0_0_x0*fsr_0_0_x1 + fsr_0_0_y3 + fsr_0_0_x3 + fsr_0_0_x0']
 
-            sage: from claasp.ciphers.stream_ciphers.trivium_stream_cipher import TriviumStreamCipher
-            sage: from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
-            sage: trivium = TriviumStreamCipher(number_of_initialization_clocks=1, keystream_bit_len=1)
-            sage: fsr_component = trivium.get_component_from_id("fsr_0_2")
-            sage: algebraic = AlgebraicModel(trivium)
-            sage: T = fsr_component.algebraic_polynomials(algebraic)
-            sage: T[92]
-            fsr_0_2_x178*fsr_0_2_x179 + fsr_0_2_y92 + fsr_0_2_x222 + fsr_0_2_x177 + fsr_0_2_x24
-
-            sage: from claasp.ciphers.stream_ciphers.bluetooth_stream_cipher_e0 import BluetoothStreamCipherE0
-            sage: from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
-            sage: e0 = BluetoothStreamCipherE0(keystream_bit_len=1)
-            sage: fsr_component = e0.get_component_from_id("fsr_0_16")
-            sage: algebraic = AlgebraicModel(e0)
-            sage: E = fsr_component.algebraic_polynomials(algebraic)
-            sage: E[24]
-            fsr_0_16_y24 + fsr_0_16_x17 + fsr_0_16_x13 + fsr_0_16_x5 + fsr_0_16_x0
-
-            sage: from claasp.ciphers.stream_ciphers.snow3g_stream_cipher import Snow3GStreamCipher
-            sage: from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
-            sage: snow = Snow3GStreamCipher(number_of_initialization_clocks=1, keystream_word_size=1)
-            sage: fsr_component = snow.get_component_from_id("fsr_0_714")
-            sage: algebraic = AlgebraicModel(snow)
-            sage: S = fsr_component.algebraic_polynomials(algebraic)
-            sage: S[480]
-            fsr_0_714_y480 + fsr_0_714_x352 + fsr_0_714_x64 + fsr_0_714_x0
+            sage: word_cipher = FsrCipher(register_size=4, description=[[[2, [[1, [0]], [1, [1]]]]], 2])
+            sage: fsr_component = word_cipher.get_component_from_id("fsr_0_0")
+            sage: algebraic = AlgebraicModel(word_cipher)
+            sage: word = fsr_component.algebraic_polynomials(algebraic)
+            sage: [str(p) for p in word]
+            ['fsr_0_0_y0 + fsr_0_0_x2', 'fsr_0_0_y1 + fsr_0_0_x3', 'fsr_0_0_y2 + fsr_0_0_x2 + fsr_0_0_x0', 'fsr_0_0_y3 + fsr_0_0_x3 + fsr_0_0_x1']
         """
         bits_inside_word = self.description[1]
         if bits_inside_word == 1:

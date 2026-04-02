@@ -75,6 +75,40 @@ def free_input(code):
 
 
 class Component:
+    """
+    Construct a generic component.
+
+    INPUT:
+
+    - ``component_id`` -- **string**; unique component identifier (for example,
+        ``'xor_0_0'``). Required and should not be ``None``.
+    - ``component_type`` -- **string**; component category (for example,
+        ``'word_operation'``). Required and should not be ``None``.
+    - ``component_input`` -- **Input**; instance of :class:`claasp.input.Input`.
+        Required and should not be ``None``.
+        ``component_input.id_links`` must be a list.
+        ``component_input.bit_positions`` must be a list of lists and should not be empty.
+        ``component_input.id_links`` and ``component_input.bit_positions`` must have the same length.
+    - ``output_bit_size`` -- **integer**; output width in bits. ``0`` is allowed
+        when the component semantics allows it.
+    - ``description`` -- **object**; component-specific metadata (typically a
+        list). Required and should not be ``None``.
+
+    EXAMPLES::
+
+            sage: from claasp.component import Component
+            sage: from claasp.input import Input
+            sage: component_input = Input(4, ['input'], [[0, 1, 2, 3]])
+            sage: component = Component('xor_0_0', 'word_operation', component_input, 4, ['XOR', 2])
+            sage: print(component.id)
+            xor_0_0
+            sage: print(component.type)
+            word_operation
+            sage: print(component.output_bit_size)
+            4
+            sage: print(component.description)
+            ['XOR', 2]
+    """
     def __init__(
         self,
         component_id,
@@ -128,6 +162,15 @@ class Component:
         - ``input_postfix`` -- **strings**
         - ``output_postfix`` -- **strings**
         - ``data_type`` -- **strings**
+
+        EXAMPLES::
+
+            sage: from claasp.component import Component
+            sage: from claasp.input import Input
+            sage: component_input = Input(4, ['input'], [[0, 1, 2, 3]])
+            sage: component = Component('my_component_id', 'my_component_type', component_input, 4, [])
+            sage: component._define_var("in", "out", "data_type")
+            ['var data_type: my_component_id_in0;', 'var data_type: my_component_id_in1;', 'var data_type: my_component_id_in2;', 'var data_type: my_component_id_in3;', 'var data_type: my_component_id_out0;', 'var data_type: my_component_id_out1;', 'var data_type: my_component_id_out2;', 'var data_type: my_component_id_out3;']
         """
         var_definition_names = []
         component_id = self.id
@@ -143,6 +186,18 @@ class Component:
         return var_definition_names
 
     def _generate_component_input_ids(self):
+        """
+        Generate component-local input identifiers.
+
+        EXAMPLES::
+
+            sage: from claasp.component import Component
+            sage: from claasp.input import Input
+            sage: component_input = Input(4, ['input'], [[0, 1, 2, 3]])
+            sage: component = Component('my_component_id', 'my_component_type', component_input, 4, [])
+            sage: component._generate_component_input_ids()
+            (4, ['my_component_id_0_i', 'my_component_id_1_i', 'my_component_id_2_i', 'my_component_id_3_i'])
+        """
         input_id_link = self.id
         in_suffix = constants.INPUT_BIT_ID_SUFFIX
         input_bit_size = self.input_bit_size
@@ -151,6 +206,20 @@ class Component:
         return input_bit_size, input_bit_ids
 
     def _generate_input_ids(self, suffix=""):
+        """
+        Generate linked input identifiers.
+
+        EXAMPLES::
+
+            sage: from claasp.component import Component
+            sage: from claasp.input import Input
+            sage: component_input = Input(4, ['input'], [[0, 1, 2, 3]])
+            sage: component = Component('my_component_id', 'my_component_type', component_input, 4, [])
+            sage: component._generate_input_ids()
+            ['input_0', 'input_1', 'input_2', 'input_3']
+            sage: component._generate_input_ids(suffix="my_suffix")
+            ['input_0my_suffix', 'input_1my_suffix', 'input_2my_suffix', 'input_3my_suffix']
+        """
         input_id_link = self.input_id_links
         input_bit_positions = self.input_bit_positions
         input_bit_ids = []
@@ -160,12 +229,36 @@ class Component:
         return input_bit_ids
 
     def _generate_input_double_ids(self):
+        """
+        Generate paired linked input identifiers.
+
+        EXAMPLES::
+
+            sage: from claasp.component import Component
+            sage: from claasp.input import Input
+            sage: component_input = Input(4, ['input'], [[0, 1, 2, 3]])
+            sage: component = Component('my_component_id', 'my_component_type', component_input, 4, [])
+            sage: component._generate_input_double_ids()
+            (['input_0_0', 'input_1_0', 'input_2_0', 'input_3_0'], ['input_0_1', 'input_1_1', 'input_2_1', 'input_3_1'])
+        """
         in_ids_0 = self._generate_input_ids(suffix="_0")
         in_ids_1 = self._generate_input_ids(suffix="_1")
 
         return in_ids_0, in_ids_1
 
     def _generate_output_ids(self, suffix=""):
+        """
+        Generate output identifiers.
+
+        EXAMPLES::
+
+            sage: from claasp.component import Component
+            sage: from claasp.input import Input
+            sage: component_input = Input(4, ['input'], [[0, 1, 2, 3]])
+            sage: component = Component('my_component_id', 'my_component_type', component_input, 4, [])
+            sage: component._generate_output_ids()
+            (4, ['my_component_id_0', 'my_component_id_1', 'my_component_id_2', 'my_component_id_3'])
+        """
         output_id_link = self.id
         output_bit_size = self.output_bit_size
         output_bit_ids = [f"{output_id_link}_{j}{suffix}" for j in range(output_bit_size)]
@@ -173,6 +266,18 @@ class Component:
         return output_bit_size, output_bit_ids
 
     def _generate_output_double_ids(self):
+        """
+        Generate paired output identifiers.
+
+        EXAMPLES::
+
+            sage: from claasp.component import Component
+            sage: from claasp.input import Input
+            sage: component_input = Input(4, ['input'], [[0, 1, 2, 3]])
+            sage: component = Component('my_component_id', 'my_component_type', component_input, 4, [])
+            sage: component._generate_output_double_ids()
+            (4, ['my_component_id_0_0', 'my_component_id_1_0', 'my_component_id_2_0', 'my_component_id_3_0'], ['my_component_id_0_1', 'my_component_id_1_1', 'my_component_id_2_1', 'my_component_id_3_1'])
+        """
         out_len, out_ids_0 = self._generate_output_ids(suffix="_0")
         _, out_ids_1 = self._generate_output_ids(suffix="_1")
 
@@ -190,22 +295,13 @@ class Component:
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
-            sage: fancy = FancyBlockCipher(number_of_rounds=2)
-            sage: component = fancy.get_component_from_id("and_0_8")
+            sage: from claasp.component import Component
+            sage: from claasp.input import Input
+            sage: component_input = Input(4, ['input'], [[0, 1, 2, 3]])
+            sage: component = Component('my_component_id', 'my_component_type', component_input, 4, [])
             sage: l = component._get_independent_input_output_variables()
-            sage: l[0]
-            ['and_0_8_0_i',
-             'and_0_8_1_i',
-             ...
-             'and_0_8_22_i',
-             'and_0_8_23_i']
-            sage: l[1]
-            ['and_0_8_0_o',
-             'and_0_8_1_o',
-             ...
-             'and_0_8_10_o',
-             'and_0_8_11_o']
+            sage: l
+            (['my_component_id_0_i', 'my_component_id_1_i', 'my_component_id_2_i', 'my_component_id_3_i'], ['my_component_id_0_o', 'my_component_id_1_o', 'my_component_id_2_o', 'my_component_id_3_o'])
         """
         input_vars = [f"{self.id}_{i}_i" for i in range(self.input_bit_size)]
         output_vars = [f"{self.id}_{i}_o" for i in range(self.output_bit_size)]
@@ -224,28 +320,15 @@ class Component:
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
-            sage: fancy = FancyBlockCipher(number_of_rounds=2)
-            sage: component = fancy.get_component_from_id("and_0_8")
+            sage: from claasp.component import Component
+            sage: from claasp.input import Input
+            sage: component_input = Input(4, ['input'], [[0, 1, 2, 3]])
+            sage: component = Component('my_component_id', 'my_component_type', component_input, 4, [])
             sage: l = component._get_input_output_variables()
             sage: l[0]
-            ['xor_0_7_0',
-            'xor_0_7_1',
-            'xor_0_7_2',
-            ...
-            'key_21',
-            'key_22',
-            'key_23']
+            ['input_0', 'input_1', 'input_2', 'input_3']
             sage: l[1]
-            ['and_0_8_0',
-            'and_0_8_1',
-            'and_0_8_2',
-            'and_0_8_3',
-            ...
-            'and_0_8_8',
-            'and_0_8_9',
-            'and_0_8_10',
-            'and_0_8_11']
+            ['my_component_id_0', 'my_component_id_1', 'my_component_id_2', 'my_component_id_3']
         """
 
         output_vars = [f"{self.id}_{i}" for i in range(self.output_bit_size)]
@@ -272,25 +355,15 @@ class Component:
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
-            sage: fancy = FancyBlockCipher(number_of_rounds=3)
-            sage: from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import MilpBitwiseDeterministicTruncatedXorDifferentialModel
-            sage: milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(fancy)
-            sage: milp.init_model_in_sage_milp_class()
-            sage: component = fancy.component_from(0, 6)
+            sage: from claasp.component import Component
+            sage: from claasp.input import Input
+            sage: component_input = Input(4, ['input'], [[0, 1, 2, 3]])
+            sage: component = Component('my_component_id', 'my_component_type', component_input, 4, [])
             sage: input_class_id, output_class_id = component._get_input_output_variables_tuples()
             sage: input_class_id
-            [('sbox_0_0_0_class_bit_0', 'sbox_0_0_0_class_bit_1'),
-             ('sbox_0_0_1_class_bit_0', 'sbox_0_0_1_class_bit_1'),
-             ...
-             ('sbox_0_5_2_class_bit_0', 'sbox_0_5_2_class_bit_1'),
-             ('sbox_0_5_3_class_bit_0', 'sbox_0_5_3_class_bit_1')]
+            [('input_0_class_bit_0', 'input_0_class_bit_1'), ('input_1_class_bit_0', 'input_1_class_bit_1'), ('input_2_class_bit_0', 'input_2_class_bit_1'), ('input_3_class_bit_0', 'input_3_class_bit_1')]
             sage: output_class_id
-            [('linear_layer_0_6_0_class_bit_0', 'linear_layer_0_6_0_class_bit_1'),
-             ('linear_layer_0_6_1_class_bit_0', 'linear_layer_0_6_1_class_bit_1'),
-            ...
-             ('linear_layer_0_6_22_class_bit_0', 'linear_layer_0_6_22_class_bit_1'),
-             ('linear_layer_0_6_23_class_bit_0', 'linear_layer_0_6_23_class_bit_1')]
+            [('my_component_id_0_class_bit_0', 'my_component_id_0_class_bit_1'), ('my_component_id_1_class_bit_0', 'my_component_id_1_class_bit_1'), ('my_component_id_2_class_bit_0', 'my_component_id_2_class_bit_1'), ('my_component_id_3_class_bit_0', 'my_component_id_3_class_bit_1')]
 
 
 
@@ -330,23 +403,17 @@ class Component:
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
-            sage: cipher = ToyAESBlockCipher(number_of_rounds=3)
-            sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import MilpWordwiseDeterministicTruncatedXorDifferentialModel
-            sage: milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(cipher)
-            sage: milp.init_model_in_sage_milp_class()
-            sage: component = cipher.get_component_from_id("rot_0_18")
+            sage: from claasp.component import Component
+            sage: from claasp.input import Input
+            sage: from types import SimpleNamespace
+            sage: component_input = Input(4, ['input'], [[0, 1, 2, 3]])
+            sage: component = Component('my_component_id', 'my_component_type', component_input, 4, [])
+            sage: milp = SimpleNamespace(word_size=8)
             sage: input_class_id, output_class_id = component._get_wordwise_input_output_linked_class(milp)
             sage: input_class_id
-            ['sbox_0_2_word_0_class',
-             'sbox_0_6_word_0_class',
-             'sbox_0_10_word_0_class',
-             'sbox_0_14_word_0_class']
+            ['input_word_0_class']
             sage: output_class_id
-            ['rot_0_18_word_0_class',
-             'rot_0_18_word_1_class',
-             'rot_0_18_word_2_class',
-             'rot_0_18_word_3_class']
+            []
         """
 
         output_class_ids = [f"{self.id}_word_{i}_class" for i in range(self.output_bit_size // model.word_size)]
@@ -369,23 +436,17 @@ class Component:
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
-            sage: cipher = ToyAESBlockCipher(number_of_rounds=3)
-            sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import MilpWordwiseDeterministicTruncatedXorDifferentialModel
-            sage: milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(cipher)
-            sage: milp.init_model_in_sage_milp_class()
-            sage: component = cipher.get_component_from_id("rot_0_18")
+            sage: from claasp.component import Component
+            sage: from claasp.input import Input
+            sage: from types import SimpleNamespace
+            sage: component_input = Input(4, ['input'], [[0, 1, 2, 3]])
+            sage: component = Component('my_component_id', 'my_component_type', component_input, 4, [])
+            sage: milp = SimpleNamespace(word_size=8)
             sage: input_id_tuples, output_id_tuples = component._get_wordwise_input_output_linked_class_tuples(milp)
             sage: input_id_tuples
-            [('sbox_0_2_word_0_class_bit_0', 'sbox_0_2_word_0_class_bit_1'),
-             ('sbox_0_6_word_0_class_bit_0', 'sbox_0_6_word_0_class_bit_1'),
-             ('sbox_0_10_word_0_class_bit_0', 'sbox_0_10_word_0_class_bit_1'),
-             ('sbox_0_14_word_0_class_bit_0', 'sbox_0_14_word_0_class_bit_1')]
+            [('input_word_0_class_bit_0', 'input_word_0_class_bit_1')]
             sage: output_id_tuples
-            [('rot_0_18_word_0_class_bit_0', 'rot_0_18_word_0_class_bit_1'),
-             ('rot_0_18_word_1_class_bit_0', 'rot_0_18_word_1_class_bit_1'),
-             ('rot_0_18_word_2_class_bit_0', 'rot_0_18_word_2_class_bit_1'),
-             ('rot_0_18_word_3_class_bit_0', 'rot_0_18_word_3_class_bit_1')]
+            []
 
         """
         tuple_size = 2
@@ -409,25 +470,17 @@ class Component:
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
-            sage: cipher = ToyAESBlockCipher(number_of_rounds=3)
-            sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import MilpWordwiseDeterministicTruncatedXorDifferentialModel
-            sage: milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(cipher)
-            sage: milp.init_model_in_sage_milp_class()
-            sage: component = cipher.get_component_from_id("rot_0_18")
+            sage: from claasp.component import Component
+            sage: from claasp.input import Input
+            sage: from types import SimpleNamespace
+            sage: component_input = Input(4, ['input'], [[0, 1, 2, 3]])
+            sage: component = Component('my_component_id', 'my_component_type', component_input, 4, [])
+            sage: milp = SimpleNamespace(word_size=8)
             sage: input_id_tuples, output_id_tuples = component._get_wordwise_input_output_full_tuples(milp)
-            sage: input_id_tuples[0]
-            ('sbox_0_2_word_0_class_bit_0',
-             'sbox_0_2_word_0_class_bit_1',
-             ...
-             'sbox_0_2_6',
-             'sbox_0_2_7')
-            sage: output_id_tuples[0]
-            ('rot_0_18_word_0_class_bit_0',
-             'rot_0_18_word_0_class_bit_1',
-             ...
-             'rot_0_18_6',
-             'rot_0_18_7')
+            sage: input_id_tuples
+            []
+            sage: output_id_tuples
+            []
 
 
         """
@@ -448,6 +501,21 @@ class Component:
         return input_full_tuple, output_full_tuple
 
     def as_python_dictionary(self):
+        """
+        Return the component as a Python dictionary.
+
+        EXAMPLES::
+
+            sage: from claasp.component import Component
+            sage: from claasp.input import Input
+            sage: component_input = Input(4, ['input'], [[0, 1, 2, 3]])
+            sage: component = Component('my_component_id', 'my_component_type', component_input, 4, [])
+            sage: d = component.as_python_dictionary()
+            sage: d['id'], d['type'], d['input_bit_size'], d['output_bit_size']
+            ('my_component_id', 'my_component_type', 4, 4)
+            sage: d['input_id_link'], d['input_bit_positions'], d['description']
+            (['input'], [[0, 1, 2, 3]], [])
+        """
         return {
             "id": self._id,
             "type": self._type,
@@ -459,6 +527,21 @@ class Component:
         }
 
     def get_graph_representation(self):
+        """
+        Return the component graph representation.
+
+        EXAMPLES::
+
+            sage: from claasp.component import Component
+            sage: from claasp.input import Input
+            sage: component_input = Input(4, ['input'], [[0, 1, 2, 3]])
+            sage: component = Component('my_component_id', 'my_component_type', component_input, 4, [])
+            sage: d = component.get_graph_representation()
+            sage: d['id'], d['type'], d['input_bit_size'], d['output_bit_size']
+            ('my_component_id', 'my_component_type', 4, 4)
+            sage: d['input_id_link'], d['input_bit_positions'], d['description']
+            (['input'], [[0, 1, 2, 3]], [])
+        """
         return {
             "id": self._id,
             "type": self._type,
@@ -470,6 +553,20 @@ class Component:
         }
 
     def is_id_equal_to(self, component_id):
+        """
+        Check whether the component id equals ``component_id``.
+
+        EXAMPLES::
+
+            sage: from claasp.component import Component
+            sage: from claasp.input import Input
+            sage: component_input = Input(4, ['input'], [[0, 1, 2, 3]])
+            sage: component = Component('my_component_id', 'my_component_type', component_input, 4, [])
+            sage: component.is_id_equal_to('my_id')
+            False
+            sage: component.is_id_equal_to('my_component_id')
+            True
+        """
         return self._id == component_id
 
     def is_power_of_2_word_based(self, dto):

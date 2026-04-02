@@ -1,218 +1,213 @@
 import pytest
 
+from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
 from claasp.cipher_modules.models.cp.mzn_model import MznModel
 from claasp.cipher_modules.models.milp.milp_model import MilpModel
-from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
-from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
-from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
+from claasp.ciphers.single_component_ciphers.mix_column_cipher import MixColumnCipher
+from claasp.components.mix_column_component import MixColumn
+
+MATRIX = [[1, 2], [3, 1]]
+IRREDUCIBLE_POLYNOMIAL = 0b10011
+WORD_SIZE = 4
+BIT_SIZE = 8
 
 
-@pytest.mark.filterwarnings("ignore::DeprecationWarning:")
+def make_mix_column_component(component_index=0, input_name="plaintext"):
+    return MixColumn(
+        0,
+        component_index,
+        [input_name],
+        [list(range(BIT_SIZE))],
+        BIT_SIZE,
+        [MATRIX, IRREDUCIBLE_POLYNOMIAL, WORD_SIZE],
+    )
+
+
+def make_mix_column_cipher():
+    return MixColumnCipher(word_size=WORD_SIZE, matrix=MATRIX, irreducible_polynomial=IRREDUCIBLE_POLYNOMIAL)
+
+
 def test_algebraic_polynomials():
-    midori = MidoriBlockCipher(number_of_rounds=16)
-    mix_column = midori.get_component_from_id("mix_column_0_20")
-    algebraic_polynomials = mix_column.algebraic_polynomials(AlgebraicModel(midori))
+    cipher = make_mix_column_cipher()
+    mix_column_component = cipher.get_component_from_id("mix_column_0_0")
+    algebraic_polynomials = mix_column_component.algebraic_polynomials(AlgebraicModel(cipher))
 
-    assert str(algebraic_polynomials[0]) == "mix_column_0_20_x0 + mix_column_0_20_y0"
-    assert str(algebraic_polynomials[1]) == "mix_column_0_20_x1 + mix_column_0_20_y1"
-    assert str(algebraic_polynomials[2]) == "mix_column_0_20_x2 + mix_column_0_20_y2"
-    assert str(algebraic_polynomials[-3]) == "mix_column_0_20_y61^2 + mix_column_0_20_y61"
-    assert str(algebraic_polynomials[-2]) == "mix_column_0_20_y62^2 + mix_column_0_20_y62"
-    assert str(algebraic_polynomials[-1]) == "mix_column_0_20_y63^2 + mix_column_0_20_y63"
+    assert str(algebraic_polynomials[0]) == "mix_column_0_0_x0 + mix_column_0_0_x7 + mix_column_0_0_y0"
+    assert str(algebraic_polynomials[1]) == "mix_column_0_0_x1 + mix_column_0_0_x4 + mix_column_0_0_x7 + mix_column_0_0_y1"
+    assert str(algebraic_polynomials[-2]) == "mix_column_0_0_y6^2 + mix_column_0_0_y6"
+    assert str(algebraic_polynomials[-1]) == "mix_column_0_0_y7^2 + mix_column_0_0_y7"
 
 
 def test_cp_create_component():
-    aes = ToyAESBlockCipher(number_of_rounds=3)
-    cp = MznModel(aes)
-    mix_column_component_1 = aes.component_from(0, 21)
-    mix_column_component_2 = aes.component_from(0, 22)
-    declarations, constraints = mix_column_component_1._cp_create_component(cp.word_size, mix_column_component_2,
-                                                                            1, cp.list_of_xor_components)
+    cp = MznModel(make_mix_column_cipher())
+    cp.word_size = WORD_SIZE
+    mix_column_component_1 = make_mix_column_component(component_index=0)
+    mix_column_component_2 = make_mix_column_component(component_index=1, input_name="input")
+    declarations, constraints = mix_column_component_1._cp_create_component(
+        cp.word_size,
+        mix_column_component_2,
+        1,
+        cp.list_of_xor_components,
+    )
 
-    assert declarations == ['array[0..3] of var 0..1: input_xor_mix_column_0_22_mix_column_0_21;',
-                            'array[0..3] of var 0..1: output_xor_mix_column_0_22_mix_column_0_21;']
-
-    assert constraints == ['constraint table([input_xor_mix_column_0_22_mix_column_0_21[s]|s in 0..3]++'
-                           '[output_xor_mix_column_0_22_mix_column_0_21[s]|s in 0..3],mix_column_truncated_table_1);']
+    assert declarations == [
+        "array[0..1] of var 0..1: input_xor_mix_column_0_1_mix_column_0_0;",
+        "array[0..1] of var 0..1: output_xor_mix_column_0_1_mix_column_0_0;",
+    ]
+    assert constraints == [
+        "constraint table([input_xor_mix_column_0_1_mix_column_0_0[s]|s in 0..1]++"
+        "[output_xor_mix_column_0_1_mix_column_0_0[s]|s in 0..1],mix_column_truncated_table_1);"
+    ]
 
 
 def test_cms_constraints():
-    midori = MidoriBlockCipher(number_of_rounds=3)
-    mix_column_component = midori.component_from(0, 23)
+    mix_column_component = make_mix_column_component()
     output_bit_ids, constraints = mix_column_component.cms_constraints()
 
-    assert output_bit_ids[0] == 'mix_column_0_23_0'
-    assert output_bit_ids[1] == 'mix_column_0_23_1'
-    assert output_bit_ids[2] == 'mix_column_0_23_2'
-
-    assert constraints[-3] == '-mix_column_0_23_15 -mix_column_0_20_35 mix_column_0_20_39 -mix_column_0_20_43'
-    assert constraints[-2] == '-mix_column_0_23_15 mix_column_0_20_35 -mix_column_0_20_39 -mix_column_0_20_43'
-    assert constraints[-1] == 'mix_column_0_23_15 -mix_column_0_20_35 -mix_column_0_20_39 -mix_column_0_20_43'
+    assert output_bit_ids[0] == "mix_column_0_0_0"
+    assert output_bit_ids[1] == "mix_column_0_0_1"
+    assert output_bit_ids[2] == "mix_column_0_0_2"
+    assert constraints[-3] == "-mix_column_0_0_7 -plaintext_0 plaintext_3 -plaintext_7"
+    assert constraints[-2] == "-mix_column_0_0_7 plaintext_0 -plaintext_3 -plaintext_7"
+    assert constraints[-1] == "mix_column_0_0_7 -plaintext_0 -plaintext_3 -plaintext_7"
 
 
 def test_cp_constraints():
-    aes = ToyAESBlockCipher(number_of_rounds=3)
-    mix_column_component = aes.component_from(0, 21)
+    mix_column_component = make_mix_column_component()
     declarations, constraints = mix_column_component.cp_constraints()
 
     assert declarations == []
-
-    assert constraints[0] == 'constraint mix_column_0_21[0] = (rot_0_17[1] + rot_0_18[0] + rot_0_18[1] + ' \
-                             'rot_0_19[0] + rot_0_20[0]) mod 2;'
-    assert constraints[-1] == 'constraint mix_column_0_21[31] = (rot_0_17[0] + rot_0_17[7] + rot_0_18[7] + ' \
-                              'rot_0_19[7] + rot_0_20[0]) mod 2;'
+    assert constraints[0] == "constraint mix_column_0_0[0] = (plaintext[0] + plaintext[5]) mod 2;"
+    assert constraints[-1] == "constraint mix_column_0_0[7] = (plaintext[0] + plaintext[3] + plaintext[7]) mod 2;"
 
 
 def test_cp_deterministic_truncated_xor_differential_constraints():
-    aes = ToyAESBlockCipher(number_of_rounds=3)
-    mix_column_component = aes.component_from(0, 21)
+    mix_column_component = make_mix_column_component()
     declarations, constraints = mix_column_component.cp_deterministic_truncated_xor_differential_constraints()
 
     assert declarations == []
-
-    assert constraints[0] == 'constraint if ((rot_0_17[1] < 2) /\\ (rot_0_18[0] < 2) /\\ (rot_0_18[1] < 2) /\\ ' \
-                             '(rot_0_19[0] < 2) /\\ (rot_0_20[0] < 2)) then mix_column_0_21[0] = (rot_0_17[1] + ' \
-                             'rot_0_18[0] + rot_0_18[1] + rot_0_19[0] + rot_0_20[0]) mod 2 else ' \
-                             'mix_column_0_21[0] = 2 endif;'
-    assert constraints[-1] == 'constraint if ((rot_0_17[0] < 2) /\\ (rot_0_17[7] < 2) /\\ (rot_0_18[7] < 2) /\\ ' \
-                              '(rot_0_19[7] < 2) /\\ (rot_0_20[0] < 2)) then mix_column_0_21[31] = (rot_0_17[0] + ' \
-                              'rot_0_17[7] + rot_0_18[7] + rot_0_19[7] + rot_0_20[0]) mod 2 else ' \
-                              'mix_column_0_21[31] = 2 endif;'
+    assert constraints[0] == (
+        "constraint if ((plaintext[0] < 2) /\\ (plaintext[5] < 2)) then mix_column_0_0[0] = "
+        "(plaintext[0] + plaintext[5]) mod 2 else mix_column_0_0[0] = 2 endif;"
+    )
+    assert constraints[-1] == (
+        "constraint if ((plaintext[0] < 2) /\\ (plaintext[3] < 2) /\\ (plaintext[7] < 2)) then "
+        "mix_column_0_0[7] = (plaintext[0] + plaintext[3] + plaintext[7]) mod 2 else mix_column_0_0[7] = 2 endif;"
+    )
 
 
 def test_cp_xor_linear_mask_propagation_constraints():
-    aes = ToyAESBlockCipher(number_of_rounds=3)
-    mix_column_component = aes.component_from(0, 21)
+    mix_column_component = make_mix_column_component()
     declarations, constraints = mix_column_component.cp_xor_linear_mask_propagation_constraints()
 
-    assert declarations == ['array[0..31] of var 0..1:mix_column_0_21_i;',
-                            'array[0..31] of var 0..1:mix_column_0_21_o;']
-
-    assert constraints[0] == 'constraint mix_column_0_21_i[0]=(mix_column_0_21_o[1]+mix_column_0_21_o[2]+' \
-                             'mix_column_0_21_o[3]+mix_column_0_21_o[8]+mix_column_0_21_o[9]+mix_column_0_21_o[11]+' \
-                             'mix_column_0_21_o[16]+mix_column_0_21_o[18]+mix_column_0_21_o[19]+' \
-                             'mix_column_0_21_o[24]+mix_column_0_21_o[27]) mod 2;'
-    assert constraints[-1] == 'constraint mix_column_0_21_i[31]=(mix_column_0_21_o[0]+mix_column_0_21_o[2]+' \
-                              'mix_column_0_21_o[7]+mix_column_0_21_o[9]+mix_column_0_21_o[10]+' \
-                              'mix_column_0_21_o[15]+mix_column_0_21_o[18]+mix_column_0_21_o[23]+' \
-                              'mix_column_0_21_o[24]+mix_column_0_21_o[25]+mix_column_0_21_o[26]) mod 2;'
+    assert declarations == [
+        "array[0..7] of var 0..1:mix_column_0_0_i;",
+        "array[0..7] of var 0..1:mix_column_0_0_o;",
+    ]
+    assert constraints[0] == (
+        "constraint mix_column_0_0_i[0]=(mix_column_0_0_o[1]+mix_column_0_0_o[2]+mix_column_0_0_o[4]+"
+        "mix_column_0_0_o[6]+mix_column_0_0_o[7]) mod 2;"
+    )
+    assert constraints[-1] == (
+        "constraint mix_column_0_0_i[7]=(mix_column_0_0_o[0]+mix_column_0_0_o[2]+mix_column_0_0_o[4]+"
+        "mix_column_0_0_o[5]) mod 2;"
+    )
 
 
 def test_milp_constraints():
-    aes = ToyAESBlockCipher(number_of_rounds=3)
-    milp = MilpModel(aes)
+    cipher = make_mix_column_cipher()
+    milp = MilpModel(cipher)
     milp.init_model_in_sage_milp_class()
-    mix_column_component = aes.component_from(0, 21)
+    mix_column_component = cipher.get_component_from_id("mix_column_0_0")
     variables, constraints = mix_column_component.milp_constraints(milp)
 
-    assert str(variables[0]) == "('x[rot_0_17_0]', x_0)"
-    assert str(variables[1]) == "('x[rot_0_17_1]', x_1)"
-    assert str(variables[-2]) == "('x[mix_column_0_21_30]', x_62)"
-    assert str(variables[-1]) == "('x[mix_column_0_21_31]', x_63)"
-
-    assert str(constraints[:3]) == '[1 <= 1 - x_1 + x_8 + x_9 + x_16 + x_24 + x_32,' \
-                                   ' 1 <= 1 + x_1 - x_8 + x_9 + x_16 + x_24 + x_32,' \
-                                   ' 1 <= 1 + x_1 + x_8 - x_9 + x_16 + x_24 + x_32]'
+    assert str(variables[0]) == "('x[plaintext_0]', x_0)"
+    assert str(variables[1]) == "('x[plaintext_1]', x_1)"
+    assert str(variables[-2]) == "('x[mix_column_0_0_6]', x_14)"
+    assert str(variables[-1]) == "('x[mix_column_0_0_7]', x_15)"
+    assert str(constraints[:3]) == "[1 <= 1 - x_0 + x_5 + x_8, 1 <= 1 + x_0 - x_5 + x_8, 1 <= 1 + x_0 + x_5 - x_8]"
 
 
 def test_milp_xor_linear_mask_propagation_constraints():
-    midori = MidoriBlockCipher()
-    milp = MilpModel(midori)
+    cipher = make_mix_column_cipher()
+    milp = MilpModel(cipher)
     milp.init_model_in_sage_milp_class()
-    mix_column_component = midori.component_from(0, 20)
+    mix_column_component = cipher.get_component_from_id("mix_column_0_0")
     variables, constraints = mix_column_component.milp_xor_linear_mask_propagation_constraints(milp)
 
-    assert str(variables[0]) == "('x[mix_column_0_20_0_i]', x_0)"
-    assert str(variables[1]) == "('x[mix_column_0_20_1_i]', x_1)"
-    assert str(variables[-2]) == "('x[mix_column_0_20_62_o]', x_126)"
-    assert str(variables[-1]) == "('x[mix_column_0_20_63_o]', x_127)"
-
-    assert str(constraints[0]) == "x_64 == x_0"
-    assert str(constraints[1]) == "x_65 == x_1"
-    assert str(constraints[-2]) == "x_126 == x_34"
-    assert str(constraints[-1]) == "x_127 == x_35"
+    assert str(variables[0]) == "('x[mix_column_0_0_0_i]', x_0)"
+    assert str(variables[1]) == "('x[mix_column_0_0_1_i]', x_1)"
+    assert str(variables[-2]) == "('x[mix_column_0_0_6_o]', x_14)"
+    assert str(variables[-1]) == "('x[mix_column_0_0_7_o]', x_15)"
+    assert str(constraints[0]) == "1 <= 1 - x_1 + x_3 + x_4 + x_5 + x_6 + x_7 + x_8"
+    assert str(constraints[1]) == "1 <= 1 + x_1 - x_3 + x_4 + x_5 + x_6 + x_7 + x_8"
 
 
 def test_sat_constraints():
-    midori = MidoriBlockCipher(number_of_rounds=3)
-    mix_column_component = midori.component_from(0, 23)
+    mix_column_component = make_mix_column_component()
     output_bit_ids, constraints = mix_column_component.sat_constraints()
 
-    assert output_bit_ids[0] == 'mix_column_0_23_0'
-    assert output_bit_ids[1] == 'mix_column_0_23_1'
-    assert output_bit_ids[2] == 'mix_column_0_23_2'
-
-    assert constraints[-3] == '-mix_column_0_23_15 -mix_column_0_20_35 mix_column_0_20_39 -mix_column_0_20_43'
-    assert constraints[-2] == '-mix_column_0_23_15 mix_column_0_20_35 -mix_column_0_20_39 -mix_column_0_20_43'
-    assert constraints[-1] == 'mix_column_0_23_15 -mix_column_0_20_35 -mix_column_0_20_39 -mix_column_0_20_43'
+    assert output_bit_ids[0] == "mix_column_0_0_0"
+    assert output_bit_ids[1] == "mix_column_0_0_1"
+    assert output_bit_ids[2] == "mix_column_0_0_2"
+    assert constraints[-3] == "-mix_column_0_0_7 -plaintext_0 plaintext_3 -plaintext_7"
+    assert constraints[-2] == "-mix_column_0_0_7 plaintext_0 -plaintext_3 -plaintext_7"
+    assert constraints[-1] == "mix_column_0_0_7 -plaintext_0 -plaintext_3 -plaintext_7"
 
 
 def test_sat_bitwise_deterministic_truncated_xor_differential_constraints():
-    midori = MidoriBlockCipher(number_of_rounds=3)
-    mix_column_component = midori.component_from(0, 23)
+    mix_column_component = make_mix_column_component()
     output_bit_ids, constraints = mix_column_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
 
-    assert output_bit_ids[3] == 'mix_column_0_23_3_0'
-    assert output_bit_ids[9] == 'mix_column_0_23_9_0'
-    assert output_bit_ids[27] == 'mix_column_0_23_11_1'
-
-    assert constraints[30] == 'mix_column_0_20_38_0 mix_column_0_20_42_0 -inter_0_mix_column_0_23_2_0'
-    assert constraints[60] == 'mix_column_0_20_32_1 inter_0_mix_column_0_23_4_0 inter_0_mix_column_0_23_4_1 -mix_column_0_20_40_1'
-    assert constraints[90] == 'inter_0_mix_column_0_23_6_0 -mix_column_0_20_34_1 -mix_column_0_20_42_1 -inter_0_mix_column_0_23_6_1'
+    assert output_bit_ids[3] == "mix_column_0_0_3_0"
+    assert output_bit_ids[5] == "mix_column_0_0_5_0"
+    assert constraints[-3] == "inter_0_mix_column_0_0_7_1 mix_column_0_0_7_0 mix_column_0_0_7_1 -plaintext_7_1"
+    assert constraints[-2] == "plaintext_7_1 mix_column_0_0_7_0 mix_column_0_0_7_1 -inter_0_mix_column_0_0_7_1"
+    assert constraints[-1] == "mix_column_0_0_7_0 -inter_0_mix_column_0_0_7_1 -plaintext_7_1 -mix_column_0_0_7_1"
 
 
 def test_sat_xor_linear_mask_propagation_constraints():
-    midori = MidoriBlockCipher(number_of_rounds=3)
-    mix_column_component = midori.component_from(0, 23)
+    mix_column_component = make_mix_column_component()
     variables, constraints = mix_column_component.sat_xor_linear_mask_propagation_constraints()
 
-    assert variables[0] == 'mix_column_0_23_0_i'
-    assert variables[1] == 'mix_column_0_23_1_i'
-    assert variables[2] == 'mix_column_0_23_2_i'
-
-    assert constraints[-3] == '-mix_column_0_23_15_o -dummy_3_mix_column_0_23_15_o dummy_7_mix_column_0_23_15_o ' \
-                              '-dummy_11_mix_column_0_23_15_o'
-    assert constraints[-2] == '-mix_column_0_23_15_o dummy_3_mix_column_0_23_15_o -dummy_7_mix_column_0_23_15_o ' \
-                              '-dummy_11_mix_column_0_23_15_o'
-    assert constraints[-1] == 'mix_column_0_23_15_o -dummy_3_mix_column_0_23_15_o -dummy_7_mix_column_0_23_15_o ' \
-                              '-dummy_11_mix_column_0_23_15_o'
+    assert variables[0] == "mix_column_0_0_0_i"
+    assert variables[1] == "mix_column_0_0_1_i"
+    assert variables[2] == "mix_column_0_0_2_i"
+    assert constraints[-2] == (
+        "mix_column_0_0_7_o dummy_0_mix_column_0_0_7_o -dummy_1_mix_column_0_0_7_o -dummy_5_mix_column_0_0_7_o "
+        "-dummy_6_mix_column_0_0_7_o"
+    )
+    assert constraints[-1] == (
+        "-mix_column_0_0_7_o -dummy_0_mix_column_0_0_7_o -dummy_1_mix_column_0_0_7_o -dummy_5_mix_column_0_0_7_o "
+        "-dummy_6_mix_column_0_0_7_o"
+    )
 
 
 def test_smt_constraints():
-    midori = MidoriBlockCipher(number_of_rounds=3)
-    mix_column_component = midori.component_from(0, 23)
+    mix_column_component = make_mix_column_component()
     variables, constraints = mix_column_component.smt_constraints()
 
-    assert variables[0] == 'mix_column_0_23_0'
-    assert variables[1] == 'mix_column_0_23_1'
-    assert variables[-2] == 'mix_column_0_23_14'
-    assert variables[-1] == 'mix_column_0_23_15'
-
-    assert constraints[0] == '(assert (= mix_column_0_23_0 (xor mix_column_0_20_36 mix_column_0_20_40 ' \
-                             'mix_column_0_20_44)))'
-    assert constraints[1] == '(assert (= mix_column_0_23_1 (xor mix_column_0_20_37 mix_column_0_20_41 ' \
-                             'mix_column_0_20_45)))'
-    assert constraints[-2] == '(assert (= mix_column_0_23_14 (xor mix_column_0_20_34 mix_column_0_20_38 ' \
-                              'mix_column_0_20_42)))'
-    assert constraints[-1] == '(assert (= mix_column_0_23_15 (xor mix_column_0_20_35 mix_column_0_20_39 ' \
-                              'mix_column_0_20_43)))'
+    assert variables[0] == "mix_column_0_0_0"
+    assert variables[1] == "mix_column_0_0_1"
+    assert variables[-2] == "mix_column_0_0_6"
+    assert variables[-1] == "mix_column_0_0_7"
+    assert constraints[-2] == "(assert (= mix_column_0_0_6 (xor plaintext_0 plaintext_2 plaintext_3 plaintext_6)))"
+    assert constraints[-1] == "(assert (= mix_column_0_0_7 (xor plaintext_0 plaintext_3 plaintext_7)))"
 
 
 def test_smt_xor_linear_mask_propagation_constraints():
-    midori = MidoriBlockCipher(number_of_rounds=3)
-    mix_column_component = midori.component_from(0, 23)
+    mix_column_component = make_mix_column_component()
     variables, constraints = mix_column_component.smt_xor_linear_mask_propagation_constraints()
 
-    assert variables[0] == 'mix_column_0_23_0_i'
-    assert variables[1] == 'mix_column_0_23_1_i'
-    assert variables[-2] == 'mix_column_0_23_14_o'
-    assert variables[-1] == 'mix_column_0_23_15_o'
-
-    assert constraints[0] == '(assert (= mix_column_0_23_0_i dummy_0_mix_column_0_23_4_o ' \
-                             'dummy_0_mix_column_0_23_8_o dummy_0_mix_column_0_23_12_o))'
-    assert constraints[1] == '(assert (= mix_column_0_23_1_i dummy_1_mix_column_0_23_5_o dummy_1_' \
-                             'mix_column_0_23_9_o dummy_1_mix_column_0_23_13_o))'
-    assert constraints[-2] == '(assert (= mix_column_0_23_14_o (xor dummy_2_mix_column_0_23_14_o ' \
-                              'dummy_6_mix_column_0_23_14_o dummy_10_mix_column_0_23_14_o)))'
-    assert constraints[-1] == '(assert (= mix_column_0_23_15_o (xor dummy_3_mix_column_0_23_15_o ' \
-                              'dummy_7_mix_column_0_23_15_o dummy_11_mix_column_0_23_15_o)))'
+    assert variables[0] == "mix_column_0_0_0_i"
+    assert variables[1] == "mix_column_0_0_1_i"
+    assert variables[-2] == "mix_column_0_0_6_o"
+    assert variables[-1] == "mix_column_0_0_7_o"
+    assert constraints[-2] == (
+        "(assert (= mix_column_0_0_6_o (xor dummy_0_mix_column_0_0_6_o dummy_2_mix_column_0_0_6_o "
+        "dummy_3_mix_column_0_0_6_o dummy_4_mix_column_0_0_6_o dummy_5_mix_column_0_0_6_o)))"
+    )
+    assert constraints[-1] == (
+        "(assert (= mix_column_0_0_7_o (xor dummy_0_mix_column_0_0_7_o dummy_1_mix_column_0_0_7_o "
+        "dummy_5_mix_column_0_0_7_o dummy_6_mix_column_0_0_7_o)))"
+    )

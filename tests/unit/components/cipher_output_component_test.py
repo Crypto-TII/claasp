@@ -1,11 +1,14 @@
-from claasp.cipher_modules.models.cp.mzn_model import MznModel
-from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
-from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+from claasp.components.cipher_output_component import CipherOutput
 
 
 def test_cp_constraints():
-    speck = SpeckBlockCipher(number_of_rounds=3)
-    output_component = speck.component_from(2, 12)
+    output_component = CipherOutput(
+        2,
+        12,
+        ["xor_2_8", "xor_2_10"],
+        [list(range(16)), list(range(16))],
+        32,
+    )
     declarations, constraints = output_component.cp_constraints()
 
     assert declarations == []
@@ -16,9 +19,19 @@ def test_cp_constraints():
 
 
 def test_cp_wordwise_deterministic_truncated_xor_differential_constraints():
-    aes = ToyAESBlockCipher(number_of_rounds=3)
-    cp = MznModel(aes)
-    output_component = aes.component_from(0, 35)
+    class DummyModel:
+        word_size = 4
+
+    output_component = CipherOutput(
+        0,
+        35,
+        ["xor_0_31", "xor_0_32", "xor_0_33", "xor_0_34"],
+        [list(range(16)), list(range(16)), list(range(16)), list(range(16))],
+        64,
+        is_intermediate=True,
+        output_tag="intermediate_output",
+    )
+    cp = DummyModel()
     declarations, constraints = output_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(cp)
 
     assert declarations == []

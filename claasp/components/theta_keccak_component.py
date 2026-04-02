@@ -23,6 +23,29 @@ from claasp.cipher_modules.generic_functions import THETA_KECCAK
 
 
 class ThetaKeccak(LinearLayer):
+    """
+    Construct a Theta-Keccak component.
+
+
+    INPUT:
+
+    - ``current_round_number`` -- **integer**; round index where the component is created. ``0`` is valid.
+    - ``current_round_number_of_components`` -- **integer**; index of the component inside the round. ``0`` is valid.
+    - ``input_id_links`` -- **list**; input component identifiers (usually strings). Must align with ``input_bit_positions``.
+    - ``input_bit_positions`` -- **list**; bit positions for each input identifier (list of lists). Must align with ``input_id_links``.
+    - ``output_bit_size`` -- **integer**; output size in bits. ``0`` is valid only when supported by the component semantics.
+
+    EXAMPLES::
+
+        sage: from claasp.components.theta_keccak_component import ThetaKeccak
+        sage: component = ThetaKeccak(0, 0, ['input'], [[i for i in range(25)]], 25)
+        sage: print(component.id)
+        theta_keccak_0_0
+        sage: print(component.type)
+        linear_layer
+        sage: print(component.input_bit_size)
+        25
+    """
     def __init__(
         self,
         current_round_number,

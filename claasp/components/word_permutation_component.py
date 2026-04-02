@@ -20,6 +20,31 @@ from claasp.components.mix_column_component import MixColumn
 
 
 class WordPermutation(MixColumn):
+    """
+    Construct a word permutation component.
+
+
+    INPUT:
+
+    - ``current_round_number`` -- **integer**; round index where the component is created. ``0`` is valid.
+    - ``current_round_number_of_components`` -- **integer**; index of the component inside the round. ``0`` is valid.
+    - ``input_id_links`` -- **list**; input component identifiers (usually strings). Must align with ``input_bit_positions``.
+    - ``input_bit_positions`` -- **list**; bit positions for each input identifier (list of lists). Must align with ``input_id_links``.
+    - ``output_bit_size`` -- **integer**; output size in bits. ``0`` is valid only when supported by the component semantics.
+    - ``permutation_description`` -- **list**; permutation mapping description.
+    - ``word_size`` -- **integer**; word size used by the permutation construction.
+
+    EXAMPLES::
+
+        sage: from claasp.components.word_permutation_component import WordPermutation
+        sage: component = WordPermutation(0, 0, ['input'], [[0, 1, 2, 3]], 0, [1, 0], 2)
+        sage: print(component.id)
+        mix_column_0_0
+        sage: print(component.type)
+        mix_column
+        sage: print(component.description[2])
+        2
+    """
     def __init__(
         self,
         current_round_number,

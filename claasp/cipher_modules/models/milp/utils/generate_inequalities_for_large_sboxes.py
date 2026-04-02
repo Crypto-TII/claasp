@@ -120,7 +120,7 @@ def update_dictionary_that_contains_inequalities_for_large_sboxes(sbox, analysis
         dictio = {}
 
     if str(sbox) not in dictio.keys():
-        print("Adding sbox inequalities in pre-saved dictionary")
+        # Compute and persist inequalities the first time this S-box is requested.
         dict_product_of_sum = generate_product_of_sum_from_espresso(sbox, analysis)
         dictio[str(sbox)] = dict_product_of_sum
 

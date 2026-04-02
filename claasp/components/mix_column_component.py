@@ -41,6 +41,15 @@ from claasp.cipher_modules.component_analysis_tests import (
 )
 
 
+def _field_from_int(field, value):
+    """Convert an integer to a field element across Sage versions."""
+    if hasattr(field, "from_integer"):
+        return field.from_integer(value)
+    if hasattr(field, "fetch_int"):
+        return field.fetch_int(value)
+    return field(value)
+
+
 def add_xor_components(word_size, output_id_link_1, output_id_link_2, output_size, list_of_xor_components):
     for i in range(output_size // word_size):
         input_id_link = [output_id_link_1, output_id_link_2, f"output_xor_{output_id_link_1}_{output_id_link_2}"]
@@ -83,6 +92,30 @@ def cp_get_all_inputs(word_size, input_bit_positions, input_id_link, numb_of_inp
 
 
 class MixColumn(LinearLayer):
+    """
+    Construct a MixColumn component.
+
+
+    INPUT:
+
+    - ``current_round_number`` -- **integer**; round index where the component is created. ``0`` is valid.
+    - ``current_round_number_of_components`` -- **integer**; index of the component inside the round. ``0`` is valid.
+    - ``input_id_links`` -- **list**; input component identifiers (usually strings). Must align with ``input_bit_positions``.
+    - ``input_bit_positions`` -- **list**; bit positions for each input identifier (list of lists). Must align with ``input_id_links``.
+    - ``output_bit_size`` -- **integer**; output size in bits. ``0`` is valid only when supported by the component semantics.
+    - ``description`` -- **list**; component-specific metadata used by the implementation.
+
+    EXAMPLES::
+
+        sage: from claasp.components.mix_column_component import MixColumn
+        sage: component = MixColumn(0, 0, ['input'], [[0, 1, 2, 3]], 4, [[[2, 3], [3, 2]], 1, 3])
+        sage: print(component.id)
+        mix_column_0_0
+        sage: print(component.type)
+        mix_column
+        sage: print(component.description[1])
+        1
+    """
     def __init__(
         self,
         current_round_number,
@@ -123,13 +156,10 @@ class MixColumn(LinearLayer):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
-            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
-            sage: aes = ToyAESBlockCipher(number_of_rounds=3)
-            sage: cp = MznModel(aes)
-            sage: mix_column_component = aes.component_from(0, 21)
-            sage: mix_column_component._cp_build_truncated_table(cp.word_size)
-            'array[0..93, 1..8] of int: mix_column_truncated_table_mix_column_0_21 = array2d(0..93, 1..8, [0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,1,0,1,1,1,1,0,0,1,1,0,1,1,1,0,0,1,1,1,0,1,1,0,0,1,1,1,1,0,1,0,0,1,1,1,1,1,0,0,0,1,1,1,1,1,1,0,1,0,0,1,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,1,0,1,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,1,0,0,1,0,1,1,1,1,1,0,1,1,0,0,1,1,1,0,1,1,0,1,0,1,1,0,1,1,0,1,1,0,1,0,1,1,0,1,1,1,0,0,1,1,0,1,1,1,1,0,1,1,1,0,0,1,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,1,0,0,1,1,1,0,1,1,1,0,1,1,1,1,0,0,1,0,1,1,1,1,0,1,0,0,1,1,1,1,0,1,1,0,1,1,1,1,1,0,0,0,1,1,1,1,1,0,1,0,1,1,1,1,1,1,0,0,1,1,1,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,1,0,1,1,1,1,0,0,1,1,0,1,1,1,0,0,1,1,1,0,1,1,0,0,1,1,1,1,0,1,0,0,1,1,1,1,1,1,0,1,0,0,1,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,1,0,1,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,1,1,0,1,1,0,0,1,1,1,0,1,1,0,1,0,1,1,0,1,1,0,1,1,0,1,0,1,1,0,1,1,1,1,0,1,1,1,0,0,1,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,1,1,0,1,1,1,1,0,0,1,0,1,1,1,1,0,1,1,0,1,1,1,1,1,0,1,0,1,1,1,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,1,0,1,1,1,1,0,0,1,1,0,1,1,1,0,0,1,1,1,0,1,1,0,0,1,1,1,1,1,1,0,1,0,0,1,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,1,0,1,1,0,1,0,1,1,1,1,1,0,1,1,0,0,1,1,1,0,1,1,0,1,0,1,1,0,1,1,0,1,1,1,1,0,1,1,1,0,0,1,1,0,1,1,1,0,1,1,1,0,1,1,1,1,0,1,1,0,1,1,1,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,1,0,1,1,1,1,0,0,1,1,0,1,1,1,0,0,1,1,1,1,1,1,0,1,0,0,1,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,1,1,1,1,0,1,1,0,0,1,1,1,0,1,1,0,1,1,1,1,0,1,1,1,0,1,1,1,0,1,1,1,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,1,0,1,1,1,1,0,0,1,1,1,1,1,1,0,1,0,0,1,1,1,1,0,1,0,1,1,1,1,1,0,1,1,0,1,1,1,1,0,1,1,1,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,1,1,1,1,1,1,0,1,0,1,1,1,1,1,0,1,1,1,1,1,1,1,1,0,0,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1]);'
+            sage: from claasp.components.mix_column_component import MixColumn
+            sage: mix_column_component = MixColumn(0, 0, ['in'], [[0, 1, 2, 3]], 4, [[[1, 0], [0, 1]], 0, 2])
+            sage: mix_column_component._cp_build_truncated_table(2)
+            'array[0..11, 1..4] of int: mix_column_truncated_table_mix_column_0_0 = array2d(0..11, 1..4, [0,0,0,0,0,0,1,1,0,1,0,1,0,1,1,0,0,1,1,1,1,0,0,1,1,0,1,0,1,0,1,1,1,1,0,0,1,1,0,1,1,1,1,0,1,1,1,1]);'
         """
         input_size = int(self.input_bit_size)
         output_size = int(self.output_bit_size)
@@ -166,16 +196,15 @@ class MixColumn(LinearLayer):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
-            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
-            sage: aes = ToyAESBlockCipher(number_of_rounds=3)
-            sage: cp = MznModel(aes)
-            sage: mix_column_component_1 = aes.component_from(0, 21)
-            sage: mix_column_component_2 = aes.component_from(0, 22)
-            sage: mix_column_component_1._cp_create_component(cp.word_size, mix_column_component_2, 1, cp.list_of_xor_components)
-            (['array[0..3] of var 0..1: input_xor_mix_column_0_22_mix_column_0_21;',
-              'array[0..3] of var 0..1: output_xor_mix_column_0_22_mix_column_0_21;'],
-             ['constraint table([input_xor_mix_column_0_22_mix_column_0_21[s]|s in 0..3]++[output_xor_mix_column_0_22_mix_column_0_21[s]|s in 0..3],mix_column_truncated_table_1);'])
+            sage: from claasp.components.mix_column_component import MixColumn
+            sage: mix_column_component_1 = MixColumn(0, 0, ['in'], [[0, 1, 2, 3]], 4, [[[1, 0], [0, 1]], 0, 2])
+            sage: mix_column_component_2 = MixColumn(0, 1, ['in2'], [[0, 1, 2, 3]], 4, [[[1, 0], [0, 1]], 0, 2])
+            sage: declarations, constraints = mix_column_component_1._cp_create_component(2, mix_column_component_2, 1, [])
+            sage: declarations
+            ['array[0..1] of var 0..1: input_xor_mix_column_0_1_mix_column_0_0;',
+            'array[0..1] of var 0..1: output_xor_mix_column_0_1_mix_column_0_0;']
+            sage: constraints
+            ['constraint table([input_xor_mix_column_0_1_mix_column_0_0[s]|s in 0..1]++[output_xor_mix_column_0_1_mix_column_0_0[s]|s in 0..1],mix_column_truncated_table_1);']
         """
         cp_declarations = []
         cp_constraints = []
@@ -252,18 +281,36 @@ class MixColumn(LinearLayer):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
+            sage: from claasp.ciphers.single_component_ciphers.mix_column_cipher import MixColumnCipher
             sage: from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
-            sage: midori = MidoriBlockCipher(number_of_rounds=16)
-            sage: mix_column = midori.get_component_from_id("mix_column_0_20")
-            sage: mix_column.algebraic_polynomials(AlgebraicModel(midori))
-            [mix_column_0_20_x0 + mix_column_0_20_y0,
-             mix_column_0_20_x1 + mix_column_0_20_y1,
-             mix_column_0_20_x2 + mix_column_0_20_y2,
-             ...
-             mix_column_0_20_y61^2 + mix_column_0_20_y61,
-             mix_column_0_20_y62^2 + mix_column_0_20_y62,
-             mix_column_0_20_y63^2 + mix_column_0_20_y63]
+            sage: cipher = MixColumnCipher(word_size=4, matrix=[[1, 1], [1, 1]], irreducible_polynomial=0b10011)
+            sage: mix_column = cipher.get_component_from_id("mix_column_0_0")
+            sage: polys = mix_column.algebraic_polynomials(AlgebraicModel(cipher))
+            sage: polys
+            [mix_column_0_0_x0 + mix_column_0_0_x4 + mix_column_0_0_y0,
+            mix_column_0_0_x1 + mix_column_0_0_x5 + mix_column_0_0_y1,
+            mix_column_0_0_x2 + mix_column_0_0_x6 + mix_column_0_0_y2,
+            mix_column_0_0_x3 + mix_column_0_0_x7 + mix_column_0_0_y3,
+            mix_column_0_0_x0 + mix_column_0_0_x4 + mix_column_0_0_y4,
+            mix_column_0_0_x1 + mix_column_0_0_x5 + mix_column_0_0_y5,
+            mix_column_0_0_x2 + mix_column_0_0_x6 + mix_column_0_0_y6,
+            mix_column_0_0_x3 + mix_column_0_0_x7 + mix_column_0_0_y7,
+            mix_column_0_0_x0^2 + mix_column_0_0_x0,
+            mix_column_0_0_x1^2 + mix_column_0_0_x1,
+            mix_column_0_0_x2^2 + mix_column_0_0_x2,
+            mix_column_0_0_x3^2 + mix_column_0_0_x3,
+            mix_column_0_0_x4^2 + mix_column_0_0_x4,
+            mix_column_0_0_x5^2 + mix_column_0_0_x5,
+            mix_column_0_0_x6^2 + mix_column_0_0_x6,
+            mix_column_0_0_x7^2 + mix_column_0_0_x7,
+            mix_column_0_0_y0^2 + mix_column_0_0_y0,
+            mix_column_0_0_y1^2 + mix_column_0_0_y1,
+            mix_column_0_0_y2^2 + mix_column_0_0_y2,
+            mix_column_0_0_y3^2 + mix_column_0_0_y3,
+            mix_column_0_0_y4^2 + mix_column_0_0_y4,
+            mix_column_0_0_y5^2 + mix_column_0_0_y5,
+            mix_column_0_0_y6^2 + mix_column_0_0_y6,
+            mix_column_0_0_y7^2 + mix_column_0_0_y7]
         """
         ninputs = self.input_bit_size
         noutputs = self.output_bit_size
@@ -276,7 +323,7 @@ class MixColumn(LinearLayer):
             E = FiniteField(2**deg_of_extension)
 
         init_matrix = self.description[0]
-        M = Matrix(E, [[E.fetch_int(value) for value in row] for row in init_matrix])
+        M = Matrix(E, [[_field_from_int(E, value) for value in row] for row in init_matrix])
 
         ninput_words = M.ncols()
         noutput_words = M.nrows()
@@ -298,31 +345,6 @@ class MixColumn(LinearLayer):
         return polynomials
 
     def cms_constraints(self):
-        """
-        Return a list of variables and a list of clauses for MIX COLUMN in CMS CIPHER model.
-
-        .. SEEALSO::
-
-            :ref:`sat-standard` for the format.
-
-        INPUT:
-
-        - None
-
-        EXAMPLES::
-
-            sage: from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
-            sage: midori = MidoriBlockCipher(number_of_rounds=3)
-            sage: mix_column_component = midori.component_from(0, 23)
-            sage: mix_column_component.cms_constraints()
-            (['mix_column_0_23_0',
-              'mix_column_0_23_1',
-              'mix_column_0_23_2',
-              ...
-              '-mix_column_0_23_15 -mix_column_0_20_35 mix_column_0_20_39 -mix_column_0_20_43',
-              '-mix_column_0_23_15 mix_column_0_20_35 -mix_column_0_20_39 -mix_column_0_20_43',
-              'mix_column_0_23_15 -mix_column_0_20_35 -mix_column_0_20_39 -mix_column_0_20_43'])
-        """
         return self.sat_constraints()
 
     def cms_xor_differential_propagation_constraints(self, model):
@@ -341,14 +363,16 @@ class MixColumn(LinearLayer):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
-            sage: aes = ToyAESBlockCipher(number_of_rounds=3)
-            sage: mix_column_component = aes.component_from(0, 21)
-            sage: mix_column_component.cp_constraints()
-            ([],
-             ['constraint mix_column_0_21[0] = (rot_0_17[1] + rot_0_18[0] + rot_0_18[1] + rot_0_19[0] + rot_0_20[0]) mod 2;',
-              ...
-              'constraint mix_column_0_21[31] = (rot_0_17[0] + rot_0_17[7] + rot_0_18[7] + rot_0_19[7] + rot_0_20[0]) mod 2;'])
+            sage: from claasp.components.mix_column_component import MixColumn
+            sage: mix_column_component = MixColumn(0, 0, ['in'], [[0, 1, 2, 3]], 4, [[[1, 0], [0, 1]], 0, 2])
+            sage: declarations, constraints = mix_column_component.cp_constraints()
+            sage: declarations
+            []
+            sage: constraints
+            ['constraint mix_column_0_0[0] = (in[0]) mod 2;',
+            'constraint mix_column_0_0[1] = (in[1]) mod 2;',
+            'constraint mix_column_0_0[2] = (in[2]) mod 2;',
+            'constraint mix_column_0_0[3] = (in[3]) mod 2;']
         """
         matrix = binary_matrix_of_linear_component(self)
         matrix_transposed = [[matrix[i][j] for i in range(matrix.nrows())] for j in range(matrix.ncols())]
@@ -369,14 +393,16 @@ class MixColumn(LinearLayer):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
-            sage: aes = ToyAESBlockCipher(number_of_rounds=3)
-            sage: mix_column_component = aes.component_from(0, 21)
-            sage: mix_column_component.cp_deterministic_truncated_xor_differential_constraints()
-            ([],
-             ['constraint if ((rot_0_17[1] < 2) /\\ (rot_0_18[0] < 2) /\\ (rot_0_18[1] < 2) /\\ (rot_0_19[0] < 2) /\\ (rot_0_20[0] < 2)) then mix_column_0_21[0] = (rot_0_17[1] + rot_0_18[0] + rot_0_18[1] + rot_0_19[0] + rot_0_20[0]) mod 2 else mix_column_0_21[0] = 2 endif;',
-               ...
-              'constraint if ((rot_0_17[0] < 2) /\\ (rot_0_17[7] < 2) /\\ (rot_0_18[7] < 2) /\\ (rot_0_19[7] < 2) /\\ (rot_0_20[0] < 2)) then mix_column_0_21[31] = (rot_0_17[0] + rot_0_17[7] + rot_0_18[7] + rot_0_19[7] + rot_0_20[0]) mod 2 else mix_column_0_21[31] = 2 endif;'])
+            sage: from claasp.components.mix_column_component import MixColumn
+            sage: mix_column_component = MixColumn(0, 0, ['in'], [[0, 1, 2, 3]], 4, [[[1, 0], [0, 1]], 0, 2])
+            sage: declarations, constraints = mix_column_component.cp_deterministic_truncated_xor_differential_constraints()
+            sage: declarations
+            []
+            sage: constraints
+            ['constraint if ((in[0] < 2)) then mix_column_0_0[0] = (in[0]) mod 2 else mix_column_0_0[0] = 2 endif;',
+            'constraint if ((in[1] < 2)) then mix_column_0_0[1] = (in[1]) mod 2 else mix_column_0_0[1] = 2 endif;',
+            'constraint if ((in[2] < 2)) then mix_column_0_0[2] = (in[2]) mod 2 else mix_column_0_0[2] = 2 endif;',
+            'constraint if ((in[3] < 2)) then mix_column_0_0[3] = (in[3]) mod 2 else mix_column_0_0[3] = 2 endif;']
         """
         matrix = binary_matrix_of_linear_component(self)
         matrix_transposed = [[matrix[i][j] for i in range(matrix.nrows())] for j in range(matrix.ncols())]
@@ -403,15 +429,15 @@ class MixColumn(LinearLayer):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
-            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
-            sage: aes = ToyAESBlockCipher(number_of_rounds=3)
-            sage: cp = MznModel(aes)
-            sage: mix_column_component = aes.component_from(0, 21)
-            sage: mix_column_component.cp_xor_differential_propagation_first_step_constraints(cp)
-            (['array[0..3] of var 0..1: mix_column_0_21;',
-              'array[0..93, 1..8] of int: mix_column_truncated_table_mix_column_0_21 = array2d(0..93, 1..8, [0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,1,0,1,1,1,1,0,0,1,1,0,1,1,1,0,0,1,1,1,0,1,1,0,0,1,1,1,1,0,1,0,0,1,1,1,1,1,0,0,0,1,1,1,1,1,1,0,1,0,0,1,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,1,0,1,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,1,0,0,1,0,1,1,1,1,1,0,1,1,0,0,1,1,1,0,1,1,0,1,0,1,1,0,1,1,0,1,1,0,1,0,1,1,0,1,1,1,0,0,1,1,0,1,1,1,1,0,1,1,1,0,0,1,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,1,0,0,1,1,1,0,1,1,1,0,1,1,1,1,0,0,1,0,1,1,1,1,0,1,0,0,1,1,1,1,0,1,1,0,1,1,1,1,1,0,0,0,1,1,1,1,1,0,1,0,1,1,1,1,1,1,0,0,1,1,1,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,1,0,1,1,1,1,0,0,1,1,0,1,1,1,0,0,1,1,1,0,1,1,0,0,1,1,1,1,0,1,0,0,1,1,1,1,1,1,0,1,0,0,1,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,1,0,1,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,1,1,0,1,1,0,0,1,1,1,0,1,1,0,1,0,1,1,0,1,1,0,1,1,0,1,0,1,1,0,1,1,1,1,0,1,1,1,0,0,1,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,1,1,0,1,1,1,1,0,0,1,0,1,1,1,1,0,1,1,0,1,1,1,1,1,0,1,0,1,1,1,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,1,0,1,1,1,1,0,0,1,1,0,1,1,1,0,0,1,1,1,0,1,1,0,0,1,1,1,1,1,1,0,1,0,0,1,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,1,0,1,1,0,1,0,1,1,1,1,1,0,1,1,0,0,1,1,1,0,1,1,0,1,0,1,1,0,1,1,0,1,1,1,1,0,1,1,1,0,0,1,1,0,1,1,1,0,1,1,1,0,1,1,1,1,0,1,1,0,1,1,1,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,1,0,1,1,1,1,0,0,1,1,0,1,1,1,0,0,1,1,1,1,1,1,0,1,0,0,1,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,1,1,1,1,0,1,1,0,0,1,1,1,0,1,1,0,1,1,1,1,0,1,1,1,0,1,1,1,0,1,1,1,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,1,0,1,1,1,1,0,0,1,1,1,1,1,1,0,1,0,0,1,1,1,1,0,1,0,1,1,1,1,1,0,1,1,0,1,1,1,1,0,1,1,1,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,1,1,1,1,1,1,0,1,0,1,1,1,1,1,0,1,1,1,1,1,1,1,1,0,0,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1]);'],
-             ['constraint table([rot_0_17[0]]++[rot_0_18[0]]++[rot_0_19[0]]++[rot_0_20[0]]++[mix_column_0_21[0]]++[mix_column_0_21[1]]++[mix_column_0_21[2]]++[mix_column_0_21[3]], mix_column_truncated_table_mix_column_0_21);'])
+            sage: from claasp.components.mix_column_component import MixColumn
+            sage: mix_column_component = MixColumn(0, 0, ['in'], [[0, 1, 2, 3]], 4, [[[1, 0], [0, 1]], 0, 2])
+            sage: DummyModel = type('DummyModel', (), {'word_size': 2, 'mix_column_mant': [], 'list_of_xor_components': []})
+            sage: declarations, constraints = mix_column_component.cp_xor_differential_propagation_first_step_constraints(DummyModel())
+            sage: declarations
+            ['array[0..1] of var 0..1: mix_column_0_0;',
+            'array[0..11, 1..4] of int: mix_column_truncated_table_mix_column_0_0 = array2d(0..11, 1..4, [0,0,0,0,0,0,1,1,0,1,0,1,0,1,1,0,0,1,1,1,1,0,0,1,1,0,1,0,1,0,1,1,1,1,0,0,1,1,0,1,1,1,1,0,1,1,1,1]);']
+            sage: constraints
+            ['constraint table([in[0]]++[in[1]]++[mix_column_0_0[0]]++[mix_column_0_0[1]], mix_column_truncated_table_mix_column_0_0);']
         """
         output_size = int(self.output_bit_size)
         input_id_link = self.input_id_links
@@ -486,15 +512,16 @@ class MixColumn(LinearLayer):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
-            sage: aes = ToyAESBlockCipher(number_of_rounds=3)
-            sage: mix_column_component = aes.component_from(0, 21)
-            sage: mix_column_component.cp_xor_linear_mask_propagation_constraints()
-            (['array[0..31] of var 0..1:mix_column_0_21_i;',
-              'array[0..31] of var 0..1:mix_column_0_21_o;'],
-             ['constraint mix_column_0_21_i[0]=(mix_column_0_21_o[1]+mix_column_0_21_o[2]+mix_column_0_21_o[3]+mix_column_0_21_o[8]+mix_column_0_21_o[9]+mix_column_0_21_o[11]+mix_column_0_21_o[16]+mix_column_0_21_o[18]+mix_column_0_21_o[19]+mix_column_0_21_o[24]+mix_column_0_21_o[27]) mod 2;',
-              ...
-              'constraint mix_column_0_21_i[31]=(mix_column_0_21_o[0]+mix_column_0_21_o[2]+mix_column_0_21_o[7]+mix_column_0_21_o[9]+mix_column_0_21_o[10]+mix_column_0_21_o[15]+mix_column_0_21_o[18]+mix_column_0_21_o[23]+mix_column_0_21_o[24]+mix_column_0_21_o[25]+mix_column_0_21_o[26]) mod 2;'])
+            sage: from claasp.components.mix_column_component import MixColumn
+            sage: mix_column_component = MixColumn(0, 0, ['in'], [[0, 1, 2, 3]], 4, [[[1, 0], [0, 1]], 0, 2])
+            sage: declarations, constraints = mix_column_component.cp_xor_linear_mask_propagation_constraints()
+            sage: declarations
+            ['array[0..3] of var 0..1:mix_column_0_0_i;', 'array[0..3] of var 0..1:mix_column_0_0_o;']
+            sage: constraints
+            ['constraint mix_column_0_0_i[0]=(mix_column_0_0_o[0]) mod 2;',
+            'constraint mix_column_0_0_i[1]=(mix_column_0_0_o[1]) mod 2;',
+            'constraint mix_column_0_0_i[2]=(mix_column_0_0_o[2]) mod 2;',
+            'constraint mix_column_0_0_i[3]=(mix_column_0_0_o[3]) mod 2;']
         """
         cp_declarations = [
             f"array[0..{self.input_bit_size - 1}] of var 0..1:{self.id}_i;",
@@ -512,6 +539,34 @@ class MixColumn(LinearLayer):
         return cp_declarations, cp_constraints
 
     def get_bit_based_c_code(self, verbosity):
+        """
+        Return C code lines that evaluate this MIX COLUMN on bit strings.
+
+        INPUT:
+
+        - ``verbosity`` -- **boolean**; when ``True``, generated code includes debug print statements.
+
+        OUTPUT:
+
+        - **list**; C code lines as strings.
+
+        EXAMPLES::
+
+            sage: from claasp.components.mix_column_component import MixColumn
+            sage: component = MixColumn(0, 0, ['in'], [[0, 1, 2, 3]], 4, [[[1, 0], [0, 1]], 0, 2])
+            sage: code = component.get_bit_based_c_code(False)
+            sage: code
+            ['\tinput_id = (BitString*[]) {in};\n\tinput_positions = (uint16_t*[]) {',
+            '\t\t(uint16_t[]) {4, 0, 1, 2, 3},',
+            '\t};',
+            '\tinput = select_bits(1, input_id, input_positions, 4);',
+            '\tmatrix = (uint64_t*[]) {',
+            '\t\t(uint64_t[]) {1, 0},',
+            '\t\t(uint64_t[]) {0, 1},',
+            '\t};',
+            '\tBitString* mix_column_0_0 = MIX_COLUMNS(input, matrix, 0, 2);\n',
+            '\tdelete_bitstring(input);\n']
+        """
         mix_column_code = []
         self.select_bits(mix_column_code)
 
@@ -532,6 +587,26 @@ class MixColumn(LinearLayer):
         return mix_column_code
 
     def get_bit_based_vectorized_python_code(self, params, convert_output_to_bytes):
+        """
+        Return vectorized Python code lines for bit-based MIX COLUMN evaluation.
+
+        INPUT:
+
+        - ``params`` -- **list**; variable names feeding this component.
+        - ``convert_output_to_bytes`` -- **boolean**; reserved for API compatibility.
+
+        OUTPUT:
+
+        - **list**; Python code lines as strings.
+
+        EXAMPLES::
+
+            sage: from claasp.components.mix_column_component import MixColumn
+            sage: component = MixColumn(0, 0, ['in'], [[0, 1, 2, 3]], 4, [[[1, 0], [0, 1]], 0, 2])
+            sage: code = component.get_bit_based_vectorized_python_code(['in'], False)
+            sage: code
+            ['  mix_column_0_0 = bit_vector_mix_column(bit_vector_CONCAT([ ]), [[1, 0], [0, 1]], , 2)']
+        """
         matrix = self.description[0]
         polynomial = self.description[1]
         input_size = self.description[2]
@@ -546,7 +621,7 @@ class MixColumn(LinearLayer):
                 for element in row:
                     if element not in mul_tables:
                         mul_tables[element] = [
-                            (F.fetch_int(i) * F.fetch_int(element)).integer_representation()
+                            (_field_from_int(F, i) * _field_from_int(F, element)).integer_representation()
                             for i in range(2**input_size)
                         ]
             params_mix_column = [
@@ -560,6 +635,25 @@ class MixColumn(LinearLayer):
         ]
 
     def get_byte_based_vectorized_python_code(self, params):
+        """
+        Return vectorized Python code lines for byte-based MIX COLUMN evaluation.
+
+        INPUT:
+
+        - ``params`` -- **list**; variable names feeding this component.
+
+        OUTPUT:
+
+        - **list**; Python code lines as strings.
+
+        EXAMPLES::
+
+            sage: from claasp.components.mix_column_component import MixColumn
+            sage: component = MixColumn(0, 0, ['in'], [[0, 1, 2, 3]], 4, [[[1, 0], [0, 1]], 0, 2])
+            sage: code = component.get_byte_based_vectorized_python_code(['in'])
+            sage: code
+            ["  mix_column_0_0=byte_vector_mix_column_poly0(['in'] , [[1, 0], [0, 1]], 2)"]
+        """
         matrix = self.description[0]
         polynomial = self.description[1]
         input_size = self.description[2]
@@ -573,7 +667,7 @@ class MixColumn(LinearLayer):
                 for element in row:
                     if element not in mul_tables:
                         mul_tables[element] = [
-                            (F.fetch_int(i) * F.fetch_int(element)).integer_representation()
+                            (_field_from_int(F, i) * _field_from_int(F, element)).integer_representation()
                             for i in range(2**input_size)
                         ]
             return [f"  {self.id}=byte_vector_mix_column({params} , {matrix}, {mul_tables}, {input_size})"]
@@ -589,24 +683,17 @@ class MixColumn(LinearLayer):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
+            sage: from claasp.ciphers.single_component_ciphers.mix_column_cipher import MixColumnCipher
             sage: from claasp.cipher_modules.models.milp.milp_model import MilpModel
-            sage: aes = ToyAESBlockCipher(number_of_rounds=3)
-            sage: milp = MilpModel(aes)
+            sage: cipher = MixColumnCipher(word_size=2, matrix=[[1, 0], [0, 1]], irreducible_polynomial=0)
+            sage: milp = MilpModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
-            sage: mix_column_component = aes.component_from(0, 21)
+            sage: mix_column_component = cipher.component_from(0, 0)
             sage: variables, constraints = mix_column_component.milp_constraints(milp)
-            ...
-            sage: variables
-            [('x[rot_0_17_0]', x_0),
-            ('x[rot_0_17_1]', x_1),
-            ...
-            ('x[mix_column_0_21_30]', x_62),
-            ('x[mix_column_0_21_31]', x_63)]
-            sage: constraints[:3]
-            [1 <= 1 - x_1 + x_8 + x_9 + x_16 + x_24 + x_32,
-             1 <= 1 + x_1 - x_8 + x_9 + x_16 + x_24 + x_32,
-             1 <= 1 + x_1 + x_8 - x_9 + x_16 + x_24 + x_32]
+            sage: len(variables)
+            8
+            sage: constraints
+            [x_4 == x_0, x_5 == x_1, x_6 == x_2, x_7 == x_3]
         """
         bin_matrix = binary_matrix_of_linear_component(self)
         matrix_transposed = [[bin_matrix[i][j] for i in range(bin_matrix.nrows())] for j in range(bin_matrix.ncols())]
@@ -630,27 +717,24 @@ class MixColumn(LinearLayer):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
+            sage: from claasp.ciphers.single_component_ciphers.mix_column_cipher import MixColumnCipher
             sage: from claasp.cipher_modules.models.milp.milp_model import MilpModel
-            sage: midori = MidoriBlockCipher()
-            sage: milp = MilpModel(midori)
+            sage: cipher = MixColumnCipher(word_size=2, matrix=[[1, 0], [0, 1]], irreducible_polynomial=0)
+            sage: milp = MilpModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
-            sage: mix_column_component = midori.component_from(0, 20)
+            sage: mix_column_component = cipher.component_from(0, 0)
             sage: variables, constraints = mix_column_component.milp_xor_linear_mask_propagation_constraints(milp)
-            ...
             sage: variables
-            [('x[mix_column_0_20_0_i]', x_0),
-             ('x[mix_column_0_20_1_i]', x_1),
-            ...
-             ('x[mix_column_0_20_62_o]', x_126),
-             ('x[mix_column_0_20_63_o]', x_127)]
-
+            [('x[mix_column_0_0_0_i]', x_0),
+            ('x[mix_column_0_0_1_i]', x_1),
+            ('x[mix_column_0_0_2_i]', x_2),
+            ('x[mix_column_0_0_3_i]', x_3),
+            ('x[mix_column_0_0_0_o]', x_4),
+            ('x[mix_column_0_0_1_o]', x_5),
+            ('x[mix_column_0_0_2_o]', x_6),
+            ('x[mix_column_0_0_3_o]', x_7)]
             sage: constraints
-            [x_64 == x_0,
-             x_65 == x_1,
-            ...
-            x_126 == x_34,
-            x_127 == x_35]
+            [x_4 == x_0, x_5 == x_1, x_6 == x_2, x_7 == x_3]
         """
         bin_matrix = binary_matrix_of_linear_component(self)
         matrix_transposed = [[bin_matrix[i][j] for i in range(bin_matrix.nrows())] for j in range(bin_matrix.ncols())]
@@ -673,35 +757,41 @@ class MixColumn(LinearLayer):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
-            sage: aes = ToyAESBlockCipher(number_of_rounds=2)
+            sage: from claasp.ciphers.single_component_ciphers.mix_column_cipher import MixColumnCipher
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import MilpWordwiseDeterministicTruncatedXorDifferentialModel
-            sage: milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(aes)
-            sage: milp.init_model_in_sage_milp_class()
-            sage: mix_column_component = aes.component_from(0, 21)
-            sage: variables, constraints = mix_column_component.milp_wordwise_deterministic_truncated_xor_differential_constraints(milp) # random
-            sage: variables
-            [('x[rot_0_17_word_0_class_bit_0]', x_0),
-             ('x[rot_0_17_word_0_class_bit_1]', x_1),
-             ...
-             ('x[mix_column_0_21_word_3_class_bit_0]', x_14),
-             ('x[mix_column_0_21_word_3_class_bit_1]', x_15)]
-            sage: constraints
-            [1 <= 1 + x_0 + x_1 + x_2 + x_3 + x_4 + x_5 + x_6 - x_15,
-             1 <= 1 + x_0 + x_1 + x_2 + x_3 + x_4 + x_5 + x_7 - x_15,
-             ...
-            1 <= 1 - x_11 + x_13,
-            1 <= 1 - x_9 + x_11]
-
-            sage: from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
-            sage: cipher = MidoriBlockCipher(number_of_rounds=2)
-            sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import MilpWordwiseDeterministicTruncatedXorDifferentialModel
+            sage: cipher = MixColumnCipher(word_size=4, matrix=[[1, 1], [1, 1]], irreducible_polynomial=0b10011)
             sage: milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
-            sage: mix_column_component = cipher.component_from(0, 21)
+            sage: mix_column_component = cipher.component_from(0, 0)
             sage: variables, constraints = mix_column_component.milp_wordwise_deterministic_truncated_xor_differential_constraints(milp)
-            ...
-
+            sage: variables
+            [('x[plaintext_word_0_class_bit_0]', x_0),
+            ('x[plaintext_word_0_class_bit_1]', x_1),
+            ('x[plaintext_word_1_class_bit_0]', x_2),
+            ('x[plaintext_word_1_class_bit_1]', x_3),
+            ('x[mix_column_0_0_word_0_class_bit_0]', x_4),
+            ('x[mix_column_0_0_word_0_class_bit_1]', x_5),
+            ('x[mix_column_0_0_word_1_class_bit_0]', x_6),
+            ('x[mix_column_0_0_word_1_class_bit_1]', x_7)]
+            sage: constraints
+            [1 <= 1 + x_0 + x_1 + x_2 - x_7,
+            1 <= 1 + x_0 + x_1 + x_3 - x_7,
+            1 <= 1 + x_0 + x_2 + x_3 - x_7,
+            1 <= 2 - x_0 - x_3 + x_7,
+            1 <= 2 - x_0 - x_2 + x_7,
+            1 <= 2 - x_0 - x_1 + x_7,
+            1 <= 1 - x_0 + x_6,
+            1 <= 2 - x_1 - x_3 + x_7,
+            1 <= 1 + x_0 + x_1 + x_2 + x_3 - x_4,
+            1 <= 2 - x_1 - x_2 + x_7,
+            1 <= 2 - x_2 - x_3 + x_7,
+            1 <= 1 - x_1 + x_6,
+            1 <= 1 + x_1 + x_2 + x_3 - x_7,
+            1 <= 1 + x_5 - x_7,
+            1 <= 1 - x_2 + x_6,
+            1 <= 1 - x_3 + x_6,
+            1 <= 1 + x_4 - x_6,
+            1 <= 1 - x_5 + x_7]
         """
 
         constraints = []
@@ -750,12 +840,24 @@ class MixColumn(LinearLayer):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
-            sage: midori = MidoriBlockCipher(number_of_rounds=3)
-            sage: mix_column_component = midori.component_from(0, 23)
+            sage: from claasp.ciphers.single_component_ciphers.mix_column_cipher import MixColumnCipher
+            sage: cipher = MixColumnCipher(word_size=2, matrix=[[1, 0], [0, 1]], irreducible_polynomial=0)
+            sage: mix_column_component = cipher.component_from(0, 0)
             sage: variables, constraints = mix_column_component.sat_constraints()
-            sage: constraints[-1]
-            'mix_column_0_23_15 -mix_column_0_20_35 -mix_column_0_20_39 -mix_column_0_20_43'
+            sage: variables
+            ['mix_column_0_0_0',
+            'mix_column_0_0_1',
+            'mix_column_0_0_2',
+            'mix_column_0_0_3']
+            sage: constraints
+            ['-mix_column_0_0_0 plaintext_0',
+            'mix_column_0_0_0 -plaintext_0',
+            '-mix_column_0_0_1 plaintext_1',
+            'mix_column_0_0_1 -plaintext_1',
+            '-mix_column_0_0_2 plaintext_2',
+            'mix_column_0_0_2 -plaintext_2',
+            '-mix_column_0_0_3 plaintext_3',
+            'mix_column_0_0_3 -plaintext_3']
         """
         matrix = binary_matrix_of_linear_component(self)
         matrix_transposed = [[matrix[i][j] for i in range(matrix.nrows())] for j in range(matrix.ncols())]
@@ -784,12 +886,36 @@ class MixColumn(LinearLayer):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
-            sage: midori = MidoriBlockCipher(number_of_rounds=3)
-            sage: mix_column_component = midori.component_from(0, 23)
+            sage: from claasp.ciphers.single_component_ciphers.mix_column_cipher import MixColumnCipher
+            sage: cipher = MixColumnCipher(word_size=2, matrix=[[1, 0], [0, 1]], irreducible_polynomial=0)
+            sage: mix_column_component = cipher.component_from(0, 0)
             sage: variables, constraints = mix_column_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
-            sage: constraints[-1]
-            'mix_column_0_23_15_0 -inter_0_mix_column_0_23_15_1 -mix_column_0_20_43_1 -mix_column_0_23_15_1'
+            sage: variables
+            ['mix_column_0_0_0_0',
+            'mix_column_0_0_1_0',
+            'mix_column_0_0_2_0',
+            'mix_column_0_0_3_0',
+            'mix_column_0_0_0_1',
+            'mix_column_0_0_1_1',
+            'mix_column_0_0_2_1',
+            'mix_column_0_0_3_1']
+            sage: constraints
+            ['mix_column_0_0_0_0 -plaintext_0_0',
+            'plaintext_0_0 -mix_column_0_0_0_0',
+            'mix_column_0_0_0_1 -plaintext_0_1',
+            'plaintext_0_1 -mix_column_0_0_0_1',
+            'mix_column_0_0_1_0 -plaintext_1_0',
+            'plaintext_1_0 -mix_column_0_0_1_0',
+            'mix_column_0_0_1_1 -plaintext_1_1',
+            'plaintext_1_1 -mix_column_0_0_1_1',
+            'mix_column_0_0_2_0 -plaintext_2_0',
+            'plaintext_2_0 -mix_column_0_0_2_0',
+            'mix_column_0_0_2_1 -plaintext_2_1',
+            'plaintext_2_1 -mix_column_0_0_2_1',
+            'mix_column_0_0_3_0 -plaintext_3_0',
+            'plaintext_3_0 -mix_column_0_0_3_0',
+            'mix_column_0_0_3_1 -plaintext_3_1',
+            'plaintext_3_1 -mix_column_0_0_3_1']
         """
         matrix = binary_matrix_of_linear_component(self)
         matrix_transposed = [[matrix[i][j] for i in range(matrix.nrows())] for j in range(matrix.ncols())]
@@ -817,12 +943,24 @@ class MixColumn(LinearLayer):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
-            sage: midori = MidoriBlockCipher(number_of_rounds=3)
-            sage: mix_column_component = midori.component_from(0, 23)
+            sage: from claasp.ciphers.single_component_ciphers.mix_column_cipher import MixColumnCipher
+            sage: cipher = MixColumnCipher(word_size=2, matrix=[[1, 0], [0, 1]], irreducible_polynomial=0)
+            sage: mix_column_component = cipher.component_from(0, 0)
             sage: variables, constraints = mix_column_component.sat_xor_differential_propagation_constraints()
-            sage: constraints[-1]
-            'mix_column_0_23_15 -mix_column_0_20_35 -mix_column_0_20_39 -mix_column_0_20_43'
+            sage: variables
+            ['mix_column_0_0_0',
+            'mix_column_0_0_1',
+            'mix_column_0_0_2',
+            'mix_column_0_0_3']
+            sage: constraints
+            ['-mix_column_0_0_0 plaintext_0',
+            'mix_column_0_0_0 -plaintext_0',
+            '-mix_column_0_0_1 plaintext_1',
+            'mix_column_0_0_1 -plaintext_1',
+            '-mix_column_0_0_2 plaintext_2',
+            'mix_column_0_0_2 -plaintext_2',
+            '-mix_column_0_0_3 plaintext_3',
+            'mix_column_0_0_3 -plaintext_3']
         """
         return self.sat_constraints()
 
@@ -844,12 +982,40 @@ class MixColumn(LinearLayer):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
-            sage: midori = MidoriBlockCipher(number_of_rounds=3)
-            sage: mix_column_component = midori.component_from(0, 23)
+            sage: from claasp.ciphers.single_component_ciphers.mix_column_cipher import MixColumnCipher
+            sage: cipher = MixColumnCipher(word_size=2, matrix=[[1, 0], [0, 1]], irreducible_polynomial=0)
+            sage: mix_column_component = cipher.component_from(0, 0)
             sage: variables, constraints = mix_column_component.sat_xor_linear_mask_propagation_constraints()
-            sage: constraints[-1]
-            'mix_column_0_23_15_o -dummy_3_mix_column_0_23_15_o -dummy_7_mix_column_0_23_15_o -dummy_11_mix_column_0_23_15_o'
+            sage: variables
+            ['mix_column_0_0_0_i',
+            'mix_column_0_0_1_i',
+            'mix_column_0_0_2_i',
+            'mix_column_0_0_3_i',
+            'dummy_0_mix_column_0_0_0_o',
+            'dummy_1_mix_column_0_0_1_o',
+            'dummy_2_mix_column_0_0_2_o',
+            'dummy_3_mix_column_0_0_3_o',
+            'mix_column_0_0_0_o',
+            'mix_column_0_0_1_o',
+            'mix_column_0_0_2_o',
+            'mix_column_0_0_3_o']
+            sage: constraints
+            ['mix_column_0_0_0_i -dummy_0_mix_column_0_0_0_o',
+            'dummy_0_mix_column_0_0_0_o -mix_column_0_0_0_i',
+            'mix_column_0_0_1_i -dummy_1_mix_column_0_0_1_o',
+            'dummy_1_mix_column_0_0_1_o -mix_column_0_0_1_i',
+            'mix_column_0_0_2_i -dummy_2_mix_column_0_0_2_o',
+            'dummy_2_mix_column_0_0_2_o -mix_column_0_0_2_i',
+            'mix_column_0_0_3_i -dummy_3_mix_column_0_0_3_o',
+            'dummy_3_mix_column_0_0_3_o -mix_column_0_0_3_i',
+            '-mix_column_0_0_0_o dummy_0_mix_column_0_0_0_o',
+            'mix_column_0_0_0_o -dummy_0_mix_column_0_0_0_o',
+            '-mix_column_0_0_1_o dummy_1_mix_column_0_0_1_o',
+            'mix_column_0_0_1_o -dummy_1_mix_column_0_0_1_o',
+            '-mix_column_0_0_2_o dummy_2_mix_column_0_0_2_o',
+            'mix_column_0_0_2_o -dummy_2_mix_column_0_0_2_o',
+            '-mix_column_0_0_3_o dummy_3_mix_column_0_0_3_o',
+            'mix_column_0_0_3_o -dummy_3_mix_column_0_0_3_o']
         """
         matrix = binary_matrix_of_linear_component(self)
         matrix_transposed = [[matrix[i][j] for i in range(matrix.nrows())] for j in range(matrix.ncols())]
@@ -874,12 +1040,20 @@ class MixColumn(LinearLayer):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
-            sage: midori = MidoriBlockCipher(number_of_rounds=3)
-            sage: mix_column_component = midori.component_from(0, 23)
+            sage: from claasp.ciphers.single_component_ciphers.mix_column_cipher import MixColumnCipher
+            sage: cipher = MixColumnCipher(word_size=2, matrix=[[1, 0], [0, 1]], irreducible_polynomial=0)
+            sage: mix_column_component = cipher.component_from(0, 0)
             sage: variables, constraints = mix_column_component.smt_constraints()
-            sage: constraints[-1]
-            '(assert (= mix_column_0_23_15 (xor mix_column_0_20_35 mix_column_0_20_39 mix_column_0_20_43)))'
+            sage: variables
+            ['mix_column_0_0_0',
+            'mix_column_0_0_1',
+            'mix_column_0_0_2',
+            'mix_column_0_0_3']
+            sage: constraints
+            ['(assert (= mix_column_0_0_0 plaintext_0))',
+            '(assert (= mix_column_0_0_1 plaintext_1))',
+            '(assert (= mix_column_0_0_2 plaintext_2))',
+            '(assert (= mix_column_0_0_3 plaintext_3))']
         """
         matrix = binary_matrix_of_linear_component(self)
         matrix_transposed = [[matrix[i][j] for i in range(matrix.nrows())] for j in range(matrix.ncols())]
@@ -904,12 +1078,20 @@ class MixColumn(LinearLayer):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
-            sage: midori = MidoriBlockCipher(number_of_rounds=3)
-            sage: mix_column_component = midori.component_from(0, 23)
+            sage: from claasp.ciphers.single_component_ciphers.mix_column_cipher import MixColumnCipher
+            sage: cipher = MixColumnCipher(word_size=2, matrix=[[1, 0], [0, 1]], irreducible_polynomial=0)
+            sage: mix_column_component = cipher.component_from(0, 0)
             sage: variables, constraints = mix_column_component.smt_xor_differential_propagation_constraints()
-            sage: constraints[-1]
-            '(assert (= mix_column_0_23_15 (xor mix_column_0_20_35 mix_column_0_20_39 mix_column_0_20_43)))'
+            sage: variables
+            ['mix_column_0_0_0',
+            'mix_column_0_0_1',
+            'mix_column_0_0_2',
+            'mix_column_0_0_3']
+            sage: constraints
+            ['(assert (= mix_column_0_0_0 plaintext_0))',
+            '(assert (= mix_column_0_0_1 plaintext_1))',
+            '(assert (= mix_column_0_0_2 plaintext_2))',
+            '(assert (= mix_column_0_0_3 plaintext_3))']
         """
         return self.smt_constraints()
 
@@ -927,12 +1109,32 @@ class MixColumn(LinearLayer):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
-            sage: midori = MidoriBlockCipher(number_of_rounds=3)
-            sage: mix_column_component = midori.component_from(0, 23)
+            sage: from claasp.ciphers.single_component_ciphers.mix_column_cipher import MixColumnCipher
+            sage: cipher = MixColumnCipher(word_size=2, matrix=[[1, 0], [0, 1]], irreducible_polynomial=0)
+            sage: mix_column_component = cipher.component_from(0, 0)
             sage: variables, constraints = mix_column_component.smt_xor_linear_mask_propagation_constraints()
-            sage: constraints[-1]
-            '(assert (= mix_column_0_23_15_o (xor dummy_3_mix_column_0_23_15_o dummy_7_mix_column_0_23_15_o dummy_11_mix_column_0_23_15_o)))'
+            sage: variables
+            ['mix_column_0_0_0_i',
+            'mix_column_0_0_1_i',
+            'mix_column_0_0_2_i',
+            'mix_column_0_0_3_i',
+            'dummy_0_mix_column_0_0_0_o',
+            'dummy_1_mix_column_0_0_1_o',
+            'dummy_2_mix_column_0_0_2_o',
+            'dummy_3_mix_column_0_0_3_o',
+            'mix_column_0_0_0_o',
+            'mix_column_0_0_1_o',
+            'mix_column_0_0_2_o',
+            'mix_column_0_0_3_o']
+            sage: constraints
+            ['(assert (= mix_column_0_0_0_i dummy_0_mix_column_0_0_0_o))',
+            '(assert (= mix_column_0_0_1_i dummy_1_mix_column_0_0_1_o))',
+            '(assert (= mix_column_0_0_2_i dummy_2_mix_column_0_0_2_o))',
+            '(assert (= mix_column_0_0_3_i dummy_3_mix_column_0_0_3_o))',
+            '(assert (= mix_column_0_0_0_o dummy_0_mix_column_0_0_0_o))',
+            '(assert (= mix_column_0_0_1_o dummy_1_mix_column_0_0_1_o))',
+            '(assert (= mix_column_0_0_2_o dummy_2_mix_column_0_0_2_o))',
+            '(assert (= mix_column_0_0_3_o dummy_3_mix_column_0_0_3_o))']
         """
         matrix = binary_matrix_of_linear_component(self)
         matrix_transposed = [[matrix[i][j] for i in range(matrix.nrows())] for j in range(matrix.ncols())]

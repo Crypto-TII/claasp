@@ -16,7 +16,7 @@ from claasp.ciphers.permutations.keccak_invertible_permutation import KeccakInve
 from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
 from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
 from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
-from claasp.ciphers.toys.identity_cipher import IdentityCipher
+from claasp.ciphers.single_component_ciphers.identity_cipher import IdentityCipher
 from claasp.ciphers.permutations.ascon_sbox_sigma_permutation import AsconSboxSigmaPermutation
 from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
 from claasp.ciphers.block_ciphers.skinny_block_cipher import SkinnyBlockCipher
@@ -408,10 +408,10 @@ def test_print_evaluation_python_code():
     sys.stdout = old_stdout
     python_code = result.getvalue()
 
-    assert ("components_io['cipher_output_0_0'] = [component_input.uint, cipher_output_0_0_output.uint]"
-            in python_code) is True
-    assert ("component_input = select_bits(plaintext_output, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14,"
-            " 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31])" in python_code) is True
+    assert "def evaluate(input):" in python_code
+    assert "components_io['cipher_output_0_0'] = [component_input.uint, cipher_output_0_0_output.uint]" in python_code
+    assert ("component_input = select_bits(plaintext_output, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,"
+        " 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31])" in python_code)
 
 
 def test_print_evaluation_python_code_to_file():

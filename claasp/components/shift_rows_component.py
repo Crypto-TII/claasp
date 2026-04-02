@@ -21,6 +21,30 @@ from claasp.name_mappings import WORD_OPERATION
 
 
 class ShiftRows(Rotate):
+    """
+    Construct a ShiftRows component.
+
+
+    INPUT:
+
+    - ``current_round_number`` -- **integer**; round index where the component is created. ``0`` is valid.
+    - ``current_round_number_of_components`` -- **integer**; index of the component inside the round. ``0`` is valid.
+    - ``input_id_links`` -- **list**; input component identifiers (usually strings). Must align with ``input_bit_positions``.
+    - ``input_bit_positions`` -- **list**; bit positions for each input identifier (list of lists). Must align with ``input_id_links``.
+    - ``output_bit_size`` -- **integer**; output size in bits. ``0`` is valid only when supported by the component semantics.
+    - ``parameter`` -- **integer**; operation parameter (for example shift/rotation amount). Negative values are allowed when semantics supports them.
+
+    EXAMPLES::
+
+        sage: from claasp.components.shift_rows_component import ShiftRows
+        sage: component = ShiftRows(0, 0, ['input'], [[0, 1, 2, 3]], 4, 2)
+        sage: print(component.id)
+        shift_rows_0_0
+        sage: print(component.type)
+        word_operation
+        sage: print(component.description)
+        ['ROTATE', 2]
+    """
     def __init__(
         self,
         current_round_number,

@@ -23,6 +23,30 @@ from claasp.components.linear_layer_component import LinearLayer
 
 
 class Sigma(LinearLayer):
+    """
+    Construct a sigma component.
+
+
+    INPUT:
+
+    - ``current_round_number`` -- **integer**; round index where the component is created. ``0`` is valid.
+    - ``current_round_number_of_components`` -- **integer**; index of the component inside the round. ``0`` is valid.
+    - ``input_id_links`` -- **list**; input component identifiers (usually strings). Must align with ``input_bit_positions``.
+    - ``input_bit_positions`` -- **list**; bit positions for each input identifier (list of lists). Must align with ``input_id_links``.
+    - ``output_bit_size`` -- **integer**; output size in bits. ``0`` is valid only when supported by the component semantics.
+    - ``rotation_amounts_parameter`` -- **list**; rotation offsets used to build the linear layer.
+
+    EXAMPLES::
+
+        sage: from claasp.components.sigma_component import Sigma
+        sage: component = Sigma(0, 0, ['input'], [[0, 1, 2, 3]], 4, [1, 3])
+        sage: print(component.id)
+        sigma_0_0
+        sage: print(component.type)
+        linear_layer
+        sage: print(component.input_bit_size)
+        4
+    """
     def __init__(
         self,
         current_round_number,

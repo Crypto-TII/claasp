@@ -9,16 +9,16 @@ from claasp.name_mappings import PERMUTATION
 
 
 def test_add_shift_rows_component():
-    cipher = Cipher("cipher_name", PERMUTATION, ["input"], [4], 4)
+    cipher = Cipher("cipher_name", PERMUTATION, ["input"], [32], 32)
     cipher.add_round()
-    cipher.add_shift_rows_component(["input"], [[0, 1, 2, 3]], 4, 2)
+    cipher.add_shift_rows_component(["input"], [list(range(32))], 1, 8, 4)
     assert cipher.rounds.rounds_as_python_dictionary() == [[{'id': 'shift_rows_0_0',
                                                              'type': 'word_operation',
-                                                             'input_bit_size': 4,
+                                                             'input_bit_size': 32,
                                                              'input_id_link': ['input'],
-                                                             'input_bit_positions': [[0, 1, 2, 3]],
-                                                             'output_bit_size': 4,
-                                                             'description': ['ROTATE', 2]}]]
+                                                             'input_bit_positions': [list(range(32))],
+                                                             'output_bit_size': 32,
+                                                             'description': ['ROTATE', 8]}]]
 
 
 def test_add_variable_rotate_component():

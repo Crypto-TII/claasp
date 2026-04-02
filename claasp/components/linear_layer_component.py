@@ -61,6 +61,30 @@ def update_constraints_for_more_than_one_bit(
 
 
 class LinearLayer(Component):
+    """
+    Construct a linear layer component.
+
+
+    INPUT:
+
+    - ``current_round_number`` -- **integer**; round index where the component is created. ``0`` is valid.
+    - ``current_round_number_of_components`` -- **integer**; index of the component inside the round. ``0`` is valid.
+    - ``input_id_links`` -- **list**; input component identifiers (usually strings). Must align with ``input_bit_positions``.
+    - ``input_bit_positions`` -- **list**; bit positions for each input identifier (list of lists). Must align with ``input_id_links``.
+    - ``output_bit_size`` -- **integer**; output size in bits. ``0`` is valid only when supported by the component semantics.
+    - ``description`` -- **list**; component-specific metadata used by the implementation.
+
+    EXAMPLES::
+
+        sage: from claasp.components.linear_layer_component import LinearLayer
+        sage: component = LinearLayer(0, 0, ['input'], [[0, 1, 2, 3]], 4, [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
+        sage: print(component.id)
+        linear_layer_0_0
+        sage: print(component.type)
+        linear_layer
+        sage: print(len(component.description))
+        4
+    """
     def __init__(
         self,
         current_round_number,
@@ -88,14 +112,16 @@ class LinearLayer(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
+            sage: from claasp.ciphers.single_component_ciphers.linear_layer_cipher import LinearLayerCipher
             sage: from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
-            sage: fancy = FancyBlockCipher(number_of_rounds=1)
-            sage: linear_layer_component = fancy.get_component_from_id("linear_layer_0_6")
-            sage: algebraic = AlgebraicModel(fancy)
-            sage: L = linear_layer_component.algebraic_polynomials(algebraic)
-            sage: L[0]
-            linear_layer_0_6_y0 + linear_layer_0_6_x23 + linear_layer_0_6_x19 + linear_layer_0_6_x18 + linear_layer_0_6_x16 + linear_layer_0_6_x15 + linear_layer_0_6_x14 + linear_layer_0_6_x12 + linear_layer_0_6_x9 + linear_layer_0_6_x8 + linear_layer_0_6_x6 + linear_layer_0_6_x3
+            sage: cipher = LinearLayerCipher(bit_size=4, description=[[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
+            sage: linear_layer_component = cipher.get_component_from_id("linear_layer_0_0")
+            sage: algebraic = AlgebraicModel(cipher)
+            sage: linear_layer_component.algebraic_polynomials(algebraic)
+            [linear_layer_0_0_y0 + linear_layer_0_0_x0,
+            linear_layer_0_0_y1 + linear_layer_0_0_x1,
+            linear_layer_0_0_y2 + linear_layer_0_0_x2,
+            linear_layer_0_0_y3 + linear_layer_0_0_x3]
         """
         noutputs = self.output_bit_size
         ninputs = self.input_bit_size
@@ -120,17 +146,16 @@ class LinearLayer(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
-            sage: fancy = FancyBlockCipher(number_of_rounds=3)
-            sage: linear_layer_component = fancy.component_from(0,6)
-            sage: linear_layer_component.cms_constraints()
-            (['linear_layer_0_6_0',
-              'linear_layer_0_6_1',
-              'linear_layer_0_6_2',
-              ...
-              'x -linear_layer_0_6_21 sbox_0_0_1 sbox_0_1_2 sbox_0_1_3 sbox_0_2_0 sbox_0_2_1 sbox_0_2_3 sbox_0_3_1 sbox_0_3_2 sbox_0_4_1 sbox_0_4_2 sbox_0_5_1 sbox_0_5_3',
-              'x -linear_layer_0_6_22 sbox_0_0_2 sbox_0_2_2 sbox_0_3_2 sbox_0_4_3 sbox_0_5_0 sbox_0_5_1 sbox_0_5_3',
-              'x -linear_layer_0_6_23 sbox_0_0_0 sbox_0_0_1 sbox_0_0_2 sbox_0_0_3 sbox_0_1_3 sbox_0_2_1 sbox_0_3_1 sbox_0_3_2 sbox_0_3_3 sbox_0_4_1 sbox_0_4_2 sbox_0_4_3 sbox_0_5_1 sbox_0_5_2 sbox_0_5_3'])
+            sage: from claasp.components.linear_layer_component import LinearLayer
+            sage: linear_layer_component = LinearLayer(0, 0, ['in'], [[0, 1, 2, 3]], 4, [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
+            sage: variables, constraints = linear_layer_component.cms_constraints()
+            sage: variables
+            ['linear_layer_0_0_0', 'linear_layer_0_0_1', 'linear_layer_0_0_2', 'linear_layer_0_0_3']
+            sage: constraints
+            ['x -linear_layer_0_0_0 in_0',
+            'x -linear_layer_0_0_1 in_1',
+            'x -linear_layer_0_0_2 in_2',
+            'x -linear_layer_0_0_3 in_3']
         """
         input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
@@ -160,17 +185,24 @@ class LinearLayer(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
-            sage: fancy = FancyBlockCipher(number_of_rounds=3)
-            sage: linear_layer_component = fancy.component_from(0,6)
-            sage: linear_layer_component.cms_xor_linear_mask_propagation_constraints()
-            (['linear_layer_0_6_0_i',
-              'linear_layer_0_6_1_i',
-              'linear_layer_0_6_2_i',
-              ...
-              'x -linear_layer_0_6_21_o dummy_0_linear_layer_0_6_21_o dummy_1_linear_layer_0_6_21_o dummy_2_linear_layer_0_6_21_o dummy_3_linear_layer_0_6_21_o dummy_4_linear_layer_0_6_21_o dummy_5_linear_layer_0_6_21_o dummy_6_linear_layer_0_6_21_o dummy_8_linear_layer_0_6_21_o dummy_9_linear_layer_0_6_21_o dummy_10_linear_layer_0_6_21_o dummy_11_linear_layer_0_6_21_o dummy_12_linear_layer_0_6_21_o dummy_18_linear_layer_0_6_21_o dummy_19_linear_layer_0_6_21_o dummy_23_linear_layer_0_6_21_o',
-              'x -linear_layer_0_6_22_o dummy_0_linear_layer_0_6_22_o dummy_1_linear_layer_0_6_22_o dummy_2_linear_layer_0_6_22_o dummy_3_linear_layer_0_6_22_o dummy_4_linear_layer_0_6_22_o dummy_6_linear_layer_0_6_22_o dummy_9_linear_layer_0_6_22_o dummy_13_linear_layer_0_6_22_o dummy_14_linear_layer_0_6_22_o dummy_15_linear_layer_0_6_22_o dummy_16_linear_layer_0_6_22_o dummy_19_linear_layer_0_6_22_o dummy_20_linear_layer_0_6_22_o dummy_21_linear_layer_0_6_22_o',
-              'x -linear_layer_0_6_23_o dummy_1_linear_layer_0_6_23_o dummy_5_linear_layer_0_6_23_o dummy_7_linear_layer_0_6_23_o dummy_8_linear_layer_0_6_23_o dummy_9_linear_layer_0_6_23_o dummy_14_linear_layer_0_6_23_o dummy_17_linear_layer_0_6_23_o dummy_18_linear_layer_0_6_23_o dummy_23_linear_layer_0_6_23_o'])
+            sage: from claasp.components.linear_layer_component import LinearLayer
+            sage: linear_layer_component = LinearLayer(0, 0, ['in'], [[0, 1, 2, 3]], 4, [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
+            sage: variables, constraints = linear_layer_component.cms_xor_linear_mask_propagation_constraints()
+            sage: len(variables)
+            12
+            sage: constraints
+            ['linear_layer_0_0_0_i -dummy_0_linear_layer_0_0_0_o',
+            'dummy_0_linear_layer_0_0_0_o -linear_layer_0_0_0_i',
+            'linear_layer_0_0_1_i -dummy_1_linear_layer_0_0_1_o',
+            'dummy_1_linear_layer_0_0_1_o -linear_layer_0_0_1_i',
+            'linear_layer_0_0_2_i -dummy_2_linear_layer_0_0_2_o',
+            'dummy_2_linear_layer_0_0_2_o -linear_layer_0_0_2_i',
+            'linear_layer_0_0_3_i -dummy_3_linear_layer_0_0_3_o',
+            'dummy_3_linear_layer_0_0_3_o -linear_layer_0_0_3_i',
+            'x -linear_layer_0_0_0_o dummy_0_linear_layer_0_0_0_o',
+            'x -linear_layer_0_0_1_o dummy_1_linear_layer_0_0_1_o',
+            'x -linear_layer_0_0_2_o dummy_2_linear_layer_0_0_2_o',
+            'x -linear_layer_0_0_3_o dummy_3_linear_layer_0_0_3_o']
         """
         input_bit_len, input_bit_ids = self._generate_component_input_ids()
         out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
@@ -203,14 +235,13 @@ class LinearLayer(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
-            sage: fancy = FancyBlockCipher(number_of_rounds=3)
-            sage: linear_layer_component = fancy.component_from(0, 6)
-            sage: linear_layer_component.cp_constraints()
-            ([],
-             ['constraint linear_layer_0_6[0] = (sbox_0_0[2] + sbox_0_0[3] + sbox_0_1[0] + sbox_0_1[1] + sbox_0_1[3] + sbox_0_2[0] + sbox_0_2[1] + sbox_0_3[1] + sbox_0_4[2] + sbox_0_5[1] + sbox_0_5[3]) mod 2;',
-              ...
-              'constraint linear_layer_0_6[23] = (sbox_0_0[0] + sbox_0_0[1] + sbox_0_0[2] + sbox_0_0[3] + sbox_0_1[3] + sbox_0_2[1] + sbox_0_3[1] + sbox_0_3[2] + sbox_0_3[3] + sbox_0_4[1] + sbox_0_4[2] + sbox_0_4[3] + sbox_0_5[1] + sbox_0_5[2] + sbox_0_5[3]) mod 2;'])
+            sage: from claasp.components.linear_layer_component import LinearLayer
+            sage: linear_layer_component = LinearLayer(0, 0, ['in'], [[0, 1, 2, 3]], 4, [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
+            sage: declarations, constraints = linear_layer_component.cp_constraints()
+            sage: declarations
+            []
+            sage: constraints
+            ['constraint linear_layer_0_0[0] = (in[0]) mod 2;', 'constraint linear_layer_0_0[1] = (in[1]) mod 2;', 'constraint linear_layer_0_0[2] = (in[2]) mod 2;', 'constraint linear_layer_0_0[3] = (in[3]) mod 2;']
         """
         matrix = self.description
         cp_declarations = []
@@ -235,14 +266,13 @@ class LinearLayer(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
-            sage: fancy = FancyBlockCipher(number_of_rounds=3)
-            sage: linear_layer_component = fancy.component_from(0, 6)
-            sage: linear_layer_component.cp_deterministic_truncated_xor_differential_constraints()
-            ([],
-             ['constraint if ((sbox_0_0[2] < 2) /\\ (sbox_0_0[3] < 2) /\\ (sbox_0_1[0] < 2) /\\ (sbox_0_1[1] < 2) /\\ (sbox_0_1[3] < 2) /\\ (sbox_0_2[0] < 2) /\\ (sbox_0_2[1] < 2) /\\ (sbox_0_3[1] < 2) /\\ (sbox_0_4[2] < 2) /\\ (sbox_0_5[1] < 2) /\\ (sbox_0_5[3] < 2)) then linear_layer_0_6[0] = (sbox_0_0[2] + sbox_0_0[3] + sbox_0_1[0] + sbox_0_1[1] + sbox_0_1[3] + sbox_0_2[0] + sbox_0_2[1] + sbox_0_3[1] + sbox_0_4[2] + sbox_0_5[1] + sbox_0_5[3]) mod 2 else linear_layer_0_6[0] = 2 endif;',
-              ...
-              'constraint if ((sbox_0_0[0] < 2) /\\ (sbox_0_0[1] < 2) /\\ (sbox_0_0[2] < 2) /\\ (sbox_0_0[3] < 2) /\\ (sbox_0_1[3] < 2) /\\ (sbox_0_2[1] < 2) /\\ (sbox_0_3[1] < 2) /\\ (sbox_0_3[2] < 2) /\\ (sbox_0_3[3] < 2) /\\ (sbox_0_4[1] < 2) /\\ (sbox_0_4[2] < 2) /\\ (sbox_0_4[3] < 2) /\\ (sbox_0_5[1] < 2) /\\ (sbox_0_5[2] < 2) /\\ (sbox_0_5[3] < 2)) then linear_layer_0_6[23] = (sbox_0_0[0] + sbox_0_0[1] + sbox_0_0[2] + sbox_0_0[3] + sbox_0_1[3] + sbox_0_2[1] + sbox_0_3[1] + sbox_0_3[2] + sbox_0_3[3] + sbox_0_4[1] + sbox_0_4[2] + sbox_0_4[3] + sbox_0_5[1] + sbox_0_5[2] + sbox_0_5[3]) mod 2 else linear_layer_0_6[23] = 2 endif;'])
+            sage: from claasp.components.linear_layer_component import LinearLayer
+            sage: linear_layer_component = LinearLayer(0, 0, ['in'], [[0, 1, 2, 3]], 4, [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
+            sage: declarations, constraints = linear_layer_component.cp_deterministic_truncated_xor_differential_constraints()
+            sage: declarations
+            []
+            sage: constraints[0]
+            'constraint if ((in[0] < 2)) then linear_layer_0_0[0] = (in[0]) mod 2 else linear_layer_0_0[0] = 2 endif;'
         """
         cp_declarations = []
         matrix = self.description
@@ -276,14 +306,15 @@ class LinearLayer(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
-            sage: fancy = FancyBlockCipher(number_of_rounds=3)
-            sage: linear_layer_component = fancy.component_from(0, 6)
-            sage: linear_layer_component.cp_deterministic_truncated_xor_differential_constraints()
-            ([],
-             ['constraint if ((sbox_0_0[2] < 2) /\\ (sbox_0_0[3] < 2) /\\ (sbox_0_1[0] < 2) /\\ (sbox_0_1[1] < 2) /\\ (sbox_0_1[3] < 2) /\\ (sbox_0_2[0] < 2) /\\ (sbox_0_2[1] < 2) /\\ (sbox_0_3[1] < 2) /\\ (sbox_0_4[2] < 2) /\\ (sbox_0_5[1] < 2) /\\ (sbox_0_5[3] < 2)) then linear_layer_0_6[0] = (sbox_0_0[2] + sbox_0_0[3] + sbox_0_1[0] + sbox_0_1[1] + sbox_0_1[3] + sbox_0_2[0] + sbox_0_2[1] + sbox_0_3[1] + sbox_0_4[2] + sbox_0_5[1] + sbox_0_5[3]) mod 2 else linear_layer_0_6[0] = 2 endif;',
-              ...
-              'constraint if ((sbox_0_0[0] < 2) /\\ (sbox_0_0[1] < 2) /\\ (sbox_0_0[2] < 2) /\\ (sbox_0_0[3] < 2) /\\ (sbox_0_1[3] < 2) /\\ (sbox_0_2[1] < 2) /\\ (sbox_0_3[1] < 2) /\\ (sbox_0_3[2] < 2) /\\ (sbox_0_3[3] < 2) /\\ (sbox_0_4[1] < 2) /\\ (sbox_0_4[2] < 2) /\\ (sbox_0_4[3] < 2) /\\ (sbox_0_5[1] < 2) /\\ (sbox_0_5[2] < 2) /\\ (sbox_0_5[3] < 2)) then linear_layer_0_6[23] = (sbox_0_0[0] + sbox_0_0[1] + sbox_0_0[2] + sbox_0_0[3] + sbox_0_1[3] + sbox_0_2[1] + sbox_0_3[1] + sbox_0_3[2] + sbox_0_3[3] + sbox_0_4[1] + sbox_0_4[2] + sbox_0_4[3] + sbox_0_5[1] + sbox_0_5[2] + sbox_0_5[3]) mod 2 else linear_layer_0_6[23] = 2 endif;'])
+            sage: from claasp.components.linear_layer_component import LinearLayer
+            sage: DummyModel = type('DummyModel', (), {'word_size': 2})
+            sage: linear_layer_component = LinearLayer(0, 0, ['in'], [[0, 1, 2, 3]], 4, [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
+            sage: declarations, constraints = linear_layer_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(DummyModel())
+            sage: declarations
+            []
+            sage: constraints
+            ['constraint if ((in_active[0]== 0)) then linear_layer_0_0_active[0] = 0 /\\ linear_layer_0_0_value[0] = 0 elselinear_layer_0_0_active[0] = 3 /\\ linear_layer_0_0_value[0] = -2 endif;',
+            'constraint if ((in_active[1]== 0)) then linear_layer_0_0_active[1] = 0 /\\ linear_layer_0_0_value[1] = 0 elselinear_layer_0_0_active[1] = 3 /\\ linear_layer_0_0_value[1] = -2 endif;']
         """
         cp_declarations = []
         all_inputs_value = []
@@ -330,15 +361,13 @@ class LinearLayer(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
-            sage: fancy = FancyBlockCipher()
-            sage: linear_layer_component = fancy.component_from(0, 6)
-            sage: linear_layer_component.cp_xor_linear_mask_propagation_constraints()
-            (['array[0..23] of var 0..1:linear_layer_0_6_i;',
-            'array[0..23] of var 0..1:linear_layer_0_6_o;'],
-            ['constraint linear_layer_0_6_i[0]=(linear_layer_0_6_o[3]+linear_layer_0_6_o[6]+linear_layer_0_6_o[8]+linear_layer_0_6_o[9]+linear_layer_0_6_o[12]+linear_layer_0_6_o[14]+linear_layer_0_6_o[15]+linear_layer_0_6_o[16]+linear_layer_0_6_o[18]+linear_layer_0_6_o[19]+linear_layer_0_6_o[23]) mod 2;',
-            ...
-            'constraint linear_layer_0_6_i[23]=(linear_layer_0_6_o[0]+linear_layer_0_6_o[1]+linear_layer_0_6_o[2]+linear_layer_0_6_o[3]+linear_layer_0_6_o[4]+linear_layer_0_6_o[7]+linear_layer_0_6_o[8]+linear_layer_0_6_o[11]+linear_layer_0_6_o[13]+linear_layer_0_6_o[14]+linear_layer_0_6_o[15]+linear_layer_0_6_o[18]+linear_layer_0_6_o[19]+linear_layer_0_6_o[20]+linear_layer_0_6_o[21]+linear_layer_0_6_o[22]+linear_layer_0_6_o[23]) mod 2;'])
+            sage: from claasp.components.linear_layer_component import LinearLayer
+            sage: linear_layer_component = LinearLayer(0, 0, ['in'], [[0, 1, 2, 3]], 4, [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
+            sage: declarations, constraints = linear_layer_component.cp_xor_linear_mask_propagation_constraints()
+            sage: declarations
+            ['array[0..3] of var 0..1:linear_layer_0_0_i;', 'array[0..3] of var 0..1:linear_layer_0_0_o;']
+            sage: constraints[-1]
+            'constraint linear_layer_0_0_i[3]=(linear_layer_0_0_o[3]) mod 2;'
         """
         cp_declarations = [
             f"array[0..{self.input_bit_size - 1}] of var 0..1:{self.id}_i;",
@@ -387,25 +416,24 @@ class LinearLayer(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
+            sage: from claasp.ciphers.single_component_ciphers.linear_layer_cipher import LinearLayerCipher
             sage: from claasp.cipher_modules.models.milp.milp_model import MilpModel
-            sage: present = PresentBlockCipher(number_of_rounds=6)
-            sage: milp = MilpModel(present)
+            sage: cipher = LinearLayerCipher(bit_size=4, description=[[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
+            sage: milp = MilpModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
-            sage: linear_layer_component = present.component_from(0, 17)
-            sage: variables, constraints = linear_layer_component.milp_constraints(milp) # long
-            sage: variables # long
-            [('x[sbox_0_1_0]', x_0),
-            ('x[sbox_0_1_1]', x_1),
-            ...
-            ('x[linear_layer_0_17_62]', x_126),
-            ('x[linear_layer_0_17_63]', x_127)]
-            sage: constraints # long
-            [x_64 == x_0,
-            x_65 == x_4,
-            ...
-            x_126 == x_59,
-            x_127 == x_63]
+            sage: linear_layer_component = cipher.get_component_from_id("linear_layer_0_0")
+            sage: variables, constraints = linear_layer_component.milp_constraints(milp)
+            sage: variables
+            [('x[plaintext_0]', x_0),
+            ('x[plaintext_1]', x_1),
+            ('x[plaintext_2]', x_2),
+            ('x[plaintext_3]', x_3),
+            ('x[linear_layer_0_0_0]', x_4),
+            ('x[linear_layer_0_0_1]', x_5),
+            ('x[linear_layer_0_0_2]', x_6),
+            ('x[linear_layer_0_0_3]', x_7)]
+            sage: constraints
+            [x_4 == x_0, x_5 == x_1, x_6 == x_2, x_7 == x_3]
         """
         x = model.binary_variable
         input_vars, output_vars = self._get_input_output_variables()
@@ -452,25 +480,24 @@ class LinearLayer(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
+            sage: from claasp.ciphers.single_component_ciphers.linear_layer_cipher import LinearLayerCipher
             sage: from claasp.cipher_modules.models.milp.milp_model import MilpModel
-            sage: present = PresentBlockCipher(number_of_rounds=6)
-            sage: milp = MilpModel(present)
+            sage: cipher = LinearLayerCipher(bit_size=4, description=[[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
+            sage: milp = MilpModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
-            sage: linear_layer_component = present.component_from(0, 17)
-            sage: variables, constraints = linear_layer_component.milp_xor_linear_mask_propagation_constraints(milp) # long
-            sage: variables # long
-            [('x[linear_layer_0_17_0_i]', x_0),
-            ('x[linear_layer_0_17_1_i]', x_1),
-            ...
-            ('x[linear_layer_0_17_62_o]', x_126),
-            ('x[linear_layer_0_17_63_o]', x_127)]
-            sage: constraints # long
-            [x_64 == x_0,
-            x_65 == x_4,
-            ...
-            x_126 == x_59,
-            x_127 == x_63]
+            sage: linear_layer_component = cipher.get_component_from_id("linear_layer_0_0")
+            sage: variables, constraints = linear_layer_component.milp_xor_linear_mask_propagation_constraints(milp)
+            sage: variables
+            [('x[linear_layer_0_0_0_i]', x_0),
+            ('x[linear_layer_0_0_1_i]', x_1),
+            ('x[linear_layer_0_0_2_i]', x_2),
+            ('x[linear_layer_0_0_3_i]', x_3),
+            ('x[linear_layer_0_0_0_o]', x_4),
+            ('x[linear_layer_0_0_1_o]', x_5),
+            ('x[linear_layer_0_0_2_o]', x_6),
+            ('x[linear_layer_0_0_3_o]', x_7)]
+            sage: constraints
+            [x_4 == x_0, x_5 == x_1, x_6 == x_2, x_7 == x_3]
         """
         x = model.binary_variable
         input_vars, output_vars = self._get_independent_input_output_variables()
@@ -514,27 +541,24 @@ class LinearLayer(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
+            sage: from claasp.ciphers.single_component_ciphers.linear_layer_cipher import LinearLayerCipher
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import MilpBitwiseDeterministicTruncatedXorDifferentialModel
-            sage: present = PresentBlockCipher(number_of_rounds=6)
-            sage: milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(present)
+            sage: cipher = LinearLayerCipher(bit_size=4, description=[[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
+            sage: milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
-            sage: linear_layer_component = present.component_from(0, 17)
+            sage: linear_layer_component = cipher.get_component_from_id("linear_layer_0_0")
             sage: variables, constraints = linear_layer_component.milp_bitwise_deterministic_truncated_xor_differential_constraints(milp)
             sage: variables
-            [('x_class[sbox_0_1_0]', x_0),
-             ('x_class[sbox_0_1_1]', x_1),
-             ...
-             ('x_class[linear_layer_0_17_62]', x_126),
-             ('x_class[linear_layer_0_17_63]', x_127)]
+            [('x_class[plaintext_0]', x_0),
+            ('x_class[plaintext_1]', x_1),
+            ('x_class[plaintext_2]', x_2),
+            ('x_class[plaintext_3]', x_3),
+            ('x_class[linear_layer_0_0_0]', x_4),
+            ('x_class[linear_layer_0_0_1]', x_5),
+            ('x_class[linear_layer_0_0_2]', x_6),
+            ('x_class[linear_layer_0_0_3]', x_7)]
             sage: constraints
-            [x_64 == x_0,
-             x_65 == x_4,
-             ...
-             x_126 == x_59,
-             x_127 == x_63]
-
-
+            [x_4 == x_0, x_5 == x_1, x_6 == x_2, x_7 == x_3]
         """
         x_class = model.trunc_binvar
 
@@ -585,15 +609,35 @@ class LinearLayer(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.permutations.ascon_sbox_sigma_permutation import AsconSboxSigmaPermutation
+            sage: from claasp.ciphers.single_component_ciphers.linear_layer_cipher import LinearLayerCipher
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import MilpBitwiseDeterministicTruncatedXorDifferentialModel
-            sage: ascon = AsconSboxSigmaPermutation(number_of_rounds=1)
-            sage: milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(ascon)
+            sage: cipher = LinearLayerCipher(bit_size=4, description=[[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
+            sage: milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
-            sage: linear_layer_component = ascon.component_from(0, 68)
+            sage: linear_layer_component = cipher.get_component_from_id("linear_layer_0_0")
             sage: variables, constraints = linear_layer_component.milp_bitwise_deterministic_truncated_xor_differential_binary_constraints(milp)
-
-
+            sage: variables
+            [('x_class[plaintext_0]', x_0),
+            ('x_class[plaintext_1]', x_1),
+            ('x_class[plaintext_2]', x_2),
+            ('x_class[plaintext_3]', x_3),
+            ('x_class[linear_layer_0_0_0]', x_4),
+            ('x_class[linear_layer_0_0_1]', x_5),
+            ('x_class[linear_layer_0_0_2]', x_6),
+            ('x_class[linear_layer_0_0_3]', x_7)]
+            sage: constraints
+            [x_0 == 2*x_8 + x_9,
+            x_1 == 2*x_10 + x_11,
+            x_2 == 2*x_12 + x_13,
+            x_3 == 2*x_14 + x_15,
+            x_4 == 2*x_16 + x_17,
+            x_5 == 2*x_18 + x_19,
+            x_6 == 2*x_20 + x_21,
+            x_7 == 2*x_22 + x_23,
+            x_4 == x_0,
+            x_5 == x_1,
+            x_6 == x_2,
+            x_7 == x_3]
         """
         x_class = model.trunc_binvar
         x = model.binary_variable
@@ -658,26 +702,51 @@ class LinearLayer(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
+            sage: from claasp.ciphers.single_component_ciphers.linear_layer_cipher import LinearLayerCipher
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import MilpWordwiseDeterministicTruncatedXorDifferentialModel
-            sage: cipher = MidoriBlockCipher(number_of_rounds=2)
+            sage: cipher = LinearLayerCipher(bit_size=8, description=[[1, 0, 0, 0, 0, 0, 0, 0], [0, 1, 0, 0, 0, 0, 0, 0], [0, 0, 1, 0, 0, 0, 0, 0], [0, 0, 0, 1, 0, 0, 0, 0], [0, 0, 0, 0, 1, 0, 0, 0], [0, 0, 0, 0, 0, 1, 0, 0], [0, 0, 0, 0, 0, 0, 1, 0], [0, 0, 0, 0, 0, 0, 0, 1]])
             sage: milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
-            sage: linear_layer_component = cipher.component_from(0, 21)
-            sage: variables, constraints = linear_layer_component.milp_wordwise_deterministic_truncated_xor_differential_constraints(milp) # random
+            sage: linear_layer_component = cipher.get_component_from_id("linear_layer_0_0")
+            sage: variables, constraints = linear_layer_component.milp_wordwise_deterministic_truncated_xor_differential_constraints(milp)
             sage: variables
-            [('x[mix_column_0_20_word_0_class_bit_0]', x_0),
-             ('x[mix_column_0_20_word_0_class_bit_1]', x_1),
-            ...
-             ('x[mix_column_0_21_14]', x_46),
-             ('x[mix_column_0_21_15]', x_47)]
+            [('x[plaintext_word_0_class_bit_0]', x_0),
+            ('x[plaintext_word_0_class_bit_1]', x_1),
+            ('x[plaintext_0]', x_2),
+            ('x[plaintext_1]', x_3),
+            ('x[plaintext_2]', x_4),
+            ('x[plaintext_3]', x_5),
+            ('x[plaintext_word_1_class_bit_0]', x_6),
+            ('x[plaintext_word_1_class_bit_1]', x_7),
+            ('x[plaintext_4]', x_8),
+            ('x[plaintext_5]', x_9),
+            ('x[plaintext_6]', x_10),
+            ('x[plaintext_7]', x_11),
+            ('x[linear_layer_0_0_word_0_class_bit_0]', x_12),
+            ('x[linear_layer_0_0_word_0_class_bit_1]', x_13),
+            ('x[linear_layer_0_0_0]', x_14),
+            ('x[linear_layer_0_0_1]', x_15),
+            ('x[linear_layer_0_0_2]', x_16),
+            ('x[linear_layer_0_0_3]', x_17),
+            ('x[linear_layer_0_0_word_1_class_bit_0]', x_18),
+            ('x[linear_layer_0_0_word_1_class_bit_1]', x_19),
+            ('x[linear_layer_0_0_4]', x_20),
+            ('x[linear_layer_0_0_5]', x_21),
+            ('x[linear_layer_0_0_6]', x_22),
+            ('x[linear_layer_0_0_7]', x_23)]
             sage: constraints
-            [1 <= 1 + x_6 + x_8 + x_9 + x_10 + x_11 + x_13 + x_18 + x_19 - x_25,
-             1 <= 1 + x_6 + x_8 + x_9 + x_10 + x_11 + x_12 + x_13 + x_19 - x_25,
-            ...
-             1 <= 1 + x_7 - x_8,
-             1 <= 1 + x_1 - x_2]
-
+            [x_12 == x_0,
+            x_13 == x_1,
+            x_14 == x_2,
+            x_15 == x_3,
+            x_16 == x_4,
+            x_17 == x_5,
+            x_18 == x_6,
+            x_19 == x_7,
+            x_20 == x_8,
+            x_21 == x_9,
+            x_22 == x_10,
+            x_23 == x_11]
         """
         x = model.binary_variable
 
@@ -690,7 +759,7 @@ class LinearLayer(Component):
         if M.ncols() > model.word_size and [len(input) for input in self.input_bit_positions] != [
             model.word_size
         ] * len(self.input_bit_positions):
-            self.print()
+            # self.print()
             # truncated matrix
             matrix = [
                 [
@@ -761,12 +830,23 @@ class LinearLayer(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
-            sage: fancy = FancyBlockCipher(number_of_rounds=3)
-            sage: linear_layer_component = fancy.component_from(0, 6)
+            sage: from claasp.components.linear_layer_component import LinearLayer
+            sage: linear_layer_component = LinearLayer(0, 0, ['in'], [[0, 1, 2, 3]], 4, [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
             sage: variables, constraints = linear_layer_component.sat_constraints()
-            sage: constraints[-1]
-            'linear_layer_0_6_23 -sbox_0_0_0 -sbox_0_0_1 -sbox_0_0_2 -sbox_0_0_3 -sbox_0_1_3 -sbox_0_2_1 -sbox_0_3_1 -sbox_0_3_2 -sbox_0_3_3 -sbox_0_4_1 -sbox_0_4_2 -sbox_0_4_3 -sbox_0_5_1 -sbox_0_5_2 -sbox_0_5_3'
+            sage: variables
+            ['linear_layer_0_0_0',
+            'linear_layer_0_0_1',
+            'linear_layer_0_0_2',
+            'linear_layer_0_0_3']
+            sage: constraints
+            ['-linear_layer_0_0_0 in_0',
+            'linear_layer_0_0_0 -in_0',
+            '-linear_layer_0_0_1 in_1',
+            'linear_layer_0_0_1 -in_1',
+            '-linear_layer_0_0_2 in_2',
+            'linear_layer_0_0_2 -in_2',
+            '-linear_layer_0_0_3 in_3',
+            'linear_layer_0_0_3 -in_3']
         """
         input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
@@ -794,12 +874,35 @@ class LinearLayer(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
-            sage: fancy = FancyBlockCipher(number_of_rounds=3)
-            sage: linear_layer_component = fancy.component_from(0, 6)
+            sage: from claasp.components.linear_layer_component import LinearLayer
+            sage: linear_layer_component = LinearLayer(0, 0, ['in'], [[0, 1, 2, 3]], 4, [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
             sage: variables, constraints = linear_layer_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
-            sage: constraints[-1]
-            'linear_layer_0_6_23_0 -inter_12_linear_layer_0_6_23_1 -sbox_0_5_3_1 -linear_layer_0_6_23_1'
+            sage: variables
+            ['linear_layer_0_0_0_0',
+            'linear_layer_0_0_1_0',
+            'linear_layer_0_0_2_0',
+            'linear_layer_0_0_3_0',
+            'linear_layer_0_0_0_1',
+            'linear_layer_0_0_1_1',
+            'linear_layer_0_0_2_1',
+            'linear_layer_0_0_3_1']
+            sage: constraints
+            ['linear_layer_0_0_0_0 -in_0_0',
+            'in_0_0 -linear_layer_0_0_0_0',
+            'linear_layer_0_0_0_1 -in_0_1',
+            'in_0_1 -linear_layer_0_0_0_1',
+            'linear_layer_0_0_1_0 -in_1_0',
+            'in_1_0 -linear_layer_0_0_1_0',
+            'linear_layer_0_0_1_1 -in_1_1',
+            'in_1_1 -linear_layer_0_0_1_1',
+            'linear_layer_0_0_2_0 -in_2_0',
+            'in_2_0 -linear_layer_0_0_2_0',
+            'linear_layer_0_0_2_1 -in_2_1',
+            'in_2_1 -linear_layer_0_0_2_1',
+            'linear_layer_0_0_3_0 -in_3_0',
+            'in_3_0 -linear_layer_0_0_3_0',
+            'linear_layer_0_0_3_1 -in_3_1',
+            'in_3_1 -linear_layer_0_0_3_1']
         """
         in_ids_0, in_ids_1 = self._generate_input_double_ids()
         _, out_ids_0, out_ids_1 = self._generate_output_double_ids()
@@ -835,12 +938,23 @@ class LinearLayer(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
-            sage: fancy = FancyBlockCipher(number_of_rounds=3)
-            sage: linear_layer_component = fancy.component_from(0, 6)
+            sage: from claasp.components.linear_layer_component import LinearLayer
+            sage: linear_layer_component = LinearLayer(0, 0, ['in'], [[0, 1, 2, 3]], 4, [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
             sage: variables, constraints = linear_layer_component.sat_xor_differential_propagation_constraints()
-            sage: constraints[-1]
-            'linear_layer_0_6_23 -sbox_0_0_0 -sbox_0_0_1 -sbox_0_0_2 -sbox_0_0_3 -sbox_0_1_3 -sbox_0_2_1 -sbox_0_3_1 -sbox_0_3_2 -sbox_0_3_3 -sbox_0_4_1 -sbox_0_4_2 -sbox_0_4_3 -sbox_0_5_1 -sbox_0_5_2 -sbox_0_5_3'
+            sage: variables
+            ['linear_layer_0_0_0',
+            'linear_layer_0_0_1',
+            'linear_layer_0_0_2',
+            'linear_layer_0_0_3']
+            sage: constraints
+            ['-linear_layer_0_0_0 in_0',
+            'linear_layer_0_0_0 -in_0',
+            '-linear_layer_0_0_1 in_1',
+            'linear_layer_0_0_1 -in_1',
+            '-linear_layer_0_0_2 in_2',
+            'linear_layer_0_0_2 -in_2',
+            '-linear_layer_0_0_3 in_3',
+            'linear_layer_0_0_3 -in_3']
         """
         return self.sat_constraints()
 
@@ -860,12 +974,39 @@ class LinearLayer(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
-            sage: fancy = FancyBlockCipher(number_of_rounds=3)
-            sage: linear_layer_component = fancy.component_from(0, 6)
+            sage: from claasp.components.linear_layer_component import LinearLayer
+            sage: linear_layer_component = LinearLayer(0, 0, ['in'], [[0, 1, 2, 3]], 4, [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
             sage: variables, constraints = linear_layer_component.sat_xor_linear_mask_propagation_constraints()
-            sage: constraints[-1]
-            'linear_layer_0_6_23_o -dummy_1_linear_layer_0_6_23_o -dummy_5_linear_layer_0_6_23_o -dummy_7_linear_layer_0_6_23_o -dummy_8_linear_layer_0_6_23_o -dummy_9_linear_layer_0_6_23_o -dummy_14_linear_layer_0_6_23_o -dummy_17_linear_layer_0_6_23_o -dummy_18_linear_layer_0_6_23_o -dummy_23_linear_layer_0_6_23_o'
+            sage: variables
+            ['linear_layer_0_0_0_i',
+            'linear_layer_0_0_1_i',
+            'linear_layer_0_0_2_i',
+            'linear_layer_0_0_3_i',
+            'dummy_0_linear_layer_0_0_0_o',
+            'dummy_1_linear_layer_0_0_1_o',
+            'dummy_2_linear_layer_0_0_2_o',
+            'dummy_3_linear_layer_0_0_3_o',
+            'linear_layer_0_0_0_o',
+            'linear_layer_0_0_1_o',
+            'linear_layer_0_0_2_o',
+            'linear_layer_0_0_3_o']
+            sage: constraints
+            ['linear_layer_0_0_0_i -dummy_0_linear_layer_0_0_0_o',
+            'dummy_0_linear_layer_0_0_0_o -linear_layer_0_0_0_i',
+            'linear_layer_0_0_1_i -dummy_1_linear_layer_0_0_1_o',
+            'dummy_1_linear_layer_0_0_1_o -linear_layer_0_0_1_i',
+            'linear_layer_0_0_2_i -dummy_2_linear_layer_0_0_2_o',
+            'dummy_2_linear_layer_0_0_2_o -linear_layer_0_0_2_i',
+            'linear_layer_0_0_3_i -dummy_3_linear_layer_0_0_3_o',
+            'dummy_3_linear_layer_0_0_3_o -linear_layer_0_0_3_i',
+            '-linear_layer_0_0_0_o dummy_0_linear_layer_0_0_0_o',
+            'linear_layer_0_0_0_o -dummy_0_linear_layer_0_0_0_o',
+            '-linear_layer_0_0_1_o dummy_1_linear_layer_0_0_1_o',
+            'linear_layer_0_0_1_o -dummy_1_linear_layer_0_0_1_o',
+            '-linear_layer_0_0_2_o dummy_2_linear_layer_0_0_2_o',
+            'linear_layer_0_0_2_o -dummy_2_linear_layer_0_0_2_o',
+            '-linear_layer_0_0_3_o dummy_3_linear_layer_0_0_3_o',
+            'linear_layer_0_0_3_o -dummy_3_linear_layer_0_0_3_o']
         """
         input_bit_len, input_bit_ids = self._generate_component_input_ids()
         out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
@@ -899,12 +1040,19 @@ class LinearLayer(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
-            sage: fancy = FancyBlockCipher(number_of_rounds=3)
-            sage: linear_layer_component = fancy.component_from(0, 6)
-            sage: vairables, constraints = linear_layer_component.smt_constraints()
-            sage: constraints[-1]
-            '(assert (= linear_layer_0_6_23 (xor sbox_0_0_0 sbox_0_0_1 sbox_0_0_2 sbox_0_0_3 sbox_0_1_3 sbox_0_2_1 sbox_0_3_1 sbox_0_3_2 sbox_0_3_3 sbox_0_4_1 sbox_0_4_2 sbox_0_4_3 sbox_0_5_1 sbox_0_5_2 sbox_0_5_3)))'
+            sage: from claasp.components.linear_layer_component import LinearLayer
+            sage: linear_layer_component = LinearLayer(0, 0, ['in'], [[0, 1, 2, 3]], 4, [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
+            sage: variables, constraints = linear_layer_component.smt_constraints()
+            sage: variables
+            ['linear_layer_0_0_0',
+            'linear_layer_0_0_1',
+            'linear_layer_0_0_2',
+            'linear_layer_0_0_3']
+            sage: constraints
+            ['(assert (= linear_layer_0_0_0 in_0))',
+            '(assert (= linear_layer_0_0_1 in_1))',
+            '(assert (= linear_layer_0_0_2 in_2))',
+            '(assert (= linear_layer_0_0_3 in_3))']
         """
         input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
@@ -933,12 +1081,10 @@ class LinearLayer(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
-            sage: fancy = FancyBlockCipher(number_of_rounds=3)
-            sage: linear_layer_component = fancy.component_from(0, 6)
-            sage: variables, constraints = linear_layer_component.smt_constraints()
-            sage: constraints[-1]
-            '(assert (= linear_layer_0_6_23 (xor sbox_0_0_0 sbox_0_0_1 sbox_0_0_2 sbox_0_0_3 sbox_0_1_3 sbox_0_2_1 sbox_0_3_1 sbox_0_3_2 sbox_0_3_3 sbox_0_4_1 sbox_0_4_2 sbox_0_4_3 sbox_0_5_1 sbox_0_5_2 sbox_0_5_3)))'
+            sage: from claasp.components.linear_layer_component import LinearLayer
+            sage: linear_layer_component = LinearLayer(0, 0, ['in'], [[0, 1, 2, 3]], 4, [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
+            sage: linear_layer_component.smt_xor_differential_propagation_constraints(None) == linear_layer_component.smt_constraints()
+            True
         """
         return self.smt_constraints()
 
@@ -954,12 +1100,31 @@ class LinearLayer(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
-            sage: fancy = FancyBlockCipher(number_of_rounds=3)
-            sage: linear_layer_component = fancy.component_from(0, 6)
+            sage: from claasp.components.linear_layer_component import LinearLayer
+            sage: linear_layer_component = LinearLayer(0, 0, ['in'], [[0, 1, 2, 3]], 4, [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
             sage: variables, constraints = linear_layer_component.smt_xor_linear_mask_propagation_constraints()
-            sage: constraints[-1]
-            '(assert (= linear_layer_0_6_23_o (xor dummy_1_linear_layer_0_6_23_o dummy_5_linear_layer_0_6_23_o dummy_7_linear_layer_0_6_23_o dummy_8_linear_layer_0_6_23_o dummy_9_linear_layer_0_6_23_o dummy_14_linear_layer_0_6_23_o dummy_17_linear_layer_0_6_23_o dummy_18_linear_layer_0_6_23_o dummy_23_linear_layer_0_6_23_o)))'
+            sage: variables
+            ['linear_layer_0_0_0_i',
+            'linear_layer_0_0_1_i',
+            'linear_layer_0_0_2_i',
+            'linear_layer_0_0_3_i',
+            'dummy_0_linear_layer_0_0_0_o',
+            'dummy_1_linear_layer_0_0_1_o',
+            'dummy_2_linear_layer_0_0_2_o',
+            'dummy_3_linear_layer_0_0_3_o',
+            'linear_layer_0_0_0_o',
+            'linear_layer_0_0_1_o',
+            'linear_layer_0_0_2_o',
+            'linear_layer_0_0_3_o']
+            sage: constraints
+            ['(assert (= linear_layer_0_0_0_i dummy_0_linear_layer_0_0_0_o))',
+            '(assert (= linear_layer_0_0_1_i dummy_1_linear_layer_0_0_1_o))',
+            '(assert (= linear_layer_0_0_2_i dummy_2_linear_layer_0_0_2_o))',
+            '(assert (= linear_layer_0_0_3_i dummy_3_linear_layer_0_0_3_o))',
+            '(assert (= linear_layer_0_0_0_o dummy_0_linear_layer_0_0_0_o))',
+            '(assert (= linear_layer_0_0_1_o dummy_1_linear_layer_0_0_1_o))',
+            '(assert (= linear_layer_0_0_2_o dummy_2_linear_layer_0_0_2_o))',
+            '(assert (= linear_layer_0_0_3_o dummy_3_linear_layer_0_0_3_o))']
         """
         input_bit_len, input_bit_ids = self._generate_component_input_ids()
         out_suffix = constants.OUTPUT_BIT_ID_SUFFIX

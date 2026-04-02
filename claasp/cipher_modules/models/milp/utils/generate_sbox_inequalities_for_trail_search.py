@@ -243,7 +243,7 @@ def update_dictionary_that_contains_inequalities_for_small_sboxes(sbox, analysis
         dictio = {}
 
     if str(sbox) not in dictio.keys():
-        print("Adding sbox inequalities in pre-saved dictionary")
+        # Compute and persist inequalities the first time this S-box is requested.
         dict_inequalities = sbox_inequalities(sbox, analysis)
         dictio[str(sbox)] = dict_inequalities
         write_file = open(file_path, "wb")

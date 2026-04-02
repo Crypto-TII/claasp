@@ -533,7 +533,7 @@ def generate_python_code_string(cipher, verbosity=False):
         # This test is skipped due to it changes the order of the intermediate outputs sometimes as:
         # intermediate_output['cipher_output'] = []
         # intermediate_output['round_key_output'] = []
-        sage: from claasp.ciphers.toys.identity_cipher import IdentityCipher
+        sage: from claasp.ciphers.single_component_ciphers.identity_cipher import IdentityCipher
         sage: from claasp.cipher_modules import code_generator
         sage: identity = IdentityCipher()
         sage: print(code_generator.generate_python_code_string(identity, verbosity=True)) # doctest: +SKIP

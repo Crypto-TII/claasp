@@ -1,5 +1,3 @@
-import pickle
-
 from plotly.basedatatypes import BaseFigure
 
 from claasp.cipher_modules.continuous_diffusion_analysis import ContinuousDiffusionAnalysis
@@ -24,8 +22,17 @@ def test_continuous_tests_report(monkeypatch, tmp_path):
         return None
 
     monkeypatch.setattr(BaseFigure, 'write_image', fake_write_image)
-    with open('tests/unit/cipher_modules/pre_computed_cda_obj.pkl', 'rb') as f:
-        cda_for_repo = pickle.load(f)
+    speck = SpeckBlockCipher(number_of_rounds=1)
+    cda = ContinuousDiffusionAnalysis(speck)
+    cda_for_repo = cda.continuous_diffusion_tests(
+        continuous_avalanche_factor_number_of_samples=10,
+        continuous_neutral_measure_beta_number_of_samples=2,
+        continuous_neutral_measure_gf_number_samples=2,
+        continuous_diffusion_factor_beta_number_of_samples=2,
+        continuous_diffusion_factor_gf_number_samples=2,
+        seed=42,
+        number_of_processors=1,
+    )
     cda_repo = Report(cda_for_repo)
     output_dir = str(tmp_path / 'cda-report')
     cda_repo.save_as_image(output_directory=output_dir)

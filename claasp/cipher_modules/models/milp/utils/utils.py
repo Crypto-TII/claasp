@@ -162,10 +162,13 @@ def generate_product_of_sum_from_espresso(valid_points):
 
 
 def output_espresso_dictionary(file_path):
-    read_file = open(file_path, "rb")
-    dictio = pickle.load(read_file)
-    read_file.close()
-    return dictio
+    try:
+        read_file = open(file_path, "rb")
+        dictio = pickle.load(read_file)
+        read_file.close()
+        return dictio
+    except OSError:
+        return {}
 
 
 def delete_espresso_dictionary(file_path):
