@@ -323,10 +323,11 @@ class LowMCBlockCipher(Cipher):
 
         return number_of_sboxes
 
-    def linear_layer(self, plaintext_id, round_number):
+    def linear_layer(self, input_state, round_number):
+        input_id_links, input_bit_positions = input_state
         return self.add_linear_layer_component(
-            [plaintext_id],
-            [list(range(self.block_bit_size))],
+            input_id_links,
+            input_bit_positions,
             self.block_bit_size,
             self.matrices_for_linear_layer[round_number],
         ).id
@@ -420,11 +421,10 @@ class LowMCBlockCipher(Cipher):
         for i in range(self.n_sbox):
             sbox_output[i] = self.add_SBOX_component([plaintext_id], [list(range(3 * i, 3 * (i + 1)))], 3, self.sbox).id
 
-        return self.add_concatenate_component(
+        return (
             sbox_output + [plaintext_id],
             [list(range(3))] * self.n_sbox + [list(range(3 * self.n_sbox, self.block_bit_size))],
-            self.block_bit_size,
-        ).id
+        )
 
     def update_key_register(self, key_id, round_number):
         rk_id = self.add_linear_layer_component(
