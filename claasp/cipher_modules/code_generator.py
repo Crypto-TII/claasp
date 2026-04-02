@@ -25,7 +25,7 @@ import claasp
 from claasp.cipher_modules.generic_functions_vectorized_byte import get_number_of_bytes_needed_for_bit_size
 from claasp.component import free_input
 from claasp.name_mappings import (SBOX, LINEAR_LAYER, MIX_COLUMN, WORD_OPERATION, CONSTANT,
-                                  CONCATENATE, PADDING, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT,
+                                  PADDING, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT,
                                   FSR, CIPHER_INVERSE_SUFFIX)
 
 tii_path = inspect.getfile(claasp)
@@ -86,7 +86,7 @@ def get_rounds_bit_based_c_code(cipher, intermediate_output, verbosity):
             rounds_code.append(f'\tprintf("\\nROUND {round_number.id}\\n\\n");\n')
 
         for component in round_number.components:
-            if component.type in ['constant', 'sbox', 'linear_layer', 'mix_column', 'concatenate']:
+            if component.type in ['constant', 'sbox', 'linear_layer', 'mix_column']:
                 rounds_code.extend(component.get_bit_based_c_code(verbosity))
                 c_variables.append(component.id)
 
@@ -247,7 +247,7 @@ def generate_bit_based_vectorized_python_code_string(cipher, store_intermediate_
     code.extend([f'  {cipher.inputs[i]}=input[{i}]' for i in range(len(cipher.inputs))])
     for component in cipher.get_all_components():
         params = prepare_input_bit_based_vectorized_python_code_string(component)
-        component_types_allowed = ['constant', 'linear_layer', 'concatenate', 'mix_column',
+        component_types_allowed = ['constant', 'linear_layer', 'mix_column',
                                    'sbox', 'cipher_output', 'intermediate_output', 'fsr']
         component_descriptions_allowed = ['ROTATE', 'SHIFT', 'SHIFT_BY_VARIABLE_AMOUNT', 'NOT', 'XOR',
                                           'MODADD', 'MODMUL', 'MODSUB', 'OR', 'AND']
@@ -296,7 +296,7 @@ def generate_bit_based_vectorized_python_code_string(cipher, store_intermediate_
     code.extend([f'  {cipher.inputs[i]}=input[{i}]' for i in range(len(cipher.inputs))])
     for component in cipher.get_all_components():
         params = prepare_input_bit_based_vectorized_python_code_string(component)
-        component_types_allowed = ['constant', 'linear_layer', 'concatenate', 'mix_column',
+        component_types_allowed = ['constant', 'linear_layer', 'mix_column',
                                    'sbox', 'cipher_output', 'intermediate_output', 'fsr']
         component_descriptions_allowed = ['ROTATE', 'SHIFT', 'SHIFT_BY_VARIABLE_AMOUNT', 'NOT', 'XOR',
                                           'MODADD', 'MODMUL', 'MODSUB', 'OR', 'AND']
@@ -367,7 +367,7 @@ def generate_byte_based_vectorized_python_code_string(cipher, store_intermediate
     for component in cipher.get_all_components():
         formatted_component_inputs = prepare_input_byte_based_vectorized_python_code_string(output_bit_sizes, component)
         output_bit_sizes[component.id] = component.output_bit_size
-        component_types_allowed = ['constant', 'linear_layer', 'concatenate', 'mix_column',
+        component_types_allowed = ['constant', 'linear_layer', 'mix_column',
                                    'sbox', 'cipher_output', 'intermediate_output', 'fsr']
         component_descriptions_allowed = ['ROTATE', 'SHIFT', 'SHIFT_BY_VARIABLE_AMOUNT', 'NOT', 'XOR',
                                           'MODADD', 'MODMUL', 'MODSUB', 'IDEA_MODMUL', 'OR', 'AND']
@@ -470,8 +470,6 @@ def get_number_of_inputs(component):
         number_of_inputs = len(component.description[0])
     elif component.type == 'sbox':
         number_of_inputs = 1
-    elif component.type == 'concatenate':
-        number_of_inputs = 1
     elif 'output' in component.type:
         number_of_inputs = 1
 
@@ -544,33 +542,22 @@ def generate_python_code_string(cipher, verbosity=False):
         from claasp.cipher_modules.generic_functions import *
         <BLANKLINE>
         def evaluate(input):
-            plaintext_output = copy(BitArray(uint=input[0], length=32))
-            key_output = copy(BitArray(uint=input[1], length=32))
+            plaintext_output = copy(BitArray(uint=int(input[0]), length=32))
             intermediate_output = {}
-            intermediate_output['round_key_output'] = []
             intermediate_output['cipher_output'] = []
             components_io = {}
             component_input = BitArray(1)
             print('\nRound_0\n')
         <BLANKLINE>
-            # round: 0, component: 0, component_id: concatenate_0_0
-            component_input = select_bits(key_output, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31])
+            # round: 0, component: 0, component_id: cipher_output_0_0
+            component_input = select_bits(plaintext_output, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31])
             output_bit_size = 32
-            concatenate_0_0_output = component_input
-            components_io['concatenate_0_0'] = [component_input.uint, concatenate_0_0_output.uint]
-            print('concatenate_0_0_input = {}'.format(component_input))
-            print('concatenate_0_0_output = {}'.format(concatenate_0_0_output))
-        ...
-        <BLANKLINE>
-            # round: 0, component: 3, component_id: cipher_output_0_3
-            component_input = select_bits(concatenate_0_2_output, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31])
-            output_bit_size = 32
-            cipher_output_0_3_output = component_input
-            intermediate_output['cipher_output'].append(cipher_output_0_3_output.uint)
-            cipher_output = cipher_output_0_3_output.uint
-            components_io['cipher_output_0_3'] = [component_input.uint, cipher_output_0_3_output.uint]
-            print('cipher_output_0_3_input = {}'.format(component_input))
-            print('cipher_output_0_3_output = {}'.format(cipher_output_0_3_output))
+            cipher_output_0_0_output = component_input
+            intermediate_output['cipher_output'].append(cipher_output_0_0_output.uint)
+            cipher_output = cipher_output_0_0_output.uint
+            components_io['cipher_output_0_0'] = [component_input.uint, cipher_output_0_0_output.uint]
+            print('cipher_output_0_0_input = {}'.format(component_input))
+            print('cipher_output_0_0_output = {}'.format(cipher_output_0_0_output))
         <BLANKLINE>
             return cipher_output, intermediate_output, components_io
         <BLANKLINE>
@@ -684,8 +671,6 @@ def build_function_call(component):
             return f"{component.description[0]}(component_input, {component.description[1]})"
     elif component.type == CONSTANT:
         return f"set_from_hex_string('{component.description[0]}')"
-    elif component.type == CONCATENATE:
-        return "component_input"
     elif component.type == PADDING:
         return "padding(component_input)"
     elif component.type == FSR:
@@ -822,7 +807,7 @@ def build_continuous_diffusion_analysis_function_call(component):
     elif component.type == CONSTANT:
         return f"CONSTANT_continuous_diffusion_analysis({component.description[0]}, " \
                f"{component.output_bit_size})"
-    elif component.type in [CONCATENATE, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT]:
+    elif component.type in [INTERMEDIATE_OUTPUT, CIPHER_OUTPUT]:
         return "component_input"
     elif component.type == PADDING:
         return "padding(component_input)"
@@ -879,7 +864,7 @@ def get_rounds_word_based_c_code(cipher, intermediate_output, verbosity, word_si
                                            component.description[0] in ['SHIFT', 'ROTATE',
                                                                         'SHIFT_BY_VARIABLE_AMOUNT',
                                                                         'ROTATE_BY_VARIABLE_AMOUNT']
-            if component.type in ['constant', 'sbox', 'concatenate'] or is_shift_or_rotate_component:
+            if component.type in ['constant', 'sbox'] or is_shift_or_rotate_component:
                 rounds_code.extend(component.get_word_based_c_code(verbosity, word_size, wordstring_variables))
             elif component.type == 'word_operation':
                 rounds_code.extend(get_word_operation_word_based_c_code(component, verbosity,
