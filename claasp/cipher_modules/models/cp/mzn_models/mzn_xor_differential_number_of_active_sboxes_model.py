@@ -132,7 +132,7 @@ class MznXorDifferentialNumberOfActiveSboxesModel(MznModel):
         self.sbox_mant = []
         self.input_sbox = []
         self._variables_list = []
-        self.c = 0
+        self.component_probability_index = 0
         self.table_of_solutions_length = 0
         constraints = self.fix_variables_value_constraints(fixed_variables, "first_step")
         self._first_step = constraints

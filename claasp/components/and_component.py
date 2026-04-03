@@ -24,7 +24,7 @@ from claasp.components.multi_input_non_linear_logical_operator_component import 
 
 def cp_twoterms(model, inp1, inp2, out, cp_constraints):
     cp_constraints.append(
-        f"constraint Ham_weight(Andz({inp1}, {inp2}, {out})) == 0 /\\ p[{model.c}] = Ham_weight(OR({inp1}, {inp2}));"
+        f"constraint Ham_weight(Andz({inp1}, {inp2}, {out})) == 0 /\ p[{model.component_probability_index}] = Ham_weight(OR({inp1}, {inp2}));"
     )
     return cp_constraints
 
@@ -241,7 +241,7 @@ class AND(MultiInputNonlinearLogicalOperator):
         cp_declarations.append(f"array[0..{self.input_bit_size - 1}] of var 0..1:{output_id_link}_i;")
         cp_declarations.append(f"array[0..{self.output_bit_size - 1}] of var 0..1:{output_id_link}_o;")
         model.component_and_probability[output_id_link] = 0
-        probability = []
+        component_probability_indices = []
         for i in range(self.output_bit_size):
             new_constraint = "constraint table("
             for j in range(num_add):
@@ -255,15 +255,15 @@ class AND(MultiInputNonlinearLogicalOperator):
                 for k in range(len(model.float_and_lat_values)):
                     rounded_float = round(float(model.float_and_lat_values[k]), 2)
                     cp_constraints.append(
-                        f"constraint if p_{output_id_link}_{i} == {1000 + k} then p[{model.c}]={rounded_float} else "
-                        f"p[{model.c}]=p_{output_id_link}_{i} endif;"
+                        f"constraint if p_{output_id_link}_{i} == {1000 + k} then p[{model.component_probability_index}]={rounded_float} else "
+                        f"p[{model.component_probability_index}]=p_{output_id_link}_{i} endif;"
                     )
             else:
-                new_constraint = new_constraint + f"[{output_id_link}_o[{i}]]++[p[{model.c}]],and{num_add}inputs_LAT);"
+                new_constraint = new_constraint + f"[{output_id_link}_o[{i}]]++[p[{model.component_probability_index}]],and{num_add}inputs_LAT);"
                 cp_constraints.append(new_constraint)
-            probability.append(model.c)
-            model.c += 1
-        model.component_and_probability[output_id_link] = probability
+            component_probability_indices.append(model.component_probability_index)
+            model.component_probability_index += 1
+        model.component_and_probability[output_id_link] = component_probability_indices
 
         return cp_declarations, cp_constraints
 

@@ -70,7 +70,7 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
             ....: integer_to_bit_list(0, 128, 'little'))]
             sage: cp.build_xor_differential_trail_second_step_model(-1, fixed_variables)
         """
-        self.c = 0
+        self.component_probability_index = 0
         self.sbox_mant = []
         self.component_and_probability = {}
         self.build_xor_differential_trail_model_template(weight, fixed_variables)

@@ -133,7 +133,7 @@ class MznXorLinearModel(MznModel):
         """
         self.initialise_model()
         self.sbox_mant = []
-        self.c = 0
+        self.component_probability_index = 0
         self._variables_list = []
         self.component_and_probability = {}
         self._variables_list = []

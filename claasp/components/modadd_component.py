@@ -336,7 +336,7 @@ class MODADD(Modular):
         return cp_declarations, cp_constraints
 
     def cp_twoterms_xor_differential_probability(
-        self, inp1, inp2, out, inplen, cp_constraints, cp_declarations, c, model
+        self, inp1, inp2, out, inplen, cp_constraints, cp_declarations, component_probability_index, model
     ):
         if inp1 not in model.modadd_twoterms_mant:
             cp_declarations.append(f"array[0..{inplen - 1}] of var 0..1: Shi_{inp1} = LShift({inp1},1);")
@@ -350,7 +350,7 @@ class MODADD(Modular):
         cp_declarations.append(f"array[0..{inplen - 1}] of var 0..1: eq_{out} = Eq(Shi_{inp1}, Shi_{inp2}, Shi_{out});")
         cp_constraints.append(
             f"constraint forall(j in 0..{inplen - 1})(if eq_{out}[j] = 1 then (sum([{inp1}[j], {inp2}[j], "
-            f"{out}[j]]) mod 2) = Shi_{inp2}[j] else true endif) /\\ p[{c}] = {100 * inplen}-100 * sum(eq_{out});"
+            f"{out}[j]]) mod 2) = Shi_{inp2}[j] else true endif) /\ p[{component_probability_index}] = {100 * inplen}-100 * sum(eq_{out});"
         )
 
         return cp_declarations, cp_constraints

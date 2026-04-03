@@ -128,7 +128,7 @@ class MznXorDifferentialModel(MznModel):
             sage: cp.build_xor_differential_trail_model()
         """
         self.initialise_model()
-        self.c = 0
+        self.component_probability_index = 0
         self.sbox_mant = []
         self.input_sbox = []
         self.component_and_probability = {}

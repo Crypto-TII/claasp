@@ -85,7 +85,7 @@ class MznModel:
     def initialise_model(self):
         self._variables_list = []
         self._model_constraints = []
-        self.c = 0
+        self.component_probability_index = 0
         if self._cipher.is_spn():
             for component in self._cipher.get_all_components():
                 if SBOX in component.type:

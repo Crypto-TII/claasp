@@ -221,9 +221,9 @@ class OR(MultiInputNonlinearLogicalOperator):
             )
             cp_constraints.append(cp_constraint)
             p_count = p_count + 1
-        cp_constraints.append(f"constraint p[{model.c}] = sum(p_{self.id});")
-        model.component_and_probability[self.id] = model.c
-        model.c = model.c + 1
+        cp_constraints.append(f"constraint p[{model.component_probability_index}] = sum(p_{self.id});")
+        model.component_and_probability[self.id] = model.component_probability_index
+        model.component_probability_index = model.component_probability_index + 1
 
         return cp_declarations, cp_constraints
 

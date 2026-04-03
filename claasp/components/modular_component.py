@@ -400,7 +400,7 @@ class Modular(Component):
         return cp_declarations, cp_constraints, metadata
 
     def cp_twoterms_xor_differential_probability(
-        self, input_1, input_2, out, input_length, cp_constraints, cp_declarations, c, model
+        self, input_1, input_2, out, input_length, cp_constraints, cp_declarations, component_probability_index, model
     ):
         if input_1 not in model.modadd_twoterms_mant:
             cp_declarations.append(f"array[0..{input_length - 1}] of var 0..1: Shi_{input_1} = LShift({input_1},1);")
@@ -520,7 +520,7 @@ class Modular(Component):
             )
         for i in range(num_add, 2 * num_add - 2):
             cp_declarations.append(f"array[0..{input_len - 1}] of var 0..1: pre_{output_id_link}_{i};")
-        probability = []
+        component_probability_indices = []
         for i in range(num_add - 2):
             self.cp_twoterms_xor_differential_probability(
                 f"pre_{output_id_link}_{num_add - 1}",
@@ -529,11 +529,11 @@ class Modular(Component):
                 self.output_bit_size,
                 cp_constraints,
                 cp_declarations,
-                model.c,
+                model.component_probability_index,
                 model,
             )
-            probability.append(model.c)
-            model.c += 1
+            component_probability_indices.append(model.component_probability_index)
+            model.component_probability_index += 1
         self.cp_twoterms_xor_differential_probability(
             f"pre_{output_id_link}_{2 * num_add - 3}",
             f"pre_{output_id_link}_0",
@@ -541,12 +541,12 @@ class Modular(Component):
             self.output_bit_size,
             cp_constraints,
             cp_declarations,
-            model.c,
+            model.component_probability_index,
             model,
         )
-        probability.append(model.c)
-        model.c += 1
-        model.component_and_probability[output_id_link] = probability
+        component_probability_indices.append(model.component_probability_index)
+        model.component_probability_index += 1
+        model.component_and_probability[output_id_link] = component_probability_indices
 
         return cp_declarations, cp_constraints
 
@@ -666,10 +666,10 @@ class Modular(Component):
             )
 
         cp_constraints.append(
-            f"constraint p[{model.c}] = sum([if (x1_{output_id_link}[i+1] = x2_{output_id_link}[i+1]) /\\ (x1_{output_id_link}[i+1] = {output_id_link}[i+1]) then 0 else 100 endif | i in 0..{input_len - 2}]);"
+            f"constraint p[{model.component_probability_index}] = sum([if (x1_{output_id_link}[i+1] = x2_{output_id_link}[i+1]) /\\ (x1_{output_id_link}[i+1] = {output_id_link}[i+1]) then 0 else 100 endif | i in 0..{input_len - 2}]);"
         )
 
-        model.c += 1
+        model.component_probability_index += 1
 
         return cp_declarations, cp_constraints
 
@@ -708,7 +708,7 @@ class Modular(Component):
         input_len = self.input_bit_size // num_add
         cp_declarations.append(f"array[0..{self.input_bit_size - 1}] of var 0..1: {output_id_link}_i;")
         cp_declarations.append(f"array[0..{self.output_bit_size - 1}] of var 0..1: {output_id_link}_o;")
-        probability = []
+        component_probability_indices = []
         for i in range(num_add):
             cp_declarations.append(f"array[0..{input_len - 1}] of var 0..1: pre_{output_id_link}_{i};")
             for j in range(input_len):
@@ -720,17 +720,17 @@ class Modular(Component):
         for i in range(num_add - 2):
             cp_constraints.append(
                 f"constraint modadd_linear(pre_{output_id_link}_{num_add - 1}, pre_{output_id_link}_{i + 1}, "
-                f"pre_{output_id_link}_{num_add + i}, p[{model.c}]);"
+                f"pre_{output_id_link}_{num_add + i}, p[{model.component_probability_index}]);"
             )
-            probability.append(model.c)
-            model.c = model.c + 1
+            component_probability_indices.append(model.component_probability_index)
+            model.component_probability_index = model.component_probability_index + 1
         cp_constraints.append(
             f"constraint modadd_linear(pre_{output_id_link}_{2 * num_add - 3}, pre_{output_id_link}_0, "
-            f"{output_id_link}_o, p[{model.c}]);"
+            f"{output_id_link}_o, p[{model.component_probability_index}]);"
         )
-        probability.append(model.c)
-        model.c = model.c + 1
-        model.component_and_probability[output_id_link] = probability
+        component_probability_indices.append(model.component_probability_index)
+        model.component_probability_index = model.component_probability_index + 1
+        model.component_and_probability[output_id_link] = component_probability_indices
 
         return cp_declarations, cp_constraints
 

@@ -1070,7 +1070,7 @@ class SBOX(Component):
             sage: cp = type('DummyModel', (), {})()
             sage: cp.sbox_mant = []
             sage: cp.component_and_probability = {}
-            sage: cp.c = 0
+            sage: cp.component_probability_index = 0
             sage: cp_decl, cp_constr = sbox_component.cp_xor_differential_propagation_constraints(cp)[0:2]
             sage: cp_constr
             ['constraint table([plaintext[0]]++[plaintext[1]]++[plaintext[2]]++[sbox_0_0[0]]++[sbox_0_0[1]]++[sbox_0_0[2]]++[p[0]], DDT_sbox_0_0);']
@@ -1113,10 +1113,10 @@ class SBOX(Component):
             all_inputs.extend([f"[{id_link}[{position}]]" for position in bit_positions])
         table_input = "++".join(all_inputs)
         table_output = "++".join([f"[{self.id}[{i}]]" for i in range(output_size)])
-        constraint = f"constraint table({table_input}++{table_output}++[p[{model.c}]], DDT_{output_id_link_sost});"
+        constraint = f"constraint table({table_input}++{table_output}++[p[{model.component_probability_index}]], DDT_{output_id_link_sost});"
         cp_constraints = [constraint]
-        model.component_and_probability[self.id] = model.c
-        model.c += 1
+        model.component_and_probability[self.id] = model.component_probability_index
+        model.component_probability_index += 1
 
         return cp_declarations, cp_constraints
 
@@ -1135,7 +1135,7 @@ class SBOX(Component):
             sage: cp = type('DummyModel', (), {})()
             sage: cp.sbox_mant = []
             sage: cp.component_and_probability = {}
-            sage: cp.c = 0
+            sage: cp.component_probability_index = 0
             sage: cp_decl, cp_constr = sbox_component.cp_xor_linear_mask_propagation_constraints(cp)[0:2]
             sage: cp_constr
             ['constraint table([sbox_0_0_i[0]]++[sbox_0_0_i[1]]++[sbox_0_0_i[2]]++[sbox_0_0_o[0]]++[sbox_0_0_o[1]]++[sbox_0_0_o[2]]++[p[0]],LAT_sbox_0_0);']
@@ -1180,10 +1180,10 @@ class SBOX(Component):
             new_constraint = new_constraint + f"[{output_id_link}_i[{i}]]++"
         for i in range(output_size):
             new_constraint = new_constraint + f"[{output_id_link}_o[{i}]]++"
-        new_constraint = new_constraint + f"[p[{model.c}]],LAT_{output_id_link_sost});"
+        new_constraint = new_constraint + f"[p[{model.component_probability_index}]],LAT_{output_id_link_sost});"
         cp_constraints.append(new_constraint)
-        model.component_and_probability[output_id_link] = model.c
-        model.c = model.c + 1
+        model.component_and_probability[output_id_link] = model.component_probability_index
+        model.component_probability_index = model.component_probability_index + 1
 
         return cp_declarations, cp_constraints
 

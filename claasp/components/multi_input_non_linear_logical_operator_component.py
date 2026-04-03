@@ -224,7 +224,7 @@ class MultiInputNonlinearLogicalOperator(Component):
             sage: from claasp.components.multi_input_non_linear_logical_operator_component import MultiInputNonlinearLogicalOperator
             sage: class DummyModel:
             ....:     def __init__(self):
-            ....:         self.c = 0
+            ....:         self.component_probability_index = 0
             ....:         self.component_and_probability = {}
             sage: component = MultiInputNonlinearLogicalOperator(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2, 'and')
             sage: component.cp_xor_differential_propagation_constraints(DummyModel())
@@ -239,14 +239,14 @@ class MultiInputNonlinearLogicalOperator(Component):
         input_len = len(all_inputs) // num_add
         cp_declarations = []
         cp_constraints = []
-        probability = []
+        component_probability_indices = []
         for i in range(self.output_bit_size):
             inputs = "++".join(f"[{all_inputs[i + input_len * j]}]" for j in range(num_add))
-            cp_constraint = f"constraint table({inputs}++[{self.id}[{i}]]++[p[{model.c}]],and{num_add}inputs_DDT);"
+            cp_constraint = f"constraint table({inputs}++[{self.id}[{i}]]++[p[{model.component_probability_index}]],and{num_add}inputs_DDT);"
             cp_constraints.append(cp_constraint)
-            model.c += 1
-            probability.append(model.c)
-        model.component_and_probability[self.id] = probability
+            model.component_probability_index += 1
+            component_probability_indices.append(model.component_probability_index)
+        model.component_and_probability[self.id] = component_probability_indices
 
         return cp_declarations, cp_constraints
 
