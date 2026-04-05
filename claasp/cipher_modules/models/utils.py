@@ -1417,3 +1417,122 @@ def truncated_differential_linear_checker_permutation(
     count = np.count_nonzero(parities == 0)
     corr = 2 * count / number_of_samples * 1.0 - 1
     return corr
+
+def differential_checker_for_block_cipher_single_key_numba(
+    cipher,
+    input_difference,
+    output_difference,
+    number_of_samples,
+    block_size,
+    key_size,
+    fixed_key,
+    seed=None
+):
+    """
+    Numba-based differential checker that processes samples one-by-one.
+    Uses much less VRAM than CuPy version by not storing all samples.
+    Supports arbitrary block/key sizes via byte-array state representation.
+    """
+    import math
+    import numpy as np
+    from numba import cuda, uint64
+    from claasp.cipher_modules.code_generator import generate_numba_cipher_evaluation_kernel
+
+    differential_kernel, device_code = generate_numba_cipher_evaluation_kernel(cipher)
+
+    pt_n  = block_size // 8
+    key_n = key_size   // 8
+
+    # Pack key as byte array on GPU
+    key_bytes = np.array(
+        [(fixed_key >> (8 * (key_n - 1 - i))) & 0xFF for i in range(key_n)],
+        dtype=np.uint8
+    )
+    d_key = cuda.to_device(key_bytes)
+
+    # Pack differences as uint64 (kernel unpacks byte by byte)
+    in_diff  = uint64(input_difference)
+    out_diff = uint64(output_difference)
+
+    d_counter = cuda.to_device(np.array([0], dtype=np.uint64))
+
+    threads_per_block = 256
+    blocks = min(4096, (number_of_samples + threads_per_block - 1) // threads_per_block)
+
+    differential_kernel[blocks, threads_per_block](
+        d_counter,
+        in_diff,
+        out_diff,
+        uint64(number_of_samples),
+        d_key,
+        uint64(seed if seed is not None else 42)
+    )
+
+    cuda.synchronize()
+
+    matches = int(d_counter.copy_to_host()[0])
+    if matches == 0:
+        return float('-inf')
+    return math.log2(matches / number_of_samples)
+
+def differential_linear_checker_for_block_cipher_single_key_numba(
+    cipher,
+    input_difference,
+    output_mask,
+    number_of_samples,
+    block_size,
+    key_size,
+    fixed_key,
+    seed=None
+):
+    """
+    Numba-based differential-linear checker that processes samples one-by-one.
+    Uses much less VRAM than CuPy version by not storing all samples.
+    Supports arbitrary block/key sizes via byte-array state representation.
+    """
+    import numpy as np
+    from numba import cuda, uint64
+    from claasp.cipher_modules.code_generator import generate_numba_cipher_evaluation_kernel
+
+    if isinstance(output_mask, str):
+        mask_int = 0
+        for i, bit in enumerate(output_mask):
+            if bit == '1':
+                mask_int |= (1 << (block_size - 1 - i))
+    else:
+        mask_int = output_mask
+
+    dl_kernel, device_code = generate_numba_cipher_evaluation_kernel(
+        cipher,
+        mode='differential_linear',
+        output_mask=mask_int
+    )
+
+    pt_n  = block_size // 8
+    key_n = key_size   // 8
+
+    key_bytes = np.array(
+        [(fixed_key >> (8 * (key_n - 1 - i))) & 0xFF for i in range(key_n)],
+        dtype=np.uint8
+    )
+    d_key = cuda.to_device(key_bytes)
+
+    d_counter = cuda.to_device(np.array([0], dtype=np.uint64))
+
+    threads_per_block = 256
+    blocks = min(4096, (number_of_samples + threads_per_block - 1) // threads_per_block)
+
+    dl_kernel[blocks, threads_per_block](
+        d_counter,
+        uint64(input_difference),
+        uint64(mask_int),
+        uint64(number_of_samples),
+        d_key,
+        uint64(seed if seed is not None else 42)
+    )
+
+    cuda.synchronize()
+
+    count = int(d_counter.copy_to_host()[0])
+    correlation = 2.0 * count / number_of_samples - 1.0
+    return correlation

@@ -629,3 +629,45 @@ def test_differential_linear_distinguisher_speck32_9rounds_gpu():
 
     assert math.isclose(exp_corr, practical_corr, rel_tol=0.3), \
         f"Correlation {exp_corr:.6f} too far from practical {practical_corr:.6f}"
+
+def test_differential_linear_distinguisher_speck32_11rounds_numba():
+    """
+    Numba version - should handle more samples than CuPy (2^25 limit).
+    """
+    import time
+    import math
+    
+    from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+    from claasp.cipher_modules.models.utils import differential_linear_checker_for_block_cipher_single_key_numba
+    
+    speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=11)
+    input_difference = 0x2A100004
+    out_mask_int = 0x38543844
+    block_size = speck.inputs_bit_size[0]
+    key_size = speck.inputs_bit_size[1]
+    fixed_key = 0x00000000
+    seed = 45
+    
+    practical_corr = 2**-16  
+    theoretical_corr = 2**-16.12  
+
+    number_of_samples = 1 << 32  
+    
+    print(f"\n  Speck32/64 - 11-round DL Distinguisher (Numba)")
+    print(f"  Input diff: {hex(input_difference)} | Output mask: {hex(out_mask_int)}")
+    print(f"  Samples: 2^{int(math.log2(number_of_samples))}")
+    
+    start = time.time()
+    corr = differential_linear_checker_for_block_cipher_single_key_numba(
+        speck, input_difference, out_mask_int,
+        number_of_samples, block_size, key_size, fixed_key, seed
+    )
+    t = time.time() - start
+    
+    exp_corr = -corr  
+    
+    print(f"  samples=2^** | exp_corr={exp_corr:.15f} | practical={practical_corr:.6f} | theo={theoretical_corr:.6f} | time={t:.2f}s")
+    
+    assert math.isclose(exp_corr, practical_corr, rel_tol=0.3), \
+        f"Correlation {exp_corr:.6f} too far from practical {practical_corr:.6f}"
+

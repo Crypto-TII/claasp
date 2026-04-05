@@ -1,4 +1,8 @@
 from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation, ROUND_MODE_HALF, ROUND_MODE_SINGLE
+from claasp.cipher_modules.code_generator import generate_numba_cipher_evaluation_kernel
+from claasp.cipher_modules.generic_functions_vectorized_byte_numba import supports_word_fast_path
+from numba import cuda, uint8, uint16, uint32, uint64
+import numpy as np
 
 
 def test_chacha_permutation():
@@ -62,3 +66,59 @@ def test_toy_chacha_permutation():
     assert chacha.evaluate([plaintext], verbosity=False) == output
     assert chacha.evaluate_vectorized([plaintext], evaluate_api=True) == output
     assert chacha.evaluate_vectorized_gpu([plaintext], evaluate_api=True) == output
+
+def test_numba_matches_evaluate_vectorized_toy_chacha_fallback():
+    """
+    The test vectors below were taken from the source code available in the URL specified in [DEY2023]_.
+    """
+    chacha = ChachaPermutation(
+        number_of_rounds=2,
+        rotations=[2, 1, 4, 3],
+        word_size=8,
+        round_mode=ROUND_MODE_HALF,
+    )
+    state = ["01", "00", "00", "00",
+             "00", "00", "00", "00",
+             "00", "00", "00", "00",
+             "00", "00", "00", "00"]
+    plaintext = int("0x" + "".join(state), 16)
+
+    pt_n = chacha.inputs_bit_size[chacha.inputs.index("plaintext")] // 8
+    expected = chacha.evaluate_vectorized([plaintext], evaluate_api=True)
+    expected_hex = expected.to_bytes(pt_n, byteorder="big").hex()
+
+    _, code = generate_numba_cipher_evaluation_kernel(chacha, mode="differential")
+    device_code = code.split("@cuda.jit\ndef differential_kernel")[0]
+
+    eg = {
+        "cuda": cuda,
+        "uint8": uint8,
+        "uint16": uint16,
+        "uint32": uint32,
+        "uint64": uint64,
+        "np": np,
+    }
+    exec(device_code, eg)
+
+    kernel_name = "test_kernel_toy_chacha_fallback"
+    exec(
+        f"@cuda.jit\ndef {kernel_name}(pt, key, out):\n    evaluate_cipher(pt, key, out)",
+        eg,
+    )
+
+    pt = np.frombuffer(plaintext.to_bytes(pt_n, byteorder="big"), dtype=np.uint8).copy()
+    key = np.zeros(0, dtype=np.uint8)
+    out = np.zeros(pt_n, dtype=np.uint8)
+
+    d_pt = cuda.to_device(pt)
+    d_key = cuda.to_device(key)
+    d_out = cuda.to_device(out)
+    eg[kernel_name][1, 1](d_pt, d_key, d_out)
+    cuda.synchronize()
+
+    got = d_out.copy_to_host().tobytes().hex()
+    print("Expected:", expected_hex)
+    print("Got     :", got)
+    assert got == expected_hex
+    assert got == "81000000ad0000005600000046000000"
+

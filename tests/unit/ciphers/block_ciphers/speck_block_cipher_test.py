@@ -1,4 +1,5 @@
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+from claasp.cipher_modules.generic_functions_vectorized_byte_numba import supports_word_fast_path
 
 
 def test_speck_block_cipher():
@@ -93,3 +94,62 @@ def test_differential_checker_speck32_gpu_scalability():
         print(f"  {number_of_rounds:>6} | {'2^'+str(samples_exp):>8} | {log2p_gpu:>10.2f} | {data['log2_prob']:>6} | {t_gpu:>7.2f}s")
 
     print("=" * 70)
+
+def test_differential_checker_speck32_numba():
+    """
+    Test Numba-based differential checker for Speck32/64.
+    Should use less VRAM than CuPy and scale to larger samples.
+    """
+    import time
+    import math
+    
+    from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+    from claasp.cipher_modules.models.utils import differential_checker_for_block_cipher_single_key_numba
+    
+    input_difference = (0x0211 << 16) | 0x0A04
+    fixed_key = 0x0000000000000000
+    seed = 12
+    
+    rounds_data = {
+        1: {'out_diff': (0x2800, 0x0010), 'log2_prob': -4},
+        3: {'out_diff': (0x8000, 0x8000), 'log2_prob': -6},
+        5: {'out_diff': (0x8004, 0x840E), 'log2_prob': -10},
+        7: {'out_diff': (0x5002, 0x0420), 'log2_prob': -25},
+        9: {'out_diff': (0x1001, 0x5001), 'log2_prob': -30},
+    }
+    
+    print("\n")
+    print("=" * 70)
+    print("  Speck32/64 - NUMBA Differential Verification")
+    print(f"  Input difference: {hex(input_difference)}")
+    print("=" * 70)
+    print(f"  {'rounds':>6} | {'samples':>8} | {'Numba log2p':>12} | {'theo':>6} | {'time':>8}")
+    print("-" * 70)
+    
+    for number_of_rounds, data in rounds_data.items():
+        speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64,
+                                 number_of_rounds=number_of_rounds)
+        block_size = speck.inputs_bit_size[0]
+        key_size = speck.inputs_bit_size[1]
+        
+        out_L, out_R = data['out_diff']
+        output_difference = (out_L << 16) | out_R
+
+        number_of_samples = 1 << (-data['log2_prob'] + 6)
+        samples_exp = int(math.log2(number_of_samples))
+            
+        start = time.time()
+        log2p_numba = differential_checker_for_block_cipher_single_key_numba(
+            speck, input_difference, output_difference,
+            number_of_samples, block_size, key_size, fixed_key, seed
+        )
+        t_numba = time.time() - start
+            
+        print(f"  {number_of_rounds:>6} | {'2^'+str(samples_exp):>8} | {log2p_numba:>12.2f} | {data['log2_prob']:>6} | {t_numba:>7.2f}s")
+    
+    print("=" * 70)
+
+
+def test_speck_supports_numba_word_fast_path():
+    speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=4)
+    assert supports_word_fast_path(speck) is True

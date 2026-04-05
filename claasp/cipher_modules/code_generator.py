@@ -33,6 +33,8 @@ tii_dir_path = os.path.dirname(tii_path)
 
 TII_C_LIB_PATH = f'{tii_dir_path}/cipher_modules/'
 
+_NUMBA_KERNEL_CACHE = {}
+
 
 def delete_generated_evaluate_c_shared_library(cipher):
     name = cipher.id + "_evaluate"
@@ -446,7 +448,58 @@ def generate_byte_based_vectorized_gpu_python_code_string(cipher, store_intermed
         code.append('  return intermediateOutputs["cipher_output"]')
 
     return '\n'.join(code)
+'''
+def generate_byte_based_vectorized_python_code_string_numba(cipher, store_intermediate_outputs=False, verbosity=False, integers_inputs_and_outputs=False):
+    """
+    Numba
+    """
+    cipher.sort_cipher()
 
+    code = ['import cupy as cp',
+            'import numpy as np',
+            'from claasp.cipher_modules.generic_functions_vectorized_byte_gpu import *\n',
+            'integers_inputs_and_outputs=' + str(integers_inputs_and_outputs) + '\n',
+            'def evaluate(input, store_intermediate_outputs):', '  intermediateOutputs={}']
+    output_bit_sizes = {}
+    code.append('  if integers_inputs_and_outputs:\n'
+                '    input = cipher_inputs_to_evaluate_vectorized_inputs(input, ' + str(cipher.inputs_bit_size) + ')')
+    for i in range(len(cipher.inputs)):
+        code.append(f'  {cipher.inputs[i]}=cp.asarray(input[{i}])')
+        output_bit_sizes[cipher.inputs[i]] = cipher.inputs_bit_size[i]
+    cipher_descriptions = []
+    for component in cipher.get_all_components():
+        cipher_descriptions.append(component.description)
+    for component in cipher.get_all_components():
+        formatted_component_inputs = prepare_input_byte_based_vectorized_python_code_string(output_bit_sizes, component)
+        output_bit_sizes[component.id] = component.output_bit_size
+        component_types_allowed = ['constant', 'linear_layer', 'concatenate', 'mix_column',
+                                   'sbox', 'cipher_output', 'intermediate_output', 'fsr']
+        component_descriptions_allowed = ['ROTATE', 'SHIFT', 'SHIFT_BY_VARIABLE_AMOUNT', 'NOT', 'XOR',
+                                          'MODADD', 'MODMUL', 'MODSUB', 'IDEA_MODMUL', 'OR', 'AND']
+        if component.type in component_types_allowed or (component.type == 'word_operation' and
+                                                         component.description[0] in component_descriptions_allowed):
+            code.extend(component.get_byte_based_vectorized_python_code(formatted_component_inputs))
+
+        name = component.id
+
+        if verbosity and component.type != 'constant':
+            code.append(f'  byte_vector_print_as_hex_values("{name}_input", {formatted_component_inputs})')
+            code.append(f'  byte_vector_print_as_hex_values("{name}_output", {name})')
+
+    if store_intermediate_outputs:
+        code.append('  return intermediateOutputs')
+    elif CIPHER_INVERSE_SUFFIX in cipher.id:
+        if ['plaintext'] in cipher_descriptions:
+            code.append('  return intermediateOutputs["plaintext"]')
+        else:
+            code.append('  last_inter_output = [output for output in list(intermediateOutputs.keys()) if \'intermediate_output\' in output][0]')
+            code.append('  return intermediateOutputs[last_inter_output]')
+    else:
+        code.append('  return intermediateOutputs["cipher_output"]')
+
+    return '\n'.join(code)
+
+'''
 def prepare_input_byte_based_vectorized_python_code_string(bit_sizes, component):
     params = None
     initial_inputs = component.input_id_links
@@ -1019,3 +1072,61 @@ def update_intermediate_structure(string_dictionary, list_sizes, intermediate_ou
         f'\toutput_list[{i}][{list_sizes[i] - 1}] = wordstring_to_hex_string({component.id});')
 
     return index
+
+# ============================================================================
+# NUMBA CUDA CODE GENERATION
+# ============================================================================
+
+def generate_numba_cipher_evaluation_kernel(cipher, mode='differential', output_mask=None):
+    """
+    Generate complete Numba CUDA code (device functions + kernel).
+
+    INPUT:
+    - cipher: Cipher object
+    - mode: 'differential' or 'differential_linear'
+    - output_mask: For differential_linear, bit mask as integer
+
+    OUTPUT:
+    - Compiled kernel function, code string
+    """
+    from numba import cuda, uint8, uint16, uint32, uint64
+    from claasp.cipher_modules import generic_functions_vectorized_byte_numba as numba_gen
+
+    cache_key = (cipher.id, mode, output_mask)
+    cached = _NUMBA_KERNEL_CACHE.get(cache_key)
+    if cached is not None:
+        return cached
+
+    word_size = numba_gen.determine_word_size(cipher)
+    input_sizes, plaintext_name, key_name = numba_gen._resolve_numba_input_names(cipher)
+    block_size = input_sizes[plaintext_name]
+    key_size = input_sizes[key_name] if key_name is not None else 0
+
+    code_lines = [
+        "from numba import cuda, uint8, uint16, uint32, uint64",
+        "import numpy as np",
+        "",
+    ]
+    code_lines.extend(numba_gen.generate_device_helpers_code(mode))
+
+    if numba_gen.supports_word_fast_path(cipher):
+        code_lines.extend(
+            numba_gen.generate_word_fast_cipher_evaluator_code(cipher, word_size, block_size, key_size)
+        )
+        code_lines.extend(numba_gen.generate_word_fast_kernel_code(mode, block_size))
+    else:
+        evaluator_lines, layout, pt_n, key_n, out_n = numba_gen.generate_cipher_evaluator_code(
+            cipher, word_size, block_size, key_size
+        )
+        code_lines.extend(evaluator_lines)
+        code_lines.extend(numba_gen.generate_kernel_code(mode, block_size, pt_n, key_n, out_n))
+
+    full_code = "\n".join(code_lines)
+
+    exec_globals = {'cuda': cuda, 'uint8': uint8, 'uint16': uint16, 'uint32': uint32, 'uint64': uint64}
+    exec(full_code, exec_globals)
+
+    kernel_name = 'differential_kernel' if mode == 'differential' else 'differential_linear_kernel'
+    result = (exec_globals[kernel_name], full_code)
+    _NUMBA_KERNEL_CACHE[cache_key] = result
+    return result
