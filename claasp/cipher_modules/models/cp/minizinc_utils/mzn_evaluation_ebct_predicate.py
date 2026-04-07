@@ -1,5 +1,5 @@
-def get_evaluation_ebct_operations():
-    ebct_string = """ 
+def get_evaluation_ebct_operations(nbit):
+    ebct_string = f""" 
     array[0..63, 0..7, 0..7] of 0..4: tables_ebct = array3d(0..63, 0..7, 0..7, 
 [
   4, 0, 0, 0, 0, 2, 0, 0, 
@@ -591,21 +591,21 @@ array[0..7,0..2] of 0..1: valid_state_ebct = array2d(0..7,0..2,
 ]);
 
 predicate ebct_compute(
-    array[0..15] of var 0..1: dL,
-    array[0..15] of var 0..1: dR,
-    array[0..15] of var 0..1: nL,
-    array[0..15] of var 0..1: nR,
-    array[0..15] of var 0..1: dLL,
-    array[0..15] of var 0..1: nLL,
+    array[0..{nbit-1}] of var 0..1: dL,
+    array[0..{nbit-1}] of var 0..1: dR,
+    array[0..{nbit-1}] of var 0..1: nL,
+    array[0..{nbit-1}] of var 0..1: nR,
+    array[0..{nbit-1}] of var 0..1: dLL,
+    array[0..{nbit-1}] of var 0..1: nLL,
     int: branchSize,
     var 0..3200: ebct_minus_log_2,
     var 0..3200: upper_bound_ebct
 ) =
-let {
+let {{
     array[1..branchSize-1,0..7] of var 0.0..1.0: dp_ebct;
     array[1..branchSize-1] of var 0..63: tmp0;
     var 0.0..1.0: ebct_value;
-} in
+}} in
 (
     (
         tmp0[1] == nLL[branchSize-1]*32 + dLL[branchSize-1]*16 + nR[branchSize-1]*8 + nL[branchSize-1]*4 + dR[branchSize-1]*2 + dL[branchSize-1]
