@@ -43,10 +43,10 @@ class AESBlockCipher(Cipher):
     INPUT:
 
     - ``key_bit_size`` -- **integer** (default: `128`); size of the key in bits (128, 192, or 256)
-        - ``number_of_rounds`` -- **integer** (default: computed from key size); number of rounds
-      - AES-128: Nr = 10 rounds
-      - AES-192: Nr = 12 rounds
-      - AES-256: Nr = 14 rounds
+    - ``number_of_rounds`` -- **integer** (default: computed from key size); number of rounds
+    - AES-128: Nr = 10 rounds
+    - AES-192: Nr = 12 rounds
+    - AES-256: Nr = 14 rounds
 
     EXAMPLES::
 

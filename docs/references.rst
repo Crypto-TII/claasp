@@ -459,6 +459,16 @@
 
         **R**
 
+.. [RijndaelSpec]
+        Daemen J., Rijmen V. : *A Specification for Rijndael, the AES
+        Algorithm* (2002) :
+        https://asmaes.sourceforge.net/rijndael/rijndaelImplementation.pdf
+
+.. [RijndaelDesign]
+        Daemen J., Rijmen V. : *The Design of Rijndael AES -- The Advanced
+        Encryption Standard* (2001) :
+        https://cs.ru.nl/~joan/papers/JDA_VRI_Rijndael_2002.pdf
+
 .. _claasp-ref-S:
 
 .. only:: html
