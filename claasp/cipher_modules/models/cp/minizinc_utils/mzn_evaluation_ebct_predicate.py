@@ -598,8 +598,7 @@ predicate ebct_compute(
     array[0..{nbit-1}] of var 0..1: dLL,
     array[0..{nbit-1}] of var 0..1: nLL,
     int: branchSize,
-    var 0..3200: ebct_minus_log_2,
-    var 0..3200: upper_bound_ebct
+    var 0..3200: ebct_minus_log_2
 ) =
 let {{
     array[1..branchSize-1,0..7] of var 0.0..1.0: dp_ebct;
@@ -633,9 +632,6 @@ let {{
     ) /\\
     (
         approx_prob_log(ebct_value,ebct_minus_log_2)
-    ) /\\
-    (
-        approx_prob_log_upper_bound(ebct_value,upper_bound_ebct)
     )
 );
     """

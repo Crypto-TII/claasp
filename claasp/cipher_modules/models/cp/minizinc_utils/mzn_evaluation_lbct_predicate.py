@@ -340,8 +340,7 @@ predicate lbct_compute(
     array[0..{nbit-1}] of var 0..1: nR,
     array[0..{nbit-1}] of var 0..1: nLL,
     int: branchSize,
-    var 0..3200: lbct_minus_log_2,
-    var 0..3200: upper_bound_lbct
+    var 0..3200: lbct_minus_log_2
 ) =
 let {{
     array[1..branchSize-1,0..7] of var 0.0..1.0: dp_lbct;
@@ -374,9 +373,6 @@ let {{
     ) /\\
     (
         approx_prob_log(lbct_value,lbct_minus_log_2)
-    ) /\\
-    (
-        approx_prob_log_upper_bound(lbct_value,upper_bound_lbct)
     )
 );
     """

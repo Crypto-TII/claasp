@@ -176,8 +176,7 @@ predicate ubct_compute(
     array[0..{nbit-1}] of var 0..1: nR,
     array[0..{nbit-1}] of var 0..1: dLL,
     int: branchSize,
-    var 0..3200: ubct_minus_log_2,
-    var 0..3200: upper_bound_ubct
+    var 0..3200: ubct_minus_log_2
 ) =
 let {{
     array[1..branchSize-1,0..3] of var 0.0..1.0: dp_ubct;
@@ -209,9 +208,6 @@ let {{
     ) /\\
     (
         approx_prob_log(ubct_value,ubct_minus_log_2)
-    ) /\\
-    (
-        approx_prob_log_upper_bound(ubct_value,upper_bound_ubct)
     )
 );
     """
