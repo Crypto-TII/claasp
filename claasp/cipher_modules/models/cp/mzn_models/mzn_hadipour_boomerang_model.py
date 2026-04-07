@@ -192,29 +192,38 @@ class MznHadipourBoomerangModel(MznModel):
 
         self.count_middle_p = 0
         self.count_index_for_assign_p_with_upper_lower_middle_p = count_index_for_assign_p_with_upper_lower_middle_p
-        middle_keys = sorted(middle_keys, key=lambda x: int(x.split('_')[1]))
-        
 
         if self.middle_part_number_of_rounds == 1:
-            middle_non_linear_transition_ids = middle_keys[0]
-            deltaL, deltaR, nablaL, nablaR, _, _, branch_size = self.addSwitch(middle_non_linear_transition_ids)
-            self._model_constraints.extend(MznHadipourBoomerangModel.bct_mzn_constraint_from_component_ids(deltaL, deltaR, nablaL, nablaR, branch_size))
+            for middle_non_linear_transition_ids in middle_keys:
+                deltaL, deltaR, nablaL, nablaR, _, _, branch_size = self.addSwitch(middle_non_linear_transition_ids)
+                self._model_constraints.extend(MznHadipourBoomerangModel.bct_mzn_constraint_from_component_ids(deltaL, deltaR, nablaL, nablaR, branch_size))
         else:
-            middle_non_linear_transition_ids = middle_keys.pop(0)
-            deltaL, deltaR, nablaL, nablaR, deltaLL, _, branch_size = self.addSwitch(middle_non_linear_transition_ids)
-            self._model_constraints.extend(MznHadipourBoomerangModel.ubct_mzn_constraint_from_component_ids(deltaL, deltaR, nablaL, nablaR, deltaLL, branch_size))
-            self._model_constraints.extend(MznHadipourBoomerangModel.evaluation_ubct_mzn_constraint_from_component_ids(deltaL, deltaR, nablaL, nablaR, deltaLL, branch_size, self.count_middle_p-1))
+            vals = [int(s.split('_')[1]) for s in middle_keys]
+            mn, mx = min(vals), max(vals)
 
-            middle_non_linear_transition_ids = middle_keys.pop()
-            deltaL, deltaR, nablaL, nablaR, _, nablaLL, branch_size = self.addSwitch(middle_non_linear_transition_ids)
-            self._model_constraints.extend(MznHadipourBoomerangModel.lbct_mzn_constraint_from_component_ids(deltaL, deltaR, nablaL, nablaR, nablaLL, branch_size))
-            self._model_constraints.extend(MznHadipourBoomerangModel.evaluation_lbct_mzn_constraint_from_component_ids(deltaL, deltaR, nablaL, nablaR, nablaLL, branch_size, self.count_middle_p-1))
+            list_ubct_middle_keys, list_ebct_middle_keys, list_lbct_middle_keys = (
+                [s for s in middle_keys if int(s.split('_')[1]) == mn],
+                [s for s in middle_keys if mn < int(s.split('_')[1]) < mx],
+                [s for s in middle_keys if int(s.split('_')[1]) == mx],
+            )
+            
+            for middle_non_linear_transition_ids in list_ubct_middle_keys:
+                deltaL, deltaR, nablaL, nablaR, deltaLL, _, branch_size = self.addSwitch(middle_non_linear_transition_ids)
+                self._model_constraints.extend(MznHadipourBoomerangModel.ubct_mzn_constraint_from_component_ids(deltaL, deltaR, nablaL, nablaR, deltaLL, branch_size))
+                self._model_constraints.extend(MznHadipourBoomerangModel.evaluation_ubct_mzn_constraint_from_component_ids(deltaL, deltaR, nablaL, nablaR, deltaLL, branch_size, self.count_middle_p-1))
 
-            if len(middle_keys) > 0:        
-                for middle_non_linear_transition_ids in middle_keys:
+            if self.middle_part_number_of_rounds > 2:       
+                for middle_non_linear_transition_ids in list_ebct_middle_keys:
                     deltaL, deltaR, nablaL, nablaR, deltaLL, nablaLL, branch_size = self.addSwitch(middle_non_linear_transition_ids)
                     self._model_constraints.extend(MznHadipourBoomerangModel.ebct_mzn_constraint_from_component_ids(deltaL, deltaR, nablaL, nablaR, deltaLL, nablaLL, branch_size))
                     self._model_constraints.extend(MznHadipourBoomerangModel.evaluation_ebct_mzn_constraint_from_component_ids(deltaL, deltaR, nablaL, nablaR, deltaLL, nablaLL, branch_size, self.count_middle_p-1))
+
+            for middle_non_linear_transition_ids in list_lbct_middle_keys:
+                deltaL, deltaR, nablaL, nablaR, _, nablaLL, branch_size = self.addSwitch(middle_non_linear_transition_ids)
+                self._model_constraints.extend(MznHadipourBoomerangModel.lbct_mzn_constraint_from_component_ids(deltaL, deltaR, nablaL, nablaR, nablaLL, branch_size))
+                self._model_constraints.extend(MznHadipourBoomerangModel.evaluation_lbct_mzn_constraint_from_component_ids(deltaL, deltaR, nablaL, nablaR, nablaLL, branch_size, self.count_middle_p-1))
+
+            self.branch_size = branch_size
 
         cp_declarations_weight_middle = 'var int: middle_weight = sum(middle_p);'
         self._cp_xor_differential_constraints.append(cp_declarations_weight_middle)
@@ -573,13 +582,13 @@ class MznHadipourBoomerangModel(MznModel):
         )
         
         self.initialise_model()
-        self.c = 0
         self.c_upper = 0
         self.c_lower = 0
         self.sbox_mant = []
         self.input_sbox = []
         self.component_and_probability = {}
         self.table_of_solutions_length = 0
+        self.branch_size = 0
         self.boomerang = True
 
         self.build_generic_mzn_model_from_dictionary(component_and_model_types)
@@ -600,13 +609,13 @@ class MznHadipourBoomerangModel(MznModel):
         else:
             self._model_constraints.extend([get_lbct_operations()])
             self._model_constraints.extend([get_ubct_operations()])
-            self._model_constraints.extend([get_evaluation_ubct_operations()])
-            self._model_constraints.extend([get_evaluation_lbct_operations()])
+            self._model_constraints.extend([get_evaluation_ubct_operations(self.branch_size)])
+            self._model_constraints.extend([get_evaluation_lbct_operations(self.branch_size)])
             self._model_constraints.extend([get_approx_logarithm_operation_lower_bound()])
             self._model_constraints.extend([get_approx_logarithm_operation_upper_bound()])
             if self.middle_part_number_of_rounds > 2:
                 self._model_constraints.extend([get_ebct_operations()])
-                self._model_constraints.extend([get_evaluation_ebct_operations()])
+                self._model_constraints.extend([get_evaluation_ebct_operations(self.branch_size)])
 
         self.write_minizinc_model_to_file(".")
 
