@@ -25,7 +25,8 @@ from claasp.cipher_modules.models.cp.minizinc_utils.mzn_ebct_predicates import g
 from claasp.cipher_modules.models.cp.minizinc_utils.mzn_evaluation_ubct_predicate import get_evaluation_ubct_operations
 from claasp.cipher_modules.models.cp.minizinc_utils.mzn_evaluation_lbct_predicate import get_evaluation_lbct_operations
 from claasp.cipher_modules.models.cp.minizinc_utils.mzn_evaluation_ebct_predicate import get_evaluation_ebct_operations
-from claasp.cipher_modules.models.cp.minizinc_utils.mzn_approx_logarithm_predicate import get_approx_logarithm_operation_lower_bound, get_approx_logarithm_operation_upper_bound
+from claasp.cipher_modules.models.cp.minizinc_utils.mzn_evaluation_bct_predicate import get_evaluation_bct_operations
+from claasp.cipher_modules.models.cp.minizinc_utils.mzn_approx_logarithm_predicate import get_approx_logarithm_operation
 from copy import deepcopy
 import math
 from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model import update_and_or_ddt_valid_probabilities
@@ -197,6 +198,7 @@ class MznHadipourBoomerangModel(MznModel):
             for middle_non_linear_transition_ids in middle_keys:
                 deltaL, deltaR, nablaL, nablaR, _, _, branch_size = self.addSwitch(middle_non_linear_transition_ids)
                 self._model_constraints.extend(MznHadipourBoomerangModel.bct_mzn_constraint_from_component_ids(deltaL, deltaR, nablaL, nablaR, branch_size))
+                self._model_constraints.extend(MznHadipourBoomerangModel.evaluation_bct_mzn_constraint_from_component_ids(deltaL, deltaR, nablaL, nablaR, branch_size, self.count_middle_p-1))
         else:
             vals = [int(s.split('_')[1]) for s in middle_keys]
             mn, mx = min(vals), max(vals)
@@ -223,16 +225,13 @@ class MznHadipourBoomerangModel(MznModel):
                 self._model_constraints.extend(MznHadipourBoomerangModel.lbct_mzn_constraint_from_component_ids(deltaL, deltaR, nablaL, nablaR, nablaLL, branch_size))
                 self._model_constraints.extend(MznHadipourBoomerangModel.evaluation_lbct_mzn_constraint_from_component_ids(deltaL, deltaR, nablaL, nablaR, nablaLL, branch_size, self.count_middle_p-1))
 
-            self.branch_size = branch_size
+        
+        self.branch_size = branch_size
 
         cp_declarations_weight_middle = 'var int: middle_weight = sum(middle_p);'
         self._cp_xor_differential_constraints.append(cp_declarations_weight_middle)
-        cp_declarations_weight_middle = 'var int: upper_bound_middle_weight = sum(upper_bound_middle_p);'
-        self._cp_xor_differential_constraints.append(cp_declarations_weight_middle)
 
         new_declaration = 'var int: weight = (2 * upper_weight) + (2 * lower_weight) + middle_weight;'
-        self._cp_xor_differential_constraints.append(new_declaration)
-        new_declaration = 'var int: upper_bound_weight = (2 * upper_weight) + (2 * lower_weight) + upper_bound_middle_weight;'
         self._cp_xor_differential_constraints.append(new_declaration)
 
         variables = []
@@ -316,8 +315,7 @@ class MznHadipourBoomerangModel(MznModel):
         new_constraint = new_constraint + '\"Upper weight = \" ++ show(upper_weight/100) ++ \"\\n\" ++'
         new_constraint = new_constraint + '\"Lower weight = \" ++ show(lower_weight/100) ++ \"\\n\" ++'
         new_constraint = new_constraint + '\"Middle weight = \" ++ show(middle_weight/100) ++ \"\\n\" ++'
-        new_constraint = new_constraint + '\"Trail weight = \" ++ show(weight/100)  ++ \"\\n\" ++'
-        new_constraint = new_constraint + '\"2^-\" ++ show(upper_bound_weight/100) ++ \" => Probability Boomerang => 2^-\" ++ show(weight/100)  ];'
+        new_constraint = new_constraint + '\"Trail weight = \" ++ show(weight/100)  ];'
         cp_constraints.append(new_constraint)
 
         return cp_constraints
@@ -355,6 +353,32 @@ class MznHadipourBoomerangModel(MznModel):
         return new_constraint
     
     ##############################################################
+
+    @staticmethod
+    def evaluation_bct_mzn_constraint_from_component_ids(delta_left_component_id, delta_right_component_id, nabla_left_component_id, nabla_right_component_id, branch_size, index):
+        # variables = []
+        # branch_size = self.output_bit_size
+        delta_left_vars = [f'{delta_left_component_id}[{i}]' for i in range(branch_size)]
+        delta_right_vars = [f'{delta_right_component_id}[{i}]' for i in range(branch_size)]
+        nabla_left_vars = [f'{nabla_left_component_id}[{i}]' for i in range(branch_size)]
+        nabla_right_vars = [f'{nabla_right_component_id}[{i}]' for i in range(branch_size)]
+        
+        delta_left_str = ",".join(delta_left_vars)
+        delta_right_str = ",".join(delta_right_vars)
+        nabla_left_str = ",".join(nabla_left_vars)
+        nabla_right_str = ",".join(nabla_right_vars)
+
+        delta_left = f'array1d(0..{branch_size}-1, [{delta_left_str}])'
+        delta_right = f'array1d(0..{branch_size}-1, [{delta_right_str}])'
+        nabla_left = f'array1d(0..{branch_size}-1, [{nabla_left_str}])'
+        nabla_right = f'array1d(0..{branch_size}-1, [{nabla_right_str}])'
+
+        constraint = [
+            f"constraint bct_compute({delta_left}, {delta_right}, "
+            f"{nabla_left}, {nabla_right}, {branch_size}, middle_p[{index}]);\n"
+        ]
+        return constraint
+    
     @staticmethod
     def bct_mzn_constraint_from_component_ids(delta_left_component_id, delta_right_component_id, nabla_left_component_id, nabla_right_component_id, branch_size):
         # variables = []
@@ -411,7 +435,7 @@ class MznHadipourBoomerangModel(MznModel):
 
         constraint = [
             f"constraint ebct_compute({delta_left}, {delta_right}, "
-            f"{nabla_left}, {nabla_right}, {delta_left_left}, {nabla_left_left}, {branch_size}, middle_p[{index}], upper_bound_middle_p[{index}]);\n"
+            f"{nabla_left}, {nabla_right}, {delta_left_left}, {nabla_left_left}, {branch_size}, middle_p[{index}]);\n"
         ]
         return constraint
     
@@ -473,7 +497,7 @@ class MznHadipourBoomerangModel(MznModel):
 
         constraint = [
             f"constraint lbct_compute({delta_left}, {delta_right}, "
-            f"{nabla_left}, {nabla_right}, {nabla_left_left}, {branch_size}, middle_p[{index}], upper_bound_middle_p[{index}]);\n"
+            f"{nabla_left}, {nabla_right}, {nabla_left_left}, {branch_size}, middle_p[{index}]);\n"
         ]
         return constraint
     
@@ -532,7 +556,7 @@ class MznHadipourBoomerangModel(MznModel):
 
         constraint = [
             f"constraint ubct_compute({delta_left}, {delta_right}, "
-            f"{nabla_left}, {nabla_right}, {delta_left_left}, {branch_size}, middle_p[{index}], upper_bound_middle_p[{index}]);\n"
+            f"{nabla_left}, {nabla_right}, {delta_left_left}, {branch_size}, middle_p[{index}]);\n"
         ]
         return constraint
     
@@ -606,17 +630,17 @@ class MznHadipourBoomerangModel(MznModel):
         self._model_constraints = self._model_prefix + self._model_constraints
         if self.middle_part_number_of_rounds == 1:
             self._model_constraints.extend([get_bct_operations()])
+            self._model_constraints.extend([get_evaluation_bct_operations(self.branch_size)])
         else:
             self._model_constraints.extend([get_lbct_operations()])
             self._model_constraints.extend([get_ubct_operations()])
             self._model_constraints.extend([get_evaluation_ubct_operations(self.branch_size)])
             self._model_constraints.extend([get_evaluation_lbct_operations(self.branch_size)])
-            self._model_constraints.extend([get_approx_logarithm_operation_lower_bound()])
-            self._model_constraints.extend([get_approx_logarithm_operation_upper_bound()])
             if self.middle_part_number_of_rounds > 2:
                 self._model_constraints.extend([get_ebct_operations()])
                 self._model_constraints.extend([get_evaluation_ebct_operations(self.branch_size)])
 
+        self._model_constraints.extend([get_approx_logarithm_operation()])
         self.write_minizinc_model_to_file(".")
 
         # # debug stuff
