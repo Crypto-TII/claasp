@@ -1183,7 +1183,7 @@ class SBOX(Component):
         new_constraint = new_constraint + f"[p[{model.component_probability_index}]],LAT_{output_id_link_sost});"
         cp_constraints.append(new_constraint)
         model.component_and_probability[output_id_link] = model.component_probability_index
-        model.component_probability_index = model.component_probability_index + 1
+        model.component_probability_index += 1
 
         return cp_declarations, cp_constraints
 

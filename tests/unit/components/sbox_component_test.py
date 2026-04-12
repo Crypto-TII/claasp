@@ -67,7 +67,7 @@ def test_cp_xor_differential_propagation_constraints():
     cp = type("DummyModel", (), {})()
     cp.sbox_mant = []
     cp.component_and_probability = {}
-    cp.c = 0
+    cp.component_probability_index = 0
 
     declarations, constraints = sbox_component.cp_xor_differential_propagation_constraints(cp)
 
@@ -83,7 +83,7 @@ def test_cp_xor_linear_mask_propagation_constraints():
     cp = type("DummyModel", (), {})()
     cp.sbox_mant = []
     cp.component_and_probability = {}
-    cp.c = 0
+    cp.component_probability_index = 0
 
     declarations, constraints = sbox_component.cp_xor_linear_mask_propagation_constraints(cp)
 

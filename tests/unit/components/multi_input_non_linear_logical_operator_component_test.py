@@ -52,7 +52,7 @@ def test_cp_deterministic_trail_alias_matches_base_constraints():
 
 def test_cp_xor_differential_updates_model_counter_and_probability_map():
     class DummyModel:
-        c = 0
+        component_probability_index = 0
         component_and_probability = {}
 
     component = make_component(number_of_inputs=3)
@@ -62,7 +62,7 @@ def test_cp_xor_differential_updates_model_counter_and_probability_map():
     assert declarations == []
     assert constraints[0] == "constraint table([in0[0]]++[in1[4]]++[in2[8]]++[and_0_0[0]]++[p[0]],and3inputs_DDT);"
     assert constraints[-1] == "constraint table([in0[3]]++[in1[7]]++[in2[11]]++[and_0_0[3]]++[p[3]],and3inputs_DDT);"
-    assert model.c == 4
+    assert model.component_probability_index == 4
     assert model.component_and_probability["and_0_0"] == [1, 2, 3, 4]
 
 

@@ -1273,8 +1273,8 @@ def differential_truncated_checker_permutation_input_and_output_truncated(
 
 def truncated_differential_linear_checker_permutation(
     cipher,
-    input_trunc_diff,      
-    output_mask, 
+    input_trunc_diff,
+    output_mask,
     number_of_samples,
     state_size,
     seed=None,

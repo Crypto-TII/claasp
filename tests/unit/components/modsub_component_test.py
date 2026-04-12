@@ -55,7 +55,7 @@ def test_cp_constraints():
 
 def test_cp_xor_differential_propagation_constraints():
     class DummyModel:
-        c = 0
+        component_probability_index = 0
         component_and_probability = {}
         modadd_twoterms_mant = []
 

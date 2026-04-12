@@ -417,7 +417,7 @@ class Modular(Component):
         cp_constraints.append(
             f"constraint forall(j in 0..{input_length - 1})(if eq_{out}[j] = "
             f"1 then (sum([{input_1}[j], {input_2}[j], {out}[j]]) mod 2) = Shi_{input_2}[j] else "
-            f"true endif) /\\ p[{c}] = {input_length}-sum(eq_{out});"
+            f"true endif) /\\ p[{component_probability_index}] = {input_length}-sum(eq_{out});"
         )
 
         return cp_declarations, cp_constraints
