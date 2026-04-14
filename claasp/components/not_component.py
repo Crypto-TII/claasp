@@ -137,10 +137,10 @@ class NOT(Component):
 
             sage: from claasp.components.not_component import NOT
             sage: not_component = NOT(0, 0, ['input0'], [list(range(32))], 32)
-            sage: declarations, constraints = not_component.cp_constraints()
-            sage: declarations
+            sage: result = not_component.cp_constraints()
+            sage: result.declarations
             []
-            sage: constraints[0]
+            sage: result.constraints[0]
             'constraint not_0_0[0] = (input0[0] + 1) mod 2;'
         """
         cp_declarations = []
@@ -163,10 +163,10 @@ class NOT(Component):
 
             sage: from claasp.components.not_component import NOT
             sage: not_component = NOT(0, 0, ['input0'], [list(range(32))], 32)
-            sage: declarations, constraints = not_component.cp_deterministic_truncated_xor_differential_constraints()
-            sage: declarations
+            sage: result = not_component.cp_deterministic_truncated_xor_differential_constraints()
+            sage: result.declarations
             []
-            sage: constraints[0]
+            sage: result.constraints[0]
             'constraint not_0_0[0] = input0[0];'
         """
         cp_declarations = []
@@ -226,12 +226,11 @@ class NOT(Component):
             sage: class DummyModel:
             ....:     word_size = 2
             sage: not_component = NOT(0, 18, ['input0'], [list(range(8))], 8)
-            sage: not_component.cp_xor_differential_first_step_constraints(DummyModel())
-            (['array[0..3] of var 0..1: not_0_18;'],
-             ['constraint not_0_18[0] = input0[0];',
-            'constraint not_0_18[1] = input0[1];',
-            'constraint not_0_18[2] = input0[2];',
-            'constraint not_0_18[3] = input0[3];'])
+            sage: result = not_component.cp_xor_differential_first_step_constraints(DummyModel())
+            sage: result.declarations
+            ['array[0..3] of var 0..1: not_0_18;']
+            sage: result.constraints
+            ['constraint not_0_18[0] = input0[0];', 'constraint not_0_18[1] = input0[1];', 'constraint not_0_18[2] = input0[2];', 'constraint not_0_18[3] = input0[3];']
         """
         word_size = model.word_size
         cp_declarations = [f"array[0..{(self.output_bit_size - 1) // model.word_size}] of var 0..1: {self.id};"]

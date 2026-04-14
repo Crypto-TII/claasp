@@ -143,11 +143,11 @@ class VariableShift(Component):
 
             sage: from claasp.components.variable_shift_component import VariableShift
             sage: variable_shift_component = VariableShift(0, 2, ['plaintext', 'key'], [list(range(4)), list(range(4))], 4, 1)
-            sage: declarations, constraints = variable_shift_component.cp_constraints()
-            sage: declarations
+            sage: result = variable_shift_component.cp_constraints()
+            sage: result.declarations
             ['array[0..3] of var 0..1: pre_var_shift_0_2;',
             'var int: shift_amount_var_shift_0_2;']
-            sage: constraints
+            sage: result.constraints
             ['constraint pre_var_shift_0_2[0]=plaintext[0];',
             'constraint pre_var_shift_0_2[1]=plaintext[1];',
             'constraint pre_var_shift_0_2[2]=plaintext[2];',
@@ -347,8 +347,8 @@ class VariableShift(Component):
             sage: cipher = VariableShiftCipher(bit_size=4, amount_bit_size=4, direction=-1)
             sage: minizinc = MznModel(cipher)
             sage: variable_shift_component = cipher.get_component_from_id('var_shift_0_0')
-            sage: var_names, constraints = variable_shift_component.minizinc_xor_differential_propagation_constraints(minizinc)
-            sage: var_names
+            sage: result = variable_shift_component.minizinc_xor_differential_propagation_constraints(minizinc)
+            sage: result.declarations
             ['var bool: var_shift_0_0_x0;',
             'var bool: var_shift_0_0_x1;',
             'var bool: var_shift_0_0_x2;',
@@ -361,7 +361,7 @@ class VariableShift(Component):
             'var bool: var_shift_0_0_y1;',
             'var bool: var_shift_0_0_y2;',
             'var bool: var_shift_0_0_y3;']
-            sage: constraints
+            sage: result.constraints
             ['constraint LSHIFT_BY_VARIABLE_AMOUNT(array1d(0..4-1, [var_shift_0_0_x0,var_shift_0_0_x1,var_shift_0_0_x2,var_shift_0_0_x3]), 8*var_shift_0_0_x7+4*var_shift_0_0_x6+2*var_shift_0_0_x5+1*var_shift_0_0_x4)=array1d(0..4-1, [var_shift_0_0_y0,var_shift_0_0_y1,var_shift_0_0_y2,var_shift_0_0_y3]);\n']
         """
         if self.description[0].lower() != "shift_by_variable_amount":

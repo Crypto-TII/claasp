@@ -778,9 +778,11 @@ class SBOX(Component):
             sage: from claasp.components.sbox_component import SBOX
             sage: sbox = [12, 10, 13, 3, 14, 11, 15, 7, 8, 9, 1, 5, 0, 2, 4, 6]
             sage: sbox_component = SBOX(0, 5, ['xor_0_1'], [[4, 5, 6, 7]], 4, sbox)
-            sage: sbox_component.cp_constraints([])
-            (['array [1..16, 1..8] of int: table_sbox_0_5 = array2d(1..16, 1..8, [0,0,0,0,1,1,0,0,0,0,0,1,1,0,1,0,0,0,1,0,1,1,0,1,0,0,1,1,0,0,1,1,0,1,0,0,1,1,1,0,0,1,0,1,1,0,1,1,0,1,1,0,1,1,1,1,0,1,1,1,0,1,1,1,1,0,0,0,1,0,0,0,1,0,0,1,1,0,0,1,1,0,1,0,0,0,0,1,1,0,1,1,0,1,0,1,1,1,0,0,0,0,0,0,1,1,0,1,0,0,1,0,1,1,1,0,0,1,0,0,1,1,1,1,0,1,1,0]);'],
-             ['constraint table([xor_0_1[4]]++[xor_0_1[5]]++[xor_0_1[6]]++[xor_0_1[7]]++[sbox_0_5[0]]++[sbox_0_5[1]]++[sbox_0_5[2]]++[sbox_0_5[3]], table_sbox_0_5);'])
+            sage: result = sbox_component.cp_constraints([])
+            sage: result.declarations[0].startswith('array [1..16, 1..8] of int: table_sbox_0_5 = array2d(')
+            True
+            sage: result.constraints
+            ['constraint table([xor_0_1[4]]++[xor_0_1[5]]++[xor_0_1[6]]++[xor_0_1[7]]++[sbox_0_5[0]]++[sbox_0_5[1]]++[sbox_0_5[2]]++[sbox_0_5[3]], table_sbox_0_5);']
         """
         sbox = self.description
         if second:
@@ -829,12 +831,12 @@ class SBOX(Component):
             sage: from claasp.components.sbox_component import SBOX
             sage: sbox = [1, 2, 3, 4, 0, 7, 6, 5]
             sage: sbox_component = SBOX(0, 1, ['xor_0_0'], [[0, 1, 2, 3]], 4, sbox)
-            sage: declarations, constraints, sbox_table_cache = sbox_component.cp_deterministic_truncated_xor_differential_constraints(sbox_table_cache=[])
-            sage: declarations
+            sage: result = sbox_component.cp_deterministic_truncated_xor_differential_constraints(sbox_table_cache=[])
+            sage: result.declarations
             ['array [1..27, 1..6] of int: table_sbox_0_1 = array2d(1..27, 1..6, [0,0,0,0,0,0,0,0,1,2,1,1,0,1,0,2,1,0,0,1,1,2,0,1,1,0,0,2,0,1,1,0,1,2,1,0,1,1,0,2,1,1,1,1,1,1,0,0,0,0,2,2,2,2,0,2,0,2,2,0,0,2,2,2,2,2,2,0,0,2,0,2,2,0,2,2,2,2,2,2,0,2,2,2,2,2,2,2,2,2,0,2,1,2,2,1,2,0,1,2,1,2,2,2,1,2,2,2,0,1,2,2,2,2,2,1,0,2,1,2,2,1,2,2,2,2,2,1,1,2,0,2,1,0,2,2,2,2,1,2,0,2,2,1,1,2,2,2,2,2,1,2,1,2,2,0,1,1,2,2,2,2]);']
-            sage: constraints
+            sage: result.constraints
             ['constraint table([xor_0_0[0]]++[xor_0_0[1]]++[xor_0_0[2]]++[xor_0_0[3]]++[sbox_0_1[0]]++[sbox_0_1[1]]++[sbox_0_1[2]]++[sbox_0_1[3]], table_sbox_0_1);']
-            sage: sbox_table_cache
+            sage: result.metadata
             [['0,0,0,0,0,0,0,0,1,2,1,1,0,1,0,2,1,0,0,1,1,2,0,1,1,0,0,2,0,1,1,0,1,2,1,0,1,1,0,2,1,1,1,1,1,1,0,0,0,0,2,2,2,2,0,2,0,2,2,0,0,2,2,2,2,2,2,0,0,2,0,2,2,0,2,2,2,2,2,2,0,2,2,2,2,2,2,2,2,2,0,2,1,2,2,1,2,0,1,2,1,2,2,2,1,2,2,2,0,1,2,2,2,2,2,1,0,2,1,2,2,1,2,2,2,2,2,1,1,2,0,2,1,0,2,2,2,2,1,2,0,2,2,1,1,2,2,2,2,2,1,2,1,2,2,0,1,1,2,2,2,2',
             'sbox_0_1']]
         """
@@ -896,8 +898,8 @@ class SBOX(Component):
             sage: from claasp.components.sbox_component import SBOX
             sage: lblock_sbox = [14, 9, 15, 0, 13, 4, 10, 11, 1, 2, 8, 3, 7, 6, 12, 5]
             sage: sbox_component = SBOX(0, 2, ['xor_0_1'], [[4, 5, 6, 7]], 4, lblock_sbox)
-            sage: declarations, constraints, sbox_table_cache = sbox_component.cp_hybrid_deterministic_truncated_xor_differential_constraints(sbox_table_cache=[])
-            sage: constraints
+            sage: result = sbox_component.cp_hybrid_deterministic_truncated_xor_differential_constraints(sbox_table_cache=[])
+            sage: result.constraints
             ['constraint abstract_sbox_0_2(array1d(0..3, [xor_0_1[4]]++[xor_0_1[5]]++[xor_0_1[6]]++[xor_0_1[7]]), array1d(0..3, [sbox_0_2[0]]++[sbox_0_2[1]]++[sbox_0_2[2]]++[sbox_0_2[3]]), 0, 0);']
         """
 
@@ -991,8 +993,11 @@ class SBOX(Component):
             sage: sbox = [1, 2, 3, 4, 5, 6, 7, 0]
             sage: sbox_component = SBOX(0, 0, ['plaintext'], [[0, 1, 2]], 3, sbox)
             sage: model = type('DummyModel', (), {'word_size': 3})()
-            sage: sbox_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(model)
-            ([], ['constraint if plaintext_value[0]==0 then sbox_0_0_active[0] = 0 else sbox_0_0_active[0] = 2 endif;'])
+            sage: result = sbox_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(model)
+            sage: result.declarations
+            []
+            sage: result.constraints
+            ['constraint if plaintext_value[0]==0 then sbox_0_0_active[0] = 0 else sbox_0_0_active[0] = 2 endif;']
         """
         cp_declarations = []
         all_inputs = []
@@ -1030,10 +1035,11 @@ class SBOX(Component):
             ....:         self.table_of_solutions_length = 0
             sage: model = DummyModel()
             sage: sbox_component = SBOX(0, 0, ['input0'], [list(range(4))], 4, list(range(16)))
-            sage: sbox_component.cp_xor_differential_first_step_constraints(model)
-            (['array[0..1] of var 0..1: sbox_0_0;'],
-                ['constraint sbox_0_0[0] = input0[0];',
-                'constraint sbox_0_0[1] = input0[1];'])
+            sage: result = sbox_component.cp_xor_differential_first_step_constraints(model)
+            sage: result.declarations
+            ['array[0..1] of var 0..1: sbox_0_0;']
+            sage: result.constraints
+            ['constraint sbox_0_0[0] = input0[0];', 'constraint sbox_0_0[1] = input0[1];']
             sage: model.input_sbox
             [('input0[0]', 1), ('input0[1]', 1)]
             sage: model.table_of_solutions_length

@@ -135,8 +135,11 @@ class Rotate(Component):
 
             sage: from claasp.components.rotate_component import Rotate
             sage: rotate_component = Rotate(0, 0, ['input'], [[0, 1]], 2, 1)
-            sage: rotate_component.cp_constraints()
-            ([], ['constraint rot_0_0[0] = input[1];', 'constraint rot_0_0[1] = input[0];'])
+            sage: result = rotate_component.cp_constraints()
+            sage: result.declarations
+            []
+            sage: result.constraints
+            ['constraint rot_0_0[0] = input[1];', 'constraint rot_0_0[1] = input[0];']
         """
         rot_amount = abs(self.description[1])
         all_inputs = []
@@ -202,8 +205,11 @@ class Rotate(Component):
 
             sage: from claasp.components.rotate_component import Rotate
             sage: rotate_component = Rotate(0, 0, ['input'], [[0, 1]], 2, 1)
-            sage: rotate_component.cp_inverse_constraints()
-            ([], ['constraint rot_0_0_inverse[0] = input[1];', 'constraint rot_0_0_inverse[1] = input[0];'])
+            sage: result = rotate_component.cp_inverse_constraints()
+            sage: result.declarations
+            []
+            sage: result.constraints
+            ['constraint rot_0_0_inverse[0] = input[1];', 'constraint rot_0_0_inverse[1] = input[0];']
         """
         rot_amount = abs(self.description[1])
         all_inputs = []
@@ -269,12 +275,11 @@ class Rotate(Component):
             sage: class DummyModel:
             ....:     word_size = 2
             sage: rotate_component = Rotate(0, 0, ['input0'], [list(range(8))], 8, -2)
-            sage: rotate_component.cp_xor_differential_first_step_constraints(DummyModel())
-            (['array[0..3] of var 0..1: rot_0_0;'],
-            ['constraint rot_0_0[0] = input0[1];',
-            'constraint rot_0_0[1] = input0[2];',
-            'constraint rot_0_0[2] = input0[3];',
-            'constraint rot_0_0[3] = input0[0];'])
+            sage: result = rotate_component.cp_xor_differential_first_step_constraints(DummyModel())
+            sage: result.declarations
+            ['array[0..3] of var 0..1: rot_0_0;']
+            sage: result.constraints
+            ['constraint rot_0_0[0] = input0[1];', 'constraint rot_0_0[1] = input0[2];', 'constraint rot_0_0[2] = input0[3];', 'constraint rot_0_0[3] = input0[0];']
         """
         input_id_link = self.input_id_links
         output_id_link = self.id
@@ -575,8 +580,8 @@ class Rotate(Component):
             sage: cipher = RotateCipher(bit_size=2, parameter=1)
             sage: minizinc = MznModel(cipher)
             sage: rotate_component = cipher.get_component_from_id('rot_0_0')
-            sage: _, rotate_mzn_constraints = rotate_component.minizinc_constraints(minizinc)
-            sage: rotate_mzn_constraints[0]
+            sage: result = rotate_component.minizinc_constraints(minizinc)
+            sage: result.constraints[0]
             'constraint RRot(array1d(0..2-1, [rot_0_0_x0,rot_0_0_x1]), 1)=array1d(0..2-1, [rot_0_0_y0,rot_0_0_y1]);\n'
         """
         if self.description[0].lower() != "rotate":

@@ -178,8 +178,11 @@ class Constant(Component):
 
             sage: from claasp.components.constant_component import Constant
             sage: constant_component = Constant(0, 0, 4, 0x1)
-            sage: constant_component.cp_constraints()
-            (['array[0..3] of var 0..1: constant_0_0;'], ['constraint constant_0_0[0] = 0;', 'constraint constant_0_0[1] = 0;', 'constraint constant_0_0[2] = 0;', 'constraint constant_0_0[3] = 1;'])
+            sage: result = constant_component.cp_constraints()
+            sage: result.declarations
+            ['array[0..3] of var 0..1: constant_0_0;']
+            sage: result.constraints
+            ['constraint constant_0_0[0] = 0;', 'constraint constant_0_0[1] = 0;', 'constraint constant_0_0[2] = 0;', 'constraint constant_0_0[3] = 1;']
         """
         cp_declarations = [f"array[0..{self.output_bit_size - 1}] of var 0..1: {self.id};"]
         value = int(self.description[0], 16)
@@ -244,8 +247,11 @@ class Constant(Component):
             sage: from claasp.components.constant_component import Constant
             sage: DummyModel = type("DummyModel", (), {"word_size": 4})
             sage: constant_component = Constant(0, 18, 4, 0x1)
-            sage: constant_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(DummyModel())
-            (['array[0..0] of var 0..1: constant_0_18_active = array1d(0..0, [0]);', 'array[0..0] of var 0..1: constant_0_18_value = array1d(0..0, [0]);'], [])
+            sage: result = constant_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(DummyModel())
+            sage: result.declarations
+            ['array[0..0] of var 0..1: constant_0_18_active = array1d(0..0, [0]);', 'array[0..0] of var 0..1: constant_0_18_value = array1d(0..0, [0]);']
+            sage: result.constraints
+            []
         """
         output_bit_size = self.output_bit_size
         word_size = model.word_size
@@ -279,8 +285,11 @@ class Constant(Component):
             sage: from claasp.components.constant_component import Constant
             sage: DummyModel = type("DummyModel", (), {"word_size": 4})
             sage: constant_component = Constant(0, 30, 4, 0x0)
-            sage: constant_component.cp_xor_differential_propagation_first_step_constraints(DummyModel())
-            (['array[0..0] of var 0..1: constant_0_30 = array1d(0..0, [0]);'], [])
+            sage: result = constant_component.cp_xor_differential_propagation_first_step_constraints(DummyModel())
+            sage: result.declarations
+            ['array[0..0] of var 0..1: constant_0_30 = array1d(0..0, [0]);']
+            sage: result.constraints
+            []
         """
         cp_declarations = [
             f"array[0..{(self.output_bit_size - 1) // model.word_size}] of var 0..1: "
@@ -587,8 +596,8 @@ class Constant(Component):
             sage: cipher = ConstantCipher(output_bit_size=4, value=0x1)
             sage: minizinc = MznXorDifferentialModelARXOptimized(cipher)
             sage: constant_component = cipher.get_component_from_id('constant_0_0')
-            sage: _, constant_xor_differential_constraints = constant_component.minizinc_xor_differential_propagation_constraints(minizinc)
-            sage: constant_xor_differential_constraints[0]
+            sage: result = constant_component.minizinc_xor_differential_propagation_constraints(minizinc)
+            sage: result.constraints[0]
             'constraint constant_0_0_y0 = 0;'
         """
         var_names = self._define_var(model.input_postfix, model.output_postfix, model.data_type)

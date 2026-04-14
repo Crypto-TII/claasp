@@ -123,10 +123,11 @@ class MultiInputNonlinearLogicalOperator(Component):
 
             sage: from claasp.components.multi_input_non_linear_logical_operator_component import MultiInputNonlinearLogicalOperator
             sage: component = MultiInputNonlinearLogicalOperator(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2, 'and')
-            sage: component.cp_deterministic_truncated_xor_differential_constraints()
-            ([],
-             ['constraint if input1[0] == 0 /\\ input2[0] == 0 then and_0_0[0] = 0 else and_0_0[0] = 2 endif;',
-              'constraint if input1[1] == 0 /\\ input2[1] == 0 then and_0_0[1] = 0 else and_0_0[1] = 2 endif;'])
+            sage: result = component.cp_deterministic_truncated_xor_differential_constraints()
+            sage: result.declarations
+            []
+            sage: result.constraints
+            ['constraint if input1[0] == 0 /\\ input2[0] == 0 then and_0_0[0] = 0 else and_0_0[0] = 2 endif;', 'constraint if input1[1] == 0 /\\ input2[1] == 0 then and_0_0[1] = 0 else and_0_0[1] = 2 endif;']
         """
         cp_declarations = []
         all_inputs = []
@@ -166,8 +167,9 @@ class MultiInputNonlinearLogicalOperator(Component):
             sage: class DummyModel:
             ....:     word_size = 2
             sage: component = MultiInputNonlinearLogicalOperator(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2, 'and')
-            sage: component.cp_wordwise_deterministic_truncated_xor_differential_constraints(DummyModel())[:1]
-            ([],)
+            sage: result = component.cp_wordwise_deterministic_truncated_xor_differential_constraints(DummyModel())
+            sage: result.declarations
+            []
         """
         cp_declarations = []
         all_inputs_value = []

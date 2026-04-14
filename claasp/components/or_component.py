@@ -130,15 +130,11 @@ class OR(MultiInputNonlinearLogicalOperator):
 
             sage: from claasp.components.or_component import OR
             sage: or_component = OR(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2)
-            sage: or_component.cp_constraints()
-            (['array[0..1] of var 0..1: or_0_0;',
-            'array[0..1] of var 0..1:pre_or_0_0_0;',
-            'array[0..1] of var 0..1:pre_or_0_0_1;'],
-            ['constraint pre_or_0_0_0[0]=input1[0];',
-            'constraint pre_or_0_0_0[1]=input1[1];',
-            'constraint pre_or_0_0_1[0]=input2[0];',
-            'constraint pre_or_0_0_1[1]=input2[1];',
-            'constraint or(pre_or_0_0_0, pre_or_0_0_1, or_0_0);'])
+            sage: result = or_component.cp_constraints()
+            sage: result.declarations
+            ['array[0..1] of var 0..1: or_0_0;', 'array[0..1] of var 0..1:pre_or_0_0_0;', 'array[0..1] of var 0..1:pre_or_0_0_1;']
+            sage: result.constraints
+            ['constraint pre_or_0_0_0[0]=input1[0];', 'constraint pre_or_0_0_0[1]=input1[1];', 'constraint pre_or_0_0_1[0]=input2[0];', 'constraint pre_or_0_0_1[1]=input2[1];', 'constraint or(pre_or_0_0_0, pre_or_0_0_1, or_0_0);']
         """
         input_id_link = self.input_id_links
         numb_of_inp = len(input_id_link)

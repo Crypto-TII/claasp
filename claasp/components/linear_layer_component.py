@@ -238,10 +238,10 @@ class LinearLayer(Component):
 
             sage: from claasp.components.linear_layer_component import LinearLayer
             sage: linear_layer_component = LinearLayer(0, 0, ['in'], [[0, 1, 2, 3]], 4, [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
-            sage: declarations, constraints = linear_layer_component.cp_constraints()
-            sage: declarations
+            sage: result = linear_layer_component.cp_constraints()
+            sage: result.declarations
             []
-            sage: constraints
+            sage: result.constraints
             ['constraint linear_layer_0_0[0] = (in[0]) mod 2;', 'constraint linear_layer_0_0[1] = (in[1]) mod 2;', 'constraint linear_layer_0_0[2] = (in[2]) mod 2;', 'constraint linear_layer_0_0[3] = (in[3]) mod 2;']
         """
         matrix = self.description
@@ -269,10 +269,10 @@ class LinearLayer(Component):
 
             sage: from claasp.components.linear_layer_component import LinearLayer
             sage: linear_layer_component = LinearLayer(0, 0, ['in'], [[0, 1, 2, 3]], 4, [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
-            sage: declarations, constraints = linear_layer_component.cp_deterministic_truncated_xor_differential_constraints()
-            sage: declarations
+            sage: result = linear_layer_component.cp_deterministic_truncated_xor_differential_constraints()
+            sage: result.declarations
             []
-            sage: constraints[0]
+            sage: result.constraints[0]
             'constraint if ((in[0] < 2)) then linear_layer_0_0[0] = (in[0]) mod 2 else linear_layer_0_0[0] = 2 endif;'
         """
         cp_declarations = []
@@ -310,10 +310,10 @@ class LinearLayer(Component):
             sage: from claasp.components.linear_layer_component import LinearLayer
             sage: DummyModel = type('DummyModel', (), {'word_size': 2})
             sage: linear_layer_component = LinearLayer(0, 0, ['in'], [[0, 1, 2, 3]], 4, [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
-            sage: declarations, constraints = linear_layer_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(DummyModel())
-            sage: declarations
+            sage: result = linear_layer_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(DummyModel())
+            sage: result.declarations
             []
-            sage: constraints
+            sage: result.constraints
             ['constraint if ((in_active[0]== 0)) then linear_layer_0_0_active[0] = 0 /\\ linear_layer_0_0_value[0] = 0 elselinear_layer_0_0_active[0] = 3 /\\ linear_layer_0_0_value[0] = -2 endif;',
             'constraint if ((in_active[1]== 0)) then linear_layer_0_0_active[1] = 0 /\\ linear_layer_0_0_value[1] = 0 elselinear_layer_0_0_active[1] = 3 /\\ linear_layer_0_0_value[1] = -2 endif;']
         """

@@ -242,10 +242,10 @@ class Modular(Component):
 
             sage: from claasp.components.modular_component import Modular
             sage: component = Modular(0, 0, ['a', 'b'], [[0, 1, 2, 3], [0, 1, 2, 3]], 4, 'modular', 16)
-            sage: declarations, constraints = component.cp_deterministic_truncated_xor_differential_constraints()
-            sage: declarations
+            sage: result = component.cp_deterministic_truncated_xor_differential_constraints()
+            sage: result.declarations
             ['array[0..3] of var 0..2: pre_modular_0_0_0;', 'array[0..3] of var 0..2: pre_modular_0_0_1;']
-            sage: constraints
+            sage: result.constraints
             ['constraint pre_modular_0_0_0[0] = a[0];',
             'constraint pre_modular_0_0_0[1] = a[1];',
             'constraint pre_modular_0_0_0[2] = a[2];',
@@ -437,10 +437,10 @@ class Modular(Component):
             sage: from claasp.components.modular_component import Modular
             sage: component = Modular(0, 0, ['a', 'b'], [[0, 1, 2, 3], [0, 1, 2, 3]], 4, 'modular', 16)
             sage: DummyModel = type('DummyModel', (), {'word_size': 1})
-            sage: declarations, constraints = component.cp_wordwise_deterministic_truncated_xor_differential_constraints(DummyModel())
-            sage: declarations[0]
+            sage: result = component.cp_wordwise_deterministic_truncated_xor_differential_constraints(DummyModel())
+            sage: result.declarations[0]
             'array[0..4] of var 0..2: carry_modular_0_0;'
-            sage: len(constraints) > 0
+            sage: len(result.constraints) > 0
             True
         """
         output_id_link = self.id
@@ -581,14 +581,14 @@ class Modular(Component):
             sage: cipher = DummyCipher()
             sage: minizinc = MznXorDifferentialModelARXOptimized(cipher, sat_or_milp='milp')
             sage: component = cipher.component_from(0, 0)
-            sage: variables, constraints = component.cp_xor_differential_propagation_constraints_arx_optimized(minizinc)
-            sage: variables
+            sage: result = component.cp_xor_differential_propagation_constraints_arx_optimized(minizinc)
+            sage: result.declarations
             ['array[0..3] of var 0..1: dummy_modadd_0_0;',
             'array[0..3] of var 0..1: x1_modadd_0_0;',
             'array[0..3] of var 0..1: x2_modadd_0_0;']
-            sage: constraints[0].startswith('constraint x1_modadd_0_0[0] = plaintext[0];')
+            sage: result.constraints[0].startswith('constraint x1_modadd_0_0[0] = plaintext[0];')
             True
-            sage: len(constraints)
+            sage: len(result.constraints)
             53
         """
         input_id_links = self.input_id_links
@@ -1123,8 +1123,8 @@ class Modular(Component):
             sage: cipher = DummyCipher()
             sage: minizinc = MznXorDifferentialModelARXOptimized(cipher, sat_or_milp='milp')
             sage: component = cipher.component_from(0, 0)
-            sage: _, constraints = component.minizinc_xor_differential_propagation_constraints(minizinc)
-            sage: constraints[0].startswith('constraint modular_addition_word(')
+            sage: result = component.minizinc_xor_differential_propagation_constraints(minizinc)
+            sage: result.constraints[0].startswith('constraint modular_addition_word(')
             True
         """
 
