@@ -680,10 +680,17 @@ class MznModel:
                     elif "----------" in string:
                         solution_number += 1
         else:
-            if "solveTime" in output_to_parse.statistics:
-                time = output_to_parse.statistics["solveTime"].total_seconds()
+            stats = output_to_parse.statistics
+            if "solveTime" in stats:
+                time = stats["solveTime"].total_seconds()
+            elif "time" in stats:
+                time = stats["time"].total_seconds()
+            elif "flatTime" in stats:
+                time = stats["flatTime"].total_seconds()
+            elif "initTime" in stats:
+                time = stats["initTime"].total_seconds()
             else:
-                time = output_to_parse.statistics["time"].total_seconds()
+                time = 0
             if "trailMem" in output_to_parse.statistics:
                 memory = output_to_parse.statistics["trailMem"]
             else:

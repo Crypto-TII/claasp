@@ -24,7 +24,10 @@ FINDMUS = "findmus"
 GLOBALIZER = "globalizer"
 GUROBI = "gurobi"
 SCIP = "scip"
+# MiniZinc solver id for Google OR-Tools (CP-SAT backend).
 CPSAT = "cp-sat"
+# Readability alias for callers that use the OR-Tools naming.
+ORTOOLS = CPSAT
 XPRESS = "xpress"
 
 
