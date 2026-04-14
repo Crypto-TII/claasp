@@ -18,6 +18,7 @@
 
 from claasp.input import Input
 from claasp.component import Component
+from claasp.cipher_modules.models.cp.cp_component_build_result import CpComponentBuildResult
 from claasp.cipher_modules.models.smt.utils import utils as smt_utils
 from claasp.cipher_modules.models.sat.utils import constants, utils as sat_utils
 from claasp.name_mappings import WORD_OPERATION
@@ -154,9 +155,9 @@ class Rotate(Component):
                 for i in range(self.output_bit_size)
             ]
 
-        return cp_declarations, cp_constraints
+        return CpComponentBuildResult(cp_declarations, cp_constraints)
 
-    def cp_continuous_differential_propagation_constraints(self, model):
+    def cp_continuous_differential_propagation_constraints(self, context, state):
 
         output_id_link = self.id
         input_len = self.output_bit_size
@@ -181,12 +182,12 @@ class Rotate(Component):
                 f"constraint {output_id_link} = continuous_LRot(x1_{output_id_link}, {abs(rot_val)}, {output_id_link});"
             )
 
-        return cp_declarations, cp_constraints
+        return CpComponentBuildResult(cp_declarations, cp_constraints)
         
     def cp_deterministic_truncated_xor_differential_trail_constraints(self):
         return self.cp_constraints()
 
-    def cp_semi_deterministic_truncated_xor_differential_constraints(self):
+    def cp_semi_deterministic_truncated_xor_differential_constraints(self, context, state):
         return self.cp_constraints()
 
     def cp_inverse_constraints(self):
@@ -221,7 +222,7 @@ class Rotate(Component):
                 for i in range(self.output_bit_size)
             ]
 
-        return cp_declarations, cp_constraints
+        return CpComponentBuildResult(cp_declarations, cp_constraints)
 
     def cp_wordwise_deterministic_truncated_xor_differential_constraints(self, model):
         cp_declarations = []
@@ -252,7 +253,7 @@ class Rotate(Component):
                 f"constraint {self.id}_value[{i}] = {all_inputs_value[(i - rot_amount) % input_len]};"
             )
 
-        return cp_declarations, cp_constraints
+        return CpComponentBuildResult(cp_declarations, cp_constraints)
 
     def cp_xor_differential_first_step_constraints(self, model):
         """
@@ -314,28 +315,29 @@ class Rotate(Component):
                 for i in range(self.output_bit_size // word_size)
             ]
 
-        return cp_declarations, cp_constraints
+        return CpComponentBuildResult(cp_declarations, cp_constraints)
 
-    def cp_xor_differential_propagation_constraints(self, model=None):
+    def cp_xor_differential_propagation_constraints(self, context, state):
         return self.cp_constraints()
 
     def cp_xor_differential_propagation_first_step_constraints(self, model):
         return self.cp_xor_differential_first_step_constraints(model)
 
-    def cp_xor_linear_mask_propagation_constraints(self, model=None):
+    def cp_xor_linear_mask_propagation_constraints(self, context, state):
         """
         Return lists of declarations and constraints for ROTATE component for CP xor linear model.
 
         INPUT:
 
-        - ``model`` -- **model object** (default: `None`); a model instance
+        - ``context`` -- a ``CpBuildContext`` (read-only build configuration)
+        - ``state`` -- ``CpBuildState`` (mutable accumulator for build state)
 
         EXAMPLES::
 
             sage: from claasp.components.rotate_component import Rotate
             sage: rotate_component = Rotate(0, 0, ['input'], [[0, 1]], 2, 1)
-            sage: rotate_component.cp_xor_linear_mask_propagation_constraints()
-            (['array[0..1] of var 0..1: rot_0_0_i;', 'array[0..1] of var 0..1: rot_0_0_o;'], ['constraint rot_0_0_o[0]=rot_0_0_i[1];', 'constraint rot_0_0_o[1]=rot_0_0_i[0];'])
+            sage: rotate_component.cp_xor_linear_mask_propagation_constraints(None, None)
+            CpComponentBuildResult(declarations=['array[0..1] of var 0..1: rot_0_0_i;', 'array[0..1] of var 0..1: rot_0_0_o;'], constraints=['constraint rot_0_0_o[0]=rot_0_0_i[1];', 'constraint rot_0_0_o[1]=rot_0_0_i[0];'], metadata={})
         """
         cp_declarations = [
             f"array[0..{self.output_bit_size - 1}] of var 0..1: {self.id}_i;",
@@ -351,7 +353,7 @@ class Rotate(Component):
             for i in range(output_size):
                 cp_constraints.append(f"constraint {self.id}_o[{i}]={self.id}_i[{(i + rot_amount) % output_size}];")
 
-        return cp_declarations, cp_constraints
+        return CpComponentBuildResult(cp_declarations, cp_constraints)
 
     def get_bit_based_vectorized_python_code(self, params, convert_output_to_bytes):
         return [f"  {self.id} = bit_vector_ROTATE([{','.join(params)} ], {self.description[1]})"]
@@ -601,7 +603,7 @@ class Rotate(Component):
                 f"constraint RRot({mzn_input_array_1}, {int(rotation_const)})={mzn_output_array_1};\n"
             ]
 
-        return var_names, rotate_mzn_constraints
+        return CpComponentBuildResult(var_names, rotate_mzn_constraints)
 
     def minizinc_deterministic_truncated_xor_differential_trail_constraints(self, model):
         return self.minizinc_constraints(model)

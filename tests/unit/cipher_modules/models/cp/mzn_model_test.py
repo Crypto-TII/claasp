@@ -156,7 +156,6 @@ def test_build_generic_cp_model_from_dictionary_xor_differential():
     """
     speck = SpeckBlockCipher(number_of_rounds=3)
     model = MznXorDifferentialModelARXOptimized(speck)
-    component_and_model_types = []
     fixed_variables = []
 
     fixed_variables.append(
@@ -177,17 +176,7 @@ def test_build_generic_cp_model_from_dictionary_xor_differential():
         )
     )
 
-    for component in speck.get_all_components():
-        component_and_model_types.append({
-            "component_object": component,
-            "model_type": "minizinc_xor_differential_propagation_constraints"
-        })
-    model.build_generic_cp_model_from_dictionary(component_and_model_types, fixed_variables)
-
-    weight=6
-    constraints = model.weight_constraints(weight)
-    model._model_constraints.extend(constraints)
-    model.init_constraints()
+    model.build_xor_differential_trail_model(weight=6, fixed_variables=fixed_variables)
     model._model_constraints.extend(model.objective_generator())
     model._model_constraints.extend(model.weight_constraints())
 

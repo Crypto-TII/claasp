@@ -9,7 +9,8 @@ def test_cp_constraints():
         [list(range(16)), list(range(16))],
         32,
     )
-    declarations, constraints = output_component.cp_constraints()
+    result = output_component.cp_constraints()
+    declarations, constraints = result.declarations, result.constraints
 
     assert declarations == []
 
@@ -32,7 +33,8 @@ def test_cp_wordwise_deterministic_truncated_xor_differential_constraints():
         output_tag="intermediate_output",
     )
     cp = DummyModel()
-    declarations, constraints = output_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(cp)
+    result = output_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(cp)
+    declarations, constraints = result.declarations, result.constraints
 
     assert declarations == []
 

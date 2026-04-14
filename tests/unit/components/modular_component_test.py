@@ -37,7 +37,8 @@ def test_cp_deterministic_trail_alias_matches_base_constraints():
 
 def test_cp_deterministic_truncated_constraints_build_chain_for_three_inputs():
     component = make_modular_component(number_of_inputs=3)
-    declarations, constraints = component.cp_deterministic_truncated_xor_differential_constraints()
+    result = component.cp_deterministic_truncated_xor_differential_constraints()
+    declarations, constraints = result.declarations, result.constraints
 
     assert "array[0..3] of var 0..2: pre_modadd_0_0_0;" in declarations
     assert "array[0..3] of var 0..2: pre_modadd_0_0_1;" in declarations

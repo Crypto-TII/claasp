@@ -17,6 +17,7 @@
 
 
 from claasp.components.cipher_output_component import CipherOutput
+from claasp.cipher_modules.models.cp.cp_component_build_result import CpComponentBuildResult
 from claasp.cipher_modules.models.sat.utils import utils as sat_utils
 from claasp.cipher_modules.models.smt.utils import utils as smt_utils
 from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_xor_with_n_input_bits import (
@@ -94,7 +95,7 @@ class IntermediateOutput(CipherOutput):
         )
         self._suffixes = ["_i", "_o"]
 
-    def cp_xor_linear_mask_propagation_constraints(self, model):
+    def cp_xor_linear_mask_propagation_constraints(self, context, state):
         """
         Return lists declarations and constraints for OUTPUT component (both intermediate and cipher).
 
@@ -102,44 +103,44 @@ class IntermediateOutput(CipherOutput):
 
         INPUT:
 
-        - ``model`` -- **model object**; a model instance
+        - ``context`` -- a ``CpBuildContext`` (read-only build configuration)
+        - ``state`` -- ``CpBuildState`` (mutable accumulator for build state)
 
         EXAMPLES::
 
             sage: from claasp.components.intermediate_output_component import IntermediateOutput
             sage: intermediate_component = IntermediateOutput(0, 0, ['xor_0_0'], [[0, 1, 2, 3]], 4, 'round_output')
-            sage: DummyModel = type('DummyModel', (), {
-            ....:     'bit_bindings_for_intermediate_output': {
-            ....:         'intermediate_output_0_0': {
-            ....:             'intermediate_output_0_0_0_i': ['xor_0_0_0_o'],
-            ....:             'intermediate_output_0_0_1_i': ['xor_0_0_1_o'],
-            ....:             'intermediate_output_0_0_2_i': ['xor_0_0_2_o'],
-            ....:             'intermediate_output_0_0_3_i': ['xor_0_0_3_o'],
-            ....:         }
+            sage: from claasp.cipher_modules.models.cp.cp_build_context import CpBuildContext
+            sage: context = CpBuildContext(cipher=None, word_size=1, data_type='0..1', true_value=1, false_value=0, bit_bindings_for_intermediate_output={
+            ....:     'intermediate_output_0_0': {
+            ....:         'intermediate_output_0_0_0_i': ['xor_0_0_0_o'],
+            ....:         'intermediate_output_0_0_1_i': ['xor_0_0_1_o'],
+            ....:         'intermediate_output_0_0_2_i': ['xor_0_0_2_o'],
+            ....:         'intermediate_output_0_0_3_i': ['xor_0_0_3_o'],
             ....:     }
             ....: })
-            sage: variables, constraints = intermediate_component.cp_xor_linear_mask_propagation_constraints(DummyModel())
-            sage: len(variables)
+            sage: result = intermediate_component.cp_xor_linear_mask_propagation_constraints(context, None)
+            sage: len(result.declarations)
             2
-            sage: len(constraints)
+            sage: len(result.constraints)
             8
-            sage: constraints[0]
+            sage: result.constraints[0]
             'constraint intermediate_output_0_0_o[0] = intermediate_output_0_0_i[0];'
         """
-        variables, constraints = super().cp_xor_linear_mask_propagation_constraints(model)
-        bit_bindings = model.bit_bindings_for_intermediate_output[self.id]
+        result = super().cp_xor_linear_mask_propagation_constraints(context, state)
+        bit_bindings = context.bit_bindings_for_intermediate_output[self.id]
         for intermediate_var, linked_components in bit_bindings.items():
             # no fork
             if len(linked_components) == 1:
-                constraints.append(f"constraint {intermediate_var} = {linked_components[0]};")
+                result.constraints.append(f"constraint {intermediate_var} = {linked_components[0]};")
             # fork
             else:
                 operation = " + ".join(linked_components)
-                constraints.append(f"constraint {intermediate_var} = ({operation}) mod 2;")
+                result.constraints.append(f"constraint {intermediate_var} = ({operation}) mod 2;")
 
-        return variables, constraints
+        return result
 
-    def cp_semi_deterministic_truncated_xor_differential_constraints(self):
+    def cp_semi_deterministic_truncated_xor_differential_constraints(self, context, state):
         return self.cp_constraints()
 
     def get_bit_based_vectorized_python_code(self, params, convert_output_to_bytes):

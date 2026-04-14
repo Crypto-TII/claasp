@@ -1,4 +1,5 @@
 from claasp.components.multi_input_non_linear_logical_operator_component import MultiInputNonlinearLogicalOperator
+from claasp.cipher_modules.models.cp.cp_build_state import CpBuildState
 
 
 def make_component(number_of_inputs=2, operation="and"):
@@ -34,7 +35,8 @@ def test_cms_delegates_to_sat_methods():
 
 def test_cp_deterministic_truncated_constraints_base_logic():
     component = make_component()
-    declarations, constraints = component.cp_deterministic_truncated_xor_differential_constraints()
+    result = component.cp_deterministic_truncated_xor_differential_constraints()
+    declarations, constraints = result.declarations, result.constraints
 
     assert declarations == []
     assert constraints[0] == "constraint if in0[0] == 0 /\\ in1[4] == 0 then and_0_0[0] = 0 else and_0_0[0] = 2 endif;"
@@ -51,19 +53,15 @@ def test_cp_deterministic_trail_alias_matches_base_constraints():
 
 
 def test_cp_xor_differential_updates_model_counter_and_probability_map():
-    class DummyModel:
-        component_probability_index = 0
-        component_and_probability = {}
-
     component = make_component(number_of_inputs=3)
-    model = DummyModel()
-    declarations, constraints = component.cp_xor_differential_propagation_constraints(model)
+    state = CpBuildState()
+    result = component.cp_xor_differential_propagation_constraints(None, state)
 
-    assert declarations == []
-    assert constraints[0] == "constraint table([in0[0]]++[in1[4]]++[in2[8]]++[and_0_0[0]]++[p[0]],and3inputs_DDT);"
-    assert constraints[-1] == "constraint table([in0[3]]++[in1[7]]++[in2[11]]++[and_0_0[3]]++[p[3]],and3inputs_DDT);"
-    assert model.component_probability_index == 4
-    assert model.component_and_probability["and_0_0"] == [1, 2, 3, 4]
+    assert result.declarations == []
+    assert result.constraints[0] == "constraint table([in0[0]]++[in1[4]]++[in2[8]]++[and_0_0[0]]++[p[0]],and3inputs_DDT);"
+    assert result.constraints[-1] == "constraint table([in0[3]]++[in1[7]]++[in2[11]]++[and_0_0[3]]++[p[3]],and3inputs_DDT);"
+    assert state.next_probability_index == 4
+    assert state.component_probability_map["and_0_0"] == [1, 2, 3, 4]
 
 
 def test_cp_wordwise_deterministic_constraints_use_model_word_size():
@@ -71,7 +69,8 @@ def test_cp_wordwise_deterministic_constraints_use_model_word_size():
         word_size = 2
 
     component = make_component(number_of_inputs=2)
-    declarations, constraints = component.cp_wordwise_deterministic_truncated_xor_differential_constraints(DummyModel())
+    result = component.cp_wordwise_deterministic_truncated_xor_differential_constraints(DummyModel())
+    declarations, constraints = result.declarations, result.constraints
 
     assert declarations == []
     assert constraints[0] == "constraint if in0_active[0] == 0 /\\ in1_active[2] == 0 then and_0_0_active[0] = 0 /\\ and_0_0_value[0] = 0 else and_0_0_active[0] = 3 /\\ and_0_0_value[0] = -2 endif;"

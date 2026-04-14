@@ -21,6 +21,8 @@ import time as tm
 
 from sage.crypto.sbox import SBox
 
+from claasp.cipher_modules.models.cp.cp_build_context import CpBuildContext
+from claasp.cipher_modules.models.cp.cp_build_state import CpBuildState
 from claasp.cipher_modules.models.cp.mzn_model import MznModel, SOLVE_SATISFY, CONSTRAINT_TYPE_ERROR
 from claasp.cipher_modules.models.utils import get_bit_bindings, get_single_key_scenario_format_for_fixed_values
 from claasp.name_mappings import (
@@ -149,6 +151,9 @@ class MznXorLinearModel(MznModel):
         constraints = self.fix_variables_value_xor_linear_constraints(fixed_variables)
         self._model_constraints = constraints
 
+        state = CpBuildState.from_model(self)
+        context = CpBuildContext.from_model(self)
+
         for component in self._cipher.get_all_components():
             component_types = [
                 CONSTANT,
@@ -162,12 +167,17 @@ class MznXorLinearModel(MznModel):
             operation = component.description[0]
             operation_types = ["AND", "MODADD", "NOT", "ROTATE", "SHIFT", "XOR", "OR", "MODSUB"]
             if component.type in component_types and (component.type != WORD_OPERATION or operation in operation_types):
-                variables, constraints = component.cp_xor_linear_mask_propagation_constraints(self)
+                result = component.cp_xor_linear_mask_propagation_constraints(context, state)
+                variables = result.declarations
+                constraints = result.constraints
             else:
                 print(f"{component.id} not yet implemented")
+                continue
 
             self._variables_list.extend(variables)
             self._model_constraints.extend(constraints)
+
+        state.apply_to_model(self)
 
         constraints = self.branch_xor_linear_constraints()
         self._model_constraints.extend(constraints)

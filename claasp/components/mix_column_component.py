@@ -34,6 +34,7 @@ from claasp.input import Input
 from claasp.component import Component, free_input
 from claasp.utils.utils import int_to_poly
 from claasp.components.linear_layer_component import LinearLayer
+from claasp.cipher_modules.models.cp.cp_component_build_result import CpComponentBuildResult
 from claasp.cipher_modules.component_analysis_tests import (
     binary_matrix_of_linear_component,
     branch_number,
@@ -146,11 +147,11 @@ class MixColumn(LinearLayer):
         mix_column_name,
     ):
         for component_mix in mix_column_declaration_cache:
-            variables, constraints = self._cp_create_component(
+            result = self._cp_create_component(
                 word_size, component_mix, mix_column_name, list_of_xor_components
             )
-            cp_declarations.extend(variables)
-            cp_constraints.extend(constraints)
+            cp_declarations.extend(result.declarations)
+            cp_constraints.extend(result.constraints)
 
     def _cp_build_truncated_table(self, word_size):
         """
@@ -215,7 +216,7 @@ class MixColumn(LinearLayer):
         cp_declarations = []
         cp_constraints = []
         if component.description[0] != self.description[0]:
-            return cp_declarations, cp_constraints
+            return CpComponentBuildResult(cp_declarations, cp_constraints)
 
         input_id_link_1 = component.input_id_links
         all_inputs_1 = cp_get_all_inputs(
@@ -275,7 +276,7 @@ class MixColumn(LinearLayer):
         output_size = int(component.output_bit_size)
         add_xor_components(word_size, output_id_link_1, output_id_link_2, output_size, list_of_xor_components)
 
-        return cp_declarations, cp_constraints
+        return CpComponentBuildResult(cp_declarations, cp_constraints)
 
     def algebraic_polynomials(self, model):
         """
@@ -384,10 +385,10 @@ class MixColumn(LinearLayer):
         matrix_transposed = [[matrix[i][j] for i in range(matrix.nrows())] for j in range(matrix.ncols())]
         original_description = deepcopy(self.description)
         self.set_description(matrix_transposed)
-        cp_declarations, cp_constraints = super().cp_constraints()
+        result = super().cp_constraints()
         self.set_description(original_description)
 
-        return cp_declarations, cp_constraints
+        return result
 
     def cp_deterministic_truncated_xor_differential_constraints(self, inverse=False):
         r"""
@@ -414,15 +415,15 @@ class MixColumn(LinearLayer):
         matrix_transposed = [[matrix[i][j] for i in range(matrix.nrows())] for j in range(matrix.ncols())]
         original_description = deepcopy(self.description)
         self.set_description(matrix_transposed)
-        cp_declarations, cp_constraints = super().cp_deterministic_truncated_xor_differential_constraints()
+        result = super().cp_deterministic_truncated_xor_differential_constraints()
         self.set_description(original_description)
 
-        return cp_declarations, cp_constraints
+        return result
 
     def cp_deterministic_truncated_xor_differential_trail_constraints(self):
         return self.cp_deterministic_truncated_xor_differential_constraints()
 
-    def cp_semi_deterministic_truncated_xor_differential_constraints(self):
+    def cp_semi_deterministic_truncated_xor_differential_constraints(self, context, state):
         raise NotImplementedError("Semi-deterministic CP model not supported for MIX_COLUMN component yet")
 
     def cp_xor_differential_propagation_first_step_constraints(self, model):
@@ -501,29 +502,29 @@ class MixColumn(LinearLayer):
                 mix_column_name,
             )
         model.mix_column_declaration_cache.append(self)
-        result = cp_declarations, cp_constraints
 
-        return result
+        return CpComponentBuildResult(cp_declarations, cp_constraints)
 
-    def cp_xor_differential_propagation_constraints(self, model):
+    def cp_xor_differential_propagation_constraints(self, context, state):
         return self.cp_constraints()
 
-    def cp_xor_linear_mask_propagation_constraints(self, model=None):
+    def cp_xor_linear_mask_propagation_constraints(self, context, state):
         """
         Return lists of declarations and constraints for MIX COLUMN component for the CP xor linear model.
 
         INPUT:
 
-        - ``model`` -- **model object** (default: `None`); a model instance
+        - ``context`` -- a ``CpBuildContext`` (read-only build configuration)
+        - ``state`` -- ``CpBuildState`` (mutable accumulator for build state)
 
         EXAMPLES::
 
             sage: from claasp.components.mix_column_component import MixColumn
             sage: mix_column_component = MixColumn(0, 0, ['in'], [[0, 1, 2, 3]], 4, [[[1, 0], [0, 1]], 0, 2])
-            sage: declarations, constraints = mix_column_component.cp_xor_linear_mask_propagation_constraints()
-            sage: declarations
+            sage: result = mix_column_component.cp_xor_linear_mask_propagation_constraints(None, None)
+            sage: result.declarations
             ['array[0..3] of var 0..1:mix_column_0_0_i;', 'array[0..3] of var 0..1:mix_column_0_0_o;']
-            sage: constraints
+            sage: result.constraints
             ['constraint mix_column_0_0_i[0]=(mix_column_0_0_o[0]) mod 2;',
             'constraint mix_column_0_0_i[1]=(mix_column_0_0_o[1]) mod 2;',
             'constraint mix_column_0_0_i[2]=(mix_column_0_0_o[2]) mod 2;',
@@ -542,7 +543,7 @@ class MixColumn(LinearLayer):
             new_constraint = f"constraint {self.id}_i[{i}]=(" + "+".join(addenda) + ") mod 2;"
             cp_constraints.append(new_constraint)
 
-        return cp_declarations, cp_constraints
+        return CpComponentBuildResult(cp_declarations, cp_constraints)
 
     def get_bit_based_c_code(self, verbosity):
         """

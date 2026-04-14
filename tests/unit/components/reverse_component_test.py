@@ -20,7 +20,8 @@ def test_constructor_builds_reverse_matrix():
 
 def test_cp_constraints():
     reverse_component = make_reverse_component()
-    declarations, constraints = reverse_component.cp_constraints()
+    result = reverse_component.cp_constraints()
+    declarations, constraints = result.declarations, result.constraints
 
     assert declarations == []
     assert constraints == [

@@ -146,12 +146,13 @@ class MznXorDifferentialNumberOfActiveSboxesModel(MznModel):
                 component.type == WORD_OPERATION and operation not in operation_types
             ):
                 print(f"{component.id} not yet implemented")
+                continue
             elif component.type == WORD_OPERATION and operation == "XOR":
-                variables, constraints = component.cp_transform_xor_components_for_first_step(self)
+                result = component.cp_transform_xor_components_for_first_step(self)
             else:
-                variables, constraints = component.cp_xor_differential_propagation_first_step_constraints(self)
-            self._variables_list.extend(variables)
-            self._first_step.extend(constraints)
+                result = component.cp_xor_differential_propagation_first_step_constraints(self)
+            self._variables_list.extend(result.declarations)
+            self._first_step.extend(result.constraints)
 
         self.add_additional_xor_constraints(nmax, repetition)
         for i, component in enumerate(self.list_of_xor_components):

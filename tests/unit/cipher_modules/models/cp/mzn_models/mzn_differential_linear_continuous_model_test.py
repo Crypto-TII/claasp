@@ -1,6 +1,8 @@
 from claasp.cipher_modules.models.cp.mzn_models.mzn_differential_linear_continuous_model import MznDifferentialLinearContinuousModel
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.cipher_modules.models.cp.mzn_model import MznModel
+from claasp.cipher_modules.models.cp.cp_build_context import CpBuildContext
+from claasp.cipher_modules.models.cp.cp_build_state import CpBuildState
 from claasp.cipher_modules.models.cp.minizinc_utils.mzn_continuous_predicates import get_continuous_operations
 from minizinc import Model, Solver, Instance
 import re
@@ -10,7 +12,10 @@ def test_cp_modadd_test_vectors():
     model = MznModel(cipher)
 
     modadd_component = cipher.get_component_from_id("modadd_0_1")
-    declarations, constraints = modadd_component.cp_continuous_differential_propagation_constraints(model)
+    context = CpBuildContext.from_model(model)
+    state = CpBuildState.from_model(model)
+    result = modadd_component.cp_continuous_differential_propagation_constraints(context, state)
+    declarations, constraints = result.declarations, result.constraints
 
     mzn_model = Model()
     mzn_model.add_string(get_continuous_operations())
@@ -58,7 +63,10 @@ def test_cp_xor_test_vectors():
         print(c.id, c.description)
 
     xor_component = cipher.get_component_from_id("xor_0_4")
-    declarations, constraints = xor_component.cp_continuous_differential_propagation_constraints(model)
+    context = CpBuildContext.from_model(model)
+    state = CpBuildState.from_model(model)
+    result = xor_component.cp_continuous_differential_propagation_constraints(context, state)
+    declarations, constraints = result.declarations, result.constraints
 
     mzn_model = Model()
     mzn_model.add_string(get_continuous_operations())
@@ -143,9 +151,8 @@ def test_cp_rotate_test_vectors():
     for case in test_cases:
         rot_component = cipher.get_component_from_id(case["component_id"])
 
-        declarations, constraints = (
-            rot_component.cp_continuous_differential_propagation_constraints(model)
-        )
+        result = rot_component.cp_continuous_differential_propagation_constraints(None, None)
+        declarations, constraints = result.declarations, result.constraints
 
         mzn_model = Model()
         mzn_model.add_string(get_continuous_operations())

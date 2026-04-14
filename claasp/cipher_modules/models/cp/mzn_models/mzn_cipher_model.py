@@ -70,14 +70,14 @@ class MznCipherModel(MznModel):
                 WORD_OPERATION == component.type and operation not in operation_types
             ):
                 print(f"{component.id} not yet implemented")
+                continue
+            if component.type != SBOX:
+                    result = component.cp_constraints()
             else:
-                if component.type != SBOX:
-                    variables, constraints = component.cp_constraints()
-                else:
-                    variables, constraints = component.cp_constraints(self.sbox_table_cache)
+                    result = component.cp_constraints(self.sbox_table_cache)
 
-            self._model_constraints.extend(constraints)
-            self._variables_list.extend(variables)
+            self._model_constraints.extend(result.constraints)
+            self._variables_list.extend(result.declarations)
 
         self._model_constraints.extend(self.final_constraints())
 

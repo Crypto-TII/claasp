@@ -20,6 +20,7 @@ import math
 import time as tm
 from sage.crypto.sbox import SBox
 
+from claasp.cipher_modules.models.cp.cp_build_state import CpBuildState
 from claasp.cipher_modules.models.cp.mzn_model import MznModel, SOLVE_SATISFY
 from claasp.cipher_modules.models.utils import get_single_key_scenario_format_for_fixed_values
 from claasp.name_mappings import (
@@ -150,19 +151,24 @@ class MznXorDifferentialModel(MznModel):
         operation_types = ("AND", "MODADD", "MODSUB", "NOT", "OR", "ROTATE", "SHIFT", "XOR")
         self._model_constraints = constraints
 
+        state = CpBuildState.from_model(self)
+
         for component in self._cipher.get_all_components():
             operation = component.description[0]
             if component.type not in component_types or (
                 WORD_OPERATION == component.type and operation not in operation_types
             ):
                 print(f"{component.id} not yet implemented")
+                continue
             elif operation in ("MODADD", "MODSUB") and milp_modadd:
-                variables, constraints = component.cp_xor_differential_propagation_constraints_arx_optimized(self)
+                result = component.cp_xor_differential_propagation_constraints_arx_optimized(self)
             else:
-                variables, constraints = component.cp_xor_differential_propagation_constraints(self)
+                result = component.cp_xor_differential_propagation_constraints(None, state)
 
-            self._variables_list.extend(variables)
-            self._model_constraints.extend(constraints)
+            self._variables_list.extend(result.declarations)
+            self._model_constraints.extend(result.constraints)
+
+        state.apply_to_model(self)
 
         if weight != -1:
             variables, constraints = self.weight_constraints(weight)

@@ -16,6 +16,8 @@
 # ****************************************************************************
 
 
+from claasp.cipher_modules.models.cp.cp_build_state import CpBuildState
+from claasp.cipher_modules.models.cp.cp_component_build_result import CpComponentBuildResult
 from claasp.input import Input
 from claasp.component import Component
 from claasp.cipher_modules.models.smt.utils import utils as smt_utils
@@ -136,7 +138,7 @@ class MultiInputNonlinearLogicalOperator(Component):
             cp_constraint = f"constraint if {operation} == 0 then {self.id}[{i}] = 0 else {self.id}[{i}] = 2 endif;"
             cp_constraints.append(cp_constraint)
 
-        return cp_declarations, cp_constraints
+        return CpComponentBuildResult(cp_declarations, cp_constraints)
 
     def cp_deterministic_truncated_xor_differential_trail_constraints(self):
         return self.cp_deterministic_truncated_xor_differential_constraints()
@@ -196,9 +198,9 @@ class MultiInputNonlinearLogicalOperator(Component):
             )
             cp_constraints.append(new_constraint)
 
-        return cp_declarations, cp_constraints
+        return CpComponentBuildResult(cp_declarations, cp_constraints)
 
-    def cp_xor_differential_propagation_constraints(self, model):
+    def cp_xor_differential_propagation_constraints(self, context, state):
         """
         Return lists of declarations and constraints for the probability of a multi-input nonlinear
         logical operator in the CP XOR differential model.
@@ -209,29 +211,26 @@ class MultiInputNonlinearLogicalOperator(Component):
             the same DDT table is used. This is why the generated MiniZinc constraint names
             still reference ``and{num_add}inputs_DDT``.
 
-        TESTING NOTE:
-
-            This method contains real base-class logic but only depends on the model's
-            ``c`` counter and ``component_and_probability`` dictionary. The doctest uses a
-            minimal dummy model rather than a full cipher/model integration setup.
-
         INPUT:
 
-        - ``model`` -- **model object**; a model instance
+        - ``context`` -- a ``CpBuildContext`` (read-only build configuration)
+        - ``state`` -- ``CpBuildState`` (mutable accumulator for build state)
 
         EXAMPLES::
 
             sage: from claasp.components.multi_input_non_linear_logical_operator_component import MultiInputNonlinearLogicalOperator
-            sage: class DummyModel:
-            ....:     def __init__(self):
-            ....:         self.component_probability_index = 0
-            ....:         self.component_and_probability = {}
+            sage: from claasp.cipher_modules.models.cp.cp_build_state import CpBuildState
             sage: component = MultiInputNonlinearLogicalOperator(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2, 'and')
-            sage: component.cp_xor_differential_propagation_constraints(DummyModel())
-            ([],
-             ['constraint table([input1[0]]++[input2[0]]++[and_0_0[0]]++[p[0]],and2inputs_DDT);',
-              'constraint table([input1[1]]++[input2[1]]++[and_0_0[1]]++[p[1]],and2inputs_DDT);'])
+            sage: state = CpBuildState()
+            sage: result = component.cp_xor_differential_propagation_constraints(None, state)
+            sage: result.declarations
+            []
+            sage: result.constraints
+            ['constraint table([input1[0]]++[input2[0]]++[and_0_0[0]]++[p[0]],and2inputs_DDT);', 'constraint table([input1[1]]++[input2[1]]++[and_0_0[1]]++[p[1]],and2inputs_DDT);']
         """
+        return self._cp_xor_differential_propagation_impl(state)
+
+    def _cp_xor_differential_propagation_impl(self, state):
         num_add = self.description[1]
         all_inputs = []
         for id_link, bit_positions in zip(self.input_id_links, self.input_bit_positions):
@@ -241,14 +240,14 @@ class MultiInputNonlinearLogicalOperator(Component):
         cp_constraints = []
         component_probability_indices = []
         for i in range(self.output_bit_size):
+            prob_index = state.allocate_probability_index()
             inputs = "++".join(f"[{all_inputs[i + input_len * j]}]" for j in range(num_add))
-            cp_constraint = f"constraint table({inputs}++[{self.id}[{i}]]++[p[{model.component_probability_index}]],and{num_add}inputs_DDT);"
+            cp_constraint = f"constraint table({inputs}++[{self.id}[{i}]]++[p[{prob_index}]],and{num_add}inputs_DDT);"
             cp_constraints.append(cp_constraint)
-            model.component_probability_index += 1
-            component_probability_indices.append(model.component_probability_index)
-        model.component_and_probability[self.id] = component_probability_indices
+            component_probability_indices.append(prob_index + 1)
+        state.component_probability_map[self.id] = component_probability_indices
 
-        return cp_declarations, cp_constraints
+        return CpComponentBuildResult(cp_declarations, cp_constraints)
 
     def generic_sign_linear_constraints(self, inputs, outputs):
         """AND component and OR component override this method."""

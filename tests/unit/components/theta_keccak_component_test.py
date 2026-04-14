@@ -16,7 +16,8 @@ def test_constructor_sets_theta_keccak_identity():
 
 def test_cp_constraints():
     theta_component = make_theta_keccak_component()
-    declarations, constraints = theta_component.cp_constraints()
+    result = theta_component.cp_constraints()
+    declarations, constraints = result.declarations, result.constraints
 
     assert declarations == []
     assert constraints[0].startswith("constraint theta_keccak_0_0[0] = (")

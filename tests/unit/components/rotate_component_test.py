@@ -16,7 +16,8 @@ def test_algebraic_polynomials():
 
 def test_cp_inverse_constraints():
     rotate_component = Rotate(0, 0, ['plaintext'], [list(range(16))], 16, 7)
-    declarations, constraints = rotate_component.cp_inverse_constraints()
+    result = rotate_component.cp_inverse_constraints()
+    declarations, constraints = result.declarations, result.constraints
 
     assert declarations == []
 
@@ -34,7 +35,8 @@ def test_cp_xor_differential_first_step_constraints():
     class DummyModel:
         word_size = 8
 
-    declarations, constraints = rotate_component.cp_xor_differential_first_step_constraints(DummyModel())
+    result = rotate_component.cp_xor_differential_first_step_constraints(DummyModel())
+    declarations, constraints = result.declarations, result.constraints
 
     assert declarations == ['array[0..3] of var 0..1: rot_0_18;']
 

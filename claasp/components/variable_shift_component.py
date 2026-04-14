@@ -18,6 +18,7 @@
 
 import math
 
+from claasp.cipher_modules.models.cp.cp_component_build_result import CpComponentBuildResult
 from claasp.cipher_modules.models.sat.utils import utils as sat_utils
 from claasp.cipher_modules.models.smt.utils import utils as smt_utils
 from claasp.component import Component
@@ -187,7 +188,7 @@ class VariableShift(Component):
                 f"constraint {output_id_link}=LShift(pre_{output_id_link},shift_amount_{output_id_link});"
             )
 
-        return cp_declarations, cp_constraints
+        return CpComponentBuildResult(cp_declarations, cp_constraints)
 
     def get_bit_based_vectorized_python_code(self, params, convert_output_to_bytes):
         """
@@ -395,7 +396,7 @@ class VariableShift(Component):
                 f" {str_shift_amount})={mzn_input_array_output};\n"
             ]
 
-        return var_names, mzn_shift_by_variable_amount_constraints
+        return CpComponentBuildResult(var_names, mzn_shift_by_variable_amount_constraints)
 
     def sat_constraints(self):
         """

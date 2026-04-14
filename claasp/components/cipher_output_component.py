@@ -18,6 +18,7 @@
 
 from claasp.input import Input
 from claasp.component import Component
+from claasp.cipher_modules.models.cp.cp_component_build_result import CpComponentBuildResult
 from claasp.cipher_modules.models.smt.utils import utils as smt_utils
 from claasp.cipher_modules.models.sat.utils import constants, utils as sat_utils
 from claasp.name_mappings import CIPHER_OUTPUT, INTERMEDIATE_OUTPUT
@@ -119,12 +120,12 @@ class CipherOutput(Component):
             all_inputs.extend([f"{id_link}[{position}]" for position in bit_positions])
         cp_constraints = [f"constraint {self.id}[{i}] = {all_inputs[i]};" for i in range(self.output_bit_size)]
 
-        return cp_declarations, cp_constraints
+        return CpComponentBuildResult(cp_declarations, cp_constraints)
 
     def cp_deterministic_truncated_xor_differential_trail_constraints(self):
         return self.cp_constraints()
 
-    def cp_semi_deterministic_truncated_xor_differential_constraints(self):
+    def cp_semi_deterministic_truncated_xor_differential_constraints(self, context, state):
         return self.cp_constraints()
 
     def cp_wordwise_deterministic_truncated_xor_differential_constraints(self, model):
@@ -169,7 +170,7 @@ class CipherOutput(Component):
             [f"constraint {self.id}_active[{i}] = {input_};" for i, input_ in enumerate(all_inputs_active)]
         )
 
-        return cp_declarations, cp_constraints
+        return CpComponentBuildResult(cp_declarations, cp_constraints)
 
     def cp_xor_differential_propagation_first_step_constraints(self, model):
         """
@@ -202,12 +203,12 @@ class CipherOutput(Component):
             )
         cp_constraints.extend([f"constraint {self.id}[{i}] = {input_};" for i, input_ in enumerate(all_inputs)])
 
-        return cp_declarations, cp_constraints
+        return CpComponentBuildResult(cp_declarations, cp_constraints)
 
-    def cp_xor_differential_propagation_constraints(self, model):
+    def cp_xor_differential_propagation_constraints(self, context, state):
         return self.cp_constraints()
 
-    def cp_xor_linear_mask_propagation_constraints(self, model=None):
+    def cp_xor_linear_mask_propagation_constraints(self, context, state):
         """
         Return lists declarations and constraints for OUTPUT component (both
         intermediate and cipher), for CP xor linear.
@@ -216,14 +217,19 @@ class CipherOutput(Component):
 
         INPUT:
 
-        - ``model`` -- **model object** (default: `None`); a model instance
+        - ``context`` -- a ``CpBuildContext`` (read-only build configuration)
+        - ``state`` -- ``CpBuildState`` (mutable accumulator for build state)
 
         EXAMPLES::
 
             sage: from claasp.components.cipher_output_component import CipherOutput
+            sage: from claasp.cipher_modules.models.cp.cp_build_state import CpBuildState
             sage: output_component = CipherOutput(0, 0, ['xor_0_0', 'xor_0_1'], [[0, 1], [0, 1]], 4)
-            sage: output_component.cp_xor_linear_mask_propagation_constraints()
-            (['array[0..3] of var 0..1: cipher_output_0_0_i;', 'array[0..3] of var 0..1: cipher_output_0_0_o;'], ['constraint cipher_output_0_0_o[0] = cipher_output_0_0_i[0];', 'constraint cipher_output_0_0_o[1] = cipher_output_0_0_i[1];', 'constraint cipher_output_0_0_o[2] = cipher_output_0_0_i[2];', 'constraint cipher_output_0_0_o[3] = cipher_output_0_0_i[3];'])
+            sage: result = output_component.cp_xor_linear_mask_propagation_constraints(None, CpBuildState())
+            sage: result.declarations
+            ['array[0..3] of var 0..1: cipher_output_0_0_i;', 'array[0..3] of var 0..1: cipher_output_0_0_o;']
+            sage: result.constraints
+            ['constraint cipher_output_0_0_o[0] = cipher_output_0_0_i[0];', 'constraint cipher_output_0_0_o[1] = cipher_output_0_0_i[1];', 'constraint cipher_output_0_0_o[2] = cipher_output_0_0_i[2];', 'constraint cipher_output_0_0_o[3] = cipher_output_0_0_i[3];']
         """
         cp_declarations = [
             f"array[0..{self.output_bit_size - 1}] of var 0..1: {self.id}_i;",
@@ -231,7 +237,7 @@ class CipherOutput(Component):
         ]
         cp_constraints = [f"constraint {self.id}_o[{i}] = {self.id}_i[{i}];" for i in range(self.output_bit_size)]
 
-        return cp_declarations, cp_constraints
+        return CpComponentBuildResult(cp_declarations, cp_constraints)
 
     def get_bit_based_vectorized_python_code(self, params, convert_output_to_bytes):
         code = []
@@ -250,7 +256,7 @@ class CipherOutput(Component):
             code.append(f'  intermediateOutputs["{self.description[0]}"].append({self.id}.transpose())')
         return code
 
-    def cp_continuous_differential_propagation_constraints(self, model):
+    def cp_continuous_differential_propagation_constraints(self, context, state):
         component_id = self.id
         ninputs = self.input_bit_size
         num_links = len(self.input_id_links)
@@ -277,7 +283,7 @@ class CipherOutput(Component):
                 )
                 output_idx += 1
         
-        return cp_declarations, cp_constraints
+        return CpComponentBuildResult(cp_declarations, cp_constraints)
 
     def get_byte_based_vectorized_python_code(self, params):
         return [
@@ -513,7 +519,7 @@ class CipherOutput(Component):
 
         model.intermediate_constraints_array.append({f"{component_id}_input": input_vars})
 
-        return var_names, intermediate_component_string
+        return CpComponentBuildResult(var_names, intermediate_component_string)
 
     def minizinc_deterministic_truncated_xor_differential_trail_constraints(self, model):
         return self.minizinc_constraints(model)

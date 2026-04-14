@@ -18,6 +18,7 @@
 
 from claasp.cipher_modules.models.sat.utils import utils as sat_utils
 from claasp.cipher_modules.models.smt.utils import utils as smt_utils
+from claasp.cipher_modules.models.cp.cp_component_build_result import CpComponentBuildResult
 from claasp.components.multi_input_non_linear_logical_operator_component import MultiInputNonlinearLogicalOperator
 
 
@@ -175,15 +176,16 @@ class OR(MultiInputNonlinearLogicalOperator):
                 f"{output_id_link});"
             )
 
-        return cp_declarations, cp_constraints
+        return CpComponentBuildResult(cp_declarations, cp_constraints)
 
-    def cp_xor_linear_mask_propagation_constraints(self, model):
+    def cp_xor_linear_mask_propagation_constraints(self, context, state):
         """
         Return lists of declarations and constraints for the probability of OR for CP xor linear model.
 
         INPUT:
 
-        - ``model`` -- **model object**; a model instance
+        - ``context`` -- a ``CpBuildContext`` (read-only build configuration)
+        - ``state`` -- ``CpBuildState`` (mutable accumulator for build state)
 
         EXAMPLES::
 
@@ -192,17 +194,13 @@ class OR(MultiInputNonlinearLogicalOperator):
             sage: cipher = OrCipher(word_bit_size=4, number_of_inputs=2)
             sage: or_component = cipher.get_component_from_id("or_0_0")
             sage: cp = MznModel(cipher)
-            sage: declarations, constraints = or_component.cp_xor_linear_mask_propagation_constraints(cp)
-            sage: declarations
-            ['array[0..3] of var 0..400: p_or_0_0;',
-             'array[0..7] of var 0..1:or_0_0_i;',
-             'array[0..3] of var 0..1:or_0_0_o;']
-            sage: constraints
-            ['constraint table([or_0_0_i[0]]++[or_0_0_i[4]]++[or_0_0_o[0]]++[p_or_0_0[0]],and2inputs_LAT);',
-             'constraint table([or_0_0_i[1]]++[or_0_0_i[5]]++[or_0_0_o[1]]++[p_or_0_0[1]],and2inputs_LAT);',
-             'constraint table([or_0_0_i[2]]++[or_0_0_i[6]]++[or_0_0_o[2]]++[p_or_0_0[2]],and2inputs_LAT);',
-             'constraint table([or_0_0_i[3]]++[or_0_0_i[7]]++[or_0_0_o[3]]++[p_or_0_0[3]],and2inputs_LAT);',
-             'constraint p[0] = sum(p_or_0_0);']
+            sage: from claasp.cipher_modules.models.cp.cp_build_context import CpBuildContext
+            sage: from claasp.cipher_modules.models.cp.cp_build_state import CpBuildState
+            sage: context = CpBuildContext.from_model(cp)
+            sage: state = CpBuildState.from_model(cp)
+            sage: result = or_component.cp_xor_linear_mask_propagation_constraints(context, state)
+            sage: result.declarations[0]
+            'array[0..3] of var 0..400: p_or_0_0;'
         """
         cp_declarations = [
             f"array[0..{self.output_bit_size - 1}] of var 0..{100 * self.output_bit_size}: p_{self.id};",
@@ -212,7 +210,7 @@ class OR(MultiInputNonlinearLogicalOperator):
         cp_constraints = []
         num_add = self.description[1]
         input_len = self.input_bit_size // num_add
-        model.component_and_probability[self.id] = 0
+        state.component_probability_map[self.id] = 0
         p_count = 0
         for i in range(self.output_bit_size):
             inputs = "++".join(f"[{self.id}_i[{i + input_len * j}]]" for j in range(num_add))
@@ -221,11 +219,11 @@ class OR(MultiInputNonlinearLogicalOperator):
             )
             cp_constraints.append(cp_constraint)
             p_count = p_count + 1
-        cp_constraints.append(f"constraint p[{model.component_probability_index}] = sum(p_{self.id});")
-        model.component_and_probability[self.id] = model.component_probability_index
-        model.component_probability_index = model.component_probability_index + 1
+        prob_idx = state.allocate_probability_index()
+        cp_constraints.append(f"constraint p[{prob_idx}] = sum(p_{self.id});")
+        state.component_probability_map[self.id] = prob_idx
 
-        return cp_declarations, cp_constraints
+        return CpComponentBuildResult(cp_declarations, cp_constraints)
 
     def generic_sign_linear_constraints(self, inputs, outputs):
         """

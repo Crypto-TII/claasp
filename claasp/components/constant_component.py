@@ -18,6 +18,7 @@
 
 from claasp.input import Input
 from claasp.component import Component
+from claasp.cipher_modules.models.cp.cp_component_build_result import CpComponentBuildResult
 from claasp.cipher_modules.models.sat.utils import constants
 from claasp.cipher_modules.models.smt.utils import utils as smt_utils
 from claasp.name_mappings import CONSTANT
@@ -185,26 +186,31 @@ class Constant(Component):
         bits = map(int, f"{value:0{self.output_bit_size}b}")
         cp_constraints = [f"constraint {self.id}[{i}] = {bit};" for i, bit in enumerate(bits)]
 
-        return cp_declarations, cp_constraints
+        return CpComponentBuildResult(cp_declarations, cp_constraints)
 
-    def cp_continuous_differential_propagation_constraints(self, model):
+    def cp_continuous_differential_propagation_constraints(self, context, state):
         """
         Return CP declarations and constraints for continuous differential propagation.
 
         INPUT:
 
-        - ``model`` -- **model object**; a model instance (unused by this component)
+        - ``context`` -- a ``CpBuildContext`` (read-only build configuration)
+        - ``state`` -- ``CpBuildState`` (mutable accumulator for build state)
 
         OUTPUT:
 
-        - ``tuple`` -- pair ``(cp_declarations, cp_constraints)``
+        - ``CpComponentBuildResult``
 
         EXAMPLES::
 
             sage: from claasp.components.constant_component import Constant
+            sage: from claasp.cipher_modules.models.cp.cp_build_state import CpBuildState
             sage: constant_component = Constant(0, 0, 4, 0x1)
-            sage: constant_component.cp_continuous_differential_propagation_constraints(object())
-            (['array[0..3] of var -1.0..1.0: constant_0_0;'], ['constraint constant_0_0[0] = -1.0;', 'constraint constant_0_0[1] = -1.0;', 'constraint constant_0_0[2] = -1.0;', 'constraint constant_0_0[3] = -1.0;'])
+            sage: result = constant_component.cp_continuous_differential_propagation_constraints(None, CpBuildState())
+            sage: result.declarations
+            ['array[0..3] of var -1.0..1.0: constant_0_0;']
+            sage: result.constraints
+            ['constraint constant_0_0[0] = -1.0;', 'constraint constant_0_0[1] = -1.0;', 'constraint constant_0_0[2] = -1.0;', 'constraint constant_0_0[3] = -1.0;']
         """
         size = self.output_bit_size
 
@@ -217,13 +223,13 @@ class Constant(Component):
             for i in range(size)
         ]
 
-        return cp_declarations, cp_constraints
+        return CpComponentBuildResult(cp_declarations, cp_constraints)
     
     def cp_deterministic_truncated_xor_differential_trail_constraints(self):
-        return self.cp_xor_differential_propagation_constraints()
+        return self.cp_xor_differential_propagation_constraints(None, None)
 
-    def cp_semi_deterministic_truncated_xor_differential_constraints(self):
-        return self.cp_xor_differential_propagation_constraints()
+    def cp_semi_deterministic_truncated_xor_differential_constraints(self, context, state):
+        return self.cp_xor_differential_propagation_constraints(context, state)
 
     def cp_wordwise_deterministic_truncated_xor_differential_constraints(self, model):
         """
@@ -258,7 +264,7 @@ class Constant(Component):
         )
         cp_constraints = []
 
-        return cp_declarations, cp_constraints
+        return CpComponentBuildResult(cp_declarations, cp_constraints)
 
     def cp_xor_differential_propagation_first_step_constraints(self, model):
         """
@@ -284,47 +290,57 @@ class Constant(Component):
         ]
         cp_constraints = []
 
-        return cp_declarations, cp_constraints
+        return CpComponentBuildResult(cp_declarations, cp_constraints)
 
-    def cp_xor_differential_propagation_constraints(self, model=None):
+    def cp_xor_differential_propagation_constraints(self, context, state):
         """
         Return lists of declarations and constraints for CONSTANT component for CP xor differential model.
 
         INPUT:
 
-        - ``model`` -- **model object** (default: `None`); a model instance
+        - ``context`` -- a ``CpBuildContext`` (read-only build configuration)
+        - ``state`` -- ``CpBuildState`` (mutable accumulator for build state)
 
         EXAMPLES::
 
             sage: from claasp.components.constant_component import Constant
+            sage: from claasp.cipher_modules.models.cp.cp_build_state import CpBuildState
             sage: constant_component = Constant(0, 0, 4, 0x1)
-            sage: constant_component.cp_xor_differential_propagation_constraints()
-            (['array[0..3] of var 0..2: constant_0_0;'], ['constraint constant_0_0[0] = 0;', 'constraint constant_0_0[1] = 0;', 'constraint constant_0_0[2] = 0;', 'constraint constant_0_0[3] = 0;'])
+            sage: result = constant_component.cp_xor_differential_propagation_constraints(None, CpBuildState())
+            sage: result.declarations
+            ['array[0..3] of var 0..2: constant_0_0;']
+            sage: result.constraints
+            ['constraint constant_0_0[0] = 0;', 'constraint constant_0_0[1] = 0;', 'constraint constant_0_0[2] = 0;', 'constraint constant_0_0[3] = 0;']
         """
         cp_declarations = [f"array[0..{self.output_bit_size - 1}] of var 0..2: {self.id};"]
         cp_constraints = [f"constraint {self.id}[{i}] = 0;" for i in range(self.output_bit_size)]
 
-        return cp_declarations, cp_constraints
+        return CpComponentBuildResult(cp_declarations, cp_constraints)
 
-    def cp_xor_linear_mask_propagation_constraints(self, model=None):
+    def cp_xor_linear_mask_propagation_constraints(self, context, state):
         """
         Return lists of declarations and constraints for CONSTANT component for CP xor linear model.
 
         INPUT:
 
-        - ``model`` -- **model object** (default: `None`); a model instance
+        - ``context`` -- a ``CpBuildContext`` (read-only build configuration)
+        - ``state`` -- ``CpBuildState`` (mutable accumulator for build state)
 
         EXAMPLES::
 
             sage: from claasp.components.constant_component import Constant
+            sage: from claasp.cipher_modules.models.cp.cp_build_state import CpBuildState
             sage: constant_component = Constant(0, 0, 4, 0x1)
-            sage: constant_component.cp_xor_linear_mask_propagation_constraints()
-            (['array[0..3] of var 0..1: constant_0_0_o;'], [])
+            sage: result = constant_component.cp_xor_linear_mask_propagation_constraints(None, CpBuildState())
+            sage: result.declarations
+            ['array[0..3] of var 0..1: constant_0_0_o;']
+            sage: result.constraints
+            []
         """
         cp_declarations = [f"array[0..{self.output_bit_size - 1}] of var 0..1: {self.id}_o;"]
         cp_constraints = []
 
-        return cp_declarations, cp_constraints
+        return CpComponentBuildResult(cp_declarations, cp_constraints)
 
     def get_bit_based_c_code(self, verbosity):
         """
@@ -581,7 +597,7 @@ class Constant(Component):
         for constant_str in constant_str_values:
             constant_component_string.append(f"constraint {constant_str} = 0;")
 
-        return var_names, constant_component_string
+        return CpComponentBuildResult(var_names, constant_component_string)
 
     def sat_constraints(self):
         """

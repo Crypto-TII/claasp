@@ -492,13 +492,11 @@ class MznDeterministicTruncatedXorDifferentialModel(MznModel):
     def propagate_deterministically(self, component, wordwise=False, inverse=False):
         if not wordwise:
             if component.type == SBOX:
-                variables, constraints, sbox_table_cache = (
-                    component.cp_deterministic_truncated_xor_differential_trail_constraints(self.sbox_table_cache, inverse)
-                )
-                self.sbox_table_cache = sbox_table_cache
+                result = component.cp_deterministic_truncated_xor_differential_trail_constraints(self.sbox_table_cache, inverse)
+                self.sbox_table_cache = result.metadata
             else:
-                variables, constraints = component.cp_deterministic_truncated_xor_differential_trail_constraints()
+                result = component.cp_deterministic_truncated_xor_differential_trail_constraints()
         else:
-            variables, constraints = component.cp_wordwise_deterministic_truncated_xor_differential_constraints(self)
+            result = component.cp_wordwise_deterministic_truncated_xor_differential_constraints(self)
 
-        return variables, constraints
+        return result.declarations, result.constraints

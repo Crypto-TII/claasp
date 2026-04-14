@@ -16,7 +16,8 @@ def test_constructor_sets_sigma_identity():
 
 def test_cp_constraints():
     sigma_component = make_sigma_component()
-    declarations, constraints = sigma_component.cp_constraints()
+    result = sigma_component.cp_constraints()
+    declarations, constraints = result.declarations, result.constraints
 
     assert declarations == []
     assert constraints[0] == "constraint sigma_0_0[0] = (plaintext[0] + plaintext[6] + plaintext[7]) mod 2;"

@@ -16,6 +16,7 @@
 # ****************************************************************************
 
 
+from claasp.cipher_modules.models.cp.cp_component_build_result import CpComponentBuildResult
 from claasp.components.modular_component import Modular
 from claasp.cipher_modules.models.smt.utils import utils as smt_utils
 from claasp.cipher_modules.models.sat.utils import utils as sat_utils
@@ -62,7 +63,7 @@ def cp_twoterms(input_1, input_2, out, input_length, cp_constraints, cp_declarat
         f"constraint {out}[{input_length - 1}] = ({input_1}[{input_length - 1}] + {input_2}[{input_length - 1}]) mod 2;"
     )
 
-    return cp_declarations, cp_constraints
+    return CpComponentBuildResult(cp_declarations, cp_constraints)
 
 
 def sat_modadd(output_ids, input0_ids, input1_ids, carry_ids):
@@ -333,27 +334,27 @@ class MODADD(Modular):
             cp_declarations,
         )
 
-        return cp_declarations, cp_constraints
+        return CpComponentBuildResult(cp_declarations, cp_constraints)
 
     def cp_twoterms_xor_differential_probability(
-        self, inp1, inp2, out, inplen, cp_constraints, cp_declarations, component_probability_index, model
+        self, inp1, inp2, out, inplen, cp_constraints, cp_declarations, component_probability_index, state
     ):
-        if inp1 not in model.modadd_two_term_shift_cache:
+        if inp1 not in state.shift_declaration_cache:
             cp_declarations.append(f"array[0..{inplen - 1}] of var 0..1: Shi_{inp1} = LShift({inp1},1);")
-            model.modadd_two_term_shift_cache.append(inp1)
-        if inp2 not in model.modadd_two_term_shift_cache:
+            state.shift_declaration_cache.append(inp1)
+        if inp2 not in state.shift_declaration_cache:
             cp_declarations.append(f"array[0..{inplen - 1}] of var 0..1: Shi_{inp2} = LShift({inp2},1);")
-            model.modadd_two_term_shift_cache.append(inp2)
-        if out not in model.modadd_two_term_shift_cache:
+            state.shift_declaration_cache.append(inp2)
+        if out not in state.shift_declaration_cache:
             cp_declarations.append(f"array[0..{inplen - 1}] of var 0..1: Shi_{out} = LShift({out},1);")
-            model.modadd_two_term_shift_cache.append(out)
+            state.shift_declaration_cache.append(out)
         cp_declarations.append(f"array[0..{inplen - 1}] of var 0..1: eq_{out} = Eq(Shi_{inp1}, Shi_{inp2}, Shi_{out});")
         cp_constraints.append(
             f"constraint forall(j in 0..{inplen - 1})(if eq_{out}[j] = 1 then (sum([{inp1}[j], {inp2}[j], "
             f"{out}[j]]) mod 2) = Shi_{inp2}[j] else true endif) /\ p[{component_probability_index}] = {100 * inplen}-100 * sum(eq_{out});"
         )
 
-        return cp_declarations, cp_constraints
+        return CpComponentBuildResult(cp_declarations, cp_constraints)
 
     def get_bit_based_vectorized_python_code(self, params, convert_output_to_bytes):
         return [

@@ -46,6 +46,8 @@ from claasp.name_mappings import (
     XOR_DIFFERENTIAL_LINEAR_OPTIMAL_SOLUTION,
 )
 
+from claasp.cipher_modules.models.cp.cp_build_context import CpBuildContext
+from claasp.cipher_modules.models.cp.cp_build_state import CpBuildState
 from claasp.cipher_modules.models.utils import write_model_to_file, convert_solver_solution_to_dictionary
 
 SOLVE_SATISFY = "solve satisfy;"
@@ -181,7 +183,9 @@ class MznModel:
         components_values[f"solution{solution_number}"][f"{component}"] = component_solution
 
     def build_generic_cp_model_from_dictionary(self, component_and_model_types, fixed_variables=None):
-        variables = []
+        context = CpBuildContext.from_model(self)
+        state = CpBuildState.from_model(self)
+
         self._variables_list = []
         self._model_constraints = []
         component_types = [CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER, MIX_COLUMN, SBOX, WORD_OPERATION]
@@ -196,21 +200,11 @@ class MznModel:
                 print(f'{component.id} not yet implemented')
             else:
                 cp_generic_propagation_constraints = getattr(component, model_type)
-                try:
-                    result = cp_generic_propagation_constraints()
-                except TypeError:
-                    result = cp_generic_propagation_constraints(self)
+                result = cp_generic_propagation_constraints(context, state)
 
-                if len(result) == 2:
-                    variables, constraints = result
-                    metadata = {}
-                elif len(result) == 3:
-                    variables, constraints, metadata = result
-                else:
-                    raise ValueError("Unexpected return value from component generator")
-
-                self._model_constraints.extend(constraints)
-                self._variables_list.extend(variables)
+                self._variables_list.extend(result.declarations)
+                self._model_constraints.extend(result.constraints)
+                metadata = result.metadata
 
                 if metadata:
                     probability_var = metadata.get("probability_var")
@@ -221,6 +215,9 @@ class MznModel:
                             round_index = self._cipher.get_round_from_component_id(component.id)
                             if round_index < len(self.probability_modadd_vars_per_round):
                                 self.probability_modadd_vars_per_round[round_index].append(probability_var)
+
+        # Apply accumulated state back to model
+        state.apply_to_model(self)
 
     def build_mix_column_truncated_table(self, component):
         """

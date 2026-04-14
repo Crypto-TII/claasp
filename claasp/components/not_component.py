@@ -18,6 +18,7 @@
 
 from claasp.input import Input
 from claasp.component import Component
+from claasp.cipher_modules.models.cp.cp_component_build_result import CpComponentBuildResult
 from claasp.cipher_modules.models.smt.utils import utils as smt_utils
 from claasp.cipher_modules.models.sat.utils import constants, utils as sat_utils
 from claasp.name_mappings import WORD_OPERATION
@@ -148,7 +149,7 @@ class NOT(Component):
             all_inputs.extend([f"{id_link}[{position}]" for position in bit_positions])
         cp_constraints = [f"constraint {self.id}[{i}] = ({input_} + 1) mod 2;" for i, input_ in enumerate(all_inputs)]
 
-        return cp_declarations, cp_constraints
+        return CpComponentBuildResult(cp_declarations, cp_constraints)
 
     def cp_deterministic_truncated_xor_differential_constraints(self):
         """
@@ -174,12 +175,12 @@ class NOT(Component):
             all_inputs.extend([f"{id_link}[{position}]" for position in bit_positions])
         cp_constraints = [f"constraint {self.id}[{i}] = {input_};" for i, input_ in enumerate(all_inputs)]
 
-        return cp_declarations, cp_constraints
+        return CpComponentBuildResult(cp_declarations, cp_constraints)
 
     def cp_deterministic_truncated_xor_differential_trail_constraints(self):
         return self.cp_deterministic_truncated_xor_differential_constraints()
 
-    def cp_semi_deterministic_truncated_xor_differential_constraints(self):
+    def cp_semi_deterministic_truncated_xor_differential_constraints(self, context, state):
         return self.cp_deterministic_truncated_xor_differential_trail_constraints()
 
     def cp_wordwise_deterministic_truncated_xor_differential_constraints(self, model):
@@ -209,7 +210,7 @@ class NOT(Component):
                 f"else {self.id}_value[{i}] = {2**word_size - 1} - {all_inputs_value[i]}"
             )
 
-        return cp_declarations, cp_constraints
+        return CpComponentBuildResult(cp_declarations, cp_constraints)
 
     def cp_xor_differential_first_step_constraints(self, model):
         """
@@ -244,24 +245,25 @@ class NOT(Component):
             )
         cp_constraints = [f"constraint {self.id}[{i}] = {input_};" for i, input_ in enumerate(all_inputs)]
 
-        return cp_declarations, cp_constraints
+        return CpComponentBuildResult(cp_declarations, cp_constraints)
 
-    def cp_xor_differential_propagation_constraints(self, model=None):
+    def cp_xor_differential_propagation_constraints(self, context, state):
         """
         Return lists of declarations and constraints for NOT component for CP xor differential.
 
         INPUT:
 
-        - ``model`` -- **model object** (default: `None`); a model instance
+        - ``context`` -- a ``CpBuildContext`` (read-only build configuration)
+        - ``state`` -- ``CpBuildState`` (mutable accumulator for build state)
 
         EXAMPLES::
 
             sage: from claasp.components.not_component import NOT
             sage: not_component = NOT(0, 0, ['input0'], [list(range(32))], 32)
-            sage: declarations, constraints = not_component.cp_xor_differential_propagation_constraints()
-            sage: declarations
+            sage: result = not_component.cp_xor_differential_propagation_constraints(None, None)
+            sage: result.declarations
             []
-            sage: constraints[0]
+            sage: result.constraints[0]
             'constraint not_0_0[0] = input0[0];'
         """
         cp_declarations = []
@@ -270,27 +272,28 @@ class NOT(Component):
             all_inputs.extend([f"{id_link}[{position}]" for position in bit_positions])
         cp_constraints = [f"constraint {self.id}[{i}] = {input_};" for i, input_ in enumerate(all_inputs)]
 
-        return cp_declarations, cp_constraints
+        return CpComponentBuildResult(cp_declarations, cp_constraints)
 
     def cp_xor_differential_propagation_first_step_constraints(self, model):
         return self.cp_xor_differential_first_step_constraints(model)
 
-    def cp_xor_linear_mask_propagation_constraints(self, model=None):
+    def cp_xor_linear_mask_propagation_constraints(self, context, state):
         """
         Return lists of declarations and constraints for NOT component for CP xor linear model.
 
         INPUT:
 
-        - ``model`` -- **model object** (default: `None`); a model instance
+        - ``context`` -- a ``CpBuildContext`` (read-only build configuration)
+        - ``state`` -- ``CpBuildState`` (mutable accumulator for build state)
 
         EXAMPLES::
 
             sage: from claasp.components.not_component import NOT
             sage: not_component = NOT(0, 0, ['input0'], [list(range(64))], 64)
-            sage: declarations, constraints = not_component.cp_xor_linear_mask_propagation_constraints()
-            sage: declarations
+            sage: result = not_component.cp_xor_linear_mask_propagation_constraints(None, None)
+            sage: result.declarations
             ['array[0..63] of var 0..1:not_0_0_i;', 'array[0..63] of var 0..1:not_0_0_o;']
-            sage: constraints[0]
+            sage: result.constraints[0]
             'constraint not_0_0_o[0]=not_0_0_i[0];'
         """
         cp_declarations = [
@@ -301,7 +304,7 @@ class NOT(Component):
         for i in range(self.input_bit_size):
             cp_constraints.append(f"constraint {self.id}_o[{i}]={self.id}_i[{i}];")
 
-        return cp_declarations, cp_constraints
+        return CpComponentBuildResult(cp_declarations, cp_constraints)
 
     def get_bit_based_vectorized_python_code(self, params, convert_output_to_bytes):
         return [f"  {self.id} = bit_vector_NOT([{','.join(params)} ])"]

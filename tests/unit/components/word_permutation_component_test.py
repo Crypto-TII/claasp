@@ -22,7 +22,8 @@ def test_constructor_builds_word_permutation_description():
 
 def test_cp_constraints():
     word_permutation_component = make_word_permutation_component()
-    declarations, constraints = word_permutation_component.cp_constraints()
+    result = word_permutation_component.cp_constraints()
+    declarations, constraints = result.declarations, result.constraints
 
     assert declarations == []
     assert constraints[0] == "constraint mix_column_0_0[0] = (plaintext[2]) mod 2;"

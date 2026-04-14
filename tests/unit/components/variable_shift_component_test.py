@@ -16,7 +16,8 @@ def test_cms_constraints():
 
 def test_cp_constraints():
     variable_shift_component = VariableShift(0, 2, ['plaintext', 'key'], [list(range(32)), list(range(32))], 32, 1)
-    declarations, constraints = variable_shift_component.cp_constraints()
+    result = variable_shift_component.cp_constraints()
+    declarations, constraints = result.declarations, result.constraints
 
     assert declarations == ['array[0..31] of var 0..1: pre_var_shift_0_2;', 'var int: shift_amount_var_shift_0_2;']
 

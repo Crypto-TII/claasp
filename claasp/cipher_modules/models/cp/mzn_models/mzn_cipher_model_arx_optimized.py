@@ -59,8 +59,8 @@ class MznCipherModelARXOptimized(MznModel):
                 WORD_OPERATION == component.type and operation not in operation_types
             ):
                 print(f"{component.id} not yet implemented")
-            else:
-                variables, constraints = component.minizinc_constraints(self)
+                continue
+            result = component.minizinc_constraints(self)
 
-            self._model_constraints.extend(constraints)
-            self._variables_list.extend(variables)
+            self._model_constraints.extend(result.constraints)
+            self._variables_list.extend(result.declarations)

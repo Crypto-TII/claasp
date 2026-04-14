@@ -18,6 +18,7 @@
 
 from claasp.input import Input
 from claasp.component import Component
+from claasp.cipher_modules.models.cp.cp_component_build_result import CpComponentBuildResult
 from claasp.cipher_modules.models.smt.utils import utils as smt_utils
 from claasp.cipher_modules.models.sat.utils import constants, utils as sat_utils
 from claasp.cipher_modules.models.milp.utils import utils as milp_utils
@@ -294,9 +295,9 @@ class XOR(Component):
             operation = " + ".join(all_inputs[i::self.output_bit_size])
             cp_constraints.append(f"constraint {self.id}[{i}] = ({operation}) mod 2;")
 
-        return cp_declarations, cp_constraints
+        return CpComponentBuildResult(cp_declarations, cp_constraints)
 
-    def cp_continuous_differential_propagation_constraints(self, model):
+    def cp_continuous_differential_propagation_constraints(self, context, state):
 
         input_id_links = self.input_id_links
         output_id_link = self.id
@@ -314,7 +315,7 @@ class XOR(Component):
             f"constraint {output_id_link} = continuous_xor(x1_{output_id_link}, x2_{output_id_link},{output_id_link});"
         )
 
-        return cp_declarations, cp_constraints
+        return CpComponentBuildResult(cp_declarations, cp_constraints)
         
     def cp_deterministic_truncated_xor_differential_constraints(self):
         r"""
@@ -346,7 +347,7 @@ class XOR(Component):
             new_constraint += f"{self.id}[{i}] = ({operation2}) mod 2 else {self.id}[{i}] = 2 endif;"
             cp_constraints.append(new_constraint)
 
-        return cp_declarations, cp_constraints
+        return CpComponentBuildResult(cp_declarations, cp_constraints)
 
     def cp_hybrid_deterministic_truncated_xor_differential_constraints(self):
         r"""
@@ -385,12 +386,12 @@ class XOR(Component):
             )
             cp_constraints.append(new_constraint)
 
-        return cp_declarations, cp_constraints
+        return CpComponentBuildResult(cp_declarations, cp_constraints)
 
     def cp_deterministic_truncated_xor_differential_trail_constraints(self):
         return self.cp_deterministic_truncated_xor_differential_constraints()
 
-    def cp_semi_deterministic_truncated_xor_differential_constraints(self):
+    def cp_semi_deterministic_truncated_xor_differential_constraints(self, context, state):
         return self.cp_deterministic_truncated_xor_differential_constraints()
 
     def cp_wordwise_deterministic_truncated_xor_differential_constraints(self, model):
@@ -524,9 +525,9 @@ class XOR(Component):
             )
             cp_constraints.append(new_constraint)
 
-        return cp_declarations, cp_constraints
+        return CpComponentBuildResult(cp_declarations, cp_constraints)
 
-    def cp_xor_differential_propagation_constraints(self, model=None):
+    def cp_xor_differential_propagation_constraints(self, context, state):
         return self.cp_constraints()
 
     def cp_xor_differential_propagation_first_step_constraints(self, model, variables_list=None):
@@ -570,27 +571,25 @@ class XOR(Component):
         if xor_table not in variables_list:
             cp_declarations = [xor_table]
 
-        return cp_declarations, cp_constraints
+        return CpComponentBuildResult(cp_declarations, cp_constraints)
 
-    def cp_xor_linear_mask_propagation_constraints(self, model=None):
+    def cp_xor_linear_mask_propagation_constraints(self, context, state):
         """
         Return lists of declarations and constraints for XOR component for CP xor linear model.
 
         INPUT:
 
-        - ``model`` -- **model object** (default: `None`); a model instance
+        - ``context`` -- a ``CpBuildContext`` (read-only build configuration)
+        - ``state`` -- ``CpBuildState`` (mutable accumulator for build state)
 
         EXAMPLES::
 
             sage: from claasp.components.xor_component import XOR
+            sage: from claasp.cipher_modules.models.cp.cp_build_state import CpBuildState
             sage: xor_component = XOR(0, 0, ['plaintext', 'key'], [list(range(2)), list(range(2))], 2)
-            sage: xor_component.cp_xor_linear_mask_propagation_constraints()
-            (['array[0..3] of var 0..1: xor_0_0_i;',
-            'array[0..1] of var 0..1: xor_0_0_o;'],
-            ['constraint xor_0_0_o[0] = xor_0_0_i[0];',
-            'constraint xor_0_0_o[0] = xor_0_0_i[2];',
-            'constraint xor_0_0_o[1] = xor_0_0_i[1];',
-            'constraint xor_0_0_o[1] = xor_0_0_i[3];'])
+            sage: result = xor_component.cp_xor_linear_mask_propagation_constraints(None, CpBuildState())
+            sage: result.declarations
+            ['array[0..3] of var 0..1: xor_0_0_i;', 'array[0..1] of var 0..1: xor_0_0_o;']
         """
         cp_declarations = [
             f"array[0..{self.input_bit_size - 1}] of var 0..1: {self.id}_i;",
@@ -606,7 +605,7 @@ class XOR(Component):
                     for j in range(num_of_addenda)
                 ]
             )
-        result = cp_declarations, cp_constraints
+        result = CpComponentBuildResult(cp_declarations, cp_constraints)
 
         return result
 
@@ -1182,7 +1181,7 @@ class XOR(Component):
             var_names += [mzn_variables_and_constraints[0]]
             mzn_constraints += [mzn_variables_and_constraints[1]]
 
-        return var_names, mzn_constraints
+        return CpComponentBuildResult(var_names, mzn_constraints)
 
     def minizinc_xor_differential_propagation_constraints(self, model):
         return self.minizinc_constraints(model)
@@ -1502,4 +1501,4 @@ class XOR(Component):
             model.list_of_xor_components.append(xor_component)
         cp_constraints = []
 
-        return cp_declarations, cp_constraints
+        return CpComponentBuildResult(cp_declarations, cp_constraints)

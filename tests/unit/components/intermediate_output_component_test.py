@@ -1,6 +1,8 @@
 from sage.numerical.mip import MixedIntegerLinearProgram
 
 from claasp.components.intermediate_output_component import IntermediateOutput
+from claasp.cipher_modules.models.cp.cp_build_context import CpBuildContext
+from claasp.cipher_modules.models.cp.cp_build_state import CpBuildState
 
 
 class DummyCpModel:
@@ -55,7 +57,8 @@ def make_component():
 
 def test_cp_constraints():
     component = make_component()
-    declarations, constraints = component.cp_constraints()
+    result = component.cp_constraints()
+    declarations, constraints = result.declarations, result.constraints
 
     assert declarations == []
     assert constraints == [
@@ -68,7 +71,14 @@ def test_cp_constraints():
 
 def test_cp_xor_linear_mask_propagation_constraints():
     component = make_component()
-    declarations, constraints = component.cp_xor_linear_mask_propagation_constraints(DummyCpModel())
+    dummy = DummyCpModel()
+    context = CpBuildContext(
+        cipher=None, word_size=0, data_type='', true_value='', false_value='',
+        float_and_lat_values=(), bit_bindings_for_intermediate_output=dummy.bit_bindings_for_intermediate_output
+    )
+    state = CpBuildState()
+    result = component.cp_xor_linear_mask_propagation_constraints(context, state)
+    declarations, constraints = result.declarations, result.constraints
 
     assert declarations == [
         "array[0..3] of var 0..1: intermediate_output_0_0_i;",

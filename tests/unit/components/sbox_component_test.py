@@ -8,6 +8,7 @@ from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_t
 )
 from claasp.cipher_modules.models.milp.milp_models.milp_xor_differential_model import MilpXorDifferentialModel
 from claasp.cipher_modules.models.milp.milp_models.milp_xor_linear_model import MilpXorLinearModel
+from claasp.cipher_modules.models.cp.cp_build_state import CpBuildState
 from claasp.cipher_modules.models.sat.sat_model import SatModel
 from claasp.cipher_modules.models.smt.smt_model import SmtModel
 from claasp.ciphers.single_component_ciphers.sbox_cipher import SboxCipher
@@ -39,7 +40,8 @@ def test_cms_constraints():
 def test_cp_constraints():
     sbox = [12, 10, 13, 3, 14, 11, 15, 7, 8, 9, 1, 5, 0, 2, 4, 6]
     sbox_component = SBOX(0, 5, ["xor_0_1"], [[4, 5, 6, 7]], 4, sbox)
-    declarations, constraints = sbox_component.cp_constraints([])
+    result = sbox_component.cp_constraints([])
+    declarations, constraints = result.declarations, result.constraints
 
     assert declarations[0].startswith("array [1..16, 1..8] of int: table_sbox_0_5")
     assert constraints == [
@@ -50,9 +52,10 @@ def test_cp_constraints():
 
 def test_cp_deterministic_truncated_xor_differential_constraints():
     sbox_component = SBOX(0, 1, ["xor_0_0"], [[0, 1, 2, 3]], 4, [1, 2, 3, 4, 0, 7, 6, 5])
-    declarations, constraints, sbox_table_cache = sbox_component.cp_deterministic_truncated_xor_differential_constraints(
+    result = sbox_component.cp_deterministic_truncated_xor_differential_constraints(
         sbox_table_cache=[]
     )
+    declarations, constraints, sbox_table_cache = result.declarations, result.constraints, result.metadata
 
     assert declarations[0].startswith("array [1..27, 1..6] of int: table_sbox_0_1")
     assert constraints == [
@@ -64,15 +67,12 @@ def test_cp_deterministic_truncated_xor_differential_constraints():
 
 def test_cp_xor_differential_propagation_constraints():
     sbox_component = SBOX(0, 0, ["plaintext"], [[0, 1, 2]], 3, list(range(8)))
-    cp = type("DummyModel", (), {})()
-    cp.sbox_table_cache = []
-    cp.component_and_probability = {}
-    cp.component_probability_index = 0
+    state = CpBuildState()
 
-    declarations, constraints = sbox_component.cp_xor_differential_propagation_constraints(cp)
+    result = sbox_component.cp_xor_differential_propagation_constraints(None, state)
 
-    assert declarations[0].startswith("array [1..8, 1..7] of int: DDT_sbox_0_0")
-    assert constraints == [
+    assert result.declarations[0].startswith("array [1..8, 1..7] of int: DDT_sbox_0_0")
+    assert result.constraints == [
         "constraint table([plaintext[0]]++[plaintext[1]]++[plaintext[2]]++[sbox_0_0[0]]++[sbox_0_0[1]]++"
         "[sbox_0_0[2]]++[p[0]], DDT_sbox_0_0);"
     ]
@@ -80,16 +80,13 @@ def test_cp_xor_differential_propagation_constraints():
 
 def test_cp_xor_linear_mask_propagation_constraints():
     sbox_component = SBOX(0, 0, ["plaintext"], [[0, 1, 2]], 3, list(range(8)))
-    cp = type("DummyModel", (), {})()
-    cp.sbox_table_cache = []
-    cp.component_and_probability = {}
-    cp.component_probability_index = 0
+    state = CpBuildState()
 
-    declarations, constraints = sbox_component.cp_xor_linear_mask_propagation_constraints(cp)
+    result = sbox_component.cp_xor_linear_mask_propagation_constraints(None, state)
 
-    assert declarations[-2] == "array[0..2] of var 0..1: sbox_0_0_i;"
-    assert declarations[-1] == "array[0..2] of var 0..1: sbox_0_0_o;"
-    assert constraints == [
+    assert result.declarations[-2] == "array[0..2] of var 0..1: sbox_0_0_i;"
+    assert result.declarations[-1] == "array[0..2] of var 0..1: sbox_0_0_o;"
+    assert result.constraints == [
         "constraint table([sbox_0_0_i[0]]++[sbox_0_0_i[1]]++[sbox_0_0_i[2]]++[sbox_0_0_o[0]]++"
         "[sbox_0_0_o[1]]++[sbox_0_0_o[2]]++[p[0]],LAT_sbox_0_0);"
     ]

@@ -43,12 +43,13 @@ def test_cp_create_component():
     cp.word_size = WORD_SIZE
     mix_column_component_1 = make_mix_column_component(component_index=0)
     mix_column_component_2 = make_mix_column_component(component_index=1, input_name="input")
-    declarations, constraints = mix_column_component_1._cp_create_component(
+    result = mix_column_component_1._cp_create_component(
         cp.word_size,
         mix_column_component_2,
         1,
         cp.list_of_xor_components,
     )
+    declarations, constraints = result.declarations, result.constraints
 
     assert declarations == [
         "array[0..1] of var 0..1: input_xor_mix_column_0_1_mix_column_0_0;",
@@ -74,7 +75,8 @@ def test_cms_constraints():
 
 def test_cp_constraints():
     mix_column_component = make_mix_column_component()
-    declarations, constraints = mix_column_component.cp_constraints()
+    result = mix_column_component.cp_constraints()
+    declarations, constraints = result.declarations, result.constraints
 
     assert declarations == []
     assert constraints[0] == "constraint mix_column_0_0[0] = (plaintext[0] + plaintext[5]) mod 2;"
@@ -83,7 +85,8 @@ def test_cp_constraints():
 
 def test_cp_deterministic_truncated_xor_differential_constraints():
     mix_column_component = make_mix_column_component()
-    declarations, constraints = mix_column_component.cp_deterministic_truncated_xor_differential_constraints()
+    result = mix_column_component.cp_deterministic_truncated_xor_differential_constraints()
+    declarations, constraints = result.declarations, result.constraints
 
     assert declarations == []
     assert constraints[0] == (
@@ -98,7 +101,8 @@ def test_cp_deterministic_truncated_xor_differential_constraints():
 
 def test_cp_xor_linear_mask_propagation_constraints():
     mix_column_component = make_mix_column_component()
-    declarations, constraints = mix_column_component.cp_xor_linear_mask_propagation_constraints()
+    result = mix_column_component.cp_xor_linear_mask_propagation_constraints(None, None)
+    declarations, constraints = result.declarations, result.constraints
 
     assert declarations == [
         "array[0..7] of var 0..1:mix_column_0_0_i;",

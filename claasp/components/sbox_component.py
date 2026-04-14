@@ -32,6 +32,8 @@ from claasp.cipher_modules.models.milp.utils.milp_name_mappings import MILP_DEFA
 from claasp.cipher_modules.models.milp.utils.utils import espresso_pos_to_constraints
 from claasp.input import Input
 from claasp.component import Component, free_input
+from claasp.cipher_modules.models.cp.cp_build_state import CpBuildState
+from claasp.cipher_modules.models.cp.cp_component_build_result import CpComponentBuildResult
 from claasp.cipher_modules.models.sat.utils import constants
 from claasp.cipher_modules.models.smt.utils import utils as smt_utils
 from claasp.cipher_modules.models.milp.utils import utils as milp_utils
@@ -812,7 +814,7 @@ class SBOX(Component):
         table_output = "++".join([f"[{self.id}[{i}]]" for i in range(output_size)])
         cp_constraints = [f"constraint table({table_input}++{table_output}, table_{output_id_link_sost});"]
 
-        return cp_declarations, cp_constraints
+        return CpComponentBuildResult(cp_declarations, cp_constraints)
 
     def cp_deterministic_truncated_xor_differential_constraints(self, sbox_table_cache, inverse=False):
         """
@@ -869,12 +871,12 @@ class SBOX(Component):
         new_constraint = f"constraint table({table_input}++{table_output}, table_{output_id_link_sost});"
         cp_constraints.append(new_constraint)
 
-        return cp_declarations, cp_constraints, sbox_table_cache
+        return CpComponentBuildResult(cp_declarations, cp_constraints, sbox_table_cache)
 
     def cp_deterministic_truncated_xor_differential_trail_constraints(self, sbox_table_cache, inverse=False):
         return self.cp_deterministic_truncated_xor_differential_constraints(sbox_table_cache, inverse)
 
-    def cp_semi_deterministic_truncated_xor_differential_constraints(self, sbox_table_cache=None, inverse=False):
+    def cp_semi_deterministic_truncated_xor_differential_constraints(self, context=None, state=None):
         raise NotImplementedError("Semi-deterministic CP model not supported for SBOX component yet")
 
     def cp_hybrid_deterministic_truncated_xor_differential_constraints(
@@ -973,7 +975,7 @@ class SBOX(Component):
         cp_constraint = f"constraint abstract_{output_id_link_sost}(array1d(0..{len(all_inputs) - 1}, {table_input}), array1d(0..{output_size - 1}, {table_output}), {round}, {index_of_id});"
         cp_constraints = [cp_constraint]
 
-        return cp_declarations, cp_constraints, sbox_table_cache
+        return CpComponentBuildResult(cp_declarations, cp_constraints, sbox_table_cache)
 
     def cp_wordwise_deterministic_truncated_xor_differential_constraints(self, model):
         """
@@ -1008,7 +1010,7 @@ class SBOX(Component):
                 f"constraint if {input_}==0 then {self.id}_active[{i}] = 0 else {self.id}_active[{i}] = 2 endif;"
             )
 
-        return cp_declarations, cp_constraints
+        return CpComponentBuildResult(cp_declarations, cp_constraints)
 
     def cp_xor_differential_first_step_constraints(self, model):
         """
@@ -1049,32 +1051,34 @@ class SBOX(Component):
         cp_declarations = [f"array[0..{(self.output_bit_size - 1) // word_size}] of var 0..1: {self.id};"]
         cp_constraints = [f"constraint {self.id}[{i}] = {input_};" for i, input_ in enumerate(all_inputs)]
 
-        return cp_declarations, cp_constraints
+        return CpComponentBuildResult(cp_declarations, cp_constraints)
 
     def cp_xor_differential_propagation_first_step_constraints(self, model):
         return self.cp_xor_differential_first_step_constraints(model)
 
-    def cp_xor_differential_propagation_constraints(self, model, inverse=False):
+    def cp_xor_differential_propagation_constraints(self, context, state, inverse=False):
         """
         Return lists of declarations and constraints for the probability of SBOX component for CP xor differential probability.
 
         INPUT:
 
-        - ``model`` -- **model object**; a model instance
+        - ``context`` -- a ``CpBuildContext`` (read-only build configuration)
+        - ``state`` -- ``CpBuildState`` (mutable accumulator for build state)
         - ``inverse`` -- **boolean** (default: `False`); used to model components in the impossible xor differential model
 
         EXAMPLES::
 
             sage: from claasp.components.sbox_component import SBOX
+            sage: from claasp.cipher_modules.models.cp.cp_build_state import CpBuildState
             sage: sbox_component = SBOX(0, 0, ['plaintext'], [[0, 1, 2]], 3, [0, 1, 2, 3, 4, 5, 6, 7])
-            sage: cp = type('DummyModel', (), {})()
-            sage: cp.sbox_table_cache = []
-            sage: cp.component_and_probability = {}
-            sage: cp.component_probability_index = 0
-            sage: cp_decl, cp_constr = sbox_component.cp_xor_differential_propagation_constraints(cp)[0:2]
-            sage: cp_constr
+            sage: state = CpBuildState()
+            sage: result = sbox_component.cp_xor_differential_propagation_constraints(None, state)
+            sage: result.constraints
             ['constraint table([plaintext[0]]++[plaintext[1]]++[plaintext[2]]++[sbox_0_0[0]]++[sbox_0_0[1]]++[sbox_0_0[2]]++[p[0]], DDT_sbox_0_0);']
         """
+        return self._cp_xor_differential_propagation_impl(state, inverse)
+
+    def _cp_xor_differential_propagation_impl(self, state, inverse=False):
         input_size = int(self.input_bit_size)
         output_size = int(self.output_bit_size)
         description = self.description
@@ -1084,7 +1088,7 @@ class SBOX(Component):
             output_id_link_sost = f"inverse_{self.id}"
         else:
             output_id_link_sost = self.id
-        for mant in model.sbox_table_cache:
+        for mant in state.sbox_table_cache:
             if description == mant[0] and ((not inverse) or (inverse and "inverse" in mant[1])):
                 already_in = True
                 output_id_link_sost = mant[1]
@@ -1107,39 +1111,41 @@ class SBOX(Component):
                 f"[{ddt_values}]);"
             )
             cp_declarations.append(sbox_declaration)
-            model.sbox_table_cache.append((description, self.id))
+            state.sbox_table_cache.append((description, self.id))
         all_inputs = []
         for id_link, bit_positions in zip(self.input_id_links, self.input_bit_positions):
             all_inputs.extend([f"[{id_link}[{position}]]" for position in bit_positions])
         table_input = "++".join(all_inputs)
         table_output = "++".join([f"[{self.id}[{i}]]" for i in range(output_size)])
-        constraint = f"constraint table({table_input}++{table_output}++[p[{model.component_probability_index}]], DDT_{output_id_link_sost});"
+        prob_index = state.allocate_probability_index()
+        constraint = f"constraint table({table_input}++{table_output}++[p[{prob_index}]], DDT_{output_id_link_sost});"
         cp_constraints = [constraint]
-        model.component_and_probability[self.id] = model.component_probability_index
-        model.component_probability_index += 1
+        state.component_probability_map[self.id] = prob_index
 
-        return cp_declarations, cp_constraints
+        return CpComponentBuildResult(cp_declarations, cp_constraints)
 
-    def cp_xor_linear_mask_propagation_constraints(self, model):
+    def cp_xor_linear_mask_propagation_constraints(self, context, state):
         """
         Return lists of declarations and constraints for the probability of SBOX component for CP xor linear model.
 
         INPUT:
 
-        - ``model`` -- **model object**; a model instance
+        - ``context`` -- a ``CpBuildContext`` (read-only build configuration)
+        - ``state`` -- ``CpBuildState`` (mutable accumulator for build state)
 
         EXAMPLES::
 
             sage: from claasp.components.sbox_component import SBOX
+            sage: from claasp.cipher_modules.models.cp.cp_build_state import CpBuildState
             sage: sbox_component = SBOX(0, 0, ['plaintext'], [[0, 1, 2]], 3, [0, 1, 2, 3, 4, 5, 6, 7])
-            sage: cp = type('DummyModel', (), {})()
-            sage: cp.sbox_table_cache = []
-            sage: cp.component_and_probability = {}
-            sage: cp.component_probability_index = 0
-            sage: cp_decl, cp_constr = sbox_component.cp_xor_linear_mask_propagation_constraints(cp)[0:2]
-            sage: cp_constr
+            sage: state = CpBuildState()
+            sage: result = sbox_component.cp_xor_linear_mask_propagation_constraints(None, state)
+            sage: result.constraints
             ['constraint table([sbox_0_0_i[0]]++[sbox_0_0_i[1]]++[sbox_0_0_i[2]]++[sbox_0_0_o[0]]++[sbox_0_0_o[1]]++[sbox_0_0_o[2]]++[p[0]],LAT_sbox_0_0);']
         """
+        return self._cp_xor_linear_mask_propagation_impl(state)
+
+    def _cp_xor_linear_mask_propagation_impl(self, state):
         input_size = int(self.input_bit_size)
         output_size = int(self.output_bit_size)
         output_id_link = self.id
@@ -1149,7 +1155,7 @@ class SBOX(Component):
         cp_constraints = []
         already_in = 0
         output_id_link_sost = output_id_link
-        sbox_table_cache = model.sbox_table_cache
+        sbox_table_cache = state.sbox_table_cache
         for i in range(len(sbox_table_cache)):
             if description == sbox_table_cache[i][0]:
                 already_in = 1
@@ -1180,12 +1186,12 @@ class SBOX(Component):
             new_constraint = new_constraint + f"[{output_id_link}_i[{i}]]++"
         for i in range(output_size):
             new_constraint = new_constraint + f"[{output_id_link}_o[{i}]]++"
-        new_constraint = new_constraint + f"[p[{model.component_probability_index}]],LAT_{output_id_link_sost});"
+        prob_index = state.allocate_probability_index()
+        new_constraint = new_constraint + f"[p[{prob_index}]],LAT_{output_id_link_sost});"
         cp_constraints.append(new_constraint)
-        model.component_and_probability[output_id_link] = model.component_probability_index
-        model.component_probability_index += 1
+        state.component_probability_map[output_id_link] = prob_index
 
-        return cp_declarations, cp_constraints
+        return CpComponentBuildResult(cp_declarations, cp_constraints)
 
     def generate_sbox_sign_lat(self):
         """

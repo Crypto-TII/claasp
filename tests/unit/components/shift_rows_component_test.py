@@ -21,7 +21,8 @@ def test_constructor_sets_shift_rows_identity():
 def test_cp_constraints():
     cipher = make_shift_rows_cipher()
     shift_rows_component = cipher.component_from(0, 0)
-    declarations, constraints = shift_rows_component.cp_constraints()
+    result = shift_rows_component.cp_constraints()
+    declarations, constraints = result.declarations, result.constraints
 
     assert declarations == []
     assert constraints[0] == "constraint shift_rows_0_0[0] = plaintext[6];"

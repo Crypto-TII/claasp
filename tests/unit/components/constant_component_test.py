@@ -6,7 +6,8 @@ def test_cp_wordwise_deterministic_truncated_xor_differential_constraints():
         word_size = 8
 
     constant_component = Constant(0, 18, 16, 0xAB01)
-    declarations, constraints = constant_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(DummyModel())
+    result = constant_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(DummyModel())
+    declarations, constraints = result.declarations, result.constraints
 
     assert declarations == ['array[0..1] of var 0..1: constant_0_18_active = array1d(0..1, [0,0]);',
                             'array[0..1] of var 0..1: constant_0_18_value = array1d(0..1, [0,0]);']
@@ -16,7 +17,8 @@ def test_cp_wordwise_deterministic_truncated_xor_differential_constraints():
 
 def test_cp_xor_linear_mask_propagation_constraints():
     constant_component = Constant(2, 0, 16, 0x0000)
-    declarations, constraints = constant_component.cp_xor_linear_mask_propagation_constraints()
+    result = constant_component.cp_xor_linear_mask_propagation_constraints(None, None)
+    declarations, constraints = result.declarations, result.constraints
 
     assert declarations == ['array[0..15] of var 0..1: constant_2_0_o;']
 

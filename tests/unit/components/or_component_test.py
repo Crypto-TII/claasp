@@ -1,5 +1,7 @@
 from claasp.components.or_component import OR
 from claasp.cipher_modules.models.cp.mzn_model import MznModel
+from claasp.cipher_modules.models.cp.cp_build_context import CpBuildContext
+from claasp.cipher_modules.models.cp.cp_build_state import CpBuildState
 from claasp.ciphers.single_component_ciphers.or_cipher import OrCipher
 from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
 
@@ -18,7 +20,8 @@ def test_algebraic_polynomials():
 
 def test_cp_constraints():
     or_component = OR(0, 0, ['plaintext', 'key'], [list(range(4)), list(range(4))], 4)
-    declarations, constraints = or_component.cp_constraints()
+    result = or_component.cp_constraints()
+    declarations, constraints = result.declarations, result.constraints
 
     assert declarations == ['array[0..3] of var 0..1: or_0_0;', 'array[0..3] of var 0..1:pre_or_0_0_0;',
                             'array[0..3] of var 0..1:pre_or_0_0_1;']
@@ -32,7 +35,10 @@ def test_cp_xor_linear_mask_propagation_constraints():
     cipher = OrCipher(word_bit_size=4, number_of_inputs=2)
     or_component = cipher.get_component_from_id("or_0_0")
     cp = MznModel(cipher)
-    declarations, constraints = or_component.cp_xor_linear_mask_propagation_constraints(cp)
+    context = CpBuildContext.from_model(cp)
+    state = CpBuildState.from_model(cp)
+    result = or_component.cp_xor_linear_mask_propagation_constraints(context, state)
+    declarations, constraints = result.declarations, result.constraints
 
     assert declarations == ['array[0..3] of var 0..400: p_or_0_0;', 'array[0..7] of var 0..1:or_0_0_i;',
                             'array[0..3] of var 0..1:or_0_0_o;']

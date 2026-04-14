@@ -123,7 +123,8 @@ def test_modular_component_semideterministic_probability_sample():
         modulus=2**32,
     )
 
-    cp_declarations, cp_constraints, metadata = comp.cp_semi_deterministic_truncated_xor_differential_constraints()
+    result = comp.cp_semi_deterministic_truncated_xor_differential_constraints(None, None)
+    cp_declarations, cp_constraints, metadata = result.declarations, result.constraints, result.metadata
 
     model = Model()
     model.add_string(MINIZINC_USEFUL_FUNCTIONS)
@@ -189,7 +190,8 @@ def test_modular_component_semideterministic_multiple_addends_constraints():
         modulus=2**4,
     )
 
-    cp_declarations, cp_constraints, metadata = comp.cp_semi_deterministic_truncated_xor_differential_constraints()
+    result = comp.cp_semi_deterministic_truncated_xor_differential_constraints(None, None)
+    cp_declarations, cp_constraints, metadata = result.declarations, result.constraints, result.metadata
 
     assert metadata["probability_var"] == "probability_modadd_0_0"
     assert any("pre_modadd_0_0_3" in declaration for declaration in cp_declarations)

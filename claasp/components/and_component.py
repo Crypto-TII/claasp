@@ -19,6 +19,7 @@
 from claasp.cipher_modules.models.sat.utils import utils as sat_utils
 from claasp.cipher_modules.models.smt.utils import utils as smt_utils
 from claasp.cipher_modules.models.milp.utils import utils as milp_utils
+from claasp.cipher_modules.models.cp.cp_component_build_result import CpComponentBuildResult
 from claasp.components.multi_input_non_linear_logical_operator_component import MultiInputNonlinearLogicalOperator
 
 
@@ -209,15 +210,16 @@ class AND(MultiInputNonlinearLogicalOperator):
             cp_constraint = f"constraint {self.id}[{i}] = {operation};"
             cp_constraints.append(cp_constraint)
 
-        return cp_declarations, cp_constraints
+        return CpComponentBuildResult(cp_declarations, cp_constraints)
 
-    def cp_xor_linear_mask_propagation_constraints(self, model):
+    def cp_xor_linear_mask_propagation_constraints(self, context, state):
         """
         Return lists declarations and constraints for the probability of AND component for CP xor linear model.
 
         INPUT:
 
-        - ``model`` -- **model object**; a model instance
+        - ``context`` -- a ``CpBuildContext`` (read-only build configuration)
+        - ``state`` -- ``CpBuildState`` (mutable accumulator for build state)
 
         EXAMPLES::
 
@@ -225,13 +227,14 @@ class AND(MultiInputNonlinearLogicalOperator):
             sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
             sage: cipher = AndCipher(word_bit_size=12, number_of_inputs=2)
             sage: cp = MznModel(cipher)
+            sage: from claasp.cipher_modules.models.cp.cp_build_context import CpBuildContext
+            sage: from claasp.cipher_modules.models.cp.cp_build_state import CpBuildState
+            sage: context = CpBuildContext.from_model(cp)
+            sage: state = CpBuildState.from_model(cp)
             sage: and_component = cipher.get_component_from_id('and_0_0')
-            sage: and_component.cp_xor_linear_mask_propagation_constraints(cp)
-            (['array[0..23] of var 0..1:and_0_0_i;',
-              'array[0..11] of var 0..1:and_0_0_o;'],
-             ['constraint table([and_0_0_i[0]]++[and_0_0_i[12]]++[and_0_0_o[0]]++[p[0]],and2inputs_LAT);',
-               ...
-              'constraint table([and_0_0_i[11]]++[and_0_0_i[23]]++[and_0_0_o[11]]++[p[11]],and2inputs_LAT);'])
+            sage: result = and_component.cp_xor_linear_mask_propagation_constraints(context, state)
+            sage: result.declarations[0]
+            'array[0..23] of var 0..1:and_0_0_i;'
         """
         output_id_link = self.id
         cp_declarations = []
@@ -240,32 +243,32 @@ class AND(MultiInputNonlinearLogicalOperator):
         input_len = self.input_bit_size // num_add
         cp_declarations.append(f"array[0..{self.input_bit_size - 1}] of var 0..1:{output_id_link}_i;")
         cp_declarations.append(f"array[0..{self.output_bit_size - 1}] of var 0..1:{output_id_link}_o;")
-        model.component_and_probability[output_id_link] = 0
+        state.component_probability_map[output_id_link] = 0
         component_probability_indices = []
         for i in range(self.output_bit_size):
             new_constraint = "constraint table("
             for j in range(num_add):
                 new_constraint = new_constraint + f"[{output_id_link}_i[{i + input_len * j}]]++"
-            if model.float_and_lat_values:
+            if context.float_and_lat_values:
                 cp_declarations.append(f"var :p_{output_id_link}_{i};")
                 new_constraint = (
                     new_constraint + f"[{output_id_link}_o[{i}]]++[p_{output_id_link}_{i}],and{num_add}inputs_LAT);"
                 )
                 cp_constraints.append(new_constraint)
-                for k in range(len(model.float_and_lat_values)):
-                    rounded_float = round(float(model.float_and_lat_values[k]), 2)
+                for k in range(len(context.float_and_lat_values)):
+                    rounded_float = round(float(context.float_and_lat_values[k]), 2)
                     cp_constraints.append(
-                        f"constraint if p_{output_id_link}_{i} == {1000 + k} then p[{model.component_probability_index}]={rounded_float} else "
-                        f"p[{model.component_probability_index}]=p_{output_id_link}_{i} endif;"
+                        f"constraint if p_{output_id_link}_{i} == {1000 + k} then p[{state.next_probability_index}]={rounded_float} else "
+                        f"p[{state.next_probability_index}]=p_{output_id_link}_{i} endif;"
                     )
             else:
-                new_constraint = new_constraint + f"[{output_id_link}_o[{i}]]++[p[{model.component_probability_index}]],and{num_add}inputs_LAT);"
+                new_constraint = new_constraint + f"[{output_id_link}_o[{i}]]++[p[{state.next_probability_index}]],and{num_add}inputs_LAT);"
                 cp_constraints.append(new_constraint)
-            component_probability_indices.append(model.component_probability_index)
-            model.component_probability_index += 1
-        model.component_and_probability[output_id_link] = component_probability_indices
+            component_probability_indices.append(state.next_probability_index)
+            state.allocate_probability_index()
+        state.component_probability_map[output_id_link] = component_probability_indices
 
-        return cp_declarations, cp_constraints
+        return CpComponentBuildResult(cp_declarations, cp_constraints)
 
     def milp_bitwise_deterministic_truncated_xor_differential_constraints(self, model):
         """

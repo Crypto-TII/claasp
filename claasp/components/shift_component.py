@@ -18,6 +18,7 @@
 
 from claasp.input import Input
 from claasp.component import Component
+from claasp.cipher_modules.models.cp.cp_component_build_result import CpComponentBuildResult
 from claasp.cipher_modules.models.smt.utils import utils as smt_utils
 from claasp.cipher_modules.models.sat.utils import constants, utils as sat_utils
 from claasp.name_mappings import WORD_OPERATION
@@ -165,12 +166,12 @@ class SHIFT(Component):
                 ]
             )
 
-        return cp_declarations, cp_constraints
+        return CpComponentBuildResult(cp_declarations, cp_constraints)
 
     def cp_deterministic_truncated_xor_differential_trail_constraints(self):
         return self.cp_constraints()
 
-    def cp_semi_deterministic_truncated_xor_differential_constraints(self):
+    def cp_semi_deterministic_truncated_xor_differential_constraints(self, context, state):
         return self.cp_constraints()
 
     def cp_inverse_constraints(self):
@@ -213,7 +214,7 @@ class SHIFT(Component):
                 ]
             )
 
-        return cp_declarations, cp_constraints
+        return CpComponentBuildResult(cp_declarations, cp_constraints)
 
     def cp_wordwise_deterministic_truncated_xor_differential_constraints(self, model):
         """
@@ -294,7 +295,7 @@ class SHIFT(Component):
                 ]
             )
 
-        return cp_declarations, cp_constraints
+        return CpComponentBuildResult(cp_declarations, cp_constraints)
 
     def cp_xor_differential_first_step_constraints(self, model):
         """
@@ -363,28 +364,29 @@ class SHIFT(Component):
                 ]
             )
 
-        return cp_declarations, cp_constraints
+        return CpComponentBuildResult(cp_declarations, cp_constraints)
 
-    def cp_xor_differential_propagation_constraints(self, model=None):
+    def cp_xor_differential_propagation_constraints(self, context, state):
         return self.cp_constraints()
 
     def cp_xor_differential_propagation_first_step_constraints(self, model):
         return self.cp_xor_differential_first_step_constraints(model)
 
-    def cp_xor_linear_mask_propagation_constraints(self, model=None):
+    def cp_xor_linear_mask_propagation_constraints(self, context, state):
         """
         Return a list of Cp declarations and a list of Cp constraints for SHIFT component for CP xor linear model.
 
         INPUT:
 
-        - ``model`` -- **model object** (default: `None`); a model instance
+        - ``context`` -- a ``CpBuildContext`` (read-only build configuration)
+        - ``state`` -- ``CpBuildState`` (mutable accumulator for build state)
 
         EXAMPLES::
 
             sage: from claasp.components.shift_component import SHIFT
             sage: shift_component = SHIFT(0, 0, ['input'], [[0, 1]], 2, 1)
-            sage: shift_component.cp_xor_linear_mask_propagation_constraints()
-            (['array[0..1] of var 0..1: shift_0_0_i;', 'array[0..1] of var 0..1: shift_0_0_o;'], ['constraint shift_0_0_i[1]=0;', 'constraint shift_0_0_o[1]=shift_0_0_i[0];'])
+            sage: shift_component.cp_xor_linear_mask_propagation_constraints(None, None)
+            CpComponentBuildResult(declarations=['array[0..1] of var 0..1: shift_0_0_i;', 'array[0..1] of var 0..1: shift_0_0_o;'], constraints=['constraint shift_0_0_i[1]=0;', 'constraint shift_0_0_o[1]=shift_0_0_i[0];'], metadata={})
         """
         output_size = self.output_bit_size
         output_id_link = self.id
@@ -404,9 +406,8 @@ class SHIFT(Component):
                 cp_constraints.append(f"constraint {output_id_link}_o[{i}]={output_id_link}_i[{i + shift_amount}];")
             for i in range(shift_amount):
                 cp_constraints.append(f"constraint {output_id_link}_i[{i}]=0;")
-        result = cp_declarations, cp_constraints
 
-        return result
+        return CpComponentBuildResult(cp_declarations, cp_constraints)
 
     def get_bit_based_vectorized_python_code(self, params, convert_output_to_bytes):
         return [f"  {self.id} = bit_vector_SHIFT([{','.join(params)} ], {self.description[1]})"]
@@ -670,7 +671,7 @@ class SHIFT(Component):
                 f"constraint RSHIFT({mzn_input_array_1}, {int(shift_const)})={mzn_output_array_1};\n"
             ]
 
-        return var_names, shift_mzn_constraints
+        return CpComponentBuildResult(var_names, shift_mzn_constraints)
 
     def minizinc_deterministic_truncated_xor_differential_trail_constraints(self, model):
         return self.minizinc_constraints(model)

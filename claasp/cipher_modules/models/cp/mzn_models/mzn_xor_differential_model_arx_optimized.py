@@ -184,15 +184,14 @@ class MznXorDifferentialModelARXOptimized(MznModel):
                 WORD_OPERATION == component.type and operation not in operation_types
             ):
                 print(f"{component.id} not yet implemented")
-            else:
-                variables, constraints = component.minizinc_xor_differential_propagation_constraints(self)
+                continue
+            result = component.minizinc_xor_differential_propagation_constraints(self)
 
-            self._variables_list.extend(variables)
-            self._model_constraints.extend(constraints)
+            self._variables_list.extend(result.declarations)
+            self._model_constraints.extend(result.constraints)
 
         if weight != -1:
-            variables, constraints = self.weight_constraints(weight)
-            self._variables_list.extend(variables)
+            constraints = self.weight_constraints(weight)
             self._model_constraints.extend(constraints)
 
         self.init_constraints()

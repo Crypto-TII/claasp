@@ -16,6 +16,8 @@
 # ****************************************************************************
 
 
+from claasp.cipher_modules.models.cp.cp_build_state import CpBuildState
+from claasp.cipher_modules.models.cp.cp_component_build_result import CpComponentBuildResult
 from claasp.cipher_modules.models.milp.utils import utils as milp_utils
 from claasp.cipher_modules.models.sat.utils import constants, utils as sat_utils
 from claasp.cipher_modules.models.smt.utils import utils as smt_utils
@@ -209,7 +211,7 @@ class Modular(Component):
         result = input_bit_ids + output_bit_ids + hw_bit_ids, constraints
         return result
 
-    def cp_continuous_differential_propagation_constraints(self, model):
+    def cp_continuous_differential_propagation_constraints(self, context, state):
         
         input_id_links = self.input_id_links
         output_id_link = self.id
@@ -226,7 +228,7 @@ class Modular(Component):
             f"constraint {output_id_link} = continuous_modadd(x1_{output_id_link}, x2_{output_id_link}, {output_id_link});"
         )
 
-        return cp_declarations, cp_constraints
+        return CpComponentBuildResult(cp_declarations, cp_constraints)
         
     def cp_deterministic_truncated_xor_differential_constraints(self):
         """
@@ -282,7 +284,7 @@ class Modular(Component):
             f"pre_{output_id_link}_0, {output_id_link});"
         )
 
-        return cp_declarations, cp_constraints
+        return CpComponentBuildResult(cp_declarations, cp_constraints)
 
     def cp_deterministic_truncated_xor_differential_trail_constraints(self):
         return self.cp_deterministic_truncated_xor_differential_constraints()
@@ -318,7 +320,7 @@ class Modular(Component):
             f"constraint counter_based_modadd_semideterministic({left_input}, {right_input}, {output_var}, {delta_carry}, {costs}, {input_len}, {stage_probability_var});"
         )
 
-    def cp_semi_deterministic_truncated_xor_differential_constraints(self):
+    def cp_semi_deterministic_truncated_xor_differential_constraints(self, context, state):
         """
         Return declarations, constraints, and metadata for modular addition/subtraction in the CP
         semi-deterministic truncated XOR differential model.
@@ -397,20 +399,20 @@ class Modular(Component):
 
         metadata = {"probability_var": probability_var}
 
-        return cp_declarations, cp_constraints, metadata
+        return CpComponentBuildResult(cp_declarations, cp_constraints, metadata)
 
     def cp_twoterms_xor_differential_probability(
-        self, input_1, input_2, out, input_length, cp_constraints, cp_declarations, component_probability_index, model
+        self, input_1, input_2, out, input_length, cp_constraints, cp_declarations, component_probability_index, state
     ):
-        if input_1 not in model.modadd_two_term_shift_cache:
+        if input_1 not in state.shift_declaration_cache:
             cp_declarations.append(f"array[0..{input_length - 1}] of var 0..1: Shi_{input_1} = LShift({input_1},1);")
-            model.modadd_two_term_shift_cache.append(input_1)
-        if input_2 not in model.modadd_two_term_shift_cache:
+            state.shift_declaration_cache.append(input_1)
+        if input_2 not in state.shift_declaration_cache:
             cp_declarations.append(f"array[0..{input_length - 1}] of var 0..1: Shi_{input_2} = LShift({input_2},1);")
-            model.modadd_two_term_shift_cache.append(input_2)
-        if out not in model.modadd_two_term_shift_cache:
+            state.shift_declaration_cache.append(input_2)
+        if out not in state.shift_declaration_cache:
             cp_declarations.append(f"array[0..{input_length - 1}] of var 0..1: Shi_{out} = LShift({out},1);")
-            model.modadd_two_term_shift_cache.append(out)
+            state.shift_declaration_cache.append(out)
         cp_declarations.append(
             f"array[0..{input_length - 1}] of var 0..1: eq_{out} = Eq(Shi_{input_1}, Shi_{input_2}, Shi_{out});"
         )
@@ -420,7 +422,7 @@ class Modular(Component):
             f"true endif) /\\ p[{component_probability_index}] = {input_length}-sum(eq_{out});"
         )
 
-        return cp_declarations, cp_constraints
+        return CpComponentBuildResult(cp_declarations, cp_constraints)
 
     def cp_wordwise_deterministic_truncated_xor_differential_constraints(self, model):
         """
@@ -474,20 +476,22 @@ class Modular(Component):
             )
             cp_constraints.append(new_constraint)
 
-        return cp_declarations, cp_constraints
+        return CpComponentBuildResult(cp_declarations, cp_constraints)
 
-    def cp_xor_differential_propagation_constraints(self, model):
+    def cp_xor_differential_propagation_constraints(self, context, state):
         """
         Return lists of declarations and constraints for the probability of Modular Addition/Substraction component for CP xor differential probability.
 
         INPUT:
 
-        - ``model`` -- **model object**; a model instance
+        - ``context`` -- a ``CpBuildContext`` (read-only build configuration)
+        - ``state`` -- ``CpBuildState`` (mutable accumulator for build state)
 
         EXAMPLES::
 
             sage: from claasp.cipher import Cipher
             sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
+            sage: from claasp.cipher_modules.models.cp.cp_build_state import CpBuildState
             sage: from claasp.name_mappings import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
             sage: class DummyCipher(Cipher):
             ....:     def __init__(self):
@@ -496,12 +500,15 @@ class Modular(Component):
             ....:         self.add_MODADD_component([INPUT_PLAINTEXT, INPUT_KEY], [list(range(4)), list(range(4))], 4)
             ....:         self.add_cipher_output_component(['modadd_0_0'], [list(range(4))], 4)
             sage: cipher = DummyCipher()
-            sage: model = MznModel(cipher)
+            sage: state = CpBuildState()
             sage: component = cipher.component_from(0, 0)
-            sage: declarations, constraints = component.cp_xor_differential_propagation_constraints(model)
-            sage: len(declarations) > 0 and len(constraints) > 0
+            sage: result = component.cp_xor_differential_propagation_constraints(None, state)
+            sage: len(result.declarations) > 0 and len(result.constraints) > 0
             True
         """
+        return self._cp_xor_differential_propagation_impl(state)
+
+    def _cp_xor_differential_propagation_impl(self, state):
         output_id_link = self.id
         num_add = self.description[1]
         all_inputs = []
@@ -522,6 +529,7 @@ class Modular(Component):
             cp_declarations.append(f"array[0..{input_len - 1}] of var 0..1: pre_{output_id_link}_{i};")
         component_probability_indices = []
         for i in range(num_add - 2):
+            prob_index = state.next_probability_index
             self.cp_twoterms_xor_differential_probability(
                 f"pre_{output_id_link}_{num_add - 1}",
                 f"pre_{output_id_link}_{i + 1}",
@@ -529,11 +537,12 @@ class Modular(Component):
                 self.output_bit_size,
                 cp_constraints,
                 cp_declarations,
-                model.component_probability_index,
-                model,
+                prob_index,
+                state,
             )
-            component_probability_indices.append(model.component_probability_index)
-            model.component_probability_index += 1
+            component_probability_indices.append(prob_index)
+            state.next_probability_index += 1
+        prob_index = state.next_probability_index
         self.cp_twoterms_xor_differential_probability(
             f"pre_{output_id_link}_{2 * num_add - 3}",
             f"pre_{output_id_link}_0",
@@ -541,14 +550,14 @@ class Modular(Component):
             self.output_bit_size,
             cp_constraints,
             cp_declarations,
-            model.component_probability_index,
-            model,
+            prob_index,
+            state,
         )
-        component_probability_indices.append(model.component_probability_index)
-        model.component_probability_index += 1
-        model.component_and_probability[output_id_link] = component_probability_indices
+        component_probability_indices.append(prob_index)
+        state.next_probability_index += 1
+        state.component_probability_map[output_id_link] = component_probability_indices
 
-        return cp_declarations, cp_constraints
+        return CpComponentBuildResult(cp_declarations, cp_constraints)
 
     def cp_xor_differential_propagation_constraints_arx_optimized(self, model):
         """
@@ -588,7 +597,10 @@ class Modular(Component):
         num_add = self.description[1]
 
         if num_add > 2:
-            return self.cp_xor_differential_propagation_constraints(model)
+            state = CpBuildState.from_model(model)
+            result = self.cp_xor_differential_propagation_constraints(None, state)
+            state.apply_to_model(model)
+            return CpComponentBuildResult(result.declarations, result.constraints)
 
         all_inputs = []
         for id_link, bit_positions in zip(input_id_links, input_bit_positions):
@@ -671,20 +683,22 @@ class Modular(Component):
 
         model.component_probability_index += 1
 
-        return cp_declarations, cp_constraints
+        return CpComponentBuildResult(cp_declarations, cp_constraints)
 
-    def cp_xor_linear_mask_propagation_constraints(self, model):
+    def cp_xor_linear_mask_propagation_constraints(self, context, state):
         """
         Return lists of declarations and constraints for the probability of Modular Addition/Substraction for CP xor linear model.
 
         INPUT:
 
-        - ``model`` -- **model object**; a model instance
+        - ``context`` -- a ``CpBuildContext`` (read-only build configuration)
+        - ``state`` -- ``CpBuildState`` (mutable accumulator for build state)
 
         EXAMPLES::
 
             sage: from claasp.cipher import Cipher
             sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
+            sage: from claasp.cipher_modules.models.cp.cp_build_state import CpBuildState
             sage: from claasp.name_mappings import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
             sage: class DummyCipher(Cipher):
             ....:     def __init__(self):
@@ -693,14 +707,17 @@ class Modular(Component):
             ....:         self.add_MODADD_component([INPUT_PLAINTEXT, INPUT_KEY], [list(range(4)), list(range(4))], 4)
             ....:         self.add_cipher_output_component(['modadd_0_0'], [list(range(4))], 4)
             sage: cipher = DummyCipher()
-            sage: model = MznModel(cipher)
+            sage: state = CpBuildState()
             sage: component = cipher.component_from(0, 0)
-            sage: declarations, constraints = component.cp_xor_linear_mask_propagation_constraints(model)
-            sage: declarations[:2]
+            sage: result = component.cp_xor_linear_mask_propagation_constraints(None, state)
+            sage: result.declarations[:2]
             ['array[0..7] of var 0..1: modadd_0_0_i;', 'array[0..3] of var 0..1: modadd_0_0_o;']
-            sage: len(constraints) > 0
+            sage: len(result.constraints) > 0
             True
         """
+        return self._cp_xor_linear_mask_propagation_impl(state)
+
+    def _cp_xor_linear_mask_propagation_impl(self, state):
         output_id_link = self.id
         cp_declarations = []
         cp_constraints = []
@@ -718,21 +735,21 @@ class Modular(Component):
         for i in range(num_add, 2 * num_add - 2):
             cp_declarations.append(f"array[0..{self.output_bit_size - 1}] of var 0..1: pre_{output_id_link}_{i};")
         for i in range(num_add - 2):
+            prob_index = state.allocate_probability_index()
             cp_constraints.append(
                 f"constraint modadd_linear(pre_{output_id_link}_{num_add - 1}, pre_{output_id_link}_{i + 1}, "
-                f"pre_{output_id_link}_{num_add + i}, p[{model.component_probability_index}]);"
+                f"pre_{output_id_link}_{num_add + i}, p[{prob_index}]);"
             )
-            component_probability_indices.append(model.component_probability_index)
-            model.component_probability_index = model.component_probability_index + 1
+            component_probability_indices.append(prob_index)
+        prob_index = state.allocate_probability_index()
         cp_constraints.append(
             f"constraint modadd_linear(pre_{output_id_link}_{2 * num_add - 3}, pre_{output_id_link}_0, "
-            f"{output_id_link}_o, p[{model.component_probability_index}]);"
+            f"{output_id_link}_o, p[{prob_index}]);"
         )
-        component_probability_indices.append(model.component_probability_index)
-        model.component_probability_index = model.component_probability_index + 1
-        model.component_and_probability[output_id_link] = component_probability_indices
+        component_probability_indices.append(prob_index)
+        state.component_probability_map[output_id_link] = component_probability_indices
 
-        return cp_declarations, cp_constraints
+        return CpComponentBuildResult(cp_declarations, cp_constraints)
 
     def get_word_operation_sign(self, sign, solution):
         output_id_link = self.id
@@ -1203,7 +1220,7 @@ class Modular(Component):
             var_names += [mzn_variables_and_constraints[0]]
             mzn_constraints += [mzn_variables_and_constraints[1]]
 
-        return var_names, mzn_constraints
+        return CpComponentBuildResult(var_names, mzn_constraints)
 
     def milp_xor_linear_mask_propagation_constraints(self, model):
         """

@@ -23,7 +23,8 @@ def test_constructor_builds_permutation_matrix():
 
 def test_cp_constraints():
     permutation_component = make_permutation_component()
-    declarations, constraints = permutation_component.cp_constraints()
+    result = permutation_component.cp_constraints()
+    declarations, constraints = result.declarations, result.constraints
 
     assert declarations == []
     assert constraints == [

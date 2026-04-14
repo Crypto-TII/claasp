@@ -33,7 +33,8 @@ def test_cms_constraints():
 
 def test_cp_constraints():
     not_component = NOT(0, 8, ['xor_0_6'], [list(range(32))], 32)
-    declarations, constraints = not_component.cp_constraints()
+    result = not_component.cp_constraints()
+    declarations, constraints = result.declarations, result.constraints
 
     assert declarations == []
 
@@ -43,7 +44,8 @@ def test_cp_constraints():
 
 def test_cp_deterministic_truncated_xor_differential_constraints():
     not_component = NOT(0, 8, ['xor_0_6'], [list(range(32))], 32)
-    declarations, constraints = not_component.cp_deterministic_truncated_xor_differential_constraints()
+    result = not_component.cp_deterministic_truncated_xor_differential_constraints()
+    declarations, constraints = result.declarations, result.constraints
 
     assert declarations == []
 
@@ -58,7 +60,8 @@ def test_cp_xor_differential_first_step_constraints():
     not_component = NOT(0, 18, ['plaintext', 'key', 'input3', 'input4'],
                         [[0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7],
                          [0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7]], 32)
-    declarations, constraints = not_component.cp_xor_differential_first_step_constraints(DummyModel())
+    result = not_component.cp_xor_differential_first_step_constraints(DummyModel())
+    declarations, constraints = result.declarations, result.constraints
 
     assert declarations == ['array[0..3] of var 0..1: not_0_18;']
 
@@ -70,7 +73,8 @@ def test_cp_xor_differential_first_step_constraints():
 
 def test_cp_xor_differential_propagation_constraints():
     not_component = NOT(0, 8, ['xor_0_6'], [list(range(32))], 32)
-    declarations, constraints = not_component.cp_xor_differential_propagation_constraints()
+    result = not_component.cp_xor_differential_propagation_constraints(None, None)
+    declarations, constraints = result.declarations, result.constraints
 
     assert declarations == []
 
@@ -80,7 +84,8 @@ def test_cp_xor_differential_propagation_constraints():
 
 def test_cp_xor_linear_mask_propagation_constraints():
     not_component = NOT(0, 5, ['ascon_0_5_i'], [list(range(64))], 64)
-    declarations, constraints = not_component.cp_xor_linear_mask_propagation_constraints()
+    result = not_component.cp_xor_linear_mask_propagation_constraints(None, None)
+    declarations, constraints = result.declarations, result.constraints
 
     assert declarations == ['array[0..63] of var 0..1:not_0_5_i;', 'array[0..63] of var 0..1:not_0_5_o;']
 

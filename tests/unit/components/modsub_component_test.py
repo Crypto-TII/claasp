@@ -1,4 +1,5 @@
 from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
+from claasp.cipher_modules.models.cp.cp_build_state import CpBuildState
 from claasp.cipher import Cipher
 from claasp.components.modsub_component import MODSUB
 from claasp.name_mappings import PERMUTATION
@@ -38,7 +39,8 @@ def test_cms_constraints():
 
 def test_cp_constraints():
     modsub_component = MODSUB(0, 7, ['modadd_0_4', 'plaintext'], [list(range(32)), list(range(32, 64))], 32, 2 ** 32)
-    output_bit_ids, constraints = modsub_component.cp_constraints()
+    result = modsub_component.cp_constraints()
+    output_bit_ids, constraints = result.declarations, result.constraints
 
     assert output_bit_ids[0] == 'array[0..31] of var 0..1: constant_modsub_0_7= array1d(0..31,[0, 0, 0, 0, 0, 0, 0, ' \
                                 '0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]);'
@@ -54,24 +56,19 @@ def test_cp_constraints():
 
 
 def test_cp_xor_differential_propagation_constraints():
-    class DummyModel:
-        component_probability_index = 0
-        component_and_probability = {}
-        modadd_two_term_shift_cache = []
-
     modsub_component = MODSUB(0, 7, ['modadd_0_4', 'plaintext'], [list(range(32)), list(range(32, 64))], 32, 2 ** 32)
-    cp_model = DummyModel()
-    output_bit_ids, constraints = modsub_component.cp_xor_differential_propagation_constraints(cp_model)
+    state = CpBuildState()
+    result = modsub_component.cp_xor_differential_propagation_constraints(None, state)
 
-    assert output_bit_ids[0] == 'array[0..31] of var 0..1: pre_modsub_0_7_0;'
-    assert output_bit_ids[-1] == 'array[0..31] of var 0..1: eq_modsub_0_7 = Eq(Shi_pre_modsub_0_7_1, Shi_pre_modsub_0_7_0, Shi_modsub_0_7);'
+    assert result.declarations[0] == 'array[0..31] of var 0..1: pre_modsub_0_7_0;'
+    assert result.declarations[-1] == 'array[0..31] of var 0..1: eq_modsub_0_7 = Eq(Shi_pre_modsub_0_7_1, Shi_pre_modsub_0_7_0, Shi_modsub_0_7);'
 
-    assert constraints[0] == 'constraint pre_modsub_0_7_0[0] = modadd_0_4[0];'
-    assert constraints[1] == 'constraint pre_modsub_0_7_0[1] = modadd_0_4[1];'
-    assert constraints[2] == 'constraint pre_modsub_0_7_0[2] = modadd_0_4[2];'
-    assert constraints[-3] == 'constraint pre_modsub_0_7_1[30] = plaintext[62];'
-    assert constraints[-2] == 'constraint pre_modsub_0_7_1[31] = plaintext[63];'
-    assert constraints[-1] == 'constraint forall(j in 0..31)(if eq_modsub_0_7[j] = 1 then (sum([pre_modsub_0_7_1[j], ' \
+    assert result.constraints[0] == 'constraint pre_modsub_0_7_0[0] = modadd_0_4[0];'
+    assert result.constraints[1] == 'constraint pre_modsub_0_7_0[1] = modadd_0_4[1];'
+    assert result.constraints[2] == 'constraint pre_modsub_0_7_0[2] = modadd_0_4[2];'
+    assert result.constraints[-3] == 'constraint pre_modsub_0_7_1[30] = plaintext[62];'
+    assert result.constraints[-2] == 'constraint pre_modsub_0_7_1[31] = plaintext[63];'
+    assert result.constraints[-1] == 'constraint forall(j in 0..31)(if eq_modsub_0_7[j] = 1 then (sum([pre_modsub_0_7_1[j], ' \
                               'pre_modsub_0_7_0[j], modsub_0_7[j]]) mod 2) = Shi_pre_modsub_0_7_0[j] else true endif) /\\ p[0] = 32-sum(eq_modsub_0_7);'
 
 

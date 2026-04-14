@@ -56,10 +56,11 @@ def test_cp_xor_differential_propagation_first_step_constraints():
     cp = MznModel(cipher)
     cp.word_size = 8
     xor_component = cipher.get_component_from_id("xor_0_0")
-    declarations, constraints = xor_component.cp_xor_differential_propagation_first_step_constraints(
+    result = xor_component.cp_xor_differential_propagation_first_step_constraints(
         cp,
         cp._variables_list,
     )
+    declarations, constraints = result.declarations, result.constraints
 
     assert declarations == ['array[0..1, 1..2] of int: xor_truncated_table_2 = array2d(0..1, 1..2, [0,0,1,1]);']
 

@@ -35,7 +35,8 @@ def test_cms_constraints():
 
 def test_cp_constraints():
     shift_component = make_shift_component(bit_size=32, parameter=4)
-    declarations, constraints = shift_component.cp_constraints()
+    result = shift_component.cp_constraints()
+    declarations, constraints = result.declarations, result.constraints
 
     assert declarations == []
     assert constraints[0].startswith('constraint shift_0_0[0] = ')
@@ -44,7 +45,8 @@ def test_cp_constraints():
 
 def test_cp_inverse_constraints():
     shift_component = make_shift_component(bit_size=32, parameter=4)
-    declarations, constraints = shift_component.cp_inverse_constraints()
+    result = shift_component.cp_inverse_constraints()
+    declarations, constraints = result.declarations, result.constraints
 
     assert declarations == []
     assert constraints[0].startswith('constraint shift_0_0_inverse[0] = ')
@@ -58,7 +60,8 @@ def test_cp_wordwise_deterministic_truncated_xor_differential_constraints():
     shift_component = SHIFT(0, 18, ['sbox_0_2', 'sbox_0_6', 'sbox_0_10', 'sbox_0_14'],
                             [[0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7],
                              [0, 1, 2, 3, 4, 5, 6, 7]], 32, -8)
-    declarations, constraints = shift_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(DummyModel())
+    result = shift_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(DummyModel())
+    declarations, constraints = result.declarations, result.constraints
 
     assert declarations == []
     assert constraints[0] == 'constraint shift_0_18_active[0] = sbox_0_6_active[0];'
@@ -72,7 +75,8 @@ def test_cp_xor_differential_first_step_constraints():
     shift_component = SHIFT(0, 18, ['sbox_0_2', 'sbox_0_6', 'sbox_0_10', 'sbox_0_14'],
                             [[0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7],
                              [0, 1, 2, 3, 4, 5, 6, 7]], 32, -8)
-    declarations, constraints = shift_component.cp_xor_differential_first_step_constraints(DummyModel())
+    result = shift_component.cp_xor_differential_first_step_constraints(DummyModel())
+    declarations, constraints = result.declarations, result.constraints
 
     assert declarations == ['array[0..3] of var 0..1: shift_0_18;']
     assert constraints == ['constraint shift_0_18[0] = sbox_0_6[0];',
@@ -83,7 +87,8 @@ def test_cp_xor_differential_first_step_constraints():
 
 def test_cp_xor_linear_mask_propagation_constraints():
     shift_component = make_shift_component(bit_size=32, parameter=4)
-    declarations, constraints = shift_component.cp_xor_linear_mask_propagation_constraints()
+    result = shift_component.cp_xor_linear_mask_propagation_constraints(None, None)
+    declarations, constraints = result.declarations, result.constraints
 
     assert declarations == ['array[0..31] of var 0..1: shift_0_0_i;', 'array[0..31] of var 0..1: shift_0_0_o;']
     assert len(constraints) > 0
@@ -121,7 +126,8 @@ def test_minizinc_constraints():
     cipher = ShiftCipher(bit_size=32, parameter=4)
     minizinc = MznModel(cipher)
     shift_component = cipher.get_component_from_id('shift_0_0')
-    _, shift_mzn_constraints = shift_component.minizinc_constraints(minizinc)
+    result = shift_component.minizinc_constraints(minizinc)
+    shift_mzn_constraints = result.constraints
 
     assert shift_mzn_constraints[0].startswith('constraint ')
     assert 'SHIFT(' in shift_mzn_constraints[0]

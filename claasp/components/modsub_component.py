@@ -16,6 +16,7 @@
 # ****************************************************************************
 
 
+from claasp.cipher_modules.models.cp.cp_component_build_result import CpComponentBuildResult
 from claasp.components.modular_component import Modular
 from claasp.cipher_modules.models.sat.utils import utils as sat_utils
 from claasp.cipher_modules.models.smt.utils import utils as smt_utils
@@ -29,7 +30,7 @@ def cp_twoterms(input_1, input_2, out, component_name, input_length, cp_constrai
     cp_constraints.append(f"constraint modadd(pre_minus_{input_2}, constant_{component_name}, minus_{input_2});")
     cp_constraints.append(f"constraint modadd({input_1},minus_{input_2},{out});")
 
-    return cp_declarations, cp_constraints
+    return CpComponentBuildResult(cp_declarations, cp_constraints)
 
 
 class MODSUB(Modular):
@@ -263,7 +264,7 @@ class MODSUB(Modular):
                     cp_declarations,
                 )
 
-        return cp_declarations, cp_constraints
+        return CpComponentBuildResult(cp_declarations, cp_constraints)
 
     def get_bit_based_vectorized_python_code(self, params, convert_output_to_bytes):
         return [

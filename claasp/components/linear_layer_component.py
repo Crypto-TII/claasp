@@ -30,6 +30,7 @@ from claasp.component import Component, free_input
 from claasp.cipher_modules.models.smt.utils import utils as smt_utils
 from claasp.cipher_modules.models.sat.utils import constants, utils as sat_utils
 from claasp.cipher_modules.models.milp.utils import utils as milp_utils
+from claasp.cipher_modules.models.cp.cp_component_build_result import CpComponentBuildResult
 from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_xor_with_n_input_bits import (
     update_dictionary_that_contains_xor_inequalities_for_specific_matrix,
     output_dictionary_that_contains_xor_inequalities,
@@ -254,7 +255,7 @@ class LinearLayer(Component):
             sum_of_addenda = " + ".join(addenda)
             cp_constraints.append(f"constraint {self.id}[{i}] = ({sum_of_addenda}) mod 2;")
 
-        return cp_declarations, cp_constraints
+        return CpComponentBuildResult(cp_declarations, cp_constraints)
 
     def cp_deterministic_truncated_xor_differential_constraints(self):
         r"""
@@ -288,12 +289,12 @@ class LinearLayer(Component):
             cp_constraint += f"{self.id}[{i}] = ({operation2}) mod 2 else {self.id}[{i}] = 2 endif;"
             cp_constraints.append(cp_constraint)
 
-        return cp_declarations, cp_constraints
+        return CpComponentBuildResult(cp_declarations, cp_constraints)
 
     def cp_deterministic_truncated_xor_differential_trail_constraints(self):
         return self.cp_deterministic_truncated_xor_differential_constraints()
 
-    def cp_semi_deterministic_truncated_xor_differential_constraints(self):
+    def cp_semi_deterministic_truncated_xor_differential_constraints(self, context, state):
         return self.cp_deterministic_truncated_xor_differential_constraints()
 
     def cp_wordwise_deterministic_truncated_xor_differential_constraints(self, model):
@@ -346,27 +347,28 @@ class LinearLayer(Component):
             )
             cp_constraints.append(cp_constraint)
 
-        return cp_declarations, cp_constraints
+        return CpComponentBuildResult(cp_declarations, cp_constraints)
 
-    def cp_xor_differential_propagation_constraints(self, model):
+    def cp_xor_differential_propagation_constraints(self, context, state):
         return self.cp_constraints()
 
-    def cp_xor_linear_mask_propagation_constraints(self, model=None):
+    def cp_xor_linear_mask_propagation_constraints(self, context, state):
         """
         Return lists of declarations and constraints for LINEAR LAYER for CP xor linear model.
 
         INPUT:
 
-        - ``model`` -- **model object** (default: `None`); a model instance
+        - ``context`` -- a ``CpBuildContext`` (read-only build configuration)
+        - ``state`` -- ``CpBuildState`` (mutable accumulator for build state)
 
         EXAMPLES::
 
             sage: from claasp.components.linear_layer_component import LinearLayer
             sage: linear_layer_component = LinearLayer(0, 0, ['in'], [[0, 1, 2, 3]], 4, [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
-            sage: declarations, constraints = linear_layer_component.cp_xor_linear_mask_propagation_constraints()
-            sage: declarations
+            sage: result = linear_layer_component.cp_xor_linear_mask_propagation_constraints(None, None)
+            sage: result.declarations
             ['array[0..3] of var 0..1:linear_layer_0_0_i;', 'array[0..3] of var 0..1:linear_layer_0_0_o;']
-            sage: constraints[-1]
+            sage: result.constraints[-1]
             'constraint linear_layer_0_0_i[3]=(linear_layer_0_0_o[3]) mod 2;'
         """
         cp_declarations = [
@@ -380,7 +382,7 @@ class LinearLayer(Component):
             cp_constraint = f"constraint {self.id}_i[{i}]=(" + "+".join(addenda) + ") mod 2;"
             cp_constraints.append(cp_constraint)
 
-        return cp_declarations, cp_constraints
+        return CpComponentBuildResult(cp_declarations, cp_constraints)
 
     def get_bit_based_c_code(self, verbosity):
         linear_layer_code = []

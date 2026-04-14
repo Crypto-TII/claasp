@@ -60,7 +60,8 @@ def test_cms_xor_linear_mask_propagation_constraints():
 
 def test_cp_constraints():
     linear_layer_component = make_linear_layer_component()
-    declarations, constraints = linear_layer_component.cp_constraints()
+    result = linear_layer_component.cp_constraints()
+    declarations, constraints = result.declarations, result.constraints
 
     assert declarations == []
     assert constraints == [
@@ -73,7 +74,8 @@ def test_cp_constraints():
 
 def test_cp_deterministic_truncated_xor_differential_constraints():
     linear_layer_component = make_linear_layer_component()
-    declarations, constraints = linear_layer_component.cp_deterministic_truncated_xor_differential_constraints()
+    result = linear_layer_component.cp_deterministic_truncated_xor_differential_constraints()
+    declarations, constraints = result.declarations, result.constraints
 
     assert declarations == []
     assert constraints == [
@@ -86,7 +88,8 @@ def test_cp_deterministic_truncated_xor_differential_constraints():
 
 def test_cp_xor_linear_mask_propagation_constraints():
     linear_layer_component = make_linear_layer_component()
-    declarations, constraints = linear_layer_component.cp_xor_linear_mask_propagation_constraints()
+    result = linear_layer_component.cp_xor_linear_mask_propagation_constraints(None, None)
+    declarations, constraints = result.declarations, result.constraints
 
     assert declarations == [
         "array[0..3] of var 0..1:linear_layer_0_0_i;",

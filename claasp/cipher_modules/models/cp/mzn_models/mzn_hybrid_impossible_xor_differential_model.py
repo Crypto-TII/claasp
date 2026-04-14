@@ -37,6 +37,7 @@ import subprocess
 from sage.combinat.permutation import Permutation
 from sage.crypto.sbox import SBox
 
+from claasp.cipher_modules.models.cp.cp_build_state import CpBuildState
 from claasp.cipher_modules.models.cp.mzn_model import SOLVE_SATISFY, MznModel
 from claasp.cipher_modules.models.cp.mzn_models.mzn_impossible_xor_differential_model import (
     MznImpossibleXorDifferentialModel,
@@ -721,23 +722,23 @@ class MznHybridImpossibleXorDifferentialModel(MznImpossibleXorDifferentialModel)
         if not wordwise:
             if component.type == SBOX:
                 if key_schedule and probabilistic:
-                    variables, constraints = component.cp_xor_differential_propagation_constraints(self, inverse)
+                    state = CpBuildState.from_model(self)
+                    result = component.cp_xor_differential_propagation_constraints(None, state, inverse)
+                    state.apply_to_model(self)
                 else:
-                    variables, constraints, sbox_table_cache = (
-                        component.cp_hybrid_deterministic_truncated_xor_differential_constraints(
-                            self.sbox_table_cache, inverse, self.sboxes_component_number_list
-                        )
+                    result = component.cp_hybrid_deterministic_truncated_xor_differential_constraints(
+                        self.sbox_table_cache, inverse, self.sboxes_component_number_list
                     )
-                    self.sbox_table_cache = sbox_table_cache
+                    self.sbox_table_cache = result.metadata
                     self.sbox_size = component.output_bit_size
             elif component.description[0] == "XOR":
-                variables, constraints = component.cp_hybrid_deterministic_truncated_xor_differential_constraints()
+                result = component.cp_hybrid_deterministic_truncated_xor_differential_constraints()
             else:
-                variables, constraints = component.cp_deterministic_truncated_xor_differential_trail_constraints()
+                result = component.cp_deterministic_truncated_xor_differential_trail_constraints()
         else:
-            variables, constraints = component.cp_wordwise_deterministic_truncated_xor_differential_constraints(self)
+            result = component.cp_wordwise_deterministic_truncated_xor_differential_constraints(self)
 
-        return variables, constraints
+        return result.declarations, result.constraints
 
     def format_component_value(self, component_id, string):
         if f"{component_id}_i" in string:

@@ -57,11 +57,12 @@ class MznDeterministicTruncatedXorDifferentialModelARXOptimized(MznModel):
             operation_types = ["ROTATE", "SHIFT"]
 
             if component.type in component_types and (component.type != WORD_OPERATION or operation in operation_types):
-                variables, constraints = component.minizinc_deterministic_truncated_xor_differential_trail_constraints(
+                result = component.minizinc_deterministic_truncated_xor_differential_trail_constraints(
                     self
                 )
             else:
                 print(f"{component.id} not yet implemented")
+                continue
 
-            self._variables_list.extend(variables)
-            self._model_constraints.extend(constraints)
+            self._variables_list.extend(result.declarations)
+            self._model_constraints.extend(result.constraints)
