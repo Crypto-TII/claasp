@@ -195,10 +195,11 @@ class AND(MultiInputNonlinearLogicalOperator):
 
             sage: from claasp.components.and_component import AND
             sage: and_component = AND(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2)
-            sage: and_component.cp_constraints()
-            ([],
-             ['constraint and_0_0[0] = input1[0] * input2[0];',
-              'constraint and_0_0[1] = input1[1] * input2[1];'])
+            sage: result = and_component.cp_constraints()
+            sage: result.declarations
+            []
+            sage: result.constraints
+            ['constraint and_0_0[0] = input1[0] * input2[0];', 'constraint and_0_0[1] = input1[1] * input2[1];']
         """
         cp_declarations = []
         all_inputs = []

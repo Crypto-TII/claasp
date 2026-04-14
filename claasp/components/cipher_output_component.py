@@ -111,8 +111,11 @@ class CipherOutput(Component):
 
             sage: from claasp.components.cipher_output_component import CipherOutput
             sage: output_component = CipherOutput(0, 0, ['xor_0_0', 'xor_0_1'], [[0, 1], [0, 1]], 4)
-            sage: output_component.cp_constraints()
-            ([], ['constraint cipher_output_0_0[0] = xor_0_0[0];', 'constraint cipher_output_0_0[1] = xor_0_0[1];', 'constraint cipher_output_0_0[2] = xor_0_1[0];', 'constraint cipher_output_0_0[3] = xor_0_1[1];'])
+            sage: result = output_component.cp_constraints()
+            sage: result.declarations
+            []
+            sage: result.constraints
+            ['constraint cipher_output_0_0[0] = xor_0_0[0];', 'constraint cipher_output_0_0[1] = xor_0_0[1];', 'constraint cipher_output_0_0[2] = xor_0_1[0];', 'constraint cipher_output_0_0[3] = xor_0_1[1];']
         """
         cp_declarations = []
         all_inputs = []
@@ -145,8 +148,11 @@ class CipherOutput(Component):
             sage: from claasp.components.cipher_output_component import CipherOutput
             sage: DummyModel = type('DummyModel', (), {'word_size': 2})
             sage: output_component = CipherOutput(0, 0, ['xor_0_0', 'xor_0_1'], [[0, 1], [0, 1]], 4, True, 'round_output')
-            sage: output_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(DummyModel())
-            ([], ['constraint intermediate_output_0_0_value[0] = xor_0_0_value[0];', 'constraint intermediate_output_0_0_value[1] = xor_0_1_value[0];', 'constraint intermediate_output_0_0_active[0] = xor_0_0_active[0];', 'constraint intermediate_output_0_0_active[1] = xor_0_1_active[0];'])
+            sage: result = output_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(DummyModel())
+            sage: result.declarations
+            []
+            sage: result.constraints
+            ['constraint intermediate_output_0_0_value[0] = xor_0_0_value[0];', 'constraint intermediate_output_0_0_value[1] = xor_0_1_value[0];', 'constraint intermediate_output_0_0_active[0] = xor_0_0_active[0];', 'constraint intermediate_output_0_0_active[1] = xor_0_1_active[0];']
         """
         cp_declarations = []
         all_inputs_active = []
@@ -188,8 +194,11 @@ class CipherOutput(Component):
             sage: from claasp.components.cipher_output_component import CipherOutput
             sage: DummyModel = type('DummyModel', (), {'word_size': 2})
             sage: output_component = CipherOutput(0, 0, ['xor_0_0', 'xor_0_1'], [[0, 1], [0, 1]], 4, True, 'round_output')
-            sage: output_component.cp_xor_differential_propagation_first_step_constraints(DummyModel())
-            (['array[0..1] of var 0..1: intermediate_output_0_0;'], ['constraint intermediate_output_0_0[0] = xor_0_0[0];', 'constraint intermediate_output_0_0[1] = xor_0_1[0];'])
+            sage: result = output_component.cp_xor_differential_propagation_first_step_constraints(DummyModel())
+            sage: result.declarations
+            ['array[0..1] of var 0..1: intermediate_output_0_0;']
+            sage: result.constraints
+            ['constraint intermediate_output_0_0[0] = xor_0_0[0];', 'constraint intermediate_output_0_0[1] = xor_0_1[0];']
         """
         cp_declarations = [f"array[0..{(self.output_bit_size - 1) // model.word_size}] of var 0..1: {self.id};"]
         all_inputs = []

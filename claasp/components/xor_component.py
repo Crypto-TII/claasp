@@ -281,10 +281,11 @@ class XOR(Component):
 
             sage: from claasp.components.xor_component import XOR
             sage: xor_component = XOR(0, 0, ['plaintext', 'key'], [list(range(2)), list(range(2))], 2)
-            sage: xor_component.cp_constraints()
-            ([],
-            ['constraint xor_0_0[0] = (plaintext[0] + key[0]) mod 2;',
-            'constraint xor_0_0[1] = (plaintext[1] + key[1]) mod 2;'])
+            sage: result = xor_component.cp_constraints()
+            sage: result.declarations
+            []
+            sage: result.constraints
+            ['constraint xor_0_0[0] = (plaintext[0] + key[0]) mod 2;', 'constraint xor_0_0[1] = (plaintext[1] + key[1]) mod 2;']
         """
         cp_declarations = []
         all_inputs = []
@@ -329,10 +330,11 @@ class XOR(Component):
 
             sage: from claasp.components.xor_component import XOR
             sage: xor_component = XOR(0, 0, ['plaintext', 'key'], [list(range(2)), list(range(2))], 2)
-            sage: xor_component.cp_deterministic_truncated_xor_differential_constraints()
-            ([],
-            ['constraint if ((plaintext[0] < 2) /\\ (key[0]< 2)) then xor_0_0[0] = (plaintext[0] + key[0]) mod 2 else xor_0_0[0] = 2 endif;',
-            'constraint if ((plaintext[1] < 2) /\\ (key[1]< 2)) then xor_0_0[1] = (plaintext[1] + key[1]) mod 2 else xor_0_0[1] = 2 endif;'])
+            sage: result = xor_component.cp_deterministic_truncated_xor_differential_constraints()
+            sage: result.declarations
+            []
+            sage: result.constraints
+            ['constraint if ((plaintext[0] < 2) /\\ (key[0]< 2)) then xor_0_0[0] = (plaintext[0] + key[0]) mod 2 else xor_0_0[0] = 2 endif;', 'constraint if ((plaintext[1] < 2) /\\ (key[1]< 2)) then xor_0_0[1] = (plaintext[1] + key[1]) mod 2 else xor_0_0[1] = 2 endif;']
         """
         cp_declarations = []
         all_inputs = []
@@ -362,10 +364,11 @@ class XOR(Component):
 
             sage: from claasp.components.xor_component import XOR
             sage: xor_component = XOR(0, 0, ['plaintext', 'key'], [list(range(2)), list(range(2))], 2)
-            sage: xor_component.cp_hybrid_deterministic_truncated_xor_differential_constraints()
-            ([],
-             ['constraint if (plaintext[0] < 2) /\\ (key[0] < 2) then xor_0_0[0] = (plaintext[0] + key[0]) mod 2 elseif (plaintext[0] + key[0] = plaintext[0]) then xor_0_0[0] = plaintext[0] elseif (plaintext[0] + key[0] = key[0]) then xor_0_0[0] = key[0] else xor_0_0[0] = 2 endif;',
-              'constraint if (plaintext[1] < 2) /\\ (key[1] < 2) then xor_0_0[1] = (plaintext[1] + key[1]) mod 2 elseif (plaintext[1] + key[1] = plaintext[1]) then xor_0_0[1] = plaintext[1] elseif (plaintext[1] + key[1] = key[1]) then xor_0_0[1] = key[1] else xor_0_0[1] = 2 endif;'])
+            sage: result = xor_component.cp_hybrid_deterministic_truncated_xor_differential_constraints()
+            sage: result.declarations
+            []
+            sage: result.constraints
+            ['constraint if (plaintext[0] < 2) /\\ (key[0] < 2) then xor_0_0[0] = (plaintext[0] + key[0]) mod 2 elseif (plaintext[0] + key[0] = plaintext[0]) then xor_0_0[0] = plaintext[0] elseif (plaintext[0] + key[0] = key[0]) then xor_0_0[0] = key[0] else xor_0_0[0] = 2 endif;', 'constraint if (plaintext[1] < 2) /\\ (key[1] < 2) then xor_0_0[1] = (plaintext[1] + key[1]) mod 2 elseif (plaintext[1] + key[1] = plaintext[1]) then xor_0_0[1] = plaintext[1] elseif (plaintext[1] + key[1] = key[1]) then xor_0_0[1] = key[1] else xor_0_0[1] = 2 endif;']
         """
         cp_declarations = []
         all_inputs = [
@@ -410,13 +413,11 @@ class XOR(Component):
             sage: cp = MznModel(cipher)
             sage: cp.word_size = 8
             sage: xor_component = cipher.get_component_from_id("xor_0_0")
-            sage: xor_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(cp)
-            (['var -2..255: xor_0_0_temp_0_0_value;',
-              ...
-              'var 0..9: xor_0_0_bound_value_0_0 = if xor_0_0_temp_0_0_value + xor_0_0_temp_1_0_value > 0 then ceil(log2(xor_0_0_temp_0_0_value + xor_0_0_temp_1_0_value)) else 0 endif;'],
-             ['constraint xor_0_0_temp_0_0_value = plaintext_value[0] /\\ xor_0_0_temp_0_0_active = plaintext_active[0];',
-               ...
-              'constraint if xor_0_0_temp_0_0_active + xor_0_0_temp_1_0_active > 2 then xor_0_0_active[0] == 3 /\\ xor_0_0_value[0] = -2 elseif xor_0_0_temp_0_0_active + xor_0_0_temp_1_0_active == 1 then xor_0_0_active[0] = 1 /\\ xor_0_0_value[0] = xor_0_0_temp_0_0_value + xor_0_0_temp_1_0_value elseif xor_0_0_temp_0_0_active + xor_0_0_temp_1_0_active == 0 then xor_0_0_active[0] = 0 /\\ xor_0_0_value[0] = 0 elseif xor_0_0_temp_0_0_value + xor_0_0_temp_1_0_value < 0 then xor_0_0_active[0] = 2 /\\ xor_0_0_value[0] = -1 elseif xor_0_0_temp_0_0_value == xor_0_0_temp_1_0_value then xor_0_0_active[0] = 0 /\\ xor_0_0_value[0] = 0 else xor_0_0_active[0] = 1 /\\ xor_0_0_value[0] = sum([(((floor(xor_0_0_temp_0_0_value/pow(2,j)) + floor(xor_0_0_temp_1_0_value/pow(2,j))) mod 2) * pow(2,j)) | j in 0..xor_0_0_bound_value_0_0]) endif;'])
+                        sage: result = xor_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(cp)
+                        sage: result.declarations[0]
+                        'var -2..255: xor_0_0_temp_0_0_value;'
+                        sage: result.constraints[0]
+                        'constraint xor_0_0_temp_0_0_value = plaintext_value[0] /\\ xor_0_0_temp_0_0_active = plaintext_active[0];'
         """
         output_id_link = self.id
         cp_declarations = []
@@ -547,9 +548,11 @@ class XOR(Component):
             sage: cp = MznModel(cipher)
             sage: cp.word_size = 8
             sage: xor_component = cipher.get_component_from_id("xor_0_0")
-            sage: xor_component.cp_xor_differential_propagation_first_step_constraints(cp, cp._variables_list)
-            (['array[0..1, 1..2] of int: xor_truncated_table_2 = array2d(0..1, 1..2, [0,0,1,1]);'],
-             'constraint table([plaintext[0]]++[key[0]], xor_truncated_table_2);')
+            sage: result = xor_component.cp_xor_differential_propagation_first_step_constraints(cp, cp._variables_list)
+            sage: result.declarations
+            ['array[0..1, 1..2] of int: xor_truncated_table_2 = array2d(0..1, 1..2, [0,0,1,1]);']
+            sage: result.constraints
+            'constraint table([plaintext[0]]++[key[0]], xor_truncated_table_2);'
         """
         numadd = self.description[1]
         all_inputs = []
@@ -1122,8 +1125,8 @@ class XOR(Component):
             sage: cipher = XorCipher(word_bit_size=2, number_of_inputs=2)
             sage: minizinc = MznModel(cipher)
             sage: xor_component = cipher.get_component_from_id('xor_0_0')
-            sage: _, xor_minizinc_constraints = xor_component.minizinc_constraints(minizinc)
-            sage: xor_minizinc_constraints[0]
+            sage: xor_minizinc_constraints = xor_component.minizinc_constraints(minizinc)
+            sage: xor_minizinc_constraints.constraints[0]
             'constraint xor_word(\narray1d(0..2-1, [xor_0_0_x2,xor_0_0_x3]),\narray1d(0..2-1, [xor_0_0_x0,xor_0_0_x1]),\narray1d(0..2-1, [xor_0_0_y0,xor_0_0_y1]))=true;\n'
         """
 
@@ -1457,8 +1460,11 @@ class XOR(Component):
             sage: cp = MznModel(cipher)
             sage: cp.word_size = 8
             sage: xor_component = cipher.get_component_from_id("xor_0_0")
-            sage: xor_component.cp_transform_xor_components_for_first_step(cp)
-            (['array[0..0] of var 0..1: xor_0_0;'], [])
+            sage: result = xor_component.cp_transform_xor_components_for_first_step(cp)
+            sage: result.declarations
+            ['array[0..0] of var 0..1: xor_0_0;']
+            sage: result.constraints
+            []
         """
         output_size = int(self.output_bit_size)
         input_id_link = self.input_id_links
