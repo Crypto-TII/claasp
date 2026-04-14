@@ -295,8 +295,9 @@ class MODADD(Modular):
 
             sage: from claasp.components.modadd_component import MODADD
             sage: modadd_component = MODADD(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2, 2)
-            sage: modadd_component.cp_constraints()[:1]
-            (['array[0..1] of var 0..1: pre_modadd_0_0_0;', 'array[0..1] of var 0..1: pre_modadd_0_0_1;', 'array[1..1] of var 0..1: carry_modadd_0_0;'],)
+            sage: result = modadd_component.cp_constraints()
+            sage: result.declarations[:3]
+            ['array[0..1] of var 0..1: pre_modadd_0_0_0;', 'array[0..1] of var 0..1: pre_modadd_0_0_1;', 'array[1..1] of var 0..1: carry_modadd_0_0;']
         """
         output_id_link = self.id
         num_add = self.description[1]

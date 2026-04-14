@@ -138,8 +138,11 @@ class SHIFT(Component):
 
             sage: from claasp.components.shift_component import SHIFT
             sage: shift_component = SHIFT(0, 0, ['input'], [[0, 1]], 2, 1)
-            sage: shift_component.cp_constraints()
-            ([], ['constraint shift_0_0[0] = 0;', 'constraint shift_0_0[1] = input[0];'])
+            sage: result = shift_component.cp_constraints()
+            sage: result.declarations
+            []
+            sage: result.constraints
+            ['constraint shift_0_0[0] = 0;', 'constraint shift_0_0[1] = input[0];']
         """
         shift_amount = abs(self.description[1])
         cp_declarations = []
@@ -186,8 +189,11 @@ class SHIFT(Component):
 
             sage: from claasp.components.shift_component import SHIFT
             sage: shift_component = SHIFT(0, 0, ['input'], [[0, 1]], 2, 1)
-            sage: shift_component.cp_inverse_constraints()
-            ([], ['constraint shift_0_0_inverse[0] = 0;', 'constraint shift_0_0_inverse[1] = input[0];'])
+            sage: result = shift_component.cp_inverse_constraints()
+            sage: result.declarations
+            []
+            sage: result.constraints
+            ['constraint shift_0_0_inverse[0] = 0;', 'constraint shift_0_0_inverse[1] = input[0];']
         """
         shift_amount = abs(self.description[1])
         cp_declarations = []
@@ -232,8 +238,11 @@ class SHIFT(Component):
             sage: class DummyModel:
             ....:     word_size = 2
             sage: shift_component = SHIFT(0, 18, ['sbox_0_2'], [list(range(4))], 4, -2)
-            sage: shift_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(DummyModel())
-            ([], ['constraint shift_0_18_active[0] = sbox_0_2_active[1];', 'constraint shift_0_18_active[1] = 0;', 'constraint shift_0_18_value[0] = sbox_0_2_active[1];', 'constraint shift_0_18_value[1] = 0;'])
+            sage: result = shift_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(DummyModel())
+            sage: result.declarations
+            []
+            sage: result.constraints
+            ['constraint shift_0_18_active[0] = sbox_0_2_active[1];', 'constraint shift_0_18_active[1] = 0;', 'constraint shift_0_18_value[0] = sbox_0_2_active[1];', 'constraint shift_0_18_value[1] = 0;']
         """
         output_size = int(self.output_bit_size)
         output_id_link = self.id
@@ -311,8 +320,11 @@ class SHIFT(Component):
             sage: class DummyModel:
             ....:     word_size = 2
             sage: shift_component = SHIFT(0, 18, ['input0'], [list(range(4))], 4, -2)
-            sage: shift_component.cp_xor_differential_first_step_constraints(DummyModel())
-            (['array[0..1] of var 0..1: shift_0_18;'], ['constraint shift_0_18[0] = input0[1];', 'constraint shift_0_18[1] = 0;'])
+            sage: result = shift_component.cp_xor_differential_first_step_constraints(DummyModel())
+            sage: result.declarations
+            ['array[0..1] of var 0..1: shift_0_18;']
+            sage: result.constraints
+            ['constraint shift_0_18[0] = input0[1];', 'constraint shift_0_18[1] = 0;']
         """
         output_size = int(self.output_bit_size)
         input_id_link = self.input_id_links
@@ -645,12 +657,11 @@ class SHIFT(Component):
             sage: cipher = ShiftCipher(bit_size=2, parameter=1)
             sage: minizinc = MznModel(cipher)
             sage: shift_component = cipher.get_component_from_id('shift_0_0')
-            sage: shift_component.minizinc_constraints(minizinc)
-            (['var bool: shift_0_0_x0;',
-            'var bool: shift_0_0_x1;',
-            'var bool: shift_0_0_y0;',
-            'var bool: shift_0_0_y1;'],
-            ['constraint RSHIFT(array1d(0..2-1, [shift_0_0_x0,shift_0_0_x1]), 1)=array1d(0..2-1, [shift_0_0_y0,shift_0_0_y1]);\n'])
+            sage: result = shift_component.minizinc_constraints(minizinc)
+            sage: result.declarations
+            ['var bool: shift_0_0_x0;', 'var bool: shift_0_0_x1;', 'var bool: shift_0_0_y0;', 'var bool: shift_0_0_y1;']
+            sage: result.constraints
+            ['constraint RSHIFT(array1d(0..2-1, [shift_0_0_x0,shift_0_0_x1]), 1)=array1d(0..2-1, [shift_0_0_y0,shift_0_0_y1]);\n']
         """
         var_names = self._define_var(model.input_postfix, model.output_postfix, model.data_type)
         shift_const = self.description[1]

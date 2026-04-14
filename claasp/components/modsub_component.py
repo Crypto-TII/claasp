@@ -196,8 +196,9 @@ class MODSUB(Modular):
 
             sage: from claasp.components.modsub_component import MODSUB
             sage: modsub_component = MODSUB(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2, 2)
-            sage: modsub_component.cp_constraints()[:1]
-            (['array[0..1] of var 0..1: constant_modsub_0_0= array1d(0..1,[0, 1]);', 'array[0..1] of var 0..1: modsub_0_0;', 'array[0..1] of var 0..1:pre_modsub_0_0_0;', 'array[0..1] of var 0..1:pre_modsub_0_0_1;', 'array[0..1] of var 0..1:pre_minus_pre_modsub_0_0_1;', 'array[0..1] of var 0..1:minus_pre_modsub_0_0_1;'],)
+            sage: result = modsub_component.cp_constraints()
+            sage: result.declarations[:6]
+            ['array[0..1] of var 0..1: constant_modsub_0_0= array1d(0..1,[0, 1]);', 'array[0..1] of var 0..1: modsub_0_0;', 'array[0..1] of var 0..1:pre_modsub_0_0_0;', 'array[0..1] of var 0..1:pre_modsub_0_0_1;', 'array[0..1] of var 0..1:pre_minus_pre_modsub_0_0_1;', 'array[0..1] of var 0..1:minus_pre_modsub_0_0_1;']
         """
         output_size = self.output_bit_size
         output_id_link = self.id
