@@ -50,8 +50,8 @@ def test_cp_constraints():
 
 def test_cp_deterministic_truncated_xor_differential_constraints():
     sbox_component = SBOX(0, 1, ["xor_0_0"], [[0, 1, 2, 3]], 4, [1, 2, 3, 4, 0, 7, 6, 5])
-    declarations, constraints, sbox_mant = sbox_component.cp_deterministic_truncated_xor_differential_constraints(
-        sbox_mant=[]
+    declarations, constraints, sbox_table_cache = sbox_component.cp_deterministic_truncated_xor_differential_constraints(
+        sbox_table_cache=[]
     )
 
     assert declarations[0].startswith("array [1..27, 1..6] of int: table_sbox_0_1")
@@ -59,13 +59,13 @@ def test_cp_deterministic_truncated_xor_differential_constraints():
         "constraint table([xor_0_0[0]]++[xor_0_0[1]]++[xor_0_0[2]]++[xor_0_0[3]]++[sbox_0_1[0]]++"
         "[sbox_0_1[1]]++[sbox_0_1[2]]++[sbox_0_1[3]], table_sbox_0_1);"
     ]
-    assert sbox_mant[0][1] == "sbox_0_1"
+    assert sbox_table_cache[0][1] == "sbox_0_1"
 
 
 def test_cp_xor_differential_propagation_constraints():
     sbox_component = SBOX(0, 0, ["plaintext"], [[0, 1, 2]], 3, list(range(8)))
     cp = type("DummyModel", (), {})()
-    cp.sbox_mant = []
+    cp.sbox_table_cache = []
     cp.component_and_probability = {}
     cp.component_probability_index = 0
 
@@ -81,7 +81,7 @@ def test_cp_xor_differential_propagation_constraints():
 def test_cp_xor_linear_mask_propagation_constraints():
     sbox_component = SBOX(0, 0, ["plaintext"], [[0, 1, 2]], 3, list(range(8)))
     cp = type("DummyModel", (), {})()
-    cp.sbox_mant = []
+    cp.sbox_table_cache = []
     cp.component_and_probability = {}
     cp.component_probability_index = 0
 

@@ -57,7 +57,7 @@ def test_cp_xor_differential_propagation_constraints():
     class DummyModel:
         component_probability_index = 0
         component_and_probability = {}
-        modadd_twoterms_mant = []
+        modadd_two_term_shift_cache = []
 
     modsub_component = MODSUB(0, 7, ['modadd_0_4', 'plaintext'], [list(range(32)), list(range(32, 64))], 32, 2 ** 32)
     cp_model = DummyModel()
