@@ -723,12 +723,12 @@ class MznHybridImpossibleXorDifferentialModel(MznImpossibleXorDifferentialModel)
                 if key_schedule and probabilistic:
                     variables, constraints = component.cp_xor_differential_propagation_constraints(self, inverse)
                 else:
-                    variables, constraints, sbox_mant = (
+                    variables, constraints, sbox_table_cache = (
                         component.cp_hybrid_deterministic_truncated_xor_differential_constraints(
-                            self.sbox_mant, inverse, self.sboxes_component_number_list
+                            self.sbox_table_cache, inverse, self.sboxes_component_number_list
                         )
                     )
-                    self.sbox_mant = sbox_mant
+                    self.sbox_table_cache = sbox_table_cache
                     self.sbox_size = component.output_bit_size
             elif component.description[0] == "XOR":
                 variables, constraints = component.cp_hybrid_deterministic_truncated_xor_differential_constraints()

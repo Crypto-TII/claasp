@@ -132,7 +132,7 @@ class MznXorLinearModel(MznModel):
             sage: cp.build_xor_linear_trail_model(-1, fixed_variables)
         """
         self.initialise_model()
-        self.sbox_mant = []
+        self.sbox_table_cache = []
         self.component_probability_index = 0
         self._variables_list = []
         self.component_and_probability = {}
@@ -669,7 +669,7 @@ class MznXorLinearModel(MznModel):
               'var int: weight = sum(p);'],
              [])
         """
-        self.sbox_mant = []
+        self.sbox_table_cache = []
         cp_constraints = []
         and_already_added = []
         cipher_inputs = self._cipher.inputs
@@ -728,8 +728,8 @@ class MznXorLinearModel(MznModel):
         description = component.description
         sbox = SBox(description)
         already_in = False
-        for i in range(len(self.sbox_mant)):
-            if description == self.sbox_mant[i][0]:
+        for i in range(len(self.sbox_table_cache)):
+            if description == self.sbox_table_cache[i][0]:
                 already_in = True
         if not already_in:
             sbox_lat = sbox.linear_approximation_table()
@@ -742,7 +742,7 @@ class MznXorLinearModel(MznModel):
                         for occurence in set_of_occurrences
                     }
                 )
-            self.sbox_mant.append((description, output_id_link))
+            self.sbox_table_cache.append((description, output_id_link))
 
     def weight_xor_linear_constraints(self, weight):
         """
