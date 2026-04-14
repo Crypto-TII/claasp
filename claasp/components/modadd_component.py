@@ -338,15 +338,15 @@ class MODADD(Modular):
     def cp_twoterms_xor_differential_probability(
         self, inp1, inp2, out, inplen, cp_constraints, cp_declarations, component_probability_index, model
     ):
-        if inp1 not in model.modadd_twoterms_mant:
+        if inp1 not in model.modadd_two_term_shift_cache:
             cp_declarations.append(f"array[0..{inplen - 1}] of var 0..1: Shi_{inp1} = LShift({inp1},1);")
-            model.modadd_twoterms_mant.append(inp1)
-        if inp2 not in model.modadd_twoterms_mant:
+            model.modadd_two_term_shift_cache.append(inp1)
+        if inp2 not in model.modadd_two_term_shift_cache:
             cp_declarations.append(f"array[0..{inplen - 1}] of var 0..1: Shi_{inp2} = LShift({inp2},1);")
-            model.modadd_twoterms_mant.append(inp2)
-        if out not in model.modadd_twoterms_mant:
+            model.modadd_two_term_shift_cache.append(inp2)
+        if out not in model.modadd_two_term_shift_cache:
             cp_declarations.append(f"array[0..{inplen - 1}] of var 0..1: Shi_{out} = LShift({out},1);")
-            model.modadd_twoterms_mant.append(out)
+            model.modadd_two_term_shift_cache.append(out)
         cp_declarations.append(f"array[0..{inplen - 1}] of var 0..1: eq_{out} = Eq(Shi_{inp1}, Shi_{inp2}, Shi_{out});")
         cp_constraints.append(
             f"constraint forall(j in 0..{inplen - 1})(if eq_{out}[j] = 1 then (sum([{inp1}[j], {inp2}[j], "

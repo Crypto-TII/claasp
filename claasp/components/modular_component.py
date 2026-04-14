@@ -402,15 +402,15 @@ class Modular(Component):
     def cp_twoterms_xor_differential_probability(
         self, input_1, input_2, out, input_length, cp_constraints, cp_declarations, component_probability_index, model
     ):
-        if input_1 not in model.modadd_twoterms_mant:
+        if input_1 not in model.modadd_two_term_shift_cache:
             cp_declarations.append(f"array[0..{input_length - 1}] of var 0..1: Shi_{input_1} = LShift({input_1},1);")
-            model.modadd_twoterms_mant.append(input_1)
-        if input_2 not in model.modadd_twoterms_mant:
+            model.modadd_two_term_shift_cache.append(input_1)
+        if input_2 not in model.modadd_two_term_shift_cache:
             cp_declarations.append(f"array[0..{input_length - 1}] of var 0..1: Shi_{input_2} = LShift({input_2},1);")
-            model.modadd_twoterms_mant.append(input_2)
-        if out not in model.modadd_twoterms_mant:
+            model.modadd_two_term_shift_cache.append(input_2)
+        if out not in model.modadd_two_term_shift_cache:
             cp_declarations.append(f"array[0..{input_length - 1}] of var 0..1: Shi_{out} = LShift({out},1);")
-            model.modadd_twoterms_mant.append(out)
+            model.modadd_two_term_shift_cache.append(out)
         cp_declarations.append(
             f"array[0..{input_length - 1}] of var 0..1: eq_{out} = Eq(Shi_{input_1}, Shi_{input_2}, Shi_{out});"
         )

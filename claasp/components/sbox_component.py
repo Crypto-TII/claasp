@@ -80,7 +80,7 @@ def check_table_feasibility(table, table_type, solver):
 
 
 def cp_update_ddt_valid_probabilities(
-    cipher, component, word_size, cp_declarations, table_items, valid_probabilities, sbox_mant
+    cipher, component, word_size, cp_declarations, table_items, valid_probabilities, sbox_table_cache
 ):
     """
     Update CP bookkeeping for S-box differential probabilities.
@@ -94,7 +94,7 @@ def cp_update_ddt_valid_probabilities(
     - ``cp_declarations`` -- **list**; declarations updated in place
     - ``table_items`` -- **list**; table items updated in place
     - ``valid_probabilities`` -- **set**; differential weights updated in place
-    - ``sbox_mant`` -- **list**; cache of already processed S-boxes
+    - ``sbox_table_cache`` -- **list**; cache of already processed S-boxes
 
     OUTPUT:
 
@@ -107,15 +107,15 @@ def cp_update_ddt_valid_probabilities(
         ....:     def is_spn(self):
         ....:         return True
         sage: component = SBOX(0, 0, ['xor_0_0'], [[0, 1, 2, 3]], 4, [12, 5, 6, 11, 9, 0, 10, 13, 3, 14, 15, 8, 4, 7, 1, 2])
-        sage: cp_declarations, table_items, valid_probabilities, sbox_mant = [], [], set(), []
-        sage: cp_update_ddt_valid_probabilities(DummyCipher(), component, 4, cp_declarations, table_items, valid_probabilities, sbox_mant)
+        sage: cp_declarations, table_items, valid_probabilities, sbox_table_cache = [], [], set(), []
+        sage: cp_update_ddt_valid_probabilities(DummyCipher(), component, 4, cp_declarations, table_items, valid_probabilities, sbox_table_cache)
         sage: len(valid_probabilities) > 0
         True
         sage: cp_declarations
         ['constraint (xor_0_0[0]+xor_0_0[1]+xor_0_0[2]+xor_0_0[3] > 0) = word_sbox_0_0[0];', 'array[0..0] of var 0..1: word_sbox_0_0;']
         sage: table_items
         ['[word_sbox_0_0[s] | s in 0..0]']
-        sage: sbox_mant
+        sage: sbox_table_cache
         [([12, 5, 6, 11, 9, 0, 10, 13, 3, 14, 15, 8, 4, 7, 1, 2], 'sbox_0_0')]
     """
     input_size = int(component.input_bit_size)
@@ -123,7 +123,7 @@ def cp_update_ddt_valid_probabilities(
     description = component.description
     sbox = SBox(description)
     sbox_already_in = False
-    for mant in sbox_mant:
+    for mant in sbox_table_cache:
         if description == mant[0]:
             sbox_already_in = True
     if not sbox_already_in:
@@ -134,7 +134,7 @@ def cp_update_ddt_valid_probabilities(
             valid_probabilities.update(
                 {round(100 * math.log2(2**input_size / occurrence)) for occurrence in set_of_occurrences}
             )
-        sbox_mant.append((description, output_id_link))
+        sbox_table_cache.append((description, output_id_link))
     if cipher.is_spn():
         input_id_link = component.input_id_links[0]
         input_bit_positions = component.input_bit_positions[0]
@@ -147,7 +147,7 @@ def cp_update_ddt_valid_probabilities(
         table_items.append(f"[word_{output_id_link}[s] | s in 0..{input_size // word_size - 1}]")
 
 
-def cp_update_lat_valid_probabilities(component, valid_probabilities, sbox_mant):
+def cp_update_lat_valid_probabilities(component, valid_probabilities, sbox_table_cache):
     """
     Update CP bookkeeping for S-box linear probabilities.
 
@@ -155,7 +155,7 @@ def cp_update_lat_valid_probabilities(component, valid_probabilities, sbox_mant)
 
     - ``component`` -- component-like object with ``input_bit_size``, ``id`` and ``description``
     - ``valid_probabilities`` -- **set**; linear weights updated in place
-    - ``sbox_mant`` -- **list**; cache of already processed S-boxes
+    - ``sbox_table_cache`` -- **list**; cache of already processed S-boxes
 
     OUTPUT:
 
@@ -165,11 +165,11 @@ def cp_update_lat_valid_probabilities(component, valid_probabilities, sbox_mant)
 
         sage: from claasp.components.sbox_component import SBOX, cp_update_lat_valid_probabilities
         sage: component = SBOX(0, 0, ['xor_0_0'], [[0, 1, 2, 3]], 4, [12, 5, 6, 11, 9, 0, 10, 13, 3, 14, 15, 8, 4, 7, 1, 2])
-        sage: valid_probabilities, sbox_mant = set(), []
-        sage: cp_update_lat_valid_probabilities(component, valid_probabilities, sbox_mant)
+        sage: valid_probabilities, sbox_table_cache = set(), []
+        sage: cp_update_lat_valid_probabilities(component, valid_probabilities, sbox_table_cache)
         sage: len(valid_probabilities) > 0
         True
-        sage: sbox_mant
+        sage: sbox_table_cache
         [([12, 5, 6, 11, 9, 0, 10, 13, 3, 14, 15, 8, 4, 7, 1, 2], 'sbox_0_0')]
     """
     input_size = component.input_bit_size
@@ -177,8 +177,8 @@ def cp_update_lat_valid_probabilities(component, valid_probabilities, sbox_mant)
     description = component.description
     sbox = SBox(description)
     already_in = False
-    for i in range(len(sbox_mant)):
-        if description == sbox_mant[i][0]:
+    for i in range(len(sbox_table_cache)):
+        if description == sbox_table_cache[i][0]:
             already_in = True
     if not already_in:
         sbox_lat = sbox.linear_approximation_table()
@@ -188,7 +188,7 @@ def cp_update_lat_valid_probabilities(component, valid_probabilities, sbox_mant)
             valid_probabilities.update(
                 {round(100 * math.log2(abs(pow(2, input_size - 1) / occurence))) for occurence in set_of_occurrences}
             )
-        sbox_mant.append((description, output_id_link))
+        sbox_table_cache.append((description, output_id_link))
 
 
 def milp_set_constraints_from_dictionnary_for_large_sbox(
@@ -497,17 +497,17 @@ def _get_truncated_output_difference(ddt_row, n):
     return has_undisturbed_bits, output_bits
 
 
-def _mzn_update_sbox_mant_for_deterministic_truncated_xor_differential(
-    inv_output_id_link, undisturbed_bits, sbox_mant, inverse
+def _mzn_update_sbox_table_cache_for_deterministic_truncated_xor_differential(
+    inv_output_id_link, undisturbed_bits, sbox_table_cache, inverse
 ):
     """
     Update and query the S-box deduplication cache for deterministic truncated xor differential constraints.
 
-    `sbox_mant` ("S-box Materialized") is a deduplication cache that accumulates S-box table descriptions
+    `sbox_table_cache` is a deduplication cache that accumulates S-box table descriptions
     to avoid generating duplicate constraint declarations during constraint programming model generation.
     This is critical when the same S-box appears across multiple cipher rounds or component instances.
 
-    Entries in `sbox_mant` for this function are stored as:
+    Entries in `sbox_table_cache` for this function are stored as:
         [undisturbed_table_bits_string, output_id_link]
 
     where:
@@ -517,12 +517,12 @@ def _mzn_update_sbox_mant_for_deterministic_truncated_xor_differential(
     This function:
     1. Checks if the S-box's undisturbed table has already been declared (cache hit)
     2. Returns the existing output_id_link if found (for constraint reuse)
-    3. Otherwise, adds the new entry to sbox_mant and returns the new output_id_link
+    3. Otherwise, adds the new entry to `sbox_table_cache` and returns the new output_id_link
 
     Args:
         inv_output_id_link: Component ID for this S-box (used as lookup key)
         undisturbed_bits: List of (input_tuple, output_tuple) differential pairs with undisturbed bits
-        sbox_mant: Accumulating cache list modified in-place; tracks [table_bits, id] entries
+        sbox_table_cache: Accumulating cache list modified in-place; tracks [table_bits, id] entries
         inverse: Boolean flag used for matching cache entries (e.g., "inverse_sbox_0_1")
 
     Returns:
@@ -539,12 +539,12 @@ def _mzn_update_sbox_mant_for_deterministic_truncated_xor_differential(
     undisturbed_table_bits = ",".join(undisturbed_bits_ddt)
     already_in = False
     output_id_link_sost = inv_output_id_link
-    for mant in sbox_mant:
+    for mant in sbox_table_cache:
         if undisturbed_table_bits == mant[0] and ((not inverse) or (inverse and "inverse" in mant[1])):
             already_in = True
             output_id_link_sost = mant[1]
     if not already_in:
-        sbox_mant.append([undisturbed_table_bits, inv_output_id_link])
+        sbox_table_cache.append([undisturbed_table_bits, inv_output_id_link])
 
     return already_in, output_id_link_sost, undisturbed_table_bits
 
@@ -574,13 +574,13 @@ class SBOX(Component):
         sage: print(len(component.description))
         8
 
-    NOTE ON `sbox_mant` (S-box Materialized Cache):
+    NOTE ON `sbox_table_cache`:
 
     The S-box component's constraint generation methods for Constraint Programming (CP) models
-    accept and return an ``sbox_mant`` parameter, a deduplication cache that avoids redundant table declarations.
+    accept and return an ``sbox_table_cache`` parameter, a deduplication cache that avoids redundant table declarations.
 
     **Purpose**: When multiple S-boxes in a cipher are identical or share the same lookup structure, declaring
-    the same constraint table multiple times is wasteful. The `sbox_mant` cache tracks already-generated tables
+    the same constraint table multiple times is wasteful. The `sbox_table_cache` tracks already-generated tables
     across component rounds and instances.
 
     **Structure**: A list of entries where each entry type depends on the constraint model:
@@ -588,9 +588,9 @@ class SBOX(Component):
     - For ``cp_deterministic_truncated_xor_differential_constraints``: ``[undisturbed_bits_string, component_id]`` list
 
     **Usage Pattern**:
-    1. Initialize with empty list: ``sbox_mant = []``
-    2. Pass to first component: ``decls1, constraints1, sbox_mant = sbox1.cp_constraints(sbox_mant=[])``
-    3. Reuse cache for subsequent components: ``decls2, constraints2, sbox_mant = sbox2.cp_constraints(sbox_mant)``
+    1. Initialize with empty list: ``sbox_table_cache = []``
+    2. Pass to first component: ``decls1, constraints1 = sbox1.cp_constraints(sbox_table_cache=[])``
+    3. Reuse cache for subsequent components: ``decls2, constraints2 = sbox2.cp_constraints(sbox_table_cache)``
     4. If sbox2 matches sbox1, then ``decls2`` will be empty (table reused via table name reference)
 
     **Benefit**: Reduces constraint bloat in models with repeated S-box instances and improves solver performance.
@@ -763,13 +763,13 @@ class SBOX(Component):
     def cms_xor_linear_mask_propagation_constraints(self, model):
         return self.sat_xor_linear_mask_propagation_constraints(model)
 
-    def cp_constraints(self, sbox_mant, second=False):
+    def cp_constraints(self, sbox_table_cache, second=False):
         """
         Return lists of declarations and constraints for SBOX component for CP CIPHER model.
 
         INPUT:
 
-        - ``sbox_mant`` -- **list of objects**; the list of the S-boxes already encountered so that there is no need to calculate the constraints again
+        - ``sbox_table_cache`` -- **list of objects**; the list of the S-boxes already encountered so that there is no need to calculate the constraints again
 
         EXAMPLES::
 
@@ -787,7 +787,7 @@ class SBOX(Component):
             sec_output_id_link = self.id
         already_in = False
         output_id_link_sost = sec_output_id_link
-        for mant in sbox_mant:
+        for mant in sbox_table_cache:
             if sbox == mant[0] and ((not second) or (second and "second" in mant[1])):
                 already_in = True
                 output_id_link_sost = mant[1]
@@ -804,7 +804,7 @@ class SBOX(Component):
                 f"[{table_values}]);"
             )
             cp_declarations.append(sbox_declaration)
-            sbox_mant.append((sbox, self.id))
+            sbox_table_cache.append((sbox, self.id))
         all_inputs = []
         for id_link, bit_positions in zip(self.input_id_links, self.input_bit_positions):
             all_inputs.extend([f"[{id_link}[{position}]]" for position in bit_positions])
@@ -814,7 +814,7 @@ class SBOX(Component):
 
         return cp_declarations, cp_constraints
 
-    def cp_deterministic_truncated_xor_differential_constraints(self, sbox_mant, inverse=False):
+    def cp_deterministic_truncated_xor_differential_constraints(self, sbox_table_cache, inverse=False):
         """
         Return lists of declarations and constraints for SBOX component for CP deterministic truncated xor differential.
 
@@ -827,12 +827,12 @@ class SBOX(Component):
             sage: from claasp.components.sbox_component import SBOX
             sage: sbox = [1, 2, 3, 4, 0, 7, 6, 5]
             sage: sbox_component = SBOX(0, 1, ['xor_0_0'], [[0, 1, 2, 3]], 4, sbox)
-            sage: declarations, constraints, sbox_mant = sbox_component.cp_deterministic_truncated_xor_differential_constraints(sbox_mant = [])
+            sage: declarations, constraints, sbox_table_cache = sbox_component.cp_deterministic_truncated_xor_differential_constraints(sbox_table_cache=[])
             sage: declarations
             ['array [1..27, 1..6] of int: table_sbox_0_1 = array2d(1..27, 1..6, [0,0,0,0,0,0,0,0,1,2,1,1,0,1,0,2,1,0,0,1,1,2,0,1,1,0,0,2,0,1,1,0,1,2,1,0,1,1,0,2,1,1,1,1,1,1,0,0,0,0,2,2,2,2,0,2,0,2,2,0,0,2,2,2,2,2,2,0,0,2,0,2,2,0,2,2,2,2,2,2,0,2,2,2,2,2,2,2,2,2,0,2,1,2,2,1,2,0,1,2,1,2,2,2,1,2,2,2,0,1,2,2,2,2,2,1,0,2,1,2,2,1,2,2,2,2,2,1,1,2,0,2,1,0,2,2,2,2,1,2,0,2,2,1,1,2,2,2,2,2,1,2,1,2,2,0,1,1,2,2,2,2]);']
             sage: constraints
             ['constraint table([xor_0_0[0]]++[xor_0_0[1]]++[xor_0_0[2]]++[xor_0_0[3]]++[sbox_0_1[0]]++[sbox_0_1[1]]++[sbox_0_1[2]]++[sbox_0_1[3]], table_sbox_0_1);']
-            sage: sbox_mant
+            sage: sbox_table_cache
             [['0,0,0,0,0,0,0,0,1,2,1,1,0,1,0,2,1,0,0,1,1,2,0,1,1,0,0,2,0,1,1,0,1,2,1,0,1,1,0,2,1,1,1,1,1,1,0,0,0,0,2,2,2,2,0,2,0,2,2,0,0,2,2,2,2,2,2,0,0,2,0,2,2,0,2,2,2,2,2,2,0,2,2,2,2,2,2,2,2,2,0,2,1,2,2,1,2,0,1,2,1,2,2,2,1,2,2,2,0,1,2,2,2,2,2,1,0,2,1,2,2,1,2,2,2,2,2,1,1,2,0,2,1,0,2,2,2,2,1,2,0,2,2,1,1,2,2,2,2,2,1,2,1,2,2,0,1,1,2,2,2,2',
             'sbox_0_1']]
         """
@@ -852,8 +852,8 @@ class SBOX(Component):
         table_output = "++".join([f"[{output_id_link}[{i}]]" for i in range(self.output_bit_size)])
 
         already_in, output_id_link_sost, undisturbed_table_bits = (
-            _mzn_update_sbox_mant_for_deterministic_truncated_xor_differential(
-                inv_output_id_link, eventual_undisturbed_bits, sbox_mant, inverse
+            _mzn_update_sbox_table_cache_for_deterministic_truncated_xor_differential(
+                inv_output_id_link, eventual_undisturbed_bits, sbox_table_cache, inverse
             )
         )
 
@@ -869,22 +869,22 @@ class SBOX(Component):
         new_constraint = f"constraint table({table_input}++{table_output}, table_{output_id_link_sost});"
         cp_constraints.append(new_constraint)
 
-        return cp_declarations, cp_constraints, sbox_mant
+        return cp_declarations, cp_constraints, sbox_table_cache
 
-    def cp_deterministic_truncated_xor_differential_trail_constraints(self, sbox_mant, inverse=False):
-        return self.cp_deterministic_truncated_xor_differential_constraints(sbox_mant, inverse)
+    def cp_deterministic_truncated_xor_differential_trail_constraints(self, sbox_table_cache, inverse=False):
+        return self.cp_deterministic_truncated_xor_differential_constraints(sbox_table_cache, inverse)
 
-    def cp_semi_deterministic_truncated_xor_differential_constraints(self, sbox_mant=None, inverse=False):
+    def cp_semi_deterministic_truncated_xor_differential_constraints(self, sbox_table_cache=None, inverse=False):
         raise NotImplementedError("Semi-deterministic CP model not supported for SBOX component yet")
 
     def cp_hybrid_deterministic_truncated_xor_differential_constraints(
-        self, sbox_mant, inverse=False, list_of_component_number=[]
+        self, sbox_table_cache, inverse=False, list_of_component_number=[]
     ):
         """
         Return lists of declarations and constraints for SBOX component for CP hybrid deterministic truncated xor differential.
 
         INPUT:
-        - ``sbox_mant`` -- **list**
+        - ``sbox_table_cache`` -- **list**
         - ``inverse`` -- **boolean** (default: `False`)
         - ``list_of_component_number`` -- **list** (default: `[]`)
 
@@ -894,7 +894,7 @@ class SBOX(Component):
             sage: from claasp.components.sbox_component import SBOX
             sage: lblock_sbox = [14, 9, 15, 0, 13, 4, 10, 11, 1, 2, 8, 3, 7, 6, 12, 5]
             sage: sbox_component = SBOX(0, 2, ['xor_0_1'], [[4, 5, 6, 7]], 4, lblock_sbox)
-            sage: declarations, constraints, sbox_mant = sbox_component.cp_hybrid_deterministic_truncated_xor_differential_constraints(sbox_mant = [])
+            sage: declarations, constraints, sbox_table_cache = sbox_component.cp_hybrid_deterministic_truncated_xor_differential_constraints(sbox_table_cache=[])
             sage: constraints
             ['constraint abstract_sbox_0_2(array1d(0..3, [xor_0_1[4]]++[xor_0_1[5]]++[xor_0_1[6]]++[xor_0_1[7]]), array1d(0..3, [sbox_0_2[0]]++[sbox_0_2[1]]++[sbox_0_2[2]]++[sbox_0_2[3]]), 0, 0);']
         """
@@ -957,8 +957,8 @@ class SBOX(Component):
         table_input = "++".join(all_inputs)
         table_output = "++".join([f"[{self.id}[{i}]]" for i in range(output_size)])
 
-        already_in, output_id_link_sost, _ = _mzn_update_sbox_mant_for_deterministic_truncated_xor_differential(
-            inv_output_id_link, undisturbed_bits, sbox_mant, inverse
+        already_in, output_id_link_sost, _ = _mzn_update_sbox_table_cache_for_deterministic_truncated_xor_differential(
+            inv_output_id_link, undisturbed_bits, sbox_table_cache, inverse
         )
 
         cp_declarations = []
@@ -973,7 +973,7 @@ class SBOX(Component):
         cp_constraint = f"constraint abstract_{output_id_link_sost}(array1d(0..{len(all_inputs) - 1}, {table_input}), array1d(0..{output_size - 1}, {table_output}), {round}, {index_of_id});"
         cp_constraints = [cp_constraint]
 
-        return cp_declarations, cp_constraints, sbox_mant
+        return cp_declarations, cp_constraints, sbox_table_cache
 
     def cp_wordwise_deterministic_truncated_xor_differential_constraints(self, model):
         """
@@ -1068,7 +1068,7 @@ class SBOX(Component):
             sage: from claasp.components.sbox_component import SBOX
             sage: sbox_component = SBOX(0, 0, ['plaintext'], [[0, 1, 2]], 3, [0, 1, 2, 3, 4, 5, 6, 7])
             sage: cp = type('DummyModel', (), {})()
-            sage: cp.sbox_mant = []
+            sage: cp.sbox_table_cache = []
             sage: cp.component_and_probability = {}
             sage: cp.component_probability_index = 0
             sage: cp_decl, cp_constr = sbox_component.cp_xor_differential_propagation_constraints(cp)[0:2]
@@ -1084,7 +1084,7 @@ class SBOX(Component):
             output_id_link_sost = f"inverse_{self.id}"
         else:
             output_id_link_sost = self.id
-        for mant in model.sbox_mant:
+        for mant in model.sbox_table_cache:
             if description == mant[0] and ((not inverse) or (inverse and "inverse" in mant[1])):
                 already_in = True
                 output_id_link_sost = mant[1]
@@ -1107,7 +1107,7 @@ class SBOX(Component):
                 f"[{ddt_values}]);"
             )
             cp_declarations.append(sbox_declaration)
-            model.sbox_mant.append((description, self.id))
+            model.sbox_table_cache.append((description, self.id))
         all_inputs = []
         for id_link, bit_positions in zip(self.input_id_links, self.input_bit_positions):
             all_inputs.extend([f"[{id_link}[{position}]]" for position in bit_positions])
@@ -1133,7 +1133,7 @@ class SBOX(Component):
             sage: from claasp.components.sbox_component import SBOX
             sage: sbox_component = SBOX(0, 0, ['plaintext'], [[0, 1, 2]], 3, [0, 1, 2, 3, 4, 5, 6, 7])
             sage: cp = type('DummyModel', (), {})()
-            sage: cp.sbox_mant = []
+            sage: cp.sbox_table_cache = []
             sage: cp.component_and_probability = {}
             sage: cp.component_probability_index = 0
             sage: cp_decl, cp_constr = sbox_component.cp_xor_linear_mask_propagation_constraints(cp)[0:2]
@@ -1149,11 +1149,11 @@ class SBOX(Component):
         cp_constraints = []
         already_in = 0
         output_id_link_sost = output_id_link
-        sbox_mant = model.sbox_mant
-        for i in range(len(sbox_mant)):
-            if description == sbox_mant[i][0]:
+        sbox_table_cache = model.sbox_table_cache
+        for i in range(len(sbox_table_cache)):
+            if description == sbox_table_cache[i][0]:
                 already_in = 1
-                output_id_link_sost = sbox_mant[i][1]
+                output_id_link_sost = sbox_table_cache[i][1]
         if already_in == 0:
             size = 0
             sbox_lat = sbox.linear_approximation_table()
@@ -1172,7 +1172,7 @@ class SBOX(Component):
             )
             sbox_declaration = pre_declaration + sbox_declaration[:-1] + "]);"
             cp_declarations.append(sbox_declaration)
-            sbox_mant.append((description, output_id_link))
+            sbox_table_cache.append((description, output_id_link))
         cp_declarations.append(f"array[0..{input_size - 1}] of var 0..1: {output_id_link}_i;")
         cp_declarations.append(f"array[0..{output_size - 1}] of var 0..1: {output_id_link}_o;")
         new_constraint = "constraint table("

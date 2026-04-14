@@ -137,9 +137,15 @@ class MixColumn(LinearLayer):
         self._type = "mix_column"
 
     def _cp_add_declarations_and_constraints(
-        self, word_size, mix_column_mant, list_of_xor_components, cp_constraints, cp_declarations, mix_column_name
+        self,
+        word_size,
+        mix_column_declaration_cache,
+        list_of_xor_components,
+        cp_constraints,
+        cp_declarations,
+        mix_column_name,
     ):
-        for component_mix in mix_column_mant:
+        for component_mix in mix_column_declaration_cache:
             variables, constraints = self._cp_create_component(
                 word_size, component_mix, mix_column_name, list_of_xor_components
             )
@@ -431,7 +437,7 @@ class MixColumn(LinearLayer):
 
             sage: from claasp.components.mix_column_component import MixColumn
             sage: mix_column_component = MixColumn(0, 0, ['in'], [[0, 1, 2, 3]], 4, [[[1, 0], [0, 1]], 0, 2])
-            sage: DummyModel = type('DummyModel', (), {'word_size': 2, 'mix_column_mant': [], 'list_of_xor_components': []})
+            sage: DummyModel = type('DummyModel', (), {'word_size': 2, 'mix_column_declaration_cache': [], 'list_of_xor_components': []})
             sage: declarations, constraints = mix_column_component.cp_xor_differential_propagation_first_step_constraints(DummyModel())
             sage: declarations
             ['array[0..1] of var 0..1: mix_column_0_0;',
@@ -472,7 +478,7 @@ class MixColumn(LinearLayer):
             cp_declarations.append(f"array[0..{number_of_mix - 1}] of var 0..1: {output_id_link}_i;")
         cp_declarations.append(f"array[0..{(output_size - 1) // model.word_size}] of var 0..1: {output_id_link};")
         already_in = False
-        for mant in model.mix_column_mant:
+        for mant in model.mix_column_declaration_cache:
             if description == mant.description:
                 already_in = True
                 mix_column_name = mant.id
@@ -488,13 +494,13 @@ class MixColumn(LinearLayer):
         if additional_constraint == "yes":
             self._cp_add_declarations_and_constraints(
                 model.word_size,
-                model.mix_column_mant,
+                model.mix_column_declaration_cache,
                 model.list_of_xor_components,
                 cp_constraints,
                 cp_declarations,
                 mix_column_name,
             )
-        model.mix_column_mant.append(self)
+        model.mix_column_declaration_cache.append(self)
         result = cp_declarations, cp_constraints
 
         return result

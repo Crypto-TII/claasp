@@ -93,9 +93,9 @@ class MznModel:
                     break
         self._float_and_lat_values = []
         self._probability = False
-        self.sbox_mant = []
-        self.mix_column_mant = []
-        self.modadd_twoterms_mant = []
+        self.sbox_table_cache = []
+        self.mix_column_declaration_cache = []
+        self.modadd_two_term_shift_cache = []
         self.input_sbox = []
         self.table_of_solutions_length = 0
         self.list_of_xor_components = []
