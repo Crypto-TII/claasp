@@ -46,7 +46,6 @@ class MznDeterministicTruncatedXorDifferentialModelARXOptimized(MznModel):
             sage: minizinc.build_deterministic_truncated_xor_differential_trail_model()
             ...
         """
-        variables = []
         constraints = self.fix_variables_value_constraints_for_ARX(fixed_variables)
         self._variables_list = []
         self._model_constraints = constraints

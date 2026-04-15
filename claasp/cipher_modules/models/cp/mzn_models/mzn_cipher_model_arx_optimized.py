@@ -47,7 +47,6 @@ class MznCipherModelARXOptimized(MznModel):
             ...
         """
         self._variables_list = []
-        variables = []
         constraints = self.fix_variables_value_constraints_for_ARX(fixed_variables)
         self._model_constraints = constraints
         component_types = [CIPHER_OUTPUT, INTERMEDIATE_OUTPUT, WORD_OPERATION]
