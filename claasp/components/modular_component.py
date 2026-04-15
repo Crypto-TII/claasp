@@ -424,20 +424,21 @@ class Modular(Component):
 
         return CpComponentBuildResult(cp_declarations, cp_constraints)
 
-    def cp_wordwise_deterministic_truncated_xor_differential_constraints(self, model):
+    def cp_wordwise_deterministic_truncated_xor_differential_constraints(self, context, state):
         """
         Return lists declarations and constraints for XOR component CP wordwise deterministic truncated XOR differential model.
 
         INPUT:
 
-        - ``model`` -- **model object**; a model instance
+        - ``context`` -- a ``CpBuildContext`` (read-only build configuration)
+        - ``state`` -- ``CpBuildState`` (mutable accumulator for build state)
 
         EXAMPLES::
 
             sage: from claasp.components.modular_component import Modular
             sage: component = Modular(0, 0, ['a', 'b'], [[0, 1, 2, 3], [0, 1, 2, 3]], 4, 'modular', 16)
-            sage: DummyModel = type('DummyModel', (), {'word_size': 1})
-            sage: result = component.cp_wordwise_deterministic_truncated_xor_differential_constraints(DummyModel())
+            sage: DummyContext = type('DummyContext', (), {'word_size': 1})
+            sage: result = component.cp_wordwise_deterministic_truncated_xor_differential_constraints(DummyContext(), None)
             sage: result.declarations[0]
             'array[0..4] of var 0..2: carry_modular_0_0;'
             sage: len(result.constraints) > 0
@@ -448,7 +449,7 @@ class Modular(Component):
         all_inputs_value = []
         all_inputs_active = []
         numadd = self.description[1]
-        word_size = model.word_size
+        word_size = context.word_size
         for id_link, bit_positions in zip(self.input_id_links, self.input_bit_positions):
             all_inputs_value.extend(
                 [

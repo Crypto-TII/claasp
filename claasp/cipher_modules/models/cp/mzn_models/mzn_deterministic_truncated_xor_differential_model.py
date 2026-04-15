@@ -17,6 +17,8 @@
 
 from minizinc import Status
 
+from claasp.cipher_modules.models.cp.cp_build_context import CpBuildContext
+from claasp.cipher_modules.models.cp.cp_build_state import CpBuildState
 from claasp.cipher_modules.models.cp.mzn_model import MznModel, SOLVE_SATISFY
 from claasp.cipher_modules.models.cp.solvers import SOLVER_DEFAULT
 from claasp.cipher_modules.models.utils import (
@@ -497,6 +499,9 @@ class MznDeterministicTruncatedXorDifferentialModel(MznModel):
             else:
                 result = component.cp_deterministic_truncated_xor_differential_trail_constraints()
         else:
-            result = component.cp_wordwise_deterministic_truncated_xor_differential_constraints(self)
+            context = CpBuildContext.from_model(self)
+            state = CpBuildState.from_model(self)
+            result = component.cp_wordwise_deterministic_truncated_xor_differential_constraints(context, state)
+            state.apply_to_model(self)
 
         return result.declarations, result.constraints

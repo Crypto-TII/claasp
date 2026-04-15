@@ -131,7 +131,7 @@ class CipherOutput(Component):
     def cp_semi_deterministic_truncated_xor_differential_constraints(self, context, state):
         return self.cp_constraints()
 
-    def cp_wordwise_deterministic_truncated_xor_differential_constraints(self, model):
+    def cp_wordwise_deterministic_truncated_xor_differential_constraints(self, context, state):
         """
         Return lists declarations and constraints for OUTPUT component (both
         intermediate and cipher), for CP wordwise deterministic truncated xor
@@ -141,14 +141,15 @@ class CipherOutput(Component):
 
         INPUT:
 
-        - ``model`` -- **model object**; a model instance
+        - ``context`` -- a ``CpBuildContext`` (read-only build configuration)
+        - ``state`` -- ``CpBuildState`` (mutable accumulator for build state)
 
         EXAMPLES::
 
             sage: from claasp.components.cipher_output_component import CipherOutput
-            sage: DummyModel = type('DummyModel', (), {'word_size': 2})
+            sage: DummyContext = type('DummyContext', (), {'word_size': 2})
             sage: output_component = CipherOutput(0, 0, ['xor_0_0', 'xor_0_1'], [[0, 1], [0, 1]], 4, True, 'round_output')
-            sage: result = output_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(DummyModel())
+            sage: result = output_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(DummyContext(), None)
             sage: result.declarations
             []
             sage: result.constraints
@@ -160,15 +161,15 @@ class CipherOutput(Component):
         for id_link, bit_positions in zip(self.input_id_links, self.input_bit_positions):
             all_inputs_active.extend(
                 [
-                    f"{id_link}_active[{bit_positions[j * model.word_size] // model.word_size}]"
-                    for j in range(len(bit_positions) // model.word_size)
+                    f"{id_link}_active[{bit_positions[j * context.word_size] // context.word_size}]"
+                    for j in range(len(bit_positions) // context.word_size)
                 ]
             )
         for id_link, bit_positions in zip(self.input_id_links, self.input_bit_positions):
             all_inputs_value.extend(
                 [
-                    f"{id_link}_value[{bit_positions[j * model.word_size] // model.word_size}]"
-                    for j in range(len(bit_positions) // model.word_size)
+                    f"{id_link}_value[{bit_positions[j * context.word_size] // context.word_size}]"
+                    for j in range(len(bit_positions) // context.word_size)
                 ]
             )
         cp_constraints = [f"constraint {self.id}_value[{i}] = {input_};" for i, input_ in enumerate(all_inputs_value)]

@@ -234,27 +234,28 @@ class Constant(Component):
     def cp_semi_deterministic_truncated_xor_differential_constraints(self, context, state):
         return self.cp_xor_differential_propagation_constraints(context, state)
 
-    def cp_wordwise_deterministic_truncated_xor_differential_constraints(self, model):
+    def cp_wordwise_deterministic_truncated_xor_differential_constraints(self, context, state):
         """
         Return lists of declarations and constraints for CONSTANT component for CP wordwise deterministic truncated xor differential.
 
         INPUT:
 
-        - ``model`` -- **model object**; a model instance
+        - ``context`` -- a ``CpBuildContext`` (read-only build configuration)
+        - ``state`` -- ``CpBuildState`` (mutable accumulator for build state)
 
         EXAMPLES::
 
             sage: from claasp.components.constant_component import Constant
-            sage: DummyModel = type("DummyModel", (), {"word_size": 4})
+            sage: DummyContext = type("DummyContext", (), {"word_size": 4})
             sage: constant_component = Constant(0, 18, 4, 0x1)
-            sage: result = constant_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(DummyModel())
+            sage: result = constant_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(DummyContext(), None)
             sage: result.declarations
             ['array[0..0] of var 0..1: constant_0_18_active = array1d(0..0, [0]);', 'array[0..0] of var 0..1: constant_0_18_value = array1d(0..0, [0]);']
             sage: result.constraints
             []
         """
         output_bit_size = self.output_bit_size
-        word_size = model.word_size
+        word_size = context.word_size
         new_declaration = (
             f"array[0..{(output_bit_size - 1) // word_size}] of var 0..1: "
             f"{self.id}_active = array1d(0..{(output_bit_size - 1) // word_size}, ["

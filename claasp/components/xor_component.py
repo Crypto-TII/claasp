@@ -397,34 +397,34 @@ class XOR(Component):
     def cp_semi_deterministic_truncated_xor_differential_constraints(self, context, state):
         return self.cp_deterministic_truncated_xor_differential_constraints()
 
-    def cp_wordwise_deterministic_truncated_xor_differential_constraints(self, model):
+    def cp_wordwise_deterministic_truncated_xor_differential_constraints(self, context, state):
         r"""
         Return lists declarations and constraints for XOR component CP wordwise deterministic truncated XOR differential model.
 
         INPUT:
 
-        - ``model`` -- **model object**; a model instance
+        - ``context`` -- a ``CpBuildContext`` (read-only build configuration)
+        - ``state`` -- ``CpBuildState`` (mutable accumulator for build state)
 
         EXAMPLES::
 
             sage: from claasp.ciphers.single_component_ciphers.xor_cipher import XorCipher
-            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
+            sage: from claasp.cipher_modules.models.cp.cp_build_context import CpBuildContext
             sage: cipher = XorCipher(word_bit_size=8, number_of_inputs=2)
-            sage: cp = MznModel(cipher)
-            sage: cp.word_size = 8
+            sage: cp = CpBuildContext(cipher=cipher, word_size=8)
             sage: xor_component = cipher.get_component_from_id("xor_0_0")
-                        sage: result = xor_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(cp)
-                        sage: result.declarations[0]
-                        'var -2..255: xor_0_0_temp_0_0_value;'
-                        sage: result.constraints[0]
-                        'constraint xor_0_0_temp_0_0_value = plaintext_value[0] /\\ xor_0_0_temp_0_0_active = plaintext_active[0];'
+            sage: result = xor_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(cp, None)
+            sage: result.declarations[0]
+            'var -2..255: xor_0_0_temp_0_0_value;'
+            sage: result.constraints[0]
+            'constraint xor_0_0_temp_0_0_value = plaintext_value[0] /\\ xor_0_0_temp_0_0_active = plaintext_active[0];'
         """
         output_id_link = self.id
         cp_declarations = []
         all_inputs_value = []
         all_inputs_active = []
         numadd = self.description[1]
-        word_size = model.word_size
+        word_size = context.word_size
         for id_link, bit_positions in zip(self.input_id_links, self.input_bit_positions):
             all_inputs_value.extend(
                 [

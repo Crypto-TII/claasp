@@ -183,11 +183,11 @@ class NOT(Component):
     def cp_semi_deterministic_truncated_xor_differential_constraints(self, context, state):
         return self.cp_deterministic_truncated_xor_differential_trail_constraints()
 
-    def cp_wordwise_deterministic_truncated_xor_differential_constraints(self, model):
+    def cp_wordwise_deterministic_truncated_xor_differential_constraints(self, context, state):
         cp_declarations = []
         all_inputs_value = []
         all_inputs_active = []
-        word_size = model.word_size
+        word_size = context.word_size
         for id_link, bit_positions in zip(self.input_id_links, self.input_bit_positions):
             all_inputs_value.extend(
                 [

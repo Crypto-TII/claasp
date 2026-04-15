@@ -979,21 +979,22 @@ class SBOX(Component):
 
         return CpComponentBuildResult(cp_declarations, cp_constraints, sbox_table_cache)
 
-    def cp_wordwise_deterministic_truncated_xor_differential_constraints(self, model):
+    def cp_wordwise_deterministic_truncated_xor_differential_constraints(self, context, state):
         """
         Return lists of declarations and constraints for SBOX component for CP wordwise deterministic truncated xor differential.
 
         INPUT:
 
-        - ``model`` -- **model object**; a model instance
+        - ``context`` -- a ``CpBuildContext`` (read-only build configuration)
+        - ``state`` -- ``CpBuildState`` (mutable accumulator for build state)
 
         EXAMPLES::
 
             sage: from claasp.components.sbox_component import SBOX
             sage: sbox = [1, 2, 3, 4, 5, 6, 7, 0]
             sage: sbox_component = SBOX(0, 0, ['plaintext'], [[0, 1, 2]], 3, sbox)
-            sage: model = type('DummyModel', (), {'word_size': 3})()
-            sage: result = sbox_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(model)
+            sage: context = type('DummyContext', (), {'word_size': 3})()
+            sage: result = sbox_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(context, None)
             sage: result.declarations
             []
             sage: result.constraints
@@ -1001,7 +1002,7 @@ class SBOX(Component):
         """
         cp_declarations = []
         all_inputs = []
-        word_size = model.word_size
+        word_size = context.word_size
         for id_link, bit_positions in zip(self.input_id_links, self.input_bit_positions):
             all_inputs.extend(
                 [
@@ -1084,43 +1085,58 @@ class SBOX(Component):
         """
         return self._cp_xor_differential_propagation_impl(state, inverse)
 
+    @staticmethod
+    def _resolve_ddt_table_alias(sbox_table_cache, description, component_id, inverse):
+        if inverse:
+            output_id_link_sost = f"inverse_{component_id}"
+        else:
+            output_id_link_sost = component_id
+
+        for mant in sbox_table_cache:
+            if description == mant[0] and ((not inverse) or (inverse and "inverse" in mant[1])):
+                return True, mant[1]
+
+        return False, output_id_link_sost
+
+    @staticmethod
+    def _build_ddt_declaration(sbox, input_size, output_size, output_id_link_sost):
+        sbox_ddt = sbox.difference_distribution_table()
+        dim_ddt = len([i for i in sbox_ddt.list() if i])
+        ddt_entries = []
+        for i in range(sbox_ddt.nrows()):
+            for j in range(sbox_ddt.ncols()):
+                if not sbox_ddt[i][j]:
+                    continue
+                sep_bin_i = ",".join(f"{i:0{input_size}b}")
+                sep_bin_j = ",".join(f"{j:0{output_size}b}")
+                log_of_prob = round(100 * math.log2((2**input_size) / sbox_ddt[i][j]))
+                ddt_entries.append(f"{sep_bin_i},{sep_bin_j},{log_of_prob}")
+
+        ddt_values = ",".join(ddt_entries)
+        return (
+            f"array [1..{dim_ddt}, 1..{input_size + output_size + 1}] of int: "
+            f"DDT_{output_id_link_sost} = array2d(1..{dim_ddt}, 1..{input_size + output_size + 1}, "
+            f"[{ddt_values}]);"
+        )
+
     def _cp_xor_differential_propagation_impl(self, state, inverse=False):
         input_size = int(self.input_bit_size)
         output_size = int(self.output_bit_size)
         description = self.description
         sbox = SBox(description)
-        already_in = False
-        if inverse:
-            output_id_link_sost = f"inverse_{self.id}"
-        else:
-            output_id_link_sost = self.id
-        for mant in state.sbox_table_cache:
-            if description == mant[0] and ((not inverse) or (inverse and "inverse" in mant[1])):
-                already_in = True
-                output_id_link_sost = mant[1]
+        already_in, output_id_link_sost = self._resolve_ddt_table_alias(
+            state.sbox_table_cache, description, self.id, inverse
+        )
+
         cp_declarations = []
         if not already_in:
-            sbox_ddt = sbox.difference_distribution_table()
-            dim_ddt = len([i for i in sbox_ddt.list() if i])
-            ddt_entries = []
-            for i in range(sbox_ddt.nrows()):
-                for j in range(sbox_ddt.ncols()):
-                    if sbox_ddt[i][j]:
-                        sep_bin_i = ",".join(f"{i:0{input_size}b}")
-                        sep_bin_j = ",".join(f"{j:0{output_size}b}")
-                        log_of_prob = round(100 * math.log2((2**input_size) / sbox_ddt[i][j]))
-                        ddt_entries.append(f"{sep_bin_i},{sep_bin_j},{log_of_prob}")
-            ddt_values = ",".join(ddt_entries)
-            sbox_declaration = (
-                f"array [1..{dim_ddt}, 1..{input_size + output_size + 1}] of int: "
-                f"DDT_{output_id_link_sost} = array2d(1..{dim_ddt}, 1..{input_size + output_size + 1}, "
-                f"[{ddt_values}]);"
-            )
-            cp_declarations.append(sbox_declaration)
+            cp_declarations.append(self._build_ddt_declaration(sbox, input_size, output_size, output_id_link_sost))
             state.sbox_table_cache.append((description, self.id))
+
         all_inputs = []
         for id_link, bit_positions in zip(self.input_id_links, self.input_bit_positions):
             all_inputs.extend([f"[{id_link}[{position}]]" for position in bit_positions])
+
         table_input = "++".join(all_inputs)
         table_output = "++".join([f"[{self.id}[{i}]]" for i in range(output_size)])
         prob_index = state.allocate_probability_index()

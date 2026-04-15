@@ -37,6 +37,7 @@ import subprocess
 from sage.combinat.permutation import Permutation
 from sage.crypto.sbox import SBox
 
+from claasp.cipher_modules.models.cp.cp_build_context import CpBuildContext
 from claasp.cipher_modules.models.cp.cp_build_state import CpBuildState
 from claasp.cipher_modules.models.cp.mzn_model import SOLVE_SATISFY, MznModel
 from claasp.cipher_modules.models.cp.mzn_models.mzn_impossible_xor_differential_model import (
@@ -736,7 +737,10 @@ class MznHybridImpossibleXorDifferentialModel(MznImpossibleXorDifferentialModel)
             else:
                 result = component.cp_deterministic_truncated_xor_differential_trail_constraints()
         else:
-            result = component.cp_wordwise_deterministic_truncated_xor_differential_constraints(self)
+            context = CpBuildContext.from_model(self)
+            state = CpBuildState.from_model(self)
+            result = component.cp_wordwise_deterministic_truncated_xor_differential_constraints(context, state)
+            state.apply_to_model(self)
 
         return result.declarations, result.constraints
 

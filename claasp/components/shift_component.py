@@ -222,7 +222,7 @@ class SHIFT(Component):
 
         return CpComponentBuildResult(cp_declarations, cp_constraints)
 
-    def cp_wordwise_deterministic_truncated_xor_differential_constraints(self, model):
+    def cp_wordwise_deterministic_truncated_xor_differential_constraints(self, context, state):
         """
         Return a list of CP declarations and a list of CP constraints for shift component.
 
@@ -230,15 +230,16 @@ class SHIFT(Component):
 
         INPUT:
 
-        - ``model`` -- **model object**; a model instance
+        - ``context`` -- a ``CpBuildContext`` (read-only build configuration)
+        - ``state`` -- ``CpBuildState`` (mutable accumulator for build state)
 
         EXAMPLES::
 
             sage: from claasp.components.shift_component import SHIFT
-            sage: class DummyModel:
+            sage: class DummyContext:
             ....:     word_size = 2
             sage: shift_component = SHIFT(0, 18, ['sbox_0_2'], [list(range(4))], 4, -2)
-            sage: result = shift_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(DummyModel())
+            sage: result = shift_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(DummyContext(), None)
             sage: result.declarations
             []
             sage: result.constraints
@@ -246,7 +247,7 @@ class SHIFT(Component):
         """
         output_size = int(self.output_bit_size)
         output_id_link = self.id
-        word_size = model.word_size
+        word_size = context.word_size
         shift_amount = abs(self.description[1]) // word_size
         all_inputs_active = []
         all_inputs_value = []

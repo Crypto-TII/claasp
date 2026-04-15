@@ -57,7 +57,6 @@ class MznCipherModel(MznModel):
         self.initialise_model()
         self._model_prefix.extend(self.input_constraints())
         self.sbox_table_cache = []
-        variables = []
         self._variables_list = []
         constraints = self.fix_variables_value_constraints(fixed_variables)
         component_types = (CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER, MIX_COLUMN, SBOX, WORD_OPERATION)

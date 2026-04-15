@@ -144,7 +144,7 @@ class MultiInputNonlinearLogicalOperator(Component):
     def cp_deterministic_truncated_xor_differential_trail_constraints(self):
         return self.cp_deterministic_truncated_xor_differential_constraints()
 
-    def cp_wordwise_deterministic_truncated_xor_differential_constraints(self, model):
+    def cp_wordwise_deterministic_truncated_xor_differential_constraints(self, context, state):
         r"""
         Return lists of declarations and constraints for a multi-input nonlinear logical operator
         for CP wordwise deterministic truncated XOR differential.
@@ -153,21 +153,22 @@ class MultiInputNonlinearLogicalOperator(Component):
 
         TESTING NOTE:
 
-            This method contains real base-class logic but only depends on the model's
-            ``word_size`` attribute. The doctest therefore uses a minimal dummy model
+            This method contains real base-class logic but only depends on the context's
+            ``word_size`` attribute. The doctest therefore uses a minimal dummy context
             instead of a full cipher-backed instantiation.
 
         INPUT:
 
-        - ``model`` -- **model object**; a model instance
+        - ``context`` -- a ``CpBuildContext`` (read-only build configuration)
+        - ``state`` -- ``CpBuildState`` (mutable accumulator for build state)
 
         EXAMPLES::
 
             sage: from claasp.components.multi_input_non_linear_logical_operator_component import MultiInputNonlinearLogicalOperator
-            sage: class DummyModel:
+            sage: class DummyContext:
             ....:     word_size = 2
             sage: component = MultiInputNonlinearLogicalOperator(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2, 'and')
-            sage: result = component.cp_wordwise_deterministic_truncated_xor_differential_constraints(DummyModel())
+            sage: result = component.cp_wordwise_deterministic_truncated_xor_differential_constraints(DummyContext(), None)
             sage: result.declarations
             []
         """
@@ -175,7 +176,7 @@ class MultiInputNonlinearLogicalOperator(Component):
         all_inputs_value = []
         all_inputs_active = []
         numadd = self.description[1]
-        word_size = model.word_size
+        word_size = context.word_size
         for id_link, bit_positions in zip(self.input_id_links, self.input_bit_positions):
             all_inputs_value.extend(
                 [
