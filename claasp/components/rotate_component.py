@@ -230,7 +230,7 @@ class Rotate(Component):
 
         return CpComponentBuildResult(cp_declarations, cp_constraints)
 
-    def cp_wordwise_deterministic_truncated_xor_differential_constraints(self, context, state):
+    def cp_wordwise_deterministic_truncated_xor_differential_constraints(self, context, state=None):
         cp_declarations = []
         all_inputs_value = []
         all_inputs_active = []

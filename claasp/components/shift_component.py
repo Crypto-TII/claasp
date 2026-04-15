@@ -222,7 +222,7 @@ class SHIFT(Component):
 
         return CpComponentBuildResult(cp_declarations, cp_constraints)
 
-    def cp_wordwise_deterministic_truncated_xor_differential_constraints(self, context, state):
+    def cp_wordwise_deterministic_truncated_xor_differential_constraints(self, context, state=None):
         """
         Return a list of CP declarations and a list of CP constraints for shift component.
 

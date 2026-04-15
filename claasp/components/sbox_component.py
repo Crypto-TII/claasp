@@ -979,7 +979,7 @@ class SBOX(Component):
 
         return CpComponentBuildResult(cp_declarations, cp_constraints, sbox_table_cache)
 
-    def cp_wordwise_deterministic_truncated_xor_differential_constraints(self, context, state):
+    def cp_wordwise_deterministic_truncated_xor_differential_constraints(self, context, state=None):
         """
         Return lists of declarations and constraints for SBOX component for CP wordwise deterministic truncated xor differential.
 

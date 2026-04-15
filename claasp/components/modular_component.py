@@ -424,7 +424,7 @@ class Modular(Component):
 
         return CpComponentBuildResult(cp_declarations, cp_constraints)
 
-    def cp_wordwise_deterministic_truncated_xor_differential_constraints(self, context, state):
+    def cp_wordwise_deterministic_truncated_xor_differential_constraints(self, context, state=None):
         """
         Return lists declarations and constraints for XOR component CP wordwise deterministic truncated XOR differential model.
 

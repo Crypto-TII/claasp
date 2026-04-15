@@ -144,7 +144,7 @@ class MultiInputNonlinearLogicalOperator(Component):
     def cp_deterministic_truncated_xor_differential_trail_constraints(self):
         return self.cp_deterministic_truncated_xor_differential_constraints()
 
-    def cp_wordwise_deterministic_truncated_xor_differential_constraints(self, context, state):
+    def cp_wordwise_deterministic_truncated_xor_differential_constraints(self, context, state=None):
         r"""
         Return lists of declarations and constraints for a multi-input nonlinear logical operator
         for CP wordwise deterministic truncated XOR differential.
