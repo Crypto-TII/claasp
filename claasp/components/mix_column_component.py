@@ -759,7 +759,7 @@ class MixColumn(LinearLayer):
 
             sage: from claasp.ciphers.single_component_ciphers.mix_column_cipher import MixColumnCipher
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import MilpWordwiseDeterministicTruncatedXorDifferentialModel
-            sage: cipher = MixColumnCipher(word_size=4, matrix=[[1, 1], [1, 1]], irreducible_polynomial=0b10011)
+            sage: cipher = MixColumnCipher(word_size=4, matrix=[[2, 3], [3, 2]], irreducible_polynomial=0b10011)
             sage: milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
             sage: mix_column_component = cipher.component_from(0, 0)
@@ -795,7 +795,6 @@ class MixColumn(LinearLayer):
         """
 
         constraints = []
-
         if has_maximal_branch_number(self):
             x = model.binary_variable
             input_class_tuple, output_class_tuple = self._get_wordwise_input_output_linked_class_tuples(model)
