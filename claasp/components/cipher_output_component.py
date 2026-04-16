@@ -494,29 +494,37 @@ class CipherOutput(Component):
 
         return variables, constraints
 
-    def minizinc_constraints(self, model):
+    def minizinc_constraints(self, context, state=None):
         """
         Return variables and constraints for the components with type OUTPUT
         (both intermediate and cipher), for MINIZINC CIPHER constraints.
 
         INPUT:
 
-        - ``model`` -- **model object**; a model instance
+        - ``context`` -- **model object** or ``CpBuildContext``; build configuration
+        - ``state`` -- optional ``CpBuildState`` for mutable build outputs
         """
+        input_postfix = context.input_postfix
+        output_postfix = context.output_postfix
+        data_type = context.data_type
+        output_directives = context.mzn_output_directives if state is None else state.mzn_output_directives
+        intermediate_constraints_array = (
+            context.intermediate_constraints_array if state is None else state.intermediate_constraints_array
+        )
 
-        var_names = self._define_var(model.input_postfix, model.output_postfix, model.data_type)
+        var_names = self._define_var(input_postfix, output_postfix, data_type)
         intermediate_component_string = []
         component_id = self.id
         ninputs = self.input_bit_size
-        input_vars = [f"{component_id}_{model.input_postfix}{i}" for i in range(ninputs)]
-        output_vars = [f"{component_id}_{model.output_postfix}{i}" for i in range(ninputs)]
+        input_vars = [f"{component_id}_{input_postfix}{i}" for i in range(ninputs)]
+        output_vars = [f"{component_id}_{output_postfix}{i}" for i in range(ninputs)]
 
         for input_var, output_var in zip(input_vars, output_vars):
             intermediate_component_string.append(f"constraint {input_var} = {output_var};")
 
         mzn_input_array = self._create_minizinc_1d_array_from_list(input_vars)
         if self.description[0] in ["round_output", "cipher_output", "round_key_output"]:
-            model.mzn_output_directives.append(
+            output_directives.append(
                 '\noutput ["component description: '
                 + self.description[0]
                 + ", id: "
@@ -527,7 +535,7 @@ class CipherOutput(Component):
                 + "\n"
             )
 
-        model.intermediate_constraints_array.append({f"{component_id}_input": input_vars})
+        intermediate_constraints_array.append({f"{component_id}_input": input_vars})
 
         return CpComponentBuildResult(var_names, intermediate_component_string)
 

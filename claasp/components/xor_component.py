@@ -1110,13 +1110,14 @@ class XOR(Component):
 
             return variables, constraints
 
-    def minizinc_constraints(self, model):
+    def minizinc_constraints(self, context, state=None):
         r"""
         Return variables and constraints for the XOR component for MINIZINC CIPHER model.
 
         INPUT:
 
-        - ``model`` -- **model object**; a model instance
+        - ``context`` -- **model object** or ``CpBuildContext``; build configuration
+        - ``state`` -- optional ``CpBuildState``
 
         EXAMPLES::
 
@@ -1134,38 +1135,38 @@ class XOR(Component):
             mzn_input_array_1 = self._create_minizinc_1d_array_from_list(input_vars_1_temp)
             mzn_input_array_2 = self._create_minizinc_1d_array_from_list(input_vars_2_temp)
             mzn_output_array = self._create_minizinc_1d_array_from_list(output_varstrs_temp)
-            if model.sat_or_milp == "sat":
+            if context.sat_or_milp == "sat":
                 mzn_block_variables = ""
                 mzn_block_constraints = (
                     f"constraint xor_word(\n{mzn_input_array_1},"
-                    f"\n{mzn_input_array_2},\n{mzn_output_array})={model.true_value};\n"
+                    f"\n{mzn_input_array_2},\n{mzn_output_array})={context.true_value};\n"
                 )
             else:
                 mzn_block_variables = f"array [0..{noutputs}-1] of var 0..1: dummy_{component_id}_{i};\n"
                 mzn_block_constraints = (
                     f"constraint xor_word(\n{mzn_input_array_1},\n{mzn_input_array_2},"
-                    f"\n{mzn_output_array},\ndummy_{component_id}_{i})={model.true_value};\n"
+                    f"\n{mzn_output_array},\ndummy_{component_id}_{i})={context.true_value};\n"
                 )
             return mzn_block_variables, mzn_block_constraints
 
         if self.description[0].lower() != "xor":
             raise ValueError("component must be Boolean XOR word_operation")
 
-        var_names = self._define_var(model.input_postfix, model.output_postfix, model.data_type)
+        var_names = self._define_var(context.input_postfix, context.output_postfix, context.data_type)
 
         mzn_constraints = []
         component_id = self.id
         ninputs = self.input_bit_size
         noutputs = self.output_bit_size
-        input_vars = [component_id + "_" + model.input_postfix + str(i) for i in range(ninputs)]
-        output_vars = [component_id + "_" + model.output_postfix + str(i) for i in range(noutputs)]
+        input_vars = [component_id + "_" + context.input_postfix + str(i) for i in range(ninputs)]
+        output_vars = [component_id + "_" + context.output_postfix + str(i) for i in range(noutputs)]
         ninput_words = int(self.description[1])
         word_chunk = noutputs
         new_output_vars = [input_vars[0 * word_chunk : 0 * word_chunk + word_chunk]]
         for i in range(ninput_words - 2):
             new_output_vars_temp = []
             for output_var in output_vars:
-                mzn_constraints += [f"var {model.data_type}: {output_var}_{str(i)};\n"]
+                mzn_constraints += [f"var {context.data_type}: {output_var}_{str(i)};\n"]
                 new_output_vars_temp.append(output_var + "_" + str(i))
             new_output_vars.append(new_output_vars_temp)
 

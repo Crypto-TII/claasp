@@ -643,13 +643,14 @@ class SHIFT(Component):
 
         return variables, constraints
 
-    def minizinc_constraints(self, model):
+    def minizinc_constraints(self, context, state=None):
         r"""
         Return variables and constraints for the component SHIFT for MINIZINC CIPHER model.
 
         INPUT:
 
-        - ``model`` -- **model object**;  a model instance
+        - ``context`` -- **model object** or ``CpBuildContext``; build configuration
+        - ``state`` -- optional ``CpBuildState``
 
         EXAMPLES::
 
@@ -664,11 +665,11 @@ class SHIFT(Component):
             sage: result.constraints
             ['constraint RSHIFT(array1d(0..2-1, [shift_0_0_x0,shift_0_0_x1]), 1)=array1d(0..2-1, [shift_0_0_y0,shift_0_0_y1]);\n']
         """
-        var_names = self._define_var(model.input_postfix, model.output_postfix, model.data_type)
+        var_names = self._define_var(context.input_postfix, context.output_postfix, context.data_type)
         shift_const = self.description[1]
         ninputs = noutputs = self.output_bit_size
-        input_vars = [self.id + "_" + model.input_postfix + str(i) for i in range(ninputs)]
-        output_vars = [self.id + "_" + model.output_postfix + str(i) for i in range(noutputs)]
+        input_vars = [self.id + "_" + context.input_postfix + str(i) for i in range(ninputs)]
+        output_vars = [self.id + "_" + context.output_postfix + str(i) for i in range(noutputs)]
         input_vars_1 = input_vars
         mzn_input_array_1 = self._create_minizinc_1d_array_from_list(input_vars_1)
         output_vars_1 = output_vars

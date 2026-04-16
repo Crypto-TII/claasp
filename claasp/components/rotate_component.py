@@ -565,13 +565,14 @@ class Rotate(Component):
 
         return variables, constraints
 
-    def minizinc_constraints(self, model):
+    def minizinc_constraints(self, context, state=None):
         r"""
         Return variables and constraints for the component ROTATE for MINIZINC CIPHER model.
 
         INPUT:
 
-        - ``model`` -- **model object**; a model instance
+        - ``context`` -- **model object** or ``CpBuildContext``; build configuration
+        - ``state`` -- optional ``CpBuildState``
 
         EXAMPLES::
 
@@ -586,10 +587,10 @@ class Rotate(Component):
         """
         if self.description[0].lower() != "rotate":
             raise ValueError("component must be bitwise rotation")
-        input_postfix = model.input_postfix
-        output_postfix = model.output_postfix
+        input_postfix = context.input_postfix
+        output_postfix = context.output_postfix
 
-        var_names = self._define_var(input_postfix, output_postfix, model.data_type)
+        var_names = self._define_var(input_postfix, output_postfix, context.data_type)
         rotation_const = self.description[1]
         ninputs = noutputs = self.output_bit_size
         input_vars = [f"{self.id}_{input_postfix}{i}" for i in range(ninputs)]
