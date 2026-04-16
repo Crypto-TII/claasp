@@ -43,8 +43,7 @@ from claasp.name_mappings import (
     SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL,
     SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL_LOWEST_SOLUTION,
     SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL_ONE_SOLUTION,
-    XOR_DIFFERENTIAL_LINEAR_ONE_SOLUTION,
-    XOR_DIFFERENTIAL_LINEAR_OPTIMAL_SOLUTION,
+    XOR_DIFFERENTIAL_LINEAR_ONE_SOLUTION
 )
 
 from claasp.cipher_modules.models.utils import write_model_to_file, convert_solver_solution_to_dictionary
@@ -516,7 +515,6 @@ class MznModel:
             "deterministic_truncated_xor_differential_one_solution",
             "differential_pair_one_solution",
             "impossible_xor_differential_one_solution",
-            SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL_LOWEST_SOLUTION,
             SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL_ONE_SOLUTION,
             "xor_differential_one_solution",
             "xor_linear_one_solution",
@@ -530,7 +528,8 @@ class MznModel:
                 found_name = True
         if not found_name:
             raise NameError(f"Solver {solver_name} not defined. Specify a valid solver name.")
-        if model_type not in solvers:
+        # if model type is not in solvers and does not contain the word optimal/lowest then add -a
+        if model_type not in solvers and "optimal" not in model_type.lower() and "lowest" not in model_type.lower():
             command_options["options"].insert(0, "-a")
         if num_of_processors is not None:
             command_options["options"].insert(0, f"-p {num_of_processors}")
