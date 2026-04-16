@@ -69,8 +69,10 @@ class MznDifferentialLinearModel(MznModel):
         cipher,
         list_of_components,
         middle_part_model="cp_semi_deterministic_truncated_xor_differential_constraints",
+        standard_differential_part=True,
     ):
         super().__init__(cipher)
+        self.standard_differential_part = standard_differential_part
 
         middle_part_components = list_of_components.get("middle_part_components", [])
         bottom_part_components = list_of_components.get("bottom_part_components", [])
@@ -147,8 +149,9 @@ class MznDifferentialLinearModel(MznModel):
 
     def _state_declarations(self):
         declarations = []
+        input_domain = "0..2" if not self.standard_differential_part else "0..1"
         for input_name, bit_size in zip(self._cipher.inputs, self._cipher.inputs_bit_size):
-            declarations.append(f"array[0..{bit_size - 1}] of var 0..1: {input_name};")
+            declarations.append(f"array[0..{bit_size - 1}] of var {input_domain}: {input_name};")
 
         for component in self._cipher.get_all_components():
             if component.type == CONSTANT:
@@ -286,7 +289,7 @@ class MznDifferentialLinearModel(MznModel):
         effective_middle_component_ids = self.middle_part_component_ids - self.bottom_part_component_ids
 
         top_probability_sum = _sum_component_probability(self.top_part_component_ids)
-        middle_probability_sum = _sum_component_probability(effective_middle_component_ids)+"*100"
+        middle_probability_sum = _sum_component_probability(effective_middle_component_ids)
         bottom_probability_sum = _sum_component_probability(self.bottom_part_component_ids)
 
         constraints = [
@@ -427,7 +430,11 @@ class MznDifferentialLinearModel(MznModel):
         if not isinstance(components_values, dict):
             return
 
-        for component_id in self.middle_part_component_ids:
+        ids_to_normalize = set(self.middle_part_component_ids)
+        if not self.standard_differential_part:
+            ids_to_normalize.update(self._cipher.inputs)
+
+        for component_id in ids_to_normalize:
             component_solution = components_values.get(component_id)
             if not isinstance(component_solution, dict):
                 continue
@@ -437,7 +444,11 @@ class MznDifferentialLinearModel(MznModel):
                 continue
 
             if value.startswith("0x"):
-                bit_size = self._get_component_by_id(component_id).output_bit_size
+                if component_id in self._cipher.inputs:
+                    idx = list(self._cipher.inputs).index(component_id)
+                    bit_size = self._cipher.inputs_bit_size[idx]
+                else:
+                    bit_size = self._get_component_by_id(component_id).output_bit_size
                 component_solution["value"] = bin(int(value, 16))[2:].zfill(bit_size)
             else:
                 component_solution["value"] = value.replace("?", "2")
@@ -473,7 +484,13 @@ class MznDifferentialLinearModel(MznModel):
                     q_weight += weight
                     seen_bottom.add(base_component_id)
         import math
-        r_weight = math.log(2 * (2**middle_sum) - 1, 2) if seen_middle else 0.0
+        if seen_middle:
+            if middle_sum > 1000:
+                r_weight = middle_sum + 1.0
+            else:
+                r_weight = math.log(2 * (2**middle_sum) - 1, 2)
+        else:
+            r_weight = 0.0
         return round(p_weight + r_weight + (2 * q_weight), 10)
 
     def _set_differential_linear_total_weight(self, solution):
@@ -615,6 +632,7 @@ class MznDifferentialLinearModel(MznModel):
         num_of_processors=None,
         timelimit=None,
         solve_external=False,
+        intermediate_solutions=False,
     ):
         if fixed_values is None:
             fixed_values = []
@@ -629,6 +647,8 @@ class MznDifferentialLinearModel(MznModel):
             timeout_in_seconds_=timelimit,
             processes_=num_of_processors,
             solve_external=solve_external,
+            intermediate_solutions_=intermediate_solutions,
+
         )
         if isinstance(solution, list):
             for partial_solution in solution:
