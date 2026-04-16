@@ -41,6 +41,7 @@ from claasp.name_mappings import (
     SATISFIABLE,
     UNSATISFIABLE,
     SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL,
+    SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL_LOWEST_SOLUTION,
     SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL_ONE_SOLUTION,
     XOR_DIFFERENTIAL_LINEAR_ONE_SOLUTION,
     XOR_DIFFERENTIAL_LINEAR_OPTIMAL_SOLUTION,
@@ -503,11 +504,19 @@ class MznModel:
 
         return value
 
-    def get_command_for_solver_process(self, model_type, solver_name, num_of_processors, timelimit):
+    def get_command_for_solver_process(
+        self,
+        model_type,
+        solver_name,
+        num_of_processors,
+        timelimit,
+        include_intermediate_solutions=False,
+    ):
         solvers = (
             "deterministic_truncated_xor_differential_one_solution",
             "differential_pair_one_solution",
             "impossible_xor_differential_one_solution",
+            SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL_LOWEST_SOLUTION,
             SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL_ONE_SOLUTION,
             "xor_differential_one_solution",
             "xor_linear_one_solution",
@@ -527,6 +536,8 @@ class MznModel:
             command_options["options"].insert(0, f"-p {num_of_processors}")
         if timelimit is not None:
             command_options["options"].extend(["--time-limit", str(timelimit)])
+        if include_intermediate_solutions:
+            command_options["options"].insert(0, "-i")
         command = []
         for key in command_options["format"]:
             command.extend(command_options[key])
@@ -794,6 +805,7 @@ class MznModel:
             "deterministic_truncated_xor_differential_one_solution",
             "deterministic_truncated_xor_differential",
             SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL_ONE_SOLUTION,
+            SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL_LOWEST_SOLUTION,
             SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL,
             "impossible_xor_differential_attack",
             "impossible_xor_differential_one_solution",
@@ -805,7 +817,13 @@ class MznModel:
 
         solutions = []
         if solve_external:
-            command = self.get_command_for_solver_process(model_type, solver_name, processes_, timeout_in_seconds_)
+            command = self.get_command_for_solver_process(
+                model_type,
+                solver_name,
+                processes_,
+                timeout_in_seconds_,
+                include_intermediate_solutions=intermediate_solutions_,
+            )
             model = "\n".join(mzn_model)
             start = time.time()
             solver_process = subprocess.run(command, input=model, capture_output=True, text=True)

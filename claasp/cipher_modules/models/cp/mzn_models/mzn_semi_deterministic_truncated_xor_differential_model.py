@@ -25,6 +25,7 @@ from claasp.name_mappings import (
     CONSTANT,
     INTERMEDIATE_OUTPUT,
     WORD_OPERATION,
+    SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL_LOWEST_SOLUTION,
     SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL_ONE_SOLUTION,
 )
 
@@ -158,6 +159,7 @@ class MznSemiDeterministicTruncatedXorDifferentialModel(MznModel):
         timelimit=None,
         random_seed=None,
         solve_external=False,
+        intermediate_solutions=False,
     ):
         if fixed_values is None:
             fixed_values = []
@@ -172,6 +174,7 @@ class MznSemiDeterministicTruncatedXorDifferentialModel(MznModel):
             processes_=num_of_processors,
             random_seed_=random_seed,
             solve_external=solve_external,
+            intermediate_solutions_=intermediate_solutions,
         )
 
     def find_lowest_cp_semi_deterministic_truncated_xor_differential_trail(
@@ -182,6 +185,7 @@ class MznSemiDeterministicTruncatedXorDifferentialModel(MznModel):
         timelimit=None,
         random_seed=None,
         solve_external=False,
+        intermediate_solutions=False,
     ):
         if fixed_values is None:
             fixed_values = []
@@ -191,12 +195,13 @@ class MznSemiDeterministicTruncatedXorDifferentialModel(MznModel):
         )
 
         return self.solve(
-            SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL_ONE_SOLUTION,
+            SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL_LOWEST_SOLUTION,
             solver_name=solver_name,
             timeout_in_seconds_=timelimit,
             processes_=num_of_processors,
             random_seed_=random_seed,
             solve_external=solve_external,
+            intermediate_solutions_=intermediate_solutions,
         )
 
     def add_solutions_from_components_values(
