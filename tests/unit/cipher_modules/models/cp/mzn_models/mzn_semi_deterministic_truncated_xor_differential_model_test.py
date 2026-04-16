@@ -235,7 +235,7 @@ def test_find_lowest_semi_deterministic_truncated_xor_differential_trail_speck()
     )
 
     ciphertext = set_fixed_variables(
-        component_id="cipher_output_1_12",
+        component_id="cipher_output_2_12",
         constraint_type="equal",
         bit_positions=range(32),
         bit_values=[2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
@@ -243,9 +243,9 @@ def test_find_lowest_semi_deterministic_truncated_xor_differential_trail_speck()
 
     key = set_fixed_variables(component_id=INPUT_KEY, constraint_type="equal", bit_positions=range(64), bit_values=(0,) * 64)
 
-    trail = mzn.find_lowest_cp_semi_deterministic_truncated_xor_differential_trail(fixed_values=[plaintext, key])
+    trail = mzn.find_lowest_cp_semi_deterministic_truncated_xor_differential_trail(fixed_values=[plaintext, key, ciphertext])
     assert trail["total_weight"] == '0.0'
-    assert trail["components_values"]["cipher_output_2_12"]["value"] == "???????????????0????????????????"
+    assert trail["components_values"]["cipher_output_2_12"]["value"] == "???????????????0???????????????1"
 
 
 @pytest.mark.parametrize(
