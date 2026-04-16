@@ -132,6 +132,13 @@ class MznSemiDeterministicTruncatedXorDifferentialModel(MznModel):
         cipher_inputs = self._cipher.inputs
         cipher = self._cipher
         cp_constraints = []
+
+        for component_id in cipher.get_all_components_ids():
+            #at least one of the outputs bit difference should be active for the output cipher
+            if "cipher_output" in component_id:
+                cp_constraints.append(f"constraint count({component_id}, 1) > 0;")
+
+
         solve_directive = "solve minimize weight;" if (minimize and self.probability_vars) else SOLVE_SATISFY
         cp_constraints.append(solve_directive)
 
