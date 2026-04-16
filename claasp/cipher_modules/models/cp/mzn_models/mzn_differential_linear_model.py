@@ -234,6 +234,11 @@ class MznDifferentialLinearModel(MznModel):
     def _middle_to_bottom_connecting_constraints(self):
         constraints = []
         truncated_border_components = set(self._get_truncated_xor_differential_components_in_border())
+        # ensure that at least one bit difference exist in the concatenation of the output of the truncated border components 
+        truncated_border_components_list = []
+        for component_id in truncated_border_components:
+            truncated_border_components_list.append(component_id)
+        constraints.append(f"constraint count({' ++ '.join(truncated_border_components_list)}, 1) > 0;")
 
         for output_bit_id, successor_bits in self.bit_bindings.items():
             source_component_id, _, _ = self._parse_linear_bit_id(output_bit_id)

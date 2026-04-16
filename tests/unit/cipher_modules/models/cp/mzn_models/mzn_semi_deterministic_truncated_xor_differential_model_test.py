@@ -233,6 +233,14 @@ def test_find_lowest_semi_deterministic_truncated_xor_differential_trail_speck()
         bit_positions=range(32),
         bit_values=(0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
     )
+
+    ciphertext = set_fixed_variables(
+        component_id="cipher_output_1_12",
+        constraint_type="equal",
+        bit_positions=range(32),
+        bit_values=[2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
+    )
+
     key = set_fixed_variables(component_id=INPUT_KEY, constraint_type="equal", bit_positions=range(64), bit_values=(0,) * 64)
 
     trail = mzn.find_lowest_cp_semi_deterministic_truncated_xor_differential_trail(fixed_values=[plaintext, key])
