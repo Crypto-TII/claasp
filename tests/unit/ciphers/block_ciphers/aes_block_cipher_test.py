@@ -1,4 +1,7 @@
 from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+from claasp.cipher_modules.code_generator import generate_numba_cipher_evaluation_kernel
+from numba import cuda, uint8, uint16, uint32, uint64
+import numpy as np
 import pytest
 
 def test_aes128_block_cipher():
@@ -110,3 +113,100 @@ def test_aes_invalid_key_size():
         assert "Invalid key_bit_size" in str(e)
 
 
+
+
+
+def test_aes_numba_batch_efficiency_against_evaluate_vectorized_r2():
+    import time
+
+    aes = AESBlockCipher(key_bit_size=128, number_of_rounds=2)
+    timeout_seconds = 30.0
+    sample_exponents = [12, 14, 16, 18, 20]
+    rng = np.random.default_rng(12)
+
+    key_n = aes.inputs_bit_size[aes.inputs.index('key')] // 8
+    pt_n = aes.inputs_bit_size[aes.inputs.index('plaintext')] // 8
+
+    _, code = generate_numba_cipher_evaluation_kernel(aes, mode='differential')
+    device_code = code.split('@cuda.jit\ndef differential_kernel')[0]
+
+    eg = {
+        'cuda': cuda,
+        'uint8': uint8,
+        'uint16': uint16,
+        'uint32': uint32,
+        'uint64': uint64,
+        'np': np,
+    }
+    exec(device_code, eg)
+    batch_kernel_code = """@cuda.jit
+def test_kernel_aes_batch(key, pt, out):
+    i = cuda.grid(1)
+    if i < pt.shape[1]:
+        evaluate_cipher(pt[:, i], key[:, i], out[:, i])
+"""
+    exec(batch_kernel_code, eg)
+
+    warm_key = np.zeros((key_n, 1), dtype=np.uint8)
+    warm_pt = np.zeros((pt_n, 1), dtype=np.uint8)
+    warm_out = np.zeros((pt_n, 1), dtype=np.uint8)
+    d_warm_key = cuda.to_device(warm_key)
+    d_warm_pt = cuda.to_device(warm_pt)
+    d_warm_out = cuda.to_device(warm_out)
+    eg['test_kernel_aes_batch'][1, 1](d_warm_key, d_warm_pt, d_warm_out)
+    cuda.synchronize()
+
+    print("\n")
+    print("=" * 92)
+    print("  AES-128 r2 - Batch Efficiency: evaluate_vectorized vs Numba")
+    print(f"  timeout per backend: {timeout_seconds:.0f}s")
+    print("=" * 92)
+    print(f"  {'samples':>10} | {'CPU time':>12} | {'Numba time':>12} | {'speedup':>10}")
+    print("-" * 92)
+
+    for exp in sample_exponents:
+        num_samples = 1 << exp
+        key_arr = rng.integers(0, 256, size=(key_n, num_samples), dtype=np.uint8)
+        pt_arr = rng.integers(0, 256, size=(pt_n, num_samples), dtype=np.uint8)
+        input_list = [key_arr if name == 'key' else pt_arr for name in aes.inputs]
+
+        cpu_status = None
+        expected = None
+        cpu_start = time.perf_counter()
+        expected = aes.evaluate_vectorized(input_list)[0].T
+        cpu_time = time.perf_counter() - cpu_start
+        if cpu_time > timeout_seconds:
+            cpu_status = 'TIMEOUT'
+            expected = None
+
+        out = np.zeros((pt_n, num_samples), dtype=np.uint8)
+        d_key = cuda.to_device(np.ascontiguousarray(key_arr))
+        d_pt = cuda.to_device(np.ascontiguousarray(pt_arr))
+        d_out = cuda.to_device(out)
+
+        threads_per_block = 128
+        blocks = (num_samples + threads_per_block - 1) // threads_per_block
+
+        numba_status = None
+        numba_start = time.perf_counter()
+        eg['test_kernel_aes_batch'][blocks, threads_per_block](d_key, d_pt, d_out)
+        cuda.synchronize()
+        got = d_out.copy_to_host()
+        numba_time = time.perf_counter() - numba_start
+        if numba_time > timeout_seconds:
+            numba_status = 'TIMEOUT'
+
+        if expected is not None:
+            assert np.array_equal(got, expected)
+
+        cpu_display = cpu_status if cpu_status else f'{cpu_time:.4f}s'
+        numba_display = numba_status if numba_status else f'{numba_time:.4f}s'
+        if cpu_status or numba_status:
+            speedup_display = '-'
+        else:
+            speedup = cpu_time / numba_time if numba_time > 0 else float('inf')
+            speedup_display = f'{speedup:.2f}x'
+
+        print(f"  {'2^'+str(exp):>10} | {cpu_display:>12} | {numba_display:>12} | {speedup_display:>10}")
+
+    print("=" * 92)
