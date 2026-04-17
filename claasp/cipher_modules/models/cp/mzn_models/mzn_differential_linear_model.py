@@ -291,7 +291,11 @@ class MznDifferentialLinearModel(MznModel):
         top_probability_sum = _sum_component_probability(self.top_part_component_ids)
         middle_probability_sum = _sum_component_probability(effective_middle_component_ids)
         bottom_probability_sum = _sum_component_probability(self.bottom_part_component_ids)
-
+        # Approximate DL objective in log-domain:
+        # weight ≈ p + r + 2q
+        # where p = top, r = middle, q = bottom.
+        # The factor 2*bottom reflects that the exact term is 2^(2q),
+        # and the middle term (2·2^r - 1) is approximated by r.
         constraints = [
             f"constraint weight = {top_probability_sum} + {middle_probability_sum} + 2*{bottom_probability_sum};"
         ]
