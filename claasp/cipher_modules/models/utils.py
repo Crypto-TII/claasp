@@ -853,7 +853,7 @@ def _w_diff_linear_sk(args):
     c1 = cipher.evaluate_vectorized([p1, fk])
     c2 = cipher.evaluate_vectorized([p2, fk])
     c3 = c1[0] ^ c2[0]
-    bit_pos = _extract_bit_positions_msb(output_mask, ('1'))
+    bit_pos = _extract_bit_positions_msb(output_mask, ("1",))
     ccc = _extract_bits_msb(c3.T, bit_pos)
     parities = np.bitwise_xor.reduce(ccc, axis=0)
     return int(np.count_nonzero(parities == 0))
@@ -867,8 +867,8 @@ def _w_linear_sk(args):
     ciphertext = cipher.evaluate_vectorized([plaintext, fk])[0]
     in_pos = _extract_bit_positions_msb(input_mask, ("1",))
     out_pos = _extract_bit_positions_msb(output_mask, ("1",))
-    in_par = np.bitwise_xor.reduce(_extract_bits_msb(plaintext, in_pos), axis=0) if in_pos else np.zeros(chunk_size, dtype=np.uint8)
-    out_par = np.bitwise_xor.reduce(_extract_bits_msb(ciphertext.T, out_pos), axis=0) if out_pos else np.zeros(chunk_size, dtype=np.uint8)
+    in_par = np.bitwise_xor.reduce(_extract_bits_msb(plaintext, in_pos), axis=0) if len(in_pos) > 0 else np.zeros(chunk_size, dtype=np.uint8)
+    out_par = np.bitwise_xor.reduce(_extract_bits_msb(ciphertext.T, out_pos), axis=0) if len(out_pos) > 0 else np.zeros(chunk_size, dtype=np.uint8)
     return int(np.count_nonzero((in_par ^ out_par) == 0))
 
 
@@ -946,7 +946,7 @@ def _w_sdpi_diff_linear_perm(args):
     c11 = cipher.evaluate_vectorized([bcf2, p11])
     c22 = cipher.evaluate_vectorized([bcf2, p22])
     c3 = c1[0] ^ c2[0] ^ c11[0] ^ c22[0]
-    bit_pos = _extract_bit_positions_msb(output_mask, ('1'))
+    bit_pos = _extract_bit_positions_msb(output_mask, ("1",))
     ccc = _extract_bits_msb(c3.T, bit_pos)
     parities = np.bitwise_xor.reduce(ccc, axis=0)
     return int(np.count_nonzero(parities == 0))
@@ -978,7 +978,7 @@ def _w_trunc_diff_linear_perm(args):
     c1 = cipher.evaluate_vectorized([p1])
     c2 = cipher.evaluate_vectorized([p2])
     c3 = c1[0] ^ c2[0]
-    bit_pos = _extract_bit_positions_msb(output_mask, ('1'))
+    bit_pos = _extract_bit_positions_msb(output_mask, ("1",))
     ccc = _extract_bits_msb(c3.T, bit_pos)
     parities = np.bitwise_xor.reduce(ccc, axis=0)
     return int(np.count_nonzero(parities == 0))
@@ -986,13 +986,17 @@ def _w_trunc_diff_linear_perm(args):
 
 def _parallel_dispatch(worker_func, fixed_args, number_of_samples, num_workers, seed):
     """Split samples into chunks, run worker_func on each in parallel, return (total_count, total_samples)."""
-    chunk_size = number_of_samples // num_workers
+    base_chunk = number_of_samples // num_workers
+    remainder = number_of_samples % num_workers
     rng = np.random.default_rng(seed)
     seeds = rng.integers(0, 2 ** 31, size=num_workers).tolist()
-    args_list = [fixed_args + (chunk_size, int(s)) for s in seeds]
+    args_list = [
+        fixed_args + (base_chunk + (1 if i < remainder else 0), int(s))
+        for i, s in enumerate(seeds)
+    ]
     with ProcessPoolExecutor(max_workers=num_workers) as executor:
         counts = list(executor.map(worker_func, args_list))
-    return sum(counts), chunk_size * num_workers
+    return sum(counts), number_of_samples
 
 
 def differential_linear_checker_for_block_cipher_single_key(
@@ -1039,7 +1043,7 @@ def differential_linear_checker_for_block_cipher_single_key(
     ciphertext1 = cipher.evaluate_vectorized([plaintext1, fixed_key_data])
     ciphertext2 = cipher.evaluate_vectorized([plaintext2, fixed_key_data])
     ciphertext3 = ciphertext1[0] ^ ciphertext2[0]
-    bit_positions_ciphertext = _extract_bit_positions_msb(output_mask, ('1'))
+    bit_positions_ciphertext = _extract_bit_positions_msb(output_mask, ("1",))
     ccc = _extract_bits_msb(ciphertext3.T, bit_positions_ciphertext)
     parities = np.bitwise_xor.reduce(ccc, axis=0)
     count = np.count_nonzero(parities == 0)
@@ -1257,6 +1261,8 @@ def differential_truncated_checker_single_key(
             (cipher, input_difference, output_difference, num_bytes, key_num_bytes, fixed_key),
             number_of_samples, num_workers, seed,
         )
+        if total == 0:
+            return float("-inf")
         return math.log(total / n, 2)
 
     rng = np.random.default_rng(seed)
@@ -1275,6 +1281,8 @@ def differential_truncated_checker_single_key(
     filled_bits = np.array([int(bit) for bit in output_difference if bit in ("0", "1")], dtype=np.uint8)[:, np.newaxis]
     total = int(np.all(known_bits == filled_bits, axis=0).sum())
 
+    if total == 0:
+        return float("-inf")
     prob_weight = math.log(total / number_of_samples, 2)
     return prob_weight
 
@@ -1384,7 +1392,7 @@ def shared_difference_paired_input_differential_linear_checker_permutation(
     ciphertext22 = cipher.evaluate_vectorized([bottom_ciphertext_final2, plaintext22])
 
     ciphertext3 = ciphertext1[0] ^ ciphertext2[0] ^ ciphertext11[0] ^ ciphertext22[0]
-    bit_positions_ciphertext = _extract_bit_positions_msb(output_mask, ('1'))
+    bit_positions_ciphertext = _extract_bit_positions_msb(output_mask, ("1",))
     ccc = _extract_bits_msb(ciphertext3.T, bit_positions_ciphertext)
     parities = np.bitwise_xor.reduce(ccc, axis=0)
     count = np.count_nonzero(parities == 0)
@@ -1548,7 +1556,7 @@ def truncated_differential_linear_checker_permutation(
     ciphertext2 = cipher.evaluate_vectorized([plaintext_data2])
 
     ciphertext3 = ciphertext1[0] ^ ciphertext2[0]
-    bit_positions_ciphertext = _extract_bit_positions_msb(output_mask, ('1'))
+    bit_positions_ciphertext = _extract_bit_positions_msb(output_mask, ("1",))
     ccc = _extract_bits_msb(ciphertext3.T, bit_positions_ciphertext)
     parities = np.bitwise_xor.reduce(ccc, axis=0)
     count = np.count_nonzero(parities == 0)
