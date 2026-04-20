@@ -1,12 +1,15 @@
+import time
+
 from claasp.ciphers.block_ciphers.katan_block_cipher import KatanBlockCipher
+from claasp.ciphers.block_ciphers.katan_fsr_block_cipher import KatanFSRBlockCipher
 
 
 def test_katan_block_cipher():
-    """
-    Official test vectors for the KATAN block cipher are not available.
-    The following test vectors were generated from the implementation provided in:
-    https://gist.github.com/raullenchai/2662701
-    https://gist.github.com/raullenchai/2712516
+    """Gate-level KATAN vs FSR-based KATAN cross-validation at reduced round count.
+
+    Full test vectors are in katan_fsr_block_cipher_test.py (faster implementation).
+    Here we verify that the gate-level and FSR implementations agree at 40 rounds
+    (enough to exhaust all 80 initial key bits at 2 bits per round).
     """
     katan = KatanBlockCipher()
     assert katan.type == 'block_cipher'
@@ -18,14 +21,30 @@ def test_katan_block_cipher():
     assert katan.number_of_rounds == 4
     assert katan.id == 'katan_p48_k80_o48_r4'
 
-    key = 0xFFFFFFFFFFFFFFFFFFFF
-    plaintext = 0x00000000
+    # Cross-validate gate-level vs FSR at 40 rounds (all 80 key bits consumed).
+    ROUNDS = 40
+    inputs = [
+        (32,  0x00000000,         0xFFFFFFFFFFFFFFFFFFFF),
+        (32,  0x12345678,         0x0123456789ABCDEFFEDC),
+        (48,  0x000000000000,     0xFFFFFFFFFFFFFFFFFFFF),
+        (48,  0x123456789ABC,     0x0123456789ABCDEFFEDC),
+        (64,  0x0000000000000000, 0xFFFFFFFFFFFFFFFFFFFF),
+        (64,  0x123456789ABCDEF0, 0x0123456789ABCDEFFEDC),
+    ]
 
-    assert KatanBlockCipher().evaluate([plaintext, key]) == 0x7E1FF945
-    assert KatanBlockCipher(block_bit_size=48).evaluate([plaintext, key]) == 0x4B7EFCFB8659
-    assert KatanBlockCipher(block_bit_size=64).evaluate([plaintext, key]) == 0x21F2E99C0FAB828A
+    for block_size, pt, key in inputs:
+        t0 = time.perf_counter()
+        gate = KatanBlockCipher(block_bit_size=block_size, number_of_rounds=ROUNDS)
+        fsr  = KatanFSRBlockCipher(block_bit_size=block_size, number_of_rounds=ROUNDS)
+        t_build = time.perf_counter() - t0
 
-    key = 0x0123456789ABCDEFFEDC
-    assert KatanBlockCipher().evaluate([0x12345678, key]) == 0xCFFDC7DA
-    assert KatanBlockCipher(block_bit_size=48).evaluate([0x123456789ABC, key]) == 0x0675F0F5DA84
-    assert KatanBlockCipher(block_bit_size=64).evaluate([0x123456789ABCDEF0, key]) == 0x0B3EDCA9A41D4619
+        gate_out = gate.evaluate([pt, key])
+        fsr_out  = fsr.evaluate([pt, key])
+
+        t_eval = time.perf_counter() - t0 - t_build
+        print(f"\n[katan gate vs fsr r={ROUNDS} bs={block_size}] "
+              f"build={t_build:.2f}s  eval_total={t_eval:.2f}s  "
+              f"gate={gate_out:#x}  fsr={fsr_out:#x}")
+        assert gate_out == fsr_out, (
+            f"Mismatch at block_size={block_size}: gate={gate_out:#x} fsr={fsr_out:#x}"
+        )

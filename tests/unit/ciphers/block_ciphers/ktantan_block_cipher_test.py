@@ -1,12 +1,15 @@
+import time
+
 from claasp.ciphers.block_ciphers.ktantan_block_cipher import KtantanBlockCipher
+from claasp.ciphers.block_ciphers.ktantan_fsr_block_cipher import KtantanFSRBlockCipher
 
 
 def test_ktantan_block_cipher():
-    """
-    Official test vectors for the KTANTAN block cipher are not available.
-    The following test vectors were generated from the implementation provided in:
-    https://gist.github.com/raullenchai/2662701
-    https://gist.github.com/raullenchai/2712516
+    """Gate-level KTANTAN vs FSR-based KTANTAN cross-validation at reduced round count.
+
+    Full test vectors are in ktantan_fsr_block_cipher_test.py (faster implementation).
+    Here we verify that the gate-level and FSR implementations agree at 40 rounds
+    (enough to exhaust all 80 initial key bits at 2 bits per round).
     """
     ktantan = KtantanBlockCipher()
     assert ktantan.type == 'block_cipher'
@@ -18,14 +21,30 @@ def test_ktantan_block_cipher():
     assert ktantan.number_of_rounds == 8
     assert ktantan.id == 'ktantan_p64_k80_o64_r8'
 
-    key = 0xFFFFFFFFFFFFFFFFFFFF
-    plaintext = 0x00000000
+    # Cross-validate gate-level vs FSR at 40 rounds (all 80 key bits consumed).
+    ROUNDS = 40
+    inputs = [
+        (32,  0x00000000,         0xFFFFFFFFFFFFFFFFFFFF),
+        (32,  0x12345678,         0x0123456789ABCDEFFEDC),
+        (48,  0x000000000000,     0xFFFFFFFFFFFFFFFFFFFF),
+        (48,  0x123456789ABC,     0x0123456789ABCDEFFEDC),
+        (64,  0x0000000000000000, 0xFFFFFFFFFFFFFFFFFFFF),
+        (64,  0x123456789ABCDEF0, 0x0123456789ABCDEFFEDC),
+    ]
 
-    assert KtantanBlockCipher().evaluate([plaintext, key]) == 0x22EA3988
-    assert KtantanBlockCipher(block_bit_size=48).evaluate([plaintext, key]) == 0x936D0FA33A05
-    assert KtantanBlockCipher(block_bit_size=64).evaluate([plaintext, key]) == 0xC02DE05BFA194B16
+    for block_size, pt, key in inputs:
+        t0 = time.perf_counter()
+        gate = KtantanBlockCipher(block_bit_size=block_size, number_of_rounds=ROUNDS)
+        fsr  = KtantanFSRBlockCipher(block_bit_size=block_size, number_of_rounds=ROUNDS)
+        t_build = time.perf_counter() - t0
 
-    key = 0x0123456789ABCDEFFEDC
-    assert KtantanBlockCipher().evaluate([0x12345678, key]) == 0xB3F16EA2
-    assert KtantanBlockCipher(block_bit_size=48).evaluate([0x123456789ABC, key]) == 0xEC5D5700FD6A
-    assert KtantanBlockCipher(block_bit_size=64).evaluate([0x123456789ABCDEF0, key]) == 0xD2E6ABB1BDBCB6CC
+        gate_out = gate.evaluate([pt, key])
+        fsr_out  = fsr.evaluate([pt, key])
+
+        t_eval = time.perf_counter() - t0 - t_build
+        print(f"\n[ktantan gate vs fsr r={ROUNDS} bs={block_size}] "
+              f"build={t_build:.2f}s  eval_total={t_eval:.2f}s  "
+              f"gate={gate_out:#x}  fsr={fsr_out:#x}")
+        assert gate_out == fsr_out, (
+            f"Mismatch at block_size={block_size}: gate={gate_out:#x} fsr={fsr_out:#x}"
+        )
