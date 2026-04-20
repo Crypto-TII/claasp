@@ -1,5 +1,3 @@
-import time
-
 from claasp.ciphers.block_ciphers.katan_block_cipher import KatanBlockCipher
 from claasp.ciphers.block_ciphers.katan_fsr_block_cipher import KatanFSRBlockCipher
 
@@ -33,18 +31,12 @@ def test_katan_block_cipher():
     ]
 
     for block_size, pt, key in inputs:
-        t0 = time.perf_counter()
         gate = KatanBlockCipher(block_bit_size=block_size, number_of_rounds=ROUNDS)
         fsr  = KatanFSRBlockCipher(block_bit_size=block_size, number_of_rounds=ROUNDS)
-        t_build = time.perf_counter() - t0
 
         gate_out = gate.evaluate([pt, key])
         fsr_out  = fsr.evaluate([pt, key])
 
-        t_eval = time.perf_counter() - t0 - t_build
-        print(f"\n[katan gate vs fsr r={ROUNDS} bs={block_size}] "
-              f"build={t_build:.2f}s  eval_total={t_eval:.2f}s  "
-              f"gate={gate_out:#x}  fsr={fsr_out:#x}")
         assert gate_out == fsr_out, (
             f"Mismatch at block_size={block_size}: gate={gate_out:#x} fsr={fsr_out:#x}"
         )

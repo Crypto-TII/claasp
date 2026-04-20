@@ -1,5 +1,3 @@
-import time
-
 from claasp.ciphers.block_ciphers.katan_fsr_block_cipher import KatanFSRBlockCipher
 
 
@@ -20,11 +18,9 @@ def test_katan_fsr_block_cipher():
     assert katan_fsr.id == 'katan_fsr_p48_k80_o48_r4'
 
     # Reuse cipher objects per block size to minimise Python code compilation.
-    t0 = time.perf_counter()
     katan_fsr32 = KatanFSRBlockCipher()
     katan_fsr48 = KatanFSRBlockCipher(block_bit_size=48)
     katan_fsr64 = KatanFSRBlockCipher(block_bit_size=64)
-    t_build = time.perf_counter() - t0
 
     key_all = 0xFFFFFFFFFFFFFFFFFFFF
     assert katan_fsr32.evaluate([0x00000000, key_all]) == 0x7E1FF945
@@ -35,5 +31,3 @@ def test_katan_fsr_block_cipher():
     assert katan_fsr32.evaluate([0x12345678, key2]) == 0xCFFDC7DA
     assert katan_fsr48.evaluate([0x123456789ABC, key2]) == 0x0675F0F5DA84
     assert katan_fsr64.evaluate([0x123456789ABCDEF0, key2]) == 0x0B3EDCA9A41D4619
-
-    print(f"\n[katan_fsr] build: {t_build:.2f}s")
