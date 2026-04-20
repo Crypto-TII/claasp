@@ -4,6 +4,11 @@ from claasp.ciphers.block_ciphers.katan_fsr_block_cipher import KatanFSRBlockCip
 def test_katan_fsr_block_cipher():
     """Test vectors for the KATAN FSR block cipher.
 
+    Official test vectors for the KATAN block cipher are not available.
+    The full 254-round test vectors were generated from the implementations provided in:
+    https://gist.github.com/raullenchai/2662701
+    https://gist.github.com/raullenchai/2712516
+
     The expected values are identical to those of the gate-level KatanBlockCipher,
     confirming that both implementations produce the same results.
     """

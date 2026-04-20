@@ -5,6 +5,11 @@ from claasp.ciphers.block_ciphers.ktantan_fsr_block_cipher import KtantanFSRBloc
 def test_ktantan_block_cipher():
     """Gate-level KTANTAN vs FSR-based KTANTAN cross-validation at reduced round count.
 
+    Official test vectors for the KTANTAN block cipher are not available.
+    The full 254-round test vectors were generated from the implementations provided in:
+    https://gist.github.com/raullenchai/2662701
+    https://gist.github.com/raullenchai/2712516
+
     Full test vectors are in ktantan_fsr_block_cipher_test.py (faster implementation).
     Here we verify that the gate-level and FSR implementations agree at 40 rounds
     (enough to exhaust all 80 initial key bits at 2 bits per round).

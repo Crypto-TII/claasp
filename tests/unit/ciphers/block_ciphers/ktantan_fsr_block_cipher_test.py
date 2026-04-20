@@ -4,6 +4,11 @@ from claasp.ciphers.block_ciphers.ktantan_fsr_block_cipher import KtantanFSRBloc
 def test_ktantan_fsr_block_cipher():
     """Test vectors for the KTANTAN FSR block cipher.
 
+    Official test vectors for the KTANTAN block cipher are not available.
+    The full 254-round test vectors were generated from the implementations provided in:
+    https://gist.github.com/raullenchai/2662701
+    https://gist.github.com/raullenchai/2712516
+
     The expected values are identical to those of the gate-level KtantanBlockCipher,
     confirming that both implementations produce the same results.
     """
