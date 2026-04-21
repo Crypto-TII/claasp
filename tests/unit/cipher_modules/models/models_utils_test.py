@@ -4,6 +4,7 @@ import sys
 from io import StringIO
 import pickle
 import numpy as np
+import pytest
 
 from claasp.cipher_modules.models.milp.milp_models.milp_xor_linear_model import MilpXorLinearModel
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
@@ -19,15 +20,81 @@ from claasp.cipher_modules.models.utils import (convert_solver_solution_to_dicti
                                                 differential_checker_permutation,
                                                 differential_truncated_checker_permutation_input_and_output_truncated,
                                                 hex_to_bitlist,
-                                                linear_checker_for_block_cipher_single_key)
+                                                linear_checker_for_block_cipher_single_key,
+                                                add_arcs,
+                                                check_if_implemented_component,
+                                                get_previous_output_bit_ids,
+                                                set_component_value_weight_sign,
+                                                set_component_solution,
+                                                join_and_sanitize_strings,
+                                                write_model_to_file,
+                                                differential_truncated_checker_single_key,
+                                                _sample_truncated_difference_from_string)
 from claasp.ciphers.permutations.chacha_permutation import ROUND_MODE_HALF, ChachaPermutation
 from claasp.ciphers.permutations.salsa_permutation import SalsaPermutation
+from claasp.name_mappings import INTERMEDIATE_OUTPUT, WORD_OPERATION
 
 NOT_EQUAL = 'not equal'
+
+class DummyIdentityBlockCipher:
+    def evaluate_vectorized(self, inputs):
+        return [inputs[0]]
+
 
 def test_hex_to_bitlist():
     assert hex_to_bitlist("0xabc10") == hex_to_bitlist("0Xabc10")
     assert hex_to_bitlist("0xabc10") == [1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0]
+
+
+def test_set_component_solution_helpers():
+    assert set_component_value_weight_sign("0xab", 3, -1) == {"value": "0xab", "weight": 3, "sign": -1}
+    assert set_component_solution("abcd") == {"value": "abcd"}
+    assert set_component_solution("abcd", weight=2, sign=1) == {"value": "abcd", "weight": 2, "sign": 1}
+
+
+def test_sample_truncated_difference_from_string_validation_and_bits():
+    rng = np.random.default_rng(0)
+    with pytest.raises(ValueError, match="pattern length"):
+        _sample_truncated_difference_from_string("01", 2, 8, rng)
+    with pytest.raises(ValueError, match="may only contain"):
+        _sample_truncated_difference_from_string("0A000000", 2, 8, rng)
+
+    samples = _sample_truncated_difference_from_string("10??????", 16, 8, np.random.default_rng(1))
+    assert samples.shape == (1, 16)
+    assert np.all((samples[0] & 0b10000000) == 0b10000000)
+    assert np.all((samples[0] & 0b01000000) == 0)
+
+
+def test_parallel_and_validation_paths_for_checker_helpers():
+    cipher = DummyIdentityBlockCipher()
+
+    corr_seq = differential_linear_checker_for_block_cipher_single_key(
+        cipher, 0, "10000000", 32, 8, 8, 0, seed=7, num_workers=1
+    )
+    corr_par = differential_linear_checker_for_block_cipher_single_key(
+        cipher, 0, "10000000", 32, 8, 8, 0, seed=7, num_workers=2
+    )
+    assert -1.0 <= corr_seq <= 1.0
+    assert -1.0 <= corr_par <= 1.0
+
+    lin_corr_par = linear_checker_for_block_cipher_single_key(
+        cipher, "00000000", "00000000", 32, 8, 8, 0, seed=5, num_workers=2
+    )
+    assert lin_corr_par == 1.0
+
+    prob_weight = differential_truncated_checker_single_key(
+        cipher, 0, "00000000", 32, 8, 0, 8, seed=3, num_workers=2
+    )
+    assert math.isfinite(prob_weight)
+    assert prob_weight <= 0.0
+
+    impossible = differential_truncated_checker_permutation(
+        cipher, 0, "11111111", 32, 8, seed=9, num_workers=2
+    )
+    assert impossible <= 0.0
+
+    with pytest.raises(ValueError, match="State size must be a multiple of 8"):
+        differential_checker_permutation(cipher, 0, 0, 8, 7)
     
 
 def test_print_components_values():
