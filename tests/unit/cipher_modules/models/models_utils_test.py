@@ -1,6 +1,7 @@
 import math
 import os
 import sys
+from contextlib import redirect_stdout
 from io import StringIO
 import pickle
 import numpy as np
@@ -73,11 +74,12 @@ def test_hex_to_bitlist_invalid_prefix_raises():
         hex_to_bitlist("abc10")
 
 
-def test_check_if_implemented_component_invalid_word_operation(capsys):
+def test_check_if_implemented_component_invalid_word_operation():
     component = DummyComponent("wo_0", WORD_OPERATION, description=["UNSUPPORTED"])
-    assert check_if_implemented_component(component) is False
-    captured = capsys.readouterr()
-    assert "wo_0 not yet implemented" in captured.out
+    out = StringIO()
+    with redirect_stdout(out):
+        assert check_if_implemented_component(component) is False
+    assert "wo_0 not yet implemented" in out.getvalue()
 
 
 def test_join_and_sanitize_strings_and_write_model_to_file(tmp_path):
