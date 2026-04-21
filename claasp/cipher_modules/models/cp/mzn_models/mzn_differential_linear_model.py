@@ -15,6 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
+import math
 import re
 import time as tm
 
@@ -463,7 +464,7 @@ class MznDifferentialLinearModel(MznModel):
             return component_id[:-2]
         return component_id
 
-    def _differential_linear_total_weight_from_components(self, components_values):
+    def _collect_differential_linear_component_weights(self, components_values):
         p_weight = 0.0
         middle_sum = 0.0
         q_weight = 0.0
@@ -479,22 +480,33 @@ class MznDifferentialLinearModel(MznModel):
 
             if base_component_id in self.top_part_component_ids:
                 p_weight += weight
-            elif base_component_id in self.middle_part_component_ids:
+                continue
+
+            if base_component_id in self.middle_part_component_ids:
                 if base_component_id not in seen_middle:
                     middle_sum += weight
                     seen_middle.add(base_component_id)
-            elif base_component_id in self.bottom_part_component_ids:
-                if base_component_id not in seen_bottom:
-                    q_weight += weight
-                    seen_bottom.add(base_component_id)
-        import math
-        if seen_middle:
-            if middle_sum > 1000:
-                r_weight = middle_sum + 1.0
-            else:
-                r_weight = math.log(2 * (2**middle_sum) - 1, 2)
-        else:
-            r_weight = 0.0
+                continue
+
+            if base_component_id in self.bottom_part_component_ids and base_component_id not in seen_bottom:
+                q_weight += weight
+                seen_bottom.add(base_component_id)
+
+        return p_weight, middle_sum, q_weight, bool(seen_middle)
+
+    @staticmethod
+    def _middle_weight_term(middle_sum, has_middle_components):
+        if not has_middle_components:
+            return 0.0
+        if middle_sum > 1000:
+            return middle_sum + 1.0
+        return math.log(2 * (2**middle_sum) - 1, 2)
+
+    def _differential_linear_total_weight_from_components(self, components_values):
+        p_weight, middle_sum, q_weight, has_middle_components = (
+            self._collect_differential_linear_component_weights(components_values)
+        )
+        r_weight = self._middle_weight_term(middle_sum, has_middle_components)
         return round(p_weight + r_weight + (2 * q_weight), 10)
 
     def _set_differential_linear_total_weight(self, solution):

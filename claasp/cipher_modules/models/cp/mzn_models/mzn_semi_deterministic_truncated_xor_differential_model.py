@@ -184,7 +184,7 @@ class MznSemiDeterministicTruncatedXorDifferentialModel(MznModel):
             intermediate_solutions_=intermediate_solutions,
         )
 
-    def find_lowest_cp_semi_deterministic_truncated_xor_differential_trail(
+    def find_optimal_cp_semi_deterministic_truncated_xor_differential_trail(
         self,
         fixed_values=None,
         solver_name=SOLVER_DEFAULT,

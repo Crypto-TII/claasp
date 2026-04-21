@@ -57,8 +57,8 @@ def test_find_one_semi_deterministic_truncated_xor_differential_trail_external()
     assert trail["solver_name"] == CHUFFED
     assert "total_weight" in trail
 
-
-def test_find_lowest_cp_semi_deterministic_truncated_xor_differential_trail():
+    
+def test_find_optimal_cp_semi_deterministic_truncated_xor_differential_trail():
     speck = SpeckBlockCipher(number_of_rounds=1)
     mzn = MznSemiDeterministicTruncatedXorDifferentialModel(speck)
     block_size, key_size = speck.inputs_bit_size
@@ -75,7 +75,7 @@ def test_find_lowest_cp_semi_deterministic_truncated_xor_differential_trail():
         bit_values=(0,) * key_size,
     )
 
-    trail = mzn.find_lowest_cp_semi_deterministic_truncated_xor_differential_trail(
+    trail = mzn.find_optimal_cp_semi_deterministic_truncated_xor_differential_trail(
         fixed_values=[plaintext, key], 
         solver_name=CHUFFED, solve_external=True, random_seed=0
     )[0]
@@ -221,7 +221,7 @@ def test_find_lowest_semi_deterministic_truncated_xor_differential_trail_speck()
 
     key = set_fixed_variables(component_id=INPUT_KEY, constraint_type="equal", bit_positions=range(64), bit_values=(0,) * 64)
 
-    trail = mzn.find_lowest_cp_semi_deterministic_truncated_xor_differential_trail(fixed_values=[plaintext, key, ciphertext])
+    trail = mzn.find_optimal_cp_semi_deterministic_truncated_xor_differential_trail(fixed_values=[plaintext, key, ciphertext])
     assert trail["total_weight"] == '1.0'
     assert trail["components_values"]["cipher_output_1_12"]["value"] == "???????????????1???????????????1"
 
@@ -243,7 +243,7 @@ def test_find_lowest_semi_deterministic_truncated_xor_differential_trail_speck()
 
     key = set_fixed_variables(component_id=INPUT_KEY, constraint_type="equal", bit_positions=range(64), bit_values=(0,) * 64)
 
-    trail = mzn.find_lowest_cp_semi_deterministic_truncated_xor_differential_trail(fixed_values=[plaintext, key, ciphertext])
+    trail = mzn.find_optimal_cp_semi_deterministic_truncated_xor_differential_trail(fixed_values=[plaintext, key, ciphertext])
     assert trail["total_weight"] == '0.0'
     assert trail["components_values"]["cipher_output_2_12"]["value"] == "???????????????0???????????????1"
 
@@ -267,7 +267,7 @@ def test_find_lowest_semi_deterministic_truncated_xor_differential_trail_chacha(
     print(
         f"Starting to find trail for Chacha permutation with {number_of_rounds} rounds and half round mode"
     )
-    trail = mzn.find_lowest_cp_semi_deterministic_truncated_xor_differential_trail(
+    trail = mzn.find_optimal_cp_semi_deterministic_truncated_xor_differential_trail(
         fixed_values=[plaintext], solver_name=CPSAT, num_of_processors=8, solve_external=True
     )[0]
     theoretical_probability = float(trail["total_weight"])
@@ -314,7 +314,7 @@ def test_find_lowest_four_round_semi_deterministic_truncated_xor_differential_tr
     print(
         f"Starting to find trail for Chacha permutation with {number_of_rounds} rounds and half round mode"
     )
-    trail = mzn.find_lowest_cp_semi_deterministic_truncated_xor_differential_trail(
+    trail = mzn.find_optimal_cp_semi_deterministic_truncated_xor_differential_trail(
         fixed_values=[plaintext, cipher_output], solver_name=CPSAT, num_of_processors=4, solve_external=True
     )[0]
     assert trail.get("status") == "SATISFIABLE"
