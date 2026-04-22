@@ -503,11 +503,10 @@ class MznDifferentialLinearModel(MznModel):
         return abs(math.log(abs(2 * (2**(-1*middle_sum)) - 1), 2))
 
     def _differential_linear_total_weight_from_components(self, components_values):
-        p_weight, middle_sum, q_weight, has_middle_components = (
+        p_weight, middle_sum, q_weight, _ = (
             self._collect_differential_linear_component_weights(components_values)
         )
-        r_weight = self._middle_weight_term(middle_sum, has_middle_components)
-        return round(p_weight + r_weight + (2 * q_weight), 10)
+        return round(p_weight + middle_sum + (2 * q_weight), 10)
 
     def _set_differential_linear_total_weight(self, solution):
         if not isinstance(solution, dict):
