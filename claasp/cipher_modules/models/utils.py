@@ -1402,19 +1402,26 @@ def shared_difference_paired_input_differential_linear_checker_permutation(
 
 def _sample_truncated_difference_from_string(pattern, num_samples, state_size, rng):
     """
-    Build a (num_bytes, num_samples) uint8 matrix with per-sample input differences
+    Build a (state_size // 8, num_samples) uint8 matrix with per-sample input differences
     that satisfy the truncated pattern.
-    Pattern is a string of length = state_size over {'0','1','2','?'},
-    where '2'/'?' means unconstrained. Bit index 0 is LSB of the state.
-    For convenience (to match your existing helpers), we interpret the
-    given string MSB→LSB and reverse it internally.
+    
+    Pattern is a string of length = state_size over {'0','1','2','?'}:
+      - '0' or '1': fixed bit value
+      - '2' or '?': unconstrained (random)
+    
+    Bit index 0 corresponds to the MSB of the state (MSB-first ordering).
+    
+    Bits are packed into bytes using big-endian order, i.e., index 0 becomes
+    the MSB of byte 0.
+    
+    Returns:
+        A (state_size // 8, num_samples) array of dtype uint8.
     """
     if len(pattern) != state_size:
         raise ValueError(f"pattern length ({len(pattern)}) must equal state_size ({state_size}).")
     if any(c not in ('0','1','2','?') for c in pattern):
         raise ValueError("pattern may only contain '0', '1', '2', or '?'.")
 
-    num_bytes = state_size // 8
     if state_size % 8 != 0:
         raise ValueError("State size must be a multiple of 8.")
 
@@ -1430,9 +1437,8 @@ def _sample_truncated_difference_from_string(pattern, num_samples, state_size, r
         bits[:, fixed_pos] = fixed_vals  # broadcast per column
 
     # Pack bit rows into bytes (big-endian: position 0 = MSB of byte 0)
-    input_diff_samples = np.packbits(bits, axis=1, bitorder='big')  # (num_samples, num_bytes)
-
-    # Return in shape (num_bytes, num_samples) to XOR with plaintexts directly
+    input_diff_samples = np.packbits(bits, axis=1, bitorder='big')
+    
     return input_diff_samples.T
 
 
