@@ -509,7 +509,7 @@ class MznModel:
         solver_name,
         num_of_processors,
         timelimit,
-        include_intermediate_solutions=False,
+        intermediate_solutions=False,
     ):
         solvers = (
             "deterministic_truncated_xor_differential_one_solution",
@@ -535,7 +535,7 @@ class MznModel:
             command_options["options"].insert(0, f"-p {num_of_processors}")
         if timelimit is not None:
             command_options["options"].extend(["--time-limit", str(timelimit)])
-        if include_intermediate_solutions:
+        if intermediate_solutions:
             command_options["options"].insert(0, "-i")
         command = []
         for key in command_options["format"]:
@@ -754,8 +754,9 @@ class MznModel:
     def solve(
         self,
         model_type,
-        solver_name=SOLVER_DEFAULT,
         solve_external=False,
+        # MiniZinc solver parameters
+        solver_name=SOLVER_DEFAULT,
         timeout_in_seconds_=None,
         processes_=None,
         nr_solutions_=None,
@@ -821,7 +822,7 @@ class MznModel:
                 solver_name,
                 processes_,
                 timeout_in_seconds_,
-                include_intermediate_solutions=intermediate_solutions_,
+                intermediate_solutions=intermediate_solutions_,
             )
             model = "\n".join(mzn_model)
             start = time.time()

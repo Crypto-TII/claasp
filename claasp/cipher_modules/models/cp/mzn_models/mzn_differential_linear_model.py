@@ -641,14 +641,14 @@ class MznDifferentialLinearModel(MznModel):
 
         return solution
 
-    def find_lowest_weight_xor_differential_linear_trail(
+    def find_optimal_weight_xor_differential_linear_trail(
         self,
         fixed_values=None,
         solver_name=SOLVER_DEFAULT,
         num_of_processors=None,
         timelimit=None,
         solve_external=False,
-        intermediate_solutions=False,
+        include_non_optimal_solutions=False,
     ):
         if fixed_values is None:
             fixed_values = []
@@ -663,7 +663,7 @@ class MznDifferentialLinearModel(MznModel):
             timeout_in_seconds_=timelimit,
             processes_=num_of_processors,
             solve_external=solve_external,
-            intermediate_solutions_=intermediate_solutions,
+            intermediate_solutions_=include_non_optimal_solutions,
 
         )
         if isinstance(solution, list):
@@ -672,7 +672,7 @@ class MznDifferentialLinearModel(MznModel):
                 self._normalize_total_weight(partial_solution)
                 self._ensure_components_values(partial_solution)
                 partial_solution["building_time_seconds"] = build_time
-                partial_solution["test_name"] = "find_lowest_weight_xor_differential_linear_trail"
+                partial_solution["test_name"] = "find_optimal_weight_xor_differential_linear_trail"
             if len(solution) == 1:
                 return solution[0]
             return solution
@@ -681,7 +681,7 @@ class MznDifferentialLinearModel(MznModel):
         self._normalize_total_weight(solution)
         self._ensure_components_values(solution)
         solution["building_time_seconds"] = build_time
-        solution["test_name"] = "find_lowest_weight_xor_differential_linear_trail"
+        solution["test_name"] = "find_optimal_weight_xor_differential_linear_trail"
 
         return solution
 

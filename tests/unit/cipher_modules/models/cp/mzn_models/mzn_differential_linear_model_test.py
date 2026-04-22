@@ -318,7 +318,7 @@ def test_differential_linear_trail_6_rounds_ballet_cp_case():
         bit_values=(0,) * ballet.block_bit_size,
     )
 
-    solutions = model.find_lowest_weight_xor_differential_linear_trail(
+    solutions = model.find_optimal_weight_xor_differential_linear_trail(
         fixed_values=[key_difference, plaintext_difference, ciphertext_output_mask],
         solver_name=CPSAT,
         num_of_processors=4,
@@ -532,7 +532,7 @@ def test_differential_linear_trail_6_rounds_speck_cp_case_2():
         middle_part_model="cp_semi_deterministic_truncated_xor_differential_constraints",
     )
 
-    trail = model.find_lowest_weight_xor_differential_linear_trail(
+    trail = model.find_optimal_weight_xor_differential_linear_trail(
         fixed_values=fixed_values,
         solver_name=CPSAT,
         num_of_processors=4,
@@ -550,7 +550,7 @@ def test_differential_linear_trail_6_rounds_speck_cp_case_2():
         assert trail["components_values"][component_id]["value"] == expected_value
 
     
-    assert math.isclose(float(trail["total_weight"]), 14.9943534369, rel_tol=1e-6, abs_tol=1e-6)
+    assert math.isclose(float(trail["total_weight"]), 7.0227200765, rel_tol=1e-6, abs_tol=1e-6)
 
 
 def test_differential_linear_trail_with_fixed_weight_4_rounds_chacha_golden():
@@ -720,7 +720,7 @@ def test_diff_lin_chacha_permutation_cases(
     assert abs(math.log(absolute_correlation, 2)) < threshold
 
 
-def test_lowest_semi_deterministic_differential_linear_trail_siphash():
+def test_optimal_semi_deterministic_differential_linear_trail_siphash():
 
 
     siphash = SiphashMAC(message_byte_size=15, compression_rounds=2, finalization_rounds=1)
@@ -796,13 +796,13 @@ def test_lowest_semi_deterministic_differential_linear_trail_siphash():
     fixed_values = [key_difference, message_difference, output_mask]
     print("Output component used:", cipher_output_component_id)
 
-    solutions = mzn_differential_linear_model.find_lowest_weight_xor_differential_linear_trail(
+    solutions = mzn_differential_linear_model.find_optimal_weight_xor_differential_linear_trail(
         fixed_values=fixed_values,
         solver_name=CPSAT,
         solve_external=True,
         num_of_processors=4,
         timelimit=70000,
-        intermediate_solutions=True
+        include_non_optimal_solutions=True
     )
 
     if isinstance(solutions, list):

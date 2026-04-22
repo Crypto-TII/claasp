@@ -192,7 +192,7 @@ class MznSemiDeterministicTruncatedXorDifferentialModel(MznModel):
         timelimit=None,
         random_seed=None,
         solve_external=False,
-        intermediate_solutions=False,
+        include_non_optimal_solutions=False,
     ):
         if fixed_values is None:
             fixed_values = []
@@ -208,7 +208,7 @@ class MznSemiDeterministicTruncatedXorDifferentialModel(MznModel):
             processes_=num_of_processors,
             random_seed_=random_seed,
             solve_external=solve_external,
-            intermediate_solutions_=intermediate_solutions,
+            intermediate_solutions_=include_non_optimal_solutions,
         )
 
     def add_solutions_from_components_values(
