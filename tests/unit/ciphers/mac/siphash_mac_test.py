@@ -58,8 +58,8 @@ def test_siphash24_vector_from_paper_page_19_and_vectors_h():
     message = _int_from_bytes_big_endian(message_bytes)
     expected = _siphash64_expected_from_le_bytes(expected_le_bytes)
 
-    assert siphash.evaluate([key, message]) == expected
-    assert siphash.evaluate_vectorized([key, message], evaluate_api=True) == expected
+    assert siphash.evaluate([message, key]) == expected
+    assert siphash.evaluate_vectorized([message, key], evaluate_api=True) == expected
 
 
 @pytest.mark.parametrize(
@@ -79,7 +79,7 @@ def test_siphash24_vectors_h_selected(message_size, expected_le_bytes):
     expected = _siphash64_expected_from_le_bytes(expected_le_bytes)
 
     siphash = SiphashMAC(message_byte_size=message_size, compression_rounds=2, finalization_rounds=4)
-    assert siphash.evaluate([key, message]) == expected
+    assert siphash.evaluate([message, key]) == expected
 
 
 def test_siphash128_vectors_h_selected():
@@ -110,4 +110,4 @@ def test_siphash128_vectors_h_selected():
     expected = _siphash128_expected_from_le_bytes(expected_le_bytes)
 
     siphash_128 = SiphashMAC(message_byte_size=15, compression_rounds=2, finalization_rounds=4, output_bit_size=128)
-    assert siphash_128.evaluate([key, message]) == expected
+    assert siphash_128.evaluate([message, key]) == expected

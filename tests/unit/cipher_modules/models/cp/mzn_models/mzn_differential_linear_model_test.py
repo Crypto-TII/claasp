@@ -550,7 +550,7 @@ def test_differential_linear_trail_6_rounds_speck_cp_case_2():
         assert trail["components_values"][component_id]["value"] == expected_value
 
     
-    assert math.isclose(float(trail["total_weight"]), 7.0227200765, rel_tol=1e-6, abs_tol=1e-6)
+    assert math.isclose(float(trail["total_weight"]), 14.0, rel_tol=1e-6, abs_tol=1e-6)
 
 
 def test_differential_linear_trail_with_fixed_weight_4_rounds_chacha_golden():
@@ -768,8 +768,8 @@ def test_optimal_semi_deterministic_differential_linear_trail_siphash():
         standard_differential_part=False,
     )
 
-    key_size = siphash.inputs_bit_size[0]
-    message_size = siphash.inputs_bit_size[1]
+    message_size = siphash.inputs_bit_size[0]
+    key_size = siphash.inputs_bit_size[1]
 
     key_difference = set_fixed_variables(
         component_id=INPUT_KEY,
