@@ -498,9 +498,9 @@ class MznDifferentialLinearModel(MznModel):
     def _middle_weight_term(middle_sum, has_middle_components):
         if not has_middle_components:
             return 0.0
-        if middle_sum > 1000:
-            return middle_sum + 1.0
-        return math.log(2 * (2**middle_sum) - 1, 2)
+        if middle_sum == 1:
+            raise ValueError("Unexpected probability weight 1 in middle part")
+        return abs(math.log(abs(2 * (2**(-1*middle_sum)) - 1), 2))
 
     def _differential_linear_total_weight_from_components(self, components_values):
         p_weight, middle_sum, q_weight, has_middle_components = (

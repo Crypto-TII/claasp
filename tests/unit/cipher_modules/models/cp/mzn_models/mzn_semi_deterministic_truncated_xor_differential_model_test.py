@@ -14,7 +14,7 @@ from claasp.ciphers.permutations.chacha_permutation import ROUND_MODE_HALF, Chac
 from claasp.name_mappings import (
     INPUT_KEY,
     INPUT_PLAINTEXT,
-    SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL_LOWEST_SOLUTION,
+    SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL_OPTIMAL_SOLUTION,
     SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL_ONE_SOLUTION,
 )
 from minizinc import Model, Solver, Instance
@@ -81,7 +81,7 @@ def test_find_optimal_cp_semi_deterministic_truncated_xor_differential_trail():
     )[0]
 
     assert str(trail["cipher"]) == "speck_p32_k64_o32_r1"
-    assert trail["model_type"] == SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL_LOWEST_SOLUTION
+    assert trail["model_type"] == SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL_OPTIMAL_SOLUTION
     assert trail["solver_name"] == CHUFFED
     assert "total_weight" in trail
 

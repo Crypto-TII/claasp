@@ -25,7 +25,7 @@ from claasp.name_mappings import (
     CONSTANT,
     INTERMEDIATE_OUTPUT,
     WORD_OPERATION,
-    SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL_LOWEST_SOLUTION,
+    SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL_OPTIMAL_SOLUTION,
     SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL_ONE_SOLUTION,
 )
 
@@ -202,7 +202,7 @@ class MznSemiDeterministicTruncatedXorDifferentialModel(MznModel):
         )
 
         return self.solve(
-            SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL_LOWEST_SOLUTION,
+            SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL_OPTIMAL_SOLUTION,
             solver_name=solver_name,
             timeout_in_seconds_=timelimit,
             processes_=num_of_processors,
