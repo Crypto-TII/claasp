@@ -377,14 +377,14 @@ def test_get_command_for_solver_process_intermediate_solutions_flag():
         solver_name="chuffed",
         num_of_processors=None,
         timelimit=None,
-        include_intermediate_solutions=False,
+        intermediate_solutions=False,
     )
     command_with_intermediate = model.get_command_for_solver_process(
         model_type="xor_differential_one_solution",
         solver_name="chuffed",
         num_of_processors=None,
         timelimit=None,
-        include_intermediate_solutions=True,
+        intermediate_solutions=True,
     )
 
     assert "-i" not in command_without_intermediate
