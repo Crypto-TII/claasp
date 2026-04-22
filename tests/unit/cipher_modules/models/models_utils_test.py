@@ -1,9 +1,11 @@
 import math
 import os
 import sys
+from contextlib import redirect_stdout
 from io import StringIO
 import pickle
 import numpy as np
+import pytest
 
 from claasp.cipher_modules.models.milp.milp_models.milp_xor_linear_model import MilpXorLinearModel
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
@@ -19,15 +21,144 @@ from claasp.cipher_modules.models.utils import (convert_solver_solution_to_dicti
                                                 differential_checker_permutation,
                                                 differential_truncated_checker_permutation_input_and_output_truncated,
                                                 hex_to_bitlist,
-                                                linear_checker_for_block_cipher_single_key)
+                                                linear_checker_for_block_cipher_single_key,
+                                                add_arcs,
+                                                check_if_implemented_component,
+                                                get_previous_output_bit_ids,
+                                                set_component_value_weight_sign,
+                                                set_component_solution,
+                                                join_and_sanitize_strings,
+                                                write_model_to_file,
+                                                differential_truncated_checker_single_key,
+                                                _sample_truncated_difference_from_string,
+                                                shared_difference_paired_input_differential_checker_permutation,
+                                                shared_difference_paired_input_differential_linear_checker_permutation,
+                                                _w_diff_linear_sk, _w_linear_sk, _w_diff_perm,
+                                                _w_diff_trunc_perm, _w_diff_trunc_sk,
+                                                _w_sdpi_diff_perm, _w_sdpi_diff_linear_perm,
+                                                _w_diff_trunc_perm_io, _w_trunc_diff_linear_perm)
 from claasp.ciphers.permutations.chacha_permutation import ROUND_MODE_HALF, ChachaPermutation
 from claasp.ciphers.permutations.salsa_permutation import SalsaPermutation
+from claasp.name_mappings import INTERMEDIATE_OUTPUT, WORD_OPERATION
 
 NOT_EQUAL = 'not equal'
+
+class DummyIdentityBlockCipher:
+    def evaluate_vectorized(self, inputs):
+        return [inputs[0]]
+
+
+class DummyComponent:
+    def __init__(self, component_id, component_type, description=None, suffixes=None):
+        self.id = component_id
+        self.type = component_type
+        self.description = description if description is not None else []
+        self.suffixes = suffixes if suffixes is not None else [""]
+
+
+class DummyCipherForMeasures:
+    def __init__(self, components):
+        self._components = components
+
+    def get_all_components(self):
+        return self._components
+
 
 def test_hex_to_bitlist():
     assert hex_to_bitlist("0xabc10") == hex_to_bitlist("0Xabc10")
     assert hex_to_bitlist("0xabc10") == [1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0]
+
+
+def test_hex_to_bitlist_invalid_prefix_raises():
+    with pytest.raises(ValueError, match="Hex string must start with 0x"):
+        hex_to_bitlist("abc10")
+
+
+def test_check_if_implemented_component_invalid_word_operation():
+    component = DummyComponent("wo_0", WORD_OPERATION, description=["UNSUPPORTED"])
+    out = StringIO()
+    with redirect_stdout(out):
+        assert check_if_implemented_component(component) is False
+    assert "wo_0 not yet implemented" in out.getvalue()
+
+
+def test_join_and_sanitize_strings_and_write_model_to_file(tmp_path):
+    assert join_and_sanitize_strings(["model°", "round#1"]) == "_model_round1"
+
+    file_name = tmp_path / "model.txt"
+    write_model_to_file(["line_1", "line_2"], str(file_name))
+    assert file_name.read_text() == "line_1\nline_2\n"
+
+
+def test_to_bias_and_probability_measure_conversion_branches():
+    cipher = DummyCipherForMeasures([DummyComponent("c0", "sbox", suffixes=[""])])
+
+    proba_solution = {
+        "measure": "probability",
+        "total_weight": 0.0,
+        "components_values": {"c0": {"weight": 0.5}},
+    }
+    bias_solution = to_bias_for_xor_linear_trail(cipher, proba_solution)
+    assert bias_solution["measure"] == "bias"
+
+    bias_input = {
+        "measure": "bias",
+        "total_weight": 1.0,
+        "components_values": {"c0": {"weight": 1.0}},
+    }
+    proba_from_bias = to_probability_for_xor_linear_trail(cipher, bias_input)
+    assert proba_from_bias["measure"] == "probability"
+
+
+def test_set_component_solution_helpers():
+    assert set_component_value_weight_sign("0xab", 3, -1) == {"value": "0xab", "weight": 3, "sign": -1}
+    assert set_component_solution("abcd") == {"value": "abcd"}
+    assert set_component_solution("abcd", weight=2, sign=1) == {"value": "abcd", "weight": 2, "sign": 1}
+
+
+def test_sample_truncated_difference_from_string_validation_and_bits():
+    rng = np.random.default_rng(0)
+    with pytest.raises(ValueError, match="pattern length"):
+        _sample_truncated_difference_from_string("01", 2, 8, rng)
+    with pytest.raises(ValueError, match="may only contain"):
+        _sample_truncated_difference_from_string("0A000000", 2, 8, rng)
+
+    samples = _sample_truncated_difference_from_string("10??????", 16, 8, np.random.default_rng(1))
+    assert samples.shape == (1, 16)
+    assert np.all((samples[0] & 0b10000000) == 0b10000000)
+    assert np.all((samples[0] & 0b01000000) == 0)
+
+
+def test_parallel_and_validation_paths_for_checker_helpers():
+    cipher = DummyIdentityBlockCipher()
+
+    corr_seq = differential_linear_checker_for_block_cipher_single_key(
+        cipher, 0, "10000000", 32, 8, 8, 0, seed=7, num_workers=1
+    )
+    corr_par = differential_linear_checker_for_block_cipher_single_key(
+        cipher, 0, "10000000", 32, 8, 8, 0, seed=7, num_workers=2
+    )
+    assert -1.0 <= corr_seq <= 1.0
+    assert -1.0 <= corr_par <= 1.0
+
+    lin_corr_par = linear_checker_for_block_cipher_single_key(
+        cipher, "00000000", "00000000", 32, 8, 8, 0, seed=5, num_workers=2
+    )
+    assert lin_corr_par == 1.0
+
+    prob_weight = differential_truncated_checker_single_key(
+        cipher, 0, "00000000", 32, 8, 0, 8, seed=3, num_workers=2
+    )
+    assert math.isfinite(prob_weight)
+    assert prob_weight <= 0.0
+
+    impossible = differential_truncated_checker_permutation(
+        cipher, 0, "11111111", 32, 8, seed=9, num_workers=2
+    )
+    assert impossible <= 0.0
+
+    with pytest.raises(ValueError, match="State size must be a multiple of 8"):
+        differential_checker_permutation(cipher, 0, 0, 8, 7)
     
 
 def test_print_components_values():
@@ -487,3 +618,109 @@ def test_differential_linear_continuous_checker_speck_block_cipher():
         assert math.isclose(exp_corr, theo_corr, abs_tol=tol_err)
 
     print("-" * 55 + "\n")
+
+
+def test_to_correlation_measure_branches():
+    """Cover to_correlation_for_bias_measure and to_correlation_for_probability_measure paths."""
+    cipher = DummyCipherForMeasures([DummyComponent("c0", "sbox", suffixes=["_i", "_o"])])
+
+    # bias → correlation: total_weight and nonzero component weights each decrease by 1
+    bias_sol = {
+        "measure": "bias",
+        "total_weight": 3.0,
+        "components_values": {
+            "c0_i": {"weight": 2.0},
+            "c0_o": {"weight": 0.0},
+        },
+    }
+    corr = to_correlation_for_xor_linear_trail(cipher, bias_sol)
+    assert corr["measure"] == "correlation"
+    assert corr["total_weight"] == 2.0
+    assert corr["components_values"]["c0_i"]["weight"] == 1.0
+    assert corr["components_values"]["c0_o"]["weight"] == 0.0  # zero stays zero
+
+    # probability → correlation: log formula applied to total_weight and nonzero component weights
+    proba_sol = {
+        "measure": "probability",
+        "total_weight": 0.5,
+        "components_values": {
+            "c0_i": {"weight": 0.0},
+            "c0_o": {"weight": 0.5},
+        },
+    }
+    corr2 = to_correlation_for_xor_linear_trail(cipher, proba_sol)
+    assert corr2["measure"] == "correlation"
+    assert isinstance(corr2["total_weight"], float)
+    assert corr2["components_values"]["c0_i"]["weight"] == 0.0  # zero stays zero
+    assert isinstance(corr2["components_values"]["c0_o"]["weight"], float)
+
+
+def test_worker_functions_direct():
+    """Call each _w_* worker function directly in-process to cover those code paths."""
+    cipher = DummyIdentityBlockCipher()
+    n = 32
+    nb = 1  # 1 byte = 8-bit state
+    kn = 1  # 1 byte = 8-bit key
+
+    r = _w_diff_linear_sk((cipher, 0, "1" + "0" * 7, nb, kn, 0, n, 42))
+    assert isinstance(r, int)
+
+    r = _w_linear_sk((cipher, "0" * 8, "0" * 8, nb, kn, 0, n, 42))
+    assert isinstance(r, int)
+
+    r = _w_diff_perm((cipher, 0, 0, nb, n, 42))
+    assert isinstance(r, int)
+
+    r = _w_diff_trunc_perm((cipher, 0, "0" + "?" * 7, nb, n, 42))
+    assert isinstance(r, int)
+
+    r = _w_diff_trunc_sk((cipher, 0, "0" + "?" * 7, nb, kn, 0, n, 42))
+    assert isinstance(r, int)
+
+    r = _w_sdpi_diff_perm((cipher, 0, 0, nb, n, 42))
+    assert isinstance(r, int)
+
+    r = _w_sdpi_diff_linear_perm((cipher, 0, "1" + "0" * 7, nb, n, 42))
+    assert isinstance(r, int)
+
+    # _w_diff_trunc_perm_io: output all-wildcard triggers early return path
+    r = _w_diff_trunc_perm_io((cipher, "?" * 8, "?" * 8, 8, nb, n, 42))
+    assert r == n
+
+    # _w_diff_trunc_perm_io: output with fixed bits exercises the full matching path
+    r = _w_diff_trunc_perm_io((cipher, "?" * 8, "0" + "?" * 7, 8, nb, n, 42))
+    assert isinstance(r, int)
+
+    r = _w_trunc_diff_linear_perm((cipher, "?" * 8, "1" + "0" * 7, 8, nb, n, 42))
+    assert isinstance(r, int)
+
+
+def test_sample_truncated_difference_all_wildcard():
+    """Cover the false branch of `if fixed_pos.size` when pattern has no fixed bits."""
+    rng = np.random.default_rng(5)
+    samples = _sample_truncated_difference_from_string("?" * 8, 4, 8, rng)
+    assert samples.shape == (1, 4)
+
+
+def test_sequential_shared_difference_and_truncated_sk_checkers():
+    """Cover sequential (num_workers=1) paths for shared-difference and truncated-SK checkers."""
+    cipher = DummyIdentityBlockCipher()
+
+    # differential_truncated_checker_single_key sequential path
+    pw = differential_truncated_checker_single_key(
+        cipher, 0, "0" * 8, 64, 8, 0, 8, seed=11, num_workers=1
+    )
+    assert math.isfinite(pw)
+    assert pw <= 0.0
+
+    # shared_difference_paired_input_differential_checker_permutation sequential path
+    pw2 = shared_difference_paired_input_differential_checker_permutation(
+        cipher, 0, 0, 64, 8, seed=12, num_workers=1
+    )
+    assert math.isfinite(pw2)
+
+    # shared_difference_paired_input_differential_linear_checker_permutation sequential path
+    corr = shared_difference_paired_input_differential_linear_checker_permutation(
+        cipher, 0, "1" + "0" * 7, 64, 8, seed=13, num_workers=1
+    )
+    assert -1.0 <= corr <= 1.0

@@ -19,6 +19,7 @@ import re
 import json
 import math
 import os
+from concurrent.futures import ProcessPoolExecutor
 from copy import deepcopy
 
 import numpy as np
@@ -837,8 +838,170 @@ def _repeat_input_difference(input_difference, num_samples, num_bytes):
     return repeated_array
 
 
+# ---------------------------------------------------------------------------
+# Module-level worker functions (must be picklable for ProcessPoolExecutor)
+# Each returns the "count" statistic for its chunk; the caller aggregates.
+# ---------------------------------------------------------------------------
+
+def _w_diff_linear_sk(args):
+    cipher, input_difference, output_mask, state_num_bytes, key_num_bytes, fixed_key, chunk_size, seed = args
+    rng = np.random.default_rng(seed)
+    fk = _repeat_input_difference(fixed_key, chunk_size, key_num_bytes)
+    id_ = _repeat_input_difference(input_difference, chunk_size, state_num_bytes)
+    p1 = rng.integers(0, 256, size=(state_num_bytes, chunk_size), dtype=np.uint8)
+    p2 = p1 ^ id_
+    c1 = cipher.evaluate_vectorized([p1, fk])
+    c2 = cipher.evaluate_vectorized([p2, fk])
+    c3 = c1[0] ^ c2[0]
+    bit_pos = _extract_bit_positions_msb(output_mask, ("1",))
+    ccc = _extract_bits_msb(c3.T, bit_pos)
+    parities = np.bitwise_xor.reduce(ccc, axis=0)
+    return int(np.count_nonzero(parities == 0))
+
+
+def _w_linear_sk(args):
+    cipher, input_mask, output_mask, state_num_bytes, key_num_bytes, fixed_key, chunk_size, seed = args
+    rng = np.random.default_rng(seed)
+    fk = _repeat_input_difference(fixed_key, chunk_size, key_num_bytes)
+    plaintext = rng.integers(0, 256, size=(state_num_bytes, chunk_size), dtype=np.uint8)
+    ciphertext = cipher.evaluate_vectorized([plaintext, fk])[0]
+    in_pos = _extract_bit_positions_msb(input_mask, ("1",))
+    out_pos = _extract_bit_positions_msb(output_mask, ("1",))
+    in_par = np.bitwise_xor.reduce(_extract_bits_msb(plaintext, in_pos), axis=0) if len(in_pos) > 0 else np.zeros(chunk_size, dtype=np.uint8)
+    out_par = np.bitwise_xor.reduce(_extract_bits_msb(ciphertext.T, out_pos), axis=0) if len(out_pos) > 0 else np.zeros(chunk_size, dtype=np.uint8)
+    return int(np.count_nonzero((in_par ^ out_par) == 0))
+
+
+def _w_diff_perm(args):
+    cipher, input_difference, output_difference, num_bytes, chunk_size, seed = args
+    rng = np.random.default_rng(seed)
+    id_ = _repeat_input_difference(input_difference, chunk_size, num_bytes)
+    od_ = _repeat_input_difference(output_difference, chunk_size, num_bytes)
+    p1 = rng.integers(0, 256, size=(num_bytes, chunk_size), dtype=np.uint8)
+    p2 = p1 ^ id_
+    c1 = cipher.evaluate_vectorized([p1])
+    c2 = cipher.evaluate_vectorized([p2])
+    return int(np.count_nonzero(np.all(c1[0] ^ c2[0] == od_.T, axis=1)))
+
+
+def _w_diff_trunc_perm(args):
+    cipher, input_difference, output_difference, num_bytes, chunk_size, seed = args
+    rng = np.random.default_rng(seed)
+    id_ = _repeat_input_difference_msb(input_difference, chunk_size, num_bytes)
+    p1 = rng.integers(0, 256, size=(num_bytes, chunk_size), dtype=np.uint8)
+    p2 = p1 ^ id_
+    c1 = cipher.evaluate_vectorized([p1])
+    c2 = cipher.evaluate_vectorized([p2])
+    diff = c1[0] ^ c2[0]
+    bit_pos = _extract_bit_positions_msb(output_difference)
+    known = _extract_bits_msb(diff.T, bit_pos)
+    filled = np.array([int(output_difference[p]) for p in bit_pos], dtype=np.uint8)[:, np.newaxis]
+    return int(np.all(known == filled, axis=0).sum())
+
+
+def _w_diff_trunc_sk(args):
+    cipher, input_difference, output_difference, num_bytes, key_num_bytes, fixed_key, chunk_size, seed = args
+    rng = np.random.default_rng(seed)
+    fk = _repeat_input_difference(fixed_key, chunk_size, key_num_bytes)
+    id_ = _repeat_input_difference(input_difference, chunk_size, num_bytes)
+    p1 = rng.integers(0, 256, size=(num_bytes, chunk_size), dtype=np.uint8)
+    p2 = p1 ^ id_
+    c1 = cipher.evaluate_vectorized([p1, fk])
+    c2 = cipher.evaluate_vectorized([p2, fk])
+    diff = c1[0] ^ c2[0]
+    bit_pos = _extract_bit_positions_msb(output_difference)
+    known = _extract_bits_msb(diff.T, bit_pos)
+    filled = np.array([int(b) for b in output_difference if b in ("0", "1")], dtype=np.uint8)[:, np.newaxis]
+    return int(np.all(known == filled, axis=0).sum())
+
+
+def _w_sdpi_diff_perm(args):
+    cipher, input_difference, output_difference, num_bytes, chunk_size, seed = args
+    rng = np.random.default_rng(seed)
+    id_ = _repeat_input_difference(input_difference, chunk_size, num_bytes)
+    od_ = _repeat_input_difference(output_difference, chunk_size, num_bytes)
+    p1 = rng.integers(0, 256, size=(num_bytes, chunk_size), dtype=np.uint8)
+    p2 = p1 ^ id_
+    p11 = rng.integers(0, 256, size=(num_bytes, chunk_size), dtype=np.uint8)
+    p22 = p11 ^ id_
+    c1 = cipher.evaluate_vectorized([p1])
+    c2 = cipher.evaluate_vectorized([p2])
+    c11 = cipher.evaluate_vectorized([p11])
+    c22 = cipher.evaluate_vectorized([p22])
+    return int(np.count_nonzero(np.all(c1[0] ^ c2[0] ^ c11[0] ^ c22[0] == od_.T, axis=1)))
+
+
+def _w_sdpi_diff_linear_perm(args):
+    cipher, input_difference, output_mask, num_bytes, chunk_size, seed = args
+    rng = np.random.default_rng(seed)
+    id_ = _repeat_input_difference(input_difference, chunk_size, num_bytes)
+    bcf1 = rng.integers(0, 256, size=(num_bytes, chunk_size), dtype=np.uint8)
+    bcf2 = rng.integers(0, 256, size=(num_bytes, chunk_size), dtype=np.uint8)
+    p1 = rng.integers(0, 256, size=(num_bytes, chunk_size), dtype=np.uint8)
+    p2 = p1 ^ id_
+    p11 = rng.integers(0, 256, size=(num_bytes, chunk_size), dtype=np.uint8)
+    p22 = p11 ^ id_
+    c1 = cipher.evaluate_vectorized([bcf1, p1])
+    c2 = cipher.evaluate_vectorized([bcf1, p2])
+    c11 = cipher.evaluate_vectorized([bcf2, p11])
+    c22 = cipher.evaluate_vectorized([bcf2, p22])
+    c3 = c1[0] ^ c2[0] ^ c11[0] ^ c22[0]
+    bit_pos = _extract_bit_positions_msb(output_mask, ("1",))
+    ccc = _extract_bits_msb(c3.T, bit_pos)
+    parities = np.bitwise_xor.reduce(ccc, axis=0)
+    return int(np.count_nonzero(parities == 0))
+
+
+def _w_diff_trunc_perm_io(args):
+    cipher, input_trunc_diff, output_trunc_diff, state_size, num_bytes, chunk_size, seed = args
+    rng = np.random.default_rng(seed)
+    p1 = rng.integers(0, 256, size=(num_bytes, chunk_size), dtype=np.uint8)
+    mask = _sample_truncated_difference_from_string(input_trunc_diff, chunk_size, state_size, rng)
+    p2 = p1 ^ mask
+    c1 = cipher.evaluate_vectorized([p1])[0]
+    c2 = cipher.evaluate_vectorized([p2])[0]
+    diff = c1 ^ c2
+    bit_pos = _extract_bit_positions_msb(output_trunc_diff)
+    if not bit_pos:
+        return chunk_size
+    known = _extract_bits_msb(diff.T, bit_pos)
+    filled = np.array([int(output_trunc_diff[p]) for p in bit_pos], dtype=np.uint8)[:, None]
+    return int(np.all(known == filled, axis=0).sum())
+
+
+def _w_trunc_diff_linear_perm(args):
+    cipher, input_trunc_diff, output_mask, state_size, num_bytes, chunk_size, seed = args
+    rng = np.random.default_rng(seed)
+    p1 = rng.integers(0, 256, size=(num_bytes, chunk_size), dtype=np.uint8)
+    mask = _sample_truncated_difference_from_string(input_trunc_diff, chunk_size, state_size, rng)
+    p2 = p1 ^ mask
+    c1 = cipher.evaluate_vectorized([p1])
+    c2 = cipher.evaluate_vectorized([p2])
+    c3 = c1[0] ^ c2[0]
+    bit_pos = _extract_bit_positions_msb(output_mask, ("1",))
+    ccc = _extract_bits_msb(c3.T, bit_pos)
+    parities = np.bitwise_xor.reduce(ccc, axis=0)
+    return int(np.count_nonzero(parities == 0))
+
+
+def _parallel_dispatch(worker_func, fixed_args, number_of_samples, num_workers, seed):
+    """Split samples into chunks, run worker_func on each in parallel, return (total_count, total_samples)."""
+    base_chunk = number_of_samples // num_workers
+    remainder = number_of_samples % num_workers
+    rng = np.random.default_rng(seed)
+    seeds = rng.integers(0, 2 ** 31, size=num_workers).tolist()
+    args_list = [
+        fixed_args + (base_chunk + (1 if i < remainder else 0), int(s))
+        for i, s in enumerate(seeds)
+    ]
+    with ProcessPoolExecutor(max_workers=num_workers) as executor:
+        counts = list(executor.map(worker_func, args_list))
+    return sum(counts), number_of_samples
+
+
 def differential_linear_checker_for_block_cipher_single_key(
-    cipher, input_difference, output_mask, number_of_samples, block_size, key_size, fixed_key, seed=None
+    cipher, input_difference, output_mask, number_of_samples, block_size, key_size, fixed_key, seed=None,
+    num_workers=1
 ):
     """
     Verify experimentally differential-linear distinguishers for block ciphers using the vectorized evaluator.
@@ -853,6 +1016,7 @@ def differential_linear_checker_for_block_cipher_single_key(
     - ``key_size`` -- **integer**; key size in bits (must be multiple of 8)
     - ``fixed_key`` -- **integer**; fixed key value for the single-key scenario
     - ``seed`` -- **integer** (default: `None`); seed for reproducible random sampling
+    - ``num_workers`` -- **integer** (default: `1`); number of parallel worker processes
 
     OUTPUT:
 
@@ -864,6 +1028,13 @@ def differential_linear_checker_for_block_cipher_single_key(
         raise ValueError("Key size must be a multiple of 8.")
     state_num_bytes = int(block_size / 8)
     key_num_bytes = int(key_size / 8)
+    if num_workers > 1:
+        count, total = _parallel_dispatch(
+            _w_diff_linear_sk,
+            (cipher, input_difference, output_mask, state_num_bytes, key_num_bytes, fixed_key),
+            number_of_samples, num_workers, seed,
+        )
+        return 2 * count / total - 1.0
     rng = np.random.default_rng(seed)
     fixed_key_data = _repeat_input_difference(fixed_key, number_of_samples, key_num_bytes)
     input_difference_data = _repeat_input_difference(input_difference, number_of_samples, state_num_bytes)
@@ -872,7 +1043,7 @@ def differential_linear_checker_for_block_cipher_single_key(
     ciphertext1 = cipher.evaluate_vectorized([plaintext1, fixed_key_data])
     ciphertext2 = cipher.evaluate_vectorized([plaintext2, fixed_key_data])
     ciphertext3 = ciphertext1[0] ^ ciphertext2[0]
-    bit_positions_ciphertext = _extract_bit_positions_msb(output_mask, ('1'))
+    bit_positions_ciphertext = _extract_bit_positions_msb(output_mask, ("1",))
     ccc = _extract_bits_msb(ciphertext3.T, bit_positions_ciphertext)
     parities = np.bitwise_xor.reduce(ccc, axis=0)
     count = np.count_nonzero(parities == 0)
@@ -881,7 +1052,8 @@ def differential_linear_checker_for_block_cipher_single_key(
 
 
 def linear_checker_for_block_cipher_single_key(
-    cipher, input_mask, output_mask, number_of_samples, block_size, key_size, fixed_key, seed=None
+    cipher, input_mask, output_mask, number_of_samples, block_size, key_size, fixed_key, seed=None,
+    num_workers=1
 ):
     """
     Verify experimentally linear distinguishers for block ciphers in a single-key scenario.
@@ -896,6 +1068,7 @@ def linear_checker_for_block_cipher_single_key(
     - ``key_size`` -- **integer**; key size in bits (must be multiple of 8)
     - ``fixed_key`` -- **integer**; fixed key value for the single-key scenario
     - ``seed`` -- **integer** (default: `None`); seed for reproducible random sampling
+    - ``num_workers`` -- **integer** (default: `1`); number of parallel worker processes
 
     OUTPUT:
 
@@ -912,6 +1085,14 @@ def linear_checker_for_block_cipher_single_key(
 
     state_num_bytes = int(block_size / 8)
     key_num_bytes = int(key_size / 8)
+
+    if num_workers > 1:
+        count, total = _parallel_dispatch(
+            _w_linear_sk,
+            (cipher, input_mask, output_mask, state_num_bytes, key_num_bytes, fixed_key),
+            number_of_samples, num_workers, seed,
+        )
+        return 2 * count / total - 1.0
 
     rng = np.random.default_rng(seed)
     fixed_key_data = _repeat_input_difference(fixed_key, number_of_samples, key_num_bytes)
@@ -940,7 +1121,7 @@ def linear_checker_for_block_cipher_single_key(
 
 
 def differential_checker_permutation(
-    cipher, input_difference, output_difference, number_of_samples, state_size, seed=None
+    cipher, input_difference, output_difference, number_of_samples, state_size, seed=None, num_workers=1
 ):
     """
     Verify experimentally differential distinguishers for permutations using the vectorized evaluator.
@@ -953,6 +1134,7 @@ def differential_checker_permutation(
     - ``number_of_samples`` -- **integer**; number of random plaintext pairs
     - ``state_size`` -- **integer**; permutation state size in bits (must be multiple of 8)
     - ``seed`` -- **integer** (default: `None`); seed for reproducible random sampling
+    - ``num_workers`` -- **integer** (default: `1`); number of parallel worker processes
 
     OUTPUT:
 
@@ -961,6 +1143,14 @@ def differential_checker_permutation(
     if state_size % 8 != 0:
         raise ValueError("State size must be a multiple of 8.")
     num_bytes = int(state_size / 8)
+
+    if num_workers > 1:
+        total, n = _parallel_dispatch(
+            _w_diff_perm,
+            (cipher, input_difference, output_difference, num_bytes),
+            number_of_samples, num_workers, seed,
+        )
+        return math.log(total / n, 2)
 
     rng = np.random.default_rng(seed)
     input_difference_data = _repeat_input_difference(input_difference, number_of_samples, num_bytes)
@@ -978,7 +1168,7 @@ def differential_checker_permutation(
 
 
 def differential_truncated_checker_permutation(
-    cipher, input_difference, output_difference, number_of_samples, state_size, seed=None
+    cipher, input_difference, output_difference, number_of_samples, state_size, seed=None, num_workers=1
 ):
     """
     Verify experimentally differential-truncated distinguishers for permutations.
@@ -991,6 +1181,7 @@ def differential_truncated_checker_permutation(
     - ``number_of_samples`` -- **integer**; number of random plaintext pairs
     - ``state_size`` -- **integer**; permutation state size in bits (must be multiple of 8)
     - ``seed`` -- **integer** (default: `None`); seed for reproducible random sampling
+    - ``num_workers`` -- **integer** (default: `1`); number of parallel worker processes
 
     OUTPUT:
 
@@ -999,6 +1190,18 @@ def differential_truncated_checker_permutation(
     if state_size % 8 != 0:
         raise ValueError("State size must be a multiple of 8.")
     num_bytes = int(state_size / 8)
+
+    if num_workers > 1:
+        total, n = _parallel_dispatch(
+            _w_diff_trunc_perm,
+            (cipher, input_difference, output_difference, num_bytes),
+            number_of_samples, num_workers, seed,
+        )
+        if total == 0:
+            print(f"\nWARNING: No matches found out of {n} samples!")
+            return float("-inf")
+        return math.log(total / n, 2)
+
     rng = np.random.default_rng(seed)
 
     input_diff_data = _repeat_input_difference_msb(input_difference, number_of_samples, num_bytes)
@@ -1013,23 +1216,20 @@ def differential_truncated_checker_permutation(
     known_bits = _extract_bits_msb(diff_ciphertext.T, bit_positions)
     np.set_printoptions(linewidth=400)
 
-    filled_bits = [int(output_difference[pos]) for pos in bit_positions]
-    
-    total = 0
-    for i in range(len(known_bits[0])):
-        if np.all(known_bits[:, i] == filled_bits):
-            total += 1
+    filled_bits = np.array([int(output_difference[pos]) for pos in bit_positions], dtype=np.uint8)[:, np.newaxis]
+    total = int(np.all(known_bits == filled_bits, axis=0).sum())
 
     if total == 0:
         print(f"\nWARNING: No matches found out of {number_of_samples} samples!")
         return float("-inf")
-        
+
     prob_weight = math.log(total / number_of_samples, 2)
     return prob_weight
 
 
 def differential_truncated_checker_single_key(
-    cipher, input_difference, output_difference, number_of_samples, state_size, fixed_key, key_size, seed=None
+    cipher, input_difference, output_difference, number_of_samples, state_size, fixed_key, key_size, seed=None,
+    num_workers=1
 ):
     """
     Verify experimentally differential-truncated distinguishers for block ciphers in the single-key scenario.
@@ -1044,6 +1244,7 @@ def differential_truncated_checker_single_key(
     - ``fixed_key`` -- **integer**; fixed key value for the single-key scenario
     - ``key_size`` -- **integer**; key size in bits (must be multiple of 8)
     - ``seed`` -- **integer** (default: `None`); seed for reproducible random sampling
+    - ``num_workers`` -- **integer** (default: `1`); number of parallel worker processes
 
     OUTPUT:
 
@@ -1052,9 +1253,20 @@ def differential_truncated_checker_single_key(
     if state_size % 8 != 0:
         raise ValueError("State size must be a multiple of 8.")
     num_bytes = int(state_size / 8)
+    key_num_bytes = int(key_size / 8)
+
+    if num_workers > 1:
+        total, n = _parallel_dispatch(
+            _w_diff_trunc_sk,
+            (cipher, input_difference, output_difference, num_bytes, key_num_bytes, fixed_key),
+            number_of_samples, num_workers, seed,
+        )
+        if total == 0:
+            return float("-inf")
+        return math.log(total / n, 2)
+
     rng = np.random.default_rng(seed)
 
-    key_num_bytes = int(key_size / 8)
     fixed_key_data = _repeat_input_difference(fixed_key, number_of_samples, key_num_bytes)
     input_diff_data = _repeat_input_difference(input_difference, number_of_samples, num_bytes)
     plaintext_data1 = rng.integers(low=0, high=256, size=(num_bytes, number_of_samples), dtype=np.uint8)
@@ -1066,19 +1278,17 @@ def differential_truncated_checker_single_key(
     bit_positions = _extract_bit_positions_msb(output_difference)
     known_bits = _extract_bits_msb(diff_ciphertext.T, bit_positions)
 
-    filled_bits = [int(bit) for bit in output_difference if bit in ("0", "1")]
+    filled_bits = np.array([int(bit) for bit in output_difference if bit in ("0", "1")], dtype=np.uint8)[:, np.newaxis]
+    total = int(np.all(known_bits == filled_bits, axis=0).sum())
 
-    total = 0
-    for i in range(len(known_bits[0])):
-        if np.all(known_bits[:, i] == filled_bits):
-            total += 1
-
+    if total == 0:
+        return float("-inf")
     prob_weight = math.log(total / number_of_samples, 2)
     return prob_weight
 
 
 def shared_difference_paired_input_differential_checker_permutation(
-    cipher, input_difference, output_difference, number_of_samples, state_size, seed=None
+    cipher, input_difference, output_difference, number_of_samples, state_size, seed=None, num_workers=1
 ):
     """
     Verify experimentally shared-difference paired-input differential distinguishers for permutations.
@@ -1091,6 +1301,7 @@ def shared_difference_paired_input_differential_checker_permutation(
     - ``number_of_samples`` -- **integer**; number of sampled paired inputs
     - ``state_size`` -- **integer**; permutation state size in bits (must be multiple of 8)
     - ``seed`` -- **integer** (default: `None`); seed for reproducible random sampling
+    - ``num_workers`` -- **integer** (default: `1`); number of parallel worker processes
 
     OUTPUT:
 
@@ -1099,6 +1310,14 @@ def shared_difference_paired_input_differential_checker_permutation(
     if state_size % 8 != 0:
         raise ValueError("State size must be a multiple of 8.")
     num_bytes = int(state_size / 8)
+
+    if num_workers > 1:
+        total, n = _parallel_dispatch(
+            _w_sdpi_diff_perm,
+            (cipher, input_difference, output_difference, num_bytes),
+            number_of_samples, num_workers, seed,
+        )
+        return math.log(total / n, 2)
 
     rng = np.random.default_rng(seed)
     input_difference_data = _repeat_input_difference(input_difference, number_of_samples, num_bytes)
@@ -1125,7 +1344,7 @@ def shared_difference_paired_input_differential_checker_permutation(
 
 
 def shared_difference_paired_input_differential_linear_checker_permutation(
-    cipher, input_difference, output_mask, number_of_samples, state_size, seed=None
+    cipher, input_difference, output_mask, number_of_samples, state_size, seed=None, num_workers=1
 ):
     """
     Verify experimentally shared-difference paired-input differential-linear distinguishers for permutations.
@@ -1138,6 +1357,7 @@ def shared_difference_paired_input_differential_linear_checker_permutation(
     - ``number_of_samples`` -- **integer**; number of sampled paired inputs
     - ``state_size`` -- **integer**; permutation state size in bits (must be multiple of 8)
     - ``seed`` -- **integer** (default: `None`); seed for reproducible random sampling
+    - ``num_workers`` -- **integer** (default: `1`); number of parallel worker processes
 
     OUTPUT:
 
@@ -1146,6 +1366,14 @@ def shared_difference_paired_input_differential_linear_checker_permutation(
     if state_size % 8 != 0:
         raise ValueError("State size must be a multiple of 8.")
     num_bytes = int(state_size / 8)
+
+    if num_workers > 1:
+        count, n = _parallel_dispatch(
+            _w_sdpi_diff_linear_perm,
+            (cipher, input_difference, output_mask, num_bytes),
+            number_of_samples, num_workers, seed,
+        )
+        return 2 * count / n - 1.0
 
     rng = np.random.default_rng(seed)
     input_difference_data = _repeat_input_difference(input_difference, number_of_samples, num_bytes)
@@ -1164,7 +1392,7 @@ def shared_difference_paired_input_differential_linear_checker_permutation(
     ciphertext22 = cipher.evaluate_vectorized([bottom_ciphertext_final2, plaintext22])
 
     ciphertext3 = ciphertext1[0] ^ ciphertext2[0] ^ ciphertext11[0] ^ ciphertext22[0]
-    bit_positions_ciphertext = _extract_bit_positions_msb(output_mask, ('1'))
+    bit_positions_ciphertext = _extract_bit_positions_msb(output_mask, ("1",))
     ccc = _extract_bits_msb(ciphertext3.T, bit_positions_ciphertext)
     parities = np.bitwise_xor.reduce(ccc, axis=0)
     count = np.count_nonzero(parities == 0)
@@ -1174,19 +1402,26 @@ def shared_difference_paired_input_differential_linear_checker_permutation(
 
 def _sample_truncated_difference_from_string(pattern, num_samples, state_size, rng):
     """
-    Build a (num_bytes, num_samples) uint8 matrix with per-sample input differences
+    Build a (state_size // 8, num_samples) uint8 matrix with per-sample input differences
     that satisfy the truncated pattern.
-    Pattern is a string of length = state_size over {'0','1','2','?'},
-    where '2'/'?' means unconstrained. Bit index 0 is LSB of the state.
-    For convenience (to match your existing helpers), we interpret the
-    given string MSB→LSB and reverse it internally.
+    
+    Pattern is a string of length = state_size over {'0','1','2','?'}:
+      - '0' or '1': fixed bit value
+      - '2' or '?': unconstrained (random)
+    
+    Bit index 0 corresponds to the MSB of the state (MSB-first ordering).
+    
+    Bits are packed into bytes using big-endian order, i.e., index 0 becomes
+    the MSB of byte 0.
+    
+    Returns:
+        A (state_size // 8, num_samples) array of dtype uint8.
     """
     if len(pattern) != state_size:
         raise ValueError(f"pattern length ({len(pattern)}) must equal state_size ({state_size}).")
     if any(c not in ('0','1','2','?') for c in pattern):
         raise ValueError("pattern may only contain '0', '1', '2', or '?'.")
 
-    num_bytes = state_size // 8
     if state_size % 8 != 0:
         raise ValueError("State size must be a multiple of 8.")
 
@@ -1201,27 +1436,20 @@ def _sample_truncated_difference_from_string(pattern, num_samples, state_size, r
     if fixed_pos.size:
         bits[:, fixed_pos] = fixed_vals  # broadcast per column
 
-    # Pack per-sample bit vectors into bytes, big-endian at the byte level
-    input_diff_samples = np.zeros((num_samples, num_bytes), dtype=np.uint8)
-    byte_indices = indices // 8
-    bit_indices = (7 - (indices % 8)).astype(np.uint8)
-
-    for pos in range(state_size):
-        column = bits[:, pos]
-        if np.any(column):
-            input_diff_samples[:, byte_indices[pos]] |= (column << bit_indices[pos])
-
-    # Return in shape (num_bytes, num_samples) to XOR with plaintexts directly
+    # Pack bit rows into bytes (big-endian: position 0 = MSB of byte 0)
+    input_diff_samples = np.packbits(bits, axis=1, bitorder='big')
+    
     return input_diff_samples.T
 
 
 def differential_truncated_checker_permutation_input_and_output_truncated(
     cipher,
-    input_trunc_diff,      
-    output_trunc_diff, 
+    input_trunc_diff,
+    output_trunc_diff,
     number_of_samples,
     state_size,
     seed=None,
+    num_workers=1,
 ):
     """
     Verify experimentally differential-truncated distinguishers for permutations with truncated input and output.
@@ -1234,6 +1462,7 @@ def differential_truncated_checker_permutation_input_and_output_truncated(
     - ``number_of_samples`` -- **integer**; number of random plaintext pairs
     - ``state_size`` -- **integer**; permutation state size in bits (must be multiple of 8)
     - ``seed`` -- **integer** (default: `None`); seed for reproducible random sampling
+    - ``num_workers`` -- **integer** (default: `1`); number of parallel worker processes
 
     OUTPUT:
 
@@ -1244,8 +1473,19 @@ def differential_truncated_checker_permutation_input_and_output_truncated(
     if len(input_trunc_diff) != state_size or len(output_trunc_diff) != state_size:
         raise ValueError("Both truncated differences must have length == state_size.")
 
-    rng = np.random.default_rng(seed)
     num_bytes = state_size // 8
+
+    if num_workers > 1:
+        total, n = _parallel_dispatch(
+            _w_diff_trunc_perm_io,
+            (cipher, input_trunc_diff, output_trunc_diff, state_size, num_bytes),
+            number_of_samples, num_workers, seed,
+        )
+        if total == 0:
+            return float("-inf")
+        return math.log(total / n, 2)
+
+    rng = np.random.default_rng(seed)
 
     plaintext_data1 = rng.integers(low=0, high=256, size=(num_bytes, number_of_samples), dtype=np.uint8)
     input_mask = _sample_truncated_difference_from_string(input_trunc_diff, number_of_samples, state_size, rng)
@@ -1273,11 +1513,12 @@ def differential_truncated_checker_permutation_input_and_output_truncated(
 
 def truncated_differential_linear_checker_permutation(
     cipher,
-    input_trunc_diff,      
-    output_mask, 
+    input_trunc_diff,
+    output_mask,
     number_of_samples,
     state_size,
     seed=None,
+    num_workers=1,
 ):
     """
     Verify experimentally truncated-differential-linear distinguishers for permutations.
@@ -1290,6 +1531,7 @@ def truncated_differential_linear_checker_permutation(
     - ``number_of_samples`` -- **integer**; number of random plaintext pairs
     - ``state_size`` -- **integer**; permutation state size in bits (must be multiple of 8)
     - ``seed`` -- **integer** (default: `None`); seed for reproducible random sampling
+    - ``num_workers`` -- **integer** (default: `1`); number of parallel worker processes
 
     OUTPUT:
 
@@ -1300,8 +1542,17 @@ def truncated_differential_linear_checker_permutation(
     if len(input_trunc_diff) != state_size or len(output_mask) != state_size:
         raise ValueError("Both truncated differences must have length == state_size.")
 
-    rng = np.random.default_rng(seed)
     num_bytes = state_size // 8
+
+    if num_workers > 1:
+        count, n = _parallel_dispatch(
+            _w_trunc_diff_linear_perm,
+            (cipher, input_trunc_diff, output_mask, state_size, num_bytes),
+            number_of_samples, num_workers, seed,
+        )
+        return 2 * count / n - 1.0
+
+    rng = np.random.default_rng(seed)
 
     plaintext_data1 = rng.integers(low=0, high=256, size=(num_bytes, number_of_samples), dtype=np.uint8)
     input_mask = _sample_truncated_difference_from_string(input_trunc_diff, number_of_samples, state_size, rng)
@@ -1311,7 +1562,7 @@ def truncated_differential_linear_checker_permutation(
     ciphertext2 = cipher.evaluate_vectorized([plaintext_data2])
 
     ciphertext3 = ciphertext1[0] ^ ciphertext2[0]
-    bit_positions_ciphertext = _extract_bit_positions_msb(output_mask, ('1'))
+    bit_positions_ciphertext = _extract_bit_positions_msb(output_mask, ("1",))
     ccc = _extract_bits_msb(ciphertext3.T, bit_positions_ciphertext)
     parities = np.bitwise_xor.reduce(ccc, axis=0)
     count = np.count_nonzero(parities == 0)
