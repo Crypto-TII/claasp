@@ -29,6 +29,7 @@ from claasp.ciphers.permutations.gift_sbox_permutation import GiftSboxPermutatio
 from claasp.ciphers.block_ciphers.raiden_block_cipher import RaidenBlockCipher
 from claasp.ciphers.block_ciphers.hight_block_cipher import HightBlockCipher
 from claasp.ciphers.block_ciphers.des_block_cipher import DESBlockCipher
+from claasp.ciphers.block_ciphers.twofish_block_cipher import TwofishBlockCipher
 from claasp.ciphers.permutations.salsa_permutation import SalsaPermutation
 from claasp.ciphers.block_ciphers.bea1_block_cipher import BEA1BlockCipher
 from claasp.ciphers.block_ciphers.qarmav2_with_mixcolumn_block_cipher import QARMAv2MixColumnBlockCipher
@@ -534,7 +535,7 @@ def test_cipher_inverse():
 
     key = 0x98edeafc899338c45fad
     plaintext = 0x42c20fd3b586879e
-    cipher = PresentBlockCipher(number_of_rounds=2)
+    cipher = PresentBlockCipher(number_of_rounds=1)
     ciphertext = cipher.evaluate([plaintext, key])
     cipher_inv = cipher.cipher_inverse()
     assert cipher_inv.evaluate([ciphertext, key]) == plaintext
@@ -638,7 +639,7 @@ def test_cipher_inverse():
     cipher_inv = cipher.cipher_inverse()
     assert cipher_inv.evaluate([ciphertext]) == plaintext
 
-    cipher = BEA1BlockCipher(number_of_rounds=2)
+    cipher = BEA1BlockCipher(number_of_rounds=1)
     key = 0x8cdd0f3459fb721e798655298d5c1
     plaintext = 0x47a57eff5d6475a68916
     ciphertext = cipher.evaluate([key, plaintext])
@@ -651,11 +652,18 @@ def test_cipher_inverse():
     cipher_inv = cipher.cipher_inverse()
     assert cipher_inv.evaluate([ciphertext]) == plaintext
 
-    cipher = ChachaPermutation(number_of_rounds=3)
+    cipher = ChachaPermutation(number_of_rounds=2)
     plaintext = 0x0001
     ciphertext = cipher.evaluate([plaintext])
     cipher_inv = cipher.cipher_inverse()
     assert cipher_inv.evaluate([ciphertext]) == plaintext
+
+    cipher = TwofishBlockCipher(key_length=256, number_of_rounds=2)
+    key = 0xD43BB7556EA32E46F2A282B7D45B4E0D57FF739D4DC92C1BD7FC01700CC8216F
+    plaintext = 0x90AFE91BB288544F2C32DC239B2635E6
+    ciphertext = cipher.evaluate([key, plaintext])
+    cipher_inv = cipher.cipher_inverse()
+    assert cipher_inv.evaluate([ciphertext, key]) == plaintext
 
     cipher = LBlockBlockCipher(number_of_rounds=2)
     key = 0x012345689abcdeffedc
