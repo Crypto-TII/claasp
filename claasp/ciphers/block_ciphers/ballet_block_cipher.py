@@ -98,10 +98,7 @@ class BalletBlockCipher(Cipher):
             cipher_output_bit_size=self.block_bit_size,
         )
 
-        if self.block_bit_size == self.key_bit_size:
-            state_0, state_1, state_2, state_3, key_0, key_1 = self.round_initialization()
-        else:
-            state_0, state_1, state_2, state_3, key_0, key_1, t_0, t_1 = self.round_initialization()
+        state_0, state_1, state_2, state_3, key_0, key_1, t_0, t_1 = self.round_initialization()
 
         for round_number in range(self.r):
             self.add_round()
@@ -178,7 +175,9 @@ class BalletBlockCipher(Cipher):
         if self.block_bit_size == self.key_bit_size:
             key_0 = ComponentState([INPUT_KEY], [list(range(self.round_key_bit_size))])
             key_1 = ComponentState([INPUT_KEY], [list(range(self.round_key_bit_size, self.key_bit_size))])
-            return state_0, state_1, state_2, state_3, key_0, key_1
+            t_0 = None
+            t_1 = None
+            return state_0, state_1, state_2, state_3, key_0, key_1, t_0, t_1
 
         key_0 = ComponentState([INPUT_KEY], [list(range(self.round_key_bit_size))])
         key_1 = ComponentState([INPUT_KEY], [list(range(self.round_key_bit_size, self.round_key_bit_size * 2))])
