@@ -41,9 +41,9 @@ from claasp.name_mappings import (
     SATISFIABLE,
     UNSATISFIABLE,
     SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL,
+    SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL_OPTIMAL_SOLUTION,
     SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL_ONE_SOLUTION,
-    XOR_DIFFERENTIAL_LINEAR_ONE_SOLUTION,
-    XOR_DIFFERENTIAL_LINEAR_OPTIMAL_SOLUTION,
+    XOR_DIFFERENTIAL_LINEAR_ONE_SOLUTION
 )
 
 from claasp.cipher_modules.models.utils import write_model_to_file, convert_solver_solution_to_dictionary
@@ -503,7 +503,14 @@ class MznModel:
 
         return value
 
-    def get_command_for_solver_process(self, model_type, solver_name, num_of_processors, timelimit):
+    def get_command_for_solver_process(
+        self,
+        model_type,
+        solver_name,
+        num_of_processors,
+        timelimit,
+        intermediate_solutions=False,
+    ):
         solvers = (
             "deterministic_truncated_xor_differential_one_solution",
             "differential_pair_one_solution",
@@ -521,12 +528,15 @@ class MznModel:
                 found_name = True
         if not found_name:
             raise NameError(f"Solver {solver_name} not defined. Specify a valid solver name.")
-        if model_type not in solvers:
+        # if model type is not in solvers and does not contain the word optimal/lowest then add -a
+        if model_type not in solvers and "optimal" not in model_type.lower() and "lowest" not in model_type.lower():
             command_options["options"].insert(0, "-a")
         if num_of_processors is not None:
             command_options["options"].insert(0, f"-p {num_of_processors}")
         if timelimit is not None:
             command_options["options"].extend(["--time-limit", str(timelimit)])
+        if intermediate_solutions:
+            command_options["options"].insert(0, "-i")
         command = []
         for key in command_options["format"]:
             command.extend(command_options[key])
@@ -744,8 +754,9 @@ class MznModel:
     def solve(
         self,
         model_type,
-        solver_name=SOLVER_DEFAULT,
         solve_external=False,
+        # MiniZinc solver parameters
+        solver_name=SOLVER_DEFAULT,
         timeout_in_seconds_=None,
         processes_=None,
         nr_solutions_=None,
@@ -794,6 +805,7 @@ class MznModel:
             "deterministic_truncated_xor_differential_one_solution",
             "deterministic_truncated_xor_differential",
             SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL_ONE_SOLUTION,
+            SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL_OPTIMAL_SOLUTION,
             SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL,
             "impossible_xor_differential_attack",
             "impossible_xor_differential_one_solution",
@@ -805,7 +817,13 @@ class MznModel:
 
         solutions = []
         if solve_external:
-            command = self.get_command_for_solver_process(model_type, solver_name, processes_, timeout_in_seconds_)
+            command = self.get_command_for_solver_process(
+                model_type,
+                solver_name,
+                processes_,
+                timeout_in_seconds_,
+                intermediate_solutions=intermediate_solutions_,
+            )
             model = "\n".join(mzn_model)
             start = time.time()
             solver_process = subprocess.run(command, input=model, capture_output=True, text=True)

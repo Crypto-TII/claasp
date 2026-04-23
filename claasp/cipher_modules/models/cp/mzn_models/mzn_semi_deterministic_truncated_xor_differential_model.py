@@ -25,6 +25,7 @@ from claasp.name_mappings import (
     CONSTANT,
     INTERMEDIATE_OUTPUT,
     WORD_OPERATION,
+    SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL_OPTIMAL_SOLUTION,
     SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL_ONE_SOLUTION,
 )
 
@@ -131,6 +132,13 @@ class MznSemiDeterministicTruncatedXorDifferentialModel(MznModel):
         cipher_inputs = self._cipher.inputs
         cipher = self._cipher
         cp_constraints = []
+
+        for component_id in cipher.get_all_components_ids():
+            #at least one of the outputs bit difference should be active for the output cipher
+            if "cipher_output" in component_id:
+                cp_constraints.append(f"constraint count({component_id}, 1) > 0;")
+
+
         solve_directive = "solve minimize weight;" if (minimize and self.probability_vars) else SOLVE_SATISFY
         cp_constraints.append(solve_directive)
 
@@ -158,6 +166,7 @@ class MznSemiDeterministicTruncatedXorDifferentialModel(MznModel):
         timelimit=None,
         random_seed=None,
         solve_external=False,
+        intermediate_solutions=False,
     ):
         if fixed_values is None:
             fixed_values = []
@@ -172,9 +181,10 @@ class MznSemiDeterministicTruncatedXorDifferentialModel(MznModel):
             processes_=num_of_processors,
             random_seed_=random_seed,
             solve_external=solve_external,
+            intermediate_solutions_=intermediate_solutions,
         )
 
-    def find_lowest_cp_semi_deterministic_truncated_xor_differential_trail(
+    def find_optimal_cp_semi_deterministic_truncated_xor_differential_trail(
         self,
         fixed_values=None,
         solver_name=SOLVER_DEFAULT,
@@ -182,6 +192,7 @@ class MznSemiDeterministicTruncatedXorDifferentialModel(MznModel):
         timelimit=None,
         random_seed=None,
         solve_external=False,
+        include_non_optimal_solutions=False,
     ):
         if fixed_values is None:
             fixed_values = []
@@ -191,12 +202,13 @@ class MznSemiDeterministicTruncatedXorDifferentialModel(MznModel):
         )
 
         return self.solve(
-            SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL_ONE_SOLUTION,
+            SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL_OPTIMAL_SOLUTION,
             solver_name=solver_name,
             timeout_in_seconds_=timelimit,
             processes_=num_of_processors,
             random_seed_=random_seed,
             solve_external=solve_external,
+            intermediate_solutions_=include_non_optimal_solutions,
         )
 
     def add_solutions_from_components_values(

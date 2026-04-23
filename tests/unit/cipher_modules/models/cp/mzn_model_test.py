@@ -368,6 +368,29 @@ def test_get_command_for_solver_process_invalid_solver_name():
     assert error_raised is True
 
 
+def test_get_command_for_solver_process_intermediate_solutions_flag():
+    cipher = SpeckBlockCipher(number_of_rounds=1)
+    model = MznXorDifferentialModel(cipher)
+
+    command_without_intermediate = model.get_command_for_solver_process(
+        model_type="xor_differential_one_solution",
+        solver_name="chuffed",
+        num_of_processors=None,
+        timelimit=None,
+        intermediate_solutions=False,
+    )
+    command_with_intermediate = model.get_command_for_solver_process(
+        model_type="xor_differential_one_solution",
+        solver_name="chuffed",
+        num_of_processors=None,
+        timelimit=None,
+        intermediate_solutions=True,
+    )
+
+    assert "-i" not in command_without_intermediate
+    assert "-i" in command_with_intermediate
+
+
 def test_mzn_model_rejects_invalid_solver_type():
     cipher = SpeckBlockCipher(number_of_rounds=1)
 

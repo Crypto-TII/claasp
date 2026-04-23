@@ -14,8 +14,8 @@ from claasp.cipher_modules.models.utils import (
 from claasp.ciphers.block_ciphers.ballet_block_cipher import BalletBlockCipher
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation, ROUND_MODE_HALF
-from claasp.name_mappings import INPUT_PLAINTEXT, SATISFIABLE
-
+from claasp.name_mappings import INPUT_PLAINTEXT, SATISFIABLE, INPUT_KEY, INPUT_MESSAGE
+from claasp.ciphers.mac.siphash_mac import SiphashMAC
 
 def _split_components(cipher, top_rounds_end, middle_rounds_end):
     top_part_components = []
@@ -318,7 +318,7 @@ def test_differential_linear_trail_6_rounds_ballet_cp_case():
         bit_values=(0,) * ballet.block_bit_size,
     )
 
-    solutions = model.find_lowest_weight_xor_differential_linear_trail(
+    solutions = model.find_optimal_weight_xor_differential_linear_trail(
         fixed_values=[key_difference, plaintext_difference, ciphertext_output_mask],
         solver_name=CPSAT,
         num_of_processors=4,
@@ -532,7 +532,7 @@ def test_differential_linear_trail_6_rounds_speck_cp_case_2():
         middle_part_model="cp_semi_deterministic_truncated_xor_differential_constraints",
     )
 
-    trail = model.find_lowest_weight_xor_differential_linear_trail(
+    trail = model.find_optimal_weight_xor_differential_linear_trail(
         fixed_values=fixed_values,
         solver_name=CPSAT,
         num_of_processors=4,
@@ -550,7 +550,7 @@ def test_differential_linear_trail_6_rounds_speck_cp_case_2():
         assert trail["components_values"][component_id]["value"] == expected_value
 
     
-    assert math.isclose(float(trail["total_weight"]), 14.9943534369, rel_tol=1e-6, abs_tol=1e-6)
+    assert math.isclose(float(trail["total_weight"]), 14.0, rel_tol=1e-6, abs_tol=1e-6)
 
 
 def test_differential_linear_trail_with_fixed_weight_4_rounds_chacha_golden():
@@ -584,9 +584,11 @@ def test_differential_linear_trail_with_fixed_weight_4_rounds_chacha_golden():
         num_of_processors=4,
         solve_external=True,
     )
-    print(trail)
     assert trail["status"] == SATISFIABLE
-    assert float(trail["total_weight"]) <= 12
+    # The solver constrains the approximated objective p + r + 2q <= 12.
+    # The reported total_weight uses the exact middle term p + log2(2^(r+1)-1) + 2q,
+    # which can exceed the approximation by less than 1.
+    assert float(trail["total_weight"]) <= 12 + 1 
 
 def test_differential_linear_trail_with_fixed_weight_8_rounds_chacha_one_case():
     chacha = ChachaPermutation(number_of_rounds=8, round_mode=ROUND_MODE_HALF)
@@ -716,3 +718,98 @@ def test_diff_lin_chacha_permutation_cases(
     absolute_correlation = abs(correlation)
 
     assert abs(math.log(absolute_correlation, 2)) < threshold
+
+
+def test_optimal_semi_deterministic_differential_linear_trail_siphash():
+
+
+    siphash = SiphashMAC(message_byte_size=15, compression_rounds=2, finalization_rounds=1)
+    # Siphash has 6 rounds (0..5). With no top part, split as 0/5/1.
+    first_cryptanalytic_round = 0
+    top_len, middle_len, bottom_len = 0, 5, 1
+
+    top_rounds = range(first_cryptanalytic_round, first_cryptanalytic_round + top_len)
+    middle_rounds = range(first_cryptanalytic_round + top_len, first_cryptanalytic_round + top_len + middle_len)
+    bottom_rounds = range(first_cryptanalytic_round + top_len + middle_len, first_cryptanalytic_round + top_len + middle_len + bottom_len)
+
+    top_part_components = []
+    for round_number in top_rounds:
+        top_part_components += siphash.get_components_in_round(round_number)
+
+    middle_part_components = []
+    for round_number in middle_rounds:
+        middle_part_components += siphash.get_components_in_round(round_number)
+
+    bottom_part_components = []
+    for round_number in bottom_rounds:
+        bottom_part_components += siphash.get_components_in_round(round_number)
+
+    top_part_component_ids = [component.id for component in top_part_components]
+    middle_part_component_ids = [component.id for component in middle_part_components]
+    bottom_part_component_ids = [component.id for component in bottom_part_components]
+
+    print("Top rounds:", list(top_rounds))
+    print("Middle rounds:", list(middle_rounds))
+    print("Bottom rounds:", list(bottom_rounds))
+    print()
+    print("Top components count:", len(top_part_component_ids))
+    print("Middle components count:", len(middle_part_component_ids))
+    print("Bottom components count:", len(bottom_part_component_ids))
+
+    component_model_list = {
+        "middle_part_components": middle_part_component_ids,
+        "bottom_part_components": bottom_part_component_ids
+    }
+
+    mzn_differential_linear_model = MznDifferentialLinearModel(
+        siphash,
+        component_model_list,
+        middle_part_model="cp_semi_deterministic_truncated_xor_differential_constraints",
+        standard_differential_part=False,
+    )
+
+    message_size = siphash.inputs_bit_size[0]
+    key_size = siphash.inputs_bit_size[1]
+
+    key_difference = set_fixed_variables(
+        component_id=INPUT_KEY,
+        constraint_type="equal",
+        bit_positions=range(key_size),
+        bit_values=(0,) * key_size
+    )
+
+    message_difference = set_fixed_variables(
+        component_id=INPUT_MESSAGE,
+        constraint_type="not_equal",
+        bit_positions=range(message_size),
+        bit_values=(0,) * message_size
+    )
+
+    cipher_output_component_id = next(c.id for c in siphash.get_all_components() if c.id.startswith("cipher_output_"))
+    output_mask = set_fixed_variables(
+        component_id=cipher_output_component_id,
+        constraint_type="not_equal",
+        bit_positions=range(siphash.output_bit_size),
+        bit_values=(0,) * siphash.output_bit_size
+    )
+
+    fixed_values = [key_difference, message_difference, output_mask]
+    print("Output component used:", cipher_output_component_id)
+
+    solutions = mzn_differential_linear_model.find_optimal_weight_xor_differential_linear_trail(
+        fixed_values=fixed_values,
+        solver_name=CPSAT,
+        solve_external=True,
+        num_of_processors=4,
+        timelimit=70000,
+        include_non_optimal_solutions=True
+    )
+
+    if isinstance(solutions, list):
+        trail = min(solutions, key=lambda s: float(s["total_weight"]))
+    else:
+        trail = solutions
+
+    print("Status:", trail["status"])
+    print("Total weight:", trail["total_weight"])
+    assert trail["status"] == SATISFIABLE

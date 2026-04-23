@@ -15,6 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
+import math
 import re
 import time as tm
 
@@ -69,8 +70,10 @@ class MznDifferentialLinearModel(MznModel):
         cipher,
         list_of_components,
         middle_part_model="cp_semi_deterministic_truncated_xor_differential_constraints",
+        standard_differential_part=True,
     ):
         super().__init__(cipher)
+        self.standard_differential_part = standard_differential_part
 
         middle_part_components = list_of_components.get("middle_part_components", [])
         bottom_part_components = list_of_components.get("bottom_part_components", [])
@@ -147,8 +150,9 @@ class MznDifferentialLinearModel(MznModel):
 
     def _state_declarations(self):
         declarations = []
+        input_domain = "0..2" if not self.standard_differential_part else "0..1"
         for input_name, bit_size in zip(self._cipher.inputs, self._cipher.inputs_bit_size):
-            declarations.append(f"array[0..{bit_size - 1}] of var 0..1: {input_name};")
+            declarations.append(f"array[0..{bit_size - 1}] of var {input_domain}: {input_name};")
 
         for component in self._cipher.get_all_components():
             if component.type == CONSTANT:
@@ -234,6 +238,11 @@ class MznDifferentialLinearModel(MznModel):
     def _middle_to_bottom_connecting_constraints(self):
         constraints = []
         truncated_border_components = set(self._get_truncated_xor_differential_components_in_border())
+        # ensure that at least one bit difference exist in the concatenation of the output of the truncated border components 
+        truncated_border_components_list = []
+        for component_id in truncated_border_components:
+            truncated_border_components_list.append(component_id)
+        constraints.append(f"constraint count({' ++ '.join(truncated_border_components_list)}, 1) > 0;")
 
         for output_bit_id, successor_bits in self.bit_bindings.items():
             source_component_id, _, _ = self._parse_linear_bit_id(output_bit_id)
@@ -281,9 +290,13 @@ class MznDifferentialLinearModel(MznModel):
         effective_middle_component_ids = self.middle_part_component_ids - self.bottom_part_component_ids
 
         top_probability_sum = _sum_component_probability(self.top_part_component_ids)
-        middle_probability_sum = _sum_component_probability(effective_middle_component_ids)+"*100"
+        middle_probability_sum = _sum_component_probability(effective_middle_component_ids)
         bottom_probability_sum = _sum_component_probability(self.bottom_part_component_ids)
-
+        # Approximate DL objective in log-domain:
+        # weight ≈ p + r + 2q
+        # where p = top, r = middle, q = bottom.
+        # The factor 2*bottom reflects that the exact term is 2^(2q),
+        # and the middle term (2·2^r - 1) is approximated by r.
         constraints = [
             f"constraint weight = {top_probability_sum} + {middle_probability_sum} + 2*{bottom_probability_sum};"
         ]
@@ -422,7 +435,11 @@ class MznDifferentialLinearModel(MznModel):
         if not isinstance(components_values, dict):
             return
 
-        for component_id in self.middle_part_component_ids:
+        ids_to_normalize = set(self.middle_part_component_ids)
+        if not self.standard_differential_part:
+            ids_to_normalize.update(self._cipher.inputs)
+
+        for component_id in ids_to_normalize:
             component_solution = components_values.get(component_id)
             if not isinstance(component_solution, dict):
                 continue
@@ -432,7 +449,11 @@ class MznDifferentialLinearModel(MznModel):
                 continue
 
             if value.startswith("0x"):
-                bit_size = self._get_component_by_id(component_id).output_bit_size
+                if component_id in self._cipher.inputs:
+                    idx = list(self._cipher.inputs).index(component_id)
+                    bit_size = self._cipher.inputs_bit_size[idx]
+                else:
+                    bit_size = self._get_component_by_id(component_id).output_bit_size
                 component_solution["value"] = bin(int(value, 16))[2:].zfill(bit_size)
             else:
                 component_solution["value"] = value.replace("?", "2")
@@ -443,7 +464,7 @@ class MznDifferentialLinearModel(MznModel):
             return component_id[:-2]
         return component_id
 
-    def _differential_linear_total_weight_from_components(self, components_values):
+    def _collect_differential_linear_component_weights(self, components_values):
         p_weight = 0.0
         middle_sum = 0.0
         q_weight = 0.0
@@ -459,17 +480,33 @@ class MznDifferentialLinearModel(MznModel):
 
             if base_component_id in self.top_part_component_ids:
                 p_weight += weight
-            elif base_component_id in self.middle_part_component_ids:
+                continue
+
+            if base_component_id in self.middle_part_component_ids:
                 if base_component_id not in seen_middle:
                     middle_sum += weight
                     seen_middle.add(base_component_id)
-            elif base_component_id in self.bottom_part_component_ids:
-                if base_component_id not in seen_bottom:
-                    q_weight += weight
-                    seen_bottom.add(base_component_id)
-        import math
-        r_weight = math.log(2 * (2**middle_sum) - 1, 2) if seen_middle else 0.0
-        return round(p_weight + r_weight + (2 * q_weight), 10)
+                continue
+
+            if base_component_id in self.bottom_part_component_ids and base_component_id not in seen_bottom:
+                q_weight += weight
+                seen_bottom.add(base_component_id)
+
+        return p_weight, middle_sum, q_weight, bool(seen_middle)
+
+    @staticmethod
+    def _middle_weight_term(middle_sum, has_middle_components):
+        if not has_middle_components:
+            return 0.0
+        if middle_sum == 1:
+            raise ValueError("Unexpected probability weight 1 in middle part")
+        return abs(math.log(abs(2 * (2**(-1*middle_sum)) - 1), 2))
+
+    def _differential_linear_total_weight_from_components(self, components_values):
+        p_weight, middle_sum, q_weight, _ = (
+            self._collect_differential_linear_component_weights(components_values)
+        )
+        return round(p_weight + middle_sum + (2 * q_weight), 10)
 
     def _set_differential_linear_total_weight(self, solution):
         if not isinstance(solution, dict):
@@ -603,13 +640,14 @@ class MznDifferentialLinearModel(MznModel):
 
         return solution
 
-    def find_lowest_weight_xor_differential_linear_trail(
+    def find_optimal_weight_xor_differential_linear_trail(
         self,
         fixed_values=None,
         solver_name=SOLVER_DEFAULT,
         num_of_processors=None,
         timelimit=None,
         solve_external=False,
+        include_non_optimal_solutions=False,
     ):
         if fixed_values is None:
             fixed_values = []
@@ -624,6 +662,8 @@ class MznDifferentialLinearModel(MznModel):
             timeout_in_seconds_=timelimit,
             processes_=num_of_processors,
             solve_external=solve_external,
+            intermediate_solutions_=include_non_optimal_solutions,
+
         )
         if isinstance(solution, list):
             for partial_solution in solution:
@@ -631,7 +671,7 @@ class MznDifferentialLinearModel(MznModel):
                 self._normalize_total_weight(partial_solution)
                 self._ensure_components_values(partial_solution)
                 partial_solution["building_time_seconds"] = build_time
-                partial_solution["test_name"] = "find_lowest_weight_xor_differential_linear_trail"
+                partial_solution["test_name"] = "find_optimal_weight_xor_differential_linear_trail"
             if len(solution) == 1:
                 return solution[0]
             return solution
@@ -640,7 +680,7 @@ class MznDifferentialLinearModel(MznModel):
         self._normalize_total_weight(solution)
         self._ensure_components_values(solution)
         solution["building_time_seconds"] = build_time
-        solution["test_name"] = "find_lowest_weight_xor_differential_linear_trail"
+        solution["test_name"] = "find_optimal_weight_xor_differential_linear_trail"
 
         return solution
 
