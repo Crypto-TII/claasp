@@ -176,7 +176,7 @@ class PresentBlockCipher(Cipher):
 
     def add_round_key(self, data, key):
         key_id_list, key_bit_positions = extract_inputs(*key, list(range(self.block_bit_size)))
-        new_data_id = self.add_XOR_component(data[0] + key_id_list, data[1] + key_bit_positions, self.block_bit_size).id
+        new_data_id = self.add_xor_component(data[0] + key_id_list, data[1] + key_bit_positions, self.block_bit_size).id
 
         return [new_data_id], [list(range(self.block_bit_size))]
 
@@ -189,24 +189,24 @@ class PresentBlockCipher(Cipher):
         sbox_output = [""] * 16
 
         for i in range(16):
-            sbox_output[i] = self.add_SBOX_component(data[0], [data[1][0][i * 4 : (i + 1) * 4]], 4, sbox).id
+            sbox_output[i] = self.add_sbox_component(data[0], [data[1][0][i * 4 : (i + 1) * 4]], 4, sbox).id
 
         return sbox_output, [list(range(4))] * 16
 
     def update_key_register(self, key, r):
         rot = self.add_rotate_component(key[0], key[1], self.key_bit_size, -61).id
 
-        sbox_1 = self.add_SBOX_component([rot], [list(range(4))], 4, sbox).id
+        sbox_1 = self.add_sbox_component([rot], [list(range(4))], 4, sbox).id
 
         constant_id = self.add_constant_component(8, r).id
 
         if self.key_bit_size == 80:
-            xor = self.add_XOR_component([rot, constant_id], [list(range(60, 65)), list(range(3, 8))], 5).id
+            xor = self.add_xor_component([rot, constant_id], [list(range(60, 65)), list(range(3, 8))], 5).id
             return [sbox_1, rot, xor, rot], [list(range(4)), list(range(4, 60)), list(range(5)), list(range(65, 80))]
 
         if self.key_bit_size == 128:
-            xor = self.add_XOR_component([rot, constant_id], [list(range(61, 66)), list(range(3, 8))], 5).id
-            sbox_2 = self.add_SBOX_component([rot], [list(range(4, 8))], 4, sbox).id
+            xor = self.add_xor_component([rot, constant_id], [list(range(61, 66)), list(range(3, 8))], 5).id
+            sbox_2 = self.add_sbox_component([rot], [list(range(4, 8))], 4, sbox).id
             return [sbox_1, sbox_2, rot, xor, rot], [
                 list(range(4)),
                 list(range(4)),

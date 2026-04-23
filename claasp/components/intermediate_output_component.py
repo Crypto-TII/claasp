@@ -194,7 +194,7 @@ class IntermediateOutput(CipherOutput):
             ....:             cipher_output_bit_size=block_bit_size,
             ....:         )
             ....:         self.add_round()
-            ....:         xor_component = self.add_XOR_component(
+            ....:         xor_component = self.add_xor_component(
             ....:             [INPUT_PLAINTEXT, INPUT_KEY],
             ....:             [list(range(block_bit_size)), list(range(block_bit_size))],
             ....:             block_bit_size,
@@ -261,7 +261,7 @@ class IntermediateOutput(CipherOutput):
             ....:             cipher_output_bit_size=block_bit_size,
             ....:         )
             ....:         self.add_round()
-            ....:         xor_component = self.add_XOR_component(
+            ....:         xor_component = self.add_xor_component(
             ....:             [INPUT_PLAINTEXT, INPUT_KEY],
             ....:             [list(range(block_bit_size)), list(range(block_bit_size))],
             ....:             block_bit_size,
@@ -321,7 +321,7 @@ class IntermediateOutput(CipherOutput):
             ....:             cipher_output_bit_size=block_bit_size,
             ....:         )
             ....:         self.add_round()
-            ....:         xor_component = self.add_XOR_component(
+            ....:         xor_component = self.add_xor_component(
             ....:             [INPUT_PLAINTEXT, INPUT_KEY],
             ....:             [list(range(block_bit_size)), list(range(block_bit_size))],
             ....:             block_bit_size,

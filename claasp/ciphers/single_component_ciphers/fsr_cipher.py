@@ -38,7 +38,7 @@ class FsrCipher(SingleComponentCipher):
             cipher_inputs_bit_size=[register_size],
             cipher_output_bit_size=register_size,
         )
-        fsr_component = self.add_FSR_component(
+        fsr_component = self.add_fsr_component(
             [INPUT_PLAINTEXT],
             [list(range(register_size))],
             register_size,

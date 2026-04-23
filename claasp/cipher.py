@@ -69,12 +69,12 @@ class Cipher:
         sage: from claasp.name_mappings import PERMUTATION
         sage: cipher = Cipher("cipher_name", PERMUTATION, ["input"], [6], 6)
         sage: cipher.add_round()
-        sage: sbox_0_0 = cipher.add_SBOX_component(["input"], [[0,1,2]], 4, [6,7,0,1,2,3,4,5])
-        sage: sbox_0_1 = cipher.add_SBOX_component(["input"], [[3,4,5]], 4, [7,0,1,2,3,4,5,6])
+        sage: sbox_0_0 = cipher.add_sbox_component(["input"], [[0,1,2]], 4, [6,7,0,1,2,3,4,5])
+        sage: sbox_0_1 = cipher.add_sbox_component(["input"], [[3,4,5]], 4, [7,0,1,2,3,4,5,6])
         sage: rotate_0_2 = cipher.add_rotate_component([sbox_0_0.id, sbox_0_1.id], [[0,1,2],[3,4,5]], 6, 3)
         sage: cipher.add_round()
-        sage: sbox_1_0 = cipher.add_SBOX_component([rotate_0_2.id], [[0,1,2]], 4, [6,7,0,1,2,3,4,5])
-        sage: sbox_1_1 = cipher.add_SBOX_component([rotate_0_2.id], [[3,4,5]], 4, [7,0,1,2,3,4,5,6])
+        sage: sbox_1_0 = cipher.add_sbox_component([rotate_0_2.id], [[0,1,2]], 4, [6,7,0,1,2,3,4,5])
+        sage: sbox_1_1 = cipher.add_sbox_component([rotate_0_2.id], [[3,4,5]], 4, [7,0,1,2,3,4,5,6])
         sage: rotate_1_2 = cipher.add_rotate_component([sbox_1_0.id, sbox_1_1.id], [[0,1,2],[3,4,5]], 6, 3)
         sage: cipher.id == "cipher_name_i6_o6_r2"
         True
@@ -159,8 +159,8 @@ class Cipher:
     def _are_there_not_forbidden_components(self, forbidden_types, forbidden_descriptions):
         return self._rounds.are_there_not_forbidden_components(forbidden_types, forbidden_descriptions)
 
-    def add_AND_component(self, input_id_links, input_bit_positions, output_bit_size):
-        return editor.add_AND_component(self, input_id_links, input_bit_positions, output_bit_size)
+    def add_and_component(self, input_id_links, input_bit_positions, output_bit_size):
+        return editor.add_and_component(self, input_id_links, input_bit_positions, output_bit_size)
 
     def add_cipher_output_component(self, input_id_links, input_bit_positions, output_bit_size):
         return editor.add_cipher_output_component(self, input_id_links, input_bit_positions, output_bit_size)
@@ -171,8 +171,8 @@ class Cipher:
     def add_constant_component(self, output_bit_size, value):
         return editor.add_constant_component(self, output_bit_size, value)
 
-    def add_FSR_component(self, input_id_links, input_bit_positions, output_bit_size, description):
-        return editor.add_FSR_component(self, input_id_links, input_bit_positions, output_bit_size, description)
+    def add_fsr_component(self, input_id_links, input_bit_positions, output_bit_size, description):
+        return editor.add_fsr_component(self, input_id_links, input_bit_positions, output_bit_size, description)
 
     def add_intermediate_output_component(self, input_id_links, input_bit_positions, output_bit_size, output_tag):
         return editor.add_intermediate_output_component(
@@ -199,24 +199,24 @@ class Cipher:
             mix_column_description,
         )
 
-    def add_MODADD_component(self, input_id_links, input_bit_positions, output_bit_size, modulus=None):
-        return editor.add_MODADD_component(self, input_id_links, input_bit_positions, output_bit_size, modulus)
+    def add_modadd_component(self, input_id_links, input_bit_positions, output_bit_size, modulus=None):
+        return editor.add_modadd_component(self, input_id_links, input_bit_positions, output_bit_size, modulus)
 
-    def add_MODMUL_component(self, input_id_links, input_bit_positions, output_bit_size, modulus=None):
-        return editor.add_MODMUL_component(self, input_id_links, input_bit_positions, output_bit_size, modulus)
+    def add_modmul_component(self, input_id_links, input_bit_positions, output_bit_size, modulus=None):
+        return editor.add_modmul_component(self, input_id_links, input_bit_positions, output_bit_size, modulus)
 
-    def add_MODSUB_component(self, input_id_links, input_bit_positions, output_bit_size, modulus=None):
-        return editor.add_MODSUB_component(self, input_id_links, input_bit_positions, output_bit_size, modulus)
+    def add_modsub_component(self, input_id_links, input_bit_positions, output_bit_size, modulus=None):
+        return editor.add_modsub_component(self, input_id_links, input_bit_positions, output_bit_size, modulus)
 
     def add_idea_modmul_component(self, input_id_links, input_bit_positions, output_bit_size, modulus=None):
         return editor.add_idea_modmul_component(self, input_id_links, input_bit_positions, output_bit_size, modulus)
 
-    def add_NOT_component(self, input_id_links, input_bit_positions, output_bit_size):
+    def add_not_component(self, input_id_links, input_bit_positions, output_bit_size):
 
-        return editor.add_NOT_component(self, input_id_links, input_bit_positions, output_bit_size)
+        return editor.add_not_component(self, input_id_links, input_bit_positions, output_bit_size)
 
-    def add_OR_component(self, input_id_links, input_bit_positions, output_bit_size):
-        return editor.add_OR_component(self, input_id_links, input_bit_positions, output_bit_size)
+    def add_or_component(self, input_id_links, input_bit_positions, output_bit_size):
+        return editor.add_or_component(self, input_id_links, input_bit_positions, output_bit_size)
 
     def add_permutation_component(
         self,
@@ -248,11 +248,11 @@ class Cipher:
     def add_round_output_component(self, input_id_links, input_bit_positions, output_bit_size):
         return editor.add_round_output_component(self, input_id_links, input_bit_positions, output_bit_size)
 
-    def add_SBOX_component(self, input_id_links, input_bit_positions, output_bit_size, description):
-        return editor.add_SBOX_component(self, input_id_links, input_bit_positions, output_bit_size, description)
+    def add_sbox_component(self, input_id_links, input_bit_positions, output_bit_size, description):
+        return editor.add_sbox_component(self, input_id_links, input_bit_positions, output_bit_size, description)
 
-    def add_SHIFT_component(self, input_id_links, input_bit_positions, output_bit_size, parameter):
-        return editor.add_SHIFT_component(self, input_id_links, input_bit_positions, output_bit_size, parameter)
+    def add_shift_component(self, input_id_links, input_bit_positions, output_bit_size, parameter):
+        return editor.add_shift_component(self, input_id_links, input_bit_positions, output_bit_size, parameter)
 
     def add_shift_rows_component(self, input_id_links, input_bit_positions, rotation_amount=1, word_bit_size=8,
                                  number_of_words=4):
@@ -328,8 +328,8 @@ class Cipher:
             word_size,
         )
 
-    def add_XOR_component(self, input_id_links, input_bit_positions, output_bit_size):
-        return editor.add_XOR_component(self, input_id_links, input_bit_positions, output_bit_size)
+    def add_xor_component(self, input_id_links, input_bit_positions, output_bit_size):
+        return editor.add_xor_component(self, input_id_links, input_bit_positions, output_bit_size)
 
     def as_python_dictionary(self):
         return {

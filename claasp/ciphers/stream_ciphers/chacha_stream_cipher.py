@@ -113,7 +113,7 @@ class ChachaStreamCipher(ChachaPermutation):
         lst_ids = []
         for i in range(4):
             for j in range(4):
-                state_of_final_components[i][j] = self.add_MODADD_component(
+                state_of_final_components[i][j] = self.add_modadd_component(
                     [input_state_of_components[i][j].id] + [state_of_components_permutation[i][j].id],
                     input_state_of_components[i][j].input_bit_positions + [list(range(32))],
                     self.WORD_SIZE

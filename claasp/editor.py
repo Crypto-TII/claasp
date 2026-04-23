@@ -19,24 +19,24 @@ import sys
 
 from copy import deepcopy
 
-from claasp.components.and_component import AND
+from claasp.components.and_component import And
 from claasp.components.cipher_output_component import CipherOutput
 from claasp.components.constant_component import Constant
-from claasp.components.fsr_component import FSR
+from claasp.components.fsr_component import Fsr
 from claasp.components.intermediate_output_component import IntermediateOutput
 from claasp.components.linear_layer_component import LinearLayer
 from claasp.components.mix_column_component import MixColumn
-from claasp.components.modadd_component import MODADD
-from claasp.components.modmul_component import MODMUL
-from claasp.components.modsub_component import MODSUB
+from claasp.components.modadd_component import ModAdd
+from claasp.components.modmul_component import ModMul
+from claasp.components.modsub_component import ModSub
 from claasp.components.idea_modmul_component import IdeaModmul
-from claasp.components.not_component import NOT
-from claasp.components.or_component import OR
+from claasp.components.not_component import Not
+from claasp.components.or_component import Or
 from claasp.components.permutation_component import Permutation
 from claasp.components.reverse_component import Reverse
 from claasp.components.rotate_component import Rotate
-from claasp.components.sbox_component import SBOX
-from claasp.components.shift_component import SHIFT
+from claasp.components.sbox_component import Sbox
+from claasp.components.shift_component import Shift
 from claasp.components.shift_rows_component import ShiftRows
 from claasp.components.sigma_component import Sigma
 from claasp.components.theta_gaston_component import ThetaGaston
@@ -45,7 +45,7 @@ from claasp.components.theta_xoodoo_component import ThetaXoodoo
 from claasp.components.variable_rotate_component import VariableRotate
 from claasp.components.variable_shift_component import VariableShift
 from claasp.components.word_permutation_component import WordPermutation
-from claasp.components.xor_component import XOR
+from claasp.components.xor_component import Xor
 from claasp.name_mappings import (
     INTERMEDIATE_OUTPUT,
     CIPHER_OUTPUT,
@@ -59,7 +59,7 @@ CIPHER_ROUND_NOT_FOUND_ERROR = (
 )
 
 
-def add_AND_component(cipher, input_id_links, input_bit_positions, output_bit_size):
+def add_and_component(cipher, input_id_links, input_bit_positions, output_bit_size):
     """
     Use this function to create and add an and component to editor.
 
@@ -76,7 +76,7 @@ def add_AND_component(cipher, input_id_links, input_bit_positions, output_bit_si
         sage: from claasp.name_mappings import PERMUTATION
         sage: cipher = Cipher("cipher_name", PERMUTATION, ["input"], [4], 4)
         sage: cipher.add_round()
-        sage: and_0_0 = cipher.add_AND_component(["input","input"], [[0,1],[2,3]], 2)
+        sage: and_0_0 = cipher.add_and_component(["input","input"], [[0,1],[2,3]], 2)
         sage: cipher.print()
         cipher_id = cipher_name_i4_o4_r1
         cipher_type = permutation
@@ -99,7 +99,7 @@ def add_AND_component(cipher, input_id_links, input_bit_positions, output_bit_si
         print(CIPHER_ROUND_NOT_FOUND_ERROR)
         return None
 
-    new_component = AND(
+    new_component = And(
         cipher.current_round_number,
         cipher.current_round_number_of_components,
         input_id_links,
@@ -224,7 +224,7 @@ def add_constant_component(cipher, output_bit_size, value):
     return new_component
 
 
-def add_FSR_component(cipher, input_id_links, input_bit_positions, output_bit_size, description):
+def add_fsr_component(cipher, input_id_links, input_bit_positions, output_bit_size, description):
     """
     Use this function to create and add an lfsr/nlfsr component to editor.
 
@@ -255,7 +255,7 @@ def add_FSR_component(cipher, input_id_links, input_bit_positions, output_bit_si
         sage: from claasp.cipher import Cipher
         sage: cipher = Cipher("cipher_name", "fsr", ["input"], [12], 12)
         sage: cipher.add_round()
-        sage: fsr_0_0 = cipher.add_FSR_component(["input", "input"], [[0,1,2,3,4],[0,1,2,3,4,5,6]], 12, [[
+        sage: fsr_0_0 = cipher.add_fsr_component(["input", "input"], [[0,1,2,3,4],[0,1,2,3,4,5,6]], 12, [[
         ....: [5, [[4], [5], [6, 7]]],  # Register_len:5,  feedback poly: x4 + x5 + x6*x7
         ....: [7, [[0], [8], [1, 2]]]  # Register_len:7, feedback poly: x0 + x1*x2 + x8
         ....: ], 1])
@@ -282,7 +282,7 @@ def add_FSR_component(cipher, input_id_links, input_bit_positions, output_bit_si
         print(CIPHER_ROUND_NOT_FOUND_ERROR)
         return None
 
-    new_component = FSR(
+    new_component = Fsr(
         cipher.current_round_number,
         cipher.current_round_number_of_components,
         input_id_links,
@@ -454,7 +454,7 @@ def add_mix_column_component(cipher, input_id_links, input_bit_positions, output
     return new_component
 
 
-def add_MODADD_component(cipher, input_id_links, input_bit_positions, output_bit_size, modulus):
+def add_modadd_component(cipher, input_id_links, input_bit_positions, output_bit_size, modulus):
     """
     Use this function to create and add a modadd component to editor.
 
@@ -471,7 +471,7 @@ def add_MODADD_component(cipher, input_id_links, input_bit_positions, output_bit
         sage: from claasp.name_mappings import PERMUTATION
         sage: cipher = Cipher("cipher_name", PERMUTATION, ["input"], [4], 4)
         sage: cipher.add_round()
-        sage: modadd_0_0 = cipher.add_MODADD_component(["input","input"], [[0,1],[2,3]], 2)
+        sage: modadd_0_0 = cipher.add_modadd_component(["input","input"], [[0,1],[2,3]], 2)
         sage: cipher.print()
         cipher_id = cipher_name_i4_o4_r1
         cipher_type = permutation
@@ -494,7 +494,7 @@ def add_MODADD_component(cipher, input_id_links, input_bit_positions, output_bit
         print(CIPHER_ROUND_NOT_FOUND_ERROR)
         return None
 
-    new_component = MODADD(
+    new_component = ModAdd(
         cipher.current_round_number,
         cipher.current_round_number_of_components,
         input_id_links,
@@ -506,7 +506,7 @@ def add_MODADD_component(cipher, input_id_links, input_bit_positions, output_bit
     return new_component
 
 
-def add_MODMUL_component(cipher, input_id_links, input_bit_positions, output_bit_size, modulus):
+def add_modmul_component(cipher, input_id_links, input_bit_positions, output_bit_size, modulus):
     """
     Use this function to create and add a modmul component to editor.
 
@@ -521,7 +521,7 @@ def add_MODMUL_component(cipher, input_id_links, input_bit_positions, output_bit
         print(CIPHER_ROUND_NOT_FOUND_ERROR)
         return None
 
-    new_component = MODMUL(
+    new_component = ModMul(
         cipher.current_round_number,
         cipher.current_round_number_of_components,
         input_id_links,
@@ -533,7 +533,7 @@ def add_MODMUL_component(cipher, input_id_links, input_bit_positions, output_bit
     return new_component
 
 
-def add_MODSUB_component(cipher, input_id_links, input_bit_positions, output_bit_size, modulus):
+def add_modsub_component(cipher, input_id_links, input_bit_positions, output_bit_size, modulus):
     """
     Use this function to create a modsub component in the editor.
 
@@ -550,7 +550,7 @@ def add_MODSUB_component(cipher, input_id_links, input_bit_positions, output_bit
         sage: from claasp.name_mappings import PERMUTATION
         sage: cipher = Cipher("cipher_name", PERMUTATION, ["input"], [4], 4)
         sage: cipher.add_round()
-        sage: modsub_0_0 = cipher.add_MODSUB_component(["input","input"], [[0,1],[2,3]], 2)
+        sage: modsub_0_0 = cipher.add_modsub_component(["input","input"], [[0,1],[2,3]], 2)
         sage: cipher.print()
         cipher_id = cipher_name_i4_o4_r1
         cipher_type = permutation
@@ -573,7 +573,7 @@ def add_MODSUB_component(cipher, input_id_links, input_bit_positions, output_bit
         print(CIPHER_ROUND_NOT_FOUND_ERROR)
         return None
 
-    new_component = MODSUB(
+    new_component = ModSub(
         cipher.current_round_number,
         cipher.current_round_number_of_components,
         input_id_links,
@@ -638,7 +638,7 @@ def add_idea_modmul_component(cipher, input_id_links, input_bit_positions, outpu
     return new_component
 
 
-def add_NOT_component(cipher, input_id_links, input_bit_positions, output_bit_size):
+def add_not_component(cipher, input_id_links, input_bit_positions, output_bit_size):
     """
     Use this function to create a not component in editor.
 
@@ -655,7 +655,7 @@ def add_NOT_component(cipher, input_id_links, input_bit_positions, output_bit_si
         sage: from claasp.name_mappings import PERMUTATION
         sage: cipher = Cipher("cipher_name", PERMUTATION, ["input"], [4], 4)
         sage: cipher.add_round()
-        sage: not_0_0 = cipher.add_NOT_component(["input"], [[0,1,2,3]], 4)
+        sage: not_0_0 = cipher.add_not_component(["input"], [[0,1,2,3]], 4)
         sage: cipher.print()
         cipher_id = cipher_name_i4_o4_r1
         cipher_type = permutation
@@ -678,7 +678,7 @@ def add_NOT_component(cipher, input_id_links, input_bit_positions, output_bit_si
         print(CIPHER_ROUND_NOT_FOUND_ERROR)
         return None
 
-    new_component = NOT(
+    new_component = Not(
         cipher.current_round_number,
         cipher.current_round_number_of_components,
         input_id_links,
@@ -689,7 +689,7 @@ def add_NOT_component(cipher, input_id_links, input_bit_positions, output_bit_si
     return new_component
 
 
-def add_OR_component(cipher, input_id_links, input_bit_positions, output_bit_size):
+def add_or_component(cipher, input_id_links, input_bit_positions, output_bit_size):
     """
     Use this function to create an or component in editor.
 
@@ -706,7 +706,7 @@ def add_OR_component(cipher, input_id_links, input_bit_positions, output_bit_siz
         sage: from claasp.name_mappings import PERMUTATION
         sage: cipher = Cipher("cipher_name", PERMUTATION, ["input"], [4], 4)
         sage: cipher.add_round()
-        sage: or_0_0 = cipher.add_OR_component(["input","input"], [[0,1],[2,3]], 2)
+        sage: or_0_0 = cipher.add_or_component(["input","input"], [[0,1],[2,3]], 2)
         sage: cipher.print()
         cipher_id = cipher_name_i4_o4_r1
         cipher_type = permutation
@@ -729,7 +729,7 @@ def add_OR_component(cipher, input_id_links, input_bit_positions, output_bit_siz
         print(CIPHER_ROUND_NOT_FOUND_ERROR)
         return None
 
-    new_component = OR(
+    new_component = Or(
         cipher.current_round_number,
         cipher.current_round_number_of_components,
         input_id_links,
@@ -1052,7 +1052,7 @@ def add_round_output_component(cipher, input_id_links, input_bit_positions, outp
     return new_component
 
 
-def add_SBOX_component(cipher, input_id_links, input_bit_positions, output_bit_size, description):
+def add_sbox_component(cipher, input_id_links, input_bit_positions, output_bit_size, description):
     """
     Use this function to create and add a sbox component to editor.
 
@@ -1070,7 +1070,7 @@ def add_SBOX_component(cipher, input_id_links, input_bit_positions, output_bit_s
         sage: from claasp.name_mappings import PERMUTATION
         sage: cipher = Cipher("cipher_name", PERMUTATION, ["input"], [4], 4)
         sage: cipher.add_round()
-        sage: sbox_0_0 = cipher.add_SBOX_component(["input"], [[0,1,2,3]], 4,
+        sage: sbox_0_0 = cipher.add_sbox_component(["input"], [[0,1,2,3]], 4,
         ....: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15])
         sage: cipher.print()
         cipher_id = cipher_name_i4_o4_r1
@@ -1094,7 +1094,7 @@ def add_SBOX_component(cipher, input_id_links, input_bit_positions, output_bit_s
         print(CIPHER_ROUND_NOT_FOUND_ERROR)
         return None
 
-    new_component = SBOX(
+    new_component = Sbox(
         cipher.current_round_number,
         cipher.current_round_number_of_components,
         input_id_links,
@@ -1106,7 +1106,7 @@ def add_SBOX_component(cipher, input_id_links, input_bit_positions, output_bit_s
     return new_component
 
 
-def add_SHIFT_component(cipher, input_id_links, input_bit_positions, output_bit_size, parameter):
+def add_shift_component(cipher, input_id_links, input_bit_positions, output_bit_size, parameter):
     """
     Use this function to create and add a shift component to editor.
 
@@ -1125,7 +1125,7 @@ def add_SHIFT_component(cipher, input_id_links, input_bit_positions, output_bit_
         sage: from claasp.name_mappings import PERMUTATION
         sage: cipher = Cipher("cipher_name", PERMUTATION, ["input"], [4], 4)
         sage: cipher.add_round()
-        sage: shift_0_0 = cipher.add_SHIFT_component(["input"], [[0,1,2,3]], 4, 2)
+        sage: shift_0_0 = cipher.add_shift_component(["input"], [[0,1,2,3]], 4, 2)
         sage: cipher.print()
         cipher_id = cipher_name_i4_o4_r1
         cipher_type = permutation
@@ -1148,7 +1148,7 @@ def add_SHIFT_component(cipher, input_id_links, input_bit_positions, output_bit_
         print(CIPHER_ROUND_NOT_FOUND_ERROR)
         return None
 
-    new_component = SHIFT(
+    new_component = Shift(
         cipher.current_round_number,
         cipher.current_round_number_of_components,
         input_id_links,
@@ -1587,7 +1587,7 @@ def add_word_permutation_component(
     return new_component
 
 
-def add_XOR_component(cipher, input_id_links, input_bit_positions, output_bit_size):
+def add_xor_component(cipher, input_id_links, input_bit_positions, output_bit_size):
     """
     Use this function to create and add a xor component to editor.
 
@@ -1604,7 +1604,7 @@ def add_XOR_component(cipher, input_id_links, input_bit_positions, output_bit_si
         sage: from claasp.name_mappings import PERMUTATION
         sage: cipher = Cipher("cipher_name", PERMUTATION, ["input"], [4], 4)
         sage: cipher.add_round()
-        sage: xor_0_0 = cipher.add_XOR_component(["input","input"], [[0,1],[2,3]], 2)
+        sage: xor_0_0 = cipher.add_xor_component(["input","input"], [[0,1],[2,3]], 2)
         sage: cipher.print()
         cipher_id = cipher_name_i4_o4_r1
         cipher_type = permutation
@@ -1627,7 +1627,7 @@ def add_XOR_component(cipher, input_id_links, input_bit_positions, output_bit_si
         print(CIPHER_ROUND_NOT_FOUND_ERROR)
         return None
 
-    new_component = XOR(
+    new_component = Xor(
         cipher.current_round_number,
         cipher.current_round_number_of_components,
         input_id_links,
@@ -2090,9 +2090,9 @@ def sort_cipher(cipher):
         sage: from claasp.name_mappings import PERMUTATION
         sage: cipher = Cipher("cipher_name", PERMUTATION, ["input"], [4], 4)
         sage: cipher.add_round()
-        sage: sbox_that_should_be_second = cipher.add_SBOX_component(["sbox_0_1"], [[0,1,2,3]], 4,
+        sage: sbox_that_should_be_second = cipher.add_sbox_component(["sbox_0_1"], [[0,1,2,3]], 4,
         ....: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15])
-        sage: sbox_that_should_be_first = cipher.add_SBOX_component(["input"], [[0,1,2,3]], 4,
+        sage: sbox_that_should_be_first = cipher.add_sbox_component(["input"], [[0,1,2,3]], 4,
         ....: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15])
         sage: cipher.print_as_python_dictionary()
         cipher = {

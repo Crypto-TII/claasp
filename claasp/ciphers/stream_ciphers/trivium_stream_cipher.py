@@ -90,7 +90,7 @@ class TriviumStreamCipher(Cipher):
         for clock_number in range(self.get_keystream_bit_len(keystream_bit_len)):
             self.add_round()
             key_stream = self.trivium_key_stream(triv_state, clock_number, key_stream)
-            triv_state = self.add_FSR_component(
+            triv_state = self.add_fsr_component(
                 [triv_state], [list(range(self.state_bit_size))], state_bit_size, NLFSR_DESCR
             ).id
 
@@ -128,7 +128,7 @@ class TriviumStreamCipher(Cipher):
             list(range(self.iv_bit_size)),
             list(range(111)),
         ]
-        triv_state = self.add_FSR_component(state0_id, state0_pos, self.state_bit_size,
+        triv_state = self.add_fsr_component(state0_id, state0_pos, self.state_bit_size,
                                             NLFSR_DESCR + [self.number_of_initialization_clocks]).id
         self.add_round_output_component([triv_state], [list(range(self.state_bit_size))], self.state_bit_size)
         return triv_state
@@ -136,7 +136,7 @@ class TriviumStreamCipher(Cipher):
     def trivium_key_stream(self, state, clock_number, key_stream):
         k_bits_id = [state, state, state, state, state, state]
         k_bits_pos = [[0], [27], [93], [108], [177], [222]]
-        key_stream_bit = self.add_XOR_component(k_bits_id, k_bits_pos, 1).id
+        key_stream_bit = self.add_xor_component(k_bits_id, k_bits_pos, 1).id
         if clock_number == 0:
             key_stream = self.add_round_output_component([key_stream_bit], [[0]], 1).id
         else:

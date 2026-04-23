@@ -1,4 +1,4 @@
-from claasp.components.not_component import NOT
+from claasp.components.not_component import Not
 from claasp.cipher_modules.models.milp.milp_model import MilpModel
 from claasp.ciphers.single_component_ciphers.not_cipher import NotCipher
 from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
@@ -20,7 +20,7 @@ def test_algebraic_polynomials():
 
 
 def test_cms_constraints():
-    not_component = NOT(0, 8, ['xor_0_6'], [list(range(32))], 32)
+    not_component = Not(0, 8, ['xor_0_6'], [list(range(32))], 32)
     output_bit_ids, constraints = not_component.cms_constraints()
 
     assert output_bit_ids[0] == 'not_0_8_0'
@@ -32,7 +32,7 @@ def test_cms_constraints():
 
 
 def test_cp_constraints():
-    not_component = NOT(0, 8, ['xor_0_6'], [list(range(32))], 32)
+    not_component = Not(0, 8, ['xor_0_6'], [list(range(32))], 32)
     declarations, constraints = not_component.cp_constraints()
 
     assert declarations == []
@@ -42,7 +42,7 @@ def test_cp_constraints():
 
 
 def test_cp_deterministic_truncated_xor_differential_constraints():
-    not_component = NOT(0, 8, ['xor_0_6'], [list(range(32))], 32)
+    not_component = Not(0, 8, ['xor_0_6'], [list(range(32))], 32)
     declarations, constraints = not_component.cp_deterministic_truncated_xor_differential_constraints()
 
     assert declarations == []
@@ -55,7 +55,7 @@ def test_cp_xor_differential_first_step_constraints():
     class DummyModel:
         word_size = 8
 
-    not_component = NOT(0, 18, ['plaintext', 'key', 'input3', 'input4'],
+    not_component = Not(0, 18, ['plaintext', 'key', 'input3', 'input4'],
                         [[0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7],
                          [0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7]], 32)
     declarations, constraints = not_component.cp_xor_differential_first_step_constraints(DummyModel())
@@ -69,7 +69,7 @@ def test_cp_xor_differential_first_step_constraints():
 
 
 def test_cp_xor_differential_propagation_constraints():
-    not_component = NOT(0, 8, ['xor_0_6'], [list(range(32))], 32)
+    not_component = Not(0, 8, ['xor_0_6'], [list(range(32))], 32)
     declarations, constraints = not_component.cp_xor_differential_propagation_constraints()
 
     assert declarations == []
@@ -79,7 +79,7 @@ def test_cp_xor_differential_propagation_constraints():
 
 
 def test_cp_xor_linear_mask_propagation_constraints():
-    not_component = NOT(0, 5, ['ascon_0_5_i'], [list(range(64))], 64)
+    not_component = Not(0, 5, ['ascon_0_5_i'], [list(range(64))], 64)
     declarations, constraints = not_component.cp_xor_linear_mask_propagation_constraints()
 
     assert declarations == ['array[0..63] of var 0..1:not_0_5_i;', 'array[0..63] of var 0..1:not_0_5_o;']
@@ -89,7 +89,7 @@ def test_cp_xor_linear_mask_propagation_constraints():
 
 
 def test_generic_sign_linear_constraints():
-    not_component = NOT(0, 8, ['xor_0_6'], [list(range(32))], 32)
+    not_component = Not(0, 8, ['xor_0_6'], [list(range(32))], 32)
     inputs = [0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 1, 0]
 
     assert not_component.generic_sign_linear_constraints(inputs) == 1
@@ -150,7 +150,7 @@ def test_milp_xor_linear_mask_propagation_constraints():
 
 
 def test_sat_constraints():
-    not_component = NOT(0, 8, ['xor_0_6'], [list(range(32))], 32)
+    not_component = Not(0, 8, ['xor_0_6'], [list(range(32))], 32)
     output_bit_ids, constraints = not_component.sat_constraints()
 
     assert output_bit_ids[0] == 'not_0_8_0'
@@ -163,7 +163,7 @@ def test_sat_constraints():
 
 
 def test_sat_bitwise_deterministic_truncated_xor_differential_constraints():
-    not_component = NOT(0, 8, ['xor_0_6'], [list(range(32))], 32)
+    not_component = Not(0, 8, ['xor_0_6'], [list(range(32))], 32)
     output_bit_ids, constraints = not_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
 
     assert output_bit_ids[0] == 'not_0_8_0_0'
@@ -176,7 +176,7 @@ def test_sat_bitwise_deterministic_truncated_xor_differential_constraints():
 
 
 def test_sat_xor_differential_propagation_constraints():
-    not_component = NOT(0, 8, ['xor_0_6'], [list(range(32))], 32)
+    not_component = Not(0, 8, ['xor_0_6'], [list(range(32))], 32)
     output_bit_ids, constraints = not_component.sat_xor_differential_propagation_constraints()
 
     assert output_bit_ids[0] == 'not_0_8_0'
@@ -189,7 +189,7 @@ def test_sat_xor_differential_propagation_constraints():
 
 
 def test_sat_xor_linear_mask_propagation_constraints():
-    not_component = NOT(0, 8, ['xor_0_6'], [list(range(32))], 32)
+    not_component = Not(0, 8, ['xor_0_6'], [list(range(32))], 32)
     output_bit_ids, constraints = not_component.sat_xor_linear_mask_propagation_constraints()
 
     assert output_bit_ids[0] == 'not_0_8_0_i'
@@ -202,7 +202,7 @@ def test_sat_xor_linear_mask_propagation_constraints():
 
 
 def test_smt_constraints():
-    not_component = NOT(0, 5, ['xor_0_2'], [list(range(64))], 64)
+    not_component = Not(0, 5, ['xor_0_2'], [list(range(64))], 64)
     output_bit_ids, constraints = not_component.smt_constraints()
 
     assert output_bit_ids[0] == 'not_0_5_0'
@@ -217,7 +217,7 @@ def test_smt_constraints():
 
 
 def test_smt_xor_differential_propagation_constraints():
-    not_component = NOT(0, 5, ['xor_0_2'], [list(range(64))], 64)
+    not_component = Not(0, 5, ['xor_0_2'], [list(range(64))], 64)
     output_bit_ids, constraints = not_component.smt_xor_differential_propagation_constraints()
 
     assert output_bit_ids[0] == 'not_0_5_0'
@@ -232,7 +232,7 @@ def test_smt_xor_differential_propagation_constraints():
 
 
 def test_smt_xor_linear_mask_propagation_constraints():
-    not_component = NOT(0, 5, ['not_0_5_i'], [list(range(64))], 64)
+    not_component = Not(0, 5, ['not_0_5_i'], [list(range(64))], 64)
     output_bit_ids, constraints = not_component.smt_xor_linear_mask_propagation_constraints()
 
     assert output_bit_ids[0] == 'not_0_5_0_i'

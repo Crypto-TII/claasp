@@ -170,19 +170,19 @@ class SpongentPiPrecomputationPermutation(Cipher):
         self.add_constant_component(SBOX_CELL_SIZE, self.icounter_iv[r])
         icounter = ComponentState([self.get_current_component_id()], [list(range(SBOX_CELL_SIZE))])
         inputs_id, inputs_pos = get_inputs_parameter([state[self.state_len - 1], icounter])
-        self.add_XOR_component(inputs_id, inputs_pos, SBOX_CELL_SIZE)
+        self.add_xor_component(inputs_id, inputs_pos, SBOX_CELL_SIZE)
         state[self.state_len - 1] = ComponentState([self.get_current_component_id()], [list(range(SBOX_CELL_SIZE))])
 
         # state[0] = state[0] xor reverse(0|icounter)
         self.add_constant_component(SBOX_CELL_SIZE, self.icounter_iv_rev[r])
         reverse_icounter = ComponentState([self.get_current_component_id()], [list(range(SBOX_CELL_SIZE))])
         inputs_id, inputs_pos = get_inputs_parameter([state[0], reverse_icounter])
-        self.add_XOR_component(inputs_id, inputs_pos, SBOX_CELL_SIZE)
+        self.add_xor_component(inputs_id, inputs_pos, SBOX_CELL_SIZE)
         state[0] = ComponentState([self.get_current_component_id()], [list(range(SBOX_CELL_SIZE))])
 
         # state[i] = sbox(state[i])
         for i in range(self.state_len):
-            self.add_SBOX_component(state[i].id, state[i].input_bit_positions, SBOX_CELL_SIZE, S_BOX)
+            self.add_sbox_component(state[i].id, state[i].input_bit_positions, SBOX_CELL_SIZE, S_BOX)
             state[i] = ComponentState([self.get_current_component_id()], [list(range(SBOX_CELL_SIZE))])
 
         # state[j] = permute(state[j])

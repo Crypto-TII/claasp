@@ -21,7 +21,7 @@ from claasp.cipher_modules.models.smt.utils import utils as smt_utils
 from claasp.components.multi_input_non_linear_logical_operator_component import MultiInputNonlinearLogicalOperator
 
 
-class OR(MultiInputNonlinearLogicalOperator):
+class Or(MultiInputNonlinearLogicalOperator):
     """
     Construct an OR component.
 
@@ -43,15 +43,15 @@ class OR(MultiInputNonlinearLogicalOperator):
 
     EXAMPLES::
 
-        sage: from claasp.components.or_component import OR
-        sage: component = OR(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2)
+        sage: from claasp.components.or_component import Or
+        sage: component = Or(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2)
         sage: print(component.id)
         or_0_0
         sage: print(component.type)
         word_operation
         sage: print(component.description)
         ['OR', 2]
-        sage: component3 = OR(0, 1, ['a', 'b', 'c'], [[0, 1], [0, 1], [0, 1]], 2)
+        sage: component3 = Or(0, 1, ['a', 'b', 'c'], [[0, 1], [0, 1], [0, 1]], 2)
         sage: print(component3.description)  # 6 total bits / output_bit_size 2 = 3 operands
         ['OR', 3]
     """
@@ -127,8 +127,8 @@ class OR(MultiInputNonlinearLogicalOperator):
 
         EXAMPLES::
 
-            sage: from claasp.components.or_component import OR
-            sage: or_component = OR(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2)
+            sage: from claasp.components.or_component import Or
+            sage: or_component = Or(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2)
             sage: or_component.cp_constraints()
             (['array[0..1] of var 0..1: or_0_0;',
             'array[0..1] of var 0..1:pre_or_0_0_0;',
@@ -238,14 +238,14 @@ class OR(MultiInputNonlinearLogicalOperator):
 
         EXAMPLES::
 
-            sage: from claasp.components.or_component import OR
-            sage: or_component = OR(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2)
+            sage: from claasp.components.or_component import Or
+            sage: or_component = Or(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2)
             sage: input = [0, 0, 0, 1]
             sage: output = [0, 1]
             sage: or_component.generic_sign_linear_constraints(input, output)
             1
-            sage: from claasp.components.or_component import OR
-            sage: or_component = OR(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2)
+            sage: from claasp.components.or_component import Or
+            sage: or_component = Or(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2)
             sage: input = [0, 0, 0, 1]
             sage: output = [1, 1]
             sage: or_component.generic_sign_linear_constraints(input, output)
@@ -284,8 +284,8 @@ class OR(MultiInputNonlinearLogicalOperator):
 
         EXAMPLES::
 
-            sage: from claasp.components.or_component import OR
-            sage: component = OR(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2)
+            sage: from claasp.components.or_component import Or
+            sage: component = Or(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2)
             sage: component.sat_constraints()
             (['or_0_0_0', 'or_0_0_1'],
             ['or_0_0_0 -input1_0',
@@ -317,8 +317,8 @@ class OR(MultiInputNonlinearLogicalOperator):
 
         EXAMPLES::
 
-            sage: from claasp.components.or_component import OR
-            sage: component = OR(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2)
+            sage: from claasp.components.or_component import Or
+            sage: component = Or(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2)
             sage: component.smt_constraints()
             (['or_0_0_0', 'or_0_0_1'],
             ['(assert (= or_0_0_0 (or input1_0 input2_0)))',

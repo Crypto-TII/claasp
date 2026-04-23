@@ -24,7 +24,7 @@ from claasp.components.multi_input_non_linear_logical_operator_component import 
 
 def cp_twoterms(model, inp1, inp2, out, cp_constraints):
     cp_constraints.append(
-        f"constraint Ham_weight(Andz({inp1}, {inp2}, {out})) == 0 /\\ p[{model.c}] = Ham_weight(OR({inp1}, {inp2}));"
+        f"constraint Ham_weight(Andz({inp1}, {inp2}, {out})) == 0 /\\ p[{model.c}] = Ham_weight(Or({inp1}, {inp2}));"
     )
     return cp_constraints
 
@@ -94,7 +94,7 @@ def cp_xor_linear_probability_lat(numadd):
     return lat
 
 
-class AND(MultiInputNonlinearLogicalOperator):
+class And(MultiInputNonlinearLogicalOperator):
     """
     Construct an AND component.
 
@@ -116,15 +116,15 @@ class AND(MultiInputNonlinearLogicalOperator):
 
     EXAMPLES::
 
-        sage: from claasp.components.and_component import AND
-        sage: component = AND(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2)
+        sage: from claasp.components.and_component import And
+        sage: component = And(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2)
         sage: print(component.id)
         and_0_0
         sage: print(component.type)
         word_operation
         sage: print(component.description)
         ['AND', 2]
-        sage: component3 = AND(0, 1, ['a', 'b', 'c'], [[0, 1], [0, 1], [0, 1]], 2)
+        sage: component3 = And(0, 1, ['a', 'b', 'c'], [[0, 1], [0, 1], [0, 1]], 2)
         sage: print(component3.description)  # 6 total bits / output_bit_size 2 = 3 operands
         ['AND', 3]
     """
@@ -192,8 +192,8 @@ class AND(MultiInputNonlinearLogicalOperator):
 
         EXAMPLES::
 
-            sage: from claasp.components.and_component import AND
-            sage: and_component = AND(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2)
+            sage: from claasp.components.and_component import And
+            sage: and_component = And(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2)
             sage: and_component.cp_constraints()
             ([],
              ['constraint and_0_0[0] = input1[0] * input2[0];',
@@ -341,8 +341,8 @@ class AND(MultiInputNonlinearLogicalOperator):
 
         EXAMPLES::
 
-            sage: from claasp.components.and_component import AND
-            sage: and_component = AND(0, 0, ['plaintext', 'key'], [list(range(16)), list(range(16))], 16)
+            sage: from claasp.components.and_component import And
+            sage: and_component = And(0, 0, ['plaintext', 'key'], [list(range(16)), list(range(16))], 16)
             sage: input = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
             sage: output = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
             sage: and_component.generic_sign_linear_constraints(input, output)
@@ -381,8 +381,8 @@ class AND(MultiInputNonlinearLogicalOperator):
 
         EXAMPLES::
 
-            sage: from claasp.components.and_component import AND
-            sage: and_component = AND(0, 0, ['plaintext', 'key'], [list(range(2)), list(range(2))], 2)
+            sage: from claasp.components.and_component import And
+            sage: and_component = And(0, 0, ['plaintext', 'key'], [list(range(2)), list(range(2))], 2)
             sage: and_component.sat_constraints()
             (['and_0_0_0', 'and_0_0_1'],
             ['-and_0_0_0 plaintext_0',
@@ -414,8 +414,8 @@ class AND(MultiInputNonlinearLogicalOperator):
 
         EXAMPLES::
 
-            sage: from claasp.components.and_component import AND
-            sage: and_component = AND(0, 0, ['plaintext', 'key'], [list(range(2)), list(range(2))], 2)
+            sage: from claasp.components.and_component import And
+            sage: and_component = And(0, 0, ['plaintext', 'key'], [list(range(2)), list(range(2))], 2)
             sage: and_component.smt_constraints()
             (['and_0_0_0', 'and_0_0_1'],
             ['(assert (= and_0_0_0 (and plaintext_0 key_0)))',

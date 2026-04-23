@@ -1,6 +1,6 @@
 from copy import deepcopy
 
-from claasp.components.xor_component import XOR
+from claasp.components.xor_component import Xor
 from claasp.name_mappings import CIPHER_OUTPUT, INTERMEDIATE_OUTPUT
 
 
@@ -49,7 +49,7 @@ def create_xor_component_inputs(old_cipher_inputs_, cipher, round_object):
         input_links = [f"{cipher_input}_pair1", f"{cipher_input}_pair2"]
         current_components_number = round_object.get_number_of_components()
         output_bit_size = cipher.inputs_bit_size[i]
-        new_xor_component = XOR(
+        new_xor_component = Xor(
             0,
             current_components_number,
             input_links,
@@ -66,7 +66,7 @@ def create_xor_component(component1_, component2_, round_object, round_number):
     input_links = [component1_.id, component2_.id]
     current_components_number = round_object.get_number_of_components()
     output_bit_size = component1_.output_bit_size
-    new_xor_component = XOR(
+    new_xor_component = Xor(
         round_number,
         current_components_number,
         input_links,

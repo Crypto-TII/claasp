@@ -102,11 +102,11 @@ def cp_update_ddt_valid_probabilities(
 
     EXAMPLES::
 
-        sage: from claasp.components.sbox_component import SBOX, cp_update_ddt_valid_probabilities
+        sage: from claasp.components.sbox_component import Sbox, cp_update_ddt_valid_probabilities
         sage: class DummyCipher:
         ....:     def is_spn(self):
         ....:         return True
-        sage: component = SBOX(0, 0, ['xor_0_0'], [[0, 1, 2, 3]], 4, [12, 5, 6, 11, 9, 0, 10, 13, 3, 14, 15, 8, 4, 7, 1, 2])
+        sage: component = Sbox(0, 0, ['xor_0_0'], [[0, 1, 2, 3]], 4, [12, 5, 6, 11, 9, 0, 10, 13, 3, 14, 15, 8, 4, 7, 1, 2])
         sage: cp_declarations, table_items, valid_probabilities, sbox_mant = [], [], set(), []
         sage: cp_update_ddt_valid_probabilities(DummyCipher(), component, 4, cp_declarations, table_items, valid_probabilities, sbox_mant)
         sage: len(valid_probabilities) > 0
@@ -163,8 +163,8 @@ def cp_update_lat_valid_probabilities(component, valid_probabilities, sbox_mant)
 
     EXAMPLES::
 
-        sage: from claasp.components.sbox_component import SBOX, cp_update_lat_valid_probabilities
-        sage: component = SBOX(0, 0, ['xor_0_0'], [[0, 1, 2, 3]], 4, [12, 5, 6, 11, 9, 0, 10, 13, 3, 14, 15, 8, 4, 7, 1, 2])
+        sage: from claasp.components.sbox_component import Sbox, cp_update_lat_valid_probabilities
+        sage: component = Sbox(0, 0, ['xor_0_0'], [[0, 1, 2, 3]], 4, [12, 5, 6, 11, 9, 0, 10, 13, 3, 14, 15, 8, 4, 7, 1, 2])
         sage: valid_probabilities, sbox_mant = set(), []
         sage: cp_update_lat_valid_probabilities(component, valid_probabilities, sbox_mant)
         sage: len(valid_probabilities) > 0
@@ -549,7 +549,7 @@ def _mzn_update_sbox_mant_for_deterministic_truncated_xor_differential(
     return already_in, output_id_link_sost, undisturbed_table_bits
 
 
-class SBOX(Component):
+class Sbox(Component):
     """
     Construct an S-box component.
 
@@ -565,8 +565,8 @@ class SBOX(Component):
 
     EXAMPLES::
 
-        sage: from claasp.components.sbox_component import SBOX
-        sage: component = SBOX(0, 0, ['input'], [[0, 1, 2]], 3, [0, 1, 2, 3, 4, 5, 6, 7])
+        sage: from claasp.components.sbox_component import Sbox
+        sage: component = Sbox(0, 0, ['input'], [[0, 1, 2]], 3, [0, 1, 2, 3, 4, 5, 6, 7])
         sage: print(component.id)
         sbox_0_0
         sage: print(component.type)
@@ -660,9 +660,9 @@ class SBOX(Component):
 
         EXAMPLES::
 
-            sage: from claasp.components.sbox_component import SBOX
+            sage: from claasp.components.sbox_component import Sbox
             sage: present_sbox = [12, 5, 6, 11, 9, 0, 10, 13, 3, 14, 15, 8, 4, 7, 1, 2]
-            sage: sbox_component = SBOX(0, 2, ['input'], [[0, 1, 2, 3]], 4, present_sbox)
+            sage: sbox_component = Sbox(0, 2, ['input'], [[0, 1, 2, 3]], 4, present_sbox)
             sage: valid_transitions = sbox_component.get_ddt_with_undisturbed_transitions()
             sage: len(valid_transitions)
             81
@@ -679,7 +679,7 @@ class SBOX(Component):
             ....:     0x1e, 0x13, 0x07, 0x0e, 0x00, 0x0d, 0x11, 0x18,
             ....:     0x10, 0x0c, 0x01, 0x19, 0x16, 0x0a, 0x0f, 0x17
             ....: ]
-            sage: sbox_component = SBOX(0, 3, ['input'], [[0, 1, 2, 3, 4]], 5, ascon_sbox)
+            sage: sbox_component = Sbox(0, 3, ['input'], [[0, 1, 2, 3, 4]], 5, ascon_sbox)
             sage: valid_transitions = sbox_component.get_ddt_with_undisturbed_transitions()
             sage: len(valid_transitions)
             243
@@ -743,9 +743,9 @@ class SBOX(Component):
 
         EXAMPLES::
 
-            sage: from claasp.components.sbox_component import SBOX
+            sage: from claasp.components.sbox_component import Sbox
             sage: present_sbox = [12, 5, 6, 11, 9, 0, 10, 13, 3, 14, 15, 8, 4, 7, 1, 2]
-            sage: sbox_component = SBOX(0, 2, ['xor_0_0'], [[4, 5, 6, 7]], 4, present_sbox)
+            sage: sbox_component = Sbox(0, 2, ['xor_0_0'], [[4, 5, 6, 7]], 4, present_sbox)
             sage: sbox_component.cms_constraints()
             (['sbox_0_2_0', 'sbox_0_2_1', 'sbox_0_2_2', 'sbox_0_2_3'],
              ['xor_0_0_4 xor_0_0_5 xor_0_0_6 xor_0_0_7 sbox_0_2_0',
@@ -773,9 +773,9 @@ class SBOX(Component):
 
         EXAMPLES::
 
-            sage: from claasp.components.sbox_component import SBOX
+            sage: from claasp.components.sbox_component import Sbox
             sage: sbox = [12, 10, 13, 3, 14, 11, 15, 7, 8, 9, 1, 5, 0, 2, 4, 6]
-            sage: sbox_component = SBOX(0, 5, ['xor_0_1'], [[4, 5, 6, 7]], 4, sbox)
+            sage: sbox_component = Sbox(0, 5, ['xor_0_1'], [[4, 5, 6, 7]], 4, sbox)
             sage: sbox_component.cp_constraints([])
             (['array [1..16, 1..8] of int: table_sbox_0_5 = array2d(1..16, 1..8, [0,0,0,0,1,1,0,0,0,0,0,1,1,0,1,0,0,0,1,0,1,1,0,1,0,0,1,1,0,0,1,1,0,1,0,0,1,1,1,0,0,1,0,1,1,0,1,1,0,1,1,0,1,1,1,1,0,1,1,1,0,1,1,1,1,0,0,0,1,0,0,0,1,0,0,1,1,0,0,1,1,0,1,0,0,0,0,1,1,0,1,1,0,1,0,1,1,1,0,0,0,0,0,0,1,1,0,1,0,0,1,0,1,1,1,0,0,1,0,0,1,1,1,1,0,1,1,0]);'],
              ['constraint table([xor_0_1[4]]++[xor_0_1[5]]++[xor_0_1[6]]++[xor_0_1[7]]++[sbox_0_5[0]]++[sbox_0_5[1]]++[sbox_0_5[2]]++[sbox_0_5[3]], table_sbox_0_5);'])
@@ -824,9 +824,9 @@ class SBOX(Component):
 
         EXAMPLES::
 
-            sage: from claasp.components.sbox_component import SBOX
+            sage: from claasp.components.sbox_component import Sbox
             sage: sbox = [1, 2, 3, 4, 0, 7, 6, 5]
-            sage: sbox_component = SBOX(0, 1, ['xor_0_0'], [[0, 1, 2, 3]], 4, sbox)
+            sage: sbox_component = Sbox(0, 1, ['xor_0_0'], [[0, 1, 2, 3]], 4, sbox)
             sage: declarations, constraints, sbox_mant = sbox_component.cp_deterministic_truncated_xor_differential_constraints(sbox_mant = [])
             sage: declarations
             ['array [1..27, 1..6] of int: table_sbox_0_1 = array2d(1..27, 1..6, [0,0,0,0,0,0,0,0,1,2,1,1,0,1,0,2,1,0,0,1,1,2,0,1,1,0,0,2,0,1,1,0,1,2,1,0,1,1,0,2,1,1,1,1,1,1,0,0,0,0,2,2,2,2,0,2,0,2,2,0,0,2,2,2,2,2,2,0,0,2,0,2,2,0,2,2,2,2,2,2,0,2,2,2,2,2,2,2,2,2,0,2,1,2,2,1,2,0,1,2,1,2,2,2,1,2,2,2,0,1,2,2,2,2,2,1,0,2,1,2,2,1,2,2,2,2,2,1,1,2,0,2,1,0,2,2,2,2,1,2,0,2,2,1,1,2,2,2,2,2,1,2,1,2,2,0,1,1,2,2,2,2]);']
@@ -891,9 +891,9 @@ class SBOX(Component):
 
         EXAMPLES::
 
-            sage: from claasp.components.sbox_component import SBOX
+            sage: from claasp.components.sbox_component import Sbox
             sage: lblock_sbox = [14, 9, 15, 0, 13, 4, 10, 11, 1, 2, 8, 3, 7, 6, 12, 5]
-            sage: sbox_component = SBOX(0, 2, ['xor_0_1'], [[4, 5, 6, 7]], 4, lblock_sbox)
+            sage: sbox_component = Sbox(0, 2, ['xor_0_1'], [[4, 5, 6, 7]], 4, lblock_sbox)
             sage: declarations, constraints, sbox_mant = sbox_component.cp_hybrid_deterministic_truncated_xor_differential_constraints(sbox_mant = [])
             sage: constraints
             ['constraint abstract_sbox_0_2(array1d(0..3, [xor_0_1[4]]++[xor_0_1[5]]++[xor_0_1[6]]++[xor_0_1[7]]), array1d(0..3, [sbox_0_2[0]]++[sbox_0_2[1]]++[sbox_0_2[2]]++[sbox_0_2[3]]), 0, 0);']
@@ -985,9 +985,9 @@ class SBOX(Component):
 
         EXAMPLES::
 
-            sage: from claasp.components.sbox_component import SBOX
+            sage: from claasp.components.sbox_component import Sbox
             sage: sbox = [1, 2, 3, 4, 5, 6, 7, 0]
-            sage: sbox_component = SBOX(0, 0, ['plaintext'], [[0, 1, 2]], 3, sbox)
+            sage: sbox_component = Sbox(0, 0, ['plaintext'], [[0, 1, 2]], 3, sbox)
             sage: model = type('DummyModel', (), {'word_size': 3})()
             sage: sbox_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(model)
             ([], ['constraint if plaintext_value[0]==0 then sbox_0_0_active[0] = 0 else sbox_0_0_active[0] = 2 endif;'])
@@ -1020,14 +1020,14 @@ class SBOX(Component):
 
         EXAMPLES::
 
-            sage: from claasp.components.sbox_component import SBOX
+            sage: from claasp.components.sbox_component import Sbox
             sage: class DummyModel:
             ....:     word_size = 2
             ....:     def __init__(self):
             ....:         self.input_sbox = []
             ....:         self.table_of_solutions_length = 0
             sage: model = DummyModel()
-            sage: sbox_component = SBOX(0, 0, ['input0'], [list(range(4))], 4, list(range(16)))
+            sage: sbox_component = Sbox(0, 0, ['input0'], [list(range(4))], 4, list(range(16)))
             sage: sbox_component.cp_xor_differential_first_step_constraints(model)
             (['array[0..1] of var 0..1: sbox_0_0;'],
                 ['constraint sbox_0_0[0] = input0[0];',
@@ -1065,8 +1065,8 @@ class SBOX(Component):
 
         EXAMPLES::
 
-            sage: from claasp.components.sbox_component import SBOX
-            sage: sbox_component = SBOX(0, 0, ['plaintext'], [[0, 1, 2]], 3, [0, 1, 2, 3, 4, 5, 6, 7])
+            sage: from claasp.components.sbox_component import Sbox
+            sage: sbox_component = Sbox(0, 0, ['plaintext'], [[0, 1, 2]], 3, [0, 1, 2, 3, 4, 5, 6, 7])
             sage: cp = type('DummyModel', (), {})()
             sage: cp.sbox_mant = []
             sage: cp.component_and_probability = {}
@@ -1130,8 +1130,8 @@ class SBOX(Component):
 
         EXAMPLES::
 
-            sage: from claasp.components.sbox_component import SBOX
-            sage: sbox_component = SBOX(0, 0, ['plaintext'], [[0, 1, 2]], 3, [0, 1, 2, 3, 4, 5, 6, 7])
+            sage: from claasp.components.sbox_component import Sbox
+            sage: sbox_component = Sbox(0, 0, ['plaintext'], [[0, 1, 2]], 3, [0, 1, 2, 3, 4, 5, 6, 7])
             sage: cp = type('DummyModel', (), {})()
             sage: cp.sbox_mant = []
             sage: cp.component_and_probability = {}
@@ -1201,8 +1201,8 @@ class SBOX(Component):
 
         EXAMPLES::
 
-            sage: from claasp.components.sbox_component import SBOX
-            sage: sbox_component = SBOX(0, 0, ['input'], [[0, 1]], 2, [0, 1, 3, 2])
+            sage: from claasp.components.sbox_component import Sbox
+            sage: sbox_component = Sbox(0, 0, ['input'], [[0, 1]], 2, [0, 1, 3, 2])
             sage: sign_lat = sbox_component.generate_sbox_sign_lat()
             sage: sign_lat
             [[1, 0, 0, 0], [0, 0, 0, 1], [0, 0, 1, 0], [0, 1, 0, 0]]
@@ -1234,8 +1234,8 @@ class SBOX(Component):
 
         EXAMPLES::
 
-            sage: from claasp.components.sbox_component import SBOX
-            sage: sbox_component = SBOX(0, 0, ['input'], [[0, 1]], 2, [0, 1, 3, 2])
+            sage: from claasp.components.sbox_component import Sbox
+            sage: sbox_component = Sbox(0, 0, ['input'], [[0, 1]], 2, [0, 1, 3, 2])
             sage: code = sbox_component.get_bit_based_c_code(False)
             sage: code
             ['\tinput_id = (BitString*[]) {input};\n\tinput_positions = (uint16_t*[]) {',
@@ -1243,14 +1243,14 @@ class SBOX(Component):
             '\t};',
             '\tinput = select_bits(1, input_id, input_positions, 2);',
             '\tsubstitution_list = (uint64_t[]) {0, 1, 3, 2};',
-            '\tBitString* sbox_0_0 = SBOX(input, 2, substitution_list);\n',
+            '\tBitString* sbox_0_0 = Sbox(input, 2, substitution_list);\n',
             '\tdelete_bitstring(input);\n']
         """
         sbox_code = []
         self.select_bits(sbox_code)
 
         sbox_code.append(f"\tsubstitution_list = (uint64_t[]) {{{', '.join([str(x) for x in self.description])}}};")
-        sbox_code.append(f"\tBitString* {self.id} = SBOX(input, {self.output_bit_size}, substitution_list);\n")
+        sbox_code.append(f"\tBitString* {self.id} = Sbox(input, {self.output_bit_size}, substitution_list);\n")
 
         if verbosity:
             self.print_values(sbox_code)
@@ -1274,8 +1274,8 @@ class SBOX(Component):
 
         EXAMPLES::
 
-            sage: from claasp.components.sbox_component import SBOX
-            sage: sbox_component = SBOX(0, 0, ['x'], [[0, 1]], 2, [0, 1, 3, 2])
+            sage: from claasp.components.sbox_component import Sbox
+            sage: sbox_component = Sbox(0, 0, ['x'], [[0, 1]], 2, [0, 1, 3, 2])
             sage: code = sbox_component.get_bit_based_vectorized_python_code(None, False)
             sage: code
             ['  sbox_0_0 = bit_vector_SBOX(bit_vector_CONCAT([bit_vector_select_word(x,  [0, 1]) ]), np.array([0, 1, 3, 2], dtype=np.uint8), output_bit_size = 2)']
@@ -1303,8 +1303,8 @@ class SBOX(Component):
 
         EXAMPLES::
 
-            sage: from claasp.components.sbox_component import SBOX
-            sage: sbox_component = SBOX(0, 0, ['x'], [[0, 1]], 2, [0, 1, 3, 2])
+            sage: from claasp.components.sbox_component import Sbox
+            sage: sbox_component = Sbox(0, 0, ['x'], [[0, 1]], 2, [0, 1, 3, 2])
             sage: sbox_component.get_byte_based_vectorized_python_code('state')
             ['  sbox_0_0 = byte_vector_SBOX(state, [0, 1, 3, 2], 2)']
         """
@@ -1326,8 +1326,8 @@ class SBOX(Component):
 
         EXAMPLES::
 
-            sage: from claasp.components.sbox_component import SBOX
-            sage: sbox_component = SBOX(0, 0, ['x'], [[0, 1]], 2, [0, 1, 3, 2])
+            sage: from claasp.components.sbox_component import Sbox
+            sage: sbox_component = Sbox(0, 0, ['x'], [[0, 1]], 2, [0, 1, 3, 2])
             sage: sbox_component.get_word_based_c_code(False, 8, {})
             ['\t//// TODO']
         """
@@ -2068,9 +2068,9 @@ class SBOX(Component):
 
         EXAMPLES::
 
-            sage: from claasp.components.sbox_component import SBOX
+            sage: from claasp.components.sbox_component import Sbox
             sage: present_sbox = [12, 5, 6, 11, 9, 0, 10, 13, 3, 14, 15, 8, 4, 7, 1, 2]
-            sage: sbox_component = SBOX(0, 2, ['xor_0_0'], [[4, 5, 6, 7]], 4, present_sbox)
+            sage: sbox_component = Sbox(0, 2, ['xor_0_0'], [[4, 5, 6, 7]], 4, present_sbox)
             sage: sbox_component.sat_constraints()
             (['sbox_0_2_0', 'sbox_0_2_1', 'sbox_0_2_2', 'sbox_0_2_3'],
              ['xor_0_0_4 xor_0_0_5 xor_0_0_6 xor_0_0_7 sbox_0_2_0',
@@ -2111,9 +2111,9 @@ class SBOX(Component):
 
         EXAMPLES::
 
-            sage: from claasp.components.sbox_component import SBOX
+            sage: from claasp.components.sbox_component import Sbox
             sage: present_sbox = [12, 5, 6, 11, 9, 0, 10, 13, 3, 14, 15, 8, 4, 7, 1, 2]
-            sage: sbox_component = SBOX(0, 2, ['xor_0_0'], [[4, 5, 6, 7]], 4, present_sbox)
+            sage: sbox_component = Sbox(0, 2, ['xor_0_0'], [[4, 5, 6, 7]], 4, present_sbox)
             sage: sbox_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
             (['sbox_0_2_0_0',
               'sbox_0_2_1_0',
@@ -2316,9 +2316,9 @@ class SBOX(Component):
 
         EXAMPLES::
 
-            sage: from claasp.components.sbox_component import SBOX
+            sage: from claasp.components.sbox_component import Sbox
             sage: sbox = [1, 2, 3, 0]
-            sage: component = SBOX(0, 1, ['input'], [[0, 1]], 2, sbox)
+            sage: component = Sbox(0, 1, ['input'], [[0, 1]], 2, sbox)
             sage: output_ids, asserts = component.smt_constraints()
             sage: output_ids
             ['sbox_0_1_0', 'sbox_0_1_1']

@@ -83,10 +83,10 @@ class LBlockBlockCipher(Cipher):
 
     def update_key(self, k, i):
         rot_k = self.add_rotate_component([k], [list(range(80))], 80, -29).id  #
-        s0 = self.add_SBOX_component([rot_k], [list(range(4))], 4, self.sboxes[9]).id  #
-        s1 = self.add_SBOX_component([rot_k], [list(range(4, 8))], 4, self.sboxes[8]).id  #
+        s0 = self.add_sbox_component([rot_k], [list(range(4))], 4, self.sboxes[9]).id  #
+        s1 = self.add_sbox_component([rot_k], [list(range(4, 8))], 4, self.sboxes[8]).id  #
         c0 = self.add_constant_component(5, i).id
-        xor0 = self.add_XOR_component([rot_k, c0], [[29, 30, 31, 32, 33], list(range(5))], 5).id  #
+        xor0 = self.add_xor_component([rot_k, c0], [[29, 30, 31, 32, 33], list(range(5))], 5).id  #
         updated_key = self.add_intermediate_output_component(
             [s0, s1, rot_k, xor0, rot_k],
             [list(range(4)), list(range(4)), list(range(8, 29)), list(range(5)), list(range(34, 80))],
@@ -98,15 +98,15 @@ class LBlockBlockCipher(Cipher):
     def round_function(self, x, k):
         word_pos = [1, 3, 0, 2, 5, 7, 4, 6]
         sb_order = [6, 4, 7, 5, 2, 0, 3, 1]
-        after_key_add = self.add_XOR_component([x, k], [list(range(32))] + [list(range(32))], 32).id
+        after_key_add = self.add_xor_component([x, k], [list(range(32))] + [list(range(32))], 32).id
         sb_outputs = [
-            self.add_SBOX_component(
+            self.add_sbox_component(
                 [after_key_add], [list(range(word_pos[i] * 4, (word_pos[i] + 1) * 4))], 4, self.sboxes[sb_order[i]]
             ).id
             for i in range(8)
         ]
         right_word_rotated = self.add_rotate_component([x], [list(range(32, 64))], 32, -8).id
-        new_left_word = self.add_XOR_component(
+        new_left_word = self.add_xor_component(
             sb_outputs + [right_word_rotated], [list(range(4)) for i in range(8)] + [list(range(32))], 32
         ).id
         round_output = self.add_round_output_component([new_left_word, x], [list(range(32)), list(range(32))], 64).id

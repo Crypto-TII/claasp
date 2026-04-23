@@ -1,7 +1,7 @@
-from claasp.components.modmul_component import MODMUL
+from claasp.components.modmul_component import ModMul
 
 def test_modmul_component_creation():
-    component = MODMUL(
+    component = ModMul(
         current_round_number=1,
         current_round_number_of_components=0,
         input_id_links=["input1", "input2"],

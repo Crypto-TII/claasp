@@ -756,8 +756,8 @@ class CipherComponentsAnalysis:
             sage: from claasp.cipher_modules.component_analysis_tests import CipherComponentsAnalysis
             sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
             sage: fancy = FancyBlockCipher(number_of_rounds=3)
-            sage: from claasp.components.sbox_component import SBOX
-            sage: sbox_component = SBOX(0, 0, ['plaintext'], [[0, 1, 2, 3]], 4, [0, 2, 4, 6, 8, 10, 12, 14, 1, 3, 5, 7, 9, 11, 13, 15])
+            sage: from claasp.components.sbox_component import Sbox
+            sage: sbox_component = Sbox(0, 0, ['plaintext'], [[0, 1, 2, 3]], 4, [0, 2, 4, 6, 8, 10, 12, 14, 1, 3, 5, 7, 9, 11, 13, 15])
             sage: operation = [sbox_component, 12, ['sbox_0_0', 'sbox_0_1', 'sbox_0_2', 'sbox_0_3', 'sbox_0_4', 'sbox_0_5',
             ....: 'sbox_1_0', 'sbox_1_1', 'sbox_1_2', 'sbox_1_3', 'sbox_1_4', 'sbox_1_5']]
             sage: d = CipherComponentsAnalysis(fancy)._sbox_properties(operation)
@@ -835,8 +835,8 @@ class CipherComponentsAnalysis:
             sage: from claasp.cipher_modules.component_analysis_tests import CipherComponentsAnalysis
             sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
             sage: fancy = FancyBlockCipher(number_of_rounds=3)
-            sage: from claasp.components.fsr_component import FSR
-            sage: fsr_component = FSR(0,0, ["input"],[[0,1,2,3]],4,[[[4, [[1,[0]],[3,[1]],[2,[2]]]]],4])
+            sage: from claasp.components.fsr_component import Fsr
+            sage: fsr_component = Fsr(0,0, ["input"],[[0,1,2,3]],4,[[[4, [[1,[0]],[3,[1]],[2,[2]]]]],4])
             sage: operation= [fsr_component, 1, ['fsr_0_0']]
             sage: dictionary = CipherComponentsAnalysis(fancy)._fsr_properties(operation)
             sage: dictionary['fsr_word_size'] == 4

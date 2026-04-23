@@ -951,7 +951,7 @@ def component_inverse(component, available_bits, all_equivalent_bits, key_schedu
             component.output_bit_size,
             ["MODSUB", component.description[1], component.description[2]],
         )
-        inverse_component.__class__ = modsub_component.MODSUB
+        inverse_component.__class__ = modsub_component.ModSub
         setattr(inverse_component, "round", component.round)
         update_output_bits(inverse_component, self, all_equivalent_bits, available_bits)
     elif component.type == CONSTANT:

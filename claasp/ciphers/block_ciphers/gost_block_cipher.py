@@ -124,7 +124,7 @@ class GostBlockCipher(Cipher):
     def add_round_key(
         self, plaintext: ComponentState, key: ComponentState
     ) -> ComponentState:
-        plaintext_id = self.add_MODADD_component(
+        plaintext_id = self.add_modadd_component(
             [plaintext.id[-1], key.id],
             [plaintext.input_bit_positions[-1]] + key.input_bit_positions,
             self.half_block_size,
@@ -144,7 +144,7 @@ class GostBlockCipher(Cipher):
 
         for i, sbox in enumerate(SBOX):
             plaintext_ids += [
-                self.add_SBOX_component(
+                self.add_sbox_component(
                     [plaintext.id[-1]], [list(range(4 * i, 4 * (i + 1)))], 4, sbox
                 ).id
             ]
@@ -173,7 +173,7 @@ class GostBlockCipher(Cipher):
         )
 
     def xor(self, plaintext: ComponentState) -> ComponentState:
-        plaintext_id = self.add_XOR_component(
+        plaintext_id = self.add_xor_component(
             [plaintext.id[0], plaintext.id[2]],
             [plaintext.input_bit_positions[0]] + [plaintext.input_bit_positions[2]],
             self.half_block_size,

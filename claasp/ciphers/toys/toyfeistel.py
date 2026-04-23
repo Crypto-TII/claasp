@@ -88,11 +88,11 @@ class ToyFeistel(Cipher):
 
     def update_key(self, k, i):
         rot_5 = self.add_rotate_component([k], [list(range(self.key_bit_size))], self.key_bit_size, -5).id
-        xor0 = self.add_XOR_component(
+        xor0 = self.add_xor_component(
             [k, rot_5], [list(range(self.key_bit_size)), list(range(self.key_bit_size))], self.key_bit_size
         ).id
         c0 = self.add_constant_component(self.key_bit_size // 2, i).id
-        xor1 = self.add_XOR_component(
+        xor1 = self.add_xor_component(
             [xor0, c0],
             [list(range(self.key_bit_size // 2, self.key_bit_size)), list(range(self.key_bit_size // 2))],
             self.key_bit_size // 2,
@@ -107,13 +107,13 @@ class ToyFeistel(Cipher):
 
     def round_function(self, state, key):
         right_half_positions = list(range(self.block_bit_size // 2, self.block_bit_size))
-        after_key_add = self.add_XOR_component(
+        after_key_add = self.add_xor_component(
             [state, key], [right_half_positions, list(range(self.block_bit_size // 2))], self.block_bit_size // 2
         ).id
-        sb_output = self.add_SBOX_component(
+        sb_output = self.add_sbox_component(
             [after_key_add], [list(range(self.block_bit_size // 2))], self.block_bit_size // 2, self.sbox
         ).id
-        new_right_word = self.add_XOR_component(
+        new_right_word = self.add_xor_component(
             [sb_output, state],
             [list(range(self.block_bit_size // 2))] + [list(range(self.block_bit_size // 2))],
             self.block_bit_size // 2,

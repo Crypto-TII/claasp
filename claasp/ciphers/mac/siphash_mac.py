@@ -224,7 +224,7 @@ class SiphashMAC(Cipher):
     def _modadd_words(self, word_a, word_b):
         links_a, pos_a = self._state_links_positions(word_a)
         links_b, pos_b = self._state_links_positions(word_b)
-        component = self.add_MODADD_component(
+        component = self.add_modadd_component(
             links_a + links_b,
             pos_a + pos_b,
             64,
@@ -265,7 +265,7 @@ class SiphashMAC(Cipher):
     def _xor_words(self, word_a, word_b):
         links_a, pos_a = self._state_links_positions(word_a)
         links_b, pos_b = self._state_links_positions(word_b)
-        component = self.add_XOR_component(
+        component = self.add_xor_component(
             links_a + links_b,
             pos_a + pos_b,
             64,

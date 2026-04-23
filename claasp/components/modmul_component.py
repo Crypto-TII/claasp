@@ -19,7 +19,7 @@
 from claasp.components.modular_component import Modular
 
 
-class MODMUL(Modular):
+class ModMul(Modular):
     """
     Construct a modular multiplication component.
 
@@ -42,15 +42,15 @@ class MODMUL(Modular):
 
     EXAMPLES::
 
-        sage: from claasp.components.modmul_component import MODMUL
-        sage: component = MODMUL(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2, 2)
+        sage: from claasp.components.modmul_component import ModMul
+        sage: component = ModMul(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2, 2)
         sage: print(component.id)
         modmul_0_0
         sage: print(component.type)
         word_operation
         sage: print(component.description)  # 4 total bits / output_bit_size 2 = 2 operands
         ['MODMUL', 2, 2]
-        sage: component3 = MODMUL(0, 1, ['a', 'b', 'c'], [[0, 1], [0, 1], [0, 1]], 2, 4)
+        sage: component3 = ModMul(0, 1, ['a', 'b', 'c'], [[0, 1], [0, 1], [0, 1]], 2, 4)
         sage: print(component3.description)  # 6 total bits / output_bit_size 2 = 3 operands
         ['MODMUL', 3, 4]
     """

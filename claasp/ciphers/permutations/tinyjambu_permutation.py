@@ -89,11 +89,11 @@ class TinyJambuPermutation(Cipher):
     def round_function(self, state, key, r):
         # feedback = s0 xor s47 xor (∼ (s70 and s85)) xor s91 xor kr
         inputs_id, inputs_pos = get_inputs_parameter([state[70], state[85]])
-        self.add_AND_component(inputs_id, inputs_pos, 1)
-        self.add_NOT_component([self.get_current_component_id()], [[0]], 1)
+        self.add_and_component(inputs_id, inputs_pos, 1)
+        self.add_not_component([self.get_current_component_id()], [[0]], 1)
         temp = ComponentState([self.get_current_component_id()], [[0]])
         inputs_id, inputs_pos = get_inputs_parameter([state[0], state[47], state[91], temp, key[(r) % len(key)]])
-        self.add_XOR_component(inputs_id, inputs_pos, 1)
+        self.add_xor_component(inputs_id, inputs_pos, 1)
         temp = ComponentState([self.get_current_component_id()], [[0]])
 
         for i in range(STATE_SIZE - 1):

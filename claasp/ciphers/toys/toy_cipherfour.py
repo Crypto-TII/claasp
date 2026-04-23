@@ -97,7 +97,7 @@ class ToyCipherFour(Cipher):
         for round_idx in range(number_of_rounds - 1):
             # XOR with round key
             self.add_round()
-            xor = self.add_XOR_component(
+            xor = self.add_xor_component(
                 [state, key],
                 [
                     list(range(block_bit_size)),
@@ -110,7 +110,7 @@ class ToyCipherFour(Cipher):
             # S-box layer
             sbox_outputs = []
             for ns in range(self.number_of_sboxes):
-                sbox_component = self.add_SBOX_component(
+                sbox_component = self.add_sbox_component(
                     [state],
                     [[ns * self.sbox_bit_size + i for i in range(self.sbox_bit_size)]],
                     self.sbox_bit_size,
@@ -126,7 +126,7 @@ class ToyCipherFour(Cipher):
         self.add_round()
 
         # XOR with round key
-        xor = self.add_XOR_component(
+        xor = self.add_xor_component(
             [state, key],
             [list(range(block_bit_size)), list(range(4 * block_bit_size, 5 * block_bit_size))],
             block_bit_size,
@@ -136,7 +136,7 @@ class ToyCipherFour(Cipher):
         # Last round does not include permutation
         sbox_outputs = []
         for ns in range(self.number_of_sboxes):
-            sbox_component = self.add_SBOX_component(
+            sbox_component = self.add_sbox_component(
                 [state],
                 [[ns * self.sbox_bit_size + i for i in range(self.sbox_bit_size)]],
                 self.sbox_bit_size,
@@ -149,7 +149,7 @@ class ToyCipherFour(Cipher):
             raise IndexError(f"Expected at least 4 SBOX outputs, but got {len(sbox_outputs)}.")
 
         # Final XOR with the last round key
-        xor = self.add_XOR_component(
+        xor = self.add_xor_component(
             [sbox_outputs[0]] + [sbox_outputs[1]] + [sbox_outputs[2]] + [sbox_outputs[3]] + [key],
             [list(range(4))] * 4 + [list(range(5 * block_bit_size, 6 * block_bit_size))],
             block_bit_size,

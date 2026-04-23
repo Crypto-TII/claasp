@@ -136,7 +136,7 @@ def get_milp_constraints_from_inequalities(inequalities, input_vars, number_of_i
     return constraints
 
 
-class XOR(Component):
+class Xor(Component):
     """
     Construct an XOR component.
 
@@ -158,15 +158,15 @@ class XOR(Component):
 
     EXAMPLES::
 
-        sage: from claasp.components.xor_component import XOR
-        sage: component = XOR(0, 0, ['input1', 'input2', 'input2'], [[0, 1], [0, 1], [2, 3]], 2)
+        sage: from claasp.components.xor_component import Xor
+        sage: component = Xor(0, 0, ['input1', 'input2', 'input2'], [[0, 1], [0, 1], [2, 3]], 2)
         sage: print(component.id)
         xor_0_0
         sage: print(component.type)
         word_operation
         sage: print(component.description)  # 6 total bits / output_bit_size 2 = 3 operands
         ['XOR', 3]
-        sage: component2 = XOR(0, 1, ['a', 'b'], [[0, 1], [0, 1]], 2)
+        sage: component2 = Xor(0, 1, ['a', 'b'], [[0, 1], [0, 1]], 2)
         sage: print(component2.description)  # 4 total bits / output_bit_size 2 = 2 operands
         ['XOR', 2]
     """
@@ -246,8 +246,8 @@ class XOR(Component):
 
         EXAMPLES::
 
-            sage: from claasp.components.xor_component import XOR
-            sage: xor_component = XOR(0, 0, ['plaintext', 'key'], [list(range(2)), list(range(2))], 2)
+            sage: from claasp.components.xor_component import Xor
+            sage: xor_component = Xor(0, 0, ['plaintext', 'key'], [list(range(2)), list(range(2))], 2)
             sage: xor_component.cms_constraints()
             (['xor_0_0_0', 'xor_0_0_1'],
             ['x -xor_0_0_0 plaintext_0 key_0', 'x -xor_0_0_1 plaintext_1 key_1'])
@@ -278,8 +278,8 @@ class XOR(Component):
 
         EXAMPLES::
 
-            sage: from claasp.components.xor_component import XOR
-            sage: xor_component = XOR(0, 0, ['plaintext', 'key'], [list(range(2)), list(range(2))], 2)
+            sage: from claasp.components.xor_component import Xor
+            sage: xor_component = Xor(0, 0, ['plaintext', 'key'], [list(range(2)), list(range(2))], 2)
             sage: xor_component.cp_constraints()
             ([],
             ['constraint xor_0_0[0] = (plaintext[0] + key[0]) mod 2;',
@@ -326,8 +326,8 @@ class XOR(Component):
 
         EXAMPLES::
 
-            sage: from claasp.components.xor_component import XOR
-            sage: xor_component = XOR(0, 0, ['plaintext', 'key'], [list(range(2)), list(range(2))], 2)
+            sage: from claasp.components.xor_component import Xor
+            sage: xor_component = Xor(0, 0, ['plaintext', 'key'], [list(range(2)), list(range(2))], 2)
             sage: xor_component.cp_deterministic_truncated_xor_differential_constraints()
             ([],
             ['constraint if ((plaintext[0] < 2) /\\ (key[0]< 2)) then xor_0_0[0] = (plaintext[0] + key[0]) mod 2 else xor_0_0[0] = 2 endif;',
@@ -359,8 +359,8 @@ class XOR(Component):
 
         EXAMPLES::
 
-            sage: from claasp.components.xor_component import XOR
-            sage: xor_component = XOR(0, 0, ['plaintext', 'key'], [list(range(2)), list(range(2))], 2)
+            sage: from claasp.components.xor_component import Xor
+            sage: xor_component = Xor(0, 0, ['plaintext', 'key'], [list(range(2)), list(range(2))], 2)
             sage: xor_component.cp_hybrid_deterministic_truncated_xor_differential_constraints()
             ([],
              ['constraint if (plaintext[0] < 2) /\\ (key[0] < 2) then xor_0_0[0] = (plaintext[0] + key[0]) mod 2 elseif (plaintext[0] + key[0] = plaintext[0]) then xor_0_0[0] = plaintext[0] elseif (plaintext[0] + key[0] = key[0]) then xor_0_0[0] = key[0] else xor_0_0[0] = 2 endif;',
@@ -582,8 +582,8 @@ class XOR(Component):
 
         EXAMPLES::
 
-            sage: from claasp.components.xor_component import XOR
-            sage: xor_component = XOR(0, 0, ['plaintext', 'key'], [list(range(2)), list(range(2))], 2)
+            sage: from claasp.components.xor_component import Xor
+            sage: xor_component = Xor(0, 0, ['plaintext', 'key'], [list(range(2)), list(range(2))], 2)
             sage: xor_component.cp_xor_linear_mask_propagation_constraints()
             (['array[0..3] of var 0..1: xor_0_0_i;',
             'array[0..1] of var 0..1: xor_0_0_o;'],
@@ -868,7 +868,7 @@ class XOR(Component):
 
         constraints = []
 
-        # if a_i < 2 for all i then b = XOR(a_i, i in range(num_inputs))
+        # if a_i < 2 for all i then b = Xor(a_i, i in range(num_inputs))
         # else b = 2
         a = [
             [x_class[input_vars[i + chunk * input_bit_size]] for chunk in range(num_of_inputs)]
@@ -888,7 +888,7 @@ class XOR(Component):
             all_ai_less_2, constr = milp_utils.milp_generalized_and(model, list_ai_less_2)
             constraints.extend(constr)
 
-            # if all_ai_less_2 == 1 then b = XOR(a_i, i in range(num_inputs))
+            # if all_ai_less_2 == 1 then b = Xor(a_i, i in range(num_inputs))
             # else b = 2
             xor_constr = milp_utils.milp_generalized_xor(a[i], b[i])
             constr = milp_utils.milp_if_then_else(
@@ -904,7 +904,7 @@ class XOR(Component):
         in deterministic truncated XOR differential model.
 
         This does not implement the XOR for more than 2 inputs in a sequential manner.
-        Indeed, if Y = XOR(X_0, X_1, X_2), and the input patterns are:
+        Indeed, if Y = Xor(X_0, X_1, X_2), and the input patterns are:
 
         delta_X_0 = 1
         delta_X_1 = 2
@@ -968,7 +968,7 @@ class XOR(Component):
         in deterministic truncated XOR differential model.
         It should perform the wordwise xor for multiple inputs faster than the
         xor_wordwise_deterministic_truncated_xor_differential_constraints() methods but skips some cases
-        e.g. if DX1 = 1, DX2 = 2, DX3 = 1 and X1 = X3, then DY = XOR(DX1, DX2, DX3) = 2 but this method will
+        e.g. if DX1 = 1, DX2 = 2, DX3 = 1 and X1 = X3, then DY = Xor(DX1, DX2, DX3) = 2 but this method will
         return 3
 
         INPUTS:
@@ -1205,8 +1205,8 @@ class XOR(Component):
 
         EXAMPLES::
 
-            sage: from claasp.components.xor_component import XOR
-            sage: xor_component = XOR(0, 0, ['plaintext', 'key'], [list(range(2)), list(range(2))], 2)
+            sage: from claasp.components.xor_component import Xor
+            sage: xor_component = Xor(0, 0, ['plaintext', 'key'], [list(range(2)), list(range(2))], 2)
             sage: xor_component.sat_constraints()
             (['xor_0_0_0', 'xor_0_0_1'],
             ['-xor_0_0_0 plaintext_0 key_0',
@@ -1236,7 +1236,7 @@ class XOR(Component):
         .. SEEALSO::
 
             - :ref:`sat-standard` for the format.
-            - :obj:`sat_constraints() <components.xor_component.XOR.sat_constraints>` for the model.
+            - :obj:`sat_constraints() <components.xor_component.Xor.sat_constraints>` for the model.
 
         INPUT:
 
@@ -1244,8 +1244,8 @@ class XOR(Component):
 
         EXAMPLES::
 
-            sage: from claasp.components.xor_component import XOR
-            sage: xor_component = XOR(0, 0, ['plaintext', 'key'], [list(range(2)), list(range(2))], 2)
+            sage: from claasp.components.xor_component import Xor
+            sage: xor_component = Xor(0, 0, ['plaintext', 'key'], [list(range(2)), list(range(2))], 2)
             sage: xor_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
             (['xor_0_0_0_0', 'xor_0_0_1_0', 'xor_0_0_0_1', 'xor_0_0_1_1'],
             ['xor_0_0_0_0 -plaintext_0_0',
@@ -1286,7 +1286,7 @@ class XOR(Component):
         .. SEEALSO::
 
             - :ref:`sat-standard` for the format.
-            - :obj:`sat_constraints() <components.xor_component.XOR.sat_constraints>` for the model.
+            - :obj:`sat_constraints() <components.xor_component.Xor.sat_constraints>` for the model.
 
         INPUT:
 
@@ -1294,8 +1294,8 @@ class XOR(Component):
 
         EXAMPLES::
 
-            sage: from claasp.components.xor_component import XOR
-            sage: xor_component = XOR(0, 0, ['plaintext', 'key'], [list(range(2)), list(range(2))], 2)
+            sage: from claasp.components.xor_component import Xor
+            sage: xor_component = Xor(0, 0, ['plaintext', 'key'], [list(range(2)), list(range(2))], 2)
             sage: xor_component.sat_xor_differential_propagation_constraints()
             (['xor_0_0_0', 'xor_0_0_1'],
             ['-xor_0_0_0 plaintext_0 key_0',
@@ -1323,8 +1323,8 @@ class XOR(Component):
 
         EXAMPLES::
 
-            sage: from claasp.components.xor_component import XOR
-            sage: xor_component = XOR(0, 0, ['plaintext', 'key'], [list(range(2)), list(range(2))], 2)
+            sage: from claasp.components.xor_component import Xor
+            sage: xor_component = Xor(0, 0, ['plaintext', 'key'], [list(range(2)), list(range(2))], 2)
             sage: xor_component.sat_xor_linear_mask_propagation_constraints()
             (['xor_0_0_0_i',
             'xor_0_0_1_i',
@@ -1355,7 +1355,7 @@ class XOR(Component):
         Return a variable list and SMT-LIB list asserts representing XOR for SMT CIPHER model
 
         Since the XOR operation is part of the SMT-LIB formalism, the operation can be modeled using the corresponding
-        builtin operation, e.g. ``z = XOR(x, y)`` becomes ``(assert (= z (xor x y)))``.
+        builtin operation, e.g. ``z = Xor(x, y)`` becomes ``(assert (= z (xor x y)))``.
         This method support XOR operation using more than two inputs.
 
         INPUT:
@@ -1364,8 +1364,8 @@ class XOR(Component):
 
         EXAMPLES::
 
-            sage: from claasp.components.xor_component import XOR
-            sage: xor_component = XOR(0, 0, ['plaintext', 'key'], [list(range(2)), list(range(2))], 2)
+            sage: from claasp.components.xor_component import Xor
+            sage: xor_component = Xor(0, 0, ['plaintext', 'key'], [list(range(2)), list(range(2))], 2)
             sage: xor_component.smt_constraints()
             (['xor_0_0_0', 'xor_0_0_1'],
             ['(assert (= xor_0_0_0 (xor plaintext_0 key_0)))',
@@ -1387,7 +1387,7 @@ class XOR(Component):
 
         .. SEEALSO::
 
-            :obj:`smt_constraints() <components.xor_component.XOR.sat_constraints>` for the model.
+            :obj:`smt_constraints() <components.xor_component.Xor.sat_constraints>` for the model.
 
         INPUT:
 
@@ -1395,8 +1395,8 @@ class XOR(Component):
 
         EXAMPLES::
 
-            sage: from claasp.components.xor_component import XOR
-            sage: xor_component = XOR(0, 0, ['plaintext', 'key'], [list(range(2)), list(range(2))], 2)
+            sage: from claasp.components.xor_component import Xor
+            sage: xor_component = Xor(0, 0, ['plaintext', 'key'], [list(range(2)), list(range(2))], 2)
             sage: xor_component.smt_xor_differential_propagation_constraints()
             (['xor_0_0_0', 'xor_0_0_1'],
             ['(assert (= xor_0_0_0 (xor plaintext_0 key_0)))',
@@ -1418,8 +1418,8 @@ class XOR(Component):
 
         EXAMPLES::
 
-            sage: from claasp.components.xor_component import XOR
-            sage: xor_component = XOR(0, 0, ['plaintext', 'key'], [list(range(2)), list(range(2))], 2)
+            sage: from claasp.components.xor_component import Xor
+            sage: xor_component = Xor(0, 0, ['plaintext', 'key'], [list(range(2)), list(range(2))], 2)
             sage: xor_component.smt_xor_linear_mask_propagation_constraints()
             (['xor_0_0_0_o',
             'xor_0_0_1_o',
@@ -1497,7 +1497,7 @@ class XOR(Component):
             input_bits = 0
             for input_bit in input_bit_positions:
                 input_bits += len(input_bit)
-            xor_component = XOR("", "", input_id_link, input_bit_positions, input_bits)
+            xor_component = Xor("", "", input_id_link, input_bit_positions, input_bits)
             xor_component.set_description(["XOR", numadd + 1])
             model.list_of_xor_components.append(xor_component)
         cp_constraints = []

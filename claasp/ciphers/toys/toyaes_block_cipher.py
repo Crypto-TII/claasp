@@ -198,7 +198,7 @@ class ToyAESBlockCipher(Cipher):
         # Rounds definition:
         # Round 0 different from others since it starts with first_add_round_key
         self.add_round()
-        first_add_round_key = self.add_XOR_component(
+        first_add_round_key = self.add_xor_component(
             [INPUT_KEY, INPUT_PLAINTEXT],
             [list(range(self.key_block_size)), list(range(self.cipher_block_size))],
             int(self.cipher_block_size),
@@ -231,14 +231,14 @@ class ToyAESBlockCipher(Cipher):
         sboxes_components = []
         for j in range(self.num_sboxes):
             if round_number == 0:
-                sbox = self.add_SBOX_component(
+                sbox = self.add_sbox_component(
                     [first_add_round_key.id],
                     [list(range(j * self.sbox_bit_size, (j + 1) * self.sbox_bit_size))],
                     self.sbox_bit_size,
                     self.sbox[word_size],
                 )
             else:
-                sbox = self.add_SBOX_component(
+                sbox = self.add_sbox_component(
                     [add_round_key.id],
                     [list(range(j * self.sbox_bit_size, (j + 1) * self.sbox_bit_size))],
                     self.sbox_bit_size,
@@ -293,7 +293,7 @@ class ToyAESBlockCipher(Cipher):
     def create_key_sbox_components(self, key_rotation, word_size):
         key_sboxes_components = []
         for i in range(self.num_rows):
-            key_sub = self.add_SBOX_component(
+            key_sub = self.add_sbox_component(
                 [key_rotation.id],
                 [list(range(i * self.sbox_bit_size, (i + 1) * self.sbox_bit_size))],
                 self.sbox_bit_size,
@@ -321,14 +321,14 @@ class ToyAESBlockCipher(Cipher):
 
     def create_xor_components(self, constant, key_sboxes_components, remaining_xors, xor1, round_number):
         if round_number == 0:
-            xor1 = self.add_XOR_component(
+            xor1 = self.add_xor_component(
                 [key_sboxes_components[i].id for i in range(self.num_rows)] + [constant.id, INPUT_KEY],
                 [list(range(self.sbox_bit_size)) for _ in range(self.num_rows)]
                 + [list(range(self.row_size)) for _ in range(2)],
                 self.row_size,
             )
         else:
-            xor1 = self.add_XOR_component(
+            xor1 = self.add_xor_component(
                 [key_sboxes_components[i].id for i in range(self.num_rows)] + [constant.id, xor1.id],
                 [list(range(self.sbox_bit_size)) for _ in range(self.num_rows)]
                 + [list(range(self.row_size)) for _ in range(2)],
@@ -337,7 +337,7 @@ class ToyAESBlockCipher(Cipher):
         tmp_remaining_xors = [xor1]
         for i in range(self.num_rows - 1):
             if round_number == 0:
-                xor = self.add_XOR_component(
+                xor = self.add_xor_component(
                     [tmp_remaining_xors[i].id, INPUT_KEY],
                     [
                         list(range(self.row_size)),
@@ -346,7 +346,7 @@ class ToyAESBlockCipher(Cipher):
                     self.row_size,
                 )
             else:
-                xor = self.add_XOR_component(
+                xor = self.add_xor_component(
                     [tmp_remaining_xors[i].id, remaining_xors[i + 1].id],
                     [list(range(self.row_size)), list(range(self.row_size))],
                     self.row_size,
@@ -358,7 +358,7 @@ class ToyAESBlockCipher(Cipher):
 
     def create_round_key(self, mix_column_components, remaining_xors, round_number, shift_row_components):
         if round_number != self.nrounds - 1:
-            add_round_key = self.add_XOR_component(
+            add_round_key = self.add_xor_component(
                 [mix_column_components[i].id for i in range(self.num_rows)]
                 + [remaining_xors[i].id for i in range(self.num_rows)],
                 [list(range(self.row_size)) for _ in range(2 * self.num_rows)],
@@ -373,7 +373,7 @@ class ToyAESBlockCipher(Cipher):
                 shift_rows_input_position_lists.extend(
                     [list(range(i * self.sbox_bit_size, (i + 1) * self.sbox_bit_size)) for _ in range(self.num_rows)]
                 )
-            add_round_key = self.add_XOR_component(
+            add_round_key = self.add_xor_component(
                 shift_rows_ids + [remaining_xors[i].id for i in range(self.num_rows)],
                 shift_rows_input_position_lists + [list(range(self.row_size)) for _ in range(self.num_rows)],
                 self.cipher_block_size,

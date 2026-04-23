@@ -1,4 +1,4 @@
-from claasp.components.or_component import OR
+from claasp.components.or_component import Or
 from claasp.cipher_modules.models.cp.mzn_model import MznModel
 from claasp.ciphers.single_component_ciphers.or_cipher import OrCipher
 from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
@@ -17,7 +17,7 @@ def test_algebraic_polynomials():
 
 
 def test_cp_constraints():
-    or_component = OR(0, 0, ['plaintext', 'key'], [list(range(4)), list(range(4))], 4)
+    or_component = Or(0, 0, ['plaintext', 'key'], [list(range(4)), list(range(4))], 4)
     declarations, constraints = or_component.cp_constraints()
 
     assert declarations == ['array[0..3] of var 0..1: or_0_0;', 'array[0..3] of var 0..1:pre_or_0_0_0;',
@@ -44,7 +44,7 @@ def test_cp_xor_linear_mask_propagation_constraints():
 
 
 def test_generic_sign_linear_constraints():
-    or_component = OR(0, 0, ['plaintext', 'key'], [list(range(4)), list(range(4))], 4)
+    or_component = Or(0, 0, ['plaintext', 'key'], [list(range(4)), list(range(4))], 4)
     input_tert = [0, 0, 0, 0, 0, 0, 0, 0]
 
     assert or_component.generic_sign_linear_constraints(input_tert, [0, 0, 0, 0]) == 1
@@ -52,7 +52,7 @@ def test_generic_sign_linear_constraints():
 
 
 def test_sat_constraints():
-    or_component = OR(0, 0, ['plaintext', 'key'], [list(range(4)), list(range(4))], 4)
+    or_component = Or(0, 0, ['plaintext', 'key'], [list(range(4)), list(range(4))], 4)
     output_bit_ids, constraints = or_component.sat_constraints()
 
     assert output_bit_ids[0] == 'or_0_0_0'
@@ -65,7 +65,7 @@ def test_sat_constraints():
 
 
 def test_smt_constraints():
-    or_component = OR(0, 0, ['plaintext', 'key'], [list(range(4)), list(range(4))], 4)
+    or_component = Or(0, 0, ['plaintext', 'key'], [list(range(4)), list(range(4))], 4)
     output_bit_ids, constraints = or_component.smt_constraints()
 
     assert output_bit_ids[0] == 'or_0_0_0'

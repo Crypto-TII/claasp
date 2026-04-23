@@ -170,7 +170,7 @@ class SkipjackBlockCipher(Cipher):
             key_byte = ComponentState([INPUT_KEY], [list(range(bit_start, bit_end))])
 
             # XOR: g_out XOR key_byte
-            self.add_XOR_component(
+            self.add_xor_component(
                 [g_out.id[0], key_byte.id[0]],
                 [g_out.input_bit_positions[0], key_byte.input_bit_positions[0]],
                 8
@@ -178,7 +178,7 @@ class SkipjackBlockCipher(Cipher):
             xor_result = ComponentState([self.get_current_component_id()], [list(range(8))])
 
             # SBOX: F[xor_result]
-            self.add_SBOX_component(
+            self.add_sbox_component(
                 [xor_result.id[0]],
                 [xor_result.input_bit_positions[0]],
                 8,
@@ -187,7 +187,7 @@ class SkipjackBlockCipher(Cipher):
             sbox_result = ComponentState([self.get_current_component_id()], [list(range(8))])
 
             # XOR: sbox_result XOR g_prev
-            self.add_XOR_component(
+            self.add_xor_component(
                 [sbox_result.id[0], g_prev.id[0]],
                 [sbox_result.input_bit_positions[0], g_prev.input_bit_positions[0]],
                 8
@@ -210,7 +210,7 @@ class SkipjackBlockCipher(Cipher):
         counter_comp = ComponentState([self.get_current_component_id()], [list(range(16))])
 
         # Both g_output and w4 can be multi-ID (2x8-bit), so flatten both.
-        self.add_XOR_component(
+        self.add_xor_component(
             g_output.id + w4.id + [counter_comp.id[0]],
             g_output.input_bit_positions + w4.input_bit_positions + [counter_comp.input_bit_positions[0]],
             16
@@ -228,14 +228,14 @@ class SkipjackBlockCipher(Cipher):
         counter_comp = ComponentState([self.get_current_component_id()], [list(range(16))])
 
         # w1 and w2 can be multi-ID, so flatten both for a full 16-bit XOR each.
-        self.add_XOR_component(
+        self.add_xor_component(
             w1.id + w2.id,
             w1.input_bit_positions + w2.input_bit_positions,
             16
         )
         temp = ComponentState([self.get_current_component_id()], [list(range(16))])
 
-        self.add_XOR_component(
+        self.add_xor_component(
             [temp.id[0], counter_comp.id[0]],
             [temp.input_bit_positions[0], counter_comp.input_bit_positions[0]],
             16

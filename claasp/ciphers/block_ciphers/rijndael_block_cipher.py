@@ -239,7 +239,7 @@ class RijndaelBlockCipher(Cipher):
         for byte_index in range(4):
             byte_start = byte_index * self.byte_bit_size
             substituted_bytes.append(
-                self.add_SBOX_component(
+                self.add_sbox_component(
                     word_state.id,
                     [list(range(byte_start, byte_start + self.byte_bit_size))],
                     self.byte_bit_size,
@@ -257,7 +257,7 @@ class RijndaelBlockCipher(Cipher):
 
     def _xor_word_with_constant(self, word_state, constant_value):
         constant_component = self.add_constant_component(self.word_bit_size, constant_value)
-        xor_component = self.add_XOR_component(
+        xor_component = self.add_xor_component(
             word_state.id + [constant_component.id],
             word_state.input_bit_positions + [list(range(self.word_bit_size))],
             self.word_bit_size,
@@ -265,7 +265,7 @@ class RijndaelBlockCipher(Cipher):
         return ComponentState([xor_component.id], [list(range(self.word_bit_size))])
 
     def _xor_words(self, left_word, right_word):
-        xor_component = self.add_XOR_component(
+        xor_component = self.add_xor_component(
             left_word.id + right_word.id,
             left_word.input_bit_positions + right_word.input_bit_positions,
             self.word_bit_size,
@@ -279,7 +279,7 @@ class RijndaelBlockCipher(Cipher):
                 byte_index = column_index * self.state_rows + row_index
                 byte_start = byte_index * self.byte_bit_size
                 substituted_bytes.append(
-                    self.add_SBOX_component(
+                    self.add_sbox_component(
                         state.id,
                         [list(range(byte_start, byte_start + self.byte_bit_size))],
                         self.byte_bit_size,
@@ -334,7 +334,7 @@ class RijndaelBlockCipher(Cipher):
         return ComponentState([mixed_state.id], [list(range(self.block_bit_size))])
 
     def _add_round_key(self, state, round_key):
-        round_state = self.add_XOR_component(
+        round_state = self.add_xor_component(
             state.id + round_key.id,
             state.input_bit_positions + round_key.input_bit_positions,
             self.block_bit_size,

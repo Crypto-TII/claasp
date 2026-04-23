@@ -35,5 +35,5 @@ class NotCipher(SingleComponentCipher):
             cipher_inputs_bit_size=[bit_size],
             cipher_output_bit_size=bit_size,
         )
-        not_component = self.add_NOT_component([INPUT_PLAINTEXT], [list(range(bit_size))], bit_size)
+        not_component = self.add_not_component([INPUT_PLAINTEXT], [list(range(bit_size))], bit_size)
         add_cipher_output_from_component(self, not_component)

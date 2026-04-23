@@ -125,7 +125,7 @@ class XoodooInvertiblePermutation(Cipher):
                 for i in range(PLANE_NUM):
                     inputs_id += [planes[i].id[j]]
                     inputs_pos += [[planes[i].input_bit_positions[j][k]]]
-                self.add_SBOX_component(inputs_id, inputs_pos, SBOX_SIZE, SBOX)
+                self.add_sbox_component(inputs_id, inputs_pos, SBOX_SIZE, SBOX)
                 for i in range(PLANE_NUM):
                     planes_new[i].id[j] += [self.get_current_component_id()]
                     planes_new[i].input_bit_positions[j] += [[i]]
@@ -146,7 +146,7 @@ class XoodooInvertiblePermutation(Cipher):
         # A0,0 = A0,0 + Ci
         inputs_id = c.id + [planes[0].id[0]]
         inputs_pos = c.input_bit_positions + [planes[0].input_bit_positions[0]]
-        self.add_XOR_component(inputs_id, inputs_pos, LANE_SIZE)
+        self.add_xor_component(inputs_id, inputs_pos, LANE_SIZE)
         planes[0].id[0] = self.get_current_component_id()
         planes[0].input_bit_positions[0] = list(range(LANE_SIZE))
 

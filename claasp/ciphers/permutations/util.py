@@ -79,7 +79,7 @@ def sub_quarter_round_latin_dances(permutation, state, p1_index, p2_index, p3_in
     p3 = get_2d_array_element_from_1d_array_index(p3_index, state, 4)
     word_size = permutation.WORD_SIZE
 
-    p1 = permutation.add_MODADD_component(
+    p1 = permutation.add_modadd_component(
         [p1.id] + [p2.id],
         get_input_bit_positions_latin_dances(p1, word_size) + get_input_bit_positions_latin_dances(p2, word_size),
         word_size,
@@ -88,7 +88,7 @@ def sub_quarter_round_latin_dances(permutation, state, p1_index, p2_index, p3_in
         p2 = permutation.add_rotate_component(
             [p1.id], get_input_bit_positions_latin_dances(p1, word_size), word_size, rot_amount
         )
-        p3 = permutation.add_XOR_component(
+        p3 = permutation.add_xor_component(
             [p3.id] + [p2.id],
             get_input_bit_positions_latin_dances(p3, word_size) + get_input_bit_positions_latin_dances(p2, word_size),
             word_size,
@@ -96,7 +96,7 @@ def sub_quarter_round_latin_dances(permutation, state, p1_index, p2_index, p3_in
 
         set_2d_array_element_from_1d_array_index(p3_index, state, p3, 4)
     else:
-        p3 = permutation.add_XOR_component(
+        p3 = permutation.add_xor_component(
             [p3.id] + [p1.id],
             get_input_bit_positions_latin_dances(p3, word_size) + get_input_bit_positions_latin_dances(p1, word_size),
             word_size,

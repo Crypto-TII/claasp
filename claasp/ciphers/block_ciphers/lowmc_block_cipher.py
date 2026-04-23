@@ -277,12 +277,12 @@ class LowMCBlockCipher(Cipher):
     def add_round_constant(self, plaintext_id, round_number):
         constant_id = self.add_constant_component(self.block_bit_size, self.round_constants[round_number]).id
 
-        return self.add_XOR_component(
+        return self.add_xor_component(
             [plaintext_id, constant_id], [list(range(self.block_bit_size))] * 2, self.block_bit_size
         ).id
 
     def add_round_key(self, plaintext_id, rk_id):
-        return self.add_XOR_component(
+        return self.add_xor_component(
             [plaintext_id, rk_id], [list(range(self.block_bit_size))] * 2, self.block_bit_size
         ).id
 
@@ -419,7 +419,7 @@ class LowMCBlockCipher(Cipher):
         # m computations of 3 - bit sbox
         # remaining n - 3m bits remain the same
         for i in range(self.n_sbox):
-            sbox_output[i] = self.add_SBOX_component([plaintext_id], [list(range(3 * i, 3 * (i + 1)))], 3, self.sbox).id
+            sbox_output[i] = self.add_sbox_component([plaintext_id], [list(range(3 * i, 3 * (i + 1)))], 3, self.sbox).id
 
         return (
             sbox_output + [plaintext_id],

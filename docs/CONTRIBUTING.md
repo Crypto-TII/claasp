@@ -414,7 +414,7 @@ person in charge of reviewing your code. If you are the reviewer, make sure that
 We agreed on some specifics that do not follow the convention linked above. These are:
 
 - Both protected/private methods will have the suffix `_`.
-- Component names like AND, OR, etc. inside a method name will always be in capital letters. `add_AND_component()`
+- Component names like AND, OR, etc. inside a method name will always be in capital letters. `add_and_component()`
 - Create a PR to `develp` branch only when the functionality is completed
 
 ## Contributing to the documentation

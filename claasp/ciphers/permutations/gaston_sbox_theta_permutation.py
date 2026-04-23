@@ -148,7 +148,7 @@ class GastonSboxThetaPermutation(Cipher):
         self.add_constant_component(WORD_SIZE, rc)
         const = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))])
         inputs_id, inputs_pos = get_inputs_parameter([state[0], const])
-        self.add_XOR_component(inputs_id, inputs_pos, WORD_SIZE)
+        self.add_xor_component(inputs_id, inputs_pos, WORD_SIZE)
         state[0] = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))])
 
         return state
@@ -159,7 +159,7 @@ class GastonSboxThetaPermutation(Cipher):
         output_ids = []
         for k in range(WORD_SIZE):
             inputs_pos = [[k] for _ in range(GASTON_NROWS)]
-            self.add_SBOX_component(inputs_id, inputs_pos, GASTON_NROWS, SBOX)
+            self.add_sbox_component(inputs_id, inputs_pos, GASTON_NROWS, SBOX)
             output_ids = output_ids + [self.get_current_component_id()]
 
         for i in range(GASTON_NROWS):

@@ -138,7 +138,7 @@ class RC5BlockCipher(Cipher):
                     block = self.u
 
                 L.append(
-                    self.add_XOR_component(
+                    self.add_xor_component(
                         [dummy_component.id]
                         + [INPUT_KEY for _ in range(min(self.u, len(little_endian_order) - i * self.u))],
                         [list(range(block * 8))]
@@ -170,11 +170,11 @@ class RC5BlockCipher(Cipher):
         for _ in range(3 * max(self.t, self.c)):
             # A = (S[i] + A + B) shift 3
 
-            Si_modadd_A = self.add_MODADD_component(
+            Si_modadd_A = self.add_modadd_component(
                 [S[i].id, A.id], [list(range(word_size)), list(range(word_size))], word_size
             )
 
-            Si_modadd_A_modadd_B = self.add_MODADD_component(
+            Si_modadd_A_modadd_B = self.add_modadd_component(
                 [Si_modadd_A.id, B.id], [list(range(word_size)), list(range(word_size))], word_size
             )
 
@@ -184,21 +184,21 @@ class RC5BlockCipher(Cipher):
 
             # B = (key_array[j] + A + B) shift (A + B)
 
-            A_modadd_B = self.add_MODADD_component(
+            A_modadd_B = self.add_modadd_component(
                 [A.id, B.id], [list(range(word_size)), list(range(word_size))], word_size
             )
 
-            shift_amount = self.add_XOR_component(
+            shift_amount = self.add_xor_component(
                 [A_modadd_B.id, dummy_component.id],
                 [[word_size - 1 - i for i in range(self.Lgw)][::-1], list(range(word_size))],
                 self.Lgw,
             )
 
-            Lj_modadd_A = self.add_MODADD_component(
+            Lj_modadd_A = self.add_modadd_component(
                 [L[j].id, A.id], [list(range(word_size)), list(range(word_size))], word_size
             )
 
-            Lj_modadd_A_modadd_B = self.add_MODADD_component(
+            Lj_modadd_A_modadd_B = self.add_modadd_component(
                 [Lj_modadd_A.id, B.id], [list(range(word_size)), list(range(word_size))], word_size
             )
 
@@ -223,24 +223,24 @@ class RC5BlockCipher(Cipher):
 
         little_endian_order_pt = [list(range(2 * word_size))[x : x + 8] for x in range(0, 2 * word_size, 8)][::-1]
 
-        A = self.add_XOR_component(
+        A = self.add_xor_component(
             [INPUT_PLAINTEXT for _ in range(int(word_size / 8))] + [dummy_component.id],
             [little_endian_order_pt[j] for j in range(int(word_size / 8), int(word_size / 4))]
             + [list(range(word_size))],
             word_size,
         )
 
-        B = self.add_XOR_component(
+        B = self.add_xor_component(
             [INPUT_PLAINTEXT for _ in range(int(word_size / 8))] + [dummy_component.id],
             [little_endian_order_pt[i] for i in range(int(word_size / 8))] + [list(range(word_size))],
             word_size,
         )
 
-        S0_modadd = self.add_MODADD_component(
+        S0_modadd = self.add_modadd_component(
             [A.id, S[0].id], [list(range(word_size)), list(range(word_size))], word_size
         )
 
-        S1_modadd = self.add_MODADD_component(
+        S1_modadd = self.add_modadd_component(
             [B.id, S[1].id], [list(range(word_size)), list(range(word_size))], word_size
         )
 
@@ -252,9 +252,9 @@ class RC5BlockCipher(Cipher):
     def round_function(self, k, A, B, S, word_size):
         dummy_component = self.add_constant_component(word_size, 0x0)
 
-        A_xor_B = self.add_XOR_component([A.id, B.id], [list(range(word_size)), list(range(word_size))], word_size)
+        A_xor_B = self.add_xor_component([A.id, B.id], [list(range(word_size)), list(range(word_size))], word_size)
 
-        shift_amount_B = self.add_XOR_component(
+        shift_amount_B = self.add_xor_component(
             [B.id, dummy_component.id],
             [[word_size - 1 - i for i in range(self.Lgw)][::-1], list(range(word_size))],
             self.Lgw,
@@ -267,15 +267,15 @@ class RC5BlockCipher(Cipher):
             -1,
         )
 
-        S_2i_modadd = self.add_MODADD_component(
+        S_2i_modadd = self.add_modadd_component(
             [B_shift.id, S[2 * (k + 1)].id], [list(range(word_size)), list(range(word_size))], word_size
         )
 
         A = S_2i_modadd
 
-        B_xor_A = self.add_XOR_component([B.id, A.id], [list(range(word_size)), list(range(word_size))], word_size)
+        B_xor_A = self.add_xor_component([B.id, A.id], [list(range(word_size)), list(range(word_size))], word_size)
 
-        shift_amount_A = self.add_XOR_component(
+        shift_amount_A = self.add_xor_component(
             [A.id, dummy_component.id],
             [[word_size - 1 - i for i in range(self.Lgw)][::-1], list(range(word_size))],
             self.Lgw,
@@ -288,7 +288,7 @@ class RC5BlockCipher(Cipher):
             -1,
         )
 
-        S_2i_1_modadd = self.add_MODADD_component(
+        S_2i_1_modadd = self.add_modadd_component(
             [A_shift.id, S[2 * (k + 1) + 1].id], [list(range(word_size)), list(range(word_size))], word_size
         )
 

@@ -1,4 +1,4 @@
-from claasp.components.shift_component import SHIFT
+from claasp.components.shift_component import Shift
 from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
 from claasp.cipher_modules.models.cp.mzn_model import MznModel
 from claasp.cipher_modules.models.milp.milp_model import MilpModel
@@ -10,7 +10,7 @@ from claasp.ciphers.single_component_ciphers.shift_cipher import ShiftCipher
 
 
 def make_shift_component(bit_size=32, parameter=4):
-    return SHIFT(0, 0, ['plaintext'], [list(range(bit_size))], bit_size, parameter)
+    return Shift(0, 0, ['plaintext'], [list(range(bit_size))], bit_size, parameter)
 
 
 def test_algebraic_polynomials():
@@ -55,7 +55,7 @@ def test_cp_wordwise_deterministic_truncated_xor_differential_constraints():
     class DummyModel:
         word_size = 8
 
-    shift_component = SHIFT(0, 18, ['sbox_0_2', 'sbox_0_6', 'sbox_0_10', 'sbox_0_14'],
+    shift_component = Shift(0, 18, ['sbox_0_2', 'sbox_0_6', 'sbox_0_10', 'sbox_0_14'],
                             [[0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7],
                              [0, 1, 2, 3, 4, 5, 6, 7]], 32, -8)
     declarations, constraints = shift_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(DummyModel())
@@ -69,7 +69,7 @@ def test_cp_xor_differential_first_step_constraints():
     class DummyModel:
         word_size = 8
 
-    shift_component = SHIFT(0, 18, ['sbox_0_2', 'sbox_0_6', 'sbox_0_10', 'sbox_0_14'],
+    shift_component = Shift(0, 18, ['sbox_0_2', 'sbox_0_6', 'sbox_0_10', 'sbox_0_14'],
                             [[0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7],
                              [0, 1, 2, 3, 4, 5, 6, 7]], 32, -8)
     declarations, constraints = shift_component.cp_xor_differential_first_step_constraints(DummyModel())
@@ -206,7 +206,7 @@ def test_milp_wordwise_deterministic_truncated_xor_differential_constraints():
     cipher = ShiftCipher(bit_size=32, parameter=-8)
     milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(cipher)
     milp.init_model_in_sage_milp_class()
-    shift_component = SHIFT(0, 18, ['in0', 'in1', 'in2', 'in3'],
+    shift_component = Shift(0, 18, ['in0', 'in1', 'in2', 'in3'],
                             [[0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7],
                              [0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7]], 32, -8)
     variables, constraints = shift_component.milp_wordwise_deterministic_truncated_xor_differential_constraints(milp)

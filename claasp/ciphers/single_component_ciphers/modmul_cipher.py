@@ -43,7 +43,7 @@ class ModmulCipher(SingleComponentCipher):
             cipher_inputs_bit_size=cipher_inputs_bit_size,
             cipher_output_bit_size=word_bit_size,
         )
-        modmul_component = self.add_MODMUL_component(
+        modmul_component = self.add_modmul_component(
             cipher_inputs,
             equal_input_bit_positions(word_bit_size, number_of_inputs),
             word_bit_size,

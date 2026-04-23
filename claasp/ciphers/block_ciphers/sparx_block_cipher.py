@@ -236,7 +236,7 @@ class SparxBlockCipher(Cipher):
                 for t in range(s):
                     # c[i] ^ k[r]
                     key_id_list, key_bit_positions = extract_inputs(*key, list(range(t * 32, (t + 1) * 32)))
-                    xor_id = self.add_XOR_component(
+                    xor_id = self.add_xor_component(
                         new_data_words[i][0] + key_id_list, new_data_words[i][1] + key_bit_positions, 32
                     ).id
                     # c[i] = arx_box(c[i] ^ k[r])
@@ -258,7 +258,7 @@ class SparxBlockCipher(Cipher):
                 for i in range(self.word_number):
                     data_id_list, data_bit_positions = extract_inputs(*data, list(range(i * 32, (i + 1) * 32)))
                     key_id_list, key_bit_positions = extract_inputs(*key, list(range(i * 32, (i + 1) * 32)))
-                    new_data_id_list[i] = self.add_XOR_component(
+                    new_data_id_list[i] = self.add_xor_component(
                         data_id_list + key_id_list, data_bit_positions + key_bit_positions, 32
                     ).id
                 data = new_data_id_list, [list(range(32))] * self.word_number
@@ -288,16 +288,16 @@ class SparxBlockCipher(Cipher):
 
         # k2 = key[1]_h + k1_h || k[1]_l + k1_l
         k1_high = extract_inputs(*key, list(range(32, 48)))
-        new_k2_high_id = self.add_MODADD_component(k1_high[0] + new_k1_high[0], k1_high[1] + new_k1_high[1], 16).id
+        new_k2_high_id = self.add_modadd_component(k1_high[0] + new_k1_high[0], k1_high[1] + new_k1_high[1], 16).id
 
         k1_low = extract_inputs(*key, list(range(48, 64)))
-        new_k2_low_id = self.add_MODADD_component(k1_low[0] + new_k1_low[0], k1_low[1] + new_k1_low[1], 16).id
+        new_k2_low_id = self.add_modadd_component(k1_low[0] + new_k1_low[0], k1_low[1] + new_k1_low[1], 16).id
 
         # k[3] = (k[3] // 2**16) * 2**16 + (k[3] + r) % 2**16 #can be changed?
         r_id = self.add_constant_component(16, r).id
 
         k3_low = extract_inputs(*key, list(range(112, 128)))
-        new_k0_low_id = self.add_MODADD_component(k3_low[0] + [r_id], k3_low[1] + [list(range(16))], 16).id
+        new_k0_low_id = self.add_modadd_component(k3_low[0] + [r_id], k3_low[1] + [list(range(16))], 16).id
 
         # Concatenate parts
         k3_high = extract_inputs(*key, list(range(96, 112)))
@@ -317,10 +317,10 @@ class SparxBlockCipher(Cipher):
 
         # k[2] = k1_h + k1_h || k1_l + k1_l
         k1_high = extract_inputs(*key, list(range(32, 48)))
-        new_k2_high_id = self.add_MODADD_component(k1_high[0] + new_k1_high[0], k1_high[1] + new_k1_high[1], 16).id
+        new_k2_high_id = self.add_modadd_component(k1_high[0] + new_k1_high[0], k1_high[1] + new_k1_high[1], 16).id
 
         k1_low = extract_inputs(*key, list(range(48, 64)))
-        new_k2_low_id = self.add_MODADD_component(k1_low[0] + new_k1_low[0], k1_low[1] + new_k1_low[1], 16).id
+        new_k2_low_id = self.add_modadd_component(k1_low[0] + new_k1_low[0], k1_low[1] + new_k1_low[1], 16).id
 
         # k[3] = arx_box(k[2])
         new_k3 = self.arx_box(key, 2)
@@ -331,10 +331,10 @@ class SparxBlockCipher(Cipher):
         r_id = self.add_constant_component(16, r).id
 
         k3_high = extract_inputs(*key, list(range(96, 112)))
-        new_k0_high_id = self.add_MODADD_component(k3_high[0] + new_k3_high[0], k3_high[1] + new_k3_high[1], 16).id
+        new_k0_high_id = self.add_modadd_component(k3_high[0] + new_k3_high[0], k3_high[1] + new_k3_high[1], 16).id
 
         k3_low = extract_inputs(*key, list(range(112, 128)))
-        new_k0_low_id = self.add_MODADD_component(
+        new_k0_low_id = self.add_modadd_component(
             k3_low[0] + new_k3_low[0] + [r_id], k3_low[1] + new_k3_low[1] + [list(range(16))], 16
         ).id
 
@@ -354,10 +354,10 @@ class SparxBlockCipher(Cipher):
 
         # k1_low = (k3_low + key[1]) % 2**16
         k1_high = extract_inputs(*key, list(range(32, 48)))
-        new_k4_high_id = self.add_MODADD_component(new_k3_high[0] + k1_high[0], new_k3_high[1] + k1_high[1], 16).id
+        new_k4_high_id = self.add_modadd_component(new_k3_high[0] + k1_high[0], new_k3_high[1] + k1_high[1], 16).id
 
         k1_low = extract_inputs(*key, list(range(48, 64)))
-        new_k4_low_id = self.add_MODADD_component(new_k3_low[0] + k1_low[0], new_k3_low[1] + k1_low[1], 16).id
+        new_k4_low_id = self.add_modadd_component(new_k3_low[0] + k1_low[0], new_k3_low[1] + k1_low[1], 16).id
 
         # k7
         new_k7 = self.arx_box(key, 4)
@@ -368,10 +368,10 @@ class SparxBlockCipher(Cipher):
         r_id = self.add_constant_component(16, r).id
 
         k5_low = extract_inputs(*key, list(range(160, 176)))
-        new_k0_high_id = self.add_MODADD_component(new_k7_high[0] + k5_low[0], new_k7_high[1] + k5_low[1], 16).id
+        new_k0_high_id = self.add_modadd_component(new_k7_high[0] + k5_low[0], new_k7_high[1] + k5_low[1], 16).id
 
         k5_high = extract_inputs(*key, list(range(176, 192)))
-        new_k0_low_id = self.add_MODADD_component(
+        new_k0_low_id = self.add_modadd_component(
             new_k7_low[0] + k5_high[0] + [r_id], new_k7_low[1] + k5_high[1] + [list(range(16))], 16
         ).id
 
@@ -401,13 +401,13 @@ class SparxBlockCipher(Cipher):
 
         # new_a = (a >>> 7) + b
         low_i_word = extract_inputs(*arx_input, list(range((i * 32) + 16, (i + 1) * 32)))
-        new_a = self.add_MODADD_component([rrot_id] + low_i_word[0], [list(range(16))] + low_i_word[1], 16).id
+        new_a = self.add_modadd_component([rrot_id] + low_i_word[0], [list(range(16))] + low_i_word[1], 16).id
 
         # b <<< 2
         lrot_id = self.add_rotate_component(*low_i_word, 16, -2).id
 
         # new_b = (b <<< 2) ^ new_a
-        new_b = self.add_XOR_component([lrot_id, new_a], [list(range(16))] * 2, 16).id
+        new_b = self.add_xor_component([lrot_id, new_a], [list(range(16))] * 2, 16).id
 
         return [new_a, new_b], [list(range(16))] * 2
 
@@ -421,7 +421,7 @@ class SparxBlockCipher(Cipher):
         rrot = self.add_rotate_component(high_data_id_list, high_data_bit_positions, 32, 8).id
 
         # x ^ y ^ (x <<< 8) ^ (x >>> 8)
-        xor_id = self.add_XOR_component(data[0] + [lrot, rrot], data[1] + [list(range(32))] * 2, 32).id
+        xor_id = self.add_xor_component(data[0] + [lrot, rrot], data[1] + [list(range(32))] * 2, 32).id
 
         return [xor_id] + high_data_id_list, [list(range(32))] + high_data_bit_positions
 
@@ -429,28 +429,28 @@ class SparxBlockCipher(Cipher):
         high_data_id_list, high_data_bit_positions = extract_inputs(*data, list(range(64)))
 
         # t = ror(x ^ y, 8, 32) ^ lor(x ^ y, 8, 32)
-        xor1 = self.add_XOR_component(high_data_id_list, high_data_bit_positions, 32).id
+        xor1 = self.add_xor_component(high_data_id_list, high_data_bit_positions, 32).id
         rrot = self.add_rotate_component([xor1], [list(range(32))], 32, 8).id
         lrot = self.add_rotate_component([xor1], [list(range(32))], 32, -8).id
-        t = self.add_XOR_component([rrot, lrot], [list(range(32))] * 2, 32).id
+        t = self.add_xor_component([rrot, lrot], [list(range(32))] * 2, 32).id
 
         data_0_id_list, data_0_bit_positions = extract_inputs(*data, list(range(32)))
         data_1_id_list, data_1_bit_positions = extract_inputs(*data, list(range(32, 64)))
 
         # x ^ t
-        xor_a = self.add_XOR_component(data_0_id_list + [t], data_0_bit_positions + [list(range(32))], 32).id
+        xor_a = self.add_xor_component(data_0_id_list + [t], data_0_bit_positions + [list(range(32))], 32).id
 
         # y ^ t
-        xor_b = self.add_XOR_component(data_1_id_list + [t], data_1_bit_positions + [list(range(32))], 32).id
+        xor_b = self.add_xor_component(data_1_id_list + [t], data_1_bit_positions + [list(range(32))], 32).id
 
         data_2_id_list, data_2_bit_positions = extract_inputs(*data, list(range(64, 96)))
         data_3_id_list, data_3_bit_positions = extract_inputs(*data, list(range(96, 128)))
 
         # c[2] ^
-        c0 = self.add_XOR_component(
+        c0 = self.add_xor_component(
             data_2_id_list + [xor_b, xor_a], data_2_bit_positions + [list(range(16)), list(range(16, 32))], 32
         ).id
-        c1 = self.add_XOR_component(
+        c1 = self.add_xor_component(
             data_3_id_list + [xor_a, xor_b], data_3_bit_positions + [list(range(16)), list(range(16, 32))], 32
         ).id
 

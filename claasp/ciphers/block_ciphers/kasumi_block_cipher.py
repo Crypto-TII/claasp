@@ -161,7 +161,7 @@ class KasumiBlockCipher(Cipher):
 
         new_right_half_ids = []
         for i in range(6):
-            xor = self.add_XOR_component(
+            xor = self.add_xor_component(
                 [fos[i], right_half_ids[i]],
                 [list(range(half_word_distribution[i])), right_positions[i]],
                 half_word_distribution[i],
@@ -181,7 +181,7 @@ class KasumiBlockCipher(Cipher):
 
         new_left_half_ids = []
         for i in range(6):
-            xor = self.add_XOR_component(
+            xor = self.add_xor_component(
                 [fls[i], left_half_ids[i]],
                 [list(range(half_word_distribution[i])), left_positions[i]],
                 half_word_distribution[i],
@@ -204,30 +204,30 @@ class KasumiBlockCipher(Cipher):
         return configuration_number_of_rounds
 
     def fi_function1(self, ids, ki_id, ki_positions):
-        s9_1 = self.add_SBOX_component([ids[0], ids[1]], [list(range(7)), list(range(2))], 9, SBox9).id
+        s9_1 = self.add_sbox_component([ids[0], ids[1]], [list(range(7)), list(range(2))], 9, SBox9).id
 
         cst1 = self.add_constant_component(2, 0b00).id
 
-        xor1_1 = self.add_XOR_component([s9_1, cst1], [list(range(2)), list(range(2))], 2).id
-        xor1_2 = self.add_XOR_component([s9_1, ids[2]], [list(range(2, 9)), list(range(7))], 7).id
+        xor1_1 = self.add_xor_component([s9_1, cst1], [list(range(2)), list(range(2))], 2).id
+        xor1_2 = self.add_xor_component([s9_1, ids[2]], [list(range(2, 9)), list(range(7))], 7).id
 
-        s7_1 = self.add_SBOX_component([ids[2]], [list(range(7))], 7, SBox7).id
+        s7_1 = self.add_sbox_component([ids[2]], [list(range(7))], 7, SBox7).id
 
-        xor2 = self.add_XOR_component([s7_1, xor1_2], [list(range(7)), list(range(7))], 7).id
+        xor2 = self.add_xor_component([s7_1, xor1_2], [list(range(7)), list(range(7))], 7).id
 
-        xor3_1 = self.add_XOR_component([xor1_1, ki_id], [list(range(2)), ki_positions[7:9]], 2).id
-        xor3_2 = self.add_XOR_component([xor1_2, ki_id], [list(range(7)), ki_positions[9:16]], 7).id
+        xor3_1 = self.add_xor_component([xor1_1, ki_id], [list(range(2)), ki_positions[7:9]], 2).id
+        xor3_2 = self.add_xor_component([xor1_2, ki_id], [list(range(7)), ki_positions[9:16]], 7).id
 
-        xor4 = self.add_XOR_component([xor2, ki_id], [list(range(7)), ki_positions[:7]], 7).id
+        xor4 = self.add_xor_component([xor2, ki_id], [list(range(7)), ki_positions[:7]], 7).id
 
-        s9_2 = self.add_SBOX_component([xor3_1, xor3_2], [list(range(2)), list(range(7))], 9, SBox9).id
+        s9_2 = self.add_sbox_component([xor3_1, xor3_2], [list(range(2)), list(range(7))], 9, SBox9).id
 
-        xor5_1 = self.add_XOR_component([s9_2, cst1], [list(range(2)), list(range(2))], 2)
-        xor5_2 = self.add_XOR_component([s9_2, xor4], [list(range(2, 9)), list(range(7))], 7)
+        xor5_1 = self.add_xor_component([s9_2, cst1], [list(range(2)), list(range(2))], 2)
+        xor5_2 = self.add_xor_component([s9_2, xor4], [list(range(2, 9)), list(range(7))], 7)
         xor5_2_id = xor5_2.id
 
-        s7_2 = self.add_SBOX_component([xor4], [list(range(7))], 7, SBox7).id
-        xor6 = self.add_XOR_component([s7_2, xor5_2_id], [list(range(7)), list(range(7))], 7)
+        s7_2 = self.add_sbox_component([xor4], [list(range(7))], 7, SBox7).id
+        xor6 = self.add_xor_component([s7_2, xor5_2_id], [list(range(7)), list(range(7))], 7)
 
         return [xor6, xor5_1, xor5_2]
 
@@ -236,7 +236,7 @@ class KasumiBlockCipher(Cipher):
         xor1s = []
         for i, length in enumerate(half_half_word_distribution):
             end = start + length
-            xor1_temp = self.add_XOR_component([ids[i], sub_key], [positions[i], list(range(start, end))], length)
+            xor1_temp = self.add_xor_component([ids[i], sub_key], [positions[i], list(range(start, end))], length)
             xor1s.append(xor1_temp.id)
             start = end
 
@@ -248,7 +248,7 @@ class KasumiBlockCipher(Cipher):
 
         xor2s = []
         for i, length in enumerate(half_half_word_distribution):
-            xor2_temp = self.add_XOR_component(
+            xor2_temp = self.add_xor_component(
                 [fis1[i].id, ids[i + 3]], [list(range(length)), positions[i + 3]], length
             )
             xor2s.append(xor2_temp.id)
@@ -259,7 +259,7 @@ class KasumiBlockCipher(Cipher):
         xor3s = []
         for i, length in enumerate(half_half_word_distribution):
             end = start + length
-            xor3_temp = self.add_XOR_component(
+            xor3_temp = self.add_xor_component(
                 [ids[i + 3], sub_key], [positions[i + 3], subkey_size[start:end]], length
             )
             xor3s.append(xor3_temp.id)
@@ -273,7 +273,7 @@ class KasumiBlockCipher(Cipher):
 
         xor4s = []
         for i, length in enumerate(half_half_word_distribution):
-            xor4_temp = self.add_XOR_component(
+            xor4_temp = self.add_xor_component(
                 [fis2[i].id, xor2s[i]], [list(range(length)), list(range(length))], length
             )
             xor4s.append(xor4_temp.id)
@@ -284,7 +284,7 @@ class KasumiBlockCipher(Cipher):
         start = 0
         for i, length in enumerate(half_half_word_distribution):
             end = start + length
-            xor5_temp = self.add_XOR_component(
+            xor5_temp = self.add_xor_component(
                 [xor2s[i], sub_key], [list(range(length)), sub_key_positions[start:end]], length
             )
             xor5s.append(xor5_temp.id)
@@ -297,7 +297,7 @@ class KasumiBlockCipher(Cipher):
 
         xor6s = []
         for i, length in enumerate(half_half_word_distribution):
-            xor6_temp = self.add_XOR_component(
+            xor6_temp = self.add_xor_component(
                 [fis3[i].id, xor4s[i]], [list(range(length)), list(range(length))], length
             )
             xor6s.append(xor6_temp.id)
@@ -310,7 +310,7 @@ class KasumiBlockCipher(Cipher):
         start = 0
         for i, length in enumerate(half_half_word_distribution):
             end = start + length
-            and1_temp = self.add_AND_component([ids[i], sub_key], [positions[i], word_size[start:end]], length)
+            and1_temp = self.add_and_component([ids[i], sub_key], [positions[i], word_size[start:end]], length)
             and1s.append(and1_temp.id)
             start = end
 
@@ -324,7 +324,7 @@ class KasumiBlockCipher(Cipher):
         start = 0
         for i, length in enumerate(half_half_word_distribution):
             end = start + length
-            xor1_temp = self.add_XOR_component([rot1, ids[i + 3]], [rot_size[start:end], positions[i + 3]], length)
+            xor1_temp = self.add_xor_component([rot1, ids[i + 3]], [rot_size[start:end], positions[i + 3]], length)
             xor1s.append(xor1_temp.id)
             start = end
 
@@ -334,7 +334,7 @@ class KasumiBlockCipher(Cipher):
         start = 0
         for i, length in enumerate(half_half_word_distribution):
             end = start + length
-            or1_temp = self.add_OR_component([xor1s[i], sub_key], [list(range(length)), subkey_size[start:end]], length)
+            or1_temp = self.add_or_component([xor1s[i], sub_key], [list(range(length)), subkey_size[start:end]], length)
             or1s.append(or1_temp.id)
             start = end
 
@@ -345,7 +345,7 @@ class KasumiBlockCipher(Cipher):
         start = 0
         for i, length in enumerate(half_half_word_distribution):
             end = start + length
-            xor2_temp = self.add_XOR_component([rot2, ids[i]], [rot_size[start:end], positions[i]], length)
+            xor2_temp = self.add_xor_component([rot2, ids[i]], [rot_size[start:end], positions[i]], length)
             xor2s.append(xor2_temp.id)
             start = end
 
@@ -353,7 +353,7 @@ class KasumiBlockCipher(Cipher):
 
     def derived_key(self, key):
         cst = self.add_constant_component(128, 0x123456789ABCDEFFEDCBA9876543210).id
-        key_der = self.add_XOR_component(
+        key_der = self.add_xor_component(
             key[0] + [cst], [list(range(self.key_bit_size))] + [list(range(self.key_bit_size))], self.key_bit_size
         )
         return key_der.id

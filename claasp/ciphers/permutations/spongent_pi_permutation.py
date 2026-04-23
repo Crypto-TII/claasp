@@ -150,7 +150,7 @@ class SpongentPiPermutation(Cipher):
             icounter.id, icounter.input_bit_positions, SBOX_CELL_SIZE, [0, 7, 1, 2, 3, 4, 5, 6]
         )
         temp_rotate = ComponentState([self.get_current_component_id()], [list(range(SBOX_CELL_SIZE))])
-        self.add_XOR_component(
+        self.add_xor_component(
             temp_rotate.id + const_0.id + icounter.id,
             temp_rotate.input_bit_positions + const_0.input_bit_positions + [[icounter.input_bit_positions[0][2]]],
             SBOX_CELL_SIZE,
@@ -162,19 +162,19 @@ class SpongentPiPermutation(Cipher):
     def round_function(self, state, icounter):
         # state[len-1] = state[len-1] xor 0|icounter
         inputs_id, inputs_pos = get_inputs_parameter([state[self.state_len - 1], icounter])
-        self.add_XOR_component(inputs_id, inputs_pos, SBOX_CELL_SIZE)
+        self.add_xor_component(inputs_id, inputs_pos, SBOX_CELL_SIZE)
         state[self.state_len - 1] = ComponentState([self.get_current_component_id()], [list(range(SBOX_CELL_SIZE))])
 
         # state[0] = state[0] xor reverse(0|icounter)
         self.add_reverse_component(icounter.id, icounter.input_bit_positions, SBOX_CELL_SIZE)
         reverse_icounter = ComponentState([self.get_current_component_id()], [list(range(SBOX_CELL_SIZE))])
         inputs_id, inputs_pos = get_inputs_parameter([state[0], reverse_icounter])
-        self.add_XOR_component(inputs_id, inputs_pos, SBOX_CELL_SIZE)
+        self.add_xor_component(inputs_id, inputs_pos, SBOX_CELL_SIZE)
         state[0] = ComponentState([self.get_current_component_id()], [list(range(SBOX_CELL_SIZE))])
 
         # state[i] = sbox(state[i])
         for i in range(self.state_len):
-            self.add_SBOX_component(state[i].id, state[i].input_bit_positions, SBOX_CELL_SIZE, S_BOX)
+            self.add_sbox_component(state[i].id, state[i].input_bit_positions, SBOX_CELL_SIZE, S_BOX)
             state[i] = ComponentState([self.get_current_component_id()], [list(range(SBOX_CELL_SIZE))])
 
         # state[j] = permute(state[j])

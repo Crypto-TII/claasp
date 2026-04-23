@@ -136,11 +136,11 @@ class MSXBlockCipher(Cipher):
         ]
         Cc = [self._const32(v) for v in C]
 
-        self.add_MODADD_component(k[1].id + k[0].id, k[1].input_bit_positions + k[0].input_bit_positions, self.word_size, self.mod32)
+        self.add_modadd_component(k[1].id + k[0].id, k[1].input_bit_positions + k[0].input_bit_positions, self.word_size, self.mod32)
         t = ComponentState([self.get_current_component_id()], [list(range(self.word_size))])
-        self.add_MODADD_component(t.id + k[3].id, t.input_bit_positions + k[3].input_bit_positions, self.word_size, self.mod32)
+        self.add_modadd_component(t.id + k[3].id, t.input_bit_positions + k[3].input_bit_positions, self.word_size, self.mod32)
         t = ComponentState([self.get_current_component_id()], [list(range(self.word_size))])
-        self.add_XOR_component(t.id + Cc[0].id, t.input_bit_positions + Cc[0].input_bit_positions, self.word_size)
+        self.add_xor_component(t.id + Cc[0].id, t.input_bit_positions + Cc[0].input_bit_positions, self.word_size)
         st0 = ComponentState([self.get_current_component_id()], [list(range(self.word_size))])
 
         st = [None] * 12
@@ -150,7 +150,7 @@ class MSXBlockCipher(Cipher):
             (7, k[0], 7), (8, k[2], 8), (9, k[1], 9), (10, k[2], 10), (11, k[3], 11)
         ]
         for idx, kw, ci in assign:
-            self.add_XOR_component(kw.id + Cc[ci].id, kw.input_bit_positions + Cc[ci].input_bit_positions, self.word_size)
+            self.add_xor_component(kw.id + Cc[ci].id, kw.input_bit_positions + Cc[ci].input_bit_positions, self.word_size)
             st[idx] = ComponentState([self.get_current_component_id()], [list(range(self.word_size))])
         return st
 
@@ -172,7 +172,7 @@ class MSXBlockCipher(Cipher):
         for rot, dst in zip([1, 2, 3, 4, 5], dsts):
             self.add_rotate_component(new_st[dst].id, new_st[dst].input_bit_positions, self.word_size, -rot)
             r = ComponentState([self.get_current_component_id()], [list(range(self.word_size))])
-            self.add_MODADD_component(r.id + tmp.id, r.input_bit_positions + tmp.input_bit_positions, self.word_size, self.mod32)
+            self.add_modadd_component(r.id + tmp.id, r.input_bit_positions + tmp.input_bit_positions, self.word_size, self.mod32)
             new_st[dst] = ComponentState([self.get_current_component_id()], [list(range(self.word_size))])
         return new_st
 
@@ -188,11 +188,11 @@ class MSXBlockCipher(Cipher):
 
         if self.key_bit_size == 128:
             k = self._key_words_from_input(4)
-            self.add_MODADD_component(k[2].id + k[3].id, k[2].input_bit_positions + k[3].input_bit_positions, self.word_size, self.mod32)
+            self.add_modadd_component(k[2].id + k[3].id, k[2].input_bit_positions + k[3].input_bit_positions, self.word_size, self.mod32)
             t = ComponentState([self.get_current_component_id()], [list(range(self.word_size))])
-            self.add_MODADD_component(t.id + k[0].id, t.input_bit_positions + k[0].input_bit_positions, self.word_size, self.mod32)
+            self.add_modadd_component(t.id + k[0].id, t.input_bit_positions + k[0].input_bit_positions, self.word_size, self.mod32)
             t = ComponentState([self.get_current_component_id()], [list(range(self.word_size))])
-            self.add_XOR_component(t.id + Cc[0].id, t.input_bit_positions + Cc[0].input_bit_positions, self.word_size)
+            self.add_xor_component(t.id + Cc[0].id, t.input_bit_positions + Cc[0].input_bit_positions, self.word_size)
             st[0] = ComponentState([self.get_current_component_id()], [list(range(self.word_size))])
             assign = [
                 (1, k[1], 1), (2, k[0], 2), (3, k[3], 3), (4, k[0], 4), (5, k[2], 5), (6, k[3], 6),
@@ -202,25 +202,25 @@ class MSXBlockCipher(Cipher):
                 (22, k[3], 22), (23, k[1], 23),
             ]
             for idx, kw, ci in assign:
-                self.add_XOR_component(kw.id + Cc[ci].id, kw.input_bit_positions + Cc[ci].input_bit_positions, self.word_size)
+                self.add_xor_component(kw.id + Cc[ci].id, kw.input_bit_positions + Cc[ci].input_bit_positions, self.word_size)
                 st[idx] = ComponentState([self.get_current_component_id()], [list(range(self.word_size))])
         elif self.key_bit_size == 256:
             k = self._key_words_from_input(8)
-            self.add_MODADD_component(k[2].id + k[1].id, k[2].input_bit_positions + k[1].input_bit_positions, self.word_size, self.mod32)
+            self.add_modadd_component(k[2].id + k[1].id, k[2].input_bit_positions + k[1].input_bit_positions, self.word_size, self.mod32)
             t = ComponentState([self.get_current_component_id()], [list(range(self.word_size))])
-            self.add_MODADD_component(t.id + k[5].id, t.input_bit_positions + k[5].input_bit_positions, self.word_size, self.mod32)
+            self.add_modadd_component(t.id + k[5].id, t.input_bit_positions + k[5].input_bit_positions, self.word_size, self.mod32)
             t = ComponentState([self.get_current_component_id()], [list(range(self.word_size))])
-            self.add_MODADD_component(t.id + k[4].id, t.input_bit_positions + k[4].input_bit_positions, self.word_size, self.mod32)
+            self.add_modadd_component(t.id + k[4].id, t.input_bit_positions + k[4].input_bit_positions, self.word_size, self.mod32)
             t = ComponentState([self.get_current_component_id()], [list(range(self.word_size))])
-            self.add_XOR_component(t.id + Cc[0].id, t.input_bit_positions + Cc[0].input_bit_positions, self.word_size)
+            self.add_xor_component(t.id + Cc[0].id, t.input_bit_positions + Cc[0].input_bit_positions, self.word_size)
             st[0] = ComponentState([self.get_current_component_id()], [list(range(self.word_size))])
-            self.add_MODADD_component(k[3].id + k[7].id, k[3].input_bit_positions + k[7].input_bit_positions, self.word_size, self.mod32)
+            self.add_modadd_component(k[3].id + k[7].id, k[3].input_bit_positions + k[7].input_bit_positions, self.word_size, self.mod32)
             t = ComponentState([self.get_current_component_id()], [list(range(self.word_size))])
-            self.add_MODADD_component(t.id + k[6].id, t.input_bit_positions + k[6].input_bit_positions, self.word_size, self.mod32)
+            self.add_modadd_component(t.id + k[6].id, t.input_bit_positions + k[6].input_bit_positions, self.word_size, self.mod32)
             t = ComponentState([self.get_current_component_id()], [list(range(self.word_size))])
-            self.add_MODADD_component(t.id + k[0].id, t.input_bit_positions + k[0].input_bit_positions, self.word_size, self.mod32)
+            self.add_modadd_component(t.id + k[0].id, t.input_bit_positions + k[0].input_bit_positions, self.word_size, self.mod32)
             t = ComponentState([self.get_current_component_id()], [list(range(self.word_size))])
-            self.add_XOR_component(t.id + Cc[1].id, t.input_bit_positions + Cc[1].input_bit_positions, self.word_size)
+            self.add_xor_component(t.id + Cc[1].id, t.input_bit_positions + Cc[1].input_bit_positions, self.word_size)
             st[1] = ComponentState([self.get_current_component_id()], [list(range(self.word_size))])
             assign = [
                 (2, k[0], 2), (3, k[6], 3), (4, k[7], 4), (5, k[4], 5), (6, k[2], 6), (7, k[3], 7),
@@ -229,7 +229,7 @@ class MSXBlockCipher(Cipher):
                 (20, k[3], 20), (21, k[4], 21), (22, k[5], 22), (23, k[7], 23),
             ]
             for idx, kw, ci in assign:
-                self.add_XOR_component(kw.id + Cc[ci].id, kw.input_bit_positions + Cc[ci].input_bit_positions, self.word_size)
+                self.add_xor_component(kw.id + Cc[ci].id, kw.input_bit_positions + Cc[ci].input_bit_positions, self.word_size)
                 st[idx] = ComponentState([self.get_current_component_id()], [list(range(self.word_size))])
         else:
             raise AssertionError("Unsupported key size for MSX-128")
@@ -255,7 +255,7 @@ class MSXBlockCipher(Cipher):
         for rot, dst in zip(range(1, 10), dsts):
             self.add_rotate_component(new_st[dst].id, new_st[dst].input_bit_positions, self.word_size, -rot)
             r = ComponentState([self.get_current_component_id()], [list(range(self.word_size))])
-            self.add_MODADD_component(r.id + tmp.id, r.input_bit_positions + tmp.input_bit_positions, self.word_size, self.mod32)
+            self.add_modadd_component(r.id + tmp.id, r.input_bit_positions + tmp.input_bit_positions, self.word_size, self.mod32)
             new_st[dst] = ComponentState([self.get_current_component_id()], [list(range(self.word_size))])
         return new_st
 
@@ -286,7 +286,7 @@ class MSXBlockCipher(Cipher):
             rk_group = next_rk_group()
             # MSX-64 Feistel applies F to W1 (offset 32) exactly as the original code applied F to L.
             F_out = self.round_function(W1, rk_group, c_i)
-            self.add_XOR_component(W0.id + F_out.id, W0.input_bit_positions + F_out.input_bit_positions, self.word_size)
+            self.add_xor_component(W0.id + F_out.id, W0.input_bit_positions + F_out.input_bit_positions, self.word_size)
             W0_next = ComponentState([self.get_current_component_id()], [list(range(self.word_size))])
             
             W0_new = W1
@@ -342,11 +342,11 @@ class MSXBlockCipher(Cipher):
 
             # F takes W1 XORs into W0, and then F takes W3 XORs into W2
             F1 = self.round_function(W1, rk_group1, c_i)
-            self.add_XOR_component(W0.id + F1.id, W0.input_bit_positions + F1.input_bit_positions, self.word_size)
+            self.add_xor_component(W0.id + F1.id, W0.input_bit_positions + F1.input_bit_positions, self.word_size)
             W0_next = ComponentState([self.get_current_component_id()], [list(range(self.word_size))])
             
             F2 = self.round_function(W3, rk_group2, c_i)
-            self.add_XOR_component(W2.id + F2.id, W2.input_bit_positions + F2.input_bit_positions, self.word_size)
+            self.add_xor_component(W2.id + F2.id, W2.input_bit_positions + F2.input_bit_positions, self.word_size)
             W2_next = ComponentState([self.get_current_component_id()], [list(range(self.word_size))])
 
             W0_new = W3
@@ -399,25 +399,25 @@ class MSXBlockCipher(Cipher):
             zero16.input_bit_positions + x_high16.input_bit_positions,
         )
 
-        self.add_MODADD_component(x0_32.id + rk_group[0].id, x0_32.input_bit_positions + rk_group[0].input_bit_positions, n, self.mod32)
+        self.add_modadd_component(x0_32.id + rk_group[0].id, x0_32.input_bit_positions + rk_group[0].input_bit_positions, n, self.mod32)
         t0 = ComponentState([self.get_current_component_id()], [list(range(n))])
-        self.add_MODADD_component(x1_32.id + rk_group[1].id, x1_32.input_bit_positions + rk_group[1].input_bit_positions, n, self.mod32)
+        self.add_modadd_component(x1_32.id + rk_group[1].id, x1_32.input_bit_positions + rk_group[1].input_bit_positions, n, self.mod32)
         t1 = ComponentState([self.get_current_component_id()], [list(range(n))])
 
-        self.add_MODMUL_component(t0.id + t1.id, t0.input_bit_positions + t1.input_bit_positions, n, self.mod32)
+        self.add_modmul_component(t0.id + t1.id, t0.input_bit_positions + t1.input_bit_positions, n, self.mod32)
         w0 = ComponentState([self.get_current_component_id()], [list(range(n))])
-        self.add_MODADD_component(w0.id + rk_group[2].id, w0.input_bit_positions + rk_group[2].input_bit_positions, n, self.mod32)
+        self.add_modadd_component(w0.id + rk_group[2].id, w0.input_bit_positions + rk_group[2].input_bit_positions, n, self.mod32)
         w0 = ComponentState([self.get_current_component_id()], [list(range(n))])
 
-        self.add_MODADD_component(x0_32.id + rk_group[3].id, x0_32.input_bit_positions + rk_group[3].input_bit_positions, n, self.mod32)
+        self.add_modadd_component(x0_32.id + rk_group[3].id, x0_32.input_bit_positions + rk_group[3].input_bit_positions, n, self.mod32)
         u0 = ComponentState([self.get_current_component_id()], [list(range(n))])
-        self.add_MODADD_component(x1_32.id + rk_group[4].id, x1_32.input_bit_positions + rk_group[4].input_bit_positions, n, self.mod32)
+        self.add_modadd_component(x1_32.id + rk_group[4].id, x1_32.input_bit_positions + rk_group[4].input_bit_positions, n, self.mod32)
         u1 = ComponentState([self.get_current_component_id()], [list(range(n))])
-        self.add_MODMUL_component(u0.id + u1.id, u0.input_bit_positions + u1.input_bit_positions, n, self.mod32)
+        self.add_modmul_component(u0.id + u1.id, u0.input_bit_positions + u1.input_bit_positions, n, self.mod32)
         w1 = ComponentState([self.get_current_component_id()], [list(range(n))])
-        self.add_MODADD_component(w1.id + rk_group[5].id, w1.input_bit_positions + rk_group[5].input_bit_positions, n, self.mod32)
+        self.add_modadd_component(w1.id + rk_group[5].id, w1.input_bit_positions + rk_group[5].input_bit_positions, n, self.mod32)
         w1 = ComponentState([self.get_current_component_id()], [list(range(n))])
-        self.add_XOR_component(w1.id + c.id, w1.input_bit_positions + c.input_bit_positions, n)
+        self.add_xor_component(w1.id + c.id, w1.input_bit_positions + c.input_bit_positions, n)
         w1 = ComponentState([self.get_current_component_id()], [list(range(n))])
 
         hi16_w0 = ComponentState(w0.id, [[i for i in range(0, 16)]])
@@ -433,9 +433,9 @@ class MSXBlockCipher(Cipher):
         self.add_rotate_component(y_orig.id, y_orig.input_bit_positions, n, -21)
         ry21 = ComponentState([self.get_current_component_id()], [list(range(n))])
 
-        self.add_XOR_component(y_orig.id + ry13.id, y_orig.input_bit_positions + ry13.input_bit_positions, n)
+        self.add_xor_component(y_orig.id + ry13.id, y_orig.input_bit_positions + ry13.input_bit_positions, n)
         y_step1 = ComponentState([self.get_current_component_id()], [list(range(n))])
-        self.add_XOR_component(y_step1.id + ry21.id, y_step1.input_bit_positions + ry21.input_bit_positions, n)
+        self.add_xor_component(y_step1.id + ry21.id, y_step1.input_bit_positions + ry21.input_bit_positions, n)
         y = ComponentState([self.get_current_component_id()], [list(range(n))])
         return y
 

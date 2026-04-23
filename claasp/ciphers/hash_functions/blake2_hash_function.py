@@ -324,13 +324,13 @@ class Blake2HashFunction(Cipher):
 
         for i in range(self.n):
             if m[i] is None:
-                new_state_id[j] = self.add_MODADD_component(
+                new_state_id[j] = self.add_modadd_component(
                     [new_state_id[j], new_state_id[(j + 1) % self.n]],
                     [new_state_range[j], new_state_range[(j + 1) % self.n]],
                     self.word_size,
                 ).id
             else:
-                new_state_id[j] = self.add_MODADD_component(
+                new_state_id[j] = self.add_modadd_component(
                     [new_state_id[j], new_state_id[(j + 1) % self.n], data_word_ids[m[i]]],
                     [new_state_range[j], new_state_range[(j + 1) % self.n], data_word_ranges[m[i]]],
                     self.word_size,
@@ -338,7 +338,7 @@ class Blake2HashFunction(Cipher):
 
             new_state_range[j] = list(range(self.word_size))
 
-            xor = self.add_XOR_component(
+            xor = self.add_xor_component(
                 [new_state_id[(j - 1) % self.n], new_state_id[j]],
                 [new_state_range[(j - 1) % self.n], new_state_range[j]],
                 self.word_size,

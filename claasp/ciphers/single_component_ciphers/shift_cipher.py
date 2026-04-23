@@ -36,5 +36,5 @@ class ShiftCipher(SingleComponentCipher):
             cipher_inputs_bit_size=[bit_size],
             cipher_output_bit_size=bit_size,
         )
-        shift_component = self.add_SHIFT_component([INPUT_PLAINTEXT], [list(range(bit_size))], bit_size, parameter)
+        shift_component = self.add_shift_component([INPUT_PLAINTEXT], [list(range(bit_size))], bit_size, parameter)
         add_cipher_output_from_component(self, shift_component)

@@ -164,17 +164,17 @@ class MD5HashFunction(Cipher):
         return self.add_xor_component_in_md5(Y, X_or_notZ)
 
     def add_and_component_in_md5(self, component_0, component_1):
-        return self.add_AND_component(
+        return self.add_and_component(
             [component_0.id, component_1.id], [list(range(self.word_size)), list(range(self.word_size))], self.word_size
         )
 
     def add_modadd_component_in_md5(self, component_0, component_1):
-        return self.add_MODADD_component(
+        return self.add_modadd_component(
             [component_0.id, component_1.id], [list(range(self.word_size)), list(range(self.word_size))], self.word_size
         )
 
     def add_modadd_component_in_md5_for_x(self, x, component):
-        return self.add_MODADD_component(
+        return self.add_modadd_component(
             [x.id, component.id], [x.input_bit_positions[0], list(range(self.word_size))], self.word_size
         )
 
@@ -182,17 +182,17 @@ class MD5HashFunction(Cipher):
         return self.add_rotate_component([component.id], [list(range(self.word_size))], self.word_size, amount)
 
     def add_xor_component_in_md5(self, component_0, component_1):
-        return self.add_XOR_component(
+        return self.add_xor_component(
             [component_0.id, component_1.id], [list(range(self.word_size)), list(range(self.word_size))], self.word_size
         )
 
     def add_or_component_in_md5(self, component_0, component_1):
-        return self.add_OR_component(
+        return self.add_or_component(
             [component_0.id, component_1.id], [list(range(self.word_size)), list(range(self.word_size))], self.word_size
         )
 
     def add_not_component_in_md5(self, component):
-        return self.add_NOT_component([component.id], [list(range(self.word_size))], self.word_size)
+        return self.add_not_component([component.id], [list(range(self.word_size))], self.word_size)
 
     def add_round_output_component_in_md5(self, A, B, C, D):
         return self.add_round_output_component(

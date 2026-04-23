@@ -114,19 +114,19 @@ class SparklePermutation(Cipher):
         self.add_rotate_component(state_y.id, state_y.input_bit_positions, WORD_SIZE, rotate_y)
         temp = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))])
         inputs_id, inputs_pos = get_inputs_parameter([state_x, temp])
-        self.add_MODADD_component(inputs_id, inputs_pos, WORD_SIZE)
+        self.add_modadd_component(inputs_id, inputs_pos, WORD_SIZE)
         state_x = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))])
 
         # y = y xor (x >> rotate_x)
         self.add_rotate_component(state_x.id, state_x.input_bit_positions, WORD_SIZE, rotate_x)
         temp = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))])
         inputs_id, inputs_pos = get_inputs_parameter([state_y, temp])
-        self.add_XOR_component(inputs_id, inputs_pos, WORD_SIZE)
+        self.add_xor_component(inputs_id, inputs_pos, WORD_SIZE)
         state_y = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))])
 
         # x = x xor ci
         inputs_id, inputs_pos = get_inputs_parameter([state_x, ci])
-        self.add_XOR_component(inputs_id, inputs_pos, WORD_SIZE)
+        self.add_xor_component(inputs_id, inputs_pos, WORD_SIZE)
         state_x = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))])
 
         return state_x, state_y
@@ -138,7 +138,7 @@ class SparklePermutation(Cipher):
             state_i.id, [[state_i.input_bit_positions[0][k] for k in range(WORD_SIZE // 2, WORD_SIZE)]]
         )
         inputs_id, inputs_pos = get_inputs_parameter([state_left, state_right])
-        self.add_XOR_component(inputs_id, inputs_pos, WORD_SIZE // 2)
+        self.add_xor_component(inputs_id, inputs_pos, WORD_SIZE // 2)
         state_left = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE // 2))])
 
         inputs_id, inputs_pos = get_inputs_parameter([state_left, state_right])
@@ -153,13 +153,13 @@ class SparklePermutation(Cipher):
         # tx = x0 xor ... xor x_omega
         # ltx = l(tx)
         inputs_id, inputs_pos = get_inputs_parameter([state[i * 2] for i in range(omega)])
-        self.add_XOR_component(inputs_id, inputs_pos, WORD_SIZE)
+        self.add_xor_component(inputs_id, inputs_pos, WORD_SIZE)
         tx = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))])
         tx = self.ell_function(tx)
 
         # ty = y0 xor ... xor y_omega
         inputs_id, inputs_pos = get_inputs_parameter([state[i * 2 + 1] for i in range(omega)])
-        self.add_XOR_component(inputs_id, inputs_pos, WORD_SIZE)
+        self.add_xor_component(inputs_id, inputs_pos, WORD_SIZE)
         ty = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))])
         ty = self.ell_function(ty)
 
@@ -172,24 +172,24 @@ class SparklePermutation(Cipher):
         state_old = deepcopy(state)
         for i in range(omega - 1):
             inputs_id, inputs_pos = get_inputs_parameter([state_old[(omega + i + 1) * 2], state_old[(i + 1) * 2], ty])
-            self.add_XOR_component(inputs_id, inputs_pos, WORD_SIZE)
+            self.add_xor_component(inputs_id, inputs_pos, WORD_SIZE)
             state[i * 2] = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))])
             state[(omega + i + 1) * 2] = state_old[2 * (i + 1)]
             inputs_id, inputs_pos = get_inputs_parameter(
                 [state_old[(omega + i + 1) * 2 + 1], state_old[(i + 1) * 2 + 1], tx]
             )
-            self.add_XOR_component(inputs_id, inputs_pos, WORD_SIZE)
+            self.add_xor_component(inputs_id, inputs_pos, WORD_SIZE)
             state[i * 2 + 1] = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))])
             state[(omega + i + 1) * 2 + 1] = state_old[2 * (i + 1) + 1]
 
         # state[nb-2] = state[nb] ^ x0 ^ tmpy; state[nb] = x0;
         # state[nb-1] = state[nb+1] ^ y0 ^ tmpx; state[nb+1] = y0;
         inputs_id, inputs_pos = get_inputs_parameter([state_old[omega * 2], state_old[0], ty])
-        self.add_XOR_component(inputs_id, inputs_pos, WORD_SIZE)
+        self.add_xor_component(inputs_id, inputs_pos, WORD_SIZE)
         state[(omega - 1) * 2] = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))])
         state[omega * 2] = state_old[0]
         inputs_id, inputs_pos = get_inputs_parameter([state_old[omega * 2 + 1], state_old[1], tx])
-        self.add_XOR_component(inputs_id, inputs_pos, WORD_SIZE)
+        self.add_xor_component(inputs_id, inputs_pos, WORD_SIZE)
         state[(omega - 1) * 2 + 1] = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))])
         state[omega * 2 + 1] = state_old[1]
 
@@ -198,12 +198,12 @@ class SparklePermutation(Cipher):
     def round_function(self, state, constant_ci, constant_r, r):
         # y0 = y0 xor ci[r mod 8]
         inputs_id, inputs_pos = get_inputs_parameter([state[1], constant_ci[r % 8]])
-        self.add_XOR_component(inputs_id, inputs_pos, WORD_SIZE)
+        self.add_xor_component(inputs_id, inputs_pos, WORD_SIZE)
         state[1] = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))])
 
         # y1 = y1 xor (r mod 2^32)
         inputs_id, inputs_pos = get_inputs_parameter([state[3], constant_r])
-        self.add_XOR_component(inputs_id, inputs_pos, WORD_SIZE)
+        self.add_xor_component(inputs_id, inputs_pos, WORD_SIZE)
         state[3] = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))])
 
         # xi, yi = alzette(xi, yi, ci)

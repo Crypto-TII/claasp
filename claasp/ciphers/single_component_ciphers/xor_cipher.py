@@ -42,7 +42,7 @@ class XorCipher(SingleComponentCipher):
             cipher_inputs_bit_size=cipher_inputs_bit_size,
             cipher_output_bit_size=word_bit_size,
         )
-        xor_component = self.add_XOR_component(
+        xor_component = self.add_xor_component(
             cipher_inputs,
             equal_input_bit_positions(word_bit_size, number_of_inputs),
             word_bit_size,

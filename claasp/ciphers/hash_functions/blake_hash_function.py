@@ -375,24 +375,24 @@ class BlakeHashFunction(Cipher):
 
         for i in range(self.n):
             if m[i] is None:
-                new_state_id[j] = self.add_MODADD_component(
+                new_state_id[j] = self.add_modadd_component(
                     [new_state_id[j], new_state_id[(j + 1) % self.n]],
                     [new_state_range[j], new_state_range[(j + 1) % self.n]],
                     self.word_size,
                 ).id
             else:
                 const_id = self.add_constant_component(self.word_size, self.constants[c[i]]).id
-                opt_xor_id = self.add_XOR_component(
+                opt_xor_id = self.add_xor_component(
                     [data_word_ids[m[i]], const_id],
                     [data_word_ranges[m[i]], list(range(self.word_size))],
                     self.word_size,
                 ).id
-                temp_add_id = self.add_MODADD_component(
+                temp_add_id = self.add_modadd_component(
                     [new_state_id[j], new_state_id[(j + 1) % self.n]],
                     [new_state_range[j], new_state_range[(j + 1) % self.n]],
                     self.word_size,
                 ).id
-                new_state_id[j] = self.add_MODADD_component(
+                new_state_id[j] = self.add_modadd_component(
                     [temp_add_id, opt_xor_id],
                     [list(range(self.word_size)), list(range(self.word_size))],
                     self.word_size,
@@ -400,7 +400,7 @@ class BlakeHashFunction(Cipher):
 
             new_state_range[j] = list(range(self.word_size))
 
-            xor_id = self.add_XOR_component(
+            xor_id = self.add_xor_component(
                 [new_state_id[(j - 1) % self.n], new_state_id[j]],
                 [new_state_range[(j - 1) % self.n], new_state_range[j]],
                 self.word_size,

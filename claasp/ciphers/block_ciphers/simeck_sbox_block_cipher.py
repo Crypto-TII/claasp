@@ -143,7 +143,7 @@ class SimeckSboxBlockCipher(Cipher):
         output_positions = [0] * self.word_size
         for i in range(self.number_of_sboxes):
             sbox_input_positions = [left[1][(position + 8 * i) % self.word_size] for position in positions_pattern]
-            sbox_id = self.add_SBOX_component([left[0]], [sbox_input_positions], 8, SBOX).id
+            sbox_id = self.add_sbox_component([left[0]], [sbox_input_positions], 8, SBOX).id
             sbox_output_positions = [(position + 8 * i) % self.word_size for position in positions_pattern[:-1]]
             for j, sbox_output_position in enumerate(sbox_output_positions):
                 output_ids[sbox_output_position] = sbox_id
@@ -157,11 +157,11 @@ class SimeckSboxBlockCipher(Cipher):
             else:
                 sboxes_positions[-1].append(output_positions[i])
         s1_left_input_positions = left[1][1:] + [left[1][0]]
-        f_id = self.add_XOR_component(
+        f_id = self.add_xor_component(
             [*sboxes_ids, left[0]], [*sboxes_positions, s1_left_input_positions], self.word_size
         ).id
         # Rk(x, y) = (y ⊕ f(x) ⊕ k, x)
-        new_left_id = self.add_XOR_component(
+        new_left_id = self.add_xor_component(
             [right[0], f_id, round_key[0]], [right[1], list(range(self.word_size)), round_key[1]], self.word_size
         ).id
 

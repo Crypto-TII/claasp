@@ -116,10 +116,10 @@ class RaidenBlockCipher(Cipher):
 
             # OPERATION 1
             # k0 + k1
-            sum1_id = self.add_MODADD_component([key[0][0], key[1][0]], [key[0][1], key[1][1]], self.word_size).id
+            sum1_id = self.add_modadd_component([key[0][0], key[1][0]], [key[0][1], key[1][1]], self.word_size).id
 
             # k2 + k3
-            sum2_id = self.add_MODADD_component([key[2][0], key[3][0]], [key[2][1], key[3][1]], self.word_size).id
+            sum2_id = self.add_modadd_component([key[2][0], key[3][0]], [key[2][1], key[3][1]], self.word_size).id
 
             # k0 << k2
             ls1_id = self.add_variable_shift_component(
@@ -127,52 +127,52 @@ class RaidenBlockCipher(Cipher):
             ).id
 
             # (k2 + k3) ^ (k0 << k2)
-            xor1_id = self.add_XOR_component([sum2_id, ls1_id], [word_bit_positions] * 2, self.word_size).id
+            xor1_id = self.add_xor_component([sum2_id, ls1_id], [word_bit_positions] * 2, self.word_size).id
 
             # (k0 + k1) + ((k2 + k3) ^ (k0 << k2))
-            sk_id = self.add_MODADD_component([sum1_id, xor1_id], [word_bit_positions] * 2, self.word_size).id
+            sk_id = self.add_modadd_component([sum1_id, xor1_id], [word_bit_positions] * 2, self.word_size).id
 
             # OPERATION 2
             # sk + v1
-            sum3_id = self.add_MODADD_component(
+            sum3_id = self.add_modadd_component(
                 [sk_id, data[1][0]], [word_bit_positions, data[1][1]], self.word_size
             ).id
 
             # (sk + v1) << ls
-            ls2_id = self.add_SHIFT_component([sum3_id], [word_bit_positions], self.word_size, -left_shift_amount).id
+            ls2_id = self.add_shift_component([sum3_id], [word_bit_positions], self.word_size, -left_shift_amount).id
 
             # sk - v1
-            sub1_id = self.add_MODSUB_component(
+            sub1_id = self.add_modsub_component(
                 [sk_id, data[1][0]], [word_bit_positions, data[1][1]], self.word_size
             ).id
 
             # (sk + v1) >> rs
-            rs1_id = self.add_SHIFT_component([sum3_id], [word_bit_positions], self.word_size, right_shift_amount).id
+            rs1_id = self.add_shift_component([sum3_id], [word_bit_positions], self.word_size, right_shift_amount).id
 
             # ((sk + v1) << ls) ^ ((sk - v1) ^ ((sk + v1) >> rs))
-            xor2_id = self.add_XOR_component([ls2_id, sub1_id, rs1_id], [word_bit_positions] * 3, self.word_size).id
+            xor2_id = self.add_xor_component([ls2_id, sub1_id, rs1_id], [word_bit_positions] * 3, self.word_size).id
 
             # v0 = v0 + ((sk + v1) << ls) ^ ((sk - v1) ^ ((sk + v1) >> rs))
-            v0 = self.add_MODADD_component([data[0][0], xor2_id], [data[0][1], word_bit_positions], self.word_size).id
+            v0 = self.add_modadd_component([data[0][0], xor2_id], [data[0][1], word_bit_positions], self.word_size).id
 
             # OPERATION 3
             # sk + v0
-            sum4_id = self.add_MODADD_component([sk_id, v0], [word_bit_positions] * 2, self.word_size).id
+            sum4_id = self.add_modadd_component([sk_id, v0], [word_bit_positions] * 2, self.word_size).id
 
             # (sk + v0) << ls
-            ls3_id = self.add_SHIFT_component([sum4_id], [word_bit_positions], self.word_size, -left_shift_amount).id
+            ls3_id = self.add_shift_component([sum4_id], [word_bit_positions], self.word_size, -left_shift_amount).id
 
             # sk - v0
-            sub2_id = self.add_MODSUB_component([sk_id, v0], [word_bit_positions] * 2, self.word_size).id
+            sub2_id = self.add_modsub_component([sk_id, v0], [word_bit_positions] * 2, self.word_size).id
 
             # (sk + v0) >> rs
-            rs2_id = self.add_SHIFT_component([sum4_id], [word_bit_positions], self.word_size, right_shift_amount).id
+            rs2_id = self.add_shift_component([sum4_id], [word_bit_positions], self.word_size, right_shift_amount).id
 
             # ((sk + v0) << ls) ^ (sk - v0) ^ ((sk + v0) >> rs)
-            xor3_id = self.add_XOR_component([ls3_id, sub2_id, rs2_id], [word_bit_positions] * 3, self.word_size).id
+            xor3_id = self.add_xor_component([ls3_id, sub2_id, rs2_id], [word_bit_positions] * 3, self.word_size).id
 
             # v1 = v1 + (((sk + v0) << ls) ^ (sk - v0) ^ ((sk + v0) >> rs))
-            v1 = self.add_MODADD_component([data[1][0], xor3_id], [data[1][1], word_bit_positions], self.word_size).id
+            v1 = self.add_modadd_component([data[1][0], xor3_id], [data[1][1], word_bit_positions], self.word_size).id
 
             # ROUND KEY OUTPUT
             key[round_number % 4] = sk_id, word_bit_positions

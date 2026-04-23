@@ -108,16 +108,16 @@ class TwineBlockCipher(Cipher):
 
     def update_key(self, k, i):
         def update_word(emitting_word_indx, receiving_word_indx):
-            sbox = self.add_SBOX_component([k], [get_word_bit_indexes(emitting_word_indx)], 4, self.sbox).id
-            return self.add_XOR_component([sbox, k], [list(range(4)), get_word_bit_indexes(receiving_word_indx)], 4).id
+            sbox = self.add_sbox_component([k], [get_word_bit_indexes(emitting_word_indx)], 4, self.sbox).id
+            return self.add_xor_component([sbox, k], [list(range(4)), get_word_bit_indexes(receiving_word_indx)], 4).id
 
         xor0 = update_word(0, 1)
         xor1 = update_word(16, 4)
 
         c0 = self.add_constant_component(6, self.round_constants[i - 1]).id
         pad = self.add_constant_component(1, 0b0).id
-        xor_c0 = self.add_XOR_component([pad, c0, k], [[0], list(range(3)), get_word_bit_indexes(7)], 4).id
-        xor_c1 = self.add_XOR_component([pad, c0, k], [[0], list(range(3, 6)), get_word_bit_indexes(19)], 4).id
+        xor_c0 = self.add_xor_component([pad, c0, k], [[0], list(range(3)), get_word_bit_indexes(7)], 4).id
+        xor_c1 = self.add_xor_component([pad, c0, k], [[0], list(range(3, 6)), get_word_bit_indexes(19)], 4).id
 
         if self.key_bit_size == 80:
             input_ids = [xor1, k, xor_c0, k, xor_c1, xor0, k]
@@ -154,14 +154,14 @@ class TwineBlockCipher(Cipher):
 
     def round_function(self, x, k):
         sb_order = [0, 5, 1, 4, 3, 6, 2, 7]
-        after_key_add = self.add_XOR_component(
+        after_key_add = self.add_xor_component(
             [x, k], [[_ for i in range(8) for _ in get_word_bit_indexes(2 * i)], list(range(32))], 32
         ).id
         sb_outputs = [
-            self.add_SBOX_component([after_key_add], [get_word_bit_indexes(i)], 4, self.sbox).id for i in range(8)
+            self.add_sbox_component([after_key_add], [get_word_bit_indexes(i)], 4, self.sbox).id for i in range(8)
         ]
         xor_outputs = [
-            self.add_XOR_component([sb_outputs[i], x], [list(range(4))] + [get_word_bit_indexes(2 * i + 1)], 4).id
+            self.add_xor_component([sb_outputs[i], x], [list(range(4))] + [get_word_bit_indexes(2 * i + 1)], 4).id
             for i in sb_order
         ]
         round_output = self.add_round_output_component(
