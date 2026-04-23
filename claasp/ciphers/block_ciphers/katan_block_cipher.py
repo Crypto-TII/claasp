@@ -57,7 +57,12 @@ IR = (
 def normalize_number_of_rounds(number_of_rounds):
     if number_of_rounds is None:
         return DEFAULT_NUMBER_OF_ROUNDS
-    if not isinstance(number_of_rounds, int) or isinstance(number_of_rounds, bool):
+    if isinstance(number_of_rounds, bool):
+        raise TypeError("number_of_rounds must be an integer.")
+
+    try:
+        number_of_rounds = number_of_rounds.__index__()
+    except (AttributeError, TypeError):
         raise TypeError("number_of_rounds must be an integer.")
     if number_of_rounds <= 0:
         raise ValueError("number_of_rounds must be positive.")
