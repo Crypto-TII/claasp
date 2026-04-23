@@ -1243,14 +1243,14 @@ class Sbox(Component):
             '\t};',
             '\tinput = select_bits(1, input_id, input_positions, 2);',
             '\tsubstitution_list = (uint64_t[]) {0, 1, 3, 2};',
-            '\tBitString* sbox_0_0 = Sbox(input, 2, substitution_list);\n',
+            '\tBitString* sbox_0_0 = SBOX(input, 2, substitution_list);\n',
             '\tdelete_bitstring(input);\n']
         """
         sbox_code = []
         self.select_bits(sbox_code)
 
         sbox_code.append(f"\tsubstitution_list = (uint64_t[]) {{{', '.join([str(x) for x in self.description])}}};")
-        sbox_code.append(f"\tBitString* {self.id} = Sbox(input, {self.output_bit_size}, substitution_list);\n")
+        sbox_code.append(f"\tBitString* {self.id} = SBOX(input, {self.output_bit_size}, substitution_list);\n")
 
         if verbosity:
             self.print_values(sbox_code)

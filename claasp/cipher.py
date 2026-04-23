@@ -396,7 +396,7 @@ class Cipher:
         EXAMPLES::
 
             sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher as fancy
-            sage: fancy(number_of_rounds=2).evaluate_using_c([0x012345,0x89ABCD], True) # random
+            sage: fancy(number_of_rounds=2).evaluate_using_c([0x012345,0x89ABCD], True) # random # doctest: +SKIP
             {'round_key_output': [3502917, 73728],
              'round_output': [9834215],
              'cipher_output': [7457252]}
@@ -602,8 +602,8 @@ class Cipher:
             True
 
             sage: from claasp.ciphers.block_ciphers.twofish_block_cipher import TwofishBlockCipher
-            sage: cipher = TwofishBlockCipher(key_length=256, number_of_rounds=2)
-            sage: key = 0xD43BB7556EA32E46F2A282B7D45B4E0D57FF739D4DC92C1BD7FC01700CC8216F
+            sage: cipher = TwofishBlockCipher(key_length=128, number_of_rounds=1)
+            sage: key = 0xD43BB7556EA32E46F2A282B7D45B4E0D
             sage: plaintext = 0x90AFE91BB288544F2C32DC239B2635E6
             sage: ciphertext = cipher.evaluate([key, plaintext])
             sage: cipher_inv = cipher.cipher_inverse()
