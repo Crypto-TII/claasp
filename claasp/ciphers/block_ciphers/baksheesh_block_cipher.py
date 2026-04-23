@@ -62,7 +62,7 @@ class BaksheeshBlockCipher(Cipher):
 
         # 1) Whitening
         self.add_round()
-        xor = self.add_XOR_component(state[0] + key[0], state[1] + key[1], block_bit_size)
+        xor = self.add_xor_component(state[0] + key[0], state[1] + key[1], block_bit_size)
         state = ([xor.id], [list(range(block_bit_size))])
 
         # 2) Rounds
@@ -71,7 +71,7 @@ class BaksheeshBlockCipher(Cipher):
             state = self.apply_bit_permutation(state)
             state = self.apply_round_constants(state, round_number)
             key = self.update_key(key)
-            xor = self.add_XOR_component(state[0] + key[0], state[1] + key[1], block_bit_size)
+            xor = self.add_xor_component(state[0] + key[0], state[1] + key[1], block_bit_size)
             state = ([xor.id], [list(range(block_bit_size))])
             self.add_round_output_component(state[0], state[1], block_bit_size)
             self.add_round()
@@ -81,14 +81,14 @@ class BaksheeshBlockCipher(Cipher):
         state = self.apply_bit_permutation(state)
         state = self.apply_round_constants(state, number_of_rounds - 1)
         key = self.update_key(key)
-        xor = self.add_XOR_component(state[0] + key[0], state[1] + key[1], block_bit_size)
+        xor = self.add_xor_component(state[0] + key[0], state[1] + key[1], block_bit_size)
 
         self.add_cipher_output_component([xor.id], [list(range(block_bit_size))], block_bit_size)
 
     def apply_sbox_layer(self, state):
         ids, bits = [], []
         for i in range(self.number_of_nibbles):
-            sbox = self.add_SBOX_component(state[0], [state[1][0][i * 4 : (i + 1) * 4]], 4, SBOX)
+            sbox = self.add_sbox_component(state[0], [state[1][0][i * 4 : (i + 1) * 4]], 4, SBOX)
             ids.append(sbox.id)
             bits.append(list(range(4)))
         state = (ids, bits)
@@ -109,7 +109,7 @@ class BaksheeshBlockCipher(Cipher):
 
         constant = self.add_constant_component(self.block_bit_size, value)
 
-        comp = self.add_XOR_component(
+        comp = self.add_xor_component(
             state[0] + [constant.id], state[1] + [list(range(self.block_bit_size))], self.block_bit_size
         )
         state = ([comp.id], [list(range(self.block_bit_size))])

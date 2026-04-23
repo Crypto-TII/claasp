@@ -117,7 +117,7 @@ def smt_modadd_seq(outputs_ids, inputs_ids, carries_ids):
     return constraints
 
 
-class MODADD(Modular):
+class ModAdd(Modular):
     """
     Construct a modular addition component.
 
@@ -133,8 +133,8 @@ class MODADD(Modular):
 
     EXAMPLES::
 
-        sage: from claasp.components.modadd_component import MODADD
-        sage: component = MODADD(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2, 2)
+        sage: from claasp.components.modadd_component import ModAdd
+        sage: component = ModAdd(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2, 2)
         sage: print(component.id)
         modadd_0_0
         sage: print(component.type)
@@ -247,8 +247,8 @@ class MODADD(Modular):
 
         EXAMPLES::
 
-            sage: from claasp.components.modadd_component import MODADD
-            sage: modadd_component = MODADD(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2, 2)
+            sage: from claasp.components.modadd_component import ModAdd
+            sage: modadd_component = ModAdd(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2, 2)
             sage: modadd_component.cms_constraints()[:1]
             (['carry_modadd_0_0_0', 'modadd_0_0_0', 'modadd_0_0_1'],)
         """
@@ -292,8 +292,8 @@ class MODADD(Modular):
 
         EXAMPLES::
 
-            sage: from claasp.components.modadd_component import MODADD
-            sage: modadd_component = MODADD(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2, 2)
+            sage: from claasp.components.modadd_component import ModAdd
+            sage: modadd_component = ModAdd(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2, 2)
             sage: modadd_component.cp_constraints()[:1]
             (['array[0..1] of var 0..1: pre_modadd_0_0_0;', 'array[0..1] of var 0..1: pre_modadd_0_0_1;', 'array[1..1] of var 0..1: carry_modadd_0_0;'],)
         """
@@ -381,8 +381,8 @@ class MODADD(Modular):
 
         EXAMPLES::
 
-            sage: from claasp.components.modadd_component import MODADD
-            sage: modadd_component = MODADD(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2, 2)
+            sage: from claasp.components.modadd_component import ModAdd
+            sage: modadd_component = ModAdd(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2, 2)
             sage: modadd_component.sat_constraints()[:1]
             (['carry_0_modadd_0_0_0', 'modadd_0_0_0', 'modadd_0_0_1'],)
         """
@@ -418,8 +418,8 @@ class MODADD(Modular):
 
         EXAMPLES::
 
-            sage: from claasp.components.modadd_component import MODADD
-            sage: modadd_component = MODADD(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2, 2)
+            sage: from claasp.components.modadd_component import ModAdd
+            sage: modadd_component = ModAdd(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2, 2)
             sage: modadd_component.smt_constraints()[:1]
             (['carry_0_modadd_0_0_0', 'modadd_0_0_0', 'modadd_0_0_1'],)
         """

@@ -140,12 +140,12 @@ class SpeedyBlockCipher(Cipher):
 
             # the comments describe the point of view of the state
             # state is a whole of 6*l bits
-            block = self.add_XOR_component(
+            block = self.add_xor_component(
                 [block.id, key.id], block.input_bit_positions + key.input_bit_positions, block_bit_size
             )
             # state is l components corresponding to the l sboxes
             block = [
-                self.add_SBOX_component([block.id], [list(range(6 * i, 6 * (i + 1)))], 6, SBOX) for i in range(self.l)
+                self.add_sbox_component([block.id], [list(range(6 * i, 6 * (i + 1)))], 6, SBOX) for i in range(self.l)
             ]
             # state is 6 columns
             new_block = []
@@ -159,7 +159,7 @@ class SpeedyBlockCipher(Cipher):
             input_ids = [block[_].id for _ in range(6)]
             for i in range(self.l):
                 input_bit_positions = [[i] for _ in range(6)]
-                new_block.append(self.add_SBOX_component(input_ids, input_bit_positions, 6, SBOX))
+                new_block.append(self.add_sbox_component(input_ids, input_bit_positions, 6, SBOX))
             block = new_block
             # state is 6 columns
             new_block = []
@@ -173,7 +173,7 @@ class SpeedyBlockCipher(Cipher):
             input_ids = [block[_].id for _ in range(6)] * len(alpha)
             for i in range(self.l):
                 input_bit_positions = [[(i + a) % self.l] for a in alpha for _ in range(6)]
-                new_block.append(self.add_XOR_component(input_ids, input_bit_positions, 6))
+                new_block.append(self.add_xor_component(input_ids, input_bit_positions, 6))
             block = new_block
             # state is a whole of 6*l bits
             constant = 0
@@ -183,7 +183,7 @@ class SpeedyBlockCipher(Cipher):
             constant_component = self.add_constant_component(192, constant)
             input_ids = [nb.id for nb in block] + [constant_component.id]
             input_bit_positions = [list(range(6)) for _ in range(self.l)] + [list(range(6 * self.l))]
-            block = self.add_XOR_component(input_ids, input_bit_positions, block_bit_size)
+            block = self.add_xor_component(input_ids, input_bit_positions, block_bit_size)
             block = ComponentState(block.id, [list(range(block_bit_size))])
             # key schedule
             key = self.add_permutation_component([key.id], [list(range(6 * self.l))], 6 * self.l, self.permutation)
@@ -195,11 +195,11 @@ class SpeedyBlockCipher(Cipher):
         self.add_round()
 
         # state is a whole of 6*l bits
-        block = self.add_XOR_component(
+        block = self.add_xor_component(
             [block.id, key.id], block.input_bit_positions + key.input_bit_positions, block_bit_size
         )
         # state is l components corresponding to the l sboxes
-        block = [self.add_SBOX_component([block.id], [list(range(6 * i, 6 * (i + 1)))], 6, SBOX) for i in range(self.l)]
+        block = [self.add_sbox_component([block.id], [list(range(6 * i, 6 * (i + 1)))], 6, SBOX) for i in range(self.l)]
         # state is 6 columns
         new_block = []
         input_ids = [block[_].id for _ in range(self.l)]
@@ -212,14 +212,14 @@ class SpeedyBlockCipher(Cipher):
         input_ids = [block[_].id for _ in range(6)]
         for i in range(self.l):
             input_bit_positions = [[i] for _ in range(6)]
-            new_block.append(self.add_SBOX_component(input_ids, input_bit_positions, 6, SBOX))
+            new_block.append(self.add_sbox_component(input_ids, input_bit_positions, 6, SBOX))
         block = new_block
         # key schedule
         key = self.add_permutation_component([key.id], [list(range(6 * self.l))], 6 * self.l, self.permutation)
         # state is a whole of 6*l bits
         input_ids = [nb.id for nb in new_block] + [key.id]
         input_bit_positions = [list(range(6)) for _ in range(self.l)] + [list(range(6 * self.l))]
-        block = self.add_XOR_component(input_ids, input_bit_positions, block_bit_size)
+        block = self.add_xor_component(input_ids, input_bit_positions, block_bit_size)
 
         self.add_round_key_output_component([key.id], [list(range(6 * self.l))], 6 * self.l)
         self.add_cipher_output_component([block.id], [list(range(6 * self.l))], 6 * self.l)

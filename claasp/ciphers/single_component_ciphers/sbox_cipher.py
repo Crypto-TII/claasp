@@ -38,7 +38,7 @@ class SboxCipher(SingleComponentCipher):
             cipher_inputs_bit_size=[bit_size],
             cipher_output_bit_size=bit_size,
         )
-        sbox_component = self.add_SBOX_component(
+        sbox_component = self.add_sbox_component(
             [INPUT_PLAINTEXT],
             [list(range(bit_size))],
             bit_size,

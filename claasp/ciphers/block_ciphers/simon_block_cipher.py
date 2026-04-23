@@ -176,14 +176,14 @@ class SimonBlockCipher(Cipher):
         s8_x = self.add_rotate_component([x[0]], [x[1]], self.word_size, self.rotation_amounts[1]).id
         s2_x = self.add_rotate_component([x[0]], [x[1]], self.word_size, self.rotation_amounts[2]).id
 
-        s1_and_s8 = self.add_AND_component([s1_x, s8_x], [list(range(self.word_size))] * 2, self.word_size).id
+        s1_and_s8 = self.add_and_component([s1_x, s8_x], [list(range(self.word_size))] * 2, self.word_size).id
 
-        return self.add_XOR_component([s1_and_s8, s2_x], [list(range(self.word_size))] * 2, self.word_size).id
+        return self.add_xor_component([s1_and_s8, s2_x], [list(range(self.word_size))] * 2, self.word_size).id
 
     def feistel_function(self, data, round_key):
         # Rk(x, y) = (y ⊕ f(x) ⊕ k, x)
         f_id = self.f((data[0][0], data[1][0]))
-        new_x_id = self.add_XOR_component(
+        new_x_id = self.add_xor_component(
             [data[0][1], f_id, round_key[0]], [data[1][1], list(range(self.word_size)), round_key[1]], self.word_size
         ).id
 
@@ -219,13 +219,13 @@ class SimonBlockCipher(Cipher):
             ).id
 
             if self.key_size_in_words == 4:
-                op = self.add_XOR_component(
+                op = self.add_xor_component(
                     [op, round_keys[i + 1][0]], [list(range(self.word_size)), round_keys[i + 1][1]], self.word_size
                 ).id
 
             rot_id = self.add_rotate_component([op], [list(range(self.word_size))], self.word_size, 1).id
 
-            xor_id = self.add_XOR_component(
+            xor_id = self.add_xor_component(
                 [round_constant, round_keys[i][0], op, rot_id],
                 [list(range(self.word_size)), round_keys[i][1]] + [list(range(self.word_size))] * 2,
                 self.word_size,

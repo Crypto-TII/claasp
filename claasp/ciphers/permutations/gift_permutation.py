@@ -157,49 +157,49 @@ class GiftPermutation(Cipher):
         # subcells
         # S1 = S1 xor (S0 & S2)
         inputs_id, inputs_pos = get_inputs_parameter([state[0], state[2]])
-        self.add_AND_component(inputs_id, inputs_pos, STATE_SIZE)
+        self.add_and_component(inputs_id, inputs_pos, STATE_SIZE)
         input_bit_positions = list(range(STATE_SIZE))
         temp = ComponentState([self.get_current_component_id()], [input_bit_positions])
         inputs_id, inputs_pos = get_inputs_parameter([state[1], temp])
-        self.add_XOR_component(inputs_id, inputs_pos, STATE_SIZE)
+        self.add_xor_component(inputs_id, inputs_pos, STATE_SIZE)
         state[1] = ComponentState([self.get_current_component_id()], [input_bit_positions])
 
         # S0 = S0 xor (S1 & S3)
         inputs_id, inputs_pos = get_inputs_parameter([state[1], state[3]])
-        self.add_AND_component(inputs_id, inputs_pos, STATE_SIZE)
+        self.add_and_component(inputs_id, inputs_pos, STATE_SIZE)
         temp = ComponentState([self.get_current_component_id()], [input_bit_positions])
         inputs_id, inputs_pos = get_inputs_parameter([state[0], temp])
-        self.add_XOR_component(inputs_id, inputs_pos, STATE_SIZE)
+        self.add_xor_component(inputs_id, inputs_pos, STATE_SIZE)
         state[0] = ComponentState([self.get_current_component_id()], [input_bit_positions])
 
         # S2 = S2 xor (S0 or S1)
         inputs_id, inputs_pos = get_inputs_parameter([state[0], state[1]])
-        self.add_OR_component(inputs_id, inputs_pos, STATE_SIZE)
+        self.add_or_component(inputs_id, inputs_pos, STATE_SIZE)
         temp = ComponentState([self.get_current_component_id()], [input_bit_positions])
         inputs_id, inputs_pos = get_inputs_parameter([state[2], temp])
-        self.add_XOR_component(inputs_id, inputs_pos, STATE_SIZE)
+        self.add_xor_component(inputs_id, inputs_pos, STATE_SIZE)
         state[2] = ComponentState([self.get_current_component_id()], [input_bit_positions])
 
         # S3 = S3 xor S2
         inputs_id, inputs_pos = get_inputs_parameter([state[2], state[3]])
-        self.add_XOR_component(inputs_id, inputs_pos, STATE_SIZE)
+        self.add_xor_component(inputs_id, inputs_pos, STATE_SIZE)
         state[3] = ComponentState([self.get_current_component_id()], [input_bit_positions])
 
         # S1 = S1 xor S3
         inputs_id, inputs_pos = get_inputs_parameter([state[1], state[3]])
-        self.add_XOR_component(inputs_id, inputs_pos, STATE_SIZE)
+        self.add_xor_component(inputs_id, inputs_pos, STATE_SIZE)
         state[1] = ComponentState([self.get_current_component_id()], [input_bit_positions])
 
         # S3 = ~S3
-        self.add_NOT_component(state[3].id, state[3].input_bit_positions, STATE_SIZE)
+        self.add_not_component(state[3].id, state[3].input_bit_positions, STATE_SIZE)
         state[3] = ComponentState([self.get_current_component_id()], [input_bit_positions])
 
         # S2 = S2 xor (S0 & S1)
         inputs_id, inputs_pos = get_inputs_parameter([state[0], state[1]])
-        self.add_AND_component(inputs_id, inputs_pos, STATE_SIZE)
+        self.add_and_component(inputs_id, inputs_pos, STATE_SIZE)
         temp = ComponentState([self.get_current_component_id()], [input_bit_positions])
         inputs_id, inputs_pos = get_inputs_parameter([state[2], temp])
-        self.add_XOR_component(inputs_id, inputs_pos, STATE_SIZE)
+        self.add_xor_component(inputs_id, inputs_pos, STATE_SIZE)
         state[2] = ComponentState([self.get_current_component_id()], [input_bit_positions])
 
         # S0, S1, S2, S3 = S3, S1, S2, S0
@@ -213,12 +213,12 @@ class GiftPermutation(Cipher):
         # addroundkey
         # S2 = S2 xor U
         inputs_id, inputs_pos = get_inputs_parameter([state[2], round_key_u])
-        self.add_XOR_component(inputs_id, inputs_pos, STATE_SIZE)
+        self.add_xor_component(inputs_id, inputs_pos, STATE_SIZE)
         state[2] = ComponentState([self.get_current_component_id()], [input_bit_positions])
 
         # S1 = S1 xor V
         inputs_id, inputs_pos = get_inputs_parameter([state[1], round_key_v])
-        self.add_XOR_component(inputs_id, inputs_pos, STATE_SIZE)
+        self.add_xor_component(inputs_id, inputs_pos, STATE_SIZE)
         state[1] = ComponentState([self.get_current_component_id()], [input_bit_positions])
 
         # S3 = S3 xor ci
@@ -226,7 +226,7 @@ class GiftPermutation(Cipher):
         self.add_constant_component(STATE_SIZE, ci)
         c = ComponentState([self.get_current_component_id()], [input_bit_positions])
         inputs_id, inputs_pos = get_inputs_parameter([state[3], c])
-        self.add_XOR_component(inputs_id, inputs_pos, STATE_SIZE)
+        self.add_xor_component(inputs_id, inputs_pos, STATE_SIZE)
         state[3] = ComponentState([self.get_current_component_id()], [input_bit_positions])
 
         return state

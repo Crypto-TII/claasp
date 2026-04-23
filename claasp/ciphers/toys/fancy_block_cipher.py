@@ -120,7 +120,7 @@ class FancyBlockCipher(Cipher):
                     "round_key_output",
                 )
                 constant = self.add_constant_component(block_bit_size, 0xFEDCBA)
-                type1_xor_with_key = self.add_XOR_component(
+                type1_xor_with_key = self.add_xor_component(
                     [constant.id, linear_layer.id, type1_key_schedule_xor.id, type1_key_schedule_and.id],
                     [
                         list(range(block_bit_size)),
@@ -148,18 +148,18 @@ class FancyBlockCipher(Cipher):
                 b = self.sbox_bit_size
                 type2_sboxes = []
                 for j in range(self.num_sboxes):
-                    sbox = self.add_SBOX_component(
+                    sbox = self.add_sbox_component(
                         [type1_xor_with_key.id], [list(range(j * b + 0, j * b + b))], b, self.sbox_description
                     )
                     type2_sboxes.append(sbox)
 
                 # key schedule for type 2 round
-                type2_key_schedule_xor = self.add_XOR_component(
+                type2_key_schedule_xor = self.add_xor_component(
                     [type1_key_schedule_xor.id, type1_key_schedule_and.id],
                     [list(range(int(key_bit_size / 2))), list(range(int(key_bit_size / 2)))],
                     int(key_bit_size / 2),
                 )
-                type2_key_schedule_and = self.add_AND_component(
+                type2_key_schedule_and = self.add_and_component(
                     [type2_key_schedule_xor.id, type1_key_schedule_and.id],
                     [list(range(int(key_bit_size / 2))) for _ in range(2)],
                     int(key_bit_size / 2),
@@ -172,7 +172,7 @@ class FancyBlockCipher(Cipher):
                 )
 
                 # Modular addition 8
-                type2_modadd1 = self.add_MODADD_component(
+                type2_modadd1 = self.add_modadd_component(
                     [
                         type2_key_schedule_xor.id,
                         type2_sboxes[0].id,
@@ -191,7 +191,7 @@ class FancyBlockCipher(Cipher):
                 )
 
                 # Modular addition 9
-                type2_modadd2 = self.add_MODADD_component(
+                type2_modadd2 = self.add_modadd_component(
                     [
                         type2_key_schedule_xor.id,
                         type2_sboxes[3].id,
@@ -218,7 +218,7 @@ class FancyBlockCipher(Cipher):
                 )
 
                 # Right shift_3 11
-                shift = self.add_SHIFT_component(
+                shift = self.add_shift_component(
                     [type2_sboxes[4].id, type2_sboxes[5].id],
                     [list(range(int(self.sbox_bit_size / 2), self.sbox_bit_size)), list(range(self.sbox_bit_size))],
                     int(block_bit_size / 4),
@@ -226,14 +226,14 @@ class FancyBlockCipher(Cipher):
                 )
 
                 # xor 12
-                type2_xor1 = self.add_XOR_component(
+                type2_xor1 = self.add_xor_component(
                     [type2_modadd1.id, rotation.id, type2_key_schedule_and.id],
                     [list(range(int(block_bit_size / 4))) for _ in range(3)],
                     int(block_bit_size / 4),
                 )
 
                 # xor 13
-                type2_xor2 = self.add_XOR_component(
+                type2_xor2 = self.add_xor_component(
                     [type2_modadd2.id, shift.id, type2_key_schedule_and.id],
                     [
                         list(range(int(block_bit_size / 4))),
@@ -264,38 +264,38 @@ class FancyBlockCipher(Cipher):
         for j in range(self.num_sboxes):
             b = self.sbox_bit_size
             if round_number == 0:
-                sbox = self.add_SBOX_component(
+                sbox = self.add_sbox_component(
                     [INPUT_PLAINTEXT], [list(range(j * b + 0, j * b + b))], b, self.sbox_description
                 )
             else:
                 if j == 0:
-                    sbox = self.add_SBOX_component(
+                    sbox = self.add_sbox_component(
                         [type2_modadd1.id], [list(range(4))], self.sbox_bit_size, self.sbox_description
                     )
                 elif j == 1:
-                    sbox = self.add_SBOX_component(
+                    sbox = self.add_sbox_component(
                         [type2_modadd1.id, type2_xor1.id],
                         [list(range(4, 6)), list(range(2))],
                         self.sbox_bit_size,
                         self.sbox_description,
                     )
                 elif j == 2:
-                    sbox = self.add_SBOX_component(
+                    sbox = self.add_sbox_component(
                         [type2_xor1.id], [list(range(2, 6))], self.sbox_bit_size, self.sbox_description
                     )
                 elif j == 3:
-                    sbox = self.add_SBOX_component(
+                    sbox = self.add_sbox_component(
                         [type2_modadd2.id], [list(range(4))], self.sbox_bit_size, self.sbox_description
                     )
                 elif j == 4:
-                    sbox = self.add_SBOX_component(
+                    sbox = self.add_sbox_component(
                         [type2_modadd2.id, type2_xor2.id],
                         [list(range(4, 6)), list(range(2))],
                         self.sbox_bit_size,
                         self.sbox_description,
                     )
                 elif j == 5:
-                    sbox = self.add_SBOX_component(
+                    sbox = self.add_sbox_component(
                         [type2_xor2.id], [list(range(2, 6))], self.sbox_bit_size, self.sbox_description
                     )
                 else:
@@ -307,13 +307,13 @@ class FancyBlockCipher(Cipher):
         self, key_bit_size, round_number, type1_key_schedule_xor, type2_key_schedule_and
     ):
         if round_number == 0:
-            type1_key_schedule_and = self.add_AND_component(
+            type1_key_schedule_and = self.add_and_component(
                 [type1_key_schedule_xor.id, INPUT_KEY],
                 [list(range(int(key_bit_size / 2))), [i + int(key_bit_size / 2) for i in range(int(key_bit_size / 2))]],
                 int(key_bit_size / 2),
             )
         else:
-            type1_key_schedule_and = self.add_AND_component(
+            type1_key_schedule_and = self.add_and_component(
                 [type1_key_schedule_xor.id, type2_key_schedule_and.id],
                 [list(range(int(key_bit_size / 2))) for _ in range(2)],
                 int(key_bit_size / 2),
@@ -325,13 +325,13 @@ class FancyBlockCipher(Cipher):
         self, key_bit_size, round_number, type2_key_schedule_and, type2_key_schedule_xor
     ):
         if round_number == 0:
-            type1_key_schedule_xor = self.add_XOR_component(
+            type1_key_schedule_xor = self.add_xor_component(
                 [INPUT_KEY, INPUT_KEY],
                 [list(range(int(key_bit_size / 2))), list(range(int(key_bit_size / 2), key_bit_size))],
                 int(key_bit_size / 2),
             )
         else:
-            type1_key_schedule_xor = self.add_XOR_component(
+            type1_key_schedule_xor = self.add_xor_component(
                 [type2_key_schedule_xor.id, type2_key_schedule_and.id],
                 [list(range(int(key_bit_size / 2))), list(range(int(key_bit_size / 2)))],
                 int(key_bit_size / 2),

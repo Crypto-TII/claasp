@@ -97,10 +97,10 @@ def test_remove_rotations():
     assert ciphertext == ciphertext_no_rotations
 
 
-def test_add_FSR_component():
+def test_add_fsr_component():
     cipher = Cipher("cipher_name", "fsr", ["input"], [12], 12)
     cipher.add_round()
-    cipher.add_FSR_component(["input", "input"], [[0, 1, 2, 3, 4], [0, 1, 2, 3, 4, 5, 6]], 12,
+    cipher.add_fsr_component(["input", "input"], [[0, 1, 2, 3, 4], [0, 1, 2, 3, 4, 5, 6]], 12,
                              [
                                  [
                                      [5, [[4], [5], [6, 7]]],  # Register_len:5,  feedback poly: x4 + x5 + x6*x7

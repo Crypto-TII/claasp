@@ -116,10 +116,10 @@ class TeaBlockCipher(Cipher):
             # UPDATE OF V0
             # OPERAND 1
             # v1 << l
-            ls1_id = self.add_SHIFT_component([data[1][0]], [data[1][1]], self.word_size, -left_shift_amount).id
+            ls1_id = self.add_shift_component([data[1][0]], [data[1][1]], self.word_size, -left_shift_amount).id
 
             # (v1 << l) + k0
-            sum1_id = self.add_MODADD_component([ls1_id, key[0][0]], [word_bit_positions, key[0][1]], self.word_size).id
+            sum1_id = self.add_modadd_component([ls1_id, key[0][0]], [word_bit_positions, key[0][1]], self.word_size).id
 
             # sum = delta * (round+1)
             round_constant_id = self.add_constant_component(
@@ -128,49 +128,49 @@ class TeaBlockCipher(Cipher):
 
             # OPERAND 2
             # v1 + sum
-            sum2_id = self.add_MODADD_component(
+            sum2_id = self.add_modadd_component(
                 [data[1][0], round_constant_id], [data[1][1], word_bit_positions], self.word_size
             ).id
 
             # OPERAND 3
             # v1 >> r
-            rs1_id = self.add_SHIFT_component([data[1][0]], [data[1][1]], self.word_size, right_shift_amount).id
+            rs1_id = self.add_shift_component([data[1][0]], [data[1][1]], self.word_size, right_shift_amount).id
 
             # (v1 >> r) + k1
-            sum3_id = self.add_MODADD_component([rs1_id, key[1][0]], [word_bit_positions, key[1][1]], self.word_size).id
+            sum3_id = self.add_modadd_component([rs1_id, key[1][0]], [word_bit_positions, key[1][1]], self.word_size).id
 
             # FINAL
             # ((v1 << l) + k0) XOR (v1 + sum) XOR ((v1 >> r) + k1)
-            xor1_id = self.add_XOR_component([sum1_id, sum2_id, sum3_id], [word_bit_positions] * 3, self.word_size).id
+            xor1_id = self.add_xor_component([sum1_id, sum2_id, sum3_id], [word_bit_positions] * 3, self.word_size).id
 
             # v0 + (((v1 << l) + k0) XOR (v1 + sum) XOR ((v1 >> r) + k1))
-            v0 = self.add_MODADD_component([data[0][0], xor1_id], [data[0][1], word_bit_positions], self.word_size).id
+            v0 = self.add_modadd_component([data[0][0], xor1_id], [data[0][1], word_bit_positions], self.word_size).id
 
             # UPDATE OF V1
             # OPERAND 1
             # v0 << l
-            ls2_id = self.add_SHIFT_component([v0], [word_bit_positions], self.word_size, -left_shift_amount).id
+            ls2_id = self.add_shift_component([v0], [word_bit_positions], self.word_size, -left_shift_amount).id
 
             # (v0 << l) + k2
-            sum4_id = self.add_MODADD_component([ls2_id, key[2][0]], [word_bit_positions, key[2][1]], self.word_size).id
+            sum4_id = self.add_modadd_component([ls2_id, key[2][0]], [word_bit_positions, key[2][1]], self.word_size).id
 
             # OPERAND 2
             # v0 + sum
-            sum5_id = self.add_MODADD_component([v0, round_constant_id], [word_bit_positions] * 2, self.word_size).id
+            sum5_id = self.add_modadd_component([v0, round_constant_id], [word_bit_positions] * 2, self.word_size).id
 
             # OPERAND 3
             # v0 >> r
-            rs2_id = self.add_SHIFT_component([v0], [word_bit_positions], self.word_size, right_shift_amount).id
+            rs2_id = self.add_shift_component([v0], [word_bit_positions], self.word_size, right_shift_amount).id
 
             # (v0 >> r) + k3
-            sum6_id = self.add_MODADD_component([rs2_id, key[3][0]], [word_bit_positions, key[3][1]], self.word_size).id
+            sum6_id = self.add_modadd_component([rs2_id, key[3][0]], [word_bit_positions, key[3][1]], self.word_size).id
 
             # FINAL
             # ((v0 << l) + k2) XOR (v0 + sum) XOR ((v0 >> r) + k3)
-            xor2_id = self.add_XOR_component([sum4_id, sum5_id, sum6_id], [word_bit_positions] * 3, self.word_size).id
+            xor2_id = self.add_xor_component([sum4_id, sum5_id, sum6_id], [word_bit_positions] * 3, self.word_size).id
 
             # v1 + (((v0 << l) + k2) XOR (v0 + sum) XOR ((v0 >> r) + k3))
-            v1 = self.add_MODADD_component([data[1][0], xor2_id], [data[1][1], word_bit_positions], self.word_size).id
+            v1 = self.add_modadd_component([data[1][0], xor2_id], [data[1][1], word_bit_positions], self.word_size).id
 
             # ROUND OUTPUT
             data[0] = v0, word_bit_positions

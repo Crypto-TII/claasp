@@ -114,11 +114,11 @@ class A52StreamCipher(Cipher):
             for k in regs_and_bit:
                 for i in range(len(k)):
                     for j in range(i + 1, len(k)):
-                        self.add_AND_component(regs.id, [[k[i], k[j]]], 1)
+                        self.add_and_component(regs.id, [[k[i], k[j]]], 1)
                         regs_xor_output.append(ComponentState([self.get_current_component_id()], [[0]]))
 
             inputs_id, inputs_pos = get_inputs_parameter(regs_xor_output)
-            self.add_XOR_component(inputs_id, inputs_pos, 1)
+            self.add_xor_component(inputs_id, inputs_pos, 1)
             cipher_output.append(ComponentState([self.get_current_component_id()], [[0]]))
 
             regs = self._round_function(regs=regs, regs_size=regs_size, fsr_description=fsr_description)
@@ -142,7 +142,7 @@ class A52StreamCipher(Cipher):
         # load key
         fsr_description = [[[register[BIT_LENGTH], register[TAPPED_BITS]] for register in REGISTERS], 1]
         for i in range(key_bit_size):
-            self.add_FSR_component(regs.id, regs.input_bit_positions, regs_size, fsr_description)
+            self.add_fsr_component(regs.id, regs.input_bit_positions, regs_size, fsr_description)
             regs = ComponentState([self.get_current_component_id()], [list(range(regs_size))])
 
             inputs = [regs]
@@ -150,12 +150,12 @@ class A52StreamCipher(Cipher):
                 inputs.append(constant_0[j])
                 inputs.append(ComponentState([INPUT_KEY], [[i]]))
             inputs_id, inputs_pos = get_inputs_parameter(inputs)
-            self.add_XOR_component(inputs_id, inputs_pos, regs_size)
+            self.add_xor_component(inputs_id, inputs_pos, regs_size)
             regs = ComponentState([self.get_current_component_id()], [list(range(regs_size))])
 
         # load frame
         for i in range(frame_bit_size):
-            self.add_FSR_component(regs.id, regs.input_bit_positions, regs_size, fsr_description)
+            self.add_fsr_component(regs.id, regs.input_bit_positions, regs_size, fsr_description)
             regs = ComponentState([self.get_current_component_id()], [list(range(regs_size))])
 
             inputs = [regs]
@@ -163,13 +163,13 @@ class A52StreamCipher(Cipher):
                 inputs.append(constant_0[j])
                 inputs.append(ComponentState([INPUT_FRAME], [[i]]))
             inputs_id, inputs_pos = get_inputs_parameter(inputs)
-            self.add_XOR_component(inputs_id, inputs_pos, regs_size)
+            self.add_xor_component(inputs_id, inputs_pos, regs_size)
             regs = ComponentState([self.get_current_component_id()], [list(range(regs_size))])
         # For A5/2, somebits is fixed to 1 after frame is loaded
         self.add_constant_component(regs_size, MASK_AFTER_FRAME_SETUP)
         mask = ComponentState([self.get_current_component_id()], [list(range(regs_size))])
         inputs_id, inputs_pos = get_inputs_parameter([regs, mask])
-        self.add_OR_component(inputs_id, inputs_pos, regs_size)
+        self.add_or_component(inputs_id, inputs_pos, regs_size)
         regs = ComponentState([self.get_current_component_id()], [list(range(regs_size))])
 
         # normal clocked without output
@@ -178,14 +178,14 @@ class A52StreamCipher(Cipher):
             1,
             number_of_normal_clocks_at_initialization,
         ]
-        self.add_FSR_component(regs.id, regs.input_bit_positions, regs_size, fsr_description)
+        self.add_fsr_component(regs.id, regs.input_bit_positions, regs_size, fsr_description)
         regs = ComponentState([self.get_current_component_id()], [list(range(regs_size))])
 
         return regs
 
     def _round_function(self, regs, regs_size, fsr_description):
         self.add_round()
-        self.add_FSR_component(regs.id, regs.input_bit_positions, regs_size, fsr_description)
+        self.add_fsr_component(regs.id, regs.input_bit_positions, regs_size, fsr_description)
         regs = ComponentState([self.get_current_component_id()], [list(range(regs_size))])
 
         return regs

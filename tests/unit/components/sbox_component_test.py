@@ -11,7 +11,7 @@ from claasp.cipher_modules.models.milp.milp_models.milp_xor_linear_model import 
 from claasp.cipher_modules.models.sat.sat_model import SatModel
 from claasp.cipher_modules.models.smt.smt_model import SmtModel
 from claasp.ciphers.single_component_ciphers.sbox_cipher import SboxCipher
-from claasp.components.sbox_component import SBOX
+from claasp.components.sbox_component import Sbox
 
 
 PRESENT_SBOX = [12, 5, 6, 11, 9, 0, 10, 13, 3, 14, 15, 8, 4, 7, 1, 2]
@@ -28,7 +28,7 @@ def test_algebraic_polynomials():
 
 
 def test_cms_constraints():
-    sbox_component = SBOX(0, 2, ["xor_0_0"], [[4, 5, 6, 7]], 4, PRESENT_SBOX)
+    sbox_component = Sbox(0, 2, ["xor_0_0"], [[4, 5, 6, 7]], 4, PRESENT_SBOX)
     output_bit_ids, constraints = sbox_component.cms_constraints()
 
     assert output_bit_ids == ["sbox_0_2_0", "sbox_0_2_1", "sbox_0_2_2", "sbox_0_2_3"]
@@ -38,7 +38,7 @@ def test_cms_constraints():
 
 def test_cp_constraints():
     sbox = [12, 10, 13, 3, 14, 11, 15, 7, 8, 9, 1, 5, 0, 2, 4, 6]
-    sbox_component = SBOX(0, 5, ["xor_0_1"], [[4, 5, 6, 7]], 4, sbox)
+    sbox_component = Sbox(0, 5, ["xor_0_1"], [[4, 5, 6, 7]], 4, sbox)
     declarations, constraints = sbox_component.cp_constraints([])
 
     assert declarations[0].startswith("array [1..16, 1..8] of int: table_sbox_0_5")
@@ -49,7 +49,7 @@ def test_cp_constraints():
 
 
 def test_cp_deterministic_truncated_xor_differential_constraints():
-    sbox_component = SBOX(0, 1, ["xor_0_0"], [[0, 1, 2, 3]], 4, [1, 2, 3, 4, 0, 7, 6, 5])
+    sbox_component = Sbox(0, 1, ["xor_0_0"], [[0, 1, 2, 3]], 4, [1, 2, 3, 4, 0, 7, 6, 5])
     declarations, constraints, sbox_mant = sbox_component.cp_deterministic_truncated_xor_differential_constraints(
         sbox_mant=[]
     )
@@ -63,7 +63,7 @@ def test_cp_deterministic_truncated_xor_differential_constraints():
 
 
 def test_cp_xor_differential_propagation_constraints():
-    sbox_component = SBOX(0, 0, ["plaintext"], [[0, 1, 2]], 3, list(range(8)))
+    sbox_component = Sbox(0, 0, ["plaintext"], [[0, 1, 2]], 3, list(range(8)))
     cp = type("DummyModel", (), {})()
     cp.sbox_mant = []
     cp.component_and_probability = {}
@@ -79,7 +79,7 @@ def test_cp_xor_differential_propagation_constraints():
 
 
 def test_cp_xor_linear_mask_propagation_constraints():
-    sbox_component = SBOX(0, 0, ["plaintext"], [[0, 1, 2]], 3, list(range(8)))
+    sbox_component = Sbox(0, 0, ["plaintext"], [[0, 1, 2]], 3, list(range(8)))
     cp = type("DummyModel", (), {})()
     cp.sbox_mant = []
     cp.component_and_probability = {}
@@ -176,7 +176,7 @@ def test_milp_xor_linear_mask_propagation_constraints():
 
 
 def test_sat_constraints():
-    sbox_component = SBOX(0, 2, ["xor_0_0"], [[4, 5, 6, 7]], 4, PRESENT_SBOX)
+    sbox_component = Sbox(0, 2, ["xor_0_0"], [[4, 5, 6, 7]], 4, PRESENT_SBOX)
     output_bit_ids, constraints = sbox_component.sat_constraints()
 
     assert output_bit_ids == ["sbox_0_2_0", "sbox_0_2_1", "sbox_0_2_2", "sbox_0_2_3"]
@@ -185,7 +185,7 @@ def test_sat_constraints():
 
 
 def test_sat_bitwise_deterministic_truncated_xor_differential_constraints():
-    sbox_component = SBOX(0, 2, ["xor_0_0"], [[4, 5, 6, 7]], 4, PRESENT_SBOX)
+    sbox_component = Sbox(0, 2, ["xor_0_0"], [[4, 5, 6, 7]], 4, PRESENT_SBOX)
     output_bit_ids, constraints = sbox_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
 
     assert output_bit_ids[0] == "sbox_0_2_0_0"
@@ -241,7 +241,7 @@ def test_sat_xor_linear_mask_propagation_constraints():
 
 
 def test_smt_constraints():
-    component = SBOX(0, 1, ["input"], [[0, 1]], 2, [1, 2, 3, 0])
+    component = Sbox(0, 1, ["input"], [[0, 1]], 2, [1, 2, 3, 0])
     output_bit_ids, constraints = component.smt_constraints()
 
     assert output_bit_ids == ["sbox_0_1_0", "sbox_0_1_1"]

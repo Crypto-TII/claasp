@@ -81,17 +81,17 @@ class SCARFBlockCipher(Cipher):
         for r in range(number_of_rounds - 1):
             F_component = self.F_function(data, Ti[r], r)
             xor_component = self.add_subkey(data, Ti[r], r)
-            sbox_component = self.add_SBOX_component([xor_component.id], [[0, 1, 2, 3, 4]], 5, scarf_sbox)
-            F_component_xored = self.add_XOR_component([F_component.id, data.id[1]], [[0, 1, 2, 3, 4]] * 2, 5)
+            sbox_component = self.add_sbox_component([xor_component.id], [[0, 1, 2, 3, 4]], 5, scarf_sbox)
+            F_component_xored = self.add_xor_component([F_component.id, data.id[1]], [[0, 1, 2, 3, 4]] * 2, 5)
             data = ComponentState([F_component_xored.id, sbox_component.id], [[0, 1, 2, 3, 4]] * 2)
             self.add_round_output_component(data.id, data.input_bit_positions, self.block_bit_size)
             self.add_round()
 
         # Last round is different:
         F_component = self.F_function(data, Ti[7], 7)
-        F_component_xored = self.add_XOR_component([F_component.id, data.id[1]], [[0, 1, 2, 3, 4]] * 2, 5)
-        sbox_component = self.add_SBOX_component([data.id[0]], [[0, 1, 2, 3, 4]], 5, scarf_sbox)
-        last_xor = self.add_XOR_component([sbox_component.id, Ti[7].id], [[0, 1, 2, 3, 4], [0, 1, 2, 3, 4]], 5)
+        F_component_xored = self.add_xor_component([F_component.id, data.id[1]], [[0, 1, 2, 3, 4]] * 2, 5)
+        sbox_component = self.add_sbox_component([data.id[0]], [[0, 1, 2, 3, 4]], 5, scarf_sbox)
+        last_xor = self.add_xor_component([sbox_component.id, Ti[7].id], [[0, 1, 2, 3, 4], [0, 1, 2, 3, 4]], 5)
 
         self.add_cipher_output_component(
             [last_xor.id, F_component_xored.id], [[0, 1, 2, 3, 4]] * 2, self.block_bit_size
@@ -99,9 +99,9 @@ class SCARFBlockCipher(Cipher):
 
     def add_subkey(self, data, Ti, current_round):
         if current_round % 2 == 0:
-            xor = self.add_XOR_component([data.id[0], Ti.id], [[0, 1, 2, 3, 4], [30, 31, 32, 33, 34]], 5)
+            xor = self.add_xor_component([data.id[0], Ti.id], [[0, 1, 2, 3, 4], [30, 31, 32, 33, 34]], 5)
         else:
-            xor = self.add_XOR_component([data.id[0], Ti.id], [[0, 1, 2, 3, 4], [0, 1, 2, 3, 4]], 5)
+            xor = self.add_xor_component([data.id[0], Ti.id], [[0, 1, 2, 3, 4], [0, 1, 2, 3, 4]], 5)
         return xor
 
     def F_function(self, data, Ti, current_round):
@@ -109,12 +109,12 @@ class SCARFBlockCipher(Cipher):
         self.create_rot_components(data, rot_components)
         and_components = []
         self.create_and_components(rot_components, and_components, Ti, current_round)
-        extra_and_component = self.add_AND_component(
+        extra_and_component = self.add_and_component(
             [rot_components[1].id, rot_components[2].id], [[0, 1, 2, 3, 4]] * 2, 5
         )
         input_ids = [xor.id for xor in and_components] + [extra_and_component.id]
         input_bit_pos = [[0, 1, 2, 3, 4]] * 6
-        xor_component = self.add_XOR_component(input_ids, input_bit_pos, 5)
+        xor_component = self.add_xor_component(input_ids, input_bit_pos, 5)
         return xor_component
 
     def create_rot_components(self, data, rot_components):
@@ -126,30 +126,30 @@ class SCARFBlockCipher(Cipher):
         for i in range(5):
             if current_round % 2 == 0:
                 l = [list(range(30 + 5 * j, 30 + 5 * j + 5)) for j in range(6)]
-                and_comp = self.add_AND_component([rot_components[i].id] + [Ti.id], [[0, 1, 2, 3, 4]] + [l[5 - i]], 5)
+                and_comp = self.add_and_component([rot_components[i].id] + [Ti.id], [[0, 1, 2, 3, 4]] + [l[5 - i]], 5)
             else:
                 l = [list(range(5 * j, 5 * j + 5)) for j in range(6)]
-                and_comp = self.add_AND_component([rot_components[i].id] + [Ti.id], [[0, 1, 2, 3, 4]] + [l[5 - i]], 5)
+                and_comp = self.add_and_component([rot_components[i].id] + [Ti.id], [[0, 1, 2, 3, 4]] + [l[5 - i]], 5)
             and_components.append(and_comp)
 
     def tweakey_schedule(self, tweak, key, constant):
         expansion = [list(range(j, j + 4)) for j in range(0, 48, 4)]
         for i in range(0, 24, 2):
             expansion.insert(i, [0])
-        T1 = self.add_XOR_component([constant.id, tweak[0][0]] * 12 + key[0], expansion + [list(range(180, 240))], 60)
+        T1 = self.add_xor_component([constant.id, tweak[0][0]] * 12 + key[0], expansion + [list(range(180, 240))], 60)
         self.add_round_key_output_component([T1.id], [list(range(60))], 60)
 
         sboxes_components = []
         self.create_sbox_components(T1, sboxes_components)
         sigma = self.create_sigma_components(sboxes_components)
-        T2 = self.add_XOR_component([sigma.id] + key[0], [list(range(60)), list(range(120, 180))], 60)
+        T2 = self.add_xor_component([sigma.id] + key[0], [list(range(60)), list(range(120, 180))], 60)
         self.add_round_key_output_component([T2.id], [list(range(60))], 60)
 
         sboxes_components = []
         self.create_sbox_components(T2, sboxes_components)
         input_ids = [sbox_component.id for sbox_component in sboxes_components]
         input_bit_pos = [list(range(5)) for _ in range(12)]
-        Sl_xored = self.add_XOR_component(input_ids + key[0], input_bit_pos + [list(range(60, 120))], 60)
+        Sl_xored = self.add_xor_component(input_ids + key[0], input_bit_pos + [list(range(60, 120))], 60)
 
         Pi = self.add_permutation_component([Sl_xored.id], [list(range(60))], 60, permutation)
         sboxes_components = []
@@ -159,7 +159,7 @@ class SCARFBlockCipher(Cipher):
         T3 = self.add_round_key_output_component(input_ids, input_bit_pos, 60)
 
         sigma = self.create_sigma_components(sboxes_components)
-        sigma_xored = self.add_XOR_component([sigma.id] + key[0], [list(range(60)), list(range(60))], 60)
+        sigma_xored = self.add_xor_component([sigma.id] + key[0], [list(range(60)), list(range(60))], 60)
         sboxes_components = []
         self.create_sbox_components(sigma_xored, sboxes_components)
         input_ids = [sbox_component.id for sbox_component in sboxes_components]
@@ -170,7 +170,7 @@ class SCARFBlockCipher(Cipher):
 
     def create_sbox_components(self, Ti, sboxes_components):
         for j in range(12):
-            sbox = self.add_SBOX_component([Ti.id], [list(range(j * 5, (j + 1) * 5))], 5, scarf_sbox)
+            sbox = self.add_sbox_component([Ti.id], [list(range(j * 5, (j + 1) * 5))], 5, scarf_sbox)
             sboxes_components.append(sbox)
 
     def create_sigma_components(self, sboxes_components):
@@ -182,7 +182,7 @@ class SCARFBlockCipher(Cipher):
         rot29 = self.add_rotate_component(input_ids, input_bit_pos, 60, -29).id
         rot43 = self.add_rotate_component(input_ids, input_bit_pos, 60, -43).id
         rot51 = self.add_rotate_component(input_ids, input_bit_pos, 60, -51).id
-        sigma_xor = self.add_XOR_component(
+        sigma_xor = self.add_xor_component(
             [rot6, rot12, rot19, rot29, rot43, rot51] + input_ids,
             [list(range(60)) for _ in range(6)] + input_bit_pos,
             60,

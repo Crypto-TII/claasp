@@ -115,16 +115,16 @@ class XTeaBlockCipher(Cipher):
 
             # OPERATION 1
             # v1 << l
-            ls1_id = self.add_SHIFT_component([data[1][0]], [data[1][1]], self.word_size, -left_shift_amount).id
+            ls1_id = self.add_shift_component([data[1][0]], [data[1][1]], self.word_size, -left_shift_amount).id
 
             # (v1 >> r)
-            rs1_id = self.add_SHIFT_component([data[1][0]], [data[1][1]], self.word_size, right_shift_amount).id
+            rs1_id = self.add_shift_component([data[1][0]], [data[1][1]], self.word_size, right_shift_amount).id
 
             # (v1 << l) ^ (v1 >> r)
-            xor1_id = self.add_XOR_component([ls1_id, rs1_id], [word_bit_positions] * 2, self.word_size).id
+            xor1_id = self.add_xor_component([ls1_id, rs1_id], [word_bit_positions] * 2, self.word_size).id
 
             # ((v1 << l) ^ (v1 >> r)) + v1
-            sum1_id = self.add_MODADD_component(
+            sum1_id = self.add_modadd_component(
                 [xor1_id, data[1][0]], [word_bit_positions, data[1][1]], self.word_size
             ).id
 
@@ -134,15 +134,15 @@ class XTeaBlockCipher(Cipher):
 
             # sum + key[sum & 3]
             i = sum_constant & 3
-            sum2_id = self.add_MODADD_component(
+            sum2_id = self.add_modadd_component(
                 [sum_constant_id, key[i][0]], [word_bit_positions, key[i][1]], self.word_size
             ).id
 
             # (((v1 << l) ^ (v1 >> r)) + v1) ^ (sum + key[sum & 3])
-            xor2_id = self.add_XOR_component([sum1_id, sum2_id], [word_bit_positions] * 2, self.word_size).id
+            xor2_id = self.add_xor_component([sum1_id, sum2_id], [word_bit_positions] * 2, self.word_size).id
 
             # v0 = v0 + ((((v1 << l) ^ (v1 >> r)) + v1) ^ (sum + key[sum & 3]))
-            v0 = self.add_MODADD_component([data[0][0], xor2_id], [data[0][1], word_bit_positions], self.word_size).id
+            v0 = self.add_modadd_component([data[0][0], xor2_id], [data[0][1], word_bit_positions], self.word_size).id
 
             # OPERATION 2
             # sum = sum + delta
@@ -150,28 +150,28 @@ class XTeaBlockCipher(Cipher):
             sum_constant_id = self.add_constant_component(self.word_size, sum_constant).id
 
             # v0 << l
-            ls2_id = self.add_SHIFT_component([v0], [word_bit_positions], self.word_size, -left_shift_amount).id
+            ls2_id = self.add_shift_component([v0], [word_bit_positions], self.word_size, -left_shift_amount).id
 
             # v0 >> r
-            rs2_id = self.add_SHIFT_component([v0], [word_bit_positions], self.word_size, right_shift_amount).id
+            rs2_id = self.add_shift_component([v0], [word_bit_positions], self.word_size, right_shift_amount).id
 
             # (v0 << l) ^ (v0 >> r)
-            xor3_id = self.add_XOR_component([ls2_id, rs2_id], [word_bit_positions] * 2, self.word_size).id
+            xor3_id = self.add_xor_component([ls2_id, rs2_id], [word_bit_positions] * 2, self.word_size).id
 
             # ((v0 << l) ^ (v0 >> r)) + v0
-            sum3_id = self.add_MODADD_component([xor3_id, v0], [word_bit_positions] * 2, self.word_size).id
+            sum3_id = self.add_modadd_component([xor3_id, v0], [word_bit_positions] * 2, self.word_size).id
 
             # sum + key[(sum>>11) & 3]
             i = (sum_constant >> 11) & 3
-            sum4_id = self.add_MODADD_component(
+            sum4_id = self.add_modadd_component(
                 [sum_constant_id, key[i][0]], [word_bit_positions, key[i][1]], self.word_size
             ).id
 
             # (((v0 << l) ^ (v0 >> r)) + v0) ^ (sum + key[(sum>>11) & 3])
-            xor4_id = self.add_XOR_component([sum3_id, sum4_id], [word_bit_positions] * 2, self.word_size).id
+            xor4_id = self.add_xor_component([sum3_id, sum4_id], [word_bit_positions] * 2, self.word_size).id
 
             # v1 = v1 + ((((v0 << l) ^ (v0 >> r)) + v0) ^ (sum + key[(sum>>11) & 3]))
-            v1 = self.add_MODADD_component([data[1][0], xor4_id], [data[1][1], word_bit_positions], self.word_size).id
+            v1 = self.add_modadd_component([data[1][0], xor4_id], [data[1][1], word_bit_positions], self.word_size).id
 
             # ROUND OUTPUT
             data[0] = v0, word_bit_positions

@@ -371,7 +371,7 @@ class BEA1BlockCipher(Cipher):
 
         _zero = self.add_constant_component(self.sbox_bit_size, 0)
         key_state = [
-            self.add_XOR_component(
+            self.add_xor_component(
                 [INPUT_KEY if j < (self.key_block_size // self.sbox_bit_size) else _zero.id, _zero.id],
                 [
                     list(range(j * self.sbox_bit_size, (j + 1) * self.sbox_bit_size))
@@ -397,7 +397,7 @@ class BEA1BlockCipher(Cipher):
                 self.mix_columns_matrix,
             )
             x = [
-                self.add_SBOX_component(
+                self.add_sbox_component(
                     [x.id],
                     [[j * self.sbox_bit_size + k for k in range(self.sbox_bit_size)]],
                     self.sbox_bit_size,
@@ -406,24 +406,24 @@ class BEA1BlockCipher(Cipher):
                 for j in range(4)
             ]
             xor_constant = self.add_constant_component(self.sbox_bit_size, pow(3, i, 2**10))
-            x[0] = self.add_XOR_component(
+            x[0] = self.add_xor_component(
                 [x[0].id, xor_constant.id], [list(range(self.sbox_bit_size))] * 2, self.sbox_bit_size
             )
 
             for j in range(4):
-                key_state[(12 * i + 12) % 24 + j] = self.add_XOR_component(
+                key_state[(12 * i + 12) % 24 + j] = self.add_xor_component(
                     [key_state[(12 * i) % 24 + j].id, x[j].id],
                     [list(range(self.sbox_bit_size))] * 2,
                     self.sbox_bit_size,
                 )
             for j in range(4):
-                key_state[(12 * i + 16) % 24 + j] = self.add_XOR_component(
+                key_state[(12 * i + 16) % 24 + j] = self.add_xor_component(
                     [key_state[(12 * i + 4) % 24 + j].id, key_state[(12 * i + 12) % 24 + j].id],
                     [list(range(self.sbox_bit_size))] * 2,
                     self.sbox_bit_size,
                 )
             for j in range(4):
-                key_state[(12 * i + 20) % 24 + j] = self.add_XOR_component(
+                key_state[(12 * i + 20) % 24 + j] = self.add_xor_component(
                     [key_state[(12 * i + 8) % 24 + j].id, key_state[(12 * i + 16) % 24 + j].id],
                     [list(range(self.sbox_bit_size))] * 2,
                     self.sbox_bit_size,
@@ -439,7 +439,7 @@ class BEA1BlockCipher(Cipher):
 
             # sbox
             cipher_state = [
-                self.add_SBOX_component(
+                self.add_sbox_component(
                     [cipher_state[i].id],
                     [list(range(self.sbox_bit_size))],
                     self.sbox_bit_size,
@@ -463,7 +463,7 @@ class BEA1BlockCipher(Cipher):
                     self.mix_columns_matrix,
                 )
                 cipher_state = [
-                    self.add_XOR_component(
+                    self.add_xor_component(
                         [mx1.id, _zero.id],
                         [
                             list(range(i * self.sbox_bit_size, (i + 1) * self.sbox_bit_size)),
@@ -474,7 +474,7 @@ class BEA1BlockCipher(Cipher):
                     for i in range(4)
                 ]
                 cipher_state += [
-                    self.add_XOR_component(
+                    self.add_xor_component(
                         [mx2.id, _zero.id],
                         [
                             list(range(i * self.sbox_bit_size, (i + 1) * self.sbox_bit_size)),
@@ -521,7 +521,7 @@ class BEA1BlockCipher(Cipher):
         if isinstance(cipher_state, str):
             # cipher_state == INPUT_PLAINTEXT
             return [
-                self.add_XOR_component(
+                self.add_xor_component(
                     [cipher_state, key[i].id],
                     [
                         list(range(i * self.sbox_bit_size, (i + 1) * self.sbox_bit_size)),
@@ -533,7 +533,7 @@ class BEA1BlockCipher(Cipher):
             ]
 
         return [
-            self.add_XOR_component(
+            self.add_xor_component(
                 [cipher_state[i].id, key[i].id], [list(range(self.sbox_bit_size))] * 2, self.sbox_bit_size
             )
             for i in range(8)

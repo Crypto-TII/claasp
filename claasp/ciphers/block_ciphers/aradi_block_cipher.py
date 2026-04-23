@@ -75,10 +75,10 @@ class AradiBlockCipher(Cipher):
             key = self.update_key(key, round_i)
 
         round_key = self.get_round_key_id(key, 0)
-        w = self.add_XOR_component([round_key, state], [list(range(32)), list(range(32))], 32).id
-        x = self.add_XOR_component([round_key, state], [list(range(32, 64)), list(range(32, 64))], 32).id
-        y = self.add_XOR_component([round_key, state], [list(range(64, 96)), list(range(64, 96))], 32).id
-        z = self.add_XOR_component([round_key, state], [list(range(96, 128)), list(range(96, 128))], 32).id
+        w = self.add_xor_component([round_key, state], [list(range(32)), list(range(32))], 32).id
+        x = self.add_xor_component([round_key, state], [list(range(32, 64)), list(range(32, 64))], 32).id
+        y = self.add_xor_component([round_key, state], [list(range(64, 96)), list(range(64, 96))], 32).id
+        z = self.add_xor_component([round_key, state], [list(range(96, 128)), list(range(96, 128))], 32).id
         self.add_cipher_output_component([w, x, y, z], [list(range(32)) for _ in range(4)], 128)
 
     def get_round_key_id(self, key, round_i):
@@ -94,10 +94,10 @@ class AradiBlockCipher(Cipher):
         rot_y_a = self.add_rotate_component([xy_id_links], [y_bits], 16, -self.A[j]).id
         rot_y_c = self.add_rotate_component([xy_id_links], [y_bits], 16, -self.C[j]).id
 
-        left_part = self.add_XOR_component(
+        left_part = self.add_xor_component(
             [xy_id_links] + [rot_x_a, rot_y_c], [x_bits] + [list(range(16)), list(range(16))], 16
         ).id
-        right_part = self.add_XOR_component(
+        right_part = self.add_xor_component(
             [xy_id_links] + [rot_y_a, rot_x_b], [y_bits] + [list(range(16)), list(range(16))], 16
         ).id
         return left_part, right_part
@@ -107,10 +107,10 @@ class AradiBlockCipher(Cipher):
         x_indices = xy_input_bits[:32]
         rot_i_y = self.add_rotate_component(xy_id_links, [y_indices], 32, -i).id
         rot_j_x = self.add_rotate_component(xy_id_links, [x_indices], 32, -j).id
-        left_part = self.add_XOR_component(
+        left_part = self.add_xor_component(
             xy_id_links + [rot_i_y, rot_j_x], [x_indices] + [list(range(32)), list(range(32))], 32
         ).id
-        right_part = self.add_XOR_component(xy_id_links + [rot_i_y], [x_indices] + [list(range(32))], 32).id
+        right_part = self.add_xor_component(xy_id_links + [rot_i_y], [x_indices] + [list(range(32))], 32).id
         return left_part, right_part
 
     def update_key(self, key, round_i):
@@ -119,7 +119,7 @@ class AradiBlockCipher(Cipher):
         k3, k2 = self.m_function(9, 28, [key], get_key_word_bit_indexes(3) + get_key_word_bit_indexes(2))
         k5, k4 = self.m_function(1, 3, [key], get_key_word_bit_indexes(5) + get_key_word_bit_indexes(4))
         k7, k6 = self.m_function(9, 28, [key], get_key_word_bit_indexes(7) + get_key_word_bit_indexes(6))
-        k7 = self.add_XOR_component([k7, round_constant], [list(range(32)), list(range(32))], 32).id
+        k7 = self.add_xor_component([k7, round_constant], [list(range(32)), list(range(32))], 32).id
         if round_i % 2 == 0:
             updated_key = self.add_intermediate_output_component(
                 [k7, k5, k6, k4, k3, k1, k2, k0], [list(range(32)) for _ in range(8)], 256, f"key_{round_i}"
@@ -135,22 +135,22 @@ class AradiBlockCipher(Cipher):
         x_ind = list(range(32, 64))
         y_ind = list(range(64, 96))
         z_ind = list(range(96, 128))
-        w = self.add_XOR_component([round_key, state], [w_ind, w_ind], 32).id
-        x = self.add_XOR_component([round_key, state], [x_ind, x_ind], 32).id
-        y = self.add_XOR_component([round_key, state], [y_ind, y_ind], 32).id
-        z = self.add_XOR_component([round_key, state], [z_ind, z_ind], 32).id
+        w = self.add_xor_component([round_key, state], [w_ind, w_ind], 32).id
+        x = self.add_xor_component([round_key, state], [x_ind, x_ind], 32).id
+        y = self.add_xor_component([round_key, state], [y_ind, y_ind], 32).id
+        z = self.add_xor_component([round_key, state], [z_ind, z_ind], 32).id
         # SBOX
-        wy = self.add_AND_component([w, y], [list(range(32)), list(range(32))], 32).id
-        x = self.add_XOR_component([x, wy], [list(range(32)), list(range(32))], 32).id
+        wy = self.add_and_component([w, y], [list(range(32)), list(range(32))], 32).id
+        x = self.add_xor_component([x, wy], [list(range(32)), list(range(32))], 32).id
 
-        xy = self.add_AND_component([x, y], [list(range(32)), list(range(32))], 32).id
-        z = self.add_XOR_component([z, xy], [list(range(32)), list(range(32))], 32).id
+        xy = self.add_and_component([x, y], [list(range(32)), list(range(32))], 32).id
+        z = self.add_xor_component([z, xy], [list(range(32)), list(range(32))], 32).id
 
-        wz = self.add_AND_component([w, z], [list(range(32)), list(range(32))], 32).id
-        y = self.add_XOR_component([y, wz], [list(range(32)), list(range(32))], 32).id
+        wz = self.add_and_component([w, z], [list(range(32)), list(range(32))], 32).id
+        y = self.add_xor_component([y, wz], [list(range(32)), list(range(32))], 32).id
 
-        xz = self.add_AND_component([x, z], [list(range(32)), list(range(32))], 32).id
-        w = self.add_XOR_component([w, xz], [list(range(32)), list(range(32))], 32).id
+        xz = self.add_and_component([x, z], [list(range(32)), list(range(32))], 32).id
+        w = self.add_xor_component([w, xz], [list(range(32)), list(range(32))], 32).id
 
         # L Function
         # w_id_links = [sb_id for sb_id in sb_outputs]

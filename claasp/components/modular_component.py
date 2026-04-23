@@ -493,7 +493,7 @@ class Modular(Component):
             ....:     def __init__(self):
             ....:         super().__init__('dummy_cipher', BLOCK_CIPHER, [INPUT_PLAINTEXT, INPUT_KEY], [4, 4], 4)
             ....:         self.add_round()
-            ....:         self.add_MODADD_component([INPUT_PLAINTEXT, INPUT_KEY], [list(range(4)), list(range(4))], 4)
+            ....:         self.add_modadd_component([INPUT_PLAINTEXT, INPUT_KEY], [list(range(4)), list(range(4))], 4)
             ....:         self.add_cipher_output_component(['modadd_0_0'], [list(range(4))], 4)
             sage: cipher = DummyCipher()
             sage: model = MznModel(cipher)
@@ -567,7 +567,7 @@ class Modular(Component):
             ....:     def __init__(self):
             ....:         super().__init__('dummy_cipher', BLOCK_CIPHER, [INPUT_PLAINTEXT, INPUT_KEY], [4, 4], 4)
             ....:         self.add_round()
-            ....:         self.add_MODADD_component([INPUT_PLAINTEXT, INPUT_KEY], [list(range(4)), list(range(4))], 4)
+            ....:         self.add_modadd_component([INPUT_PLAINTEXT, INPUT_KEY], [list(range(4)), list(range(4))], 4)
             ....:         self.add_cipher_output_component(['modadd_0_0'], [list(range(4))], 4)
             sage: cipher = DummyCipher()
             sage: minizinc = MznXorDifferentialModelARXOptimized(cipher, sat_or_milp='milp')
@@ -690,7 +690,7 @@ class Modular(Component):
             ....:     def __init__(self):
             ....:         super().__init__('dummy_cipher', BLOCK_CIPHER, [INPUT_PLAINTEXT, INPUT_KEY], [4, 4], 4)
             ....:         self.add_round()
-            ....:         self.add_MODADD_component([INPUT_PLAINTEXT, INPUT_KEY], [list(range(4)), list(range(4))], 4)
+            ....:         self.add_modadd_component([INPUT_PLAINTEXT, INPUT_KEY], [list(range(4)), list(range(4))], 4)
             ....:         self.add_cipher_output_component(['modadd_0_0'], [list(range(4))], 4)
             sage: cipher = DummyCipher()
             sage: model = MznModel(cipher)
@@ -768,7 +768,7 @@ class Modular(Component):
             ....:     def __init__(self):
             ....:         super().__init__('dummy_cipher', BLOCK_CIPHER, [INPUT_PLAINTEXT, INPUT_KEY], [4, 4], 4)
             ....:         self.add_round()
-            ....:         self.add_MODADD_component([INPUT_PLAINTEXT, INPUT_KEY], [list(range(4)), list(range(4))], 4)
+            ....:         self.add_modadd_component([INPUT_PLAINTEXT, INPUT_KEY], [list(range(4)), list(range(4))], 4)
             ....:         self.add_cipher_output_component(['modadd_0_0'], [list(range(4))], 4)
             sage: cipher = DummyCipher()
             sage: modadd_component = cipher.component_from(0, 0)
@@ -923,7 +923,7 @@ class Modular(Component):
             ....:     def __init__(self):
             ....:         super().__init__('dummy_cipher', BLOCK_CIPHER, [INPUT_PLAINTEXT, INPUT_KEY], [4, 4], 4)
             ....:         self.add_round()
-            ....:         self.add_MODADD_component([INPUT_PLAINTEXT, INPUT_KEY], [list(range(4)), list(range(4))], 4)
+            ....:         self.add_modadd_component([INPUT_PLAINTEXT, INPUT_KEY], [list(range(4)), list(range(4))], 4)
             ....:         self.add_cipher_output_component(['modadd_0_0'], [list(range(4))], 4)
             sage: cipher = DummyCipher()
             sage: milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(cipher)
@@ -1027,7 +1027,7 @@ class Modular(Component):
             ....:     def __init__(self):
             ....:         super().__init__('dummy_cipher', BLOCK_CIPHER, [INPUT_PLAINTEXT, INPUT_KEY], [4, 4], 4)
             ....:         self.add_round()
-            ....:         self.add_MODADD_component([INPUT_PLAINTEXT, INPUT_KEY], [list(range(4)), list(range(4))], 4)
+            ....:         self.add_modadd_component([INPUT_PLAINTEXT, INPUT_KEY], [list(range(4)), list(range(4))], 4)
             ....:         self.add_cipher_output_component(['modadd_0_0'], [list(range(4))], 4)
             sage: cipher = DummyCipher()
             sage: milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(cipher)
@@ -1101,7 +1101,7 @@ class Modular(Component):
             ....:     def __init__(self):
             ....:         super().__init__('dummy_cipher', BLOCK_CIPHER, [INPUT_PLAINTEXT, INPUT_KEY], [4, 4], 4)
             ....:         self.add_round()
-            ....:         self.add_MODADD_component([INPUT_PLAINTEXT, INPUT_KEY], [list(range(4)), list(range(4))], 4)
+            ....:         self.add_modadd_component([INPUT_PLAINTEXT, INPUT_KEY], [list(range(4)), list(range(4))], 4)
             ....:         self.add_cipher_output_component(['modadd_0_0'], [list(range(4))], 4)
             sage: cipher = DummyCipher()
             sage: minizinc = MznXorDifferentialModelARXOptimized(cipher, sat_or_milp='milp')
@@ -1222,7 +1222,7 @@ class Modular(Component):
             ....:     def __init__(self):
             ....:         super().__init__('dummy_cipher', BLOCK_CIPHER, [INPUT_PLAINTEXT, INPUT_KEY], [4, 4], 4)
             ....:         self.add_round()
-            ....:         self.add_MODADD_component([INPUT_PLAINTEXT, INPUT_KEY], [list(range(4)), list(range(4))], 4)
+            ....:         self.add_modadd_component([INPUT_PLAINTEXT, INPUT_KEY], [list(range(4)), list(range(4))], 4)
             ....:         self.add_cipher_output_component(['modadd_0_0'], [list(range(4))], 4)
             sage: cipher = DummyCipher()
             sage: milp = MilpXorLinearModel(cipher)
@@ -1313,7 +1313,7 @@ class Modular(Component):
             ....:     def __init__(self):
             ....:         super().__init__('dummy_cipher', BLOCK_CIPHER, [INPUT_PLAINTEXT, INPUT_KEY], [4, 4], 4)
             ....:         self.add_round()
-            ....:         self.add_MODADD_component([INPUT_PLAINTEXT, INPUT_KEY], [list(range(4)), list(range(4))], 4)
+            ....:         self.add_modadd_component([INPUT_PLAINTEXT, INPUT_KEY], [list(range(4)), list(range(4))], 4)
             ....:         self.add_cipher_output_component(['modadd_0_0'], [list(range(4))], 4)
             sage: cipher = DummyCipher()
             sage: sat = SatModel(cipher)

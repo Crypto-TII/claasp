@@ -32,7 +32,7 @@ def cp_twoterms(input_1, input_2, out, component_name, input_length, cp_constrai
     return cp_declarations, cp_constraints
 
 
-class MODSUB(Modular):
+class ModSub(Modular):
     """
     Construct a modular subtraction component.
 
@@ -57,15 +57,15 @@ class MODSUB(Modular):
 
     EXAMPLES::
 
-        sage: from claasp.components.modsub_component import MODSUB
-        sage: component = MODSUB(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2, 2)
+        sage: from claasp.components.modsub_component import ModSub
+        sage: component = ModSub(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2, 2)
         sage: print(component.id)
         modsub_0_0
         sage: print(component.type)
         word_operation
         sage: print(component.description)  # 4 total bits / output_bit_size 2 = 2 operands
         ['MODSUB', 2, 2]
-        sage: component3 = MODSUB(0, 1, ['a', 'b', 'c'], [[0, 1], [0, 1], [0, 1]], 2, 4)
+        sage: component3 = ModSub(0, 1, ['a', 'b', 'c'], [[0, 1], [0, 1], [0, 1]], 2, 4)
         sage: print(component3.description)  # 6 total bits / output_bit_size 2 = 3 operands
         ['MODSUB', 3, 4]
     """
@@ -176,8 +176,8 @@ class MODSUB(Modular):
 
         EXAMPLES::
 
-            sage: from claasp.components.modsub_component import MODSUB
-            sage: modsub_component = MODSUB(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2, 2)
+            sage: from claasp.components.modsub_component import ModSub
+            sage: modsub_component = ModSub(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2, 2)
             sage: modsub_component.cms_constraints()[:1]
             (['temp_carry_input2_0', 'temp_input_input2_0', 'temp_input_input2_1', 'carry_modsub_0_0_0', 'modsub_0_0_0', 'modsub_0_0_1'],)
         """
@@ -193,8 +193,8 @@ class MODSUB(Modular):
 
         EXAMPLES::
 
-            sage: from claasp.components.modsub_component import MODSUB
-            sage: modsub_component = MODSUB(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2, 2)
+            sage: from claasp.components.modsub_component import ModSub
+            sage: modsub_component = ModSub(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2, 2)
             sage: modsub_component.cp_constraints()[:1]
             (['array[0..1] of var 0..1: constant_modsub_0_0= array1d(0..1,[0, 1]);', 'array[0..1] of var 0..1: modsub_0_0;', 'array[0..1] of var 0..1:pre_modsub_0_0_0;', 'array[0..1] of var 0..1:pre_modsub_0_0_1;', 'array[0..1] of var 0..1:pre_minus_pre_modsub_0_0_1;', 'array[0..1] of var 0..1:minus_pre_modsub_0_0_1;'],)
         """
@@ -293,8 +293,8 @@ class MODSUB(Modular):
 
         EXAMPLES::
 
-            sage: from claasp.components.modsub_component import MODSUB
-            sage: modsub_component = MODSUB(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2, 2)
+            sage: from claasp.components.modsub_component import ModSub
+            sage: modsub_component = ModSub(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2, 2)
             sage: modsub_component.sat_constraints()[:1]
             (['temp_carry_input2_0', 'temp_input_input2_0', 'temp_input_input2_1', 'carry_modsub_0_0_0', 'modsub_0_0_0', 'modsub_0_0_1'],)
         """
@@ -367,8 +367,8 @@ class MODSUB(Modular):
 
         EXAMPLES::
 
-            sage: from claasp.components.modsub_component import MODSUB
-            sage: modsub_component = MODSUB(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2, 2)
+            sage: from claasp.components.modsub_component import ModSub
+            sage: modsub_component = ModSub(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2, 2)
             sage: modsub_component.smt_constraints()[:1]
             (['temp_carry_input2_0', 'temp_input_input2_0', 'temp_input_input2_1', 'carry_modsub_0_0_0', 'modsub_0_0_0', 'modsub_0_0_1'],)
         """

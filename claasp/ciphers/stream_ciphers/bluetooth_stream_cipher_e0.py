@@ -98,7 +98,7 @@ class BluetoothStreamCipherE0(Cipher):
             self.add_round()
             keystream = self.e0_keystream(lfsr_state, fsm_id, fsm_pos, clock_number, keystream)
             fsm_id, fsm_pos = self.e0_nonlinear_function(lfsr_state, fsm_id, fsm_pos)
-            lfsr_state = self.add_FSR_component(
+            lfsr_state = self.add_fsr_component(
                 [lfsr_state], [list(range(self.lfsr_state_bit_size))], self.lfsr_state_bit_size, LFSR_DESCR
             ).id
 
@@ -115,28 +115,28 @@ class BluetoothStreamCipherE0(Cipher):
         z_pos = [57]
         u_pos = [96]
 
-        y0 = self.add_XOR_component([x_id, y_id, z_id, u_id], [x_pos, y_pos, z_pos, u_pos], 1).id
+        y0 = self.add_xor_component([x_id, y_id, z_id, u_id], [x_pos, y_pos, z_pos, u_pos], 1).id
 
-        y1_0 = self.add_XOR_component([y_id, z_id, u_id], [y_pos, z_pos, u_pos], 1).id
-        y1_0 = self.add_AND_component([x_id, y1_0], [x_pos, [0]], 1).id
-        y1_1 = self.add_XOR_component([z_id, u_id], [z_pos, u_pos], 1).id
-        y1_1 = self.add_AND_component([y_id, y1_1], [y_pos, [0]], 1).id
-        y1_2 = self.add_AND_component([z_id, u_id], [z_pos, u_pos], 1).id
-        y1 = self.add_XOR_component([y1_0, y1_1, y1_2], [[0], [0], [0]], 1).id
+        y1_0 = self.add_xor_component([y_id, z_id, u_id], [y_pos, z_pos, u_pos], 1).id
+        y1_0 = self.add_and_component([x_id, y1_0], [x_pos, [0]], 1).id
+        y1_1 = self.add_xor_component([z_id, u_id], [z_pos, u_pos], 1).id
+        y1_1 = self.add_and_component([y_id, y1_1], [y_pos, [0]], 1).id
+        y1_2 = self.add_and_component([z_id, u_id], [z_pos, u_pos], 1).id
+        y1 = self.add_xor_component([y1_0, y1_1, y1_2], [[0], [0], [0]], 1).id
 
-        y2 = self.add_AND_component([x_id, y_id, z_id, u_id], [x_pos, y_pos, z_pos, u_pos], 1).id
+        y2 = self.add_and_component([x_id, y_id, z_id, u_id], [x_pos, y_pos, z_pos, u_pos], 1).id
 
-        t0_0 = self.add_AND_component([y0, fsm_id[2]], [[0], fsm_pos[2]], 1).id
-        t0 = self.add_XOR_component(
+        t0_0 = self.add_and_component([y0, fsm_id[2]], [[0], fsm_pos[2]], 1).id
+        t0 = self.add_xor_component(
             [t0_0, y1, fsm_id[3], fsm_id[2], fsm_id[1], fsm_id[0]],
             [[0], [0], fsm_pos[3], fsm_pos[2], fsm_pos[1], fsm_pos[0]],
             1,
         ).id
 
-        t1_0 = self.add_AND_component([y1, fsm_id[3]], [[0], fsm_pos[3]], 1).id
-        t1_1 = self.add_AND_component([y0, fsm_id[2], fsm_id[3]], [[0], fsm_pos[2], fsm_pos[3]], 1).id
-        t1_2 = self.add_AND_component([y1, y0, fsm_id[2]], [[0], [0], fsm_pos[2]], 1).id
-        t1 = self.add_XOR_component(
+        t1_0 = self.add_and_component([y1, fsm_id[3]], [[0], fsm_pos[3]], 1).id
+        t1_1 = self.add_and_component([y0, fsm_id[2], fsm_id[3]], [[0], fsm_pos[2], fsm_pos[3]], 1).id
+        t1_2 = self.add_and_component([y1, y0, fsm_id[2]], [[0], [0], fsm_pos[2]], 1).id
+        t1 = self.add_xor_component(
             [y2, t1_0, t1_1, t1_2, fsm_id[3], fsm_id[0]], [[0], [0], [0], [0], fsm_pos[3], fsm_pos[0]], 1
         ).id
 
@@ -169,7 +169,7 @@ class BluetoothStreamCipherE0(Cipher):
     def e0_keystream(self, lfsr_state, fsm_id, fsm_pos, clock_number, ks):
         ks_id = [lfsr_state, lfsr_state, lfsr_state, lfsr_state, fsm_id[2]]
         ks_pos = [[1], [32], [57], [96], fsm_pos[2]]
-        z = self.add_XOR_component(ks_id, ks_pos, 1).id
+        z = self.add_xor_component(ks_id, ks_pos, 1).id
         if clock_number == 0:
             ks = self.add_round_output_component([z], [[0]], 1).id
         else:

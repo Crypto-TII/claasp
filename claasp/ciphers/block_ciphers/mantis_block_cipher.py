@@ -101,13 +101,13 @@ class MantisBlockCipher(Cipher):
         for i in range(16):
             data_id_list, data_bit_positions = extract_inputs(
                 [current_state], [list(range(64))], list(range(i * 4, (i + 1) * 4)))
-            sbox_output = self.add_SBOX_component(
+            sbox_output = self.add_sbox_component(
                 data_id_list, data_bit_positions, 4, MANTIS_SBOX)
             sbox_id_list.append(sbox_output.id)
             sbox_bit_positions.append(list(range(4)))
 
         zero_constant = self.add_constant_component(64, 0)
-        concatenated_state = self.add_XOR_component(
+        concatenated_state = self.add_xor_component(
             sbox_id_list + [zero_constant.id],
             sbox_bit_positions + [list(range(64))],
             64
@@ -117,7 +117,7 @@ class MantisBlockCipher(Cipher):
     def add_round_constant(self, sbox_id_list, sbox_bit_positions, round_idx):
         constant = self.add_constant_component(
             64, MANTIS_ROUND_CONSTANTS[round_idx])
-        constant_xor = self.add_XOR_component(
+        constant_xor = self.add_xor_component(
             sbox_id_list + [constant.id],
             sbox_bit_positions + [list(range(64))],
             64
@@ -129,7 +129,7 @@ class MantisBlockCipher(Cipher):
             [current_tweak], [list(range(64))], 64, TWEAK_PERMUTATION, 4
         ).id
 
-        tweakey = self.add_XOR_component(
+        tweakey = self.add_xor_component(
             [permuted_tweak, INPUT_KEY],
             [list(range(64)), list(range(64, 128))], 64
         )
@@ -166,7 +166,7 @@ class MantisBlockCipher(Cipher):
             mix_column_ids.append(mix_output.id)
 
         zero_constant = self.add_constant_component(64, 0)
-        concatenated_state = self.add_XOR_component(
+        concatenated_state = self.add_xor_component(
             mix_column_ids + [zero_constant.id],
             [list(range(column_size))
              for _ in range(num_columns)] + [list(range(64))],
@@ -199,17 +199,17 @@ class MantisBlockCipher(Cipher):
                 4
             ).id
         alpha_component = self.add_constant_component(64, MANTIS_ALPHA)
-        k1_xor_alpha = self.add_XOR_component(
+        k1_xor_alpha = self.add_xor_component(
             [INPUT_KEY, alpha_component.id],
             [list(range(64, 128)), list(range(64))],
             64
         )
-        tweakey = self.add_XOR_component(
+        tweakey = self.add_xor_component(
             [current_tweak, k1_xor_alpha.id],
             [list(range(64)), list(range(64))],
             64
         )
-        result = self.add_XOR_component(
+        result = self.add_xor_component(
             [current_state, tweakey.id],
             [list(range(64)), list(range(64))],
             64
@@ -219,7 +219,7 @@ class MantisBlockCipher(Cipher):
     def add_round_constant_direct(self, current_state, round_idx):
         constant = self.add_constant_component(
             64, MANTIS_ROUND_CONSTANTS[round_idx])
-        constant_xor = self.add_XOR_component(
+        constant_xor = self.add_xor_component(
             [current_state, constant.id],
             [list(range(64)), list(range(64))],
             64
@@ -227,11 +227,11 @@ class MantisBlockCipher(Cipher):
         return constant_xor.id
 
     def add_pre_whitening(self):
-        k1_xor_tweak = self.add_XOR_component(
+        k1_xor_tweak = self.add_xor_component(
             [INPUT_KEY, INPUT_TWEAK], [list(range(64, 128)), list(range(64))], 64)
-        m_xor_k0 = self.add_XOR_component([INPUT_PLAINTEXT, INPUT_KEY], [
+        m_xor_k0 = self.add_xor_component([INPUT_PLAINTEXT, INPUT_KEY], [
                                           list(range(64)), list(range(64))], 64)
-        pre_whitening = self.add_XOR_component([m_xor_k0.id, k1_xor_tweak.id], [
+        pre_whitening = self.add_xor_component([m_xor_k0.id, k1_xor_tweak.id], [
                                                list(range(64)), list(range(64))], 64)
         return pre_whitening.id
 
@@ -244,7 +244,7 @@ class MantisBlockCipher(Cipher):
             for i in range(16):
                 data_id_list, data_bit_positions = extract_inputs(
                     [current_state], [list(range(64))], list(range(i * 4, (i + 1) * 4)))
-                sbox_output = self.add_SBOX_component(
+                sbox_output = self.add_sbox_component(
                     data_id_list, data_bit_positions, 4, MANTIS_SBOX)
                 sbox_id_list.append(sbox_output.id)
                 sbox_bit_positions.append(list(range(4)))
@@ -253,7 +253,7 @@ class MantisBlockCipher(Cipher):
                 sbox_id_list, sbox_bit_positions, round_idx)
 
             tweakey_id, current_tweak = self.add_tweakey(current_tweak)
-            current_state = self.add_XOR_component(
+            current_state = self.add_xor_component(
                 [current_state, tweakey_id],
                 [list(range(64)), list(range(64))], 64
             ).id
@@ -311,32 +311,32 @@ class MantisBlockCipher(Cipher):
         k0_rot1 = self.add_rotate_component(
             [INPUT_KEY], [list(range(64))], 64, 1
         )
-        k0_sh63 = self.add_SHIFT_component(
+        k0_sh63 = self.add_shift_component(
             [INPUT_KEY], [list(range(64))], 64, 63
         )
-        k0_prime = self.add_XOR_component(
+        k0_prime = self.add_xor_component(
             [k0_rot1.id, k0_sh63.id],
             [list(range(64)), list(range(64))],
             64
         )
         alpha_component = self.add_constant_component(64, MANTIS_ALPHA)
-        k1_xor_alpha = self.add_XOR_component(
+        k1_xor_alpha = self.add_xor_component(
             [INPUT_KEY, alpha_component.id],
             [list(range(64, 128)), list(range(64))],
             64
         )
 
-        k1_alpha_xor_tweak = self.add_XOR_component(
+        k1_alpha_xor_tweak = self.add_xor_component(
             [k1_xor_alpha.id, current_tweak],
             [list(range(64)), list(range(64))],
             64
         )
-        state_xor_tweakey = self.add_XOR_component(
+        state_xor_tweakey = self.add_xor_component(
             [current_state, k1_alpha_xor_tweak.id],
             [list(range(64)), list(range(64))],
             64
         )
-        post_whitening = self.add_XOR_component(
+        post_whitening = self.add_xor_component(
             [state_xor_tweakey.id, k0_prime.id],
             [list(range(64)), list(range(64))],
             64

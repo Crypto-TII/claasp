@@ -118,7 +118,7 @@ class ToySPN1(Cipher):
             self.add_round_key_output_component([INPUT_KEY], [list(range(key_bit_size))], key_bit_size)
 
             # XOR with round key
-            xor = self.add_XOR_component(
+            xor = self.add_xor_component(
                 [xor_input1] + [xor_input2],
                 [list(range(block_bit_size)), list(range(block_bit_size))],
                 block_bit_size,
@@ -127,7 +127,7 @@ class ToySPN1(Cipher):
             # S-box layer
             sbox_ids_list = []
             for ns in range(self.number_of_sboxes):
-                sbox_component = self.add_SBOX_component(
+                sbox_component = self.add_sbox_component(
                     [xor.id],
                     [[ns * self.sbox_bit_size + i for i in range(self.sbox_bit_size)]],
                     self.sbox_bit_size,

@@ -153,12 +153,12 @@ class SHA1HashFunction(Cipher):
         )
 
     def add_and_component_in_sha1(self, component_0, component_1):
-        return self.add_AND_component(
+        return self.add_and_component(
             [component_0.id, component_1.id], [list(range(self.word_size)), list(range(self.word_size))], self.word_size
         )
 
     def add_modadd_component_in_sha1(self, component_0, component_1):
-        return self.add_MODADD_component(
+        return self.add_modadd_component(
             [component_0.id, component_1.id], [list(range(self.word_size)), list(range(self.word_size))], self.word_size
         )
 
@@ -172,7 +172,7 @@ class SHA1HashFunction(Cipher):
 
     def compute_temp_and_s_30_b(self, A, B, E, ft_B_C_D, K, W):
         S_5_A = self.add_rotate_component_in_sha1(A, -(5 % self.word_size))
-        TEMP = self.add_MODADD_component(
+        TEMP = self.add_modadd_component(
             [S_5_A.id, ft_B_C_D.id, E.id, K.id, W.id],
             [list(range(self.word_size)) for _ in range(4)] + W.input_bit_positions,
             self.word_size,
@@ -183,16 +183,16 @@ class SHA1HashFunction(Cipher):
 
     def rounds_0_19(self, A, B, C, D, E, K, W):
         B_AND_C = self.add_and_component_in_sha1(B, C)
-        NOT_B = self.add_NOT_component([B.id], [list(range(self.word_size))], self.word_size)
+        NOT_B = self.add_not_component([B.id], [list(range(self.word_size))], self.word_size)
         NOT_B_AND_D = self.add_and_component_in_sha1(NOT_B, D)
-        ft_B_C_D = self.add_OR_component(
+        ft_B_C_D = self.add_or_component(
             [B_AND_C.id, NOT_B_AND_D.id], [list(range(self.word_size)), list(range(self.word_size))], self.word_size
         )
 
         return self.compute_temp_and_s_30_b(A, B, E, ft_B_C_D, K, W)
 
     def rounds_20_39(self, A, B, C, D, E, K, W):
-        ft_B_C_D = self.add_XOR_component(
+        ft_B_C_D = self.add_xor_component(
             [B.id, C.id, D.id],
             [list(range(self.word_size)), list(range(self.word_size)), list(range(self.word_size))],
             self.word_size,
@@ -204,7 +204,7 @@ class SHA1HashFunction(Cipher):
         B_AND_C = self.add_and_component_in_sha1(B, C)
         B_AND_D = self.add_and_component_in_sha1(B, D)
         C_AND_D = self.add_and_component_in_sha1(C, D)
-        ft_B_C_D = self.add_OR_component(
+        ft_B_C_D = self.add_or_component(
             [B_AND_C.id, B_AND_D.id, C_AND_D.id],
             [list(range(self.word_size)), list(range(self.word_size)), list(range(self.word_size))],
             self.word_size,
@@ -213,7 +213,7 @@ class SHA1HashFunction(Cipher):
         return self.compute_temp_and_s_30_b(A, B, E, ft_B_C_D, K, W)
 
     def schedule(self, W, t):
-        Wt_temp = self.add_XOR_component(
+        Wt_temp = self.add_xor_component(
             [W[t - 3].id, W[t - 8].id, W[t - 14].id, W[t - 16].id],
             W[t - 3].input_bit_positions
             + W[t - 8].input_bit_positions

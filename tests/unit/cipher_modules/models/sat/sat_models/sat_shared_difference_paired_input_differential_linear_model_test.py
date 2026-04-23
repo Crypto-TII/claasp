@@ -13,7 +13,7 @@ from claasp.cipher_modules.models.utils import (
 )
 from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation, ROUND_MODE_HALF
 from claasp.components.intermediate_output_component import IntermediateOutput
-from claasp.components.modsub_component import MODSUB
+from claasp.components.modsub_component import ModSub
 
 
 def add_prefix_id_to_inputs(chacha_permutation, prefix):
@@ -31,7 +31,7 @@ def add_ciphertext_and_new_plaintext_to_inputs(chacha_permutation):
     modsub_ids = []
     round_object = chacha_permutation.rounds.round_at(0)
     for i in range(16):
-        new_modsub_component = MODSUB(
+        new_modsub_component = ModSub(
             0,
             round_object.get_number_of_components(),
             ["ciphertext_final", "fake_plaintext"],

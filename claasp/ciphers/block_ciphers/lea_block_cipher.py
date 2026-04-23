@@ -175,7 +175,7 @@ class LeaBlockCipher(Cipher):
             rot_j = self.add_rotate_component(
                 [delta_j.id], [get_ith_word(self.word_size, 0)], self.word_size, -(round_i + operation)
             )
-            mod_j = self.add_MODADD_component(
+            mod_j = self.add_modadd_component(
                 [key[operation].id] + [rot_j.id],
                 key[operation].input_bit_positions + rot_j.input_bit_positions,
                 self.word_size,
@@ -194,7 +194,7 @@ class LeaBlockCipher(Cipher):
             rot_j = self.add_rotate_component(
                 [delta_j.id], [get_ith_word(self.word_size, 0)], self.word_size, -(round_i + operation)
             )
-            mod_j = self.add_MODADD_component(
+            mod_j = self.add_modadd_component(
                 [key[operation].id] + [rot_j.id],
                 key[operation].input_bit_positions + rot_j.input_bit_positions,
                 self.word_size,
@@ -213,7 +213,7 @@ class LeaBlockCipher(Cipher):
             rot_j = self.add_rotate_component(
                 [delta_j.id], [get_ith_word(self.word_size, 0)], self.word_size, -(round_i + operation)
             )
-            mod_j = self.add_MODADD_component(
+            mod_j = self.add_modadd_component(
                 [key[new_j].id] + [rot_j.id], key[new_j].input_bit_positions + rot_j.input_bit_positions, self.word_size
             )
             rot_c = self.add_rotate_component(
@@ -244,18 +244,18 @@ class LeaBlockCipher(Cipher):
 
     def round_function(self, internal_state, round_key):
         def word_function(i0, i1, i2, i3, rot_value):
-            xor_w3_1 = self.add_XOR_component(
+            xor_w3_1 = self.add_xor_component(
                 [internal_state[i0].id] + [round_key[i1].id],
                 internal_state[i0].input_bit_positions + round_key[i1].input_bit_positions,
                 self.word_size,
             )
-            xor_w1_2 = self.add_XOR_component(
+            xor_w1_2 = self.add_xor_component(
                 [internal_state[i2].id] + [round_key[i3].id],
                 internal_state[i2].input_bit_positions + round_key[i3].input_bit_positions,
                 self.word_size,
             )
 
-            mod_1 = self.add_MODADD_component(
+            mod_1 = self.add_modadd_component(
                 [xor_w3_1.id] + [xor_w1_2.id],
                 [get_ith_word(self.word_size, 0)] + [get_ith_word(self.word_size, 0)],
                 self.word_size,

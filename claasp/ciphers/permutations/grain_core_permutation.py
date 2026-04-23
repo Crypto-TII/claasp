@@ -87,7 +87,7 @@ class GrainCorePermutation(Cipher):
             self.add_round()
 
             state_id_list, state_bit_positions = extract_inputs(*state, [0, 13, 23, 38, 51, 62])
-            new_bit_id = self.add_XOR_component(state_id_list, state_bit_positions, 1).id
+            new_bit_id = self.add_xor_component(state_id_list, state_bit_positions, 1).id
 
             state_id_list, state_bit_positions = extract_inputs(*state, list(range(1, 80)))
             state = state_id_list + [new_bit_id], state_bit_positions + [[0]]

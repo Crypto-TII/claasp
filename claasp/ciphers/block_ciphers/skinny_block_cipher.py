@@ -191,7 +191,7 @@ class SkinnyBlockCipher(Cipher):
     def round_function(self, state, key, round_number, rc2):
         # SubCells
         for cell_number in range(NUMBER_OF_CELLS):
-            self.add_SBOX_component(
+            self.add_sbox_component(
                 state[cell_number].id, state[cell_number].input_bit_positions, self.cell_size, self.sbox
             )
             state[cell_number] = ComponentState([self.get_current_component_id()], [list(range(self.cell_size))])
@@ -200,26 +200,26 @@ class SkinnyBlockCipher(Cipher):
         self.add_constant_component(self.cell_size, ROUND_CONSTANTS_0[round_number])
         rc0 = ComponentState([self.get_current_component_id()], [list(range(self.cell_size))])
         inputs_id, inputs_positions = get_inputs_parameter([state[0], rc0])
-        self.add_XOR_component(inputs_id, inputs_positions, self.cell_size)
+        self.add_xor_component(inputs_id, inputs_positions, self.cell_size)
         state[0] = ComponentState([self.get_current_component_id()], [list(range(self.cell_size))])
 
         # AddConstants c1
         self.add_constant_component(self.cell_size, ROUND_CONSTANTS_1[round_number])
         rc1 = ComponentState([self.get_current_component_id()], [list(range(self.cell_size))])
         inputs_id, inputs_pos = get_inputs_parameter([state[4], rc1])
-        self.add_XOR_component(inputs_id, inputs_pos, self.cell_size)
+        self.add_xor_component(inputs_id, inputs_pos, self.cell_size)
         state[4] = ComponentState([self.get_current_component_id()], [list(range(self.cell_size))])
 
         # AddConstants c2
         inputs_id, inputs_pos = get_inputs_parameter([state[8], rc2])
-        self.add_XOR_component(inputs_id, inputs_pos, self.cell_size)
+        self.add_xor_component(inputs_id, inputs_pos, self.cell_size)
         state[8] = ComponentState([self.get_current_component_id()], [list(range(self.cell_size))])
 
         # AddRoundTweakey
         for key_arrays_number in range(self.number_of_key_arrays):
             for cell_number in range(2 * NUMBER_OF_ROWS):
                 inputs_id, inputs_pos = get_inputs_parameter([state[cell_number], key[key_arrays_number][cell_number]])
-                self.add_XOR_component(inputs_id, inputs_pos, self.cell_size)
+                self.add_xor_component(inputs_id, inputs_pos, self.cell_size)
                 state[cell_number] = ComponentState([self.get_current_component_id()], [list(range(self.cell_size))])
 
         # ShiftRows
@@ -231,17 +231,17 @@ class SkinnyBlockCipher(Cipher):
         mix_column_state = []
         for i in range(4):
             inputs_id, inputs_pos = get_inputs_parameter([state[i], state[i + 8], state[i + 12]])
-            self.add_XOR_component(inputs_id, inputs_pos, self.cell_size)
+            self.add_xor_component(inputs_id, inputs_pos, self.cell_size)
             mix_column_state.append(ComponentState([self.get_current_component_id()], [list(range(self.cell_size))]))
         for i in range(4):
             mix_column_state.append(state[i])
         for i in range(4):
             inputs_id, inputs_pos = get_inputs_parameter([state[i + 4], state[i + 8]])
-            self.add_XOR_component(inputs_id, inputs_pos, self.cell_size)
+            self.add_xor_component(inputs_id, inputs_pos, self.cell_size)
             mix_column_state.append(ComponentState([self.get_current_component_id()], [list(range(self.cell_size))]))
         for i in range(4):
             inputs_id, inputs_pos = get_inputs_parameter([state[i], state[i + 8]])
-            self.add_XOR_component(inputs_id, inputs_pos, self.cell_size)
+            self.add_xor_component(inputs_id, inputs_pos, self.cell_size)
             mix_column_state.append(ComponentState([self.get_current_component_id()], [list(range(self.cell_size))]))
 
         return mix_column_state

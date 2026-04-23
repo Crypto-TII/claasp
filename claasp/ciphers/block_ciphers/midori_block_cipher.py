@@ -241,7 +241,7 @@ class MidoriBlockCipher(Cipher):
         self.add_round()
 
         if self.block_bit_size == 64:
-            WK_id = self.add_XOR_component([key_id], [list(range(key_bit_size))], 64).id
+            WK_id = self.add_xor_component([key_id], [list(range(key_bit_size))], 64).id
         else:
             WK_id = key_id
 
@@ -268,7 +268,7 @@ class MidoriBlockCipher(Cipher):
         self.add_cipher_output_component(data[0], data[1], self.block_bit_size)
 
     def key_add(self, data, round_key_id):
-        new_data_id = self.add_XOR_component(
+        new_data_id = self.add_xor_component(
             data[0] + [round_key_id], data[1] + [list(range(self.block_bit_size))], self.block_bit_size
         ).id
 
@@ -294,12 +294,12 @@ class MidoriBlockCipher(Cipher):
         round_constant_id = self.add_constant_component(self.block_bit_size, round_constant_value).id
 
         if self.block_bit_size == 64:
-            xor_id = self.add_XOR_component(
+            xor_id = self.add_xor_component(
                 [key_id, round_constant_id], [list(range((i % 2) * 64, ((i % 2) + 1) * 64)), list(range(64))], 64
             ).id
 
         else:
-            xor_id = self.add_XOR_component([key_id, round_constant_id], [list(range(128))] * 2, 128).id
+            xor_id = self.add_xor_component([key_id, round_constant_id], [list(range(128))] * 2, 128).id
 
         return xor_id
 
@@ -316,7 +316,7 @@ class MidoriBlockCipher(Cipher):
         if self.block_bit_size == 64:
             for i in range(16):
                 data_id_list, data_bit_positions = extract_inputs(*data, list(range(i * 4, (i + 1) * 4)))
-                new_data_id_list[i] = self.add_SBOX_component(data_id_list, data_bit_positions, 4, sbox[0]).id
+                new_data_id_list[i] = self.add_sbox_component(data_id_list, data_bit_positions, 4, sbox[0]).id
 
         else:
             for i in range(16):
@@ -328,8 +328,8 @@ class MidoriBlockCipher(Cipher):
                     data_id_list, data_bit_positions, self.word_size, p
                 ).id
 
-                sbox_high_output = self.add_SBOX_component([permutated_data_word_id], [list(range(4))], 4, sbox[1]).id
-                sbox_low_output = self.add_SBOX_component([permutated_data_word_id], [list(range(4, 8))], 4, sbox[1]).id
+                sbox_high_output = self.add_sbox_component([permutated_data_word_id], [list(range(4))], 4, sbox[1]).id
+                sbox_low_output = self.add_sbox_component([permutated_data_word_id], [list(range(4, 8))], 4, sbox[1]).id
 
                 perm = [inverse_sub_permutation[i % 4].index(j) for j in range(8)]
                 new_data_id_list[i] = self.add_permutation_component(

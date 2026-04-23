@@ -168,7 +168,7 @@ class GiftSboxPermutation(Cipher):
                 inputs_id = inputs_id + state[i].id
                 inputs_pos = inputs_pos + [[state[i].input_bit_positions[0][k]]]
             inputs_id, inputs_pos = simplify_inputs(inputs_id, inputs_pos)
-            self.add_SBOX_component(inputs_id, inputs_pos, S_BOX_SIZE, S_BOX)
+            self.add_sbox_component(inputs_id, inputs_pos, S_BOX_SIZE, S_BOX)
             for i in range(STATE_NUM):
                 state_new[i].id[k] = self.get_current_component_id()
                 state_new[i].input_bit_positions[k] = [i]
@@ -184,12 +184,12 @@ class GiftSboxPermutation(Cipher):
         # addroundkey
         # S2 = S2 xor U
         inputs_id, inputs_pos = get_inputs_parameter([state[2], round_key_u])
-        self.add_XOR_component(inputs_id, inputs_pos, STATE_SIZE)
+        self.add_xor_component(inputs_id, inputs_pos, STATE_SIZE)
         state[2] = ComponentState([self.get_current_component_id()], [list(range(STATE_SIZE))])
 
         # S1 = S1 xor V
         inputs_id, inputs_pos = get_inputs_parameter([state[1], round_key_v])
-        self.add_XOR_component(inputs_id, inputs_pos, STATE_SIZE)
+        self.add_xor_component(inputs_id, inputs_pos, STATE_SIZE)
         state[1] = ComponentState([self.get_current_component_id()], [list(range(STATE_SIZE))])
 
         # S3 = S3 xor ci
@@ -197,7 +197,7 @@ class GiftSboxPermutation(Cipher):
         self.add_constant_component(STATE_SIZE, ci)
         c = ComponentState([self.get_current_component_id()], [list(range(STATE_SIZE))])
         inputs_id, inputs_pos = get_inputs_parameter([state[3], c])
-        self.add_XOR_component(inputs_id, inputs_pos, STATE_SIZE)
+        self.add_xor_component(inputs_id, inputs_pos, STATE_SIZE)
         state[3] = ComponentState([self.get_current_component_id()], [list(range(STATE_SIZE))])
 
         return state

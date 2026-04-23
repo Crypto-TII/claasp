@@ -114,13 +114,13 @@ class PhotonPermutation(Cipher):
         # state[i,0] = state[i,0] xor RC[r] xor IC[i] for i in range(self.d)
         for i in range(self.d):
             inputs_id, inputs_pos = get_inputs_parameter([state[i * self.d], component_rc, components_ic[i]])
-            self.add_XOR_component(inputs_id, inputs_pos, self.cell_bits)
+            self.add_xor_component(inputs_id, inputs_pos, self.cell_bits)
             state[i * self.d] = ComponentState([self.get_current_component_id()], [list(range(self.cell_bits))])
 
         # SubCells
         # state[i,j] = s_box(state[i, j])
         for i in range(self.d * self.d):
-            self.add_SBOX_component(state[i].id, state[i].input_bit_positions, self.cell_bits, S_BOX)
+            self.add_sbox_component(state[i].id, state[i].input_bit_positions, self.cell_bits, S_BOX)
             state[i] = ComponentState([self.get_current_component_id()], [list(range(self.cell_bits))])
 
         # ShiftRows

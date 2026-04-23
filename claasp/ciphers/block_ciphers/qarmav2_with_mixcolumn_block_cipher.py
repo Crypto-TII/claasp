@@ -253,7 +253,7 @@ class QARMAv2MixColumnBlockCipher(Cipher):
 
     def first_round_start(self, key_state):
         # First round different from others
-        first_round_add_round_key = self.add_XOR_component(
+        first_round_add_round_key = self.add_xor_component(
             [key_state[0].id, INPUT_PLAINTEXT],
             [list(range(self.key_block_size)), list(range(self.cipher_block_size))[::-1]],
             self.cipher_block_size,
@@ -261,7 +261,7 @@ class QARMAv2MixColumnBlockCipher(Cipher):
 
         first_round_sboxes = []
         for sb in range(self.num_sboxes):
-            sbox = self.add_SBOX_component(
+            sbox = self.add_sbox_component(
                 [first_round_add_round_key.id], [list(range(4 * sb, 4 * sb + 4))], self.sbox_bit_size, self.sbox
             )
             first_round_sboxes.append(sbox)
@@ -279,7 +279,7 @@ class QARMAv2MixColumnBlockCipher(Cipher):
         # Direct encryption
         round_key_shuffle = [None] * self.number_of_layers
         for l in range(self.number_of_layers):
-            xor = self.add_XOR_component(
+            xor = self.add_xor_component(
                 [
                     round_output.id,
                     key_state[round_number % 2].id,
@@ -332,7 +332,7 @@ class QARMAv2MixColumnBlockCipher(Cipher):
         round_sboxes = [None] * self.number_of_layers * self.layer_sboxes
         for l in range(self.number_of_layers):
             for sb in range(self.layer_sboxes):
-                sbox = self.add_SBOX_component(
+                sbox = self.add_sbox_component(
                     [round_state_rotate[sb % 4 + 4 * l].id],
                     [list(range(4 * int(sb / 4), 4 * int(sb / 4) + 4))],
                     self.sbox_bit_size,
@@ -378,7 +378,7 @@ class QARMAv2MixColumnBlockCipher(Cipher):
                 self.layer_block_size,
                 self.state_permutation,
             )
-            mixed_shuffled_state = self.add_XOR_component(
+            mixed_shuffled_state = self.add_xor_component(
                 [shuffled_state.id, W[(self.nrounds + 1) % 2].id],
                 [list(range(self.layer_block_size)), list(range(64 * l, 64 * l + 64))],
                 self.layer_block_size,
@@ -404,7 +404,7 @@ class QARMAv2MixColumnBlockCipher(Cipher):
         central_keyed_state = [None] * self.number_of_layers * 16
         for l in range(self.number_of_layers):
             for w in range(16):
-                central_xor = self.add_XOR_component(
+                central_xor = self.add_xor_component(
                     [round_state_rotate[w % 4 + 4 * l].id, W[(self.nrounds) % 2].id],
                     [
                         list(range(self.word_size * int(w / 4), self.word_size * int(w / 4) + 4)),
@@ -446,7 +446,7 @@ class QARMAv2MixColumnBlockCipher(Cipher):
 
         round_sboxes = []
         for sb in range(self.num_sboxes):
-            sbox = self.add_SBOX_component(
+            sbox = self.add_sbox_component(
                 [exchanging_rows.id], [list(range(4 * sb, 4 * sb + 4))], self.sbox_bit_size, self.inverse_sbox
             )
             round_sboxes.append(sbox)
@@ -475,7 +475,7 @@ class QARMAv2MixColumnBlockCipher(Cipher):
         round_key_shuffle = []
         if round_number == 1:
             for l in range(self.number_of_layers):
-                xor = self.add_XOR_component(
+                xor = self.add_xor_component(
                     [
                         round_state_shuffle[l].id,
                         key_state[(round_number + 1) % 2].id,
@@ -493,7 +493,7 @@ class QARMAv2MixColumnBlockCipher(Cipher):
                 round_key_shuffle.append(xor)
         else:
             for l in range(self.number_of_layers):
-                xor = self.add_XOR_component(
+                xor = self.add_xor_component(
                     [
                         round_state_shuffle[l].id,
                         key_state[(round_number + 1) % 2].id,
@@ -537,14 +537,14 @@ class QARMAv2MixColumnBlockCipher(Cipher):
         # Last round different from others
         last_round_sboxes = []
         for sb in range(self.num_sboxes):
-            sbox = self.add_SBOX_component(
+            sbox = self.add_sbox_component(
                 [round_output.id], [list(range(4 * sb, 4 * sb + 4))], self.sbox_bit_size, self.inverse_sbox
             )
             last_round_sboxes.append(sbox)
 
         last_round_add_round_key = []
         for sb in range(self.num_sboxes):
-            add_round_key = self.add_XOR_component(
+            add_round_key = self.add_xor_component(
                 [key_state[1].id, last_round_sboxes[sb].id],
                 [list(range(4 * sb, 4 * sb + 4)), list(range(self.sbox_bit_size))],
                 self.sbox_bit_size,
@@ -568,7 +568,7 @@ class QARMAv2MixColumnBlockCipher(Cipher):
         alpha, beta = self.constants_update()
 
         if self.number_of_layers == 2:
-            key_state[0] = self.add_XOR_component(
+            key_state[0] = self.add_xor_component(
                 [key_state[0].id, alpha[0], alpha[1]],
                 [
                     list(range(self.key_block_size)),
@@ -577,7 +577,7 @@ class QARMAv2MixColumnBlockCipher(Cipher):
                 ],
                 self.key_block_size,
             )
-            key_state[1] = self.add_XOR_component(
+            key_state[1] = self.add_xor_component(
                 [key_state[1].id, beta[0], beta[1]],
                 [
                     list(range(self.key_block_size)),
@@ -587,12 +587,12 @@ class QARMAv2MixColumnBlockCipher(Cipher):
                 self.key_block_size,
             )
         else:
-            key_state[0] = self.add_XOR_component(
+            key_state[0] = self.add_xor_component(
                 [key_state[0].id, alpha[0]],
                 [list(range(self.key_block_size)), list(range(self.layer_block_size))],
                 self.key_block_size,
             )
-            key_state[1] = self.add_XOR_component(
+            key_state[1] = self.add_xor_component(
                 [key_state[1].id, beta[0]],
                 [list(range(self.key_block_size)), list(range(self.layer_block_size))],
                 self.key_block_size,
@@ -617,42 +617,42 @@ class QARMAv2MixColumnBlockCipher(Cipher):
     # --------------------------------------------------------------------------------#
 
     def update_single_constant(self, constant):
-        spill = self.add_SHIFT_component(
+        spill = self.add_shift_component(
             [constant], [list(range(self.layer_block_size))], self.layer_block_size, 51
         )
-        tmp_0 = self.add_SHIFT_component(
+        tmp_0 = self.add_shift_component(
             [constant], [list(range(self.layer_block_size))], self.layer_block_size, -13
         )
-        tmp_1 = self.add_SHIFT_component(
+        tmp_1 = self.add_shift_component(
             [spill.id], [list(range(self.layer_block_size))], self.layer_block_size, -50
         )
-        tmp_2 = self.add_SHIFT_component(
+        tmp_2 = self.add_shift_component(
             [spill.id], [list(range(self.layer_block_size))], self.layer_block_size, -33
         )
-        tmp_3 = self.add_SHIFT_component(
+        tmp_3 = self.add_shift_component(
             [spill.id], [list(range(self.layer_block_size))], self.layer_block_size, -19
         )
-        tmp = self.add_XOR_component(
+        tmp = self.add_xor_component(
             [tmp_0.id, tmp_1.id, tmp_2.id, tmp_3.id, spill.id],
             [list(range(self.layer_block_size)) for j in range(5)],
             self.layer_block_size,
         )
-        spill = self.add_SHIFT_component(
+        spill = self.add_shift_component(
             [tmp.id], [list(range(self.layer_block_size))], self.layer_block_size, 54
         )
-        tmp_0 = self.add_SHIFT_component(
+        tmp_0 = self.add_shift_component(
             [tmp.id], [list(range(self.layer_block_size))], self.layer_block_size, -10
         )
-        tmp_1 = self.add_SHIFT_component(
+        tmp_1 = self.add_shift_component(
             [spill.id], [list(range(self.layer_block_size))], self.layer_block_size, -50
         )
-        tmp_2 = self.add_SHIFT_component(
+        tmp_2 = self.add_shift_component(
             [spill.id], [list(range(self.layer_block_size))], self.layer_block_size, -33
         )
-        tmp_3 = self.add_SHIFT_component(
+        tmp_3 = self.add_shift_component(
             [spill.id], [list(range(self.layer_block_size))], self.layer_block_size, -19
         )
-        tmp = self.add_XOR_component(
+        tmp = self.add_xor_component(
             [tmp_0.id, tmp_1.id, tmp_2.id, tmp_3.id, spill.id],
             [list(range(self.layer_block_size)) for j in range(5)],
             self.layer_block_size,
@@ -663,22 +663,22 @@ class QARMAv2MixColumnBlockCipher(Cipher):
         key_rot_0 = self.add_rotate_component(
             [key[0].id], [list(range(self.key_block_size))], self.key_block_size, 1
         )
-        key_shift_0 = self.add_SHIFT_component(
+        key_shift_0 = self.add_shift_component(
             [key[0].id], [list(range(self.key_block_size))], self.key_block_size, self.key_block_size - 1
         )
-        key_1 = self.add_XOR_component(
+        key_1 = self.add_xor_component(
             [key_rot_0.id, key_shift_0.id],
             [list(range(self.key_block_size)), list(range(self.key_block_size))],
             self.key_block_size,
         )
 
-        key_lshift_1 = self.add_SHIFT_component(
+        key_lshift_1 = self.add_shift_component(
             [key[1].id], [list(range(self.key_block_size))], self.key_block_size, -1
         )
-        key_rshift_1 = self.add_SHIFT_component(
+        key_rshift_1 = self.add_shift_component(
             [key_lshift_1.id], [list(range(self.key_block_size))], self.key_block_size, self.key_block_size - 1
         )
-        key_rotated_1 = self.add_XOR_component(
+        key_rotated_1 = self.add_xor_component(
             [key[1].id, key_rshift_1.id],
             [list(range(self.key_block_size)), list(range(self.key_block_size))],
             self.key_block_size,
@@ -691,17 +691,17 @@ class QARMAv2MixColumnBlockCipher(Cipher):
 
     def majority_function(self, key):
         maj_key_size = self.key_block_size / 2
-        and_0_1 = self.add_AND_component(
+        and_0_1 = self.add_and_component(
             [key, key],
             [list(range(maj_key_size)), list(range(maj_key_size, 2 * maj_key_size))],
             maj_key_size,
         )
-        and_0_2 = self.add_AND_component(
+        and_0_2 = self.add_and_component(
             [key, key],
             [list(range(maj_key_size)), list(range(2 * maj_key_size, 3 * maj_key_size))],
             maj_key_size,
         )
-        and_1_2 = self.add_AND_component(
+        and_1_2 = self.add_and_component(
             [key, key],
             [
                 list(range(maj_key_size, 2 * maj_key_size)),
@@ -709,7 +709,7 @@ class QARMAv2MixColumnBlockCipher(Cipher):
             ],
             maj_key_size,
         )
-        maj_key_rotated = self.add_OR_component(
+        maj_key_rotated = self.add_or_component(
             [and_0_1, and_0_2, and_1_2], [list(range(maj_key_size)) for _ in range(3)], maj_key_size
         )
         maj_key = self.add_rotate_component([maj_key_rotated], [list(range(maj_key_size))], maj_key_size, 17)

@@ -173,7 +173,7 @@ class TwofishBlockCipher(Cipher):
             )
             A = self.h_function(X1.id, [M_e[k].id for k in range(self.key_k)], M_e_positions)
             B = self.h_function(X2.id, [M_o[k].id for k in range(self.key_k)], M_o_positions)
-            keys_list[2 * i] = self.add_MODADD_component(
+            keys_list[2 * i] = self.add_modadd_component(
                 [A, B],
                 [
                     list(chain(range(24, 32), range(16, 24), range(8, 16), range(8))),
@@ -181,17 +181,17 @@ class TwofishBlockCipher(Cipher):
                 ],
                 32,
             )
-            B1 = self.add_SHIFT_component(
+            B1 = self.add_shift_component(
                 [B], [list(chain(range(16, 24), range(8, 16), range(8), range(24, 32)))], 32, -1
             )
-            A1 = self.add_MODADD_component(
+            A1 = self.add_modadd_component(
                 [A, B1.id], [list(chain(range(24, 32), range(16, 24), range(8, 16), range(8))), list(range(32))], 32
             )
             keys_list[2 * i + 1] = A1
 
         state = [0, 0, 0, 0]
         for i in range(2):
-            s0 = self.add_XOR_component(
+            s0 = self.add_xor_component(
                 [INPUT_PLAINTEXT, keys_list[2 * i].id],
                 [
                     list(
@@ -207,7 +207,7 @@ class TwofishBlockCipher(Cipher):
                 32,
             )
             state[2 * i] = s0
-            s1 = self.add_XOR_component(
+            s1 = self.add_xor_component(
                 [INPUT_PLAINTEXT, keys_list[2 * i + 1].id],
                 [
                     list(
@@ -242,7 +242,7 @@ class TwofishBlockCipher(Cipher):
             )
             A = self.h_function(X1.id, [M_e[k].id for k in range(self.key_k)], M_e_positions)
             B = self.h_function(X2.id, [M_o[k].id for k in range(self.key_k)], M_o_positions)
-            keys_list[(2 * round_number + 8)] = self.add_MODADD_component(
+            keys_list[(2 * round_number + 8)] = self.add_modadd_component(
                 [A, B],
                 [
                     list(chain(range(24, 32), range(16, 24), range(8, 16), range(8))),
@@ -250,10 +250,10 @@ class TwofishBlockCipher(Cipher):
                 ],
                 32,
             )
-            B1 = self.add_SHIFT_component(
+            B1 = self.add_shift_component(
                 [B], [list(chain(range(16, 24), range(8, 16), range(8), range(24, 32)))], 32, -1
             )
-            A1 = self.add_MODADD_component(
+            A1 = self.add_modadd_component(
                 [A, B1.id], [list(chain(range(24, 32), range(16, 24), range(8, 16), range(8))), list(range(32))], 32
             )
             keys_list[(2 * round_number + 9)] = A1
@@ -262,7 +262,7 @@ class TwofishBlockCipher(Cipher):
             T0 = self.h_function(state[0].id, [S[k].id for k in range(self.key_k)], S_positions)
             X = self.add_rotate_component([state[1].id], [list(range(32))], 32, -8)
             T1 = self.h_function(X.id, [S[k].id for k in range(self.key_k)], S_positions)
-            F0 = self.add_MODADD_component(
+            F0 = self.add_modadd_component(
                 [T0, T1, keys_list[2 * round_number + 8].id],
                 [
                     list(chain(range(24, 32), range(16, 24), range(8, 16), range(8))),
@@ -271,10 +271,10 @@ class TwofishBlockCipher(Cipher):
                 ],
                 32,
             )
-            FT = self.add_SHIFT_component(
+            FT = self.add_shift_component(
                 [T1], [list(chain(range(24, 32), range(16, 24), range(8, 16), range(8)))], 32, -1
             )
-            F1 = self.add_MODADD_component(
+            F1 = self.add_modadd_component(
                 [T0, FT.id, keys_list[2 * round_number + 9].id],
                 [
                     list(chain(range(24, 32), range(16, 24), range(8, 16), range(8))),
@@ -283,9 +283,9 @@ class TwofishBlockCipher(Cipher):
                 ],
                 32,
             )
-            R0_to_rot = self.add_XOR_component([state[2].id, F0.id], [list(range(32)), list(range(32))], 32)
+            R0_to_rot = self.add_xor_component([state[2].id, F0.id], [list(range(32)), list(range(32))], 32)
             R0 = self.add_rotate_component([R0_to_rot.id], [list(range(32))], 32, 1)
-            R1 = self.add_XOR_component([state[3].id, F1.id], [list(range(1, 32)) + [0], list(range(32))], 32)
+            R1 = self.add_xor_component([state[3].id, F1.id], [list(range(1, 32)) + [0], list(range(32))], 32)
             state[2] = state[0]
             state[3] = state[1]
             state[0] = R0
@@ -295,10 +295,10 @@ class TwofishBlockCipher(Cipher):
             if round_number == number_of_rounds - 1:
                 output = [0, 0, 0, 0]
                 for i in range(2):
-                    output[2 * i] = self.add_XOR_component(
+                    output[2 * i] = self.add_xor_component(
                         [state[(2 * i + 2) % 4].id, keys_list[2 * i + 4].id], [list(range(32)) for _ in range(2)], 32
                     )
-                    output[2 * i + 1] = self.add_XOR_component(
+                    output[2 * i + 1] = self.add_xor_component(
                         [state[((2 * i + 1) + 2) % 4].id, keys_list[(2 * i + 1) + 4].id],
                         [list(range(32)), list(chain(range(9, 32), range(9)))],
                         32,
@@ -324,69 +324,69 @@ class TwofishBlockCipher(Cipher):
         if self.key_k == 4:
             y4_j = X
             y_i[3] = [
-                self.add_SBOX_component(
+                self.add_sbox_component(
                     [y4_j], [list(range(8 * (3 - j), 8 * (4 - j)))], 8, self.q_PERMUTATIONS[int(abs(j - 1.5))]
                 )
                 for j in range(4)
             ]
-            y3_j = self.add_XOR_component(
+            y3_j = self.add_xor_component(
                 [y_i[3][j].id for j in range(4)] + [L[3]], [list(range(8)) for _ in range(4)] + [L_bits[3]], 32
             )
             y_i[2] = [
-                self.add_SBOX_component(
+                self.add_sbox_component(
                     [y3_j.id], [list(range(8 * j, 8 * (j + 1)))], 8, self.q_PERMUTATIONS[1 - int(j / 2)]
                 )
                 for j in range(4)
             ]
-            y2_j = self.add_XOR_component(
+            y2_j = self.add_xor_component(
                 [y_i[2][j].id for j in range(4)] + [L[2]], [list(range(8)) for _ in range(4)] + [L_bits[2]], 32
             )
             y_i[1] = [
-                self.add_SBOX_component([y2_j.id], [list(range(8 * j, 8 * (j + 1)))], 8, self.q_PERMUTATIONS[j % 2])
+                self.add_sbox_component([y2_j.id], [list(range(8 * j, 8 * (j + 1)))], 8, self.q_PERMUTATIONS[j % 2])
                 for j in range(4)
             ]
-            y1_j = self.add_XOR_component(
+            y1_j = self.add_xor_component(
                 [y_i[1][j].id for j in range(4)] + [L[1]], [list(range(8)) for _ in range(4)] + [L_bits[1]], 32
             )
 
         elif self.key_k == 3:
             y3_j = X
             y_i[2] = [
-                self.add_SBOX_component(
+                self.add_sbox_component(
                     [y3_j], [list(range(8 * (3 - j), 8 * (4 - j)))], 8, self.q_PERMUTATIONS[1 - int(j / 2)]
                 )
                 for j in range(4)
             ]
-            y2_j = self.add_XOR_component(
+            y2_j = self.add_xor_component(
                 [y_i[2][j].id for j in range(4)] + [L[2]], [list(range(8)) for _ in range(4)] + [L_bits[2]], 32
             )
             y_i[1] = [
-                self.add_SBOX_component([y2_j.id], [list(range(8 * j, 8 * (j + 1)))], 8, self.q_PERMUTATIONS[j % 2])
+                self.add_sbox_component([y2_j.id], [list(range(8 * j, 8 * (j + 1)))], 8, self.q_PERMUTATIONS[j % 2])
                 for j in range(4)
             ]
-            y1_j = self.add_XOR_component(
+            y1_j = self.add_xor_component(
                 [y_i[1][j].id for j in range(4)] + [L[1]], [list(range(8)) for _ in range(4)] + [L_bits[1]], 32
             )
 
         elif self.key_k == 2:
             y_i[1] = [
-                self.add_SBOX_component([y2_j], [list(range(8 * (3 - j), 8 * (4 - j)))], 8, self.q_PERMUTATIONS[j % 2])
+                self.add_sbox_component([y2_j], [list(range(8 * (3 - j), 8 * (4 - j)))], 8, self.q_PERMUTATIONS[j % 2])
                 for j in range(4)
             ]
-            y1_j = self.add_XOR_component(
+            y1_j = self.add_xor_component(
                 [y_i[1][j].id for j in range(4)] + [L[1]], [list(range(8)) for _ in range(4)] + [L_bits[1]], 32
             )
 
         y_i[0] = [
-            self.add_SBOX_component([y1_j.id], [list(range(8 * j, 8 * (j + 1)))], 8, self.q_PERMUTATIONS[int(j / 2)])
+            self.add_sbox_component([y1_j.id], [list(range(8 * j, 8 * (j + 1)))], 8, self.q_PERMUTATIONS[int(j / 2)])
             for j in range(4)
         ]
-        y0_j = self.add_XOR_component(
+        y0_j = self.add_xor_component(
             [y_i[0][j].id for j in range(4)] + [L[0]], [list(range(8)) for _ in range(4)] + [L_bits[0]], 32
         )
 
         y = [
-            self.add_SBOX_component([y0_j.id], [list(range(8 * j, 8 * (j + 1)))], 8, self.q_PERMUTATIONS[1 - (j % 2)])
+            self.add_sbox_component([y0_j.id], [list(range(8 * j, 8 * (j + 1)))], 8, self.q_PERMUTATIONS[1 - (j % 2)])
             for j in range(4)
         ]
 

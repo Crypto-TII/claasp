@@ -209,7 +209,7 @@ class UblockSingleLinearLayerBlockCipher(Cipher):
             key_0, key_1, key_2, key_3, round_key = self.key_schedule(key_0, key_1, key_2, key_3, RC[round_number])
 
         # cipher output and round key output
-        self.add_XOR_component(
+        self.add_xor_component(
             state.id + round_key.id, state.input_bit_positions + round_key.input_bit_positions, self.block_bit_size
         )
         cipher_output = ComponentState([self.get_current_component_id()], [list(range(self.block_bit_size))])
@@ -228,7 +228,7 @@ class UblockSingleLinearLayerBlockCipher(Cipher):
 
     def round_function(self, state, round_key):
         # state xor round_key
-        self.add_XOR_component(
+        self.add_xor_component(
             state.id + round_key.id, state.input_bit_positions + round_key.input_bit_positions, self.block_bit_size
         )
         state = ComponentState([self.get_current_component_id()], [list(range(self.block_bit_size))])
@@ -237,7 +237,7 @@ class UblockSingleLinearLayerBlockCipher(Cipher):
         window_size = SBOX_SIZE
         n = self.block_bit_size // window_size
         for i in range(n):
-            self.add_SBOX_component(
+            self.add_sbox_component(
                 state.id, [state.input_bit_positions[0][i * window_size : (i + 1) * window_size]], window_size, SBOX
             )
             ids.append(self.get_current_component_id())
@@ -281,7 +281,7 @@ class UblockSingleLinearLayerBlockCipher(Cipher):
         self.add_constant_component(RC_SIZE, RC)
         round_constant = ComponentState([self.get_current_component_id()], [list(range(RC_SIZE))])
         if self.key_block_size == RC_SIZE:
-            self.add_XOR_component(
+            self.add_xor_component(
                 key_0.id + round_constant.id,
                 key_0.input_bit_positions + round_constant.input_bit_positions,
                 RC_SIZE,
@@ -291,7 +291,7 @@ class UblockSingleLinearLayerBlockCipher(Cipher):
             window_size = SBOX_SIZE
             n = int(self.key_block_size / window_size)
             for i in range(n):
-                self.add_SBOX_component(
+                self.add_sbox_component(
                     temp.id, [list(range(i * window_size, (i + 1) * window_size))], window_size, SBOX
                 )
                 ids.append(self.get_current_component_id())
@@ -299,7 +299,7 @@ class UblockSingleLinearLayerBlockCipher(Cipher):
         else:
             key_0_left = ComponentState(key_0.id, [list(range(RC_SIZE))])
             key_0_right = ComponentState(key_0.id, [list(range(RC_SIZE, self.key_block_size))])
-            self.add_XOR_component(
+            self.add_xor_component(
                 key_0_left.id + round_constant.id,
                 key_0_left.input_bit_positions + round_constant.input_bit_positions,
                 RC_SIZE,
@@ -309,13 +309,13 @@ class UblockSingleLinearLayerBlockCipher(Cipher):
             window_size = SBOX_SIZE
             n = RC_SIZE // window_size
             for i in range(n):
-                self.add_SBOX_component(
+                self.add_sbox_component(
                     temp.id, [list(range(i * window_size, (i + 1) * window_size))], window_size, SBOX
                 )
                 ids.append(self.get_current_component_id())
             n = (self.key_block_size - RC_SIZE) // window_size
             for i in range(n):
-                self.add_SBOX_component(
+                self.add_sbox_component(
                     key_0_right.id,
                     [key_0_right.input_bit_positions[0][i * window_size : (i + 1) * window_size]],
                     window_size,
@@ -323,7 +323,7 @@ class UblockSingleLinearLayerBlockCipher(Cipher):
                 )
                 ids.append(self.get_current_component_id())
             temp = ComponentState(ids, [list(range(window_size))] * int(self.key_block_size / window_size))
-        self.add_XOR_component(
+        self.add_xor_component(
             key_2.id + temp.id, key_2.input_bit_positions + temp.input_bit_positions, self.key_block_size
         )
         key_2 = ComponentState([self.get_current_component_id()], [list(range(self.key_block_size))])
@@ -333,12 +333,12 @@ class UblockSingleLinearLayerBlockCipher(Cipher):
         window_size = SBOX_SIZE
         n = self.key_block_size // window_size
         for i in range(n):
-            self.add_SBOX_component(
+            self.add_sbox_component(
                 key_1.id, [key_1.input_bit_positions[0][i * window_size : (i + 1) * window_size]], window_size, SBOX_TK
             )
             ids.append(self.get_current_component_id())
         temp = ComponentState(ids, [list(range(window_size))] * n)
-        self.add_XOR_component(
+        self.add_xor_component(
             key_3.id + temp.id, key_3.input_bit_positions + temp.input_bit_positions, self.key_block_size
         )
         key_3 = ComponentState([self.get_current_component_id()], [list(range(self.key_block_size))])

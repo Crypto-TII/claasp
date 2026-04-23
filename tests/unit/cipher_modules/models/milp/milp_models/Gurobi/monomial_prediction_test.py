@@ -121,7 +121,7 @@ def test_modmul_modeling_correctness_via_anf_exhaustive():
     n = 3
     cipher = Cipher("test_modmul_3", BLOCK_CIPHER, ["input"], [n * 2], n)
     cipher.add_round()
-    cipher.add_MODMUL_component(
+    cipher.add_modmul_component(
         ["input", "input"],
         [list(range(n)), list(range(n, 2 * n))],
         n,

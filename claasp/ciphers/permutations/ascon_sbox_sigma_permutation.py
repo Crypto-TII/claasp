@@ -103,7 +103,7 @@ class AsconSboxSigmaPermutation(Cipher):
         self.add_constant_component(WORD_SIZE, ci)
         constant = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))])
         inputs_id, inputs_pos = get_inputs_parameter([state[2], constant])
-        self.add_XOR_component(inputs_id, inputs_pos, WORD_SIZE)
+        self.add_xor_component(inputs_id, inputs_pos, WORD_SIZE)
         state[2] = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))])
 
         substitution_layer = []
@@ -113,7 +113,7 @@ class AsconSboxSigmaPermutation(Cipher):
                 inputs_pos = [[i], [i + 64], [i], [i + 192], [i + 256]]
             else:
                 inputs_pos = [[i]] * 5
-            self.add_SBOX_component(inputs_id, inputs_pos, SBOX_SIZE, ASCON_SBOX)
+            self.add_sbox_component(inputs_id, inputs_pos, SBOX_SIZE, ASCON_SBOX)
             substitution_layer.append(ComponentState([self.get_current_component_id()], [list(range(SBOX_SIZE))]))
 
         linear_layer = []

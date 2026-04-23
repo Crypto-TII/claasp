@@ -42,7 +42,7 @@ class OrCipher(SingleComponentCipher):
             cipher_inputs_bit_size=cipher_inputs_bit_size,
             cipher_output_bit_size=word_bit_size,
         )
-        or_component = self.add_OR_component(
+        or_component = self.add_or_component(
             cipher_inputs,
             equal_input_bit_positions(word_bit_size, number_of_inputs),
             word_bit_size,

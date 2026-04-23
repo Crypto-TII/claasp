@@ -95,7 +95,7 @@ class BiviumStreamCipher(Cipher):
         for clock_number in range(self._get_len_of_keystream(keystream_bit_len)):
             self.add_round()
             key_stream = self.bivium_key_stream(biv_state, clock_number, key_stream)
-            biv_state = self.add_FSR_component(
+            biv_state = self.add_fsr_component(
                 [biv_state], [list(range(self.state_bit_size))], self.state_bit_size, NLFSR_DESCR
             ).id
 
@@ -126,8 +126,8 @@ class BiviumStreamCipher(Cipher):
         cst0 = self.add_constant_component(13, 0x0).id
         state0_id = [cst0] + key[0] + [cst0] + iv[0]
         state0_pos = [list(range(13)), list(range(self.key_bit_size)), list(range(4)), list(range(self.iv_bit_size))]
-        biv_state = self.add_FSR_component(state0_id, state0_pos, self.state_bit_size, NLFSR_DESCR).id
-        biv_state = self.add_FSR_component(
+        biv_state = self.add_fsr_component(state0_id, state0_pos, self.state_bit_size, NLFSR_DESCR).id
+        biv_state = self.add_fsr_component(
             [biv_state],
             [list(range(self.state_bit_size))],
             self.state_bit_size,
@@ -137,7 +137,7 @@ class BiviumStreamCipher(Cipher):
         return biv_state
 
     def bivium_key_stream(self, state, clock_number, ks):
-        z = self.add_XOR_component([state, state, state, state], [[0], [27], [93], [108]], 1).id
+        z = self.add_xor_component([state, state, state, state], [[0], [27], [93], [108]], 1).id
         if clock_number == 0:
             ks = self.add_round_output_component([z], [[0]], 1).id
         else:

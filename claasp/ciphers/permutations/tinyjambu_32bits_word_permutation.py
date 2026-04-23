@@ -108,11 +108,11 @@ class TinyJambuWordBasedPermutation(Cipher):
             ],
         )
         inputs_id, inputs_pos = get_inputs_parameter([input1, input2])
-        self.add_AND_component(inputs_id, inputs_pos, WORD_SIZE)
+        self.add_and_component(inputs_id, inputs_pos, WORD_SIZE)
 
         inputs_id = [self.get_current_component_id()]
         inputs_pos = [list(range(WORD_SIZE))]
-        self.add_NOT_component(inputs_id, inputs_pos, WORD_SIZE)
+        self.add_not_component(inputs_id, inputs_pos, WORD_SIZE)
 
         temp = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))])
         input1 = ComponentState(
@@ -130,7 +130,7 @@ class TinyJambuWordBasedPermutation(Cipher):
             ],
         )
         inputs_id, inputs_pos = get_inputs_parameter([state[0], input1, input2, temp, key[r % len(key)]])
-        self.add_XOR_component(inputs_id, inputs_pos, WORD_SIZE)
+        self.add_xor_component(inputs_id, inputs_pos, WORD_SIZE)
         temp = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))])
 
         for i in range(len(state) - 1):

@@ -92,7 +92,7 @@ class SM4(Cipher):
             K = []
             for idx in range(4):
                 FK_const = self.add_constant_component(word_bits, self.FK[idx])
-                Ki = self.add_XOR_component(
+                Ki = self.add_xor_component(
                     [INPUT_KEY, FK_const.id],
                     [
                         [i for i in range(idx * 32, (idx + 1) * 32)],
@@ -112,7 +112,7 @@ class SM4(Cipher):
             for i in range(self.NROUNDS):
                 CK_const = self.add_constant_component(word_bits, self.CK[i])
 
-                t1 = self.add_XOR_component(
+                t1 = self.add_xor_component(
                     [K[i + 3].id, CK_const.id],
                     [
                         [j for j in range(self.KEY_BLOCK_SIZE // 4)],
@@ -120,7 +120,7 @@ class SM4(Cipher):
                     ],
                     self.CIPHER_BLOCK_SIZE // 4,
                 )
-                t2 = self.add_XOR_component(
+                t2 = self.add_xor_component(
                     [t1.id, K[i + 2].id],
                     [
                         [j for j in range(self.CIPHER_BLOCK_SIZE // 4)],
@@ -128,7 +128,7 @@ class SM4(Cipher):
                     ],
                     self.CIPHER_BLOCK_SIZE // 4,
                 )
-                temp_k = self.add_XOR_component(
+                temp_k = self.add_xor_component(
                     [t2.id, K[i + 1].id],
                     [
                         [j for j in range(self.CIPHER_BLOCK_SIZE // 4)],
@@ -138,7 +138,7 @@ class SM4(Cipher):
                 )
 
                 sboxes_k = [
-                    self.add_SBOX_component(
+                    self.add_sbox_component(
                         [temp_k.id], [[b * 8 + k for k in range(8)]], 8, self.sbox
                     )
                     for b in range(4)
@@ -148,7 +148,7 @@ class SM4(Cipher):
 
                 rot13 = self.add_rotate_component(ids_k, pos_k, word_bits, -13)
                 rot23 = self.add_rotate_component(ids_k, pos_k, word_bits, -23)
-                xor_rot = self.add_XOR_component(
+                xor_rot = self.add_xor_component(
                     [rot13.id, rot23.id],
                     [
                         [j for j in range(self.CIPHER_BLOCK_SIZE // 4)],
@@ -157,13 +157,13 @@ class SM4(Cipher):
                     self.CIPHER_BLOCK_SIZE // 4,
                 )
 
-                L_prime = self.add_XOR_component(
+                L_prime = self.add_xor_component(
                     [sboxes_k[b].id for b in range(4)] + [xor_rot.id],
                     [list(range(8)) for _ in range(4)] + [list(range(32))],
                     32,
                 )
 
-                Ki4 = self.add_XOR_component(
+                Ki4 = self.add_xor_component(
                     [L_prime.id, K[i].id],
                     [
                         [j for j in range(self.KEY_BLOCK_SIZE // 4)],
@@ -174,7 +174,7 @@ class SM4(Cipher):
                 K.append(Ki4)
                 rk_i = Ki4
 
-                t1 = self.add_XOR_component(
+                t1 = self.add_xor_component(
                     [X[i + 3]["id"], rk_i.id],
                     [
                         X[i + 3]["bit_position"],
@@ -182,7 +182,7 @@ class SM4(Cipher):
                     ],
                     self.CIPHER_BLOCK_SIZE // 4,
                 )
-                t2 = self.add_XOR_component(
+                t2 = self.add_xor_component(
                     [t1.id, X[i + 2]["id"]],
                     [
                         [j for j in range(self.CIPHER_BLOCK_SIZE // 4)],
@@ -190,7 +190,7 @@ class SM4(Cipher):
                     ],
                     self.CIPHER_BLOCK_SIZE // 4,
                 )
-                temp_x = self.add_XOR_component(
+                temp_x = self.add_xor_component(
                     [t2.id, X[i + 1]["id"]],
                     [
                         [j for j in range(self.CIPHER_BLOCK_SIZE // 4)],
@@ -200,7 +200,7 @@ class SM4(Cipher):
                 )
 
                 sboxes_x = [
-                    self.add_SBOX_component(
+                    self.add_sbox_component(
                         [temp_x.id], [[b * 8 + k for k in range(8)]], 8, self.sbox
                     )
                     for b in range(4)
@@ -213,7 +213,7 @@ class SM4(Cipher):
                 rot18 = self.add_rotate_component(ids_x, pos_x, word_bits, -18)
                 rot24 = self.add_rotate_component(ids_x, pos_x, word_bits, -24)
 
-                xor_rot2_10 = self.add_XOR_component(
+                xor_rot2_10 = self.add_xor_component(
                     [rot2.id, rot10.id],
                     [
                         [j for j in range(self.CIPHER_BLOCK_SIZE // 4)],
@@ -221,7 +221,7 @@ class SM4(Cipher):
                     ],
                     self.CIPHER_BLOCK_SIZE // 4,
                 )
-                xor_rot18_24 = self.add_XOR_component(
+                xor_rot18_24 = self.add_xor_component(
                     [rot18.id, rot24.id],
                     [
                         [j for j in range(self.CIPHER_BLOCK_SIZE // 4)],
@@ -229,7 +229,7 @@ class SM4(Cipher):
                     ],
                     self.CIPHER_BLOCK_SIZE // 4,
                 )
-                xor_all = self.add_XOR_component(
+                xor_all = self.add_xor_component(
                     [xor_rot2_10.id, xor_rot18_24.id],
                     [
                         [j for j in range(self.CIPHER_BLOCK_SIZE // 4)],
@@ -238,14 +238,14 @@ class SM4(Cipher):
                     self.CIPHER_BLOCK_SIZE // 4,
                 )
 
-                L_out = self.add_XOR_component(
+                L_out = self.add_xor_component(
                     [sboxes_x[b].id for b in range(4)] + [xor_all.id],
                     [list(range(8)) for _ in range(4)]
                     + [list(range(self.CIPHER_BLOCK_SIZE // 4))],
                     32,
                 )
 
-                Xi4 = self.add_XOR_component(
+                Xi4 = self.add_xor_component(
                     [L_out.id, X[i]["id"]],
                     [
                         [j for j in range(self.CIPHER_BLOCK_SIZE // 4)],

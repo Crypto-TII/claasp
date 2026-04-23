@@ -706,7 +706,7 @@ class MilpMonomialPredictionModel:
     def add_or_constraints(self, component):
         """
         The OR operation is modeled as:
-            y = OR(x1, x2, ..., xn)
+            y = Or(x1, x2, ..., xn)
         Then:
             - y >= xi  for each input xi
             - y <= sum(xi)

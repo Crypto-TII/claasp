@@ -5,7 +5,7 @@ from claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model impo
 from claasp.cipher_modules.models.sat.solvers import CADICAL_EXT, KISSAT_EXT, PARKISSAT_EXT
 from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-from claasp.components.modadd_component import MODADD
+from claasp.components.modadd_component import ModAdd
 from claasp.name_mappings import INPUT_KEY, INPUT_PLAINTEXT, SATISFIABLE, XOR_DIFFERENTIAL
 
 
@@ -140,7 +140,7 @@ def test_find_one_xor_differential_trail_with_fixed_weight_and_with_exactly_thre
     )
     result = sat.find_one_xor_differential_trail_with_fixed_weight(30, solver_name=CADICAL_EXT)
     speck_components = speck.get_all_components()
-    modadd_objects = list(filter(lambda obj: isinstance(obj, MODADD), speck_components))
+    modadd_objects = list(filter(lambda obj: isinstance(obj, ModAdd), speck_components))
 
     carry_list = compute_modadd_xor(modadd_objects, result["components_values"])
     computed_number_of_full_windows = count_sequences_of_ones(carry_list, window_size)
@@ -171,7 +171,7 @@ def test_find_one_xor_differential_trail_with_fixed_weight_and_with_exactly_one_
     sat.build_xor_differential_trail_model(34, fixed_variables=[plaintext, key])
     result = sat._solve_with_external_sat_solver(XOR_DIFFERENTIAL, PARKISSAT_EXT, ["-c=6"])
     speck_components = speck.get_all_components()
-    modadd_objects = list(filter(lambda obj: isinstance(obj, MODADD), speck_components))
+    modadd_objects = list(filter(lambda obj: isinstance(obj, ModAdd), speck_components))
     carry_list = compute_modadd_xor(modadd_objects, result["components_values"])
     computed_number_of_full_windows = count_sequences_of_ones(carry_list, window_size)
 

@@ -184,10 +184,10 @@ class ThreefishBlockCipher(Cipher):
         constant = self.add_constant_component(64, 0x1BD11BDAA9FC1A22).id
 
         key_id_list, key_bit_positions = extract_inputs(*key, list(range(self.block_bit_size)))
-        xor_1 = self.add_XOR_component([constant] + key_id_list, [list(range(64))] + key_bit_positions, 64).id
+        xor_1 = self.add_xor_component([constant] + key_id_list, [list(range(64))] + key_bit_positions, 64).id
         key = key_id_list + [xor_1], key_bit_positions + [list(range(64))]
 
-        xor_2 = self.add_XOR_component(*tweak, 64).id
+        xor_2 = self.add_xor_component(*tweak, 64).id
         tweak = tweak[0] + [xor_2], tweak[1] + [list(range(64))]
 
         for round_number in range(n):
@@ -218,7 +218,7 @@ class ThreefishBlockCipher(Cipher):
         for i in range(self.nw):
             data_id_list, data_bit_positions = extract_inputs(*data, list(range(i * 64, (i + 1) * 64)))
             subkey_id_list, subkey_bit_positions = extract_inputs(*subkey, list(range(i * 64, (i + 1) * 64)))
-            new_data[i] = self.add_MODADD_component(
+            new_data[i] = self.add_modadd_component(
                 data_id_list + subkey_id_list, data_bit_positions + subkey_bit_positions, 64
             ).id
 
@@ -231,12 +231,12 @@ class ThreefishBlockCipher(Cipher):
             r = ROUND_CONSTANTS[d % 8][self.n][j]
 
             data_id_list, data_bit_positions = extract_inputs(*data, list(range(2 * j * 64, (2 * j + 2) * 64)))
-            new_data[2 * j] = self.add_MODADD_component(data_id_list, data_bit_positions, 64).id
+            new_data[2 * j] = self.add_modadd_component(data_id_list, data_bit_positions, 64).id
 
             data_id_list, data_bit_positions = extract_inputs(*data, list(range((2 * j + 1) * 64, (2 * j + 2) * 64)))
             lrot = self.add_rotate_component(data_id_list, data_bit_positions, 64, -r).id
 
-            new_data[2 * j + 1] = self.add_XOR_component([lrot, new_data[2 * j]], [list(range(64))] * 2, 64).id
+            new_data[2 * j + 1] = self.add_xor_component([lrot, new_data[2 * j]], [list(range(64))] * 2, 64).id
 
         return new_data, [list(range(64))] * self.nw
 
@@ -260,7 +260,7 @@ class ThreefishBlockCipher(Cipher):
         j = (s + self.nw - 3) % (self.nw + 1)
         key_id_list, key_bit_positions = extract_inputs(*key, list(range(j * 64, (j + 1) * 64)))
         tweak_id_list, tweak_bit_positions = extract_inputs(*tweak, list(range(i * 64, (i + 1) * 64)))
-        subkey_id_list[-3] = self.add_MODADD_component(
+        subkey_id_list[-3] = self.add_modadd_component(
             key_id_list + tweak_id_list, key_bit_positions + tweak_bit_positions, 64
         ).id
 
@@ -268,14 +268,14 @@ class ThreefishBlockCipher(Cipher):
         j = (s + self.nw - 2) % (self.nw + 1)
         key_id_list, key_bit_positions = extract_inputs(*key, list(range(j * 64, (j + 1) * 64)))
         tweak_id_list, tweak_bit_positions = extract_inputs(*tweak, list(range(i * 64, (i + 1) * 64)))
-        subkey_id_list[-2] = self.add_MODADD_component(
+        subkey_id_list[-2] = self.add_modadd_component(
             key_id_list + tweak_id_list, key_bit_positions + tweak_bit_positions, 64
         ).id
 
         s_const = self.add_constant_component(64, s).id
         j = (s + self.nw - 1) % (self.nw + 1)
         key_id_list, key_bit_positions = extract_inputs(*key, list(range(j * 64, (j + 1) * 64)))
-        subkey_id_list[-1] = self.add_MODADD_component(
+        subkey_id_list[-1] = self.add_modadd_component(
             key_id_list + [s_const], key_bit_positions + [list(range(64))], 64
         ).id
 

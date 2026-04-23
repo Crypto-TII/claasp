@@ -260,7 +260,7 @@ class AESBlockCipher(Cipher):
             # SUBWORD
             sbox_outputs = []
             for byte_idx in range(4):
-                sbox_out = self.add_SBOX_component(
+                sbox_out = self.add_sbox_component(
                     [rotated.id],
                     [[byte_idx * 8 + i for i in range(8)]],
                     8, self.SBOX_LOOKUP_TABLE)
@@ -275,7 +275,7 @@ class AESBlockCipher(Cipher):
             # Line 12: temp ← SUBWORD(temp) for AES-256
             sbox_outputs = []
             for byte_idx in range(4):
-                sbox_out = self.add_SBOX_component(
+                sbox_out = self.add_sbox_component(
                     [prev_word.id],
                     [[byte_idx * 8 + i for i in range(8)]],
                     8, self.SBOX_LOOKUP_TABLE)
@@ -290,7 +290,7 @@ class AESBlockCipher(Cipher):
         
         # Line 14: w[i] ← w[i−Nk]⊕temp
         word_minus_nk = self.get_word(word_idx - self.Nk)
-        new_word = self.add_XOR_component(
+        new_word = self.add_xor_component(
             [word_minus_nk.id] + temp_input_id_links,
             [list(range(32))] + temp_input_bit_positions,
             32)
@@ -331,7 +331,7 @@ class AESBlockCipher(Cipher):
         # Column-major byte indexing: byte_idx = c*4 + r
         byte_idx = c * self.NUM_ROWS + r
         start_bit = byte_idx * self.SBOX_BIT_SIZE
-        return self.add_SBOX_component(
+        return self.add_sbox_component(
             [s.id],
             [[start_bit + i for i in range(self.SBOX_BIT_SIZE)]],
             self.SBOX_BIT_SIZE, self.SBOX_LOOKUP_TABLE)
@@ -342,7 +342,7 @@ class AESBlockCipher(Cipher):
         Pseudocode expanding Algorithm 1 Step 05 as described in FIPS-197 Section 5.1.1:
         SUBBYTES(s)
             for 0 ≤ r < 4 and 0 ≤ c < 4
-                s[r,c] = SBOX(s[r,c]) 
+                s[r,c] = Sbox(s[r,c]) 
             return s
         """
         s_output = []
@@ -436,7 +436,7 @@ class AESBlockCipher(Cipher):
                 s_id_list = [s[i].id for i in range(self.NUM_ROWS)] + [w[i].id for i in range(self.NUM_ROWS)]
                 s_input_position_lists = [list(range(self.WORD_BIT_SIZE)) for _ in range(2 * self.NUM_ROWS)]
             
-        s = self.add_XOR_component(s_id_list, s_input_position_lists, self.CIPHER_BLOCK_SIZE)
+        s = self.add_xor_component(s_id_list, s_input_position_lists, self.CIPHER_BLOCK_SIZE)
         return s
 
     def add_round_output(self, state_component, round_number):

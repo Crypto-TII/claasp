@@ -118,7 +118,7 @@ class GimliPermutation(Cipher):
         inputs_id = c.id + states[0][0].id
         inputs_pos = c.input_bit_positions + states[0][0].input_bit_positions
 
-        self.add_XOR_component(inputs_id, inputs_pos, self.word_bit_size)
+        self.add_xor_component(inputs_id, inputs_pos, self.word_bit_size)
         states[0][0] = ComponentState([self.get_current_component_id()], [list(range(self.word_bit_size))])
 
         return states
@@ -169,28 +169,28 @@ class GimliPermutation(Cipher):
         sp_states = [[{} for _ in range(N_COLS)] for _ in range(N_ROWS)]
         for column_number in range(N_COLS):
             # x
-            self.add_SHIFT_component(
+            self.add_shift_component(
                 b[2][column_number].id, b[2][column_number].input_bit_positions, self.word_bit_size, -1
             )
             b0_shift1 = ComponentState([self.get_current_component_id()], [list(range(self.word_bit_size))])
             inputs_id = b[0][column_number].id + b0_shift1.id
             inputs_pos = b[0][column_number].input_bit_positions + b0_shift1.input_bit_positions
 
-            self.add_XOR_component(inputs_id, inputs_pos, self.word_bit_size)
+            self.add_xor_component(inputs_id, inputs_pos, self.word_bit_size)
             b0_xor1 = ComponentState([self.get_current_component_id()], [list(range(self.word_bit_size))])
 
-            self.add_AND_component(
+            self.add_and_component(
                 b[1][column_number].id + b[2][column_number].id,
                 b[1][column_number].input_bit_positions + b[2][column_number].input_bit_positions,
                 self.word_bit_size,
             )
             b0_and = ComponentState([self.get_current_component_id()], [list(range(self.word_bit_size))])
-            self.add_SHIFT_component(b0_and.id, b0_and.input_bit_positions, self.word_bit_size, -2)
+            self.add_shift_component(b0_and.id, b0_and.input_bit_positions, self.word_bit_size, -2)
             b0_shift2 = ComponentState([self.get_current_component_id()], [list(range(self.word_bit_size))])
             inputs_id = b0_xor1.id + b0_shift2.id
             inputs_pos = b0_xor1.input_bit_positions + b0_shift2.input_bit_positions
 
-            self.add_XOR_component(inputs_id, inputs_pos, self.word_bit_size)
+            self.add_xor_component(inputs_id, inputs_pos, self.word_bit_size)
 
             # Swap x <- z
             sp_states[2][column_number] = ComponentState(
@@ -201,21 +201,21 @@ class GimliPermutation(Cipher):
             inputs_id = b[1][column_number].id + b[0][column_number].id
             inputs_pos = b[1][column_number].input_bit_positions + b[0][column_number].input_bit_positions
 
-            self.add_XOR_component(inputs_id, inputs_pos, self.word_bit_size)
+            self.add_xor_component(inputs_id, inputs_pos, self.word_bit_size)
             b1_xor = ComponentState([self.get_current_component_id()], [list(range(self.word_bit_size))])
 
-            self.add_OR_component(
+            self.add_or_component(
                 b[0][column_number].id + b[2][column_number].id,
                 b[0][column_number].input_bit_positions + b[2][column_number].input_bit_positions,
                 self.word_bit_size,
             )
             b1_or = ComponentState([self.get_current_component_id()], [list(range(self.word_bit_size))])
-            self.add_SHIFT_component(b1_or.id, b1_or.input_bit_positions, self.word_bit_size, -1)
+            self.add_shift_component(b1_or.id, b1_or.input_bit_positions, self.word_bit_size, -1)
             b1_shift = ComponentState([self.get_current_component_id()], [list(range(self.word_bit_size))])
             inputs_id = b1_xor.id + b1_shift.id
             inputs_pos = b1_xor.input_bit_positions + b1_shift.input_bit_positions
 
-            self.add_XOR_component(inputs_id, inputs_pos, self.word_bit_size)
+            self.add_xor_component(inputs_id, inputs_pos, self.word_bit_size)
 
             sp_states[1][column_number] = ComponentState(
                 [self.get_current_component_id()], [list(range(self.word_bit_size))]
@@ -225,21 +225,21 @@ class GimliPermutation(Cipher):
             inputs_id = b[2][column_number].id + b[1][column_number].id
             inputs_pos = b[2][column_number].input_bit_positions + b[1][column_number].input_bit_positions
 
-            self.add_XOR_component(inputs_id, inputs_pos, self.word_bit_size)
+            self.add_xor_component(inputs_id, inputs_pos, self.word_bit_size)
             b2_xor = ComponentState([self.get_current_component_id()], [list(range(self.word_bit_size))])
 
-            self.add_AND_component(
+            self.add_and_component(
                 b[0][column_number].id + b[1][column_number].id,
                 b[0][column_number].input_bit_positions + b[1][column_number].input_bit_positions,
                 self.word_bit_size,
             )
             b2_and = ComponentState([self.get_current_component_id()], [list(range(self.word_bit_size))])
-            self.add_SHIFT_component(b2_and.id, b2_and.input_bit_positions, self.word_bit_size, -3)
+            self.add_shift_component(b2_and.id, b2_and.input_bit_positions, self.word_bit_size, -3)
             b2_shift = ComponentState([self.get_current_component_id()], [list(range(self.word_bit_size))])
             inputs_id = b2_xor.id + b2_shift.id
             inputs_pos = b2_xor.input_bit_positions + b2_shift.input_bit_positions
 
-            self.add_XOR_component(inputs_id, inputs_pos, self.word_bit_size)
+            self.add_xor_component(inputs_id, inputs_pos, self.word_bit_size)
             # Swap z <- x
             sp_states[0][column_number] = ComponentState(
                 [self.get_current_component_id()], [list(range(self.word_bit_size))]

@@ -152,7 +152,7 @@ class SimonSboxBlockCipher(Cipher):
         output_positions = [0] * self.word_size
         for i in range(self.number_of_sboxes):
             sbox_input_positions = [(position + 8 * i) % self.word_size for position in input_positions_pattern]
-            sbox_id = self.add_SBOX_component([x[0]], [sbox_input_positions], 8, SBOX).id
+            sbox_id = self.add_sbox_component([x[0]], [sbox_input_positions], 8, SBOX).id
             sbox_output_positions = [(position + 8 * i) % self.word_size for position in output_positions_pattern]
             for j, sbox_output_position in enumerate(sbox_output_positions):
                 output_ids[sbox_output_position] = sbox_id
@@ -167,7 +167,7 @@ class SimonSboxBlockCipher(Cipher):
                 sboxes_positions[-1].append(output_positions[i])
 
         s2_x_input_positions = list(map(int(self.word_size).__rmod__, range(2, 2 + self.word_size)))
-        feistel_id = self.add_XOR_component(
+        feistel_id = self.add_xor_component(
             [*sboxes_ids, x[0]], [*sboxes_positions, s2_x_input_positions], self.word_size
         ).id
 
@@ -176,7 +176,7 @@ class SimonSboxBlockCipher(Cipher):
     def feistel_function(self, x, y, k):
         # Rk(x, y) = (y ⊕ f(x) ⊕ k, x)
         feistel_id, feistel_positions = self.f(x)
-        new_x_id = self.add_XOR_component([y[0], feistel_id, k[0]], [y[1], feistel_positions, k[1]], self.word_size).id
+        new_x_id = self.add_xor_component([y[0], feistel_id, k[0]], [y[1], feistel_positions, k[1]], self.word_size).id
 
         self.add_round_output_component([new_x_id, x[0]], [list(range(self.word_size)), x[1]], self.block_bit_size).id
 
@@ -207,22 +207,22 @@ class SimonSboxBlockCipher(Cipher):
             s4_x_input_positions = [(i - 4) % self.word_size for i in range(self.word_size)]
 
             if self.number_of_key_words == 4:
-                op = self.add_XOR_component(
+                op = self.add_xor_component(
                     [round_keys[round_number - 1][0], round_keys[round_number - 3][0]],
                     [s3_x_input_positions, round_keys[round_number - 3][1]],
                     self.word_size,
                 ).id
-                op = self.add_XOR_component(
+                op = self.add_xor_component(
                     [op, op], [s1_x_input_positions, list(range(self.word_size))], self.word_size
                 ).id
             else:
-                op = self.add_XOR_component(
+                op = self.add_xor_component(
                     [round_keys[round_number - 1][0], round_keys[round_number - 1][0]],
                     [s4_x_input_positions, s3_x_input_positions],
                     self.word_size,
                 ).id
 
-            xor_id = self.add_XOR_component(
+            xor_id = self.add_xor_component(
                 [round_constant, op, round_keys[constant_index][0]],
                 [list(range(self.word_size))] * 2 + [round_keys[constant_index][1]],
                 self.word_size,

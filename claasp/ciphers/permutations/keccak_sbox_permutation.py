@@ -145,7 +145,7 @@ class KeccakSboxPermutation(Cipher):
                     inputs_id = inputs_id + b[i][j].id
                     inputs_pos = inputs_pos + [[k]]
                 inputs_id, inputs_pos = simplify_inputs(inputs_id, inputs_pos)
-                self.add_SBOX_component(inputs_id, inputs_pos, SBOX_SIZE, SBOX)
+                self.add_sbox_component(inputs_id, inputs_pos, SBOX_SIZE, SBOX)
                 for i in range(X_NUM):
                     state_new[i][j].id[k] = self.get_current_component_id()
                     state_new[i][j].input_bit_positions[k] = [i]
@@ -167,7 +167,7 @@ class KeccakSboxPermutation(Cipher):
         inputs_id = c.id + state[0][0].id
         inputs_pos = c.input_bit_positions + state[0][0].input_bit_positions
         inputs_id, inputs_pos = simplify_inputs(inputs_id, inputs_pos)
-        self.add_XOR_component(inputs_id, inputs_pos, self.word_bit_size)
+        self.add_xor_component(inputs_id, inputs_pos, self.word_bit_size)
         state[0][0] = ComponentState([self.get_current_component_id()], [list(range(self.word_bit_size))])
 
         return state
@@ -215,7 +215,7 @@ class KeccakSboxPermutation(Cipher):
                 inputs_id = inputs_id + state[i][j].id
                 inputs_pos = inputs_pos + state[i][j].input_bit_positions
             inputs_id, inputs_pos = simplify_inputs(inputs_id, inputs_pos)
-            self.add_XOR_component(inputs_id, inputs_pos, self.word_bit_size)
+            self.add_xor_component(inputs_id, inputs_pos, self.word_bit_size)
             c.append(ComponentState([self.get_current_component_id()], [list(range(self.word_bit_size))]))
         # D[x] = C[x - 1] xor rot(C[x + 1], 1) for x in range(5)
         d = []
@@ -225,14 +225,14 @@ class KeccakSboxPermutation(Cipher):
             )
             inputs_id = c[(i - 1) % X_NUM].id + [self.get_current_component_id()]
             inputs_pos = c[(i - 1) % X_NUM].input_bit_positions + [list(range(self.word_bit_size))]
-            self.add_XOR_component(inputs_id, inputs_pos, self.word_bit_size)
+            self.add_xor_component(inputs_id, inputs_pos, self.word_bit_size)
             d.append(ComponentState([self.get_current_component_id()], [list(range(self.word_bit_size))]))
         # A[x, y] = A[x, y] xor D[x] for x in range(5), y in range(5)
         for i in range(X_NUM):
             for j in range(Y_NUM):
                 inputs_id = state[i][j].id + d[i].id
                 inputs_pos = state[i][j].input_bit_positions + d[i].input_bit_positions
-                self.add_XOR_component(inputs_id, inputs_pos, self.word_bit_size)
+                self.add_xor_component(inputs_id, inputs_pos, self.word_bit_size)
                 state[i][j] = ComponentState([self.get_current_component_id()], [list(range(self.word_bit_size))])
 
         return state

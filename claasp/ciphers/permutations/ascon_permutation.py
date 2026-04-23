@@ -94,57 +94,57 @@ class AsconPermutation(Cipher):
         self.add_constant_component(WORD_SIZE, ci)
         c = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))])
         inputs_id, inputs_pos = get_inputs_parameter([state[2], c])
-        self.add_XOR_component(inputs_id, inputs_pos, WORD_SIZE)
+        self.add_xor_component(inputs_id, inputs_pos, WORD_SIZE)
         state[2] = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))])
 
         # substitution layer
         # S[0] ^= S[4]
         inputs_id, inputs_pos = get_inputs_parameter([state[0], state[4]])
-        self.add_XOR_component(inputs_id, inputs_pos, WORD_SIZE)
+        self.add_xor_component(inputs_id, inputs_pos, WORD_SIZE)
         state[0] = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))])
 
         # S[4] ^= S[3]
         inputs_id, inputs_pos = get_inputs_parameter([state[4], state[3]])
-        self.add_XOR_component(inputs_id, inputs_pos, WORD_SIZE)
+        self.add_xor_component(inputs_id, inputs_pos, WORD_SIZE)
         state[4] = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))])
 
         # S[2] ^= S[1]
         inputs_id, inputs_pos = get_inputs_parameter([state[2], state[1]])
-        self.add_XOR_component(inputs_id, inputs_pos, WORD_SIZE)
+        self.add_xor_component(inputs_id, inputs_pos, WORD_SIZE)
         state[2] = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))])
 
         # T = [(~S[i]) & S[(i + 1) % 5] for i in range(5)]
         T = []
         for i in range(WORD_NUM):
-            self.add_NOT_component(state[i].id, state[i].input_bit_positions, WORD_SIZE)
+            self.add_not_component(state[i].id, state[i].input_bit_positions, WORD_SIZE)
             s = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))])
             inputs_id, inputs_pos = get_inputs_parameter([s, state[(i + 1) % WORD_NUM]])
-            self.add_AND_component(inputs_id, inputs_pos, WORD_SIZE)
+            self.add_and_component(inputs_id, inputs_pos, WORD_SIZE)
             T.append(ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))]))
 
         # S[i] ^= T[(i+1)%5] for i in range(5)
         for i in range(WORD_NUM):
             inputs_id, inputs_pos = get_inputs_parameter([state[i], T[(i + 1) % WORD_NUM]])
-            self.add_XOR_component(inputs_id, inputs_pos, WORD_SIZE)
+            self.add_xor_component(inputs_id, inputs_pos, WORD_SIZE)
             state[i] = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))])
 
         # S[1] ^= S[0]
         inputs_id, inputs_pos = get_inputs_parameter([state[1], state[0]])
-        self.add_XOR_component(inputs_id, inputs_pos, WORD_SIZE)
+        self.add_xor_component(inputs_id, inputs_pos, WORD_SIZE)
         state[1] = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))])
 
         # S[3] ^= S[2]
         inputs_id, inputs_pos = get_inputs_parameter([state[3], state[2]])
-        self.add_XOR_component(inputs_id, inputs_pos, WORD_SIZE)
+        self.add_xor_component(inputs_id, inputs_pos, WORD_SIZE)
         state[3] = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))])
 
         # S[0] ^= S[4]
         inputs_id, inputs_pos = get_inputs_parameter([state[0], state[4]])
-        self.add_XOR_component(inputs_id, inputs_pos, WORD_SIZE)
+        self.add_xor_component(inputs_id, inputs_pos, WORD_SIZE)
         state[0] = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))])
 
         # S[2] = ~S[2]
-        self.add_NOT_component(state[2].id, state[2].input_bit_positions, WORD_SIZE)
+        self.add_not_component(state[2].id, state[2].input_bit_positions, WORD_SIZE)
         state[2] = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))])
 
         inputs = []
@@ -161,7 +161,7 @@ class AsconPermutation(Cipher):
             self.add_rotate_component(state[i].id, state[i].input_bit_positions, WORD_SIZE, LINEAR_LAYER_ROT[i][1])
             s2 = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))])
             inputs_id, inputs_pos = get_inputs_parameter([state[i], s1, s2])
-            self.add_XOR_component(inputs_id, inputs_pos, WORD_SIZE)
+            self.add_xor_component(inputs_id, inputs_pos, WORD_SIZE)
             state[i] = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))])
 
         return state

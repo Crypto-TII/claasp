@@ -140,12 +140,12 @@ class XoodooPermutation(Cipher):
         for i in range(PLANE_NUM):
             inputs_id = planes[(i + 1) % PLANE_NUM].id
             inputs_pos = planes[(i + 1) % PLANE_NUM].input_bit_positions
-            self.add_NOT_component(inputs_id, inputs_pos, PLANE_SIZE)
+            self.add_not_component(inputs_id, inputs_pos, PLANE_SIZE)
             p = ComponentState([self.get_current_component_id()], [list(range(PLANE_SIZE))])
 
             inputs_id = planes[(i + 2) % PLANE_NUM].id + p.id
             inputs_pos = planes[(i + 2) % PLANE_NUM].input_bit_positions + p.input_bit_positions
-            self.add_AND_component(inputs_id, inputs_pos, PLANE_SIZE)
+            self.add_and_component(inputs_id, inputs_pos, PLANE_SIZE)
             p = ComponentState([self.get_current_component_id()], [list(range(PLANE_SIZE))])
             b.append(deepcopy(p))
         # Ai = Ai + Bi
@@ -153,7 +153,7 @@ class XoodooPermutation(Cipher):
             inputs_id = planes[i].id + b[i].id
             inputs_pos = planes[i].input_bit_positions + b[i].input_bit_positions
             inputs_id, inputs_pos = simplify_inputs(inputs_id, inputs_pos)
-            self.add_XOR_component(inputs_id, inputs_pos, PLANE_SIZE)
+            self.add_xor_component(inputs_id, inputs_pos, PLANE_SIZE)
             planes[i] = ComponentState(
                 [self.get_current_component_id() for _ in range(LANE_NUM)],
                 [[k + j * LANE_SIZE for k in range(LANE_SIZE)] for j in range(LANE_NUM)],
@@ -166,7 +166,7 @@ class XoodooPermutation(Cipher):
         # A0,0 = A0,0 + Ci
         inputs_id = c.id + [planes[0].id[0]]
         inputs_pos = c.input_bit_positions + [planes[0].input_bit_positions[0]]
-        self.add_XOR_component(inputs_id, inputs_pos, LANE_SIZE)
+        self.add_xor_component(inputs_id, inputs_pos, LANE_SIZE)
         planes[0].id[0] = self.get_current_component_id()
         planes[0].input_bit_positions[0] = list(range(LANE_SIZE))
 
@@ -217,7 +217,7 @@ class XoodooPermutation(Cipher):
             inputs_id = inputs_id + planes[i].id
             inputs_pos = inputs_pos + planes[i].input_bit_positions
         inputs_id, inputs_pos = simplify_inputs(inputs_id, inputs_pos)
-        self.add_XOR_component(inputs_id, inputs_pos, PLANE_SIZE)
+        self.add_xor_component(inputs_id, inputs_pos, PLANE_SIZE)
         p = ComponentState(
             [self.get_current_component_id() for _ in range(LANE_NUM)],
             [[k + j * LANE_SIZE for k in range(LANE_SIZE)] for j in range(LANE_NUM)],
@@ -233,14 +233,14 @@ class XoodooPermutation(Cipher):
             inputs_id = inputs_id + q[k].id
             inputs_pos = inputs_pos + q[k].input_bit_positions
         inputs_id, inputs_pos = simplify_inputs(inputs_id, inputs_pos)
-        self.add_XOR_component(inputs_id, inputs_pos, PLANE_SIZE)
+        self.add_xor_component(inputs_id, inputs_pos, PLANE_SIZE)
         p = ComponentState([self.get_current_component_id()], [list(range(PLANE_SIZE))])
         # Ai = Ai + P
         for i in range(PLANE_NUM):
             inputs_id = planes[i].id + p.id
             inputs_pos = planes[i].input_bit_positions + p.input_bit_positions
             inputs_id, inputs_pos = simplify_inputs(inputs_id, inputs_pos)
-            self.add_XOR_component(inputs_id, inputs_pos, PLANE_SIZE)
+            self.add_xor_component(inputs_id, inputs_pos, PLANE_SIZE)
             planes[i] = ComponentState(
                 [self.get_current_component_id() for _ in range(LANE_NUM)],
                 [[k + j * LANE_SIZE for k in range(LANE_SIZE)] for j in range(LANE_NUM)],

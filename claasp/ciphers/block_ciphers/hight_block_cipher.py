@@ -167,7 +167,7 @@ class HightBlockCipher(Cipher):
         for sub_key_temp in sub_key_temp_list:
             delta = self.add_constant_component(8, sub_key_temp["delta_constant"])
 
-            mod_a = self.add_MODADD_component(
+            mod_a = self.add_modadd_component(
                 [sub_key_temp["master_key"].id] + [delta.id],
                 sub_key_temp["master_key"].input_bit_positions + [list(range(8))],
                 8,
@@ -178,12 +178,12 @@ class HightBlockCipher(Cipher):
 
     def final_transformation(self, plaintext_list, whitening_key_list):
         def temp_final_transformation(a, b, c, d):
-            mod_temp_1 = self.add_MODADD_component(
+            mod_temp_1 = self.add_modadd_component(
                 [plaintext_list[a].id] + [whitening_key_list[b].id],
                 [list(range(8))] + whitening_key_list[b].input_bit_positions,
                 8,
             )
-            xor_temp_1 = self.add_XOR_component(
+            xor_temp_1 = self.add_xor_component(
                 [plaintext_list[c].id] + [whitening_key_list[d].id],
                 [list(range(8))] + whitening_key_list[d].input_bit_positions,
                 8,
@@ -223,12 +223,12 @@ class HightBlockCipher(Cipher):
 
     def initial_transformation(self, plaintext_list, whitening_key_list):
         def temp_initial_transformation(a, b, c, d):
-            mod_temp_1 = self.add_MODADD_component(
+            mod_temp_1 = self.add_modadd_component(
                 [plaintext_list[a].id] + [whitening_key_list[b].id],
                 plaintext_list[a].input_bit_positions + whitening_key_list[b].input_bit_positions,
                 8,
             )
-            xor_temp_1 = self.add_XOR_component(
+            xor_temp_1 = self.add_xor_component(
                 [plaintext_list[c].id] + [whitening_key_list[d].id],
                 plaintext_list[c].input_bit_positions + whitening_key_list[d].input_bit_positions,
                 8,
@@ -266,14 +266,14 @@ class HightBlockCipher(Cipher):
                 [x.id], [get_ith_word(self.word_size, 0, x.id, x.input_bit_positions)], self.word_size, -7
             )
 
-            xor_1 = self.add_XOR_component(
+            xor_1 = self.add_xor_component(
                 [rot_1.id] + [rot_2.id],
                 [get_ith_word(self.word_size, 0, rot_1.id, rot_1.input_bit_positions)]
                 + [get_ith_word(self.word_size, 0, rot_2.id, rot_2.input_bit_positions)],
                 self.word_size,
             )
 
-            xor_2 = self.add_XOR_component(
+            xor_2 = self.add_xor_component(
                 [xor_1.id] + [rot_7.id],
                 [get_ith_word(self.word_size, 0, xor_1.id, xor_1.input_bit_positions)]
                 + [get_ith_word(self.word_size, 0, rot_7.id, rot_7.input_bit_positions)],
@@ -295,14 +295,14 @@ class HightBlockCipher(Cipher):
                 [x.id], [get_ith_word(self.word_size, 0, x.id, x.input_bit_positions)], self.word_size, -6
             )
 
-            xor_1 = self.add_XOR_component(
+            xor_1 = self.add_xor_component(
                 [rot_1.id] + [rot_2.id],
                 [get_ith_word(self.word_size, 0, rot_1.id, rot_1.input_bit_positions)]
                 + [get_ith_word(self.word_size, 0, rot_2.id, rot_2.input_bit_positions)],
                 self.word_size,
             )
 
-            xor_2 = self.add_XOR_component(
+            xor_2 = self.add_xor_component(
                 [xor_1.id] + [rot_7.id],
                 [get_ith_word(self.word_size, 0, xor_1.id, xor_1.input_bit_positions)]
                 + [get_ith_word(self.word_size, 0, rot_7.id, rot_7.input_bit_positions)],
@@ -313,14 +313,14 @@ class HightBlockCipher(Cipher):
 
         def f3_xor(x1, x2, x3, f):
             x2p = f(x2)
-            mod_1 = self.add_MODADD_component(
+            mod_1 = self.add_modadd_component(
                 [x2p.id] + [x3.id],
                 [get_ith_word(self.word_size, 0, x2p.id, x2p.input_bit_positions)]
                 + [get_ith_word(self.word_size, 0, x3.id, x3.input_bit_positions)],
                 self.word_size,
             )
 
-            xor_1 = self.add_XOR_component(
+            xor_1 = self.add_xor_component(
                 [x1.id] + [mod_1.id],
                 [get_ith_word(self.word_size, 0, x1.id, x1.input_bit_positions)]
                 + [get_ith_word(self.word_size, 0, mod_1.id, mod_1.input_bit_positions)],
@@ -331,14 +331,14 @@ class HightBlockCipher(Cipher):
 
         def f3_mod(x1, x2, x3, f):
             x2p = f(x2)
-            xor_1 = self.add_XOR_component(
+            xor_1 = self.add_xor_component(
                 [x2p.id] + [x3.id],
                 [get_ith_word(self.word_size, 0, x2p.id, x2p.input_bit_positions)]
                 + [get_ith_word(self.word_size, 0, x3.id, x3.input_bit_positions)],
                 self.word_size,
             )
 
-            mod_1 = self.add_MODADD_component(
+            mod_1 = self.add_modadd_component(
                 [x1.id] + [xor_1.id],
                 [get_ith_word(self.word_size, 0, x1.id, x1.input_bit_positions)]
                 + [get_ith_word(self.word_size, 0, xor_1.id, xor_1.input_bit_positions)],

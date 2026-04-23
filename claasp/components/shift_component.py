@@ -23,7 +23,7 @@ from claasp.cipher_modules.models.sat.utils import constants, utils as sat_utils
 from claasp.name_mappings import WORD_OPERATION
 
 
-class SHIFT(Component):
+class Shift(Component):
     """
     Construct a SHIFT component.
 
@@ -39,8 +39,8 @@ class SHIFT(Component):
 
     EXAMPLES::
 
-        sage: from claasp.components.shift_component import SHIFT
-        sage: component = SHIFT(0, 0, ['input'], [[0, 1]], 2, -1)
+        sage: from claasp.components.shift_component import Shift
+        sage: component = Shift(0, 0, ['input'], [[0, 1]], 2, -1)
         sage: print(component.id)
         shift_0_0
         sage: print(component.type)
@@ -112,8 +112,8 @@ class SHIFT(Component):
 
         EXAMPLES::
 
-            sage: from claasp.components.shift_component import SHIFT
-            sage: shift_component = SHIFT(0, 0, ['input'], [[0, 1]], 2, 1)
+            sage: from claasp.components.shift_component import Shift
+            sage: shift_component = Shift(0, 0, ['input'], [[0, 1]], 2, 1)
             sage: shift_component.cms_constraints()
             (['shift_0_0_0', 'shift_0_0_1'], ['-shift_0_0_0', 'shift_0_0_1 -input_0', 'input_0 -shift_0_0_1'])
         """
@@ -135,8 +135,8 @@ class SHIFT(Component):
 
         EXAMPLES::
 
-            sage: from claasp.components.shift_component import SHIFT
-            sage: shift_component = SHIFT(0, 0, ['input'], [[0, 1]], 2, 1)
+            sage: from claasp.components.shift_component import Shift
+            sage: shift_component = Shift(0, 0, ['input'], [[0, 1]], 2, 1)
             sage: shift_component.cp_constraints()
             ([], ['constraint shift_0_0[0] = 0;', 'constraint shift_0_0[1] = input[0];'])
         """
@@ -183,8 +183,8 @@ class SHIFT(Component):
 
         EXAMPLES::
 
-            sage: from claasp.components.shift_component import SHIFT
-            sage: shift_component = SHIFT(0, 0, ['input'], [[0, 1]], 2, 1)
+            sage: from claasp.components.shift_component import Shift
+            sage: shift_component = Shift(0, 0, ['input'], [[0, 1]], 2, 1)
             sage: shift_component.cp_inverse_constraints()
             ([], ['constraint shift_0_0_inverse[0] = 0;', 'constraint shift_0_0_inverse[1] = input[0];'])
         """
@@ -227,10 +227,10 @@ class SHIFT(Component):
 
         EXAMPLES::
 
-            sage: from claasp.components.shift_component import SHIFT
+            sage: from claasp.components.shift_component import Shift
             sage: class DummyModel:
             ....:     word_size = 2
-            sage: shift_component = SHIFT(0, 18, ['sbox_0_2'], [list(range(4))], 4, -2)
+            sage: shift_component = Shift(0, 18, ['sbox_0_2'], [list(range(4))], 4, -2)
             sage: shift_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(DummyModel())
             ([], ['constraint shift_0_18_active[0] = sbox_0_2_active[1];', 'constraint shift_0_18_active[1] = 0;', 'constraint shift_0_18_value[0] = sbox_0_2_active[1];', 'constraint shift_0_18_value[1] = 0;'])
         """
@@ -306,10 +306,10 @@ class SHIFT(Component):
 
         EXAMPLES::
 
-            sage: from claasp.components.shift_component import SHIFT
+            sage: from claasp.components.shift_component import Shift
             sage: class DummyModel:
             ....:     word_size = 2
-            sage: shift_component = SHIFT(0, 18, ['input0'], [list(range(4))], 4, -2)
+            sage: shift_component = Shift(0, 18, ['input0'], [list(range(4))], 4, -2)
             sage: shift_component.cp_xor_differential_first_step_constraints(DummyModel())
             (['array[0..1] of var 0..1: shift_0_18;'], ['constraint shift_0_18[0] = input0[1];', 'constraint shift_0_18[1] = 0;'])
         """
@@ -381,8 +381,8 @@ class SHIFT(Component):
 
         EXAMPLES::
 
-            sage: from claasp.components.shift_component import SHIFT
-            sage: shift_component = SHIFT(0, 0, ['input'], [[0, 1]], 2, 1)
+            sage: from claasp.components.shift_component import Shift
+            sage: shift_component = Shift(0, 0, ['input'], [[0, 1]], 2, 1)
             sage: shift_component.cp_xor_linear_mask_propagation_constraints()
             (['array[0..1] of var 0..1: shift_0_0_i;', 'array[0..1] of var 0..1: shift_0_0_o;'], ['constraint shift_0_0_i[1]=0;', 'constraint shift_0_0_o[1]=shift_0_0_i[0];'])
         """
@@ -541,8 +541,8 @@ class SHIFT(Component):
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import MilpWordwiseDeterministicTruncatedXorDifferentialModel
             sage: milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
-            sage: from claasp.components.shift_component import SHIFT
-            sage: shift_component = SHIFT(0, 18, ['plaintext'], [list(range(4))], 4, -4)
+            sage: from claasp.components.shift_component import Shift
+            sage: shift_component = Shift(0, 18, ['plaintext'], [list(range(4))], 4, -4)
             sage: variables, constraints = shift_component.milp_wordwise_deterministic_truncated_xor_differential_constraints(milp)
             sage: variables
             [('x_class[plaintext_word_0_class]', x_0),
@@ -697,8 +697,8 @@ class SHIFT(Component):
 
         EXAMPLES::
 
-            sage: from claasp.components.shift_component import SHIFT
-            sage: shift_component = SHIFT(0, 0, ['input'], [[0, 1]], 2, 1)
+            sage: from claasp.components.shift_component import Shift
+            sage: shift_component = Shift(0, 0, ['input'], [[0, 1]], 2, 1)
             sage: shift_component.sat_constraints()
             (['shift_0_0_0', 'shift_0_0_1'], ['-shift_0_0_0', 'shift_0_0_1 -input_0', 'input_0 -shift_0_0_1'])
         """
@@ -730,7 +730,7 @@ class SHIFT(Component):
         .. SEEALSO::
 
             - :ref:`sat-standard` for the format.
-            - :obj:`sat_constraints() <components.shift_component.SHIFT.sat_constraints>` for the model.
+            - :obj:`sat_constraints() <components.shift_component.Shift.sat_constraints>` for the model.
 
         INPUT:
 
@@ -738,8 +738,8 @@ class SHIFT(Component):
 
         EXAMPLES::
 
-            sage: from claasp.components.shift_component import SHIFT
-            sage: shift_component = SHIFT(0, 0, ['input'], [[0, 1]], 2, 1)
+            sage: from claasp.components.shift_component import Shift
+            sage: shift_component = Shift(0, 0, ['input'], [[0, 1]], 2, 1)
             sage: shift_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
             (['shift_0_0_0_0', 'shift_0_0_1_0', 'shift_0_0_0_1', 'shift_0_0_1_1'], ['-shift_0_0_0_0', '-shift_0_0_0_1', 'shift_0_0_1_0 -input_0_0', 'input_0_0 -shift_0_0_1_0', 'shift_0_0_1_1 -input_0_1', 'input_0_1 -shift_0_0_1_1'])
         """
@@ -772,7 +772,7 @@ class SHIFT(Component):
         .. SEEALSO::
 
             - :ref:`sat-standard` for the format.
-            - :obj:`sat_constraints() <components.shift_component.SHIFT.sat_constraints>` for the model.
+            - :obj:`sat_constraints() <components.shift_component.Shift.sat_constraints>` for the model.
 
         INPUT:
 
@@ -780,8 +780,8 @@ class SHIFT(Component):
 
         EXAMPLES::
 
-            sage: from claasp.components.shift_component import SHIFT
-            sage: shift_component = SHIFT(0, 0, ['input'], [[0, 1]], 2, 1)
+            sage: from claasp.components.shift_component import Shift
+            sage: shift_component = Shift(0, 0, ['input'], [[0, 1]], 2, 1)
             sage: shift_component.sat_xor_differential_propagation_constraints()
             (['shift_0_0_0', 'shift_0_0_1'], ['-shift_0_0_0', 'shift_0_0_1 -input_0', 'input_0 -shift_0_0_1'])
         """
@@ -797,7 +797,7 @@ class SHIFT(Component):
         .. SEEALSO::
 
             - :ref:`sat-standard` for the format.
-            - :obj:`sat_constraints() <components.shift_component.SHIFT.sat_constraints>` for the model.
+            - :obj:`sat_constraints() <components.shift_component.Shift.sat_constraints>` for the model.
 
         INPUT:
 
@@ -805,8 +805,8 @@ class SHIFT(Component):
 
         EXAMPLES::
 
-            sage: from claasp.components.shift_component import SHIFT
-            sage: shift_component = SHIFT(0, 0, ['input'], [[0, 1]], 2, 1)
+            sage: from claasp.components.shift_component import Shift
+            sage: shift_component = Shift(0, 0, ['input'], [[0, 1]], 2, 1)
             sage: shift_component.sat_xor_linear_mask_propagation_constraints()
             (['shift_0_0_0_i', 'shift_0_0_1_i', 'shift_0_0_0_o', 'shift_0_0_1_o'], ['shift_0_0_1_o -shift_0_0_0_i', 'shift_0_0_0_i -shift_0_0_1_o', '-shift_0_0_1_i'])
         """
@@ -844,8 +844,8 @@ class SHIFT(Component):
 
         EXAMPLES::
 
-            sage: from claasp.components.shift_component import SHIFT
-            sage: shift_component = SHIFT(0, 0, ['input'], [[0, 1]], 2, 1)
+            sage: from claasp.components.shift_component import Shift
+            sage: shift_component = Shift(0, 0, ['input'], [[0, 1]], 2, 1)
             sage: shift_component.smt_constraints()
             (['shift_0_0_0', 'shift_0_0_1'], ['(assert (not shift_0_0_0))', '(assert (= shift_0_0_1 input_0))'])
         """
@@ -875,7 +875,7 @@ class SHIFT(Component):
 
         .. SEEALSO::
 
-            :obj:`smt_constraints() <components.shift_component.SHIFT.smt_constraints>`.
+            :obj:`smt_constraints() <components.shift_component.Shift.smt_constraints>`.
 
         INPUT:
 
@@ -883,8 +883,8 @@ class SHIFT(Component):
 
         EXAMPLES::
 
-            sage: from claasp.components.shift_component import SHIFT
-            sage: shift_component = SHIFT(0, 0, ['input'], [[0, 1]], 2, 1)
+            sage: from claasp.components.shift_component import Shift
+            sage: shift_component = Shift(0, 0, ['input'], [[0, 1]], 2, 1)
             sage: shift_component.smt_xor_differential_propagation_constraints()
             (['shift_0_0_0', 'shift_0_0_1'], ['(assert (not shift_0_0_0))', '(assert (= shift_0_0_1 input_0))'])
         """
@@ -899,7 +899,7 @@ class SHIFT(Component):
 
         .. SEEALSO::
 
-            :obj:`smt_constraints() <components.shift_component.SHIFT.smt_constraints>`.
+            :obj:`smt_constraints() <components.shift_component.Shift.smt_constraints>`.
 
         INPUT:
 
@@ -907,8 +907,8 @@ class SHIFT(Component):
 
         EXAMPLES::
 
-            sage: from claasp.components.shift_component import SHIFT
-            sage: shift_component = SHIFT(0, 0, ['input'], [[0, 1]], 2, 1)
+            sage: from claasp.components.shift_component import Shift
+            sage: shift_component = Shift(0, 0, ['input'], [[0, 1]], 2, 1)
             sage: shift_component.smt_xor_linear_mask_propagation_constraints()
             (['shift_0_0_0_i', 'shift_0_0_1_i', 'shift_0_0_0_o', 'shift_0_0_1_o'], ['(assert (= shift_0_0_1_o shift_0_0_0_i))', '(assert (not shift_0_0_1_i))'])
         """

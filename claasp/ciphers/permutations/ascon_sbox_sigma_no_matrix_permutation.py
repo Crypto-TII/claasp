@@ -102,7 +102,7 @@ class AsconSboxSigmaNoMatrixPermutation(Cipher):
         self.add_constant_component(WORD_SIZE, ci)
         constant = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))])
         inputs_id, inputs_pos = get_inputs_parameter([state[2], constant])
-        self.add_XOR_component(inputs_id, inputs_pos, WORD_SIZE)
+        self.add_xor_component(inputs_id, inputs_pos, WORD_SIZE)
         state[2] = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))])
 
         substitution_layer = []
@@ -112,7 +112,7 @@ class AsconSboxSigmaNoMatrixPermutation(Cipher):
                 inputs_pos = [[i], [i + 64], [i], [i + 192], [i + 256]]
             else:
                 inputs_pos = [[i]] * 5
-            self.add_SBOX_component(inputs_id, inputs_pos, SBOX_SIZE, ASCON_SBOX)
+            self.add_sbox_component(inputs_id, inputs_pos, SBOX_SIZE, ASCON_SBOX)
             substitution_layer.append(ComponentState([self.get_current_component_id()], [list(range(SBOX_SIZE))]))
 
         inputs_id = []
@@ -133,7 +133,7 @@ class AsconSboxSigmaNoMatrixPermutation(Cipher):
             s1 = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))])
             self.add_rotate_component(inputs_id, inputs_pos, WORD_SIZE, LINEAR_LAYER_ROT[i][1])
             s2 = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))])
-            self.add_XOR_component(
+            self.add_xor_component(
                 inputs_id + s1.id + s2.id, inputs_pos + s1.input_bit_positions + s2.input_bit_positions, WORD_SIZE
             )
             state[i] = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))])

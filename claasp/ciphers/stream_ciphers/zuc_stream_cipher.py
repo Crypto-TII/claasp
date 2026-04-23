@@ -131,10 +131,10 @@ class ZucStreamCipher(Cipher):
 
     def lfsr_with_initialization_mode(self, W):
         self.clocking_lfsr()
-        self.add_SHIFT_component([W.id[0]], [list(range(WORD_SIZE))], WORD_SIZE, 1)
+        self.add_shift_component([W.id[0]], [list(range(WORD_SIZE))], WORD_SIZE, 1)
         W = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))])
 
-        self.add_MODADD_component(
+        self.add_modadd_component(
             LFSR_S[15] + [W.id[0]], LFSR_P[15] + [list(range(1, WORD_SIZE))], LFSR_W_SIZE, (2**LFSR_W_SIZE) - 1
         )
         LFSR_S[15] = [ComponentState([self.get_current_component_id()], [list(range(LFSR_W_SIZE))]).id[0]]
@@ -156,7 +156,7 @@ class ZucStreamCipher(Cipher):
         pr5 = ComponentState([self.get_current_component_id()], [list(range(LFSR_W_SIZE))])
 
         ids = [pr1.id[0], pr2.id[0], pr3.id[0], pr4.id[0], pr5.id[0]] + LFSR_S[0]
-        self.add_MODADD_component(ids, [list(range(LFSR_W_SIZE))] * 5 + LFSR_P[0], LFSR_W_SIZE, (2**LFSR_W_SIZE) - 1)
+        self.add_modadd_component(ids, [list(range(LFSR_W_SIZE))] * 5 + LFSR_P[0], LFSR_W_SIZE, (2**LFSR_W_SIZE) - 1)
         s16 = ComponentState([self.get_current_component_id()], [list(range(LFSR_W_SIZE))])
 
         for i in range(15):
@@ -169,20 +169,20 @@ class ZucStreamCipher(Cipher):
         s15h_id, s15h_ps = self.lfsr_S_high_16bits(LFSR_S[15], LFSR_P[15])
         s14l_id, s14l_ps = self.lfsr_S_low_16bits(LFSR_S[14], LFSR_P[14])
 
-        self.add_XOR_component(s15h_id + s14l_id + FSM_R[0], s15h_ps + s14l_ps + FSM_P[0], WORD_SIZE)
+        self.add_xor_component(s15h_id + s14l_id + FSM_R[0], s15h_ps + s14l_ps + FSM_P[0], WORD_SIZE)
 
         W = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))])
-        self.add_MODADD_component([W.id[0]] + FSM_R[1], [list(range(WORD_SIZE))] + FSM_P[1], WORD_SIZE)
+        self.add_modadd_component([W.id[0]] + FSM_R[1], [list(range(WORD_SIZE))] + FSM_P[1], WORD_SIZE)
         W = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))])
 
         s11l_id, s11l_ps = self.lfsr_S_low_16bits(LFSR_S[11], LFSR_P[11])
         s9h_id, s9h_ps = self.lfsr_S_high_16bits(LFSR_S[9], LFSR_P[9])
-        self.add_MODADD_component(FSM_R[0] + s11l_id + s9h_id, FSM_P[0] + s11l_ps + s9h_ps, WORD_SIZE)
+        self.add_modadd_component(FSM_R[0] + s11l_id + s9h_id, FSM_P[0] + s11l_ps + s9h_ps, WORD_SIZE)
         W1 = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))])
 
         s7l_id, s7l_ps = self.lfsr_S_low_16bits(LFSR_S[7], LFSR_P[7])
         s5h_id, s5h_ps = self.lfsr_S_high_16bits(LFSR_S[5], LFSR_P[5])
-        self.add_XOR_component(FSM_R[1] + s7l_id + s5h_id, FSM_P[1] + s7l_ps + s5h_ps, WORD_SIZE)
+        self.add_xor_component(FSM_R[1] + s7l_id + s5h_id, FSM_P[1] + s7l_ps + s5h_ps, WORD_SIZE)
         W2 = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))])
 
         l1 = self.linear_transform_L1(W1, W2)
@@ -193,10 +193,10 @@ class ZucStreamCipher(Cipher):
         return W
 
     def s_box_layer(self, lo):
-        s_box_1 = self.add_SBOX_component([lo.id[0]], [list(range(8))], 8, Sbox1).id
-        s_box_2 = self.add_SBOX_component([lo.id[0]], [list(range(8, 16))], 8, Sbox2).id
-        s_box_3 = self.add_SBOX_component([lo.id[0]], [list(range(16, 24))], 8, Sbox1).id
-        s_box_4 = self.add_SBOX_component([lo.id[0]], [list(range(24, 32))], 8, Sbox2).id
+        s_box_1 = self.add_sbox_component([lo.id[0]], [list(range(8))], 8, Sbox1).id
+        s_box_2 = self.add_sbox_component([lo.id[0]], [list(range(8, 16))], 8, Sbox2).id
+        s_box_3 = self.add_sbox_component([lo.id[0]], [list(range(16, 24))], 8, Sbox1).id
+        s_box_4 = self.add_sbox_component([lo.id[0]], [list(range(24, 32))], 8, Sbox2).id
         s_box_id = [s_box_1, s_box_2, s_box_3, s_box_4]
         return s_box_id, [list(range(8))] * 4
 
@@ -207,7 +207,7 @@ class ZucStreamCipher(Cipher):
         rot4 = self.linear_layer_rotation(W1, W2, -24)
         ids = [W1.id[0], W2.id[0], rot1.id[0], rot2.id[0], rot3.id[0], rot4.id[0]]
         pos = [list(range(16, WORD_SIZE)), list(range(0, 16))] + [list(range(WORD_SIZE))] * 4
-        self.add_XOR_component(ids, pos, WORD_SIZE)
+        self.add_xor_component(ids, pos, WORD_SIZE)
         l1 = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))])
         return l1
 
@@ -218,14 +218,14 @@ class ZucStreamCipher(Cipher):
         rot4 = self.linear_layer_rotation(W1, W2, -30)
         ids = [W1.id[0], W2.id[0], rot1.id[0], rot2.id[0], rot3.id[0], rot4.id[0]]
         pos = [list(range(16, WORD_SIZE)), list(range(16))] + [list(range(WORD_SIZE))] * 4
-        self.add_XOR_component(ids, pos, WORD_SIZE)
+        self.add_xor_component(ids, pos, WORD_SIZE)
         l2 = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))])
         return l2
 
     def key_stream(self, w, clock_number, key_st):
         s2l_id, s2l_ps = self.lfsr_S_low_16bits(LFSR_S[2], LFSR_P[2])
         s0h_id, s0h_ps = self.lfsr_S_high_16bits(LFSR_S[0], LFSR_P[0])
-        key_word = self.add_XOR_component(
+        key_word = self.add_xor_component(
             [w.id[0]] + s2l_id + s0h_id, [list(range(WORD_SIZE))] + s2l_ps + s0h_ps, WORD_SIZE
         ).id
         if clock_number == 0:

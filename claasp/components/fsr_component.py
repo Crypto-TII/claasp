@@ -70,7 +70,7 @@ def _words_array_to_bits(word_array, word_gf):
     return output
 
 
-class FSR(Component):
+class Fsr(Component):
     """
     Construct an FSR component.
 
@@ -86,9 +86,9 @@ class FSR(Component):
 
     EXAMPLES::
 
-        sage: from claasp.components.fsr_component import FSR
+        sage: from claasp.components.fsr_component import Fsr
         sage: fsr_description = [[[[5, [[4], [5], [6, 7]]], [7, [[0], [8], [1, 2]]]], 1]]
-        sage: component = FSR(0, 0, ['input'], [[0, 1, 2, 3, 4, 5, 6, 7, 8]], 0, fsr_description)
+        sage: component = Fsr(0, 0, ['input'], [[0, 1, 2, 3, 4, 5, 6, 7, 8]], 0, fsr_description)
         sage: print(component.id)
         fsr_0_0
         sage: print(component.type)
