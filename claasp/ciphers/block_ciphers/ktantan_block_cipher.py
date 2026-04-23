@@ -17,7 +17,11 @@
 
 from claasp.DTOs.component_state import ComponentState
 from claasp.cipher import Cipher
-from claasp.ciphers.block_ciphers.katan_block_cipher import CONFIGURATION, IR
+from claasp.ciphers.block_ciphers.katan_block_cipher import (
+    CONFIGURATION,
+    get_ir_bit,
+    normalize_number_of_rounds,
+)
 from claasp.name_mappings import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
 
 PARAMETERS_CONFIGURATION_LIST = [
@@ -36,9 +40,11 @@ class KtantanBlockCipher(Cipher):
 
     INPUT:
 
-    - ``block_bit_size`` -- **integer** (default: `32`); the block size of the cipher. Valid values are `32`, `48`, and `64`.
-    - ``key_bit_size`` -- **integer** (default: `80`); the key size of the cipher. KTANTAN uses a fixed 80-bit key.
-    - ``number_of_rounds`` -- **integer** (default: `None`); number of rounds. The default is `254`.
+        - ``block_bit_size`` -- **integer** (default: `32`); the block size of the cipher. Valid values are `32`, `48`, and `64`.
+        - ``key_bit_size`` -- **integer** (default: `80`); the key size of the cipher. KTANTAN uses a fixed 80-bit key.
+        - ``number_of_rounds`` -- **integer** (default: `None`); number of rounds. The default is `254`.
+        - ``ir_mode`` -- **string** (default: `"strict"`); how to handle rounds beyond the
+            254-bit IR sequence. Use `"cycle"` to repeat the IR sequence.
 
     EXAMPLES::
 
@@ -54,9 +60,12 @@ class KtantanBlockCipher(Cipher):
 
         sage: KtantanBlockCipher(block_bit_size=64, number_of_rounds=8).id
         'ktantan_p64_k80_o64_r8'
+
+        sage: KtantanBlockCipher(number_of_rounds=255, ir_mode='cycle').number_of_rounds
+        255
     """
 
-    def __init__(self, block_bit_size=32, key_bit_size=80, number_of_rounds=None):
+    def __init__(self, block_bit_size=32, key_bit_size=80, number_of_rounds=None, ir_mode="strict"):
         if block_bit_size not in CONFIGURATION:
             raise ValueError("No available configuration for the given block size.")
         if key_bit_size != 80:
@@ -68,8 +77,7 @@ class KtantanBlockCipher(Cipher):
         self._zero_bit = None
         self._one_bit = None
 
-        if number_of_rounds is None:
-            number_of_rounds = 254
+        number_of_rounds = normalize_number_of_rounds(number_of_rounds)
 
         super().__init__(
             family_name="ktantan",
@@ -91,7 +99,7 @@ class KtantanBlockCipher(Cipher):
             self.add_round()
 
             for _ in range(self._config["steps"]):
-                fa = self._round_function_a(l1, ka, round_number)
+                fa = self._round_function_a(l1, ka, round_number, ir_mode)
                 fb = self._round_function_b(l2, kb, round_number)
                 l1 = [fb] + l1[:-1]
                 l2 = [fa] + l2[:-1]
@@ -130,13 +138,13 @@ class KtantanBlockCipher(Cipher):
         ).id
         return ComponentState([component_id], [[0]])
 
-    def _round_function_a(self, l1, ka, round_number):
+    def _round_function_a(self, l1, ka, round_number, ir_mode):
         x1, x2, x3, x4, x5 = self._config["x"]
         return self._xor_bits([
             l1[x1],
             l1[x2],
             self._and_bits(l1[x3], l1[x4]),
-            l1[x5] if IR[round_number] else self._constant_bit(0),
+            l1[x5] if get_ir_bit(round_number, ir_mode) else self._constant_bit(0),
             ka[round_number],
         ])
 

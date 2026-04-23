@@ -54,7 +54,11 @@ equals  FSR[len_l2 .. block-1] ++ FSR[0 .. len_l2-1].
 
 from claasp.DTOs.component_state import ComponentState
 from claasp.cipher import Cipher
-from claasp.ciphers.block_ciphers.katan_block_cipher import CONFIGURATION, IR
+from claasp.ciphers.block_ciphers.katan_block_cipher import (
+    CONFIGURATION,
+    get_ir_bit,
+    normalize_number_of_rounds,
+)
 from claasp.name_mappings import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
 
 PARAMETERS_CONFIGURATION_LIST = [
@@ -76,9 +80,11 @@ class KatanFSRBlockCipher(Cipher):
 
     INPUT:
 
-    - ``block_bit_size`` -- **integer** (default: `32`); Valid values: 32, 48, 64.
-    - ``key_bit_size`` -- **integer** (default: `80`); must be 80.
-    - ``number_of_rounds`` -- **integer** (default: `None`); defaults to 254.
+        - ``block_bit_size`` -- **integer** (default: `32`); Valid values: 32, 48, 64.
+        - ``key_bit_size`` -- **integer** (default: `80`); must be 80.
+        - ``number_of_rounds`` -- **integer** (default: `None`); defaults to 254.
+        - ``ir_mode`` -- **string** (default: `"strict"`); how to handle rounds beyond the
+            254-bit IR sequence. Use `"cycle"` to repeat the IR sequence.
 
     EXAMPLES::
 
@@ -94,9 +100,12 @@ class KatanFSRBlockCipher(Cipher):
 
         sage: KatanFSRBlockCipher(block_bit_size=48, number_of_rounds=4).id
         'katan_fsr_p48_k80_o48_r4'
+
+        sage: KatanFSRBlockCipher(number_of_rounds=255, ir_mode='cycle').number_of_rounds
+        255
     """
 
-    def __init__(self, block_bit_size=32, key_bit_size=80, number_of_rounds=None):
+    def __init__(self, block_bit_size=32, key_bit_size=80, number_of_rounds=None, ir_mode="strict"):
         if block_bit_size not in CONFIGURATION:
             raise ValueError("No available configuration for the given block size.")
         if key_bit_size != 80:
@@ -109,8 +118,7 @@ class KatanFSRBlockCipher(Cipher):
         y = config["y"]   # (y1, y2, y3, y4, y5, y6) — L2 tap indices
         steps = config["steps"]  # register clocks per CLAASP round
 
-        if number_of_rounds is None:
-            number_of_rounds = 254
+        number_of_rounds = normalize_number_of_rounds(number_of_rounds)
 
         super().__init__(
             family_name="katan_fsr",
@@ -194,8 +202,8 @@ class KatanFSRBlockCipher(Cipher):
             ka = key_bits[2 * round_number]
             kb = key_bits[2 * round_number + 1]
 
-            # L2 feedback polynomial changes with IR[round_number]
-            fa_poly = fa_poly_with_ir if IR[round_number] else fa_poly_no_ir
+            # L2 feedback polynomial changes with the per-round IR bit.
+            fa_poly = fa_poly_with_ir if get_ir_bit(round_number, ir_mode) else fa_poly_no_ir
 
             fsr_desc = [
                 [[len_l2, fa_poly], [len_l1, fb_poly]],

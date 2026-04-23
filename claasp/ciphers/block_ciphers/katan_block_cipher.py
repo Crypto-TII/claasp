@@ -25,6 +25,9 @@ PARAMETERS_CONFIGURATION_LIST = [
     {"block_bit_size": 64, "key_bit_size": 80, "number_of_rounds": 254},
 ]
 
+DEFAULT_NUMBER_OF_ROUNDS = 254
+SUPPORTED_IR_MODES = ("strict", "cycle")
+
 CONFIGURATION = {
     32: {"len_l1": 13, "len_l2": 19, "x": (12, 7, 8, 5, 3), "y": (18, 7, 12, 10, 8, 3), "steps": 1},
     48: {"len_l1": 19, "len_l2": 29, "x": (18, 12, 15, 7, 6), "y": (28, 19, 21, 13, 15, 6), "steps": 2},
@@ -51,6 +54,32 @@ IR = (
 )
 
 
+def normalize_number_of_rounds(number_of_rounds):
+    if number_of_rounds is None:
+        return DEFAULT_NUMBER_OF_ROUNDS
+    if not isinstance(number_of_rounds, int) or isinstance(number_of_rounds, bool):
+        raise TypeError("number_of_rounds must be an integer.")
+    if number_of_rounds <= 0:
+        raise ValueError("number_of_rounds must be positive.")
+
+    return number_of_rounds
+
+
+def get_ir_bit(round_number, ir_mode="strict"):
+    if ir_mode not in SUPPORTED_IR_MODES:
+        raise ValueError(f"ir_mode must be one of {SUPPORTED_IR_MODES}.")
+
+    if round_number < len(IR):
+        return IR[round_number]
+    if ir_mode == "cycle":
+        return IR[round_number % len(IR)]
+
+    raise ValueError(
+        f"number_of_rounds exceeds the available IR sequence length ({len(IR)}). "
+        "Pass ir_mode='cycle' to repeat IR for extended-round experiments."
+    )
+
+
 class KatanBlockCipher(Cipher):
     """
     Construct an instance of the KatanBlockCipher class.
@@ -60,9 +89,11 @@ class KatanBlockCipher(Cipher):
 
     INPUT:
 
-    - ``block_bit_size`` -- **integer** (default: `32`); the block size of the cipher. Valid values are `32`, `48`, and `64`.
-    - ``key_bit_size`` -- **integer** (default: `80`); the key size of the cipher. KATAN uses a fixed 80-bit key.
-    - ``number_of_rounds`` -- **integer** (default: `None`); number of rounds. The default is `254`.
+        - ``block_bit_size`` -- **integer** (default: `32`); the block size of the cipher. Valid values are `32`, `48`, and `64`.
+        - ``key_bit_size`` -- **integer** (default: `80`); the key size of the cipher. KATAN uses a fixed 80-bit key.
+        - ``number_of_rounds`` -- **integer** (default: `None`); number of rounds. The default is `254`.
+        - ``ir_mode`` -- **string** (default: `"strict"`); how to handle rounds beyond the
+            254-bit IR sequence. Use `"cycle"` to repeat the IR sequence.
 
     EXAMPLES::
 
@@ -78,9 +109,12 @@ class KatanBlockCipher(Cipher):
 
         sage: KatanBlockCipher(block_bit_size=48, number_of_rounds=4).id
         'katan_p48_k80_o48_r4'
+
+        sage: KatanBlockCipher(number_of_rounds=255, ir_mode='cycle').number_of_rounds
+        255
     """
 
-    def __init__(self, block_bit_size=32, key_bit_size=80, number_of_rounds=None):
+    def __init__(self, block_bit_size=32, key_bit_size=80, number_of_rounds=None, ir_mode="strict"):
         if block_bit_size not in CONFIGURATION:
             raise ValueError("No available configuration for the given block size.")
         if key_bit_size != 80:
@@ -92,8 +126,7 @@ class KatanBlockCipher(Cipher):
         self._zero_bit = None
         self._one_bit = None
 
-        if number_of_rounds is None:
-            number_of_rounds = 254
+        number_of_rounds = normalize_number_of_rounds(number_of_rounds)
 
         super().__init__(
             family_name="katan",
@@ -123,7 +156,7 @@ class KatanBlockCipher(Cipher):
                 )
 
             for _ in range(self._config["steps"]):
-                fa = self._round_function_a(l1, key_bits, round_number)
+                fa = self._round_function_a(l1, key_bits, round_number, ir_mode)
                 fb = self._round_function_b(l2, key_bits, round_number)
                 l1 = [fb] + l1[:-1]
                 l2 = [fa] + l2[:-1]
@@ -167,13 +200,13 @@ class KatanBlockCipher(Cipher):
             return self._constant_bit(0)
         return bit
 
-    def _round_function_a(self, l1, key_bits, round_number):
+    def _round_function_a(self, l1, key_bits, round_number, ir_mode):
         x1, x2, x3, x4, x5 = self._config["x"]
         return self._xor_bits([
             l1[x1],
             l1[x2],
             self._and_bits(l1[x3], l1[x4]),
-            self._and_with_ir(l1[x5], IR[round_number]),
+            self._and_with_ir(l1[x5], get_ir_bit(round_number, ir_mode)),
             key_bits[2 * round_number],
         ])
 
