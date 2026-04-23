@@ -1,3 +1,5 @@
+import pytest
+
 from claasp.ciphers.block_ciphers.katan_fsr_block_cipher import KatanFSRBlockCipher
 
 
@@ -36,3 +38,20 @@ def test_katan_fsr_block_cipher():
     assert katan_fsr32.evaluate([0x12345678, key2]) == 0xCFFDC7DA
     assert katan_fsr48.evaluate([0x123456789ABC, key2]) == 0x0675F0F5DA84
     assert katan_fsr64.evaluate([0x123456789ABCDEF0, key2]) == 0x0B3EDCA9A41D4619
+
+
+def test_katan_fsr_block_cipher_round_validation():
+    with pytest.raises(ValueError, match="must be positive"):
+        KatanFSRBlockCipher(number_of_rounds=0)
+
+    with pytest.raises(TypeError, match="must be an integer"):
+        KatanFSRBlockCipher(number_of_rounds=True)
+
+    with pytest.raises(ValueError, match="exceeds the available IR sequence length"):
+        KatanFSRBlockCipher(number_of_rounds=255)
+
+    katan_fsr = KatanFSRBlockCipher(number_of_rounds=255, ir_mode="cycle")
+    assert katan_fsr.number_of_rounds == 255
+
+    with pytest.raises(ValueError, match="ir_mode must be one of"):
+        KatanFSRBlockCipher(number_of_rounds=255, ir_mode="invalid")

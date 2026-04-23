@@ -89,11 +89,11 @@ class KatanBlockCipher(Cipher):
 
     INPUT:
 
-        - ``block_bit_size`` -- **integer** (default: `32`); the block size of the cipher. Valid values are `32`, `48`, and `64`.
-        - ``key_bit_size`` -- **integer** (default: `80`); the key size of the cipher. KATAN uses a fixed 80-bit key.
-        - ``number_of_rounds`` -- **integer** (default: `None`); number of rounds. The default is `254`.
-        - ``ir_mode`` -- **string** (default: `"strict"`); how to handle rounds beyond the
-            254-bit IR sequence. Use `"cycle"` to repeat the IR sequence.
+    - ``block_bit_size`` -- **integer** (default: `32`); the block size of the cipher. Valid values are `32`, `48`, and `64`.
+    - ``key_bit_size`` -- **integer** (default: `80`); the key size of the cipher. KATAN uses a fixed 80-bit key.
+    - ``number_of_rounds`` -- **integer** (default: `None`); number of rounds. The default is `254`.
+    - ``ir_mode`` -- **string** (default: `"strict"`); how to handle rounds beyond the
+        254-bit IR sequence. Use `"cycle"` to repeat the IR sequence.
 
     EXAMPLES::
 

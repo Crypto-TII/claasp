@@ -1,3 +1,5 @@
+import pytest
+
 from claasp.ciphers.block_ciphers.ktantan_fsr_block_cipher import KtantanFSRBlockCipher
 
 
@@ -36,3 +38,20 @@ def test_ktantan_fsr_block_cipher():
     assert ktantan_fsr32.evaluate([0x12345678, key2]) == 0xB3F16EA2
     assert ktantan_fsr48.evaluate([0x123456789ABC, key2]) == 0xEC5D5700FD6A
     assert ktantan_fsr64.evaluate([0x123456789ABCDEF0, key2]) == 0xD2E6ABB1BDBCB6CC
+
+
+def test_ktantan_fsr_block_cipher_round_validation():
+    with pytest.raises(ValueError, match="must be positive"):
+        KtantanFSRBlockCipher(number_of_rounds=0)
+
+    with pytest.raises(TypeError, match="must be an integer"):
+        KtantanFSRBlockCipher(number_of_rounds=True)
+
+    with pytest.raises(ValueError, match="exceeds the available IR sequence length"):
+        KtantanFSRBlockCipher(number_of_rounds=255)
+
+    ktantan_fsr = KtantanFSRBlockCipher(number_of_rounds=255, ir_mode="cycle")
+    assert ktantan_fsr.number_of_rounds == 255
+
+    with pytest.raises(ValueError, match="ir_mode must be one of"):
+        KtantanFSRBlockCipher(number_of_rounds=255, ir_mode="invalid")

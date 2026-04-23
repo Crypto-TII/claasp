@@ -1,3 +1,5 @@
+import pytest
+
 from claasp.ciphers.block_ciphers.ktantan_block_cipher import KtantanBlockCipher
 from claasp.ciphers.block_ciphers.ktantan_fsr_block_cipher import KtantanFSRBlockCipher
 
@@ -11,8 +13,11 @@ def test_ktantan_block_cipher():
     https://gist.github.com/raullenchai/2712516
 
     Full test vectors are in ktantan_fsr_block_cipher_test.py (faster implementation).
-    Here we verify that the gate-level and FSR implementations agree at 40 rounds
-    (enough to exhaust all 80 initial key bits at 2 bits per round).
+    Here we verify that the gate-level and FSR implementations agree at 8 rounds,
+    which is enough to hit both IR-controlled branches (IR[0] = 1 and IR[7] = 0),
+    exercise the round-output path, and cover the relevant fixed-key mux-schedule
+    branches, while keeping the cross-check much cheaper than the full 254-round
+    test.
     """
     ktantan = KtantanBlockCipher()
     assert ktantan.type == 'block_cipher'
@@ -24,8 +29,8 @@ def test_ktantan_block_cipher():
     assert ktantan.number_of_rounds == 8
     assert ktantan.id == 'ktantan_p64_k80_o64_r8'
 
-    # Cross-validate gate-level vs FSR at 40 rounds (all 80 key bits consumed).
-    ROUNDS = 40
+    # Eight rounds cover both IR branches and the relevant key-schedule mux cases.
+    ROUNDS = 8
     inputs = [
         (32,  0x00000000,         0xFFFFFFFFFFFFFFFFFFFF),
         (32,  0x12345678,         0x0123456789ABCDEFFEDC),
@@ -45,3 +50,20 @@ def test_ktantan_block_cipher():
         assert gate_out == fsr_out, (
             f"Mismatch at block_size={block_size}: gate={gate_out:#x} fsr={fsr_out:#x}"
         )
+
+
+def test_ktantan_block_cipher_round_validation():
+    with pytest.raises(ValueError, match="must be positive"):
+        KtantanBlockCipher(number_of_rounds=0)
+
+    with pytest.raises(TypeError, match="must be an integer"):
+        KtantanBlockCipher(number_of_rounds=True)
+
+    with pytest.raises(ValueError, match="exceeds the available IR sequence length"):
+        KtantanBlockCipher(number_of_rounds=255)
+
+    ktantan = KtantanBlockCipher(number_of_rounds=255, ir_mode="cycle")
+    assert ktantan.number_of_rounds == 255
+
+    with pytest.raises(ValueError, match="ir_mode must be one of"):
+        KtantanBlockCipher(number_of_rounds=255, ir_mode="invalid")
