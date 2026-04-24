@@ -292,11 +292,6 @@ class MznDifferentialLinearModel(MznModel):
         top_probability_sum = _sum_component_probability(self.top_part_component_ids)
         middle_probability_sum = _sum_component_probability(effective_middle_component_ids)
         bottom_probability_sum = _sum_component_probability(self.bottom_part_component_ids)
-        # Approximate DL objective in log-domain:
-        # weight ≈ p + r + 2q
-        # where p = top, r = middle, q = bottom.
-        # The factor 2*bottom reflects that the exact term is 2^(2q),
-        # and the middle term (2·2^r - 1) is approximated by r.
         constraints = [
             f"constraint weight = {top_probability_sum} + {middle_probability_sum} + 2*{bottom_probability_sum};"
         ]
@@ -493,14 +488,6 @@ class MznDifferentialLinearModel(MznModel):
                 seen_bottom.add(base_component_id)
 
         return p_weight, middle_sum, q_weight, bool(seen_middle)
-
-    @staticmethod
-    def _middle_weight_term(middle_sum, has_middle_components):
-        if not has_middle_components:
-            return 0.0
-        if middle_sum == 1:
-            raise ValueError("Unexpected probability weight 1 in middle part")
-        return abs(math.log(abs(2 * (2**(-1*middle_sum)) - 1), 2))
 
     def _differential_linear_total_weight_from_components(self, components_values):
         p_weight, middle_sum, q_weight, _ = (
