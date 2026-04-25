@@ -652,7 +652,7 @@ def test_cipher_inverse():
     cipher_inv = cipher.cipher_inverse()
     assert cipher_inv.evaluate([ciphertext]) == plaintext
 
-    cipher = ChachaPermutation(number_of_rounds=2)
+    cipher = ChachaPermutation(number_of_rounds=3)
     plaintext = 0x0001
     ciphertext = cipher.evaluate([plaintext])
     cipher_inv = cipher.cipher_inverse()
