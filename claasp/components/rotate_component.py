@@ -76,7 +76,7 @@ class Rotate(Component):
             sage: from claasp.ciphers.single_component_ciphers.rotate_cipher import RotateCipher
             sage: from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
             sage: cipher = RotateCipher(bit_size=2, parameter=1)
-            sage: rotate_component = cipher.get_component_from_id('rot_0_0')
+            sage: rotate_component = cipher.component_from_id('rot_0_0')
             sage: algebraic = AlgebraicModel(cipher)
             sage: rotate_component.algebraic_polynomials(algebraic)
             [rot_0_0_y0 + rot_0_0_x1, rot_0_0_y1 + rot_0_0_x0]
@@ -400,7 +400,7 @@ class Rotate(Component):
             sage: cipher = RotateCipher(bit_size=2, parameter=1)
             sage: milp = MilpModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
-            sage: rotate_component = cipher.get_component_from_id('rot_0_0')
+            sage: rotate_component = cipher.component_from_id('rot_0_0')
             sage: variables, constraints = rotate_component.milp_constraints(milp)
             sage: variables
             [('x[plaintext_0]', x_0), ('x[plaintext_1]', x_1), ('x[rot_0_0_0]', x_2), ('x[rot_0_0_1]', x_3)]
@@ -442,7 +442,7 @@ class Rotate(Component):
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import MilpWordwiseDeterministicTruncatedXorDifferentialModel
             sage: milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
-            sage: rotate_component = cipher.get_component_from_id('rot_0_0')
+            sage: rotate_component = cipher.component_from_id('rot_0_0')
             sage: variables, constraints = rotate_component.milp_wordwise_deterministic_truncated_xor_differential_constraints(milp)
             sage: variables
             [('x_class[plaintext_word_0_class]', x_0), ('x_class[rot_0_0_word_0_class]', x_1), ('x[plaintext_0]', x_2), ('x[plaintext_1]', x_3), ('x[plaintext_2]', x_4), ('x[plaintext_3]', x_5), ('x[rot_0_0_0]', x_6), ('x[rot_0_0_1]', x_7), ('x[rot_0_0_2]', x_8), ('x[rot_0_0_3]', x_9)]
@@ -490,7 +490,7 @@ class Rotate(Component):
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import MilpBitwiseDeterministicTruncatedXorDifferentialModel
             sage: milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
-            sage: rotate_component = cipher.get_component_from_id('rot_0_0')
+            sage: rotate_component = cipher.component_from_id('rot_0_0')
             sage: variables, constraints = rotate_component.milp_bitwise_deterministic_truncated_xor_differential_constraints(milp)
             sage: variables
             [('x_class[plaintext_0]', x_0), ('x_class[plaintext_1]', x_1), ('x_class[rot_0_0_0]', x_2), ('x_class[rot_0_0_1]', x_3)]
@@ -534,7 +534,7 @@ class Rotate(Component):
             sage: cipher = RotateCipher(bit_size=2, parameter=1)
             sage: milp = MilpModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
-            sage: rotate_component = cipher.get_component_from_id('rot_0_0')
+            sage: rotate_component = cipher.component_from_id('rot_0_0')
             sage: variables, constraints = rotate_component.milp_xor_linear_mask_propagation_constraints(milp)
             sage: variables
             [('x[rot_0_0_0_i]', x_0), ('x[rot_0_0_1_i]', x_1), ('x[rot_0_0_0_o]', x_2), ('x[rot_0_0_1_o]', x_3)]
@@ -572,7 +572,7 @@ class Rotate(Component):
             sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
             sage: cipher = RotateCipher(bit_size=2, parameter=1)
             sage: minizinc = MznModel(cipher)
-            sage: rotate_component = cipher.get_component_from_id('rot_0_0')
+            sage: rotate_component = cipher.component_from_id('rot_0_0')
             sage: _, rotate_mzn_constraints = rotate_component.minizinc_constraints(minizinc)
             sage: rotate_mzn_constraints[0]
             'constraint RRot(array1d(0..2-1, [rot_0_0_x0,rot_0_0_x1]), 1)=array1d(0..2-1, [rot_0_0_y0,rot_0_0_y1]);\n'

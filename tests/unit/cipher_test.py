@@ -167,9 +167,9 @@ def test_generate_word_based_c_code():
     assert '\t\tprintf("\\"%s\\" : [", descriptions[i]);' in word_based_c_code
 
 
-def test_get_component_from_id():
+def test_component_from_id():
     fancy = FancyBlockCipher(number_of_rounds=2)
-    component = fancy.get_component_from_id('sbox_0_0')
+    component = fancy.component_from_id('sbox_0_0')
     assert component.description == [0, 2, 4, 6, 8, 10, 12, 14, 1, 3, 5, 7, 9, 11, 13, 15]
 
 

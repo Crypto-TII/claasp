@@ -2215,7 +2215,7 @@ def get_output_bit_size_from_id(cipher_list, component_id):
             if component_id in cipher.inputs:
                 return cipher.inputs_bit_size[cipher.inputs.index(component_id)]
             elif component_id in cipher.get_all_components_ids():
-                return cipher.get_component_from_id(component_id).output_bit_size
+                return cipher.component_from_id(component_id).output_bit_size
         raise ValueError(f"{component_id} not found.")
     except ValueError as e:
         sys.exit(str(e))

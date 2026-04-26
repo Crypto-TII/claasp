@@ -104,7 +104,7 @@ def test_milp_constraints():
     cipher = make_linear_layer_cipher()
     milp = MilpModel(cipher)
     milp.init_model_in_sage_milp_class()
-    linear_layer_component = cipher.get_component_from_id("linear_layer_0_0")
+    linear_layer_component = cipher.component_from_id("linear_layer_0_0")
     variables, constraints = linear_layer_component.milp_constraints(milp)
 
     assert str(variables[0]) == "('x[plaintext_0]', x_0)"
@@ -122,7 +122,7 @@ def test_milp_xor_linear_mask_propagation_constraints():
     cipher = make_linear_layer_cipher()
     milp = MilpModel(cipher)
     milp.init_model_in_sage_milp_class()
-    linear_layer_component = cipher.get_component_from_id("linear_layer_0_0")
+    linear_layer_component = cipher.component_from_id("linear_layer_0_0")
     variables, constraints = linear_layer_component.milp_xor_linear_mask_propagation_constraints(milp)
 
     assert str(variables[0]) == "('x[linear_layer_0_0_0_i]', x_0)"
@@ -225,7 +225,7 @@ def test_milp_bitwise_deterministic_truncated_xor_differential_constraints():
     cipher = make_linear_layer_cipher()
     milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(cipher)
     milp.init_model_in_sage_milp_class()
-    linear_layer_component = cipher.get_component_from_id("linear_layer_0_0")
+    linear_layer_component = cipher.component_from_id("linear_layer_0_0")
     variables, constraints = linear_layer_component.milp_bitwise_deterministic_truncated_xor_differential_constraints(milp)
 
     assert str(variables[0]) == "('x_class[plaintext_0]', x_0)"
@@ -244,7 +244,7 @@ def test_milp_bitwise_deterministic_truncated_xor_differential_binary_constraint
     cipher = make_linear_layer_cipher()
     milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(cipher)
     milp.init_model_in_sage_milp_class()
-    linear_layer_component = cipher.get_component_from_id("linear_layer_0_0")
+    linear_layer_component = cipher.component_from_id("linear_layer_0_0")
     variables, constraints = linear_layer_component.milp_bitwise_deterministic_truncated_xor_differential_binary_constraints(milp)
 
     assert str(variables[0]) == "('x_class[plaintext_0]', x_0)"
@@ -264,7 +264,7 @@ def test_milp_wordwise_deterministic_truncated_xor_differential_constraints():
     milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(cipher)
     milp.init_model_in_sage_milp_class()
     milp._word_size = 2
-    linear_layer_component = cipher.get_component_from_id("linear_layer_0_0")
+    linear_layer_component = cipher.component_from_id("linear_layer_0_0")
     variables, constraints = linear_layer_component.milp_wordwise_deterministic_truncated_xor_differential_constraints(milp)
 
     assert str(variables[0]) == "('x[plaintext_word_0_class_bit_0]', x_0)"

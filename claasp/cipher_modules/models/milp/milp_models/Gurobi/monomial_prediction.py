@@ -342,7 +342,7 @@ class MilpMonomialPredictionModel:
                 output_index = current_output_index % output_size
 
                 if input_name.startswith("constant"):
-                    const_comp = self._cipher.get_component_from_id(input_name)
+                    const_comp = self._cipher.component_from_id(input_name)
                     value = (int(const_comp.description[0], 16) >>
                              (const_comp.output_bit_size - 1 - pos)) & 1
                     const_bits_per_bit[output_index].append(value)
@@ -772,7 +772,7 @@ class MilpMonomialPredictionModel:
             # Skip components in the exclusion set (e.g., dead-end round_output tap at middle_round)
             if skip_components and component_id in skip_components:
                 continue
-            component = self._cipher.get_component_from_id(component_id)
+            component = self._cipher.component_from_id(component_id)
             print(f"---> {component.id}") if verbosity else None
             self._dispatch_constraints(component)
 
@@ -837,7 +837,7 @@ class MilpMonomialPredictionModel:
             # Skip components in the exclusion set (e.g., dead-end round_output tap at middle_round)
             if skip_components and component_id in skip_components:
                 continue
-            component = self._cipher.get_component_from_id(component_id)
+            component = self._cipher.component_from_id(component_id)
             if name in component.input_id_links:
                 indexes = [i for i, j in enumerate(component.input_id_links) if j == name]
                 if name not in occurences:
@@ -849,13 +849,13 @@ class MilpMonomialPredictionModel:
         if input_id_link_needed in self._cipher.inputs:
             occurences[input_id_link_needed] = [block_needed]
         else:
-            component = self._cipher.get_component_from_id(input_id_link_needed)
+            component = self._cipher.component_from_id(input_id_link_needed)
             occurences[input_id_link_needed] = [[i for i in range(component.output_bit_size)]]
 
     def _fill_occurences_for_cipher_output(self, input_id_link_needed, occurences):
         cipher_id = self.get_cipher_output_component_id()
         if input_id_link_needed == cipher_id:
-            component = self._cipher.get_component_from_id(cipher_id)
+            component = self._cipher.component_from_id(cipher_id)
             occurences[cipher_id] = [[i for i in range(component.output_bit_size)]]
 
     def find_copy_indexes(self, input_bit_positions):
@@ -906,7 +906,7 @@ class MilpMonomialPredictionModel:
                                                                                  name=component_id + f"[{pos}]")
                     all_vars[component_id][pos]["copies"] = []
             else:
-                component = self._cipher.get_component_from_id(cipher_id)
+                component = self._cipher.component_from_id(cipher_id)
                 for pos in range(component.output_bit_size):
                     all_vars[component_id][pos] = {}
                     all_vars[component_id][pos]["original"] = self._model.addVar(vtype=GRB.BINARY,
@@ -931,7 +931,7 @@ class MilpMonomialPredictionModel:
             G = create_networkx_graph_from_input_ids(self._cipher)
             skip_components = {
                 n for n, d in G.out_degree() if d == 0 
-                and self._cipher.get_component_from_id(n).type == INTERMEDIATE_OUTPUT
+                and self._cipher.component_from_id(n).type == INTERMEDIATE_OUTPUT
             }
             if chosen_cipher_output in skip_components:
                 skip_components.remove(chosen_cipher_output)
@@ -940,7 +940,7 @@ class MilpMonomialPredictionModel:
             input_id_link_needed = chosen_cipher_output
         else:
             input_id_link_needed = self.get_cipher_output_component_id()
-        component = self._cipher.get_component_from_id(input_id_link_needed)
+        component = self._cipher.component_from_id(input_id_link_needed)
         block_needed = list(range(component.output_bit_size))
         output_bit_index_previous_comp = output_bit_index
 
@@ -1017,7 +1017,7 @@ class MilpMonomialPredictionModel:
 
         input_id_link_needed = chosen_cipher_output if chosen_cipher_output is not None else self.get_cipher_output_component_id()
              
-        component = self._cipher.get_component_from_id(input_id_link_needed)
+        component = self._cipher.component_from_id(input_id_link_needed)
         block_needed = list(range(component.output_bit_size))
         
         predecessors = self._get_predecessors_for_link(input_id_link_needed)
@@ -1047,7 +1047,7 @@ class MilpMonomialPredictionModel:
         G = create_networkx_graph_from_input_ids(self._cipher)
         skip_components = {
             n for n, d in G.out_degree() if d == 0 
-            and self._cipher.get_component_from_id(n).type == INTERMEDIATE_OUTPUT
+            and self._cipher.component_from_id(n).type == INTERMEDIATE_OUTPUT
         }
         if chosen_cipher_output in skip_components:
             skip_components.remove(chosen_cipher_output)
@@ -2197,7 +2197,7 @@ class MilpMonomialPredictionModel:
                 return comp
         
         c_idx = middle_round + self._cipher.components_before_round_starts + 1
-        comp = self._cipher.get_component_from_id(f"intermediate_output_{middle_round}_{c_idx}")
+        comp = self._cipher.component_from_id(f"intermediate_output_{middle_round}_{c_idx}")
         if comp is None:
             raise ValueError(f"Could not find round_output component at round {middle_round}")
         return comp

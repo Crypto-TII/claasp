@@ -88,7 +88,7 @@ class SatProbabilisticXorTruncatedDifferentialModel(SatXorDifferentialModel, Sat
         border_components = []
 
         for truncated_component in self.truncated_components:
-            component_obj = self.cipher.get_component_from_id(truncated_component["component_id"])
+            component_obj = self.cipher.component_from_id(truncated_component["component_id"])
             for input_id in component_obj.input_id_links:
                 if input_id in regular_component_ids:
                     border_components.append(input_id)
@@ -102,7 +102,7 @@ class SatProbabilisticXorTruncatedDifferentialModel(SatXorDifferentialModel, Sat
         border_components = self._get_regular_xor_differential_components_in_border()
 
         for component_id in border_components:
-            component = self.cipher.get_component_from_id(component_id)
+            component = self.cipher.component_from_id(component_id)
             for idx in range(component.output_bit_size):
                 constraints = sat_utils.get_cnf_bitwise_truncate_constraints(
                     f"{component_id}_{idx}", f"{component_id}_{idx}_0", f"{component_id}_{idx}_1"

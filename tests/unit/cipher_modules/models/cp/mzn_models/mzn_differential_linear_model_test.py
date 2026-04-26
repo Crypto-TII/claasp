@@ -63,7 +63,7 @@ def test_get_truncated_xor_differential_components_in_border(
     expected_border_components = set()
     middle_components = set(component_model_list["middle_part_components"])
     for bottom_component_id in component_model_list["bottom_part_components"]:
-        bottom_component = cipher.get_component_from_id(bottom_component_id)
+        bottom_component = cipher.component_from_id(bottom_component_id)
         for input_id in bottom_component.input_id_links:
             if input_id in middle_components:
                 expected_border_components.add(input_id)
@@ -151,7 +151,7 @@ def test_differential_linear_trail_with_fixed_weight_6_rounds_speck_cp():
             return 32
         if component_id == "key":
             return 64
-        return speck.get_component_from_id(component_id).output_bit_size
+        return speck.component_from_id(component_id).output_bit_size
 
     def _value_to_bits(value, bit_size):
         if value.startswith("0x"):
@@ -382,7 +382,7 @@ def test_differential_linear_trail_6_rounds_speck_cp_case_2():
             return 32
         if component_id == "key":
             return 64
-        return speck.get_component_from_id(component_id).output_bit_size
+        return speck.component_from_id(component_id).output_bit_size
 
     def _value_to_bits(value, bit_size):
         if value.startswith("0x"):

@@ -8,7 +8,7 @@ def test_algebraic_polynomials():
     cipher = Cipher("cipher_name", PERMUTATION, ["input"], [8], 8)
     cipher.add_round()
     cipher.add_modsub_component(["input", "input"], [[0, 1, 2, 3], [4, 5, 6, 7]], 4)
-    modsub_component = cipher.get_component_from_id('modsub_0_0')
+    modsub_component = cipher.component_from_id('modsub_0_0')
     algebraic = AlgebraicModel(cipher)
     algebraic_polynomials = modsub_component.algebraic_polynomials(algebraic)
 

@@ -205,7 +205,7 @@ class MznHybridImpossibleXorDifferentialModel(MznImpossibleXorDifferentialModel)
             components_to_invert = [backward_components[i] for i in range(len(backward_components))]
             for component in backward_components:
                 for id_link in component.input_id_links:
-                    input_component = self.get_component_from_id(id_link, self.inverse_cipher)
+                    input_component = self.component_from_id(id_link, self.inverse_cipher)
                     if input_component not in backward_components and id_link not in key_ids + constant_ids:
                         components_to_invert.append(input_component)
             inverse_variables, inverse_constraints = (
@@ -233,7 +233,7 @@ class MznHybridImpossibleXorDifferentialModel(MznImpossibleXorDifferentialModel)
 
         # if permutation
         if end_node[0] != "plaintext":
-            component = self.cipher.get_component_from_id(end_node[0])
+            component = self.cipher.component_from_id(end_node[0])
             if component.type == "linear_layer":
                 matrix = component.description
                 try:

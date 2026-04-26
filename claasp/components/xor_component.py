@@ -198,7 +198,7 @@ class Xor(Component):
             sage: from claasp.ciphers.single_component_ciphers.xor_cipher import XorCipher
             sage: from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
             sage: cipher = XorCipher(word_bit_size=12, number_of_inputs=2)
-            sage: xor_component = cipher.get_component_from_id('xor_0_0')
+            sage: xor_component = cipher.component_from_id('xor_0_0')
             sage: algebraic = AlgebraicModel(cipher)
             sage: xor_component.algebraic_polynomials(algebraic)
             [xor_0_0_y0 + xor_0_0_x12 + xor_0_0_x0,
@@ -408,7 +408,7 @@ class Xor(Component):
             sage: cipher = XorCipher(word_bit_size=8, number_of_inputs=2)
             sage: cp = MznModel(cipher)
             sage: cp.word_size = 8
-            sage: xor_component = cipher.get_component_from_id("xor_0_0")
+            sage: xor_component = cipher.component_from_id("xor_0_0")
             sage: xor_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(cp)
             (['var -2..255: xor_0_0_temp_0_0_value;',
               ...
@@ -545,7 +545,7 @@ class Xor(Component):
             sage: cipher = XorCipher(word_bit_size=8, number_of_inputs=2)
             sage: cp = MznModel(cipher)
             sage: cp.word_size = 8
-            sage: xor_component = cipher.get_component_from_id("xor_0_0")
+            sage: xor_component = cipher.component_from_id("xor_0_0")
             sage: xor_component.cp_xor_differential_propagation_first_step_constraints(cp, cp._variables_list)
             (['array[0..1, 1..2] of int: xor_truncated_table_2 = array2d(0..1, 1..2, [0,0,1,1]);'],
              'constraint table([plaintext[0]]++[key[0]], xor_truncated_table_2);')
@@ -652,7 +652,7 @@ class Xor(Component):
             sage: cipher = XorCipher(word_bit_size=2, number_of_inputs=2)
             sage: milp = MilpModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
-            sage: xor_component = cipher.get_component_from_id('xor_0_0')
+            sage: xor_component = cipher.component_from_id('xor_0_0')
             sage: variables, constraints = xor_component.milp_constraints(milp)
             sage: variables
             [('x[plaintext_0]', x_0),
@@ -709,7 +709,7 @@ class Xor(Component):
             sage: cipher = XorCipher(word_bit_size=2, number_of_inputs=2)
             sage: milp = MilpModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
-            sage: xor_component = cipher.get_component_from_id('xor_0_0')
+            sage: xor_component = cipher.component_from_id('xor_0_0')
             sage: variables, constraints = xor_component.milp_xor_linear_constraints(milp)
             sage: variables
             [('x[xor_0_0_0_i]', x_0),
@@ -779,7 +779,7 @@ class Xor(Component):
             sage: cipher = XorCipher(word_bit_size=2, number_of_inputs=2)
             sage: milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
-            sage: xor_component = cipher.get_component_from_id('xor_0_0')
+            sage: xor_component = cipher.component_from_id('xor_0_0')
             sage: variables, constraints = xor_component.milp_bitwise_deterministic_truncated_xor_differential_binary_constraints(milp)
             sage: variables
             [('x[plaintext_0_class_bit_0]', x_0),
@@ -843,7 +843,7 @@ class Xor(Component):
             sage: cipher = XorCipher(word_bit_size=2, number_of_inputs=2)
             sage: milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
-            sage: xor_component = cipher.get_component_from_id('xor_0_0')
+            sage: xor_component = cipher.component_from_id('xor_0_0')
             sage: variables, constraints = xor_component.milp_bitwise_deterministic_truncated_xor_differential_constraints(milp)
             sage: variables
             [('x_class[plaintext_0]', x_0),
@@ -927,7 +927,7 @@ class Xor(Component):
             sage: milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(cipher)
             sage: milp._word_size = 8
             sage: milp.init_model_in_sage_milp_class()
-            sage: xor_component = cipher.get_component_from_id("xor_0_0")
+            sage: xor_component = cipher.component_from_id("xor_0_0")
             sage: variables, constraints = xor_component.milp_wordwise_deterministic_truncated_xor_differential_constraints(milp)
             sage: variables[:1]
             [('x[plaintext_word_0_class_bit_0]', x_0)]
@@ -983,7 +983,7 @@ class Xor(Component):
             sage: milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(cipher)
             sage: milp._word_size = 8
             sage: milp.init_model_in_sage_milp_class()
-            sage: xor_component = cipher.get_component_from_id("xor_0_0")
+            sage: xor_component = cipher.component_from_id("xor_0_0")
             sage: variables, constraints = xor_component.milp_wordwise_deterministic_truncated_xor_differential_sequential_constraints(milp)
             sage: variables[:1]
             [('x[plaintext_word_0_class_bit_0]', x_0)]
@@ -1047,7 +1047,7 @@ class Xor(Component):
             sage: milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(cipher)
             sage: milp._word_size = 8
             sage: milp.init_model_in_sage_milp_class()
-            sage: xor_component = cipher.get_component_from_id("xor_0_0")
+            sage: xor_component = cipher.component_from_id("xor_0_0")
             sage: variables, constraints = xor_component.milp_wordwise_deterministic_truncated_xor_differential_simple_constraints(milp)
 
         """
@@ -1122,7 +1122,7 @@ class Xor(Component):
             sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
             sage: cipher = XorCipher(word_bit_size=2, number_of_inputs=2)
             sage: minizinc = MznModel(cipher)
-            sage: xor_component = cipher.get_component_from_id('xor_0_0')
+            sage: xor_component = cipher.component_from_id('xor_0_0')
             sage: _, xor_minizinc_constraints = xor_component.minizinc_constraints(minizinc)
             sage: xor_minizinc_constraints[0]
             'constraint xor_word(\narray1d(0..2-1, [xor_0_0_x2,xor_0_0_x3]),\narray1d(0..2-1, [xor_0_0_x0,xor_0_0_x1]),\narray1d(0..2-1, [xor_0_0_y0,xor_0_0_y1]))=true;\n'
@@ -1457,7 +1457,7 @@ class Xor(Component):
             sage: cipher = XorCipher(word_bit_size=8, number_of_inputs=2)
             sage: cp = MznModel(cipher)
             sage: cp.word_size = 8
-            sage: xor_component = cipher.get_component_from_id("xor_0_0")
+            sage: xor_component = cipher.component_from_id("xor_0_0")
             sage: xor_component.cp_transform_xor_components_for_first_step(cp)
             (['array[0..0] of var 0..1: xor_0_0;'], [])
         """

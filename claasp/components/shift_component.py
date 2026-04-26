@@ -76,7 +76,7 @@ class Shift(Component):
             sage: from claasp.ciphers.single_component_ciphers.shift_cipher import ShiftCipher
             sage: from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
             sage: cipher = ShiftCipher(bit_size=2, parameter=1)
-            sage: shift_component = cipher.get_component_from_id('shift_0_0')
+            sage: shift_component = cipher.component_from_id('shift_0_0')
             sage: algebraic = AlgebraicModel(cipher)
             sage: shift_component.algebraic_polynomials(algebraic)
             [shift_0_0_y0, shift_0_0_y1 + shift_0_0_x0]
@@ -455,7 +455,7 @@ class Shift(Component):
             sage: cipher = ShiftCipher(bit_size=2, parameter=1)
             sage: milp = MilpModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
-            sage: shift_component = cipher.get_component_from_id('shift_0_0')
+            sage: shift_component = cipher.component_from_id('shift_0_0')
             sage: variables, constraints = shift_component.milp_constraints(milp)
             sage: variables
             [('x[plaintext_0]', x_0),
@@ -601,7 +601,7 @@ class Shift(Component):
             sage: cipher = ShiftCipher(bit_size=2, parameter=1)
             sage: milp = MilpModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
-            sage: shift_component = cipher.get_component_from_id('shift_0_0')
+            sage: shift_component = cipher.component_from_id('shift_0_0')
             sage: variables, constraints = shift_component.milp_xor_linear_mask_propagation_constraints(milp)
             sage: variables
             [('x[shift_0_0_0_i]', x_0), ('x[shift_0_0_1_i]', x_1), ('x[shift_0_0_0_o]', x_2), ('x[shift_0_0_1_o]', x_3)]
@@ -643,7 +643,7 @@ class Shift(Component):
             sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
             sage: cipher = ShiftCipher(bit_size=2, parameter=1)
             sage: minizinc = MznModel(cipher)
-            sage: shift_component = cipher.get_component_from_id('shift_0_0')
+            sage: shift_component = cipher.component_from_id('shift_0_0')
             sage: shift_component.minizinc_constraints(minizinc)
             (['var bool: shift_0_0_x0;',
             'var bool: shift_0_0_x1;',

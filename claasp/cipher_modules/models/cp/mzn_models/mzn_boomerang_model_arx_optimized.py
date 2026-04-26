@@ -66,7 +66,7 @@ class MznBoomerangModelARXOptimized(MznXorDifferentialModelARXOptimized):
 
     @staticmethod
     def remove_component(new_cipher, component):
-        component_to_remove = new_cipher.get_component_from_id(component.id)
+        component_to_remove = new_cipher.component_from_id(component.id)
         round_number = new_cipher.get_round_from_component_id(component.id)
         new_cipher.remove_round_component(round_number, component_to_remove)
 
@@ -85,7 +85,7 @@ class MznBoomerangModelARXOptimized(MznXorDifferentialModelARXOptimized):
 
         for middle_id in self.sboxes_ids:
             bottom_cipher._inputs.append(middle_id)
-            bottom_cipher._inputs_bit_size.append(original_cipher.get_component_from_id(middle_id).output_bit_size)
+            bottom_cipher._inputs_bit_size.append(original_cipher.component_from_id(middle_id).output_bit_size)
 
     def update_bottom_cipher_inputs(self, bottom_cipher, original_cipher, initial_nodes, new_input_bit_positions):
         for node_id in initial_nodes:
@@ -97,7 +97,7 @@ class MznBoomerangModelARXOptimized(MznXorDifferentialModelARXOptimized):
                 del self.top_cipher._inputs[index_input_to_delete]
                 del self.top_cipher._inputs_bit_size[index_input_to_delete]
             else:
-                old_component = original_cipher.get_component_from_id(node_id)
+                old_component = original_cipher.component_from_id(node_id)
                 new_input_id_links = self.get_new_input_id_links(old_component, bottom_cipher)
                 bottom_cipher.update_input_id_links_from_component_id(old_component.id, new_input_id_links)
                 new_input_bit_positions[old_component.id] = old_component.input_bit_positions
@@ -171,7 +171,7 @@ class MznBoomerangModelARXOptimized(MznXorDifferentialModelARXOptimized):
         self.differential_model_bottom_cipher.build_xor_differential_trail_model(-1, fixed_variables_for_bottom_cipher)
 
         for sbox_component_id in self.sboxes_ids:
-            sbox_component = self.original_cipher.get_component_from_id(sbox_component_id)
+            sbox_component = self.original_cipher.component_from_id(sbox_component_id)
             bct_mzn_model = sbox_component.create_bct_mzn_constraint_from_component_ids()
             self.differential_model_bottom_cipher.add_constraint_from_str(bct_mzn_model)
 

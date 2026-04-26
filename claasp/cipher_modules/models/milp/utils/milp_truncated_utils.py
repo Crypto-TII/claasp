@@ -27,7 +27,7 @@ def generate_incompatiblity_constraints_for_component(
         inputs_to_be_kept = []
         for index, input_id in enumerate(["_".join(i.split("_")[:-1]) for i in set(backward_component.input_id_links)]):
             if INPUT_KEY not in input_id and [
-                link + MILP_BACKWARD_SUFFIX for link in model._cipher.get_component_from_id(input_id).input_id_links
+                link + MILP_BACKWARD_SUFFIX for link in model._cipher.component_from_id(input_id).input_id_links
             ] == [backward_component.id]:
                 inputs_to_be_kept.extend([_ for _ in input_ids if input_id in _])
         backward_vars = [x_class[id] for id in (inputs_to_be_kept or input_ids) if INPUT_KEY not in id]
@@ -69,7 +69,7 @@ def generate_all_incompatibility_constraints_for_fully_automatic_model(
 
     if include_all_components:
         backward_components = set(model._backward_cipher.get_all_components()) - set(
-            model._backward_cipher.get_component_from_id(key_flow_id) for key_flow_id in backward_key_flow
+            model._backward_cipher.component_from_id(key_flow_id) for key_flow_id in backward_key_flow
         )
 
     for backward_component in backward_components:

@@ -115,7 +115,7 @@ class LinearLayer(Component):
             sage: from claasp.ciphers.single_component_ciphers.linear_layer_cipher import LinearLayerCipher
             sage: from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
             sage: cipher = LinearLayerCipher(bit_size=4, description=[[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
-            sage: linear_layer_component = cipher.get_component_from_id("linear_layer_0_0")
+            sage: linear_layer_component = cipher.component_from_id("linear_layer_0_0")
             sage: algebraic = AlgebraicModel(cipher)
             sage: linear_layer_component.algebraic_polynomials(algebraic)
             [linear_layer_0_0_y0 + linear_layer_0_0_x0,
@@ -421,7 +421,7 @@ class LinearLayer(Component):
             sage: cipher = LinearLayerCipher(bit_size=4, description=[[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
             sage: milp = MilpModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
-            sage: linear_layer_component = cipher.get_component_from_id("linear_layer_0_0")
+            sage: linear_layer_component = cipher.component_from_id("linear_layer_0_0")
             sage: variables, constraints = linear_layer_component.milp_constraints(milp)
             sage: variables
             [('x[plaintext_0]', x_0),
@@ -485,7 +485,7 @@ class LinearLayer(Component):
             sage: cipher = LinearLayerCipher(bit_size=4, description=[[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
             sage: milp = MilpModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
-            sage: linear_layer_component = cipher.get_component_from_id("linear_layer_0_0")
+            sage: linear_layer_component = cipher.component_from_id("linear_layer_0_0")
             sage: variables, constraints = linear_layer_component.milp_xor_linear_mask_propagation_constraints(milp)
             sage: variables
             [('x[linear_layer_0_0_0_i]', x_0),
@@ -546,7 +546,7 @@ class LinearLayer(Component):
             sage: cipher = LinearLayerCipher(bit_size=4, description=[[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
             sage: milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
-            sage: linear_layer_component = cipher.get_component_from_id("linear_layer_0_0")
+            sage: linear_layer_component = cipher.component_from_id("linear_layer_0_0")
             sage: variables, constraints = linear_layer_component.milp_bitwise_deterministic_truncated_xor_differential_constraints(milp)
             sage: variables
             [('x_class[plaintext_0]', x_0),
@@ -614,7 +614,7 @@ class LinearLayer(Component):
             sage: cipher = LinearLayerCipher(bit_size=4, description=[[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
             sage: milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
-            sage: linear_layer_component = cipher.get_component_from_id("linear_layer_0_0")
+            sage: linear_layer_component = cipher.component_from_id("linear_layer_0_0")
             sage: variables, constraints = linear_layer_component.milp_bitwise_deterministic_truncated_xor_differential_binary_constraints(milp)
             sage: variables
             [('x_class[plaintext_0]', x_0),
@@ -707,7 +707,7 @@ class LinearLayer(Component):
             sage: cipher = LinearLayerCipher(bit_size=8, description=[[1, 0, 0, 0, 0, 0, 0, 0], [0, 1, 0, 0, 0, 0, 0, 0], [0, 0, 1, 0, 0, 0, 0, 0], [0, 0, 0, 1, 0, 0, 0, 0], [0, 0, 0, 0, 1, 0, 0, 0], [0, 0, 0, 0, 0, 1, 0, 0], [0, 0, 0, 0, 0, 0, 1, 0], [0, 0, 0, 0, 0, 0, 0, 1]])
             sage: milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
-            sage: linear_layer_component = cipher.get_component_from_id("linear_layer_0_0")
+            sage: linear_layer_component = cipher.component_from_id("linear_layer_0_0")
             sage: variables, constraints = linear_layer_component.milp_wordwise_deterministic_truncated_xor_differential_constraints(milp)
             sage: variables
             [('x[plaintext_word_0_class_bit_0]', x_0),

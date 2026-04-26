@@ -869,7 +869,7 @@ class MilpXorLinearModel(MilpModel):
             output_size = self._cipher.inputs_bit_size[self._cipher.inputs.index(component_id)]
             input_size = output_size
         else:
-            component = self._cipher.get_component_from_id(component_id)
+            component = self._cipher.component_from_id(component_id)
             input_size = component.input_bit_size
             output_size = component.output_bit_size
         suffix_dict = {"_i": input_size, "_o": output_size}

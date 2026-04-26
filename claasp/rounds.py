@@ -110,9 +110,9 @@ class Rounds:
 
         return components_ids
 
-    def get_component_from_id(self, component_id):
+    def component_from_id(self, component_id):
         for cipher_round in self._rounds:
-            component = cipher_round.get_component_from_id(component_id)
+            component = cipher_round.component_from_id(component_id)
             if component is not None:
                 return component
         raise ValueError(f"Component with id {component_id} not found.")

@@ -174,7 +174,7 @@ class ModAdd(Modular):
             sage: from claasp.ciphers.single_component_ciphers.modadd_cipher import ModaddCipher
             sage: from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
             sage: cipher = ModaddCipher(word_bit_size=4, number_of_inputs=2, modulus=16)
-            sage: modadd_component = cipher.get_component_from_id("modadd_0_0")
+            sage: modadd_component = cipher.component_from_id("modadd_0_0")
             sage: algebraic = AlgebraicModel(cipher)
             sage: modadd_component.algebraic_polynomials(algebraic)
             [modadd_0_0_c0_0,

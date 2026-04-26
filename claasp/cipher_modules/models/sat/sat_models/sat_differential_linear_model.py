@@ -124,7 +124,7 @@ class SatDifferentialLinearModel(SatModel):
         border_components = []
 
         for truncated_component in self.truncated_components:
-            component_obj = self.cipher.get_component_from_id(truncated_component["component_id"])
+            component_obj = self.cipher.component_from_id(truncated_component["component_id"])
             for input_id in component_obj.input_id_links:
                 if input_id in regular_component_ids:
                     border_components.append(input_id)
@@ -141,7 +141,7 @@ class SatDifferentialLinearModel(SatModel):
         truncated_component_ids = {item["component_id"] for item in self.truncated_components}
         border_components = []
         for linear_component in self.linear_components:
-            component_obj = self.cipher.get_component_from_id(linear_component["component_id"])
+            component_obj = self.cipher.component_from_id(linear_component["component_id"])
             for input_id in component_obj.input_id_links:
                 if input_id in truncated_component_ids:
                     border_components.append(input_id)
@@ -156,7 +156,7 @@ class SatDifferentialLinearModel(SatModel):
         def get_component_output_bit_size(component_identifier):
             component_output_bit_size = 0
             if component_identifier not in (INPUT_KEY, INPUT_PLAINTEXT, INPUT_TWEAK):
-                component = self.cipher.get_component_from_id(component_identifier)
+                component = self.cipher.component_from_id(component_identifier)
                 component_output_bit_size = component.output_bit_size
             else:
                 for cipher_index, cipher_input in enumerate(self._cipher.inputs):
@@ -187,7 +187,7 @@ class SatDifferentialLinearModel(SatModel):
         linear_component_ids = [item["component_id"] for item in self.linear_components]
 
         for component_id in border_components:
-            component = self.cipher.get_component_from_id(component_id)
+            component = self.cipher.component_from_id(component_id)
             for idx in range(component.output_bit_size):
                 truncated_component = f"{component_id}_{idx}_o"
                 component_successors = self.bit_bindings[truncated_component]

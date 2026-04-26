@@ -158,7 +158,7 @@ class And(MultiInputNonlinearLogicalOperator):
             sage: from claasp.ciphers.single_component_ciphers.and_cipher import AndCipher
             sage: from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
             sage: cipher = AndCipher(word_bit_size=4, number_of_inputs=2)
-            sage: and_component = cipher.get_component_from_id("and_0_0")
+            sage: and_component = cipher.component_from_id("and_0_0")
             sage: algebraic = AlgebraicModel(cipher)
             sage: and_component.algebraic_polynomials(algebraic)
             [and_0_0_x0*and_0_0_x4 + and_0_0_y0,
@@ -225,7 +225,7 @@ class And(MultiInputNonlinearLogicalOperator):
             sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
             sage: cipher = AndCipher(word_bit_size=12, number_of_inputs=2)
             sage: cp = MznModel(cipher)
-            sage: and_component = cipher.get_component_from_id('and_0_0')
+            sage: and_component = cipher.component_from_id('and_0_0')
             sage: and_component.cp_xor_linear_mask_propagation_constraints(cp)
             (['array[0..23] of var 0..1:and_0_0_i;',
               'array[0..11] of var 0..1:and_0_0_o;'],
@@ -283,7 +283,7 @@ class And(MultiInputNonlinearLogicalOperator):
             sage: cipher = AndCipher(word_bit_size=12, number_of_inputs=2)
             sage: milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
-            sage: and_component = cipher.get_component_from_id('and_0_0')
+            sage: and_component = cipher.component_from_id('and_0_0')
             sage: variables, constraints = and_component.milp_bitwise_deterministic_truncated_xor_differential_constraints(milp)
             sage: variables
             [('x_class[plaintext_0]', x_0),

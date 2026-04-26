@@ -9,7 +9,7 @@ def test_cp_modadd_test_vectors():
     cipher = SpeckBlockCipher(number_of_rounds=1)
     model = MznModel(cipher)
 
-    modadd_component = cipher.get_component_from_id("modadd_0_1")
+    modadd_component = cipher.component_from_id("modadd_0_1")
     declarations, constraints = modadd_component.cp_continuous_differential_propagation_constraints(model)
 
     mzn_model = Model()
@@ -57,7 +57,7 @@ def test_cp_xor_test_vectors():
     for c in cipher.get_all_components():
         print(c.id, c.description)
 
-    xor_component = cipher.get_component_from_id("xor_0_4")
+    xor_component = cipher.component_from_id("xor_0_4")
     declarations, constraints = xor_component.cp_continuous_differential_propagation_constraints(model)
 
     mzn_model = Model()
@@ -141,7 +141,7 @@ def test_cp_rotate_test_vectors():
     ]
 
     for case in test_cases:
-        rot_component = cipher.get_component_from_id(case["component_id"])
+        rot_component = cipher.component_from_id(case["component_id"])
 
         declarations, constraints = (
             rot_component.cp_continuous_differential_propagation_constraints(model)
@@ -172,7 +172,7 @@ def test_generic_cp_modadd_test_vectors():
     cipher = SpeckBlockCipher(number_of_rounds=1)
     model = MznModel(cipher)
 
-    modadd_component = cipher.get_component_from_id("modadd_0_1")
+    modadd_component = cipher.component_from_id("modadd_0_1")
 
     component_and_model_types = [
         {
@@ -230,10 +230,10 @@ def test_generic_cp_full_round_pipeline():
     cipher = SpeckBlockCipher(number_of_rounds=1)
     model = MznModel(cipher)
 
-    rot_left = cipher.get_component_from_id("rot_0_0")      
-    modadd = cipher.get_component_from_id("modadd_0_1")     
-    rot_right = cipher.get_component_from_id("rot_0_3")    
-    xor = cipher.get_component_from_id("xor_0_4")         
+    rot_left = cipher.component_from_id("rot_0_0")      
+    modadd = cipher.component_from_id("modadd_0_1")     
+    rot_right = cipher.component_from_id("rot_0_3")    
+    xor = cipher.component_from_id("xor_0_4")         
 
     component_and_model_types = [
         {"component_object": rot_left,  "model_type": "cp_continuous_differential_propagation_constraints"},

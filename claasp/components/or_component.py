@@ -85,7 +85,7 @@ class Or(MultiInputNonlinearLogicalOperator):
             sage: from claasp.ciphers.single_component_ciphers.or_cipher import OrCipher
             sage: from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
             sage: cipher = OrCipher(word_bit_size=4, number_of_inputs=2)
-            sage: or_component = cipher.get_component_from_id("or_0_0")
+            sage: or_component = cipher.component_from_id("or_0_0")
             sage: algebraic = AlgebraicModel(cipher)
             sage: or_component.algebraic_polynomials(algebraic)
             [or_0_0_x0*or_0_0_x4 + or_0_0_y0 + or_0_0_x4 + or_0_0_x0,
@@ -190,7 +190,7 @@ class Or(MultiInputNonlinearLogicalOperator):
             sage: from claasp.ciphers.single_component_ciphers.or_cipher import OrCipher
             sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
             sage: cipher = OrCipher(word_bit_size=4, number_of_inputs=2)
-            sage: or_component = cipher.get_component_from_id("or_0_0")
+            sage: or_component = cipher.component_from_id("or_0_0")
             sage: cp = MznModel(cipher)
             sage: declarations, constraints = or_component.cp_xor_linear_mask_propagation_constraints(cp)
             sage: declarations
