@@ -95,7 +95,7 @@ def test_milp_constraints():
     cipher = ShiftCipher(bit_size=8, parameter=4)
     milp = MilpModel(cipher)
     milp.init_model_in_sage_milp_class()
-    shift_component = cipher.get_component_from_id('shift_0_0')
+    shift_component = cipher.component_from_id('shift_0_0')
     variables, constraints = shift_component.milp_constraints(milp)
 
     assert str(variables[0]) == "('x[plaintext_0]', x_0)"
@@ -108,7 +108,7 @@ def test_milp_xor_linear_mask_propagation_constraints():
     cipher = ShiftCipher(bit_size=8, parameter=4)
     milp = MilpModel(cipher)
     milp.init_model_in_sage_milp_class()
-    shift_component = cipher.get_component_from_id('shift_0_0')
+    shift_component = cipher.component_from_id('shift_0_0')
     variables, constraints = shift_component.milp_xor_linear_mask_propagation_constraints(milp)
 
     assert str(variables[0]) == "('x[shift_0_0_0_i]', x_0)"
@@ -120,7 +120,7 @@ def test_milp_xor_linear_mask_propagation_constraints():
 def test_minizinc_constraints():
     cipher = ShiftCipher(bit_size=32, parameter=4)
     minizinc = MznModel(cipher)
-    shift_component = cipher.get_component_from_id('shift_0_0')
+    shift_component = cipher.component_from_id('shift_0_0')
     _, shift_mzn_constraints = shift_component.minizinc_constraints(minizinc)
 
     assert shift_mzn_constraints[0].startswith('constraint ')
@@ -194,7 +194,7 @@ def test_milp_bitwise_deterministic_truncated_xor_differential_constraints():
     cipher = ShiftCipher(bit_size=8, parameter=4)
     milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(cipher)
     milp.init_model_in_sage_milp_class()
-    shift_component = cipher.get_component_from_id('shift_0_0')
+    shift_component = cipher.component_from_id('shift_0_0')
     variables, constraints = shift_component.milp_bitwise_deterministic_truncated_xor_differential_constraints(milp)
 
     assert str(variables[0]) == "('x_class[plaintext_0]', x_0)"

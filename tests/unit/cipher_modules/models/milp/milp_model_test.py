@@ -35,7 +35,7 @@ def test_solver_names():
 
 def test_get_independent_input_output_variables():
     speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
-    component = speck.get_component_from_id("xor_1_10")
+    component = speck.component_from_id("xor_1_10")
     input_output_variables = get_independent_input_output_variables(component)
 
     assert len(input_output_variables[0]) == 32
@@ -53,7 +53,7 @@ def test_get_independent_input_output_variables():
 
 def test_get_input_output_variables():
     speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
-    component = speck.get_component_from_id("rot_0_0")
+    component = speck.component_from_id("rot_0_0")
     input_output_variables = get_input_output_variables(component)
 
     assert len(input_output_variables[0]) == 16

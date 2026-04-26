@@ -36,7 +36,7 @@ class Round:
     def component_from(self, index):
         return self._components[index]
 
-    def get_component_from_id(self, component_id):
+    def component_from_id(self, component_id):
         for component in self._components:
             if component.is_id_equal_to(component_id):
                 return component
@@ -85,7 +85,7 @@ class Round:
         self._components.remove(component)
 
     def remove_component_from_id(self, component_id):
-        self._components.remove(self.get_component_from_id(component_id))
+        self._components.remove(self.component_from_id(component_id))
 
     def round_as_python_dictionary(self):
         round_dictionary = []

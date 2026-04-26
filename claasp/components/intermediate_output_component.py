@@ -213,7 +213,7 @@ class IntermediateOutput(CipherOutput):
             sage: dummy = DummyCipher(block_bit_size=4)
             sage: milp = MilpXorLinearModel(dummy)
             sage: milp.init_model_in_sage_milp_class()
-            sage: intermediate_component = dummy.get_component_from_id("intermediate_output_0_1")
+            sage: intermediate_component = dummy.component_from_id("intermediate_output_0_1")
             sage: variables, constraints = intermediate_component.milp_xor_linear_mask_propagation_constraints(milp)
             sage: len(variables)
             12
@@ -279,7 +279,7 @@ class IntermediateOutput(CipherOutput):
             ....:         )
             sage: dummy = DummyCipher(block_bit_size=4)
             sage: sat = SatXorLinearModel(dummy)
-            sage: intermediate_component = dummy.get_component_from_id("intermediate_output_0_1")
+            sage: intermediate_component = dummy.component_from_id("intermediate_output_0_1")
             sage: intermediate_component.sat_xor_linear_mask_propagation_constraints(sat)
             (['intermediate_output_0_1_0_i', 'intermediate_output_0_1_1_i', 'intermediate_output_0_1_2_i', 'intermediate_output_0_1_3_i', 'intermediate_output_0_1_0_o', 'intermediate_output_0_1_1_o', 'intermediate_output_0_1_2_o', 'intermediate_output_0_1_3_o'], ['intermediate_output_0_1_0_i -intermediate_output_0_1_0_o', 'intermediate_output_0_1_0_o -intermediate_output_0_1_0_i', 'intermediate_output_0_1_1_i -intermediate_output_0_1_1_o', 'intermediate_output_0_1_1_o -intermediate_output_0_1_1_i', 'intermediate_output_0_1_2_i -intermediate_output_0_1_2_o', 'intermediate_output_0_1_2_o -intermediate_output_0_1_2_i', 'intermediate_output_0_1_3_i -intermediate_output_0_1_3_o', 'intermediate_output_0_1_3_o -intermediate_output_0_1_3_i', 'intermediate_output_0_1_0_i -xor_0_0_0_o', 'xor_0_0_0_o -intermediate_output_0_1_0_i', 'intermediate_output_0_1_1_i -xor_0_0_1_o', 'xor_0_0_1_o -intermediate_output_0_1_1_i', 'intermediate_output_0_1_2_i -xor_0_0_2_o', 'xor_0_0_2_o -intermediate_output_0_1_2_i', 'intermediate_output_0_1_3_i -xor_0_0_3_o', 'xor_0_0_3_o -intermediate_output_0_1_3_i'])
         """
@@ -339,7 +339,7 @@ class IntermediateOutput(CipherOutput):
             ....:         )
             sage: dummy = DummyCipher(block_bit_size=4)
             sage: smt = SmtXorLinearModel(dummy)
-            sage: intermediate_component = dummy.get_component_from_id("intermediate_output_0_1")
+            sage: intermediate_component = dummy.component_from_id("intermediate_output_0_1")
             sage: intermediate_component.smt_xor_linear_mask_propagation_constraints(smt)
             (['intermediate_output_0_1_0_o', 'intermediate_output_0_1_1_o', 'intermediate_output_0_1_2_o', 'intermediate_output_0_1_3_o', 'intermediate_output_0_1_0_i', 'intermediate_output_0_1_1_i', 'intermediate_output_0_1_2_i', 'intermediate_output_0_1_3_i'], ['(assert (= intermediate_output_0_1_0_i intermediate_output_0_1_0_o))', '(assert (= intermediate_output_0_1_1_i intermediate_output_0_1_1_o))', '(assert (= intermediate_output_0_1_2_i intermediate_output_0_1_2_o))', '(assert (= intermediate_output_0_1_3_i intermediate_output_0_1_3_o))', '(assert (= intermediate_output_0_1_0_i xor_0_0_0_o))', '(assert (= intermediate_output_0_1_1_i xor_0_0_1_o))', '(assert (= intermediate_output_0_1_2_i xor_0_0_2_o))', '(assert (= intermediate_output_0_1_3_i xor_0_0_3_o))'])
         """

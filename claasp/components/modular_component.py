@@ -928,7 +928,7 @@ class Modular(Component):
             sage: cipher = DummyCipher()
             sage: milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
-            sage: modadd_component = cipher.get_component_from_id('modadd_0_0')
+            sage: modadd_component = cipher.component_from_id('modadd_0_0')
             sage: variables, constraints = modadd_component.milp_bitwise_deterministic_truncated_xor_differential_constraints(milp)
             sage: len(variables)
             12
@@ -1032,7 +1032,7 @@ class Modular(Component):
             sage: cipher = DummyCipher()
             sage: milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
-            sage: modadd_component = cipher.get_component_from_id('modadd_0_0')
+            sage: modadd_component = cipher.component_from_id('modadd_0_0')
             sage: variables, constraints = modadd_component.milp_bitwise_deterministic_truncated_xor_differential_binary_constraints(milp)
             sage: len(variables)
             24

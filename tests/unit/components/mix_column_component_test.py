@@ -29,7 +29,7 @@ def make_mix_column_cipher():
 
 def test_algebraic_polynomials():
     cipher = make_mix_column_cipher()
-    mix_column_component = cipher.get_component_from_id("mix_column_0_0")
+    mix_column_component = cipher.component_from_id("mix_column_0_0")
     algebraic_polynomials = mix_column_component.algebraic_polynomials(AlgebraicModel(cipher))
 
     assert str(algebraic_polynomials[0]) == "mix_column_0_0_x0 + mix_column_0_0_x7 + mix_column_0_0_y0"
@@ -118,7 +118,7 @@ def test_milp_constraints():
     cipher = make_mix_column_cipher()
     milp = MilpModel(cipher)
     milp.init_model_in_sage_milp_class()
-    mix_column_component = cipher.get_component_from_id("mix_column_0_0")
+    mix_column_component = cipher.component_from_id("mix_column_0_0")
     variables, constraints = mix_column_component.milp_constraints(milp)
 
     assert str(variables[0]) == "('x[plaintext_0]', x_0)"
@@ -132,7 +132,7 @@ def test_milp_xor_linear_mask_propagation_constraints():
     cipher = make_mix_column_cipher()
     milp = MilpModel(cipher)
     milp.init_model_in_sage_milp_class()
-    mix_column_component = cipher.get_component_from_id("mix_column_0_0")
+    mix_column_component = cipher.component_from_id("mix_column_0_0")
     variables, constraints = mix_column_component.milp_xor_linear_mask_propagation_constraints(milp)
 
     assert str(variables[0]) == "('x[mix_column_0_0_0_i]', x_0)"

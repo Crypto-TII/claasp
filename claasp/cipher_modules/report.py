@@ -511,10 +511,10 @@ class Report:
     def _get_comp_value_and_key_flow(self, comp_id, key_flow):
 
         if comp_id[-2:] == "_i" or comp_id[-2:] == "_o":
-            input_links = self.cipher.get_component_from_id(comp_id[:-2]).input_id_links
+            input_links = self.cipher.component_from_id(comp_id[:-2]).input_id_links
             comp_value = ('_'.join(comp_id.split('_')[:-3])) + '_' + ('_'.join(comp_id.split('_')[-1]))
         else:
-            input_links = self.cipher.get_component_from_id(comp_id).input_id_links
+            input_links = self.cipher.component_from_id(comp_id).input_id_links
             comp_value = '_'.join(comp_id.split('_')[:-2])
 
         if (all(
@@ -559,7 +559,7 @@ class Report:
             else:
                 if verbose:
                     print(
-                        f'{comp_id}        Input Links : {self.cipher.get_component_from_id(comp_id if comp_id[-2:] not in ["_i", "_o"] else comp_id[:-2]).input_id_links}',
+                        f'{comp_id}        Input Links : {self.cipher.component_from_id(comp_id if comp_id[-2:] not in ["_i", "_o"] else comp_id[:-2]).input_id_links}',
                         file=file if save_fig else None)
                     _print_colored_state(out_list[comp_id][0], verbose, file)
                 else:
@@ -594,7 +594,7 @@ class Report:
                 else:
                     if verbose:
                         print(
-                            f'{comp_id}       Input Links : {self.cipher.get_component_from_id(comp_id if comp_id[-2:] not in ["_i", "_o"] else comp_id[:-2]).input_id_links}',
+                            f'{comp_id}       Input Links : {self.cipher.component_from_id(comp_id if comp_id[-2:] not in ["_i", "_o"] else comp_id[:-2]).input_id_links}',
                             file=file)
                         _print_colored_state(out_list[comp_id][0], verbose, file)
                     else:

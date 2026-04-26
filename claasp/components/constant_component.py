@@ -120,7 +120,7 @@ class Constant(Component):
             sage: from claasp.ciphers.single_component_ciphers.constant_cipher import ConstantCipher
             sage: from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
             sage: cipher = ConstantCipher(output_bit_size=4, value=0x1)
-            sage: constant_component = cipher.get_component_from_id('constant_0_0')
+            sage: constant_component = cipher.component_from_id('constant_0_0')
             sage: algebraic = AlgebraicModel(cipher)
             sage: constant_component.algebraic_polynomials(algebraic)
             [constant_0_0_y0 + 1, constant_0_0_y1, constant_0_0_y2, constant_0_0_y3]
@@ -452,7 +452,7 @@ class Constant(Component):
             sage: cipher = ConstantCipher(output_bit_size=4, value=0x1)
             sage: milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
-            sage: constant_component = cipher.get_component_from_id('constant_0_0')
+            sage: constant_component = cipher.component_from_id('constant_0_0')
             sage: variables, constraints = constant_component.milp_wordwise_deterministic_truncated_xor_differential_constraints(milp)
             sage: variables
             [('x_class[constant_0_0_word_0_class]', x_0)]
@@ -479,7 +479,7 @@ class Constant(Component):
             sage: cipher = ConstantCipher(output_bit_size=4, value=0x1)
             sage: milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
-            sage: constant_component = cipher.get_component_from_id('constant_0_0')
+            sage: constant_component = cipher.component_from_id('constant_0_0')
             sage: variables, constraints = constant_component.milp_bitwise_deterministic_truncated_xor_differential_constraints(milp)
             sage: variables
             [('x_class[constant_0_0_0]', x_0), ('x_class[constant_0_0_1]', x_1), ('x_class[constant_0_0_2]', x_2), ('x_class[constant_0_0_3]', x_3)]
@@ -510,7 +510,7 @@ class Constant(Component):
             sage: cipher = ConstantCipher(output_bit_size=4, value=0x1)
             sage: milp = MilpModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
-            sage: constant_component = cipher.get_component_from_id('constant_0_0')
+            sage: constant_component = cipher.component_from_id('constant_0_0')
             sage: variables, constraints = constant_component.milp_xor_differential_propagation_constraints(milp)
             sage: variables
             [('x[constant_0_0_0]', x_0), ('x[constant_0_0_1]', x_1), ('x[constant_0_0_2]', x_2), ('x[constant_0_0_3]', x_3)]
@@ -539,7 +539,7 @@ class Constant(Component):
             sage: cipher = ConstantCipher(output_bit_size=4, value=0x1)
             sage: milp = MilpModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
-            sage: constant_component = cipher.get_component_from_id('constant_0_0')
+            sage: constant_component = cipher.component_from_id('constant_0_0')
             sage: variables, constraints = constant_component.milp_xor_linear_mask_propagation_constraints(milp)
             sage: variables
             [('x[constant_0_0_0_o]', x_0), ('x[constant_0_0_1_o]', x_1), ('x[constant_0_0_2_o]', x_2), ('x[constant_0_0_3_o]', x_3)]
@@ -570,7 +570,7 @@ class Constant(Component):
             sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model_arx_optimized import MznXorDifferentialModelARXOptimized
             sage: cipher = ConstantCipher(output_bit_size=4, value=0x1)
             sage: minizinc = MznXorDifferentialModelARXOptimized(cipher)
-            sage: constant_component = cipher.get_component_from_id('constant_0_0')
+            sage: constant_component = cipher.component_from_id('constant_0_0')
             sage: _, constant_xor_differential_constraints = constant_component.minizinc_xor_differential_propagation_constraints(minizinc)
             sage: constant_xor_differential_constraints[0]
             'constraint constant_0_0_y0 = 0;'

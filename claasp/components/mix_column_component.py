@@ -284,7 +284,7 @@ class MixColumn(LinearLayer):
             sage: from claasp.ciphers.single_component_ciphers.mix_column_cipher import MixColumnCipher
             sage: from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
             sage: cipher = MixColumnCipher(word_size=4, matrix=[[1, 1], [1, 1]], irreducible_polynomial=0b10011)
-            sage: mix_column = cipher.get_component_from_id("mix_column_0_0")
+            sage: mix_column = cipher.component_from_id("mix_column_0_0")
             sage: polys = mix_column.algebraic_polynomials(AlgebraicModel(cipher))
             sage: polys
             [mix_column_0_0_x0 + mix_column_0_0_x4 + mix_column_0_0_y0,

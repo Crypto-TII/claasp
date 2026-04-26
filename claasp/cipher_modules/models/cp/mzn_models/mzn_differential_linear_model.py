@@ -124,7 +124,7 @@ class MznDifferentialLinearModel(MznModel):
                 )
 
     def _get_component_by_id(self, component_id):
-        return self._cipher.get_component_from_id(component_id)
+        return self._cipher.component_from_id(component_id)
 
     def _parse_linear_bit_id(self, bit_id):
         match = re.match(r"^(.*)_([io])\[(\d+)\]$", bit_id)
@@ -190,7 +190,7 @@ class MznDifferentialLinearModel(MznModel):
         border_components = []
 
         for middle_component_id in self.middle_part_component_ids:
-            component_obj = self.cipher.get_component_from_id(middle_component_id)
+            component_obj = self.cipher.component_from_id(middle_component_id)
             for input_id in component_obj.input_id_links:
                 if input_id in regular_component_ids:
                     border_components.append(input_id)
@@ -202,7 +202,7 @@ class MznDifferentialLinearModel(MznModel):
         border_components = []
 
         for linear_component_id in self.bottom_part_component_ids:
-            component_obj = self.cipher.get_component_from_id(linear_component_id)
+            component_obj = self.cipher.component_from_id(linear_component_id)
             for input_id in component_obj.input_id_links:
                 if input_id in truncated_component_ids:
                     border_components.append(input_id)

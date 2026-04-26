@@ -627,7 +627,7 @@ class Sbox(Component):
             sage: from claasp.ciphers.single_component_ciphers.sbox_cipher import SboxCipher
             sage: from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
             sage: cipher = SboxCipher(bit_size=2, lookup_table=[0, 1, 3, 2])
-            sage: sbox_component = cipher.get_component_from_id("sbox_0_0")
+            sage: sbox_component = cipher.component_from_id("sbox_0_0")
             sage: algebraic = AlgebraicModel(cipher)
             sage: sbox_component.algebraic_polynomials(algebraic)
             [sbox_0_0_y1 + sbox_0_0_x1,

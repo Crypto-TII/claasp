@@ -158,7 +158,7 @@ def sort_input_id_links_and_input_bit_positions(input_id_links, input_bit_positi
     index = 0
     input_id_link_already_visited = []
     for input_id_link in input_id_links:
-        component_input_id_link = get_component_from_id(input_id_link, self)
+        component_input_id_link = component_from_id(input_id_link, self)
         if input_id_link not in input_id_link_already_visited:
             input_id_link_already_visited.append(input_id_link)
             for position, link_of_component_id_link in enumerate(component_input_id_link.input_id_links):
@@ -413,7 +413,7 @@ def compute_input_id_links_and_input_bit_positions_for_inverse_component_from_in
                 component_available = False
                 break
         if component_available:
-            potential_unwanted_component = get_component_from_id(component.input_id_links[i], self)
+            potential_unwanted_component = component_from_id(component.input_id_links[i], self)
             equivalent_component, input_bit_positions_of_equivalent_component = (
                 get_equivalent_input_bit_from_output_bit(
                     potential_unwanted_component,
@@ -478,7 +478,7 @@ def are_these_bits_available(bits_list, available_bits):
 #     else:
 #         for index, link in enumerate(component.input_id_links):
 #             if not can_be_evaluated[index]:
-#                 component_of_link = get_component_from_id(link, self)
+#                 component_of_link = component_from_id(link, self)
 #                 output_components = get_output_components(component_of_link, self)
 #                 link_bit_names = []
 #                 for bit in component_input_bits_list[index]:
@@ -513,7 +513,7 @@ def are_there_enough_available_inputs_to_evaluate_component(
         if not are_these_bits_available(bits_list, available_bits):
             can_be_evaluated[index] = False
     available_input_components = [
-        get_component_from_id(c_id, self)
+        component_from_id(c_id, self)
         for i, c_id in enumerate(component.input_id_links)
         if can_be_evaluated[i] == True
     ]
@@ -523,7 +523,7 @@ def are_there_enough_available_inputs_to_evaluate_component(
     else:
         for index, link in enumerate(component.input_id_links):
             if not can_be_evaluated[index]:
-                component_of_link = get_component_from_id(link, self)
+                component_of_link = component_from_id(link, self)
                 output_components = get_output_components(component_of_link, self)
                 # can_be_evaluated_from_outputs = [False] * len(output_components)
                 link_bit_names = []
@@ -594,7 +594,7 @@ def are_there_enough_available_inputs_to_perform_inversion(component, available_
             can_be_used_for_inversion[index] = False
     for index, link in enumerate(component.input_id_links):
         if not can_be_used_for_inversion[index]:
-            component_of_link = get_component_from_id(link, self)
+            component_of_link = component_from_id(link, self)
             output_components = get_output_components(component_of_link, self)
             link_bit_names = []
             for bit in bit_lists_link_to_component_from_input[index]:
@@ -731,7 +731,7 @@ def update_output_bits(inverse_component, self, all_equivalent_bits, available_b
                     all_equivalent_bits[name].append(output_bit_name_updated)
 
     id = inverse_component.id
-    component = get_component_from_id(id, self)
+    component = component_from_id(id, self)
 
     if (
         (component.description == [INPUT_KEY])
@@ -1075,7 +1075,7 @@ def all_output_bits_available(component, available_bits):
     return True
 
 
-def get_component_from_id(component_id, self):
+def component_from_id(component_id, self):
     cipher_components = get_cipher_components(self)
     for c in cipher_components:
         if c.id == component_id:
@@ -1129,7 +1129,7 @@ def find_correct_order_for_inversion(list1, list2, component):
 #     input_bit_positions = []
 #     if (component.type == "fdjgfk") and (component.id not in key_schedule_component_ids):
 #         for index_link, link in enumerate(component.input_id_links):
-#             component_of_link = get_component_from_id(link, self)
+#             component_of_link = component_from_id(link, self)
 #             available_output_components = get_available_output_components(component_of_link, available_bits, self)
 #             link_bit_names = []
 #             for i in range(component_of_link.output_bit_size):
@@ -1164,7 +1164,7 @@ def find_correct_order_for_inversion(list1, list2, component):
 #             components_with_same_input_bits.remove(component)
 #
 #             # check if the original input component has all output bits available
-#             original_input_component = get_component_from_id(component.input_id_links[i], self)
+#             original_input_component = component_from_id(component.input_id_links[i], self)
 #             output_bits_updated_list = []
 #             for j in component.input_bit_positions[i]:
 #                 output_bit_updated_name = original_input_component.id + "_" + str(j) + "_output_updated"
@@ -1239,7 +1239,7 @@ def evaluated_component(component, available_bits, key_schedule_component_ids, a
             components_with_same_input_bits.remove(component)
 
             # check if the original input component has all output bits available
-            original_input_component = get_component_from_id(component.input_id_links[i], self)
+            original_input_component = component_from_id(component.input_id_links[i], self)
             output_bits_updated_list = []
             for j in component.input_bit_positions[i]:
                 output_bit_updated_name = f"{original_input_component.id}_{j}_output_updated"
@@ -1465,7 +1465,7 @@ def _prune_components_outside_round_range(
     list_of_rounds = cipher.rounds_as_list[:start_round] + cipher.rounds_as_list[end_round + 1 :]
     key_schedule_component_ids = get_key_schedule_component_ids(cipher)
     key_schedule_components = [
-        cipher.get_component_from_id(id) for id in key_schedule_component_ids if INPUT_KEY not in id
+        cipher.component_from_id(id) for id in key_schedule_component_ids if INPUT_KEY not in id
     ]
 
     if not keep_key_schedule:

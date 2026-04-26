@@ -6,7 +6,7 @@ from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicMode
 
 def test_algebraic_polynomials():
     cipher = OrCipher(word_bit_size=4, number_of_inputs=2)
-    or_component = cipher.get_component_from_id("or_0_0")
+    or_component = cipher.component_from_id("or_0_0")
     algebraic = AlgebraicModel(cipher)
     algebraic_polynomials = or_component.algebraic_polynomials(algebraic)
 
@@ -30,7 +30,7 @@ def test_cp_constraints():
 
 def test_cp_xor_linear_mask_propagation_constraints():
     cipher = OrCipher(word_bit_size=4, number_of_inputs=2)
-    or_component = cipher.get_component_from_id("or_0_0")
+    or_component = cipher.component_from_id("or_0_0")
     cp = MznModel(cipher)
     declarations, constraints = or_component.cp_xor_linear_mask_propagation_constraints(cp)
 

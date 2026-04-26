@@ -702,7 +702,7 @@ class MilpXorDifferentialModel(MilpModel):
         if component_id in self._cipher.inputs:
             output_size = self._cipher.inputs_bit_size[self._cipher.inputs.index(component_id)]
         else:
-            component = self._cipher.get_component_from_id(component_id)
+            component = self._cipher.component_from_id(component_id)
             output_size = component.output_bit_size
         suffix_dict = {"": output_size}
         final_output = self._get_final_output(component_id, components_variables, probability_variables, suffix_dict)

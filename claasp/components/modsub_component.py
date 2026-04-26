@@ -101,7 +101,7 @@ class ModSub(Modular):
                 sage: from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
                 sage: from claasp.ciphers.single_component_ciphers.modsub_cipher import ModsubCipher
                 sage: cipher = ModsubCipher()
-                sage: modsub_component = cipher.get_component_from_id('modsub_0_0')
+                sage: modsub_component = cipher.component_from_id('modsub_0_0')
                 sage: algebraic = AlgebraicModel(cipher)
                 sage: modsub_component.algebraic_polynomials(algebraic)
                 [modsub_0_0_b0_0,

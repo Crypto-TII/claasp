@@ -319,7 +319,7 @@ class CipherOutput(Component):
             sage: dummy = DummyCipher(block_bit_size=4)
             sage: milp = MilpModel(dummy)
             sage: milp.init_model_in_sage_milp_class()
-            sage: output_component = dummy.get_component_from_id("cipher_output_0_0")
+            sage: output_component = dummy.component_from_id("cipher_output_0_0")
             sage: variables, constraints = output_component.milp_constraints(milp)
             sage: len(variables)
             8
@@ -362,7 +362,7 @@ class CipherOutput(Component):
             sage: dummy = DummyCipher(block_bit_size=4)
             sage: milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(dummy)
             sage: milp.init_model_in_sage_milp_class()
-            sage: output_component = dummy.get_component_from_id("cipher_output_0_0")
+            sage: output_component = dummy.component_from_id("cipher_output_0_0")
             sage: variables, constraints = output_component.milp_bitwise_deterministic_truncated_xor_differential_constraints(milp)
             sage: len(variables)
             8
@@ -408,7 +408,7 @@ class CipherOutput(Component):
             sage: dummy = DummyCipher(block_bit_size=8)
             sage: milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(dummy)
             sage: milp.init_model_in_sage_milp_class()
-            sage: output_component = dummy.get_component_from_id("cipher_output_0_0")
+            sage: output_component = dummy.component_from_id("cipher_output_0_0")
             sage: variables, constraints = output_component.milp_wordwise_deterministic_truncated_xor_differential_constraints(milp)
             sage: len(variables) > 0
             True
@@ -461,7 +461,7 @@ class CipherOutput(Component):
             sage: dummy = DummyCipher(block_bit_size=4)
             sage: milp = MilpModel(dummy)
             sage: milp.init_model_in_sage_milp_class()
-            sage: output_component = dummy.get_component_from_id("cipher_output_0_0")
+            sage: output_component = dummy.component_from_id("cipher_output_0_0")
             sage: variables, constraints = output_component.milp_xor_linear_mask_propagation_constraints(milp)
             sage: len(variables)
             8

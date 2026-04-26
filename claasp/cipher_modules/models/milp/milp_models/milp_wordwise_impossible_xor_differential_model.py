@@ -215,7 +215,7 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
 
         middle_round_number = middle_round_numbers[0]
 
-        if len(component_id_list) == 1 and self._cipher.get_component_from_id(component_id_list[0]).description == [
+        if len(component_id_list) == 1 and self._cipher.component_from_id(component_id_list[0]).description == [
             "round_output"
         ]:
             return self.add_constraints_to_build_in_sage_milp_class(middle_round_number + 1, fixed_bits, fixed_words)
@@ -233,7 +233,7 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
             + [backward_cipher.get_all_components_ids()[-1]]
         )
         input_id_links_of_chosen_components = [
-            _ for c in [backward_cipher.get_component_from_id(id) for id in component_id_list] for _ in c.input_id_links
+            _ for c in [backward_cipher.component_from_id(id) for id in component_id_list] for _ in c.input_id_links
         ]
         round_input_id_links_of_chosen_components = [
             backward_cipher.get_round_from_component_id(id) for id in input_id_links_of_chosen_components
@@ -253,12 +253,12 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
         incompatibility_constraints = []
 
         for id in component_id_list:
-            forward_component = self._cipher.get_component_from_id(id)
+            forward_component = self._cipher.component_from_id(id)
             output_size = forward_component.output_bit_size // self.word_size
             _, output_ids = forward_component._get_wordwise_input_output_linked_class(self)
             forward_vars = [x_class[id] for id in output_ids]
 
-            backward_component = self._backward_cipher.get_component_from_id(id + f"{MILP_BACKWARD_SUFFIX}")
+            backward_component = self._backward_cipher.component_from_id(id + f"{MILP_BACKWARD_SUFFIX}")
             input_ids, _ = backward_component._get_wordwise_input_output_linked_class(self)
             backward_vars = [x_class[id] for id in input_ids if INPUT_KEY not in id]
             inconsistent_vars = [x[f"{forward_component.id}_inconsistent_{_}"] for _ in range(output_size)]
@@ -270,7 +270,7 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
                     for i in backward_component.input_id_links
                 ]
             ):
-                if INPUT_KEY not in input_id and self._cipher.get_component_from_id(input_id).input_id_links == [id]:
+                if INPUT_KEY not in input_id and self._cipher.component_from_id(input_id).input_id_links == [id]:
                     backward_vars = [
                         x_class[f"{input_id}_{pos}"] for pos in backward_component.input_bit_positions[index]
                     ]
@@ -514,7 +514,7 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
         if component_id in self._cipher.inputs:
             output_size = self._cipher.inputs_bit_size[self._cipher.inputs.index(component_id)] // wordsize
         elif self._forward_cipher != self._cipher and component_id.endswith(MILP_BACKWARD_SUFFIX):
-            component = self._backward_cipher.get_component_from_id(component_id)
+            component = self._backward_cipher.component_from_id(component_id)
             output_size = component.output_bit_size // wordsize
         elif self._forward_cipher == self._cipher and component_id.endswith(MILP_BACKWARD_SUFFIX):
             if component_id in self._backward_cipher.inputs:
@@ -522,10 +522,10 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
                     self._backward_cipher.inputs_bit_size[self._backward_cipher.inputs.index(component_id)] // wordsize
                 )
             else:
-                component = self._backward_cipher.get_component_from_id(component_id)
+                component = self._backward_cipher.component_from_id(component_id)
                 output_size = component.output_bit_size // wordsize
         else:
-            component = self._cipher.get_component_from_id(component_id)
+            component = self._cipher.component_from_id(component_id)
             output_size = component.output_bit_size // wordsize
         suffix_dict = {"_class": output_size}
         final_output = self._get_final_output(component_id, components_variables, suffix_dict)
