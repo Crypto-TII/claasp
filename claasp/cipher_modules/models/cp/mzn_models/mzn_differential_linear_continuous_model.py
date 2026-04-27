@@ -3,7 +3,7 @@ import math
 import time
 from minizinc import Instance, Model, Solver, Status
 from claasp.cipher_modules.models.cp.mzn_model import MznModel
-from claasp.cipher_modules.models.cp.minizinc_utils.mzn_continuous_predicates import get_continuous_operations
+from claasp.cipher_modules.models.cp.minizinc_utils.predicate_registry import CONTINUOUS
 from claasp.name_mappings import CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, WORD_OPERATION
 
 class MznDifferentialLinearContinuousModel(MznModel):
@@ -68,8 +68,9 @@ class MznDifferentialLinearContinuousModel(MznModel):
         self.init_input_declarations()
 
         self._model_constraints.extend(self.connect_components())
-        self._variables_list.insert(0, get_continuous_operations())
         self.add_linear_mask_variables()
+        self.finalize_model(contexts=(CONTINUOUS,))
+        self._variables_list = self._model_prefix + self._variables_list
         
     def add_linear_mask_variables(self):
         block_size = self._cipher.output_bit_size

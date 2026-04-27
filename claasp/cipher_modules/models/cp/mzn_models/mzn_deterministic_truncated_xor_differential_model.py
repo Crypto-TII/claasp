@@ -130,6 +130,8 @@ class MznDeterministicTruncatedXorDifferentialModel(MznModel):
                 self.final_wordwise_deterministic_truncated_xor_differential_constraints(minimize)
             )
 
+        self._model_constraints = deterministic_truncated_xor_differential
+        self.finalize_model()
         self._model_constraints = self._model_prefix + deterministic_truncated_xor_differential
 
     def final_deterministic_truncated_xor_differential_constraints(self, minimize=False):

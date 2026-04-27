@@ -159,6 +159,8 @@ class MznXorDifferentialNumberOfActiveSboxesModel(MznModel):
             self._variables_list.extend(variables)
             self._first_step.append(constraints)
         self._first_step.extend(self.final_xor_differential_first_step_constraints(weight))
+        self._model_constraints = self._first_step
+        self.finalize_model()
         self._first_step = self._model_prefix + self._variables_list + self._first_step
 
     def create_xor_component(self, component1, component2, nmax):

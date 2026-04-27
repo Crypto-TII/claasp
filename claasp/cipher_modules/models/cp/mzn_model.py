@@ -27,7 +27,11 @@ from minizinc import Instance, Model, Solver, Status
 from sage.crypto.sbox import SBox
 
 from claasp.cipher_modules.component_analysis_tests import branch_number
-from claasp.cipher_modules.models.cp.minizinc_utils import usefulfunctions
+from claasp.cipher_modules.models.cp.minizinc_utils.predicate_registry import (
+    CP_CORE,
+    collect_used_helpers,
+    render_helper_block,
+)
 from claasp.cipher_modules.models.cp.solvers import CP_SOLVERS_INTERNAL, CP_SOLVERS_EXTERNAL, SOLVER_DEFAULT
 from claasp.name_mappings import (
     SBOX,
@@ -104,7 +108,53 @@ class MznModel:
         self.probability_vars = []
         self.probability_modadd_vars_per_round = [[] for _ in range(self._cipher.number_of_rounds)]
         self.component_probability_var = {}
-        self._model_prefix = ['include "globals.mzn";', f"{usefulfunctions.MINIZINC_USEFUL_FUNCTIONS}"]
+        self._model_prefix = ['include "globals.mzn";']
+        self._helper_block = None
+
+    def finalize_model(self, contexts=(CP_CORE,), include_predicates=True, extra_fragments=None):
+        if not include_predicates:
+            self._helper_block = ""
+            return
+
+        fragments = (
+            self._variables_list
+            + self._model_constraints
+            + self.mzn_output_directives
+            + self.mzn_carries_output_directives
+        )
+        if extra_fragments:
+            fragments.extend(extra_fragments)
+
+        helper_block = render_helper_block(collect_used_helpers(fragments, contexts), contexts)
+        if not helper_block:
+            helper_block = "% No MiniZinc helpers required"
+        self._helper_block = helper_block
+        if helper_block and helper_block not in self._model_prefix:
+            insert_at = 0
+            while insert_at < len(self._model_prefix) and self._model_prefix[insert_at].startswith("include "):
+                insert_at += 1
+            self._model_prefix.insert(insert_at, helper_block)
+
+    def _ensure_model_constraints_have_helpers(self, contexts=(CP_CORE,)):
+        if self._helper_block is None:
+            fragments = (
+                self._variables_list
+                + self._model_constraints
+                + self.mzn_output_directives
+                + self.mzn_carries_output_directives
+            )
+            helper_block = render_helper_block(collect_used_helpers(fragments, contexts), contexts)
+            self._helper_block = helper_block
+        else:
+            helper_block = self._helper_block
+
+        if not helper_block:
+            return
+        if helper_block in self._model_constraints or helper_block in self._variables_list:
+            return
+
+        insert_at = 1 if self._model_constraints and self._model_constraints[0] == 'include "globals.mzn";' else 0
+        self._model_constraints.insert(insert_at, helper_block)
 
     def add_comment(self, comment):
         """
@@ -813,6 +863,7 @@ class MznModel:
         ):
             truncated = True
         
+        self._ensure_model_constraints_have_helpers()
         mzn_model = self._variables_list + self._model_constraints
 
         solutions = []
@@ -972,6 +1023,7 @@ class MznModel:
             sage: result.statistics['nSolutions']
             1
         """
+        self._ensure_model_constraints_have_helpers()
         constraints = self._model_constraints
         variables = self._variables_list
         mzn_model_string = "\n".join(constraints) + "\n".join(variables)

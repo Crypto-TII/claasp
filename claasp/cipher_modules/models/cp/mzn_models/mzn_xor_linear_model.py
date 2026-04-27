@@ -181,6 +181,7 @@ class MznXorLinearModel(MznModel):
         self._model_prefix.extend(variables)
         self._variables_list.extend(constraints)
         self._model_constraints.extend(self.final_xor_linear_constraints(weight))
+        self.finalize_model()
         self._model_constraints = self._model_prefix + self._model_constraints
 
     def final_xor_linear_constraints(self, weight):

@@ -199,6 +199,9 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
                 cleaned_variables.append(variable)
         self._variables_list = cleaned_variables
         
+        self._model_constraints = set_of_constraints
+        self.finalize_model()
+
         cleaned_constraints = []
         for constraint in self._model_prefix + set_of_constraints:
             if constraint not in cleaned_constraints:
@@ -287,9 +290,10 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
         )
         set_of_constraints = deterministic_truncated_xor_differential
 
-        self._model_constraints = self._model_prefix + self.clean_constraints(
-            set_of_constraints, initial_round, middle_round, final_round, fully_automatic
-        )
+        cleaned_constraints = self.clean_constraints(set_of_constraints, initial_round, middle_round, final_round, fully_automatic)
+        self._model_constraints = cleaned_constraints
+        self.finalize_model()
+        self._model_constraints = self._model_prefix + cleaned_constraints
 
     def clean_constraints(self, set_of_constraints, initial_round, middle_round, final_round, fully_automatic=False):
         number_of_rounds = self._cipher.number_of_rounds

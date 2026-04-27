@@ -64,3 +64,6 @@ class MznCipherModelARXOptimized(MznModel):
 
             self._model_constraints.extend(constraints)
             self._variables_list.extend(variables)
+
+        self.finalize_model()
+        self._model_constraints = self._model_prefix + self._model_constraints

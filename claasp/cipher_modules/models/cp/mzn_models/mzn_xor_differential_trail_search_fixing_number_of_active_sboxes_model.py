@@ -78,6 +78,7 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
         self._model_prefix.extend(variables)
         self._variables_list.append(constraints)
         self._model_constraints.extend(self.final_xor_differential_constraints(weight))
+        self.finalize_model()
         self._model_constraints = self._model_prefix + self._model_constraints
 
     def find_all_xor_differential_trails_with_fixed_weight(

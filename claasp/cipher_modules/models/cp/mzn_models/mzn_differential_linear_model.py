@@ -596,6 +596,7 @@ class MznDifferentialLinearModel(MznModel):
         self._model_constraints.extend(weight_constraints)
         self._model_constraints.extend(self._build_output_block(weight))
 
+        self.finalize_model()
         self._model_constraints = self._model_prefix + self._model_constraints
 
     def find_one_differential_linear_trail_with_fixed_weight(

@@ -18,7 +18,7 @@ from copy import deepcopy
 from minizinc import Status
 
 from claasp.cipher_modules.graph_generator import split_cipher_graph_into_top_bottom
-from claasp.cipher_modules.models.cp.minizinc_utils.mzn_bct_predicates import get_bct_operations
+from claasp.cipher_modules.models.cp.minizinc_utils.predicate_registry import BCT, SAT_WORD_OPS
 from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model_arx_optimized import (
     MznXorDifferentialModelARXOptimized,
 )
@@ -187,11 +187,6 @@ class MznBoomerangModelARXOptimized(MznXorDifferentialModelARXOptimized):
         self.differential_model_top_cipher.extend_model_constraints(
             self.differential_model_top_cipher.weight_constraints(max_weight=None, weight=None, operator=">=")
         )
-        from claasp.cipher_modules.models.sat.utils.mzn_predicates import get_word_operations
-
-        self._model_constraints.extend([get_word_operations()])
-        self._model_constraints.extend([get_bct_operations()])
-
         self._variables_list.extend(
             self.differential_model_top_cipher.get_variables() + self.differential_model_bottom_cipher.get_variables()
         )
@@ -199,6 +194,8 @@ class MznBoomerangModelARXOptimized(MznXorDifferentialModelARXOptimized):
             self.differential_model_top_cipher.get_model_constraints()
             + self.differential_model_bottom_cipher.get_model_constraints()
         )
+        self.finalize_model(contexts=(SAT_WORD_OPS, BCT))
+        self._model_constraints = self._model_prefix + self._model_constraints
         top_cipher_probability_vars = self.differential_model_top_cipher.probability_vars
         bottom_cipher_probability_vars = self.differential_model_bottom_cipher.probability_vars
 
