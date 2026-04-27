@@ -55,7 +55,7 @@ class MiniZincHelper:
     model_contexts: tuple[str, ...] = (GENERIC_CP_UTILS,)
 
 
-_IDENTIFIER_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*")
+_IDENTIFIER_RE = re.compile(r"^[A-Za-z_]\w*")
 
 
 def _strip_minizinc_strings(text):
