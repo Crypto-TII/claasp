@@ -110,15 +110,30 @@ class MznModel:
         self.component_probability_var = {}
         self._model_prefix = ['include "globals.mzn";']
         self._helper_block = None
+        self._helper_model_contexts = None
+        self._known_model_prefix_entries = set(self._model_prefix)
 
     def finalize_model(self, model_contexts=DEFAULT_CP_MODEL_CONTEXTS, include_predicates=True, extra_fragments=None):
+        old_prefix = list(self._model_prefix)
+        old_helper_block = self._helper_block
+        self._known_model_prefix_entries.update(old_prefix)
+        if old_helper_block:
+            self._known_model_prefix_entries.add(old_helper_block)
+
+        if self._helper_block and self._helper_block in self._model_prefix:
+            self._model_prefix.remove(self._helper_block)
+
         if not include_predicates:
             self._helper_block = ""
+            self._helper_model_contexts = tuple(model_contexts)
+            self._known_model_prefix_entries.update(self._model_prefix)
             return
 
+        variables = self._strip_leading_known_prefix_entries(self._variables_list)
+        constraints = self._strip_leading_known_prefix_entries(self._model_constraints)
         fragments = (
-            self._variables_list
-            + self._model_constraints
+            variables
+            + constraints
             + self.mzn_output_directives
             + self.mzn_carries_output_directives
         )
@@ -129,32 +144,36 @@ class MznModel:
         if not helper_block:
             helper_block = "% No MiniZinc helpers required"
         self._helper_block = helper_block
+        self._helper_model_contexts = tuple(model_contexts)
         if helper_block and helper_block not in self._model_prefix:
             insert_at = 0
             while insert_at < len(self._model_prefix) and self._model_prefix[insert_at].startswith("include "):
                 insert_at += 1
             self._model_prefix.insert(insert_at, helper_block)
+        self._known_model_prefix_entries.update(self._model_prefix)
 
     def _ensure_model_constraints_have_helpers(self, model_contexts=DEFAULT_CP_MODEL_CONTEXTS):
-        if self._helper_block is None:
-            fragments = (
-                self._variables_list
-                + self._model_constraints
-                + self.mzn_output_directives
-                + self.mzn_carries_output_directives
-            )
-            helper_block = render_helper_block(collect_used_helpers(fragments, model_contexts), model_contexts)
-            self._helper_block = helper_block
-        else:
-            helper_block = self._helper_block
+        self.finalize_model(model_contexts=self._helper_model_contexts or model_contexts)
 
-        if not helper_block:
-            return
-        if helper_block in self._model_constraints or helper_block in self._variables_list:
-            return
+    def _strip_leading_known_prefix_entries(self, lines):
+        stripped = list(lines)
+        while stripped and stripped[0] in self._known_model_prefix_entries:
+            stripped.pop(0)
+        return stripped
 
-        insert_at = 1 if self._model_constraints and self._model_constraints[0] == 'include "globals.mzn";' else 0
-        self._model_constraints.insert(insert_at, helper_block)
+    def _assembled_model_lines(self):
+        prefix = list(self._model_prefix)
+        variables = self._strip_leading_known_prefix_entries(self._variables_list)
+        constraints = self._strip_leading_known_prefix_entries(self._model_constraints)
+
+        return (
+            self.mzn_comments
+            + prefix
+            + variables
+            + constraints
+            + self.mzn_output_directives
+            + self.mzn_carries_output_directives
+        )
 
     def add_comment(self, comment):
         """
@@ -864,7 +883,7 @@ class MznModel:
             truncated = True
         
         self._ensure_model_constraints_have_helpers()
-        mzn_model = self._variables_list + self._model_constraints
+        mzn_model = self._assembled_model_lines()
 
         solutions = []
         if solve_external:
@@ -1024,9 +1043,7 @@ class MznModel:
             1
         """
         self._ensure_model_constraints_have_helpers()
-        constraints = self._model_constraints
-        variables = self._variables_list
-        mzn_model_string = "\n".join(constraints) + "\n".join(variables)
+        mzn_model_string = "\n".join(self._assembled_model_lines())
         solver_name_mzn = Solver.lookup(solver_name)
         bit_mzn_model = Model()
         bit_mzn_model.add_string(mzn_model_string)
@@ -1129,20 +1146,14 @@ class MznModel:
         - ``file_path`` -- **string**; the path of the file that will contain the model
         - ``prefix`` -- **str** (default: ``)
         """
-        model_string = (
-            "\n".join(self.mzn_comments)
-            + "\n".join(self._variables_list)
-            + "\n".join(self._model_constraints)
-            + "\n".join(self.mzn_output_directives)
-            + "\n".join(self.mzn_carries_output_directives)
-        )
         if prefix == "":
             filename = f"{file_path}/{self.cipher_id}_mzn_{self.sat_or_milp}.mzn"
         else:
             filename = f"{file_path}/{prefix}_{self.cipher_id}_mzn_{self.sat_or_milp}.mzn"
 
         with open(filename, "w") as file:
-            file.write(model_string)
+            self._ensure_model_constraints_have_helpers()
+            file.write("\n".join(self._assembled_model_lines()))
 
     @property
     def cipher(self):

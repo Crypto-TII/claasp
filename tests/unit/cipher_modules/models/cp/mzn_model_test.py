@@ -1,5 +1,6 @@
 import pytest
 from types import SimpleNamespace
+from pathlib import Path
 
 from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
@@ -182,6 +183,23 @@ def test_model_constraints():
         speck = SpeckBlockCipher(number_of_rounds=4)
         mzn = MznModel(speck)
         mzn.model_constraints()
+
+
+def test_write_minizinc_model_to_file_prepends_model_prefix(tmp_path):
+    speck = SpeckBlockCipher(number_of_rounds=1)
+    mzn = MznModel(speck)
+    mzn._model_prefix = ['include "globals.mzn";', "function dummy(): int = 0;"]
+    mzn._variables_list = ["var int: x;"]
+    mzn._model_constraints = ["constraint x = 0;"]
+    mzn._helper_block = ""
+    mzn.write_minizinc_model_to_file(tmp_path.as_posix())
+
+    output = Path(tmp_path) / f"{speck.id}_mzn_{mzn.sat_or_milp}.mzn"
+    content = output.read_text()
+
+    assert content.startswith('include "globals.mzn";\n% No MiniZinc helpers required\nfunction dummy(): int = 0;')
+    assert content.index("function dummy(): int = 0;") < content.index("var int: x;")
+    assert content.index("var int: x;") < content.index("constraint x = 0;")
 
 def test_build_generic_cp_model_from_dictionary_xor_differential():
 

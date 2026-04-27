@@ -76,11 +76,12 @@ def test_find_lowest_weight_xor_differential_trail():
 def test_find_one_xor_differential_trail():
     speck = SpeckBlockCipher(number_of_rounds=2)
     mzn = MznXorDifferentialModel(speck)
+    
     plaintext = set_fixed_variables(
         component_id=INPUT_PLAINTEXT, constraint_type="not_equal", bit_positions=range(32), bit_values=(0,) * 32
     )
     trail = mzn.find_one_xor_differential_trail([plaintext], CHUFFED, solve_external=True)
-
+    mzn.write_minizinc_model_to_file(".")
     assert str(trail["cipher"]) == "speck_p32_k64_o32_r2"
     assert trail["model_type"] == "xor_differential_one_solution"
     assert int(trail["components_values"]["cipher_output_1_12"]["value"], base=16) >= 0
