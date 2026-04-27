@@ -41,8 +41,7 @@ class MiniZincHelper:
     contexts: tuple[str, ...] = (CP_CORE,)
 
 
-_FUNCTION_DECLARATION_RE = re.compile(r"^\s*function\s+.*?:\s*([A-Za-z_][A-Za-z0-9_]*)\s*\(")
-_PREDICATE_DECLARATION_RE = re.compile(r"^\s*predicate\s+([A-Za-z_][A-Za-z0-9_]*)\s*\(")
+_IDENTIFIER_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*")
 
 
 def _strip_minizinc_strings(text):
@@ -54,9 +53,20 @@ def _strip_minizinc_comments(text):
 
 
 def _definition_name(line):
-    match = _FUNCTION_DECLARATION_RE.match(line) or _PREDICATE_DECLARATION_RE.match(line)
-    if match:
-        return match.group(1)
+    stripped = line.lstrip()
+    if stripped.startswith("function "):
+        _, separator, suffix = stripped.partition(":")
+        if not separator:
+            return None
+        stripped = suffix.lstrip()
+    elif stripped.startswith("predicate "):
+        stripped = stripped[len("predicate ") :].lstrip()
+    else:
+        return None
+
+    match = _IDENTIFIER_RE.match(stripped)
+    if match and stripped[match.end() :].lstrip().startswith("("):
+        return match.group(0)
     return None
 
 
