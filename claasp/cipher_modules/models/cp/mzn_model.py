@@ -28,7 +28,7 @@ from sage.crypto.sbox import SBox
 
 from claasp.cipher_modules.component_analysis_tests import branch_number
 from claasp.cipher_modules.models.cp.minizinc_utils.predicate_registry import (
-    CP_CORE,
+    DEFAULT_CP_MODEL_CONTEXTS,
     collect_used_helpers,
     render_helper_block,
 )
@@ -111,7 +111,7 @@ class MznModel:
         self._model_prefix = ['include "globals.mzn";']
         self._helper_block = None
 
-    def finalize_model(self, contexts=(CP_CORE,), include_predicates=True, extra_fragments=None):
+    def finalize_model(self, model_contexts=DEFAULT_CP_MODEL_CONTEXTS, include_predicates=True, extra_fragments=None):
         if not include_predicates:
             self._helper_block = ""
             return
@@ -125,7 +125,7 @@ class MznModel:
         if extra_fragments:
             fragments.extend(extra_fragments)
 
-        helper_block = render_helper_block(collect_used_helpers(fragments, contexts), contexts)
+        helper_block = render_helper_block(collect_used_helpers(fragments, model_contexts), model_contexts)
         if not helper_block:
             helper_block = "% No MiniZinc helpers required"
         self._helper_block = helper_block
@@ -135,7 +135,7 @@ class MznModel:
                 insert_at += 1
             self._model_prefix.insert(insert_at, helper_block)
 
-    def _ensure_model_constraints_have_helpers(self, contexts=(CP_CORE,)):
+    def _ensure_model_constraints_have_helpers(self, model_contexts=DEFAULT_CP_MODEL_CONTEXTS):
         if self._helper_block is None:
             fragments = (
                 self._variables_list
@@ -143,7 +143,7 @@ class MznModel:
                 + self.mzn_output_directives
                 + self.mzn_carries_output_directives
             )
-            helper_block = render_helper_block(collect_used_helpers(fragments, contexts), contexts)
+            helper_block = render_helper_block(collect_used_helpers(fragments, model_contexts), model_contexts)
             self._helper_block = helper_block
         else:
             helper_block = self._helper_block

@@ -25,11 +25,25 @@ from claasp.cipher_modules.models.milp.utils.mzn_predicates import get_word_oper
 from claasp.cipher_modules.models.sat.utils.mzn_predicates import get_word_operations as get_sat_word_operations
 
 
-CP_CORE = "cp_core"
-CONTINUOUS = "continuous"
-BCT = "bct"
-SAT_WORD_OPS = "sat_word_ops"
-MILP_WORD_OPS = "milp_word_ops"
+GENERIC_CP_UTILS = "generic_cp_utils"
+CIPHER_EVALUATION_CP = "cipher_evaluation_cp"
+XOR_DIFFERENTIAL_CP = "xor_differential_cp"
+XOR_LINEAR_CP = "xor_linear_cp"
+DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL_CP = "deterministic_truncated_xor_differential_cp"
+SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL_CP = "semi_deterministic_truncated_xor_differential_cp"
+CONTINUOUS_DIFFERENTIAL_LINEAR = "continuous_differential_linear"
+XOR_DIFFERENTIAL_ARX_SAT = "xor_differential_arx_sat"
+XOR_DIFFERENTIAL_ARX_MILP = "xor_differential_arx_milp"
+BOOMERANG_BCT_SAT = "boomerang_bct_sat"
+
+DEFAULT_CP_MODEL_CONTEXTS = (
+    GENERIC_CP_UTILS,
+    CIPHER_EVALUATION_CP,
+    XOR_DIFFERENTIAL_CP,
+    XOR_LINEAR_CP,
+    DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL_CP,
+    SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL_CP,
+)
 
 
 @dataclass(frozen=True)
@@ -38,7 +52,7 @@ class MiniZincHelper:
     body: str
     dependencies: tuple[str, ...] = ()
     required_includes: tuple[str, ...] = ()
-    contexts: tuple[str, ...] = (CP_CORE,)
+    model_contexts: tuple[str, ...] = (GENERIC_CP_UTILS,)
 
 
 _IDENTIFIER_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*")
@@ -113,7 +127,7 @@ def _helpers_from_block(block, context, dependencies=None, helper_includes=None,
             name=prefix_name,
             body=prefix,
             required_includes=tuple(required_includes),
-            contexts=(context,),
+            model_contexts=(context,),
         )
         required_includes = []
 
@@ -126,20 +140,79 @@ def _helpers_from_block(block, context, dependencies=None, helper_includes=None,
             body=body,
             dependencies=helper_dependencies,
             required_includes=tuple((helper_includes or {}).get(name, required_includes)),
-            contexts=(context,),
+            model_contexts=(context,),
         )
         required_includes = []
 
     return helpers
 
 
-CP_CORE_DEPENDENCIES = {
+def _helpers_from_definitions(definitions, context, names, dependencies=None):
+    helpers = {}
+    for name in names:
+        helpers[(context, name)] = MiniZincHelper(
+            name=name,
+            body=definitions[name],
+            dependencies=tuple((dependencies or {}).get(name, ())),
+            model_contexts=(context,),
+        )
+    return helpers
+
+
+GENERIC_CP_UTILS_NAMES = {
+    "Xor2",
+    "Xor3",
+    "And",
+    "OR",
+    "Compl",
+    "LRot",
+    "RRot",
+    "LShift",
+    "RShift",
+    "bitArrayToInt",
+    "IntTobitArray",
+    "IntToBitLen",
+    "count_eq",
+    "Ham_weight",
+}
+
+CIPHER_EVALUATION_CP_NAMES = {
+    "modadd",
+}
+
+XOR_DIFFERENTIAL_CP_NAMES = {
+    "Andz",
+    "Eq",
+}
+
+XOR_LINEAR_CP_NAMES = {
+    "modadd_linear",
+}
+
+XOR_LINEAR_CP_DEPENDENCIES = {
     "modadd_linear": ("Xor3",),
+}
+
+DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL_CP_NAMES = {
+    "xor_bit_p1",
+    "modular_addition_word",
+    "TRUNCATED_XOR",
+}
+
+DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL_CP_DEPENDENCIES = {
     "modular_addition_word": ("LShift", "xor_bit_p1"),
+}
+
+SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL_CP_NAMES = {
+    "TRUNCATED_XOR",
+    "counter_based_modadd_semideterministic",
+}
+
+SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL_CP_DEPENDENCIES = {
     "counter_based_modadd_semideterministic": ("TRUNCATED_XOR",),
 }
 
-CONTINUOUS_DEPENDENCIES = {
+CONTINUOUS_DIFFERENTIAL_LINEAR_DEPENDENCIES = {
     "continuous_xor_bit": ("continuous_bounds",),
     "continuous_xor": ("continuous_bounds", "continuous_xor_bit"),
     "continuous_maj_bit": ("continuous_bounds",),
@@ -149,17 +222,17 @@ CONTINUOUS_DEPENDENCIES = {
     "cast": ("continuous_bounds",),
 }
 
-SAT_WORD_OPS_DEPENDENCIES = {
+XOR_DIFFERENTIAL_ARX_SAT_DEPENDENCIES = {
     "modular_addition_word": ("modular_addition_bit_level_sat", "n_window_heuristic_constraints"),
     "xor_word": ("xor_bit",),
 }
 
-MILP_WORD_OPS_DEPENDENCIES = {
+XOR_DIFFERENTIAL_ARX_MILP_DEPENDENCIES = {
     "modular_addition_word": ("modular_addition", "n_window_heuristic_constraints"),
     "xor_word": ("xor_bit",),
 }
 
-BCT_DEPENDENCIES = {
+BOOMERANG_BCT_SAT_DEPENDENCIES = {
     "BVAssign": ("bct_constants",),
     "onlyLargeSwitch_BCT_enum": ("BVAssign",),
 }
@@ -167,35 +240,69 @@ BCT_DEPENDENCIES = {
 
 def _build_registry():
     helpers = {}
-    helpers.update(_helpers_from_block(MINIZINC_USEFUL_FUNCTIONS, CP_CORE, CP_CORE_DEPENDENCIES))
+    _, _, core_definitions = _split_minizinc_definitions(MINIZINC_USEFUL_FUNCTIONS)
+    helpers.update(_helpers_from_definitions(core_definitions, GENERIC_CP_UTILS, GENERIC_CP_UTILS_NAMES))
+    helpers.update(
+        _helpers_from_definitions(core_definitions, CIPHER_EVALUATION_CP, CIPHER_EVALUATION_CP_NAMES)
+    )
+    helpers.update(_helpers_from_definitions(core_definitions, XOR_DIFFERENTIAL_CP, XOR_DIFFERENTIAL_CP_NAMES))
+    helpers.update(
+        _helpers_from_definitions(core_definitions, XOR_LINEAR_CP, XOR_LINEAR_CP_NAMES, XOR_LINEAR_CP_DEPENDENCIES)
+    )
+    helpers.update(
+        _helpers_from_definitions(
+            core_definitions,
+            DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL_CP,
+            DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL_CP_NAMES,
+            DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL_CP_DEPENDENCIES,
+        )
+    )
+    helpers.update(
+        _helpers_from_definitions(
+            core_definitions,
+            SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL_CP,
+            SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL_CP_NAMES,
+            SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL_CP_DEPENDENCIES,
+        )
+    )
     helpers.update(
         _helpers_from_block(
             get_continuous_operations(),
-            CONTINUOUS,
-            CONTINUOUS_DEPENDENCIES,
+            CONTINUOUS_DIFFERENTIAL_LINEAR,
+            CONTINUOUS_DIFFERENTIAL_LINEAR_DEPENDENCIES,
             prefix_name="continuous_bounds",
         )
     )
-    helpers.update(_helpers_from_block(get_bct_operations(), BCT, BCT_DEPENDENCIES, prefix_name="bct_constants"))
-    helpers.update(_helpers_from_block(get_sat_word_operations(), SAT_WORD_OPS, SAT_WORD_OPS_DEPENDENCIES))
-    helpers.update(_helpers_from_block(get_milp_word_operations(), MILP_WORD_OPS, MILP_WORD_OPS_DEPENDENCIES))
+    helpers.update(
+        _helpers_from_block(
+            get_bct_operations(),
+            BOOMERANG_BCT_SAT,
+            BOOMERANG_BCT_SAT_DEPENDENCIES,
+            prefix_name="bct_constants",
+        )
+    )
+    helpers.update(_helpers_from_block(get_sat_word_operations(), XOR_DIFFERENTIAL_ARX_SAT, XOR_DIFFERENTIAL_ARX_SAT_DEPENDENCIES))
+    helpers.update(_helpers_from_block(get_sat_word_operations(), BOOMERANG_BCT_SAT, XOR_DIFFERENTIAL_ARX_SAT_DEPENDENCIES))
+    helpers.update(
+        _helpers_from_block(get_milp_word_operations(), XOR_DIFFERENTIAL_ARX_MILP, XOR_DIFFERENTIAL_ARX_MILP_DEPENDENCIES)
+    )
     return helpers
 
 
 HELPERS = _build_registry()
 
 
-def helpers_for_contexts(contexts=(CP_CORE,)):
-    selected_contexts = set(contexts)
+def helpers_for_model_contexts(model_contexts=DEFAULT_CP_MODEL_CONTEXTS):
+    selected_contexts = set(model_contexts)
     return [helper for (context, _), helper in HELPERS.items() if context in selected_contexts]
 
 
-def collect_used_helpers(fragments, contexts=(CP_CORE,)):
+def collect_used_helpers(fragments, model_contexts=DEFAULT_CP_MODEL_CONTEXTS):
     text = "\n".join(fragment for fragment in fragments if fragment)
     text = _strip_minizinc_comments(_strip_minizinc_strings(text))
 
     used = set()
-    for helper in helpers_for_contexts(contexts):
+    for helper in helpers_for_model_contexts(model_contexts):
         pattern = rf"(?<![A-Za-z0-9_]){re.escape(helper.name)}(?=\s*\()"
         if re.search(pattern, text):
             used.add(helper.name)
@@ -203,21 +310,21 @@ def collect_used_helpers(fragments, contexts=(CP_CORE,)):
     return used
 
 
-def _helper_key(name, contexts):
-    matching_keys = [(context, helper_name) for context, helper_name in HELPERS if context in contexts and helper_name == name]
+def _helper_key(name, model_contexts):
+    matching_keys = [(context, helper_name) for context, helper_name in HELPERS if context in model_contexts and helper_name == name]
     if not matching_keys:
-        raise ValueError(f"Unknown MiniZinc helper {name!r} for contexts {contexts!r}")
+        raise ValueError(f"Unknown MiniZinc helper {name!r} for model contexts {model_contexts!r}")
     return matching_keys[0]
 
 
-def resolve_helper_closure(names, contexts=(CP_CORE,)):
+def resolve_helper_closure(names, model_contexts=DEFAULT_CP_MODEL_CONTEXTS):
     ordered = []
     visiting = set()
     visited = set()
-    contexts = tuple(contexts)
+    model_contexts = tuple(model_contexts)
 
     def visit(name):
-        key = _helper_key(name, contexts)
+        key = _helper_key(name, model_contexts)
         if key in visited:
             return
         if key in visiting:
@@ -237,8 +344,8 @@ def resolve_helper_closure(names, contexts=(CP_CORE,)):
     return ordered
 
 
-def render_helper_block(names, contexts=(CP_CORE,)):
-    ordered_keys = resolve_helper_closure(names, contexts)
+def render_helper_block(names, model_contexts=DEFAULT_CP_MODEL_CONTEXTS):
+    ordered_keys = resolve_helper_closure(names, model_contexts)
     includes = []
     bodies = []
 
@@ -254,16 +361,16 @@ def render_helper_block(names, contexts=(CP_CORE,)):
     return "\n\n".join(includes + bodies)
 
 
-def render_context_helpers(contexts=(CP_CORE,)):
-    names = {helper.name for helper in helpers_for_contexts(contexts)}
-    return render_helper_block(names, contexts)
+def render_model_context_helpers(model_contexts=DEFAULT_CP_MODEL_CONTEXTS):
+    names = {helper.name for helper in helpers_for_model_contexts(model_contexts)}
+    return render_helper_block(names, model_contexts)
 
 
-def inject_helpers_into_declarations(declarations, constraints, contexts=(CP_CORE,), extra_fragments=None):
+def inject_helpers_into_declarations(declarations, constraints, model_contexts=DEFAULT_CP_MODEL_CONTEXTS, extra_fragments=None):
     fragments = list(declarations) + list(constraints)
     if extra_fragments:
         fragments.extend(extra_fragments)
-    helper_block = render_helper_block(collect_used_helpers(fragments, contexts), contexts)
+    helper_block = render_helper_block(collect_used_helpers(fragments, model_contexts), model_contexts)
     if helper_block:
         return [helper_block] + list(declarations)
     return declarations

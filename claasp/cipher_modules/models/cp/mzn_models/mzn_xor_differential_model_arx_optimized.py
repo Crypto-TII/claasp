@@ -19,7 +19,7 @@ from copy import deepcopy
 from minizinc import Status
 
 from claasp.cipher_modules.models.cp.mzn_model import MznModel
-from claasp.cipher_modules.models.cp.minizinc_utils.predicate_registry import MILP_WORD_OPS, SAT_WORD_OPS
+from claasp.cipher_modules.models.cp.minizinc_utils.predicate_registry import XOR_DIFFERENTIAL_ARX_MILP, XOR_DIFFERENTIAL_ARX_SAT
 from claasp.name_mappings import CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, WORD_OPERATION
 
 
@@ -565,8 +565,8 @@ class MznXorDifferentialModelARXOptimized(MznModel):
         )
         self._model_constraints.extend(output_string_for_cipher_inputs)
         if self.include_word_operations_mzn_file:
-            context = SAT_WORD_OPS if self.sat_or_milp == "sat" else MILP_WORD_OPS
-            self.finalize_model(contexts=(context,))
+            context = XOR_DIFFERENTIAL_ARX_SAT if self.sat_or_milp == "sat" else XOR_DIFFERENTIAL_ARX_MILP
+            self.finalize_model(model_contexts=(context,))
             self._model_constraints = self._model_prefix + self._model_constraints
 
     def get_probability_vars_from_permutation(self):
