@@ -5,7 +5,7 @@ from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
 import claasp.cipher_modules.models.cp.mzn_model as mzn_model_module
-from claasp.cipher_modules.models.cp.mzn_model import MznModel
+from claasp.cipher_modules.models.cp.mzn_model import MiniZincModelParts, MznModel
 from claasp.ciphers.block_ciphers.raiden_block_cipher import RaidenBlockCipher
 from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model import MznXorDifferentialModel
 from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model_arx_optimized import (
@@ -26,6 +26,40 @@ class _FakeDuration:
 
     def total_seconds(self):
         return self._seconds
+
+
+def test_assemble_model_preserves_legacy_order():
+    speck = SpeckBlockCipher(number_of_rounds=1)
+    model = MznModel(speck)
+    model._variables_list = ["var int: x;"]
+    model._model_constraints = ["constraint x = 1;", "solve satisfy;"]
+    model.mzn_output_directives = ['output ["x=", show(x)];']
+
+    assert model.assemble_model() == (
+        "var int: x;\n"
+        "constraint x = 1;\n"
+        "solve satisfy;\n"
+        'output ["x=", show(x)];\n'
+    )
+
+
+def test_assemble_model_accepts_explicit_parts():
+    speck = SpeckBlockCipher(number_of_rounds=1)
+    model = MznModel(speck)
+    parts = MiniZincModelParts(
+        prefix=['include "globals.mzn";'],
+        variables=["var int: x;"],
+        constraints=["constraint x = 1;", "solve satisfy;"],
+        outputs=['output ["x=", show(x)];'],
+    )
+
+    assert model.assemble_model(parts) == (
+        'include "globals.mzn";\n'
+        "var int: x;\n"
+        "constraint x = 1;\n"
+        "solve satisfy;\n"
+        'output ["x=", show(x)];\n'
+    )
 
 
 @pytest.mark.parametrize(
