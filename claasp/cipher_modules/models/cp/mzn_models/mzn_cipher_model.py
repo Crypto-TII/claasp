@@ -34,7 +34,7 @@ class MznCipherModel(MznModel):
     def __init__(self, cipher):
         super().__init__(cipher)
 
-    def build_cipher_model(self, fixed_variables=[], second=False):
+    def build_cipher_model(self, fixed_variables=[]):
         """
         Build the cipher model.
 
