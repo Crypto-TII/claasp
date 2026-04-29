@@ -72,7 +72,7 @@ class KatanFSRBlockCipher(Cipher):
     """
     Construct an instance of the KatanFSRBlockCipher class.
 
-    FSR-based re-implementation of KATAN that uses one ``add_FSR_component``
+    FSR-based re-implementation of KATAN that uses one ``add_fsr_component``
     per CLAASP round instead of individual XOR/AND gate components.
 
     Reference:
@@ -212,7 +212,7 @@ class KatanFSRBlockCipher(Cipher):
             if steps > 1:
                 fsr_desc.append(steps)
 
-            fsr = self.add_FSR_component(
+            fsr = self.add_fsr_component(
                 [state_source, ka.id[0], kb.id[0]],
                 [state_bits, ka.input_bit_positions[0], kb.input_bit_positions[0]],
                 block_bit_size,

@@ -47,7 +47,7 @@ class KtantanFSRBlockCipher(Cipher):
     """
     Construct an instance of the KtantanFSRBlockCipher class.
 
-    FSR-based re-implementation of KTANTAN that uses one ``add_FSR_component``
+    FSR-based re-implementation of KTANTAN that uses one ``add_fsr_component``
     per CLAASP round.  The register structure is identical to KATAN; only the
     key schedule differs (mux-based selection from the fixed 80-bit key).
 
@@ -164,7 +164,7 @@ class KtantanFSRBlockCipher(Cipher):
             ka_r = ka[round_number]
             kb_r = kb[round_number]
 
-            fsr = self.add_FSR_component(
+            fsr = self.add_fsr_component(
                 [state_source, ka_r.id[0], kb_r.id[0]],
                 [state_bits, ka_r.input_bit_positions[0], kb_r.input_bit_positions[0]],
                 block_bit_size,
