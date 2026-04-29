@@ -189,13 +189,13 @@ class KatanBlockCipher(Cipher):
     def _xor_bits(self, bits):
         if len(bits) == 1:
             return bits[0]
-        component_id = self.add_XOR_component(
+        component_id = self.add_xor_component(
             [bit.id[0] for bit in bits], [bit.input_bit_positions[0] for bit in bits], 1
         ).id
         return ComponentState([component_id], [[0]])
 
     def _and_bits(self, left, right):
-        component_id = self.add_AND_component(
+        component_id = self.add_and_component(
             [left.id[0], right.id[0]], [left.input_bit_positions[0], right.input_bit_positions[0]], 1
         ).id
         return ComponentState([component_id], [[0]])
