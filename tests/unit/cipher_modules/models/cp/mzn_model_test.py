@@ -44,9 +44,7 @@ def test_assemble_model_orders_variables_constraints_outputs():
     )
 
 
-def test_assemble_model_accepts_explicit_parts():
-    speck = SpeckBlockCipher(number_of_rounds=1)
-    model = MznModel(speck)
+def test_minizinc_model_parts_lines_concatenates_in_order():
     parts = MiniZincModelParts(
         prefix=['include "globals.mzn";'],
         variables=["var int: x;"],
@@ -54,13 +52,13 @@ def test_assemble_model_accepts_explicit_parts():
         outputs=['output ["x=", show(x)];'],
     )
 
-    assert model.assemble_model(parts) == (
-        'include "globals.mzn";\n'
-        "var int: x;\n"
-        "constraint x = 1;\n"
-        "solve satisfy;\n"
-        'output ["x=", show(x)];\n'
-    )
+    assert parts.lines() == [
+        'include "globals.mzn";',
+        "var int: x;",
+        "constraint x = 1;",
+        "solve satisfy;",
+        'output ["x=", show(x)];',
+    ]
 
 
 @pytest.mark.parametrize(
