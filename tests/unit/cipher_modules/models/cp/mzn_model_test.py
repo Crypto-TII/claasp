@@ -28,9 +28,10 @@ class _FakeDuration:
         return self._seconds
 
 
-def test_assemble_model_preserves_legacy_order():
+def test_assemble_model_orders_variables_constraints_outputs():
     speck = SpeckBlockCipher(number_of_rounds=1)
     model = MznModel(speck)
+    model._model_prefix = []
     model._variables_list = ["var int: x;"]
     model._model_constraints = ["constraint x = 1;", "solve satisfy;"]
     model.mzn_output_directives = ['output ["x=", show(x)];']
@@ -344,10 +345,9 @@ def test_build_generic_cp_model_from_dictionary_xor_linear():
     model._variables_list.extend(variables)
     model._model_constraints.extend(constraints)
     variables, constraints = model.input_xor_linear_constraints()
-    model._model_prefix.extend(variables)
-    model._variables_list.extend(constraints)
+    model._variables_list.extend(variables)
+    model._model_constraints.extend(constraints)
     model._model_constraints.extend(model.final_xor_linear_constraints(weight))
-    model._model_constraints = model._model_prefix + model._model_constraints
 
     result = model.solve(model_type="xor_linear_one_solution", solver_name="cp-sat")
     
