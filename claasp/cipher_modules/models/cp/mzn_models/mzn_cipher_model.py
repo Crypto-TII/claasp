@@ -55,10 +55,9 @@ class MznCipherModel(MznModel):
             sage: cp.build_cipher_model(fixed_variables)
         """
         self.initialise_model()
-        self._model_prefix.extend(self.input_constraints())
         self.sbox_mant = []
         variables = []
-        self._variables_list = []
+        self._variables_list = self.input_constraints()
         constraints = self.fix_variables_value_constraints(fixed_variables)
         component_types = (CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER, MIX_COLUMN, SBOX, WORD_OPERATION)
         operation_types = ("AND", "MODADD", "MODSUB", "NOT", "OR", "ROTATE", "SHIFT", "SHIFT_BY_VARIABLE_AMOUNT", "XOR")
@@ -80,9 +79,6 @@ class MznCipherModel(MznModel):
             self._variables_list.extend(variables)
 
         self._model_constraints.extend(self.final_constraints())
-
-        if not second:
-            self._model_constraints = self._model_prefix + self._model_constraints
 
     def find_missing_bits(self, fixed_values=[], solver_name=SOLVER_DEFAULT, solver_external=True):
         self.build_cipher_model(fixed_variables=fixed_values)

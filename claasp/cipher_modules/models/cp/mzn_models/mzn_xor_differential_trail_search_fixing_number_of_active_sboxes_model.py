@@ -75,10 +75,9 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
         self.component_and_probability = {}
         self.build_xor_differential_trail_model_template(weight, fixed_variables)
         variables, constraints = self.input_xor_differential_constraints()
-        self._model_prefix.extend(variables)
-        self._variables_list.append(constraints)
+        self._variables_list.extend(variables)
+        self._model_constraints.extend(constraints)
         self._model_constraints.extend(self.final_xor_differential_constraints(weight))
-        self._model_constraints = self._model_prefix + self._model_constraints
 
     def find_all_xor_differential_trails_with_fixed_weight(
         self,
@@ -387,7 +386,7 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
         cp_declarations, cp_constraints = super().input_xor_differential_constraints()
 
         table = "++".join(self._table_items)
-        cp_constraints = f"constraint table({table}, {self.cipher_id}_table_of_solutions);"
+        cp_constraints = [f"constraint table({table}, {self.cipher_id}_table_of_solutions);"]
 
         return cp_declarations, cp_constraints
 
@@ -483,7 +482,7 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
             for key in command_options["format"]:
                 command.extend(command_options[key])
 
-            model =  table_of_solutions + "\n".join(self._variables_list) + "\n".join(self._model_constraints) + "\n"
+            model = "\n".join(self._model_prefix) + "\n" + table_of_solutions + "\n".join(self._variables_list) + "\n".join(self._model_constraints) + "\n"
             solver_process = subprocess.run(command, input=model, capture_output=True, text=True)
             if solver_process.returncode < 0:
                 raise ValueError("something went wrong with solver subprocess... sorry!")
@@ -549,7 +548,7 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
             if model_type == "xor_differential_first_step":
                 model = "\n".join(self._first_step) + "\n"
             else:
-                model = "\n".join(self._model_constraints) + "\n"
+                model = "\n".join(self._model_prefix + self._variables_list + self._model_constraints) + "\n"
         if num_of_processors is not None:
             command_options["options"].insert(0, f"-p {num_of_processors}")
         if timelimit is not None:

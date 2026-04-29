@@ -135,10 +135,9 @@ class MznXorDifferentialModel(MznModel):
         self.table_of_solutions_length = 0
         self.build_xor_differential_trail_model_template(weight, fixed_variables, milp_modadd)
         variables, constraints = self.input_xor_differential_constraints()
-        self._model_prefix.extend(variables)
-        self._variables_list.extend(constraints)
+        self._variables_list.extend(variables)
+        self._model_constraints.extend(constraints)
         self._model_constraints.extend(self.final_xor_differential_constraints(weight, milp_modadd))
-        self._model_constraints = self._model_prefix + self._model_constraints
 
     def build_xor_differential_trail_model_template(self, weight, fixed_variables, milp_modadd=False):
         variables = []

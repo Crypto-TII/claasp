@@ -121,6 +121,7 @@ class MznModel:
 
     def current_model_parts(self):
         return MiniZincModelParts(
+            prefix=list(self._model_prefix),
             variables=list(self._variables_list),
             constraints=list(self._model_constraints),
             outputs=list(self.mzn_output_directives),
@@ -999,6 +1000,7 @@ class MznModel:
         """
         mzn_model_string = self.assemble_model(
             MiniZincModelParts(
+                prefix=list(self._model_prefix),
                 variables=list(self._model_constraints),
                 constraints=list(self._variables_list),
             )
@@ -1114,6 +1116,7 @@ class MznModel:
             file.write(
                 self.assemble_model(
                     MiniZincModelParts(
+                        prefix=list(self._model_prefix),
                         variables=self.mzn_comments + list(self._variables_list),
                         constraints=list(self._model_constraints),
                         outputs=list(self.mzn_output_directives),
@@ -1152,7 +1155,7 @@ class MznModel:
             sage: constraints = mzn.model_constraints
             sage: len(constraints) > 0
             True
-            sage: 'constraint rot_0_0[2] = plaintext[11];' == constraints[29]
+            sage: 'constraint rot_0_0[2] = plaintext[11];' in constraints
             True
         """
         if not self._model_constraints:
