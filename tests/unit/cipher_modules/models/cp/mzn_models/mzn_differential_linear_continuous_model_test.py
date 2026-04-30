@@ -188,7 +188,7 @@ def test_generic_cp_modadd_test_vectors():
     mzn_model = Model()
     mzn_model.add_string(get_continuous_operations())
     mzn_model.add_string(
-        "\n".join(model._variables_list)
+        "\n".join(model._variables_declarations)
         + "\n"
         + "\n".join(model._model_constraints)
     )
@@ -250,7 +250,7 @@ def test_generic_cp_full_round_pipeline():
     mzn_model.add_string(get_continuous_operations())
 
     mzn_model.add_string(
-        "\n".join(model._variables_list)
+        "\n".join(model._variables_declarations)
         + "\n"
         + "\n".join(model._model_constraints)
     )

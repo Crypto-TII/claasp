@@ -96,7 +96,7 @@ class MznModel:
         self.component_probability_var = {}
         
     def initialise_model(self):
-        self._variables_list = []
+        self._variables_declarations = []
         self._model_constraints = []
         self.c = 0
         if self._cipher.is_spn():
@@ -122,7 +122,7 @@ class MznModel:
     def current_model_parts(self):
         return MiniZincModelParts(
             prefix=list(self._model_prefix),
-            variables=list(self._variables_list),
+            variables=list(self._variables_declarations),
             constraints=list(self._model_constraints),
             outputs=list(self.mzn_output_directives),
             carries_outputs=list(self.mzn_carries_output_directives),
@@ -210,7 +210,7 @@ class MznModel:
 
     def build_generic_cp_model_from_dictionary(self, component_and_model_types, fixed_variables=None):
         variables = []
-        self._variables_list = []
+        self._variables_declarations = []
         self._model_constraints = []
         component_types = [CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER, MIX_COLUMN, SBOX, WORD_OPERATION]
         operation_types = ['AND', 'MODADD', 'MODSUB', 'NOT', 'OR', 'ROTATE', 'SHIFT', 'SHIFT_BY_VARIABLE_AMOUNT', 'XOR']
@@ -238,7 +238,7 @@ class MznModel:
                     raise ValueError("Unexpected return value from component generator")
 
                 self._model_constraints.extend(constraints)
-                self._variables_list.extend(variables)
+                self._variables_declarations.extend(variables)
 
                 if metadata:
                     probability_var = metadata.get("probability_var")
@@ -1002,7 +1002,7 @@ class MznModel:
             MiniZincModelParts(
                 prefix=list(self._model_prefix),
                 variables=list(self._model_constraints),
-                constraints=list(self._variables_list),
+                constraints=list(self._variables_declarations),
             )
         )
         solver_name_mzn = Solver.lookup(solver_name)
@@ -1117,7 +1117,7 @@ class MznModel:
                 self.assemble_model(
                     MiniZincModelParts(
                         prefix=list(self._model_prefix),
-                        variables=self.mzn_comments + list(self._variables_list),
+                        variables=self.mzn_comments + list(self._variables_declarations),
                         constraints=list(self._model_constraints),
                         outputs=list(self.mzn_output_directives),
                         carries_outputs=list(self.mzn_carries_output_directives),
@@ -1183,6 +1183,6 @@ class MznModel:
             sage: 'array[0..15] of var 0..1: pre_modadd_0_1_0;' == variables[0]
             True
         """
-        if not self._variables_list:
+        if not self._variables_declarations:
             raise ValueError("No model generated")
-        return self._variables_list
+        return self._variables_declarations

@@ -120,7 +120,7 @@ class MznSemiDeterministicTruncatedXorDifferentialModel(MznModel):
         else:
             weight_constraint = "constraint weight = 0;"
 
-        self._variables_list = input_declarations + self._variables_list + [weight_var]
+        self._variables_declarations = input_declarations + self._variables_declarations + [weight_var]
         self._model_constraints = input_constraints + fixed_constraints + self._model_constraints
 
         self._model_constraints.append(weight_constraint)

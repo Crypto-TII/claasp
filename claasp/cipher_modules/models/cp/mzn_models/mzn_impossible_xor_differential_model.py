@@ -139,7 +139,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
             final_round = self._cipher.number_of_rounds - 1
         key_components, key_ids = self.extract_key_schedule()
         constant_components, constant_ids = self.extract_constants()
-        self._variables_list = []
+        self._variables_declarations = []
         constraints = self.fix_variables_value_constraints(fixed_variables)
         deterministic_truncated_xor_differential = constraints
         self.middle_round = middle_round
@@ -174,14 +174,14 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
         variables = direct_variables + inverse_variables
         constraints = direct_constraints + inverse_constraints
 
-        self._variables_list.extend(variables)
-        self._variables_list.extend(key_schedule_variables)
-        self._variables_list.extend(constants_variables)
+        self._variables_declarations.extend(variables)
+        self._variables_declarations.extend(key_schedule_variables)
+        self._variables_declarations.extend(constants_variables)
         deterministic_truncated_xor_differential.extend(constraints)
         variables, constraints = self.input_impossible_constraints_with_extensions(
             number_of_rounds, initial_round, middle_round, final_round
         )
-        self._variables_list.extend(variables)
+        self._variables_declarations.extend(variables)
         deterministic_truncated_xor_differential.extend(constraints)
         deterministic_truncated_xor_differential.extend(link_constraints)
         deterministic_truncated_xor_differential.extend(key_schedule_constraints)
@@ -194,10 +194,10 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
         set_of_constraints = deterministic_truncated_xor_differential
 
         cleaned_variables = []
-        for variable in self._variables_list:
+        for variable in self._variables_declarations:
             if variable not in cleaned_variables:
                 cleaned_variables.append(variable)
-        self._variables_list = cleaned_variables
+        self._variables_declarations = cleaned_variables
 
         cleaned_constraints = []
         for constraint in set_of_constraints:
@@ -248,7 +248,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
             final_round = self._cipher.number_of_rounds
         inverse_cipher = self.inverse_cipher
 
-        self._variables_list = []
+        self._variables_declarations = []
         constraints = self.fix_variables_value_constraints(fixed_variables)
         deterministic_truncated_xor_differential = constraints
         self.middle_round = middle_round
@@ -265,20 +265,20 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
                 backward_components.extend(inverse_cipher.get_components_in_round(r))
 
         direct_variables, direct_constraints = self.build_impossible_forward_model(forward_components)
-        self._variables_list.extend(direct_variables)
+        self._variables_declarations.extend(direct_variables)
         deterministic_truncated_xor_differential.extend(direct_constraints)
 
         inverse_variables, inverse_constraints = self.build_impossible_backward_model(backward_components, clean=False)
         inverse_variables, inverse_constraints = self.clean_inverse_impossible_variables_constraints(
             backward_components, inverse_variables, inverse_constraints
         )
-        self._variables_list.extend(inverse_variables)
+        self._variables_declarations.extend(inverse_variables)
         deterministic_truncated_xor_differential.extend(inverse_constraints)
 
         variables, constraints = self.input_impossible_constraints(
             number_of_rounds=number_of_rounds, middle_round=middle_round, fully_automatic=fully_automatic
         )
-        self._variables_list.extend(variables)
+        self._variables_declarations.extend(variables)
         deterministic_truncated_xor_differential.extend(constraints)
         deterministic_truncated_xor_differential.extend(
             self.final_impossible_constraints(
@@ -1414,7 +1414,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
             number_of_rounds = self._cipher.number_of_rounds
             final_round = self._cipher.number_of_rounds
         command = self.get_command_for_solver_process(model_type, solver_name, processes_, timeout_in_seconds_)
-        model = "\n".join(self._model_prefix + self._variables_list + self._model_constraints) + "\n"
+        model = "\n".join(self._model_prefix + self._variables_declarations + self._model_constraints) + "\n"
         start = time.time()
         solver_process = subprocess.run(command, input=model, capture_output=True, text=True)
         end = time.time()

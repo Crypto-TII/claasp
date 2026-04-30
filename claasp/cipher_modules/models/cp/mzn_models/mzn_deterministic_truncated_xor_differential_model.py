@@ -105,21 +105,21 @@ class MznDeterministicTruncatedXorDifferentialModel(MznModel):
         if number_of_rounds is None:
             number_of_rounds = self._cipher.number_of_rounds
 
-        self._variables_list = []
+        self._variables_declarations = []
         constraints = self.fix_variables_value_constraints(fixed_variables)
         deterministic_truncated_xor_differential = constraints
 
         for component in self._cipher.get_all_components():
             if check_if_implemented_component(component):
                 variables, constraints = self.propagate_deterministically(component, wordwise)
-                self._variables_list.extend(variables)
+                self._variables_declarations.extend(variables)
                 deterministic_truncated_xor_differential.extend(constraints)
 
         if not wordwise:
             variables, constraints = self.input_deterministic_truncated_xor_differential_constraints()
         else:
             variables, constraints = self.input_wordwise_deterministic_truncated_xor_differential_constraints()
-        self._variables_list.extend(variables)
+        self._variables_declarations.extend(variables)
         deterministic_truncated_xor_differential.extend(constraints)
         if not wordwise:
             deterministic_truncated_xor_differential.extend(

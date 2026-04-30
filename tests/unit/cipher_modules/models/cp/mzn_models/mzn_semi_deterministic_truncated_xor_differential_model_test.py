@@ -28,7 +28,7 @@ def test_build_semi_deterministic_truncated_xor_differential_trail_model():
 
     assert any("counter_based_modadd_semideterministic" in c for c in mzn.model_constraints)
     assert any("probability_modadd_0_1" in c for c in mzn.model_constraints)
-    assert any("var int: weight" in c for c in mzn._variables_list)
+    assert any("var int: weight" in c for c in mzn._variables_declarations)
 
 
 def test_find_one_semi_deterministic_truncated_xor_differential_trail_external():
