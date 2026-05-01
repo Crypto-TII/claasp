@@ -154,21 +154,25 @@ class Component:
         )
 
     def algebraic_polynomials(self, model):
+        _ = model
         self._raise_method_not_implemented_error("algebraic_polynomials")
 
     def cms_constraints(self):
         self._raise_method_not_implemented_error("cms_constraints")
 
     def cms_xor_differential_propagation_constraints(self, model=None):
+        _ = model
         return self.cms_constraints()
 
     def cms_xor_linear_mask_propagation_constraints(self, model=None):
+        _ = model
         return self.cms_constraints()
 
     def cp_constraints(self):
         self._raise_method_not_implemented_error("cp_constraints")
 
     def cp_continuous_differential_propagation_constraints(self, model):
+        _ = model
         self._raise_method_not_implemented_error("cp_continuous_differential_propagation_constraints")
 
     def cp_deterministic_truncated_xor_differential_constraints(self):
@@ -181,27 +185,35 @@ class Component:
         return self.cp_deterministic_truncated_xor_differential_constraints()
 
     def cp_wordwise_deterministic_truncated_xor_differential_constraints(self, model):
+        _ = model
         self._raise_method_not_implemented_error("cp_wordwise_deterministic_truncated_xor_differential_constraints")
 
     def cp_xor_differential_propagation_constraints(self, model=None):
+        _ = model
         return self.cp_constraints()
 
     def cp_xor_linear_mask_propagation_constraints(self, model=None):
+        _ = model
         return self.cp_constraints()
 
     def get_bit_based_vectorized_python_code(self, params, convert_output_to_bytes):
+        _ = (params, convert_output_to_bytes)
         self._raise_method_not_implemented_error("get_bit_based_vectorized_python_code")
 
     def get_byte_based_vectorized_python_code(self, params):
+        _ = params
         self._raise_method_not_implemented_error("get_byte_based_vectorized_python_code")
 
     def milp_constraints(self, model):
+        _ = model
         self._raise_method_not_implemented_error("milp_constraints")
 
     def milp_bitwise_deterministic_truncated_xor_differential_constraints(self, model):
+        _ = model
         self._raise_method_not_implemented_error("milp_bitwise_deterministic_truncated_xor_differential_constraints")
 
     def milp_wordwise_deterministic_truncated_xor_differential_constraints(self, model):
+        _ = model
         self._raise_method_not_implemented_error("milp_wordwise_deterministic_truncated_xor_differential_constraints")
 
     def milp_xor_differential_propagation_constraints(self, model):
@@ -211,6 +223,7 @@ class Component:
         return self.milp_constraints(model)
 
     def minizinc_constraints(self, model):
+        _ = model
         self._raise_method_not_implemented_error("minizinc_constraints")
 
     def minizinc_deterministic_truncated_xor_differential_trail_constraints(self, model):
@@ -229,18 +242,22 @@ class Component:
         return self.sat_bitwise_deterministic_truncated_xor_differential_constraints()
 
     def sat_xor_differential_propagation_constraints(self, model=None):
+        _ = model
         return self.sat_constraints()
 
     def sat_xor_linear_mask_propagation_constraints(self, model=None):
+        _ = model
         return self.sat_constraints()
 
     def smt_constraints(self):
         self._raise_method_not_implemented_error("smt_constraints")
 
     def smt_xor_differential_propagation_constraints(self, model=None):
+        _ = model
         return self.smt_constraints()
 
     def smt_xor_linear_mask_propagation_constraints(self, model=None):
+        _ = model
         return self.smt_constraints()
 
     def _create_minizinc_1d_array_from_list(self, mzn_list):

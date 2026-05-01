@@ -33,3 +33,16 @@ def test_alias_method_uses_common_base_implementation_when_available():
     component = DummyComponent("dummy_0_0", "word_operation", component_input, 4, ["DUMMY", 1])
 
     assert component.sat_xor_differential_propagation_constraints() == (["dummy_var"], ["dummy_constraint"])
+
+
+def test_unimplemented_component_methods_accept_documented_arguments():
+    component = make_component()
+
+    with pytest.raises(NotImplementedError, match="algebraic_polynomials"):
+        component.algebraic_polynomials(model=object())
+
+    with pytest.raises(NotImplementedError, match="get_bit_based_vectorized_python_code"):
+        component.get_bit_based_vectorized_python_code(params={"x": 1}, convert_output_to_bytes=True)
+
+    with pytest.raises(NotImplementedError, match="milp_constraints"):
+        component.milp_constraints(model=object())

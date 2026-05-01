@@ -1,6 +1,48 @@
 from claasp.catalog import Catalog
 
 
+def test_ciphers_filter_by_required_components_and_aliases():
+    table = Catalog().ciphers(filters=["toy"], has_components=["sbox", "xor"])
+
+    assert table["rows"]
+    assert all("toys" in row["tags"] for row in table["rows"])
+    assert all({"sbox", "xor"}.issubset(set(row["components"])) for row in table["rows"])
+    assert any(row["class_name"] == "FancyBlockCipher" for row in table["rows"])
+
+
+def test_ciphers_include_metadata_success_path():
+    table = Catalog().ciphers(filters="stream_ciphers", include_metadata=True)
+    row = next(row for row in table["rows"] if row["class_name"] == "A51StreamCipher")
+
+    assert "qualified_name" not in row
+    assert row["cipher_type"] == "stream_cipher"
+    assert row["family_name"] == "a51"
+    assert row["metadata_error"] is None
+
+
+def test_ciphers_include_metadata_error_path(monkeypatch):
+    catalog = Catalog()
+    broken_info = next(info for info in catalog._cipher_infos if info.name == "SpeckBlockCipher")
+
+    def fake_load_cipher_instance(qualified_name):
+        raise RuntimeError(f"boom: {qualified_name}")
+
+    monkeypatch.setattr("claasp.catalog._load_cipher_instance", fake_load_cipher_instance)
+
+    table = catalog.ciphers(filters="block_ciphers", include_metadata=True, qualified=True)
+    row = next(row for row in table["rows"] if row["class_name"] == broken_info.name)
+
+    assert row["qualified_name"] == broken_info.qualified_name
+    assert row["family_name"] is None
+    assert row["metadata_error"].startswith("RuntimeError: boom:")
+
+
+def test_ciphers_returns_empty_rows_for_unmatched_component_filter():
+    table = Catalog().ciphers(filters="mac", has_components=["sbox"])
+
+    assert table["rows"] == []
+
+
 def test_ciphers_contains_known_classes_table():
     table = Catalog().ciphers()
     names = {row["class_name"] for row in table["rows"]}

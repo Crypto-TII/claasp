@@ -45,6 +45,7 @@ FILTER_ALIASES = {
 IGNORED_CIPHER_COMPONENTS = frozenset(
     {"cipher_output", "intermediate_output", "round_key_output", "round_output"}
 )
+MODULE_INIT_FILE = "__init__.py"
 
 
 @dataclass(frozen=True)
@@ -292,7 +293,7 @@ def _resolve_module_source_file(module_name: str, package_root: Path) -> Path | 
     if module_file.exists():
         return module_file
 
-    module_init = package_root.joinpath(*module_parts, "__init__.py")
+    module_init = package_root.joinpath(*module_parts, MODULE_INIT_FILE)
     if module_init.exists():
         return module_init
 
@@ -444,6 +445,135 @@ def _base_component_methods(package_root: Path) -> set[str]:
     return set()
 
 
+def _is_python_source_file(file_path: Path) -> bool:
+    return file_path.suffix == ".py" and file_path.name != MODULE_INIT_FILE and not file_path.name.startswith("_")
+
+
+def _cipher_category_from_path(file_path: Path, ciphers_dir: Path) -> str:
+    relative_parts = file_path.relative_to(ciphers_dir).parts
+    return relative_parts[0] if len(relative_parts) > 1 else "other"
+
+
+def _collect_imported_components(
+    tree: ast.AST,
+    module_name: str,
+    package_root: Path,
+    import_component_cache: dict[str, set[str]],
+) -> set[str]:
+    imported_components = set()
+    for imported_module in _imported_cipher_modules(tree, module_name):
+        imported_components.update(
+            _collect_components_from_cipher_module(
+                imported_module,
+                package_root,
+                import_component_cache,
+                set(),
+            )
+        )
+
+    return imported_components
+
+
+def _discover_cipher_infos_from_file(
+    file_path: Path,
+    ciphers_dir: Path,
+    package_root: Path,
+    import_component_cache: dict[str, set[str]],
+) -> list[CipherInfo]:
+    module_name = _module_path_from_file(file_path, package_root)
+    source_text = file_path.read_text(encoding="utf-8")
+    tree = ast.parse(source_text, filename=str(file_path))
+    discovered_components = _cipher_components(source_text).union(
+        _collect_imported_components(tree, module_name, package_root, import_component_cache)
+    )
+    category = _cipher_category_from_path(file_path, ciphers_dir)
+
+    infos = []
+    for class_node in (node for node in tree.body if isinstance(node, ast.ClassDef)):
+        if not _is_cipher_class(class_node):
+            continue
+
+        class_name = class_node.name
+        qualified_name = f"{module_name}.{class_name}"
+        components = set(discovered_components)
+        paradigm = _infer_cipher_paradigm(components)
+        tags = frozenset(_cipher_tags(category, source_text, class_name, paradigm))
+        infos.append(
+            CipherInfo(
+                name=class_name,
+                qualified_name=qualified_name,
+                module_name=module_name,
+                category=category,
+                paradigm=paradigm,
+                components=tuple(sorted(components)),
+                tags=tags,
+            )
+        )
+
+    return infos
+
+
+def _matches_cipher_filters(
+    info: CipherInfo,
+    normalized_filters: set[str],
+    required_components: set[str],
+) -> bool:
+    if normalized_filters and not normalized_filters.issubset(info.tags):
+        return False
+    if required_components and not required_components.issubset(set(info.components)):
+        return False
+
+    return True
+
+
+def _cipher_metadata(qualified_name: str) -> dict:
+    metadata = {
+        "family_name": None,
+        "cipher_type": None,
+        "inputs": None,
+        "inputs_bit_size": None,
+        "output_bit_size": None,
+        "number_of_rounds": None,
+        "id": None,
+        "metadata_error": None,
+    }
+    try:
+        instance = _load_cipher_instance(qualified_name)
+        metadata.update(
+            {
+                "family_name": getattr(instance, "family_name", None),
+                "cipher_type": getattr(instance, "type", None),
+                "inputs": getattr(instance, "inputs", None),
+                "inputs_bit_size": getattr(instance, "inputs_bit_size", None),
+                "output_bit_size": getattr(instance, "output_bit_size", None),
+                "number_of_rounds": getattr(instance, "number_of_rounds", None),
+                "id": getattr(instance, "id", None),
+            }
+        )
+    except Exception as error:  # pragma: no cover - environment dependent
+        metadata["metadata_error"] = f"{error.__class__.__name__}: {error}"
+
+    return metadata
+
+
+def _cipher_row(info: CipherInfo, include_metadata: bool, qualified: bool) -> dict:
+    row = {
+        "class_name": info.name,
+        "module_name": info.module_name,
+        "qualified_name": info.qualified_name,
+        "category": info.category,
+        "paradigm": info.paradigm,
+        "components": list(info.components),
+        "tags": sorted(info.tags),
+    }
+    if include_metadata:
+        row.update(_cipher_metadata(info.qualified_name))
+    if not qualified:
+        row.pop("qualified_name")
+
+    return row
+
+
 class Catalog:
     """Facade class for CLAASP discovery and catalog helpers.
 
@@ -524,7 +654,7 @@ class Catalog:
         infos: list[ClassInfo] = []
 
         for file_path in sorted(components_dir.glob("*.py")):
-            if file_path.name == "__init__.py":
+            if file_path.name == MODULE_INIT_FILE:
                 continue
 
             module_name = _module_path_from_file(file_path, self._package_root)
@@ -549,50 +679,16 @@ class Catalog:
         import_component_cache: dict[str, set[str]] = {}
 
         for file_path in sorted(ciphers_dir.rglob("*.py")):
-            if file_path.name == "__init__.py" or file_path.name.startswith("_"):
+            if not _is_python_source_file(file_path):
                 continue
-
-            relative_parts = file_path.relative_to(ciphers_dir).parts
-            category = relative_parts[0] if len(relative_parts) > 1 else "other"
-            module_name = _module_path_from_file(file_path, self._package_root)
-            source_text = file_path.read_text(encoding="utf-8")
-            tree = ast.parse(source_text, filename=str(file_path))
-            class_nodes = [node for node in tree.body if isinstance(node, ast.ClassDef)]
-            static_components = _cipher_components(source_text)
-            imported_components = set()
-            for imported_module in _imported_cipher_modules(tree, module_name):
-                imported_components.update(
-                    _collect_components_from_cipher_module(
-                        imported_module,
-                        self._package_root,
-                        import_component_cache,
-                        set(),
-                    )
+            infos.extend(
+                _discover_cipher_infos_from_file(
+                    file_path,
+                    ciphers_dir,
+                    self._package_root,
+                    import_component_cache,
                 )
-
-            discovered_components = static_components.union(imported_components)
-
-            for class_node in class_nodes:
-                if not _is_cipher_class(class_node):
-                    continue
-
-                class_name = class_node.name
-                qualified_name = f"{module_name}.{class_name}"
-                components = set(discovered_components)
-                paradigm = _infer_cipher_paradigm(components)
-
-                tags = set(_cipher_tags(category, source_text, class_name, paradigm))
-                infos.append(
-                    CipherInfo(
-                        name=class_name,
-                        qualified_name=qualified_name,
-                        module_name=module_name,
-                        category=category,
-                        paradigm=paradigm,
-                        components=tuple(sorted(components)),
-                        tags=frozenset(tags),
-                    )
-                )
+            )
 
         infos.sort(key=lambda info: info.name)
         return infos
@@ -721,54 +817,9 @@ class Catalog:
         rows = []
 
         for info in self._cipher_infos:
-            if normalized_filters and not normalized_filters.issubset(info.tags):
+            if not _matches_cipher_filters(info, normalized_filters, required_components):
                 continue
-            if required_components and not required_components.issubset(set(info.components)):
-                continue
-
-            row = {
-                "class_name": info.name,
-                "module_name": info.module_name,
-                "qualified_name": info.qualified_name,
-                "category": info.category,
-                "paradigm": info.paradigm,
-                "components": list(info.components),
-                "tags": sorted(info.tags),
-            }
-
-            if include_metadata:
-                metadata = {
-                    "family_name": None,
-                    "cipher_type": None,
-                    "inputs": None,
-                    "inputs_bit_size": None,
-                    "output_bit_size": None,
-                    "number_of_rounds": None,
-                    "id": None,
-                    "metadata_error": None,
-                }
-                try:
-                    instance = _load_cipher_instance(row["qualified_name"])
-                    metadata.update(
-                        {
-                            "family_name": getattr(instance, "family_name", None),
-                            "cipher_type": getattr(instance, "type", None),
-                            "inputs": getattr(instance, "inputs", None),
-                            "inputs_bit_size": getattr(instance, "inputs_bit_size", None),
-                            "output_bit_size": getattr(instance, "output_bit_size", None),
-                            "number_of_rounds": getattr(instance, "number_of_rounds", None),
-                            "id": getattr(instance, "id", None),
-                        }
-                    )
-                except Exception as error:  # pragma: no cover - environment dependent
-                    metadata["metadata_error"] = f"{error.__class__.__name__}: {error}"
-
-                row.update(metadata)
-
-            if not qualified:
-                row.pop("qualified_name")
-
-            rows.append(row)
+            rows.append(_cipher_row(info, include_metadata, qualified))
 
         rows.sort(key=lambda r: r["class_name"])
 
