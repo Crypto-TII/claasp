@@ -5,7 +5,7 @@ from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
 import claasp.cipher_modules.models.cp.mzn_model as mzn_model_module
-from claasp.cipher_modules.models.cp.mzn_model import MznModel
+from claasp.cipher_modules.models.cp.mzn_model import MiniZincModelParts, MznModel
 from claasp.ciphers.block_ciphers.raiden_block_cipher import RaidenBlockCipher
 from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model import MznXorDifferentialModel
 from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model_arx_optimized import (
@@ -26,6 +26,39 @@ class _FakeDuration:
 
     def total_seconds(self):
         return self._seconds
+
+
+def test_assemble_model_orders_variables_constraints_outputs():
+    speck = SpeckBlockCipher(number_of_rounds=1)
+    model = MznModel(speck)
+    model._model_prefix = []
+    model._variables_declarations = ["var int: x;"]
+    model._model_constraints = ["constraint x = 1;", "solve satisfy;"]
+    model.mzn_output_directives = ['output ["x=", show(x)];']
+
+    assert model.assemble_model() == (
+        "var int: x;\n"
+        "constraint x = 1;\n"
+        "solve satisfy;\n"
+        'output ["x=", show(x)];\n'
+    )
+
+
+def test_minizinc_model_parts_lines_concatenates_in_order():
+    parts = MiniZincModelParts(
+        prefix=['include "globals.mzn";'],
+        variables=["var int: x;"],
+        constraints=["constraint x = 1;", "solve satisfy;"],
+        outputs=['output ["x=", show(x)];'],
+    )
+
+    assert parts.lines() == [
+        'include "globals.mzn";',
+        "var int: x;",
+        "constraint x = 1;",
+        "solve satisfy;",
+        'output ["x=", show(x)];',
+    ]
 
 
 @pytest.mark.parametrize(
@@ -240,7 +273,7 @@ def test_build_generic_cp_model_from_dictionary_xor_differential():
         "cp-sat",
         total_weight,
         "xor_differential",
-        model._variables_list,
+        model._variables_declarations,
         model.cipher_id,
         model.probability_vars,
     )
@@ -307,13 +340,12 @@ def test_build_generic_cp_model_from_dictionary_xor_linear():
     model._model_constraints.extend(constraints)
     weight = 5
     variables, constraints = model.weight_xor_linear_constraints(weight)
-    model._variables_list.extend(variables)
+    model._variables_declarations.extend(variables)
     model._model_constraints.extend(constraints)
     variables, constraints = model.input_xor_linear_constraints()
-    model._model_prefix.extend(variables)
-    model._variables_list.extend(constraints)
+    model._variables_declarations.extend(variables)
+    model._model_constraints.extend(constraints)
     model._model_constraints.extend(model.final_xor_linear_constraints(weight))
-    model._model_constraints = model._model_prefix + model._model_constraints
 
     result = model.solve(model_type="xor_linear_one_solution", solver_name="cp-sat")
     

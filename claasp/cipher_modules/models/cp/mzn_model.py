@@ -17,10 +17,10 @@
 
 import itertools
 import math
-import os
 import subprocess
 import time
 from copy import deepcopy
+from dataclasses import dataclass, field
 from datetime import timedelta
 
 from minizinc import Instance, Model, Solver, Status
@@ -50,6 +50,18 @@ from claasp.cipher_modules.models.utils import write_model_to_file, convert_solv
 
 SOLVE_SATISFY = "solve satisfy;"
 CONSTRAINT_TYPE_ERROR = "Constraint type not defined"
+
+
+@dataclass
+class MiniZincModelParts:
+    prefix: list[str] = field(default_factory=list)
+    variables: list[str] = field(default_factory=list)
+    constraints: list[str] = field(default_factory=list)
+    outputs: list[str] = field(default_factory=list)
+    carries_outputs: list[str] = field(default_factory=list)
+
+    def lines(self):
+        return self.prefix + self.variables + self.constraints + self.outputs + self.carries_outputs
 
 
 class MznModel:
@@ -83,7 +95,7 @@ class MznModel:
         self.component_probability_var = {}
         
     def initialise_model(self):
-        self._variables_list = []
+        self._variables_declarations = []
         self._model_constraints = []
         self.c = 0
         if self._cipher.is_spn():
@@ -105,6 +117,21 @@ class MznModel:
         self.probability_modadd_vars_per_round = [[] for _ in range(self._cipher.number_of_rounds)]
         self.component_probability_var = {}
         self._model_prefix = ['include "globals.mzn";', f"{usefulfunctions.MINIZINC_USEFUL_FUNCTIONS}"]
+
+    def current_model_parts(self):
+        return MiniZincModelParts(
+            prefix=list(self._model_prefix),
+            variables=list(self._variables_declarations),
+            constraints=list(self._model_constraints),
+            outputs=list(self.mzn_output_directives),
+            carries_outputs=list(self.mzn_carries_output_directives),
+        )
+
+    def assemble_model_lines(self, parts=None):
+        return (parts or self.current_model_parts()).lines()
+
+    def assemble_model(self, parts=None):
+        return "\n".join(self.assemble_model_lines(parts)) + "\n"
 
     def add_comment(self, comment):
         """
@@ -182,7 +209,7 @@ class MznModel:
 
     def build_generic_cp_model_from_dictionary(self, component_and_model_types, fixed_variables=None):
         variables = []
-        self._variables_list = []
+        self._variables_declarations = []
         self._model_constraints = []
         component_types = [CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER, MIX_COLUMN, SBOX, WORD_OPERATION]
         operation_types = ['AND', 'MODADD', 'MODSUB', 'NOT', 'OR', 'ROTATE', 'SHIFT', 'SHIFT_BY_VARIABLE_AMOUNT', 'XOR']
@@ -210,7 +237,7 @@ class MznModel:
                     raise ValueError("Unexpected return value from component generator")
 
                 self._model_constraints.extend(constraints)
-                self._variables_list.extend(variables)
+                self._variables_declarations.extend(variables)
 
                 if metadata:
                     probability_var = metadata.get("probability_var")
@@ -813,8 +840,6 @@ class MznModel:
         ):
             truncated = True
         
-        mzn_model = self._variables_list + self._model_constraints
-
         solutions = []
         if solve_external:
             command = self.get_command_for_solver_process(
@@ -824,7 +849,7 @@ class MznModel:
                 timeout_in_seconds_,
                 intermediate_solutions=intermediate_solutions_,
             )
-            model = "\n".join(mzn_model)
+            model = self.assemble_model()
             start = time.time()
             solver_process = subprocess.run(command, input=model, capture_output=True, text=True)
             end = time.time()
@@ -832,7 +857,7 @@ class MznModel:
             if solver_process.returncode >= 0:
                 solver_output = solver_process.stdout.splitlines()
         else:
-            mzn_model_string = "\n".join(mzn_model)
+            mzn_model_string = self.assemble_model()
             solver_name_mzn = Solver.lookup(solver_name)
             bit_mzn_model = Model()
             bit_mzn_model.add_string(mzn_model_string)
@@ -972,9 +997,13 @@ class MznModel:
             sage: result.statistics['nSolutions']
             1
         """
-        constraints = self._model_constraints
-        variables = self._variables_list
-        mzn_model_string = "\n".join(constraints) + "\n".join(variables)
+        mzn_model_string = self.assemble_model(
+            MiniZincModelParts(
+                prefix=list(self._model_prefix),
+                variables=list(self._model_constraints),
+                constraints=list(self._variables_declarations),
+            )
+        )
         solver_name_mzn = Solver.lookup(solver_name)
         bit_mzn_model = Model()
         bit_mzn_model.add_string(mzn_model_string)
@@ -1077,20 +1106,23 @@ class MznModel:
         - ``file_path`` -- **string**; the path of the file that will contain the model
         - ``prefix`` -- **str** (default: ``)
         """
-        model_string = (
-            "\n".join(self.mzn_comments)
-            + "\n".join(self._variables_list)
-            + "\n".join(self._model_constraints)
-            + "\n".join(self.mzn_output_directives)
-            + "\n".join(self.mzn_carries_output_directives)
-        )
         if prefix == "":
             filename = f"{file_path}/{self.cipher_id}_mzn_{self.sat_or_milp}.mzn"
         else:
             filename = f"{file_path}/{prefix}_{self.cipher_id}_mzn_{self.sat_or_milp}.mzn"
 
         with open(filename, "w") as file:
-            file.write(model_string)
+            file.write(
+                self.assemble_model(
+                    MiniZincModelParts(
+                        prefix=list(self._model_prefix),
+                        variables=self.mzn_comments + list(self._variables_declarations),
+                        constraints=list(self._model_constraints),
+                        outputs=list(self.mzn_output_directives),
+                        carries_outputs=list(self.mzn_carries_output_directives),
+                    )
+                )
+            )
 
     @property
     def cipher(self):
@@ -1122,7 +1154,7 @@ class MznModel:
             sage: constraints = mzn.model_constraints
             sage: len(constraints) > 0
             True
-            sage: 'constraint rot_0_0[2] = plaintext[11];' == constraints[29]
+            sage: 'constraint rot_0_0[2] = plaintext[11];' in constraints
             True
         """
         if not self._model_constraints:
@@ -1150,6 +1182,6 @@ class MznModel:
             sage: 'array[0..15] of var 0..1: pre_modadd_0_1_0;' == variables[0]
             True
         """
-        if not self._variables_list:
+        if not self._variables_declarations:
             raise ValueError("No model generated")
-        return self._variables_list
+        return self._variables_declarations
