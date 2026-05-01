@@ -288,6 +288,54 @@ def set_fixed_variables(component_id, constraint_type, bit_positions, bit_values
         "bit_values": bit_values,
     }
 
+
+def set_count_constraint(component_id, target_value, operator, threshold, bit_positions=None):
+    """
+    Return a dictionary describing a count-aggregate constraint over a component's bits.
+
+    The encoded MiniZinc constraint is, for ``bit_positions=None``::
+
+        count(<component_id>, <target_value>) <operator> <threshold>
+
+    or, when ``bit_positions`` is given, the count is taken over the specified subarray.
+
+    INPUT:
+
+    - ``component_id`` -- **string**; the id of the component (or ``<id>_i`` / ``<id>_o``
+      for linear-mask sides of a bottom-part component in a DL model)
+    - ``target_value`` -- **int**; the value to count (typically ``0``, ``1``, or ``2``
+      for truncated bits)
+    - ``operator`` -- **string**; one of ``'='``, ``'!='``, ``'<'``, ``'<='``, ``'>'``, ``'>='``
+    - ``threshold`` -- **int**; the right-hand side of the comparison
+    - ``bit_positions`` -- **list of int** (default: `None`); the positions of the bits
+      to count over; if ``None`` the count is taken over the entire component array
+
+    EXAMPLES::
+
+        sage: from claasp.cipher_modules.models.utils import set_count_constraint
+        sage: set_count_constraint('intermediate_output_2_15', target_value=2,
+        ....:                      operator='<=', threshold=20)
+        {'bit_positions': None,
+         'component_id': 'intermediate_output_2_15',
+         'constraint_type': 'count',
+         'operator': '<=',
+         'target_value': 2,
+         'threshold': 20}
+    """
+    if operator not in ("=", "!=", "<", "<=", ">", ">="):
+        raise ValueError(
+            "operator must be one of '=', '!=', '<', '<=', '>', '>='; got {!r}".format(operator)
+        )
+    return {
+        "component_id": component_id,
+        "constraint_type": "count",
+        "target_value": int(target_value),
+        "operator": operator,
+        "threshold": int(threshold),
+        "bit_positions": list(bit_positions) if bit_positions is not None else None,
+    }
+
+
 def join_and_sanitize_strings(l):
     """
     Join a list of strings using ``_`` and sanitize the resulting string so that it only

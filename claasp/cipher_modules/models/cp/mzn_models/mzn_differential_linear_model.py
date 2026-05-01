@@ -174,10 +174,16 @@ class MznDifferentialLinearModel(MznModel):
 
         for fixed_variable in fixed_variables:
             component_id = fixed_variable["component_id"]
-            if component_id in self.bottom_part_component_ids:
+            base_component_id = component_id
+            if component_id.endswith(("_i", "_o")):
+                base_component_id = component_id[:-2]
+            is_count = fixed_variable.get("constraint_type") == "count"
+            if base_component_id in self.bottom_part_component_ids:
                 linear_constraints.append(fixed_variable)
             else:
-                if component_id in self.top_part_component_ids and 2 in fixed_variable["bit_values"]:
+                if (not is_count
+                        and component_id in self.top_part_component_ids
+                        and 2 in fixed_variable.get("bit_values", [])):
                     raise ValueError("The fixed value in a top (differential) component cannot be 2")
                 top_and_middle_constraints.append(fixed_variable)
 
@@ -564,6 +570,83 @@ class MznDifferentialLinearModel(MznModel):
         if solution.get("status") != "SATISFIABLE":
             return
         self._normalize_middle_part_components_values(solution)
+
+        components_values = solution.get("components_values")
+        if isinstance(components_values, dict):
+            bottom_mask = self._compute_bottom_part_input_linear_mask(components_values)
+            if bottom_mask:
+                solution["bottom_part_input_linear_mask"] = bottom_mask
+
+    @staticmethod
+    def _bit_msb_first(value_str, total_bits, position):
+        """Extract a bit at CLAASP MSB-first ``position`` from a hex/binary string."""
+        if not isinstance(value_str, str) or total_bits <= 0:
+            return 0
+        if value_str.startswith("0x"):
+            integer_value = int(value_str, 16)
+        elif set(value_str).issubset({"0", "1"}):
+            integer_value = int(value_str, 2)
+        else:
+            return 0
+        if position < 0 or position >= total_bits:
+            return 0
+        return (integer_value >> (total_bits - 1 - position)) & 1
+
+    def _compute_bottom_part_input_linear_mask(self, components_values):
+        """Aggregate the linear mask projected on each truncated border component's output.
+
+        For every truncated border component ``c`` (a middle component whose output
+        feeds at least one bottom component) and every output bit ``b`` of ``c``,
+        walk the cipher arcs to find every bottom-side consumer that reads bit
+        ``b``. The boundary mask bit at position ``b`` is the XOR (parity) of the
+        linear-mask bits at those consumer wires, which corresponds to the linear
+        mask projected on ``c``'s output state at the truncated->linear boundary.
+
+        The result is a dict keyed by border component id; each entry has:
+          - ``value``: hex string, length ``output_bit_size / 4``, MSB-first.
+          - ``bits``:  list of 0/1 of length ``output_bit_size``, MSB-first.
+        """
+        border_components = self._get_truncated_xor_differential_components_in_border()
+        if not border_components:
+            return {}
+
+        bottom_input_masks = {}
+        for border_id in sorted(border_components):
+            component = self._get_component_by_id(border_id)
+            n = int(component.output_bit_size)
+            mask_bits = [0] * n
+
+            for b in range(n):
+                arc_key = (border_id, str(b), "o")
+                successors = self.raw_bit_bindings.get(arc_key)
+                if not successors:
+                    continue
+                for successor in successors:
+                    succ_id, succ_bit_str, succ_side = successor
+                    if succ_id not in self.bottom_part_component_ids:
+                        continue
+                    succ_bit = int(succ_bit_str)
+                    succ_component = self._get_component_by_id(succ_id)
+                    entry = components_values.get(f"{succ_id}_i")
+                    size_for_lookup = int(succ_component.input_bit_size)
+                    if entry is None:
+                        entry = components_values.get(f"{succ_id}_o")
+                        size_for_lookup = int(succ_component.output_bit_size)
+                    if not isinstance(entry, dict):
+                        continue
+                    mask_bits[b] ^= self._bit_msb_first(
+                        entry.get("value"), size_for_lookup, succ_bit
+                    )
+
+            mask_int = 0
+            for bit in mask_bits:
+                mask_int = (mask_int << 1) | bit
+            hex_width = (n + 3) // 4
+            bottom_input_masks[border_id] = {
+                "value": f"0x{mask_int:0{hex_width}x}",
+                "bits": mask_bits,
+            }
+        return bottom_input_masks
 
 
     def build_xor_differential_linear_model(self, weight=-1, fixed_variables=None):

@@ -594,6 +594,9 @@ class MznXorLinearModel(MznModel):
         cp_constraints = []
         for component in fixed_variables:
             component_id = component["component_id"]
+            if component["constraint_type"] == "count":
+                cp_constraints.append(self._build_count_constraint(component_id, component))
+                continue
             bit_positions = component["bit_positions"]
             bit_values = component["bit_values"]
             if component["constraint_type"] == "equal":

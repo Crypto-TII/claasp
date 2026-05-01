@@ -310,6 +310,19 @@ class MznModel:
 
         return new_bit_values
 
+    def _build_count_constraint(self, component_id, component):
+        # The component_id is taken verbatim; caller must provide the exact
+        # MiniZinc array name (for example, xor_4_2_i or xor_4_2_o).
+        target = int(component["target_value"])
+        op = component["operator"]
+        threshold = int(component["threshold"])
+        positions = component.get("bit_positions")
+        if positions is None:
+            array_expr = component_id
+        else:
+            array_expr = "[" + ", ".join(f"{component_id}[{p}]" for p in positions) + "]"
+        return f"constraint count({array_expr}, {target}) {op} {threshold};"
+
     def calculate_input_bit_positions(
         self, word_index, input_name_1, input_name_2, new_input_bit_positions_1, new_input_bit_positions_2
     ):
@@ -413,6 +426,9 @@ class MznModel:
         cp_constraints = []
         for component in fixed_variables:
             component_id = component["component_id"]
+            if component["constraint_type"] == "count":
+                cp_constraints.append(self._build_count_constraint(component_id, component))
+                continue
             bit_positions = component["bit_positions"]
             bit_values = component["bit_values"]
             if step == "first_step":
