@@ -134,9 +134,9 @@ class MznXorLinearModel(MznModel):
         self.initialise_model()
         self.sbox_mant = []
         self.c = 0
-        self._variables_list = []
+        self._variables_declarations = []
         self.component_and_probability = {}
-        self._variables_list = []
+        self._variables_declarations = []
         variables = []
         if INPUT_KEY not in [variable["component_id"] for variable in fixed_variables]:
             cipher_without_key_schedule = self._cipher.remove_key_schedule()
@@ -166,7 +166,7 @@ class MznXorLinearModel(MznModel):
             else:
                 print(f"{component.id} not yet implemented")
 
-            self._variables_list.extend(variables)
+            self._variables_declarations.extend(variables)
             self._model_constraints.extend(constraints)
 
         constraints = self.branch_xor_linear_constraints()
@@ -174,14 +174,13 @@ class MznXorLinearModel(MznModel):
 
         if weight != -1:
             variables, constraints = self.weight_xor_linear_constraints(weight)
-            self._variables_list.extend(variables)
+            self._variables_declarations.extend(variables)
             self._model_constraints.extend(constraints)
 
         variables, constraints = self.input_xor_linear_constraints()
-        self._model_prefix.extend(variables)
-        self._variables_list.extend(constraints)
+        self._variables_declarations.extend(variables)
+        self._model_constraints.extend(constraints)
         self._model_constraints.extend(self.final_xor_linear_constraints(weight))
-        self._model_constraints = self._model_prefix + self._model_constraints
 
     def final_xor_linear_constraints(self, weight):
         """

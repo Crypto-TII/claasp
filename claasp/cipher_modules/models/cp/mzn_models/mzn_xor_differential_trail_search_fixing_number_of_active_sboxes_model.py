@@ -75,10 +75,9 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
         self.component_and_probability = {}
         self.build_xor_differential_trail_model_template(weight, fixed_variables)
         variables, constraints = self.input_xor_differential_constraints()
-        self._model_prefix.extend(variables)
-        self._variables_list.append(constraints)
+        self._variables_declarations.extend(variables)
+        self._model_constraints.extend(constraints)
         self._model_constraints.extend(self.final_xor_differential_constraints(weight))
-        self._model_constraints = self._model_prefix + self._model_constraints
 
     def find_all_xor_differential_trails_with_fixed_weight(
         self,
@@ -382,12 +381,12 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
             (['array[0..127] of var 0..1: key;',
               'array[0..127] of var 0..1: plaintext;',
                ...
-             'constraint table([word_sbox_0_1[s] | s in 0..0]++[word_sbox_0_2[s] | s in 0..0]++[word_sbox_0_3[s] | s in 0..0]++[word_sbox_0_4[s] | s in 0..0]++[word_sbox_0_5[s] | s in 0..0]++[word_sbox_0_6[s] | s in 0..0]++[word_sbox_0_7[s] | s in 0..0]++[word_sbox_0_8[s] | s in 0..0]++[word_sbox_0_9[s] | s in 0..0]++[word_sbox_0_10[s] | s in 0..0]++[word_sbox_0_11[s] | s in 0..0]++[word_sbox_0_12[s] | s in 0..0]++[word_sbox_0_13[s] | s in 0..0]++[word_sbox_0_14[s] | s in 0..0]++[word_sbox_0_15[s] | s in 0..0]++[word_sbox_0_16[s] | s in 0..0]++[word_sbox_0_26[s] | s in 0..0]++[word_sbox_0_27[s] | s in 0..0]++[word_sbox_0_28[s] | s in 0..0]++[word_sbox_0_29[s] | s in 0..0]++[word_sbox_1_0[s] | s in 0..0]++[word_sbox_1_1[s] | s in 0..0]++[word_sbox_1_2[s] | s in 0..0]++[word_sbox_1_3[s] | s in 0..0]++[word_sbox_1_4[s] | s in 0..0]++[word_sbox_1_5[s] | s in 0..0]++[word_sbox_1_6[s] | s in 0..0]++[word_sbox_1_7[s] | s in 0..0]++[word_sbox_1_8[s] | s in 0..0]++[word_sbox_1_9[s] | s in 0..0]++[word_sbox_1_10[s] | s in 0..0]++[word_sbox_1_11[s] | s in 0..0]++[word_sbox_1_12[s] | s in 0..0]++[word_sbox_1_13[s] | s in 0..0]++[word_sbox_1_14[s] | s in 0..0]++[word_sbox_1_15[s] | s in 0..0]++[word_sbox_1_21[s] | s in 0..0]++[word_sbox_1_22[s] | s in 0..0]++[word_sbox_1_23[s] | s in 0..0]++[word_sbox_1_24[s] | s in 0..0], aes_block_cipher_k128_p128_o128_r2_table_of_solutions);')
+             ['constraint table([word_sbox_0_1[s] | s in 0..0]++[word_sbox_0_2[s] | s in 0..0]++[word_sbox_0_3[s] | s in 0..0]++[word_sbox_0_4[s] | s in 0..0]++[word_sbox_0_5[s] | s in 0..0]++[word_sbox_0_6[s] | s in 0..0]++[word_sbox_0_7[s] | s in 0..0]++[word_sbox_0_8[s] | s in 0..0]++[word_sbox_0_9[s] | s in 0..0]++[word_sbox_0_10[s] | s in 0..0]++[word_sbox_0_11[s] | s in 0..0]++[word_sbox_0_12[s] | s in 0..0]++[word_sbox_0_13[s] | s in 0..0]++[word_sbox_0_14[s] | s in 0..0]++[word_sbox_0_15[s] | s in 0..0]++[word_sbox_0_16[s] | s in 0..0]++[word_sbox_0_26[s] | s in 0..0]++[word_sbox_0_27[s] | s in 0..0]++[word_sbox_0_28[s] | s in 0..0]++[word_sbox_0_29[s] | s in 0..0]++[word_sbox_1_0[s] | s in 0..0]++[word_sbox_1_1[s] | s in 0..0]++[word_sbox_1_2[s] | s in 0..0]++[word_sbox_1_3[s] | s in 0..0]++[word_sbox_1_4[s] | s in 0..0]++[word_sbox_1_5[s] | s in 0..0]++[word_sbox_1_6[s] | s in 0..0]++[word_sbox_1_7[s] | s in 0..0]++[word_sbox_1_8[s] | s in 0..0]++[word_sbox_1_9[s] | s in 0..0]++[word_sbox_1_10[s] | s in 0..0]++[word_sbox_1_11[s] | s in 0..0]++[word_sbox_1_12[s] | s in 0..0]++[word_sbox_1_13[s] | s in 0..0]++[word_sbox_1_14[s] | s in 0..0]++[word_sbox_1_15[s] | s in 0..0]++[word_sbox_1_21[s] | s in 0..0]++[word_sbox_1_22[s] | s in 0..0]++[word_sbox_1_23[s] | s in 0..0]++[word_sbox_1_24[s] | s in 0..0], aes_block_cipher_k128_p128_o128_r2_table_of_solutions);'])
         """
         cp_declarations, cp_constraints = super().input_xor_differential_constraints()
 
         table = "++".join(self._table_items)
-        cp_constraints = f"constraint table({table}, {self.cipher_id}_table_of_solutions);"
+        cp_constraints = [f"constraint table({table}, {self.cipher_id}_table_of_solutions);"]
 
         return cp_declarations, cp_constraints
 
@@ -483,7 +482,7 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
             for key in command_options["format"]:
                 command.extend(command_options[key])
 
-            model =  table_of_solutions + "\n".join(self._variables_list) + "\n".join(self._model_constraints) + "\n"
+            model = "\n".join(self._model_prefix) + "\n" + table_of_solutions + "\n".join(self._variables_declarations) + "\n".join(self._model_constraints) + "\n"
             solver_process = subprocess.run(command, input=model, capture_output=True, text=True)
             if solver_process.returncode < 0:
                 raise ValueError("something went wrong with solver subprocess... sorry!")
@@ -549,7 +548,7 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
             if model_type == "xor_differential_first_step":
                 model = "\n".join(self._first_step) + "\n"
             else:
-                model = "\n".join(self._model_constraints) + "\n"
+                model = "\n".join(self._model_prefix + self._variables_declarations + self._model_constraints) + "\n"
         if num_of_processors is not None:
             command_options["options"].insert(0, f"-p {num_of_processors}")
         if timelimit is not None:
