@@ -21,6 +21,7 @@ import os
 import subprocess
 import time
 from copy import deepcopy
+from dataclasses import dataclass, field
 from datetime import timedelta
 
 from minizinc import Instance, Model, Solver, Status
@@ -50,6 +51,18 @@ from claasp.cipher_modules.models.utils import write_model_to_file, convert_solv
 
 SOLVE_SATISFY = "solve satisfy;"
 CONSTRAINT_TYPE_ERROR = "Constraint type not defined"
+
+
+@dataclass
+class MiniZincModelParts:
+    prefix: list[str] = field(default_factory=list)
+    variables: list[str] = field(default_factory=list)
+    constraints: list[str] = field(default_factory=list)
+    outputs: list[str] = field(default_factory=list)
+    carries_outputs: list[str] = field(default_factory=list)
+
+    def lines(self):
+        return self.prefix + self.variables + self.constraints + self.outputs + self.carries_outputs
 
 
 class MznModel:
@@ -105,6 +118,20 @@ class MznModel:
         self.probability_modadd_vars_per_round = [[] for _ in range(self._cipher.number_of_rounds)]
         self.component_probability_var = {}
         self._model_prefix = ['include "globals.mzn";', f"{usefulfunctions.MINIZINC_USEFUL_FUNCTIONS}"]
+
+    def current_model_parts(self):
+        return MiniZincModelParts(
+            variables=list(self._variables_list),
+            constraints=list(self._model_constraints),
+            outputs=list(self.mzn_output_directives),
+            carries_outputs=list(self.mzn_carries_output_directives),
+        )
+
+    def assemble_model_lines(self, parts=None):
+        return (parts or self.current_model_parts()).lines()
+
+    def assemble_model(self, parts=None):
+        return "\n".join(self.assemble_model_lines(parts)) + "\n"
 
     def add_comment(self, comment):
         """
@@ -813,8 +840,6 @@ class MznModel:
         ):
             truncated = True
         
-        mzn_model = self._variables_list + self._model_constraints
-
         solutions = []
         if solve_external:
             command = self.get_command_for_solver_process(
@@ -824,7 +849,7 @@ class MznModel:
                 timeout_in_seconds_,
                 intermediate_solutions=intermediate_solutions_,
             )
-            model = "\n".join(mzn_model)
+            model = self.assemble_model()
             start = time.time()
             solver_process = subprocess.run(command, input=model, capture_output=True, text=True)
             end = time.time()
@@ -832,7 +857,7 @@ class MznModel:
             if solver_process.returncode >= 0:
                 solver_output = solver_process.stdout.splitlines()
         else:
-            mzn_model_string = "\n".join(mzn_model)
+            mzn_model_string = self.assemble_model()
             solver_name_mzn = Solver.lookup(solver_name)
             bit_mzn_model = Model()
             bit_mzn_model.add_string(mzn_model_string)
@@ -972,9 +997,12 @@ class MznModel:
             sage: result.statistics['nSolutions']
             1
         """
-        constraints = self._model_constraints
-        variables = self._variables_list
-        mzn_model_string = "\n".join(constraints) + "\n".join(variables)
+        mzn_model_string = self.assemble_model(
+            MiniZincModelParts(
+                variables=list(self._model_constraints),
+                constraints=list(self._variables_list),
+            )
+        )
         solver_name_mzn = Solver.lookup(solver_name)
         bit_mzn_model = Model()
         bit_mzn_model.add_string(mzn_model_string)
@@ -1077,20 +1105,22 @@ class MznModel:
         - ``file_path`` -- **string**; the path of the file that will contain the model
         - ``prefix`` -- **str** (default: ``)
         """
-        model_string = (
-            "\n".join(self.mzn_comments)
-            + "\n".join(self._variables_list)
-            + "\n".join(self._model_constraints)
-            + "\n".join(self.mzn_output_directives)
-            + "\n".join(self.mzn_carries_output_directives)
-        )
         if prefix == "":
             filename = f"{file_path}/{self.cipher_id}_mzn_{self.sat_or_milp}.mzn"
         else:
             filename = f"{file_path}/{prefix}_{self.cipher_id}_mzn_{self.sat_or_milp}.mzn"
 
         with open(filename, "w") as file:
-            file.write(model_string)
+            file.write(
+                self.assemble_model(
+                    MiniZincModelParts(
+                        variables=self.mzn_comments + list(self._variables_list),
+                        constraints=list(self._model_constraints),
+                        outputs=list(self.mzn_output_directives),
+                        carries_outputs=list(self.mzn_carries_output_directives),
+                    )
+                )
+            )
 
     @property
     def cipher(self):
