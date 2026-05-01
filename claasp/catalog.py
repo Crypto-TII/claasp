@@ -1,30 +1,11 @@
 """CLAASP catalog and discovery helpers.
 
-The Catalog class provides a compact API to discover ciphers, components,
-solvers, and component-method coverage.
-
 EXAMPLES::
 
     sage: from claasp.catalog import Catalog
     sage: catalog = Catalog()
-
-    sage: # List block ciphers; rows are sorted alphabetically.
-    sage: block_ciphers = catalog.ciphers(filters='block_ciphers')
-    sage: block_ciphers['rows'][0]['class_name']
-    'AESBlockCipher'
-
-    sage: # Print the table as Markdown for quick terminal inspection.
-    sage: print('\n'.join(catalog.render(block_ciphers, fmt='markdown').splitlines()[:2]))
-    | class_name | module_name | category | paradigm | components | tags |
-    | --- | --- | --- | --- | --- | --- |
-
-    sage: # List components; abstract helpers are excluded by default.
-    sage: catalog.components()['rows'][0]['class_name']
-    'And'
-
-    sage: # Check which solver families are catalogued.
-    sage: sorted(catalog.solvers(grouped=True))
-    ['cp', 'milp', 'sat', 'smt']
+    sage: catalog
+    <claasp.catalog.Catalog object at ...>
 """
 
 from __future__ import annotations
@@ -52,7 +33,6 @@ FILTER_ALIASES = {
     "permutations": "permutations",
     "single_component_cipher": "single_component_ciphers",
     "single_component_ciphers": "single_component_ciphers",
-    "spn": "sbox_based",
     "sbox-based": "sbox_based",
     "sbox_based": "sbox_based",
     "stream_cipher": "stream_ciphers",
@@ -467,57 +447,68 @@ def _base_component_methods(package_root: Path) -> set[str]:
 class Catalog:
     """Facade class for CLAASP discovery and catalog helpers.
 
-    Compact API:
+    This class provides a single entry point to discover CLAASP assets such as
+    ciphers, components, solvers, and implemented component methods.
 
-    - :meth:`ciphers`
-    - :meth:`components`
-    - :meth:`solvers`
-    - :meth:`implemented_methods_per_component`
+    Each discovery method returns a plain table dictionary with the same shape:
 
-    Rendering/export API:
+    - ``name``: logical table name (for example ``"ciphers"``)
+    - ``columns``: ordered list of column names
+    - ``rows``: list of row dictionaries
 
-    - :meth:`to_json`
-    - :meth:`to_dataframe`
-    - :meth:`to_markdown`
-    - :meth:`to_terminal`
-    - :meth:`to_csv`
-    - :meth:`write`
-
-    One-command terminal helpers:
-
-    - :meth:`show_ciphers`
-    - :meth:`show_components`
-    - :meth:`show_solvers`
-    - :meth:`show_implemented_methods_per_component`
+    The consistent table format makes it easy to inspect results in Python,
+    filter/project columns, and render or export data through helper methods.
 
     EXAMPLES::
 
         sage: from claasp.catalog import Catalog
         sage: catalog = Catalog()
 
-        sage: # Filter ciphers by category and paradigm (AND logic).
-        sage: sbox_blocks = catalog.ciphers(filters=['block_ciphers', 'sbox_based'])
-        sage: sbox_blocks['rows'][0]['class_name']
-        'AESBlockCipher'
-        sage: sbox_blocks['rows'][0]['tags']
-        ['block_ciphers', 'sbox_based']
+        sage: # Basic cipher discovery structure.
+        sage: ciphers = catalog.ciphers()
+        sage: ciphers.keys()
+        dict_keys(['name', 'columns', 'rows'])
+        sage: ciphers['name']
+        'ciphers'
+        sage: ciphers['columns']
+        ['class_name', 'module_name', 'category', 'paradigm', 'components', 'tags']
+        sage: ciphers['rows'][0].keys()
+        dict_keys(['class_name', 'module_name', 'category', 'paradigm', 'components', 'tags'])
+        sage: ciphers['rows'][0]['class_name']
+        'A51StreamCipher'
 
-        sage: # Inspect a component's full import path.
-        sage: catalog.components(qualified=True)['rows'][0]['qualified_name']
-        'claasp.components.and_component.And'
+        sage: # Components and solvers follow the same table shape.
+        sage: components = catalog.components()
+        sage: components['name']
+        'components'
+        sage: components['rows'][0]['class_name']
+        'And'
 
-        sage: # See which solver families are available.
-        sage: sorted(catalog.solvers(grouped=True))
-        ['cp', 'milp', 'sat', 'smt']
+        sage: solvers = catalog.solvers()
+        sage: solvers['name']
+        'solvers'
+        sage: solvers['rows'][0]['family']
+        'cp'
 
-        sage: # Display results as a Markdown table in the terminal.
-        sage: print('\n'.join(catalog.render(sbox_blocks, fmt='markdown').splitlines()[:2]))
-        | class_name | module_name | category | paradigm | components | tags |
-        | --- | --- | --- | --- | --- | --- |
+        sage: methods = catalog.implemented_methods_per_component()
+        sage: methods['name']
+        'implemented_methods_per_component'
+        sage: methods['rows'][0]['method']
+        'algebraic_polynomials'
 
-        sage: # Export the same data as CSV.
-        sage: catalog.render(sbox_blocks, fmt='csv').splitlines()[0]
-        'class_name,module_name,category,paradigm,components,tags'
+        sage: # Use convenience helpers to render ciphers directly.
+        sage: catalog.show_ciphers()
+        class_name                              | module_name                                                                 | category                 | paradigm   | components                                                                               | tags                                                     
+        ----------------------------------------+-----------------------------------------------------------------------------+--------------------------+------------+------------------------------------------------------------------------------------------+----------------------------------------------------------
+        A51StreamCipher                         | claasp.ciphers.stream_ciphers.a5_1_stream_cipher                            | stream_ciphers           | other      | ['constant', 'fsr', 'xor']                                                               | ['stream_ciphers']                                       
+        A52StreamCipher                         | claasp.ciphers.stream_ciphers.a5_2_stream_cipher                            | stream_ciphers           | other      | ['and', 'constant', 'fsr', 'or', 'xor']                                                  | ['stream_ciphers']                                       
+        AESBlockCipher                          | claasp.ciphers.block_ciphers.aes_block_cipher                               | block_ciphers            | sbox-based | ['constant', 'mix_column', 'rotate', 'sbox', 'xor']                                      | ['block_ciphers', 'sbox_based']                          
+        ...
+        sage: catalog.show_ciphers(has_components=['sbox'], columns=['class_name', 'paradigm'], fmt='markdown')
+        | class_name | paradigm |
+        | --- | --- |
+        | AESBlockCipher | sbox-based |
+        ...
     """
 
     def __init__(self, package_root=None):
@@ -691,8 +682,8 @@ class Catalog:
           ``mac``, ``single_component_ciphers``, and ``toys``. Additional derived tags include
           ``tweakable_block_cipher``, ``sbox_based``, ``arx``, and ``andrx``. Multiple filters are
           combined with logical AND.
-                - ``has_components`` -- **string/list/tuple** (default: ``None``); keep only ciphers whose
-                    component set contains all requested components (logical AND), e.g. ``['sbox', 'xor']``.
+        - ``has_components`` -- **string/list/tuple** (default: ``None``); keep only ciphers whose
+          component set contains all requested components (logical AND), e.g. ``['sbox', 'xor']``.
         - ``include_metadata`` -- **boolean** (default: ``False``); include cipher runtime metadata.
         - ``qualified`` -- **boolean** (default: ``False``); include full module path.
 
@@ -1117,15 +1108,37 @@ class Catalog:
     ) -> str:
         """Build and render ciphers in one command for terminal/file output.
 
+        INPUT:
+
+        - ``filters`` -- **string/list/tuple** (default: ``None``); forwarded to :meth:`ciphers`.
+        - ``has_components`` -- **string/list/tuple** (default: ``None``); forwarded to :meth:`ciphers`.
+        - ``columns`` -- **string/list/tuple** (default: ``None``); keep only selected columns.
+        - ``exclude_columns`` -- **string/list/tuple** (default: ``None``); drop selected columns.
+        - ``include_metadata`` -- **boolean** (default: ``False``); forwarded to :meth:`ciphers`.
+        - ``qualified`` -- **boolean** (default: ``False``); forwarded to :meth:`ciphers`.
+        - ``fmt`` -- **string** (default: ``"terminal"``); output format for :meth:`render`.
+
         EXAMPLES::
 
             sage: from claasp.catalog import Catalog
-            sage: text = Catalog().show_ciphers(filters='block_ciphers', fmt='csv')
-            sage: text.splitlines()[0]
-            'class_name,module_name,category,paradigm,components,tags'
-            sage: text = Catalog().show_ciphers(filters='block_ciphers', columns=['class_name', 'paradigm'], fmt='csv')
-            sage: text.splitlines()[0]
-            'class_name,paradigm'
+            sage: Catalog().show_ciphers(filters='toys', has_components=['sbox'], columns=['class_name', 'paradigm'], fmt='json')
+            {
+                "name": "ciphers",
+                "columns": [
+                    "class_name",
+                    "paradigm"
+                ],
+                "rows": [
+                    {
+                    "class_name": "FancyBlockCipher",
+                    "paradigm": "sbox-based"
+                    },
+            ...
+
+            sage: Catalog().show_ciphers(filters='toys', include_metadata=True, exclude_columns=['module_name', 'category', 'paradigm', 'components', 'tags'], fmt='csv')
+            class_name,family_name,cipher_type,inputs,inputs_bit_size,output_bit_size,number_of_rounds,id,metadata_error
+            FancyBlockCipher,...
+            ...
         """
         table = self.ciphers(
             filters=filters,
@@ -1147,7 +1160,26 @@ class Catalog:
         exclude_columns: str | list[str] | tuple[str, ...] | None = None,
         fmt: str = "terminal",
     ) -> str:
-        """Build and render components in one command for terminal/file output."""
+        """Build and render components in one command for terminal/file output.
+
+        INPUT:
+
+        - ``include_abstract`` -- **boolean** (default: ``False``); forwarded to :meth:`components`.
+        - ``include_io_components`` -- **boolean** (default: ``False``); forwarded to :meth:`components`.
+        - ``qualified`` -- **boolean** (default: ``False``); forwarded to :meth:`components`.
+        - ``columns`` -- **string/list/tuple** (default: ``None``); keep only selected columns.
+        - ``exclude_columns`` -- **string/list/tuple** (default: ``None``); drop selected columns.
+        - ``fmt`` -- **string** (default: ``"terminal"``); output format for :meth:`render`.
+
+        EXAMPLES::
+
+            sage: from claasp.catalog import Catalog
+            sage: Catalog().show_components(qualified=True, columns=['class_name', 'qualified_name'], fmt='markdown')
+            | class_name | qualified_name |
+            | --- | --- |
+            | And | claasp.components.and_component.And |
+            ...
+        """
         table = self.components(
             include_abstract=include_abstract,
             include_io_components=include_io_components,
@@ -1166,7 +1198,25 @@ class Catalog:
         exclude_columns: str | list[str] | tuple[str, ...] | None = None,
         fmt: str = "terminal",
     ) -> str:
-        """Build and render solvers in one command for terminal/file output."""
+        """Build and render solvers in one command for terminal/file output.
+
+        INPUT:
+
+        - ``include_internal`` -- **boolean** (default: ``True``); forwarded to :meth:`solvers`.
+        - ``include_external`` -- **boolean** (default: ``True``); forwarded to :meth:`solvers`.
+        - ``columns`` -- **string/list/tuple** (default: ``None``); keep only selected columns.
+        - ``exclude_columns`` -- **string/list/tuple** (default: ``None``); drop selected columns.
+        - ``fmt`` -- **string** (default: ``"terminal"``); output format for :meth:`render`.
+
+        EXAMPLES::
+
+            sage: from claasp.catalog import Catalog
+            sage: Catalog().show_solvers(include_external=False, columns=['solver_name', 'family', 'source'], fmt='terminal')
+            solver_name   | family | source  
+            --------------+--------+---------
+            ...           | ...    | ...
+            ...
+        """
         table = self.solvers(
             include_internal=include_internal,
             include_external=include_external,
@@ -1185,7 +1235,26 @@ class Catalog:
         exclude_columns: str | list[str] | tuple[str, ...] | None = None,
         fmt: str = "terminal",
     ) -> str:
-        """Build and render methods-per-component coverage in one command."""
+        """Build and render methods-per-component coverage in one command.
+
+        INPUT:
+
+        - ``include_abstract`` -- **boolean** (default: ``False``); forwarded to
+            :meth:`implemented_methods_per_component`.
+        - ``include_io_components`` -- **boolean** (default: ``False``); forwarded to
+            :meth:`implemented_methods_per_component`.
+        - ``columns`` -- **string/list/tuple** (default: ``None``); keep only selected columns.
+        - ``exclude_columns`` -- **string/list/tuple** (default: ``None``); drop selected columns.
+        - ``fmt`` -- **string** (default: ``"terminal"``); output format for :meth:`render`.
+
+        EXAMPLES::
+
+            sage: from claasp.catalog import Catalog
+            sage: Catalog().show_implemented_methods_per_component(include_abstract=True, columns=['method', 'Sbox'], fmt='csv')
+            method,Sbox
+            ...,...
+            ...
+        """
         table = self.implemented_methods_per_component(
             include_abstract=include_abstract,
             include_io_components=include_io_components,
