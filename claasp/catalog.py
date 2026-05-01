@@ -313,7 +313,13 @@ def _resolve_imported_module_name(node: ast.ImportFrom, current_parts: list[str]
 
     base_parts = current_parts[:-node.level]
     if node.module:
-        return ".".join(base_parts + node.module.split("."))
+        resolved = ".".join(base_parts + node.module.split("."))
+        # Some callers (for example tests) may resolve relative imports from
+        # outside ``claasp.ciphers`` even when the imported module clearly
+        # targets cipher packages. Normalize those to the canonical namespace.
+        if node.module.startswith("ciphers.") and not resolved.startswith("claasp.ciphers."):
+            return f"claasp.{node.module}"
+        return resolved
 
     return ".".join(base_parts)
 
