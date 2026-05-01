@@ -46,3 +46,23 @@ def test_unimplemented_component_methods_accept_documented_arguments():
 
     with pytest.raises(NotImplementedError, match="milp_constraints"):
         component.milp_constraints(model=object())
+
+
+def test_linear_mask_alias_methods_execute_updated_paths():
+    component = make_component()
+
+    with pytest.raises(NotImplementedError, match="cms_constraints"):
+        component.cms_xor_linear_mask_propagation_constraints(model=object())
+
+    with pytest.raises(NotImplementedError, match="cp_constraints"):
+        component.cp_xor_linear_mask_propagation_constraints(model=object())
+
+    with pytest.raises(NotImplementedError, match="smt_constraints"):
+        component.smt_xor_linear_mask_propagation_constraints(model=object())
+
+
+def test_sat_linear_alias_uses_sat_constraints_fallback_when_available():
+    component_input = Input(4, ["input"], [[0, 1, 2, 3]])
+    component = DummyComponent("dummy_0_0", "word_operation", component_input, 4, ["DUMMY", 1])
+
+    assert component.sat_xor_linear_mask_propagation_constraints() == (["dummy_var"], ["dummy_constraint"])

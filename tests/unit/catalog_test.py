@@ -1,4 +1,9 @@
-from claasp.catalog import Catalog
+import ast
+from pathlib import Path
+from types import SimpleNamespace
+
+import claasp.catalog as catalog_module
+from claasp.catalog import Catalog, CipherInfo
 
 
 def test_ciphers_filter_by_required_components_and_aliases():
@@ -117,3 +122,114 @@ def test_table_render_and_write(tmp_path):
     written = catalog.write(table, output, fmt="csv")
     assert written == output
     assert output.read_text(encoding="utf-8").startswith("class_name")
+
+
+def test_catalog_import_resolution_helpers_cover_relative_and_absolute_paths():
+    source = """
+import claasp.ciphers.block_ciphers.speck_block_cipher
+from claasp.ciphers.stream_ciphers import a5_1_stream_cipher
+from ..ciphers.toys import fancy_block_cipher
+from . import local_module
+from external.module import something
+"""
+    tree = ast.parse(source)
+
+    modules = catalog_module._imported_cipher_modules(tree, "claasp.tests.unit.catalog_test")
+
+    assert "claasp.ciphers.block_ciphers.speck_block_cipher" in modules
+    assert "claasp.ciphers.stream_ciphers" in modules
+    assert "claasp.ciphers.toys" in modules
+    assert "external.module" not in modules
+
+
+def test_catalog_source_file_and_category_helpers():
+    assert catalog_module._is_python_source_file(Path("alpha.py"))
+    assert not catalog_module._is_python_source_file(Path("__init__.py"))
+    assert not catalog_module._is_python_source_file(Path("_private.py"))
+
+    ciphers_dir = Path("/tmp/root/ciphers")
+    file_path = ciphers_dir / "block_ciphers" / "demo.py"
+    assert catalog_module._cipher_category_from_path(file_path, ciphers_dir) == "block_ciphers"
+
+
+def test_catalog_discover_cipher_infos_from_file(tmp_path):
+    package_root = tmp_path / "claasp"
+    ciphers_dir = package_root / "ciphers"
+    module_dir = ciphers_dir / "toys"
+    module_dir.mkdir(parents=True)
+    file_path = module_dir / "toy_cipher.py"
+    file_path.write_text(
+        "class TinyCipher(Cipher):\n"
+        "    def __init__(self):\n"
+        "        self.add_xor_component(None, None, None)\n",
+        encoding="utf-8",
+    )
+
+    infos = catalog_module._discover_cipher_infos_from_file(file_path, ciphers_dir, package_root, {})
+
+    assert len(infos) == 1
+    assert infos[0].name == "TinyCipher"
+    assert infos[0].category == "toys"
+    assert "xor" in infos[0].components
+
+
+def test_catalog_collect_imported_components_and_filters(monkeypatch):
+    tree = ast.parse("pass")
+
+    monkeypatch.setattr(catalog_module, "_imported_cipher_modules", lambda _tree, _module: {"claasp.ciphers.mock"})
+    monkeypatch.setattr(
+        catalog_module,
+        "_collect_components_from_cipher_module",
+        lambda _module, _root, _cache, _visiting: {"xor", "rotate"},
+    )
+
+    components = catalog_module._collect_imported_components(tree, "claasp.any", Path("/tmp"), {})
+    assert components == {"xor", "rotate"}
+
+    info = CipherInfo(
+        name="X",
+        qualified_name="claasp.ciphers.toys.x.X",
+        module_name="claasp.ciphers.toys.x",
+        category="toys",
+        paradigm="other",
+        components=("xor", "sbox"),
+        tags=frozenset({"toys", "sbox_based"}),
+    )
+    assert catalog_module._matches_cipher_filters(info, {"toys"}, {"xor"})
+    assert not catalog_module._matches_cipher_filters(info, {"mac"}, {"xor"})
+    assert not catalog_module._matches_cipher_filters(info, {"toys"}, {"modadd"})
+
+
+def test_catalog_cipher_metadata_and_row_helpers(monkeypatch):
+    fake_instance = SimpleNamespace(
+        family_name="demo",
+        type="block_cipher",
+        inputs=["plaintext"],
+        inputs_bit_size=[64],
+        output_bit_size=64,
+        number_of_rounds=4,
+        id="demo_p64_o64_r4",
+    )
+    monkeypatch.setattr(catalog_module, "_load_cipher_instance", lambda _qname: fake_instance)
+
+    metadata = catalog_module._cipher_metadata("claasp.ciphers.toys.demo.DemoCipher")
+    assert metadata["family_name"] == "demo"
+    assert metadata["metadata_error"] is None
+
+    info = CipherInfo(
+        name="DemoCipher",
+        qualified_name="claasp.ciphers.toys.demo.DemoCipher",
+        module_name="claasp.ciphers.toys.demo",
+        category="toys",
+        paradigm="other",
+        components=("xor",),
+        tags=frozenset({"toys"}),
+    )
+    row = catalog_module._cipher_row(info, include_metadata=True, qualified=False)
+    assert row["class_name"] == "DemoCipher"
+    assert "qualified_name" not in row
+    assert row["family_name"] == "demo"
+
+    monkeypatch.setattr(catalog_module, "_load_cipher_instance", lambda _qname: (_ for _ in ()).throw(RuntimeError("boom")))
+    error_metadata = catalog_module._cipher_metadata("claasp.ciphers.toys.demo.DemoCipher")
+    assert error_metadata["metadata_error"].startswith("RuntimeError: boom")

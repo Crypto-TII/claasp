@@ -257,8 +257,9 @@ class Component:
         return self.smt_constraints()
 
     def smt_xor_linear_mask_propagation_constraints(self, model=None):
+        constraints = self.smt_constraints
         _ = model
-        return self.smt_constraints()
+        return constraints()
 
     def _create_minizinc_1d_array_from_list(self, mzn_list):
         mzn_list_size = len(mzn_list)

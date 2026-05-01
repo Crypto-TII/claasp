@@ -300,6 +300,24 @@ def _resolve_module_source_file(module_name: str, package_root: Path) -> Path | 
     return None
 
 
+def _is_cipher_module_name(module_name: str) -> bool:
+    return module_name.startswith("claasp.ciphers.")
+
+
+def _resolve_imported_module_name(node: ast.ImportFrom, current_parts: list[str]) -> str | None:
+    if node.level == 0:
+        return node.module or ""
+
+    if len(current_parts) <= node.level:
+        return None
+
+    base_parts = current_parts[:-node.level]
+    if node.module:
+        return ".".join(base_parts + node.module.split("."))
+
+    return ".".join(base_parts)
+
+
 def _imported_cipher_modules(tree: ast.AST, current_module: str) -> set[str]:
     modules = set()
     current_parts = current_module.split(".")
@@ -308,24 +326,16 @@ def _imported_cipher_modules(tree: ast.AST, current_module: str) -> set[str]:
         if isinstance(node, ast.Import):
             for alias in node.names:
                 imported = alias.name
-                if imported.startswith("claasp.ciphers."):
+                if _is_cipher_module_name(imported):
                     modules.add(imported)
+            continue
 
-        if isinstance(node, ast.ImportFrom):
-            if node.level > 0:
-                if len(current_parts) <= node.level:
-                    continue
-                base_parts = current_parts[:-node.level]
-                if node.module:
-                    module_parts = node.module.split(".")
-                    imported = ".".join(base_parts + module_parts)
-                else:
-                    imported = ".".join(base_parts)
-            else:
-                imported = node.module or ""
+        if not isinstance(node, ast.ImportFrom):
+            continue
 
-            if imported.startswith("claasp.ciphers."):
-                modules.add(imported)
+        imported = _resolve_imported_module_name(node, current_parts)
+        if imported and _is_cipher_module_name(imported):
+            modules.add(imported)
 
     return modules
 
