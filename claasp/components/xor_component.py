@@ -545,8 +545,8 @@ class Xor(Component):
             sage: cipher = XorCipher(word_bit_size=8, number_of_inputs=2)
             sage: cp = MznModel(cipher)
             sage: cp.word_size = 8
-            sage: xor_component = cipher.component_from_id("xor_0_0")
-            sage: xor_component.cp_xor_differential_propagation_first_step_constraints(cp, cp._variables_list)
+            sage: xor_component = cipher.get_component_from_id("xor_0_0")
+            sage: xor_component.cp_xor_differential_propagation_first_step_constraints(cp, cp._variables_declarations)
             (['array[0..1, 1..2] of int: xor_truncated_table_2 = array2d(0..1, 1..2, [0,0,1,1]);'],
              'constraint table([plaintext[0]]++[key[0]], xor_truncated_table_2);')
         """

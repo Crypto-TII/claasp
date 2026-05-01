@@ -68,7 +68,7 @@ class MznDifferentialLinearContinuousModel(MznModel):
         self.init_input_declarations()
 
         self._model_constraints.extend(self.connect_components())
-        self._variables_list.insert(0, get_continuous_operations())
+        self._variables_declarations.insert(0, get_continuous_operations())
         self.add_linear_mask_variables()
         
     def add_linear_mask_variables(self):
@@ -76,14 +76,14 @@ class MznDifferentialLinearContinuousModel(MznModel):
         output_mask = (
             f"array[0..{block_size - 1}] of var 0..1: output_mask;"
         )
-        self._variables_list.append(output_mask)
+        self._variables_declarations.append(output_mask)
 
     def init_input_declarations(self):
         input_declarations = [
             f"array[0..{size - 1}] of var -1.0..1.0: {name};"
             for name, size in zip(self._cipher.inputs, self._cipher.inputs_bit_size)
         ]
-        self._variables_list.extend(input_declarations)
+        self._variables_declarations.extend(input_declarations)
 
     def connect_components(self):
         constraints = []
@@ -126,11 +126,11 @@ class MznDifferentialLinearContinuousModel(MznModel):
             f"array[0..{block_size - 1}] of var lower..upper: active_bit_correlations = "
             f"array1d(0..{block_size - 1}, [{active_bit_correlations_entries}]);"
         )
-        self._variables_list.append(active_bit_correlations_decl)
+        self._variables_declarations.append(active_bit_correlations_decl)
     
     def _build_difflin_corr_constraints(self):
-        self._variables_list.append("var lower..upper: differential_linear_correlation;")
-        self._variables_list.append("var float: correlation_log2_approximation;")
+        self._variables_declarations.append("var lower..upper: differential_linear_correlation;")
+        self._variables_declarations.append("var float: correlation_log2_approximation;")
 
         self._model_constraints.append(
             "constraint differential_linear_correlation = product(active_bit_correlations);"
@@ -274,7 +274,7 @@ class MznDifferentialLinearContinuousModel(MznModel):
 
     def solve_for_ARX(self, solver_name="scip", timeout_in_seconds_=30, processes_=4):
         constraints = self._model_constraints
-        variables = self._variables_list
+        variables = self._variables_declarations
         mzn_model_string =  "\n".join(variables) + "\n".join(constraints) 
         solver_name_mzn = Solver.lookup(solver_name)
         bit_mzn_model = Model()

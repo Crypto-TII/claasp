@@ -192,7 +192,7 @@ class MznBoomerangModelARXOptimized(MznXorDifferentialModelARXOptimized):
         self._model_constraints.extend([get_word_operations()])
         self._model_constraints.extend([get_bct_operations()])
 
-        self._variables_list.extend(
+        self._variables_declarations.extend(
             self.differential_model_top_cipher.get_variables() + self.differential_model_bottom_cipher.get_variables()
         )
         self._model_constraints.extend(
@@ -226,7 +226,7 @@ class MznBoomerangModelARXOptimized(MznXorDifferentialModelARXOptimized):
             + "\n"
             + model_string_bottom
             + "\n"
-            + "\n".join(self._variables_list)
+            + "\n".join(self._variables_declarations)
             + "\n"
             + "\n".join(self._model_constraints)
         )
@@ -249,7 +249,7 @@ class MznBoomerangModelARXOptimized(MznXorDifferentialModelARXOptimized):
             return hex_values
 
         if result.status not in [Status.UNKNOWN, Status.UNSATISFIABLE, Status.ERROR]:
-            list_of_sublist_of_vars = group_strings_by_pattern(self._variables_list)
+            list_of_sublist_of_vars = group_strings_by_pattern(self._variables_declarations)
             dict_of_component_value = get_hex_from_sublists(list_of_sublist_of_vars, solution.__dict__)
 
         return {"component_values": dict_of_component_value}

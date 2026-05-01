@@ -120,13 +120,12 @@ class MznSemiDeterministicTruncatedXorDifferentialModel(MznModel):
         else:
             weight_constraint = "constraint weight = 0;"
 
-        self._variables_list = input_declarations + self._variables_list + [weight_var]
+        self._variables_declarations = input_declarations + self._variables_declarations + [weight_var]
         self._model_constraints = input_constraints + fixed_constraints + self._model_constraints
 
         self._model_constraints.append(weight_constraint)
         self.output_probability_per_round()
         self._model_constraints.extend(self._build_final_output_block(minimize))
-        self._model_constraints = self._model_prefix + self._model_constraints
 
     def _build_final_output_block(self, minimize):
         cipher_inputs = self._cipher.inputs
