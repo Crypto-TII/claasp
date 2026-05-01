@@ -135,14 +135,13 @@ class MznXorDifferentialModel(MznModel):
         self.table_of_solutions_length = 0
         self.build_xor_differential_trail_model_template(weight, fixed_variables, milp_modadd)
         variables, constraints = self.input_xor_differential_constraints()
-        self._model_prefix.extend(variables)
-        self._variables_list.extend(constraints)
+        self._variables_declarations.extend(variables)
+        self._model_constraints.extend(constraints)
         self._model_constraints.extend(self.final_xor_differential_constraints(weight, milp_modadd))
-        self._model_constraints = self._model_prefix + self._model_constraints
 
     def build_xor_differential_trail_model_template(self, weight, fixed_variables, milp_modadd=False):
         variables = []
-        self._variables_list = []
+        self._variables_declarations = []
         if fixed_variables == []:
             fixed_variables = get_single_key_scenario_format_for_fixed_values(self._cipher)
         constraints = self.fix_variables_value_constraints(fixed_variables)
@@ -161,12 +160,12 @@ class MznXorDifferentialModel(MznModel):
             else:
                 variables, constraints = component.cp_xor_differential_propagation_constraints(self)
 
-            self._variables_list.extend(variables)
+            self._variables_declarations.extend(variables)
             self._model_constraints.extend(constraints)
 
         if weight != -1:
             variables, constraints = self.weight_constraints(weight)
-            self._variables_list.extend(variables)
+            self._variables_declarations.extend(variables)
             self._model_constraints.extend(constraints)
 
     def final_xor_differential_constraints(self, weight, milp_modadd=False):

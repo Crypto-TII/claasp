@@ -12,11 +12,11 @@ def test_find_one_wordwise_deterministic_truncated_xor_differential_trail():
     fixed_variables = [set_fixed_variables("key_value", "equal", range(16), (0,) * 16)]
     mzn.build_deterministic_truncated_xor_differential_trail_model(fixed_variables, wordwise=True)
 
-    assert len(mzn.model_constraints) + len(mzn.model_variables) == 1361
-    assert mzn.model_constraints[2] == "array[0..15] of var 0..3: key_active;"
-    assert mzn.model_constraints[3] == "array[0..15] of var -2..255: key_value;"
-    assert mzn.model_constraints[4] == "array[0..15] of var 0..3: plaintext_active;"
-    assert mzn.model_constraints[5] == "array[0..15] of var -2..255: plaintext_value;"
+    assert len(mzn.model_constraints) + len(mzn.model_variables) == 1359
+    assert "array[0..15] of var 0..3: key_active;" in mzn.model_variables
+    assert "array[0..15] of var -2..255: key_value;" in mzn.model_variables
+    assert "array[0..15] of var 0..3: plaintext_active;" in mzn.model_variables
+    assert "array[0..15] of var -2..255: plaintext_value;" in mzn.model_variables
 
 
 """

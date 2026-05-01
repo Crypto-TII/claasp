@@ -131,12 +131,12 @@ class MznXorDifferentialNumberOfActiveSboxesModel(MznModel):
         self.mix_column_mant = []
         self.sbox_mant = []
         self.input_sbox = []
-        self._variables_list = []
+        self._variables_declarations = []
         self.c = 0
         self.table_of_solutions_length = 0
         constraints = self.fix_variables_value_constraints(fixed_variables, "first_step")
         self._first_step = constraints
-        self._variables_list.extend(self.input_xor_differential_first_step_constraints(possible_sboxes))
+        self._variables_declarations.extend(self.input_xor_differential_first_step_constraints(possible_sboxes))
 
         for component in self._cipher.get_all_components():
             component_types = [CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, SBOX, MIX_COLUMN, WORD_OPERATION]
@@ -150,16 +150,16 @@ class MznXorDifferentialNumberOfActiveSboxesModel(MznModel):
                 variables, constraints = component.cp_transform_xor_components_for_first_step(self)
             else:
                 variables, constraints = component.cp_xor_differential_propagation_first_step_constraints(self)
-            self._variables_list.extend(variables)
+            self._variables_declarations.extend(variables)
             self._first_step.extend(constraints)
 
         self.add_additional_xor_constraints(nmax, repetition)
         for i, component in enumerate(self.list_of_xor_components):
             variables, constraints = self.xor_xor_differential_first_step_constraints(component)
-            self._variables_list.extend(variables)
+            self._variables_declarations.extend(variables)
             self._first_step.append(constraints)
         self._first_step.extend(self.final_xor_differential_first_step_constraints(weight))
-        self._first_step = self._model_prefix + self._variables_list + self._first_step
+        self._first_step = self._model_prefix + self._variables_declarations + self._first_step
 
     def create_xor_component(self, component1, component2, nmax):
         """
@@ -390,7 +390,7 @@ class MznXorDifferentialNumberOfActiveSboxesModel(MznModel):
         )
         xor_table = build_xor_truncated_table(numadd)
         cp_declarations = []
-        if xor_table not in self._variables_list:
+        if xor_table not in self._variables_declarations:
             cp_declarations = [xor_table]
 
         return cp_declarations, cp_constraints

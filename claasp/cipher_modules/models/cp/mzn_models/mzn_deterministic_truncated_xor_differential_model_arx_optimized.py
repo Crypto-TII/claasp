@@ -48,7 +48,7 @@ class MznDeterministicTruncatedXorDifferentialModelARXOptimized(MznModel):
         """
         variables = []
         constraints = self.fix_variables_value_constraints_for_ARX(fixed_variables)
-        self._variables_list = []
+        self._variables_declarations = []
         self._model_constraints = constraints
 
         for component in self._cipher.get_all_components():
@@ -63,5 +63,5 @@ class MznDeterministicTruncatedXorDifferentialModelARXOptimized(MznModel):
             else:
                 print(f"{component.id} not yet implemented")
 
-            self._variables_list.extend(variables)
+            self._variables_declarations.extend(variables)
             self._model_constraints.extend(constraints)

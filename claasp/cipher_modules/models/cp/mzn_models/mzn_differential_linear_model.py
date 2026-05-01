@@ -405,7 +405,7 @@ class MznDifferentialLinearModel(MznModel):
             normalized = " ".join(var.strip().split())
             return normalized.startswith("array[") and "] of var " in normalized and normalized.endswith(": p;")
 
-        has_declaration = any(_is_probability_array_declaration(var) for var in self._variables_list)
+        has_declaration = any(_is_probability_array_declaration(var) for var in self._variables_declarations)
         if has_declaration:
             return None
 
@@ -584,19 +584,17 @@ class MznDifferentialLinearModel(MznModel):
 
         weight_declarations, weight_constraints = self._build_weight_constraints(weight)
 
-        declarations = self._state_declarations() + self._variables_list
+        declarations = self._state_declarations() + self._variables_declarations
         if probability_array_declaration is not None:
             declarations.append(probability_array_declaration)
         declarations.extend(weight_declarations)
 
-        self._variables_list = declarations
+        self._variables_declarations = declarations
 
         self._model_constraints.extend(middle_bottom_constraints)
         self._model_constraints.extend(branch_constraints)
         self._model_constraints.extend(weight_constraints)
         self._model_constraints.extend(self._build_output_block(weight))
-
-        self._model_constraints = self._model_prefix + self._model_constraints
 
     def find_one_differential_linear_trail_with_fixed_weight(
         self,

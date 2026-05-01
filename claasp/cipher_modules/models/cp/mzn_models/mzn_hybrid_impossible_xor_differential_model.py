@@ -115,7 +115,7 @@ class MznHybridImpossibleXorDifferentialModel(MznImpossibleXorDifferentialModel)
             round_num, component_num = map(int, component.id.split("_")[-2:])
             self.sboxes_component_number_list[round_num] += [component_num]
 
-        self._variables_list = []
+        self._variables_declarations = []
         constraints = self.fix_variables_value_constraints(fixed_variables)
         deterministic_truncated_xor_differential = constraints
         self.middle_round = middle_round
@@ -138,20 +138,20 @@ class MznHybridImpossibleXorDifferentialModel(MznImpossibleXorDifferentialModel)
                 backward_components, clean=False
             )
 
-        self._variables_list.extend(direct_variables)
+        self._variables_declarations.extend(direct_variables)
         deterministic_truncated_xor_differential.extend(direct_constraints)
 
         inverse_variables, inverse_constraints = self.clean_inverse_impossible_variables_constraints(
             backward_components, inverse_variables, inverse_constraints
         )
-        self._variables_list.extend(inverse_variables)
+        self._variables_declarations.extend(inverse_variables)
         deterministic_truncated_xor_differential.extend(inverse_constraints)
 
         variables, constraints = self.input_constraints(
             number_of_rounds=number_of_rounds, middle_round=middle_round, probabilistic=probabilistic
         )
-        self._model_prefix.extend(variables)
-        self._variables_list.extend(constraints)
+        self._variables_declarations.extend(variables)
+        deterministic_truncated_xor_differential.extend(constraints)
 
         deterministic_truncated_xor_differential.extend(
             self.final_impossible_constraints(
@@ -165,7 +165,7 @@ class MznHybridImpossibleXorDifferentialModel(MznImpossibleXorDifferentialModel)
         )
         set_of_constraints = deterministic_truncated_xor_differential
 
-        self._model_constraints = self._model_prefix + self.clean_constraints(
+        self._model_constraints = self.clean_constraints(
             set_of_constraints, initial_round, middle_round, final_round
         )
 
@@ -836,7 +836,7 @@ class MznHybridImpossibleXorDifferentialModel(MznImpossibleXorDifferentialModel)
         if final_round is None:
             final_round = self._cipher.number_of_rounds
         command = self.get_command_for_solver_process(model_type, solver_name, processes_, timeout_in_seconds_)
-        model = "\n".join(self._variables_list + self._model_constraints) + "\n"
+        model = "\n".join(self._model_prefix + self._variables_declarations + self._model_constraints) + "\n"
         solver_process = subprocess.run(command, input=model, capture_output=True, text=True)
         if solver_process.returncode >= 0:
             solutions = []

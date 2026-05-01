@@ -13,10 +13,10 @@ def test_build_deterministic_truncated_xor_differential_trail_model():
     fixed_variables = [set_fixed_variables(INPUT_KEY, "equal", range(64), (0,) * 64)]
     mzn.build_deterministic_truncated_xor_differential_trail_model(fixed_variables)
 
-    assert len(mzn.model_constraints)+len(mzn.model_variables) == 438
-    assert mzn.model_constraints[2] == "array[0..31] of var 0..2: plaintext;"
-    assert mzn.model_constraints[3] == "array[0..63] of var 0..2: key;"
-    assert mzn.model_constraints[4] == "array[0..15] of var 0..2: rot_0_0;"
+    assert len(mzn.model_constraints)+len(mzn.model_variables) == 436
+    assert "array[0..31] of var 0..2: plaintext;" in mzn.model_variables
+    assert "array[0..63] of var 0..2: key;" in mzn.model_variables
+    assert "array[0..15] of var 0..2: rot_0_0;" in mzn.model_variables
 
 
 def test_find_all_deterministic_truncated_xor_differential_trails():

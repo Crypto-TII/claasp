@@ -15,11 +15,11 @@ def test_build_impossible_xor_differential_trail_model():
         number_of_rounds=4, fixed_variables=fixed_variables, middle_round=3
     )
 
-    assert len(mzn.model_constraints) + len(mzn.model_variables) == 2442
-    assert mzn.model_constraints[2] == "set of int: ext_domain = 0..2 union { i | i in 10..800 where (i mod 10 = 0)};"
-    assert mzn.model_constraints[3] == "array[0..63] of var ext_domain: plaintext;"
-    assert mzn.model_constraints[4] == "array[0..79] of var ext_domain: key;"
-    assert mzn.model_constraints[5] == "array[0..63] of var ext_domain: inverse_cipher_output_3_19;"
+    assert len(mzn.model_constraints) + len(mzn.model_variables) == 2440
+    assert "set of int: ext_domain = 0..2 union { i | i in 10..800 where (i mod 10 = 0)};" in mzn.model_variables
+    assert "array[0..63] of var ext_domain: plaintext;" in mzn.model_variables
+    assert "array[0..79] of var ext_domain: key;" in mzn.model_variables
+    assert "array[0..63] of var ext_domain: inverse_cipher_output_3_19;" in mzn.model_variables
 
 
 def test_find_all_impossible_xor_differential_trails():
