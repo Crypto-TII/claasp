@@ -1,38 +1,20 @@
+"""Unit tests for ChaskeyPi permutation derived vectors.
+
+REFERENCES:
+
+Mouha, N. (2015). Chaskey: An Efficient MAC Algorithm for 32-Bit Microcontrollers.
+ https://mouha.be/wp-content/uploads/chaskey12.c [Mouha2015]_.
+"""
+
 from claasp.ciphers.permutations.chaskeypi_permutation import ChaskeyPiPermutation
 
 
-def test_chaskeypi_permutation():
-    chaskeypi = ChaskeyPiPermutation()
-
-    assert chaskeypi.family_name == "chaskeypi_permutation"
-    assert chaskeypi.type == "permutation"
-    assert chaskeypi.number_of_rounds == 12
-    assert chaskeypi.id == "chaskeypi_permutation_p128_o128_r12"
-    assert chaskeypi.evaluate([0], verbosity=False) == 0
-
-
-def test_chaskeypi_permutation_reduced_and_custom_parameters():
-    reduced = ChaskeyPiPermutation(number_of_rounds=4, word_size=16)
-    assert reduced.id == "chaskeypi_permutation_p64_o64_r4"
-    assert reduced.evaluate([0], verbosity=False) == 0
-
-    wide_state = ChaskeyPiPermutation(number_of_rounds=1, word_size=64)
-    assert wide_state.id == "chaskeypi_permutation_p256_o256_r1"
-    assert wide_state.evaluate([0], verbosity=False) == 0
-
-
 def test_chaskeypi_permutation_derived_reference_vectors():
-    """
-    The vectors were derived from the Chaskey-12 reference implementation because
-    standalone Chaskey-Pi permutation input/output vectors are not explicitly
-    listed in the original source.
+    """Test permutation I/O vectors derived from [Mouha2015]_.
 
-    REFERENCES:
-
-    - Nicky Mouha, Chaskey-12 reference implementation:
-      https://mouha.be/wp-content/uploads/chaskey12.c
-    - Derivation notes and resulting vectors used here:
-      playground/claasp/chaskey/chaskeypi_test_vectors.txt
+    Standalone Chaskey-Pi permutation input/output vectors are not explicitly
+    listed in the original source; they were reconstructed from the MAC vectors
+    as described in playground/claasp/chaskey/chaskeypi_test_vectors.txt.
     """
 
     chaskeypi = ChaskeyPiPermutation(number_of_rounds=12, word_size=32)

@@ -415,6 +415,12 @@
         Conference on the Theory and Applications of Cryptographic Techniques.
         pp.  203--228. Springer (2015)
 
+.. [Mouha2015]
+        Mouha N. : *Chaskey: An Efficient MAC Algorithm for 32-Bit Microcontrollers* :
+        In Selected Areas in Cryptography -- SAC 2014, Lecture Notes in Computer Science,
+        vol. 8781, pp. 306--323. Springer (2015).
+        https://mouha.be/wp-content/uploads/chaskey12.c
+
 .. [MUR2020]
         Murilo C., Rafael T., and Fabio B. : *Continuous
         Diffusion Analysis* : In IEEE Access.

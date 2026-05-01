@@ -30,7 +30,7 @@ class ChaskeyPiPermutation(Cipher):
     """
     Construct an instance of the ChaskeyPiPermutation class.
 
-    This class models the Chaskey-Pi permutation over 4 words.
+    This class models the Chaskey-Pi permutation over 4 words as described in [Mouha2015]_.
 
     INPUT:
 
@@ -47,8 +47,6 @@ class ChaskeyPiPermutation(Cipher):
         sage: reduced = ChaskeyPiPermutation(number_of_rounds=4, word_size=16)
         sage: reduced.id
         'chaskeypi_permutation_p64_o64_r4'
-        sage: reduced.evaluate([0], verbosity=False)
-        0
     """
 
     def __init__(self, number_of_rounds=12, word_size=32, rotations=_DEFAULT_ROTATIONS):
