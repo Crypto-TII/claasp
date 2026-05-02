@@ -1,0 +1,18 @@
+name: Fix Directory Structure
+description: >
+  Moves checked-out files from the nested GitHub Actions workspace layout to
+  /home/runner/_work/claasp as expected by the self-hosted runner environment
+  and the project Makefile.
+runs:
+  using: composite
+  steps:
+    - name: Relocate workspace
+      shell: bash
+      run: |
+        mkdir /home/runner/_work/claasp_backup
+        mv -f /home/runner/_work/claasp/claasp/* /home/runner/_work/claasp_backup
+        rm -rf /home/runner/_work/claasp/
+        mkdir /home/runner/_work/claasp
+        mv -f /home/runner/_work/claasp_backup/* /home/runner/_work/claasp
+        chmod g+w /home/runner/_work/claasp/ -R
+        rm -rf /home/runner/_work/claasp_backup
