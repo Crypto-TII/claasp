@@ -322,3 +322,38 @@ def test_show(monkeypatch, tmp_path):
 
     assert captured_fig_shows, 'Expected Plotly show to be invoked at least once'
     assert component_charts, 'Expected component analysis radar chart to be produced'
+
+
+def test_save_as_dataframe_uses_runtime_cwd_default(monkeypatch, tmp_path):
+    class DummyCipher:
+        id = 'dummy_cipher'
+
+    report = Report({'cipher': DummyCipher(), 'test_name': 'dummy_trail'})
+    captured = {}
+
+    def fake_export(self, file_format, output_dir, fixed_input=None, fixed_output=None, fixed_test=None):
+        captured['file_format'] = file_format
+        captured['output_dir'] = output_dir
+
+    monkeypatch.setattr(Report, '_export', fake_export)
+    monkeypatch.chdir(tmp_path)
+
+    report.save_as_DataFrame()
+
+    assert captured['file_format'] == '.csv'
+    assert captured['output_dir'] == str(tmp_path / 'test_reports')
+
+
+def test_clean_reports_uses_runtime_cwd_default(monkeypatch, tmp_path):
+    class DummyCipher:
+        id = 'dummy_cipher'
+
+    report = Report({'cipher': DummyCipher(), 'test_name': 'dummy_trail'})
+    monkeypatch.chdir(tmp_path)
+    reports_dir = tmp_path / 'test_reports'
+    reports_dir.mkdir()
+    (reports_dir / 'sentinel.txt').write_text('ok')
+
+    report.clean_reports()
+
+    assert not reports_dir.exists()

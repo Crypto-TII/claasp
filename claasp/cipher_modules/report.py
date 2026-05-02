@@ -16,6 +16,10 @@ from claasp.cipher_modules.statistical_tests.nist_statistical_tests import NISTS
 from claasp.cipher_modules.statistical_tests.nist_statistical_tests_report import NISTStatisticalTestsReport
 
 
+def _default_test_reports_dir():
+    return os.path.join(os.getcwd(), 'test_reports')
+
+
 def _print_colored_state(state, verbose, file):
     for line in state:
         print('', end='', file=file)
@@ -407,18 +411,24 @@ class Report:
 
         print("Report saved in " + output_dir + '/' + self.cipher.id)
 
-    def save_as_DataFrame(self, output_dir=os.getcwd() + '/test_reports', fixed_input=None, fixed_output=None,
+    def save_as_DataFrame(self, output_dir=None, fixed_input=None, fixed_output=None,
                           fixed_test=None):
+        if output_dir is None:
+            output_dir = _default_test_reports_dir()
         self._export(file_format='.csv', output_dir=output_dir, fixed_input=fixed_input, fixed_output=fixed_output,
                      fixed_test=fixed_test)
 
-    def save_as_latex_table(self, output_dir=os.getcwd() + '/test_reports', fixed_input=None, fixed_output=None,
+    def save_as_latex_table(self, output_dir=None, fixed_input=None, fixed_output=None,
                             fixed_test=None):
+        if output_dir is None:
+            output_dir = _default_test_reports_dir()
         self._export(file_format='.tex', output_dir=output_dir, fixed_input=fixed_input, fixed_output=fixed_output,
                      fixed_test=fixed_test)
 
-    def save_as_json(self, output_dir=os.getcwd() + '/test_reports', fixed_input=None, fixed_output=None,
+    def save_as_json(self, output_dir=None, fixed_input=None, fixed_output=None,
                      fixed_test=None):
+        if output_dir is None:
+            output_dir = _default_test_reports_dir()
         self._export(file_format='.json', output_dir=output_dir, fixed_input=fixed_input, fixed_output=fixed_output,
                      fixed_test=fixed_test)
 
@@ -869,7 +879,7 @@ class Report:
 
     def save_as_image(self, show_as_hex=False, test_name=None, fixed_input=None, fixed_output=None,
                       fixed_input_difference=None, word_size=1, state_size=1, key_state_size=1,
-                      output_directory=os.getcwd() + '/test_reports',
+                      output_directory=None,
                       verbose=False, show_word_permutation=False,
                       show_var_shift=False, show_var_rotate=False, show_theta_xoodoo=False,
                       show_theta_keccak=False, show_shift_rows=False, show_sigma=False, show_reverse=False,
@@ -904,6 +914,9 @@ class Report:
                 sage: report.save_as_image(test_name='avalanche_weight_vectors', fixed_input='plaintext', fixed_output='round_output', fixed_input_difference='average') # doctest: +SKIP
 
         """
+        if output_directory is None:
+            output_directory = _default_test_reports_dir()
+
         time = '_date:' + 'time:'.join(str(datetime.now()).split(' '))
         test_directory = output_directory
         if 'component_analysis' in self.test_name:
@@ -935,7 +948,9 @@ class Report:
                                 fixed_input_difference=fixed_input_difference, fixed_input=fixed_input)
         print('Report saved in ' + test_directory)
 
-    def clean_reports(self, output_dir=os.getcwd() + '/test_reports'):
+    def clean_reports(self, output_dir=None):
+        if output_dir is None:
+            output_dir = _default_test_reports_dir()
 
         if os.path.exists(output_dir):
             shutil.rmtree(output_dir)
