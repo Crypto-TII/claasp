@@ -77,7 +77,8 @@ class Round:
             print("  {")
             print(f"    # round = {self._id} - round component = {component_number}")
             requested_component = self.component_from(component_number)
-            requested_component.print_as_python_dictionary()
+            for key, value in requested_component.as_python_dictionary().items():
+                print(f"    '{key}': {repr(value)},")
             print("  },")
         print("  ],")
 

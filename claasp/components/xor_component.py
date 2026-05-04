@@ -1149,7 +1149,7 @@ class Xor(Component):
         if self.description[0].lower() != "xor":
             raise ValueError("component must be Boolean XOR word_operation")
 
-        var_names = self._define_var(model.input_postfix, model.output_postfix, model.data_type)
+        var_names = self.minizinc_define_var(model.input_postfix, model.output_postfix, model.data_type)
 
         mzn_constraints = []
         component_id = self.id

@@ -366,7 +366,7 @@ class VariableShift(Component):
         if self.description[0].lower() != "shift_by_variable_amount":
             raise ValueError("component must be bitwise rotation")
 
-        var_names = self._define_var(model.input_postfix, model.output_postfix, model.data_type)
+        var_names = self.minizinc_define_var(model.input_postfix, model.output_postfix, model.data_type)
         ninputs = self.input_bit_size
         noutputs = self.output_bit_size
         input_vars = [self.id + "_" + model.input_postfix + str(i) for i in range(ninputs)]

@@ -582,7 +582,7 @@ class Rotate(Component):
         input_postfix = model.input_postfix
         output_postfix = model.output_postfix
 
-        var_names = self._define_var(input_postfix, output_postfix, model.data_type)
+        var_names = self.minizinc_define_var(input_postfix, output_postfix, model.data_type)
         rotation_const = self.description[1]
         ninputs = noutputs = self.output_bit_size
         input_vars = [f"{self.id}_{input_postfix}{i}" for i in range(ninputs)]

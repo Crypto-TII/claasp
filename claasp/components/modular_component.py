@@ -1171,7 +1171,7 @@ class Modular(Component):
             raise ValueError("component must be modular addition, or modular substraction")
 
         round_number = model.cipher.get_round_from_component_id(self.id)
-        var_names = self._define_var(model.input_postfix, model.output_postfix, model.data_type)
+        var_names = self.minizinc_define_var(model.input_postfix, model.output_postfix, model.data_type)
         mzn_constraints = []
         component_id = self.id
         ninput_words = self.description[1]
