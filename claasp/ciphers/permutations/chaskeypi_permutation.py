@@ -50,8 +50,8 @@ class ChaskeyPiPermutation(Cipher):
     """
 
     def __init__(self, number_of_rounds=12, word_size=32, rotations=_DEFAULT_ROTATIONS):
-        if word_size <= 0 or word_size % 8 != 0:
-            raise ValueError("word_size must be a positive multiple of 8")
+        if not isinstance(word_size, int) or word_size <= 0:
+            raise ValueError("word_size must be a positive integer")
         if number_of_rounds <= 0:
             raise ValueError("number_of_rounds must be > 0")
         if len(rotations) != 5:
