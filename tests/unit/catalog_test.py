@@ -136,7 +136,7 @@ from external.module import something
 """
     tree = ast.parse(source)
 
-    modules = catalog_module._imported_cipher_modules(tree, "claasp.tests.unit.catalog_test")
+    modules = catalog_module._imported_cipher_modules(tree, "claasp.tests.unit.catalog_test", Path("/nonexistent"))
 
     assert "claasp.ciphers.block_ciphers.speck_block_cipher" in modules
     assert "claasp.ciphers.stream_ciphers" in modules
@@ -178,7 +178,7 @@ def test_catalog_discover_cipher_infos_from_file(tmp_path):
 def test_catalog_collect_imported_components_and_filters(monkeypatch):
     tree = ast.parse("pass")
 
-    monkeypatch.setattr(catalog_module, "_imported_cipher_modules", lambda _tree, _module: {"claasp.ciphers.mock"})
+    monkeypatch.setattr(catalog_module, "_imported_cipher_modules", lambda _tree, _module, _root: {"claasp.ciphers.mock"})
     monkeypatch.setattr(
         catalog_module,
         "_collect_components_from_cipher_module",
@@ -356,8 +356,7 @@ def test_catalog_module_resolution_and_import_helpers(tmp_path):
     assert catalog_module._resolve_imported_module_name(too_deep_from, ["claasp", "tests", "unit"]) is None
 
     tree = ast.parse("import claasp.ciphers.toys.demo\nfrom ..ciphers.toys import demo\n")
-    assert catalog_module._imported_cipher_modules(tree, "claasp.tests.unit.catalog_test") == {
-        "claasp.ciphers.toys",
+    assert catalog_module._imported_cipher_modules(tree, "claasp.tests.unit.catalog_test", package_root) == {
         "claasp.ciphers.toys.demo",
     }
 

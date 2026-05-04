@@ -411,7 +411,7 @@ class Report:
 
         print("Report saved in " + output_dir + '/' + self.cipher.id)
 
-    def save_as_DataFrame(self, output_dir=None, fixed_input=None, fixed_output=None,
+    def save_as_dataframe(self, output_dir=None, fixed_input=None, fixed_output=None,
                           fixed_test=None):
         if output_dir is None:
             output_dir = _default_test_reports_dir()

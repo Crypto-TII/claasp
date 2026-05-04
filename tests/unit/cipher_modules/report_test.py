@@ -242,7 +242,7 @@ def test_save_as_latex_table():
     report_sts.save_as_latex_table()
     report_sts.clean_reports()
 
-def test_save_as_DataFrame():
+def test_save_as_dataframe():
     speck = SpeckBlockCipher(number_of_rounds=2)
     cp = MznXorDifferentialModel(speck)
     plaintext = set_fixed_variables(
@@ -259,14 +259,14 @@ def test_save_as_DataFrame():
 
     avalanche_results = AvalancheTests(speck).avalanche_tests()
     avalanche_report = Report(avalanche_results)
-    avalanche_report.save_as_DataFrame(fixed_input='plaintext',fixed_output='round_output',fixed_test='avalanche_weight_vectors')
+    avalanche_report.save_as_dataframe(fixed_input='plaintext',fixed_output='round_output',fixed_test='avalanche_weight_vectors')
     avalanche_report.clean_reports()
     trail_report = Report(trail)
-    trail_report.save_as_DataFrame()
+    trail_report.save_as_dataframe()
     trail_report.clean_reports()
     dieharder = DieharderTests(speck)
     report_sts = Report(dieharder.dieharder_statistical_tests('avalanche', dieharder_test_option=100))
-    report_sts.save_as_DataFrame()
+    report_sts.save_as_dataframe()
     report_sts.clean_reports()
 
 def test_save_as_json():
@@ -338,7 +338,7 @@ def test_save_as_dataframe_uses_runtime_cwd_default(monkeypatch, tmp_path):
     monkeypatch.setattr(Report, '_export', fake_export)
     monkeypatch.chdir(tmp_path)
 
-    report.save_as_DataFrame()
+    report.save_as_dataframe()
 
     assert captured['file_format'] == '.csv'
     assert captured['output_dir'] == str(tmp_path / 'test_reports')

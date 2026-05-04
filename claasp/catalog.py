@@ -324,7 +324,7 @@ def _resolve_imported_module_name(node: ast.ImportFrom, current_parts: list[str]
     return ".".join(base_parts)
 
 
-def _imported_cipher_modules(tree: ast.AST, current_module: str) -> set[str]:
+def _imported_cipher_modules(tree: ast.AST, current_module: str, package_root: Path) -> set[str]:
     modules = set()
     current_parts = current_module.split(".")
 
@@ -340,7 +340,21 @@ def _imported_cipher_modules(tree: ast.AST, current_module: str) -> set[str]:
             continue
 
         imported = _resolve_imported_module_name(node, current_parts)
-        if imported and _is_cipher_module_name(imported):
+        if not imported or not _is_cipher_module_name(imported):
+            continue
+
+        # For "from pkg import mod" style imports the resolved name is the
+        # package (e.g. "claasp.ciphers.stream_ciphers"), whose __init__.py
+        # may be empty.  Also try each alias as a submodule so that the
+        # actual cipher file is traversed.
+        added_submodule = False
+        for alias in node.names:
+            candidate = f"{imported}.{alias.name}"
+            if _resolve_module_source_file(candidate, package_root) is not None:
+                modules.add(candidate)
+                added_submodule = True
+
+        if not added_submodule:
             modules.add(imported)
 
     return modules
@@ -368,7 +382,7 @@ def _collect_components_from_cipher_module(
         source_text = source_file.read_text(encoding="utf-8")
         components = _cipher_components(source_text)
         tree = ast.parse(source_text, filename=str(source_file))
-        for imported_module in _imported_cipher_modules(tree, module_name):
+        for imported_module in _imported_cipher_modules(tree, module_name, package_root):
             components.update(
                 _collect_components_from_cipher_module(imported_module, package_root, cache, visiting)
             )
@@ -477,7 +491,7 @@ def _collect_imported_components(
     import_component_cache: dict[str, set[str]],
 ) -> set[str]:
     imported_components = set()
-    for imported_module in _imported_cipher_modules(tree, module_name):
+    for imported_module in _imported_cipher_modules(tree, module_name, package_root):
         imported_components.update(
             _collect_components_from_cipher_module(
                 imported_module,
