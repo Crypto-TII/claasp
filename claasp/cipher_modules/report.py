@@ -17,7 +17,7 @@ from claasp.cipher_modules.statistical_tests.nist_statistical_tests_report impor
 
 
 def _default_test_reports_dir():
-    return os.path.join(os.getcwd(), 'test_reports')
+    return os.path.join(os.getcwd(), 'test_reports').replace(os.sep, '/')
 
 
 def _print_colored_state(state, verbose, file):
