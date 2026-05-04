@@ -784,7 +784,7 @@ def _get_component_values_for_impossible_models(model, objective_variables, comp
 
         indices = []
         for id in model._incompatible_components:
-            backward_incompatible_component = model._backward_cipher.get_component_from_id(
+            backward_incompatible_component = model._backward_cipher.component_from_id(
                 id + f"{MILP_BACKWARD_SUFFIX}"
             )
             input_ids, _ = backward_incompatible_component._get_input_output_variables()
@@ -852,7 +852,7 @@ def _set_weight_precision(model, analysis_type):
     if any(SBOX in item for item in model.non_linear_component_id):
         dict_product_of_sum = get_dictionary_that_contains_inequalities_for_large_sboxes(analysis=analysis_type)
         for id in model.non_linear_component_id:
-            sb = tuple(model._cipher.get_component_from_id(id).description)
+            sb = tuple(model._cipher.component_from_id(id).description)
             for proba in dict_product_of_sum[str(sb)].keys():
                 if (proba & (proba - 1)) != 0:  # proba not power of two
                     model._has_non_integer_weight = True

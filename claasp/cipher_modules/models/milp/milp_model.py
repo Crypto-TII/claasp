@@ -74,7 +74,7 @@ def get_independent_input_output_variables(component):
         sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
         sage: from claasp.cipher_modules.models.milp.milp_model import get_independent_input_output_variables
         sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
-        sage: component = speck.get_component_from_id("xor_1_10")
+        sage: component = speck.component_from_id("xor_1_10")
         sage: l = get_independent_input_output_variables(component)
         sage: l[0]
          ['xor_1_10_0_i',
@@ -110,7 +110,7 @@ def get_input_output_variables(component):
         sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
         sage: from claasp.cipher_modules.models.milp.milp_model import get_input_output_variables
         sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
-        sage: component = speck.get_component_from_id("rot_0_0")
+        sage: component = speck.component_from_id("rot_0_0")
         sage: l = get_input_output_variables(component)
         sage: l[0]
         ['plaintext_0',

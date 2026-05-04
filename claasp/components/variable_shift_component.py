@@ -345,7 +345,7 @@ class VariableShift(Component):
             sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
             sage: cipher = VariableShiftCipher(bit_size=4, amount_bit_size=4, direction=-1)
             sage: minizinc = MznModel(cipher)
-            sage: variable_shift_component = cipher.get_component_from_id('var_shift_0_0')
+            sage: variable_shift_component = cipher.component_from_id('var_shift_0_0')
             sage: var_names, constraints = variable_shift_component.minizinc_xor_differential_propagation_constraints(minizinc)
             sage: var_names
             ['var bool: var_shift_0_0_x0;',

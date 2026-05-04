@@ -6,7 +6,7 @@ from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_tr
 
 def test_algebraic_polynomials():
     cipher = ModaddCipher(word_bit_size=6, number_of_inputs=3)
-    modadd_component = cipher.get_component_from_id("modadd_0_0")
+    modadd_component = cipher.component_from_id("modadd_0_0")
     algebraic = AlgebraicModel(cipher)
     algebraic_polynomials = modadd_component.algebraic_polynomials(algebraic)
 
@@ -19,7 +19,7 @@ def test_milp_bitwise_deterministic_truncated_xor_differential_binary_constraint
     cipher = ModaddCipher(word_bit_size=16, number_of_inputs=2)
     milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(cipher)
     milp.init_model_in_sage_milp_class()
-    modadd_component = cipher.get_component_from_id("modadd_0_0")
+    modadd_component = cipher.component_from_id("modadd_0_0")
     variables, constraints = modadd_component.milp_bitwise_deterministic_truncated_xor_differential_binary_constraints(milp)
 
     assert str(variables[0]) == "('x[plaintext_0_class_bit_0]', x_0)"
@@ -36,7 +36,7 @@ def test_milp_bitwise_deterministic_truncated_xor_differential_constraints():
     cipher = ModaddCipher(word_bit_size=16, number_of_inputs=2)
     milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(cipher)
     milp.init_model_in_sage_milp_class()
-    modadd_component = cipher.get_component_from_id("modadd_0_0")
+    modadd_component = cipher.component_from_id("modadd_0_0")
     variables, constraints = modadd_component.milp_bitwise_deterministic_truncated_xor_differential_constraints(milp)
 
     assert str(variables[0]) == "('x_class[plaintext_0]', x_0)"

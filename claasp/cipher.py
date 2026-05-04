@@ -591,7 +591,7 @@ class Cipher:
         for input_id_link in all_input_links:
             if input_id_link in key_schedule_component_ids and input_id_link not in existing_inputs:
                 partial_cipher.inputs.append(input_id_link)
-                partial_cipher.inputs_bit_size.append(self.get_component_from_id(input_id_link).output_bit_size)
+                partial_cipher.inputs_bit_size.append(self.component_from_id(input_id_link).output_bit_size)
                 existing_inputs.add(input_id_link)
 
     def _replace_partial_cipher_last_round_output(self, partial_cipher, end_round, removed_components_ids):
@@ -680,7 +680,7 @@ class Cipher:
 
         key_schedule_component_ids = get_key_schedule_component_ids(partial_cipher_inverse)
         key_schedule_components = [
-            partial_cipher_inverse.get_component_from_id(id) for id in key_schedule_component_ids if INPUT_KEY not in id
+            partial_cipher_inverse.component_from_id(id) for id in key_schedule_component_ids if INPUT_KEY not in id
         ]
 
         if not keep_key_schedule:
@@ -855,7 +855,7 @@ class Cipher:
     def get_all_inputs_bit_positions(self):
         return {cipher_input: range(bit_size) for cipher_input, bit_size in zip(self._inputs, self._inputs_bit_size)}
 
-    def get_component_from_id(self, component_id):
+    def component_from_id(self, component_id):
         """
         Return the component according to the id given as input.
 
@@ -867,11 +867,11 @@ class Cipher:
 
             sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
             sage: fancy = FancyBlockCipher(number_of_rounds=2)
-            sage: component = fancy.get_component_from_id('sbox_0_0')
+            sage: component = fancy.component_from_id('sbox_0_0')
             sage: component.description
             [0, 2, 4, 6, 8, 10, 12, 14, 1, 3, 5, 7, 9, 11, 13, 15]
         """
-        return self._rounds.get_component_from_id(component_id)
+        return self._rounds.component_from_id(component_id)
 
     def get_components_in_round(self, round_number):
         return self._rounds.components_in_round(round_number)

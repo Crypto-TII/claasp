@@ -19,7 +19,7 @@ PRESENT_SBOX = [12, 5, 6, 11, 9, 0, 10, 13, 3, 14, 15, 8, 4, 7, 1, 2]
 
 def test_algebraic_polynomials():
     cipher = SboxCipher(bit_size=2, lookup_table=[0, 1, 3, 2])
-    sbox_component = cipher.get_component_from_id("sbox_0_0")
+    sbox_component = cipher.component_from_id("sbox_0_0")
     algebraic = AlgebraicModel(cipher)
     algebraic_polynomials = sbox_component.algebraic_polynomials(algebraic)
 
