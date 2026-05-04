@@ -15,7 +15,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-
 from claasp.DTOs.component_state import ComponentState
 from claasp.cipher import Cipher
 from claasp.name_mappings import INPUT_PLAINTEXT, PERMUTATION
@@ -24,6 +23,19 @@ from claasp.utils.utils import get_inputs_parameter
 _DEFAULT_ROTATIONS = (-5, -8, -13, -7, -16)
 _NUMBER_OF_WORDS = 4
 PARAMETERS_CONFIGURATION_LIST = [{"number_of_rounds": 12, "word_size": 32}]
+
+
+def _coerce_exact_int(value, parameter_name):
+    if isinstance(value, bool):
+        raise ValueError(f"{parameter_name} must be an integer")
+    try:
+        coerced = int(value)
+    except (TypeError, ValueError):
+        raise ValueError(f"{parameter_name} must be an integer")
+    if coerced != value:
+        raise ValueError(f"{parameter_name} must be an integer")
+
+    return coerced
 
 
 class ChaskeyPiPermutation(Cipher):
@@ -50,16 +62,30 @@ class ChaskeyPiPermutation(Cipher):
     """
 
     def __init__(self, number_of_rounds=12, word_size=32, rotations=_DEFAULT_ROTATIONS):
-        if not isinstance(word_size, int) or word_size <= 0:
+        try:
+            word_size = _coerce_exact_int(word_size, "word_size")
+        except ValueError:
             raise ValueError("word_size must be a positive integer")
+        if word_size <= 0:
+            raise ValueError("word_size must be a positive integer")
+
+        try:
+            number_of_rounds = _coerce_exact_int(number_of_rounds, "number_of_rounds")
+        except ValueError:
+            raise ValueError("number_of_rounds must be > 0")
         if number_of_rounds <= 0:
             raise ValueError("number_of_rounds must be > 0")
+
         if len(rotations) != 5:
             raise ValueError("rotations must contain exactly 5 values")
+        try:
+            rotations = tuple(_coerce_exact_int(rotation, "rotation") for rotation in rotations)
+        except ValueError:
+            raise ValueError("rotations values must be integers")
 
         self.word_size = word_size
         self.number_of_words = _NUMBER_OF_WORDS
-        self.rotations = tuple(rotations)
+        self.rotations = rotations
         self.state_bit_size = self.word_size * self.number_of_words
 
         super().__init__(
