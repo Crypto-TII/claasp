@@ -1,8 +1,10 @@
 import ast
+import builtins
 from pathlib import Path
 from types import SimpleNamespace
 
 import claasp.catalog as catalog_module
+import pytest
 from claasp.catalog import Catalog, CipherInfo
 
 
@@ -233,3 +235,213 @@ def test_catalog_cipher_metadata_and_row_helpers(monkeypatch):
     monkeypatch.setattr(catalog_module, "_load_cipher_instance", lambda _qname: (_ for _ in ()).throw(RuntimeError("boom")))
     error_metadata = catalog_module._cipher_metadata("claasp.ciphers.toys.demo.DemoCipher")
     assert error_metadata["metadata_error"].startswith("RuntimeError: boom")
+
+
+def test_catalog_helper_normalization_and_projection_branches():
+    assert catalog_module._normalize_column_selector(None) is None
+    assert catalog_module._normalize_column_selector([" class_name ", "", "class_name", "tags"]) == [
+        "class_name",
+        "tags",
+    ]
+
+    table = {
+        "name": "demo",
+        "columns": ["class_name", "module_name", "tags"],
+        "rows": [{"class_name": "Demo", "module_name": "demo.module", "tags": ["toys"]}],
+    }
+
+    projected = catalog_module._project_table_columns(table, columns=["tags", "class_name"])
+    assert projected["columns"] == ["class_name", "tags"]
+    assert projected["rows"] == [{"class_name": "Demo", "tags": ["toys"]}]
+
+    projected = catalog_module._project_table_columns(table, exclude_columns="module_name")
+    assert projected["columns"] == ["class_name", "tags"]
+
+    with pytest.raises(ValueError, match="Unknown selected columns"):
+        catalog_module._project_table_columns(table, columns=["missing"])
+
+    with pytest.raises(ValueError, match="Unknown excluded columns"):
+        catalog_module._project_table_columns(table, exclude_columns=["missing"])
+
+
+def test_catalog_filter_component_and_solver_helpers(monkeypatch):
+    allowed = {"block_ciphers", "toys", "sbox_based"}
+
+    assert catalog_module._normalize_filters(["Toy", "sbox-based"], allowed) == {"toys", "sbox_based"}
+    assert catalog_module._normalize_components_filter([" variable-rotate ", "xor", ""]) == {"rotate", "xor"}
+    assert catalog_module._supported_cipher_filters({"toys"}) >= {"toys", "arx", "andrx", "sbox_based"}
+
+    with pytest.raises(ValueError, match="Unknown cipher filters"):
+        catalog_module._normalize_filters(["unknown-filter"], allowed)
+
+    monkeypatch.setattr(catalog_module.shutil, "which", lambda executable: "/usr/bin/fake" if executable == "solver" else None)
+    assert catalog_module._extract_external_solver_executable({"keywords": {"command": {"executable": "solver"}}}) == "solver"
+    assert catalog_module._extract_external_solver_executable(
+        {"keywords": {"command": {"executable": ["-s", "", "solver-list"]}}}
+    ) == "solver-list"
+    assert catalog_module._extract_external_solver_executable({"keywords": {"command": {"executable": ["-a", ""]}}}) is None
+    assert not catalog_module._solver_is_available(None)
+    assert catalog_module._solver_is_available("solver")
+
+    rows = catalog_module._collect_solver_entries(
+        "sat",
+        [{"solver_name": "INTERNAL", "solver_brand_name": "internal"}],
+        [{"solver_name": "EXTERNAL", "solver_brand_name": "external", "keywords": {"command": {"executable": "solver"}}}],
+        include_internal=True,
+        include_external=True,
+    )
+    assert [row["source"] for row in rows] == ["external", "internal"]
+    assert rows[0]["available"] is True
+
+
+def test_catalog_ast_and_path_helpers(tmp_path):
+    package_root = tmp_path / "claasp"
+    package_root.mkdir()
+    source_file = package_root / "demo_module.py"
+    source_file.write_text(
+        "class DemoCipher(Cipher):\n"
+        "    def public(self):\n"
+        "        return 1\n"
+        "    def _private(self):\n"
+        "        return 0\n",
+        encoding="utf-8",
+    )
+
+    classes = catalog_module._iter_classes_in_tree(source_file)
+    assert [class_node.name for class_node in classes] == ["DemoCipher"]
+    assert catalog_module._public_methods_from_class(classes[0]) == {"public"}
+    assert catalog_module._module_path_from_file(source_file, package_root) == "claasp.demo_module"
+
+    attr_node = ast.parse("pkg.Cipher").body[0].value
+    const_node = ast.parse("1").body[0].value
+    assert catalog_module._base_name(attr_node) == "Cipher"
+    assert catalog_module._base_name(const_node) is None
+
+    hidden_class = ast.parse("class _Hidden(Cipher):\n    pass\n").body[0]
+    no_base_class = ast.parse("class Plain:\n    pass\n").body[0]
+    permutation_class = ast.parse("class DemoPermutation(BasePermutation):\n    pass\n").body[0]
+    assert not catalog_module._is_cipher_class(hidden_class)
+    assert not catalog_module._is_cipher_class(no_base_class)
+    assert catalog_module._is_cipher_class(permutation_class)
+
+    components = catalog_module._cipher_components(
+        "self.add_variable_rotate_component()\n"
+        "self.add_round_output_component()\n"
+        "self.add_xor_component()\n"
+    )
+    assert components == {"rotate", "xor"}
+
+
+def test_catalog_module_resolution_and_import_helpers(tmp_path):
+    package_root = tmp_path / "claasp"
+    module_dir = package_root / "ciphers" / "toys"
+    package_dir = package_root / "ciphers" / "single_component_ciphers"
+    module_dir.mkdir(parents=True)
+    package_dir.mkdir(parents=True)
+    (module_dir / "demo.py").write_text("pass\n", encoding="utf-8")
+    (package_dir / "__init__.py").write_text("pass\n", encoding="utf-8")
+
+    assert catalog_module._resolve_module_source_file("external.module", package_root) is None
+    assert catalog_module._resolve_module_source_file("claasp.ciphers.toys.demo", package_root) == module_dir / "demo.py"
+    assert catalog_module._resolve_module_source_file("claasp.ciphers.single_component_ciphers", package_root) == package_dir / "__init__.py"
+
+    absolute_from = ast.parse("from claasp.ciphers.toys import demo\n").body[0]
+    relative_from = ast.parse("from ..ciphers.toys import demo\n").body[0]
+    base_only_from = ast.parse("from .. import demo\n").body[0]
+    too_deep_from = ast.ImportFrom(module="demo", names=[ast.alias(name="x")], level=5)
+
+    assert catalog_module._resolve_imported_module_name(absolute_from, ["claasp", "tests", "unit"]) == "claasp.ciphers.toys"
+    assert catalog_module._resolve_imported_module_name(relative_from, ["claasp", "tests", "unit", "catalog_test"]) == "claasp.ciphers.toys"
+    assert catalog_module._resolve_imported_module_name(base_only_from, ["claasp", "ciphers", "toys", "demo"]) == "claasp.ciphers"
+    assert catalog_module._resolve_imported_module_name(too_deep_from, ["claasp", "tests", "unit"]) is None
+
+    tree = ast.parse("import claasp.ciphers.toys.demo\nfrom ..ciphers.toys import demo\n")
+    assert catalog_module._imported_cipher_modules(tree, "claasp.tests.unit.catalog_test") == {
+        "claasp.ciphers.toys",
+        "claasp.ciphers.toys.demo",
+    }
+
+
+def test_catalog_collect_components_from_module_branches_and_tags(tmp_path):
+    package_root = tmp_path / "claasp"
+    toys_dir = package_root / "ciphers" / "toys"
+    toys_dir.mkdir(parents=True)
+    (toys_dir / "child.py").write_text("self.add_xor_component()\n", encoding="utf-8")
+    (toys_dir / "parent.py").write_text(
+        "import claasp.ciphers.toys.child\n"
+        "self.add_sbox_component()\n",
+        encoding="utf-8",
+    )
+
+    cache = {"claasp.ciphers.toys.cached": {"rotate"}}
+    assert catalog_module._collect_components_from_cipher_module("claasp.ciphers.toys.cached", package_root, cache, set()) == {"rotate"}
+    assert catalog_module._collect_components_from_cipher_module(
+        "claasp.ciphers.toys.parent", package_root, {}, set()
+    ) == {"sbox", "xor"}
+    assert catalog_module._collect_components_from_cipher_module(
+        "claasp.ciphers.toys.parent", package_root, {}, {"claasp.ciphers.toys.parent"}
+    ) == set()
+    assert catalog_module._collect_components_from_cipher_module(
+        "claasp.ciphers.toys.missing", package_root, {}, set()
+    ) == set()
+
+    assert catalog_module._infer_cipher_paradigm({"and", "rotate", "xor"}) == "andrx"
+    assert catalog_module._infer_cipher_paradigm({"modadd", "rotate", "xor"}) == "arx"
+    assert catalog_module._infer_cipher_paradigm({"sbox", "xor"}) == "sbox-based"
+    assert catalog_module._cipher_tags("hash_functions", "uses tweak", "MantisHash", "sbox-based") >= {
+        "hash_function",
+        "sbox_based",
+        "tweakable_block_cipher",
+    }
+
+
+def test_catalog_dataframe_render_write_and_show_helpers(monkeypatch, tmp_path):
+    table = {"name": "demo", "columns": ["k", "v"], "rows": [{"k": "alpha", "v": 1}]}
+    catalog = Catalog()
+
+    original_import = builtins.__import__
+
+    def fake_import(name, globals=None, locals=None, fromlist=(), level=0):
+        if name == "pandas":
+            raise ImportError("missing pandas")
+        return original_import(name, globals, locals, fromlist, level)
+
+    monkeypatch.setattr(builtins, "__import__", fake_import)
+    with pytest.raises(ImportError, match="pandas is required"):
+        catalog.to_dataframe(table)
+    monkeypatch.setattr(builtins, "__import__", original_import)
+
+    assert catalog.to_terminal({"name": "empty", "columns": [], "rows": []}) == ""
+    assert catalog.render(table, fmt="json").startswith("{")
+    assert catalog.render(table, fmt="terminal").splitlines()[0] == "k     | v"
+
+    with pytest.raises(ValueError, match="Unknown output format"):
+        catalog.render(table, fmt="yaml")
+
+    terminal_path = tmp_path / "table.txt"
+    assert catalog.write(table, terminal_path, fmt="terminal").read_text(encoding="utf-8").startswith("k")
+
+    show_components = catalog.show_components(qualified=True, columns=["class_name", "qualified_name"], fmt="markdown")
+    show_ciphers = catalog.show_ciphers(filters="toys", columns=["class_name"], fmt="json")
+    show_solvers = catalog.show_solvers(include_external=False, columns=["solver_name", "family"], fmt="terminal")
+    show_methods = catalog.show_implemented_methods_per_component(columns=["method", "And"], fmt="csv")
+
+    assert isinstance(show_components, catalog_module.RenderedText)
+    assert repr(show_components) == str(show_components)
+    assert "qualified_name" in show_components
+    assert '"class_name"' in show_ciphers
+    assert show_solvers.splitlines()[0].startswith("solver_name")
+    assert show_solvers.splitlines()[0].endswith("| family")
+    assert show_methods.splitlines()[0] == "method,And"
+
+
+def test_catalog_solvers_flat_and_empty_modes():
+    catalog = Catalog()
+
+    external_only = catalog.solvers(include_internal=False)
+    assert external_only["name"] == "solvers"
+    assert external_only["rows"]
+    assert all(row["source"] == "external" for row in external_only["rows"])
+
+    none_enabled = catalog.solvers(include_internal=False, include_external=False)
+    assert none_enabled["rows"] == []
