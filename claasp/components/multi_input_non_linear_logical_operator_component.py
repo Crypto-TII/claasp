@@ -206,6 +206,62 @@ class MultiInputNonlinearLogicalOperator(Component):
 
         return result
 
+    def cp_xor_differential_propagation_constraints_boomerang(self, model):
+        """
+        Return lists declarations and constraints for the probability of AND component for CP xor differential probability.
+
+        INPUT:
+
+        - ``model`` -- **model object**; a model instance
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
+            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
+            sage: fancy = FancyBlockCipher()
+            sage: cp = MznModel(fancy)
+            sage: and_component = fancy.component_from(0, 8)
+            sage: and_component.cp_xor_differential_propagation_constraints(cp)
+            ([],
+             ['constraint table([xor_0_7[0]]++[key[12]]++[and_0_8[0]]++[p[0]],and2inputs_DDT);',
+               ...
+              'constraint table([xor_0_7[11]]++[key[23]]++[and_0_8[11]]++[p[11]],and2inputs_DDT);'])
+        """
+        output_size = int(self.output_bit_size)
+        input_id_links = self.input_id_links
+        output_id_link = self.id
+        input_bit_positions = self.input_bit_positions
+        num_add = self.description[1]
+        all_inputs = []
+        for id_link, bit_positions in zip(input_id_links, input_bit_positions):
+            all_inputs.extend([f'{id_link}[{position}]' for position in bit_positions])
+        input_len = len(all_inputs) // num_add
+        cp_declarations = []
+        cp_constraints = []
+        probability = []
+        probability_upper = []
+        probability_lower = []
+        for i in range(output_size):
+            new_constraint = f'constraint table('
+            for j in range(num_add):
+                new_constraint = new_constraint + f'[{all_inputs[i + input_len * j]}]++'
+            if 'upper' in output_id_link:
+                new_constraint = new_constraint + f'[{output_id_link}[{i}]]++[upper_p[{model.c_upper}]],upper_and{num_add}inputs_DDT);'
+                probability_upper.append(model.c_upper)
+                model.component_and_probability[output_id_link] = probability_upper
+                model.c_upper += 1 
+            if 'lower' in output_id_link:
+                new_constraint = new_constraint + f'[{output_id_link}[{i}]]++[lower_p[{model.c_lower}]],lower_and{num_add}inputs_DDT);'
+                probability_lower.append(model.c_lower)
+                model.component_and_probability[output_id_link] = probability_lower
+                model.c_lower += 1
+
+            cp_constraints.append(new_constraint)
+
+        result = cp_declarations, cp_constraints
+
+        return result
+
     def generic_sign_linear_constraints(self, inputs, outputs):
         """AND component and OR component override this method."""
         pass
