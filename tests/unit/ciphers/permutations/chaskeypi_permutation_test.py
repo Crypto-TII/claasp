@@ -13,8 +13,10 @@ def test_chaskeypi_permutation_derived_reference_vectors():
     """Test permutation I/O vectors derived from [Mouha2015]_.
 
     Standalone Chaskey-Pi permutation input/output vectors are not explicitly
-    listed in the original source; they were reconstructed from the MAC vectors
-    as described in playground/claasp/chaskey/chaskeypi_test_vectors.txt.
+    listed in the original source; they were reconstructed from the published
+    MAC reference vectors by treating each 128-bit message block as the
+    permutation input and using the corresponding intermediate state after the
+    12-round Chaskey-Pi permutation as the expected output.
     """
 
     chaskeypi = ChaskeyPiPermutation(number_of_rounds=12, word_size=32)
