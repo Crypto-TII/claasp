@@ -324,38 +324,47 @@ def _resolve_imported_module_name(node: ast.ImportFrom, current_parts: list[str]
     return ".".join(base_parts)
 
 
+def _collect_simple_import_modules(node: ast.Import) -> set[str]:
+    result = set()
+    for alias in node.names:
+        if _is_cipher_module_name(alias.name):
+            result.add(alias.name)
+    return result
+
+
+def _collect_from_import_modules(
+    node: ast.ImportFrom, current_parts: list[str], package_root: Path
+) -> set[str]:
+    result = set()
+    imported = _resolve_imported_module_name(node, current_parts)
+    if not imported or not _is_cipher_module_name(imported):
+        return result
+
+    # For "from pkg import mod" style imports the resolved name is the
+    # package (e.g. "claasp.ciphers.stream_ciphers"), whose __init__.py
+    # may be empty.  Also try each alias as a submodule so that the
+    # actual cipher file is traversed.
+    added_submodule = False
+    for alias in node.names:
+        candidate = f"{imported}.{alias.name}"
+        if _resolve_module_source_file(candidate, package_root) is not None:
+            result.add(candidate)
+            added_submodule = True
+
+    if not added_submodule:
+        result.add(imported)
+    return result
+
+
 def _imported_cipher_modules(tree: ast.AST, current_module: str, package_root: Path) -> set[str]:
     modules = set()
     current_parts = current_module.split(".")
 
     for node in ast.walk(tree):
         if isinstance(node, ast.Import):
-            for alias in node.names:
-                imported = alias.name
-                if _is_cipher_module_name(imported):
-                    modules.add(imported)
-            continue
-
-        if not isinstance(node, ast.ImportFrom):
-            continue
-
-        imported = _resolve_imported_module_name(node, current_parts)
-        if not imported or not _is_cipher_module_name(imported):
-            continue
-
-        # For "from pkg import mod" style imports the resolved name is the
-        # package (e.g. "claasp.ciphers.stream_ciphers"), whose __init__.py
-        # may be empty.  Also try each alias as a submodule so that the
-        # actual cipher file is traversed.
-        added_submodule = False
-        for alias in node.names:
-            candidate = f"{imported}.{alias.name}"
-            if _resolve_module_source_file(candidate, package_root) is not None:
-                modules.add(candidate)
-                added_submodule = True
-
-        if not added_submodule:
-            modules.add(imported)
+            modules.update(_collect_simple_import_modules(node))
+        elif isinstance(node, ast.ImportFrom):
+            modules.update(_collect_from_import_modules(node, current_parts, package_root))
 
     return modules
 
