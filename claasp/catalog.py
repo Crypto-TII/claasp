@@ -1239,8 +1239,11 @@ class Catalog:
                 ],
                 "rows": [
                     {
-                    "class_name": "FancyBlockCipher",
-                    "tags": ["andrx", "sbox_based", "toys"]
+                        "class_name": "FancyBlockCipher",
+                        "tags": [
+                            "sbox_based",
+                            "toys"
+                        ]
                     },
             ...
 
