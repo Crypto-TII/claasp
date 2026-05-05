@@ -21,7 +21,18 @@ from pathlib import Path
 
 ABSTRACT_COMPONENT_CLASS_NAMES = frozenset({"MultiInputNonlinearLogicalOperator", "Modular"})
 IO_COMPONENT_CLASS_NAMES = frozenset({"CipherOutput", "IntermediateOutput"})
-SPECIAL_CIPHER_FILTERS = frozenset({"tweakable_block_cipher", "sbox_based", "arx", "andrx"})
+ARX_COMPONENTS = frozenset({"constant", "modadd", "rotate", "xor"})
+PURE_ARX_COMPONENTS = frozenset({"modadd", "rotate", "xor"})
+ANDRX_COMPONENTS = frozenset({"and", "constant", "rotate", "xor"})
+PURE_ANDRX_COMPONENTS = frozenset({"and", "rotate", "xor"})
+SPECIAL_CIPHER_FILTERS = frozenset({
+    "tweakable_block_cipher",
+    "sbox_based",
+    "arx",
+    "purearx",
+    "andrx",
+    "pureandrx",
+})
 FILTER_ALIASES = {
     "block_cipher": "block_ciphers",
     "block_ciphers": "block_ciphers",
@@ -31,6 +42,12 @@ FILTER_ALIASES = {
     "mac": "mac",
     "permutation": "permutations",
     "permutations": "permutations",
+    "pure-arx": "purearx",
+    "pure_arx": "purearx",
+    "purearx": "purearx",
+    "pure-andrx": "pureandrx",
+    "pure_andrx": "pureandrx",
+    "pureandrx": "pureandrx",
     "single_component_cipher": "single_component_ciphers",
     "single_component_ciphers": "single_component_ciphers",
     "sbox-based": "sbox_based",
@@ -43,7 +60,7 @@ FILTER_ALIASES = {
     "tweakable_block_cipher": "tweakable_block_cipher",
 }
 IGNORED_CIPHER_COMPONENTS = frozenset(
-    {"cipher_output", "intermediate_output", "round_key_output", "round_output"}
+    {"cipher_output", "intermediate_output", "output", "round_key_output", "round_output"}
 )
 MODULE_INIT_FILE = "__init__.py"
 
@@ -67,7 +84,6 @@ class CipherInfo:
     qualified_name: str
     module_name: str
     category: str
-    paradigm: str
     components: tuple[str, ...]
     tags: frozenset[str]
 
@@ -402,24 +418,29 @@ def _collect_components_from_cipher_module(
         visiting.remove(module_name)
 
 
-def _infer_cipher_paradigm(operations: set[str]) -> str:
-    if {"and", "rotate", "xor"}.issubset(operations) and len(operations) == 3:
-        return "andrx"
-    if {"modadd", "rotate", "xor"}.issubset(operations) and len(operations) == 3:
-        return "arx"
+def _infer_cipher_design_tags(operations: set[str]) -> set[str]:
+    design_tags = set()
+    if operations == PURE_ANDRX_COMPONENTS:
+        design_tags.add("pureandrx")
+        design_tags.add("andrx")
+    elif operations == ANDRX_COMPONENTS:
+        design_tags.add("andrx")
+    if operations == PURE_ARX_COMPONENTS:
+        design_tags.add("purearx")
+        design_tags.add("arx")
+    elif operations == ARX_COMPONENTS:
+        design_tags.add("arx")
     if "sbox" in operations:
-        return "sbox-based"
+        design_tags.add("sbox_based")
+    return design_tags
 
-    return "other"
 
-
-def _cipher_tags(category: str, source_text: str, class_name: str, paradigm: str) -> set[str]:
+def _cipher_tags(category: str, source_text: str, class_name: str, operations: set[str]) -> set[str]:
     tags = {category}
     if category == "hash_functions":
         tags.add("hash_function")
 
-    if paradigm in {"sbox-based", "arx", "andrx"}:
-        tags.add(paradigm.replace("-", "_"))
+    tags.update(_infer_cipher_design_tags(operations))
 
     lower_name = class_name.lower()
     if "tweak" in source_text.lower() or "qarm" in lower_name or "mantis" in lower_name:
@@ -535,15 +556,13 @@ def _discover_cipher_infos_from_file(
         class_name = class_node.name
         qualified_name = f"{module_name}.{class_name}"
         components = set(discovered_components)
-        paradigm = _infer_cipher_paradigm(components)
-        tags = frozenset(_cipher_tags(category, source_text, class_name, paradigm))
+        tags = frozenset(_cipher_tags(category, source_text, class_name, components))
         infos.append(
             CipherInfo(
                 name=class_name,
                 qualified_name=qualified_name,
                 module_name=module_name,
                 category=category,
-                paradigm=paradigm,
                 components=tuple(sorted(components)),
                 tags=tags,
             )
@@ -557,8 +576,9 @@ def _matches_cipher_filters(
     normalized_filters: set[str],
     required_components: set[str],
 ) -> bool:
-    if normalized_filters and not normalized_filters.issubset(info.tags):
-        return False
+    for filter_name in normalized_filters:
+        if filter_name not in info.tags:
+            return False
     if required_components and not required_components.issubset(set(info.components)):
         return False
 
@@ -601,7 +621,6 @@ def _cipher_row(info: CipherInfo, include_metadata: bool, qualified: bool) -> di
         "module_name": info.module_name,
         "qualified_name": info.qualified_name,
         "category": info.category,
-        "paradigm": info.paradigm,
         "components": list(info.components),
         "tags": sorted(info.tags),
     }
@@ -640,9 +659,9 @@ class Catalog:
         sage: ciphers['name']
         'ciphers'
         sage: ciphers['columns']
-        ['class_name', 'module_name', 'category', 'paradigm', 'components', 'tags']
+        ['class_name', 'module_name', 'category', 'components', 'tags']
         sage: ciphers['rows'][0].keys()
-        dict_keys(['class_name', 'module_name', 'category', 'paradigm', 'components', 'tags'])
+        dict_keys(['class_name', 'module_name', 'category', 'components', 'tags'])
         sage: ciphers['rows'][0]['class_name']
         'A51StreamCipher'
 
@@ -667,16 +686,16 @@ class Catalog:
 
         sage: # Use convenience helpers to render ciphers directly.
         sage: catalog.show_ciphers()
-        class_name                              | module_name                                                                 | category                 | paradigm   | components                                                                               | tags                                                     
-        ----------------------------------------+-----------------------------------------------------------------------------+--------------------------+------------+------------------------------------------------------------------------------------------+----------------------------------------------------------
-        A51StreamCipher                         | claasp.ciphers.stream_ciphers.a5_1_stream_cipher                            | stream_ciphers           | other      | ['constant', 'fsr', 'xor']                                                               | ['stream_ciphers']                                       
-        A52StreamCipher                         | claasp.ciphers.stream_ciphers.a5_2_stream_cipher                            | stream_ciphers           | other      | ['and', 'constant', 'fsr', 'or', 'xor']                                                  | ['stream_ciphers']                                       
-        AESBlockCipher                          | claasp.ciphers.block_ciphers.aes_block_cipher                               | block_ciphers            | sbox-based | ['constant', 'mix_column', 'rotate', 'sbox', 'xor']                                      | ['block_ciphers', 'sbox_based']                          
+        class_name                              | module_name                                                                 | category                 | components                                                                               | tags                                                     
+        ----------------------------------------+-----------------------------------------------------------------------------+--------------------------+------------------------------------------------------------------------------------------+----------------------------------------------------------
+        A51StreamCipher                         | claasp.ciphers.stream_ciphers.a5_1_stream_cipher                            | stream_ciphers           | ['constant', 'fsr', 'xor']                                                               | ['stream_ciphers']                                       
+        A52StreamCipher                         | claasp.ciphers.stream_ciphers.a5_2_stream_cipher                            | stream_ciphers           | ['and', 'constant', 'fsr', 'or', 'xor']                                                  | ['stream_ciphers']                                       
+        AESBlockCipher                          | claasp.ciphers.block_ciphers.aes_block_cipher                               | block_ciphers            | ['constant', 'mix_column', 'rotate', 'sbox', 'xor']                                      | ['block_ciphers', 'sbox_based']                          
         ...
-        sage: catalog.show_ciphers(has_components=['sbox'], columns=['class_name', 'paradigm'], fmt='markdown')
-        | class_name | paradigm |
+        sage: catalog.show_ciphers(has_components=['sbox'], columns=['class_name', 'tags'], fmt='markdown')
+        | class_name | tags |
         | --- | --- |
-        | AESBlockCipher | sbox-based |
+        | AESBlockCipher | ['block_ciphers', 'sbox_based'] |
         ...
     """
 
@@ -815,8 +834,8 @@ class Catalog:
           Category filters are retrieved automatically from subfolders under ``claasp/ciphers``
           such as ``block_ciphers``, ``permutations``, ``stream_ciphers``, ``hash_functions``,
           ``mac``, ``single_component_ciphers``, and ``toys``. Additional derived tags include
-          ``tweakable_block_cipher``, ``sbox_based``, ``arx``, and ``andrx``. Multiple filters are
-          combined with logical AND.
+          ``tweakable_block_cipher``, ``sbox_based``, ``arx``, ``purearx``, ``andrx``, and ``pureandrx``.
+          Multiple filters are combined with logical AND.
         - ``has_components`` -- **string/list/tuple** (default: ``None``); keep only ciphers whose
           component set contains all requested components (logical AND), e.g. ``['sbox', 'xor']``.
         - ``include_metadata`` -- **boolean** (default: ``False``); include cipher runtime metadata.
@@ -862,7 +881,7 @@ class Catalog:
 
         rows.sort(key=lambda r: r["class_name"])
 
-        columns = ["class_name", "module_name", "qualified_name", "category", "paradigm", "components", "tags"]
+        columns = ["class_name", "module_name", "qualified_name", "category", "components", "tags"]
         if include_metadata:
             columns.extend(
                 [
@@ -1211,21 +1230,21 @@ class Catalog:
         EXAMPLES::
 
             sage: from claasp.catalog import Catalog
-            sage: Catalog().show_ciphers(filters='toys', has_components=['sbox'], columns=['class_name', 'paradigm'], fmt='json')
+            sage: Catalog().show_ciphers(filters='toys', has_components=['sbox'], columns=['class_name', 'tags'], fmt='json')
             {
                 "name": "ciphers",
                 "columns": [
                     "class_name",
-                    "paradigm"
+                    "tags"
                 ],
                 "rows": [
                     {
                     "class_name": "FancyBlockCipher",
-                    "paradigm": "sbox-based"
+                    "tags": ["andrx", "sbox_based", "toys"]
                     },
             ...
 
-            sage: Catalog().show_ciphers(filters='toys', include_metadata=True, exclude_columns=['module_name', 'category', 'paradigm', 'components', 'tags'], fmt='csv')
+            sage: Catalog().show_ciphers(filters='toys', include_metadata=True, exclude_columns=['module_name', 'category', 'components', 'tags'], fmt='csv')
             class_name,family_name,cipher_type,inputs,inputs_bit_size,output_bit_size,number_of_rounds,id,metadata_error
             FancyBlockCipher,...
             ...

@@ -68,6 +68,48 @@ def test_ciphers_filter_and_qualified_mode():
     assert any(row["qualified_name"].endswith(".SpeckBlockCipher") for row in table["rows"])
 
 
+def test_ciphers_filter_arx_includes_known_arx_block_ciphers():
+    table = Catalog().ciphers(filters="arx")
+    names = {row["class_name"] for row in table["rows"]}
+
+    assert "SpeckBlockCipher" in names
+    assert "ChachaPermutation" in names
+    assert "ZucStreamCipher" not in names
+    arx_set = {"constant", "modadd", "rotate", "xor"}
+    pure_arx_set = {"modadd", "rotate", "xor"}
+    assert all(set(row["components"]) in (arx_set, pure_arx_set) for row in table["rows"])
+
+
+def test_ciphers_filter_purearx_reports_only_exact_modadd_rotate_xor_ciphers():
+    table = Catalog().ciphers(filters="purearx")
+    names = {row["class_name"] for row in table["rows"]}
+
+    assert "ChachaPermutation" in names
+    assert "SpeckBlockCipher" not in names
+    assert all(set(row["components"]) == {"modadd", "rotate", "xor"} for row in table["rows"])
+
+
+def test_ciphers_filter_andrx_includes_pureandrx_and_excludes_mixed_designs():
+    table = Catalog().ciphers(filters="andrx")
+    names = {row["class_name"] for row in table["rows"]}
+
+    assert "SimonBlockCipher" in names
+    assert "SimeckBlockCipher" in names
+    assert "AradiBlockCipher" in names
+    assert "AsconPermutation" not in names
+    andrx_set = {"and", "constant", "rotate", "xor"}
+    pure_andrx_set = {"and", "rotate", "xor"}
+    assert all(set(row["components"]) in (andrx_set, pure_andrx_set) for row in table["rows"])
+
+
+def test_ciphers_filter_pureandrx_reports_only_exact_and_rotate_xor_ciphers():
+    table = Catalog().ciphers(filters="pureandrx")
+    names = {row["class_name"] for row in table["rows"]}
+
+    assert "SimonBlockCipher" not in names
+    assert all(set(row["components"]) == {"and", "rotate", "xor"} for row in table["rows"])
+
+
 def test_components_default_excludes_abstract_and_io():
     table = Catalog().components()
     names = {row["class_name"] for row in table["rows"]}
@@ -193,13 +235,72 @@ def test_catalog_collect_imported_components_and_filters(monkeypatch):
         qualified_name="claasp.ciphers.toys.x.X",
         module_name="claasp.ciphers.toys.x",
         category="toys",
-        paradigm="other",
         components=("xor", "sbox"),
         tags=frozenset({"toys", "sbox_based"}),
     )
     assert catalog_module._matches_cipher_filters(info, {"toys"}, {"xor"})
     assert not catalog_module._matches_cipher_filters(info, {"mac"}, {"xor"})
     assert not catalog_module._matches_cipher_filters(info, {"toys"}, {"modadd"})
+
+    pure_arx_info = CipherInfo(
+        name="PureArx",
+        qualified_name="claasp.ciphers.toys.pure.PureArx",
+        module_name="claasp.ciphers.toys.pure",
+        category="toys",
+        components=("modadd", "rotate", "xor"),
+        tags=frozenset({"toys", "purearx", "arx"}),
+    )
+    arx_info = CipherInfo(
+        name="Arx",
+        qualified_name="claasp.ciphers.toys.arx.Arx",
+        module_name="claasp.ciphers.toys.arx",
+        category="toys",
+        components=("constant", "modadd", "rotate", "xor"),
+        tags=frozenset({"toys", "arx"}),
+    )
+    mixed_info = CipherInfo(
+        name="Mixed",
+        qualified_name="claasp.ciphers.toys.mixed.Mixed",
+        module_name="claasp.ciphers.toys.mixed",
+        category="toys",
+        components=("modadd", "rotate", "sbox", "xor"),
+        tags=frozenset({"toys", "sbox_based"}),
+    )
+    pure_andrx_info = CipherInfo(
+        name="PureAndrx",
+        qualified_name="claasp.ciphers.toys.pure.PureAndrx",
+        module_name="claasp.ciphers.toys.pure",
+        category="toys",
+        components=("and", "rotate", "xor"),
+        tags=frozenset({"toys", "pureandrx", "andrx"}),
+    )
+    andrx_info = CipherInfo(
+        name="Andrx",
+        qualified_name="claasp.ciphers.toys.andrx.Andrx",
+        module_name="claasp.ciphers.toys.andrx",
+        category="toys",
+        components=("and", "constant", "rotate", "xor"),
+        tags=frozenset({"toys", "andrx"}),
+    )
+    mixed_andrx_info = CipherInfo(
+        name="MixedAndrx",
+        qualified_name="claasp.ciphers.toys.mixed.MixedAndrx",
+        module_name="claasp.ciphers.toys.mixed",
+        category="toys",
+        components=("and", "constant", "not", "rotate", "xor"),
+        tags=frozenset({"toys"}),
+    )
+
+    assert catalog_module._matches_cipher_filters(pure_arx_info, {"purearx"}, set())
+    assert catalog_module._matches_cipher_filters(pure_arx_info, {"arx"}, set())  # purearx ⊆ arx
+    assert catalog_module._matches_cipher_filters(arx_info, {"arx"}, set())
+    assert not catalog_module._matches_cipher_filters(arx_info, {"purearx"}, set())
+    assert not catalog_module._matches_cipher_filters(mixed_info, {"arx"}, set())
+    assert catalog_module._matches_cipher_filters(pure_andrx_info, {"pureandrx"}, set())
+    assert catalog_module._matches_cipher_filters(pure_andrx_info, {"andrx"}, set())  # pureandrx ⊆ andrx
+    assert catalog_module._matches_cipher_filters(andrx_info, {"andrx"}, set())
+    assert not catalog_module._matches_cipher_filters(andrx_info, {"pureandrx"}, set())
+    assert not catalog_module._matches_cipher_filters(mixed_andrx_info, {"andrx"}, set())
 
 
 def test_catalog_cipher_metadata_and_row_helpers(monkeypatch):
@@ -223,7 +324,6 @@ def test_catalog_cipher_metadata_and_row_helpers(monkeypatch):
         qualified_name="claasp.ciphers.toys.demo.DemoCipher",
         module_name="claasp.ciphers.toys.demo",
         category="toys",
-        paradigm="other",
         components=("xor",),
         tags=frozenset({"toys"}),
     )
@@ -269,7 +369,14 @@ def test_catalog_filter_component_and_solver_helpers(monkeypatch):
 
     assert catalog_module._normalize_filters(["Toy", "sbox-based"], allowed) == {"toys", "sbox_based"}
     assert catalog_module._normalize_components_filter([" variable-rotate ", "xor", ""]) == {"rotate", "xor"}
-    assert catalog_module._supported_cipher_filters({"toys"}) >= {"toys", "arx", "andrx", "sbox_based"}
+    assert catalog_module._supported_cipher_filters({"toys"}) >= {
+        "toys",
+        "arx",
+        "purearx",
+        "andrx",
+        "pureandrx",
+        "sbox_based",
+    }
 
     with pytest.raises(ValueError, match="Unknown cipher filters"):
         catalog_module._normalize_filters(["unknown-filter"], allowed)
@@ -325,6 +432,7 @@ def test_catalog_ast_and_path_helpers(tmp_path):
     assert catalog_module._is_cipher_class(permutation_class)
 
     components = catalog_module._cipher_components(
+        "self.add_output_component()\n"
         "self.add_variable_rotate_component()\n"
         "self.add_round_output_component()\n"
         "self.add_xor_component()\n"
@@ -384,10 +492,14 @@ def test_catalog_collect_components_from_module_branches_and_tags(tmp_path):
         "claasp.ciphers.toys.missing", package_root, {}, set()
     ) == set()
 
-    assert catalog_module._infer_cipher_paradigm({"and", "rotate", "xor"}) == "andrx"
-    assert catalog_module._infer_cipher_paradigm({"modadd", "rotate", "xor"}) == "arx"
-    assert catalog_module._infer_cipher_paradigm({"sbox", "xor"}) == "sbox-based"
-    assert catalog_module._cipher_tags("hash_functions", "uses tweak", "MantisHash", "sbox-based") >= {
+    assert catalog_module._infer_cipher_design_tags({"and", "rotate", "xor"}) == {"pureandrx", "andrx"}
+    assert catalog_module._infer_cipher_design_tags({"modadd", "rotate", "xor"}) == {"purearx", "arx"}
+    assert catalog_module._infer_cipher_design_tags({"constant", "modadd", "rotate", "xor"}) == {"arx"}
+    assert catalog_module._infer_cipher_design_tags({"constant", "modadd", "rotate", "sbox", "xor"}) == {"sbox_based"}
+    assert catalog_module._infer_cipher_design_tags({"and", "constant", "rotate", "xor"}) == {"andrx"}
+    assert catalog_module._infer_cipher_design_tags({"and", "constant", "rotate", "sbox", "xor"}) == {"sbox_based"}
+    assert catalog_module._infer_cipher_design_tags({"sbox", "xor"}) == {"sbox_based"}
+    assert catalog_module._cipher_tags("hash_functions", "uses tweak", "MantisHash", {"constant", "rotate", "sbox", "xor"}) >= {
         "hash_function",
         "sbox_based",
         "tweakable_block_cipher",
