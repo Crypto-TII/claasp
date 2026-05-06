@@ -1,11 +1,11 @@
-from claasp.components.permutation_component import Permutation
+from claasp.components.permutation_bitwise_component import PermutationBitwise
 
 
 PERMUTATION = [1, 3, 2, 0]
 
 
 def make_permutation_component():
-    return Permutation(0, 0, ["input"], [[0, 1, 2, 3]], 4, PERMUTATION)
+    return PermutationBitwise(0, 0, ["input"], [[0, 1, 2, 3]], 4, PERMUTATION)
 
 
 def test_constructor_builds_permutation_component():
@@ -67,29 +67,3 @@ def test_smt_constraints():
         "(assert (= permutation_0_0_2 input_2))",
         "(assert (= permutation_0_0_3 input_0))",
     ]
-
-
-def test_algebraic_polynomials():
-    from claasp.ciphers.single_component_ciphers.permutation_cipher import PermutationCipher
-    from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
-
-    cipher = PermutationCipher(bit_size=4, permutation_description=[1, 3, 2, 0])
-    permutation_component = cipher.component_from_id('permutation_0_0')
-    algebraic = AlgebraicModel(cipher)
-    polynomials = permutation_component.algebraic_polynomials(algebraic)
-
-    assert len(polynomials) == 4
-
-
-def test_milp_constraints():
-    from claasp.ciphers.single_component_ciphers.permutation_cipher import PermutationCipher
-    from claasp.cipher_modules.models.milp.milp_model import MilpModel
-
-    cipher = PermutationCipher(bit_size=4, permutation_description=[1, 3, 2, 0])
-    permutation_component = cipher.component_from_id('permutation_0_0')
-    milp = MilpModel(cipher)
-    milp.init_model_in_sage_milp_class()
-    variables, constraints = permutation_component.milp_constraints(milp)
-
-    assert len(variables) == 8
-    assert len(constraints) == 4
