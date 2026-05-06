@@ -110,6 +110,16 @@ def test_ciphers_filter_pureandrx_reports_only_exact_and_rotate_xor_ciphers():
     assert all(set(row["components"]) == {"and", "rotate", "xor"} for row in table["rows"])
 
 
+def test_ciphers_filter_fsr_based_reports_only_fsr_ciphers():
+    table = Catalog().ciphers(filters="fsr_based")
+    names = {row["class_name"] for row in table["rows"]}
+
+    assert "A51StreamCipher" in names
+    assert "A52StreamCipher" in names
+    assert "AESBlockCipher" not in names
+    assert all("fsr" in set(row["components"]) for row in table["rows"])
+
+
 def test_components_default_excludes_abstract_and_io():
     table = Catalog().components()
     names = {row["class_name"] for row in table["rows"]}
@@ -371,9 +381,10 @@ def test_catalog_helper_normalization_and_projection_branches():
 
 
 def test_catalog_filter_component_and_solver_helpers(monkeypatch):
-    allowed = {"block_ciphers", "toys", "sbox_based"}
+    allowed = {"block_ciphers", "toys", "sbox_based", "fsr_based"}
 
     assert catalog_module._normalize_filters(["Toy", "sbox-based"], allowed) == {"toys", "sbox_based"}
+    assert catalog_module._normalize_filters(["fsr-based"], allowed) == {"fsr_based"}
     assert catalog_module._normalize_components_filter([" variable-rotate ", "xor", ""]) == {"rotate", "xor"}
     assert catalog_module._supported_cipher_filters({"toys"}) >= {
         "toys",
@@ -382,6 +393,7 @@ def test_catalog_filter_component_and_solver_helpers(monkeypatch):
         "andrx",
         "pureandrx",
         "sbox_based",
+        "fsr_based",
     }
 
     with pytest.raises(ValueError, match="Unknown cipher filters"):
@@ -520,6 +532,7 @@ def test_catalog_collect_components_from_module_branches_and_tags(tmp_path):
     assert catalog_module._infer_cipher_design_tags({"modadd", "rotate", "xor"}) == {"purearx", "arx"}
     assert catalog_module._infer_cipher_design_tags({"constant", "modadd", "rotate", "xor"}) == {"arx"}
     assert catalog_module._infer_cipher_design_tags({"constant", "modadd", "rotate", "sbox", "xor"}) == {"sbox_based"}
+    assert catalog_module._infer_cipher_design_tags({"constant", "fsr", "xor"}) == {"fsr_based"}
     assert catalog_module._infer_cipher_design_tags({"and", "constant", "rotate", "xor"}) == {"andrx"}
     assert catalog_module._infer_cipher_design_tags({"and", "constant", "rotate", "sbox", "xor"}) == {"sbox_based"}
     assert catalog_module._infer_cipher_design_tags({"sbox", "xor"}) == {"sbox_based"}

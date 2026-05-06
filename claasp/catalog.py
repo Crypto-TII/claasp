@@ -29,6 +29,7 @@ PURE_ANDRX_COMPONENTS = frozenset({"and", "rotate", "xor"})
 SPECIAL_CIPHER_FILTERS = frozenset({
     "tweakable_block_cipher",
     "sbox_based",
+    "fsr_based",
     "arx",
     "purearx",
     "andrx",
@@ -53,6 +54,8 @@ FILTER_ALIASES = {
     "single_component_ciphers": "single_component_ciphers",
     "sbox-based": "sbox_based",
     "sbox_based": "sbox_based",
+    "fsr-based": "fsr_based",
+    "fsr_based": "fsr_based",
     "stream_cipher": "stream_ciphers",
     "stream_ciphers": "stream_ciphers",
     "toy": "toys",
@@ -485,6 +488,8 @@ def _infer_cipher_design_tags(operations: set[str]) -> set[str]:
         design_tags.add("arx")
     if "sbox" in operations:
         design_tags.add("sbox_based")
+    if "fsr" in operations:
+        design_tags.add("fsr_based")
     return design_tags
 
 
@@ -750,8 +755,8 @@ class Catalog:
         sage: catalog.show_ciphers()
         class_name                              | module_name                                                                 | category                 | components                                                                               | tags                                                     
         ----------------------------------------+-----------------------------------------------------------------------------+--------------------------+------------------------------------------------------------------------------------------+----------------------------------------------------------
-        A51StreamCipher                         | claasp.ciphers.stream_ciphers.a5_1_stream_cipher                            | stream_ciphers           | ['constant', 'fsr', 'xor']                                                               | ['stream_ciphers']                                       
-        A52StreamCipher                         | claasp.ciphers.stream_ciphers.a5_2_stream_cipher                            | stream_ciphers           | ['and', 'constant', 'fsr', 'or', 'xor']                                                  | ['stream_ciphers']                                       
+        A51StreamCipher                         | claasp.ciphers.stream_ciphers.a5_1_stream_cipher                            | stream_ciphers           | ['constant', 'fsr', 'xor']                                                               | ['fsr_based', 'stream_ciphers']                          
+        A52StreamCipher                         | claasp.ciphers.stream_ciphers.a5_2_stream_cipher                            | stream_ciphers           | ['and', 'constant', 'fsr', 'or', 'xor']                                                  | ['fsr_based', 'stream_ciphers']                          
         AESBlockCipher                          | claasp.ciphers.block_ciphers.aes_block_cipher                               | block_ciphers            | ['constant', 'mix_column', 'rotate', 'sbox', 'xor']                                      | ['block_ciphers', 'sbox_based']                          
         ...
         sage: catalog.show_ciphers(has_components=['sbox'], columns=['class_name', 'tags'], fmt='markdown')
@@ -898,7 +903,8 @@ class Catalog:
           Category filters are retrieved automatically from subfolders under ``claasp/ciphers``
           such as ``block_ciphers``, ``permutations``, ``stream_ciphers``, ``hash_functions``,
           ``mac``, ``single_component_ciphers``, and ``toys``. Additional derived tags include
-          ``tweakable_block_cipher``, ``sbox_based``, ``arx``, ``purearx``, ``andrx``, and ``pureandrx``.
+                    ``tweakable_block_cipher``, ``sbox_based``, ``fsr_based``, ``arx``, ``purearx``, ``andrx``,
+                    and ``pureandrx``.
           Multiple filters are combined with logical AND.
         - ``has_components`` -- **string/list/tuple** (default: ``None``); keep only ciphers whose
           component set contains all requested components (logical AND), e.g. ``['sbox', 'xor']``.
