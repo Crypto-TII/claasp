@@ -27,6 +27,7 @@ MIX_COLUMN = "mix_column"
 LINEAR_LAYER = "linear_layer"
 SBOX = "sbox"
 FSR = "fsr"
+PERMUTATION_COMPONENT = "permutation"
 
 # model types
 CIPHER = "cipher"
