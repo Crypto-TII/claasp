@@ -90,6 +90,35 @@ def update_and_or_ddt_valid_probabilities(and_already_added, component, cp_decla
         cp_declarations.append(and_declaration)
         and_already_added.append(numadd)
 
+def update_and_or_ddt_valid_probabilities_boomerang(and_already_added, component, cp_declarations, valid_probabilities):
+    numadd = component.description[1]
+    if numadd not in and_already_added:
+        ddt_table = and_xor_differential_probability_ddt(numadd)
+        dim_ddt = len([i for i in ddt_table if i])
+        ddt_entries = []
+        ddt_values = ''
+        set_of_occurrences = set(ddt_table)
+        set_of_occurrences -= {0}
+        valid_probabilities.update({round(100 * math.log2(2 ** numadd / occurrence))
+                                    for occurrence in set_of_occurrences})
+        for i in range(pow(2, numadd + 1)):
+            if ddt_table[i] != 0:
+                binary_i = format(i, f'0{numadd + 1}b')
+                ddt_entries += [f'{binary_i[j]}' for j in range(numadd + 1)]
+                ddt_entries.append(str(round(100 * math.log2(pow(2, numadd) / ddt_table[i]))))
+            ddt_values = ','.join(ddt_entries)
+        and_declaration = ''
+        if 'upper_' in component.id:
+            and_declaration = f'array [1..{dim_ddt}, 1..{numadd + 2}] of int: ' \
+                          f'upper_and{numadd}inputs_DDT = array2d(1..{dim_ddt}, 1..{numadd + 2}, ' \
+                          f'[{ddt_values}]);'
+        if 'lower_' in component.id:
+            and_declaration = f'array [1..{dim_ddt}, 1..{numadd + 2}] of int: ' \
+                          f'lower_and{numadd}inputs_DDT = array2d(1..{dim_ddt}, 1..{numadd + 2}, ' \
+                          f'[{ddt_values}]);'
+        cp_declarations.append(and_declaration)
+        and_already_added.append(numadd)
+
 
 class MznXorDifferentialModel(MznModel):
 
