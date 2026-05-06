@@ -147,13 +147,109 @@ class Component:
         self._description = description
         self._suffixes = ("_i", "_o")
 
+    def _raise_method_not_implemented_error(self, method_name):
+        raise NotImplementedError(
+            f"{self.__class__.__name__} (id='{self.id}', type='{self.type}') "
+            f"does not implement method '{method_name}'."
+        )
+
+    def algebraic_polynomials(self, *args, **kwargs):
+        self._raise_method_not_implemented_error("algebraic_polynomials")
+
+    def cms_constraints(self, *args, **kwargs):
+        self._raise_method_not_implemented_error("cms_constraints")
+
+    def cms_xor_differential_propagation_constraints(self, *args, **kwargs):
+        return self.cms_constraints(*args, **kwargs)
+
+    def cms_xor_linear_mask_propagation_constraints(self, *args, **kwargs):
+        return self.cms_constraints(*args, **kwargs)
+
+    def cp_constraints(self, *args, **kwargs):
+        self._raise_method_not_implemented_error("cp_constraints")
+
+    def cp_continuous_differential_propagation_constraints(self, *args, **kwargs):
+        self._raise_method_not_implemented_error("cp_continuous_differential_propagation_constraints")
+
+    def cp_deterministic_truncated_xor_differential_constraints(self):
+        self._raise_method_not_implemented_error("cp_deterministic_truncated_xor_differential_constraints")
+
+    def cp_deterministic_truncated_xor_differential_trail_constraints(self):
+        return self.cp_deterministic_truncated_xor_differential_constraints()
+
+    def cp_semi_deterministic_truncated_xor_differential_constraints(self):
+        return self.cp_deterministic_truncated_xor_differential_constraints()
+
+    def cp_wordwise_deterministic_truncated_xor_differential_constraints(self, *args, **kwargs):
+        self._raise_method_not_implemented_error("cp_wordwise_deterministic_truncated_xor_differential_constraints")
+
+    def cp_xor_differential_propagation_constraints(self, *args, **kwargs):
+        return self.cp_constraints(*args, **kwargs)
+
+    def cp_xor_linear_mask_propagation_constraints(self, *args, **kwargs):
+        return self.cp_constraints(*args, **kwargs)
+
+    def get_bit_based_vectorized_python_code(self, *args, **kwargs):
+        self._raise_method_not_implemented_error("get_bit_based_vectorized_python_code")
+
+    def get_byte_based_vectorized_python_code(self, *args, **kwargs):
+        self._raise_method_not_implemented_error("get_byte_based_vectorized_python_code")
+
+    def milp_constraints(self, *args, **kwargs):
+        self._raise_method_not_implemented_error("milp_constraints")
+
+    def milp_bitwise_deterministic_truncated_xor_differential_constraints(self, *args, **kwargs):
+        self._raise_method_not_implemented_error("milp_bitwise_deterministic_truncated_xor_differential_constraints")
+
+    def milp_wordwise_deterministic_truncated_xor_differential_constraints(self, *args, **kwargs):
+        self._raise_method_not_implemented_error("milp_wordwise_deterministic_truncated_xor_differential_constraints")
+
+    def milp_xor_differential_propagation_constraints(self, *args, **kwargs):
+        return self.milp_constraints(*args, **kwargs)
+
+    def milp_xor_linear_mask_propagation_constraints(self, *args, **kwargs):
+        return self.milp_constraints(*args, **kwargs)
+
+    def minizinc_constraints(self, *args, **kwargs):
+        self._raise_method_not_implemented_error("minizinc_constraints")
+
+    def minizinc_deterministic_truncated_xor_differential_trail_constraints(self, *args, **kwargs):
+        return self.minizinc_constraints(*args, **kwargs)
+
+    def minizinc_xor_differential_propagation_constraints(self, *args, **kwargs):
+        return self.minizinc_constraints(*args, **kwargs)
+
+    def sat_constraints(self, *args, **kwargs):
+        self._raise_method_not_implemented_error("sat_constraints")
+
+    def sat_bitwise_deterministic_truncated_xor_differential_constraints(self):
+        self._raise_method_not_implemented_error("sat_bitwise_deterministic_truncated_xor_differential_constraints")
+
+    def sat_semi_deterministic_truncated_xor_differential_constraints(self):
+        return self.sat_bitwise_deterministic_truncated_xor_differential_constraints()
+
+    def sat_xor_differential_propagation_constraints(self, *args, **kwargs):
+        return self.sat_constraints(*args, **kwargs)
+
+    def sat_xor_linear_mask_propagation_constraints(self, *args, **kwargs):
+        return self.sat_constraints(*args, **kwargs)
+
+    def smt_constraints(self, *args, **kwargs):
+        self._raise_method_not_implemented_error("smt_constraints")
+
+    def smt_xor_differential_propagation_constraints(self, *args, **kwargs):
+        return self.smt_constraints(*args, **kwargs)
+
+    def smt_xor_linear_mask_propagation_constraints(self, *args, **kwargs):
+        return self.smt_constraints(*args, **kwargs)
+
     def _create_minizinc_1d_array_from_list(self, mzn_list):
         mzn_list_size = len(mzn_list)
         lst_temp = f"[{','.join(mzn_list)}]"
 
         return f"array1d(0..{mzn_list_size}-1, {lst_temp})"
 
-    def _define_var(self, input_postfix, output_postfix, data_type):
+    def minizinc_define_var(self, input_postfix, output_postfix, data_type):
         """
         Define Minizinc variables from component.
 
@@ -169,7 +265,7 @@ class Component:
             sage: from claasp.input import Input
             sage: component_input = Input(4, ['input'], [[0, 1, 2, 3]])
             sage: component = Component('my_component_id', 'my_component_type', component_input, 4, [])
-            sage: component._define_var("in", "out", "data_type")
+            sage: component.minizinc_define_var("in", "out", "data_type")
             ['var data_type: my_component_id_in0;', 'var data_type: my_component_id_in1;', 'var data_type: my_component_id_in2;', 'var data_type: my_component_id_in3;', 'var data_type: my_component_id_out0;', 'var data_type: my_component_id_out1;', 'var data_type: my_component_id_out2;', 'var data_type: my_component_id_out3;']
         """
         var_definition_names = []
@@ -519,32 +615,6 @@ class Component:
         return {
             "id": self._id,
             "type": self._type,
-            "input_bit_size": self.input_bit_size,
-            "input_id_link": self.input_id_links,
-            "input_bit_positions": self.input_bit_positions,
-            "output_bit_size": self._output_bit_size,
-            "description": self._description,
-        }
-
-    def get_graph_representation(self):
-        """
-        Return the component graph representation.
-
-        EXAMPLES::
-
-            sage: from claasp.component import Component
-            sage: from claasp.input import Input
-            sage: component_input = Input(4, ['input'], [[0, 1, 2, 3]])
-            sage: component = Component('my_component_id', 'my_component_type', component_input, 4, [])
-            sage: d = component.get_graph_representation()
-            sage: d['id'], d['type'], d['input_bit_size'], d['output_bit_size']
-            ('my_component_id', 'my_component_type', 4, 4)
-            sage: d['input_id_link'], d['input_bit_positions'], d['description']
-            (['input'], [[0, 1, 2, 3]], [])
-        """
-        return {
-            "id": self._id,
-            "type": self._type,
             "input_bit_size": self._input.bit_size,
             "input_id_link": deepcopy(self._input.id_links),
             "input_bit_positions": deepcopy(self._input.bit_positions),
@@ -619,15 +689,6 @@ class Component:
         print(f"    input_bit_positions =", self.input_bit_positions)
         print(f"    output_bit_size =", self._output_bit_size)
         print(f"    description =", self._description)
-
-    def print_as_python_dictionary(self):
-        print(f"    'id': '{self._id}',")
-        print(f"    'type': '{self._type}',")
-        print(f"    'input_bit_size': {self.input_bit_size},")
-        print(f"    'input_id_link': {self.input_id_links},")
-        print(f"    'input_bit_positions': {self.input_bit_positions},")
-        print(f"    'output_bit_size': {self._output_bit_size},")
-        print(f"    'description': {self._description},")
 
     def set_description(self, description):
         self._description = description

@@ -6,3 +6,9 @@ def test_sigma_cipher_smoke():
     out = cipher.evaluate([0xA5])
     assert cipher.type == "hash_function"
     assert isinstance(out, int)
+
+
+def test_sigma_cipher_default_rotation_amounts():
+    cipher = SigmaCipher(bit_size=8)
+
+    assert cipher.evaluate([0xA5]) == (0xA5 ^ 0xD2 ^ 0x69)
