@@ -218,54 +218,6 @@ def get_word_operation_component_bit_based_c_code(component, verbosity):
 
     return word_operation_code
 
-def generate_bit_based_vectorized_python_code_string(cipher, store_intermediate_outputs=False,
-                                                     verbosity=False, convert_output_to_bytes=False):
-    """
-    Return string python code needed to evaluate a cipher using a vectorized implementation bit based oriented.
-
-    INPUT:
-
-    - ``cipher`` -- **Cipher object**; a cipher instance
-    - ``store_intermediate_outputs`` -- **boolean** (default: `False`); set this flag to True in order to return a list
-      with each round output
-    - ``verbosity`` -- **boolean** (default: `False`); set to True to make the Python code print the input/output of
-      each component
-    - ``convert_output_to_bytes`` -- **boolean** (default: `False`)
-
-    EXAMPLES::
-
-        sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-        sage: from claasp.cipher_modules import code_generator
-        sage: speck = SpeckBlockCipher()
-        sage: string_python_code = code_generator.generate_bit_based_vectorized_python_code_string(speck)
-        sage: string_python_code.split("\n")[0]
-        'from claasp.cipher_modules.generic_functions_vectorized_bit import *'
-    """
-    code = ['from claasp.cipher_modules.generic_functions_vectorized_bit import *\n',
-            'def evaluate(input, store_intermediate_outputs):', '  intermediateOutputs={}']
-
-    code.extend([f'  {cipher.inputs[i]}=input[{i}]' for i in range(len(cipher.inputs))])
-    for component in cipher.get_all_components():
-        params = prepare_input_bit_based_vectorized_python_code_string(component)
-        component_types_allowed = ['constant', 'linear_layer', 'mix_column',
-                                   'sbox', 'cipher_output', 'intermediate_output', 'fsr']
-        component_descriptions_allowed = ['ROTATE', 'SHIFT', 'SHIFT_BY_VARIABLE_AMOUNT', 'NOT', 'XOR',
-                                          'MODADD', 'MODMUL', 'MODSUB', 'OR', 'AND']
-        if component.type in component_types_allowed or (component.type == 'word_operation' and
-                                                         component.description[0] in component_descriptions_allowed):
-            code.extend(component.get_bit_based_vectorized_python_code(params, convert_output_to_bytes))
-        name = component.id
-        if True and component.type != 'constant':
-            code.append(f'  bit_vector_print_as_hex_values("{name}_output", {name})')
-    if store_intermediate_outputs:
-        code.append('  return intermediateOutputs')
-    elif CIPHER_INVERSE_SUFFIX in cipher.id:
-        code.append('  return intermediateOutputs["plaintext"]')
-    else:
-        code.append('  return intermediateOutputs["cipher_output"]')
-
-    return '\n'.join(code)
-
 
 def generate_bit_based_vectorized_python_code_string(cipher, store_intermediate_outputs=False,
                                                      verbosity=False, convert_output_to_bytes=False):
