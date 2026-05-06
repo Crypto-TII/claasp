@@ -9,15 +9,15 @@ from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
 
 
 def test_build_boomerang_model_chacha():
-    # cipher = ChachaPermutation(number_of_rounds=5)
+    cipher = ChachaPermutation(number_of_rounds=7)
     # cipher = SpeckBlockCipher(number_of_rounds=10)
-    cipher = LeaBlockCipher(number_of_rounds=14)
+    # cipher = LeaBlockCipher(number_of_rounds=14)
     # cipher = SpeckBlockCipher(block_bit_size=48, key_bit_size=72, number_of_rounds=12)
-    # cipher = SimonBlockCipher(block_bit_size=48, key_bit_size=72, number_of_rounds=15)
+    # cipher = SimonBlockCipher(block_bit_size=48, key_bit_size=72, number_of_rounds=16)
 
-    top_part_number_of_rounds = 7
-    middle_part_number_of_rounds = 1
-    bottom_part_number_of_rounds = 6
+    top_part_number_of_rounds = 2
+    middle_part_number_of_rounds = 2
+    bottom_part_number_of_rounds = 3
 
     component_dict = {
         "top_part_number_of_rounds": top_part_number_of_rounds,
