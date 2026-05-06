@@ -64,7 +64,7 @@ FILTER_ALIASES = {
     "tweakable_block_cipher": "tweakable_block_cipher",
 }
 IO_CIPHER_COMPONENT_NAMES = frozenset(
-    {"cipher_output", "intermediate_output", "output", "round_key_output", "round_output"}
+    {"cipher_output", "intermediate_output", "round_key_output", "round_output"}
 )
 MODULE_INIT_FILE = "__init__.py"
 
