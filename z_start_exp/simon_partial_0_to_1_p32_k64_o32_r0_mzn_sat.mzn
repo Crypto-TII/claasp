@@ -1,0 +1,735 @@
+array[0..16-1] of var 0..1: dummy_upper_xor_0_5;
+array[0..16-1] of var 0..1: dummy_upper_xor_0_6;
+array[0..16-1] of var 0..1: dummy_upper_xor_1_5;
+array[0..16-1] of var 0..1: dummy_upper_xor_1_6;
+array[0..16-1] of var 0..1: dummy_lower_xor_1_5;
+array[0..16-1] of var 0..1: dummy_lower_xor_1_6;
+array[0..16-1] of var 0..1: dummy_lower_xor_2_5;
+array[0..16-1] of var 0..1: dummy_lower_xor_2_6;include "globals.mzn";
+
+include "globals.mzn";
+
+% XOR of 2 arrays
+function array[int] of var 0..1: Xor2(array[int] of var 0..1: a, array[int] of var 0..1: b)=
+array1d(0..(length(a)-1), [(a[j]+b[j]) mod 2  | j in 0..(length(a)-1)]);
+
+% XOR of 3 arrays
+function array[int] of var 0..1: Xor3(array[int] of var 0..1: a, array[int] of var 0..1: b, array[int] of var 0..1: c)=
+array1d(0..(length(a)-1), [(a[j]+b[j]+c[j]) mod 2  | j in 0..(length(a)-1)]);
+
+% If a and b are known, then regular XOR. Otherwise, c is unknown (=2)
+predicate xor_bit_p1(var 0..2:a, var 0..2:b, var 0..2:c) =
+if ((a<2) /\ (b<2)) then (c=(a+b) mod 2) else c = 2 endif;
+
+% AND of 2 arrays
+function array[int] of var 0..1: And(array[int] of var 0..1: a, array[int] of var 0..1: b)=
+array1d(0..(length(a)-1), [(a[j]*b[j]) mod 2  | j in 0..(length(a)-1)]);
+
+% OR of 2 arrays
+function array[int] of var 0..1: OR(array[int] of var 0..1: a, array[int] of var 0..1: b)=
+array1d(0..(length(a)-1), [(a[j]+b[j]+a[j]*b[j]) mod 2  | j in 0..(length(a)-1)]);
+
+% Compl of an array
+function array[int] of var 0..1: Compl(array[int] of var 0..1: a)=
+array1d(0..(length(a)-1), [a[j]+1 mod 2| j in 0..(length(a)-1)]);
+
+% ANDZ of 2 arrays
+function array[int] of var 0..1: Andz(array[int] of var 0..1: a, array[int] of var 0..1: b, array[int] of var 0..1: c)=
+array1d(0..(length(a)-1), [(c[j]*(a[j]+b[j]+a[j]*b[j]+1)) mod 2 | j in 0..(length(a)-1)]);
+
+% Eq
+function array[int] of var 0..1: Eq(array[int] of var 0..1: a, array[int] of var 0..1: b, array[int] of var 0..1: c)=
+array1d(0..(length(a)-1), [all_equal([a[j],b[j],c[j]]) | j in 0..length(a)-1]);
+
+% Left rotation of X by val positions
+function array[int] of var 0..1: LRot(array[int] of var 0..1: X, var int: val)=
+array1d(0..(length(X)-1), [X[(j+val) mod length(X)] | j in 0..(length(X)-1)]);
+
+% Right rotation of X by val positions
+function array[int] of var 0..1: RRot(array[int] of var 0..1: X, var int: val)=
+array1d(0..(length(X)-1), [X[(length(X)+j-val) mod length(X)] | j in 0..(length(X)-1)]);
+
+% Left shift of X by val positions
+function array[int] of var 0..2: LShift(array[int] of var 0..2: X, var int:val)=
+array1d(0..(length(X)-1), [if j<length(X)-val then X[(j+val) mod length(X)] else 0 endif | j in 0..(length(X)-1)]);
+
+% Right shift of X by val positions
+function array[int] of var 0..1: RShift(array[int] of var 0..1: X, var int:val)=
+array1d(0..(length(X)-1), [if j>val-1 then X[(j-val) mod length(X)] else 0 endif | j in 0..(length(X)-1)]);
+
+%BitToInt
+predicate bitArrayToInt(array[int] of var 0..1: a, var int: n) =
+          let { int: len = length(a) }
+          in
+          n = sum(i in 1..len) (
+            ceil(pow(2, int2float(len-i))) * a[i]
+          )
+          /\ forall(i in 1..len) (a[i] >= 0)
+;
+
+%IntToBit
+predicate IntTobitArray(array[1..8] of var 0..1: a, int: n) = if n==0 then forall(i in 1..8)(a[i]=0) elseif n==1 then a[8]=1 /\ forall(i in 1..7)(a[i]=0) else
+          let { float: len = log2(n);
+          var int : len1 = floor(len);}
+          in
+          forall(i in 0..7)(a[8-i]=(n div pow(2,i) mod 2)) endif
+;
+
+%IntToBitOfFixedLength
+function array[int] of var 0..1: IntToBitLen(int: n, int: len)=
+array1d(0..(len-1), [floor(n/(pow(2,len-j-1))) mod 2  | j in 0..(len-1)]);
+
+%Count elements in array
+predicate count_eq(array[int] of var int: x, var int: y, var int: c) =
+    c = sum(i in index_set(x)) ( bool2int(x[i] == y) );
+    
+%Modular addition for xor linear
+predicate modadd_linear(array[int] of var 0..1: a, array[int] of var 0..1: b, array[int] of var 0..1: c, var int:p) = (
+   let {
+    array [0..length(a)] of var 0..1: state,
+    array [0..length(a)-1] of var 0..1: prob,
+    array [0..length(a)-1] of var 0..1: X=Xor3(a,b,c)
+   } in
+   state[0]=0 /\
+   forall (i in 0..length(a)-1)(
+        if state[i]==0 then all_equal([a[i],b[i],c[i]]) else true endif /\
+        state[i+1]=((X[i]+state[i]) mod 2) /\
+        if state[i]==1 then prob[i]=1 else prob[i]=0 endif) /\
+   p=100 * sum(prob)
+);
+
+%Modular addition for cipher
+predicate modadd(array[int] of var 0..1: a, array[int] of var 0..1: b, array[int] of var 0..1: c) = (
+   let {
+    array [0..length(a)-1] of var 0..1: carry,
+   } in
+   carry[length(a)-1] = 0  /\ forall (i in 0..length(a)-2)(carry[i] = ((carry[i+1]*a[i+1]+a[i+1]*b[i+1]+carry[i+1]*b[i+1]) mod 2))/\ forall (i in 0..length(a)-1)(c[i] = ((a[i] + b[i] + carry[i]) mod 2))
+);
+
+% Modular addition for truncated
+predicate modular_addition_word(array[int] of var 0..2: a, array[int] of var 0..2: b,array[int] of var 0..2:c) = (
+  let {
+    array [0..length(a)-1] of var 0..2: as = LShift(a,1),
+    array [0..length(a)-1] of var 0..2: bs = LShift(b,1),
+    array [0..length(a)-1] of var 0..2: cs = LShift(c,1),
+    var 0..length(a)-1: pivot;
+  } in
+  forall (i in 0..length(a)-1) (
+    if i<pivot then c[i]=2 else (as[i]=0) /\ (bs[i]=0) /\ (cs[i]=0) endif
+  ) /\
+  xor_bit_p1(a[pivot],b[pivot],c[pivot])
+  /\ if pivot>0 then a[pivot]+b[pivot]>0 else true endif
+);
+
+%Hamming weight of an array
+function var 0..512: Ham_weight(array[int] of var int: x) = sum(i in index_set(x))(x[i] != 0);
+
+constraint upper_rot_0_1[0] = upper_plaintext[1];
+constraint upper_rot_0_1[1] = upper_plaintext[2];
+constraint upper_rot_0_1[2] = upper_plaintext[3];
+constraint upper_rot_0_1[3] = upper_plaintext[4];
+constraint upper_rot_0_1[4] = upper_plaintext[5];
+constraint upper_rot_0_1[5] = upper_plaintext[6];
+constraint upper_rot_0_1[6] = upper_plaintext[7];
+constraint upper_rot_0_1[7] = upper_plaintext[8];
+constraint upper_rot_0_1[8] = upper_plaintext[9];
+constraint upper_rot_0_1[9] = upper_plaintext[10];
+constraint upper_rot_0_1[10] = upper_plaintext[11];
+constraint upper_rot_0_1[11] = upper_plaintext[12];
+constraint upper_rot_0_1[12] = upper_plaintext[13];
+constraint upper_rot_0_1[13] = upper_plaintext[14];
+constraint upper_rot_0_1[14] = upper_plaintext[15];
+constraint upper_rot_0_1[15] = upper_plaintext[0];
+constraint upper_rot_0_2[0] = upper_plaintext[8];
+constraint upper_rot_0_2[1] = upper_plaintext[9];
+constraint upper_rot_0_2[2] = upper_plaintext[10];
+constraint upper_rot_0_2[3] = upper_plaintext[11];
+constraint upper_rot_0_2[4] = upper_plaintext[12];
+constraint upper_rot_0_2[5] = upper_plaintext[13];
+constraint upper_rot_0_2[6] = upper_plaintext[14];
+constraint upper_rot_0_2[7] = upper_plaintext[15];
+constraint upper_rot_0_2[8] = upper_plaintext[0];
+constraint upper_rot_0_2[9] = upper_plaintext[1];
+constraint upper_rot_0_2[10] = upper_plaintext[2];
+constraint upper_rot_0_2[11] = upper_plaintext[3];
+constraint upper_rot_0_2[12] = upper_plaintext[4];
+constraint upper_rot_0_2[13] = upper_plaintext[5];
+constraint upper_rot_0_2[14] = upper_plaintext[6];
+constraint upper_rot_0_2[15] = upper_plaintext[7];
+constraint upper_rot_0_3[0] = upper_plaintext[2];
+constraint upper_rot_0_3[1] = upper_plaintext[3];
+constraint upper_rot_0_3[2] = upper_plaintext[4];
+constraint upper_rot_0_3[3] = upper_plaintext[5];
+constraint upper_rot_0_3[4] = upper_plaintext[6];
+constraint upper_rot_0_3[5] = upper_plaintext[7];
+constraint upper_rot_0_3[6] = upper_plaintext[8];
+constraint upper_rot_0_3[7] = upper_plaintext[9];
+constraint upper_rot_0_3[8] = upper_plaintext[10];
+constraint upper_rot_0_3[9] = upper_plaintext[11];
+constraint upper_rot_0_3[10] = upper_plaintext[12];
+constraint upper_rot_0_3[11] = upper_plaintext[13];
+constraint upper_rot_0_3[12] = upper_plaintext[14];
+constraint upper_rot_0_3[13] = upper_plaintext[15];
+constraint upper_rot_0_3[14] = upper_plaintext[0];
+constraint upper_rot_0_3[15] = upper_plaintext[1];
+constraint table([upper_rot_0_1[0]]++[upper_rot_0_2[0]]++[upper_and_0_4[0]]++[upper_p[0]],upper_and2inputs_DDT);
+constraint table([upper_rot_0_1[1]]++[upper_rot_0_2[1]]++[upper_and_0_4[1]]++[upper_p[1]],upper_and2inputs_DDT);
+constraint table([upper_rot_0_1[2]]++[upper_rot_0_2[2]]++[upper_and_0_4[2]]++[upper_p[2]],upper_and2inputs_DDT);
+constraint table([upper_rot_0_1[3]]++[upper_rot_0_2[3]]++[upper_and_0_4[3]]++[upper_p[3]],upper_and2inputs_DDT);
+constraint table([upper_rot_0_1[4]]++[upper_rot_0_2[4]]++[upper_and_0_4[4]]++[upper_p[4]],upper_and2inputs_DDT);
+constraint table([upper_rot_0_1[5]]++[upper_rot_0_2[5]]++[upper_and_0_4[5]]++[upper_p[5]],upper_and2inputs_DDT);
+constraint table([upper_rot_0_1[6]]++[upper_rot_0_2[6]]++[upper_and_0_4[6]]++[upper_p[6]],upper_and2inputs_DDT);
+constraint table([upper_rot_0_1[7]]++[upper_rot_0_2[7]]++[upper_and_0_4[7]]++[upper_p[7]],upper_and2inputs_DDT);
+constraint table([upper_rot_0_1[8]]++[upper_rot_0_2[8]]++[upper_and_0_4[8]]++[upper_p[8]],upper_and2inputs_DDT);
+constraint table([upper_rot_0_1[9]]++[upper_rot_0_2[9]]++[upper_and_0_4[9]]++[upper_p[9]],upper_and2inputs_DDT);
+constraint table([upper_rot_0_1[10]]++[upper_rot_0_2[10]]++[upper_and_0_4[10]]++[upper_p[10]],upper_and2inputs_DDT);
+constraint table([upper_rot_0_1[11]]++[upper_rot_0_2[11]]++[upper_and_0_4[11]]++[upper_p[11]],upper_and2inputs_DDT);
+constraint table([upper_rot_0_1[12]]++[upper_rot_0_2[12]]++[upper_and_0_4[12]]++[upper_p[12]],upper_and2inputs_DDT);
+constraint table([upper_rot_0_1[13]]++[upper_rot_0_2[13]]++[upper_and_0_4[13]]++[upper_p[13]],upper_and2inputs_DDT);
+constraint table([upper_rot_0_1[14]]++[upper_rot_0_2[14]]++[upper_and_0_4[14]]++[upper_p[14]],upper_and2inputs_DDT);
+constraint table([upper_rot_0_1[15]]++[upper_rot_0_2[15]]++[upper_and_0_4[15]]++[upper_p[15]],upper_and2inputs_DDT);
+constraint 2*dummy_upper_xor_0_5[0] = (upper_and_0_4[0] + upper_rot_0_3[0] + upper_xor_0_5[0]);
+constraint 2*dummy_upper_xor_0_5[1] = (upper_and_0_4[1] + upper_rot_0_3[1] + upper_xor_0_5[1]);
+constraint 2*dummy_upper_xor_0_5[2] = (upper_and_0_4[2] + upper_rot_0_3[2] + upper_xor_0_5[2]);
+constraint 2*dummy_upper_xor_0_5[3] = (upper_and_0_4[3] + upper_rot_0_3[3] + upper_xor_0_5[3]);
+constraint 2*dummy_upper_xor_0_5[4] = (upper_and_0_4[4] + upper_rot_0_3[4] + upper_xor_0_5[4]);
+constraint 2*dummy_upper_xor_0_5[5] = (upper_and_0_4[5] + upper_rot_0_3[5] + upper_xor_0_5[5]);
+constraint 2*dummy_upper_xor_0_5[6] = (upper_and_0_4[6] + upper_rot_0_3[6] + upper_xor_0_5[6]);
+constraint 2*dummy_upper_xor_0_5[7] = (upper_and_0_4[7] + upper_rot_0_3[7] + upper_xor_0_5[7]);
+constraint 2*dummy_upper_xor_0_5[8] = (upper_and_0_4[8] + upper_rot_0_3[8] + upper_xor_0_5[8]);
+constraint 2*dummy_upper_xor_0_5[9] = (upper_and_0_4[9] + upper_rot_0_3[9] + upper_xor_0_5[9]);
+constraint 2*dummy_upper_xor_0_5[10] = (upper_and_0_4[10] + upper_rot_0_3[10] + upper_xor_0_5[10]);
+constraint 2*dummy_upper_xor_0_5[11] = (upper_and_0_4[11] + upper_rot_0_3[11] + upper_xor_0_5[11]);
+constraint 2*dummy_upper_xor_0_5[12] = (upper_and_0_4[12] + upper_rot_0_3[12] + upper_xor_0_5[12]);
+constraint 2*dummy_upper_xor_0_5[13] = (upper_and_0_4[13] + upper_rot_0_3[13] + upper_xor_0_5[13]);
+constraint 2*dummy_upper_xor_0_5[14] = (upper_and_0_4[14] + upper_rot_0_3[14] + upper_xor_0_5[14]);
+constraint 2*dummy_upper_xor_0_5[15] = (upper_and_0_4[15] + upper_rot_0_3[15] + upper_xor_0_5[15]);
+constraint 2*dummy_upper_xor_0_6[0] = (upper_plaintext[16] + upper_xor_0_5[0] + upper_key[48] + upper_xor_0_6[0]);
+constraint 2*dummy_upper_xor_0_6[1] = (upper_plaintext[17] + upper_xor_0_5[1] + upper_key[49] + upper_xor_0_6[1]);
+constraint 2*dummy_upper_xor_0_6[2] = (upper_plaintext[18] + upper_xor_0_5[2] + upper_key[50] + upper_xor_0_6[2]);
+constraint 2*dummy_upper_xor_0_6[3] = (upper_plaintext[19] + upper_xor_0_5[3] + upper_key[51] + upper_xor_0_6[3]);
+constraint 2*dummy_upper_xor_0_6[4] = (upper_plaintext[20] + upper_xor_0_5[4] + upper_key[52] + upper_xor_0_6[4]);
+constraint 2*dummy_upper_xor_0_6[5] = (upper_plaintext[21] + upper_xor_0_5[5] + upper_key[53] + upper_xor_0_6[5]);
+constraint 2*dummy_upper_xor_0_6[6] = (upper_plaintext[22] + upper_xor_0_5[6] + upper_key[54] + upper_xor_0_6[6]);
+constraint 2*dummy_upper_xor_0_6[7] = (upper_plaintext[23] + upper_xor_0_5[7] + upper_key[55] + upper_xor_0_6[7]);
+constraint 2*dummy_upper_xor_0_6[8] = (upper_plaintext[24] + upper_xor_0_5[8] + upper_key[56] + upper_xor_0_6[8]);
+constraint 2*dummy_upper_xor_0_6[9] = (upper_plaintext[25] + upper_xor_0_5[9] + upper_key[57] + upper_xor_0_6[9]);
+constraint 2*dummy_upper_xor_0_6[10] = (upper_plaintext[26] + upper_xor_0_5[10] + upper_key[58] + upper_xor_0_6[10]);
+constraint 2*dummy_upper_xor_0_6[11] = (upper_plaintext[27] + upper_xor_0_5[11] + upper_key[59] + upper_xor_0_6[11]);
+constraint 2*dummy_upper_xor_0_6[12] = (upper_plaintext[28] + upper_xor_0_5[12] + upper_key[60] + upper_xor_0_6[12]);
+constraint 2*dummy_upper_xor_0_6[13] = (upper_plaintext[29] + upper_xor_0_5[13] + upper_key[61] + upper_xor_0_6[13]);
+constraint 2*dummy_upper_xor_0_6[14] = (upper_plaintext[30] + upper_xor_0_5[14] + upper_key[62] + upper_xor_0_6[14]);
+constraint 2*dummy_upper_xor_0_6[15] = (upper_plaintext[31] + upper_xor_0_5[15] + upper_key[63] + upper_xor_0_6[15]);
+constraint upper_intermediate_output_0_7[0] = upper_xor_0_6[0];
+constraint upper_intermediate_output_0_7[1] = upper_xor_0_6[1];
+constraint upper_intermediate_output_0_7[2] = upper_xor_0_6[2];
+constraint upper_intermediate_output_0_7[3] = upper_xor_0_6[3];
+constraint upper_intermediate_output_0_7[4] = upper_xor_0_6[4];
+constraint upper_intermediate_output_0_7[5] = upper_xor_0_6[5];
+constraint upper_intermediate_output_0_7[6] = upper_xor_0_6[6];
+constraint upper_intermediate_output_0_7[7] = upper_xor_0_6[7];
+constraint upper_intermediate_output_0_7[8] = upper_xor_0_6[8];
+constraint upper_intermediate_output_0_7[9] = upper_xor_0_6[9];
+constraint upper_intermediate_output_0_7[10] = upper_xor_0_6[10];
+constraint upper_intermediate_output_0_7[11] = upper_xor_0_6[11];
+constraint upper_intermediate_output_0_7[12] = upper_xor_0_6[12];
+constraint upper_intermediate_output_0_7[13] = upper_xor_0_6[13];
+constraint upper_intermediate_output_0_7[14] = upper_xor_0_6[14];
+constraint upper_intermediate_output_0_7[15] = upper_xor_0_6[15];
+constraint upper_intermediate_output_0_7[16] = upper_plaintext[0];
+constraint upper_intermediate_output_0_7[17] = upper_plaintext[1];
+constraint upper_intermediate_output_0_7[18] = upper_plaintext[2];
+constraint upper_intermediate_output_0_7[19] = upper_plaintext[3];
+constraint upper_intermediate_output_0_7[20] = upper_plaintext[4];
+constraint upper_intermediate_output_0_7[21] = upper_plaintext[5];
+constraint upper_intermediate_output_0_7[22] = upper_plaintext[6];
+constraint upper_intermediate_output_0_7[23] = upper_plaintext[7];
+constraint upper_intermediate_output_0_7[24] = upper_plaintext[8];
+constraint upper_intermediate_output_0_7[25] = upper_plaintext[9];
+constraint upper_intermediate_output_0_7[26] = upper_plaintext[10];
+constraint upper_intermediate_output_0_7[27] = upper_plaintext[11];
+constraint upper_intermediate_output_0_7[28] = upper_plaintext[12];
+constraint upper_intermediate_output_0_7[29] = upper_plaintext[13];
+constraint upper_intermediate_output_0_7[30] = upper_plaintext[14];
+constraint upper_intermediate_output_0_7[31] = upper_plaintext[15];
+constraint upper_rot_1_1[0] = upper_xor_0_6[1];
+constraint upper_rot_1_1[1] = upper_xor_0_6[2];
+constraint upper_rot_1_1[2] = upper_xor_0_6[3];
+constraint upper_rot_1_1[3] = upper_xor_0_6[4];
+constraint upper_rot_1_1[4] = upper_xor_0_6[5];
+constraint upper_rot_1_1[5] = upper_xor_0_6[6];
+constraint upper_rot_1_1[6] = upper_xor_0_6[7];
+constraint upper_rot_1_1[7] = upper_xor_0_6[8];
+constraint upper_rot_1_1[8] = upper_xor_0_6[9];
+constraint upper_rot_1_1[9] = upper_xor_0_6[10];
+constraint upper_rot_1_1[10] = upper_xor_0_6[11];
+constraint upper_rot_1_1[11] = upper_xor_0_6[12];
+constraint upper_rot_1_1[12] = upper_xor_0_6[13];
+constraint upper_rot_1_1[13] = upper_xor_0_6[14];
+constraint upper_rot_1_1[14] = upper_xor_0_6[15];
+constraint upper_rot_1_1[15] = upper_xor_0_6[0];
+constraint upper_rot_1_2[0] = upper_xor_0_6[8];
+constraint upper_rot_1_2[1] = upper_xor_0_6[9];
+constraint upper_rot_1_2[2] = upper_xor_0_6[10];
+constraint upper_rot_1_2[3] = upper_xor_0_6[11];
+constraint upper_rot_1_2[4] = upper_xor_0_6[12];
+constraint upper_rot_1_2[5] = upper_xor_0_6[13];
+constraint upper_rot_1_2[6] = upper_xor_0_6[14];
+constraint upper_rot_1_2[7] = upper_xor_0_6[15];
+constraint upper_rot_1_2[8] = upper_xor_0_6[0];
+constraint upper_rot_1_2[9] = upper_xor_0_6[1];
+constraint upper_rot_1_2[10] = upper_xor_0_6[2];
+constraint upper_rot_1_2[11] = upper_xor_0_6[3];
+constraint upper_rot_1_2[12] = upper_xor_0_6[4];
+constraint upper_rot_1_2[13] = upper_xor_0_6[5];
+constraint upper_rot_1_2[14] = upper_xor_0_6[6];
+constraint upper_rot_1_2[15] = upper_xor_0_6[7];
+constraint upper_rot_1_3[0] = upper_xor_0_6[2];
+constraint upper_rot_1_3[1] = upper_xor_0_6[3];
+constraint upper_rot_1_3[2] = upper_xor_0_6[4];
+constraint upper_rot_1_3[3] = upper_xor_0_6[5];
+constraint upper_rot_1_3[4] = upper_xor_0_6[6];
+constraint upper_rot_1_3[5] = upper_xor_0_6[7];
+constraint upper_rot_1_3[6] = upper_xor_0_6[8];
+constraint upper_rot_1_3[7] = upper_xor_0_6[9];
+constraint upper_rot_1_3[8] = upper_xor_0_6[10];
+constraint upper_rot_1_3[9] = upper_xor_0_6[11];
+constraint upper_rot_1_3[10] = upper_xor_0_6[12];
+constraint upper_rot_1_3[11] = upper_xor_0_6[13];
+constraint upper_rot_1_3[12] = upper_xor_0_6[14];
+constraint upper_rot_1_3[13] = upper_xor_0_6[15];
+constraint upper_rot_1_3[14] = upper_xor_0_6[0];
+constraint upper_rot_1_3[15] = upper_xor_0_6[1];
+constraint table([upper_rot_1_1[0]]++[upper_rot_1_2[0]]++[upper_and_1_4[0]]++[upper_p[16]],upper_and2inputs_DDT);
+constraint table([upper_rot_1_1[1]]++[upper_rot_1_2[1]]++[upper_and_1_4[1]]++[upper_p[17]],upper_and2inputs_DDT);
+constraint table([upper_rot_1_1[2]]++[upper_rot_1_2[2]]++[upper_and_1_4[2]]++[upper_p[18]],upper_and2inputs_DDT);
+constraint table([upper_rot_1_1[3]]++[upper_rot_1_2[3]]++[upper_and_1_4[3]]++[upper_p[19]],upper_and2inputs_DDT);
+constraint table([upper_rot_1_1[4]]++[upper_rot_1_2[4]]++[upper_and_1_4[4]]++[upper_p[20]],upper_and2inputs_DDT);
+constraint table([upper_rot_1_1[5]]++[upper_rot_1_2[5]]++[upper_and_1_4[5]]++[upper_p[21]],upper_and2inputs_DDT);
+constraint table([upper_rot_1_1[6]]++[upper_rot_1_2[6]]++[upper_and_1_4[6]]++[upper_p[22]],upper_and2inputs_DDT);
+constraint table([upper_rot_1_1[7]]++[upper_rot_1_2[7]]++[upper_and_1_4[7]]++[upper_p[23]],upper_and2inputs_DDT);
+constraint table([upper_rot_1_1[8]]++[upper_rot_1_2[8]]++[upper_and_1_4[8]]++[upper_p[24]],upper_and2inputs_DDT);
+constraint table([upper_rot_1_1[9]]++[upper_rot_1_2[9]]++[upper_and_1_4[9]]++[upper_p[25]],upper_and2inputs_DDT);
+constraint table([upper_rot_1_1[10]]++[upper_rot_1_2[10]]++[upper_and_1_4[10]]++[upper_p[26]],upper_and2inputs_DDT);
+constraint table([upper_rot_1_1[11]]++[upper_rot_1_2[11]]++[upper_and_1_4[11]]++[upper_p[27]],upper_and2inputs_DDT);
+constraint table([upper_rot_1_1[12]]++[upper_rot_1_2[12]]++[upper_and_1_4[12]]++[upper_p[28]],upper_and2inputs_DDT);
+constraint table([upper_rot_1_1[13]]++[upper_rot_1_2[13]]++[upper_and_1_4[13]]++[upper_p[29]],upper_and2inputs_DDT);
+constraint table([upper_rot_1_1[14]]++[upper_rot_1_2[14]]++[upper_and_1_4[14]]++[upper_p[30]],upper_and2inputs_DDT);
+constraint table([upper_rot_1_1[15]]++[upper_rot_1_2[15]]++[upper_and_1_4[15]]++[upper_p[31]],upper_and2inputs_DDT);
+constraint 2*dummy_upper_xor_1_5[0] = (upper_and_1_4[0] + upper_rot_1_3[0] + upper_xor_1_5[0]);
+constraint 2*dummy_upper_xor_1_5[1] = (upper_and_1_4[1] + upper_rot_1_3[1] + upper_xor_1_5[1]);
+constraint 2*dummy_upper_xor_1_5[2] = (upper_and_1_4[2] + upper_rot_1_3[2] + upper_xor_1_5[2]);
+constraint 2*dummy_upper_xor_1_5[3] = (upper_and_1_4[3] + upper_rot_1_3[3] + upper_xor_1_5[3]);
+constraint 2*dummy_upper_xor_1_5[4] = (upper_and_1_4[4] + upper_rot_1_3[4] + upper_xor_1_5[4]);
+constraint 2*dummy_upper_xor_1_5[5] = (upper_and_1_4[5] + upper_rot_1_3[5] + upper_xor_1_5[5]);
+constraint 2*dummy_upper_xor_1_5[6] = (upper_and_1_4[6] + upper_rot_1_3[6] + upper_xor_1_5[6]);
+constraint 2*dummy_upper_xor_1_5[7] = (upper_and_1_4[7] + upper_rot_1_3[7] + upper_xor_1_5[7]);
+constraint 2*dummy_upper_xor_1_5[8] = (upper_and_1_4[8] + upper_rot_1_3[8] + upper_xor_1_5[8]);
+constraint 2*dummy_upper_xor_1_5[9] = (upper_and_1_4[9] + upper_rot_1_3[9] + upper_xor_1_5[9]);
+constraint 2*dummy_upper_xor_1_5[10] = (upper_and_1_4[10] + upper_rot_1_3[10] + upper_xor_1_5[10]);
+constraint 2*dummy_upper_xor_1_5[11] = (upper_and_1_4[11] + upper_rot_1_3[11] + upper_xor_1_5[11]);
+constraint 2*dummy_upper_xor_1_5[12] = (upper_and_1_4[12] + upper_rot_1_3[12] + upper_xor_1_5[12]);
+constraint 2*dummy_upper_xor_1_5[13] = (upper_and_1_4[13] + upper_rot_1_3[13] + upper_xor_1_5[13]);
+constraint 2*dummy_upper_xor_1_5[14] = (upper_and_1_4[14] + upper_rot_1_3[14] + upper_xor_1_5[14]);
+constraint 2*dummy_upper_xor_1_5[15] = (upper_and_1_4[15] + upper_rot_1_3[15] + upper_xor_1_5[15]);
+constraint 2*dummy_upper_xor_1_6[0] = (upper_plaintext[0] + upper_xor_1_5[0] + upper_key[32] + upper_xor_1_6[0]);
+constraint 2*dummy_upper_xor_1_6[1] = (upper_plaintext[1] + upper_xor_1_5[1] + upper_key[33] + upper_xor_1_6[1]);
+constraint 2*dummy_upper_xor_1_6[2] = (upper_plaintext[2] + upper_xor_1_5[2] + upper_key[34] + upper_xor_1_6[2]);
+constraint 2*dummy_upper_xor_1_6[3] = (upper_plaintext[3] + upper_xor_1_5[3] + upper_key[35] + upper_xor_1_6[3]);
+constraint 2*dummy_upper_xor_1_6[4] = (upper_plaintext[4] + upper_xor_1_5[4] + upper_key[36] + upper_xor_1_6[4]);
+constraint 2*dummy_upper_xor_1_6[5] = (upper_plaintext[5] + upper_xor_1_5[5] + upper_key[37] + upper_xor_1_6[5]);
+constraint 2*dummy_upper_xor_1_6[6] = (upper_plaintext[6] + upper_xor_1_5[6] + upper_key[38] + upper_xor_1_6[6]);
+constraint 2*dummy_upper_xor_1_6[7] = (upper_plaintext[7] + upper_xor_1_5[7] + upper_key[39] + upper_xor_1_6[7]);
+constraint 2*dummy_upper_xor_1_6[8] = (upper_plaintext[8] + upper_xor_1_5[8] + upper_key[40] + upper_xor_1_6[8]);
+constraint 2*dummy_upper_xor_1_6[9] = (upper_plaintext[9] + upper_xor_1_5[9] + upper_key[41] + upper_xor_1_6[9]);
+constraint 2*dummy_upper_xor_1_6[10] = (upper_plaintext[10] + upper_xor_1_5[10] + upper_key[42] + upper_xor_1_6[10]);
+constraint 2*dummy_upper_xor_1_6[11] = (upper_plaintext[11] + upper_xor_1_5[11] + upper_key[43] + upper_xor_1_6[11]);
+constraint 2*dummy_upper_xor_1_6[12] = (upper_plaintext[12] + upper_xor_1_5[12] + upper_key[44] + upper_xor_1_6[12]);
+constraint 2*dummy_upper_xor_1_6[13] = (upper_plaintext[13] + upper_xor_1_5[13] + upper_key[45] + upper_xor_1_6[13]);
+constraint 2*dummy_upper_xor_1_6[14] = (upper_plaintext[14] + upper_xor_1_5[14] + upper_key[46] + upper_xor_1_6[14]);
+constraint 2*dummy_upper_xor_1_6[15] = (upper_plaintext[15] + upper_xor_1_5[15] + upper_key[47] + upper_xor_1_6[15]);
+constraint upper_intermediate_output_1_7[0] = upper_xor_1_6[0];
+constraint upper_intermediate_output_1_7[1] = upper_xor_1_6[1];
+constraint upper_intermediate_output_1_7[2] = upper_xor_1_6[2];
+constraint upper_intermediate_output_1_7[3] = upper_xor_1_6[3];
+constraint upper_intermediate_output_1_7[4] = upper_xor_1_6[4];
+constraint upper_intermediate_output_1_7[5] = upper_xor_1_6[5];
+constraint upper_intermediate_output_1_7[6] = upper_xor_1_6[6];
+constraint upper_intermediate_output_1_7[7] = upper_xor_1_6[7];
+constraint upper_intermediate_output_1_7[8] = upper_xor_1_6[8];
+constraint upper_intermediate_output_1_7[9] = upper_xor_1_6[9];
+constraint upper_intermediate_output_1_7[10] = upper_xor_1_6[10];
+constraint upper_intermediate_output_1_7[11] = upper_xor_1_6[11];
+constraint upper_intermediate_output_1_7[12] = upper_xor_1_6[12];
+constraint upper_intermediate_output_1_7[13] = upper_xor_1_6[13];
+constraint upper_intermediate_output_1_7[14] = upper_xor_1_6[14];
+constraint upper_intermediate_output_1_7[15] = upper_xor_1_6[15];
+constraint upper_intermediate_output_1_7[16] = upper_xor_0_6[0];
+constraint upper_intermediate_output_1_7[17] = upper_xor_0_6[1];
+constraint upper_intermediate_output_1_7[18] = upper_xor_0_6[2];
+constraint upper_intermediate_output_1_7[19] = upper_xor_0_6[3];
+constraint upper_intermediate_output_1_7[20] = upper_xor_0_6[4];
+constraint upper_intermediate_output_1_7[21] = upper_xor_0_6[5];
+constraint upper_intermediate_output_1_7[22] = upper_xor_0_6[6];
+constraint upper_intermediate_output_1_7[23] = upper_xor_0_6[7];
+constraint upper_intermediate_output_1_7[24] = upper_xor_0_6[8];
+constraint upper_intermediate_output_1_7[25] = upper_xor_0_6[9];
+constraint upper_intermediate_output_1_7[26] = upper_xor_0_6[10];
+constraint upper_intermediate_output_1_7[27] = upper_xor_0_6[11];
+constraint upper_intermediate_output_1_7[28] = upper_xor_0_6[12];
+constraint upper_intermediate_output_1_7[29] = upper_xor_0_6[13];
+constraint upper_intermediate_output_1_7[30] = upper_xor_0_6[14];
+constraint upper_intermediate_output_1_7[31] = upper_xor_0_6[15];
+constraint lower_rot_1_1[0] = lower_xor_2_6[1];
+constraint lower_rot_1_1[1] = lower_xor_2_6[2];
+constraint lower_rot_1_1[2] = lower_xor_2_6[3];
+constraint lower_rot_1_1[3] = lower_xor_2_6[4];
+constraint lower_rot_1_1[4] = lower_xor_2_6[5];
+constraint lower_rot_1_1[5] = lower_xor_2_6[6];
+constraint lower_rot_1_1[6] = lower_xor_2_6[7];
+constraint lower_rot_1_1[7] = lower_xor_2_6[8];
+constraint lower_rot_1_1[8] = lower_xor_2_6[9];
+constraint lower_rot_1_1[9] = lower_xor_2_6[10];
+constraint lower_rot_1_1[10] = lower_xor_2_6[11];
+constraint lower_rot_1_1[11] = lower_xor_2_6[12];
+constraint lower_rot_1_1[12] = lower_xor_2_6[13];
+constraint lower_rot_1_1[13] = lower_xor_2_6[14];
+constraint lower_rot_1_1[14] = lower_xor_2_6[15];
+constraint lower_rot_1_1[15] = lower_xor_2_6[0];
+constraint lower_rot_1_3[0] = lower_xor_2_6[2];
+constraint lower_rot_1_3[1] = lower_xor_2_6[3];
+constraint lower_rot_1_3[2] = lower_xor_2_6[4];
+constraint lower_rot_1_3[3] = lower_xor_2_6[5];
+constraint lower_rot_1_3[4] = lower_xor_2_6[6];
+constraint lower_rot_1_3[5] = lower_xor_2_6[7];
+constraint lower_rot_1_3[6] = lower_xor_2_6[8];
+constraint lower_rot_1_3[7] = lower_xor_2_6[9];
+constraint lower_rot_1_3[8] = lower_xor_2_6[10];
+constraint lower_rot_1_3[9] = lower_xor_2_6[11];
+constraint lower_rot_1_3[10] = lower_xor_2_6[12];
+constraint lower_rot_1_3[11] = lower_xor_2_6[13];
+constraint lower_rot_1_3[12] = lower_xor_2_6[14];
+constraint lower_rot_1_3[13] = lower_xor_2_6[15];
+constraint lower_rot_1_3[14] = lower_xor_2_6[0];
+constraint lower_rot_1_3[15] = lower_xor_2_6[1];
+constraint lower_intermediate_output_1_7[0] = lower_cipher_output_2_8[16];
+constraint lower_intermediate_output_1_7[1] = lower_cipher_output_2_8[17];
+constraint lower_intermediate_output_1_7[2] = lower_cipher_output_2_8[18];
+constraint lower_intermediate_output_1_7[3] = lower_cipher_output_2_8[19];
+constraint lower_intermediate_output_1_7[4] = lower_cipher_output_2_8[20];
+constraint lower_intermediate_output_1_7[5] = lower_cipher_output_2_8[21];
+constraint lower_intermediate_output_1_7[6] = lower_cipher_output_2_8[22];
+constraint lower_intermediate_output_1_7[7] = lower_cipher_output_2_8[23];
+constraint lower_intermediate_output_1_7[8] = lower_cipher_output_2_8[24];
+constraint lower_intermediate_output_1_7[9] = lower_cipher_output_2_8[25];
+constraint lower_intermediate_output_1_7[10] = lower_cipher_output_2_8[26];
+constraint lower_intermediate_output_1_7[11] = lower_cipher_output_2_8[27];
+constraint lower_intermediate_output_1_7[12] = lower_cipher_output_2_8[28];
+constraint lower_intermediate_output_1_7[13] = lower_cipher_output_2_8[29];
+constraint lower_intermediate_output_1_7[14] = lower_cipher_output_2_8[30];
+constraint lower_intermediate_output_1_7[15] = lower_cipher_output_2_8[31];
+constraint lower_intermediate_output_1_7[16] = lower_xor_2_6[0];
+constraint lower_intermediate_output_1_7[17] = lower_xor_2_6[1];
+constraint lower_intermediate_output_1_7[18] = lower_xor_2_6[2];
+constraint lower_intermediate_output_1_7[19] = lower_xor_2_6[3];
+constraint lower_intermediate_output_1_7[20] = lower_xor_2_6[4];
+constraint lower_intermediate_output_1_7[21] = lower_xor_2_6[5];
+constraint lower_intermediate_output_1_7[22] = lower_xor_2_6[6];
+constraint lower_intermediate_output_1_7[23] = lower_xor_2_6[7];
+constraint lower_intermediate_output_1_7[24] = lower_xor_2_6[8];
+constraint lower_intermediate_output_1_7[25] = lower_xor_2_6[9];
+constraint lower_intermediate_output_1_7[26] = lower_xor_2_6[10];
+constraint lower_intermediate_output_1_7[27] = lower_xor_2_6[11];
+constraint lower_intermediate_output_1_7[28] = lower_xor_2_6[12];
+constraint lower_intermediate_output_1_7[29] = lower_xor_2_6[13];
+constraint lower_intermediate_output_1_7[30] = lower_xor_2_6[14];
+constraint lower_intermediate_output_1_7[31] = lower_xor_2_6[15];
+constraint lower_rot_1_2[0] = lower_xor_2_6[8];
+constraint lower_rot_1_2[1] = lower_xor_2_6[9];
+constraint lower_rot_1_2[2] = lower_xor_2_6[10];
+constraint lower_rot_1_2[3] = lower_xor_2_6[11];
+constraint lower_rot_1_2[4] = lower_xor_2_6[12];
+constraint lower_rot_1_2[5] = lower_xor_2_6[13];
+constraint lower_rot_1_2[6] = lower_xor_2_6[14];
+constraint lower_rot_1_2[7] = lower_xor_2_6[15];
+constraint lower_rot_1_2[8] = lower_xor_2_6[0];
+constraint lower_rot_1_2[9] = lower_xor_2_6[1];
+constraint lower_rot_1_2[10] = lower_xor_2_6[2];
+constraint lower_rot_1_2[11] = lower_xor_2_6[3];
+constraint lower_rot_1_2[12] = lower_xor_2_6[4];
+constraint lower_rot_1_2[13] = lower_xor_2_6[5];
+constraint lower_rot_1_2[14] = lower_xor_2_6[6];
+constraint lower_rot_1_2[15] = lower_xor_2_6[7];
+constraint table([lower_rot_1_1[0]]++[lower_rot_1_2[0]]++[lower_and_1_4[0]]++[lower_p[0]],lower_and2inputs_DDT);
+constraint table([lower_rot_1_1[1]]++[lower_rot_1_2[1]]++[lower_and_1_4[1]]++[lower_p[1]],lower_and2inputs_DDT);
+constraint table([lower_rot_1_1[2]]++[lower_rot_1_2[2]]++[lower_and_1_4[2]]++[lower_p[2]],lower_and2inputs_DDT);
+constraint table([lower_rot_1_1[3]]++[lower_rot_1_2[3]]++[lower_and_1_4[3]]++[lower_p[3]],lower_and2inputs_DDT);
+constraint table([lower_rot_1_1[4]]++[lower_rot_1_2[4]]++[lower_and_1_4[4]]++[lower_p[4]],lower_and2inputs_DDT);
+constraint table([lower_rot_1_1[5]]++[lower_rot_1_2[5]]++[lower_and_1_4[5]]++[lower_p[5]],lower_and2inputs_DDT);
+constraint table([lower_rot_1_1[6]]++[lower_rot_1_2[6]]++[lower_and_1_4[6]]++[lower_p[6]],lower_and2inputs_DDT);
+constraint table([lower_rot_1_1[7]]++[lower_rot_1_2[7]]++[lower_and_1_4[7]]++[lower_p[7]],lower_and2inputs_DDT);
+constraint table([lower_rot_1_1[8]]++[lower_rot_1_2[8]]++[lower_and_1_4[8]]++[lower_p[8]],lower_and2inputs_DDT);
+constraint table([lower_rot_1_1[9]]++[lower_rot_1_2[9]]++[lower_and_1_4[9]]++[lower_p[9]],lower_and2inputs_DDT);
+constraint table([lower_rot_1_1[10]]++[lower_rot_1_2[10]]++[lower_and_1_4[10]]++[lower_p[10]],lower_and2inputs_DDT);
+constraint table([lower_rot_1_1[11]]++[lower_rot_1_2[11]]++[lower_and_1_4[11]]++[lower_p[11]],lower_and2inputs_DDT);
+constraint table([lower_rot_1_1[12]]++[lower_rot_1_2[12]]++[lower_and_1_4[12]]++[lower_p[12]],lower_and2inputs_DDT);
+constraint table([lower_rot_1_1[13]]++[lower_rot_1_2[13]]++[lower_and_1_4[13]]++[lower_p[13]],lower_and2inputs_DDT);
+constraint table([lower_rot_1_1[14]]++[lower_rot_1_2[14]]++[lower_and_1_4[14]]++[lower_p[14]],lower_and2inputs_DDT);
+constraint table([lower_rot_1_1[15]]++[lower_rot_1_2[15]]++[lower_and_1_4[15]]++[lower_p[15]],lower_and2inputs_DDT);
+constraint 2*dummy_lower_xor_1_5[0] = (lower_and_1_4[0] + lower_rot_1_3[0] + lower_xor_1_5[0]);
+constraint 2*dummy_lower_xor_1_5[1] = (lower_and_1_4[1] + lower_rot_1_3[1] + lower_xor_1_5[1]);
+constraint 2*dummy_lower_xor_1_5[2] = (lower_and_1_4[2] + lower_rot_1_3[2] + lower_xor_1_5[2]);
+constraint 2*dummy_lower_xor_1_5[3] = (lower_and_1_4[3] + lower_rot_1_3[3] + lower_xor_1_5[3]);
+constraint 2*dummy_lower_xor_1_5[4] = (lower_and_1_4[4] + lower_rot_1_3[4] + lower_xor_1_5[4]);
+constraint 2*dummy_lower_xor_1_5[5] = (lower_and_1_4[5] + lower_rot_1_3[5] + lower_xor_1_5[5]);
+constraint 2*dummy_lower_xor_1_5[6] = (lower_and_1_4[6] + lower_rot_1_3[6] + lower_xor_1_5[6]);
+constraint 2*dummy_lower_xor_1_5[7] = (lower_and_1_4[7] + lower_rot_1_3[7] + lower_xor_1_5[7]);
+constraint 2*dummy_lower_xor_1_5[8] = (lower_and_1_4[8] + lower_rot_1_3[8] + lower_xor_1_5[8]);
+constraint 2*dummy_lower_xor_1_5[9] = (lower_and_1_4[9] + lower_rot_1_3[9] + lower_xor_1_5[9]);
+constraint 2*dummy_lower_xor_1_5[10] = (lower_and_1_4[10] + lower_rot_1_3[10] + lower_xor_1_5[10]);
+constraint 2*dummy_lower_xor_1_5[11] = (lower_and_1_4[11] + lower_rot_1_3[11] + lower_xor_1_5[11]);
+constraint 2*dummy_lower_xor_1_5[12] = (lower_and_1_4[12] + lower_rot_1_3[12] + lower_xor_1_5[12]);
+constraint 2*dummy_lower_xor_1_5[13] = (lower_and_1_4[13] + lower_rot_1_3[13] + lower_xor_1_5[13]);
+constraint 2*dummy_lower_xor_1_5[14] = (lower_and_1_4[14] + lower_rot_1_3[14] + lower_xor_1_5[14]);
+constraint 2*dummy_lower_xor_1_5[15] = (lower_and_1_4[15] + lower_rot_1_3[15] + lower_xor_1_5[15]);
+constraint 2*dummy_lower_xor_1_6[0] = (lower_xor_1_5[0] + lower_key[32] + lower_cipher_output_2_8[16] + lower_xor_1_6[0]);
+constraint 2*dummy_lower_xor_1_6[1] = (lower_xor_1_5[1] + lower_key[33] + lower_cipher_output_2_8[17] + lower_xor_1_6[1]);
+constraint 2*dummy_lower_xor_1_6[2] = (lower_xor_1_5[2] + lower_key[34] + lower_cipher_output_2_8[18] + lower_xor_1_6[2]);
+constraint 2*dummy_lower_xor_1_6[3] = (lower_xor_1_5[3] + lower_key[35] + lower_cipher_output_2_8[19] + lower_xor_1_6[3]);
+constraint 2*dummy_lower_xor_1_6[4] = (lower_xor_1_5[4] + lower_key[36] + lower_cipher_output_2_8[20] + lower_xor_1_6[4]);
+constraint 2*dummy_lower_xor_1_6[5] = (lower_xor_1_5[5] + lower_key[37] + lower_cipher_output_2_8[21] + lower_xor_1_6[5]);
+constraint 2*dummy_lower_xor_1_6[6] = (lower_xor_1_5[6] + lower_key[38] + lower_cipher_output_2_8[22] + lower_xor_1_6[6]);
+constraint 2*dummy_lower_xor_1_6[7] = (lower_xor_1_5[7] + lower_key[39] + lower_cipher_output_2_8[23] + lower_xor_1_6[7]);
+constraint 2*dummy_lower_xor_1_6[8] = (lower_xor_1_5[8] + lower_key[40] + lower_cipher_output_2_8[24] + lower_xor_1_6[8]);
+constraint 2*dummy_lower_xor_1_6[9] = (lower_xor_1_5[9] + lower_key[41] + lower_cipher_output_2_8[25] + lower_xor_1_6[9]);
+constraint 2*dummy_lower_xor_1_6[10] = (lower_xor_1_5[10] + lower_key[42] + lower_cipher_output_2_8[26] + lower_xor_1_6[10]);
+constraint 2*dummy_lower_xor_1_6[11] = (lower_xor_1_5[11] + lower_key[43] + lower_cipher_output_2_8[27] + lower_xor_1_6[11]);
+constraint 2*dummy_lower_xor_1_6[12] = (lower_xor_1_5[12] + lower_key[44] + lower_cipher_output_2_8[28] + lower_xor_1_6[12]);
+constraint 2*dummy_lower_xor_1_6[13] = (lower_xor_1_5[13] + lower_key[45] + lower_cipher_output_2_8[29] + lower_xor_1_6[13]);
+constraint 2*dummy_lower_xor_1_6[14] = (lower_xor_1_5[14] + lower_key[46] + lower_cipher_output_2_8[30] + lower_xor_1_6[14]);
+constraint 2*dummy_lower_xor_1_6[15] = (lower_xor_1_5[15] + lower_key[47] + lower_cipher_output_2_8[31] + lower_xor_1_6[15]);
+constraint lower_rot_2_2[0] = lower_cipher_output_2_8[24];
+constraint lower_rot_2_2[1] = lower_cipher_output_2_8[25];
+constraint lower_rot_2_2[2] = lower_cipher_output_2_8[26];
+constraint lower_rot_2_2[3] = lower_cipher_output_2_8[27];
+constraint lower_rot_2_2[4] = lower_cipher_output_2_8[28];
+constraint lower_rot_2_2[5] = lower_cipher_output_2_8[29];
+constraint lower_rot_2_2[6] = lower_cipher_output_2_8[30];
+constraint lower_rot_2_2[7] = lower_cipher_output_2_8[31];
+constraint lower_rot_2_2[8] = lower_cipher_output_2_8[16];
+constraint lower_rot_2_2[9] = lower_cipher_output_2_8[17];
+constraint lower_rot_2_2[10] = lower_cipher_output_2_8[18];
+constraint lower_rot_2_2[11] = lower_cipher_output_2_8[19];
+constraint lower_rot_2_2[12] = lower_cipher_output_2_8[20];
+constraint lower_rot_2_2[13] = lower_cipher_output_2_8[21];
+constraint lower_rot_2_2[14] = lower_cipher_output_2_8[22];
+constraint lower_rot_2_2[15] = lower_cipher_output_2_8[23];
+constraint lower_intermediate_output_2_7[0] = lower_cipher_output_2_8[0];
+constraint lower_intermediate_output_2_7[1] = lower_cipher_output_2_8[1];
+constraint lower_intermediate_output_2_7[2] = lower_cipher_output_2_8[2];
+constraint lower_intermediate_output_2_7[3] = lower_cipher_output_2_8[3];
+constraint lower_intermediate_output_2_7[4] = lower_cipher_output_2_8[4];
+constraint lower_intermediate_output_2_7[5] = lower_cipher_output_2_8[5];
+constraint lower_intermediate_output_2_7[6] = lower_cipher_output_2_8[6];
+constraint lower_intermediate_output_2_7[7] = lower_cipher_output_2_8[7];
+constraint lower_intermediate_output_2_7[8] = lower_cipher_output_2_8[8];
+constraint lower_intermediate_output_2_7[9] = lower_cipher_output_2_8[9];
+constraint lower_intermediate_output_2_7[10] = lower_cipher_output_2_8[10];
+constraint lower_intermediate_output_2_7[11] = lower_cipher_output_2_8[11];
+constraint lower_intermediate_output_2_7[12] = lower_cipher_output_2_8[12];
+constraint lower_intermediate_output_2_7[13] = lower_cipher_output_2_8[13];
+constraint lower_intermediate_output_2_7[14] = lower_cipher_output_2_8[14];
+constraint lower_intermediate_output_2_7[15] = lower_cipher_output_2_8[15];
+constraint lower_intermediate_output_2_7[16] = lower_cipher_output_2_8[16];
+constraint lower_intermediate_output_2_7[17] = lower_cipher_output_2_8[17];
+constraint lower_intermediate_output_2_7[18] = lower_cipher_output_2_8[18];
+constraint lower_intermediate_output_2_7[19] = lower_cipher_output_2_8[19];
+constraint lower_intermediate_output_2_7[20] = lower_cipher_output_2_8[20];
+constraint lower_intermediate_output_2_7[21] = lower_cipher_output_2_8[21];
+constraint lower_intermediate_output_2_7[22] = lower_cipher_output_2_8[22];
+constraint lower_intermediate_output_2_7[23] = lower_cipher_output_2_8[23];
+constraint lower_intermediate_output_2_7[24] = lower_cipher_output_2_8[24];
+constraint lower_intermediate_output_2_7[25] = lower_cipher_output_2_8[25];
+constraint lower_intermediate_output_2_7[26] = lower_cipher_output_2_8[26];
+constraint lower_intermediate_output_2_7[27] = lower_cipher_output_2_8[27];
+constraint lower_intermediate_output_2_7[28] = lower_cipher_output_2_8[28];
+constraint lower_intermediate_output_2_7[29] = lower_cipher_output_2_8[29];
+constraint lower_intermediate_output_2_7[30] = lower_cipher_output_2_8[30];
+constraint lower_intermediate_output_2_7[31] = lower_cipher_output_2_8[31];
+constraint lower_rot_2_1[0] = lower_cipher_output_2_8[17];
+constraint lower_rot_2_1[1] = lower_cipher_output_2_8[18];
+constraint lower_rot_2_1[2] = lower_cipher_output_2_8[19];
+constraint lower_rot_2_1[3] = lower_cipher_output_2_8[20];
+constraint lower_rot_2_1[4] = lower_cipher_output_2_8[21];
+constraint lower_rot_2_1[5] = lower_cipher_output_2_8[22];
+constraint lower_rot_2_1[6] = lower_cipher_output_2_8[23];
+constraint lower_rot_2_1[7] = lower_cipher_output_2_8[24];
+constraint lower_rot_2_1[8] = lower_cipher_output_2_8[25];
+constraint lower_rot_2_1[9] = lower_cipher_output_2_8[26];
+constraint lower_rot_2_1[10] = lower_cipher_output_2_8[27];
+constraint lower_rot_2_1[11] = lower_cipher_output_2_8[28];
+constraint lower_rot_2_1[12] = lower_cipher_output_2_8[29];
+constraint lower_rot_2_1[13] = lower_cipher_output_2_8[30];
+constraint lower_rot_2_1[14] = lower_cipher_output_2_8[31];
+constraint lower_rot_2_1[15] = lower_cipher_output_2_8[16];
+constraint table([lower_rot_2_1[0]]++[lower_rot_2_2[0]]++[lower_and_2_4[0]]++[lower_p[16]],lower_and2inputs_DDT);
+constraint table([lower_rot_2_1[1]]++[lower_rot_2_2[1]]++[lower_and_2_4[1]]++[lower_p[17]],lower_and2inputs_DDT);
+constraint table([lower_rot_2_1[2]]++[lower_rot_2_2[2]]++[lower_and_2_4[2]]++[lower_p[18]],lower_and2inputs_DDT);
+constraint table([lower_rot_2_1[3]]++[lower_rot_2_2[3]]++[lower_and_2_4[3]]++[lower_p[19]],lower_and2inputs_DDT);
+constraint table([lower_rot_2_1[4]]++[lower_rot_2_2[4]]++[lower_and_2_4[4]]++[lower_p[20]],lower_and2inputs_DDT);
+constraint table([lower_rot_2_1[5]]++[lower_rot_2_2[5]]++[lower_and_2_4[5]]++[lower_p[21]],lower_and2inputs_DDT);
+constraint table([lower_rot_2_1[6]]++[lower_rot_2_2[6]]++[lower_and_2_4[6]]++[lower_p[22]],lower_and2inputs_DDT);
+constraint table([lower_rot_2_1[7]]++[lower_rot_2_2[7]]++[lower_and_2_4[7]]++[lower_p[23]],lower_and2inputs_DDT);
+constraint table([lower_rot_2_1[8]]++[lower_rot_2_2[8]]++[lower_and_2_4[8]]++[lower_p[24]],lower_and2inputs_DDT);
+constraint table([lower_rot_2_1[9]]++[lower_rot_2_2[9]]++[lower_and_2_4[9]]++[lower_p[25]],lower_and2inputs_DDT);
+constraint table([lower_rot_2_1[10]]++[lower_rot_2_2[10]]++[lower_and_2_4[10]]++[lower_p[26]],lower_and2inputs_DDT);
+constraint table([lower_rot_2_1[11]]++[lower_rot_2_2[11]]++[lower_and_2_4[11]]++[lower_p[27]],lower_and2inputs_DDT);
+constraint table([lower_rot_2_1[12]]++[lower_rot_2_2[12]]++[lower_and_2_4[12]]++[lower_p[28]],lower_and2inputs_DDT);
+constraint table([lower_rot_2_1[13]]++[lower_rot_2_2[13]]++[lower_and_2_4[13]]++[lower_p[29]],lower_and2inputs_DDT);
+constraint table([lower_rot_2_1[14]]++[lower_rot_2_2[14]]++[lower_and_2_4[14]]++[lower_p[30]],lower_and2inputs_DDT);
+constraint table([lower_rot_2_1[15]]++[lower_rot_2_2[15]]++[lower_and_2_4[15]]++[lower_p[31]],lower_and2inputs_DDT);
+constraint lower_rot_2_3[0] = lower_cipher_output_2_8[18];
+constraint lower_rot_2_3[1] = lower_cipher_output_2_8[19];
+constraint lower_rot_2_3[2] = lower_cipher_output_2_8[20];
+constraint lower_rot_2_3[3] = lower_cipher_output_2_8[21];
+constraint lower_rot_2_3[4] = lower_cipher_output_2_8[22];
+constraint lower_rot_2_3[5] = lower_cipher_output_2_8[23];
+constraint lower_rot_2_3[6] = lower_cipher_output_2_8[24];
+constraint lower_rot_2_3[7] = lower_cipher_output_2_8[25];
+constraint lower_rot_2_3[8] = lower_cipher_output_2_8[26];
+constraint lower_rot_2_3[9] = lower_cipher_output_2_8[27];
+constraint lower_rot_2_3[10] = lower_cipher_output_2_8[28];
+constraint lower_rot_2_3[11] = lower_cipher_output_2_8[29];
+constraint lower_rot_2_3[12] = lower_cipher_output_2_8[30];
+constraint lower_rot_2_3[13] = lower_cipher_output_2_8[31];
+constraint lower_rot_2_3[14] = lower_cipher_output_2_8[16];
+constraint lower_rot_2_3[15] = lower_cipher_output_2_8[17];
+constraint 2*dummy_lower_xor_2_5[0] = (lower_and_2_4[0] + lower_rot_2_3[0] + lower_xor_2_5[0]);
+constraint 2*dummy_lower_xor_2_5[1] = (lower_and_2_4[1] + lower_rot_2_3[1] + lower_xor_2_5[1]);
+constraint 2*dummy_lower_xor_2_5[2] = (lower_and_2_4[2] + lower_rot_2_3[2] + lower_xor_2_5[2]);
+constraint 2*dummy_lower_xor_2_5[3] = (lower_and_2_4[3] + lower_rot_2_3[3] + lower_xor_2_5[3]);
+constraint 2*dummy_lower_xor_2_5[4] = (lower_and_2_4[4] + lower_rot_2_3[4] + lower_xor_2_5[4]);
+constraint 2*dummy_lower_xor_2_5[5] = (lower_and_2_4[5] + lower_rot_2_3[5] + lower_xor_2_5[5]);
+constraint 2*dummy_lower_xor_2_5[6] = (lower_and_2_4[6] + lower_rot_2_3[6] + lower_xor_2_5[6]);
+constraint 2*dummy_lower_xor_2_5[7] = (lower_and_2_4[7] + lower_rot_2_3[7] + lower_xor_2_5[7]);
+constraint 2*dummy_lower_xor_2_5[8] = (lower_and_2_4[8] + lower_rot_2_3[8] + lower_xor_2_5[8]);
+constraint 2*dummy_lower_xor_2_5[9] = (lower_and_2_4[9] + lower_rot_2_3[9] + lower_xor_2_5[9]);
+constraint 2*dummy_lower_xor_2_5[10] = (lower_and_2_4[10] + lower_rot_2_3[10] + lower_xor_2_5[10]);
+constraint 2*dummy_lower_xor_2_5[11] = (lower_and_2_4[11] + lower_rot_2_3[11] + lower_xor_2_5[11]);
+constraint 2*dummy_lower_xor_2_5[12] = (lower_and_2_4[12] + lower_rot_2_3[12] + lower_xor_2_5[12]);
+constraint 2*dummy_lower_xor_2_5[13] = (lower_and_2_4[13] + lower_rot_2_3[13] + lower_xor_2_5[13]);
+constraint 2*dummy_lower_xor_2_5[14] = (lower_and_2_4[14] + lower_rot_2_3[14] + lower_xor_2_5[14]);
+constraint 2*dummy_lower_xor_2_5[15] = (lower_and_2_4[15] + lower_rot_2_3[15] + lower_xor_2_5[15]);
+constraint 2*dummy_lower_xor_2_6[0] = (lower_xor_2_5[0] + lower_key[16] + lower_cipher_output_2_8[0] + lower_xor_2_6[0]);
+constraint 2*dummy_lower_xor_2_6[1] = (lower_xor_2_5[1] + lower_key[17] + lower_cipher_output_2_8[1] + lower_xor_2_6[1]);
+constraint 2*dummy_lower_xor_2_6[2] = (lower_xor_2_5[2] + lower_key[18] + lower_cipher_output_2_8[2] + lower_xor_2_6[2]);
+constraint 2*dummy_lower_xor_2_6[3] = (lower_xor_2_5[3] + lower_key[19] + lower_cipher_output_2_8[3] + lower_xor_2_6[3]);
+constraint 2*dummy_lower_xor_2_6[4] = (lower_xor_2_5[4] + lower_key[20] + lower_cipher_output_2_8[4] + lower_xor_2_6[4]);
+constraint 2*dummy_lower_xor_2_6[5] = (lower_xor_2_5[5] + lower_key[21] + lower_cipher_output_2_8[5] + lower_xor_2_6[5]);
+constraint 2*dummy_lower_xor_2_6[6] = (lower_xor_2_5[6] + lower_key[22] + lower_cipher_output_2_8[6] + lower_xor_2_6[6]);
+constraint 2*dummy_lower_xor_2_6[7] = (lower_xor_2_5[7] + lower_key[23] + lower_cipher_output_2_8[7] + lower_xor_2_6[7]);
+constraint 2*dummy_lower_xor_2_6[8] = (lower_xor_2_5[8] + lower_key[24] + lower_cipher_output_2_8[8] + lower_xor_2_6[8]);
+constraint 2*dummy_lower_xor_2_6[9] = (lower_xor_2_5[9] + lower_key[25] + lower_cipher_output_2_8[9] + lower_xor_2_6[9]);
+constraint 2*dummy_lower_xor_2_6[10] = (lower_xor_2_5[10] + lower_key[26] + lower_cipher_output_2_8[10] + lower_xor_2_6[10]);
+constraint 2*dummy_lower_xor_2_6[11] = (lower_xor_2_5[11] + lower_key[27] + lower_cipher_output_2_8[11] + lower_xor_2_6[11]);
+constraint 2*dummy_lower_xor_2_6[12] = (lower_xor_2_5[12] + lower_key[28] + lower_cipher_output_2_8[12] + lower_xor_2_6[12]);
+constraint 2*dummy_lower_xor_2_6[13] = (lower_xor_2_5[13] + lower_key[29] + lower_cipher_output_2_8[13] + lower_xor_2_6[13]);
+constraint 2*dummy_lower_xor_2_6[14] = (lower_xor_2_5[14] + lower_key[30] + lower_cipher_output_2_8[14] + lower_xor_2_6[14]);
+constraint 2*dummy_lower_xor_2_6[15] = (lower_xor_2_5[15] + lower_key[31] + lower_cipher_output_2_8[15] + lower_xor_2_6[15]);
+constraint sum(upper_plaintext)>0;
+constraint sum(lower_cipher_output_2_8)>0;
+constraint (upper_rot_1_1[0]*lower_rot_1_2[0]) = (upper_rot_1_2[0]*lower_rot_1_1[0]);
+constraint (upper_rot_1_1[1]*lower_rot_1_2[1]) = (upper_rot_1_2[1]*lower_rot_1_1[1]);
+constraint (upper_rot_1_1[2]*lower_rot_1_2[2]) = (upper_rot_1_2[2]*lower_rot_1_1[2]);
+constraint (upper_rot_1_1[3]*lower_rot_1_2[3]) = (upper_rot_1_2[3]*lower_rot_1_1[3]);
+constraint (upper_rot_1_1[4]*lower_rot_1_2[4]) = (upper_rot_1_2[4]*lower_rot_1_1[4]);
+constraint (upper_rot_1_1[5]*lower_rot_1_2[5]) = (upper_rot_1_2[5]*lower_rot_1_1[5]);
+constraint (upper_rot_1_1[6]*lower_rot_1_2[6]) = (upper_rot_1_2[6]*lower_rot_1_1[6]);
+constraint (upper_rot_1_1[7]*lower_rot_1_2[7]) = (upper_rot_1_2[7]*lower_rot_1_1[7]);
+constraint (upper_rot_1_1[8]*lower_rot_1_2[8]) = (upper_rot_1_2[8]*lower_rot_1_1[8]);
+constraint (upper_rot_1_1[9]*lower_rot_1_2[9]) = (upper_rot_1_2[9]*lower_rot_1_1[9]);
+constraint (upper_rot_1_1[10]*lower_rot_1_2[10]) = (upper_rot_1_2[10]*lower_rot_1_1[10]);
+constraint (upper_rot_1_1[11]*lower_rot_1_2[11]) = (upper_rot_1_2[11]*lower_rot_1_1[11]);
+constraint (upper_rot_1_1[12]*lower_rot_1_2[12]) = (upper_rot_1_2[12]*lower_rot_1_1[12]);
+constraint (upper_rot_1_1[13]*lower_rot_1_2[13]) = (upper_rot_1_2[13]*lower_rot_1_1[13]);
+constraint (upper_rot_1_1[14]*lower_rot_1_2[14]) = (upper_rot_1_2[14]*lower_rot_1_1[14]);
+constraint (upper_rot_1_1[15]*lower_rot_1_2[15]) = (upper_rot_1_2[15]*lower_rot_1_1[15]);
+array[0..31] of var 0..1: upper_plaintext;
+array[0..63] of var 0..1: upper_key;
+array[0..31] of var 0..1: lower_cipher_output_2_8;
+array[0..63] of var 0..1: lower_key;
+array[0..15] of var 0..1: upper_rot_0_1;
+array[0..15] of var 0..1: upper_rot_0_2;
+array[0..15] of var 0..1: upper_rot_0_3;
+array[0..15] of var 0..1: upper_and_0_4;
+array [1..7, 1..4] of int: upper_and2inputs_DDT = array2d(1..7, 1..4, [0,0,0,0,0,1,0,100,0,1,1,100,1,0,0,100,1,0,1,100,1,1,0,100,1,1,1,100]);
+array[0..15] of var 0..1: upper_xor_0_5;
+array[0..15] of var 0..1: upper_xor_0_6;
+array[0..31] of var 0..1: upper_intermediate_output_0_7;
+array[0..15] of var 0..1: upper_rot_1_1;
+array[0..15] of var 0..1: upper_rot_1_2;
+array[0..15] of var 0..1: upper_rot_1_3;
+array[0..15] of var 0..1: upper_and_1_4;
+array[0..15] of var 0..1: upper_xor_1_5;
+array[0..15] of var 0..1: upper_xor_1_6;
+array[0..31] of var 0..1: upper_intermediate_output_1_7;
+array[0..15] of var 0..1: lower_rot_1_1;
+array[0..15] of var 0..1: lower_rot_1_3;
+array[0..31] of var 0..1: lower_intermediate_output_1_7;
+array[0..15] of var 0..1: lower_rot_1_2;
+array[0..15] of var 0..1: lower_and_1_4;
+array [1..7, 1..4] of int: lower_and2inputs_DDT = array2d(1..7, 1..4, [0,0,0,0,0,1,0,100,0,1,1,100,1,0,0,100,1,0,1,100,1,1,0,100,1,1,1,100]);
+array[0..15] of var 0..1: lower_xor_1_5;
+array[0..15] of var 0..1: lower_xor_1_6;
+array[0..15] of var 0..1: lower_rot_2_2;
+array[0..31] of var 0..1: lower_intermediate_output_2_7;
+array[0..15] of var 0..1: lower_rot_2_1;
+array[0..15] of var 0..1: lower_and_2_4;
+array[0..15] of var 0..1: lower_rot_2_3;
+array[0..15] of var 0..1: lower_xor_2_5;
+array[0..15] of var 0..1: lower_xor_2_6;
+array[0..32-1] of var int: p;
+array[0..32-1] of var {0, 100}: upper_p;
+constraint p[0] = upper_p[0];
+constraint p[1] = upper_p[1];
+constraint p[2] = upper_p[2];
+constraint p[3] = upper_p[3];
+constraint p[4] = upper_p[4];
+constraint p[5] = upper_p[5];
+constraint p[6] = upper_p[6];
+constraint p[7] = upper_p[7];
+constraint p[8] = upper_p[8];
+constraint p[9] = upper_p[9];
+constraint p[10] = upper_p[10];
+constraint p[11] = upper_p[11];
+constraint p[12] = upper_p[12];
+constraint p[13] = upper_p[13];
+constraint p[14] = upper_p[14];
+constraint p[15] = upper_p[15];
+var int: upper_weight = upper_p[0] + upper_p[1] + upper_p[2] + upper_p[3] + upper_p[4] + upper_p[5] + upper_p[6] + upper_p[7] + upper_p[8] + upper_p[9] + upper_p[10] + upper_p[11] + upper_p[12] + upper_p[13] + upper_p[14] + upper_p[15];
+array[0..32-1] of var {0, 100}: lower_p;
+constraint p[16] = lower_p[16];
+constraint p[17] = lower_p[17];
+constraint p[18] = lower_p[18];
+constraint p[19] = lower_p[19];
+constraint p[20] = lower_p[20];
+constraint p[21] = lower_p[21];
+constraint p[22] = lower_p[22];
+constraint p[23] = lower_p[23];
+constraint p[24] = lower_p[24];
+constraint p[25] = lower_p[25];
+constraint p[26] = lower_p[26];
+constraint p[27] = lower_p[27];
+constraint p[28] = lower_p[28];
+constraint p[29] = lower_p[29];
+constraint p[30] = lower_p[30];
+constraint p[31] = lower_p[31];
+var int: lower_weight = lower_p[16] + lower_p[17] + lower_p[18] + lower_p[19] + lower_p[20] + lower_p[21] + lower_p[22] + lower_p[23] + lower_p[24] + lower_p[25] + lower_p[26] + lower_p[27] + lower_p[28] + lower_p[29] + lower_p[30] + lower_p[31];
+array[0..16-1] of var 0..3200: middle_p;
+var int: middle_weight = sum(middle_p);
+constraint middle_weight = 0;
+var int: weight = (2 * upper_weight) + (2 * lower_weight) + middle_weight;
+constraint sum(upper_key) = 0;
+constraint sum(lower_key) = 0;
+solve:: int_search(p, smallest, indomain_min, complete) minimize weight;
+output["upper_plaintext = "++ show(upper_plaintext) ++ "\n" ++"upper_key = "++ show(upper_key) ++ "\n" ++"lower_cipher_output_2_8 = "++ show(lower_cipher_output_2_8) ++ "\n" ++"lower_key = "++ show(lower_key) ++ "\n" ++"upper_rot_0_1 = "++ show(upper_rot_0_1)++ "\n" ++"upper_rot_0_2 = "++ show(upper_rot_0_2)++ "\n" ++"upper_rot_0_3 = "++ show(upper_rot_0_3)++ "\n" ++"upper_and_0_4 = "++ show(upper_and_0_4)++ "\n" ++ "upper probability = "++ show(upper_p[0]/100+upper_p[1]/100+upper_p[2]/100+upper_p[3]/100+upper_p[4]/100+upper_p[5]/100+upper_p[6]/100+upper_p[7]/100+upper_p[8]/100+upper_p[9]/100+upper_p[10]/100+upper_p[11]/100+upper_p[12]/100+upper_p[13]/100+upper_p[14]/100+upper_p[15]/100) ++ "\n" ++"upper_xor_0_5 = "++ show(upper_xor_0_5)++ "\n" ++"upper_xor_0_6 = "++ show(upper_xor_0_6)++ "\n" ++"upper_intermediate_output_0_7 = "++ show(upper_intermediate_output_0_7)++ "\n" ++"upper_rot_1_1 = "++ show(upper_rot_1_1)++ "\n" ++"upper_rot_1_2 = "++ show(upper_rot_1_2)++ "\n" ++"upper_rot_1_3 = "++ show(upper_rot_1_3)++ "\n" ++"upper_and_1_4 = "++ show(upper_and_1_4)++ "\n" ++ "upper probability = "++ show(upper_p[16]/100+upper_p[17]/100+upper_p[18]/100+upper_p[19]/100+upper_p[20]/100+upper_p[21]/100+upper_p[22]/100+upper_p[23]/100+upper_p[24]/100+upper_p[25]/100+upper_p[26]/100+upper_p[27]/100+upper_p[28]/100+upper_p[29]/100+upper_p[30]/100+upper_p[31]/100) ++ "\n" ++"upper_xor_1_5 = "++ show(upper_xor_1_5)++ "\n" ++"upper_xor_1_6 = "++ show(upper_xor_1_6)++ "\n" ++"upper_intermediate_output_1_7 = "++ show(upper_intermediate_output_1_7)++ "\n" ++"lower_rot_1_1 = "++ show(lower_rot_1_1)++ "\n" ++"lower_rot_1_3 = "++ show(lower_rot_1_3)++ "\n" ++"lower_intermediate_output_1_7 = "++ show(lower_intermediate_output_1_7)++ "\n" ++"lower_rot_1_2 = "++ show(lower_rot_1_2)++ "\n" ++"lower_and_1_4 = "++ show(lower_and_1_4)++ "\n" ++ "lower_xor_1_5 = "++ show(lower_xor_1_5)++ "\n" ++"lower_xor_1_6 = "++ show(lower_xor_1_6)++ "\n" ++"lower_rot_2_2 = "++ show(lower_rot_2_2)++ "\n" ++"lower_intermediate_output_2_7 = "++ show(lower_intermediate_output_2_7)++ "\n" ++"lower_rot_2_1 = "++ show(lower_rot_2_1)++ "\n" ++"lower_and_2_4 = "++ show(lower_and_2_4)++ "\n" ++ "lower probability = "++ show(lower_p[16]/100+lower_p[17]/100+lower_p[18]/100+lower_p[19]/100+lower_p[20]/100+lower_p[21]/100+lower_p[22]/100+lower_p[23]/100+lower_p[24]/100+lower_p[25]/100+lower_p[26]/100+lower_p[27]/100+lower_p[28]/100+lower_p[29]/100+lower_p[30]/100+lower_p[31]/100) ++ "\n" ++"lower_rot_2_3 = "++ show(lower_rot_2_3)++ "\n" ++"lower_xor_2_5 = "++ show(lower_xor_2_5)++ "\n" ++"lower_xor_2_6 = "++ show(lower_xor_2_6)++ "\n" ++"Upper weight = " ++ show(upper_weight/100) ++ "\n" ++"Lower weight = " ++ show(lower_weight/100) ++ "\n" ++"Middle weight = " ++ show(middle_weight/100) ++ "\n" ++"Trail weight = " ++ show(weight/100)  ];
