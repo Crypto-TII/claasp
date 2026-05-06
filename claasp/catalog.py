@@ -11,6 +11,7 @@ EXAMPLES::
 from __future__ import annotations
 
 import ast
+from functools import lru_cache
 import importlib
 import json
 import re
@@ -59,7 +60,7 @@ FILTER_ALIASES = {
     "tweakable_block_ciphers": "tweakable_block_cipher",
     "tweakable_block_cipher": "tweakable_block_cipher",
 }
-IGNORED_CIPHER_COMPONENTS = frozenset(
+IO_CIPHER_COMPONENT_NAMES = frozenset(
     {"cipher_output", "intermediate_output", "output", "round_key_output", "round_output"}
 )
 MODULE_INIT_FILE = "__init__.py"
@@ -115,6 +116,47 @@ def _module_path_from_file(file_path: Path, package_root: Path) -> str:
 def _iter_classes_in_tree(file_path: Path) -> list[ast.ClassDef]:
     tree = ast.parse(file_path.read_text(encoding="utf-8"), filename=str(file_path))
     return [node for node in tree.body if isinstance(node, ast.ClassDef)]
+
+
+def _allowed_cipher_component_names(package_root: Path) -> frozenset[str]:
+    """Infer valid cipher component names from API methods and component modules."""
+    cipher_file = package_root / "cipher.py"
+    components_dir = package_root / "components"
+    allowed = set()
+
+    for class_node in _iter_classes_in_tree(cipher_file):
+        if class_node.name != "Cipher":
+            continue
+
+        for node in class_node.body:
+            if not isinstance(node, ast.FunctionDef):
+                continue
+
+            method_name = node.name
+            if not (method_name.startswith("add_") and method_name.endswith("_component")):
+                continue
+
+            component_name = method_name[len("add_") : -len("_component")]
+            if component_name and component_name not in IO_CIPHER_COMPONENT_NAMES:
+                allowed.add(component_name)
+
+    # Include concrete component modules to keep discovery forward-compatible
+    # when new components are added before the Cipher wrapper methods.
+    for file_path in sorted(components_dir.glob("*_component.py")):
+        module_stem = file_path.stem
+        if module_stem in {MODULE_INIT_FILE[:-3], "multi_input_non_linear_logical_operator_component", "modular_component"}:
+            continue
+
+        component_name = module_stem[: -len("_component")]
+        if component_name and component_name not in IO_CIPHER_COMPONENT_NAMES:
+            allowed.add(component_name)
+
+    return frozenset(allowed)
+
+
+@lru_cache(maxsize=1)
+def _default_allowed_cipher_components() -> frozenset[str]:
+    return _allowed_cipher_component_names(_package_root())
 
 
 def _extract_external_solver_executable(solver: dict) -> str | None:
@@ -286,13 +328,17 @@ def _is_cipher_class(class_node: ast.ClassDef) -> bool:
     return any(base_name.endswith(("Cipher", "Permutation", "HashFunction", "MAC")) for base_name in base_names)
 
 
-def _cipher_components(source_text: str) -> set[str]:
+def _cipher_components(
+    source_text: str,
+    allowed_components: set[str] | frozenset[str] | None = None,
+) -> set[str]:
     operations = set(re.findall(r"add_([a-z0-9_]+)_component", source_text.lower()))
-    operations.difference_update(IGNORED_CIPHER_COMPONENTS)
-
     if "variable_rotate" in operations:
         operations.remove("variable_rotate")
         operations.add("rotate")
+
+    valid_components = _default_allowed_cipher_components() if allowed_components is None else set(allowed_components)
+    operations.intersection_update(valid_components)
 
     return operations
 
@@ -390,6 +436,7 @@ def _collect_components_from_cipher_module(
     package_root: Path,
     cache: dict[str, set[str]],
     visiting: set[str],
+    allowed_components: set[str] | frozenset[str],
 ) -> set[str]:
     if module_name in cache:
         return set(cache[module_name])
@@ -405,11 +452,17 @@ def _collect_components_from_cipher_module(
             return set()
 
         source_text = source_file.read_text(encoding="utf-8")
-        components = _cipher_components(source_text)
+        components = _cipher_components(source_text, allowed_components)
         tree = ast.parse(source_text, filename=str(source_file))
         for imported_module in _imported_cipher_modules(tree, module_name, package_root):
             components.update(
-                _collect_components_from_cipher_module(imported_module, package_root, cache, visiting)
+                _collect_components_from_cipher_module(
+                    imported_module,
+                    package_root,
+                    cache,
+                    visiting,
+                    allowed_components,
+                )
             )
 
         cache[module_name] = components
@@ -519,6 +572,7 @@ def _collect_imported_components(
     module_name: str,
     package_root: Path,
     import_component_cache: dict[str, set[str]],
+    allowed_components: set[str] | frozenset[str],
 ) -> set[str]:
     imported_components = set()
     for imported_module in _imported_cipher_modules(tree, module_name, package_root):
@@ -528,6 +582,7 @@ def _collect_imported_components(
                 package_root,
                 import_component_cache,
                 set(),
+                allowed_components,
             )
         )
 
@@ -539,12 +594,19 @@ def _discover_cipher_infos_from_file(
     ciphers_dir: Path,
     package_root: Path,
     import_component_cache: dict[str, set[str]],
+    allowed_components: set[str] | frozenset[str],
 ) -> list[CipherInfo]:
     module_name = _module_path_from_file(file_path, package_root)
     source_text = file_path.read_text(encoding="utf-8")
     tree = ast.parse(source_text, filename=str(file_path))
-    discovered_components = _cipher_components(source_text).union(
-        _collect_imported_components(tree, module_name, package_root, import_component_cache)
+    discovered_components = _cipher_components(source_text, allowed_components).union(
+        _collect_imported_components(
+            tree,
+            module_name,
+            package_root,
+            import_component_cache,
+            allowed_components,
+        )
     )
     category = _cipher_category_from_path(file_path, ciphers_dir)
 
@@ -701,6 +763,7 @@ class Catalog:
 
     def __init__(self, package_root=None):
         self._package_root = Path(package_root).resolve() if package_root is not None else _package_root()
+        self._allowed_cipher_components = _allowed_cipher_component_names(self._package_root)
         self._cipher_categories = _cipher_categories(self._package_root)
         self._supported_cipher_filters = _supported_cipher_filters(self._cipher_categories)
         self._component_infos = self._discover_components()
@@ -745,6 +808,7 @@ class Catalog:
                     ciphers_dir,
                     self._package_root,
                     import_component_cache,
+                    self._allowed_cipher_components,
                 )
             )
 

@@ -209,7 +209,13 @@ def test_catalog_discover_cipher_infos_from_file(tmp_path):
         encoding="utf-8",
     )
 
-    infos = catalog_module._discover_cipher_infos_from_file(file_path, ciphers_dir, package_root, {})
+    infos = catalog_module._discover_cipher_infos_from_file(
+        file_path,
+        ciphers_dir,
+        package_root,
+        {},
+        {"xor"},
+    )
 
     assert len(infos) == 1
     assert infos[0].name == "TinyCipher"
@@ -224,10 +230,10 @@ def test_catalog_collect_imported_components_and_filters(monkeypatch):
     monkeypatch.setattr(
         catalog_module,
         "_collect_components_from_cipher_module",
-        lambda _module, _root, _cache, _visiting: {"xor", "rotate"},
+        lambda _module, _root, _cache, _visiting, _allowed: {"xor", "rotate"},
     )
 
-    components = catalog_module._collect_imported_components(tree, "claasp.any", Path("/tmp"), {})
+    components = catalog_module._collect_imported_components(tree, "claasp.any", Path("/tmp"), {}, {"xor", "rotate"})
     assert components == {"xor", "rotate"}
 
     info = CipherInfo(
@@ -435,9 +441,25 @@ def test_catalog_ast_and_path_helpers(tmp_path):
         "self.add_output_component()\n"
         "self.add_variable_rotate_component()\n"
         "self.add_round_output_component()\n"
+        "self.add_crazy_component()\n"
         "self.add_xor_component()\n"
     )
     assert components == {"rotate", "xor"}
+
+
+def test_allowed_cipher_component_names_includes_component_modules(tmp_path):
+    package_root = tmp_path / "claasp"
+    package_root.mkdir()
+
+    (package_root / "cipher.py").write_text("class Cipher:\n    pass\n", encoding="utf-8")
+    components_dir = package_root / "components"
+    components_dir.mkdir()
+    (components_dir / "crazy_component.py").write_text("class Crazy:\n    pass\n", encoding="utf-8")
+    (components_dir / "cipher_output_component.py").write_text("class CipherOutput:\n    pass\n", encoding="utf-8")
+
+    allowed = catalog_module._allowed_cipher_component_names(package_root)
+    assert "crazy" in allowed
+    assert "cipher_output" not in allowed
 
 
 def test_catalog_module_resolution_and_import_helpers(tmp_path):
@@ -481,15 +503,17 @@ def test_catalog_collect_components_from_module_branches_and_tags(tmp_path):
     )
 
     cache = {"claasp.ciphers.toys.cached": {"rotate"}}
-    assert catalog_module._collect_components_from_cipher_module("claasp.ciphers.toys.cached", package_root, cache, set()) == {"rotate"}
     assert catalog_module._collect_components_from_cipher_module(
-        "claasp.ciphers.toys.parent", package_root, {}, set()
+        "claasp.ciphers.toys.cached", package_root, cache, set(), {"rotate"}
+    ) == {"rotate"}
+    assert catalog_module._collect_components_from_cipher_module(
+        "claasp.ciphers.toys.parent", package_root, {}, set(), {"sbox", "xor"}
     ) == {"sbox", "xor"}
     assert catalog_module._collect_components_from_cipher_module(
-        "claasp.ciphers.toys.parent", package_root, {}, {"claasp.ciphers.toys.parent"}
+        "claasp.ciphers.toys.parent", package_root, {}, {"claasp.ciphers.toys.parent"}, {"sbox", "xor"}
     ) == set()
     assert catalog_module._collect_components_from_cipher_module(
-        "claasp.ciphers.toys.missing", package_root, {}, set()
+        "claasp.ciphers.toys.missing", package_root, {}, set(), {"sbox", "xor"}
     ) == set()
 
     assert catalog_module._infer_cipher_design_tags({"and", "rotate", "xor"}) == {"pureandrx", "andrx"}
