@@ -121,10 +121,18 @@ def _iter_classes_in_tree(file_path: Path) -> list[ast.ClassDef]:
     return [node for node in tree.body if isinstance(node, ast.ClassDef)]
 
 
-def _allowed_cipher_component_names(package_root: Path) -> frozenset[str]:
-    """Infer valid cipher component names from API methods and component modules."""
-    cipher_file = package_root / "cipher.py"
-    components_dir = package_root / "components"
+def _allowed_component_name_from_cipher_method(method_name: str) -> str | None:
+    if not (method_name.startswith("add_") and method_name.endswith("_component")):
+        return None
+
+    component_name = method_name[len("add_") : -len("_component")]
+    if not component_name or component_name in IO_CIPHER_COMPONENT_NAMES:
+        return None
+
+    return component_name
+
+
+def _allowed_components_from_cipher_api(cipher_file: Path) -> set[str]:
     allowed = set()
 
     for class_node in _iter_classes_in_tree(cipher_file):
@@ -135,24 +143,50 @@ def _allowed_cipher_component_names(package_root: Path) -> frozenset[str]:
             if not isinstance(node, ast.FunctionDef):
                 continue
 
-            method_name = node.name
-            if not (method_name.startswith("add_") and method_name.endswith("_component")):
-                continue
-
-            component_name = method_name[len("add_") : -len("_component")]
-            if component_name and component_name not in IO_CIPHER_COMPONENT_NAMES:
+            component_name = _allowed_component_name_from_cipher_method(node.name)
+            if component_name is not None:
                 allowed.add(component_name)
+
+    return allowed
+
+
+def _allowed_component_name_from_module(file_path: Path) -> str | None:
+    module_stem = file_path.stem
+    ignored_module_names = {
+        MODULE_INIT_FILE[:-3],
+        "multi_input_non_linear_logical_operator_component",
+        "modular_component",
+    }
+    if module_stem in ignored_module_names:
+        return None
+
+    component_name = module_stem[: -len("_component")]
+    if not component_name or component_name in IO_CIPHER_COMPONENT_NAMES:
+        return None
+
+    return component_name
+
+
+def _allowed_components_from_component_modules(components_dir: Path) -> set[str]:
+    allowed = set()
+
+    for file_path in sorted(components_dir.glob("*_component.py")):
+        component_name = _allowed_component_name_from_module(file_path)
+        if component_name is not None:
+            allowed.add(component_name)
+
+    return allowed
+
+
+def _allowed_cipher_component_names(package_root: Path) -> frozenset[str]:
+    """Infer valid cipher component names from API methods and component modules."""
+    cipher_file = package_root / "cipher.py"
+    components_dir = package_root / "components"
+    allowed = _allowed_components_from_cipher_api(cipher_file)
 
     # Include concrete component modules to keep discovery forward-compatible
     # when new components are added before the Cipher wrapper methods.
-    for file_path in sorted(components_dir.glob("*_component.py")):
-        module_stem = file_path.stem
-        if module_stem in {MODULE_INIT_FILE[:-3], "multi_input_non_linear_logical_operator_component", "modular_component"}:
-            continue
-
-        component_name = module_stem[: -len("_component")]
-        if component_name and component_name not in IO_CIPHER_COMPONENT_NAMES:
-            allowed.add(component_name)
+    allowed.update(_allowed_components_from_component_modules(components_dir))
 
     return frozenset(allowed)
 
