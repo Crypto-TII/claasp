@@ -130,9 +130,9 @@ class Permutation(Component):
         """
         noutputs = self.output_bit_size
         ninputs = self.input_bit_size
-        ring_R = model.ring()
-        x = list(map(ring_R, [f"{self.id}_{model.input_postfix}{i}" for i in range(ninputs)]))
-        y = list(map(ring_R, [f"{self.id}_{model.output_postfix}{i}" for i in range(noutputs)]))
+        ring_r = model.ring()
+        x = list(map(ring_r, [f"{self.id}_{model.input_postfix}{i}" for i in range(ninputs)]))
+        y = list(map(ring_r, [f"{self.id}_{model.output_postfix}{i}" for i in range(noutputs)]))
         bit_perm = self._bit_perm()
         return [y[i] + x[bit_perm[i]] for i in range(noutputs)]
 

@@ -22,6 +22,10 @@ import numpy as np
 
 DEBUG_MODE = False
 
+# Constants for verbosity output
+INPUT_LABEL = "Input : "
+OUTPUT_LABEL = "Output : "
+
 
 def bit_vector_to_integer(arr):
     """
@@ -101,10 +105,10 @@ def bit_vector_SBOX(input, sbox, verbosity=False, output_bit_size = None):
         output = output[-output_bit_size:]
     if verbosity:
         print("SBox")
-        print("Input : ", input.transpose())
+        print(INPUT_LABEL, input.transpose())
         print("Int input : ", int_val.transpose())
         print("Int output : ", int_output.transpose())
-        print("Output : ", output.transpose())
+        print(OUTPUT_LABEL, output.transpose())
         print("---")
 
     return output
@@ -553,10 +557,10 @@ def bit_vector_ROTATE(input, rotation_amount, verbosity=False):
     if verbosity:
         print("ROTATE:")
         print("  r   = {}".format(rotation_amount))
-        print("Input : ", input)
-        if inputConcatenated is not None:
-            print("Input concatenated : ", inputConcatenated)
-        print("Output : ", output)
+        print(INPUT_LABEL, input)
+        if input_concatenated is not None:
+            print("Input concatenated : ", input_concatenated)
+        print(OUTPUT_LABEL, output)
         print("---")
 
     return output
@@ -688,18 +692,18 @@ def bit_vector_permutation(input, permutation, word_size=1, verbosity=False):
     - ``word_size`` -- **integer** (default: ``1``); number of bits per word
     - ``verbosity`` -- **boolean**; (default: `False`); set this flag to True to print the input/output
     """
-    inputConcatenated = bit_vector_CONCAT(input)
-    output = np.zeros(inputConcatenated.shape, dtype=np.uint8)
+    input_concatenated = bit_vector_CONCAT(input)
+    output = np.zeros(input_concatenated.shape, dtype=np.uint8)
     for i, perm_idx in enumerate(permutation):
         for j in range(word_size):
-            output[perm_idx * word_size + j] = inputConcatenated[i * word_size + j]
+            output[perm_idx * word_size + j] = input_concatenated[i * word_size + j]
 
     if verbosity:
         print("PERMUTATION:")
         print("  perm   = {}".format(permutation))
         print("  word_size = {}".format(word_size))
-        print("Input : ", inputConcatenated)
-        print("Output : ", output)
+        print(INPUT_LABEL, input_concatenated)
+        print(OUTPUT_LABEL, output)
         print("---")
 
     return output

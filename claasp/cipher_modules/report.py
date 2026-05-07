@@ -460,9 +460,7 @@ class Report:
             # Backward compatibility for the historical typo in the public argument name.
             elif comp == 'permutation' and comp_choice == 'show_permuation':
                 show_components[comp] = var_choices[comp_choice]
-            elif 'show_' + comp == comp_choice + '_o' and show_output:
-                show_components[comp] = var_choices[comp_choice]
-            elif 'show_' + comp == comp_choice + '_i' and show_input:
+            elif ('show_' + comp == comp_choice + '_o' and show_output) or ('show_' + comp == comp_choice + '_i' and show_input):
                 show_components[comp] = var_choices[comp_choice]
 
         return show_components
