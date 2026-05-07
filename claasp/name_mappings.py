@@ -25,6 +25,7 @@ CONSTANT = "constant"
 WORD_OPERATION = "word_operation"
 MIX_COLUMN = "mix_column"
 LINEAR_LAYER = "linear_layer"
+PERMUTATION_COMPONENT = "permutation"
 SBOX = "sbox"
 FSR = "fsr"
 
