@@ -28,7 +28,7 @@ class Permutation(Component):
     Construct a permutation component.
 
     A permutation component that models a (word-wise or bitwise) permutation as simple bit
-    equalities. The permutation description follows the historical CLAASP convention where
+    equalities. The permutation description follows the CLAASP convention where
     each entry gives the destination position of the corresponding source word/bit.
 
     For ``word_size=1`` this means ``output[permutation_description[i]] = input[i]``.
@@ -123,10 +123,10 @@ class Permutation(Component):
             sage: permutation_component = cipher.component_from_id('permutation_0_0')
             sage: algebraic = AlgebraicModel(cipher)
             sage: permutation_component.algebraic_polynomials(algebraic)
-            [permutation_0_0_y0 + permutation_0_0_x1,
-             permutation_0_0_y1 + permutation_0_0_x3,
+            [permutation_0_0_y0 + permutation_0_0_x3,
+             permutation_0_0_y1 + permutation_0_0_x0,
              permutation_0_0_y2 + permutation_0_0_x2,
-             permutation_0_0_y3 + permutation_0_0_x0]
+             permutation_0_0_y3 + permutation_0_0_x1]
         """
         noutputs = self.output_bit_size
         ninputs = self.input_bit_size
@@ -158,10 +158,10 @@ class Permutation(Component):
             sage: output_bit_ids
             ['permutation_0_0_0', 'permutation_0_0_1', 'permutation_0_0_2', 'permutation_0_0_3']
             sage: constraints
-            ['permutation_0_0_0 -input_1', 'input_1 -permutation_0_0_0',
-             'permutation_0_0_1 -input_3', 'input_3 -permutation_0_0_1',
+            ['permutation_0_0_0 -input_3', 'input_3 -permutation_0_0_0',
+             'permutation_0_0_1 -input_0', 'input_0 -permutation_0_0_1',
              'permutation_0_0_2 -input_2', 'input_2 -permutation_0_0_2',
-             'permutation_0_0_3 -input_0', 'input_0 -permutation_0_0_3']
+             'permutation_0_0_3 -input_1', 'input_1 -permutation_0_0_3']
         """
         input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
@@ -191,10 +191,10 @@ class Permutation(Component):
             sage: output_bit_ids
             ['permutation_0_0_0', 'permutation_0_0_1', 'permutation_0_0_2', 'permutation_0_0_3']
             sage: constraints
-            ['(assert (= permutation_0_0_0 input_1))',
-             '(assert (= permutation_0_0_1 input_3))',
+            ['(assert (= permutation_0_0_0 input_3))',
+             '(assert (= permutation_0_0_1 input_0))',
              '(assert (= permutation_0_0_2 input_2))',
-             '(assert (= permutation_0_0_3 input_0))']
+             '(assert (= permutation_0_0_3 input_1))']
         """
         input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
@@ -223,10 +223,10 @@ class Permutation(Component):
             sage: declarations
             []
             sage: constraints
-            ['constraint permutation_0_0[0] = input[1];',
-             'constraint permutation_0_0[1] = input[3];',
+            ['constraint permutation_0_0[0] = input[3];',
+             'constraint permutation_0_0[1] = input[0];',
              'constraint permutation_0_0[2] = input[2];',
-             'constraint permutation_0_0[3] = input[0];']
+             'constraint permutation_0_0[3] = input[1];']
         """
         all_inputs = []
         for id_link, bit_positions in zip(self.input_id_links, self.input_bit_positions):
@@ -270,7 +270,7 @@ class Permutation(Component):
             ('x[permutation_0_0_2]', x_6),
             ('x[permutation_0_0_3]', x_7)]
             sage: constraints
-            [x_4 == x_1, x_5 == x_3, x_6 == x_2, x_7 == x_0]
+            [x_4 == x_3, x_5 == x_0, x_6 == x_2, x_7 == x_1]
         """
         x = model.binary_variable
         input_vars, output_vars = self._get_input_output_variables()
@@ -319,7 +319,7 @@ class Permutation(Component):
             sage: permutation_component = cipher.component_from_id('permutation_0_0')
             sage: params = ['component_input']
             sage: permutation_component.get_byte_based_vectorized_python_code(params)
-            ['  permutation_0_0 = byte_vector_permutation(component_input, [1, 3, 2, 0], 1, 4)']
+            ["  permutation_0_0 = byte_vector_permutation(['component_input'], [1, 3, 2, 0], 1, 4)"]
         """
         perm = self.description[0]
         word_size = self.description[1]

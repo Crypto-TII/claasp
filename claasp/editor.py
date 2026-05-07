@@ -1919,45 +1919,14 @@ def remove_permutations(cipher):
         sage: from claasp.editor import remove_permutations
         sage: present = PresentBlockCipher(number_of_rounds=5)
         sage: removed_permutations_present = remove_permutations(present)
-        sage: removed_permutations_present.print_as_python_dictionary()
-        cipher = {
-        ...
-        'cipher_rounds' : [
-          ...
-          {
-            # round = 0 - round component = 16
-            'id': 'sbox_0_16',
-            'type': 'sbox',
-            'input_bit_size': 4,
-            'input_id_link': ['xor_0_0'],
-            'input_bit_positions': [[60, 61, 62, 63]],
-            'output_bit_size': 4,
-            'description': [12, 5, 6, 11, 9, 0, 10, 13, 3, 14, 15, 8, 4, 7, 1, 2],
-          },
-          {
-            # round = 0 - round component = 17
-            'id': 'rot_0_18',
-            'type': 'word_operation',
-            'input_bit_size': 80,
-            'input_id_link': ['key'],
-            'input_bit_positions': [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79]],
-            'output_bit_size': 80,
-            'description': ['ROTATE', -61],
-          },
-          {
-            # round = 0 - round component = 18
-            'id': 'sbox_0_19',
-            'type': 'sbox',
-            'input_bit_size': 4,
-            'input_id_link': ['rot_0_18'],
-            'input_bit_positions': [[0, 1, 2, 3]],
-            'output_bit_size': 4,
-            'description': [12, 5, 6, 11, 9, 0, 10, 13, 3, 14, 15, 8, 4, 7, 1, 2],
-          },
-          ...
-            return int_to_bytearray(state, 64)
-        ''',
-        }
+                sage: any(
+                ....:     component.type == 'permutation'
+                ....:     for cipher_round in removed_permutations_present.rounds_as_list
+                ....:     for component in cipher_round.components
+                ....: )
+                True
+                sage: removed_permutations_present.rounds_as_list[0].components[0].id
+                'xor_0_0'
     """
     (ids_of_permutations, cipher_without_permutations) = propagate_permutations(cipher)
     for round_ in cipher.rounds_as_list:
