@@ -127,29 +127,6 @@ def linear_layer(input, matrix, verbosity=False):
     return output
 
 
-def permutation(input, permutation_description, verbosity=False):
-    """
-    Computes a bit permutation.
-
-    INPUT:
-
-    - ``input`` -- **BitArray object**; a BitArray
-    - ``permutation_description`` -- **list**; a list of integers representing the permutation mapping
-    - ``verbosity`` -- **boolean** (default: `False`); set this flag to True to print the input/output
-    """
-    output = BitArray()
-    for perm_idx in permutation_description:
-        output.append(BitArray(bool=input[perm_idx]))
-
-    if verbosity:
-        print("PERMUTATION:")
-        print("  perm  = {}".format(permutation_description))
-        print(input_expression.format(input.bin))
-        print(output_expression.format(output.bin))
-
-    return output
-
-
 def mix_column_generalized(input_vector, input_matrix, polynomial, word_size, verbosity=False):
     """
     INPUT:

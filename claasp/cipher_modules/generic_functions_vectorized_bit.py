@@ -673,28 +673,3 @@ def bit_vector_mix_column_poly0(input, matrix, verbosity=False):
         print("---")
 
     return output
-
-
-def bit_vector_permutation(input, permutation, verbosity=False):
-    """
-    Computes a permutation of binary values.
-
-    INPUT:
-
-    - ``input`` -- **np.array(dtype = np.uint8)** A binary numpy matrix with one row per bit, and one column per sample.
-    - ``permutation`` -- **list**; a list of integers representing the permutation mapping where output[i] = input[permutation[i]]
-    - ``verbosity`` -- **boolean**; (default: `False`); set this flag to True to print the input/output
-    """
-    inputConcatenated = bit_vector_CONCAT(input)
-    output = np.zeros(inputConcatenated.shape, dtype=np.uint8)
-    for i, perm_idx in enumerate(permutation):
-        output[i] = inputConcatenated[perm_idx]
-    
-    if verbosity:
-        print("PERMUTATION:")
-        print("  perm   = {}".format(permutation))
-        print("Input : ", inputConcatenated)
-        print("Output : ", output)
-        print("---")
-
-    return output
