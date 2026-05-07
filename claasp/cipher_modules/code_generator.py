@@ -26,7 +26,7 @@ from claasp.cipher_modules.generic_functions_vectorized_byte import get_number_o
 from claasp.component import free_input
 from claasp.name_mappings import (SBOX, LINEAR_LAYER, MIX_COLUMN, WORD_OPERATION, CONSTANT,
                                   PADDING, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT,
-                                  FSR, CIPHER_INVERSE_SUFFIX)
+                                  FSR, CIPHER_INVERSE_SUFFIX, PERMUTATION_COMPONENT)
 
 tii_path = inspect.getfile(claasp)
 tii_dir_path = os.path.dirname(tii_path)
@@ -247,7 +247,7 @@ def generate_bit_based_vectorized_python_code_string(cipher, store_intermediate_
     code.extend([f'  {cipher.inputs[i]}=input[{i}]' for i in range(len(cipher.inputs))])
     for component in cipher.get_all_components():
         params = prepare_input_bit_based_vectorized_python_code_string(component)
-        component_types_allowed = ['constant', 'linear_layer', 'mix_column',
+        component_types_allowed = ['constant', 'linear_layer', 'mix_column', 'permutation',
                                    'sbox', 'cipher_output', 'intermediate_output', 'fsr']
         component_descriptions_allowed = ['ROTATE', 'SHIFT', 'SHIFT_BY_VARIABLE_AMOUNT', 'NOT', 'XOR',
                                           'MODADD', 'MODMUL', 'MODSUB', 'OR', 'AND']
@@ -296,7 +296,7 @@ def generate_bit_based_vectorized_python_code_string(cipher, store_intermediate_
     code.extend([f'  {cipher.inputs[i]}=input[{i}]' for i in range(len(cipher.inputs))])
     for component in cipher.get_all_components():
         params = prepare_input_bit_based_vectorized_python_code_string(component)
-        component_types_allowed = ['constant', 'linear_layer', 'mix_column',
+        component_types_allowed = ['constant', 'linear_layer', 'mix_column', 'permutation',
                                    'sbox', 'cipher_output', 'intermediate_output', 'fsr']
         component_descriptions_allowed = ['ROTATE', 'SHIFT', 'SHIFT_BY_VARIABLE_AMOUNT', 'NOT', 'XOR',
                                           'MODADD', 'MODMUL', 'MODSUB', 'OR', 'AND']
@@ -367,7 +367,7 @@ def generate_byte_based_vectorized_python_code_string(cipher, store_intermediate
     for component in cipher.get_all_components():
         formatted_component_inputs = prepare_input_byte_based_vectorized_python_code_string(output_bit_sizes, component)
         output_bit_sizes[component.id] = component.output_bit_size
-        component_types_allowed = ['constant', 'linear_layer', 'mix_column',
+        component_types_allowed = ['constant', 'linear_layer', 'mix_column', 'permutation',
                                    'sbox', 'cipher_output', 'intermediate_output', 'fsr']
         component_descriptions_allowed = ['ROTATE', 'SHIFT', 'SHIFT_BY_VARIABLE_AMOUNT', 'NOT', 'XOR',
                                           'MODADD', 'MODMUL', 'MODSUB', 'IDEA_MODMUL', 'OR', 'AND']
@@ -468,6 +468,8 @@ def get_number_of_inputs(component):
         number_of_inputs = len(component.description[0][0])
     elif component.type == 'linear_layer':
         number_of_inputs = len(component.description[0])
+    elif component.type == PERMUTATION_COMPONENT:
+        number_of_inputs = 1
     elif component.type == 'sbox':
         number_of_inputs = 1
     elif 'output' in component.type:
@@ -657,6 +659,10 @@ def build_function_call(component):
         polynomial = component.description[1]
         word_size = component.description[2]
         return f"mix_column_generalized(component_input, {mix_column_matrix}, {polynomial}, {word_size})"
+    elif component.type == PERMUTATION_COMPONENT:
+        permutation_list = component.description[0]
+        word_size = component.description[1]
+        return f"permutation(component_input, {permutation_list}, {word_size})"
     elif component.type == WORD_OPERATION:
         if component.description[0] in ('SHIFT_BY_VARIABLE_AMOUNT', 'ROTATE_BY_VARIABLE_AMOUNT'):
             return f"{component.description[0]}" \

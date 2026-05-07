@@ -746,9 +746,10 @@ def add_permutation_component(
     input_bit_positions,
     output_bit_size,
     permutation_description,
+    word_size=1,
 ):
     """
-    Create a permutation component to permute the bit position in the editor.
+    Create a permutation component to permute the bit (or word) position in the editor.
 
     INPUT:
 
@@ -756,7 +757,10 @@ def add_permutation_component(
     - ``input_id_links`` -- **list**; the list of input_id links
     - ``input_bit_positions`` -- **list**; the list of input_bits corresponding to the input_id links
     - ``output_bit_size`` -- **integer**; the output bits of the component
-    - ``permutation_description`` -- **string**; the description of the permutation
+        - ``permutation_description`` -- **list**; the description of the permutation. When ``word_size=1``,
+            each entry is a source bit index. When ``word_size > 1``, each entry is a source word index and
+            the list has ``output_bit_size // word_size`` entries.
+        - ``word_size`` -- **integer** (default: ``1``); number of bits per word
 
     EXAMPLES::
 
@@ -774,13 +778,13 @@ def add_permutation_component(
         cipher_number_of_rounds = 1
         <BLANKLINE>
             # round = 0 - round component = 0
-            id = linear_layer_0_0
-            type = linear_layer
+            id = permutation_0_0
+            type = permutation
             input_bit_size = 4
             input_id_link = ['input']
             input_bit_positions = [[0, 1, 2, 3]]
             output_bit_size = 4
-            description = [[0, 0, 0, 1], [0, 0, 1, 0], [0, 1, 0, 0], [1, 0, 0, 0]]
+            description = [[3, 2, 1, 0], 1]
         cipher_reference_code = None
     """
     if cipher.current_round_number is None:
@@ -794,6 +798,7 @@ def add_permutation_component(
         input_bit_positions,
         output_bit_size,
         permutation_description,
+        word_size,
     )
     add_component(cipher, new_component)
     return new_component
