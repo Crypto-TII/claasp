@@ -1,4 +1,6 @@
 from claasp.components.permutation_component import Permutation
+from claasp.ciphers.single_component_ciphers.permutation_cipher import PermutationCipher
+from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
 
 
 PERMUTATION = [1, 3, 2, 0]
@@ -67,3 +69,15 @@ def test_smt_constraints():
         "(assert (= permutation_0_0_2 input_2))",
         "(assert (= permutation_0_0_3 input_1))",
     ]
+
+
+def test_algebraic_polynomials():
+    cipher = PermutationCipher(bit_size=4, permutation_description=[1, 3, 2, 0])
+    permutation_component = cipher.component_from_id("permutation_0_0")
+    algebraic = AlgebraicModel(cipher)
+    algebraic_polynomials = permutation_component.algebraic_polynomials(algebraic)
+
+    assert str(algebraic_polynomials) == '[permutation_0_0_y0 + permutation_0_0_x3,' \
+                                         ' permutation_0_0_y1 + permutation_0_0_x0,' \
+                                         ' permutation_0_0_y2 + permutation_0_0_x2,' \
+                                         ' permutation_0_0_y3 + permutation_0_0_x1]'
