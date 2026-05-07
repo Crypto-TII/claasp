@@ -25,8 +25,8 @@ sbox_0_3_input = 0x2
 sbox_0_3_output = 0x6
 sbox_0_4_input = 0x5
 sbox_0_4_output = 0x0
-linear_layer_0_5_input = 0xcb60
-linear_layer_0_5_output = 0xca64
+permutation_0_5_input = 0xcb60
+permutation_0_5_output = 0xca64
 intermediate_output_0_6_input = 0xca64
 intermediate_output_0_6_output = 0xca64
 
@@ -42,8 +42,8 @@ sbox_1_3_input = 0x4
 sbox_1_3_output = 0x9
 sbox_1_4_input = 0x6
 sbox_1_4_output = 0xa
-linear_layer_1_5_input = 0x139a
-linear_layer_1_5_output = 0x305e
+permutation_1_5_input = 0x139a
+permutation_1_5_output = 0x305e
 intermediate_output_1_6_input = 0x305e
 intermediate_output_1_6_output = 0x305e
 
@@ -59,8 +59,8 @@ sbox_2_3_input = 0x6
 sbox_2_3_output = 0xa
 sbox_2_4_input = 0xd
 sbox_2_4_output = 0x7
-linear_layer_2_5_input = 0xcba7
-linear_layer_2_5_output = 0xe975
+permutation_2_5_input = 0xcba7
+permutation_2_5_output = 0xe975
 intermediate_output_2_6_input = 0xe975
 intermediate_output_2_6_output = 0xe975
 
@@ -76,8 +76,8 @@ sbox_3_3_input = 0x3
 sbox_3_3_output = 0xb
 sbox_3_4_input = 0x1
 sbox_3_4_output = 0x5
-linear_layer_3_5_input = 0xf7b5
-linear_layer_3_5_output = 0xadef
+permutation_3_5_input = 0xf7b5
+permutation_3_5_output = 0xadef
 intermediate_output_3_6_input = 0xadef
 intermediate_output_3_6_output = 0xadef
 

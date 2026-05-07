@@ -29,6 +29,7 @@ from claasp.name_mappings import (
     INTERMEDIATE_OUTPUT,
     LINEAR_LAYER,
     MIX_COLUMN,
+    PERMUTATION_COMPONENT,
     SBOX,
     WORD_OPERATION,
 )
@@ -642,6 +643,8 @@ def is_possibly_invertible_component(component):
         is_invertible = False
     elif component.type == LINEAR_LAYER:
         is_invertible = True
+    elif component.type == PERMUTATION_COMPONENT:
+        is_invertible = True
     elif component.type == MIX_COLUMN:
         is_invertible = True
     # for rotations and shift rows
@@ -818,6 +821,26 @@ def component_inverse(component, available_bits, all_equivalent_bits, key_schedu
             Input(component.input_bit_size, input_id_links, input_bit_positions),
             component.output_bit_size,
             list(inv_binary_matrix),
+        )
+        inverse_component.__class__ = component.__class__
+        setattr(inverse_component, "round", component.round)
+        update_output_bits(inverse_component, self, all_equivalent_bits, available_bits)
+    elif component.type == PERMUTATION_COMPONENT:
+        input_id_links, input_bit_positions = (
+            compute_input_id_links_and_input_bit_positions_for_inverse_component_from_available_output_components(
+                component, output_components, all_equivalent_bits, self
+            )
+        )
+        permutation, word_size = component.description
+        inverse_permutation = [0] * len(permutation)
+        for source_word, destination_word in enumerate(permutation):
+            inverse_permutation[destination_word] = source_word
+        inverse_component = Component(
+            component.id,
+            component.type,
+            Input(component.input_bit_size, input_id_links, input_bit_positions),
+            component.output_bit_size,
+            [inverse_permutation, word_size],
         )
         inverse_component.__class__ = component.__class__
         setattr(inverse_component, "round", component.round)

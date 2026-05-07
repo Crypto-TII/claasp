@@ -173,6 +173,12 @@ class Permutation(Component):
 
         return output_bit_ids, constraints
 
+    def sat_xor_differential_propagation_constraints(self, model=None):
+        return self.sat_constraints()
+
+    def sat_xor_linear_mask_propagation_constraints(self, model=None):
+        return self.sat_constraints()
+
     def smt_constraints(self):
         """
         Return a variable list and SMT-LIB list asserts representing PERMUTATION for SMT CIPHER model.
@@ -281,6 +287,12 @@ class Permutation(Component):
                        for output_var, input_var in zip(output_vars, input_vars_permuted)]
 
         return variables, constraints
+
+    def milp_xor_differential_propagation_constraints(self, model):
+        return self.milp_constraints(model)
+
+    def milp_xor_linear_mask_propagation_constraints(self, model):
+        return self.milp_constraints(model)
 
     def get_bit_based_vectorized_python_code(self, params, convert_output_to_bytes):
         """

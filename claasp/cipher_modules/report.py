@@ -457,6 +457,9 @@ class Report:
         for comp, comp_choice in itertools.product(component_types, input_comps):
             if 'show_' + comp == comp_choice:
                 show_components[comp] = var_choices[comp_choice]
+            # Backward compatibility for the historical typo in the public argument name.
+            elif comp == 'permutation' and comp_choice == 'show_permuation':
+                show_components[comp] = var_choices[comp_choice]
             elif 'show_' + comp == comp_choice + '_o' and show_output:
                 show_components[comp] = var_choices[comp_choice]
             elif 'show_' + comp == comp_choice + '_i' and show_input:
@@ -594,10 +597,14 @@ class Report:
                 comp_value = ('_'.join(comp_id.split('_')[:-3])) + '_' + ('_'.join(comp_id.split('_')[-1]))
             else:
                 comp_value = '_'.join(comp_id.split('_')[:-2])
-            if show_components[
-                comp_value if (comp_id not in ['plaintext', 'cipher_output', 'cipher_output_o', 'cipher_output_i',
-                                               'intermediate_output', 'intermediate_output_o',
-                                               'intermediate_output_i'] and 'key' not in comp_id) else comp_id]:
+            current_comp = (
+                comp_value
+                if (comp_id not in ['plaintext', 'cipher_output', 'cipher_output_o', 'cipher_output_i',
+                                    'intermediate_output', 'intermediate_output_o', 'intermediate_output_i']
+                    and 'key' not in comp_id)
+                else comp_id
+            )
+            if show_components.get(current_comp, False):
                 if 'key' in comp_id:
                     _print_colored_state(out_list[comp_id][0], verbose, file)
                     print(f'\t{comp_id}\t', file=file)
@@ -664,10 +671,14 @@ class Report:
             if comp_id != 'plaintext' and 'key' not in comp_id:
                 comp_value, key_flow = self._get_comp_value_and_key_flow(comp_id, key_flow)
 
-            if show_components[
-                comp_value if (comp_id not in ['plaintext', 'cipher_output', 'cipher_output_o', 'cipher_output_i',
-                                               'intermediate_output', 'intermediate_output_o',
-                                               'intermediate_output_i'] and 'key' not in comp_id) else comp_id]:
+            current_comp = (
+                comp_value
+                if (comp_id not in ['plaintext', 'cipher_output', 'cipher_output_o', 'cipher_output_i',
+                                    'intermediate_output', 'intermediate_output_o', 'intermediate_output_i']
+                    and 'key' not in comp_id)
+                else comp_id
+            )
+            if show_components.get(current_comp, False):
                 self._update_out_list(out_list, rel_prob, abs_prob, show_as_hex, comp_id, word_size, state_size,
                                       key_state_size, key_flow, word_denominator)
 
