@@ -627,13 +627,9 @@ class SatModel:
     @property
     def model_constraints(self):
         """
-        Return the model specified by ``model_type``.
+        Return the generated SAT clauses.
 
-        If the key refers to one of the available solver, Otherwise will raise a KeyError exception.
-
-        INPUT:
-
-        - ``model_type`` -- **string**; the model to retrieve
+        Raise ``ValueError`` if no model has been generated yet.
 
         EXAMPLES::
 
@@ -641,10 +637,44 @@ class SatModel:
             sage: from claasp.cipher_modules.models.sat.sat_model import SatModel
             sage: speck = SpeckBlockCipher(number_of_rounds=4)
             sage: sat = SatModel(speck)
-            sage: sat.model_constraints('xor_differential')
+            sage: sat.model_constraints
             Traceback (most recent call last):
             ...
             ValueError: No model generated
+
+            sage: from claasp.ciphers.single_component_ciphers.sbox_cipher import SboxCipher
+            sage: from claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model import SatXorDifferentialModel
+            sage: sat = SatXorDifferentialModel(SboxCipher())
+            sage: sat.build_xor_differential_trail_model()
+            sage: sat.model_constraints
+            ['plaintext_0 plaintext_1 plaintext_2 plaintext_3',
+            '-plaintext_3 sbox_0_0_3',
+            'plaintext_3 -sbox_0_0_3',
+            '-plaintext_2 sbox_0_0_2',
+            'plaintext_2 -sbox_0_0_2',
+            '-plaintext_1 sbox_0_0_1',
+            'plaintext_1 -sbox_0_0_1',
+            '-plaintext_0 sbox_0_0_0',
+            'plaintext_0 -sbox_0_0_0',
+            '-hw_sbox_0_0_3',
+            '-hw_sbox_0_0_2',
+            '-hw_sbox_0_0_1',
+            '-hw_sbox_0_0_0',
+            'cipher_output_0_1_0 -sbox_0_0_0',
+            'sbox_0_0_0 -cipher_output_0_1_0',
+            'cipher_output_0_1_1 -sbox_0_0_1',
+            'sbox_0_0_1 -cipher_output_0_1_1',
+            'cipher_output_0_1_2 -sbox_0_0_2',
+            'sbox_0_0_2 -cipher_output_0_1_2',
+            'cipher_output_0_1_3 -sbox_0_0_3',
+            'sbox_0_0_3 -cipher_output_0_1_3']
+            
+            sage: from claasp.ciphers.single_component_ciphers.sbox_cipher import SboxCipher
+            sage: from claasp.cipher_modules.models.sat.sat_models.sat_cipher_model import SatCipherModel
+            sage: sat = SatCipherModel(SboxCipher())
+            sage: sat.build_cipher_model()
+            sage: len(sat.model_constraints) > 0
+            True
         """
         if not self._model_constraints:
             raise ValueError("No model generated")
