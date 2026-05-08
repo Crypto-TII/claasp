@@ -1964,11 +1964,11 @@ def replace_bit_reordering_components_as_direct_wiring(cipher, should_inline):
 
         sage: from claasp.cipher import Cipher
         sage: from claasp.editor import replace_bit_reordering_components_as_direct_wiring
-        sage: from claasp.name_mappings import PERMUTATION, PERMUTATION_COMPONENT
-        sage: cipher = Cipher("toy", PERMUTATION, ["input"], [4], 4)
+        sage: from claasp.name_mappings import PERMUTATION, PERMUTATION_COMPONENT, INPUT_MESSAGE
+        sage: cipher = Cipher("toy", PERMUTATION, [INPUT_MESSAGE], [4], 4)
         sage: cipher.add_round()
-        sage: cipher.add_permutation_component(["input"], [[0, 1, 2, 3]], 4, [3, 2, 1, 0])
-        sage: cipher.add_cipher_output_component(["permutation_0_0"], [[0, 1, 2, 3]], 4)
+        sage: permutation_component = cipher.add_permutation_component([INPUT_MESSAGE], [[0, 1, 2, 3]], 4, [3, 2, 1, 0])
+        sage: output_component = cipher.add_cipher_output_component([permutation_component.id], [[0, 1, 2, 3]], 4)
         sage: simplified = replace_bit_reordering_components_as_direct_wiring(
         ....:     cipher, lambda component: component.type == PERMUTATION_COMPONENT
         ....: )
