@@ -64,7 +64,7 @@ from sage.sat.solvers.satsolver import SAT
 from claasp.cipher_modules.models.sat import solvers
 from claasp.cipher_modules.models.sat.utils import utils
 from claasp.cipher_modules.models.utils import set_component_solution, convert_solver_solution_to_dictionary
-from claasp.editor import remove_permutations, remove_rotations
+from claasp.editor import is_fixed_rotate_component, replace_bit_reordering_components_as_direct_wiring
 from claasp.name_mappings import (
     SBOX,
     CIPHER_OUTPUT,
@@ -72,6 +72,7 @@ from claasp.name_mappings import (
     INTERMEDIATE_OUTPUT,
     LINEAR_LAYER,
     MIX_COLUMN,
+    PERMUTATION_COMPONENT,
     WORD_OPERATION,
 )
 
@@ -85,14 +86,17 @@ class SatModel:
 
         - ``cipher`` -- **Cipher object**; an instance of the cipher.
         - ``counter`` -- **string** (default: `sequential`)
-        - ``compact`` -- **boolean** (default: False); set to True for using a simplified cipher (it will remove
-          rotations and permutations)
+        - ``compact`` -- **boolean** (default: False); set to True for using a simplified cipher where fixed
+            rotations and permutation-only steps are inlined into downstream wiring
         """
-        # remove rotations and permutations (if any)
+        # inline rotations and permutation-only steps (if any)
         internal_cipher = copy.deepcopy(cipher)
         if compact:
-            internal_cipher = remove_permutations(internal_cipher)
-            internal_cipher = remove_rotations(internal_cipher)
+            internal_cipher = replace_bit_reordering_components_as_direct_wiring(
+                internal_cipher,
+                lambda component: component.type in {PERMUTATION_COMPONENT, LINEAR_LAYER}
+                or is_fixed_rotate_component(component),
+            )
 
         # set the counter to fix the weight
         if counter == "sequential":
