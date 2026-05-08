@@ -3,7 +3,6 @@ import inspect
 
 import claasp
 from claasp.utils.utils import point_pair
-from claasp.utils.utils import get_k_th_bit
 from claasp.utils.utils import sgn_function
 from claasp.utils.utils import signed_distance
 from claasp.utils.utils import pprint_dictionary
@@ -18,10 +17,6 @@ def test_bytes_positions_to_little_endian_for_32_bits():
     output_lst = [24, 25, 26, 27, 28, 29, 30, 31, 16, 17, 18, 19, 20, 21, 22, 23, 8, 9, 10, 11, 12, 13, 14, 15, 0,
                   1, 2, 3, 4, 5, 6, 7]
     assert bytes_positions_to_little_endian_for_32_bits(lst) == output_lst
-
-
-def test_get_k_th_bit():
-    assert get_k_th_bit(3, 0) == 1
 
 
 def test_pprint_dictionary():
@@ -42,6 +37,7 @@ def test_pprint_dictionary_to_file():
     pprint_dictionary_to_file(d["input_parameters"], f"{tii_dir_path}/test_json")
     assert os.path.isfile(f"{tii_dir_path}/test_json") is True
     os.remove(f"{tii_dir_path}/test_json")
+
 
 def test_sgn_function():
     assert sgn_function(-1) == -1

@@ -1,83 +1,79 @@
-from claasp.components.or_component import OR
+from claasp.components.or_component import Or
 from claasp.cipher_modules.models.cp.mzn_model import MznModel
-from claasp.ciphers.permutations.gift_permutation import GiftPermutation
+from claasp.ciphers.single_component_ciphers.or_cipher import OrCipher
 from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
 
 
 def test_algebraic_polynomials():
-    gift = GiftPermutation(number_of_rounds=1)
-    or_component = gift.get_component_from_id("or_0_4")
-    algebraic = AlgebraicModel(gift)
+    cipher = OrCipher(word_bit_size=4, number_of_inputs=2)
+    or_component = cipher.component_from_id("or_0_0")
+    algebraic = AlgebraicModel(cipher)
     algebraic_polynomials = or_component.algebraic_polynomials(algebraic)
 
-    assert str(algebraic_polynomials[0]) == "or_0_4_x0*or_0_4_x32 + or_0_4_y0 + or_0_4_x32 + or_0_4_x0"
-    assert str(algebraic_polynomials[1]) == "or_0_4_x1*or_0_4_x33 + or_0_4_y1 + or_0_4_x33 + or_0_4_x1"
-    assert str(algebraic_polynomials[-2]) == "or_0_4_x30*or_0_4_x62 + or_0_4_y30 + or_0_4_x62 + or_0_4_x30"
-    assert str(algebraic_polynomials[-1]) == "or_0_4_x31*or_0_4_x63 + or_0_4_y31 + or_0_4_x63 + or_0_4_x31"
+    assert str(algebraic_polynomials[0]) == "or_0_0_x0*or_0_0_x4 + or_0_0_y0 + or_0_0_x4 + or_0_0_x0"
+    assert str(algebraic_polynomials[1]) == "or_0_0_x1*or_0_0_x5 + or_0_0_y1 + or_0_0_x5 + or_0_0_x1"
+    assert str(algebraic_polynomials[-2]) == "or_0_0_x2*or_0_0_x6 + or_0_0_y2 + or_0_0_x6 + or_0_0_x2"
+    assert str(algebraic_polynomials[-1]) == "or_0_0_x3*or_0_0_x7 + or_0_0_y3 + or_0_0_x7 + or_0_0_x3"
 
 
 def test_cp_constraints():
-    or_component = OR(0, 9, ['xor_0_7', 'key'],
-                      [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]], 12)
+    or_component = Or(0, 0, ['plaintext', 'key'], [list(range(4)), list(range(4))], 4)
     declarations, constraints = or_component.cp_constraints()
 
-    assert declarations == ['array[0..11] of var 0..1: or_0_9;', 'array[0..11] of var 0..1:pre_or_0_9_0;',
-                            'array[0..11] of var 0..1:pre_or_0_9_1;']
+    assert declarations == ['array[0..3] of var 0..1: or_0_0;', 'array[0..3] of var 0..1:pre_or_0_0_0;',
+                            'array[0..3] of var 0..1:pre_or_0_0_1;']
 
-    assert constraints[0] == 'constraint pre_or_0_9_0[0]=xor_0_7[0];'
-    assert constraints[-2] == 'constraint pre_or_0_9_1[11]=key[23];'
-    assert constraints[-1] == 'constraint or(pre_or_0_9_0, pre_or_0_9_1, or_0_9);'
+    assert constraints[0] == 'constraint pre_or_0_0_0[0]=plaintext[0];'
+    assert constraints[-2] == 'constraint pre_or_0_0_1[3]=key[3];'
+    assert constraints[-1] == 'constraint or(pre_or_0_0_0, pre_or_0_0_1, or_0_0);'
 
 
 def test_cp_xor_linear_mask_propagation_constraints():
-    gift = GiftPermutation()
-    or_component = gift.component_from(39, 6)
-    cp = MznModel(gift)
+    cipher = OrCipher(word_bit_size=4, number_of_inputs=2)
+    or_component = cipher.component_from_id("or_0_0")
+    cp = MznModel(cipher)
     declarations, constraints = or_component.cp_xor_linear_mask_propagation_constraints(cp)
 
-    assert declarations == ['array[0..31] of var 0..3200: p_or_39_6;', 'array[0..63] of var 0..1:or_39_6_i;',
-                            'array[0..31] of var 0..1:or_39_6_o;']
+    assert declarations == ['array[0..3] of var 0..400: p_or_0_0;', 'array[0..7] of var 0..1:or_0_0_i;',
+                            'array[0..3] of var 0..1:or_0_0_o;']
 
-    assert constraints[0] == 'constraint table([or_39_6_i[0]]++[or_39_6_i[32]]++[or_39_6_o[0]]++[p_or_39_6[0]],and2inputs_LAT);'
-    assert constraints[-2] == 'constraint table([or_39_6_i[31]]++[or_39_6_i[63]]++[or_39_6_o[31]]++[p_or_39_6[31]],' \
+    assert constraints[0] == 'constraint table([or_0_0_i[0]]++[or_0_0_i[4]]++[or_0_0_o[0]]++[p_or_0_0[0]],and2inputs_LAT);'
+    assert constraints[-2] == 'constraint table([or_0_0_i[3]]++[or_0_0_i[7]]++[or_0_0_o[3]]++[p_or_0_0[3]],' \
                               'and2inputs_LAT);'
-    assert constraints[-1] == 'constraint p[0] = sum(p_or_39_6);'
+    assert constraints[-1] == 'constraint p[0] = sum(p_or_0_0);'
 
 
 def test_generic_sign_linear_constraints():
-    or_component = OR(31, 14, ['xor_0_7', 'key'],
-                      [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]], 12)
-    input_tert = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-    output = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
+    or_component = Or(0, 0, ['plaintext', 'key'], [list(range(4)), list(range(4))], 4)
+    input_tert = [0, 0, 0, 0, 0, 0, 0, 0]
 
-    assert or_component.generic_sign_linear_constraints(input_tert, output) == 1
+    assert or_component.generic_sign_linear_constraints(input_tert, [0, 0, 0, 0]) == 1
+    assert or_component.generic_sign_linear_constraints(input_tert, [0, 0, 0, 1]) == -1
 
 
 def test_sat_constraints():
-    gift = GiftPermutation(number_of_rounds=3)
-    or_component = gift.component_from(0, 4)
+    or_component = Or(0, 0, ['plaintext', 'key'], [list(range(4)), list(range(4))], 4)
     output_bit_ids, constraints = or_component.sat_constraints()
 
-    assert output_bit_ids[0] == 'or_0_4_0'
-    assert output_bit_ids[1] == 'or_0_4_1'
-    assert output_bit_ids[2] == 'or_0_4_2'
+    assert output_bit_ids[0] == 'or_0_0_0'
+    assert output_bit_ids[1] == 'or_0_0_1'
+    assert output_bit_ids[2] == 'or_0_0_2'
 
-    assert constraints[-3] == 'or_0_4_31 -xor_0_3_31'
-    assert constraints[-2] == 'or_0_4_31 -xor_0_1_31'
-    assert constraints[-1] == '-or_0_4_31 xor_0_3_31 xor_0_1_31'
+    assert constraints[-3] == 'or_0_0_3 -plaintext_3'
+    assert constraints[-2] == 'or_0_0_3 -key_3'
+    assert constraints[-1] == '-or_0_0_3 plaintext_3 key_3'
 
 
 def test_smt_constraints():
-    gift = GiftPermutation(number_of_rounds=3)
-    or_component = gift.component_from(0, 4)
+    or_component = Or(0, 0, ['plaintext', 'key'], [list(range(4)), list(range(4))], 4)
     output_bit_ids, constraints = or_component.smt_constraints()
 
-    assert output_bit_ids[0] == 'or_0_4_0'
-    assert output_bit_ids[1] == 'or_0_4_1'
-    assert output_bit_ids[-2] == 'or_0_4_30'
-    assert output_bit_ids[-1] == 'or_0_4_31'
+    assert output_bit_ids[0] == 'or_0_0_0'
+    assert output_bit_ids[1] == 'or_0_0_1'
+    assert output_bit_ids[-2] == 'or_0_0_2'
+    assert output_bit_ids[-1] == 'or_0_0_3'
 
-    assert constraints[0] == '(assert (= or_0_4_0 (or xor_0_3_0 xor_0_1_0)))'
-    assert constraints[1] == '(assert (= or_0_4_1 (or xor_0_3_1 xor_0_1_1)))'
-    assert constraints[-2] == '(assert (= or_0_4_30 (or xor_0_3_30 xor_0_1_30)))'
-    assert constraints[-1] == '(assert (= or_0_4_31 (or xor_0_3_31 xor_0_1_31)))'
+    assert constraints[0] == '(assert (= or_0_0_0 (or plaintext_0 key_0)))'
+    assert constraints[1] == '(assert (= or_0_0_1 (or plaintext_1 key_1)))'
+    assert constraints[-2] == '(assert (= or_0_0_2 (or plaintext_2 key_2)))'
+    assert constraints[-1] == '(assert (= or_0_0_3 (or plaintext_3 key_3)))'

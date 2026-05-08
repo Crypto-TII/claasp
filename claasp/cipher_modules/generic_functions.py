@@ -1,16 +1,16 @@
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
@@ -84,7 +84,7 @@ def sbox_bool_func(component, BoolPolyRing):
     output_bit_size = component.output_bit_size
     variables_names = [component.input_id_links[0] + "_" + str(i) for i in component.input_bit_positions[0]]
 
-    X = BooleanPolynomialRing(output_bit_size, 'x')
+    X = BooleanPolynomialRing(output_bit_size, "x")
     substitution = {}
     for i in range(output_bit_size):
         substitution[X.gens()[i]] = BoolPolyRing(variables_names[output_bit_size - i - 1])
@@ -142,18 +142,20 @@ def mix_column_generalized(input_vector, input_matrix, polynomial, word_size, ve
     nb_cols = len(input_matrix[0])
 
     if polynomial == 0:
-        input_vector_split = [(input_vector.uint >> (i * word_size)) % (2 ** word_size) for i in range(nb_cols)]
+        input_vector_split = [(input_vector.uint >> (i * word_size)) % (2**word_size) for i in range(nb_cols)]
         input_vector_split.reverse()
         output_vector_split = Matrix(input_matrix) * vector(input_vector_split)
         output_vector_bit_array = BitArray()
-        for i in range(nb_cols):
-            output_vector_bit_array.append(f'0b{output_vector_split[i]:0{word_size}b}')
+        for i in range(nb_rows):
+            # Mask to word_size bits to ensure correct output length
+            masked_value = int(output_vector_split[i]) % (2**word_size)
+            output_vector_bit_array.append(f"0b{masked_value:0{word_size}b}")
         return output_vector_bit_array
 
-    R = PolynomialRing(GF(2 ** word_size), 'x')
+    R = PolynomialRing(GF(2**word_size), "x")
     x = R.gen()
     irred_polynomial = int_to_poly(polynomial, word_size + 1, x)
-    S = QuotientRing(R, R.ideal(irred_polynomial), 'a')
+    S = QuotientRing(R, R.ideal(irred_polynomial), "a")
     a = S.gen()
 
     M_tmp = [[0 for _ in range(nb_cols)] for _ in range(nb_rows)]
@@ -165,7 +167,7 @@ def mix_column_generalized(input_vector, input_matrix, polynomial, word_size, ve
     c_tmp = [0 for _ in range(nb_cols)]
     block_len = input_vector.len // nb_cols
     for i in range(0, nb_cols):
-        c_tmp[i] = int_to_poly(input_vector[i * block_len:(i + 1) * block_len].uint, word_size, a)
+        c_tmp[i] = int_to_poly(input_vector[i * block_len : (i + 1) * block_len].uint, word_size, a)
     c_poly = vector(S, c_tmp)
 
     res_vector = M_poly * c_poly
@@ -185,23 +187,12 @@ def mix_column_generalized(input_vector, input_matrix, polynomial, word_size, ve
 
 def add_padding(a, number_of_rows, res_vector, word_size):
     output_vector = BitArray()
-    # Padding when needed
+    # Padding when needed - Fixed to properly handle all word sizes including 1 and 2
     for row in range(number_of_rows):
         tmp = poly_to_int(res_vector[row], word_size, a)
-        if word_size == 8 and tmp < 16:
-            output_vector.append(BitArray(4))
-        if word_size in [4, 8]:
-            output_vector.append(hex(tmp))
-        if word_size == 3 and tmp < 2:
-            output_vector.append(BitArray(2))
-            output_vector.append(bin(tmp))
-        elif word_size == 3 and tmp < 4:
-            output_vector.append(BitArray(1))
-            output_vector.append(bin(tmp))
-        elif word_size not in [4, 8]:
-            if tmp < 2:
-                output_vector.append(BitArray(1))
-            output_vector.append(bin(tmp))
+        # Format tmp as a binary string with exactly word_size bits
+        binary_str = format(tmp, f"0{word_size}b")
+        output_vector.append(BitArray(bin=binary_str))
 
     return output_vector
 
@@ -224,9 +215,9 @@ def convert_x_to_binary_matrix_given_polynomial_modulus(word_size, polynomial):
 
     def rot1_right(input_list):
         tmp = input_list[len(input_list) - 1]
-        return [tmp] + input_list[:len(input_list) - 1]
+        return [tmp] + input_list[: len(input_list) - 1]
 
-    F2 = PolynomialRing(GF(2), 'x')
+    F2 = PolynomialRing(GF(2), "x")
     rot = [0] * word_size
     rot[1] = 1
     l = [rot]
@@ -260,7 +251,7 @@ def convert_polynomial_to_binary_matrix_given_polynomial_modulus(word_size, poly
     M2 = convert_x_to_binary_matrix_given_polynomial_modulus(word_size, polynomial)
     Nbinary = bin(N)[2:].zfill(word_size)
 
-    F2 = PolynomialRing(GF(2), 'x')
+    F2 = PolynomialRing(GF(2), "x")
     Tmp = matrix.identity(F2, word_size)
     M_N = matrix(F2, word_size)
 
@@ -289,17 +280,15 @@ def transform_GF2NMatrix_to_BinMatrix(GF2NMatrix, polynomial, word_size):
     state_size = len(GF2NMatrix)
     index = [i for i in range(0, word_size * state_size - 1, word_size)]
 
-    F2 = PolynomialRing(GF(2), 'x')
+    F2 = PolynomialRing(GF(2), "x")
     BinMatrix = matrix(F2, word_size * state_size)
     for i in range(state_size):
         for j in range(state_size):
             BinMatrix.set_block(
                 index[i],
                 index[j],
-                convert_polynomial_to_binary_matrix_given_polynomial_modulus(
-                    word_size,
-                    polynomial,
-                    GF2NMatrix[i][j]))
+                convert_polynomial_to_binary_matrix_given_polynomial_modulus(word_size, polynomial, GF2NMatrix[i][j]),
+            )
 
     return BinMatrix
 
@@ -347,7 +336,7 @@ def padding(input, verbosity=False):
     if input.len % 4 != 0:
         input.prepend(4 - input.len % 4)
     output = BitArray(input)
-    output.append('0b1')
+    output.append("0b1")
     distance_from_m512 = 512 - (input.len % 512) - 1
     if distance_from_m512 > 64:
         output.append(distance_from_m512 - 64)
@@ -377,7 +366,7 @@ def XOR(input, number_of_inputs, verbosity=False):
     block_len = input.len // number_of_inputs
     output = input[0:block_len]
     for i in range(1, number_of_inputs):
-        output = output ^ input[i * block_len:(i + 1) * block_len]
+        output = output ^ input[i * block_len : (i + 1) * block_len]
 
     if verbosity:
         print("XOR:")
@@ -407,8 +396,9 @@ def XOR_boolean_function(component, BoolPolyRing):
             variables_names_positions[component.input_id_links[i]] = [tmp, component.input_bit_positions[i]]
         else:  # Keys are unique in a python dico, so need to handle 2 same entries in input_id_links !
             variables_names_positions[component.input_id_links[i]] = [
-                variables_names_positions[component.input_id_links[i]]
-                [0] + tmp, variables_names_positions[component.input_id_links[i]][1] + component.input_bit_positions[i]]
+                variables_names_positions[component.input_id_links[i]][0] + tmp,
+                variables_names_positions[component.input_id_links[i]][1] + component.input_bit_positions[i],
+            ]
 
     component_as_BF = []
     tmp = 0
@@ -429,12 +419,12 @@ def constant_bool_func(component):
     """
     output_bit_size = component.output_bit_size
     if component.description[0][:2] == "0b":
-        return [''], [int(component.description[0][i + 2]) for i in range(output_bit_size)]
+        return [""], [int(component.description[0][i + 2]) for i in range(output_bit_size)]
     elif component.description[0][:2] == "0x":
         tmp = bin(int(component.description[0], 16))
         while len(tmp) - 2 < output_bit_size:
             tmp = tmp[:2] + "0" + tmp[2:]
-        return [''], [int(tmp[i + 2]) for i in range(output_bit_size)]
+        return [""], [int(tmp[i + 2]) for i in range(output_bit_size)]
     else:
         print("TODO")  # what to do when the constant is not given as bin string or hexa string
 
@@ -470,7 +460,7 @@ def AND(input, number_of_inputs, verbosity=False):
     block_len = input.len // number_of_inputs
     output = input[0:block_len]
     for i in range(1, number_of_inputs):
-        output = output & input[i * block_len:(i + 1) * block_len]
+        output = output & input[i * block_len : (i + 1) * block_len]
 
     if verbosity:
         print("AND:")
@@ -492,7 +482,7 @@ def OR(input, number_of_inputs, verbosity=False):
     block_len = input.len // number_of_inputs
     output = input[0:block_len]
     for i in range(1, number_of_inputs):
-        output = output | input[i * block_len:(i + 1) * block_len]
+        output = output | input[i * block_len : (i + 1) * block_len]
 
     if verbosity:
         print("OR:")
@@ -534,13 +524,40 @@ def MODADD(input, number_of_inputs, modulus, verbosity=False):
     block_len = input.len // number_of_inputs
     output = input[0:block_len].uint
     if modulus is None:
-        modulus = 2 ** block_len
+        modulus = 2**block_len
     for i in range(1, number_of_inputs):
-        output = (output + input[i * block_len:(i + 1) * block_len].uint) % modulus
+        output = (output + input[i * block_len : (i + 1) * block_len].uint) % modulus
 
     output = BitArray(uint=output, length=block_len)
     if verbosity:
         print("MODADD:")
+        print(number_of_inputs_expression.format(number_of_inputs))
+        print(input_expression.format(input.bin))
+        print(output_expression.format(output.bin))
+
+    return output
+
+def MODMUL(input, number_of_inputs, modulus, verbosity=False):
+    """
+    The modulus is 2^w, where w=Floor(input_length/number_of_inputs).
+
+    INPUT:
+
+    - ``input`` -- **BitArray object**; BitArray
+    - ``number_of_inputs`` -- **integer**; specify in how many parts must the input be split
+    - ``modulus`` -- **integer**; the modulus for multiplication
+    - ``verbosity`` -- **boolean** (default: `False`); set this flag to True to print the input/output
+    """
+    block_len = input.len // number_of_inputs
+    output = input[0:block_len].uint
+    if modulus is None:
+        modulus = 2 ** block_len
+    for i in range(1, number_of_inputs):
+        output = (output * input[i * block_len:(i + 1) * block_len].uint) % modulus
+
+    output = BitArray(uint=output, length=block_len)
+    if verbosity:
+        print("MODMUL:")
         print(number_of_inputs_expression.format(number_of_inputs))
         print(input_expression.format(input.bin))
         print(output_expression.format(output.bin))
@@ -561,13 +578,73 @@ def MODSUB(input, number_of_inputs, modulus, verbosity=False):
     block_len = input.len // number_of_inputs
     output = input[0:block_len].uint
     if modulus is None:
-        modulus = 2 ** block_len
+        modulus = 2**block_len
     for i in range(1, number_of_inputs):
-        output = (output - input[i * block_len:(i + 1) * block_len].uint) % modulus
+        output = (output - input[i * block_len : (i + 1) * block_len].uint) % modulus
 
     output = BitArray(uint=output, length=block_len)
     if verbosity:
         print("MODSUB:")
+        print(number_of_inputs_expression.format(number_of_inputs))
+        print(input_expression.format(input.bin))
+        print(output_expression.format(output.bin))
+
+    return output
+
+
+def idea_modmul(input, number_of_inputs, modulus, verbosity=False):
+    """
+    Computes modular multiplication (a * b) mod modulus with 0 ↔ 2^n mapping.
+
+    For modulus 2^n + 1 (e.g., IDEA cipher uses 2^16 + 1):
+    - Input value 0 is treated as 2^n before multiplication
+    - Output value 2^n is represented as 0 after reduction
+
+    INPUT:
+
+    - ``input`` -- **BitArray object**; BitArray
+    - ``number_of_inputs`` -- **integer**; specify in how many parts must the input be split (should be 2)
+    - ``modulus`` -- **integer**; the modulus for multiplication
+    - ``verbosity`` -- **boolean** (default: `False`); set this flag to True to print the input/output
+
+    EXAMPLES::
+
+        sage: from claasp.cipher_modules.generic_functions import idea_modmul
+        sage: from bitstring import BitArray
+        sage: # Standard modular multiplication
+        sage: input_bits = BitArray(uint=int(3), length=int(16)) + BitArray(uint=int(5), length=int(16))
+        sage: result = idea_modmul(input_bits, 2, 65537)
+        sage: result.uint
+        15
+        sage: # 0 * 0 with modulus 2^16+1: (2^16 * 2^16) mod (2^16 + 1) = 1
+        sage: input_zero = BitArray(uint=int(0), length=int(16)) + BitArray(uint=int(0), length=int(16))
+        sage: result_zero = idea_modmul(input_zero, 2, 65537)
+        sage: result_zero.uint
+        1
+    """
+    block_len = input.len // number_of_inputs
+
+    # Extract the two operands
+    val1 = input[0:block_len].uint
+    val2 = input[block_len : 2 * block_len].uint
+
+    # Input mapping: 0 -> 2^n
+    max_val = 2**block_len
+    if val1 == 0:
+        val1 = max_val
+    if val2 == 0:
+        val2 = max_val
+
+    # Perform multiplication modulo modulus
+    output = (val1 * val2) % modulus
+
+    # Output mapping: 2^n -> 0
+    if output == max_val:
+        output = 0
+
+    output = BitArray(uint=int(output), length=block_len)
+    if verbosity:
+        print("idea_modmul:")
         print(number_of_inputs_expression.format(number_of_inputs))
         print(input_expression.format(input.bin))
         print(output_expression.format(output.bin))
@@ -649,7 +726,7 @@ def SIGMA(input, rotation_amounts, verbosity=False):
         xor_input += input_rotated
     output = xor_input[0:block_len]
     for i in range(1, number_of_inputs):
-        output = output ^ xor_input[i * block_len:(i + 1) * block_len]
+        output = output ^ xor_input[i * block_len : (i + 1) * block_len]
 
     if verbosity:
         print("SIGMA:")
@@ -681,9 +758,9 @@ def THETA_KECCAK(input):
     plane_len = lane_len * 5
     lanes_xored = []
     for i in range(5):
-        tmp = input[i * plane_len: i * plane_len + lane_len]
+        tmp = input[i * plane_len : i * plane_len + lane_len]
         for j in range(1, 5):
-            tmp = tmp ^ input[i * plane_len + j * lane_len: i * plane_len + (j + 1) * lane_len]
+            tmp = tmp ^ input[i * plane_len + j * lane_len : i * plane_len + (j + 1) * lane_len]
         lanes_xored.append(tmp)
 
     # Rotation of the lanes_rotated by -1
@@ -706,7 +783,9 @@ def THETA_KECCAK(input):
     output = BitArray(0)
     for i in range(5):
         for j in range(5):
-            output += input[i * plane_len + j * lane_len: i * plane_len + (j + 1) * lane_len] ^ BitArray(parity_rows[i])
+            output += input[i * plane_len + j * lane_len : i * plane_len + (j + 1) * lane_len] ^ BitArray(
+                parity_rows[i]
+            )
 
     return output
 
@@ -731,12 +810,12 @@ def THETA_XOODOO(input):
     block_len = 128
     plane = input[0:block_len]
     for i in range(1, 3):
-        plane = plane ^ input[i * block_len:(i + 1) * block_len]
+        plane = plane ^ input[i * block_len : (i + 1) * block_len]
 
     # Get the 4 lanes of plane
     plane_4_chunks = []
     for i in range(4):
-        tmp = plane[i * 32:(i + 1) * 32]
+        tmp = plane[i * 32 : (i + 1) * 32]
         plane_4_chunks.append(tmp)
 
     # Rotation by 5 to the right on the z axis
@@ -779,6 +858,57 @@ def THETA_XOODOO(input):
     plane_updated_concat_3_times = plane_updated + plane_updated + plane_updated
     output = copy(input)
     output ^= plane_updated_concat_3_times
+
+    return output
+
+
+def THETA_GASTON(input, rotation_amounts=(1, 18, 23, 25, 32, 52, 60, 63)):
+    """
+    Perform the twin column parity mixer (mixing layer) of Gaston.
+
+    INPUT:
+    - ``input`` -- BitArray of length 320 or 640, interpreted as 5 rows of 64 bits.
+    - ``rotation_amounts`` -- **tuple of 8 integers** (default: (1, 18, 23, 25, 32, 52, 60, 63)):
+        - First three values: `r`, `s`, `u` — rotation amounts for P, Q, and E.
+        - Remaining five values: `t0` through `t4` — row-specific rotation amounts used in computing Q.
+
+    EXAMPLES::
+
+        sage: from claasp.cipher_modules.generic_functions import THETA_GASTON
+        sage: from bitstring import BitArray
+        sage: b = BitArray(bytes=range(40))
+        sage: THETA_GASTON(b).bin[:70] == '0011010110100010000110000010011000101100101110110000000100111111001111'
+        True
+
+    """
+
+    def rol(bitarr, amount):
+        amount %= bitarr.len
+        return bitarr[amount:] + bitarr[:amount]
+
+    assert len(rotation_amounts) == 8
+    assert len(input) in [320, 640]
+
+    row_len = len(input) // 5
+    r, s, u, *t_list = rotation_amounts
+
+    A = [input[i * row_len : (i + 1) * row_len] for i in range(5)]
+
+    P = A[0].copy()
+    for i in range(1, 5):
+        P ^= A[i]
+
+    Q = rol(A[0], t_list[0])
+    for i in range(1, 5):
+        Q ^= rol(A[i], t_list[i])
+
+    E = (P ^ rol(P, r)) ^ (Q ^ rol(Q, s))
+
+    E_shifted = rol(E, u)
+
+    output = BitArray()
+    for i in range(5):
+        output += A[i] ^ E_shifted
 
     return output
 
@@ -870,7 +1000,7 @@ def SHIFT(input, shift_amount, verbosity=False):
         for i in range(input.len - shift_amount):
             output[i + shift_amount] = input[i]
     else:
-        s = - shift_amount
+        s = -shift_amount
         for i in range(input.len - s):
             output[i] = input[i + s]
 
@@ -935,7 +1065,7 @@ def select_bits(input, bit_positions, verbosity=False):
         return output
 
     for i in range(len(bit_positions)):
-        output = output + input[bit_positions[i]:bit_positions[i] + 1]
+        output = output + input[bit_positions[i] : bit_positions[i] + 1]
 
     if output == BitArray():
         print("ERROR: returning empty bitstring!\n  input = {}\n  bit_positions = {}".format(input.bin, bit_positions))
@@ -952,59 +1082,74 @@ def select_bits(input, bit_positions, verbosity=False):
 def merge_bits():
     return 0
 
-def _get_polynomial_from_binary_polynomial_index_list(polynomial_index_list, R):
-    if polynomial_index_list == []:
-        return R(1)
-    p = 0
-    x = R.gens()
-    for _ in polynomial_index_list:
-        m = 1
-        for i in _:
-            m = m * x[i]
-        p += m
-    return p
+
+def compute_indexed_sum(index_list, bits):
+    """
+    Compute the XOR-sum of products of bits at specified indices.
+    """
+    res = 0
+    for indices in index_list:
+        product = 1
+        for i in indices:
+            product &= bits[i]
+        res ^= product
+    return res
+
+
+def index_list_to_expression_str(index_list):
+    """
+    Convert an index-based expression list to a readable string.
+
+    Example:
+    [[0], [1], [2, 3]] -> 'x0 + x1 + x2*x3'
+    """
+    monomial_strs = []
+    for monomial in index_list:
+        # Product of bits
+        if not monomial:
+            monomial_strs.append("1")
+        else:
+            monomial_strs.append("*".join(f"x{i}" for i in monomial))
+    return " + ".join(monomial_strs)
+
 
 def fsr_binary(input, registers_info, number_of_clocks, verbosity=False):
     """
     INPUT:
 
     - ``input`` -- **BitArray object**; a BitArray
-    - ``registers_info`` -- **list**; a list of [register_bit_length, register_polynomial, clock_polynomial (optional)],
-       register_bit_length is an integer to indicates the length of register. register_polynomial and clock_polynomial
-       are lists of monomials, which is presented in the integer list. For example [[0], [1], [2, 3]] represents
-       x0+x1+x2*x3. [] represents 1.
-    - ``number_of_clocks`` -- **integer**; indicates how many loops this fsr component would operate, this is optional
+    - ``registers_info`` -- **list**; a list of [register_bit_length, update_expression, clock_condition (optional)],
+       register_bit_length is an integer to indicate the length of the register. update_expression and clock_condition
+       are lists of index groups, represented as integer lists. For example [[0], [1], [2, 3]] represents
+       x0 + x1 + x2*x3. [] represents a constant 1.
+    - ``number_of_clocks`` -- **integer**; indicates how many loops this FSR component would operate, this is optional
         by default it is 1.
     - ``verbosity`` -- **boolean** (default: `False`); set this flag to True to print the input/output
 
     """
 
-
     output = BitArray(input)
-    R = BooleanPolynomialRing(len(input), 'x')
     number_of_registers = len(registers_info)
-    registers_polynomial = [0 for _ in range(number_of_registers)]
     registers_start = [0 for _ in range(number_of_registers)]
     registers_update_bit = [0 for _ in range(number_of_registers)]
-    clock_polynomials = [None for _ in range(number_of_registers)]
+    clock_conditions = [None for _ in range(number_of_registers)]
     end = 0
 
     for i in range(number_of_registers):
         registers_start[i] = end
         end += registers_info[i][0]
         registers_update_bit[i] = end - 1
-        registers_polynomial[i] = _get_polynomial_from_binary_polynomial_index_list(registers_info[i][1], R)
-        if len(registers_info[i]) > 2 and registers_info[i][2] != None:
-            clock_polynomials[i] = _get_polynomial_from_binary_polynomial_index_list(registers_info[i][2], R)
+        if len(registers_info[i]) > 2 and registers_info[i][2] != []:
+            clock_conditions[i] = registers_info[i][2]
 
     for r in range(number_of_clocks):
         do_clocks = [True for _ in range(number_of_registers)]
         output_bits = [0 for _ in range(number_of_registers)]
         for j in range(number_of_registers):
-            if clock_polynomials[j] is not None:
-                do_clocks[j] = int(clock_polynomials[j](*output))
+            if clock_conditions[j] is not None:
+                do_clocks[j] = compute_indexed_sum(clock_conditions[j], output)
             if do_clocks[j] > 0:
-                output_bits[j] = int(registers_polynomial[j](*output))
+                output_bits[j] = compute_indexed_sum(registers_info[j][1], output)
 
         for j in range(number_of_registers):
             if do_clocks[j] > 0:
@@ -1014,123 +1159,146 @@ def fsr_binary(input, registers_info, number_of_clocks, verbosity=False):
     if verbosity:
         print("FSR:")
         for i in range(number_of_registers):
-            print("  F   = {}".format(registers_polynomial[i]))
-            if clock_polynomials[i] is None:
-                print("register_" + str(i + 1) + " clock:", True)
+            print("  F   =", index_list_to_expression_str(registers_info[i][1]))
+            if clock_conditions[i] is None:
+                print(f"register_{i + 1} clock: True")
             else:
-                print("register_" + str(i + 1) + "clock poly = {}".format(clock_polynomials[i]))
-        print("number of clocks: ", number_of_clocks)
+                print(f"register_{i + 1} clock condition = {index_list_to_expression_str(clock_conditions[i])}")
+        print("number of clocks:", number_of_clocks)
         print(input_expression.format(input.bin))
         print(output_expression.format(output.bin))
     return output
 
-def _get_polynomial_from_word_polynomial_index_list(polynomial_index_list, R):
-    if polynomial_index_list == []:
-        return R(1)
-    p = 0
-    x = R.gens()
-    y = R.construction()[1].gen()
-
-    for _ in polynomial_index_list:
-        m = 0  # presently it is for field of characteristic 2 only
-        cc = "{0:b}".format(_[0])
-        for i in range(len(cc)):
-            if cc[i] == '1':  m = m + pow(y, len(cc) - 1 - i)
-        for i in _[1]:
-            m = m * x[i]
-        p += m
-    return p
 
 def _bits_to_words_array(input, bits_inside_word, word_gf):
+    """
+    Convert a bit array (BitArray) into an array of words over GF(2^w).
+    """
     y = word_gf.gen()
-
     monomials = [pow(y, i) for i in range(bits_inside_word - 1, -1, -1)]
-    word_array = [0 for _ in
-                  range(int(len(input) / bits_inside_word))]
+    num_words = len(input) // bits_inside_word
+    word_array = [word_gf(0) for _ in range(num_words)]
 
-    for i in range(len(word_array)):
+    for i in range(num_words):
         c = 0
-        for j in range(len(monomials)):
+        for j, m in enumerate(monomials):
             c += (input[(i * bits_inside_word) + j]) * monomials[j]
         word_array[i] = c
 
     return word_array
+
+
+def compute_word_indexed_sum(index_list, word_array, word_gf):
+    """
+    Evaluate an index-based expression sum in GF(2^w).
+    Each entry in index_list: (field coefficient as int, [word indices]).
+    The sum is computed and returned.
+    """
+    res = word_gf(0)
+    for coeff_int, word_indices in index_list:
+        coeff = word_gf(0)
+        binary_coeff_str = "{0:b}".format(coeff_int)
+        for i, bit in enumerate(binary_coeff_str):
+            if bit == "1":
+                exponent = len(binary_coeff_str) - 1 - i
+                coeff += word_gf.gen() ** exponent
+        product = coeff
+        for idx in word_indices:
+            product *= word_array[idx]
+        res += product
+    return res
+
+
+def _word_list_to_bits(word_array, bits_inside_word):
+    """
+    Convert an array of GF(2^w) words to a BitArray.
+    """
+    output = BitArray()
+    for word in word_array[0]:
+        poly = word.polynomial()  # each word is a field element
+        # Extract coefficients (least significant first)
+        coffs = [int(poly[i]) for i in range(bits_inside_word)]
+        # Build bit string (most significant first)
+        s = "0b" + "".join("1" if coffs[j] else "0" for j in range(bits_inside_word - 1, -1, -1))
+        output.append(s)
+    return output
+
+
+def index_list_to_expression_str_word(index_list):
+    """
+    Convert a word-level index-based expression list to a readable string.
+
+    Each entry is [field_coefficient, [indices]].
+    For example:
+        [[1, [0]], [1, [2]], [1, [11]]] -> 'x0 + x2 + x11'
+    """
+    term_strs = []
+    for coeff, indices in index_list:
+        indices_str = "*".join(f"x{i}" for i in indices) if indices else "1"
+        if coeff == 1:
+            term_strs.append(indices_str)
+        else:
+            term_strs.append(f"{coeff}{indices_str}")
+    return " + ".join(term_strs)
+
 
 def fsr_word(input, registers_info, bits_inside_word, number_of_clocks, verbosity=False):
     """
     INPUT:
 
     - ``input`` -- **BitArray object**; a BitArray
-    - ``registers_info`` -- **list**; a list of [register_bit_length, register_polynomial, clock_polynomial (optional)],
-       register_bit_length is an integer to indicates the length of register. register_polynomial and clock_polynomial
-       are lists of monomials, which is presented in the integer list. For example [[0], [1], [2, 3]] represents
-       x0+x1+x2*x3. [] represents 1.
-    - ``number_of_clocks`` -- **integer**; indicates how many bits in a word this fsr component would operate. By
-        default, it is 1.
-    - ``number_of_clocks`` -- **integer**; indicates how many loops this fsr component would operate.
-    - ``verbosity`` -- **boolean** (default: `False`); set this flag to True to print the input/output
+    - ``registers_info`` -- **list**; a list of [register_bit_length, update_expression, clock_condition (optional)],
+       register_bit_length is an integer to indicate the length of the register. update_expression and clock_condition
+       are lists of index groups, represented as integer lists. Each entry in update_expression has a field coefficient
+       and a list of word indices. For example: [[1, [0]], [1, [1]], [1, [2, 3]]] represents
+       x0 + x1 + x2*x3. [] represents a constant 1.
+    - ``bits_inside_word`` -- **integer**; number of bits in a word.
+    - ``number_of_clocks`` -- **integer**; indicates how many loops this FSR component would operate.
+    - ``verbosity`` -- **boolean** (default: `False`); set this flag to True to print the input/output.
 
     """
 
-
-    def _word_to_bits(word_array, bits_inside_word, word_gf):
-        output = BitArray()
-        d = word_gf.degree()
-        s = f'0b'
-        for _ in word_array[0]:
-            lm = []
-            for __ in range(d): lm.append(_.polynomial()[__])
-            for j in range(bits_inside_word - 1, -1, -1):
-                v = f'1' if lm[j] else f'0'
-                s = s + v
-        output.append(s)
-        return output
-
-
     word_gf = GF(pow(2, bits_inside_word))
     word_array = _bits_to_words_array(input, bits_inside_word, word_gf)
-    R = PolynomialRing(word_gf, len(word_array), 'x')
+
     number_of_registers = len(registers_info)
-    registers_polynomial = [0 for _ in range(number_of_registers)]
     registers_start = [0 for _ in range(number_of_registers)]
     registers_update_word = [0 for _ in range(number_of_registers)]
-    clock_polynomials = [None for _ in range(number_of_registers)]
+    clock_conditions = [None for _ in range(number_of_registers)]
     end = 0
+
     for i in range(number_of_registers):
         registers_start[i] = end
         end += registers_info[i][0]
         registers_update_word[i] = end - 1
-        registers_polynomial[i] = _get_polynomial_from_word_polynomial_index_list(registers_info[i][1], R)
         if len(registers_info[i]) > 2:
-            clock_polynomials[i] = _get_polynomial_from_word_polynomial_index_list(registers_info[i][2], R)
-
+            clock_conditions[i] = registers_info[i][2]
     for r in range(number_of_clocks):
         do_clocks = [True for _ in range(number_of_registers)]
-        output_words = [0 for _ in range(number_of_registers)]
+        output_words = [word_gf(0) for _ in range(number_of_registers)]
         for j in range(number_of_registers):
-            if clock_polynomials[j] is not None:
-                do_clocks[j] = clock_polynomials[j](*word_array)
+            if clock_conditions[j] is not None:
+                do_clocks[j] = int(compute_word_indexed_sum(clock_conditions[j], word_array, word_gf))
             if do_clocks[j] > 0:
-                output_words[j] = registers_polynomial[j](*word_array)
+                output_words[j] = compute_word_indexed_sum(registers_info[j][1], word_array, word_gf)
 
         registers = []
         for j in range(number_of_registers):
-            reg = word_array[registers_start[j]:registers_update_word[j] + 1]
+            reg = word_array[registers_start[j] : registers_update_word[j] + 1]
             if do_clocks[j] > 0:
-                reg = reg[1:]
-                reg.append(output_words[j])
+                reg = reg[1:] + [output_words[j]]
             registers.append(reg)
         word_array = registers
 
-    output = _word_to_bits(word_array, bits_inside_word, word_gf)
+    output = _word_list_to_bits(word_array, bits_inside_word)
     if verbosity:
-        print("FSR:")
+        print("FSR (word-based):")
         for i in range(number_of_registers):
-            print("  F   = {}".format(registers_polynomial[i]))
-            if clock_polynomials[i] is None:
-                print("register_" + str(i + 1) + " clock:", True)
+            print("  F   =", index_list_to_expression_str_word(registers_info[i][1]))
+            if clock_conditions[i] is None:
+                print(f"register_{i + 1} clock: True")
             else:
-                print("register_" + str(i + 1) + "clock poly = {}".format(clock_polynomials[i]))
+                print(f"register_{i + 1} clock condition = {index_list_to_expression_str(clock_conditions[i])}")
         print("number of clocks: ", number_of_clocks)
         print(input_expression.format(input.bin))
         print(output_expression.format(output.bin))

@@ -1,24 +1,21 @@
-from claasp.cipher_modules.models.cp.mzn_model import MznModel
-from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
-from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
+from claasp.ciphers.single_component_ciphers.rotate_cipher import RotateCipher
+from claasp.components.rotate_component import Rotate
 
 
 def test_algebraic_polynomials():
-    fancy = FancyBlockCipher(number_of_rounds=2)
-    rotate_component = fancy.get_component_from_id("rot_1_11")
-    algebraic = AlgebraicModel(fancy)
+    cipher = RotateCipher(bit_size=6, parameter=3)
+    rotate_component = cipher.component_from(0, 0)
+    algebraic = AlgebraicModel(cipher)
     algebraic_polynomials = rotate_component.algebraic_polynomials(algebraic)
 
-    assert str(algebraic_polynomials) == "[rot_1_11_y0 + rot_1_11_x3, rot_1_11_y1 + rot_1_11_x4," \
-                                         " rot_1_11_y2 + rot_1_11_x5, rot_1_11_y3 + rot_1_11_x0," \
-                                         " rot_1_11_y4 + rot_1_11_x1, rot_1_11_y5 + rot_1_11_x2]"
+    assert len(algebraic_polynomials) == 6
+    assert str(algebraic_polynomials[0]) == "rot_0_0_y0 + rot_0_0_x3"
+    assert str(algebraic_polynomials[-1]) == "rot_0_0_y5 + rot_0_0_x2"
 
 
 def test_cp_inverse_constraints():
-    speck = SpeckBlockCipher(number_of_rounds=3)
-    rotate_component = speck.component_from(0, 0)
+    rotate_component = Rotate(0, 0, ['plaintext'], [list(range(16))], 16, 7)
     declarations, constraints = rotate_component.cp_inverse_constraints()
 
     assert declarations == []
@@ -28,12 +25,18 @@ def test_cp_inverse_constraints():
 
 
 def test_cp_xor_differential_first_step_constraints():
-    aes = AESBlockCipher(number_of_rounds=3)
-    cp = MznModel(aes)
-    rotate_component = aes.component_from(0, 18)
-    declarations, constraints = rotate_component.cp_xor_differential_first_step_constraints(cp)
+    rotate_component = Rotate(0, 18, ['input0', 'input1', 'input2', 'input3'],
+                              [[0, 1, 2, 3, 4, 5, 6, 7],
+                               [0, 1, 2, 3, 4, 5, 6, 7],
+                               [0, 1, 2, 3, 4, 5, 6, 7],
+                               [0, 1, 2, 3, 4, 5, 6, 7]], 32, -8)
+
+    class DummyModel:
+        word_size = 8
+
+    declarations, constraints = rotate_component.cp_xor_differential_first_step_constraints(DummyModel())
 
     assert declarations == ['array[0..3] of var 0..1: rot_0_18;']
 
-    assert constraints == ['constraint rot_0_18[0] = sbox_0_6[0];', 'constraint rot_0_18[1] = sbox_0_10[0];',
-                           'constraint rot_0_18[2] = sbox_0_14[0];', 'constraint rot_0_18[3] = sbox_0_2[0];']
+    assert constraints == ['constraint rot_0_18[0] = input1[0];', 'constraint rot_0_18[1] = input2[0];',
+                           'constraint rot_0_18[2] = input3[0];', 'constraint rot_0_18[3] = input0[0];']

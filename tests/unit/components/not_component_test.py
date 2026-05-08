@@ -1,30 +1,26 @@
-from claasp.components.not_component import NOT
-from claasp.cipher_modules.models.cp.mzn_model import MznModel
+from claasp.components.not_component import Not
 from claasp.cipher_modules.models.milp.milp_model import MilpModel
-from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-from claasp.ciphers.permutations.gift_permutation import GiftPermutation
-from claasp.ciphers.permutations.ascon_permutation import AsconPermutation
+from claasp.ciphers.single_component_ciphers.not_cipher import NotCipher
 from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
 from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import \
     MilpBitwiseDeterministicTruncatedXorDifferentialModel
 
 def test_algebraic_polynomials():
-    ascon = AsconPermutation(number_of_rounds=2)
-    algebraic = AlgebraicModel(ascon)
-    not_component = ascon.get_component_from_id("not_0_5")
+    cipher = NotCipher(bit_size=64)
+    algebraic = AlgebraicModel(cipher)
+    not_component = cipher.component_from(0, 0)
     algebraic_polynomials = not_component.algebraic_polynomials(algebraic)
 
-    assert str(algebraic_polynomials[0]) == "not_0_5_y0 + not_0_5_x0 + 1"
-    assert str(algebraic_polynomials[1]) == "not_0_5_y1 + not_0_5_x1 + 1"
-    assert str(algebraic_polynomials[2]) == "not_0_5_y2 + not_0_5_x2 + 1"
-    assert str(algebraic_polynomials[-3]) == "not_0_5_y61 + not_0_5_x61 + 1"
-    assert str(algebraic_polynomials[-2]) == "not_0_5_y62 + not_0_5_x62 + 1"
-    assert str(algebraic_polynomials[-1]) == "not_0_5_y63 + not_0_5_x63 + 1"
+    assert str(algebraic_polynomials[0]) == "not_0_0_y0 + not_0_0_x0 + 1"
+    assert str(algebraic_polynomials[1]) == "not_0_0_y1 + not_0_0_x1 + 1"
+    assert str(algebraic_polynomials[2]) == "not_0_0_y2 + not_0_0_x2 + 1"
+    assert str(algebraic_polynomials[-3]) == "not_0_0_y61 + not_0_0_x61 + 1"
+    assert str(algebraic_polynomials[-2]) == "not_0_0_y62 + not_0_0_x62 + 1"
+    assert str(algebraic_polynomials[-1]) == "not_0_0_y63 + not_0_0_x63 + 1"
 
 
 def test_cms_constraints():
-    gift = GiftPermutation(number_of_rounds=3)
-    not_component = gift.component_from(0, 8)
+    not_component = Not(0, 8, ['xor_0_6'], [list(range(32))], 32)
     output_bit_ids, constraints = not_component.cms_constraints()
 
     assert output_bit_ids[0] == 'not_0_8_0'
@@ -36,8 +32,7 @@ def test_cms_constraints():
 
 
 def test_cp_constraints():
-    gift = GiftPermutation(number_of_rounds=3)
-    not_component = gift.component_from(0, 8)
+    not_component = Not(0, 8, ['xor_0_6'], [list(range(32))], 32)
     declarations, constraints = not_component.cp_constraints()
 
     assert declarations == []
@@ -47,8 +42,7 @@ def test_cp_constraints():
 
 
 def test_cp_deterministic_truncated_xor_differential_constraints():
-    gift = GiftPermutation(number_of_rounds=3)
-    not_component = gift.component_from(0, 8)
+    not_component = Not(0, 8, ['xor_0_6'], [list(range(32))], 32)
     declarations, constraints = not_component.cp_deterministic_truncated_xor_differential_constraints()
 
     assert declarations == []
@@ -58,24 +52,24 @@ def test_cp_deterministic_truncated_xor_differential_constraints():
 
 
 def test_cp_xor_differential_first_step_constraints():
-    aes = AESBlockCipher()
-    cp = MznModel(aes)
-    not_component = NOT(0, 18, ['sbox_0_2', 'sbox_0_6', 'sbox_0_10', 'sbox_0_14'],
-                               [[0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7],
-                                [0, 1, 2, 3, 4, 5, 6, 7]], 32)
-    declarations, constraints = not_component.cp_xor_differential_first_step_constraints(cp)
+    class DummyModel:
+        word_size = 8
+
+    not_component = Not(0, 18, ['plaintext', 'key', 'input3', 'input4'],
+                        [[0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7],
+                         [0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7]], 32)
+    declarations, constraints = not_component.cp_xor_differential_first_step_constraints(DummyModel())
 
     assert declarations == ['array[0..3] of var 0..1: not_0_18;']
 
-    assert constraints == ['constraint not_0_18[0] = sbox_0_2[0];',
-                           'constraint not_0_18[1] = sbox_0_6[0];',
-                           'constraint not_0_18[2] = sbox_0_10[0];',
-                           'constraint not_0_18[3] = sbox_0_14[0];']
+    assert constraints == ['constraint not_0_18[0] = plaintext[0];',
+                           'constraint not_0_18[1] = key[0];',
+                           'constraint not_0_18[2] = input3[0];',
+                           'constraint not_0_18[3] = input4[0];']
 
 
 def test_cp_xor_differential_propagation_constraints():
-    gift = GiftPermutation(number_of_rounds=3)
-    not_component = gift.component_from(0, 8)
+    not_component = Not(0, 8, ['xor_0_6'], [list(range(32))], 32)
     declarations, constraints = not_component.cp_xor_differential_propagation_constraints()
 
     assert declarations == []
@@ -85,8 +79,7 @@ def test_cp_xor_differential_propagation_constraints():
 
 
 def test_cp_xor_linear_mask_propagation_constraints():
-    ascon = AsconPermutation(number_of_rounds=1)
-    not_component = ascon.component_from(0, 5)
+    not_component = Not(0, 5, ['ascon_0_5_i'], [list(range(64))], 64)
     declarations, constraints = not_component.cp_xor_linear_mask_propagation_constraints()
 
     assert declarations == ['array[0..63] of var 0..1:not_0_5_i;', 'array[0..63] of var 0..1:not_0_5_o;']
@@ -96,24 +89,23 @@ def test_cp_xor_linear_mask_propagation_constraints():
 
 
 def test_generic_sign_linear_constraints():
-    gift = GiftPermutation(number_of_rounds=1)
-    not_component = gift.component_from(0, 8)
+    not_component = Not(0, 8, ['xor_0_6'], [list(range(32))], 32)
     inputs = [0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 1, 0]
 
     assert not_component.generic_sign_linear_constraints(inputs) == 1
 
 
 def test_milp_constraints():
-    ascon = AsconPermutation()
-    milp = MilpModel(ascon)
+    cipher = NotCipher(bit_size=64)
+    milp = MilpModel(cipher)
     milp.init_model_in_sage_milp_class()
-    not_component = ascon.component_from(0, 5)
+    not_component = cipher.component_from(0, 0)
     variables, constraints = not_component.milp_constraints(milp)
 
-    assert str(variables[0]) == "('x[xor_0_2_0]', x_0)"
-    assert str(variables[1]) == "('x[xor_0_2_1]', x_1)"
-    assert str(variables[-2]) == "('x[not_0_5_62]', x_126)"
-    assert str(variables[-1]) == "('x[not_0_5_63]', x_127)"
+    assert str(variables[0]) == "('x[plaintext_0]', x_0)"
+    assert str(variables[1]) == "('x[plaintext_1]', x_1)"
+    assert str(variables[-2]) == "('x[not_0_0_62]', x_126)"
+    assert str(variables[-1]) == "('x[not_0_0_63]', x_127)"
 
     assert str(constraints[0]) == "x_0 + x_64 == 1"
     assert str(constraints[1]) == "x_1 + x_65 == 1"
@@ -122,16 +114,16 @@ def test_milp_constraints():
 
 
 def test_milp_xor_differential_propagation_constraints():
-    ascon = AsconPermutation()
-    milp = MilpModel(ascon)
+    cipher = NotCipher(bit_size=64)
+    milp = MilpModel(cipher)
     milp.init_model_in_sage_milp_class()
-    not_component = ascon.component_from(0, 5)
+    not_component = cipher.component_from(0, 0)
     variables, constraints = not_component.milp_xor_differential_propagation_constraints(milp)
 
-    assert str(variables[0]) == "('x[xor_0_2_0]', x_0)"
-    assert str(variables[1]) == "('x[xor_0_2_1]', x_1)"
-    assert str(variables[-2]) == "('x[not_0_5_62]', x_126)"
-    assert str(variables[-1]) == "('x[not_0_5_63]', x_127)"
+    assert str(variables[0]) == "('x[plaintext_0]', x_0)"
+    assert str(variables[1]) == "('x[plaintext_1]', x_1)"
+    assert str(variables[-2]) == "('x[not_0_0_62]', x_126)"
+    assert str(variables[-1]) == "('x[not_0_0_63]', x_127)"
 
     assert str(constraints[0]) == "x_64 == x_0"
     assert str(constraints[1]) == "x_65 == x_1"
@@ -140,16 +132,16 @@ def test_milp_xor_differential_propagation_constraints():
 
 
 def test_milp_xor_linear_mask_propagation_constraints():
-    ascon = AsconPermutation()
-    milp = MilpModel(ascon)
+    cipher = NotCipher(bit_size=64)
+    milp = MilpModel(cipher)
     milp.init_model_in_sage_milp_class()
-    not_component = ascon.component_from(0, 5)
+    not_component = cipher.component_from(0, 0)
     variables, constraints = not_component.milp_xor_linear_mask_propagation_constraints(milp)
 
-    assert str(variables[0]) == "('x[not_0_5_0_i]', x_0)"
-    assert str(variables[1]) == "('x[not_0_5_1_i]', x_1)"
-    assert str(variables[-2]) == "('x[not_0_5_62_o]', x_126)"
-    assert str(variables[-1]) == "('x[not_0_5_63_o]', x_127)"
+    assert str(variables[0]) == "('x[not_0_0_0_i]', x_0)"
+    assert str(variables[1]) == "('x[not_0_0_1_i]', x_1)"
+    assert str(variables[-2]) == "('x[not_0_0_62_o]', x_126)"
+    assert str(variables[-1]) == "('x[not_0_0_63_o]', x_127)"
 
     assert str(constraints[0]) == "x_64 == x_0"
     assert str(constraints[1]) == "x_65 == x_1"
@@ -158,8 +150,7 @@ def test_milp_xor_linear_mask_propagation_constraints():
 
 
 def test_sat_constraints():
-    gift = GiftPermutation(number_of_rounds=3)
-    not_component = gift.component_from(0, 8)
+    not_component = Not(0, 8, ['xor_0_6'], [list(range(32))], 32)
     output_bit_ids, constraints = not_component.sat_constraints()
 
     assert output_bit_ids[0] == 'not_0_8_0'
@@ -172,8 +163,7 @@ def test_sat_constraints():
 
 
 def test_sat_bitwise_deterministic_truncated_xor_differential_constraints():
-    gift = GiftPermutation(number_of_rounds=3)
-    not_component = gift.component_from(0, 8)
+    not_component = Not(0, 8, ['xor_0_6'], [list(range(32))], 32)
     output_bit_ids, constraints = not_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
 
     assert output_bit_ids[0] == 'not_0_8_0_0'
@@ -186,8 +176,7 @@ def test_sat_bitwise_deterministic_truncated_xor_differential_constraints():
 
 
 def test_sat_xor_differential_propagation_constraints():
-    gift = GiftPermutation(number_of_rounds=3)
-    not_component = gift.component_from(0, 8)
+    not_component = Not(0, 8, ['xor_0_6'], [list(range(32))], 32)
     output_bit_ids, constraints = not_component.sat_xor_differential_propagation_constraints()
 
     assert output_bit_ids[0] == 'not_0_8_0'
@@ -200,8 +189,7 @@ def test_sat_xor_differential_propagation_constraints():
 
 
 def test_sat_xor_linear_mask_propagation_constraints():
-    gift = GiftPermutation(number_of_rounds=3)
-    not_component = gift.component_from(0, 8)
+    not_component = Not(0, 8, ['xor_0_6'], [list(range(32))], 32)
     output_bit_ids, constraints = not_component.sat_xor_linear_mask_propagation_constraints()
 
     assert output_bit_ids[0] == 'not_0_8_0_i'
@@ -214,8 +202,7 @@ def test_sat_xor_linear_mask_propagation_constraints():
 
 
 def test_smt_constraints():
-    ascon = AsconPermutation(number_of_rounds=3)
-    not_component = ascon.component_from(0, 5)
+    not_component = Not(0, 5, ['xor_0_2'], [list(range(64))], 64)
     output_bit_ids, constraints = not_component.smt_constraints()
 
     assert output_bit_ids[0] == 'not_0_5_0'
@@ -230,8 +217,7 @@ def test_smt_constraints():
 
 
 def test_smt_xor_differential_propagation_constraints():
-    ascon = AsconPermutation(number_of_rounds=3)
-    not_component = ascon.component_from(0, 5)
+    not_component = Not(0, 5, ['xor_0_2'], [list(range(64))], 64)
     output_bit_ids, constraints = not_component.smt_xor_differential_propagation_constraints()
 
     assert output_bit_ids[0] == 'not_0_5_0'
@@ -246,8 +232,7 @@ def test_smt_xor_differential_propagation_constraints():
 
 
 def test_smt_xor_linear_mask_propagation_constraints():
-    ascon = AsconPermutation(number_of_rounds=3)
-    not_component = ascon.component_from(0, 5)
+    not_component = Not(0, 5, ['not_0_5_i'], [list(range(64))], 64)
     output_bit_ids, constraints = not_component.smt_xor_linear_mask_propagation_constraints()
 
     assert output_bit_ids[0] == 'not_0_5_0_i'
@@ -261,16 +246,16 @@ def test_smt_xor_linear_mask_propagation_constraints():
     assert constraints[-1] == '(assert (= not_0_5_63_i not_0_5_63_o))'
 
 def test_milp_deterministic_truncated_xor_differential_constraints():
-    cipher = GiftPermutation()
+    cipher = NotCipher(bit_size=32)
     milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(cipher)
     milp.init_model_in_sage_milp_class()
-    not_component = cipher.component_from(0,8)
+    not_component = cipher.component_from(0, 0)
     variables, constraints = not_component.milp_bitwise_deterministic_truncated_xor_differential_constraints(milp)
 
-    assert str(variables[0]) == "('x_class[xor_0_6_0]', x_0)"
-    assert str(variables[1]) == "('x_class[xor_0_6_1]', x_1)"
-    assert str(variables[-2]) == "('x_class[not_0_8_30]', x_62)"
-    assert str(variables[-1]) == "('x_class[not_0_8_31]', x_63)"
+    assert str(variables[0]) == "('x_class[plaintext_0]', x_0)"
+    assert str(variables[1]) == "('x_class[plaintext_1]', x_1)"
+    assert str(variables[-2]) == "('x_class[not_0_0_30]', x_62)"
+    assert str(variables[-1]) == "('x_class[not_0_0_31]', x_63)"
 
     assert str(constraints[0]) == 'x_32 == x_0'
     assert str(constraints[1]) == 'x_33 == x_1'

@@ -60,6 +60,7 @@ class MznBoomerangModelARXOptimized(MznXorDifferentialModelARXOptimized):
         self.extend_model_constraints(
             self.weight_constraints(max_weight=max_weight, weight=weight, operator=">=")
         )
+        self.differential_model_top_cipher.build_xor_differential_trail_model(-1, fixed_variables_for_top_cipher)
 
         from claasp.cipher_modules.models.sat.utils.mzn_predicates import get_word_operations
 
@@ -86,22 +87,29 @@ class MznBoomerangModelARXOptimized(MznXorDifferentialModelARXOptimized):
 
     def write_minizinc_model_to_file(self, file_path, prefix=""):
         model_string_top = "\n".join(self.differential_model_top_cipher.mzn_comments) + "\n".join(
-            self.differential_model_top_cipher.mzn_output_directives)
+            self.differential_model_top_cipher.mzn_output_directives
+        )
 
         model_string_bottom = "\n".join(self.differential_model_bottom_cipher.mzn_comments) + "\n".join(
-            self.differential_model_bottom_cipher.mzn_output_directives)
+            self.differential_model_bottom_cipher.mzn_output_directives
+        )
         if prefix == "":
-            filename = f'{file_path}/{self.original_cipher.id}_mzn_{self.differential_model_top_cipher.sat_or_milp}.mzn'
+            filename = f"{file_path}/{self.original_cipher.id}_mzn_{self.differential_model_top_cipher.sat_or_milp}.mzn"
             self.filename = filename
         else:
-            filename = f'{file_path}/{prefix}_{self.original_cipher.id}_mzn_'
-            filename += f'{self.differential_model_top_cipher.sat_or_milp}.mzn'
+            filename = f"{file_path}/{prefix}_{self.original_cipher.id}_mzn_"
+            filename += f"{self.differential_model_top_cipher.sat_or_milp}.mzn"
             self.filename = filename
 
         f = open(filename, "w")
         f.write(
-            model_string_top + "\n" + model_string_bottom + "\n" + "\n".join(self._variables_list) + "\n" + "\n".join(
-                self._model_constraints)
+            model_string_top
+            + "\n"
+            + model_string_bottom
+            + "\n"
+            + "\n".join(self._variables_declarations)
+            + "\n"
+            + "\n".join(self._model_constraints)
         )
         f.close()
 
@@ -111,42 +119,42 @@ class MznBoomerangModelARXOptimized(MznXorDifferentialModelARXOptimized):
         def get_hex_from_sublists(sublists, bool_dict):
             hex_values = {}
             for sublist in sublists:
-                bit_str = ''.join(['1' if bool_dict[val] else '0' for val in sublist])
+                bit_str = "".join(["1" if bool_dict[val] else "0" for val in sublist])
                 component_id = sublist[0][:-3]
                 weight = 0
-                if component_id.startswith('modadd') and component_id not in self.sboxes_ids:
-                    p_modadd_var = [s for s in bool_dict.keys() if s.startswith(f'p_{component_id}')]
+                if component_id.startswith("modadd") and component_id not in self.sboxes_ids:
+                    p_modadd_var = [s for s in bool_dict.keys() if s.startswith(f"p_{component_id}")]
                     weight = sum(bool_dict[p_modadd_var[0]])
-                hex_values[component_id] = {'value': hex(int(bit_str, 2)), 'weight': weight, 'sign': 1}
+                hex_values[component_id] = {"value": hex(int(bit_str, 2)), "weight": weight, "sign": 1}
 
             return hex_values
 
         if result.status not in [Status.UNKNOWN, Status.UNSATISFIABLE, Status.ERROR]:
-            list_of_sublist_of_vars = group_strings_by_pattern(self._variables_list)
+            list_of_sublist_of_vars = group_strings_by_pattern(self._variables_declarations)
             dict_of_component_value = get_hex_from_sublists(list_of_sublist_of_vars, solution.__dict__)
 
-        return {'component_values': dict_of_component_value}
+        return {"component_values": dict_of_component_value}
 
     def bct_parse_result(self, result, solver_name, total_weight, model_type):
-        parsed_result = {'id': self.cipher_id, 'model_type': model_type, 'solver_name': solver_name}
+        parsed_result = {"id": self.cipher_id, "model_type": model_type, "solver_name": solver_name}
         if total_weight == "list_of_solutions":
             solutions = []
             for solution in result.solution:
-                parsed_solution = {'total_weight': None, 'component_values': {}}
+                parsed_solution = {"total_weight": None, "component_values": {}}
                 parsed_solution_non_linear = self.parse_components_with_solution(result, solution)
                 solution_total_weight = 0
                 for _, item_value_and_weight in parsed_solution.items():
-                    solution_total_weight += item_value_and_weight['weight']
-                parsed_solution['total_weight'] = solution_total_weight
+                    solution_total_weight += item_value_and_weight["weight"]
+                parsed_solution["total_weight"] = solution_total_weight
                 parsed_solution = {**parsed_solution_non_linear, **parsed_result}
                 solutions.append(parsed_solution)
             return solutions
         else:
-            parsed_result['total_weight'] = total_weight
-            parsed_result['statistics'] = result.statistics
+            parsed_result["total_weight"] = total_weight
+            parsed_result["statistics"] = result.statistics
             parsed_result = {**self.parse_components_with_solution(result, result.solution), **parsed_result}
-        parsed_result['statistics']['flatTime'] = parsed_result['statistics']['flatTime'].total_seconds()
-        parsed_result['statistics']['time'] = parsed_result['statistics']['time'].total_seconds()
+        parsed_result["statistics"]["flatTime"] = parsed_result["statistics"]["flatTime"].total_seconds()
+        parsed_result["statistics"]["time"] = parsed_result["statistics"]["time"].total_seconds()
 
         return parsed_result
 

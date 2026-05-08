@@ -1,8 +1,11 @@
+import pytest
+
+from claasp.cipher_modules.models.milp.milp_models.milp_xor_linear_model import MilpXorLinearModel
+from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
 from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
-from claasp.cipher_modules.models.milp.milp_models.milp_xor_linear_model import MilpXorLinearModel
-import pytest
+from claasp.name_mappings import INPUT_PLAINTEXT
+
 
 def test_build_xor_linear_trail_model():
     speck = SpeckBlockCipher(number_of_rounds=22)
@@ -10,11 +13,11 @@ def test_build_xor_linear_trail_model():
     milp.init_model_in_sage_milp_class()
     milp.build_xor_linear_trail_model()
 
-    assert str(milp.model_constraints[0]) == 'x_0 == x_1'
-    assert str(milp.model_constraints[1]) == 'x_2 == x_3'
-    assert str(milp.model_constraints[2]) == 'x_4 == x_5'
-    assert str(milp.model_constraints[12369]) == 'x_6400 == x_6432'
-    assert str(milp.model_constraints[12370]) == 'x_6401 == x_6433'
+    assert str(milp.model_constraints[0]) == "x_0 == x_1"
+    assert str(milp.model_constraints[1]) == "x_2 == x_3"
+    assert str(milp.model_constraints[2]) == "x_4 == x_5"
+    assert str(milp.model_constraints[12369]) == "x_6400 == x_6432"
+    assert str(milp.model_constraints[12370]) == "x_6401 == x_6433"
 
 
 def test_find_all_xor_linear_trails_with_fixed_weight():
@@ -23,16 +26,16 @@ def test_find_all_xor_linear_trails_with_fixed_weight():
     trails = milp.find_all_xor_linear_trails_with_fixed_weight(1)
 
     assert len(trails) == 12
-    for i in range(len(trails)):
-        assert str(trails[i]['cipher']) == 'speck_p8_k16_o8_r3'
-        assert trails[i]['total_weight'] == 1.0
-        assert eval(trails[i]['components_values']['plaintext']['value']) > 0
-        assert eval(trails[i]['components_values']['key_0_2']['value']) >= 0
-        assert trails[i]['components_values']['key_0_2']['weight'] == 0
-        assert trails[i]['components_values']['key_0_2']['sign'] == 1
-        assert eval(trails[i]['components_values']['rot_0_0_i']['value']) >= 0
-        assert trails[i]['components_values']['rot_0_0_i']['weight'] == 0
-        assert trails[i]['components_values']['rot_0_0_i']['sign'] == 1
+    for trail in trails:
+        assert str(trail["cipher"]) == "speck_p8_k16_o8_r3"
+        assert trail["total_weight"] == 1.0
+        assert int(trail["components_values"][INPUT_PLAINTEXT]["value"], base=16) > 0
+        assert int(trail["components_values"]["key_0_2"]["value"], base=16) >= 0
+        assert trail["components_values"]["key_0_2"]["weight"] == 0
+        assert trail["components_values"]["key_0_2"]["sign"] == 1
+        assert int(trail["components_values"]["rot_0_0_i"]["value"], base=16) >= 0
+        assert trail["components_values"]["rot_0_0_i"]["weight"] == 0
+        assert trail["components_values"]["rot_0_0_i"]["sign"] == 1
 
 
 def test_find_all_xor_linear_trails_with_weight_at_most():
@@ -41,17 +44,17 @@ def test_find_all_xor_linear_trails_with_weight_at_most():
     trails = milp.find_all_xor_linear_trails_with_weight_at_most(0, 1)
 
     assert len(trails) == 13
-    for i in range(len(trails)):
-        assert str(trails[i]['cipher']) == 'speck_p8_k16_o8_r3'
-        assert trails[i]['total_weight'] <= 1.0
-        assert trails[i]['total_weight'] >= 0.0
-        assert eval(trails[i]['components_values']['plaintext']['value']) > 0
-        assert eval(trails[i]['components_values']['key_0_2']['value']) >= 0
-        assert trails[i]['components_values']['key_0_2']['weight'] == 0
-        assert trails[i]['components_values']['key_0_2']['sign'] == 1
-        assert eval(trails[i]['components_values']['rot_0_0_i']['value']) >= 0
-        assert trails[i]['components_values']['rot_0_0_i']['weight'] == 0
-        assert trails[i]['components_values']['rot_0_0_i']['sign'] == 1
+    for trail in trails:
+        assert str(trail["cipher"]) == "speck_p8_k16_o8_r3"
+        assert trail["total_weight"] <= 1.0
+        assert trail["total_weight"] >= 0.0
+        assert int(trail["components_values"][INPUT_PLAINTEXT]["value"], base=16) > 0
+        assert int(trail["components_values"]["key_0_2"]["value"], base=16) >= 0
+        assert trail["components_values"]["key_0_2"]["weight"] == 0
+        assert trail["components_values"]["key_0_2"]["sign"] == 1
+        assert int(trail["components_values"]["rot_0_0_i"]["value"], base=16) >= 0
+        assert trail["components_values"]["rot_0_0_i"]["weight"] == 0
+        assert trail["components_values"]["rot_0_0_i"]["sign"] == 1
 
 
 def test_find_lowest_weight_xor_linear_trail():
@@ -85,8 +88,12 @@ def test_find_lowest_weight_xor_linear_trail():
 def test_find_one_xor_linear_trail():
     speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
     milp = MilpXorLinearModel(speck)
-    plaintext = set_fixed_variables(component_id='plaintext', constraint_type='equal', bit_positions=range(32),
-                                    bit_values=integer_to_bit_list(0x03805224, 32, 'big'))
+    plaintext = set_fixed_variables(
+        component_id=INPUT_PLAINTEXT,
+        constraint_type="equal",
+        bit_positions=range(32),
+        bit_values=integer_to_bit_list(0x03805224, 32, "big"),
+    )
     trail = milp.find_one_xor_linear_trail(fixed_values=[plaintext])
     assert trail["total_weight"] >= 3.0
 
@@ -132,6 +139,7 @@ def test_find_one_xor_linear_trail_with_fixed_weight_with_installed_external_sol
         milp = MilpXorLinearModel(speck)
         trail = milp.find_one_xor_linear_trail_with_fixed_weight(1, external_solver_name="Gurobi_ext")
 
+
 def test_find_one_xor_linear_trail_with_fixed_weight_with_unsupported_external_solver():
     with pytest.raises(Exception) as e_info:
         speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
@@ -143,18 +151,23 @@ def test_fix_variables_value_xor_linear_constraints():
     simon = SimonBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
     milp = MilpXorLinearModel(simon)
     milp.init_model_in_sage_milp_class()
-    fixed_variables = [{'component_id': 'plaintext',
-                        'constraint_type': 'equal',
-                        'bit_positions': [0, 1, 2, 3],
-                        'bit_values': [1, 0, 1, 1]
-                        }, {'component_id': 'cipher_output_1_8',
-                            'constraint_type': 'not_equal',
-                            'bit_positions': [0, 1, 2, 3],
-                            'bit_values': [1, 1, 1, 0]
-                            }]
+    fixed_variables = [
+        {
+            "component_id": INPUT_PLAINTEXT,
+            "constraint_type": "equal",
+            "bit_positions": [0, 1, 2, 3],
+            "bit_values": [1, 0, 1, 1],
+        },
+        {
+            "component_id": "cipher_output_1_8",
+            "constraint_type": "not_equal",
+            "bit_positions": [0, 1, 2, 3],
+            "bit_values": [1, 1, 1, 0],
+        },
+    ]
     constraints = milp.fix_variables_value_xor_linear_constraints(fixed_variables)
 
-    assert str(constraints[0]) == 'x_0 == 1'
-    assert str(constraints[1]) == 'x_1 == 0'
-    assert str(constraints[7]) == 'x_10 == x_11'
-    assert str(constraints[8]) == '1 <= x_4 + x_6 + x_8 + x_10'
+    assert str(constraints[0]) == "x_0 == 1"
+    assert str(constraints[1]) == "x_1 == 0"
+    assert str(constraints[7]) == "x_10 == x_11"
+    assert str(constraints[8]) == "1 <= x_4 + x_6 + x_8 + x_10"

@@ -1,0 +1,600 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Generic functions continuous diffusion analysis &#8212; CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives v3.1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sage.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Graph generator" href="graph_generator.html" />
+    <link rel="prev" title="Evaluator" href="evaluator.html" />
+    <link rel="icon" href="../_static/sageicon.png" type="image/x-icon" />
+    <script src="../_static/thebe.js" type="text/javascript"></script>
+    <script src="../_static/thebe-sage.js" type="text/javascript"></script>
+
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="graph_generator.html" title="Graph generator"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="evaluator.html" title="Evaluator"
+             accesskey="P">previous</a> |</li>
+  
+    
+      <a href="../../index.html"><img src="../_static/logo_tii.svg" height="28" style="vertical-align: middle" title="TII Logo"></a>
+    
+  
+  
+        <li class="nav-item nav-item-0"><a href="../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives v3.1.0 documentation</a> &#187;</li>
+
+        <li class="nav-item nav-item-this"><a href="">Generic functions continuous diffusion analysis</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="module-cipher_modules.generic_functions_continuous_diffusion_analysis">
+<span id="generic-functions-continuous-diffusion-analysis"></span><h1>Generic functions continuous diffusion analysis<a class="headerlink" href="#module-cipher_modules.generic_functions_continuous_diffusion_analysis" title="Permalink to this heading">¶</a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions_continuous_diffusion_analysis.AND_continuous_diffusion_analysis">
+<span class="sig-name descname"><span class="pre">AND_continuous_diffusion_analysis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_lst</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_inputs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions_continuous_diffusion_analysis.AND_continuous_diffusion_analysis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the continuous generalization of the and operation <a class="reference internal" href="../references.html#mur2020" id="id1"><span>[MUR2020]</span></a>.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">input_lst</span></code> – <strong>list</strong>; is a list of real numbers in the range [-1, 1]</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">number_of_inputs</span></code> – <strong>integer</strong>; specify in how many parts must the input be split</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions_continuous_diffusion_analysis.CONSTANT_continuous_diffusion_analysis">
+<span class="sig-name descname"><span class="pre">CONSTANT_continuous_diffusion_analysis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_lst</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_outputs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions_continuous_diffusion_analysis.CONSTANT_continuous_diffusion_analysis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the continuous generalization of a constant operation <a class="reference internal" href="../references.html#mur2020" id="id2"><span>[MUR2020]</span></a>.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">input_lst</span></code> – <strong>list</strong>; is a list of real numbers in the range [-1, 1]</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">number_of_inputs</span></code> – <strong>integer</strong>; specify the number of elements of the input</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions_continuous_diffusion_analysis.LINEAR_LAYER_continuous_diffusion_analysis">
+<span class="sig-name descname"><span class="pre">LINEAR_LAYER_continuous_diffusion_analysis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_lst</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">linear_matrix</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions_continuous_diffusion_analysis.LINEAR_LAYER_continuous_diffusion_analysis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the continuous generalization of a linear_layer operation <a class="reference internal" href="../references.html#mur2020" id="id3"><span>[MUR2020]</span></a>.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">input_lst</span></code> – <strong>list</strong>; is a list of real numbers in the range [-1, 1]</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">linear_matrix</span></code> – <strong>list</strong>; list of lists containing the matrix representation of the linear operation</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions_continuous_diffusion_analysis.MIX_COLUMN_generalized_continuous_diffusion_analysis">
+<span class="sig-name descname"><span class="pre">MIX_COLUMN_generalized_continuous_diffusion_analysis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_lst</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mix_column_matrix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sbox_dictionary</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">word_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions_continuous_diffusion_analysis.MIX_COLUMN_generalized_continuous_diffusion_analysis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the continuous generalization of a mix_column operation <a class="reference internal" href="../references.html#mur2020" id="id4"><span>[MUR2020]</span></a>.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">input_lst</span></code> – <strong>list</strong>; is a list of real numbers in the range [-1, 1]</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">mix_column_matrix</span></code> – <strong>list</strong>; matrix representing the mix column matrix</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">sbox_dictionary</span></code> – <strong>dictionary</strong>; contains precomputations for the mix column operation</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">word_size</span></code> – <strong>integer</strong>; integer representing the word size</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.generic_functions_continuous_diffusion_analysis</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="gp">sage: </span><span class="n">mix_column_matrix</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]]</span>
+<span class="gp">sage: </span><span class="n">lookup_table_2</span> <span class="o">=</span> <span class="p">[</span>
+<span class="gp">....: </span>    <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0x02</span><span class="p">,</span> <span class="mh">0x04</span><span class="p">,</span> <span class="mh">0x06</span><span class="p">,</span> <span class="mh">0x08</span><span class="p">,</span> <span class="mh">0x0A</span><span class="p">,</span> <span class="mh">0x0C</span><span class="p">,</span> <span class="mh">0x0E</span><span class="p">,</span> <span class="mh">0x10</span><span class="p">,</span> <span class="mh">0x12</span><span class="p">,</span> <span class="mh">0x14</span><span class="p">,</span> <span class="mh">0x16</span><span class="p">,</span>
+<span class="gp">....: </span>    <span class="mh">0x18</span><span class="p">,</span> <span class="mh">0x1A</span><span class="p">,</span> <span class="mh">0x1C</span><span class="p">,</span> <span class="mh">0x1E</span><span class="p">,</span> <span class="mh">0x20</span><span class="p">,</span> <span class="mh">0x22</span><span class="p">,</span> <span class="mh">0x24</span><span class="p">,</span> <span class="mh">0x26</span><span class="p">,</span> <span class="mh">0x28</span><span class="p">,</span> <span class="mh">0x2A</span><span class="p">,</span> <span class="mh">0x2C</span><span class="p">,</span> <span class="mh">0x2E</span><span class="p">,</span>
+<span class="gp">....: </span>    <span class="mh">0x30</span><span class="p">,</span> <span class="mh">0x32</span><span class="p">,</span> <span class="mh">0x34</span><span class="p">,</span> <span class="mh">0x36</span><span class="p">,</span> <span class="mh">0x38</span><span class="p">,</span> <span class="mh">0x3A</span><span class="p">,</span> <span class="mh">0x3C</span><span class="p">,</span> <span class="mh">0x3E</span><span class="p">,</span> <span class="mh">0x40</span><span class="p">,</span> <span class="mh">0x42</span><span class="p">,</span> <span class="mh">0x44</span><span class="p">,</span> <span class="mh">0x46</span><span class="p">,</span>
+<span class="gp">....: </span>    <span class="mh">0x48</span><span class="p">,</span> <span class="mh">0x4A</span><span class="p">,</span> <span class="mh">0x4C</span><span class="p">,</span> <span class="mh">0x4E</span><span class="p">,</span> <span class="mh">0x50</span><span class="p">,</span> <span class="mh">0x52</span><span class="p">,</span> <span class="mh">0x54</span><span class="p">,</span> <span class="mh">0x56</span><span class="p">,</span> <span class="mh">0x58</span><span class="p">,</span> <span class="mh">0x5A</span><span class="p">,</span> <span class="mh">0x5C</span><span class="p">,</span> <span class="mh">0x5E</span><span class="p">,</span>
+<span class="gp">....: </span>    <span class="mh">0x60</span><span class="p">,</span> <span class="mh">0x62</span><span class="p">,</span> <span class="mh">0x64</span><span class="p">,</span> <span class="mh">0x66</span><span class="p">,</span> <span class="mh">0x68</span><span class="p">,</span> <span class="mh">0x6A</span><span class="p">,</span> <span class="mh">0x6C</span><span class="p">,</span> <span class="mh">0x6E</span><span class="p">,</span> <span class="mh">0x70</span><span class="p">,</span> <span class="mh">0x72</span><span class="p">,</span> <span class="mh">0x74</span><span class="p">,</span> <span class="mh">0x76</span><span class="p">,</span>
+<span class="gp">....: </span>    <span class="mh">0x78</span><span class="p">,</span> <span class="mh">0x7A</span><span class="p">,</span> <span class="mh">0x7C</span><span class="p">,</span> <span class="mh">0x7E</span><span class="p">,</span> <span class="mh">0x80</span><span class="p">,</span> <span class="mh">0x82</span><span class="p">,</span> <span class="mh">0x84</span><span class="p">,</span> <span class="mh">0x86</span><span class="p">,</span> <span class="mh">0x88</span><span class="p">,</span> <span class="mh">0x8A</span><span class="p">,</span> <span class="mh">0x8C</span><span class="p">,</span> <span class="mh">0x8E</span><span class="p">,</span>
+<span class="gp">....: </span>    <span class="mh">0x90</span><span class="p">,</span> <span class="mh">0x92</span><span class="p">,</span> <span class="mh">0x94</span><span class="p">,</span> <span class="mh">0x96</span><span class="p">,</span> <span class="mh">0x98</span><span class="p">,</span> <span class="mh">0x9A</span><span class="p">,</span> <span class="mh">0x9C</span><span class="p">,</span> <span class="mh">0x9E</span><span class="p">,</span> <span class="mh">0xA0</span><span class="p">,</span> <span class="mh">0xA2</span><span class="p">,</span> <span class="mh">0xA4</span><span class="p">,</span> <span class="mh">0xA6</span><span class="p">,</span>
+<span class="gp">....: </span>    <span class="mh">0xA8</span><span class="p">,</span> <span class="mh">0xAA</span><span class="p">,</span> <span class="mh">0xAC</span><span class="p">,</span> <span class="mh">0xAE</span><span class="p">,</span> <span class="mh">0xB0</span><span class="p">,</span> <span class="mh">0xB2</span><span class="p">,</span> <span class="mh">0xB4</span><span class="p">,</span> <span class="mh">0xB6</span><span class="p">,</span> <span class="mh">0xB8</span><span class="p">,</span> <span class="mh">0xBA</span><span class="p">,</span> <span class="mh">0xBC</span><span class="p">,</span> <span class="mh">0xBE</span><span class="p">,</span>
+<span class="gp">....: </span>    <span class="mh">0xC0</span><span class="p">,</span> <span class="mh">0xC2</span><span class="p">,</span> <span class="mh">0xC4</span><span class="p">,</span> <span class="mh">0xC6</span><span class="p">,</span> <span class="mh">0xC8</span><span class="p">,</span> <span class="mh">0xCA</span><span class="p">,</span> <span class="mh">0xCC</span><span class="p">,</span> <span class="mh">0xCE</span><span class="p">,</span> <span class="mh">0xD0</span><span class="p">,</span> <span class="mh">0xD2</span><span class="p">,</span> <span class="mh">0xD4</span><span class="p">,</span> <span class="mh">0xD6</span><span class="p">,</span>
+<span class="gp">....: </span>    <span class="mh">0xD8</span><span class="p">,</span> <span class="mh">0xDA</span><span class="p">,</span> <span class="mh">0xDC</span><span class="p">,</span> <span class="mh">0xDE</span><span class="p">,</span> <span class="mh">0xE0</span><span class="p">,</span> <span class="mh">0xE2</span><span class="p">,</span> <span class="mh">0xE4</span><span class="p">,</span> <span class="mh">0xE6</span><span class="p">,</span> <span class="mh">0xE8</span><span class="p">,</span> <span class="mh">0xEA</span><span class="p">,</span> <span class="mh">0xEC</span><span class="p">,</span> <span class="mh">0xEE</span><span class="p">,</span>
+<span class="gp">....: </span>    <span class="mh">0xF0</span><span class="p">,</span> <span class="mh">0xF2</span><span class="p">,</span> <span class="mh">0xF4</span><span class="p">,</span> <span class="mh">0xF6</span><span class="p">,</span> <span class="mh">0xF8</span><span class="p">,</span> <span class="mh">0xFA</span><span class="p">,</span> <span class="mh">0xFC</span><span class="p">,</span> <span class="mh">0xFE</span><span class="p">,</span> <span class="mh">0x1B</span><span class="p">,</span> <span class="mh">0x19</span><span class="p">,</span> <span class="mh">0x1F</span><span class="p">,</span> <span class="mh">0x1D</span><span class="p">,</span>
+<span class="gp">....: </span>    <span class="mh">0x13</span><span class="p">,</span> <span class="mh">0x11</span><span class="p">,</span> <span class="mh">0x17</span><span class="p">,</span> <span class="mh">0x15</span><span class="p">,</span> <span class="mh">0x0B</span><span class="p">,</span> <span class="mh">0x09</span><span class="p">,</span> <span class="mh">0x0F</span><span class="p">,</span> <span class="mh">0x0D</span><span class="p">,</span> <span class="mh">0x03</span><span class="p">,</span> <span class="mh">0x01</span><span class="p">,</span> <span class="mh">0x07</span><span class="p">,</span> <span class="mh">0x05</span><span class="p">,</span>
+<span class="gp">....: </span>    <span class="mh">0x3B</span><span class="p">,</span> <span class="mh">0x39</span><span class="p">,</span> <span class="mh">0x3F</span><span class="p">,</span> <span class="mh">0x3D</span><span class="p">,</span> <span class="mh">0x33</span><span class="p">,</span> <span class="mh">0x31</span><span class="p">,</span> <span class="mh">0x37</span><span class="p">,</span> <span class="mh">0x35</span><span class="p">,</span> <span class="mh">0x2B</span><span class="p">,</span> <span class="mh">0x29</span><span class="p">,</span> <span class="mh">0x2F</span><span class="p">,</span> <span class="mh">0x2D</span><span class="p">,</span>
+<span class="gp">....: </span>    <span class="mh">0x23</span><span class="p">,</span> <span class="mh">0x21</span><span class="p">,</span> <span class="mh">0x27</span><span class="p">,</span> <span class="mh">0x25</span><span class="p">,</span> <span class="mh">0x5B</span><span class="p">,</span> <span class="mh">0x59</span><span class="p">,</span> <span class="mh">0x5F</span><span class="p">,</span> <span class="mh">0x5D</span><span class="p">,</span> <span class="mh">0x53</span><span class="p">,</span> <span class="mh">0x51</span><span class="p">,</span> <span class="mh">0x57</span><span class="p">,</span> <span class="mh">0x55</span><span class="p">,</span>
+<span class="gp">....: </span>    <span class="mh">0x4B</span><span class="p">,</span> <span class="mh">0x49</span><span class="p">,</span> <span class="mh">0x4F</span><span class="p">,</span> <span class="mh">0x4D</span><span class="p">,</span> <span class="mh">0x43</span><span class="p">,</span> <span class="mh">0x41</span><span class="p">,</span> <span class="mh">0x47</span><span class="p">,</span> <span class="mh">0x45</span><span class="p">,</span> <span class="mh">0x7B</span><span class="p">,</span> <span class="mh">0x79</span><span class="p">,</span> <span class="mh">0x7F</span><span class="p">,</span> <span class="mh">0x7D</span><span class="p">,</span>
+<span class="gp">....: </span>    <span class="mh">0x73</span><span class="p">,</span> <span class="mh">0x71</span><span class="p">,</span> <span class="mh">0x77</span><span class="p">,</span> <span class="mh">0x75</span><span class="p">,</span> <span class="mh">0x6B</span><span class="p">,</span> <span class="mh">0x69</span><span class="p">,</span> <span class="mh">0x6F</span><span class="p">,</span> <span class="mh">0x6D</span><span class="p">,</span> <span class="mh">0x63</span><span class="p">,</span> <span class="mh">0x61</span><span class="p">,</span> <span class="mh">0x67</span><span class="p">,</span> <span class="mh">0x65</span><span class="p">,</span>
+<span class="gp">....: </span>    <span class="mh">0x9B</span><span class="p">,</span> <span class="mh">0x99</span><span class="p">,</span> <span class="mh">0x9F</span><span class="p">,</span> <span class="mh">0x9D</span><span class="p">,</span> <span class="mh">0x93</span><span class="p">,</span> <span class="mh">0x91</span><span class="p">,</span> <span class="mh">0x97</span><span class="p">,</span> <span class="mh">0x95</span><span class="p">,</span> <span class="mh">0x8B</span><span class="p">,</span> <span class="mh">0x89</span><span class="p">,</span> <span class="mh">0x8F</span><span class="p">,</span> <span class="mh">0x8D</span><span class="p">,</span>
+<span class="gp">....: </span>    <span class="mh">0x83</span><span class="p">,</span> <span class="mh">0x81</span><span class="p">,</span> <span class="mh">0x87</span><span class="p">,</span> <span class="mh">0x85</span><span class="p">,</span> <span class="mh">0xBB</span><span class="p">,</span> <span class="mh">0xB9</span><span class="p">,</span> <span class="mh">0xBF</span><span class="p">,</span> <span class="mh">0xBD</span><span class="p">,</span> <span class="mh">0xB3</span><span class="p">,</span> <span class="mh">0xB1</span><span class="p">,</span> <span class="mh">0xB7</span><span class="p">,</span> <span class="mh">0xB5</span><span class="p">,</span>
+<span class="gp">....: </span>    <span class="mh">0xAB</span><span class="p">,</span> <span class="mh">0xA9</span><span class="p">,</span> <span class="mh">0xAF</span><span class="p">,</span> <span class="mh">0xAD</span><span class="p">,</span> <span class="mh">0xA3</span><span class="p">,</span> <span class="mh">0xA1</span><span class="p">,</span> <span class="mh">0xA7</span><span class="p">,</span> <span class="mh">0xA5</span><span class="p">,</span> <span class="mh">0xDB</span><span class="p">,</span> <span class="mh">0xD9</span><span class="p">,</span> <span class="mh">0xDF</span><span class="p">,</span> <span class="mh">0xDD</span><span class="p">,</span>
+<span class="gp">....: </span>    <span class="mh">0xD3</span><span class="p">,</span> <span class="mh">0xD1</span><span class="p">,</span> <span class="mh">0xD7</span><span class="p">,</span> <span class="mh">0xD5</span><span class="p">,</span> <span class="mh">0xCB</span><span class="p">,</span> <span class="mh">0xC9</span><span class="p">,</span> <span class="mh">0xCF</span><span class="p">,</span> <span class="mh">0xCD</span><span class="p">,</span> <span class="mh">0xC3</span><span class="p">,</span> <span class="mh">0xC1</span><span class="p">,</span> <span class="mh">0xC7</span><span class="p">,</span> <span class="mh">0xC5</span><span class="p">,</span>
+<span class="gp">....: </span>    <span class="mh">0xFB</span><span class="p">,</span> <span class="mh">0xF9</span><span class="p">,</span> <span class="mh">0xFF</span><span class="p">,</span> <span class="mh">0xFD</span><span class="p">,</span> <span class="mh">0xF3</span><span class="p">,</span> <span class="mh">0xF1</span><span class="p">,</span> <span class="mh">0xF7</span><span class="p">,</span> <span class="mh">0xF5</span><span class="p">,</span> <span class="mh">0xEB</span><span class="p">,</span> <span class="mh">0xE9</span><span class="p">,</span> <span class="mh">0xEF</span><span class="p">,</span> <span class="mh">0xED</span><span class="p">,</span>
+<span class="gp">....: </span>    <span class="mh">0xE3</span><span class="p">,</span> <span class="mh">0xE1</span><span class="p">,</span> <span class="mh">0xE7</span><span class="p">,</span> <span class="mh">0xE5</span>
+<span class="gp">....: </span><span class="p">]</span>
+<span class="gp">sage: </span><span class="n">lookup_table_3</span> <span class="o">=</span> <span class="p">[</span>
+<span class="gp">....: </span>    <span class="mh">0x0</span><span class="p">,</span> <span class="mh">0x3</span><span class="p">,</span> <span class="mh">0x6</span><span class="p">,</span> <span class="mh">0x5</span><span class="p">,</span> <span class="mh">0xc</span><span class="p">,</span> <span class="mh">0xf</span><span class="p">,</span> <span class="mh">0xa</span><span class="p">,</span> <span class="mh">0x9</span><span class="p">,</span> <span class="mh">0x18</span><span class="p">,</span> <span class="mh">0x1b</span><span class="p">,</span> <span class="mh">0x1e</span><span class="p">,</span> <span class="mh">0x1d</span><span class="p">,</span> <span class="mh">0x14</span><span class="p">,</span>
+<span class="gp">....: </span>    <span class="mh">0x17</span><span class="p">,</span> <span class="mh">0x12</span><span class="p">,</span> <span class="mh">0x11</span><span class="p">,</span> <span class="mh">0x30</span><span class="p">,</span> <span class="mh">0x33</span><span class="p">,</span> <span class="mh">0x36</span><span class="p">,</span> <span class="mh">0x35</span><span class="p">,</span> <span class="mh">0x3c</span><span class="p">,</span> <span class="mh">0x3f</span><span class="p">,</span> <span class="mh">0x3a</span><span class="p">,</span> <span class="mh">0x39</span><span class="p">,</span> <span class="mh">0x28</span><span class="p">,</span>
+<span class="gp">....: </span>    <span class="mh">0x2b</span><span class="p">,</span> <span class="mh">0x2e</span><span class="p">,</span> <span class="mh">0x2d</span><span class="p">,</span> <span class="mh">0x24</span><span class="p">,</span> <span class="mh">0x27</span><span class="p">,</span> <span class="mh">0x22</span><span class="p">,</span> <span class="mh">0x21</span><span class="p">,</span> <span class="mh">0x60</span><span class="p">,</span> <span class="mh">0x63</span><span class="p">,</span> <span class="mh">0x66</span><span class="p">,</span> <span class="mh">0x65</span><span class="p">,</span> <span class="mh">0x6c</span><span class="p">,</span>
+<span class="gp">....: </span>    <span class="mh">0x6f</span><span class="p">,</span> <span class="mh">0x6a</span><span class="p">,</span> <span class="mh">0x69</span><span class="p">,</span> <span class="mh">0x78</span><span class="p">,</span> <span class="mh">0x7b</span><span class="p">,</span> <span class="mh">0x7e</span><span class="p">,</span> <span class="mh">0x7d</span><span class="p">,</span> <span class="mh">0x74</span><span class="p">,</span> <span class="mh">0x77</span><span class="p">,</span> <span class="mh">0x72</span><span class="p">,</span> <span class="mh">0x71</span><span class="p">,</span> <span class="mh">0x50</span><span class="p">,</span>
+<span class="gp">....: </span>    <span class="mh">0x53</span><span class="p">,</span> <span class="mh">0x56</span><span class="p">,</span> <span class="mh">0x55</span><span class="p">,</span> <span class="mh">0x5c</span><span class="p">,</span> <span class="mh">0x5f</span><span class="p">,</span> <span class="mh">0x5a</span><span class="p">,</span> <span class="mh">0x59</span><span class="p">,</span> <span class="mh">0x48</span><span class="p">,</span> <span class="mh">0x4b</span><span class="p">,</span> <span class="mh">0x4e</span><span class="p">,</span> <span class="mh">0x4d</span><span class="p">,</span> <span class="mh">0x44</span><span class="p">,</span>
+<span class="gp">....: </span>    <span class="mh">0x47</span><span class="p">,</span> <span class="mh">0x42</span><span class="p">,</span> <span class="mh">0x41</span><span class="p">,</span> <span class="mh">0xc0</span><span class="p">,</span> <span class="mh">0xc3</span><span class="p">,</span> <span class="mh">0xc6</span><span class="p">,</span> <span class="mh">0xc5</span><span class="p">,</span> <span class="mh">0xcc</span><span class="p">,</span> <span class="mh">0xcf</span><span class="p">,</span> <span class="mh">0xca</span><span class="p">,</span> <span class="mh">0xc9</span><span class="p">,</span> <span class="mh">0xd8</span><span class="p">,</span>
+<span class="gp">....: </span>    <span class="mh">0xdb</span><span class="p">,</span> <span class="mh">0xde</span><span class="p">,</span> <span class="mh">0xdd</span><span class="p">,</span> <span class="mh">0xd4</span><span class="p">,</span> <span class="mh">0xd7</span><span class="p">,</span> <span class="mh">0xd2</span><span class="p">,</span> <span class="mh">0xd1</span><span class="p">,</span> <span class="mh">0xf0</span><span class="p">,</span> <span class="mh">0xf3</span><span class="p">,</span> <span class="mh">0xf6</span><span class="p">,</span> <span class="mh">0xf5</span><span class="p">,</span> <span class="mh">0xfc</span><span class="p">,</span>
+<span class="gp">....: </span>    <span class="mh">0xff</span><span class="p">,</span> <span class="mh">0xfa</span><span class="p">,</span> <span class="mh">0xf9</span><span class="p">,</span> <span class="mh">0xe8</span><span class="p">,</span> <span class="mh">0xeb</span><span class="p">,</span> <span class="mh">0xee</span><span class="p">,</span> <span class="mh">0xed</span><span class="p">,</span> <span class="mh">0xe4</span><span class="p">,</span> <span class="mh">0xe7</span><span class="p">,</span> <span class="mh">0xe2</span><span class="p">,</span> <span class="mh">0xe1</span><span class="p">,</span> <span class="mh">0xa0</span><span class="p">,</span>
+<span class="gp">....: </span>    <span class="mh">0xa3</span><span class="p">,</span> <span class="mh">0xa6</span><span class="p">,</span> <span class="mh">0xa5</span><span class="p">,</span> <span class="mh">0xac</span><span class="p">,</span> <span class="mh">0xaf</span><span class="p">,</span> <span class="mh">0xaa</span><span class="p">,</span> <span class="mh">0xa9</span><span class="p">,</span> <span class="mh">0xb8</span><span class="p">,</span> <span class="mh">0xbb</span><span class="p">,</span> <span class="mh">0xbe</span><span class="p">,</span> <span class="mh">0xbd</span><span class="p">,</span> <span class="mh">0xb4</span><span class="p">,</span>
+<span class="gp">....: </span>    <span class="mh">0xb7</span><span class="p">,</span> <span class="mh">0xb2</span><span class="p">,</span> <span class="mh">0xb1</span><span class="p">,</span> <span class="mh">0x90</span><span class="p">,</span> <span class="mh">0x93</span><span class="p">,</span> <span class="mh">0x96</span><span class="p">,</span> <span class="mh">0x95</span><span class="p">,</span> <span class="mh">0x9c</span><span class="p">,</span> <span class="mh">0x9f</span><span class="p">,</span> <span class="mh">0x9a</span><span class="p">,</span> <span class="mh">0x99</span><span class="p">,</span> <span class="mh">0x88</span><span class="p">,</span>
+<span class="gp">....: </span>    <span class="mh">0x8b</span><span class="p">,</span> <span class="mh">0x8e</span><span class="p">,</span> <span class="mh">0x8d</span><span class="p">,</span> <span class="mh">0x84</span><span class="p">,</span> <span class="mh">0x87</span><span class="p">,</span> <span class="mh">0x82</span><span class="p">,</span> <span class="mh">0x81</span><span class="p">,</span> <span class="mh">0x9b</span><span class="p">,</span> <span class="mh">0x98</span><span class="p">,</span> <span class="mh">0x9d</span><span class="p">,</span> <span class="mh">0x9e</span><span class="p">,</span> <span class="mh">0x97</span><span class="p">,</span>
+<span class="gp">....: </span>    <span class="mh">0x94</span><span class="p">,</span> <span class="mh">0x91</span><span class="p">,</span> <span class="mh">0x92</span><span class="p">,</span> <span class="mh">0x83</span><span class="p">,</span> <span class="mh">0x80</span><span class="p">,</span> <span class="mh">0x85</span><span class="p">,</span> <span class="mh">0x86</span><span class="p">,</span> <span class="mh">0x8f</span><span class="p">,</span> <span class="mh">0x8c</span><span class="p">,</span> <span class="mh">0x89</span><span class="p">,</span> <span class="mh">0x8a</span><span class="p">,</span> <span class="mh">0xab</span><span class="p">,</span>
+<span class="gp">....: </span>    <span class="mh">0xa8</span><span class="p">,</span> <span class="mh">0xad</span><span class="p">,</span> <span class="mh">0xae</span><span class="p">,</span> <span class="mh">0xa7</span><span class="p">,</span> <span class="mh">0xa4</span><span class="p">,</span> <span class="mh">0xa1</span><span class="p">,</span> <span class="mh">0xa2</span><span class="p">,</span> <span class="mh">0xb3</span><span class="p">,</span> <span class="mh">0xb0</span><span class="p">,</span> <span class="mh">0xb5</span><span class="p">,</span> <span class="mh">0xb6</span><span class="p">,</span> <span class="mh">0xbf</span><span class="p">,</span>
+<span class="gp">....: </span>    <span class="mh">0xbc</span><span class="p">,</span> <span class="mh">0xb9</span><span class="p">,</span> <span class="mh">0xba</span><span class="p">,</span> <span class="mh">0xfb</span><span class="p">,</span> <span class="mh">0xf8</span><span class="p">,</span> <span class="mh">0xfd</span><span class="p">,</span> <span class="mh">0xfe</span><span class="p">,</span> <span class="mh">0xf7</span><span class="p">,</span> <span class="mh">0xf4</span><span class="p">,</span> <span class="mh">0xf1</span><span class="p">,</span> <span class="mh">0xf2</span><span class="p">,</span> <span class="mh">0xe3</span><span class="p">,</span>
+<span class="gp">....: </span>    <span class="mh">0xe0</span><span class="p">,</span> <span class="mh">0xe5</span><span class="p">,</span> <span class="mh">0xe6</span><span class="p">,</span> <span class="mh">0xef</span><span class="p">,</span> <span class="mh">0xec</span><span class="p">,</span> <span class="mh">0xe9</span><span class="p">,</span> <span class="mh">0xea</span><span class="p">,</span> <span class="mh">0xcb</span><span class="p">,</span> <span class="mh">0xc8</span><span class="p">,</span> <span class="mh">0xcd</span><span class="p">,</span> <span class="mh">0xce</span><span class="p">,</span> <span class="mh">0xc7</span><span class="p">,</span>
+<span class="gp">....: </span>    <span class="mh">0xc4</span><span class="p">,</span> <span class="mh">0xc1</span><span class="p">,</span> <span class="mh">0xc2</span><span class="p">,</span> <span class="mh">0xd3</span><span class="p">,</span> <span class="mh">0xd0</span><span class="p">,</span> <span class="mh">0xd5</span><span class="p">,</span> <span class="mh">0xd6</span><span class="p">,</span> <span class="mh">0xdf</span><span class="p">,</span> <span class="mh">0xdc</span><span class="p">,</span> <span class="mh">0xd9</span><span class="p">,</span> <span class="mh">0xda</span><span class="p">,</span> <span class="mh">0x5b</span><span class="p">,</span>
+<span class="gp">....: </span>    <span class="mh">0x58</span><span class="p">,</span> <span class="mh">0x5d</span><span class="p">,</span> <span class="mh">0x5e</span><span class="p">,</span> <span class="mh">0x57</span><span class="p">,</span> <span class="mh">0x54</span><span class="p">,</span> <span class="mh">0x51</span><span class="p">,</span> <span class="mh">0x52</span><span class="p">,</span> <span class="mh">0x43</span><span class="p">,</span> <span class="mh">0x40</span><span class="p">,</span> <span class="mh">0x45</span><span class="p">,</span> <span class="mh">0x46</span><span class="p">,</span> <span class="mh">0x4f</span><span class="p">,</span>
+<span class="gp">....: </span>    <span class="mh">0x4c</span><span class="p">,</span> <span class="mh">0x49</span><span class="p">,</span> <span class="mh">0x4a</span><span class="p">,</span> <span class="mh">0x6b</span><span class="p">,</span> <span class="mh">0x68</span><span class="p">,</span> <span class="mh">0x6d</span><span class="p">,</span> <span class="mh">0x6e</span><span class="p">,</span> <span class="mh">0x67</span><span class="p">,</span> <span class="mh">0x64</span><span class="p">,</span> <span class="mh">0x61</span><span class="p">,</span> <span class="mh">0x62</span><span class="p">,</span> <span class="mh">0x73</span><span class="p">,</span>
+<span class="gp">....: </span>    <span class="mh">0x70</span><span class="p">,</span> <span class="mh">0x75</span><span class="p">,</span> <span class="mh">0x76</span><span class="p">,</span> <span class="mh">0x7f</span><span class="p">,</span> <span class="mh">0x7c</span><span class="p">,</span> <span class="mh">0x79</span><span class="p">,</span> <span class="mh">0x7a</span><span class="p">,</span> <span class="mh">0x3b</span><span class="p">,</span> <span class="mh">0x38</span><span class="p">,</span> <span class="mh">0x3d</span><span class="p">,</span> <span class="mh">0x3e</span><span class="p">,</span> <span class="mh">0x37</span><span class="p">,</span>
+<span class="gp">....: </span>    <span class="mh">0x34</span><span class="p">,</span> <span class="mh">0x31</span><span class="p">,</span> <span class="mh">0x32</span><span class="p">,</span> <span class="mh">0x23</span><span class="p">,</span> <span class="mh">0x20</span><span class="p">,</span> <span class="mh">0x25</span><span class="p">,</span> <span class="mh">0x26</span><span class="p">,</span> <span class="mh">0x2f</span><span class="p">,</span> <span class="mh">0x2c</span><span class="p">,</span> <span class="mh">0x29</span><span class="p">,</span> <span class="mh">0x2a</span><span class="p">,</span> <span class="mh">0xb</span><span class="p">,</span>
+<span class="gp">....: </span>    <span class="mh">0x8</span><span class="p">,</span> <span class="mh">0xd</span><span class="p">,</span> <span class="mh">0xe</span><span class="p">,</span> <span class="mh">0x7</span><span class="p">,</span> <span class="mh">0x4</span><span class="p">,</span> <span class="mh">0x1</span><span class="p">,</span> <span class="mh">0x2</span><span class="p">,</span> <span class="mh">0x13</span><span class="p">,</span> <span class="mh">0x10</span><span class="p">,</span> <span class="mh">0x15</span><span class="p">,</span> <span class="mh">0x16</span><span class="p">,</span> <span class="mh">0x1f</span><span class="p">,</span> <span class="mh">0x1c</span><span class="p">,</span>
+<span class="gp">....: </span>    <span class="mh">0x19</span><span class="p">,</span> <span class="mh">0x1a</span><span class="p">,</span>
+<span class="gp">....: </span><span class="p">]</span>
+<span class="gp">sage: </span><span class="n">evaluated_y_list_2</span><span class="p">,</span> <span class="n">minus1_power_x_s_2</span> <span class="o">=</span> <span class="n">compute_sbox_precomputations</span><span class="p">(</span><span class="n">lookup_table_2</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">evaluated_y_list_3</span><span class="p">,</span> <span class="n">minus1_power_x_s_3</span> <span class="o">=</span> <span class="n">compute_sbox_precomputations</span><span class="p">(</span><span class="n">lookup_table_3</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">sbox_precomputations</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="gp">sage: </span><span class="n">sbox_precomputations</span><span class="p">[</span><span class="s2">&quot;2&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="gp">sage: </span><span class="n">sbox_precomputations</span><span class="p">[</span><span class="s2">&quot;2&quot;</span><span class="p">][</span><span class="s2">&quot;evaluated_boolean_function&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">evaluated_y_list_2</span>
+<span class="gp">sage: </span><span class="n">sbox_precomputations</span><span class="p">[</span><span class="s2">&quot;2&quot;</span><span class="p">][</span><span class="s2">&quot;minus1_power_x_t&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">minus1_power_x_s_2</span>
+<span class="gp">sage: </span><span class="n">sbox_precomputations</span><span class="p">[</span><span class="s2">&quot;2&quot;</span><span class="p">][</span><span class="s2">&quot;lookup_table&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">lookup_table_2</span>
+<span class="gp">sage: </span><span class="n">sbox_precomputations</span><span class="p">[</span><span class="s2">&quot;3&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="gp">sage: </span><span class="n">sbox_precomputations</span><span class="p">[</span><span class="s2">&quot;3&quot;</span><span class="p">][</span><span class="s2">&quot;evaluated_boolean_function&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">evaluated_y_list_3</span>
+<span class="gp">sage: </span><span class="n">sbox_precomputations</span><span class="p">[</span><span class="s2">&quot;3&quot;</span><span class="p">][</span><span class="s2">&quot;minus1_power_x_t&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">minus1_power_x_s_3</span>
+<span class="gp">sage: </span><span class="n">sbox_precomputations</span><span class="p">[</span><span class="s2">&quot;3&quot;</span><span class="p">][</span><span class="s2">&quot;lookup_table&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">lookup_table_3</span>
+<span class="gp">sage: </span><span class="n">input_lst</span> <span class="o">=</span> <span class="p">[</span><span class="n">Decimal</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="mf">0.01</span><span class="o">*</span><span class="n">i</span><span class="p">))</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">32</span><span class="p">)]</span>
+<span class="gp">sage: </span><span class="nb">float</span><span class="p">(</span><span class="n">MIX_COLUMN_generalized_continuous_diffusion_analysis</span><span class="p">(</span>
+<span class="gp">....: </span>    <span class="n">input_lst</span><span class="p">,</span> <span class="n">mix_column_matrix</span><span class="p">,</span> <span class="n">sbox_precomputations</span><span class="p">,</span> <span class="mi">8</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<span class="gp">....: </span><span class="p">)</span>
+<span class="go">3.2256000000000004e-05</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions_continuous_diffusion_analysis.MODADD_continuous_diffusion_analysis">
+<span class="sig-name descname"><span class="pre">MODADD_continuous_diffusion_analysis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_lst</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_inputs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions_continuous_diffusion_analysis.MODADD_continuous_diffusion_analysis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the continuous generalization of a (or more) modular addition operation(s) <a class="reference internal" href="../references.html#mur2020" id="id5"><span>[MUR2020]</span></a>.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">input_lst</span></code> – <strong>list</strong>; is a list of real numbers in the range [-1, 1]</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">number_of_inputs</span></code> – <strong>integer</strong>; specify in how many parts must the input be split</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions_continuous_diffusion_analysis.MODADD_continuous_diffusion_analysis_two_words">
+<span class="sig-name descname"><span class="pre">MODADD_continuous_diffusion_analysis_two_words</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_lst</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions_continuous_diffusion_analysis.MODADD_continuous_diffusion_analysis_two_words" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the continuous generalization of a modular addition component <a class="reference internal" href="../references.html#mur2020" id="id6"><span>[MUR2020]</span></a>.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">input_lst</span></code> – <strong>list</strong>; is a list of real numbers in the range [-1, 1]</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions_continuous_diffusion_analysis.MODSUB_continuous_diffusion_analysis">
+<span class="sig-name descname"><span class="pre">MODSUB_continuous_diffusion_analysis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_lst</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_inputs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions_continuous_diffusion_analysis.MODSUB_continuous_diffusion_analysis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the continuous generalization of a (or more) modular substraction operation (s) <a class="reference internal" href="../references.html#mur2020" id="id7"><span>[MUR2020]</span></a>.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">input_lst</span></code> – <strong>list</strong>; is a list of real numbers in the range [-1, 1]</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">number_of_inputs</span></code> – <strong>integer</strong>; specify in how many parts must the input be split</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions_continuous_diffusion_analysis.NOT_continuous_diffusion_analysis">
+<span class="sig-name descname"><span class="pre">NOT_continuous_diffusion_analysis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_lst</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions_continuous_diffusion_analysis.NOT_continuous_diffusion_analysis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the continuous generalization of the not operation <a class="reference internal" href="../references.html#mur2020" id="id8"><span>[MUR2020]</span></a>.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">input_lst</span></code> –  <strong>list</strong>; is a list of real numbers in the range [-1, 1]</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions_continuous_diffusion_analysis.OR_continuous_diffusion_analysis">
+<span class="sig-name descname"><span class="pre">OR_continuous_diffusion_analysis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_lst</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_inputs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions_continuous_diffusion_analysis.OR_continuous_diffusion_analysis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the continuous generalization of the or operation <a class="reference internal" href="../references.html#mur2020" id="id9"><span>[MUR2020]</span></a>.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">input_lst</span></code> – <strong>list</strong>; is a list of real numbers in the range [-1, 1]</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">number_of_inputs</span></code> – <strong>integer</strong>; specify in how many parts must the input be split</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions_continuous_diffusion_analysis.ROTATE_BY_VARIABLE_AMOUNT_continuous_diffusion_analysis">
+<span class="sig-name descname"><span class="pre">ROTATE_BY_VARIABLE_AMOUNT_continuous_diffusion_analysis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_lst</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotation_direction</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions_continuous_diffusion_analysis.ROTATE_BY_VARIABLE_AMOUNT_continuous_diffusion_analysis" title="Permalink to this definition">¶</a></dt>
+<dd><p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">input_lst</span></code> – <strong>list</strong>; a list representing a list of real numbers</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">input_size</span></code> – <strong>integer</strong>; size of the float list to be rotated</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">rotation_direction</span></code> – <strong>integer</strong>; indicates the direction of the rotation, positive for right and negative
+for left</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions_continuous_diffusion_analysis.ROTATE_continuous_diffusion_analysis">
+<span class="sig-name descname"><span class="pre">ROTATE_continuous_diffusion_analysis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_lst</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotation_amount</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions_continuous_diffusion_analysis.ROTATE_continuous_diffusion_analysis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the continuous generalization of the rotate operation <a class="reference internal" href="../references.html#mur2020" id="id10"><span>[MUR2020]</span></a>.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">input_lst</span></code> – <strong>list</strong>; a float list</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">rotation_amount</span></code> – <strong>integer</strong>; an integer indicating the amount of the rotation, positive for right rotation,
+negative for left rotation</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions_continuous_diffusion_analysis.SBOX_continuous_diffusion_analysis">
+<span class="sig-name descname"><span class="pre">SBOX_continuous_diffusion_analysis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_lst</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sbox_precomputations</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions_continuous_diffusion_analysis.SBOX_continuous_diffusion_analysis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the continuous generalization of a sbox operation <a class="reference internal" href="../references.html#mur2020" id="id11"><span>[MUR2020]</span></a>.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">input_lst</span></code> – <strong>list</strong>; is a list of real numbers in the range [-1, 1]</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">sbox_precomputations</span></code> – <strong>dictionary</strong>; is a dictionary containing precomputations for the sbox</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.generic_functions_continuous_diffusion_analysis</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="gp">sage: </span><span class="n">lookup_table</span> <span class="o">=</span> <span class="p">[</span> <span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">7</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span> <span class="p">]</span>
+<span class="gp">sage: </span><span class="n">input_lst</span> <span class="o">=</span> <span class="p">[</span><span class="n">Decimal</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)),</span> <span class="n">Decimal</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)),</span> <span class="n">Decimal</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="mf">0.1</span><span class="p">))]</span>
+<span class="gp">sage: </span><span class="n">evaluated_y_list</span><span class="p">,</span> <span class="n">minus1_power_x_s</span> <span class="o">=</span> <span class="n">compute_sbox_precomputations</span><span class="p">(</span><span class="n">lookup_table</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">sbox_precomputations</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="gp">sage: </span><span class="n">sbox_precomputations</span><span class="p">[</span><span class="s2">&quot;evaluated_boolean_function&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">evaluated_y_list</span>
+<span class="gp">sage: </span><span class="n">sbox_precomputations</span><span class="p">[</span><span class="s2">&quot;minus1_power_x_t&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">minus1_power_x_s</span>
+<span class="gp">sage: </span><span class="n">sbox_precomputations</span><span class="p">[</span><span class="s2">&quot;lookup_table&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">lookup_table</span>
+<span class="gp">sage: </span><span class="n">output_lst</span> <span class="o">=</span> <span class="p">[</span>
+<span class="gp">....: </span>    <span class="n">Decimal</span><span class="p">(</span><span class="s1">&#39;-0.0100000000000000011102230245&#39;</span><span class="p">),</span>
+<span class="gp">....: </span>    <span class="n">Decimal</span><span class="p">(</span><span class="s1">&#39;-0.3949999999999999938937733645&#39;</span><span class="p">),</span>
+<span class="gp">....: </span>    <span class="n">Decimal</span><span class="p">(</span><span class="s1">&#39;0.595000000000000004996003611&#39;</span><span class="p">)</span>
+<span class="gp">....: </span><span class="p">]</span>
+<span class="gp">sage: </span><span class="n">SBOX_continuous_diffusion_analysis</span><span class="p">(</span><span class="n">input_lst</span><span class="p">,</span> <span class="n">sbox_precomputations</span><span class="p">)</span> <span class="o">==</span> <span class="n">output_lst</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions_continuous_diffusion_analysis.SHIFT_BY_VARIABLE_AMOUNT_continuous_diffusion_analysis">
+<span class="sig-name descname"><span class="pre">SHIFT_BY_VARIABLE_AMOUNT_continuous_diffusion_analysis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shift_direction</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions_continuous_diffusion_analysis.SHIFT_BY_VARIABLE_AMOUNT_continuous_diffusion_analysis" title="Permalink to this definition">¶</a></dt>
+<dd><p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">input</span></code> – <strong>list</strong>; a list representing a list of real numbers</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">input_size</span></code> – <strong>integer</strong>; size of the float list to be rotated</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">shift_direction</span></code> – <strong>integer</strong>; an integer indicating the direction of the shift, positive for right and
+negative for left</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.generic_functions_continuous_diffusion_analysis</span> <span class="kn">import</span> <span class="n">SHIFT_BY_VARIABLE_AMOUNT_continuous_diffusion_analysis</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">decimal</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="gp">sage: </span><span class="n">_input</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.02</span><span class="p">,</span> <span class="mf">0.004</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.02</span><span class="p">]</span>
+<span class="gp">sage: </span><span class="n">_input</span> <span class="o">=</span> <span class="p">[</span><span class="n">Decimal</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">_input</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">_input</span><span class="p">))]</span>
+<span class="gp">sage: </span><span class="n">input_size</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="gp">sage: </span><span class="n">shift_direction</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+<span class="gp">sage: </span><span class="n">output</span> <span class="o">=</span> <span class="n">SHIFT_BY_VARIABLE_AMOUNT_continuous_diffusion_analysis</span><span class="p">(</span>
+<span class="gp">....: </span>    <span class="n">_input</span><span class="p">,</span> <span class="n">input_size</span><span class="p">,</span> <span class="n">shift_direction</span>
+<span class="gp">....: </span><span class="p">)</span>
+<span class="gp">sage: </span><span class="nb">float</span><span class="p">(</span><span class="n">output</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">==</span> <span class="o">-</span><span class="mf">0.44658816949</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions_continuous_diffusion_analysis.SHIFT_continuous_diffusion_analysis">
+<span class="sig-name descname"><span class="pre">SHIFT_continuous_diffusion_analysis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_lst</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shift_amount</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions_continuous_diffusion_analysis.SHIFT_continuous_diffusion_analysis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the continuous generalization of the shit operation <a class="reference internal" href="../references.html#mur2020" id="id12"><span>[MUR2020]</span></a>.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">input_lst</span></code> – <strong>list</strong>; a BitArray representing a binary string</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">shift_amount</span></code> – <strong>integer</strong>; an integer indicating the amount of the shift, positive for right shift,
+negative for left shift</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions_continuous_diffusion_analysis.SIGMA_continuous_diffusion_analysis">
+<span class="sig-name descname"><span class="pre">SIGMA_continuous_diffusion_analysis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_lst</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotation_amounts</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions_continuous_diffusion_analysis.SIGMA_continuous_diffusion_analysis" title="Permalink to this definition">¶</a></dt>
+<dd><p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">input_lst</span></code> – <strong>list</strong>; a list representing a list of real numbers</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">rotation_amounts</span></code> – <strong>list</strong>; list indicating the amount of the rotations</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions_continuous_diffusion_analysis.XOR_continuous_diffusion_analysis">
+<span class="sig-name descname"><span class="pre">XOR_continuous_diffusion_analysis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_lst</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_inputs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions_continuous_diffusion_analysis.XOR_continuous_diffusion_analysis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the continuous generalization of a (or more) xor operation(s) <a class="reference internal" href="../references.html#mur2020" id="id13"><span>[MUR2020]</span></a>.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">input_lst</span></code> – <strong>list</strong>; is a list of real numbers in the range [-1, 1]</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">number_of_inputs</span></code> – <strong>integer</strong>; specify in how many parts must the input be split</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions_continuous_diffusion_analysis.XOR_continuous_diffusion_analysis_two_words">
+<span class="sig-name descname"><span class="pre">XOR_continuous_diffusion_analysis_two_words</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_lst</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions_continuous_diffusion_analysis.XOR_continuous_diffusion_analysis_two_words" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the continuous generalization of a xor operation <a class="reference internal" href="../references.html#mur2020" id="id14"><span>[MUR2020]</span></a>.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">input_lst</span></code> – <strong>list</strong>; is a list of real numbers in the range [-1, 1]</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions_continuous_diffusion_analysis.compute_sbox_precomputations">
+<span class="sig-name descname"><span class="pre">compute_sbox_precomputations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sbox_lookup_table</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions_continuous_diffusion_analysis.compute_sbox_precomputations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute precomputations for the extended sbox operation.</p>
+<p>This method evaluates all possible values of <span class="math">y</span> using the Boolean function <span class="math">f</span> in Theorem 1 <a class="reference internal" href="../references.html#mur2020" id="id15"><span>[MUR2020]</span></a>. Also,
+this function computes all values <span class="math">(-1)^y_i</span> in that theorem.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions_continuous_diffusion_analysis.create_lookup_table_by_matrix">
+<span class="sig-name descname"><span class="pre">create_lookup_table_by_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mix_column_matrix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">irreducible_polynomial_int_repr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">degree</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions_continuous_diffusion_analysis.create_lookup_table_by_matrix" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions_continuous_diffusion_analysis.create_lookup_table_for_finite_field_element">
+<span class="sig-name descname"><span class="pre">create_lookup_table_for_finite_field_element</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">degree</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">element</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions_continuous_diffusion_analysis.create_lookup_table_for_finite_field_element" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a lookup table for an element of the finite field <span class="math">k</span>.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions_continuous_diffusion_analysis.extended_and_bit">
+<span class="sig-name descname"><span class="pre">extended_and_bit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions_continuous_diffusion_analysis.extended_and_bit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions_continuous_diffusion_analysis.extended_left_rotation_by_variable_amount">
+<span class="sig-name descname"><span class="pre">extended_left_rotation_by_variable_amount</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_lst</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotation_amount_lst</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions_continuous_diffusion_analysis.extended_left_rotation_by_variable_amount" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions_continuous_diffusion_analysis.extended_left_shift_by_variable_amount">
+<span class="sig-name descname"><span class="pre">extended_left_shift_by_variable_amount</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_lst</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shift_amount_lst</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions_continuous_diffusion_analysis.extended_left_shift_by_variable_amount" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions_continuous_diffusion_analysis.extended_not_bit">
+<span class="sig-name descname"><span class="pre">extended_not_bit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_bit</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions_continuous_diffusion_analysis.extended_not_bit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions_continuous_diffusion_analysis.extended_one_left_rotation_iteration">
+<span class="sig-name descname"><span class="pre">extended_one_left_rotation_iteration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_lst</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotation_amount</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotation_stage</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions_continuous_diffusion_analysis.extended_one_left_rotation_iteration" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions_continuous_diffusion_analysis.extended_one_left_shift_iteration">
+<span class="sig-name descname"><span class="pre">extended_one_left_shift_iteration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_lst</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shift_amount</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shift_stage</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions_continuous_diffusion_analysis.extended_one_left_shift_iteration" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions_continuous_diffusion_analysis.extended_one_right_rotation_iteration">
+<span class="sig-name descname"><span class="pre">extended_one_right_rotation_iteration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_lst</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotation_amount</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shift_stage</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions_continuous_diffusion_analysis.extended_one_right_rotation_iteration" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions_continuous_diffusion_analysis.extended_one_right_shift_iteration">
+<span class="sig-name descname"><span class="pre">extended_one_right_shift_iteration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_lst</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shift_amount</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shift_stage</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions_continuous_diffusion_analysis.extended_one_right_shift_iteration" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions_continuous_diffusion_analysis.extended_right_rotation_by_variable_amount">
+<span class="sig-name descname"><span class="pre">extended_right_rotation_by_variable_amount</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_lst</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotation_amount_lst</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions_continuous_diffusion_analysis.extended_right_rotation_by_variable_amount" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions_continuous_diffusion_analysis.extended_right_shift_by_variable_amount">
+<span class="sig-name descname"><span class="pre">extended_right_shift_by_variable_amount</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_lst</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shift_amount_lst</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions_continuous_diffusion_analysis.extended_right_shift_by_variable_amount" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions_continuous_diffusion_analysis.extended_two_bit_multiplexer">
+<span class="sig-name descname"><span class="pre">extended_two_bit_multiplexer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_lst</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions_continuous_diffusion_analysis.extended_two_bit_multiplexer" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions_continuous_diffusion_analysis.get_mix_column_precomputations">
+<span class="sig-name descname"><span class="pre">get_mix_column_precomputations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mix_column_components</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions_continuous_diffusion_analysis.get_mix_column_precomputations" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions_continuous_diffusion_analysis.get_sbox_precomputations">
+<span class="sig-name descname"><span class="pre">get_sbox_precomputations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sbox_components</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions_continuous_diffusion_analysis.get_sbox_precomputations" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions_continuous_diffusion_analysis.select_bits_continuous_diffusion_analysis">
+<span class="sig-name descname"><span class="pre">select_bits_continuous_diffusion_analysis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_lst</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bit_positions</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions_continuous_diffusion_analysis.select_bits_continuous_diffusion_analysis" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="evaluator.html"
+                          title="previous chapter">Evaluator</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="graph_generator.html"
+                          title="next chapter">Graph generator</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/cipher_modules/generic_functions_continuous_diffusion_analysis.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="graph_generator.html" title="Graph generator"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="evaluator.html" title="Evaluator"
+             >previous</a> |</li>
+  
+    
+      <a href="../../index.html"><img src="../_static/logo_tii.svg" height="28" style="vertical-align: middle" title="TII Logo"></a>
+    
+  
+  
+        <li class="nav-item nav-item-0"><a href="../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives v3.1.0 documentation</a> &#187;</li>
+
+        <li class="nav-item nav-item-this"><a href="">Generic functions continuous diffusion analysis</a></li> 
+      </ul>
+    </div>
+    
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2005--2022, The Sage Development Team.
+    </div>
+    <script type="text/javascript">
+/*global jQuery, window */
+/* Sphinx sidebar toggle.  Putting this code at the end of the body
+ * enables the toggle for the live, static, and offline docs.  Note:
+ * sage.misc.html.math_parse() eats jQuery's dollar-sign shortcut. */
+var jq = jQuery;
+jq(document).ready(function () {
+    var bar, bod, bg, fg, key, tog, wid_old, wid_new, resize, get_state, set_state;
+    bod = jq('div.bodywrapper');
+    bar = jq('div.sphinxsidebar');
+    tog = jq('<div class="sphinxsidebartoggle"></div>');
+
+    /* Delayed resize helper.  Not perfect but good enough. */
+    resize = function () {
+        setTimeout(function () {
+            tog.height(bod.height());
+        }, 100);
+    };
+    jq(window).resize(function () {
+        resize();
+    });
+
+    /* Setup and add the toggle. See Sphinx v0.5.1 default.css. */
+    fg = jq('div.sphinxsidebar p a').css('color') || 'rgb(152, 219, 204)';
+    bg = jq('div.document').css('background-color') || 'rgb(28, 78, 99)';
+    wid_old = '230px';
+    wid_new = '5px';
+    tog.css('background-color', bg)
+        .css('border-width', '0px')
+        .css('border-right', wid_new + ' ridge ' + bg)
+        .css('cursor', 'pointer')
+        .css('position', 'absolute')
+        .css('left', '-' + wid_new)
+        .css('top', '0px')
+        .css('width', wid_new);
+    bod.css('position', 'relative');
+    bod.prepend(tog);
+    resize();
+
+    /* Cookie helpers. */
+    key = 'sphinxsidebar=';
+    set_state = function (s) {
+        var date = new Date();
+        /* Expiry in 7 days. */
+        date.setTime(date.getTime() + (7 * 24 * 3600 * 1000));
+        document.cookie = key + encodeURIComponent(s) + '; expires=' +
+            date.toUTCString() + '; path=/';
+    };
+    get_state = function () {
+        var i, c, crumbs = document.cookie.split(';');
+        for (i = 0; i < crumbs.length; i += 1) {
+            c = crumbs[i].replace(/^\s+/, '');
+            if (c.indexOf(key) === 0) {
+                return decodeURIComponent(c.substring(key.length, c.length));
+            }
+        }
+        return null;
+    };
+
+    /* Event handlers. */
+    tog.mouseover(function (ev) {
+        tog.css('border-right-color', fg);
+    }).mouseout(function (ev) {
+        tog.css('border-right-color', bg);
+    }).click(function (ev) {
+        if (bod.hasClass('wide')) {
+            bod.removeClass('wide');
+            bod.css('margin-left', wid_old);
+            bar.css('width', wid_old);
+            bar.show();
+            set_state('visible');
+        } else {
+            set_state('hidden');
+            bar.hide();
+            bar.css('width', '0px');
+            bod.css('margin-left', wid_new);
+            bod.addClass('wide');
+        }
+        resize();
+    });
+
+    /* Hide the normally visible sidebar? */
+    if (get_state() === 'hidden') {
+        tog.trigger('click');
+    } else {
+        set_state('visible');
+    }
+});
+    </script>
+  </body>
+</html>

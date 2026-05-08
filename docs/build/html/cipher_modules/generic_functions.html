@@ -1,0 +1,712 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Generic functions &#8212; CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives v3.1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sage.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Evaluator" href="evaluator.html" />
+    <link rel="prev" title="Generic word based c functions" href="generic_word_based_c_functions.html" />
+    <link rel="icon" href="../_static/sageicon.png" type="image/x-icon" />
+    <script src="../_static/thebe.js" type="text/javascript"></script>
+    <script src="../_static/thebe-sage.js" type="text/javascript"></script>
+
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="evaluator.html" title="Evaluator"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="generic_word_based_c_functions.html" title="Generic word based c functions"
+             accesskey="P">previous</a> |</li>
+  
+    
+      <a href="../../index.html"><img src="../_static/logo_tii.svg" height="28" style="vertical-align: middle" title="TII Logo"></a>
+    
+  
+  
+        <li class="nav-item nav-item-0"><a href="../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives v3.1.0 documentation</a> &#187;</li>
+
+        <li class="nav-item nav-item-this"><a href="">Generic functions</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="module-cipher_modules.generic_functions">
+<span id="generic-functions"></span><h1>Generic functions<a class="headerlink" href="#module-cipher_modules.generic_functions" title="Permalink to this heading">¶</a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions.AND">
+<span class="sig-name descname"><span class="pre">AND</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_inputs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbosity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions.AND" title="Permalink to this definition">¶</a></dt>
+<dd><p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">input</span></code> – <strong>BitArray object</strong>; BitArray</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">number_of_inputs</span></code> – <strong>integer</strong>; specify in how many parts must the input be split</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">verbosity</span></code> – <strong>boolean</strong> (default: <span class="math">False</span>); set this flag to True to print the input/output</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions.MODADD">
+<span class="sig-name descname"><span class="pre">MODADD</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_inputs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modulus</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbosity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions.MODADD" title="Permalink to this definition">¶</a></dt>
+<dd><p>The modulus is 2^w, where w=Floor(input_length/number_of_inputs).</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">input</span></code> – <strong>BitArray object</strong>; BitArray</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">number_of_inputs</span></code> – <strong>integer</strong>; specify in how many parts must the input be split</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">verbosity</span></code> – <strong>boolean</strong> (default: <span class="math">False</span>); set this flag to True to print the input/output</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions.MODSUB">
+<span class="sig-name descname"><span class="pre">MODSUB</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_inputs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modulus</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbosity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions.MODSUB" title="Permalink to this definition">¶</a></dt>
+<dd><p>The modulus is 2^w, where w=Floor(input_length/number_of_inputs).</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">input</span></code> – <strong>BitArray object</strong>; BitArray</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">number_of_inputs</span></code> – <strong>integer</strong>; specify in how many parts must the input be split</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">verbosity</span></code> – <strong>boolean</strong> (default: <span class="math">False</span>); set this flag to True to print the input/output</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions.NOT">
+<span class="sig-name descname"><span class="pre">NOT</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbosity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions.NOT" title="Permalink to this definition">¶</a></dt>
+<dd><p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">input</span></code> – <strong>BitArray object</strong>; BitArray</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">verbosity</span></code> – <strong>boolean</strong> (default: <span class="math">False</span>); set this flag to True to print the input/output</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions.OR">
+<span class="sig-name descname"><span class="pre">OR</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_inputs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbosity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions.OR" title="Permalink to this definition">¶</a></dt>
+<dd><p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">input</span></code> – <strong>BitArray object</strong>; BitArray</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">number_of_inputs</span></code> – <strong>integer</strong>; specify in how many parts must the input be split</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">verbosity</span></code> – <strong>boolean</strong> (default: <span class="math">False</span>); set this flag to True to print the input/output</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions.ROTATE">
+<span class="sig-name descname"><span class="pre">ROTATE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotation_amount</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbosity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions.ROTATE" title="Permalink to this definition">¶</a></dt>
+<dd><p>If rotation_amount is negative rotation happens to the left, to the right otherwise.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">input</span></code> – <strong>BitArray object</strong>; a BitArray representing a binary string</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">rotation_amount</span></code> – <strong>integer</strong>; an integer indicating the amount of the rotation, positive for right rotation,
+negative for left rotation</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">verbosity</span></code> – <strong>boolean</strong> (default: <span class="math">False</span>); set this flag to True to print the input/output</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.generic_functions</span> <span class="kn">import</span> <span class="n">ROTATE</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">bitstring</span> <span class="kn">import</span> <span class="n">BitArray</span>
+<span class="gp">sage: </span><span class="n">b</span> <span class="o">=</span> <span class="n">BitArray</span><span class="p">(</span><span class="s2">&quot;0x8&quot;</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">b</span><span class="o">.</span><span class="n">bin</span>
+<span class="go">&#39;1000&#39;</span>
+<span class="gp">sage: </span><span class="n">ROTATE</span><span class="p">(</span><span class="n">b</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">bin</span>
+<span class="go">&#39;0100&#39;</span>
+<span class="gp">sage: </span><span class="n">ROTATE</span><span class="p">(</span><span class="n">b</span><span class="p">,</span><span class="o">-</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">bin</span>
+<span class="go">&#39;0010&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions.ROTATE_BY_VARIABLE_AMOUNT">
+<span class="sig-name descname"><span class="pre">ROTATE_BY_VARIABLE_AMOUNT</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotation_direction</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbosity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions.ROTATE_BY_VARIABLE_AMOUNT" title="Permalink to this definition">¶</a></dt>
+<dd><p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">input</span></code> – <strong>BitArray object</strong>; a BitArray representing a binary string</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">input_size</span></code> – <strong>integer</strong>; size in bits of the binary string to be rotated</p></li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">rotation_direction</span></code> – <strong>integer</strong>; an integer indicating the direction of the rotation, positive for right</dt><dd><p>and negative for left</p>
+</dd>
+</dl>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">verbosity</span></code> – <strong>boolean</strong> (default: <span class="math">False</span>); set this flag to True to print the input/output</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions.ROTATE_boolean_function">
+<span class="sig-name descname"><span class="pre">ROTATE_boolean_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">BoolPolyRing</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions.ROTATE_boolean_function" title="Permalink to this definition">¶</a></dt>
+<dd><p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">component</span></code> – <strong>Component object</strong>; is a component of a cipher</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">BoolPolyRing</span></code> – <strong>Boolean Polynomial Ring object</strong>; is a Boolean Polynomial Ring</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions.SHIFT">
+<span class="sig-name descname"><span class="pre">SHIFT</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shift_amount</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbosity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions.SHIFT" title="Permalink to this definition">¶</a></dt>
+<dd><p>If shift_amount is negative shift happens to the left, to the right otherwise.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">input</span></code> – <strong>BitArray object</strong>; a BitArray representing a binary string</p></li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">shift_amount</span></code> – <strong>integer</strong>; an integer indicating the amount of the shift, positive for right shift,</dt><dd><p>negative for left shift</p>
+</dd>
+</dl>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">verbosity</span></code> – <strong>boolean</strong> (default: <span class="math">False</span>); set this flag to True to print the input/output</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.generic_functions</span> <span class="kn">import</span> <span class="n">SHIFT</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">bitstring</span> <span class="kn">import</span> <span class="n">BitArray</span>
+<span class="gp">sage: </span><span class="n">b</span> <span class="o">=</span> <span class="n">BitArray</span><span class="p">(</span><span class="s2">&quot;0xF&quot;</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">b</span><span class="o">.</span><span class="n">bin</span>
+<span class="go">&#39;1111&#39;</span>
+<span class="gp">sage: </span><span class="n">SHIFT</span><span class="p">(</span><span class="n">b</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">bin</span>
+<span class="go">&#39;0111&#39;</span>
+<span class="gp">sage: </span><span class="n">SHIFT</span><span class="p">(</span><span class="n">b</span><span class="p">,</span><span class="o">-</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">bin</span>
+<span class="go">&#39;1100&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions.SHIFT_BY_VARIABLE_AMOUNT">
+<span class="sig-name descname"><span class="pre">SHIFT_BY_VARIABLE_AMOUNT</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shift_direction</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbosity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions.SHIFT_BY_VARIABLE_AMOUNT" title="Permalink to this definition">¶</a></dt>
+<dd><p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">input</span></code> – <strong>BitArray object</strong>; a BitArray representing a binary string</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">input_size</span></code> – <strong>integer</strong>; size in bits of the binary string to be shifted</p></li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">shift_direction</span></code> – <strong>integer</strong>; an integer indicating the direction of the shift, positive for right and</dt><dd><p>negative for left</p>
+</dd>
+</dl>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">verbosity</span></code> – <strong>boolean</strong> (default: <span class="math">False</span>); set this flag to True to print the input/output</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions.SIGMA">
+<span class="sig-name descname"><span class="pre">SIGMA</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotation_amounts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbosity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions.SIGMA" title="Permalink to this definition">¶</a></dt>
+<dd><p>If rotation_amount is negative rotation happens to the left, to the right otherwise.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">input</span></code> – <strong>BitArray object</strong>; a BitArray representing a binary string</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">rotation_amounts</span></code> – <strong>list</strong>; list indicating the amount of the rotations</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">verbosity</span></code> – <strong>boolean</strong> (default: <span class="math">False</span>); set this flag to True to print the input/output</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.generic_functions</span> <span class="kn">import</span> <span class="n">SIGMA</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">bitstring</span> <span class="kn">import</span> <span class="n">BitArray</span>
+<span class="gp">sage: </span><span class="n">b</span> <span class="o">=</span> <span class="n">BitArray</span><span class="p">(</span><span class="s2">&quot;0x8&quot;</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">SIGMA</span><span class="p">(</span><span class="n">b</span><span class="p">,[</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span><span class="o">.</span><span class="n">bin</span>
+<span class="go">&#39;1101&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions.THETA_GASTON">
+<span class="sig-name descname"><span class="pre">THETA_GASTON</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotation_amounts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(1,</span> <span class="pre">18,</span> <span class="pre">23,</span> <span class="pre">25,</span> <span class="pre">32,</span> <span class="pre">52,</span> <span class="pre">60,</span> <span class="pre">63)</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions.THETA_GASTON" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform the twin column parity mixer (mixing layer) of Gaston.</p>
+<p>INPUT:
+- <code class="docutils literal notranslate"><span class="pre">input</span></code> – BitArray of length 320 or 640, interpreted as 5 rows of 64 bits.
+- <code class="docutils literal notranslate"><span class="pre">rotation_amounts</span></code> – <strong>tuple of 8 integers</strong> (default: (1, 18, 23, 25, 32, 52, 60, 63)):</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>First three values: <span class="math">r</span>, <span class="math">s</span>, <span class="math">u</span> — rotation amounts for P, Q, and E.</p></li>
+<li><p>Remaining five values: <span class="math">t0</span> through <span class="math">t4</span> — row-specific rotation amounts used in computing Q.</p></li>
+</ul>
+</div></blockquote>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.generic_functions</span> <span class="kn">import</span> <span class="n">THETA_GASTON</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">bitstring</span> <span class="kn">import</span> <span class="n">BitArray</span>
+<span class="gp">sage: </span><span class="n">b</span> <span class="o">=</span> <span class="n">BitArray</span><span class="p">(</span><span class="nb">bytes</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="mi">40</span><span class="p">))</span>
+<span class="gp">sage: </span><span class="n">THETA_GASTON</span><span class="p">(</span><span class="n">b</span><span class="p">)</span><span class="o">.</span><span class="n">bin</span><span class="p">[:</span><span class="mi">70</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;0011010110100010000110000010011000101100101110110000000100111111001111&#39;</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions.THETA_KECCAK">
+<span class="sig-name descname"><span class="pre">THETA_KECCAK</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions.THETA_KECCAK" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform the mixing layer of Keccak.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">input</span></code> – <strong>BitArray object</strong>; a BitArray representing a binary string</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.generic_functions</span> <span class="kn">import</span> <span class="n">THETA_KECCAK</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">bitstring</span> <span class="kn">import</span> <span class="n">BitArray</span>
+<span class="gp">sage: </span><span class="n">b</span> <span class="o">=</span> <span class="n">BitArray</span><span class="p">(</span><span class="s2">&quot;0xf1258f7940e1dde784d5ccf933c0478ad598261ea65aa9eebd1547306f80494d8b284e056253d057ff97a42d7f8e6fd490fee5a0a44647c48c5bda0cd6192e76ad30a6f71b19059c30935ab7d08ffc64eb5aa93f2317d635a9a6e6260d71210381a57c16dbcf555f43b831cd0347c82601f22f1a11a5569f05e5635a21d9ae6164befef28cc970f2613670957bc46611b87c5a554fd00ecb8c3ee88a1ccf32c8940c7922ae3a26141841f924a2c509e416f53526e70465c275f644e97f30a13beaf1ff7b5ceca249&quot;</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">THETA_KECCAK</span><span class="p">(</span><span class="n">b</span><span class="p">)</span><span class="o">.</span><span class="n">hex</span> <span class="o">==</span> <span class="s1">&#39;09b84e4804496b9b7c480dc87768f1f62d05e72fe2f21f92458886012b28ff3173b58f3426fb662b6be4933769b0bcec048dd2bab27894fc1828ed16c027fd4e394391ed0d27d6a4a4e06dadc6b12f5cfd95713beec720a9bf693e22c0a1d79f976aa412161fa3c35577e9c9ce973eba173df71edc75a0038f8853e756dc0031eed3ce4ffbccdea2eb5b40280cc1c84132116ae838d5a09b0653d8376bca9c988c89ff979aa0f7a600c47f91965fd8560e70b393d39eb4706d73c25c4baa7089f27479ce687673fb&#39;</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions.THETA_XOODOO">
+<span class="sig-name descname"><span class="pre">THETA_XOODOO</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions.THETA_XOODOO" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform the mixing layer of Xoodoo.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">input</span></code> – <strong>BitArray object</strong>; a BitArray representing a binary string</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.generic_functions</span> <span class="kn">import</span> <span class="n">THETA_XOODOO</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">bitstring</span> <span class="kn">import</span> <span class="n">BitArray</span>
+<span class="gp">sage: </span><span class="n">b</span> <span class="o">=</span> <span class="n">BitArray</span><span class="p">(</span><span class="s2">&quot;0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef&quot;</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">THETA_XOODOO</span><span class="p">(</span><span class="n">b</span><span class="p">)</span><span class="o">.</span><span class="n">bin</span><span class="p">[:</span><span class="mi">10</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;0101100100&#39;</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions.XOR">
+<span class="sig-name descname"><span class="pre">XOR</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_inputs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbosity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions.XOR" title="Permalink to this definition">¶</a></dt>
+<dd><p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">input</span></code> – <strong>BitArray object</strong>; BitArray</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">number_of_inputs</span></code> – <strong>integer</strong>; specify in how many parts must the input be split</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">verbosity</span></code> – <strong>boolean</strong> (default: <span class="math">False</span>); set this flag to True to print the input/output</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions.XOR_boolean_function">
+<span class="sig-name descname"><span class="pre">XOR_boolean_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">BoolPolyRing</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions.XOR_boolean_function" title="Permalink to this definition">¶</a></dt>
+<dd><p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">component</span></code> – <strong>object</strong>; component of a cipher</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">BoolPolyRing</span></code> – <strong>Boolean Polynomial Ring object</strong>; Boolean Polynomial Ring</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions.add_padding">
+<span class="sig-name descname"><span class="pre">add_padding</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_rows</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">res_vector</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">word_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions.add_padding" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions.compute_indexed_sum">
+<span class="sig-name descname"><span class="pre">compute_indexed_sum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bits</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions.compute_indexed_sum" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the XOR-sum of products of bits at specified indices.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions.compute_word_indexed_sum">
+<span class="sig-name descname"><span class="pre">compute_word_indexed_sum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">word_array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">word_gf</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions.compute_word_indexed_sum" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluate an index-based expression sum in GF(2^w).
+Each entry in index_list: (field coefficient as int, [word indices]).
+The sum is computed and returned.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions.concatenate_bool_func">
+<span class="sig-name descname"><span class="pre">concatenate_bool_func</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">BoolPolyRing</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions.concatenate_bool_func" title="Permalink to this definition">¶</a></dt>
+<dd><p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">component</span></code> – <strong>Component object</strong>; component of a cipher</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">BoolPolyRing</span></code> – <strong>Boolean Polynomial Ring object</strong>; Boolean Polynomial Ring</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions.constant_bool_func">
+<span class="sig-name descname"><span class="pre">constant_bool_func</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions.constant_bool_func" title="Permalink to this definition">¶</a></dt>
+<dd><p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">component</span></code> – <strong>Component object</strong>; component of a cipher</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions.convert_polynomial_to_binary_matrix_given_polynomial_modulus">
+<span class="sig-name descname"><span class="pre">convert_polynomial_to_binary_matrix_given_polynomial_modulus</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">word_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">polynomial</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions.convert_polynomial_to_binary_matrix_given_polynomial_modulus" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate binary matrix from word_size, polynomial and N.</p>
+<p>Multiplication by N in the QuotientRing defined by word_size and the irreducible polynomial.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">word_size</span></code> – <strong>integer</strong>; size of each element of the input_matrix and the input_vector</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">polynomial</span></code> – <strong>integer</strong>; irreducible polynomial that defines the quotient ring</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">N</span></code> – <strong>integer</strong>; a polynomial</p></li>
+</ul>
+<p>OUTPUT:</p>
+<ul class="simple">
+<li><p>Binary matrix.</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions.convert_x_to_binary_matrix_given_polynomial_modulus">
+<span class="sig-name descname"><span class="pre">convert_x_to_binary_matrix_given_polynomial_modulus</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">word_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">polynomial</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions.convert_x_to_binary_matrix_given_polynomial_modulus" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate binary matrix from word_size and polynomial.</p>
+<p>Multiplication by 2 in the QuotientRing defined by word_size and the irreducible polynomial.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">word_size</span></code> – <strong>integer</strong>; size of each element of the input_matrix and the input_vector</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">polynomial</span></code> – <strong>integer</strong>; irreducible polynomial that defines the quotient ring</p></li>
+</ul>
+<p>OUTPUT:</p>
+<ul class="simple">
+<li><p>Binary matrix.</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions.fsr_binary">
+<span class="sig-name descname"><span class="pre">fsr_binary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">registers_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_clocks</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbosity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions.fsr_binary" title="Permalink to this definition">¶</a></dt>
+<dd><p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">input</span></code> – <strong>BitArray object</strong>; a BitArray</p></li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">registers_info</span></code> – <strong>list</strong>; a list of [register_bit_length, update_expression, clock_condition (optional)],</dt><dd><p>register_bit_length is an integer to indicate the length of the register. update_expression and clock_condition
+are lists of index groups, represented as integer lists. For example [[0], [1], [2, 3]] represents
+x0 + x1 + x2*x3. [] represents a constant 1.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">number_of_clocks</span></code> – <strong>integer</strong>; indicates how many loops this FSR component would operate, this is optional</dt><dd><p>by default it is 1.</p>
+</dd>
+</dl>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">verbosity</span></code> – <strong>boolean</strong> (default: <span class="math">False</span>); set this flag to True to print the input/output</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions.fsr_word">
+<span class="sig-name descname"><span class="pre">fsr_word</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">registers_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bits_inside_word</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_clocks</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbosity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions.fsr_word" title="Permalink to this definition">¶</a></dt>
+<dd><p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">input</span></code> – <strong>BitArray object</strong>; a BitArray</p></li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">registers_info</span></code> – <strong>list</strong>; a list of [register_bit_length, update_expression, clock_condition (optional)],</dt><dd><p>register_bit_length is an integer to indicate the length of the register. update_expression and clock_condition
+are lists of index groups, represented as integer lists. Each entry in update_expression has a field coefficient
+and a list of word indices. For example: [[1, [0]], [1, [1]], [1, [2, 3]]] represents
+x0 + x1 + x2*x3. [] represents a constant 1.</p>
+</dd>
+</dl>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">bits_inside_word</span></code> – <strong>integer</strong>; number of bits in a word.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">number_of_clocks</span></code> – <strong>integer</strong>; indicates how many loops this FSR component would operate.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">verbosity</span></code> – <strong>boolean</strong> (default: <span class="math">False</span>); set this flag to True to print the input/output.</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions.index_list_to_expression_str">
+<span class="sig-name descname"><span class="pre">index_list_to_expression_str</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions.index_list_to_expression_str" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert an index-based expression list to a readable string.</p>
+<p>Example:
+[[0], [1], [2, 3]] -&gt; ‘x0 + x1 + x2*x3’</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions.index_list_to_expression_str_word">
+<span class="sig-name descname"><span class="pre">index_list_to_expression_str_word</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions.index_list_to_expression_str_word" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a word-level index-based expression list to a readable string.</p>
+<p>Each entry is [field_coefficient, [indices]].
+For example:</p>
+<blockquote>
+<div><p>[[1, [0]], [1, [2]], [1, [11]]] -&gt; ‘x0 + x2 + x11’</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions.int_to_byte_array">
+<span class="sig-name descname"><span class="pre">int_to_byte_array</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">integer_value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bit_length</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions.int_to_byte_array" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions.linear_layer">
+<span class="sig-name descname"><span class="pre">linear_layer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">matrix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbosity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions.linear_layer" title="Permalink to this definition">¶</a></dt>
+<dd><p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">input</span></code> – <strong>BitArray object</strong>; a BitArray</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">matrix</span></code> – <strong>list</strong>; a list of lists of 0s and 1s. len(matrix) should be equal to input.len</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">verbosity</span></code> – <strong>boolean</strong> (default: <span class="math">False</span>); set this flag to True to print the input/output</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions.merge_bits">
+<span class="sig-name descname"><span class="pre">merge_bits</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions.merge_bits" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions.mix_column_generalized">
+<span class="sig-name descname"><span class="pre">mix_column_generalized</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_vector</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_matrix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">polynomial</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">word_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbosity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions.mix_column_generalized" title="Permalink to this definition">¶</a></dt>
+<dd><p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">input_vector</span></code> – <strong>BitArray object</strong>; BitArray</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">input_matrix</span></code> – <strong>list</strong>; 2 dimensional list</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">polynomial</span></code> – <strong>integer</strong>; irreducible polynomial that defines the quotient ring</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">word_size</span></code> – <strong>integer</strong>; size of each element of the input_matrix and the input_vector</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">verbosity</span></code> – <strong>boolean</strong> (default: <span class="math">False</span>); set this flag to True to print the input/output</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions.mix_column_generalized_bool_func">
+<span class="sig-name descname"><span class="pre">mix_column_generalized_bool_func</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">BoolPolyRing</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions.mix_column_generalized_bool_func" title="Permalink to this definition">¶</a></dt>
+<dd><p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">component</span></code> – <strong>object</strong>; component of a cipher</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">BoolPolyRing</span></code> – <strong>Boolean Polynomial Ring object</strong>; Boolean Polynomial Ring</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions.padding">
+<span class="sig-name descname"><span class="pre">padding</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbosity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions.padding" title="Permalink to this definition">¶</a></dt>
+<dd><p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">input</span></code> – <strong>BitArray object</strong>; BitArray</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">verbosity</span></code> – <strong>boolean</strong> (default: <span class="math">False</span>); set this flag to True to print the input/output</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions.sbox">
+<span class="sig-name descname"><span class="pre">sbox</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lookup_table</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_len</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbosity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions.sbox" title="Permalink to this definition">¶</a></dt>
+<dd><p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">input</span></code> – <strong>BitArray object</strong>; BitArray</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">lookup_table</span></code> – <strong>list</strong>; list of integers</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">output_len</span></code> – <strong>integer</strong>; output bit size of sbox</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">verbosity</span></code> – <strong>boolean</strong> (default: <span class="math">False</span>); set this flag to True to print the input/output</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions.sbox_bool_func">
+<span class="sig-name descname"><span class="pre">sbox_bool_func</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">BoolPolyRing</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions.sbox_bool_func" title="Permalink to this definition">¶</a></dt>
+<dd><p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">component</span></code> – <strong>Component object</strong>; component of a cipher</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">BoolPolyRing</span></code> – <strong>Boolean Polynomial Ring object</strong>; Boolean Polynomial Ring</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions.select_bits">
+<span class="sig-name descname"><span class="pre">select_bits</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbosity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions.select_bits" title="Permalink to this definition">¶</a></dt>
+<dd><p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">input</span></code> – <strong>BitArray object</strong>; a BitArray representing a binary string</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">bit_positions</span></code> – <strong>list</strong>; the positions of the bits</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">verbosity</span></code> – <strong>boolean</strong> (default: <span class="math">False</span>); set this flag to True to print the input/output</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions.set_from_hex_string">
+<span class="sig-name descname"><span class="pre">set_from_hex_string</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hex_str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions.set_from_hex_string" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cipher_modules.generic_functions.transform_GF2NMatrix_to_BinMatrix">
+<span class="sig-name descname"><span class="pre">transform_GF2NMatrix_to_BinMatrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">GF2NMatrix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">polynomial</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">word_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cipher_modules.generic_functions.transform_GF2NMatrix_to_BinMatrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transform the binary matrix into the equivalent GF2NMatrix.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">GF2NMatrix</span></code> – <strong>matrix</strong>; matrix</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">polynomial</span></code> – <strong>integer</strong>; irreducible polynomial that defines the quotient ring</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">word_size</span></code> – <strong>integer</strong>; size of each element of the input_matrix and the input_vector</p></li>
+</ul>
+<p>OUTPUT:</p>
+<ul class="simple">
+<li><p>Binary matrix.</p></li>
+</ul>
+</dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="generic_word_based_c_functions.html"
+                          title="previous chapter">Generic word based c functions</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="evaluator.html"
+                          title="next chapter">Evaluator</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/cipher_modules/generic_functions.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="evaluator.html" title="Evaluator"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="generic_word_based_c_functions.html" title="Generic word based c functions"
+             >previous</a> |</li>
+  
+    
+      <a href="../../index.html"><img src="../_static/logo_tii.svg" height="28" style="vertical-align: middle" title="TII Logo"></a>
+    
+  
+  
+        <li class="nav-item nav-item-0"><a href="../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives v3.1.0 documentation</a> &#187;</li>
+
+        <li class="nav-item nav-item-this"><a href="">Generic functions</a></li> 
+      </ul>
+    </div>
+    
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2005--2022, The Sage Development Team.
+    </div>
+    <script type="text/javascript">
+/*global jQuery, window */
+/* Sphinx sidebar toggle.  Putting this code at the end of the body
+ * enables the toggle for the live, static, and offline docs.  Note:
+ * sage.misc.html.math_parse() eats jQuery's dollar-sign shortcut. */
+var jq = jQuery;
+jq(document).ready(function () {
+    var bar, bod, bg, fg, key, tog, wid_old, wid_new, resize, get_state, set_state;
+    bod = jq('div.bodywrapper');
+    bar = jq('div.sphinxsidebar');
+    tog = jq('<div class="sphinxsidebartoggle"></div>');
+
+    /* Delayed resize helper.  Not perfect but good enough. */
+    resize = function () {
+        setTimeout(function () {
+            tog.height(bod.height());
+        }, 100);
+    };
+    jq(window).resize(function () {
+        resize();
+    });
+
+    /* Setup and add the toggle. See Sphinx v0.5.1 default.css. */
+    fg = jq('div.sphinxsidebar p a').css('color') || 'rgb(152, 219, 204)';
+    bg = jq('div.document').css('background-color') || 'rgb(28, 78, 99)';
+    wid_old = '230px';
+    wid_new = '5px';
+    tog.css('background-color', bg)
+        .css('border-width', '0px')
+        .css('border-right', wid_new + ' ridge ' + bg)
+        .css('cursor', 'pointer')
+        .css('position', 'absolute')
+        .css('left', '-' + wid_new)
+        .css('top', '0px')
+        .css('width', wid_new);
+    bod.css('position', 'relative');
+    bod.prepend(tog);
+    resize();
+
+    /* Cookie helpers. */
+    key = 'sphinxsidebar=';
+    set_state = function (s) {
+        var date = new Date();
+        /* Expiry in 7 days. */
+        date.setTime(date.getTime() + (7 * 24 * 3600 * 1000));
+        document.cookie = key + encodeURIComponent(s) + '; expires=' +
+            date.toUTCString() + '; path=/';
+    };
+    get_state = function () {
+        var i, c, crumbs = document.cookie.split(';');
+        for (i = 0; i < crumbs.length; i += 1) {
+            c = crumbs[i].replace(/^\s+/, '');
+            if (c.indexOf(key) === 0) {
+                return decodeURIComponent(c.substring(key.length, c.length));
+            }
+        }
+        return null;
+    };
+
+    /* Event handlers. */
+    tog.mouseover(function (ev) {
+        tog.css('border-right-color', fg);
+    }).mouseout(function (ev) {
+        tog.css('border-right-color', bg);
+    }).click(function (ev) {
+        if (bod.hasClass('wide')) {
+            bod.removeClass('wide');
+            bod.css('margin-left', wid_old);
+            bar.css('width', wid_old);
+            bar.show();
+            set_state('visible');
+        } else {
+            set_state('hidden');
+            bar.hide();
+            bar.css('width', '0px');
+            bod.css('margin-left', wid_new);
+            bod.addClass('wide');
+        }
+        resize();
+    });
+
+    /* Hide the normally visible sidebar? */
+    if (get_state() === 'hidden') {
+        tog.trigger('click');
+    } else {
+        set_state('visible');
+    }
+});
+    </script>
+  </body>
+</html>

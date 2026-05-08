@@ -6,12 +6,12 @@ def test_blake2_hash_function():
     assert blake2.number_of_rounds == 12
     assert blake2.type == 'hash_function'
     assert blake2.family_name == 'blake2'
-    assert blake2.id == 'blake2_i1024_i1024_o1024_r12'
+    assert blake2.id == 'blake2_m1024_s1024_o1024_r12'
     assert blake2.component_from(0, 0).id == 'modadd_0_0'
 
     blake2 = Blake2HashFunction(number_of_rounds=4)
     assert blake2.number_of_rounds == 4
-    assert blake2.id == 'blake2_i1024_i1024_o1024_r4'
+    assert blake2.id == 'blake2_m1024_s1024_o1024_r4'
     assert blake2.component_from(3, 0).id == 'modadd_3_0'
 
     blake2 = Blake2HashFunction()

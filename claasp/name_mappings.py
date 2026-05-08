@@ -1,11 +1,11 @@
-# cipher_type
+# cipher types
 BLOCK_CIPHER = "block_cipher"
 STREAM_CIPHER = "stream_cipher"
 TWEAKABLE_BLOCK_CIPHER = "tweakable_block_cipher"
 PERMUTATION = "permutation"
 HASH_FUNCTION = "hash_function"
 
-# CIPHER INPUTS
+# cipher inputs
 INPUT_KEY = "key"
 INPUT_PLAINTEXT = "plaintext"
 INPUT_INITIALIZATION_VECTOR = "initialization_vector"
@@ -20,7 +20,6 @@ INPUT_FRAME = "input_frame"
 CIPHER_INPUT = "cipher_input"
 INTERMEDIATE_OUTPUT = "intermediate_output"
 CIPHER_OUTPUT = "cipher_output"
-CONCATENATE = "concatenate"
 PADDING = "padding"
 CONSTANT = "constant"
 WORD_OPERATION = "word_operation"
@@ -30,12 +29,21 @@ SBOX = "sbox"
 FSR = "fsr"
 
 # model types
-CIPHER = 'cipher'
-XOR_DIFFERENTIAL = 'xor_differential'
-XOR_LINEAR = 'xor_linear'
-DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL = 'deterministic_truncated_xor_differential'
-IMPOSSIBLE_XOR_DIFFERENTIAL = 'impossible_xor_differential'
-BOOMERANG_XOR_DIFFERENTIAL = 'boomerang_xor_differential'
+CIPHER = "cipher"
+XOR_DIFFERENTIAL = "xor_differential"
+XOR_LINEAR = "xor_linear"
+XOR_DIFFERENTIAL_LINEAR_ONE_SOLUTION = "xor_differential_linear_one_solution"
+XOR_DIFFERENTIAL_LINEAR_OPTIMAL_SOLUTION = "xor_differential_linear_optimal_solution"
+DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL = "deterministic_truncated_xor_differential"
+SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL = "semi_deterministic_truncated_xor_differential"
+SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL_ONE_SOLUTION = "semi_deterministic_truncated_xor_differential_one_solution"
+SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL_OPTIMAL_SOLUTION = "semi_deterministic_truncated_xor_differential_optimal_solution"
+IMPOSSIBLE_XOR_DIFFERENTIAL = "impossible_xor_differential"
+BOOMERANG_XOR_DIFFERENTIAL = "boomerang_xor_differential"
 
 # cipher inverse
 CIPHER_INVERSE_SUFFIX = "_inverse"
+
+# models
+SATISFIABLE = "SATISFIABLE"
+UNSATISFIABLE = "UNSATISFIABLE"

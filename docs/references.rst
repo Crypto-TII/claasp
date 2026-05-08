@@ -121,6 +121,12 @@
         Neural Training Pipeline with Automated Finding of Good Input
         Differences* : In IACR Transactions on Symmetric Cryptology 2023
 
+.. [BGGMP2023]
+        Bellini E., Gerault D., Grados J., Makarim R. H., Peyrin T. : 
+        *Fully Automated Differential-Linear Attacks against ARX Ciphers* : In
+        Cryptology ePrint Archive, (2023), 181 : 
+        https://eprint.iacr.org/2023/181.pdf
+
 .. [BCC+2010]
         Bouillaguet C., Chen H-C., Cheng H-C, Chou T., Niederhagen R., Shamir
         A., Yang B. Y. : *Fast exhaustive search for polynomial systems in F2*
@@ -181,6 +187,13 @@
         solving the rank decoding and minrank problems* : In Advances in
         Cryptology–ASIACRYPT2020
 
+.. [BJKL+2016]
+        Beierle C., Jean J., Kölbl S., Leander G., Moradi A., Peyrin T., Sasaki Y.,
+        Sasdrich P., Sim S.M. :
+        *The SKINNY Family of Block Ciphers and Its Low-Latency Variant MANTIS* :
+        Cryptology ePrint Archive, Report 2016/660, 2016.
+        https://eprint.iacr.org/2016/660.pdf
+
 .. _claasp-ref-C:
 
 .. only:: html
@@ -197,6 +210,10 @@
         Connectivity Table: A New Cryptanalysis Tool* (2018) : IACR
         Transactions on Symmetric Cryptology, Vol 2017, Issue 4, pre-print :
         https://eprint.iacr.org/2018/161.pdf
+
+.. [Cro2005]
+        Crowley P. : *Truncated differential cryptanalysis of five rounds of
+        Salsa20* : IACR 2005 : http://eprint.iacr.org/2005/375
 
 .. [CZZ2023]
         Cao, W., Zhang, W., Zhou, C. : *New Automatic Search Tool for Searching
@@ -398,6 +415,12 @@
         Conference on the Theory and Applications of Cryptographic Techniques.
         pp.  203--228. Springer (2015)
 
+.. [Mouha2015]
+        Mouha N. : *Chaskey: An Efficient MAC Algorithm for 32-Bit Microcontrollers* :
+        In Selected Areas in Cryptography -- SAC 2014, Lecture Notes in Computer Science,
+        vol. 8781, pp. 306--323. Springer (2015).
+        https://mouha.be/wp-content/uploads/chaskey12.c
+
 .. [MUR2020]
         Murilo C., Rafael T., and Fabio B. : *Continuous
         Diffusion Analysis* : In IEEE Access.
@@ -408,6 +431,11 @@
 .. only:: html
 
         **N**
+
+.. [NIST1998]
+        National Institute of Standards and Technology (NIST) : *SKIPJACK and
+        KEA Algorithm Specifications* : Version 2.0. 29 de mayo de 1998 :
+        https://csrc.nist.gov/csrc/media/projects/cryptographic-algorithm-validation-program/documents/skipjack/skipjack.pdf
 
 .. _claasp-ref-O:
 
@@ -436,6 +464,16 @@
 .. only:: html
 
         **R**
+
+.. [RijndaelSpec]
+        Daemen J., Rijmen V. : *A Specification for Rijndael, the AES
+        Algorithm* (2002) :
+        https://asmaes.sourceforge.net/rijndael/rijndaelImplementation.pdf
+
+.. [RijndaelDesign]
+        Daemen J., Rijmen V. : *The Design of Rijndael AES -- The Advanced
+        Encryption Standard* (2001) :
+        https://cs.ru.nl/~joan/papers/JDA_VRI_Rijndael_2002.pdf
 
 .. _claasp-ref-S:
 

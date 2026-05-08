@@ -16,7 +16,7 @@
 # ****************************************************************************
 
 from claasp.cipher import Cipher
-from claasp.name_mappings import INPUT_PLAINTEXT
+from claasp.name_mappings import INPUT_PLAINTEXT, PERMUTATION
 from claasp.utils.utils import get_inputs_parameter
 from claasp.DTOs.component_state import ComponentState
 
@@ -52,17 +52,15 @@ GASTON_w = [0, 56, 31, 46, 43]
 # GASTON_w4 = 43
 
 # gaston round constant
-GASTON_rc = [
-    0x00000000000000F0, 0x00000000000000E1, 0x00000000000000D2,
-    0x00000000000000C3, 0x00000000000000B4, 0x00000000000000A5,
-    0x0000000000000096, 0x0000000000000087, 0x0000000000000078,
-    0x0000000000000069, 0x000000000000005A, 0x000000000000004B
+GASTON_rc = [0xF0, 0xE1, 0xD2, 0xC3, 0xB4, 0xA5, 0x96, 0x87, 0x78, 0x69, 0x5A, 0x4B]
+# fmt: off
+SBOX = [
+    0x00, 0x05, 0x0a, 0x0b, 0x14, 0x11, 0x16, 0x17, 0x09, 0x0c, 0x03, 0x02, 0x0d, 0x08, 0x0f, 0x0e,
+    0x12, 0x15, 0x18, 0x1b, 0x06, 0x01, 0x04, 0x07, 0x1a, 0x1d, 0x10, 0x13, 0x1e, 0x19, 0x1c, 0x1f,
 ]
+# fmt: on
 
-SBOX = [0, 5, 10, 11, 20, 17, 22, 23, 9, 12, 3, 2, 13, 8, 15, 14,
-        18, 21, 24, 27, 6, 1, 4, 7, 26, 29, 16, 19, 30, 25, 28, 31]
-
-PARAMETERS_CONFIGURATION_LIST = [{'number_of_rounds': 12}]
+PARAMETERS_CONFIGURATION_LIST = [{"number_of_rounds": 12}]
 
 
 class GastonSboxPermutation(Cipher):
@@ -102,11 +100,13 @@ class GastonSboxPermutation(Cipher):
     def __init__(self, number_of_rounds=12):
         self.state_bit_size = GASTON_NROWS * WORD_SIZE
 
-        super().__init__(family_name='gaston',
-                         cipher_type="permutation",
-                         cipher_inputs=[INPUT_PLAINTEXT],
-                         cipher_inputs_bit_size=[self.state_bit_size],
-                         cipher_output_bit_size=self.state_bit_size)
+        super().__init__(
+            family_name="gaston",
+            cipher_type=PERMUTATION,
+            cipher_inputs=[INPUT_PLAINTEXT],
+            cipher_inputs_bit_size=[self.state_bit_size],
+            cipher_output_bit_size=self.state_bit_size,
+        )
 
         # gaston state initialization
         state = []
@@ -143,14 +143,14 @@ class GastonSboxPermutation(Cipher):
 
     def gaston_theta(self, state):
         inputs_id, inputs_pos = get_inputs_parameter([state[i] for i in range(GASTON_NROWS)])
-        self.add_XOR_component(inputs_id, inputs_pos, WORD_SIZE)
+        self.add_xor_component(inputs_id, inputs_pos, WORD_SIZE)
         P = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))])
 
         self.add_rotate_component(P.id, P.input_bit_positions, WORD_SIZE, -GASTON_r)
         P_rot = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))])
 
         inputs_id, inputs_pos = get_inputs_parameter([P, P_rot])
-        self.add_XOR_component(inputs_id, inputs_pos, WORD_SIZE)
+        self.add_xor_component(inputs_id, inputs_pos, WORD_SIZE)
         P = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))])
         # column parity P
 
@@ -161,19 +161,19 @@ class GastonSboxPermutation(Cipher):
             Q_rows.append(q)
 
         inputs_id, inputs_pos = get_inputs_parameter([Q_rows[i] for i in range(GASTON_NROWS)])
-        self.add_XOR_component(inputs_id, inputs_pos, WORD_SIZE)
+        self.add_xor_component(inputs_id, inputs_pos, WORD_SIZE)
         Q = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))])
 
         self.add_rotate_component(Q.id, Q.input_bit_positions, WORD_SIZE, -GASTON_s)
         Q_rot = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))])
 
         inputs_id, inputs_pos = get_inputs_parameter([Q, Q_rot])
-        self.add_XOR_component(inputs_id, inputs_pos, WORD_SIZE)
+        self.add_xor_component(inputs_id, inputs_pos, WORD_SIZE)
         Q = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))])
         # column parity Q
 
         inputs_id, inputs_pos = get_inputs_parameter([P, Q])
-        self.add_XOR_component(inputs_id, inputs_pos, WORD_SIZE)
+        self.add_xor_component(inputs_id, inputs_pos, WORD_SIZE)
         P = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))])
 
         self.add_rotate_component(P.id, P.input_bit_positions, WORD_SIZE, -GASTON_u)
@@ -181,7 +181,7 @@ class GastonSboxPermutation(Cipher):
 
         for row in range(GASTON_NROWS):
             inputs_id, inputs_pos = get_inputs_parameter([state[row], P])
-            self.add_XOR_component(inputs_id, inputs_pos, WORD_SIZE)
+            self.add_xor_component(inputs_id, inputs_pos, WORD_SIZE)
             state[row] = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))])
 
         return state
@@ -197,7 +197,7 @@ class GastonSboxPermutation(Cipher):
         self.add_constant_component(WORD_SIZE, rc)
         const = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))])
         inputs_id, inputs_pos = get_inputs_parameter([state[0], const])
-        self.add_XOR_component(inputs_id, inputs_pos, WORD_SIZE)
+        self.add_xor_component(inputs_id, inputs_pos, WORD_SIZE)
         state[0] = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))])
 
         return state
@@ -208,7 +208,7 @@ class GastonSboxPermutation(Cipher):
         output_ids = []
         for k in range(WORD_SIZE):
             inputs_pos = [[k] for _ in range(GASTON_NROWS)]
-            self.add_SBOX_component(inputs_id, inputs_pos, GASTON_NROWS, SBOX)
+            self.add_sbox_component(inputs_id, inputs_pos, GASTON_NROWS, SBOX)
             output_ids = output_ids + [self.get_current_component_id()]
 
         for i in range(GASTON_NROWS):

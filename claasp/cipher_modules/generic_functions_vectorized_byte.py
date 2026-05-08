@@ -146,12 +146,34 @@ def byte_vector_select_all_words(unformated_inputs, real_bits, real_inputs, numb
     for i in range(number_of_inputs):
         pos = 0
         number_of_output_bits = np.sum([len(x) for x in real_bits[i]])
-        if len(real_inputs[i]) == 1 and np.all(real_bits[i][0] == list(range(actual_inputs_bits[real_inputs[i][0]]))):
-            output[i] = unformated_inputs[real_inputs[i][0]]
-            if number_of_output_bits % 8 > 0:
-                left_byte_mask = 2 ** (number_of_output_bits % 8) - 1
-            else:
-                left_byte_mask = 0xffff
+        idx = real_inputs[i][0] if len(real_inputs[i]) == 1 else None
+        expected_rows = (
+            get_number_of_bytes_needed_for_bit_size(actual_inputs_bits[idx])
+            if idx is not None
+            else None
+        )
+        if number_of_output_bits % 8 > 0:
+            left_byte_mask = 2 ** (number_of_output_bits % 8) - 1
+            left_padding_mask = (~left_byte_mask) & 0xff
+        else:
+            left_byte_mask = 0xff
+            left_padding_mask = 0
+
+        is_canonical_for_bit_size = (
+            idx is not None
+            and (
+                left_padding_mask == 0
+                or np.all((unformated_inputs[idx][0, :] & left_padding_mask) == 0)
+            )
+        )
+
+        if (
+            len(real_inputs[i]) == 1
+            and np.all(real_bits[i][0] == list(range(actual_inputs_bits[idx])))
+            and unformated_inputs[idx].shape[0] == expected_rows
+            and is_canonical_for_bit_size
+        ):
+            output[i] = np.array(unformated_inputs[idx], copy=True)
             output[i][0, :] &= left_byte_mask
         else:
             output[i] = np.zeros(shape=(words_per_input, max_number_of_columns), dtype=np.uint8)
@@ -352,6 +374,125 @@ def byte_vector_MODADD(input):
             c = reduce(lambda a, b: a + b, [c, b])
             b = carry.copy()
     return c
+
+
+def byte_vector_MODMUL(input, number_of_inputs, output_bit_size):
+    """
+    Computes the result of the MODMUL operation.
+
+    INPUT:
+
+    - ``input`` -- **list**; A list of numpy byte matrices to be multiplied, each with one row per byte, and one column per sample.
+    - ``number_of_inputs`` -- **integer**; is an integer representing the number of values to be multiplied together
+    - ``output_bit_size`` -- **integer**; is an integer representing the bit size of the output
+    """
+    
+    # Each input[i] is a numpy array of shape (num_bytes, num_samples) with dtype uint8
+    # We first pad or trim inputs to match output_bit_size / 8
+    num_bytes = get_number_of_bytes_needed_for_bit_size(output_bit_size)
+    
+    # Process inputs to integers
+    int_inputs = []
+    for count in range(number_of_inputs):
+        a = input[count]
+        # Make sure input has correct length
+        if a.shape[0] < num_bytes:
+            a_padded = np.zeros((num_bytes, a.shape[1]), dtype=np.uint8)
+            a_padded[-a.shape[0]:] = a
+            a = a_padded
+        elif a.shape[0] > num_bytes:
+            a = a[-num_bytes:]
+            
+        shifts = np.flip(np.array([i * 8 for i in range(num_bytes)], dtype=object))
+        val = np.sum(a << shifts[:, np.newaxis], axis=0)
+        int_inputs.append(val)
+        
+    word_size = output_bit_size
+    modulus = 2**word_size
+    
+    a_calc = int_inputs[0].astype(object) if word_size > 32 else int_inputs[0].astype(np.uint64)
+    for i in range(1, number_of_inputs):
+        b_calc = int_inputs[i].astype(object) if word_size > 32 else int_inputs[i].astype(np.uint64)
+        a_calc = (a_calc * b_calc) % modulus
+    
+    result = a_calc
+    
+    # Convert result back to byte array (big endian)
+    output = np.zeros(shape=(num_bytes, input[0].shape[1]), dtype=np.uint8)
+    for i in range(num_bytes):
+        shift = (num_bytes - 1 - i) * 8
+        output[i, :] = (result >> shift) & 0xff
+        
+    return output
+
+def byte_vector_idea_modmul(input, modulus, word_size):
+    """
+    Computes IDEA modular multiplication (a * b) mod (2^16 + 1) for vectorized byte arrays.
+    
+    This function implements IDEA-specific modular multiplication with automatic
+    0 <-> 2^16 mapping required by the IDEA cipher.
+    
+    For moduli 2^n + 1:
+    - Input value 0 is treated as 2^n before multiplication
+    - Output value 2^n is mapped back to 0 after reduction
+    
+    This implements the multiplicative group structure where 0 represents 2^n.
+
+    INPUT:
+
+    - ``input`` -- **list**; A list of 2 numpy byte matrices (n-bit words) to be multiplied, 
+      each with one row per byte, and one column per sample.
+    - ``modulus`` -- **integer**; The modulus for multiplication
+    - ``word_size`` -- **integer**; The bit size of the operands (e.g., 16 for 16-bit words)
+    
+    EXAMPLES::
+    
+        sage: from claasp.cipher_modules.generic_functions_vectorized_byte import byte_vector_idea_modmul
+        sage: from claasp.cipher_modules.generic_functions_vectorized_byte import integer_array_to_evaluate_vectorized_input
+        sage: # Example with modulus 2^16 + 1 = 65537
+        sage: a = integer_array_to_evaluate_vectorized_input([3], 16)
+        sage: b = integer_array_to_evaluate_vectorized_input([5], 16)
+        sage: result = byte_vector_idea_modmul([a, b], 65537, 16)
+        sage: int.from_bytes(result[:, 0].tobytes(), 'big')
+        15
+        
+        sage: # IDEA with 0 mapping (0 treated as 2^16)
+        sage: a = integer_array_to_evaluate_vectorized_input([0], 16)
+        sage: b = integer_array_to_evaluate_vectorized_input([1], 16)
+        sage: result = byte_vector_idea_modmul([a, b], 65537, 16)
+        sage: int.from_bytes(result[:, 0].tobytes(), 'big')
+        0
+    """
+    assert len(input) == 2, "idea_modmul expects exactly 2 inputs"
+    assert word_size == 16, "idea_modmul only supports 16-bit words"
+    
+    # Convert 16-bit byte arrays to integers
+    a = (np.uint32(input[0][0, :]) << 8) | np.uint32(input[0][1, :])
+    b = (np.uint32(input[1][0, :]) << 8) | np.uint32(input[1][1, :])
+    
+    # Always apply input mapping: 0 -> 2^16
+    max_value = 65536  # 2^16
+    a = np.where(a == 0, max_value, a)
+    b = np.where(b == 0, max_value, b)
+    
+    # Perform modular multiplication (16-bit values fit in uint64)
+    a_calc = a.astype(np.uint64)
+    b_calc = b.astype(np.uint64)
+    mod_calc = np.uint64(modulus)
+    result = (a_calc * b_calc) % mod_calc
+    
+    # Always apply reverse mapping: 2^n -> 0
+    result = np.where(result == max_value, 0, result)
+    
+    # Convert back to byte representation (big-endian)
+    num_bytes = (word_size + 7) // 8  # Round up: ceil(word_size / 8)
+    output = np.zeros((num_bytes, input[0].shape[1]), dtype=np.uint8)
+    
+    for i in range(num_bytes):
+        shift = (num_bytes - 1 - i) * 8
+        output[i, :] = (result >> shift) & 0xff
+    
+    return output
 
 
 def byte_vector_MODSUB(input):

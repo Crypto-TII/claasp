@@ -1,8 +1,25 @@
+# ****************************************************************************
+# Copyright 2023 Technology Innovation Institute
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+# ****************************************************************************
+
 from claasp.cipher_modules.models.sat.sat_model import SatModel
 
 
 class SatTruncatedXorDifferentialModel(SatModel):
-    def __init__(self, cipher, counter='sequential', compact=False):
+    def __init__(self, cipher, counter="sequential", compact=False):
         super().__init__(cipher, counter, compact)
 
     @staticmethod
@@ -55,39 +72,39 @@ class SatTruncatedXorDifferentialModel(SatModel):
         """
         constraints = []
         for variable in fixed_variables:
-            component_id = variable['component_id']
-            is_equal = (variable['constraint_type'] == 'equal')
-            bit_positions = variable['bit_positions']
-            bit_values = variable['bit_values']
+            component_id = variable["component_id"]
+            is_equal = variable["constraint_type"] == "equal"
+            bit_positions = variable["bit_positions"]
+            bit_values = variable["bit_values"]
             variables_ids = []
             all_values_are_2 = all(v == 2 for v in bit_values)
 
             for position, value in zip(bit_positions, bit_values):
-                false_sign = '-' * is_equal
-                true_sign = '-' * (not is_equal)
+                false_sign = "-" * is_equal
+                true_sign = "-" * (not is_equal)
                 if value == 0:
-                    variables_ids.append(f'{false_sign}{component_id}_{position}_0')
-                    variables_ids.append(f'{false_sign}{component_id}_{position}_1')
+                    variables_ids.append(f"{false_sign}{component_id}_{position}_0")
+                    variables_ids.append(f"{false_sign}{component_id}_{position}_1")
                 elif value == 1:
-                    variables_ids.append(f'{false_sign}{component_id}_{position}_0')
-                    variables_ids.append(f'{true_sign}{component_id}_{position}_1')
+                    variables_ids.append(f"{false_sign}{component_id}_{position}_0")
+                    variables_ids.append(f"{true_sign}{component_id}_{position}_1")
                 elif value == 2:
                     if not is_equal:
                         # Forbid (1,0) and ensure mutual exclusion of (1,1)
-                        constraints.append(f'-{component_id}_{position}_0 {component_id}_{position}_1')
-                        constraints.append(f'-{component_id}_{position}_0 -{component_id}_{position}_1')
+                        constraints.append(f"-{component_id}_{position}_0 {component_id}_{position}_1")
+                        constraints.append(f"-{component_id}_{position}_0 -{component_id}_{position}_1")
                     else:
-                        variables_ids.append(f'{true_sign}{component_id}_{position}_0')
+                        variables_ids.append(f"{true_sign}{component_id}_{position}_0")
 
             if is_equal:
                 constraints.extend(variables_ids)
             else:
                 if all_values_are_2:
                     # Require at least one (0,1) tuple
-                    clause = ' '.join([f'{component_id}_{position}_1' for position in bit_positions])
+                    clause = " ".join([f"{component_id}_{position}_1" for position in bit_positions])
                     constraints.append(clause)
                 else:
-                    joined_clause = ' '.join(variables_ids)
+                    joined_clause = " ".join(variables_ids)
                     if joined_clause:
                         constraints.append(joined_clause)
 
@@ -99,18 +116,21 @@ class SatTruncatedXorDifferentialModel(SatModel):
         for component_id in list(number_of_unknowns_per_component.keys()):
             if component_id in self._cipher.get_all_components_ids():
                 set_to_be_minimized = []
-                set_to_be_minimized.extend([bit_id for bit_id in self._variables_list
-                                            if bit_id.startswith(component_id) and bit_id.endswith("_0")])
+                set_to_be_minimized.extend(
+                    [
+                        bit_id
+                        for bit_id in self._variables_list
+                        if bit_id.startswith(component_id) and bit_id.endswith("_0")
+                    ]
+                )
                 number_of_unknowns_per_component = number_of_unknowns_per_component[component_id]
                 unknown_variables, unknown_constraints = self._sequential_counter_algorithm(
-                    set_to_be_minimized,
-                    number_of_unknowns_per_component,
-                    f'unknown_vars_for_{component_id}'
+                    set_to_be_minimized, number_of_unknowns_per_component, f"unknown_vars_for_{component_id}"
                 )
 
                 variables.extend(unknown_variables)
                 constraints.extend(unknown_constraints)
             else:
-                raise ValueError(f'Component {component_id} not found in number_of_unknowns_per_component')
+                raise ValueError(f"Component {component_id} not found in number_of_unknowns_per_component")
 
         return variables, constraints

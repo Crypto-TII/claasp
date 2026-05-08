@@ -167,9 +167,9 @@ class AlgebraicModel:
             sage: AlgebraicModel(speck).polynomial_system()
             Polynomial Sequence with 192 Polynomials in 256 Variables
 
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
             sage: from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
-            sage: aes = AESBlockCipher(word_size=4, state_size=2, number_of_rounds=1)
+            sage: aes = ToyAESBlockCipher(word_size=4, state_size=2, number_of_rounds=1)
             sage: AlgebraicModel(aes).polynomial_system()
             Polynomial Sequence with 174 Polynomials in 104 Variables
 

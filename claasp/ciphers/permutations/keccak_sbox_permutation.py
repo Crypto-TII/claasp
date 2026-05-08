@@ -1,17 +1,16 @@
-
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
@@ -21,24 +20,30 @@ from copy import deepcopy
 
 from claasp.cipher import Cipher
 from claasp.utils.utils import simplify_inputs
-from claasp.name_mappings import INPUT_PLAINTEXT
+from claasp.name_mappings import INPUT_PLAINTEXT, PERMUTATION
 from claasp.DTOs.component_state import ComponentState
 
 X_NUM = 5
 Y_NUM = 5
 SBOX_SIZE = 5
 THETA_ROT = -1
-PARAMETERS_CONFIGURATION_LIST = [{'number_of_rounds': 18, 'word_size': 8},
-                                 {'number_of_rounds': 16, 'word_size': 16},
-                                 {'number_of_rounds': 20, 'word_size': 16}]
-SBOX = [0, 5, 10, 11, 20, 17, 22, 23, 9, 12, 3, 2, 13, 8, 15, 14,
-        18, 21, 24, 27, 6, 1, 4, 7, 26, 29, 16, 19, 30, 25, 28, 31]
+PARAMETERS_CONFIGURATION_LIST = [
+    {"number_of_rounds": 18, "word_size": 8},
+    {"number_of_rounds": 16, "word_size": 16},
+    {"number_of_rounds": 20, "word_size": 16},
+]
+# fmt: off
+SBOX = [
+    0x00, 0x05, 0x0a, 0x0b, 0x14, 0x11, 0x16, 0x17, 0x09, 0x0c, 0x03, 0x02, 0x0d, 0x08, 0x0f, 0x0e,
+    0x12, 0x15, 0x18, 0x1b, 0x06, 0x01, 0x04, 0x07, 0x1a, 0x1d, 0x10, 0x13, 0x1e, 0x19, 0x1c, 0x1f,
+]
+# fmt: on
 ROT_TABLE = [
     [0, -36, -3, -41, -18],
     [-1, -44, -10, -45, -2],
     [-62, -6, -43, -15, -61],
     [-28, -55, -25, -21, -56],
-    [-27, -20, -39, -8, -14]
+    [-27, -20, -39, -8, -14],
 ]
 ROUND_CONST = [
     0x0000000000000001,
@@ -64,7 +69,7 @@ ROUND_CONST = [
     0x8000000080008081,
     0x8000000000008080,
     0x0000000080000001,
-    0x8000000080008008
+    0x8000000080008008,
 ]
 
 
@@ -92,14 +97,16 @@ class KeccakSboxPermutation(Cipher):
 
     def __init__(self, number_of_rounds=24, word_size=64):
         self.word_bit_size = word_size
-        self.PLANE_SIZE = Y_NUM * self.word_bit_size
-        self.state_bit_size = X_NUM * self.PLANE_SIZE
+        self.plane_size = Y_NUM * self.word_bit_size
+        self.state_bit_size = X_NUM * self.plane_size
 
-        super().__init__(family_name="keccak_sbox",
-                         cipher_type="permutation",
-                         cipher_inputs=[INPUT_PLAINTEXT],
-                         cipher_inputs_bit_size=[self.state_bit_size],
-                         cipher_output_bit_size=self.state_bit_size)
+        super().__init__(
+            family_name="keccak_sbox",
+            cipher_type=PERMUTATION,
+            cipher_inputs=[INPUT_PLAINTEXT],
+            cipher_inputs_bit_size=[self.state_bit_size],
+            cipher_output_bit_size=self.state_bit_size,
+        )
 
         state = self.state_initialization()
 
@@ -138,7 +145,7 @@ class KeccakSboxPermutation(Cipher):
                     inputs_id = inputs_id + b[i][j].id
                     inputs_pos = inputs_pos + [[k]]
                 inputs_id, inputs_pos = simplify_inputs(inputs_id, inputs_pos)
-                self.add_SBOX_component(inputs_id, inputs_pos, SBOX_SIZE, SBOX)
+                self.add_sbox_component(inputs_id, inputs_pos, SBOX_SIZE, SBOX)
                 for i in range(X_NUM):
                     state_new[i][j].id[k] = self.get_current_component_id()
                     state_new[i][j].input_bit_positions[k] = [i]
@@ -148,7 +155,7 @@ class KeccakSboxPermutation(Cipher):
 
     def get_ci(self, i):
         ci = ROUND_CONST[i]
-        ci = ci % (2 ** self.word_bit_size)
+        ci = ci % (2**self.word_bit_size)
 
         return ci
 
@@ -160,7 +167,7 @@ class KeccakSboxPermutation(Cipher):
         inputs_id = c.id + state[0][0].id
         inputs_pos = c.input_bit_positions + state[0][0].input_bit_positions
         inputs_id, inputs_pos = simplify_inputs(inputs_id, inputs_pos)
-        self.add_XOR_component(inputs_id, inputs_pos, self.word_bit_size)
+        self.add_xor_component(inputs_id, inputs_pos, self.word_bit_size)
         state[0][0] = ComponentState([self.get_current_component_id()], [list(range(self.word_bit_size))])
 
         return state
@@ -170,10 +177,12 @@ class KeccakSboxPermutation(Cipher):
         b = [[{} for _ in range(Y_NUM)] for _ in range(X_NUM)]
         for i in range(X_NUM):
             for j in range(Y_NUM):
-                self.add_rotate_component(state[i][j].id, state[i][j].input_bit_positions,
-                                          self.word_bit_size, ROT_TABLE[i][j])
-                b[j][(2 * i + 3 * j) % Y_NUM] = ComponentState([self.get_current_component_id()],
-                                                               [list(range(self.word_bit_size))])
+                self.add_rotate_component(
+                    state[i][j].id, state[i][j].input_bit_positions, self.word_bit_size, ROT_TABLE[i][j]
+                )
+                b[j][(2 * i + 3 * j) % Y_NUM] = ComponentState(
+                    [self.get_current_component_id()], [list(range(self.word_bit_size))]
+                )
 
         return b
 
@@ -188,8 +197,10 @@ class KeccakSboxPermutation(Cipher):
         state = [[{} for _ in range(Y_NUM)] for _ in range(X_NUM)]
         for i in range(X_NUM):
             for j in range(Y_NUM):
-                state[i][j] = ComponentState([INPUT_PLAINTEXT], [[k + j * self.word_bit_size + i * self.PLANE_SIZE
-                                                                  for k in range(self.word_bit_size)]])
+                state[i][j] = ComponentState(
+                    [INPUT_PLAINTEXT],
+                    [[k + j * self.word_bit_size + i * self.plane_size for k in range(self.word_bit_size)]],
+                )
 
         return state
 
@@ -204,23 +215,24 @@ class KeccakSboxPermutation(Cipher):
                 inputs_id = inputs_id + state[i][j].id
                 inputs_pos = inputs_pos + state[i][j].input_bit_positions
             inputs_id, inputs_pos = simplify_inputs(inputs_id, inputs_pos)
-            self.add_XOR_component(inputs_id, inputs_pos, self.word_bit_size)
+            self.add_xor_component(inputs_id, inputs_pos, self.word_bit_size)
             c.append(ComponentState([self.get_current_component_id()], [list(range(self.word_bit_size))]))
         # D[x] = C[x - 1] xor rot(C[x + 1], 1) for x in range(5)
         d = []
         for i in range(X_NUM):
-            self.add_rotate_component(c[(i + 1) % X_NUM].id, c[(i + 1) % X_NUM].input_bit_positions,
-                                      self.word_bit_size, THETA_ROT)
+            self.add_rotate_component(
+                c[(i + 1) % X_NUM].id, c[(i + 1) % X_NUM].input_bit_positions, self.word_bit_size, THETA_ROT
+            )
             inputs_id = c[(i - 1) % X_NUM].id + [self.get_current_component_id()]
             inputs_pos = c[(i - 1) % X_NUM].input_bit_positions + [list(range(self.word_bit_size))]
-            self.add_XOR_component(inputs_id, inputs_pos, self.word_bit_size)
+            self.add_xor_component(inputs_id, inputs_pos, self.word_bit_size)
             d.append(ComponentState([self.get_current_component_id()], [list(range(self.word_bit_size))]))
         # A[x, y] = A[x, y] xor D[x] for x in range(5), y in range(5)
         for i in range(X_NUM):
             for j in range(Y_NUM):
                 inputs_id = state[i][j].id + d[i].id
                 inputs_pos = state[i][j].input_bit_positions + d[i].input_bit_positions
-                self.add_XOR_component(inputs_id, inputs_pos, self.word_bit_size)
+                self.add_xor_component(inputs_id, inputs_pos, self.word_bit_size)
                 state[i][j] = ComponentState([self.get_current_component_id()], [list(range(self.word_bit_size))])
 
         return state

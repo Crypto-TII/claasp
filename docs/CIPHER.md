@@ -147,13 +147,13 @@ sage: bea = BEA1BlockCipher()
 ```
 
 ##### 1.2.1.2 constant
-- ``block_bit_size``: cipher input and output block bit size of the cipher. Default value is 3.
-- ``number_of_rounds``: number of rounds of the cipher. Default value is 3.
+- ``output_bit_size``: output bit size of the constant component. Default value is 3.
+- ``value``: constant value emitted by the cipher. Default value is ``0b010``.
 
 Example:
 ```
-sage: from claasp.ciphers.block_ciphers.constant_block_cipher import ConstantBlockCipher
-sage: constant = ConstantBlockCipher(block_bit_size=32, number_of_rounds=8)
+sage: from claasp.ciphers.single_component_ciphers.constant_cipher import ConstantCipher
+sage: constant = ConstantCipher(output_bit_size=32, value=0)
 ```
 
 ##### 1.2.1.3 des
@@ -193,13 +193,11 @@ sage: hight = HightBlockCipher(number_of_rounds=3)
 
 ##### 1.2.1.6 identity
 - ``block_bit_size``: cipher input and output block bit size of the cipher. Default value is 32.
-- ``key_bit_size``: cipher key bit size of the cipher. Default value is 32.
-- ``number_of_rounds``: number of rounds of the cipher. Default value is 1.
 
 Example:
 ```
-sage: from claasp.ciphers.block_ciphers.identity_block_cipher import IdentityBlockCipher
-sage: identity = IdentityBlockCipher()
+sage: from claasp.ciphers.single_component_ciphers.identity_cipher import IdentityCipher
+sage: identity = IdentityCipher()
 ```
 
 ##### 1.2.1.7 lea

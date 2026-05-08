@@ -7,55 +7,45 @@ from pathlib import Path
 EXCLUDED_FOLDERS = ["__pycache__", "DTOs", "tii_reports"]
 EXCLUDED_FILES = ["__init__.py", "constants.py", ".DS_Store", "name_mappings.py", "finalAnalysisReportExample.txt"]
 EXCLUDED_EXTENSIONS = [".md"]
-ROOT_FOLDER = '../claasp/'
+ROOT_FOLDER = "../claasp/"
 SOURCE_ROOT_FOLDER = "./source/"
 Path(SOURCE_ROOT_FOLDER).mkdir(exist_ok=True)
 
-IS_HTML = sys.argv[1] == 'html'
+IS_HTML = sys.argv[1] == "html"
 REFERENCES_EXTENSION = "rst" if IS_HTML else "bib"
 copyfile("conf.py", Path("source", "conf.py"))
-copyfile('references.rst', Path("source", f'references.{REFERENCES_EXTENSION}'))
+copyfile("references.rst", Path("source", f"references.{REFERENCES_EXTENSION}"))
 
 
 def header_style(section, level):
     if not section:
         return ""
 
-    sections = {
-        0: "=",
-        1: "-",
-        2: "=",
-        3: "-",
-        4: "`",
-        5: "'",
-        6: ".",
-        7: "~",
-        8: "*",
-        9: "+",
-        10: "^"
-    }
+    sections = {0: "=", 1: "-", 2: "=", 3: "-", 4: "`", 5: "'", 6: ".", 7: "~", 8: "*", 9: "+", 10: "^"}
     style = sections[level] * len(section)
 
-    if level in [0, 1]:
+    if level in (0, 1):
         return f"{style}\n{section}\n{style}\n"
 
-    if level in [2, 3, 4, 5, 6, 7, 8, 9, 10]:
+    if level in (2, 3, 4, 5, 6, 7, 8, 9, 10):
         return f"{section}\n{style}\n"
 
     return section
 
 
 with Path(SOURCE_ROOT_FOLDER, "index.rst").open(mode="w") as index_rst_file:
-    index_rst_file.write("=========================\n"
-                         "CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives\n"
-                         "=========================\n"
-                         "\n"
-                         "This is a sample reference manual for CLAASP.\n"
-                         "\n"
-                         "To use this module, you need to import it: \n\n"
-                         "    from claasp import *\n\n"
-                         "This reference shows a minimal example of documentation of \n"
-                         "CLAASP following SageMath guidelines.\n")
+    index_rst_file.write(
+        "=========================\n"
+        "CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives\n"
+        "=========================\n"
+        "\n"
+        "This is a sample reference manual for CLAASP.\n"
+        "\n"
+        "To use this module, you need to import it: \n\n"
+        "    from claasp import *\n\n"
+        "This reference shows a minimal example of documentation of \n"
+        "CLAASP following SageMath guidelines.\n"
+    )
 
     for root, directories, files in os.walk(ROOT_FOLDER):
         path = root.split(os.sep)
@@ -76,26 +66,30 @@ with Path(SOURCE_ROOT_FOLDER, "index.rst").open(mode="w") as index_rst_file:
                         file_header = file_name.replace("_", " ").capitalize()
                         adornment = "=" * len(file_header)
                         link = file_path.replace("../claasp/", "").replace("/", ".")
-                        rst_file.write(f"{header_style(file_header, 1)}\n"
-                                       f".. automodule:: {link}\n"
-                                       "   :members:\n"
-                                       "   :undoc-members:\n"
-                                       "   :inherited-members:\n"
-                                       "   :show-inheritance:\n\n")
+                        rst_file.write(
+                            f"{header_style(file_header, 1)}\n"
+                            f".. automodule:: {link}\n"
+                            "   :members:\n"
+                            "   :undoc-members:\n"
+                            "   :inherited-members:\n"
+                            "   :show-inheritance:\n\n"
+                        )
             index_rst_file.write("\n")
 
     if IS_HTML:
-        index_rst_file.write("\n\n"
-                             "General Information\n"
-                             "===================\n"
-                             "\n"
-                             "* :ref:`Bibliographic References <references>`\n"
-                             "\n"
-                             "Indices and Tables\n"
-                             "==================\n"
-                             "\n"
-                             "* :ref:`genindex`\n"
-                             "* :ref:`modindex`\n"
-                             "* :ref:`search`\n")
+        index_rst_file.write(
+            "\n\n"
+            "General Information\n"
+            "===================\n"
+            "\n"
+            "* :ref:`Bibliographic References <references>`\n"
+            "\n"
+            "Indices and Tables\n"
+            "==================\n"
+            "\n"
+            "* :ref:`genindex`\n"
+            "* :ref:`modindex`\n"
+            "* :ref:`search`\n"
+        )
     else:
         index_rst_file.write(".. include:: references.bib")

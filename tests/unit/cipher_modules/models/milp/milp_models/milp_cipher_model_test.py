@@ -10,7 +10,7 @@ def test_build_cipher_model():
     constraints = milp.model_constraints
 
     assert len(constraints) == 9296
-    assert str(constraints[0]) == 'x_16 == x_9'
-    assert str(constraints[1]) == 'x_17 == x_10'
-    assert str(constraints[9294]) == 'x_4926 == x_4878'
-    assert str(constraints[9295]) == 'x_4927 == x_4879'
+    assert str(constraints[0]) == "x_16 == x_9"
+    assert str(constraints[1]) == "x_17 == x_10"
+    assert str(constraints[9294]) == "x_4926 == x_4878"
+    assert str(constraints[9295]) == "x_4927 == x_4879"

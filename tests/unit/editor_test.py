@@ -3,24 +3,26 @@ from random import getrandbits
 from claasp.cipher import Cipher
 from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+from claasp.ciphers.block_ciphers.ublock_block_cipher import UblockBlockCipher
 from claasp.editor import remove_permutations, remove_rotations
+from claasp.name_mappings import PERMUTATION
 
 
 def test_add_shift_rows_component():
-    cipher = Cipher("cipher_name", "permutation", ["input"], [4], 4)
+    cipher = Cipher("cipher_name", PERMUTATION, ["input"], [32], 32)
     cipher.add_round()
-    cipher.add_shift_rows_component(["input"], [[0, 1, 2, 3]], 4, 2)
+    cipher.add_shift_rows_component(["input"], [list(range(32))], 1, 8, 4)
     assert cipher.rounds.rounds_as_python_dictionary() == [[{'id': 'shift_rows_0_0',
                                                              'type': 'word_operation',
-                                                             'input_bit_size': 4,
+                                                             'input_bit_size': 32,
                                                              'input_id_link': ['input'],
-                                                             'input_bit_positions': [[0, 1, 2, 3]],
-                                                             'output_bit_size': 4,
-                                                             'description': ['ROTATE', 2]}]]
+                                                             'input_bit_positions': [list(range(32))],
+                                                             'output_bit_size': 32,
+                                                             'description': ['ROTATE', 8]}]]
 
 
 def test_add_variable_rotate_component():
-    cipher = Cipher("cipher_name", "permutation", ["input"], [4], 4)
+    cipher = Cipher("cipher_name", PERMUTATION, ["input"], [4], 4)
     cipher.add_round()
     cipher.add_variable_rotate_component(["input", "input"], [[0, 1, 2, 3], [4, 5, 6, 7]], 4, -1)
     assert cipher.rounds.rounds_as_python_dictionary() == [[{'id': 'var_rot_0_0',
@@ -46,6 +48,34 @@ def test_remove_key_schedule():
                                                                              'output_bit_size': 16,
                                                                              'description': ['ROTATE', 7]}
 
+    removed_key_speck = speck.remove_key_schedule(keep_round_key_injection=False)
+    assert removed_key_speck.component_from(1, 0).as_python_dictionary() == {'id': 'rot_1_6',
+                                                                             'type': 'word_operation',
+                                                                             'input_bit_size': 16,
+                                                                             'input_id_link': ['modadd_0_1'],
+                                                                             'input_bit_positions': [[0, 1, 2, 3, 4,
+                                                                                                      5, 6, 7, 8, 9,
+                                                                                                      10, 11, 12, 13,
+                                                                                                      14, 15]],
+                                                                             'output_bit_size': 16,
+                                                                             'description': ['ROTATE', 7]}
+
+
+def test_remove_key_schedule_without_round_key_injection_evaluate():
+    ublock = UblockBlockCipher(number_of_rounds=2)
+    plaintext = 0x80000000000000000000000000000000
+
+    removed_without_injection = ublock.remove_key_schedule(keep_round_key_injection=False)
+    removed_with_injection = ublock.remove_key_schedule(keep_round_key_injection=True)
+
+    assert removed_without_injection.inputs == ['plaintext']
+
+    output_without_injection = removed_without_injection.evaluate([plaintext], intermediate_output=True)[0]
+    zero_round_key_inputs = [plaintext] + [0] * (len(removed_with_injection.inputs) - 1)
+    output_with_zero_injections = removed_with_injection.evaluate(zero_round_key_inputs, intermediate_output=True)[0]
+
+    assert output_without_injection == output_with_zero_injections
+
 
 def test_remove_permutations():
     present = PresentBlockCipher()
@@ -67,10 +97,10 @@ def test_remove_rotations():
     assert ciphertext == ciphertext_no_rotations
 
 
-def test_add_FSR_component():
+def test_add_fsr_component():
     cipher = Cipher("cipher_name", "fsr", ["input"], [12], 12)
     cipher.add_round()
-    cipher.add_FSR_component(["input", "input"], [[0, 1, 2, 3, 4], [0, 1, 2, 3, 4, 5, 6]], 12,
+    cipher.add_fsr_component(["input", "input"], [[0, 1, 2, 3, 4], [0, 1, 2, 3, 4, 5, 6]], 12,
                              [
                                  [
                                      [5, [[4], [5], [6, 7]]],  # Register_len:5,  feedback poly: x4 + x5 + x6*x7

@@ -316,8 +316,18 @@ class DieharderTests:
             report_dict["weak_tests"] = 0
             report_dict["failed_tests"] = 0
             report_dict["total_tests"] = 0
-            test_list = [{}]
-            report_dict["randomness_test"] = test_list
+            report_dict["passed_tests_proportion"] = 0.0
+            report_dict["randomness_test"] = [
+                {
+                    "test_id": 1,
+                    "test_name": "dieharder_unavailable",
+                    "ntup": 0,
+                    "tsamples": 0,
+                    "psamples": 0,
+                    "p-value": float("nan"),
+                    "assessment": "FAILED",
+                }
+            ]
             return report_dict
 
         # retrieve results
@@ -383,7 +393,8 @@ class DieharderTests:
             "FAILED": -1
         }
         for item in report_dict["randomness_test"]:
-            y[item["test_id"] - 1] = label_y[item["assessment"]]
+            assessment = item.get("assessment", "FAILED")
+            y[item.get("test_id", 1) - 1] = label_y.get(assessment, -1)
 
         plt.clf()
         plt.scatter(x, y, color="cadetblue")
@@ -428,7 +439,7 @@ class DieharderTests:
         x = [i + 1 for i in range(report_dict_list[0]["round"], report_dict_list[-1]["round"]+1)]
         y = [0 for _ in range(len(x))]
         for i in range(len(report_dict_list)):
-            y[i] = report_dict_list[i]["passed_tests_proportion"]
+            y[i] = report_dict_list[i].get("passed_tests_proportion", 0.0)
 
         plt.clf()
         plt.scatter(x, y, color="cadetblue")

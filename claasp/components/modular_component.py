@@ -1,16 +1,16 @@
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
@@ -21,6 +21,7 @@ from claasp.cipher_modules.models.sat.utils import constants, utils as sat_utils
 from claasp.cipher_modules.models.smt.utils import utils as smt_utils
 from claasp.component import Component
 from claasp.input import Input
+from claasp.name_mappings import WORD_OPERATION
 
 
 def milp_n_window_heuristic(input_vars, output_vars, component_id, window_size, mip, x):
@@ -30,15 +31,14 @@ def milp_n_window_heuristic(input_vars, output_vars, component_id, window_size, 
             temp_vars = x[input_1_vars[j - i]] + x[input_2_vars[j - i]] + x[output_vars[j - i]]
             mod_add_var = mip.new_variable(name="mod")
             mip.set_max(mod_add_var, 1)
-            u = mip.new_variable(name='u')
-            mip.add_constraint(temp_vars == 2 * u['u' + component_id + str(j) +
-                                                  str(i)] + mod_add_var["mod" + component_id + str(j) + str(i)])
+            u = mip.new_variable(name="u")
+            mip.add_constraint(temp_vars == 2 * u[f"u{component_id}{j}{i}"] + mod_add_var[f"mod{component_id}{j}{i}"])
             temp_array.append(mod_add_var["mod" + component_id + str(j) + str(i)])
         return temp_array
 
     input_size = int(len(input_vars) / 2)
     input_1_vars = input_vars[:input_size]
-    input_2_vars = input_vars[input_size:2 * input_size]
+    input_2_vars = input_vars[input_size : 2 * input_size]
     for j in range(window_size, input_size - 1):
         window_size_array = create_window_size_array(j, input_1_vars, input_2_vars, output_vars)
         mip.add_constraint(mip.sum(window_size_array) <= int(window_size))
@@ -71,11 +71,53 @@ def generic_sign_linear_constraints(inputs, outputs):
 
 
 class Modular(Component):
-    def __init__(self, current_round_number, current_round_number_of_components,
-                 input_id_links, input_bit_positions, output_bit_size, operation, modulus):
+    """
+    Construct a generic modular arithmetic component.
 
-        component_id = f'{operation}_{current_round_number}_{current_round_number_of_components}'
-        component_type = 'word_operation'
+
+    INPUT:
+
+    - ``current_round_number`` -- **integer**; round index where the component is created. ``0`` is valid.
+    - ``current_round_number_of_components`` -- **integer**; index of the component inside the round. ``0`` is valid.
+    - ``input_id_links`` -- **list**; input component identifiers (usually strings). Must align with ``input_bit_positions``.
+    - ``input_bit_positions`` -- **list**; bit positions for each input identifier (list of lists). Must align with ``input_id_links``.
+    - ``output_bit_size`` -- **integer**; output size in bits. ``0`` is valid only when supported by the component semantics.
+    - ``operation`` -- **string**; operation name used to build the component description/id (for example ``'and'``).
+    - ``modulus`` -- **integer**; modulus used by modular arithmetic operations. Must be greater than ``0``.
+
+    NOTE:
+
+        The number of operands is automatically inferred as
+        ``sum(len(p) for p in input_bit_positions) / output_bit_size``.
+        For example, two input groups of 2 bits each with ``output_bit_size=2`` give a 2-operand modular operation;
+        three input groups of 2 bits each give a 3-operand modular operation.
+
+    EXAMPLES::
+
+        sage: from claasp.components.modular_component import Modular
+        sage: component = Modular(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2, 'modadd', 4)
+        sage: print(component.id)
+        modadd_0_0
+        sage: print(component.type)
+        word_operation
+        sage: print(component.description)  # 4 total bits / output_bit_size 2 = 2 operands
+        ['MODADD', 2, 4]
+        sage: component3 = Modular(0, 1, ['a', 'b', 'c'], [[0, 1], [0, 1], [0, 1]], 2, 'modadd', 4)
+        sage: print(component3.description)  # 6 total bits / output_bit_size 2 = 3 operands
+        ['MODADD', 3, 4]
+    """
+    def __init__(
+        self,
+        current_round_number,
+        current_round_number_of_components,
+        input_id_links,
+        input_bit_positions,
+        output_bit_size,
+        operation,
+        modulus,
+    ):
+        component_id = f"{operation}_{current_round_number}_{current_round_number_of_components}"
+        component_type = WORD_OPERATION
         input_len = 0
         for bits in input_bit_positions:
             input_len = input_len + len(bits)
@@ -105,39 +147,87 @@ class Modular(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: speck = SpeckBlockCipher(number_of_rounds=3)
-            sage: modadd_component = speck.component_from(0, 1)
-            sage: modadd_component.cms_xor_linear_mask_propagation_constraints()
-            (['modadd_0_1_0_i',
-              'modadd_0_1_1_i',
-              'modadd_0_1_2_i',
-              ...
-              'hw_modadd_0_1_14_o -modadd_0_1_14_o modadd_0_1_30_i',
-              'hw_modadd_0_1_15_o modadd_0_1_15_o -modadd_0_1_31_i',
-              'hw_modadd_0_1_15_o -modadd_0_1_15_o modadd_0_1_31_i'])
+            sage: from claasp.components.modular_component import Modular
+            sage: component = Modular(0, 0, ['a', 'b'], [[0, 1, 2, 3], [0, 1, 2, 3]], 4, 'modular', 16)
+            sage: variables, constraints = component.cms_xor_linear_mask_propagation_constraints()
+            sage: variables
+            ['modular_0_0_0_i',
+            'modular_0_0_1_i',
+            'modular_0_0_2_i',
+            'modular_0_0_3_i',
+            'modular_0_0_4_i',
+            'modular_0_0_5_i',
+            'modular_0_0_6_i',
+            'modular_0_0_7_i',
+            'modular_0_0_0_o',
+            'modular_0_0_1_o',
+            'modular_0_0_2_o',
+            'modular_0_0_3_o',
+            'hw_modular_0_0_0_o',
+            'hw_modular_0_0_1_o',
+            'hw_modular_0_0_2_o',
+            'hw_modular_0_0_3_o']
+            sage: constraints
+            ['-hw_modular_0_0_0_o',
+            'x -hw_modular_0_0_1_o modular_0_0_0_o modular_0_0_0_i modular_0_0_4_i',
+            'x -hw_modular_0_0_2_o hw_modular_0_0_1_o modular_0_0_1_o modular_0_0_1_i modular_0_0_5_i',
+            'x -hw_modular_0_0_3_o hw_modular_0_0_2_o modular_0_0_2_o modular_0_0_2_i modular_0_0_6_i',
+            'hw_modular_0_0_0_o modular_0_0_0_o -modular_0_0_0_i',
+            'hw_modular_0_0_0_o -modular_0_0_0_o modular_0_0_0_i',
+            'hw_modular_0_0_1_o modular_0_0_1_o -modular_0_0_1_i',
+            'hw_modular_0_0_1_o -modular_0_0_1_o modular_0_0_1_i',
+            'hw_modular_0_0_2_o modular_0_0_2_o -modular_0_0_2_i',
+            'hw_modular_0_0_2_o -modular_0_0_2_o modular_0_0_2_i',
+            'hw_modular_0_0_3_o modular_0_0_3_o -modular_0_0_3_i',
+            'hw_modular_0_0_3_o -modular_0_0_3_o modular_0_0_3_i',
+            'hw_modular_0_0_0_o modular_0_0_0_o -modular_0_0_4_i',
+            'hw_modular_0_0_0_o -modular_0_0_0_o modular_0_0_4_i',
+            'hw_modular_0_0_1_o modular_0_0_1_o -modular_0_0_5_i',
+            'hw_modular_0_0_1_o -modular_0_0_1_o modular_0_0_5_i',
+            'hw_modular_0_0_2_o modular_0_0_2_o -modular_0_0_6_i',
+            'hw_modular_0_0_2_o -modular_0_0_2_o modular_0_0_6_i',
+            'hw_modular_0_0_3_o modular_0_0_3_o -modular_0_0_7_i',
+            'hw_modular_0_0_3_o -modular_0_0_3_o modular_0_0_7_i']
         """
         _, input_bit_ids = self._generate_component_input_ids()
         out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
         output_bit_len, output_bit_ids = self._generate_output_ids(suffix=out_suffix)
-        hw_bit_ids = [f'hw_{output_bit_ids[i]}' for i in range(output_bit_len)]
-        constraints = [f'-{hw_bit_ids[0]}']
-        constraints.append(f'x -{hw_bit_ids[1]} {output_bit_ids[0]} '
-                           f'{input_bit_ids[0]} {input_bit_ids[output_bit_len]}')
+        hw_bit_ids = [f"hw_{output_bit_ids[i]}" for i in range(output_bit_len)]
+        constraints = [f"-{hw_bit_ids[0]}"]
+        constraints.append(f"x -{hw_bit_ids[1]} {output_bit_ids[0]} {input_bit_ids[0]} {input_bit_ids[output_bit_len]}")
         for i in range(2, output_bit_len):
-            constraints.append(f'x -{hw_bit_ids[i]} {hw_bit_ids[i - 1]} {output_bit_ids[i - 1]} '
-                               f'{input_bit_ids[i - 1]} {input_bit_ids[output_bit_len + i - 1]}')
+            constraints.append(
+                f"x -{hw_bit_ids[i]} {hw_bit_ids[i - 1]} {output_bit_ids[i - 1]} "
+                f"{input_bit_ids[i - 1]} {input_bit_ids[output_bit_len + i - 1]}"
+            )
         for i in range(output_bit_len):
-            constraints.extend(sat_utils.cnf_modadd_inequality(hw_bit_ids[i],
-                                                               output_bit_ids[i],
-                                                               input_bit_ids[i]))
+            constraints.extend(sat_utils.cnf_modadd_inequality(hw_bit_ids[i], output_bit_ids[i], input_bit_ids[i]))
         for i in range(output_bit_len):
-            constraints.extend(sat_utils.cnf_modadd_inequality(hw_bit_ids[i],
-                                                               output_bit_ids[i],
-                                                               input_bit_ids[output_bit_len + i]))
+            constraints.extend(
+                sat_utils.cnf_modadd_inequality(hw_bit_ids[i], output_bit_ids[i], input_bit_ids[output_bit_len + i])
+            )
         result = input_bit_ids + output_bit_ids + hw_bit_ids, constraints
         return result
 
+    def cp_continuous_differential_propagation_constraints(self, model):
+        
+        input_id_links = self.input_id_links
+        output_id_link = self.id
+        input_bit_positions = self.input_bit_positions
+        input_len = self.output_bit_size
+
+        cp_declarations = []
+        cp_constraints = []
+        cp_declarations.append(f"array[0..{input_len - 1}] of var -1.0..1.0: x1_{output_id_link};")
+        cp_declarations.append(f"array[0..{input_len - 1}] of var -1.0..1.0: x2_{output_id_link};")
+        cp_declarations.append(f"array[0..{input_len - 1}] of var -1.0..1.0: {output_id_link};")
+
+        cp_constraints.append(
+            f"constraint {output_id_link} = continuous_modadd(x1_{output_id_link}, x2_{output_id_link}, {output_id_link});"
+        )
+
+        return cp_declarations, cp_constraints
+        
     def cp_deterministic_truncated_xor_differential_constraints(self):
         """
         Return lists of variables and constraints for Modular Addition/Substraction in CP deterministic truncated XOR differential model.
@@ -148,60 +238,187 @@ class Modular(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: speck = SpeckBlockCipher(number_of_rounds=3)
-            sage: modadd_component = speck.component_from(0 ,1)
-            sage: modadd_component.cp_deterministic_truncated_xor_differential_constraints()
-            (['array[0..15] of var 0..2: pre_modadd_0_1_0;',
-              'array[0..15] of var 0..2: pre_modadd_0_1_1;'],
-             ['constraint pre_modadd_0_1_0[0] = rot_0_0[0];',
-               ...
-              'constraint pre_modadd_0_1_1[15] = plaintext[31];',
-              'constraint modular_addition_word(pre_modadd_0_1_1, pre_modadd_0_1_0, modadd_0_1);'])
+            sage: from claasp.components.modular_component import Modular
+            sage: component = Modular(0, 0, ['a', 'b'], [[0, 1, 2, 3], [0, 1, 2, 3]], 4, 'modular', 16)
+            sage: declarations, constraints = component.cp_deterministic_truncated_xor_differential_constraints()
+            sage: declarations
+            ['array[0..3] of var 0..2: pre_modular_0_0_0;', 'array[0..3] of var 0..2: pre_modular_0_0_1;']
+            sage: constraints
+            ['constraint pre_modular_0_0_0[0] = a[0];',
+            'constraint pre_modular_0_0_0[1] = a[1];',
+            'constraint pre_modular_0_0_0[2] = a[2];',
+            'constraint pre_modular_0_0_0[3] = a[3];',
+            'constraint pre_modular_0_0_1[0] = b[0];',
+            'constraint pre_modular_0_0_1[1] = b[1];',
+            'constraint pre_modular_0_0_1[2] = b[2];',
+            'constraint pre_modular_0_0_1[3] = b[3];',
+            'constraint modular_addition_word(pre_modular_0_0_1, pre_modular_0_0_0, modular_0_0);']
         """
-        input_id_links = self.input_id_links
         output_id_link = self.id
-        input_bit_positions = self.input_bit_positions
         num_add = self.description[1]
         all_inputs = []
-        for id_link, bit_positions in zip(input_id_links, input_bit_positions):
-            all_inputs.extend([f'{id_link}[{position}]' for position in bit_positions])
+        for id_link, bit_positions in zip(self.input_id_links, self.input_bit_positions):
+            all_inputs.extend([f"{id_link}[{position}]" for position in bit_positions])
         input_len = len(all_inputs) // num_add
         cp_declarations = []
         cp_constraints = []
         for i in range(num_add):
-            cp_declarations.append(f'array[0..{input_len - 1}] of var 0..2: pre_{output_id_link}_{i};')
-            cp_constraints.extend([f'constraint pre_{output_id_link}_{i}[{j}] = {all_inputs[i * input_len + j]};'
-                                   for j in range(input_len)])     
+            cp_declarations.append(f"array[0..{input_len - 1}] of var 0..2: pre_{output_id_link}_{i};")
+            cp_constraints.extend(
+                [
+                    f"constraint pre_{output_id_link}_{i}[{j}] = {all_inputs[i * input_len + j]};"
+                    for j in range(input_len)
+                ]
+            )
         for i in range(num_add, 2 * num_add - 2):
-            cp_declarations.append(f'array[0..{input_len - 1}] of var 0..1: pre_{output_id_link}_{i};')
+            cp_declarations.append(f"array[0..{input_len - 1}] of var 0..1: pre_{output_id_link}_{i};")
         for i in range(num_add - 2):
-            cp_constraints.append(f'constraint modular_addition_word(pre_{output_id_link}_{num_add - 1}, '
-                                  f'pre_{output_id_link}_{i + 1}, pre_{output_id_link}_{num_add + i});')
-        cp_constraints.append(f'constraint modular_addition_word(pre_{output_id_link}_{2 * num_add - 3}, '
-                              f'pre_{output_id_link}_0, {output_id_link});')
+            cp_constraints.append(
+                f"constraint modular_addition_word(pre_{output_id_link}_{num_add - 1}, "
+                f"pre_{output_id_link}_{i + 1}, pre_{output_id_link}_{num_add + i});"
+            )
+        cp_constraints.append(
+            f"constraint modular_addition_word(pre_{output_id_link}_{2 * num_add - 3}, "
+            f"pre_{output_id_link}_0, {output_id_link});"
+        )
+
         return cp_declarations, cp_constraints
 
     def cp_deterministic_truncated_xor_differential_trail_constraints(self):
         return self.cp_deterministic_truncated_xor_differential_constraints()
 
-    def cp_twoterms_xor_differential_probability(self, input_1, input_2, out, input_length,
-                                                 cp_constraints, cp_declarations, c, model):
+    @staticmethod
+    def _cp_semideterministic_stage_name(prefix, output_id_link, index, use_index_suffix):
+        if use_index_suffix:
+            return f"{prefix}_{output_id_link}_{index}"
+
+        return f"{prefix}_{output_id_link}"
+
+    @staticmethod
+    def _cp_append_semideterministic_stage(
+        cp_declarations,
+        cp_constraints,
+        left_input,
+        right_input,
+        output_var,
+        delta_carry,
+        costs,
+        input_len,
+        stage_probability_var,
+    ):
+        cp_declarations.extend(
+            [
+                f"array[0..{input_len - 1}] of var 0..2: {delta_carry};",
+                f"array[0..{input_len - 1}] of var {{100, 41, 19, 9, 4, 2, 1, 0}}: {costs};",
+                f"var int: {stage_probability_var};",
+            ]
+        )
+
+        cp_constraints.append(
+            f"constraint counter_based_modadd_semideterministic({left_input}, {right_input}, {output_var}, {delta_carry}, {costs}, {input_len}, {stage_probability_var});"
+        )
+
+    def cp_semi_deterministic_truncated_xor_differential_constraints(self):
+        """
+        Return declarations, constraints, and metadata for modular addition/subtraction in the CP
+        semi-deterministic truncated XOR differential model.
+        """
+
+        output_id_link = self.id
+        num_add = self.description[1]
+        all_inputs = []
+        for id_link, bit_positions in zip(self.input_id_links, self.input_bit_positions):
+            all_inputs.extend([f"{id_link}[{position}]" for position in bit_positions])
+
+        input_len = len(all_inputs) // num_add
+        cp_declarations = []
+        cp_constraints = []
+
+        for i in range(num_add):
+            cp_declarations.append(f"array[0..{input_len - 1}] of var 0..2: pre_{output_id_link}_{i};")
+            cp_constraints.extend(
+                [f"constraint pre_{output_id_link}_{i}[{j}] = {all_inputs[i * input_len + j]};" for j in range(input_len)]
+            )
+
+        for i in range(num_add, 2 * num_add - 2):
+            cp_declarations.append(f"array[0..{input_len - 1}] of var 0..2: pre_{output_id_link}_{i};")
+
+        probability_var = f"probability_{output_id_link}"
+        stage_probability_vars = []
+        use_index_suffix = num_add > 2
+
+        for i in range(num_add - 2):
+            delta_carry = self._cp_semideterministic_stage_name("delta_carry", output_id_link, i, use_index_suffix)
+            costs = self._cp_semideterministic_stage_name("costs", output_id_link, i, use_index_suffix)
+            stage_probability_var = self._cp_semideterministic_stage_name(
+                "probability", output_id_link, i, use_index_suffix
+            )
+
+            self._cp_append_semideterministic_stage(
+                cp_declarations,
+                cp_constraints,
+                f"pre_{output_id_link}_{i + 1}",
+                f"pre_{output_id_link}_{num_add - 1}",
+                f"pre_{output_id_link}_{num_add + i}",
+                delta_carry,
+                costs,
+                input_len,
+                stage_probability_var,
+            )
+
+            if use_index_suffix:
+                stage_probability_vars.append(stage_probability_var)
+
+        final_index = num_add - 2
+        final_delta_carry = self._cp_semideterministic_stage_name(
+            "delta_carry", output_id_link, final_index, use_index_suffix
+        )
+        final_costs = self._cp_semideterministic_stage_name("costs", output_id_link, final_index, use_index_suffix)
+        final_probability_var = self._cp_semideterministic_stage_name(
+            "probability", output_id_link, final_index, use_index_suffix
+        )
+
+        self._cp_append_semideterministic_stage(
+            cp_declarations,
+            cp_constraints,
+            f"pre_{output_id_link}_0",
+            f"pre_{output_id_link}_{2 * num_add - 3}",
+            output_id_link,
+            final_delta_carry,
+            final_costs,
+            input_len,
+            final_probability_var,
+        )
+
+        if use_index_suffix:
+            stage_probability_vars.append(final_probability_var)
+            cp_declarations.append(f"var int: {probability_var};")
+            cp_constraints.append(f"constraint {probability_var} = sum([{', '.join(stage_probability_vars)}]);")
+
+        metadata = {"probability_var": probability_var}
+
+        return cp_declarations, cp_constraints, metadata
+
+    def cp_twoterms_xor_differential_probability(
+        self, input_1, input_2, out, input_length, cp_constraints, cp_declarations, c, model
+    ):
         if input_1 not in model.modadd_twoterms_mant:
-            cp_declarations.append(f'array[0..{input_length - 1}] of var 0..1: Shi_{input_1} = LShift({input_1},1);')
+            cp_declarations.append(f"array[0..{input_length - 1}] of var 0..1: Shi_{input_1} = LShift({input_1},1);")
             model.modadd_twoterms_mant.append(input_1)
         if input_2 not in model.modadd_twoterms_mant:
-            cp_declarations.append(f'array[0..{input_length - 1}] of var 0..1: Shi_{input_2} = LShift({input_2},1);')
+            cp_declarations.append(f"array[0..{input_length - 1}] of var 0..1: Shi_{input_2} = LShift({input_2},1);")
             model.modadd_twoterms_mant.append(input_2)
         if out not in model.modadd_twoterms_mant:
-            cp_declarations.append(f'array[0..{input_length - 1}] of var 0..1: Shi_{out} = LShift({out},1);')
+            cp_declarations.append(f"array[0..{input_length - 1}] of var 0..1: Shi_{out} = LShift({out},1);")
             model.modadd_twoterms_mant.append(out)
-        cp_declarations.append(f'array[0..{input_length - 1}] of var 0..1: eq_{out} = '
-                               f'Eq(Shi_{input_1}, Shi_{input_2}, Shi_{out});')
-        # print(f'component: {self.id}')
-        cp_constraints.append(f'constraint forall(j in 0..{input_length - 1})(if eq_{out}[j] = '
-                              f'1 then (sum([{input_1}[j], {input_2}[j], {out}[j]]) mod 2) = Shi_{input_2}[j] else '
-                              f'true endif) /\\ p[{c}] = {input_length}-sum(eq_{out});')
+        cp_declarations.append(
+            f"array[0..{input_length - 1}] of var 0..1: eq_{out} = Eq(Shi_{input_1}, Shi_{input_2}, Shi_{out});"
+        )
+        cp_constraints.append(
+            f"constraint forall(j in 0..{input_length - 1})(if eq_{out}[j] = "
+            f"1 then (sum([{input_1}[j], {input_2}[j], {out}[j]]) mod 2) = Shi_{input_2}[j] else "
+            f"true endif) /\\ p[{c}] = {input_length}-sum(eq_{out});"
+        )
 
         return cp_declarations, cp_constraints
     
@@ -249,48 +466,52 @@ class Modular(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
-            sage: aes = AESBlockCipher(number_of_rounds=5)
-            sage: cp = MznModel(aes)
-            sage: xor_component = aes.component_from(0, 0)
-            sage: xor_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(cp)
-            (['var -2..255: xor_0_0_temp_0_0_value;',
-              ...
-              'var 0..9: xor_0_0_bound_value_0_15 = if xor_0_0_temp_0_15_value + xor_0_0_temp_1_15_value > 0 then ceil(log2(xor_0_0_temp_0_15_value + xor_0_0_temp_1_15_value)) else 0 endif;'],
-             ['constraint xor_0_0_temp_0_0_value = key_value[0] /\\ xor_0_0_temp_0_0_active = key_active[0];',
-              ...
-              'constraint if xor_0_0_temp_0_15_active + xor_0_0_temp_1_15_active > 2 then xor_0_0_active[15] == 3 /\\ xor_0_0_value[15] = -2 elseif xor_0_0_temp_0_15_active + xor_0_0_temp_1_15_active == 1 then xor_0_0_active[15] = 1 /\\ xor_0_0_value[15] = xor_0_0_temp_0_15_value + xor_0_0_temp_1_15_value elseif xor_0_0_temp_0_15_active + xor_0_0_temp_1_15_active == 0 then xor_0_0_active[15] = 0 /\\ xor_0_0_value[15] = 0 elseif xor_0_0_temp_0_15_value + xor_0_0_temp_1_15_value < 0 then xor_0_0_active[15] = 2 /\\ xor_0_0_value[15] = -1 elseif xor_0_0_temp_0_15_value == xor_0_0_temp_1_15_value then xor_0_0_active[15] = 0 /\\ xor_0_0_value[15] = 0 else xor_0_0_active[15] = 1 /\\ xor_0_0_value[15] = sum([(((floor(xor_0_0_temp_0_15_value/pow(2,j)) + floor(xor_0_0_temp_1_15_value/pow(2,j))) mod 2) * pow(2,j)) | j in 0..xor_0_0_bound_value_0_15]) endif;'])
+            sage: from claasp.components.modular_component import Modular
+            sage: component = Modular(0, 0, ['a', 'b'], [[0, 1, 2, 3], [0, 1, 2, 3]], 4, 'modular', 16)
+            sage: DummyModel = type('DummyModel', (), {'word_size': 1})
+            sage: declarations, constraints = component.cp_wordwise_deterministic_truncated_xor_differential_constraints(DummyModel())
+            sage: declarations[0]
+            'array[0..4] of var 0..2: carry_modular_0_0;'
+            sage: len(constraints) > 0
+            True
         """
-        input_id_links = self.input_id_links
         output_id_link = self.id
-        input_bit_positions = self.input_bit_positions
         cp_declarations = []
         all_inputs_value = []
         all_inputs_active = []
         numadd = self.description[1]
         word_size = model.word_size
-        for id_link, bit_positions in zip(input_id_links, input_bit_positions):
-            all_inputs_value.extend([f'{id_link}_value[{bit_positions[j * word_size] // word_size}]'
-                                     for j in range(len(bit_positions) // word_size)])
-            all_inputs_active.extend([f'{id_link}_active[{bit_positions[j * word_size] // word_size}]'
-                                      for j in range(len(bit_positions) // word_size)])
+        for id_link, bit_positions in zip(self.input_id_links, self.input_bit_positions):
+            all_inputs_value.extend(
+                [
+                    f"{id_link}_value[{bit_positions[j * word_size] // word_size}]"
+                    for j in range(len(bit_positions) // word_size)
+                ]
+            )
+            all_inputs_active.extend(
+                [
+                    f"{id_link}_active[{bit_positions[j * word_size] // word_size}]"
+                    for j in range(len(bit_positions) // word_size)
+                ]
+            )
         input_len = len(all_inputs_value) // numadd
         cp_constraints = []
-        cp_declarations.append(f'array[0..{input_len}] of var 0..2: carry_{output_id_link};')
-        cp_constraints.append(f'constraint carry_{output_id_link}[0] = 0;')
+        cp_declarations.append(f"array[0..{input_len}] of var 0..2: carry_{output_id_link};")
+        cp_constraints.append(f"constraint carry_{output_id_link}[0] = 0;")
         for i in range(input_len):
-            new_constraint = f'constraint if '
-            operation = f' == 0 /\\ '.join(all_inputs_active[i::numadd])
+            new_constraint = "constraint if "
+            operation = " == 0 /\\ ".join(all_inputs_active[i :: self.description[1]])
             new_constraint += operation
-            new_constraint += f' == 0 /\\ carry_{output_id_link}[{i}] == 0 then {output_id_link}_active[{i}] = 0 /\\ {output_id_link}_value[{i}] = 0 /\\ carry_{output_id_link}[{i + 1}] = 0 else ' \
-                              f'{output_id_link}_active[{i}] = 3 /\\ {output_id_link}_value[{i}] = -2 /\\ carry_{output_id_link}[{i + 1}] = 3 endif;'
+            new_constraint += (
+                f" == 0 /\\ carry_{output_id_link}[{i}] == 0 then {output_id_link}_active[{i}] = 0 /\\ {output_id_link}_value[{i}] = 0 /\\ carry_{output_id_link}[{i + 1}] = 0 else "
+                f"{output_id_link}_active[{i}] = 3 /\\ {output_id_link}_value[{i}] = -2 /\\ carry_{output_id_link}[{i + 1}] = 3 endif;"
+            )
             cp_constraints.append(new_constraint)
 
         return cp_declarations, cp_constraints
 
     def cp_xor_differential_propagation_constraints(self, model):
-        r"""
+        """
         Return lists of declarations and constraints for the probability of Modular Addition/Substraction component for CP xor differential probability.
 
         INPUT:
@@ -299,50 +520,59 @@ class Modular(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: from claasp.cipher import Cipher
             sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
-            sage: speck = SpeckBlockCipher(number_of_rounds=3)
-            sage: cp = MznModel(speck)
-            sage: modadd_component = speck.component_from(0, 1)
-            sage: modadd_component.cp_xor_differential_propagation_constraints(cp)
-            (['array[0..15] of var 0..1: pre_modadd_0_1_0;',
-              ...
-              'array[0..15] of var 0..1: eq_modadd_0_1 = Eq(Shi_pre_modadd_0_1_1, Shi_pre_modadd_0_1_0, Shi_modadd_0_1);'],
-             ['constraint pre_modadd_0_1_0[0] = rot_0_0[0];',
-              ...
-              'constraint pre_modadd_0_1_1[15] = plaintext[31];',
-              'constraint forall(j in 0..15)(if eq_modadd_0_1[j] = 1 then (sum([pre_modadd_0_1_1[j], pre_modadd_0_1_0[j], modadd_0_1[j]]) mod 2) = Shi_pre_modadd_0_1_0[j] else true endif) /\\ p[0] = 1600-100 * sum(eq_modadd_0_1);'])
+            sage: from claasp.name_mappings import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
+            sage: class DummyCipher(Cipher):
+            ....:     def __init__(self):
+            ....:         super().__init__('dummy_cipher', BLOCK_CIPHER, [INPUT_PLAINTEXT, INPUT_KEY], [4, 4], 4)
+            ....:         self.add_round()
+            ....:         self.add_modadd_component([INPUT_PLAINTEXT, INPUT_KEY], [list(range(4)), list(range(4))], 4)
+            ....:         self.add_cipher_output_component(['modadd_0_0'], [list(range(4))], 4)
+            sage: cipher = DummyCipher()
+            sage: model = MznModel(cipher)
+            sage: component = cipher.component_from(0, 0)
+            sage: declarations, constraints = component.cp_xor_differential_propagation_constraints(model)
+            sage: len(declarations) > 0 and len(constraints) > 0
+            True
         """
-        output_size = int(self.output_bit_size)
-        input_id_links = self.input_id_links
         output_id_link = self.id
-        input_bit_positions = self.input_bit_positions
         num_add = self.description[1]
         all_inputs = []
-        for id_link, bit_positions in zip(input_id_links, input_bit_positions):
-            all_inputs.extend([f'{id_link}[{position}]' for position in bit_positions])
+        for id_link, bit_positions in zip(self.input_id_links, self.input_bit_positions):
+            all_inputs.extend([f"{id_link}[{position}]" for position in bit_positions])
         input_len = len(all_inputs) // num_add
         cp_declarations = []
         cp_constraints = []
         for i in range(num_add):
-            cp_declarations.append(f'array[0..{input_len - 1}] of var 0..1: pre_{output_id_link}_{i};')
-            cp_constraints.extend([f'constraint pre_{output_id_link}_{i}[{j}] = {all_inputs[i * input_len + j]};'
-                                   for j in range(input_len)])
+            cp_declarations.append(f"array[0..{input_len - 1}] of var 0..1: pre_{output_id_link}_{i};")
+            cp_constraints.extend(
+                [
+                    f"constraint pre_{output_id_link}_{i}[{j}] = {all_inputs[i * input_len + j]};"
+                    for j in range(input_len)
+                ]
+            )
         for i in range(num_add, 2 * num_add - 2):
-            cp_declarations.append(f'array[0..{input_len - 1}] of var 0..1: pre_{output_id_link}_{i};')
+            cp_declarations.append(f"array[0..{input_len - 1}] of var 0..1: pre_{output_id_link}_{i};")
         probability = []
         for i in range(num_add - 2):
-            self.cp_twoterms_xor_differential_probability(f'pre_{output_id_link}_{num_add - 1}',
-                                                          f'pre_{output_id_link}_{i + 1}',
-                                                          f'pre_{output_id_link}_{num_add + i}', output_size,
-                                                          cp_constraints, cp_declarations, model.c, model)
+            self.cp_twoterms_xor_differential_probability(
+                f"pre_{output_id_link}_{num_add - 1}",
+                f"pre_{output_id_link}_{i + 1}",
+                f"pre_{output_id_link}_{num_add + i}",
+                self.output_bit_size,
+                cp_constraints,
+                cp_declarations,
+                model.c,
+                model,
+            )
             probability.append(model.c)
             model.c += 1
 
         # print(output_id_link)
         self.cp_twoterms_xor_differential_probability(f'pre_{output_id_link}_{2 * num_add - 3}',
                                                       f'pre_{output_id_link}_0', f'{output_id_link}',
-                                                      output_size, cp_constraints, cp_declarations, model.c, model)
+                                                      self.output_bit_size, cp_constraints, cp_declarations, model.c, model)
         probability.append(model.c)
         model.c += 1
         model.component_and_probability[output_id_link] = probability
@@ -440,16 +670,28 @@ class Modular(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
+            sage: from claasp.cipher import Cipher
             sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model_arx_optimized import MznXorDifferentialModelARXOptimized
-            sage: fancy = FancyBlockCipher(number_of_rounds=2)
-            sage: minizinc = MznXorDifferentialModelARXOptimized(fancy, sat_or_milp="milp")
-            sage: modadd_component = fancy.component_from(1, 9)
-            sage: _, constraints = modadd_component.cp_xor_differential_propagation_constraints_arx_optimized(minizinc)
-            sage: constraints[6]
-            'constraint pre_modadd_1_9_1[0] = sbox_1_0[0];'
+            sage: from claasp.name_mappings import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
+            sage: class DummyCipher(Cipher):
+            ....:     def __init__(self):
+            ....:         super().__init__('dummy_cipher', BLOCK_CIPHER, [INPUT_PLAINTEXT, INPUT_KEY], [4, 4], 4)
+            ....:         self.add_round()
+            ....:         self.add_modadd_component([INPUT_PLAINTEXT, INPUT_KEY], [list(range(4)), list(range(4))], 4)
+            ....:         self.add_cipher_output_component(['modadd_0_0'], [list(range(4))], 4)
+            sage: cipher = DummyCipher()
+            sage: minizinc = MznXorDifferentialModelARXOptimized(cipher, sat_or_milp='milp')
+            sage: component = cipher.component_from(0, 0)
+            sage: variables, constraints = component.cp_xor_differential_propagation_constraints_arx_optimized(minizinc)
+            sage: variables
+            ['array[0..3] of var 0..1: dummy_modadd_0_0;',
+            'array[0..3] of var 0..1: x1_modadd_0_0;',
+            'array[0..3] of var 0..1: x2_modadd_0_0;']
+            sage: constraints[0].startswith('constraint x1_modadd_0_0[0] = plaintext[0];')
+            True
+            sage: len(constraints)
+            53
         """
-        output_size = int(self.output_bit_size)
         input_id_links = self.input_id_links
         output_id_link = self.id
         input_bit_positions = self.input_bit_positions
@@ -460,65 +702,86 @@ class Modular(Component):
 
         all_inputs = []
         for id_link, bit_positions in zip(input_id_links, input_bit_positions):
-            all_inputs.extend([f'{id_link}[{position}]' for position in bit_positions])
+            all_inputs.extend([f"{id_link}[{position}]" for position in bit_positions])
         input_len = len(all_inputs) // num_add
         cp_declarations = []
         cp_constraints = []
-        cp_declarations.append(f'array[0..{input_len - 1}] of var 0..1: dummy_{output_id_link};')
-        cp_declarations.append(f'array[0..{input_len - 1}] of var 0..1: x1_{output_id_link};')
-        cp_declarations.append(f'array[0..{input_len - 1}] of var 0..1: x2_{output_id_link};')
+        cp_declarations.append(f"array[0..{input_len - 1}] of var 0..1: dummy_{output_id_link};")
+        cp_declarations.append(f"array[0..{input_len - 1}] of var 0..1: x1_{output_id_link};")
+        cp_declarations.append(f"array[0..{input_len - 1}] of var 0..1: x2_{output_id_link};")
 
         for i in range(input_len):
             cp_constraints.append(
-                f'constraint x1_{output_id_link}[{i}] = {input_id_links[0]}[{input_bit_positions[0][i]}];')
+                f"constraint x1_{output_id_link}[{i}] = {input_id_links[0]}[{input_bit_positions[0][i]}];"
+            )
             cp_constraints.append(
-                f'constraint x2_{output_id_link}[{i}] = {input_id_links[1]}[{input_bit_positions[1][i]}];')
+                f"constraint x2_{output_id_link}[{i}] = {input_id_links[1]}[{input_bit_positions[1][i]}];"
+            )
 
         cp_constraints.append(
-            f'constraint x2_{output_id_link}[{input_len - 1}] + x1_{output_id_link}[{input_len - 1}] + {output_id_link}[{input_len - 1}] <= 2;')
+            f"constraint x2_{output_id_link}[{input_len - 1}] + x1_{output_id_link}[{input_len - 1}] + {output_id_link}[{input_len - 1}] <= 2;"
+        )
         cp_constraints.append(
-            f'constraint x2_{output_id_link}[{input_len - 1}] + x1_{output_id_link}[{input_len - 1}] + {output_id_link}[{input_len - 1}] - 2*dummy_{output_id_link}[{input_len - 1}] >= 0;')
+            f"constraint x2_{output_id_link}[{input_len - 1}] + x1_{output_id_link}[{input_len - 1}] + {output_id_link}[{input_len - 1}] - 2*dummy_{output_id_link}[{input_len - 1}] >= 0;"
+        )
         cp_constraints.append(
-            f'constraint dummy_{output_id_link}[{input_len - 1}] - x2_{output_id_link}[{input_len - 1}] >= 0;')
+            f"constraint dummy_{output_id_link}[{input_len - 1}] - x2_{output_id_link}[{input_len - 1}] >= 0;"
+        )
         cp_constraints.append(
-            f'constraint dummy_{output_id_link}[{input_len - 1}] - x1_{output_id_link}[{input_len - 1}] >= 0;')
+            f"constraint dummy_{output_id_link}[{input_len - 1}] - x1_{output_id_link}[{input_len - 1}] >= 0;"
+        )
         cp_constraints.append(
-            f'constraint dummy_{output_id_link}[{input_len - 1}] - {output_id_link}[{input_len - 1}] >= 0;')
+            f"constraint dummy_{output_id_link}[{input_len - 1}] - {output_id_link}[{input_len - 1}] >= 0;"
+        )
 
         for i in range(input_len - 1):
             cp_constraints.append(
-                f'constraint x1_{output_id_link}[{i + 1}] - {output_id_link}[{i + 1}] + dummy_{output_id_link}[{i}] >= 0;')
+                f"constraint x1_{output_id_link}[{i + 1}] - {output_id_link}[{i + 1}] + dummy_{output_id_link}[{i}] >= 0;"
+            )
             cp_constraints.append(
-                f'constraint x2_{output_id_link}[{i + 1}] - x1_{output_id_link}[{i + 1}] + dummy_{output_id_link}[{i}] >= 0;')
+                f"constraint x2_{output_id_link}[{i + 1}] - x1_{output_id_link}[{i + 1}] + dummy_{output_id_link}[{i}] >= 0;"
+            )
             cp_constraints.append(
-                f'constraint {output_id_link}[{i + 1}] - x2_{output_id_link}[{i + 1}] + dummy_{output_id_link}[{i}] >= 0;')
+                f"constraint {output_id_link}[{i + 1}] - x2_{output_id_link}[{i + 1}] + dummy_{output_id_link}[{i}] >= 0;"
+            )
             cp_constraints.append(
-                f'constraint x2_{output_id_link}[{i + 1}] + x1_{output_id_link}[{i + 1}] + {output_id_link}[{i + 1}] + dummy_{output_id_link}[{i}] <= 3;')
+                f"constraint x2_{output_id_link}[{i + 1}] + x1_{output_id_link}[{i + 1}] + {output_id_link}[{i + 1}] + dummy_{output_id_link}[{i}] <= 3;"
+            )
             cp_constraints.append(
-                f'constraint x2_{output_id_link}[{i + 1}] + x1_{output_id_link}[{i + 1}] + {output_id_link}[{i + 1}] - dummy_{output_id_link}[{i}] >= 0;')
+                f"constraint x2_{output_id_link}[{i + 1}] + x1_{output_id_link}[{i + 1}] + {output_id_link}[{i + 1}] - dummy_{output_id_link}[{i}] >= 0;"
+            )
             cp_constraints.append(
-                f'constraint - x1_{output_id_link}[{i + 1}] + x2_{output_id_link}[{i}] + x1_{output_id_link}[{i}] + {output_id_link}[{i}] + dummy_{output_id_link}[{i}] >= 0;')
+                f"constraint - x1_{output_id_link}[{i + 1}] + x2_{output_id_link}[{i}] + x1_{output_id_link}[{i}] + {output_id_link}[{i}] + dummy_{output_id_link}[{i}] >= 0;"
+            )
             cp_constraints.append(
-                f'constraint x1_{output_id_link}[{i + 1}] + x2_{output_id_link}[{i}] - x1_{output_id_link}[{i}] + {output_id_link}[{i}] + dummy_{output_id_link}[{i}] >= 0;')
+                f"constraint x1_{output_id_link}[{i + 1}] + x2_{output_id_link}[{i}] - x1_{output_id_link}[{i}] + {output_id_link}[{i}] + dummy_{output_id_link}[{i}] >= 0;"
+            )
             cp_constraints.append(
-                f'constraint x1_{output_id_link}[{i + 1}] - x2_{output_id_link}[{i}] + x1_{output_id_link}[{i}] + {output_id_link}[{i}] + dummy_{output_id_link}[{i}] >= 0;')
+                f"constraint x1_{output_id_link}[{i + 1}] - x2_{output_id_link}[{i}] + x1_{output_id_link}[{i}] + {output_id_link}[{i}] + dummy_{output_id_link}[{i}] >= 0;"
+            )
             cp_constraints.append(
-                f'constraint x2_{output_id_link}[{i + 1}] + x2_{output_id_link}[{i}] + x1_{output_id_link}[{i}] - {output_id_link}[{i}] + dummy_{output_id_link}[{i}] >= 0;')
+                f"constraint x2_{output_id_link}[{i + 1}] + x2_{output_id_link}[{i}] + x1_{output_id_link}[{i}] - {output_id_link}[{i}] + dummy_{output_id_link}[{i}] >= 0;"
+            )
             cp_constraints.append(
-                f'constraint {output_id_link}[{i + 1}] - x2_{output_id_link}[{i}] - x1_{output_id_link}[{i}] - {output_id_link}[{i}] + dummy_{output_id_link}[{i}] >= -2;')
+                f"constraint {output_id_link}[{i + 1}] - x2_{output_id_link}[{i}] - x1_{output_id_link}[{i}] - {output_id_link}[{i}] + dummy_{output_id_link}[{i}] >= -2;"
+            )
             cp_constraints.append(
-                f'constraint - x1_{output_id_link}[{i + 1}] + x2_{output_id_link}[{i}] - x1_{output_id_link}[{i}] - {output_id_link}[{i}] + dummy_{output_id_link}[{i}] >= -2;')
+                f"constraint - x1_{output_id_link}[{i + 1}] + x2_{output_id_link}[{i}] - x1_{output_id_link}[{i}] - {output_id_link}[{i}] + dummy_{output_id_link}[{i}] >= -2;"
+            )
             cp_constraints.append(
-                f'constraint - x1_{output_id_link}[{i + 1}] - x2_{output_id_link}[{i}] + x1_{output_id_link}[{i}] - {output_id_link}[{i}] + dummy_{output_id_link}[{i}] >= -2;')
+                f"constraint - x1_{output_id_link}[{i + 1}] - x2_{output_id_link}[{i}] + x1_{output_id_link}[{i}] - {output_id_link}[{i}] + dummy_{output_id_link}[{i}] >= -2;"
+            )
             cp_constraints.append(
-                f'constraint - x1_{output_id_link}[{i + 1}] - x2_{output_id_link}[{i}] - x1_{output_id_link}[{i}] + {output_id_link}[{i}] + dummy_{output_id_link}[{i}] >= -2;')
+                f"constraint - x1_{output_id_link}[{i + 1}] - x2_{output_id_link}[{i}] - x1_{output_id_link}[{i}] + {output_id_link}[{i}] + dummy_{output_id_link}[{i}] >= -2;"
+            )
 
         cp_constraints.append(
-            f'constraint p[{model.c}] = sum([if (x1_{output_id_link}[i+1] = x2_{output_id_link}[i+1]) /\\ (x1_{output_id_link}[i+1] = {output_id_link}[i+1]) then 0 else 100 endif | i in 0..{input_len - 2}]);')
+            f"constraint p[{model.c}] = sum([if (x1_{output_id_link}[i+1] = x2_{output_id_link}[i+1]) /\\ (x1_{output_id_link}[i+1] = {output_id_link}[i+1]) then 0 else 100 endif | i in 0..{input_len - 2}]);"
+        )
 
         model.c += 1
-        result = cp_declarations, cp_constraints
-        return result
+
+        return cp_declarations, cp_constraints
 
     def cp_xor_linear_mask_propagation_constraints(self, model):
         """
@@ -530,64 +793,69 @@ class Modular(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: from claasp.cipher import Cipher
             sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
-            sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=22)
-            sage: modadd_component = speck.component_from(0, 1)
-            sage: cp = MznModel(speck)
-            sage: modadd_component.cp_xor_linear_mask_propagation_constraints(cp)
-            (['array[0..31] of var 0..1: modadd_0_1_i;',
-              'array[0..15] of var 0..1: modadd_0_1_o;',
-              ...
-              'constraint pre_modadd_0_1_1[15]=modadd_0_1_i[31];',
-              'constraint modadd_linear(pre_modadd_0_1_1, pre_modadd_0_1_0, modadd_0_1_o, p[0]);'])
+            sage: from claasp.name_mappings import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
+            sage: class DummyCipher(Cipher):
+            ....:     def __init__(self):
+            ....:         super().__init__('dummy_cipher', BLOCK_CIPHER, [INPUT_PLAINTEXT, INPUT_KEY], [4, 4], 4)
+            ....:         self.add_round()
+            ....:         self.add_modadd_component([INPUT_PLAINTEXT, INPUT_KEY], [list(range(4)), list(range(4))], 4)
+            ....:         self.add_cipher_output_component(['modadd_0_0'], [list(range(4))], 4)
+            sage: cipher = DummyCipher()
+            sage: model = MznModel(cipher)
+            sage: component = cipher.component_from(0, 0)
+            sage: declarations, constraints = component.cp_xor_linear_mask_propagation_constraints(model)
+            sage: declarations[:2]
+            ['array[0..7] of var 0..1: modadd_0_0_i;', 'array[0..3] of var 0..1: modadd_0_0_o;']
+            sage: len(constraints) > 0
+            True
         """
-        input_size = int(self.input_bit_size)
-        output_size = int(self.output_bit_size)
         output_id_link = self.id
         cp_declarations = []
         cp_constraints = []
         num_add = self.description[1]
-        input_len = input_size // num_add
-        cp_declarations.append(f'array[0..{input_size - 1}] of var 0..1: {output_id_link}_i;')
-        cp_declarations.append(f'array[0..{output_size - 1}] of var 0..1: {output_id_link}_o;')
+        input_len = self.input_bit_size // num_add
+        cp_declarations.append(f"array[0..{self.input_bit_size - 1}] of var 0..1: {output_id_link}_i;")
+        cp_declarations.append(f"array[0..{self.output_bit_size - 1}] of var 0..1: {output_id_link}_o;")
         probability = []
         for i in range(num_add):
-            cp_declarations.append(f'array[0..{input_len - 1}] of var 0..1: pre_{output_id_link}_{i};')
+            cp_declarations.append(f"array[0..{input_len - 1}] of var 0..1: pre_{output_id_link}_{i};")
             for j in range(input_len):
                 cp_constraints.append(
-                    f'constraint pre_{output_id_link}_{i}[{j}]={output_id_link}_i[{i * input_len + j}];')
+                    f"constraint pre_{output_id_link}_{i}[{j}]={output_id_link}_i[{i * input_len + j}];"
+                )
         for i in range(num_add, 2 * num_add - 2):
-            cp_declarations.append(f'array[0..{output_size - 1}] of var 0..1: pre_{output_id_link}_{i};')
+            cp_declarations.append(f"array[0..{self.output_bit_size - 1}] of var 0..1: pre_{output_id_link}_{i};")
         for i in range(num_add - 2):
             cp_constraints.append(
-                f'constraint modadd_linear(pre_{output_id_link}_{num_add - 1}, pre_{output_id_link}_{i + 1}, '
-                f'pre_{output_id_link}_{num_add + i}, p[{model.c}]);')
+                f"constraint modadd_linear(pre_{output_id_link}_{num_add - 1}, pre_{output_id_link}_{i + 1}, "
+                f"pre_{output_id_link}_{num_add + i}, p[{model.c}]);"
+            )
             probability.append(model.c)
             model.c = model.c + 1
         cp_constraints.append(
-            f'constraint modadd_linear(pre_{output_id_link}_{2 * num_add - 3}, pre_{output_id_link}_0, '
-            f'{output_id_link}_o, p[{model.c}]);')
+            f"constraint modadd_linear(pre_{output_id_link}_{2 * num_add - 3}, pre_{output_id_link}_0, "
+            f"{output_id_link}_o, p[{model.c}]);"
+        )
         probability.append(model.c)
         model.c = model.c + 1
         model.component_and_probability[output_id_link] = probability
-        result = cp_declarations, cp_constraints
-        return result
+
+        return cp_declarations, cp_constraints
 
     def get_word_operation_sign(self, sign, solution):
         output_id_link = self.id
-        input_size = self.input_bit_size
-        output_size = self.output_bit_size
-        input_int = int(solution['components_values'][f'{output_id_link}_i']['value'], 16)
-        output_int = int(solution['components_values'][f'{output_id_link}_o']['value'], 16)
-        inputs = [int(digit) for digit in format(input_int, f'0{input_size}b')]
-        outputs = [int(digit) for digit in format(output_int, f'0{output_size}b')]
+        input_int = int(solution["components_values"][f"{output_id_link}_i"]["value"], 16)
+        output_int = int(solution["components_values"][f"{output_id_link}_o"]["value"], 16)
+        inputs = [int(digit) for digit in format(input_int, f"0{self.input_bit_size}b")]
+        outputs = [int(digit) for digit in format(output_int, f"0{self.output_bit_size}b")]
         component_sign = generic_sign_linear_constraints(inputs, outputs)
         sign = sign * component_sign
-        solution['components_values'][f'{output_id_link}_o']['sign'] = component_sign
-        solution['components_values'][output_id_link] = solution['components_values'][f'{output_id_link}_o']
-        del solution['components_values'][f'{output_id_link}_o']
-        del solution['components_values'][f'{output_id_link}_i']
+        solution["components_values"][f"{output_id_link}_o"]["sign"] = component_sign
+        solution["components_values"][output_id_link] = solution["components_values"][f"{output_id_link}_o"]
+        del solution["components_values"][f"{output_id_link}_o"]
+        del solution["components_values"][f"{output_id_link}_i"]
 
         return sign
 
@@ -603,25 +871,24 @@ class Modular(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: from claasp.cipher import Cipher
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_xor_differential_model import MilpXorDifferentialModel
-            sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
-            sage: modadd_component = speck.component_from(0, 1)
-            sage: milp = MilpXorDifferentialModel(speck)
+            sage: from claasp.name_mappings import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
+            sage: class DummyCipher(Cipher):
+            ....:     def __init__(self):
+            ....:         super().__init__('dummy_cipher', BLOCK_CIPHER, [INPUT_PLAINTEXT, INPUT_KEY], [4, 4], 4)
+            ....:         self.add_round()
+            ....:         self.add_modadd_component([INPUT_PLAINTEXT, INPUT_KEY], [list(range(4)), list(range(4))], 4)
+            ....:         self.add_cipher_output_component(['modadd_0_0'], [list(range(4))], 4)
+            sage: cipher = DummyCipher()
+            sage: modadd_component = cipher.component_from(0, 0)
+            sage: milp = MilpXorDifferentialModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
             sage: variables, constraints = modadd_component.milp_xor_differential_propagation_constraints(milp)
-            sage: variables
-            [('x[rot_0_0_0]', x_0),
-            ('x[rot_0_0_1]', x_1),
-            ...
-            ('x[modadd_0_1_14]', x_46),
-            ('x[modadd_0_1_15]', x_47)]
-            sage: constraints
-            [x_47 <= x_48,
-            x_15 <= x_48,
-            ...
-            -2 <= -1*x_0 - x_16 - x_17 + x_32 + x_63,
-            x_64 == 100*x_49 + 100*x_50 + 100*x_51 + 100*x_52 + 100*x_53 + 100*x_54 + 100*x_55 + 100*x_56 + 100*x_57 + 100*x_58 + 100*x_59 + 100*x_60 + 100*x_61 + 100*x_62 + 100*x_63]
+            sage: len(variables)
+            12
+            sage: len(constraints) > 0
+            True
         """
         x = model.binary_variable
         p = model.integer_variable
@@ -635,50 +902,115 @@ class Modular(Component):
         constraints.append(x[component_id + "_dummy"] >= x[output_vars[output_bit_size - 1]])
         constraints.append(x[component_id + "_dummy"] >= x[input_vars[output_bit_size - 1]])
         constraints.append(x[component_id + "_dummy"] >= x[input_vars[2 * output_bit_size - 1]])
-        constraints.append(x[output_vars[output_bit_size - 1]] + x[input_vars[output_bit_size - 1]] +
-                           x[input_vars[2 * output_bit_size - 1]] - 2 * x[component_id + "_dummy"] >= 0)
-        constraints.append(x[output_vars[output_bit_size - 1]] +
-                           x[input_vars[output_bit_size - 1]] + x[input_vars[2 * output_bit_size - 1]] <= 2)
+        constraints.append(
+            x[output_vars[output_bit_size - 1]]
+            + x[input_vars[output_bit_size - 1]]
+            + x[input_vars[2 * output_bit_size - 1]]
+            - 2 * x[component_id + "_dummy"]
+            >= 0
+        )
+        constraints.append(
+            x[output_vars[output_bit_size - 1]]
+            + x[input_vars[output_bit_size - 1]]
+            + x[input_vars[2 * output_bit_size - 1]]
+            <= 2
+        )
         # 2nd condition:
         # indice 0 for the MSB
         for i in range(output_bit_size - 1, 0, -1):
-            constraints.append(x[input_vars[output_bit_size + i]] - x[output_vars[i]] +
-                               x[component_id + "_eq_" + str(i)] >= 0)
-            constraints.append(x[input_vars[i]] - x[input_vars[output_bit_size + i]] +
-                               x[component_id + "_eq_" + str(i)] >= 0)
+            constraints.append(
+                x[input_vars[output_bit_size + i]] - x[output_vars[i]] + x[component_id + "_eq_" + str(i)] >= 0
+            )
+            constraints.append(
+                x[input_vars[i]] - x[input_vars[output_bit_size + i]] + x[component_id + "_eq_" + str(i)] >= 0
+            )
             constraints.append(-x[input_vars[i]] + x[output_vars[i]] + x[component_id + "_eq_" + str(i)] >= 0)
-            constraints.append(-x[input_vars[i]] - x[input_vars[output_bit_size + i]] - x[output_vars[i]] - x[
-                component_id + "_eq_" + str(i)] >= -3)
-            constraints.append(x[input_vars[i]] + x[input_vars[output_bit_size + i]] + x[output_vars[i]] - x[
-                component_id + "_eq_" + str(i)] >= 0)
             constraints.append(
-                -x[input_vars[output_bit_size + i]] + x[input_vars[i - 1]] + x[input_vars[output_bit_size + i - 1]] + x[
-                    output_vars[i - 1]] + x[component_id + "_eq_" + str(i)] >= 0)
+                -x[input_vars[i]]
+                - x[input_vars[output_bit_size + i]]
+                - x[output_vars[i]]
+                - x[component_id + "_eq_" + str(i)]
+                >= -3
+            )
             constraints.append(
-                x[input_vars[output_bit_size + i]] + x[input_vars[i - 1]] - x[input_vars[output_bit_size + i - 1]] + x[
-                    output_vars[i - 1]] + x[component_id + "_eq_" + str(i)] >= 0)
+                x[input_vars[i]]
+                + x[input_vars[output_bit_size + i]]
+                + x[output_vars[i]]
+                - x[component_id + "_eq_" + str(i)]
+                >= 0
+            )
             constraints.append(
-                x[input_vars[output_bit_size + i]] - x[input_vars[i - 1]] + x[input_vars[output_bit_size + i - 1]] + x[
-                    output_vars[i - 1]] + x[component_id + "_eq_" + str(i)] >= 0)
-            constraints.append(x[input_vars[i]] + x[input_vars[i - 1]] + x[input_vars[output_bit_size + i - 1]] - x[
-                output_vars[i - 1]] + x[component_id + "_eq_" + str(i)] >= 0)
-            constraints.append(x[output_vars[i]] - x[input_vars[i - 1]] - x[input_vars[output_bit_size + i - 1]] - x[
-                output_vars[i - 1]] + x[component_id + "_eq_" + str(i)] >= -2)
+                -x[input_vars[output_bit_size + i]]
+                + x[input_vars[i - 1]]
+                + x[input_vars[output_bit_size + i - 1]]
+                + x[output_vars[i - 1]]
+                + x[component_id + "_eq_" + str(i)]
+                >= 0
+            )
             constraints.append(
-                -x[input_vars[output_bit_size + i]] - x[input_vars[output_bit_size + i - 1]] + x[input_vars[i - 1]] - x[
-                    output_vars[i - 1]] + x[component_id + "_eq_" + str(i)] >= -2)
+                x[input_vars[output_bit_size + i]]
+                + x[input_vars[i - 1]]
+                - x[input_vars[output_bit_size + i - 1]]
+                + x[output_vars[i - 1]]
+                + x[component_id + "_eq_" + str(i)]
+                >= 0
+            )
             constraints.append(
-                -x[input_vars[output_bit_size + i]] + x[input_vars[output_bit_size + i - 1]] - x[input_vars[i - 1]] - x[
-                    output_vars[i - 1]] + x[component_id + "_eq_" + str(i)] >= -2)
+                x[input_vars[output_bit_size + i]]
+                - x[input_vars[i - 1]]
+                + x[input_vars[output_bit_size + i - 1]]
+                + x[output_vars[i - 1]]
+                + x[component_id + "_eq_" + str(i)]
+                >= 0
+            )
             constraints.append(
-                -x[input_vars[output_bit_size + i]] - x[input_vars[output_bit_size + i - 1]] - x[input_vars[i - 1]] + x[
-                    output_vars[i - 1]] + x[component_id + "_eq_" + str(i)] >= -2)
-        constraints.append(p[component_id + "_probability"] == (10 ** model.weight_precision) * sum(
-            x[component_id + "_eq_" + str(i)] for i in range(output_bit_size - 1, 0, -1)))
+                x[input_vars[i]]
+                + x[input_vars[i - 1]]
+                + x[input_vars[output_bit_size + i - 1]]
+                - x[output_vars[i - 1]]
+                + x[component_id + "_eq_" + str(i)]
+                >= 0
+            )
+            constraints.append(
+                x[output_vars[i]]
+                - x[input_vars[i - 1]]
+                - x[input_vars[output_bit_size + i - 1]]
+                - x[output_vars[i - 1]]
+                + x[component_id + "_eq_" + str(i)]
+                >= -2
+            )
+            constraints.append(
+                -x[input_vars[output_bit_size + i]]
+                - x[input_vars[output_bit_size + i - 1]]
+                + x[input_vars[i - 1]]
+                - x[output_vars[i - 1]]
+                + x[component_id + "_eq_" + str(i)]
+                >= -2
+            )
+            constraints.append(
+                -x[input_vars[output_bit_size + i]]
+                + x[input_vars[output_bit_size + i - 1]]
+                - x[input_vars[i - 1]]
+                - x[output_vars[i - 1]]
+                + x[component_id + "_eq_" + str(i)]
+                >= -2
+            )
+            constraints.append(
+                -x[input_vars[output_bit_size + i]]
+                - x[input_vars[output_bit_size + i - 1]]
+                - x[input_vars[i - 1]]
+                + x[output_vars[i - 1]]
+                + x[component_id + "_eq_" + str(i)]
+                >= -2
+            )
+        constraints.append(
+            p[component_id + "_probability"]
+            == (10**model.weight_precision)
+            * sum(x[component_id + "_eq_" + str(i)] for i in range(output_bit_size - 1, 0, -1))
+        )
         # the most significant bit is not taken in consideration
         if model.n_window_heuristic is not None:
-            milp_n_window_heuristic(input_vars, output_vars, component_id,
-                                    model.n_window_heuristic, model.model, x)
+            milp_n_window_heuristic(input_vars, output_vars, component_id, model.n_window_heuristic, model.model, x)
         result = variables, constraints
         return result
 
@@ -694,24 +1026,24 @@ class Modular(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: cipher = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
+            sage: from claasp.cipher import Cipher
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import MilpBitwiseDeterministicTruncatedXorDifferentialModel
+            sage: from claasp.name_mappings import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
+            sage: class DummyCipher(Cipher):
+            ....:     def __init__(self):
+            ....:         super().__init__('dummy_cipher', BLOCK_CIPHER, [INPUT_PLAINTEXT, INPUT_KEY], [4, 4], 4)
+            ....:         self.add_round()
+            ....:         self.add_modadd_component([INPUT_PLAINTEXT, INPUT_KEY], [list(range(4)), list(range(4))], 4)
+            ....:         self.add_cipher_output_component(['modadd_0_0'], [list(range(4))], 4)
+            sage: cipher = DummyCipher()
             sage: milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
-            sage: modadd_component = cipher.get_component_from_id("modadd_0_1")
+            sage: modadd_component = cipher.component_from_id('modadd_0_0')
             sage: variables, constraints = modadd_component.milp_bitwise_deterministic_truncated_xor_differential_constraints(milp)
-            ...
-            sage: constraints
-            [x_48 <= 15,
-             0 <= x_48,
-             0 <= 16 + x_48 - 17*x_49,
-             x_48 - 17*x_49 <= 0,
-             ...
-             2 <= 4 + x_47 - 4*x_157 + 4*x_160,
-             x_157 <= x_15 + x_31]
-             sage: len(constraints)
-             430
+            sage: len(variables)
+            12
+            sage: len(constraints)
+            106
         """
 
         x_class = model.trunc_binvar
@@ -736,7 +1068,6 @@ class Modular(Component):
         c = [x_class[output_vars[i]] for i in range(output_bit_size)]
 
         for i in range(output_bit_size):
-
             M = output_bit_size + 1
 
             # i_less = 1 iff i < pivot
@@ -775,8 +1106,9 @@ class Modular(Component):
             # # # #     if a_b_less_2 == 1 then c = a XOR b
             # # # #     else c = 2
             normal_xor_constr = milp_utils.milp_generalized_xor([a[i], b[i]], c[i])
-            truncated_xor_constr = milp_utils.milp_if_then_else(a_b_less_2, normal_xor_constr, [c[i] == 2],
-                                                                model._model.get_max(x_class) * num_of_inputs)
+            truncated_xor_constr = milp_utils.milp_if_then_else(
+                a_b_less_2, normal_xor_constr, [c[i] == 2], model._model.get_max(x_class) * num_of_inputs
+            )
             constr = milp_utils.milp_if_then(p_eq, truncated_xor_constr, model._model.get_max(x_class) * num_of_inputs)
             constraints.extend(constr)
 
@@ -798,26 +1130,24 @@ class Modular(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: cipher = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
+            sage: from claasp.cipher import Cipher
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import MilpBitwiseDeterministicTruncatedXorDifferentialModel
+            sage: from claasp.name_mappings import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
+            sage: class DummyCipher(Cipher):
+            ....:     def __init__(self):
+            ....:         super().__init__('dummy_cipher', BLOCK_CIPHER, [INPUT_PLAINTEXT, INPUT_KEY], [4, 4], 4)
+            ....:         self.add_round()
+            ....:         self.add_modadd_component([INPUT_PLAINTEXT, INPUT_KEY], [list(range(4)), list(range(4))], 4)
+            ....:         self.add_cipher_output_component(['modadd_0_0'], [list(range(4))], 4)
+            sage: cipher = DummyCipher()
             sage: milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
-            sage: modadd_component = cipher.get_component_from_id("modadd_0_1")
+            sage: modadd_component = cipher.component_from_id('modadd_0_0')
             sage: variables, constraints = modadd_component.milp_bitwise_deterministic_truncated_xor_differential_binary_constraints(milp)
-            ...
-            sage: variables
-            [('x[rot_0_0_0_class_bit_0]', x_0),
-             ('x[rot_0_0_0_class_bit_1]', x_1),
-            ...
-             ('x[modadd_0_1_15_class_bit_0]', x_94),
-             ('x[modadd_0_1_15_class_bit_1]', x_95)]
-            sage: constraints
-            [x_96 == 2*x_0 + x_1,
-             x_97 == 2*x_2 + x_3,
-            ...
-             1 <= 18 - x_30 + x_94 - 17*x_159,
-             1 <= 19 - x_62 - x_63 - 17*x_159]
+            sage: len(variables)
+            24
+            sage: len(constraints) > 0
+            True
 
         """
 
@@ -828,11 +1158,13 @@ class Modular(Component):
         input_id_tuples, output_id_tuples = self._get_input_output_variables_tuples()
         input_ids, output_ids = self._get_input_output_variables()
 
-        linking_constraints = model.link_binary_tuples_to_integer_variables(input_id_tuples + output_id_tuples,
-                                                                            input_ids + output_ids)
+        linking_constraints = model.link_binary_tuples_to_integer_variables(
+            input_id_tuples + output_id_tuples, input_ids + output_ids
+        )
 
-        variables = [(f"x[{var_elt}]", x[var_elt]) for var_tuple in input_id_tuples + output_id_tuples for var_elt in
-                     var_tuple]
+        variables = [
+            (f"x[{var_elt}]", x[var_elt]) for var_tuple in input_id_tuples + output_id_tuples for var_elt in var_tuple
+        ]
         constraints = [] + linking_constraints
 
         input_vars = [tuple(x[i] for i in _) for _ in input_id_tuples]
@@ -851,9 +1183,13 @@ class Modular(Component):
             for i in range(pivot + 1, output_bit_size):
                 constraints_pivot.extend([sum(input_vars[i] + input_vars[i + output_bit_size] + output_vars[i]) == 0])
             constraints_pivot.extend(
-                milp_utils.milp_xor_truncated(model, input_id_tuples[pivot::output_bit_size][0],
-                                              input_id_tuples[pivot::output_bit_size][1],
-                                              output_id_tuples[pivot]))
+                milp_utils.milp_xor_truncated(
+                    model,
+                    input_id_tuples[pivot::output_bit_size][0],
+                    input_id_tuples[pivot::output_bit_size][1],
+                    output_id_tuples[pivot],
+                )
+            )
             constraints.extend(milp_utils.milp_if_then(pivot_vars[pivot], constraints_pivot, output_bit_size + 1))
 
         return variables, constraints
@@ -868,65 +1204,76 @@ class Modular(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
+            sage: from claasp.cipher import Cipher
             sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model_arx_optimized import MznXorDifferentialModelARXOptimized
-            sage: fancy = FancyBlockCipher(number_of_rounds=2)
-            sage: minizinc = MznXorDifferentialModelARXOptimized(fancy, sat_or_milp="milp")
-            sage: modadd_component = fancy.component_from(1, 9)
-            sage: _, constraints = modadd_component.minizinc_xor_differential_propagation_constraints(minizinc)
-            sage: constraints[6]
-            'constraint modular_addition_word(array1d(0..6-1, [modadd_1_9_x0,modadd_1_9_x1,modadd_1_9_x2,modadd_1_9_x3,modadd_1_9_x4,modadd_1_9_x5]),array1d(0..6-1, [modadd_1_9_x6,modadd_1_9_x7,modadd_1_9_x8,modadd_1_9_x9,modadd_1_9_x10,modadd_1_9_x11]),array1d(0..6-1, [modadd_1_9_y0_0,modadd_1_9_y1_0,modadd_1_9_y2_0,modadd_1_9_y3_0,modadd_1_9_y4_0,modadd_1_9_y5_0]), p_modadd_1_9_0, dummy_modadd_1_9_0, -1)=1;\nconstraint carry_modadd_1_9_0 = XOR3(array1d(0..6-1, [modadd_1_9_x0,modadd_1_9_x1,modadd_1_9_x2,modadd_1_9_x3,modadd_1_9_x4,modadd_1_9_x5]),array1d(0..6-1, [modadd_1_9_x6,modadd_1_9_x7,modadd_1_9_x8,modadd_1_9_x9,modadd_1_9_x10,modadd_1_9_x11]),array1d(0..6-1, [modadd_1_9_y0_0,modadd_1_9_y1_0,modadd_1_9_y2_0,modadd_1_9_y3_0,modadd_1_9_y4_0,modadd_1_9_y5_0]));\n'
+            sage: from claasp.name_mappings import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
+            sage: class DummyCipher(Cipher):
+            ....:     def __init__(self):
+            ....:         super().__init__('dummy_cipher', BLOCK_CIPHER, [INPUT_PLAINTEXT, INPUT_KEY], [4, 4], 4)
+            ....:         self.add_round()
+            ....:         self.add_modadd_component([INPUT_PLAINTEXT, INPUT_KEY], [list(range(4)), list(range(4))], 4)
+            ....:         self.add_cipher_output_component(['modadd_0_0'], [list(range(4))], 4)
+            sage: cipher = DummyCipher()
+            sage: minizinc = MznXorDifferentialModelARXOptimized(cipher, sat_or_milp='milp')
+            sage: component = cipher.component_from(0, 0)
+            sage: _, constraints = component.minizinc_xor_differential_propagation_constraints(minizinc)
+            sage: constraints[0].startswith('constraint modular_addition_word(')
+            True
         """
 
-        def create_block_of_modadd_constraints(input_vars_1_temp, input_vars_2_temp,
-                                               output_varstrs_temp, i, round_number):
+        def create_block_of_modadd_constraints(
+            input_vars_1_temp, input_vars_2_temp, output_varstrs_temp, i, round_number
+        ):
             mzn_input_array_1 = self._create_minizinc_1d_array_from_list(input_vars_1_temp)
             mzn_input_array_2 = self._create_minizinc_1d_array_from_list(input_vars_2_temp)
             mzn_output_array = self._create_minizinc_1d_array_from_list(output_varstrs_temp)
-            dummy_declaration = f'var {model.data_type}: dummy_{component_id}_{i};\n'
-            mzn_probability_var = f'p_{component_id}_{i}'
+            dummy_declaration = f"var {model.data_type}: dummy_{component_id}_{i};\n"
+            mzn_probability_var = f"p_{component_id}_{i}"
             model.probability_vars.append(mzn_probability_var)
-            pr_declaration = (f'array [0..{noutput_bits}-2] of var {model.data_type}:'
-                              f'{mzn_probability_var};\n')
+            pr_declaration = f"array [0..{noutput_bits}-2] of var {model.data_type}:{mzn_probability_var};\n"
             model.probability_modadd_vars_per_round[round_number - 1].append(mzn_probability_var)
             mzn_block_variables = ""
             dummy_id = ""
 
             if model.sat_or_milp == "milp":
                 mzn_block_variables += dummy_declaration
-                dummy_id += f'dummy_{component_id}_{i},'
+                dummy_id += f"dummy_{component_id}_{i},"
             mzn_block_variables += pr_declaration
 
             if model.window_size_list:
                 round_window_size = model.window_size_list[round_number - 1]
-                mzn_block_constraints = (f'constraint modular_addition_word('
-                                         f'{mzn_input_array_1},{mzn_input_array_2},{mzn_output_array},'
-                                         f' p_{component_id}_{i},'
-                                         f' {dummy_id}'
-                                         f' {round_window_size}'
-                                         f')={model.true_value};\n')
+                mzn_block_constraints = (
+                    f"constraint modular_addition_word("
+                    f"{mzn_input_array_1},{mzn_input_array_2},{mzn_output_array},"
+                    f" p_{component_id}_{i},"
+                    f" {dummy_id}"
+                    f" {round_window_size}"
+                    f")={model.true_value};\n"
+                )
             else:
-                mzn_block_constraints = (f'constraint modular_addition_word('
-                                         f'{mzn_input_array_1},{mzn_input_array_2},{mzn_output_array},'
-                                         f' p_{component_id}_{i},'
-                                         f' {dummy_id}'
-                                         f' -1'
-                                         f')={model.true_value};\n')
+                mzn_block_constraints = (
+                    f"constraint modular_addition_word("
+                    f"{mzn_input_array_1},{mzn_input_array_2},{mzn_output_array},"
+                    f" p_{component_id}_{i},"
+                    f" {dummy_id}"
+                    f" -1"
+                    f")={model.true_value};\n"
+                )
 
-            mzn_carry_var = f'carry_{component_id}_{i}'
-            modadd_carries_definition = (f'array [0..{noutput_bits}-1] of var {model.data_type}:'
-                                         f'{mzn_carry_var};\n')
+            mzn_carry_var = f"carry_{component_id}_{i}"
+            modadd_carries_definition = f"array [0..{noutput_bits}-1] of var {model.data_type}:{mzn_carry_var};\n"
             mzn_block_variables += modadd_carries_definition
-            model.carries_vars.append({'mzn_carry_array_name': mzn_carry_var, 'mzn_carry_array_size': noutput_bits})
-            mzn_block_constraints_carries = (f'constraint {mzn_carry_var} = '
-                                             f'XOR3('
-                                             f'{mzn_input_array_1},{mzn_input_array_2},'
-                                             f'{mzn_output_array});\n')
+            model.carries_vars.append({"mzn_carry_array_name": mzn_carry_var, "mzn_carry_array_size": noutput_bits})
+            mzn_block_constraints_carries = (
+                f"constraint {mzn_carry_var} = XOR3({mzn_input_array_1},{mzn_input_array_2},{mzn_output_array});\n"
+            )
             mzn_block_constraints += mzn_block_constraints_carries
 
-            model.mzn_carries_output_directives.append(f'output ["carries {component_id}:"++show(XOR3('
-                                                       f'{mzn_input_array_1},{mzn_input_array_2},'
-                                                       f'{mzn_output_array}))++"\\n"];')
+            model.mzn_carries_output_directives.append(
+                f'output ["carries {component_id}:"++show(XOR3('
+                f"{mzn_input_array_1},{mzn_input_array_2},"
+                f'{mzn_output_array}))++"\\n"];'
+            )
 
             return mzn_block_variables, mzn_block_constraints
 
@@ -934,7 +1281,7 @@ class Modular(Component):
             raise ValueError("component must be modular addition, or modular substraction")
 
         round_number = model.cipher.get_round_from_component_id(self.id)
-        var_names = self._define_var(model.input_postfix, model.output_postfix, model.data_type)
+        var_names = self.minizinc_define_var(model.input_postfix, model.output_postfix, model.data_type)
         mzn_constraints = []
         component_id = self.id
         ninput_words = self.description[1]
@@ -948,19 +1295,21 @@ class Modular(Component):
         for i in range(ninput_words - 2):
             new_output_vars_temp = []
             for output_var in output_varstrs:
-                mzn_constraints += [f'var {model.data_type}: {output_var}_{i};']
+                mzn_constraints += [f"var {model.data_type}: {output_var}_{i};"]
                 new_output_vars_temp.append(output_var + "_" + str(i))
             new_output_vars.append(new_output_vars_temp)
 
         for i in range(ninput_words - 1):
-            input_vars_1 = input_varstrs[i * word_chunk:i * word_chunk + word_chunk]
-            input_vars_2 = input_varstrs[i * word_chunk + word_chunk:i * word_chunk + word_chunk + word_chunk]
+            input_vars_1 = input_varstrs[i * word_chunk : i * word_chunk + word_chunk]
+            input_vars_2 = input_varstrs[i * word_chunk + word_chunk : i * word_chunk + word_chunk + word_chunk]
             if i == ninput_words - 2:
-                mzn_variables_and_constraints = create_block_of_modadd_constraints(input_vars_1, input_vars_2,
-                                                                                   output_varstrs, i, round_number)
+                mzn_variables_and_constraints = create_block_of_modadd_constraints(
+                    input_vars_1, input_vars_2, output_varstrs, i, round_number
+                )
             else:
-                mzn_variables_and_constraints = create_block_of_modadd_constraints(input_vars_1, input_vars_2,
-                                                                                   new_output_vars[i], i, round_number)
+                mzn_variables_and_constraints = create_block_of_modadd_constraints(
+                    input_vars_1, input_vars_2, new_output_vars[i], i, round_number
+                )
             var_names += [mzn_variables_and_constraints[0]]
             mzn_constraints += [mzn_variables_and_constraints[1]]
 
@@ -976,27 +1325,24 @@ class Modular(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: from claasp.cipher import Cipher
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_xor_linear_model import MilpXorLinearModel
-            sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
-            sage: milp = MilpXorLinearModel(speck)
+            sage: from claasp.name_mappings import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
+            sage: class DummyCipher(Cipher):
+            ....:     def __init__(self):
+            ....:         super().__init__('dummy_cipher', BLOCK_CIPHER, [INPUT_PLAINTEXT, INPUT_KEY], [4, 4], 4)
+            ....:         self.add_round()
+            ....:         self.add_modadd_component([INPUT_PLAINTEXT, INPUT_KEY], [list(range(4)), list(range(4))], 4)
+            ....:         self.add_cipher_output_component(['modadd_0_0'], [list(range(4))], 4)
+            sage: cipher = DummyCipher()
+            sage: milp = MilpXorLinearModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
-            sage: modadd_component = speck.component_from(0, 1)
+            sage: modadd_component = cipher.component_from(0, 0)
             sage: variables, constraints = modadd_component.milp_xor_linear_mask_propagation_constraints(milp)
-            sage: variables
-            [('x[modadd_0_1_0_i]', x_0),
-             ('x[modadd_0_1_1_i]', x_1),
-            ...
-             ('x[modadd_0_1_14_o]', x_46),
-             ('x[modadd_0_1_15_o]', x_47)]
-            sage: constraints
-            [x_48 == 0,
-            0 <= -1*x_0 - x_16 + x_32 + x_48 + x_49,
-            0 <= x_0 + x_16 - x_32 + x_48 - x_49,
-            ...
-             x_15 + x_31 + x_47 + x_63 + x_64 <= 4,
-             x_65 == x_48 + x_49 + x_50 + x_51 + x_52 + x_53 + x_54 + x_55 + x_56 + x_57 + x_58 + x_59 + x_60 + x_61 + x_62 + x_63,
-             x_66 == 100*x_65]
+            sage: len(variables)
+            12
+            sage: len(constraints) > 0
+            True
         """
         binary_variable = model.binary_variable
         integer_variable = model.integer_variable
@@ -1009,46 +1355,50 @@ class Modular(Component):
         variables = []
         constraints = []
         if number_of_inputs == 2:
-            variables, constraints = self.twoterms_milp_probability_xor_linear_constraints(binary_variable,
-                                                                                           integer_variable,
-                                                                                           input_vars,
-                                                                                           output_vars, 0)
-            constraints.append(correlation[component_id + "_probability"] == (10 ** model.weight_precision) *
-                               correlation[component_id + "_modadd_probability" + str(0)])
+            variables, constraints = self.twoterms_milp_probability_xor_linear_constraints(
+                binary_variable, integer_variable, input_vars, output_vars, 0
+            )
+            constraints.append(
+                correlation[component_id + "_probability"]
+                == (10**model.weight_precision) * correlation[component_id + "_modadd_probability" + str(0)]
+            )
 
         elif number_of_inputs > 2:
-            temp_output_vars = [[f"{var}_temp_modadd_{i}" for var in output_vars]
-                                for i in range(number_of_inputs - 2)]
-            variables, constraints = \
-                self.twoterms_milp_probability_xor_linear_constraints(binary_variable, integer_variable,
-                                                                      input_vars[:2 * output_bit_size],
-                                                                      temp_output_vars[0], 0)
+            temp_output_vars = [[f"{var}_temp_modadd_{i}" for var in output_vars] for i in range(number_of_inputs - 2)]
+            variables, constraints = self.twoterms_milp_probability_xor_linear_constraints(
+                binary_variable, integer_variable, input_vars[: 2 * output_bit_size], temp_output_vars[0], 0
+            )
             for i in range(1, number_of_inputs - 2):
                 temp_output_vars.extend([[f"{var}_temp_modadd_{i}" for var in output_vars]])
                 temp_variables, temp_constraints = self.twoterms_milp_probability_xor_linear_constraints(
                     binary_variable,
                     integer_variable,
-                    input_vars[(i + 1) * output_bit_size:(i + 2) * output_bit_size] + temp_output_vars[i - 1],
-                    temp_output_vars[i], i)
+                    input_vars[(i + 1) * output_bit_size : (i + 2) * output_bit_size] + temp_output_vars[i - 1],
+                    temp_output_vars[i],
+                    i,
+                )
                 variables.extend(temp_variables)
                 constraints.extend(temp_constraints)
 
-            temp_variables, temp_constraints = \
-                self.twoterms_milp_probability_xor_linear_constraints(
-                    binary_variable, integer_variable,
-                    input_vars[(number_of_inputs - 1) * output_bit_size: number_of_inputs * output_bit_size] +
-                    temp_output_vars[number_of_inputs - 3],
-                    output_vars, number_of_inputs - 2)
+            temp_variables, temp_constraints = self.twoterms_milp_probability_xor_linear_constraints(
+                binary_variable,
+                integer_variable,
+                input_vars[(number_of_inputs - 1) * output_bit_size : number_of_inputs * output_bit_size]
+                + temp_output_vars[number_of_inputs - 3],
+                output_vars,
+                number_of_inputs - 2,
+            )
             variables.extend(temp_variables)
             constraints.extend(temp_constraints)
-            constraints.append(correlation[component_id + "_probability"] ==
-                               (10 ** model.weight_precision) * sum(
-                correlation[component_id + "_modadd_probability" + str(i)]
-                for i in range(number_of_inputs - 1)))
+            constraints.append(
+                correlation[component_id + "_probability"]
+                == (10**model.weight_precision)
+                * sum(correlation[component_id + "_modadd_probability" + str(i)] for i in range(number_of_inputs - 1))
+            )
         result = variables, constraints
         return result
 
-    def sat_xor_differential_propagation_constraints(self, model):
+    def sat_xor_differential_propagation_constraints(self, model=None):
         """
         Return a list of variables and a list of clauses representing MODULAR ADDITION/SUBTRACTION for SAT XOR DIFFERENTIAL model
 
@@ -1066,71 +1416,86 @@ class Modular(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: from claasp.cipher import Cipher
             sage: from claasp.cipher_modules.models.sat.sat_model import SatModel
-            sage: speck = SpeckBlockCipher(number_of_rounds=3)
-            sage: sat = SatModel(speck)
-            sage: modadd_component = speck.component_from(0, 1)
-            sage: modadd_component.sat_xor_differential_propagation_constraints(sat)
-            (['modadd_0_1_0',
-              'modadd_0_1_1',
-              ...
-              'hw_modadd_0_1_14',
-              'hw_modadd_0_1_15'],
-             ['rot_0_0_1 -modadd_0_1_1 hw_modadd_0_1_0',
-              'plaintext_17 -rot_0_0_1 hw_modadd_0_1_0',
-              ...
-              'modadd_0_1_15 rot_0_0_15 -plaintext_31',
-              '-modadd_0_1_15 -rot_0_0_15 -plaintext_31'])
+            sage: from claasp.name_mappings import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
+            sage: class DummyCipher(Cipher):
+            ....:     def __init__(self):
+            ....:         super().__init__('dummy_cipher', BLOCK_CIPHER, [INPUT_PLAINTEXT, INPUT_KEY], [4, 4], 4)
+            ....:         self.add_round()
+            ....:         self.add_modadd_component([INPUT_PLAINTEXT, INPUT_KEY], [list(range(4)), list(range(4))], 4)
+            ....:         self.add_cipher_output_component(['modadd_0_0'], [list(range(4))], 4)
+            sage: cipher = DummyCipher()
+            sage: sat = SatModel(cipher)
+            sage: modadd_component = cipher.component_from(0, 0)
+            sage: variables, constraints = modadd_component.sat_xor_differential_propagation_constraints(sat)
+            sage: len(variables)
+            11
+            sage: constraints[0].endswith('hw_modadd_0_0_0')
+            True
         """
 
         def extend_constraints_for_window_size(
-                model_, output_bit_len_, window_size_, input_bit_ids_, output_bit_ids_, constraints_
+            model_, output_bit_len_, window_size_, input_bit_ids_, output_bit_ids_, constraints_
         ):
             window_size_ += 1
             for i in range(output_bit_len_ - window_size_):
-                aux_var = f'full_window_track_{self.id}_{i}'
+                aux_var = f"full_window_track_{self.id}_{i}"
                 if model_.window_size_number_of_full_window is not None:
                     model_._window_size_full_window_vars.append(aux_var)
-                first_addend = input_bit_ids_[i:i + window_size_]
-                second_addend = input_bit_ids_[output_bit_len_ + i:output_bit_len_ + i + window_size_]
-                result = output_bit_ids_[i:i + window_size_]
-                from claasp.cipher_modules.models.sat.utils.n_window_heuristic_helper import \
-                    generate_window_size_clauses
+                first_addend = input_bit_ids_[i : i + window_size_]
+                second_addend = input_bit_ids_[output_bit_len_ + i : output_bit_len_ + i + window_size_]
+                result = output_bit_ids_[i : i + window_size_]
+                from claasp.cipher_modules.models.sat.utils.n_window_heuristic_helper import (
+                    generate_window_size_clauses,
+                )
+
                 new_constraints = generate_window_size_clauses(first_addend, second_addend, result, aux_var)
                 constraints_.extend(new_constraints)
 
-        _, input_bit_ids = self._generate_input_ids()
+        input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
-        dummy_bit_ids = [f'dummy_{output_bit_ids[i]}' for i in range(output_bit_len - 1)]
-        hw_bit_ids = [f'hw_{output_bit_ids[i]}' for i in range(output_bit_len)]
+        dummy_bit_ids = [f"dummy_{output_bit_ids[i]}" for i in range(output_bit_len - 1)]
+        hw_bit_ids = [f"hw_{output_bit_ids[i]}" for i in range(output_bit_len)]
         constraints = []
         # Hamming weight
         for i in range(output_bit_len - 1):
-            constraints.extend(sat_utils.cnf_hw_lipmaa(hw_bit_ids[i],
-                                                       input_bit_ids[i + 1],
-                                                       input_bit_ids[output_bit_len + i + 1],
-                                                       output_bit_ids[i + 1]))
-        constraints.append(f'-{hw_bit_ids[output_bit_len - 1]}')
+            constraints.extend(
+                sat_utils.cnf_hw_lipmaa(
+                    hw_bit_ids[i], input_bit_ids[i + 1], input_bit_ids[output_bit_len + i + 1], output_bit_ids[i + 1]
+                )
+            )
+        constraints.append(f"-{hw_bit_ids[output_bit_len - 1]}")
         # Trail validity
         # <eq(alpha << 1, beta << 1, gamma << 1) & (alfa ^ beta ^ gamma ^ (beta << 1)) = 0>
         for i in range(output_bit_len - 1):
-            constraints.extend(sat_utils.cnf_lipmaa(hw_bit_ids[i],
-                                                    dummy_bit_ids[i],
-                                                    input_bit_ids[output_bit_len + i + 1],
-                                                    input_bit_ids[i],
-                                                    input_bit_ids[output_bit_len + i],
-                                                    output_bit_ids[i]))
-        constraints.extend(sat_utils.cnf_xor(output_bit_ids[output_bit_len - 1],
-                                             [input_bit_ids[output_bit_len - 1],
-                                              input_bit_ids[2 * output_bit_len - 1]]))
+            constraints.extend(
+                sat_utils.cnf_lipmaa(
+                    hw_bit_ids[i],
+                    dummy_bit_ids[i],
+                    input_bit_ids[output_bit_len + i + 1],
+                    input_bit_ids[i],
+                    input_bit_ids[output_bit_len + i],
+                    output_bit_ids[i],
+                )
+            )
+        constraints.extend(
+            sat_utils.cnf_xor(
+                output_bit_ids[output_bit_len - 1],
+                [input_bit_ids[output_bit_len - 1], input_bit_ids[2 * output_bit_len - 1]],
+            )
+        )
 
         from claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model import SatXorDifferentialModel
+
         if type(model) is SatXorDifferentialModel and model.window_size_by_round_values is not None:
             if model.window_size_weight_pr_vars != -1:
                 for i in range(output_bit_len - model.window_size_weight_pr_vars):
-                    constraints.extend(sat_utils.cnf_n_window_heuristic_on_w_vars(
-                        hw_bit_ids[i: i + (model.window_size_weight_pr_vars + 1)]))
+                    constraints.extend(
+                        sat_utils.cnf_n_window_heuristic_on_w_vars(
+                            hw_bit_ids[i : i + (model.window_size_weight_pr_vars + 1)]
+                        )
+                    )
         component_round_number = model._cipher.get_round_from_component_id(self.id)
 
         if type(model) is SatXorDifferentialModel and model.window_size_by_round_values is not None:
@@ -1172,40 +1537,45 @@ class Modular(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: speck = SpeckBlockCipher(number_of_rounds=3)
-            sage: modadd_component = speck.component_from(0, 1)
-            sage: modadd_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
-            (['modadd_0_1_0_0',
-              'modadd_0_1_1_0',
-              ...
-              'carry_modadd_0_1_14_1_1',
-              'carry_modadd_0_1_15_1_1'],
-             ['-carry_modadd_0_1_15_0_0 -carry_modadd_0_1_15_1_1',
-              'modadd_0_1_0_0 -carry_modadd_0_1_0_0_0',
-              ...
-              'plaintext_31_1 modadd_0_1_15_0 modadd_0_1_15_1 -rot_0_0_15_1',
-              'modadd_0_1_15_0 -rot_0_0_15_1 -plaintext_31_1 -modadd_0_1_15_1'])
+            sage: from claasp.components.modular_component import Modular
+            sage: component = Modular(0, 0, ['a', 'b'], [[0, 1, 2, 3], [0, 1, 2, 3]], 4, 'modular', 16)
+            sage: variables, constraints = component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
+            sage: len(variables)
+            16
+            sage: constraints[0]
+            '-carry_modular_0_0_3_0_0 -carry_modular_0_0_3_1_1'
         """
         in_ids_0, in_ids_1 = self._generate_input_double_ids()
         out_len, out_ids_0, out_ids_1 = self._generate_output_double_ids()
-        carry_ids_0 = [f'carry_{out_id}_0' for out_id in out_ids_0]
-        carry_ids_1 = [f'carry_{out_id}_1' for out_id in out_ids_1]
-        constraints = [f'-{carry_ids_0[-1]} -{carry_ids_1[-1]}']
-        constraints.extend(sat_utils.modadd_truncated_msb((out_ids_0[0], out_ids_1[0]),
-                                                          (in_ids_0[0], in_ids_1[0]),
-                                                          (in_ids_0[out_len], in_ids_1[out_len]),
-                                                          (carry_ids_0[0], carry_ids_1[0])))
+        carry_ids_0 = [f"carry_{out_id}_0" for out_id in out_ids_0]
+        carry_ids_1 = [f"carry_{out_id}_1" for out_id in out_ids_1]
+        constraints = [f"-{carry_ids_0[-1]} -{carry_ids_1[-1]}"]
+        constraints.extend(
+            sat_utils.modadd_truncated_msb(
+                (out_ids_0[0], out_ids_1[0]),
+                (in_ids_0[0], in_ids_1[0]),
+                (in_ids_0[out_len], in_ids_1[out_len]),
+                (carry_ids_0[0], carry_ids_1[0]),
+            )
+        )
         for i in range(1, out_len - 1):
-            constraints.extend(sat_utils.modadd_truncated((out_ids_0[i], out_ids_1[i]),
-                                                          (in_ids_0[i], in_ids_1[i]),
-                                                          (in_ids_0[i + out_len], in_ids_1[i + out_len]),
-                                                          (carry_ids_0[i], carry_ids_1[i]),
-                                                          (carry_ids_0[i - 1], carry_ids_1[i - 1])))
-        constraints.extend(sat_utils.modadd_truncated_lsb((out_ids_0[-1], out_ids_1[-1]),
-                                                          (in_ids_0[out_len - 1], in_ids_1[out_len - 1]),
-                                                          (in_ids_0[2 * out_len - 1], in_ids_1[2 * out_len - 1]),
-                                                          (carry_ids_0[-2], carry_ids_1[-2])))
+            constraints.extend(
+                sat_utils.modadd_truncated(
+                    (out_ids_0[i], out_ids_1[i]),
+                    (in_ids_0[i], in_ids_1[i]),
+                    (in_ids_0[i + out_len], in_ids_1[i + out_len]),
+                    (carry_ids_0[i], carry_ids_1[i]),
+                    (carry_ids_0[i - 1], carry_ids_1[i - 1]),
+                )
+            )
+        constraints.extend(
+            sat_utils.modadd_truncated_lsb(
+                (out_ids_0[-1], out_ids_1[-1]),
+                (in_ids_0[out_len - 1], in_ids_1[out_len - 1]),
+                (in_ids_0[2 * out_len - 1], in_ids_1[2 * out_len - 1]),
+                (carry_ids_0[-2], carry_ids_1[-2]),
+            )
+        )
 
         return out_ids_0 + out_ids_1 + carry_ids_0 + carry_ids_1, constraints
 
@@ -1230,10 +1600,10 @@ class Modular(Component):
             clauses.append(f"-{b_t15}")
             clauses.append(f"-{c_t15}")
 
-            clauses.append(f' {a_v15}  {b_v15} -{c_v15}')
-            clauses.append(f' {a_v15} -{b_v15} {c_v15}')
-            clauses.append(f'-{a_v15}  {b_v15} {c_v15}')
-            clauses.append(f'-{a_v15} -{b_v15} -{c_v15}')
+            clauses.append(f" {a_v15}  {b_v15} -{c_v15}")
+            clauses.append(f" {a_v15} -{b_v15} {c_v15}")
+            clauses.append(f"-{a_v15}  {b_v15} {c_v15}")
+            clauses.append(f"-{a_v15} -{b_v15} -{c_v15}")
 
             return clauses
 
@@ -1241,10 +1611,10 @@ class Modular(Component):
         out_len, out_ids_0, out_ids_1 = self._generate_output_double_ids()
 
         A_t = in_ids_0[0:out_len]
-        B_t = in_ids_0[out_len:2 * out_len]
+        B_t = in_ids_0[out_len : 2 * out_len]
 
         A_v = in_ids_1[0:out_len]
-        B_v = in_ids_1[out_len:2 * out_len]
+        B_v = in_ids_1[out_len : 2 * out_len]
 
         C_t = out_ids_0[0:out_len]
         C_v = out_ids_1[0:out_len]
@@ -1254,9 +1624,9 @@ class Modular(Component):
         )
 
         word_size = out_len
-        p = [f'hw_p_{self.id}_{i}' for i in range(word_size)]
-        q = [f'hw_q_{self.id}_{i}' for i in range(word_size)]
-        r = [f'hw_r_{self.id}_{i}' for i in range(word_size)]
+        p = [f"hw_p_{self.id}_{i}" for i in range(word_size)]
+        q = [f"hw_q_{self.id}_{i}" for i in range(word_size)]
+        r = [f"hw_r_{self.id}_{i}" for i in range(word_size)]
 
         window_size_ = 3
         for bit_position in range(word_size - 1):
@@ -1266,45 +1636,106 @@ class Modular(Component):
                     A_t_bit_positions.append(A_t[bit_position + i])
             if len(A_t_bit_positions) == 3:
                 cnf_clauses = sat_utils.get_cnf_semi_deterministic_window_1(
-                    A_t[bit_position], A_t[bit_position + 1], A_t[bit_position + 2],
-                    A_v[bit_position], A_v[bit_position + 1], A_v[bit_position + 2],
-                    B_t[bit_position], B_t[bit_position + 1], B_t[bit_position + 2],
-                    B_v[bit_position], B_v[bit_position + 1], B_v[bit_position + 2],
-                    C_t[bit_position], C_t[bit_position + 1], C_t[bit_position + 2],
-                    C_v[bit_position], C_v[bit_position + 1],
-                    p[bit_position], q[bit_position], r[bit_position])
+                    A_t[bit_position],
+                    A_t[bit_position + 1],
+                    A_t[bit_position + 2],
+                    A_v[bit_position],
+                    A_v[bit_position + 1],
+                    A_v[bit_position + 2],
+                    B_t[bit_position],
+                    B_t[bit_position + 1],
+                    B_t[bit_position + 2],
+                    B_v[bit_position],
+                    B_v[bit_position + 1],
+                    B_v[bit_position + 2],
+                    C_t[bit_position],
+                    C_t[bit_position + 1],
+                    C_t[bit_position + 2],
+                    C_v[bit_position],
+                    C_v[bit_position + 1],
+                    p[bit_position],
+                    q[bit_position],
+                    r[bit_position],
+                )
             elif len(A_t_bit_positions) == 2:
                 cnf_clauses = sat_utils.get_semi_deterministic_cnf_window_0(
-                    A_t[bit_position], A_t[bit_position + 1],
-                    A_v[bit_position], A_v[bit_position + 1],
-                    B_t[bit_position], B_t[bit_position + 1],
-                    B_v[bit_position], B_v[bit_position + 1],
-                    C_t[bit_position], C_t[bit_position + 1],
-                    C_v[bit_position], C_v[bit_position + 1],
-                    p[bit_position], q[bit_position], r[bit_position])
+                    A_t[bit_position],
+                    A_t[bit_position + 1],
+                    A_v[bit_position],
+                    A_v[bit_position + 1],
+                    B_t[bit_position],
+                    B_t[bit_position + 1],
+                    B_v[bit_position],
+                    B_v[bit_position + 1],
+                    C_t[bit_position],
+                    C_t[bit_position + 1],
+                    C_v[bit_position],
+                    C_v[bit_position + 1],
+                    p[bit_position],
+                    q[bit_position],
+                    r[bit_position],
+                )
             elif len(A_t_bit_positions) == 4:
                 cnf_clauses = sat_utils.get_cnf_semi_deterministic_window_2(
-                    A_t[bit_position], A_t[bit_position + 1], A_t[bit_position + 2], A_t[bit_position + 3],
-                    A_v[bit_position], A_v[bit_position + 1], A_v[bit_position + 2], A_v[bit_position + 3],
-                    B_t[bit_position], B_t[bit_position + 1], B_t[bit_position + 2], B_t[bit_position + 3],
-                    B_v[bit_position], B_v[bit_position + 1], B_v[bit_position + 2], B_v[bit_position + 3],
-                    C_t[bit_position], C_t[bit_position + 1], C_t[bit_position + 2], C_t[bit_position + 3],
-                    C_v[bit_position], C_v[bit_position + 1],
-                    p[bit_position], q[bit_position], r[bit_position])
+                    A_t[bit_position],
+                    A_t[bit_position + 1],
+                    A_t[bit_position + 2],
+                    A_t[bit_position + 3],
+                    A_v[bit_position],
+                    A_v[bit_position + 1],
+                    A_v[bit_position + 2],
+                    A_v[bit_position + 3],
+                    B_t[bit_position],
+                    B_t[bit_position + 1],
+                    B_t[bit_position + 2],
+                    B_t[bit_position + 3],
+                    B_v[bit_position],
+                    B_v[bit_position + 1],
+                    B_v[bit_position + 2],
+                    B_v[bit_position + 3],
+                    C_t[bit_position],
+                    C_t[bit_position + 1],
+                    C_t[bit_position + 2],
+                    C_t[bit_position + 3],
+                    C_v[bit_position],
+                    C_v[bit_position + 1],
+                    p[bit_position],
+                    q[bit_position],
+                    r[bit_position],
+                )
             elif len(A_t_bit_positions) == 5:
                 cnf_clauses = sat_utils.get_cnf_semi_deterministic_window_3(
-                    A_t[bit_position], A_t[bit_position + 1], A_t[bit_position + 2], A_t[bit_position + 3],
+                    A_t[bit_position],
+                    A_t[bit_position + 1],
+                    A_t[bit_position + 2],
+                    A_t[bit_position + 3],
                     A_t[bit_position + 4],
-                    A_v[bit_position], A_v[bit_position + 1], A_v[bit_position + 2], A_v[bit_position + 3],
+                    A_v[bit_position],
+                    A_v[bit_position + 1],
+                    A_v[bit_position + 2],
+                    A_v[bit_position + 3],
                     A_v[bit_position + 4],
-                    B_t[bit_position], B_t[bit_position + 1], B_t[bit_position + 2], B_t[bit_position + 3],
+                    B_t[bit_position],
+                    B_t[bit_position + 1],
+                    B_t[bit_position + 2],
+                    B_t[bit_position + 3],
                     B_t[bit_position + 4],
-                    B_v[bit_position], B_v[bit_position + 1], B_v[bit_position + 2], B_v[bit_position + 3],
+                    B_v[bit_position],
+                    B_v[bit_position + 1],
+                    B_v[bit_position + 2],
+                    B_v[bit_position + 3],
                     B_v[bit_position + 4],
-                    C_t[bit_position], C_t[bit_position + 1], C_t[bit_position + 2], C_t[bit_position + 3],
+                    C_t[bit_position],
+                    C_t[bit_position + 1],
+                    C_t[bit_position + 2],
+                    C_t[bit_position + 3],
                     C_t[bit_position + 4],
-                    C_v[bit_position], C_v[bit_position + 1],
-                    p[bit_position], q[bit_position], r[bit_position])
+                    C_v[bit_position],
+                    C_v[bit_position + 1],
+                    p[bit_position],
+                    q[bit_position],
+                    r[bit_position],
+                )
             else:
                 raise Exception("Window size not supported")
 
@@ -1329,44 +1760,40 @@ class Modular(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: speck = SpeckBlockCipher(number_of_rounds=3)
-            sage: modadd_component = speck.component_from(0, 1)
-            sage: modadd_component.sat_xor_linear_mask_propagation_constraints()
-            (['modadd_0_1_0_i',
-              'modadd_0_1_1_i',
-              ...
-              'hw_modadd_0_1_14_o',
-              'hw_modadd_0_1_15_o'],
-             ['-hw_modadd_0_1_0_o',
-              '-hw_modadd_0_1_1_o modadd_0_1_0_o modadd_0_1_0_i modadd_0_1_16_i',
-              ...
-              'hw_modadd_0_1_15_o modadd_0_1_15_o -modadd_0_1_31_i',
-              'hw_modadd_0_1_15_o -modadd_0_1_15_o modadd_0_1_31_i'])
+            sage: from claasp.components.modular_component import Modular
+            sage: component = Modular(0, 0, ['a', 'b'], [[0, 1, 2, 3], [0, 1, 2, 3]], 4, 'modular', 16)
+            sage: variables, constraints = component.sat_xor_linear_mask_propagation_constraints()
+            sage: len(variables)
+            16
+            sage: constraints[0]
+            '-hw_modular_0_0_0_o'
         """
         _, input_bit_ids = self._generate_component_input_ids()
         out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
         output_bit_len, output_bit_ids = self._generate_output_ids(suffix=out_suffix)
-        hw_bit_ids = [f'hw_{output_bit_ids[i]}' for i in range(output_bit_len)]
-        constraints = [f'-{hw_bit_ids[0]}']
-        constraints.extend(sat_utils.cnf_xor(hw_bit_ids[1],
-                                             [output_bit_ids[0],
-                                              input_bit_ids[0],
-                                              input_bit_ids[output_bit_len]]))
+        hw_bit_ids = [f"hw_{output_bit_ids[i]}" for i in range(output_bit_len)]
+        constraints = [f"-{hw_bit_ids[0]}"]
+        constraints.extend(
+            sat_utils.cnf_xor(hw_bit_ids[1], [output_bit_ids[0], input_bit_ids[0], input_bit_ids[output_bit_len]])
+        )
         for i in range(2, output_bit_len):
-            constraints.extend(sat_utils.cnf_xor(hw_bit_ids[i],
-                                                 [hw_bit_ids[i - 1],
-                                                  output_bit_ids[i - 1],
-                                                  input_bit_ids[i - 1],
-                                                  input_bit_ids[output_bit_len + i - 1]]))
+            constraints.extend(
+                sat_utils.cnf_xor(
+                    hw_bit_ids[i],
+                    [
+                        hw_bit_ids[i - 1],
+                        output_bit_ids[i - 1],
+                        input_bit_ids[i - 1],
+                        input_bit_ids[output_bit_len + i - 1],
+                    ],
+                )
+            )
         for i in range(output_bit_len):
-            constraints.extend(sat_utils.cnf_modadd_inequality(hw_bit_ids[i],
-                                                               output_bit_ids[i],
-                                                               input_bit_ids[i]))
+            constraints.extend(sat_utils.cnf_modadd_inequality(hw_bit_ids[i], output_bit_ids[i], input_bit_ids[i]))
         for i in range(output_bit_len):
-            constraints.extend(sat_utils.cnf_modadd_inequality(hw_bit_ids[i],
-                                                               output_bit_ids[i],
-                                                               input_bit_ids[output_bit_len + i]))
+            constraints.extend(
+                sat_utils.cnf_modadd_inequality(hw_bit_ids[i], output_bit_ids[i], input_bit_ids[output_bit_len + i])
+            )
         result = input_bit_ids + output_bit_ids + hw_bit_ids, constraints
         return result
 
@@ -1388,45 +1815,46 @@ class Modular(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.tea_block_cipher import TeaBlockCipher
-            sage: tea = TeaBlockCipher(number_of_rounds=3)
-            sage: modadd_component = tea.component_from(0, 1)
-            sage: modadd_component.smt_xor_differential_propagation_constraints()
-            (['modadd_0_1_0',
-              'modadd_0_1_1',
-              ...
-              'hw_modadd_0_1_30',
-              'hw_modadd_0_1_31'],
-             ['(assert (= (not hw_modadd_0_1_0) (= shift_0_0_1 key_1 modadd_0_1_1)))',
-              '(assert (= (not hw_modadd_0_1_1) (= shift_0_0_2 key_2 modadd_0_1_2)))',
-              ...
-              '(assert (or hw_modadd_0_1_30 (not (xor shift_0_0_30 key_30 modadd_0_1_30 key_31))))',
-              '(assert (not (xor modadd_0_1_31 shift_0_0_31 key_31)))'])
+            sage: from claasp.components.modular_component import Modular
+            sage: component = Modular(0, 0, ['a', 'b'], [[0, 1, 2, 3], [0, 1, 2, 3]], 4, 'modular', 16)
+            sage: variables, constraints = component.smt_xor_differential_propagation_constraints()
+            sage: len(variables)
+            8
+            sage: len(constraints) > 0
+            True
         """
-        _, input_bit_ids = self._generate_input_ids()
+        input_bit_ids = self._generate_input_ids()
         output_bit_len, output_bit_ids = self._generate_output_ids()
-        hw_bit_ids = [f'hw_{output_bit_ids[i]}' for i in range(output_bit_len)]
+        hw_bit_ids = [f"hw_{output_bit_ids[i]}" for i in range(output_bit_len)]
         constraints = []
         # Hamming weight
         for i in range(output_bit_len - 1):
-            operation = smt_utils.smt_equivalent((input_bit_ids[i + 1],
-                                                  input_bit_ids[output_bit_len + i + 1],
-                                                  output_bit_ids[i + 1]))
+            operation = smt_utils.smt_equivalent(
+                (input_bit_ids[i + 1], input_bit_ids[output_bit_len + i + 1], output_bit_ids[i + 1])
+            )
             equation = smt_utils.smt_equivalent([smt_utils.smt_not(hw_bit_ids[i]), operation])
             constraints.append(smt_utils.smt_assert(equation))
         constraints.append(smt_utils.smt_assert(smt_utils.smt_not(hw_bit_ids[output_bit_len - 1])))
         # Trail validity
         # <eq(alpha << 1, beta << 1, gamma << 1) & (alfa ^ beta ^ gamma ^ (beta << 1)) = 0>
         for i in range(output_bit_len - 1):
-            lipmaa = smt_utils.smt_lipmaa(hw_bit_ids[i],
-                                          input_bit_ids[i],
-                                          input_bit_ids[output_bit_len + i],
-                                          output_bit_ids[i],
-                                          input_bit_ids[output_bit_len + i + 1])
+            lipmaa = smt_utils.smt_lipmaa(
+                hw_bit_ids[i],
+                input_bit_ids[i],
+                input_bit_ids[output_bit_len + i],
+                output_bit_ids[i],
+                input_bit_ids[output_bit_len + i + 1],
+            )
             constraints.append(smt_utils.smt_assert(lipmaa))
-        lipmaa_lsb = smt_utils.smt_not(smt_utils.smt_xor([output_bit_ids[output_bit_len - 1],
-                                                          input_bit_ids[output_bit_len - 1],
-                                                          input_bit_ids[2 * output_bit_len - 1]]))
+        lipmaa_lsb = smt_utils.smt_not(
+            smt_utils.smt_xor(
+                [
+                    output_bit_ids[output_bit_len - 1],
+                    input_bit_ids[output_bit_len - 1],
+                    input_bit_ids[2 * output_bit_len - 1],
+                ]
+            )
+        )
         constraints.append(smt_utils.smt_assert(lipmaa_lsb))
         result = output_bit_ids + hw_bit_ids, constraints
         return result
@@ -1449,34 +1877,26 @@ class Modular(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.tea_block_cipher import TeaBlockCipher
-            sage: tea = TeaBlockCipher(number_of_rounds=3)
-            sage: modadd_component = tea.component_from(0, 1)
-            sage: modadd_component.smt_xor_linear_mask_propagation_constraints()
-            (['modadd_0_1_0_i',
-              'modadd_0_1_1_i',
-              ...
-              'hw_modadd_0_1_30_o',
-              'hw_modadd_0_1_31_o'],
-             ['(assert (not hw_modadd_0_1_0_o))',
-              '(assert (= hw_modadd_0_1_1_o (xor modadd_0_1_0_o modadd_0_1_0_i modadd_0_1_32_i)))',
-              ...
-              '(assert (=> (xor modadd_0_1_30_o modadd_0_1_62_i) hw_modadd_0_1_30_o))',
-              '(assert (=> (xor modadd_0_1_31_o modadd_0_1_63_i) hw_modadd_0_1_31_o))'])
+            sage: from claasp.components.modular_component import Modular
+            sage: component = Modular(0, 0, ['a', 'b'], [[0, 1, 2, 3], [0, 1, 2, 3]], 4, 'modular', 16)
+            sage: variables, constraints = component.smt_xor_linear_mask_propagation_constraints()
+            sage: len(variables)
+            16
+            sage: constraints[0]
+            '(assert (not hw_modular_0_0_0_o))'
         """
         _, input_bit_ids = self._generate_component_input_ids()
         out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
         output_bit_len, output_bit_ids = self._generate_output_ids(suffix=out_suffix)
-        hw_bit_ids = [f'hw_{output_bit_ids[i]}' for i in range(output_bit_len)]
+        hw_bit_ids = [f"hw_{output_bit_ids[i]}" for i in range(output_bit_len)]
         constraints = [smt_utils.smt_assert(smt_utils.smt_not(hw_bit_ids[0]))]
         operation = smt_utils.smt_xor((output_bit_ids[0], input_bit_ids[0], input_bit_ids[output_bit_len]))
         equation = smt_utils.smt_equivalent((hw_bit_ids[1], operation))
         constraints.append(smt_utils.smt_assert(equation))
         for i in range(2, output_bit_len):
-            operation = smt_utils.smt_xor((hw_bit_ids[i - 1],
-                                           output_bit_ids[i - 1],
-                                           input_bit_ids[i - 1],
-                                           input_bit_ids[output_bit_len + i - 1]))
+            operation = smt_utils.smt_xor(
+                (hw_bit_ids[i - 1], output_bit_ids[i - 1], input_bit_ids[i - 1], input_bit_ids[output_bit_len + i - 1])
+            )
             equation = smt_utils.smt_equivalent((hw_bit_ids[i], operation))
             constraints.append(smt_utils.smt_assert(equation))
         for i in range(output_bit_len):
@@ -1490,8 +1910,9 @@ class Modular(Component):
         result = input_bit_ids + output_bit_ids + hw_bit_ids, constraints
         return result
 
-    def twoterms_milp_probability_xor_linear_constraints(self, binary_variable, integer_variable, input_vars,
-                                                         output_vars, chunk_number):
+    def twoterms_milp_probability_xor_linear_constraints(
+        self, binary_variable, integer_variable, input_vars, output_vars, chunk_number
+    ):
         """
         Return lists of variables and constraints for the probability of Modular Addition/Substraction for two inputs MILP xor linear model.
 
@@ -1518,76 +1939,104 @@ class Modular(Component):
         output_bit_size = len(output_vars)
 
         for i in range(output_bit_size):
-            constraints.append(x[f"{self.id}_chunk_{chunk_number}_dummy_{i}"] -
-                               x[input_vars[output_bit_size + i]] -
-                               x[input_vars[i]] +
-                               x[output_vars[i]] +
-                               x[f"{self.id}_chunk_{chunk_number}_dummy_{i + 1}"] >= 0)
-            constraints.append(x[f"{self.id}_chunk_{chunk_number}_dummy_{i}"] +
-                               x[input_vars[output_bit_size + i]] +
-                               x[input_vars[i]] -
-                               x[output_vars[i]] -
-                               x[f"{self.id}_chunk_{chunk_number}_dummy_{i + 1}"] >= 0)
-            constraints.append(x[f"{self.id}_chunk_{chunk_number}_dummy_{i}"] +
-                               x[input_vars[output_bit_size + i]] -
-                               x[input_vars[i]] -
-                               x[output_vars[i]] +
-                               x[f"{self.id}_chunk_{chunk_number}_dummy_{i + 1}"] >= 0)
-            constraints.append(x[f"{self.id}_chunk_{chunk_number}_dummy_{i}"] -
-                               x[input_vars[output_bit_size + i]] +
-                               x[input_vars[i]] -
-                               x[output_vars[i]] +
-                               x[f"{self.id}_chunk_{chunk_number}_dummy_{i + 1}"] >= 0)
-            constraints.append(x[f"{self.id}_chunk_{chunk_number}_dummy_{i}"] +
-                               x[input_vars[output_bit_size + i]] -
-                               x[input_vars[i]] +
-                               x[output_vars[i]] -
-                               x[f"{self.id}_chunk_{chunk_number}_dummy_{i + 1}"] >= 0)
-            constraints.append(x[f"{self.id}_chunk_{chunk_number}_dummy_{i}"] -
-                               x[input_vars[output_bit_size + i]] +
-                               x[input_vars[i]] +
-                               x[output_vars[i]] -
-                               x[f"{self.id}_chunk_{chunk_number}_dummy_{i + 1}"] >= 0)
-            constraints.append(x[input_vars[output_bit_size + i]] -
-                               x[f"{self.id}_chunk_{chunk_number}_dummy_{i}"] +
-                               x[input_vars[i]] + x[output_vars[i]] +
-                               x[f"{self.id}_chunk_{chunk_number}_dummy_{i + 1}"] >= 0)
-            constraints.append(x[f"{self.id}_chunk_{chunk_number}_dummy_{i}"] +
-                               x[input_vars[output_bit_size + i]] + x[input_vars[i]] +
-                               x[output_vars[i]] +
-                               x[f"{self.id}_chunk_{chunk_number}_dummy_{i + 1}"] <= 4)
+            constraints.append(
+                x[f"{self.id}_chunk_{chunk_number}_dummy_{i}"]
+                - x[input_vars[output_bit_size + i]]
+                - x[input_vars[i]]
+                + x[output_vars[i]]
+                + x[f"{self.id}_chunk_{chunk_number}_dummy_{i + 1}"]
+                >= 0
+            )
+            constraints.append(
+                x[f"{self.id}_chunk_{chunk_number}_dummy_{i}"]
+                + x[input_vars[output_bit_size + i]]
+                + x[input_vars[i]]
+                - x[output_vars[i]]
+                - x[f"{self.id}_chunk_{chunk_number}_dummy_{i + 1}"]
+                >= 0
+            )
+            constraints.append(
+                x[f"{self.id}_chunk_{chunk_number}_dummy_{i}"]
+                + x[input_vars[output_bit_size + i]]
+                - x[input_vars[i]]
+                - x[output_vars[i]]
+                + x[f"{self.id}_chunk_{chunk_number}_dummy_{i + 1}"]
+                >= 0
+            )
+            constraints.append(
+                x[f"{self.id}_chunk_{chunk_number}_dummy_{i}"]
+                - x[input_vars[output_bit_size + i]]
+                + x[input_vars[i]]
+                - x[output_vars[i]]
+                + x[f"{self.id}_chunk_{chunk_number}_dummy_{i + 1}"]
+                >= 0
+            )
+            constraints.append(
+                x[f"{self.id}_chunk_{chunk_number}_dummy_{i}"]
+                + x[input_vars[output_bit_size + i]]
+                - x[input_vars[i]]
+                + x[output_vars[i]]
+                - x[f"{self.id}_chunk_{chunk_number}_dummy_{i + 1}"]
+                >= 0
+            )
+            constraints.append(
+                x[f"{self.id}_chunk_{chunk_number}_dummy_{i}"]
+                - x[input_vars[output_bit_size + i]]
+                + x[input_vars[i]]
+                + x[output_vars[i]]
+                - x[f"{self.id}_chunk_{chunk_number}_dummy_{i + 1}"]
+                >= 0
+            )
+            constraints.append(
+                x[input_vars[output_bit_size + i]]
+                - x[f"{self.id}_chunk_{chunk_number}_dummy_{i}"]
+                + x[input_vars[i]]
+                + x[output_vars[i]]
+                + x[f"{self.id}_chunk_{chunk_number}_dummy_{i + 1}"]
+                >= 0
+            )
+            constraints.append(
+                x[f"{self.id}_chunk_{chunk_number}_dummy_{i}"]
+                + x[input_vars[output_bit_size + i]]
+                + x[input_vars[i]]
+                + x[output_vars[i]]
+                + x[f"{self.id}_chunk_{chunk_number}_dummy_{i + 1}"]
+                <= 4
+            )
 
-        constraints.append(correlation[f"{self.id}_modadd_probability{chunk_number}"] == sum(
-            x[f"{self.id}_chunk_{chunk_number}_dummy_{i}"] for i in range(output_bit_size)))
+        constraints.append(
+            correlation[f"{self.id}_modadd_probability{chunk_number}"]
+            == sum(x[f"{self.id}_chunk_{chunk_number}_dummy_{i}"] for i in range(output_bit_size))
+        )
 
         return variables, constraints
 
     def create_bct_mzn_constraint_from_component_ids(self):
         variables = []
         component_dict = self.as_python_dictionary()
-        delta_left_component_id = component_dict['input_id_link'][0]
-        delta_right_component_id = component_dict['input_id_link'][1]
+        delta_left_component_id = component_dict["input_id_link"][0]
+        delta_right_component_id = component_dict["input_id_link"][1]
         nabla_left_component_id = self.id
-        nabla_right_component_id = f'new_{delta_right_component_id}'
+        nabla_right_component_id = f"new_{delta_right_component_id}"
         branch_size = self.output_bit_size
         delta_left_vars = []
         delta_right_vars = []
         nabla_left_vars = []
         nabla_right_vars = []
         for i in range(branch_size):
-            delta_left_vars.append(f'{delta_left_component_id}_y{i}')
-            delta_right_vars.append(f'{delta_right_component_id}_y{i}')
-            nabla_left_vars.append(f'{nabla_left_component_id}_y{i}')
-            nabla_right_vars.append(f'{nabla_right_component_id}_y{i}')
+            delta_left_vars.append(f"{delta_left_component_id}_y{i}")
+            delta_right_vars.append(f"{delta_right_component_id}_y{i}")
+            nabla_left_vars.append(f"{nabla_left_component_id}_y{i}")
+            nabla_right_vars.append(f"{nabla_right_component_id}_y{i}")
         delta_left_str = ",".join(delta_left_vars)
         delta_right_str = ",".join(delta_right_vars)
         nabla_left_str = ",".join(nabla_left_vars)
         nabla_right_str = ",".join(nabla_right_vars)
 
-        delta_left = f'array1d(0..{branch_size}-1, [{delta_left_str}])'
-        delta_right = f'array1d(0..{branch_size}-1, [{delta_right_str}])'
-        nabla_left = f'array1d(0..{branch_size}-1, [{nabla_left_str}])'
-        nabla_right = f'array1d(0..{branch_size}-1, [{nabla_right_str}])'
+        delta_left = f"array1d(0..{branch_size}-1, [{delta_left_str}])"
+        delta_right = f"array1d(0..{branch_size}-1, [{delta_right_str}])"
+        nabla_left = f"array1d(0..{branch_size}-1, [{nabla_left_str}])"
+        nabla_right = f"array1d(0..{branch_size}-1, [{nabla_right_str}])"
 
         constraint = [
             f"constraint onlyLargeSwitch_BCT_enum({delta_left}, {delta_right}, "

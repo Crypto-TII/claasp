@@ -1,0 +1,922 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Mix column component &#8212; CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives v3.1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sage.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Multi input non linear logical operator component" href="multi_input_non_linear_logical_operator_component.html" />
+    <link rel="prev" title="Input data example" href="../cipher_modules/statistical_tests/input_data_example.html" />
+    <link rel="icon" href="../_static/sageicon.png" type="image/x-icon" />
+    <script src="../_static/thebe.js" type="text/javascript"></script>
+    <script src="../_static/thebe-sage.js" type="text/javascript"></script>
+
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="multi_input_non_linear_logical_operator_component.html" title="Multi input non linear logical operator component"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../cipher_modules/statistical_tests/input_data_example.html" title="Input data example"
+             accesskey="P">previous</a> |</li>
+  
+    
+      <a href="../../index.html"><img src="../_static/logo_tii.svg" height="28" style="vertical-align: middle" title="TII Logo"></a>
+    
+  
+  
+        <li class="nav-item nav-item-0"><a href="../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives v3.1.0 documentation</a> &#187;</li>
+
+        <li class="nav-item nav-item-this"><a href="">Mix column component</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="module-components.mix_column_component">
+<span id="mix-column-component"></span><h1>Mix column component<a class="headerlink" href="#module-components.mix_column_component" title="Permalink to this heading">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="components.mix_column_component.MixColumn">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MixColumn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">current_round_number</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_round_number_of_components</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_bit_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.mix_column_component.MixColumn" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">LinearLayer</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="components.mix_column_component.MixColumn.algebraic_polynomials">
+<span class="sig-name descname"><span class="pre">algebraic_polynomials</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.mix_column_component.MixColumn.algebraic_polynomials" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of polynomials for MIX COLUMN operation.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">model</span></code> – <strong>model object</strong>; a model instance</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.midori_block_cipher</span> <span class="kn">import</span> <span class="n">MidoriBlockCipher</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.algebraic.algebraic_model</span> <span class="kn">import</span> <span class="n">AlgebraicModel</span>
+<span class="gp">sage: </span><span class="n">midori</span> <span class="o">=</span> <span class="n">MidoriBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">mix_column</span> <span class="o">=</span> <span class="n">midori</span><span class="o">.</span><span class="n">get_component_from_id</span><span class="p">(</span><span class="s2">&quot;mix_column_0_20&quot;</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">mix_column</span><span class="o">.</span><span class="n">algebraic_polynomials</span><span class="p">(</span><span class="n">AlgebraicModel</span><span class="p">(</span><span class="n">midori</span><span class="p">))</span>
+<span class="go">[mix_column_0_20_x0 + mix_column_0_20_y0,</span>
+<span class="go"> mix_column_0_20_x1 + mix_column_0_20_y1,</span>
+<span class="go"> mix_column_0_20_x2 + mix_column_0_20_y2,</span>
+<span class="go"> ...</span>
+<span class="go"> mix_column_0_20_y61^2 + mix_column_0_20_y61,</span>
+<span class="go"> mix_column_0_20_y62^2 + mix_column_0_20_y62,</span>
+<span class="go"> mix_column_0_20_y63^2 + mix_column_0_20_y63]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.mix_column_component.MixColumn.as_python_dictionary">
+<span class="sig-name descname"><span class="pre">as_python_dictionary</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#components.mix_column_component.MixColumn.as_python_dictionary" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.mix_column_component.MixColumn.check_output_size">
+<span class="sig-name descname"><span class="pre">check_output_size</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">available_word_sizes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">word_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.mix_column_component.MixColumn.check_output_size" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.mix_column_component.MixColumn.cms_constraints">
+<span class="sig-name descname"><span class="pre">cms_constraints</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#components.mix_column_component.MixColumn.cms_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of variables and a list of clauses for MIX COLUMN in CMS CIPHER model.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../cipher_modules/models/sat/sat_model.html#sat-standard"><span class="std std-ref">SAT standard of Cipher</span></a> for the format.</p>
+</div>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p>None</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.midori_block_cipher</span> <span class="kn">import</span> <span class="n">MidoriBlockCipher</span>
+<span class="gp">sage: </span><span class="n">midori</span> <span class="o">=</span> <span class="n">MidoriBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">mix_column_component</span> <span class="o">=</span> <span class="n">midori</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">23</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">mix_column_component</span><span class="o">.</span><span class="n">cms_constraints</span><span class="p">()</span>
+<span class="go">([&#39;mix_column_0_23_0&#39;,</span>
+<span class="go">  &#39;mix_column_0_23_1&#39;,</span>
+<span class="go">  &#39;mix_column_0_23_2&#39;,</span>
+<span class="go">  ...</span>
+<span class="go">  &#39;-mix_column_0_23_15 -mix_column_0_20_35 mix_column_0_20_39 -mix_column_0_20_43&#39;,</span>
+<span class="go">  &#39;-mix_column_0_23_15 mix_column_0_20_35 -mix_column_0_20_39 -mix_column_0_20_43&#39;,</span>
+<span class="go">  &#39;mix_column_0_23_15 -mix_column_0_20_35 -mix_column_0_20_39 -mix_column_0_20_43&#39;])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.mix_column_component.MixColumn.cms_xor_differential_propagation_constraints">
+<span class="sig-name descname"><span class="pre">cms_xor_differential_propagation_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.mix_column_component.MixColumn.cms_xor_differential_propagation_constraints" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.mix_column_component.MixColumn.cms_xor_linear_mask_propagation_constraints">
+<span class="sig-name descname"><span class="pre">cms_xor_linear_mask_propagation_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.mix_column_component.MixColumn.cms_xor_linear_mask_propagation_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of variables and a list of clauses for LINEAR LAYER in CMS XOR LINEAR model.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../cipher_modules/models/sat/sat_model.html#sat-standard"><span class="std std-ref">SAT standard of Cipher</span></a> for the format.</p>
+</div>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">model</span></code> – <strong>model object</strong> (default: <span class="math">None</span>); a model instance</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.toys.fancy_block_cipher</span> <span class="kn">import</span> <span class="n">FancyBlockCipher</span>
+<span class="gp">sage: </span><span class="n">fancy</span> <span class="o">=</span> <span class="n">FancyBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">linear_layer_component</span> <span class="o">=</span> <span class="n">fancy</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">6</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">linear_layer_component</span><span class="o">.</span><span class="n">cms_xor_linear_mask_propagation_constraints</span><span class="p">()</span>
+<span class="go">([&#39;linear_layer_0_6_0_i&#39;,</span>
+<span class="go">  &#39;linear_layer_0_6_1_i&#39;,</span>
+<span class="go">  &#39;linear_layer_0_6_2_i&#39;,</span>
+<span class="go">  ...</span>
+<span class="go">  &#39;x -linear_layer_0_6_21_o dummy_0_linear_layer_0_6_21_o dummy_1_linear_layer_0_6_21_o dummy_2_linear_layer_0_6_21_o dummy_3_linear_layer_0_6_21_o dummy_4_linear_layer_0_6_21_o dummy_5_linear_layer_0_6_21_o dummy_6_linear_layer_0_6_21_o dummy_8_linear_layer_0_6_21_o dummy_9_linear_layer_0_6_21_o dummy_10_linear_layer_0_6_21_o dummy_11_linear_layer_0_6_21_o dummy_12_linear_layer_0_6_21_o dummy_18_linear_layer_0_6_21_o dummy_19_linear_layer_0_6_21_o dummy_23_linear_layer_0_6_21_o&#39;,</span>
+<span class="go">  &#39;x -linear_layer_0_6_22_o dummy_0_linear_layer_0_6_22_o dummy_1_linear_layer_0_6_22_o dummy_2_linear_layer_0_6_22_o dummy_3_linear_layer_0_6_22_o dummy_4_linear_layer_0_6_22_o dummy_6_linear_layer_0_6_22_o dummy_9_linear_layer_0_6_22_o dummy_13_linear_layer_0_6_22_o dummy_14_linear_layer_0_6_22_o dummy_15_linear_layer_0_6_22_o dummy_16_linear_layer_0_6_22_o dummy_19_linear_layer_0_6_22_o dummy_20_linear_layer_0_6_22_o dummy_21_linear_layer_0_6_22_o&#39;,</span>
+<span class="go">  &#39;x -linear_layer_0_6_23_o dummy_1_linear_layer_0_6_23_o dummy_5_linear_layer_0_6_23_o dummy_7_linear_layer_0_6_23_o dummy_8_linear_layer_0_6_23_o dummy_9_linear_layer_0_6_23_o dummy_14_linear_layer_0_6_23_o dummy_17_linear_layer_0_6_23_o dummy_18_linear_layer_0_6_23_o dummy_23_linear_layer_0_6_23_o&#39;])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.mix_column_component.MixColumn.cp_constraints">
+<span class="sig-name descname"><span class="pre">cp_constraints</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#components.mix_column_component.MixColumn.cp_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return lists of declarations and constraints for MIX COLUMN component for the CP cipher model.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p>None</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.aes_block_cipher</span> <span class="kn">import</span> <span class="n">AESBlockCipher</span>
+<span class="gp">sage: </span><span class="n">aes</span> <span class="o">=</span> <span class="n">AESBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">mix_column_component</span> <span class="o">=</span> <span class="n">aes</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">21</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">mix_column_component</span><span class="o">.</span><span class="n">cp_constraints</span><span class="p">()</span>
+<span class="go">([],</span>
+<span class="go"> [&#39;constraint mix_column_0_21[0] = (rot_0_17[1] + rot_0_18[0] + rot_0_18[1] + rot_0_19[0] + rot_0_20[0]) mod 2;&#39;,</span>
+<span class="go">  ...</span>
+<span class="go">  &#39;constraint mix_column_0_21[31] = (rot_0_17[0] + rot_0_17[7] + rot_0_18[7] + rot_0_19[7] + rot_0_20[0]) mod 2;&#39;])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.mix_column_component.MixColumn.cp_deterministic_truncated_xor_differential_constraints">
+<span class="sig-name descname"><span class="pre">cp_deterministic_truncated_xor_differential_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inverse</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.mix_column_component.MixColumn.cp_deterministic_truncated_xor_differential_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return lists declarations and constraints for MIX COLUMN component for the CP deterministic truncated xor differential model.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">inverse</span></code> – <strong>boolean</strong> (default: <span class="math">False</span>)</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.aes_block_cipher</span> <span class="kn">import</span> <span class="n">AESBlockCipher</span>
+<span class="gp">sage: </span><span class="n">aes</span> <span class="o">=</span> <span class="n">AESBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">mix_column_component</span> <span class="o">=</span> <span class="n">aes</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">21</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">mix_column_component</span><span class="o">.</span><span class="n">cp_deterministic_truncated_xor_differential_constraints</span><span class="p">()</span>
+<span class="go">([],</span>
+<span class="go"> [&#39;constraint if ((rot_0_17[1] &lt; 2) /\\ (rot_0_18[0] &lt; 2) /\\ (rot_0_18[1] &lt; 2) /\\ (rot_0_19[0] &lt; 2) /\\ (rot_0_20[0]&lt; 2)) then mix_column_0_21[0] = (rot_0_17[1] + rot_0_18[0] + rot_0_18[1] + rot_0_19[0] + rot_0_20[0]) mod 2 else mix_column_0_21[0] = 2 endif;&#39;,</span>
+<span class="go">   ...</span>
+<span class="go">  &#39;constraint if ((rot_0_17[0] &lt; 2) /\\ (rot_0_17[7] &lt; 2) /\\ (rot_0_18[7] &lt; 2) /\\ (rot_0_19[7] &lt; 2) /\\ (rot_0_20[0]&lt; 2)) then mix_column_0_21[31] = (rot_0_17[0] + rot_0_17[7] + rot_0_18[7] + rot_0_19[7] + rot_0_20[0]) mod 2 else mix_column_0_21[31] = 2 endif;&#39;])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.mix_column_component.MixColumn.cp_deterministic_truncated_xor_differential_trail_constraints">
+<span class="sig-name descname"><span class="pre">cp_deterministic_truncated_xor_differential_trail_constraints</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#components.mix_column_component.MixColumn.cp_deterministic_truncated_xor_differential_trail_constraints" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.mix_column_component.MixColumn.cp_wordwise_deterministic_truncated_xor_differential_constraints">
+<span class="sig-name descname"><span class="pre">cp_wordwise_deterministic_truncated_xor_differential_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.mix_column_component.MixColumn.cp_wordwise_deterministic_truncated_xor_differential_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return lists declarations and constraints for LINEAR LAYER CP deterministic truncated xor differential model.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">inverse</span></code> – <strong>boolean</strong> (default: <span class="math">False</span>)</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.toys.fancy_block_cipher</span> <span class="kn">import</span> <span class="n">FancyBlockCipher</span>
+<span class="gp">sage: </span><span class="n">fancy</span> <span class="o">=</span> <span class="n">FancyBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">linear_layer_component</span> <span class="o">=</span> <span class="n">fancy</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">linear_layer_component</span><span class="o">.</span><span class="n">cp_deterministic_truncated_xor_differential_constraints</span><span class="p">()</span>
+<span class="go">([],</span>
+<span class="go"> [&#39;constraint if ((sbox_0_0[2] &lt; 2) /\\ (sbox_0_0[3] &lt; 2) /\\ (sbox_0_1[0] &lt; 2) /\\ (sbox_0_1[1] &lt; 2) /\\ (sbox_0_1[3] &lt; 2) /\\ (sbox_0_2[0] &lt; 2) /\\ (sbox_0_2[1] &lt; 2) /\\ (sbox_0_3[1] &lt; 2) /\\ (sbox_0_4[2] &lt; 2) /\\ (sbox_0_5[1] &lt; 2) /\\ (sbox_0_5[3]&lt; 2)) then linear_layer_0_6[0] = (sbox_0_0[2] + sbox_0_0[3] + sbox_0_1[0] + sbox_0_1[1] + sbox_0_1[3] + sbox_0_2[0] + sbox_0_2[1] + sbox_0_3[1] + sbox_0_4[2] + sbox_0_5[1] + sbox_0_5[3]) mod 2 else linear_layer_0_6[0] = 2 endif;&#39;,</span>
+<span class="go">  ...</span>
+<span class="go">  &#39;constraint if ((sbox_0_0[0] &lt; 2) /\\ (sbox_0_0[1] &lt; 2) /\\ (sbox_0_0[2] &lt; 2) /\\ (sbox_0_0[3] &lt; 2) /\\ (sbox_0_1[3] &lt; 2) /\\ (sbox_0_2[1] &lt; 2) /\\ (sbox_0_3[1] &lt; 2) /\\ (sbox_0_3[2] &lt; 2) /\\ (sbox_0_3[3] &lt; 2) /\\ (sbox_0_4[1] &lt; 2) /\\ (sbox_0_4[2] &lt; 2) /\\ (sbox_0_4[3] &lt; 2) /\\ (sbox_0_5[1] &lt; 2) /\\ (sbox_0_5[2] &lt; 2) /\\ (sbox_0_5[3]&lt; 2)) then linear_layer_0_6[23] = (sbox_0_0[0] + sbox_0_0[1] + sbox_0_0[2] + sbox_0_0[3] + sbox_0_1[3] + sbox_0_2[1] + sbox_0_3[1] + sbox_0_3[2] + sbox_0_3[3] + sbox_0_4[1] + sbox_0_4[2] + sbox_0_4[3] + sbox_0_5[1] + sbox_0_5[2] + sbox_0_5[3]) mod 2 else linear_layer_0_6[23] = 2 endif;&#39;])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.mix_column_component.MixColumn.cp_xor_differential_propagation_constraints">
+<span class="sig-name descname"><span class="pre">cp_xor_differential_propagation_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.mix_column_component.MixColumn.cp_xor_differential_propagation_constraints" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.mix_column_component.MixColumn.cp_xor_differential_propagation_first_step_constraints">
+<span class="sig-name descname"><span class="pre">cp_xor_differential_propagation_first_step_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.mix_column_component.MixColumn.cp_xor_differential_propagation_first_step_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return declarations and constraints for MIX COLUMN component for the CP xor differential first step model.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">model</span></code> – <strong>model object</strong>; a model instance</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.aes_block_cipher</span> <span class="kn">import</span> <span class="n">AESBlockCipher</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.cp.mzn_model</span> <span class="kn">import</span> <span class="n">MznModel</span>
+<span class="gp">sage: </span><span class="n">aes</span> <span class="o">=</span> <span class="n">AESBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">cp</span> <span class="o">=</span> <span class="n">MznModel</span><span class="p">(</span><span class="n">aes</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">mix_column_component</span> <span class="o">=</span> <span class="n">aes</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">21</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">mix_column_component</span><span class="o">.</span><span class="n">cp_xor_differential_propagation_first_step_constraints</span><span class="p">(</span><span class="n">cp</span><span class="p">)</span>
+<span class="go">([&#39;array[0..3] of var 0..1: mix_column_0_21;&#39;,</span>
+<span class="go">  &#39;array[0..93, 1..8] of int: mix_column_truncated_table_mix_column_0_21 = array2d(0..93, 1..8, [0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,1,0,1,1,1,1,0,0,1,1,0,1,1,1,0,0,1,1,1,0,1,1,0,0,1,1,1,1,0,1,0,0,1,1,1,1,1,0,0,0,1,1,1,1,1,1,0,1,0,0,1,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,1,0,1,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,1,0,0,1,0,1,1,1,1,1,0,1,1,0,0,1,1,1,0,1,1,0,1,0,1,1,0,1,1,0,1,1,0,1,0,1,1,0,1,1,1,0,0,1,1,0,1,1,1,1,0,1,1,1,0,0,1,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,1,0,0,1,1,1,0,1,1,1,0,1,1,1,1,0,0,1,0,1,1,1,1,0,1,0,0,1,1,1,1,0,1,1,0,1,1,1,1,1,0,0,0,1,1,1,1,1,0,1,0,1,1,1,1,1,1,0,0,1,1,1,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,1,0,1,1,1,1,0,0,1,1,0,1,1,1,0,0,1,1,1,0,1,1,0,0,1,1,1,1,0,1,0,0,1,1,1,1,1,1,0,1,0,0,1,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,1,0,1,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,1,1,0,1,1,0,0,1,1,1,0,1,1,0,1,0,1,1,0,1,1,0,1,1,0,1,0,1,1,0,1,1,1,1,0,1,1,1,0,0,1,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,1,1,0,1,1,1,1,0,0,1,0,1,1,1,1,0,1,1,0,1,1,1,1,1,0,1,0,1,1,1,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,1,0,1,1,1,1,0,0,1,1,0,1,1,1,0,0,1,1,1,0,1,1,0,0,1,1,1,1,1,1,0,1,0,0,1,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,1,0,1,1,0,1,0,1,1,1,1,1,0,1,1,0,0,1,1,1,0,1,1,0,1,0,1,1,0,1,1,0,1,1,1,1,0,1,1,1,0,0,1,1,0,1,1,1,0,1,1,1,0,1,1,1,1,0,1,1,0,1,1,1,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,1,0,1,1,1,1,0,0,1,1,0,1,1,1,0,0,1,1,1,1,1,1,0,1,0,0,1,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,1,1,1,1,0,1,1,0,0,1,1,1,0,1,1,0,1,1,1,1,0,1,1,1,0,1,1,1,0,1,1,1,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,1,0,1,1,1,1,0,0,1,1,1,1,1,1,0,1,0,0,1,1,1,1,0,1,0,1,1,1,1,1,0,1,1,0,1,1,1,1,0,1,1,1,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,1,1,1,1,1,1,0,1,0,1,1,1,1,1,0,1,1,1,1,1,1,1,1,0,0,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1]);&#39;],</span>
+<span class="go"> [&#39;constraint table([rot_0_17[0]]++[rot_0_18[0]]++[rot_0_19[0]]++[rot_0_20[0]]++[mix_column_0_21[0]]++[mix_column_0_21[1]]++[mix_column_0_21[2]]++[mix_column_0_21[3]], mix_column_truncated_table_mix_column_0_21);&#39;])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.mix_column_component.MixColumn.cp_xor_linear_mask_propagation_constraints">
+<span class="sig-name descname"><span class="pre">cp_xor_linear_mask_propagation_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.mix_column_component.MixColumn.cp_xor_linear_mask_propagation_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return lists of declarations and constraints for MIX COLUMN component for the CP xor linear model.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">model</span></code> – <strong>model object</strong> (default: <span class="math">None</span>); a model instance</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.aes_block_cipher</span> <span class="kn">import</span> <span class="n">AESBlockCipher</span>
+<span class="gp">sage: </span><span class="n">aes</span> <span class="o">=</span> <span class="n">AESBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">mix_column_component</span> <span class="o">=</span> <span class="n">aes</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">21</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">mix_column_component</span><span class="o">.</span><span class="n">cp_xor_linear_mask_propagation_constraints</span><span class="p">()</span>
+<span class="go">([&#39;array[0..31] of var 0..1:mix_column_0_21_i;&#39;,</span>
+<span class="go">  &#39;array[0..31] of var 0..1:mix_column_0_21_o;&#39;],</span>
+<span class="go"> [&#39;constraint mix_column_0_21_i[0]=(mix_column_0_21_o[1]+mix_column_0_21_o[2]+mix_column_0_21_o[3]+mix_column_0_21_o[8]+mix_column_0_21_o[9]+mix_column_0_21_o[11]+mix_column_0_21_o[16]+mix_column_0_21_o[18]+mix_column_0_21_o[19]+mix_column_0_21_o[24]+mix_column_0_21_o[27]) mod 2;&#39;,</span>
+<span class="go">  ...</span>
+<span class="go">  &#39;constraint mix_column_0_21_i[31]=(mix_column_0_21_o[0]+mix_column_0_21_o[2]+mix_column_0_21_o[7]+mix_column_0_21_o[9]+mix_column_0_21_o[10]+mix_column_0_21_o[15]+mix_column_0_21_o[18]+mix_column_0_21_o[23]+mix_column_0_21_o[24]+mix_column_0_21_o[25]+mix_column_0_21_o[26]) mod 2;&#39;])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="components.mix_column_component.MixColumn.description">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">description</span></span><a class="headerlink" href="#components.mix_column_component.MixColumn.description" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.mix_column_component.MixColumn.get_bit_based_c_code">
+<span class="sig-name descname"><span class="pre">get_bit_based_c_code</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">verbosity</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.mix_column_component.MixColumn.get_bit_based_c_code" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.mix_column_component.MixColumn.get_bit_based_vectorized_python_code">
+<span class="sig-name descname"><span class="pre">get_bit_based_vectorized_python_code</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">convert_output_to_bytes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.mix_column_component.MixColumn.get_bit_based_vectorized_python_code" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.mix_column_component.MixColumn.get_byte_based_vectorized_python_code">
+<span class="sig-name descname"><span class="pre">get_byte_based_vectorized_python_code</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">params</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.mix_column_component.MixColumn.get_byte_based_vectorized_python_code" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.mix_column_component.MixColumn.get_graph_representation">
+<span class="sig-name descname"><span class="pre">get_graph_representation</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#components.mix_column_component.MixColumn.get_graph_representation" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="components.mix_column_component.MixColumn.id">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#components.mix_column_component.MixColumn.id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="components.mix_column_component.MixColumn.input_bit_positions">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">input_bit_positions</span></span><a class="headerlink" href="#components.mix_column_component.MixColumn.input_bit_positions" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="components.mix_column_component.MixColumn.input_bit_size">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">input_bit_size</span></span><a class="headerlink" href="#components.mix_column_component.MixColumn.input_bit_size" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="components.mix_column_component.MixColumn.input_id_links">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">input_id_links</span></span><a class="headerlink" href="#components.mix_column_component.MixColumn.input_id_links" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.mix_column_component.MixColumn.is_forbidden">
+<span class="sig-name descname"><span class="pre">is_forbidden</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">forbidden_types</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">forbidden_descriptions</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.mix_column_component.MixColumn.is_forbidden" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.mix_column_component.MixColumn.is_id_equal_to">
+<span class="sig-name descname"><span class="pre">is_id_equal_to</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.mix_column_component.MixColumn.is_id_equal_to" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.mix_column_component.MixColumn.is_power_of_2_word_based">
+<span class="sig-name descname"><span class="pre">is_power_of_2_word_based</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dto</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.mix_column_component.MixColumn.is_power_of_2_word_based" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.mix_column_component.MixColumn.milp_bitwise_deterministic_truncated_xor_differential_binary_constraints">
+<span class="sig-name descname"><span class="pre">milp_bitwise_deterministic_truncated_xor_differential_binary_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.mix_column_component.MixColumn.milp_bitwise_deterministic_truncated_xor_differential_binary_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of variables and a list of constraints for linear layer
+component in deterministic truncated XOR differential model.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">model</span></code> – <strong>model object</strong>; a model instance</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.permutations.ascon_sbox_sigma_permutation</span> <span class="kn">import</span> <span class="n">AsconSboxSigmaPermutation</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model</span> <span class="kn">import</span> <span class="n">MilpBitwiseDeterministicTruncatedXorDifferentialModel</span>
+<span class="gp">sage: </span><span class="n">ascon</span> <span class="o">=</span> <span class="n">AsconSboxSigmaPermutation</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">milp</span> <span class="o">=</span> <span class="n">MilpBitwiseDeterministicTruncatedXorDifferentialModel</span><span class="p">(</span><span class="n">ascon</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">milp</span><span class="o">.</span><span class="n">init_model_in_sage_milp_class</span><span class="p">()</span>
+<span class="gp">sage: </span><span class="n">linear_layer_component</span> <span class="o">=</span> <span class="n">ascon</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">68</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">variables</span><span class="p">,</span> <span class="n">constraints</span> <span class="o">=</span> <span class="n">linear_layer_component</span><span class="o">.</span><span class="n">milp_bitwise_deterministic_truncated_xor_differential_binary_constraints</span><span class="p">(</span><span class="n">milp</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.mix_column_component.MixColumn.milp_bitwise_deterministic_truncated_xor_differential_constraints">
+<span class="sig-name descname"><span class="pre">milp_bitwise_deterministic_truncated_xor_differential_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.mix_column_component.MixColumn.milp_bitwise_deterministic_truncated_xor_differential_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of variables and a list of constraints for linear layer
+component in deterministic truncated XOR differential model.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">model</span></code> – <strong>model object</strong>; a model instance</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.present_block_cipher</span> <span class="kn">import</span> <span class="n">PresentBlockCipher</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model</span> <span class="kn">import</span> <span class="n">MilpBitwiseDeterministicTruncatedXorDifferentialModel</span>
+<span class="gp">sage: </span><span class="n">present</span> <span class="o">=</span> <span class="n">PresentBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">milp</span> <span class="o">=</span> <span class="n">MilpBitwiseDeterministicTruncatedXorDifferentialModel</span><span class="p">(</span><span class="n">present</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">milp</span><span class="o">.</span><span class="n">init_model_in_sage_milp_class</span><span class="p">()</span>
+<span class="gp">sage: </span><span class="n">linear_layer_component</span> <span class="o">=</span> <span class="n">present</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">17</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">variables</span><span class="p">,</span> <span class="n">constraints</span> <span class="o">=</span> <span class="n">linear_layer_component</span><span class="o">.</span><span class="n">milp_bitwise_deterministic_truncated_xor_differential_constraints</span><span class="p">(</span><span class="n">milp</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">variables</span>
+<span class="go">[(&#39;x_class[sbox_0_1_0]&#39;, x_0),</span>
+<span class="go"> (&#39;x_class[sbox_0_1_1]&#39;, x_1),</span>
+<span class="go"> ...</span>
+<span class="go"> (&#39;x_class[linear_layer_0_17_62]&#39;, x_126),</span>
+<span class="go"> (&#39;x_class[linear_layer_0_17_63]&#39;, x_127)]</span>
+<span class="gp">sage: </span><span class="n">constraints</span>
+<span class="go">[x_64 == x_0,</span>
+<span class="go"> x_65 == x_4,</span>
+<span class="go"> ...</span>
+<span class="go"> x_126 == x_59,</span>
+<span class="go"> x_127 == x_63]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.mix_column_component.MixColumn.milp_constraints">
+<span class="sig-name descname"><span class="pre">milp_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.mix_column_component.MixColumn.milp_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return lists of variables and constrains modeling a component of type MIX COLUMN for MILP CIPHER model.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">model</span></code> – <strong>model object</strong>; a model instance</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.aes_block_cipher</span> <span class="kn">import</span> <span class="n">AESBlockCipher</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.milp.milp_model</span> <span class="kn">import</span> <span class="n">MilpModel</span>
+<span class="gp">sage: </span><span class="n">aes</span> <span class="o">=</span> <span class="n">AESBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">milp</span> <span class="o">=</span> <span class="n">MilpModel</span><span class="p">(</span><span class="n">aes</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">milp</span><span class="o">.</span><span class="n">init_model_in_sage_milp_class</span><span class="p">()</span>
+<span class="gp">sage: </span><span class="n">mix_column_component</span> <span class="o">=</span> <span class="n">aes</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">21</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">variables</span><span class="p">,</span> <span class="n">constraints</span> <span class="o">=</span> <span class="n">mix_column_component</span><span class="o">.</span><span class="n">milp_constraints</span><span class="p">(</span><span class="n">milp</span><span class="p">)</span>
+<span class="go">...</span>
+<span class="gp">sage: </span><span class="n">variables</span>
+<span class="go">[(&#39;x[rot_0_17_0]&#39;, x_0),</span>
+<span class="go">(&#39;x[rot_0_17_1]&#39;, x_1),</span>
+<span class="go">...</span>
+<span class="go">(&#39;x[mix_column_0_21_30]&#39;, x_62),</span>
+<span class="go">(&#39;x[mix_column_0_21_31]&#39;, x_63)]</span>
+<span class="gp">sage: </span><span class="n">constraints</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span>
+<span class="go">[1 &lt;= 1 - x_1 + x_8 + x_9 + x_16 + x_24 + x_32,</span>
+<span class="go"> 1 &lt;= 1 + x_1 - x_8 + x_9 + x_16 + x_24 + x_32,</span>
+<span class="go"> 1 &lt;= 1 + x_1 + x_8 - x_9 + x_16 + x_24 + x_32]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.mix_column_component.MixColumn.milp_wordwise_deterministic_truncated_xor_differential_constraints">
+<span class="sig-name descname"><span class="pre">milp_wordwise_deterministic_truncated_xor_differential_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.mix_column_component.MixColumn.milp_wordwise_deterministic_truncated_xor_differential_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of variables and a list of constraints for mix column
+component in deterministic truncated XOR differential model.</p>
+<p>For MDS matrices, this method implements Model 5 from <a class="reference external" href="https://tosc.iacr.org/index.php/ToSC/article/view/8702/8294">https://tosc.iacr.org/index.php/ToSC/article/view/8702/8294</a>
+INPUTS:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">model</span></code> – <strong>model object</strong>; a model instance</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.aes_block_cipher</span> <span class="kn">import</span> <span class="n">AESBlockCipher</span>
+<span class="gp">sage: </span><span class="n">aes</span> <span class="o">=</span> <span class="n">AESBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model</span> <span class="kn">import</span> <span class="n">MilpWordwiseDeterministicTruncatedXorDifferentialModel</span>
+<span class="gp">sage: </span><span class="n">milp</span> <span class="o">=</span> <span class="n">MilpWordwiseDeterministicTruncatedXorDifferentialModel</span><span class="p">(</span><span class="n">aes</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">milp</span><span class="o">.</span><span class="n">init_model_in_sage_milp_class</span><span class="p">()</span>
+<span class="gp">sage: </span><span class="n">mix_column_component</span> <span class="o">=</span> <span class="n">aes</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">21</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">variables</span><span class="p">,</span> <span class="n">constraints</span> <span class="o">=</span> <span class="n">mix_column_component</span><span class="o">.</span><span class="n">milp_wordwise_deterministic_truncated_xor_differential_constraints</span><span class="p">(</span><span class="n">milp</span><span class="p">)</span> <span class="c1"># random</span>
+<span class="gp">sage: </span><span class="n">variables</span>
+<span class="go">[(&#39;x[rot_0_17_word_0_class_bit_0]&#39;, x_0),</span>
+<span class="go"> (&#39;x[rot_0_17_word_0_class_bit_1]&#39;, x_1),</span>
+<span class="go"> ...</span>
+<span class="go"> (&#39;x[mix_column_0_21_word_3_class_bit_0]&#39;, x_14),</span>
+<span class="go"> (&#39;x[mix_column_0_21_word_3_class_bit_1]&#39;, x_15)]</span>
+<span class="gp">sage: </span><span class="n">constraints</span>
+<span class="go">[1 &lt;= 1 + x_0 + x_1 + x_2 + x_3 + x_4 + x_5 + x_6 - x_15,</span>
+<span class="go"> 1 &lt;= 1 + x_0 + x_1 + x_2 + x_3 + x_4 + x_5 + x_7 - x_15,</span>
+<span class="go"> ...</span>
+<span class="go">1 &lt;= 1 - x_11 + x_13,</span>
+<span class="go">1 &lt;= 1 - x_9 + x_11]</span>
+
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.midori_block_cipher</span> <span class="kn">import</span> <span class="n">MidoriBlockCipher</span>
+<span class="gp">sage: </span><span class="n">cipher</span> <span class="o">=</span> <span class="n">MidoriBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model</span> <span class="kn">import</span> <span class="n">MilpWordwiseDeterministicTruncatedXorDifferentialModel</span>
+<span class="gp">sage: </span><span class="n">milp</span> <span class="o">=</span> <span class="n">MilpWordwiseDeterministicTruncatedXorDifferentialModel</span><span class="p">(</span><span class="n">cipher</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">milp</span><span class="o">.</span><span class="n">init_model_in_sage_milp_class</span><span class="p">()</span>
+<span class="gp">sage: </span><span class="n">mix_column_component</span> <span class="o">=</span> <span class="n">cipher</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">21</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">variables</span><span class="p">,</span> <span class="n">constraints</span> <span class="o">=</span> <span class="n">mix_column_component</span><span class="o">.</span><span class="n">milp_wordwise_deterministic_truncated_xor_differential_constraints</span><span class="p">(</span><span class="n">milp</span><span class="p">)</span>
+<span class="go">...</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.mix_column_component.MixColumn.milp_xor_differential_propagation_constraints">
+<span class="sig-name descname"><span class="pre">milp_xor_differential_propagation_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.mix_column_component.MixColumn.milp_xor_differential_propagation_constraints" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.mix_column_component.MixColumn.milp_xor_linear_mask_propagation_constraints">
+<span class="sig-name descname"><span class="pre">milp_xor_linear_mask_propagation_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.mix_column_component.MixColumn.milp_xor_linear_mask_propagation_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return lists of variables and constraints for MIX COLUMN component for MILP xor linear.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">model</span></code> – <strong>model object</strong>; a model instance</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.midori_block_cipher</span> <span class="kn">import</span> <span class="n">MidoriBlockCipher</span>
+<span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.cipher_modules.models.milp.milp_model</span> <span class="kn">import</span> <span class="n">MilpModel</span>
+<span class="gp">sage: </span><span class="n">midori</span> <span class="o">=</span> <span class="n">MidoriBlockCipher</span><span class="p">()</span>
+<span class="gp">sage: </span><span class="n">milp</span> <span class="o">=</span> <span class="n">MilpModel</span><span class="p">(</span><span class="n">midori</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">milp</span><span class="o">.</span><span class="n">init_model_in_sage_milp_class</span><span class="p">()</span>
+<span class="gp">sage: </span><span class="n">mix_column_component</span> <span class="o">=</span> <span class="n">midori</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">variables</span><span class="p">,</span> <span class="n">constraints</span> <span class="o">=</span> <span class="n">mix_column_component</span><span class="o">.</span><span class="n">milp_xor_linear_mask_propagation_constraints</span><span class="p">(</span><span class="n">milp</span><span class="p">)</span>
+<span class="go">...</span>
+<span class="gp">sage: </span><span class="n">variables</span>
+<span class="go">[(&#39;x[mix_column_0_20_0_i]&#39;, x_0),</span>
+<span class="go"> (&#39;x[mix_column_0_20_1_i]&#39;, x_1),</span>
+<span class="go">...</span>
+<span class="go"> (&#39;x[mix_column_0_20_62_o]&#39;, x_126),</span>
+<span class="go"> (&#39;x[mix_column_0_20_63_o]&#39;, x_127)]</span>
+
+<span class="gp">sage: </span><span class="n">constraints</span>
+<span class="go">[x_64 == x_0,</span>
+<span class="go"> x_65 == x_1,</span>
+<span class="go">...</span>
+<span class="go">x_126 == x_34,</span>
+<span class="go">x_127 == x_35]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="components.mix_column_component.MixColumn.output_bit_size">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">output_bit_size</span></span><a class="headerlink" href="#components.mix_column_component.MixColumn.output_bit_size" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.mix_column_component.MixColumn.output_size_for_concatenate">
+<span class="sig-name descname"><span class="pre">output_size_for_concatenate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">available_word_sizes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">word_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.mix_column_component.MixColumn.output_size_for_concatenate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.mix_column_component.MixColumn.print">
+<span class="sig-name descname"><span class="pre">print</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#components.mix_column_component.MixColumn.print" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.mix_column_component.MixColumn.print_as_python_dictionary">
+<span class="sig-name descname"><span class="pre">print_as_python_dictionary</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#components.mix_column_component.MixColumn.print_as_python_dictionary" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.mix_column_component.MixColumn.print_values">
+<span class="sig-name descname"><span class="pre">print_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">code</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.mix_column_component.MixColumn.print_values" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.mix_column_component.MixColumn.print_word_values">
+<span class="sig-name descname"><span class="pre">print_word_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">code</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.mix_column_component.MixColumn.print_word_values" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.mix_column_component.MixColumn.sat_bitwise_deterministic_truncated_xor_differential_constraints">
+<span class="sig-name descname"><span class="pre">sat_bitwise_deterministic_truncated_xor_differential_constraints</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#components.mix_column_component.MixColumn.sat_bitwise_deterministic_truncated_xor_differential_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of variables and a list of clauses representing MIX COLUMN for SAT DETERMINISTIC TRUNCATED XOR DIFFERENTIAL model</p>
+<p>The model is generated converting the MIX COLUMN compoment into a
+<a class="reference internal" href="linear_layer_component.html#components.linear_layer_component.LinearLayer" title="components.linear_layer_component.LinearLayer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LINEAR</span> <span class="pre">LAYER</span></code></a> and using the
+<a class="reference internal" href="linear_layer_component.html#components.linear_layer_component.LinearLayer.sat_bitwise_deterministic_truncated_xor_differential_constraints" title="components.linear_layer_component.LinearLayer.sat_bitwise_deterministic_truncated_xor_differential_constraints"><code class="xref py py-obj docutils literal notranslate"><span class="pre">corresponding</span> <span class="pre">method</span></code></a>.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../cipher_modules/models/sat/sat_model.html#sat-standard"><span class="std std-ref">SAT standard of Cipher</span></a> for the format.</p>
+</div>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p>None</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.midori_block_cipher</span> <span class="kn">import</span> <span class="n">MidoriBlockCipher</span>
+<span class="gp">sage: </span><span class="n">midori</span> <span class="o">=</span> <span class="n">MidoriBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">mix_column_component</span> <span class="o">=</span> <span class="n">midori</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">23</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">variables</span><span class="p">,</span> <span class="n">constraints</span> <span class="o">=</span> <span class="n">mix_column_component</span><span class="o">.</span><span class="n">sat_bitwise_deterministic_truncated_xor_differential_constraints</span><span class="p">()</span>
+<span class="gp">sage: </span><span class="n">constraints</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+<span class="go">&#39;mix_column_0_23_15_0 -inter_0_mix_column_0_23_15_1 -mix_column_0_20_43_1 -mix_column_0_23_15_1&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.mix_column_component.MixColumn.sat_constraints">
+<span class="sig-name descname"><span class="pre">sat_constraints</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#components.mix_column_component.MixColumn.sat_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of variables and a list of clauses representing MIX COLUMN for SAT CIPHER model</p>
+<p>The model is generated converting the MIX COLUMN compoment into a
+<a class="reference internal" href="linear_layer_component.html#components.linear_layer_component.LinearLayer" title="components.linear_layer_component.LinearLayer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LINEAR</span> <span class="pre">LAYER</span></code></a> and using the
+<a class="reference internal" href="linear_layer_component.html#components.linear_layer_component.LinearLayer.sat_constraints" title="components.linear_layer_component.LinearLayer.sat_constraints"><code class="xref py py-obj docutils literal notranslate"><span class="pre">corresponding</span> <span class="pre">method</span></code></a>.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../cipher_modules/models/sat/sat_model.html#sat-standard"><span class="std std-ref">SAT standard of Cipher</span></a> for the format.</p>
+</div>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p>None</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.midori_block_cipher</span> <span class="kn">import</span> <span class="n">MidoriBlockCipher</span>
+<span class="gp">sage: </span><span class="n">midori</span> <span class="o">=</span> <span class="n">MidoriBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">mix_column_component</span> <span class="o">=</span> <span class="n">midori</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">23</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">variables</span><span class="p">,</span> <span class="n">constraints</span> <span class="o">=</span> <span class="n">mix_column_component</span><span class="o">.</span><span class="n">sat_constraints</span><span class="p">()</span>
+<span class="gp">sage: </span><span class="n">constraints</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+<span class="go">&#39;mix_column_0_23_15 -mix_column_0_20_35 -mix_column_0_20_39 -mix_column_0_20_43&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.mix_column_component.MixColumn.sat_xor_differential_propagation_constraints">
+<span class="sig-name descname"><span class="pre">sat_xor_differential_propagation_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.mix_column_component.MixColumn.sat_xor_differential_propagation_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of variables and a list of clauses representing MIX COLUMN for SAT XOR DIFFERENTIAL model</p>
+<p>The model is generated converting the MIX COLUMN compoment into a
+<a class="reference internal" href="linear_layer_component.html#components.linear_layer_component.LinearLayer" title="components.linear_layer_component.LinearLayer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LINEAR</span> <span class="pre">LAYER</span></code></a> and using the
+<a class="reference internal" href="linear_layer_component.html#components.linear_layer_component.LinearLayer.sat_xor_differential_propagation_constraints" title="components.linear_layer_component.LinearLayer.sat_xor_differential_propagation_constraints"><code class="xref py py-obj docutils literal notranslate"><span class="pre">corresponding</span> <span class="pre">method</span></code></a>.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../cipher_modules/models/sat/sat_model.html#sat-standard"><span class="std std-ref">SAT standard of Cipher</span></a> for the format.</p>
+</div>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p>None</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.midori_block_cipher</span> <span class="kn">import</span> <span class="n">MidoriBlockCipher</span>
+<span class="gp">sage: </span><span class="n">midori</span> <span class="o">=</span> <span class="n">MidoriBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">mix_column_component</span> <span class="o">=</span> <span class="n">midori</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">23</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">variables</span><span class="p">,</span> <span class="n">constraints</span> <span class="o">=</span> <span class="n">mix_column_component</span><span class="o">.</span><span class="n">sat_xor_differential_propagation_constraints</span><span class="p">()</span>
+<span class="gp">sage: </span><span class="n">constraints</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+<span class="go">&#39;mix_column_0_23_15 -mix_column_0_20_35 -mix_column_0_20_39 -mix_column_0_20_43&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.mix_column_component.MixColumn.sat_xor_linear_mask_propagation_constraints">
+<span class="sig-name descname"><span class="pre">sat_xor_linear_mask_propagation_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.mix_column_component.MixColumn.sat_xor_linear_mask_propagation_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of variables and a list of clauses representing MIX COLUMN for SAT XOR LINEAR model</p>
+<p>The model is generated converting the MIX COLUMN compoment into a
+<a class="reference internal" href="linear_layer_component.html#components.linear_layer_component.LinearLayer" title="components.linear_layer_component.LinearLayer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LINEAR</span> <span class="pre">LAYER</span></code></a> and using the
+<a class="reference internal" href="linear_layer_component.html#components.linear_layer_component.LinearLayer.sat_xor_linear_mask_propagation_constraints" title="components.linear_layer_component.LinearLayer.sat_xor_linear_mask_propagation_constraints"><code class="xref py py-obj docutils literal notranslate"><span class="pre">corresponding</span> <span class="pre">method</span></code></a>.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../cipher_modules/models/sat/sat_model.html#sat-standard"><span class="std std-ref">SAT standard of Cipher</span></a> for the format.</p>
+</div>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">model</span></code> – <strong>model object</strong> (default: <span class="math">None</span>); a model instance</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.midori_block_cipher</span> <span class="kn">import</span> <span class="n">MidoriBlockCipher</span>
+<span class="gp">sage: </span><span class="n">midori</span> <span class="o">=</span> <span class="n">MidoriBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">mix_column_component</span> <span class="o">=</span> <span class="n">midori</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">23</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">variables</span><span class="p">,</span> <span class="n">constraints</span> <span class="o">=</span> <span class="n">mix_column_component</span><span class="o">.</span><span class="n">sat_xor_linear_mask_propagation_constraints</span><span class="p">()</span>
+<span class="gp">sage: </span><span class="n">constraints</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+<span class="go">&#39;mix_column_0_23_15_o -dummy_3_mix_column_0_23_15_o -dummy_7_mix_column_0_23_15_o -dummy_11_mix_column_0_23_15_o&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.mix_column_component.MixColumn.select_bits">
+<span class="sig-name descname"><span class="pre">select_bits</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">code</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.mix_column_component.MixColumn.select_bits" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.mix_column_component.MixColumn.select_words">
+<span class="sig-name descname"><span class="pre">select_words</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">code</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">word_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.mix_column_component.MixColumn.select_words" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.mix_column_component.MixColumn.set_description">
+<span class="sig-name descname"><span class="pre">set_description</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">description</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.mix_column_component.MixColumn.set_description" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.mix_column_component.MixColumn.set_id">
+<span class="sig-name descname"><span class="pre">set_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id_string</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.mix_column_component.MixColumn.set_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.mix_column_component.MixColumn.set_input_bit_positions">
+<span class="sig-name descname"><span class="pre">set_input_bit_positions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bit_positions</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.mix_column_component.MixColumn.set_input_bit_positions" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.mix_column_component.MixColumn.set_input_id_links">
+<span class="sig-name descname"><span class="pre">set_input_id_links</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_id_links</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.mix_column_component.MixColumn.set_input_id_links" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.mix_column_component.MixColumn.smt_constraints">
+<span class="sig-name descname"><span class="pre">smt_constraints</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#components.mix_column_component.MixColumn.smt_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a variable list and SMT-LIB list asserts representing MIX COLUMN for SMT CIPHER model</p>
+<p>The model is generated converting the MIX COLUMN compoment into a
+<a class="reference internal" href="linear_layer_component.html#components.linear_layer_component.LinearLayer" title="components.linear_layer_component.LinearLayer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LINEAR</span> <span class="pre">LAYER</span></code></a> and using the
+<a class="reference internal" href="linear_layer_component.html#components.linear_layer_component.LinearLayer.smt_constraints" title="components.linear_layer_component.LinearLayer.smt_constraints"><code class="xref py py-obj docutils literal notranslate"><span class="pre">corresponding</span> <span class="pre">method</span></code></a>.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p>None</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.midori_block_cipher</span> <span class="kn">import</span> <span class="n">MidoriBlockCipher</span>
+<span class="gp">sage: </span><span class="n">midori</span> <span class="o">=</span> <span class="n">MidoriBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">mix_column_component</span> <span class="o">=</span> <span class="n">midori</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">23</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">variables</span><span class="p">,</span> <span class="n">constraints</span> <span class="o">=</span> <span class="n">mix_column_component</span><span class="o">.</span><span class="n">smt_constraints</span><span class="p">()</span>
+<span class="gp">sage: </span><span class="n">constraints</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+<span class="go">&#39;(assert (= mix_column_0_23_15 (xor mix_column_0_20_35 mix_column_0_20_39 mix_column_0_20_43)))&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.mix_column_component.MixColumn.smt_xor_differential_propagation_constraints">
+<span class="sig-name descname"><span class="pre">smt_xor_differential_propagation_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.mix_column_component.MixColumn.smt_xor_differential_propagation_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a variable list and SMT-LIB list asserts representing MIX COLUMN for SMT XOR DIFFERENTIAL model</p>
+<p>The model is generated converting the MIX COLUMN compoment into a
+<a class="reference internal" href="linear_layer_component.html#components.linear_layer_component.LinearLayer" title="components.linear_layer_component.LinearLayer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LINEAR</span> <span class="pre">LAYER</span></code></a> and using the
+<a class="reference internal" href="linear_layer_component.html#components.linear_layer_component.LinearLayer.smt_xor_differential_propagation_constraints" title="components.linear_layer_component.LinearLayer.smt_xor_differential_propagation_constraints"><code class="xref py py-obj docutils literal notranslate"><span class="pre">corresponding</span> <span class="pre">method</span></code></a>.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p>None</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.midori_block_cipher</span> <span class="kn">import</span> <span class="n">MidoriBlockCipher</span>
+<span class="gp">sage: </span><span class="n">midori</span> <span class="o">=</span> <span class="n">MidoriBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">mix_column_component</span> <span class="o">=</span> <span class="n">midori</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">23</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">variables</span><span class="p">,</span> <span class="n">constraints</span> <span class="o">=</span> <span class="n">mix_column_component</span><span class="o">.</span><span class="n">smt_xor_differential_propagation_constraints</span><span class="p">()</span>
+<span class="gp">sage: </span><span class="n">constraints</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+<span class="go">&#39;(assert (= mix_column_0_23_15 (xor mix_column_0_20_35 mix_column_0_20_39 mix_column_0_20_43)))&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="components.mix_column_component.MixColumn.smt_xor_linear_mask_propagation_constraints">
+<span class="sig-name descname"><span class="pre">smt_xor_linear_mask_propagation_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.mix_column_component.MixColumn.smt_xor_linear_mask_propagation_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a variable list and SMT-LIB list asserts representing MIX COLUMN for SMT XOR LINEAR model</p>
+<p>The model is generated converting the MIX COLUMN compoment into a
+<a class="reference internal" href="linear_layer_component.html#components.linear_layer_component.LinearLayer" title="components.linear_layer_component.LinearLayer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LINEAR</span> <span class="pre">LAYER</span></code></a> and using the
+<a class="reference internal" href="linear_layer_component.html#components.linear_layer_component.LinearLayer.smt_xor_linear_mask_propagation_constraints" title="components.linear_layer_component.LinearLayer.smt_xor_linear_mask_propagation_constraints"><code class="xref py py-obj docutils literal notranslate"><span class="pre">corresponding</span> <span class="pre">method</span></code></a>.</p>
+<p>INPUT:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">model</span></code> – <strong>model object</strong> (default: <span class="math">None</span>); a model instance</p></li>
+</ul>
+<p>EXAMPLES:</p>
+<div class="highlight-ipycon notranslate"><div class="highlight"><pre><span></span><span class="gp">sage: </span><span class="kn">from</span> <span class="nn">claasp.ciphers.block_ciphers.midori_block_cipher</span> <span class="kn">import</span> <span class="n">MidoriBlockCipher</span>
+<span class="gp">sage: </span><span class="n">midori</span> <span class="o">=</span> <span class="n">MidoriBlockCipher</span><span class="p">(</span><span class="n">number_of_rounds</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">mix_column_component</span> <span class="o">=</span> <span class="n">midori</span><span class="o">.</span><span class="n">component_from</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">23</span><span class="p">)</span>
+<span class="gp">sage: </span><span class="n">variables</span><span class="p">,</span> <span class="n">constraints</span> <span class="o">=</span> <span class="n">mix_column_component</span><span class="o">.</span><span class="n">smt_xor_linear_mask_propagation_constraints</span><span class="p">()</span>
+<span class="gp">sage: </span><span class="n">constraints</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+<span class="go">&#39;(assert (= mix_column_0_23_15_o (xor dummy_3_mix_column_0_23_15_o dummy_7_mix_column_0_23_15_o dummy_11_mix_column_0_23_15_o)))&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="components.mix_column_component.MixColumn.suffixes">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">suffixes</span></span><a class="headerlink" href="#components.mix_column_component.MixColumn.suffixes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="components.mix_column_component.MixColumn.type">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">type</span></span><a class="headerlink" href="#components.mix_column_component.MixColumn.type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="components.mix_column_component.add_xor_components">
+<span class="sig-name descname"><span class="pre">add_xor_components</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">word_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_id_link_1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_id_link_2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">list_of_xor_components</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.mix_column_component.add_xor_components" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="components.mix_column_component.calculate_input_bit_positions">
+<span class="sig-name descname"><span class="pre">calculate_input_bit_positions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">word_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">word_index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_name_1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_name_2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_input_bit_positions_1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_input_bit_positions_2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.mix_column_component.calculate_input_bit_positions" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="components.mix_column_component.cp_get_all_inputs">
+<span class="sig-name descname"><span class="pre">cp_get_all_inputs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">word_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_bit_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_id_link</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">numb_of_inp</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#components.mix_column_component.cp_get_all_inputs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="../cipher_modules/statistical_tests/input_data_example.html"
+                          title="previous chapter">Input data example</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="multi_input_non_linear_logical_operator_component.html"
+                          title="next chapter">Multi input non linear logical operator component</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/components/mix_column_component.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="multi_input_non_linear_logical_operator_component.html" title="Multi input non linear logical operator component"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../cipher_modules/statistical_tests/input_data_example.html" title="Input data example"
+             >previous</a> |</li>
+  
+    
+      <a href="../../index.html"><img src="../_static/logo_tii.svg" height="28" style="vertical-align: middle" title="TII Logo"></a>
+    
+  
+  
+        <li class="nav-item nav-item-0"><a href="../index.html">CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives v3.1.0 documentation</a> &#187;</li>
+
+        <li class="nav-item nav-item-this"><a href="">Mix column component</a></li> 
+      </ul>
+    </div>
+    
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2005--2022, The Sage Development Team.
+    </div>
+    <script type="text/javascript">
+/*global jQuery, window */
+/* Sphinx sidebar toggle.  Putting this code at the end of the body
+ * enables the toggle for the live, static, and offline docs.  Note:
+ * sage.misc.html.math_parse() eats jQuery's dollar-sign shortcut. */
+var jq = jQuery;
+jq(document).ready(function () {
+    var bar, bod, bg, fg, key, tog, wid_old, wid_new, resize, get_state, set_state;
+    bod = jq('div.bodywrapper');
+    bar = jq('div.sphinxsidebar');
+    tog = jq('<div class="sphinxsidebartoggle"></div>');
+
+    /* Delayed resize helper.  Not perfect but good enough. */
+    resize = function () {
+        setTimeout(function () {
+            tog.height(bod.height());
+        }, 100);
+    };
+    jq(window).resize(function () {
+        resize();
+    });
+
+    /* Setup and add the toggle. See Sphinx v0.5.1 default.css. */
+    fg = jq('div.sphinxsidebar p a').css('color') || 'rgb(152, 219, 204)';
+    bg = jq('div.document').css('background-color') || 'rgb(28, 78, 99)';
+    wid_old = '230px';
+    wid_new = '5px';
+    tog.css('background-color', bg)
+        .css('border-width', '0px')
+        .css('border-right', wid_new + ' ridge ' + bg)
+        .css('cursor', 'pointer')
+        .css('position', 'absolute')
+        .css('left', '-' + wid_new)
+        .css('top', '0px')
+        .css('width', wid_new);
+    bod.css('position', 'relative');
+    bod.prepend(tog);
+    resize();
+
+    /* Cookie helpers. */
+    key = 'sphinxsidebar=';
+    set_state = function (s) {
+        var date = new Date();
+        /* Expiry in 7 days. */
+        date.setTime(date.getTime() + (7 * 24 * 3600 * 1000));
+        document.cookie = key + encodeURIComponent(s) + '; expires=' +
+            date.toUTCString() + '; path=/';
+    };
+    get_state = function () {
+        var i, c, crumbs = document.cookie.split(';');
+        for (i = 0; i < crumbs.length; i += 1) {
+            c = crumbs[i].replace(/^\s+/, '');
+            if (c.indexOf(key) === 0) {
+                return decodeURIComponent(c.substring(key.length, c.length));
+            }
+        }
+        return null;
+    };
+
+    /* Event handlers. */
+    tog.mouseover(function (ev) {
+        tog.css('border-right-color', fg);
+    }).mouseout(function (ev) {
+        tog.css('border-right-color', bg);
+    }).click(function (ev) {
+        if (bod.hasClass('wide')) {
+            bod.removeClass('wide');
+            bod.css('margin-left', wid_old);
+            bar.css('width', wid_old);
+            bar.show();
+            set_state('visible');
+        } else {
+            set_state('hidden');
+            bar.hide();
+            bar.css('width', '0px');
+            bod.css('margin-left', wid_new);
+            bod.addClass('wide');
+        }
+        resize();
+    });
+
+    /* Hide the normally visible sidebar? */
+    if (get_state() === 'hidden') {
+        tog.trigger('click');
+    } else {
+        set_state('visible');
+    }
+});
+    </script>
+  </body>
+</html>
