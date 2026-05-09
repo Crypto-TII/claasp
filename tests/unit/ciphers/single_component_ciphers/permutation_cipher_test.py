@@ -49,3 +49,10 @@ def test_permutation_cipher_word_size_is_bijection():
     cipher = PermutationCipher(bit_size=8, permutation_description=[1, 0], word_size=4)
     outputs = {cipher.evaluate([x]) for x in range(256)}
     assert len(outputs) == 256
+
+
+def test_permutation_cipher_default_word_size_description_for_words():
+    cipher = PermutationCipher(bit_size=8, word_size=4)
+
+    assert cipher.evaluate([0xAB]) == 0xBA
+    assert cipher.evaluate([0x12]) == 0x21

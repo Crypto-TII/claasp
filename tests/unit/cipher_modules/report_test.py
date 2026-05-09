@@ -357,3 +357,11 @@ def test_clean_reports_uses_runtime_cwd_default(monkeypatch, tmp_path):
     report.clean_reports()
 
     assert not reports_dir.exists()
+
+
+def test_show_rejects_invalid_hex_word_size(capsys):
+    report = Report({'cipher': object(), 'test_name': 'dummy_trail'})
+    report.show(show_as_hex=True, word_size=1)
+
+    captured = capsys.readouterr()
+    assert 'Incorrect word_size: if show_as_hex=True, word_size has to be a multiple of 4' in captured.out

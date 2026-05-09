@@ -1,4 +1,5 @@
 from claasp.components.permutation_component import Permutation
+from claasp.cipher_modules.models.milp.milp_model import MilpModel
 from claasp.ciphers.single_component_ciphers.permutation_cipher import PermutationCipher
 from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
 
@@ -160,3 +161,22 @@ def test_validation_word_size_valid():
     """Test that valid word_size > 1 works correctly."""
     permutation_component = Permutation(0, 0, ["input"], [[0, 1, 2, 3, 4, 5, 6, 7]], 8, [1, 0], word_size=4)
     assert permutation_component.description == [[1, 0], 4]
+
+
+def test_milp_and_vectorized_helpers():
+    cipher = PermutationCipher(bit_size=4, permutation_description=[1, 3, 2, 0])
+    permutation_component = cipher.component_from_id("permutation_0_0")
+    milp = MilpModel(cipher)
+    milp.init_model_in_sage_milp_class()
+
+    variables, constraints = permutation_component.milp_constraints(milp)
+    assert len(variables) == 8
+    assert len(constraints) == 4
+    assert permutation_component.milp_xor_differential_propagation_constraints(milp) == (variables, constraints)
+    assert permutation_component.milp_xor_linear_mask_propagation_constraints(milp) == (variables, constraints)
+    assert permutation_component.get_bit_based_vectorized_python_code(["component_input"], False) == [
+        "  permutation_0_0 = bit_vector_permutation([component_input ], [1, 3, 2, 0], 1)"
+    ]
+    assert permutation_component.get_byte_based_vectorized_python_code(["component_input"]) == [
+        "  permutation_0_0 = byte_vector_permutation(['component_input'], [1, 3, 2, 0], 1, 4)"
+    ]
