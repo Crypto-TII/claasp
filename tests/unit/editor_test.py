@@ -1,3 +1,5 @@
+import io
+from contextlib import redirect_stdout
 from random import getrandbits
 
 from claasp.cipher import Cipher
@@ -6,7 +8,6 @@ from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.ciphers.block_ciphers.ublock_block_cipher import UblockBlockCipher
 from claasp.ciphers.single_component_ciphers.permutation_cipher import PermutationCipher
 from claasp.editor import get_component_reordering, is_fixed_rotate_component, replace_bit_reordering_components_as_direct_wiring
-from claasp.editor import add_and_component, add_cipher_output_component
 from claasp.name_mappings import LINEAR_LAYER, PERMUTATION, PERMUTATION_COMPONENT
 
 
@@ -222,11 +223,12 @@ def test_add_fsr_component():
                                                                  1]}]]
 
 
-def test_add_components_without_round_returns_none(capsys):
+def test_add_components_without_round_returns_none():
     cipher = Cipher("cipher_name", PERMUTATION, ["input"], [4], 4)
+    stdout = io.StringIO()
 
-    assert add_and_component(cipher, ["input"], [[0, 1]], 2) is None
-    assert add_cipher_output_component(cipher, ["input"], [[0, 1, 2, 3]], 4) is None
+    with redirect_stdout(stdout):
+        assert cipher.add_and_component(["input"], [[0, 1]], 2) is None
+        assert cipher.add_cipher_output_component(["input"], [[0, 1, 2, 3]], 4) is None
 
-    captured = capsys.readouterr()
-    assert "please run self.add_round()" in captured.out
+    assert "please run self.add_round()" in stdout.getvalue()
