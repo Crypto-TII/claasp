@@ -984,6 +984,113 @@ def _w_trunc_diff_linear_perm(args):
     return int(np.count_nonzero(parities == 0))
 
 
+def _get_data_for_cipher_inputs(cipher, data_by_input_id):
+    return [data_by_input_id[input_id] for input_id in cipher.inputs]
+
+
+def _get_state_input_id(cipher, preferred_input_id=None):
+    if preferred_input_id is not None:
+        return preferred_input_id
+
+    possible_inputs = (INPUT_PLAINTEXT, INPUT_MESSAGE, INPUT_STATE)
+    for input_id in cipher.inputs:
+        if input_id in possible_inputs:
+            return input_id
+
+    return cipher.inputs[0]
+
+
+def _get_fixed_input_value(fixed_inputs, input_id, default_value=None):
+    if fixed_inputs is None:
+        return default_value
+    if isinstance(fixed_inputs, dict):
+        return fixed_inputs.get(input_id, default_value)
+    return fixed_inputs
+
+
+def _get_auxiliary_input_data(cipher, state_input_id, number_of_samples, rng, fixed_inputs=None):
+    auxiliary_input_data = {}
+    for input_id, input_bit_size in zip(cipher.inputs, cipher.inputs_bit_size):
+        if input_id == state_input_id:
+            continue
+        if input_bit_size % 8 != 0:
+            raise ValueError("Input sizes must be multiples of 8.")
+        input_num_bytes = input_bit_size // 8
+        fixed_value = _get_fixed_input_value(fixed_inputs, input_id)
+        if fixed_value is None:
+            auxiliary_input_data[input_id] = rng.integers(
+                low=0, high=256, size=(input_num_bytes, number_of_samples), dtype=np.uint8
+            )
+        else:
+            auxiliary_input_data[input_id] = _repeat_input_difference(fixed_value, number_of_samples, input_num_bytes)
+
+    return auxiliary_input_data
+
+
+def _count_boomerang_matches(cipher, input_difference, output_difference, number_of_samples, state_size, rng,
+                             auxiliary_input_data=None, state_input_id=None):
+    if state_size % 8 != 0:
+        raise ValueError("State size must be a multiple of 8.")
+
+    state_num_bytes = state_size // 8
+    state_input_id = _get_state_input_id(cipher, state_input_id)
+    auxiliary_input_data = {} if auxiliary_input_data is None else auxiliary_input_data
+    input_difference_data = _repeat_input_difference(input_difference, number_of_samples, state_num_bytes)
+    output_difference_data = _repeat_input_difference(output_difference, number_of_samples, state_num_bytes)
+
+    plaintext_data_0 = rng.integers(low=0, high=256, size=(state_num_bytes, number_of_samples), dtype=np.uint8)
+    plaintext_data_1 = plaintext_data_0 ^ input_difference_data
+
+    input_data_0 = {state_input_id: plaintext_data_0, **auxiliary_input_data}
+    input_data_1 = {state_input_id: plaintext_data_1, **auxiliary_input_data}
+    ciphertext_data_0 = cipher.evaluate_vectorized(_get_data_for_cipher_inputs(cipher, input_data_0))[0]
+    ciphertext_data_1 = cipher.evaluate_vectorized(_get_data_for_cipher_inputs(cipher, input_data_1))[0]
+
+    inverse_cipher = cipher.cipher_inverse()
+    inverse_state_input_id = _get_state_input_id(inverse_cipher)
+    inverse_auxiliary_input_data = {
+        input_id: auxiliary_input_data[input_id]
+        for input_id in inverse_cipher.inputs
+        if input_id != inverse_state_input_id and input_id in auxiliary_input_data
+    }
+    missing_input_ids = [
+        input_id
+        for input_id in inverse_cipher.inputs
+        if input_id != inverse_state_input_id and input_id not in inverse_auxiliary_input_data
+    ]
+    if missing_input_ids:
+        raise ValueError(f"Missing auxiliary input data for inverse cipher inputs: {missing_input_ids}.")
+
+    output_xor_difference_0 = (ciphertext_data_0 ^ output_difference_data.T).T
+    output_xor_difference_1 = (ciphertext_data_1 ^ output_difference_data.T).T
+    inverse_input_data_0 = {inverse_state_input_id: output_xor_difference_0, **inverse_auxiliary_input_data}
+    inverse_input_data_1 = {inverse_state_input_id: output_xor_difference_1, **inverse_auxiliary_input_data}
+    plaintext_data_2 = inverse_cipher.evaluate_vectorized(
+        _get_data_for_cipher_inputs(inverse_cipher, inverse_input_data_0)
+    )[0]
+    plaintext_data_3 = inverse_cipher.evaluate_vectorized(
+        _get_data_for_cipher_inputs(inverse_cipher, inverse_input_data_1)
+    )[0]
+
+    return int(np.count_nonzero(np.all(plaintext_data_2 ^ plaintext_data_3 == input_difference_data.T, axis=1)))
+
+
+def _w_boomerang_perm(args):
+    cipher, input_difference, output_difference, state_size, chunk_size, seed = args
+    rng = np.random.default_rng(seed)
+    return _count_boomerang_matches(cipher, input_difference, output_difference, chunk_size, state_size, rng)
+
+
+def _w_boomerang_sk(args):
+    cipher, input_difference, output_difference, state_size, fixed_inputs, state_input_id, chunk_size, seed = args
+    rng = np.random.default_rng(seed)
+    state_input_id = _get_state_input_id(cipher, state_input_id)
+    auxiliary_input_data = _get_auxiliary_input_data(cipher, state_input_id, chunk_size, rng, fixed_inputs)
+    return _count_boomerang_matches(
+        cipher, input_difference, output_difference, chunk_size, state_size, rng, auxiliary_input_data, state_input_id
+    )
+
+
 def _parallel_dispatch(worker_func, fixed_args, number_of_samples, num_workers, seed):
     """Split samples into chunks, run worker_func on each in parallel, return (total_count, total_samples)."""
     base_chunk = number_of_samples // num_workers
@@ -1165,6 +1272,94 @@ def differential_checker_permutation(
 
     total_prob_weight = math.log(total / number_of_samples, 2)
     return total_prob_weight
+
+
+def boomerang_distinguisher_checker_permutation(
+    cipher, input_difference, output_difference, number_of_samples, state_size, seed=None, num_workers=1
+):
+    """
+    Verify experimentally boomerang distinguishers for permutations using the vectorized evaluator.
+
+    INPUT:
+
+    - ``cipher`` -- **Cipher object**; permutation instance providing ``evaluate_vectorized`` and ``cipher_inverse``
+    - ``input_difference`` -- **integer**; input XOR difference
+    - ``output_difference`` -- **integer**; output XOR difference
+    - ``number_of_samples`` -- **integer**; number of random plaintext pairs
+    - ``state_size`` -- **integer**; permutation state size in bits (must be multiple of 8)
+    - ``seed`` -- **integer** (default: `None`); seed for reproducible random sampling
+    - ``num_workers`` -- **integer** (default: `1`); number of parallel worker processes
+
+    OUTPUT:
+
+    - This method returns a **float**; the empirical boomerang probability in the interval ``[0, 1]``
+    """
+    if state_size % 8 != 0:
+        raise ValueError("State size must be a multiple of 8.")
+
+    if num_workers > 1:
+        total, n = _parallel_dispatch(
+            _w_boomerang_perm,
+            (cipher, input_difference, output_difference, state_size),
+            number_of_samples, num_workers, seed,
+        )
+        return total / n
+
+    rng = np.random.default_rng(seed)
+    total = _count_boomerang_matches(cipher, input_difference, output_difference, number_of_samples, state_size, rng)
+    return total / number_of_samples
+
+
+def boomerang_distinguisher_checker_for_block_cipher_single_key(
+    cipher,
+    input_difference,
+    output_difference,
+    number_of_samples,
+    block_size,
+    fixed_key=0,
+    seed=None,
+    num_workers=1,
+    state_input_id=None,
+):
+    """
+    Verify experimentally boomerang distinguishers for block ciphers in a single-key scenario.
+
+    INPUT:
+
+    - ``cipher`` -- **Cipher object**; cipher instance providing ``evaluate_vectorized`` and ``cipher_inverse``
+    - ``input_difference`` -- **integer**; input XOR difference
+    - ``output_difference`` -- **integer**; output XOR difference
+    - ``number_of_samples`` -- **integer**; number of random plaintext pairs
+    - ``block_size`` -- **integer**; block size in bits (must be multiple of 8)
+    - ``fixed_key`` -- **integer or dict** (default: `0`); fixed key value, or a dictionary mapping cipher input ids to
+      fixed integer values. If ``None``, non-state inputs are sampled randomly.
+    - ``seed`` -- **integer** (default: `None`); seed for reproducible random sampling
+    - ``num_workers`` -- **integer** (default: `1`); number of parallel worker processes
+    - ``state_input_id`` -- **string** (default: `None`); cipher input id used as the plaintext/state input
+
+    OUTPUT:
+
+    - This method returns a **float**; the empirical boomerang probability in the interval ``[0, 1]``
+    """
+    if block_size % 8 != 0:
+        raise ValueError("State size must be a multiple of 8.")
+
+    if num_workers > 1:
+        total, n = _parallel_dispatch(
+            _w_boomerang_sk,
+            (cipher, input_difference, output_difference, block_size, fixed_key, state_input_id),
+            number_of_samples, num_workers, seed,
+        )
+        return total / n
+
+    rng = np.random.default_rng(seed)
+    state_input_id = _get_state_input_id(cipher, state_input_id)
+    auxiliary_input_data = _get_auxiliary_input_data(cipher, state_input_id, number_of_samples, rng, fixed_key)
+    total = _count_boomerang_matches(
+        cipher, input_difference, output_difference, number_of_samples, block_size, rng, auxiliary_input_data,
+        state_input_id
+    )
+    return total / number_of_samples
 
 
 def differential_truncated_checker_permutation(

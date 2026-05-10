@@ -1,101 +1,23 @@
+import math
 import os
-import numpy as np
+
+import pytest
 
 from claasp.cipher_modules.models.cp.mzn_models.mzn_boomerang_model_arx_optimized import MznBoomerangModelARXOptimized
 from claasp.cipher_modules.models.cp.solvers import CPSAT
+from claasp.cipher_modules.models.utils import boomerang_distinguisher_checker_for_block_cipher_single_key
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation
 from claasp.name_mappings import BOOMERANG_XOR_DIFFERENTIAL
 
 
-SPECK32_64_WORD_SIZE = 16
-SPECK32_64_ALPHA = 7
-SPECK32_64_BETA = 2
-MASK_VAL = 2 ** SPECK32_64_WORD_SIZE - 1
-
-
-def speck32_64_rol(x, k):
-    return ((x << k) & MASK_VAL) | (x >> (SPECK32_64_WORD_SIZE - k))
-
-
-def speck32_64_ror(x, k):
-    return (x >> k) | ((x << (SPECK32_64_WORD_SIZE - k)) & MASK_VAL)
-
-
-def speck32_64_decrypt(ciphertext, ks):
-    def dec_one_round(c, subkey_):
-        c0, c1 = c
-        c1 = c1 ^ c0
-        c1 = speck32_64_ror(c1, SPECK32_64_BETA)
-        c0 = c0 ^ subkey_
-        c0 = (c0 - c1) & MASK_VAL
-        c0 = speck32_64_rol(c0, SPECK32_64_ALPHA)
-        return c0, c1
-
-    x, y = ciphertext
-    for subkey in reversed(ks):
-        x, y = dec_one_round((x, y), subkey)
-    return x, y
-
-
-def speck32_64_enc_one_round(plaintext, subkey):
-    c0, c1 = plaintext
-    c0 = speck32_64_ror(c0, SPECK32_64_ALPHA)
-    c0 = (c0 + c1) & MASK_VAL
-    c0 = c0 ^ subkey
-    c1 = speck32_64_rol(c1, SPECK32_64_BETA)
-    c1 = c1 ^ c0
-    return c0, c1
-
-
-def speck32_64_expand_key(k, t):
-    ks = [0] * t
-    ks[0] = k[-1]
-    left_word = list(reversed(k[:-1]))
-    for i in range(t - 1):
-        left_word[i % len(left_word)], ks[i + 1] = speck32_64_enc_one_round((left_word[i % len(left_word)], ks[i]), i)
-    return ks
-
-
-def speck32_64_encrypt(p, ks):
-    x, y = p
-    for k in ks:
-        x, y = speck32_64_enc_one_round((x, y), k)
-    return x, y
-
-
-def speck32_64_bct_distinguisher_verifier(delta_, nabla_, nr, n=2**10):
-    keys = np.frombuffer(os.urandom(8 * n), dtype=np.uint16).reshape(4, -1)
-    plaintext_data_0_left = np.frombuffer(os.urandom(2 * n), dtype=np.uint16)
-    plaintext_data_0_right = np.frombuffer(os.urandom(2 * n), dtype=np.uint16)
-    plaintext_data_1_left = plaintext_data_0_left ^ delta_[0]
-    plaintext_data_1_right = plaintext_data_0_right ^ delta_[1]
-    subkey_list = speck32_64_expand_key(keys, nr)
-
-    ciphertext_data_0_left, ciphertext_data_0_right = speck32_64_encrypt(
-        (plaintext_data_0_left, plaintext_data_0_right), subkey_list
-    )
-    ciphertext_data_1_left, ciphertext_data_1_right = speck32_64_encrypt(
-        (plaintext_data_1_left, plaintext_data_1_right), subkey_list
-    )
-
-    output_xor_nabla_0 = (ciphertext_data_0_left ^ nabla_[0], ciphertext_data_0_right ^ nabla_[1])
-    output_xor_nabla_1 = (ciphertext_data_1_left ^ nabla_[0], ciphertext_data_1_right ^ nabla_[1])
-    plaintext_data_2_left, plaintext_data_2_right = speck32_64_decrypt(output_xor_nabla_0, subkey_list)
-    plaintext_data_3_left, plaintext_data_3_right = speck32_64_decrypt(output_xor_nabla_1, subkey_list)
-
-    nabla_temp = (np.uint32(delta_[0]) << 16) ^ delta_[1]
-    nabla_prime_temp_left = np.uint32(plaintext_data_2_left ^ plaintext_data_3_left) << 16
-    nabla_prime_temp = nabla_prime_temp_left ^ (plaintext_data_2_right ^ plaintext_data_3_right)
-
-    total = np.sum(nabla_temp == nabla_prime_temp)
-    return total / n
-
-
-def split_32bit_to_16bit(difference):
-    lower_16 = difference & 0xFFFF
-    upper_16 = (difference >> 16) & 0xFFFF
-    return upper_16, lower_16
+SPECK32_64_TABLE4_BCT_DISTINGUISHER = {
+    "rounds": 10,
+    "input_difference": 0x28000010,
+    "output_difference": 0x81028108,
+    "estimated_weight": 29.15,
+    "experimental_weight": 27.34,
+}
 
 
 def test_build_boomerang_model_speck_single_key():
@@ -195,12 +117,70 @@ def test_build_boomerang_model_speck_single_key():
     assert os.path.exists(mzn_bct_model.filename), "File was not created"
     os.remove(mzn_bct_model.filename)
     assert total_weight == parsed_result["total_weight"]
-    input_difference = split_32bit_to_16bit(int(parsed_result["component_values"]["plaintext"]["value"], 16))
-    output_difference = split_32bit_to_16bit(int(parsed_result["component_values"]["cipher_output_7_12"]["value"], 16))
+    input_difference = int(parsed_result["component_values"]["plaintext"]["value"], 16)
+    output_difference = int(parsed_result["component_values"]["cipher_output_7_12"]["value"], 16)
     assert (
-        speck32_64_bct_distinguisher_verifier(input_difference, output_difference, speck.number_of_rounds, n=2**20)
+        boomerang_distinguisher_checker_for_block_cipher_single_key(
+            speck, input_difference, output_difference, 2**20, speck.output_bit_size
+        )
         > 0.0001
     )
+
+
+def test_speck32_64_table4_boomerang_distinguisher_checker_smoke():
+    distinguisher = SPECK32_64_TABLE4_BCT_DISTINGUISHER
+    number_of_samples = 2**28
+    speck = SpeckBlockCipher(
+        block_bit_size=32, key_bit_size=64, number_of_rounds=distinguisher["rounds"]
+    )
+
+    probability = boomerang_distinguisher_checker_for_block_cipher_single_key(
+        speck,
+        distinguisher["input_difference"],
+        distinguisher["output_difference"],
+        number_of_samples,
+        speck.output_bit_size,
+        fixed_key=0,
+        seed=1,
+    )
+
+    expected_matches = number_of_samples * 2 ** -distinguisher["experimental_weight"]
+    assert distinguisher["input_difference"] == int("28000010", 16)
+    assert distinguisher["output_difference"] == int("81028108", 16)
+    assert distinguisher["experimental_weight"] == 27.34
+    assert expected_matches < 1
+    assert 0 <= probability <= 1
+
+
+def test_speck32_64_table4_boomerang_distinguisher_experimental_probability():
+    if os.environ.get("CLAASP_RUN_LONG_BCT_EXPERIMENTS") != "1":
+        pytest.skip("set CLAASP_RUN_LONG_BCT_EXPERIMENTS=1 to run the 10-round Table 4 experiment")
+
+    distinguisher = SPECK32_64_TABLE4_BCT_DISTINGUISHER
+    speck = SpeckBlockCipher(
+        block_bit_size=32, key_bit_size=64, number_of_rounds=distinguisher["rounds"]
+    )
+    number_of_samples = int(os.environ.get("CLAASP_BCT_EXPERIMENT_SAMPLES", 2**28))
+    expected_matches = number_of_samples * 2 ** -distinguisher["experimental_weight"]
+    if expected_matches < 5:
+        pytest.skip(
+            "CLAASP_BCT_EXPERIMENT_SAMPLES is too small for a stable estimate of "
+            "the 10-round Table 4 probability"
+        )
+
+    probability = boomerang_distinguisher_checker_for_block_cipher_single_key(
+        speck,
+        distinguisher["input_difference"],
+        distinguisher["output_difference"],
+        number_of_samples,
+        speck.output_bit_size,
+        fixed_key=0,
+        seed=1,
+        num_workers=max(1, os.cpu_count() or 1),
+    )
+
+    assert probability > 0
+    assert math.isclose(-math.log(probability, 2), distinguisher["experimental_weight"], abs_tol=2.0)
 
 
 def test_build_boomerang_model_chacha():

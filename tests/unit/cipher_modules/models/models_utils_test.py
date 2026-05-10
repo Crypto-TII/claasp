@@ -29,6 +29,8 @@ from claasp.cipher_modules.models.utils import (convert_solver_solution_to_dicti
                                                 set_component_solution,
                                                 join_and_sanitize_strings,
                                                 write_model_to_file,
+                                                boomerang_distinguisher_checker_permutation,
+                                                boomerang_distinguisher_checker_for_block_cipher_single_key,
                                                 differential_truncated_checker_single_key,
                                                 _sample_truncated_difference_from_string,
                                                 shared_difference_paired_input_differential_checker_permutation,
@@ -44,8 +46,25 @@ from claasp.name_mappings import INTERMEDIATE_OUTPUT, WORD_OPERATION
 NOT_EQUAL = 'not equal'
 
 class DummyIdentityBlockCipher:
+    inputs = ["plaintext", "key"]
+    inputs_bit_size = [8, 8]
+
     def evaluate_vectorized(self, inputs):
         return [inputs[0]]
+
+    def cipher_inverse(self):
+        return self
+
+
+class DummyIdentityPermutation:
+    inputs = ["plaintext"]
+    inputs_bit_size = [8]
+
+    def evaluate_vectorized(self, inputs):
+        return [inputs[0]]
+
+    def cipher_inverse(self):
+        return self
 
 
 class DummyComponent:
@@ -159,6 +178,16 @@ def test_parallel_and_validation_paths_for_checker_helpers():
 
     with pytest.raises(ValueError, match="State size must be a multiple of 8"):
         differential_checker_permutation(cipher, 0, 0, 8, 7)
+
+    boomerang_probability = boomerang_distinguisher_checker_permutation(
+        DummyIdentityPermutation(), 0, 0, 32, 8, seed=10, num_workers=2
+    )
+    assert boomerang_probability == 1.0
+
+    boomerang_probability = boomerang_distinguisher_checker_for_block_cipher_single_key(
+        cipher, 0, 0, 32, 8, fixed_key=0, seed=10, num_workers=2
+    )
+    assert boomerang_probability == 1.0
     
 
 def test_print_components_values():
