@@ -1,17 +1,17 @@
 
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
@@ -125,6 +125,6 @@ class ChachaStreamCipher(ChachaPermutation):
         for component_number in range(self.get_number_of_components_in_round(last_round)):
             component = self.component_from(last_round, component_number)
             if component.type == "cipher_output":
-                component.set_input_id_links(lst_ids)
+                component.input_id_links = lst_ids
 
         self.sort_cipher()

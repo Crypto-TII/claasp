@@ -1443,16 +1443,6 @@ class Cipher:
     def remove_round_component_from_id(self, round_id, component_id):
         editor.remove_round_component_from_id(self, round_id, component_id)
 
-    def set_file_name(self, file_name):
-        self._file_name = file_name
-
-    def set_id(self, cipher_id):
-        self._id = cipher_id
-
-    def set_inputs(self, inputs_ids_list, inputs_bit_size_list):
-        self._inputs = inputs_ids_list
-        self._inputs_bit_size = inputs_bit_size_list
-
     def sort_cipher(self):
         return editor.sort_cipher(self)
 
@@ -1645,9 +1635,17 @@ class Cipher:
     def file_name(self):
         return self._file_name
 
+    @file_name.setter
+    def file_name(self, file_name):
+        self._file_name = file_name
+
     @property
     def id(self):
         return self._id
+
+    @id.setter
+    def id(self, cipher_id):
+        self._id = cipher_id
 
     @property
     def inputs(self):

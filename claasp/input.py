@@ -17,20 +17,18 @@
 
 
 class Input:
-    def __init__(self, input_bit_size, id_links, bit_positions):
-        self._bit_size = input_bit_size
+    def __init__(self, bit_size, id_links, bit_positions):
+        self._bit_size = bit_size
         self._id_links = id_links
-        self._bit_positions = bit_positions
-
-    def set_input_id_links(self, id_links):
-        self._id_links = id_links
-
-    def set_input_bit_positions(self, bit_positions):
         self._bit_positions = bit_positions
 
     @property
     def bit_positions(self):
         return self._bit_positions
+
+    @bit_positions.setter
+    def bit_positions(self, bit_positions):
+        self._bit_positions = bit_positions
 
     @property
     def bit_size(self):
@@ -39,3 +37,7 @@ class Input:
     @property
     def id_links(self):
         return self._id_links
+
+    @id_links.setter
+    def id_links(self, id_links):
+        self._id_links = id_links
