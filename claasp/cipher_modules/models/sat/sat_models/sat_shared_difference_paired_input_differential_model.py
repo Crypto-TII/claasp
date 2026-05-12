@@ -32,7 +32,7 @@ def add_prefix_id_to_components(cipher, prefix):
             f"{prefix}_{input_id_link}" if input_id_link not in cipher.inputs else input_id_link
             for input_id_link in component.input_id_links
         ]
-        component.set_input_id_links = new_input_id_links
+        component.input_id_links = new_input_id_links
 
     return 0
 
@@ -173,7 +173,7 @@ class SharedDifferencePairedInputDifferentialModel(SatModel):
             ....: ]
             sage: model = SharedDifferencePairedInputDifferentialModel(speck)
             sage: trail = model.find_one_shared_difference_paired_input_differential_trail_with_fixed_weight(
-            ....:     13, fixed_values=fixed_variables
+            ....:     11, fixed_values=fixed_variables
             ....: )
             sage: trail["status"]
             'SATISFIABLE'

@@ -1651,9 +1651,17 @@ class Cipher:
     def inputs(self):
         return self._inputs
 
+    @inputs.setter
+    def inputs(self, inputs):
+        self._inputs = inputs
+
     @property
     def inputs_bit_size(self):
         return self._inputs_bit_size
+
+    @inputs_bit_size.setter
+    def input_bit_size(self, input_bit_size):
+        self._inputs_bit_size = input_bit_size
 
     @property
     def number_of_rounds(self):
