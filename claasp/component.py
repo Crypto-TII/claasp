@@ -125,7 +125,7 @@ class Component:
 
         for positions in component_input.bit_positions:
             if not isinstance(positions, list):
-                TypeError(f"Each element of {component_id} bit_positions must be a list.")
+                raise TypeError(f"Each element of {component_id} bit_positions must be a list.")
 
         if len(component_input.id_links) != len(component_input.bit_positions):
             raise ValueError(f"{component_id} id_links and bit_positions must have the same length.")
