@@ -2,20 +2,25 @@ from claasp.cipher import Cipher
 from claasp.name_mappings import BLOCK_CIPHER, INPUT_PLAINTEXT, INPUT_KEY
 
 
-class Heys_SPN(Cipher):
+class HeysBlockCipher(Cipher):
     """
-    Construct an instance of the Heys toy SPN class.
+    Construct an instance of the Heys block cipher class.
+
+    REFERENCES:
+
+    Heys H. : *A Tutorial on Linear and Differential Cryptanalysis* : Memorial University, 2002 :
+    https://www.ioactive.com/wp-content/uploads/2015/07/ldc_tutorial.pdf [He2002]_.
 
     INPUT:
 
     - ``block_bit_size`` -- **integer** (default: `16`); cipher input and output block bit size of the cipher
-    - ``self.key_bit_size`` -- **integer** (default: `80`); cipher key bit size of the cipher
+    - ``key_bit_size`` -- **integer** (default: `80`); cipher key bit size of the cipher
     - ``number_of_rounds`` -- **integer** (default: `4`); number of rounds of the cipher.
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.toys.heys_spn import Heys_SPN
-        sage: cipher = Heys_SPN()
+        sage: from claasp.ciphers.toys.heys_block_cipher import HeysBlockCipher
+        sage: cipher = HeysBlockCipher()
         sage: hex(cipher.evaluate([0x1234, 0x0123456789ABCDEF0123])) == "0xe582"
         True
     """
@@ -27,7 +32,7 @@ class Heys_SPN(Cipher):
         number_of_rounds=4
     ):
         super().__init__(
-            family_name="heys_toy_cipher",
+            family_name="heys_block_cipher",
             cipher_type=BLOCK_CIPHER,
             cipher_inputs=[INPUT_PLAINTEXT, INPUT_KEY],
             cipher_inputs_bit_size=[block_bit_size, key_bit_size],
