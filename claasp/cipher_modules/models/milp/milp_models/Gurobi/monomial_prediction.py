@@ -1670,13 +1670,51 @@ class MilpMonomialPredictionModel:
         global verbosity
         old_verbosity = verbosity
         verbosity = False
+
+        # Build the MILP once with all output bits free; the per-bit loop
+        # below only adds/removes a single fixing constraint per output bit.
+        self.re_init()
+        self.build_model_with_input_output_constraints(
+            output_indices=None, chosen_cipher_output=chosen_cipher_output,
+        )
+
+        output_vars = list(self._variables["output"].values())
+        n_out = len(output_vars)
+        self._model.addConstr(sum(output_vars) == 1, name="hw_one_output")
+
+        if which_var_degree is None:
+            target_inputs = [(self._cipher.inputs[0], self._cipher.inputs_bit_size[0])]
+        else:
+            target_inputs = [
+                (inp, size)
+                for inp, size in zip(self._cipher.inputs, self._cipher.inputs_bit_size)
+                if inp.startswith(which_var_degree)
+            ]
+        target_vars = []
+        for inp, size in target_inputs:
+            for bit in range(size):
+                v = self._model.getVarByName(f"{inp}[{bit}]")
+                if v is not None:
+                    target_vars.append(v)
+        self._model.setObjective(sum(target_vars), GRB.MAXIMIZE)
+        self._model.setParam(GRB.Param.PoolSearchMode, 0)
+        self._model.setParam("MIPGap", 0)
+        self._model.Params.OutputFlag = 0
+        self._model.update()
+
         degrees = []
-        for i in range(self._cipher.output_bit_size):
-            self.re_init()
-            degree = self.find_upper_bound_degree_of_specific_output_bit(
-                i, which_var_degree=which_var_degree, chosen_cipher_output=chosen_cipher_output
-            )
-            degrees.append(degree)
+        for i in range(n_out):
+            c = self._model.addConstr(output_vars[i] == 1)
+            self._model.update()
+            self._model.optimize()
+            if self._model.Status in (GRB.OPTIMAL, GRB.SUBOPTIMAL):
+                degrees.append(int(round(self._model.ObjVal)))
+            else:
+                print(f"[INFO] Model is infeasible for output bit {i}") if verbosity else None
+                degrees.append(-1)
+            self._model.remove(c)
+            self._model.update()
+
         verbosity = old_verbosity
 
         self._log_experiment(
