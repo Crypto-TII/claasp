@@ -94,6 +94,18 @@ class MilpMonomialPredictionModel:
             var = self._model.getVarByName(name)
             self._model.addConstr(var == 0)
 
+    def set_key_vars_zero(self):
+        """
+        Sets all Gurobi key variables to zero if the 'key' input exists.
+        """
+        if "key" in self._cipher.inputs:
+            input_index = self._cipher.inputs.index("key")
+            input_size = self._cipher.inputs_bit_size[input_index]
+            for i in range(input_size):
+                v = self._model.getVarByName(f"key[{i}]")
+                if v is not None:
+                    self._model.addConstr(v == 0)
+
     def set_as_used_variables(self, variables):
         self._model.update()
         for v in variables:
@@ -133,7 +145,7 @@ class MilpMonomialPredictionModel:
         sbox = SBox(component.description)
         for i in range(component.input_bit_size):
             anf = sbox.component_function(1 << i).algebraic_normal_form()
-            anf = anf.subs(d)  # x0 was msb, now it is the lsb
+            anf = anf.subs(d)  # S[(x0,x1,x2,x3)] = (y0,y1,y2,y3) with x0,y0 msb
             anfs.append(anf)
         anfs.reverse()
         return anfs
@@ -1216,7 +1228,7 @@ class MilpMonomialPredictionModel:
         self._constants = {}
 
     def find_anf_of_specific_output_bit(self, output_bit_index, fixed_degree=None, which_var_degree=None,
-                                        chosen_cipher_output=None):
+                                        chosen_cipher_output=None, set_key_vars_to_zero=False):
         """
         Build and solve the MILP model to compute the Algebraic Normal Form (ANF)
         of a specific output bit of the cipher using the Monomial Prediction (MP) approach.
@@ -1264,6 +1276,8 @@ class MilpMonomialPredictionModel:
 
         self.build_generic_model_for_specific_output_bit(output_bit_index, fixed_degree, which_var_degree,
                                                          chosen_cipher_output)
+        if set_key_vars_to_zero:
+            self.set_key_vars_zero()
         self._model.setParam("PoolSolutions", 200000000)
         self._model.setParam(GRB.Param.PoolSearchMode, 2)
 
@@ -1394,7 +1408,7 @@ class MilpMonomialPredictionModel:
             sage: from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel
             sage: milp = MilpMonomialPredictionModel(cipher) # doctest: +SKIP
             sage: cube = ["i9", "i19", "i29", "i39", "i49", "i59", "i69", "i79"]
-            sage: superpoly = milp.find_superpoly_of_specific_output_bit(output_bit_index=0, cube) # doctest: +SKIP
+            sage: superpoly = milp.find_superpoly_of_specific_output_bit(0, cube) # doctest: +SKIP
             sage: R = milp.get_boolean_polynomial_ring() # doctest: +SKIP
             sage: superpoly == R("k20*i60*i61 + k20*i60*i74 + k20*i60 + k20*i73 + i8*i60*i61 + i8*i60*i74 + i8*i60 + i8*i73 + i60*i61*i71 + i60*i61*i72*i73 + i60*i71*i74 + i60*i71 + i60*i72*i73*i74 + i60*i72*i73 + i71*i73 + i72*i73") # doctest: +SKIP
             ...
@@ -1937,6 +1951,7 @@ class MilpMonomialPredictionModel:
         output_bit_index,
         cube,
         chosen_cipher_output=None,
+        set_key_vars_to_zero=False,
     ):
         r"""
         Compute an upper bound degree of the given cube monomial relatively to the given cipher output bit.
@@ -1976,6 +1991,9 @@ class MilpMonomialPredictionModel:
         m.Params.OutputFlag = 0
         m.setParam(GRB.Param.PoolSearchMode, 0)
         m.setParam("MIPGap", 0)
+
+        if set_key_vars_to_zero:
+            self.set_key_vars_zero()
 
         # Fix cube bits to 1
         cube_verbose = self.var_list_to_input_positions(cube)
@@ -2061,7 +2079,8 @@ class MilpMonomialPredictionModel:
         m.Params.OutputFlag = 0
         m.setParam(GRB.Param.PoolSearchMode, 2)
         m.setParam(GRB.Param.PoolSolutions, 200000000)
-        m.setParam(GRB.Param.PoolGap, 0.0)
+        # m.setParam(GRB.Param.PoolGap, 0.0)
+        m.setParam(GRB.Param.MIPFocus, 3)
 
         cube_verbose = self.var_list_to_input_positions(cube)
         cube_set = {(a, b) for (a, b) in cube_verbose}

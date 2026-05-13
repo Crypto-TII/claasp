@@ -112,6 +112,8 @@ def test_check_correctness_of_keycoeff_of_cube_monomial_or_superpoly():
     keycoeff = milp.find_keycoeff_of_cube_monomial_of_specific_output_bit(0, cube)
     res = check_correctness_of_keycoeff_of_cube_monomial_or_superpoly(cipher, 0, cube, keycoeff)
     assert res == True
+
+test_find_upper_bound_degree_of_specific_output_bit()
 @pytest.mark.skip(reason="Requires Gurobi license")
 def test_modmul_modeling_correctness_via_anf_exhaustive():
     """
