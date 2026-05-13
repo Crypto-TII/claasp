@@ -1,3 +1,5 @@
+import pytest
+
 from claasp.ciphers.single_component_ciphers.permutation_cipher import PermutationCipher
 
 
@@ -56,3 +58,11 @@ def test_permutation_cipher_default_word_size_description_for_words():
 
     assert cipher.evaluate([0xAB]) == 0xBA
     assert cipher.evaluate([0x12]) == 0x21
+
+
+def test_permutation_cipher_rejects_invalid_default_word_size_configuration():
+    with pytest.raises(ValueError, match="bit_size must be divisible by word_size"):
+        PermutationCipher(bit_size=10, word_size=4)
+
+    with pytest.raises(ValueError, match="word_size must be a positive integer"):
+        PermutationCipher(bit_size=8, word_size=0)

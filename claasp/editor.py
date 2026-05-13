@@ -757,10 +757,11 @@ def add_permutation_component(
     - ``cipher`` -- **Cipher object**; an instance of the object cipher
     - ``input_id_links`` -- **list**; the list of input_id links
     - ``input_bit_positions`` -- **list**; the list of input_bits corresponding to the input_id links
-    - ``output_bit_size`` -- **integer**; the output bits of the component
-        - ``permutation_description`` -- **list**; the description of the permutation. When ``word_size=1``,
-            each entry is a source bit index. When ``word_size > 1``, each entry is a source word index and
-            the list has ``output_bit_size // word_size`` entries.
+        - ``output_bit_size`` -- **integer**; the output bits of the component
+        - ``permutation_description`` -- **list**; the description of the permutation as a source-to-destination
+            mapping. When ``word_size=1``, ``permutation_description[i]`` is the destination bit index for source
+            bit ``i``. When ``word_size > 1``, ``permutation_description[i]`` is the destination word index for
+            source word ``i`` and the list has ``output_bit_size // word_size`` entries.
         - ``word_size`` -- **integer** (default: ``1``); number of bits per word
 
     EXAMPLES::

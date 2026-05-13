@@ -31,10 +31,17 @@ class PermutationCipher(SingleComponentCipher):
         1
     """
     def __init__(self, bit_size=8, permutation_description=None, word_size=1):
+        if word_size <= 0:
+            raise ValueError("word_size must be a positive integer")
+
         if permutation_description is None:
             if word_size == 1:
                 permutation_description = list(reversed(range(bit_size)))
             else:
+                if bit_size % word_size != 0:
+                    raise ValueError(
+                        "bit_size must be divisible by word_size when permutation_description is omitted"
+                    )
                 n_words = bit_size // word_size
                 permutation_description = list(reversed(range(n_words)))
         super().__init__(

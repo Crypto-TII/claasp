@@ -35,8 +35,9 @@ class Permutation(Component):
     For ``word_size=1`` this means ``output[permutation_description[i]] = input[i]``.
 
     When ``word_size=1`` (default), this is a plain bitwise permutation where each entry in
-    ``permutation_description`` is a source *bit* index.  When ``word_size > 1``, each entry is
-    a source *word* index and the description has ``output_bit_size // word_size`` elements.
+    ``permutation_description`` gives the destination of source bit ``i``. When ``word_size > 1``,
+    each entry gives the destination of source word ``i`` and the description has
+    ``output_bit_size // word_size`` elements.
 
     INPUT:
 
@@ -44,10 +45,11 @@ class Permutation(Component):
     - ``current_round_number_of_components`` -- **integer**; index of the component inside the round. ``0`` is valid.
     - ``input_id_links`` -- **list**; input component identifiers (usually strings). Must align with ``input_bit_positions``.
     - ``input_bit_positions`` -- **list**; bit positions for each input identifier (list of lists). Must align with ``input_id_links``.
-    - ``output_bit_size`` -- **integer**; output size in bits.
-    - ``permutation_description`` -- **list**; permutation mapping. When ``word_size=1``, each entry is
-      a source bit index. When ``word_size > 1``, each entry is a source word index and the list has
-      ``output_bit_size // word_size`` entries.
+        - ``output_bit_size`` -- **integer**; output size in bits.
+        - ``permutation_description`` -- **list**; permutation mapping from source position to destination
+            position. When ``word_size=1``, ``permutation_description[i]`` is the destination bit index for
+            source bit ``i``. When ``word_size > 1``, ``permutation_description[i]`` is the destination word
+            index for source word ``i`` and the list has ``output_bit_size // word_size`` entries.
     - ``word_size`` -- **integer** (default: ``1``); number of bits per word. Set to ``1`` for bitwise
       permutation.
 
