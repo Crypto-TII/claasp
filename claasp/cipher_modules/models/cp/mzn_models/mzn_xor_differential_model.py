@@ -353,9 +353,14 @@ class MznXorDifferentialModel(MznModel):
                 all_solutions_=True,
                 solve_external=solve_external,
             )
-            for solution in solutions:
-                solution["building_time_seconds"] = build_time
-                solution["test_name"] = "find_all_xor_differential_trails_with_weight_at_most"
+            if isinstance(solutions, list):
+                for solution in solutions:
+                    solution["building_time_seconds"] = build_time
+                    solution["test_name"] = "find_all_xor_differential_trails_with_weight_at_most"
+            else:
+                # Unsat/no-solution outcomes can be returned as a non-list sentinel.
+                # For an "all trails" query, return an empty list instead of crashing.
+                return []
 
         return solutions
 
@@ -591,9 +596,8 @@ class MznXorDifferentialModel(MznModel):
                 processes_=num_of_processors,
                 solve_external=solve_external,
             )
-            if solve_external:
-                solution["building_time_seconds"] = build_time
-                solution["test_name"] = "find_one_xor_differential_trail_with_fixed_weight"
+            solution["building_time_seconds"] = build_time
+            solution["test_name"] = "find_one_xor_differential_trail_with_fixed_weight"
 
         return solution
 

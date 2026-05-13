@@ -48,6 +48,15 @@ def test_find_all_xor_differential_trails_with_weight_at_most():
     assert len(trails) == 7
 
 
+def test_find_all_xor_differential_trails_with_weight_at_most_unsat_returns_empty_list():
+    speck = SpeckBlockCipher(number_of_rounds=5)
+    mzn = MznXorDifferentialModel(speck)
+
+    trails = mzn.find_all_xor_differential_trails_with_weight_at_most(0, 3, solver_name=CHUFFED, solve_external=False)
+
+    assert trails == []
+
+
 def test_find_lowest_weight_xor_differential_trail():
     speck = SpeckBlockCipher(number_of_rounds=5)
     mzn = MznXorDifferentialModel(speck)
@@ -125,3 +134,6 @@ def test_find_one_xor_differential_trail_with_fixed_weight():
     assert int(trail["components_values"]["xor_3_8"]["value"], base=16) >= 0
     assert trail["components_values"]["xor_3_8"]["weight"] == 0
     assert trail["total_weight"] == "9.0"
+
+
+
