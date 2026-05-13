@@ -377,9 +377,9 @@ class MixColumn(LinearLayer):
         matrix = binary_matrix_of_linear_component(self)
         matrix_transposed = [[matrix[i][j] for i in range(matrix.nrows())] for j in range(matrix.ncols())]
         original_description = deepcopy(self.description)
-        self.set_description(matrix_transposed)
+        self.description = matrix_transposed
         cp_declarations, cp_constraints = super().cp_constraints()
-        self.set_description(original_description)
+        self.description = original_description
 
         return cp_declarations, cp_constraints
 
@@ -407,9 +407,9 @@ class MixColumn(LinearLayer):
         matrix = binary_matrix_of_linear_component(self)
         matrix_transposed = [[matrix[i][j] for i in range(matrix.nrows())] for j in range(matrix.ncols())]
         original_description = deepcopy(self.description)
-        self.set_description(matrix_transposed)
+        self.description = matrix_transposed
         cp_declarations, cp_constraints = super().cp_deterministic_truncated_xor_differential_constraints()
-        self.set_description(original_description)
+        self.description = original_description
 
         return cp_declarations, cp_constraints
 
@@ -698,9 +698,9 @@ class MixColumn(LinearLayer):
         bin_matrix = binary_matrix_of_linear_component(self)
         matrix_transposed = [[bin_matrix[i][j] for i in range(bin_matrix.nrows())] for j in range(bin_matrix.ncols())]
         original_description = deepcopy(self.description)
-        self.set_description(matrix_transposed)
+        self.description = matrix_transposed
         variables, constraints = super().milp_constraints(model)
-        self.set_description(original_description)
+        self.description = original_description
 
         return variables, constraints
 
@@ -739,9 +739,9 @@ class MixColumn(LinearLayer):
         bin_matrix = binary_matrix_of_linear_component(self)
         matrix_transposed = [[bin_matrix[i][j] for i in range(bin_matrix.nrows())] for j in range(bin_matrix.ncols())]
         original_description = deepcopy(self.description)
-        self.set_description(matrix_transposed)
+        self.description = matrix_transposed
         variables, constraints = super().milp_xor_linear_mask_propagation_constraints(model)
-        self.set_description(original_description)
+        self.description = original_description
         result = variables, constraints
         return result
 
@@ -817,7 +817,7 @@ class MixColumn(LinearLayer):
             M = self.description[0]
             bin_matrix = Matrix([[1 if M[i][j] else 0 for i in range(len(M))] for j in range(len(M[0]))])
             bin_matrix_transposed = [list(_) for _ in list(zip(*bin_matrix))]
-            self.set_description(bin_matrix_transposed)
+            self.description = bin_matrix_transposed
             variables, constraints = super().milp_wordwise_deterministic_truncated_xor_differential_constraints(model)
         return variables, constraints
 
@@ -861,9 +861,9 @@ class MixColumn(LinearLayer):
         matrix = binary_matrix_of_linear_component(self)
         matrix_transposed = [[matrix[i][j] for i in range(matrix.nrows())] for j in range(matrix.ncols())]
         original_description = deepcopy(self.description)
-        self.set_description(matrix_transposed)
+        self.description = matrix_transposed
         variables, constraints = super().sat_constraints()
-        self.set_description(original_description)
+        self.description = original_description
         result = variables, constraints
         return result
 
@@ -919,9 +919,9 @@ class MixColumn(LinearLayer):
         matrix = binary_matrix_of_linear_component(self)
         matrix_transposed = [[matrix[i][j] for i in range(matrix.nrows())] for j in range(matrix.ncols())]
         original_description = deepcopy(self.description)
-        self.set_description(matrix_transposed)
+        self.description = matrix_transposed
         out_ids, constraints = super().sat_bitwise_deterministic_truncated_xor_differential_constraints()
-        self.set_description(original_description)
+        self.description = original_description
         return out_ids, constraints
 
     def sat_xor_differential_propagation_constraints(self, model=None):
@@ -1019,9 +1019,9 @@ class MixColumn(LinearLayer):
         matrix = binary_matrix_of_linear_component(self)
         matrix_transposed = [[matrix[i][j] for i in range(matrix.nrows())] for j in range(matrix.ncols())]
         original_description = deepcopy(self.description)
-        self.set_description(matrix_transposed)
+        self.description = matrix_transposed
         variables, constraints = super().sat_xor_linear_mask_propagation_constraints()
-        self.set_description(original_description)
+        self.description = original_description
         result = variables, constraints
         return result
 
@@ -1057,9 +1057,9 @@ class MixColumn(LinearLayer):
         matrix = binary_matrix_of_linear_component(self)
         matrix_transposed = [[matrix[i][j] for i in range(matrix.nrows())] for j in range(matrix.ncols())]
         original_description = deepcopy(self.description)
-        self.set_description(matrix_transposed)
+        self.description = matrix_transposed
         variables, constraints = super().smt_constraints()
-        self.set_description(original_description)
+        self.description = original_description
         result = variables, constraints
         return result
 
@@ -1138,8 +1138,8 @@ class MixColumn(LinearLayer):
         matrix = binary_matrix_of_linear_component(self)
         matrix_transposed = [[matrix[i][j] for i in range(matrix.nrows())] for j in range(matrix.ncols())]
         original_description = deepcopy(self.description)
-        self.set_description(matrix_transposed)
+        self.description = matrix_transposed
         variables, constraints = super().smt_xor_linear_mask_propagation_constraints()
-        self.set_description(original_description)
+        self.description = original_description
         result = variables, constraints
         return result
