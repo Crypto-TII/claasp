@@ -1862,13 +1862,64 @@ class MilpMonomialPredictionModel:
         global verbosity
         old_verbosity = verbosity
         verbosity = False
+
+        # Build the MILP once with all output bits free; the per-bit loop
+        # below only adds/removes a single fixing constraint per output bit.
+        self.re_init()
+        self.build_model_with_input_output_constraints(
+            output_indices=None, chosen_cipher_output=chosen_cipher_output,
+        )
+
+        output_vars = list(self._variables["output"].values())
+        n_out = len(output_vars)
+        self._model.addConstr(sum(output_vars) == 1, name="hw_one_output")
+
+        if which_var_degree is None:
+            target_inputs = [(self._cipher.inputs[0], self._cipher.inputs_bit_size[0])]
+        else:
+            target_inputs = [
+                (inp, size)
+                for inp, size in zip(self._cipher.inputs, self._cipher.inputs_bit_size)
+                if inp.startswith(which_var_degree)
+            ]
+        vars_target = []
+        for inp, size in target_inputs:
+            for bit in range(size):
+                v = self._model.getVarByName(f"{inp}[{bit}]")
+                if v is not None:
+                    vars_target.append(v)
+        self._model.setObjective(sum(vars_target), GRB.MAXIMIZE)
+
+        m = self._model
+        m.Params.OutputFlag = 0
+        m.setParam(GRB.Param.PoolSearchMode, 2)
+        m.setParam(GRB.Param.PoolSolutions, 200000000)
+        m.setParam(GRB.Param.PoolGap, 0.0)
+        m.update()
+
         degrees = []
-        for i in range(self._cipher.output_bit_size):
-            self.re_init()
-            degree = self.find_exact_degree_of_specific_output_bit(
-                i, which_var_degree=which_var_degree, chosen_cipher_output=chosen_cipher_output
-            )
-            degrees.append(degree)
+        for i in range(n_out):
+            c = m.addConstr(output_vars[i] == 1)
+            m.update()
+            m.optimize()
+            if m.Status not in [GRB.OPTIMAL, GRB.SUBOPTIMAL]:
+                print(f"[INFO] Model is infeasible for output bit {i}") if verbosity else None
+                degrees.append(-1)
+            else:
+                d = int(round(m.ObjVal))
+                monomial_parity = {}
+                for s in range(m.SolCount):
+                    m.Params.SolutionNumber = s
+                    active_indices = tuple(j for j, v in enumerate(vars_target) if v.Xn > 0.5)
+                    if len(active_indices) == d:
+                        monomial_parity[active_indices] = monomial_parity.get(active_indices, 0) ^ 1
+                if any(val == 1 for val in monomial_parity.values()):
+                    degrees.append(d)
+                else:
+                    degrees.append(d - 1)
+            m.remove(c)
+            m.update()
+
         verbosity = old_verbosity
 
         self._log_experiment(
