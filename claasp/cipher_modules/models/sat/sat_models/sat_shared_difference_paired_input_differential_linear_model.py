@@ -84,7 +84,7 @@ class SharedDifferencePairedInputDifferentialLinearModel(SatModel):
                 for input_id_link in regular_component_copy.input_id_links
             ]
 
-            regular_component_copy.set_input_id_links(new_input_id_links)
+            regular_component_copy.input_id_links = new_input_id_links
 
             cipher._rounds.rounds[round_number]._components.extend([regular_component_copy])
             new_regular_components.append(

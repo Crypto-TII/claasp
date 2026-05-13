@@ -118,27 +118,21 @@ class Component:
         description,
     ):
         if not isinstance(component_input.id_links, list):
-            print("type of [input_id_link] should be a list")
-            return
+            raise TypeError(f"{component_id} id_links must be a list.")
 
         if not isinstance(component_input.bit_positions, list):
-            print("type of [input_bit_positions] should be a list")
-            return
+            raise TypeError(f"{component_id} bit_positions must be a list.")
 
-        if not isinstance(component_input.bit_positions[0], list):
-            print("element of [input_bit_positions] should be a list")
-            return
+        for positions in component_input.bit_positions:
+            if not isinstance(positions, list):
+                raise TypeError(f"Each element of {component_id} bit_positions must be a list.")
 
         if len(component_input.id_links) != len(component_input.bit_positions):
-            print("[input_id_link] and [input_bit_positions] should have the same length")
-            return
+            raise ValueError(f"{component_id} id_links and bit_positions must have the same length.")
 
-        length = 0
-        for i in component_input.bit_positions:
-            length += len(i)
+        length = sum(len(positions) for positions in component_input.bit_positions)
         if component_input.bit_size != length:
-            print("the length of [input_bit_positions] is not equal to input_bit_size")
-            return
+            raise ValueError(f"The length of {component_id} bit_positions is not equal to input_bit_size")
 
         self._id = component_id
         self._type = component_type
@@ -682,22 +676,13 @@ class Component:
         return False
 
     def print(self):
-        print(f"    id =", self._id)
-        print(f"    type =", self._type)
-        print(f"    input_bit_size =", self.input_bit_size)
-        print(f"    input_id_link =", self.input_id_links)
-        print(f"    input_bit_positions =", self.input_bit_positions)
-        print(f"    output_bit_size =", self._output_bit_size)
-        print(f"    description =", self._description)
-
-    def set_description(self, description):
-        self._description = description
-
-    def set_input_id_links(self, input_id_links):
-        self._input.set_input_id_links(input_id_links)
-
-    def set_input_bit_positions(self, bit_positions):
-        self._input.set_input_bit_positions(bit_positions)
+        print(f"    id = {self._id}")
+        print(f"    type = {self._type}")
+        print(f"    input_bit_size = {self.input_bit_size}")
+        print(f"    input_id_link = {self.input_id_links}")
+        print(f"    input_bit_positions = {self.input_bit_positions}")
+        print(f"    output_bit_size = {self._output_bit_size}")
+        print(f"    description = {self._description}")
 
     def print_values(self, code):
         code.append(f'\tprintf("{self.id}_input = ");')
@@ -712,8 +697,6 @@ class Component:
         code.append(f"\tprint_wordstring({self.id}, 16);\n")
 
     def select_bits(self, code):
-        n = len(self.input_id_links)
-
         code.append(
             (f"\tinput_id = (BitString*[]) {{{', '.join(self.input_id_links)}}};\n\tinput_positions = (uint16_t*[]) {{")
         )
@@ -722,7 +705,7 @@ class Component:
             code.append((f"\t\t(uint16_t[]) {{{len(position_list)}, {', '.join(map(str, position_list))}}},"))
 
         code.append("\t};")
-
+        n = len(self.input_id_links)
         code.append(f"\tinput = select_bits({n}, input_id, input_positions, {self.output_bit_size});")
 
     def select_words(self, code, word_size, input=True):
@@ -744,16 +727,21 @@ class Component:
                 f"\tmemcpy({self.id} -> list, (Word[]) {{{', '.join(word_list)}}}, {len(word_list)} * sizeof(Word));"
             )
 
-    def set_id(self, id_string):
-        self._id = id_string
-
     @property
     def description(self):
         return self._description
 
+    @description.setter
+    def description(self, description):
+        self._description = description
+
     @property
     def id(self):
         return self._id
+
+    @id.setter
+    def id(self, id_string):
+        self._id = id_string
 
     @property
     def input_bit_size(self):
@@ -763,9 +751,17 @@ class Component:
     def input_id_links(self):
         return self._input.id_links
 
+    @input_id_links.setter
+    def input_id_links(self, input_id_links):
+        self._input.id_links = input_id_links
+
     @property
     def input_bit_positions(self):
         return self._input.bit_positions
+
+    @input_bit_positions.setter
+    def input_bit_positions(self, bit_positions):
+        self._input.bit_positions = bit_positions
 
     @property
     def output_bit_size(self):

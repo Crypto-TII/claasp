@@ -296,15 +296,15 @@ def get_all_bit_names(self):
                     output_bit_name = f"{input_id_link}_{i}_output"
                     input_bit = {"component_id": c.id, "position": starting_bit_position + j, "type": "input"}
                     input_bit_name = c.id + "_" + str(starting_bit_position + j) + "_input"
-                    if output_bit_name not in dictio.keys():
+                    if output_bit_name not in dictio:
                         dictio[output_bit_name] = output_bit
-                    if input_bit_name not in dictio.keys():
+                    if input_bit_name not in dictio:
                         dictio[input_bit_name] = input_bit
 
                     if c.type != CIPHER_OUTPUT:
                         output_updated_bit = {"component_id": input_id_link, "position": i, "type": "output_updated"}
                         output_updated_bit_name = f"{input_id_link}_{i}_output_updated"
-                        if output_updated_bit_name not in dictio.keys():  # changed, if added
+                        if output_updated_bit_name not in dictio:  # changed, if added
                             dictio[output_updated_bit_name] = output_updated_bit
                     output_updated_bit = {
                         "component_id": c.id,
@@ -312,7 +312,7 @@ def get_all_bit_names(self):
                         "type": "output_updated",
                     }
                     output_updated_bit_name = f"{c.id}_{starting_bit_position + j}_output_updated"
-                    if output_updated_bit_name not in dictio.keys():  # changed, if added
+                    if output_updated_bit_name not in dictio:  # changed, if added
                         dictio[output_updated_bit_name] = output_updated_bit
                     j += 1
                 starting_bit_position += len(c.input_bit_positions[index])
@@ -334,7 +334,7 @@ def get_all_equivalent_bits(self):
                 output_bit_name = f"{input_id_link}_{i}_output"
                 input_bit_name = f"{c.id}_{current_bit_position}_input"
                 current_bit_position += 1
-                if output_bit_name not in dictio.keys():
+                if output_bit_name not in dictio:
                     dictio[output_bit_name] = []
                 dictio[output_bit_name].append(input_bit_name)
 
@@ -342,7 +342,7 @@ def get_all_equivalent_bits(self):
     for key, values in dictio.items():
         updated_dictio[key] = values
         for value in values:
-            if value not in dictio.keys():
+            if value not in dictio:
                 updated_dictio[value] = []
             updated_dictio[value].append(key)
             for other_value in values:
