@@ -17,13 +17,16 @@ def test_permutation_cipher_default_description_reverses_bits():
 
 
 def test_permutation_cipher_applies_correct_permutation():
-    # Permutation [3, 2, 1, 0]: output bit i = input bit perm[i]
-    # Output bit 0 = input bit 3, output bit 1 = input bit 2, etc.
-    # Input 0b1000 (bit 0=1, rest=0 in MSB-first indexing):
-    #   output bit 0 = input bit 3 = 0
-    #   output bit 1 = input bit 2 = 0
-    #   output bit 2 = input bit 1 = 0
-    #   output bit 3 = input bit 0 = 1  → 0b0001 = 1
+    # Permutation [3, 2, 1, 0]: permutation_description[i] is the destination of source bit i
+    # Source bit 0 -> output bit 3, source bit 1 -> output bit 2, source bit 2 -> output bit 1, source bit 3 -> output bit 0
+    # Equivalently: output[j] = input[inverse_perm[j]]; since [3,2,1,0] is self-inverse:
+    # output[0] = input[3], output[1] = input[2], output[2] = input[1], output[3] = input[0]
+    # Input 0b1000 (bit 3=1, bits 2,1,0=0):
+    #   output[0] = input[3] = 1
+    #   output[1] = input[2] = 0
+    #   output[2] = input[1] = 0
+    #   output[3] = input[0] = 0
+    #   Result: 0b0001
     cipher = PermutationCipher(bit_size=4, permutation_description=[3, 2, 1, 0])
     assert cipher.evaluate([0b1000]) == 0b0001
     assert cipher.evaluate([0b0001]) == 0b1000
