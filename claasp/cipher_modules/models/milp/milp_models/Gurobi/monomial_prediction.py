@@ -1562,13 +1562,27 @@ class MilpMonomialPredictionModel:
         m.setParam(GRB.Param.PoolSolutions, 200000000)
         m.setParam(GRB.Param.PoolGap, 0.0)
 
+    def _exact_degree_from_solution_pool(self, target_vars, candidate_degree):
+        """Walk the current Gurobi solution pool and apply the parity /
+        degree-drop rule. Returns ``candidate_degree`` if at least one
+        degree-``candidate_degree`` monomial has odd multiplicity, otherwise
+        ``candidate_degree - 1``.
+        """
+        m = self._model
+        monomial_parity = {}
+        for s in range(m.SolCount):
+            m.Params.SolutionNumber = s
+            active_indices = tuple(j for j, v in enumerate(target_vars) if v.Xn > 0.5)
+            if len(active_indices) == candidate_degree:
+                monomial_parity[active_indices] = monomial_parity.get(active_indices, 0) ^ 1
+        return candidate_degree if any(val == 1 for val in monomial_parity.values()) else candidate_degree - 1
+
     def _run_exact_degree_per_bit_loop(self, output_vars, target_vars):
         """Per-output-bit loop with parity enumeration.
 
         For each output bit i, add ``output_vars[i] == 1`` to the master,
-        solve, enumerate all optimal solutions and apply the parity /
-        degree-drop rule, then remove the constraint. Returns the list of
-        per-bit exact degrees.
+        solve, derive the exact degree from the solution pool, then remove
+        the constraint. Returns the list of per-bit exact degrees.
         """
         m = self._model
         degrees = []
@@ -1580,17 +1594,7 @@ class MilpMonomialPredictionModel:
                 print(f"[INFO] Model is infeasible for output bit {i}") if verbosity else None
                 degrees.append(-1)
             else:
-                d = int(round(m.ObjVal))
-                monomial_parity = {}
-                for s in range(m.SolCount):
-                    m.Params.SolutionNumber = s
-                    active_indices = tuple(j for j, v in enumerate(target_vars) if v.Xn > 0.5)
-                    if len(active_indices) == d:
-                        monomial_parity[active_indices] = monomial_parity.get(active_indices, 0) ^ 1
-                if any(val == 1 for val in monomial_parity.values()):
-                    degrees.append(d)
-                else:
-                    degrees.append(d - 1)
+                degrees.append(self._exact_degree_from_solution_pool(target_vars, int(round(m.ObjVal))))
             m.remove(c)
             m.update()
         return degrees
