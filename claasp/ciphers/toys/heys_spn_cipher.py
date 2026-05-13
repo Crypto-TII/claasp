@@ -3,14 +3,28 @@ from claasp.name_mappings import BLOCK_CIPHER, INPUT_PLAINTEXT, INPUT_KEY
 
 
 class Heys_SPN(Cipher):
+    """
+    Construct an instance of the Heys toy SPN class.
+
+    INPUT:
+
+    - ``block_bit_size`` -- **integer** (default: `16`); cipher input and output block bit size of the cipher
+    - ``self.key_bit_size`` -- **integer** (default: `80`); cipher key bit size of the cipher
+    - ``number_of_rounds`` -- **integer** (default: `4`); number of rounds of the cipher.
+
+    EXAMPLES::
+
+        sage: from claasp.ciphers.toys.heys_spn_cipher import Heys_SPN
+        sage: cipher = Heys_SPN()
+        sage: hex(cipher.evaluate([0x1234, 0x0123456789ABCDEF0123])) == "0xe582"
+        True
+    """
+
     def __init__(
         self,
         block_bit_size=16,
-        key_bit_size=80,  # 5 round keys of 16 bits
-        number_of_rounds=4,
-        sbox=[0xE, 0x4, 0xD, 0x1, 0x2, 0xF, 0xB, 0x8,
-              0x3, 0xA, 0x6, 0xC, 0x5, 0x9, 0x0, 0x7],
-        permutation=[0,4,8,12, 1,5,9,13, 2,6,10,14, 3,7,11,15],
+        key_bit_size=80,  # split into 5 round keys of 16 bits
+        number_of_rounds=4
     ):
         super().__init__(
             family_name="heys_toy_cipher",
@@ -22,6 +36,9 @@ class Heys_SPN(Cipher):
 
         self.sbox_bit_size = 4
         self.number_of_sboxes = block_bit_size // self.sbox_bit_size
+        sbox = [0xE, 0x4, 0xD, 0x1, 0x2, 0xF, 0xB, 0x8,
+              0x3, 0xA, 0x6, 0xC, 0x5, 0x9, 0x0, 0x7]
+        permutation = [0,4,8,12, 1,5,9,13, 2,6,10,14, 3,7,11,15]
 
         state = INPUT_PLAINTEXT
 
@@ -65,7 +82,6 @@ class Heys_SPN(Cipher):
                     permutation,
                 ).id
             else:
-                # No concatenate: directly reuse S-box outputs as "state"
                 state = sbox_ids
 
             self.add_round_output_component(
