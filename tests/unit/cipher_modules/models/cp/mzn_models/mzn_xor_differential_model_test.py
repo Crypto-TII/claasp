@@ -5,6 +5,7 @@ from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model impor
 from claasp.cipher_modules.models.cp.solvers import CHUFFED
 from claasp.cipher_modules.models.utils import set_fixed_variables
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+from claasp.ciphers.single_component_ciphers.sbox_cipher import SboxCipher
 from claasp.name_mappings import INPUT_PLAINTEXT, UNSATISFIABLE
 
 
@@ -39,20 +40,26 @@ def test_solving_unsatisfiability():
 def test_find_all_xor_differential_trails_with_weight_at_most():
     speck = SpeckBlockCipher(block_bit_size=8, key_bit_size=16, number_of_rounds=2)
     mzn = MznXorDifferentialModel(speck)
-    trails = mzn.find_all_xor_differential_trails_with_weight_at_most(0, 1, solver_name=CHUFFED, solve_external=True)
+    trails = mzn.find_all_xor_differential_trails_with_weight_at_most(1, 0, solver_name=CHUFFED, solve_external=True)
 
     assert len(trails) == 7
 
-    trails = mzn.find_all_xor_differential_trails_with_weight_at_most(0, 1, solver_name=CHUFFED, solve_external=False)
+    trails = mzn.find_all_xor_differential_trails_with_weight_at_most(1, 0, solver_name=CHUFFED, solve_external=False)
 
     assert len(trails) == 7
 
 
 def test_find_all_xor_differential_trails_with_weight_at_most_unsat_returns_empty_list():
-    speck = SpeckBlockCipher(number_of_rounds=5)
-    mzn = MznXorDifferentialModel(speck)
+    cipher = SboxCipher(bit_size=3, lookup_table=[0, 1, 2, 3, 4, 5, 6, 7])
+    mzn = MznXorDifferentialModel(cipher)
 
-    trails = mzn.find_all_xor_differential_trails_with_weight_at_most(0, 3, solver_name=CHUFFED, solve_external=False)
+    zero_weight_trails = mzn.find_all_xor_differential_trails_with_weight_at_most(
+        0, 0, solver_name=CHUFFED, solve_external=False
+    )
+    assert len(zero_weight_trails) > 0
+    assert all(t["total_weight"] == "0.0" for t in zero_weight_trails)
+
+    trails = mzn.find_all_xor_differential_trails_with_weight_at_most(1, 1, solver_name=CHUFFED, solve_external=False)
 
     assert trails == []
 

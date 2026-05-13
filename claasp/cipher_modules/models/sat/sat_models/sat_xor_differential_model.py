@@ -242,7 +242,13 @@ class SatXorDifferentialModel(SatModel):
         start_building_time = time.time()
         self.build_xor_differential_trail_model(weight=fixed_weight, fixed_variables=fixed_values)
         if self._counter == self._sequential_counter:
-            self._sequential_counter_greater_or_equal(fixed_weight, "dummy_hw_1")
+            hw_variables = [variable_id for variable_id in self._variables_list if variable_id.startswith("hw_")]
+            if fixed_weight > len(hw_variables):
+                return []
+            if fixed_weight == len(hw_variables):
+                self._model_constraints.extend(hw_variables)
+            else:
+                self._sequential_counter_greater_or_equal(fixed_weight, "dummy_hw_1")
         end_building_time = time.time()
         solution = self.solve(XOR_DIFFERENTIAL, solver_name=solver_name, options=options)
         solutions_list = []
@@ -257,7 +263,7 @@ class SatXorDifferentialModel(SatModel):
         return solutions_list
 
     def find_all_xor_differential_trails_with_weight_at_most(
-        self, min_weight, max_weight, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT, options=None
+        self, max_weight, min_weight=0, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT, options=None
     ):
         """
         Return a list of solutions.
