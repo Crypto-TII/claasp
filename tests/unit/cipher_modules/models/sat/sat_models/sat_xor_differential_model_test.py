@@ -5,6 +5,7 @@ from claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model impo
 from claasp.cipher_modules.models.sat.solvers import CADICAL_EXT, KISSAT_EXT, PARKISSAT_EXT
 from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+from claasp.ciphers.single_component_ciphers.sbox_cipher import SboxCipher
 from claasp.components.modadd_component import ModAdd
 from claasp.name_mappings import INPUT_KEY, INPUT_PLAINTEXT, SATISFIABLE, XOR_DIFFERENTIAL
 
@@ -79,9 +80,25 @@ def test_find_all_xor_differential_trails_with_fixed_weight():
 def test_find_all_xor_differential_trails_with_weight_at_most():
     speck = speck_5rounds
     sat = SatXorDifferentialModel(speck)
-    trails = sat.find_all_xor_differential_trails_with_weight_at_most(9, 10)
+    trails = sat.find_all_xor_differential_trails_with_weight_at_most(10, 9)
 
     assert len(trails) == 28
+
+
+def test_find_all_xor_differential_trails_with_weight_at_most_accepts_default_min_weight_and_no_crash():
+    """Test that single-argument call finds all trails 'at most' that weight (min_weight=0 by default)."""
+    cipher = SboxCipher(bit_size=3, lookup_table=[0, 1, 2, 3, 4, 5, 6, 7])
+    sat = SatXorDifferentialModel(cipher)
+
+    # Single-arg call: find all trails "at most 1 weight" → [0, 1]
+    trails_default_range = sat.find_all_xor_differential_trails_with_weight_at_most(1)
+    assert len(trails_default_range) == 7
+    assert all(float(t["total_weight"]) == 0.0 for t in trails_default_range)
+
+    # Two-arg call: find all trails with weight in [0, 17]
+    trails = sat.find_all_xor_differential_trails_with_weight_at_most(17, 0)
+    assert len(trails) == 7
+    assert all(float(t["total_weight"]) == 0.0 for t in trails)
 
 
 def test_find_lowest_weight_xor_differential_trail():

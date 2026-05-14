@@ -181,7 +181,7 @@ class SmtXorDifferentialModel(SmtModel):
         return solutions_list
 
     def find_all_xor_differential_trails_with_weight_at_most(
-        self, min_weight, max_weight, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT
+        self, max_weight, min_weight=0, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT
     ):
         """
         Return a list of solutions.
@@ -192,8 +192,8 @@ class SmtXorDifferentialModel(SmtModel):
 
         INPUT:
 
-        - ``min_weight`` -- **integer**; the weight from which to start the search
-        - ``max_weight`` -- **integer**; the weight at which the search stops
+        - ``max_weight`` -- **integer**; the maximum weight at which the search stops
+        - ``min_weight`` -- **integer** (default: 0); the minimum weight from which to start the search
         - ``fixed_values`` -- **list** (default: `[]`); they can be created using ``set_fixed_variables`` method
         - ``solver_name`` -- **string** (default: `Z3_EXT`); the name of the solver
 
@@ -208,7 +208,7 @@ class SmtXorDifferentialModel(SmtModel):
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: speck = SpeckBlockCipher(number_of_rounds=5)
             sage: smt = SmtXorDifferentialModel(speck)
-            sage: trails = smt.find_all_xor_differential_trails_with_weight_at_most(9, 10)
+            sage: trails = smt.find_all_xor_differential_trails_with_weight_at_most(10, 9)
             sage: len(trails)
             28
 
@@ -223,7 +223,7 @@ class SmtXorDifferentialModel(SmtModel):
             ....:     constraint_type='not_equal',
             ....:     bit_positions=range(64),
             ....:     bit_values=[0]*64)
-            sage: trails = smt.find_all_xor_differential_trails_with_weight_at_most(2, 3, fixed_values=[key])
+            sage: trails = smt.find_all_xor_differential_trails_with_weight_at_most(3, 2, fixed_values=[key])
             sage: len(trails)
             9
         """

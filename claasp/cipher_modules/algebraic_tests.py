@@ -78,7 +78,10 @@ class AlgebraicTests:
             if dict_vars:
                 F = self._algebraic_model._eliminate_const_not_shift_rot_components_polynomials(dict_vars, F)
 
-            Fseq = Sequence(F)
+            # Coerce explicitly into the algebraic model Boolean ring to avoid
+            # environment-dependent PolyBoRi coercion failures in groebner_basis.
+            ring = self._algebraic_model.ring()
+            Fseq = Sequence([ring(p) for p in F], universe=ring)
             nvars_up_to_round.append(Fseq.nvariables())
             npolynomials_up_to_round.append(len(Fseq))
             nmonomials_up_to_round.append(Fseq.nmonomials())
