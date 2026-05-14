@@ -1210,8 +1210,8 @@ def _bits_to_words_array(input, bits_inside_word, word_gf):
 
     for i in range(num_words):
         c = 0
-        for j, m in enumerate(monomials):
-            c += (input[(i * bits_inside_word) + j]) * monomials[j]
+        for j, monomial in enumerate(monomials):
+            c += (input[(i * bits_inside_word) + j]) * monomial
         word_array[i] = c
 
     return word_array

@@ -252,7 +252,13 @@ class SatXorDifferentialModel(SatModel):
         start_building_time = time.time()
         self.build_xor_differential_trail_model(weight=fixed_weight, fixed_variables=fixed_values)
         if self._counter == self._sequential_counter:
-            self._sequential_counter_greater_or_equal(fixed_weight, "dummy_hw_1")
+            hw_variables = [variable_id for variable_id in self._variables_list if variable_id.startswith("hw_")]
+            if fixed_weight > len(hw_variables):
+                return []
+            if fixed_weight == len(hw_variables):
+                self._model_constraints.extend(hw_variables)
+            else:
+                self._sequential_counter_greater_or_equal(fixed_weight, "dummy_hw_1")
         end_building_time = time.time()
         solution = self.solve(XOR_DIFFERENTIAL, solver_name=solver_name, options=options)
         solutions_list = []
@@ -267,7 +273,7 @@ class SatXorDifferentialModel(SatModel):
         return solutions_list
 
     def find_all_xor_differential_trails_with_weight_at_most(
-        self, min_weight, max_weight, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT, options=None
+        self, max_weight, min_weight=0, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT, options=None
     ):
         """
         Return a list of solutions.
@@ -278,8 +284,8 @@ class SatXorDifferentialModel(SatModel):
 
         INPUT:
 
-        - ``min_weight`` -- **integer**; the weight from which to start the search
         - ``max_weight`` -- **integer**; the weight at which the search stops
+        - ``min_weight`` -- **integer** (default: `0`); the weight from which to start the search
         - ``fixed_values`` -- **list** (default: `[]`); they can be created using ``set_fixed_variables`` method
         - ``solver_name`` -- **string** (default: `CRYPTOMINISAT_EXT`); the name of the solver
 
@@ -294,7 +300,7 @@ class SatXorDifferentialModel(SatModel):
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: speck = SpeckBlockCipher(number_of_rounds=5)
             sage: sat = SatXorDifferentialModel(speck)
-            sage: trails = sat.find_all_xor_differential_trails_with_weight_at_most(9, 10)
+            sage: trails = sat.find_all_xor_differential_trails_with_weight_at_most(10, 9)
             sage: len(trails) == 28
             True
 
@@ -309,7 +315,7 @@ class SatXorDifferentialModel(SatModel):
             ....:     constraint_type='not_equal',
             ....:     bit_positions=range(64),
             ....:     bit_values=[0]*64)
-            sage: trails = sat.find_all_xor_differential_trails_with_weight_at_most(2, 3, fixed_values=[key])
+            sage: trails = sat.find_all_xor_differential_trails_with_weight_at_most(3, 2, fixed_values=[key])
             sage: len(trails) == 9
             True
         """

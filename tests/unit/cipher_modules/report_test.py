@@ -326,6 +326,25 @@ def test_show(monkeypatch, tmp_path):
     assert component_charts, 'Expected component analysis radar chart to be produced'
 
 
+def test_report_accepts_cp_trail_output():
+    """
+    Test that Report can be instantiated with CP model trail output directly,
+    without requiring explicit 'input_parameters' or 'test_name' nesting.
+    This validates that Report gracefully handles single-trial dictionaries
+    from find_one_xor_differential_trail_with_fixed_weight and similar methods.
+    """
+    speck = SpeckBlockCipher(block_bit_size=8, key_bit_size=16, number_of_rounds=2)
+    cp = MznXorDifferentialModel(speck)
+    trail = cp.find_one_xor_differential_trail_with_fixed_weight(1, solver_name='chuffed', solve_external=False)
+
+    assert 'test_name' in trail
+    assert trail['test_name'] == 'find_one_xor_differential_trail_with_fixed_weight'
+
+    trail_report = Report(trail)
+    assert trail_report.cipher == speck
+    assert trail_report.test_name == 'find_one_xor_differential_trail_with_fixed_weight'
+
+
 def test_save_as_dataframe_uses_runtime_cwd_default(monkeypatch, tmp_path):
     class DummyCipher:
         id = 'dummy_cipher'

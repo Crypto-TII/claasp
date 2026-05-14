@@ -372,15 +372,15 @@ class MilpXorDifferentialModel(MilpModel):
 
     def find_all_xor_differential_trails_with_weight_at_most(
         self,
-        min_weight,
         max_weight,
+        min_weight=0,
         fixed_values=[],
         weight_precision=MILP_DEFAULT_WEIGHT_PRECISION,
         solver_name=SOLVER_DEFAULT,
         external_solver_name=None,
     ):
         """
-        Return all XOR differential trails with weight greater than ``min_weight`` and lower/equal to ``max_weight``.
+        Return all XOR differential trails with weight greater than or equal to ``min_weight`` and lower/equal to ``max_weight``.
         By default, the search is set in the single-key setting.
         The value returned is a list of solutions in standard format.
 
@@ -395,8 +395,8 @@ class MilpXorDifferentialModel(MilpModel):
 
         INPUT:
 
-        - ``min_weight`` -- **integer**;  the weight found using :py:meth:`~find_lowest_weight_xor_differential_trail`.
         - ``max_weight`` -- **integer**; the upper bound for the weight.
+        - ``min_weight`` -- **integer** (default: 0); the lower bound for the weight search.
         - ``fixed_values`` -- **list** (default: `[]`); each dictionary contains variables values whose output need to
           be fixed
         - ``weight_precision`` -- **integer** (default: `2`); the number of decimals to use when rounding the weight of the trail.
@@ -410,7 +410,7 @@ class MilpXorDifferentialModel(MilpModel):
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: speck = SpeckBlockCipher(number_of_rounds=5)
             sage: milp = MilpXorDifferentialModel(speck)
-            sage: trails = milp.find_all_xor_differential_trails_with_weight_at_most(9, 10) # long #doctest: +SKIP
+            sage: trails = milp.find_all_xor_differential_trails_with_weight_at_most(10, 9) # long #doctest: +SKIP
             ...
             sage: len(trails) #doctest: +SKIP
             28
@@ -422,7 +422,7 @@ class MilpXorDifferentialModel(MilpModel):
             sage: speck = SpeckBlockCipher(number_of_rounds=5)
             sage: milp = MilpXorDifferentialModel(speck)
             sage: key = set_fixed_variables('key', 'not_equal', list(range(64)), [0] * 64)
-            sage: trails = milp.find_all_xor_differential_trails_with_weight_at_most(2, 3, fixed_values=[key]) # long #doctest: +SKIP
+            sage: trails = milp.find_all_xor_differential_trails_with_weight_at_most(3, 2, fixed_values=[key]) # long #doctest: +SKIP
             ...
             sage: len(trails) #doctest: +SKIP
             9

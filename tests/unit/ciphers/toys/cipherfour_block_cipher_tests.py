@@ -1,10 +1,11 @@
 import sys
 from io import StringIO
 
-from claasp.ciphers.toys.toy_cipherfour import ToyCipherFour
+from claasp.ciphers.toys.cipherfour_block_cipher import CipherFourBlockCipher
 
-def test_toycipherFOUR():
-    toy_cipher = ToyCipherFour()
+
+def test_cipherfour_block_cipher():
+    toy_cipher = CipherFourBlockCipher()
     assert toy_cipher.number_of_rounds == 5
 
     plaintext = 0x1234
@@ -107,13 +108,13 @@ cipher_output_4_6_output = 0x45e9
     assert evaluation == '0x45e9'
     assert result.getvalue() == expected_evaluation
 
-    toy_cipher = ToyCipherFour(block_bit_size=16, key_bit_size=80, number_of_rounds=10)
+    toy_cipher = CipherFourBlockCipher(block_bit_size=16, key_bit_size=80, number_of_rounds=10)
     assert hex(toy_cipher.evaluate([0x5678, 0x22224444666688889999aaaa])) == '0xbeec'
 
-    toy_cipher = ToyCipherFour(block_bit_size=16, key_bit_size=80,
-                               sbox=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0],
-                               permutations=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
-                               number_of_rounds=5)
+    toy_cipher = CipherFourBlockCipher(block_bit_size=16, key_bit_size=80,
+                                       sbox=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0],
+                                       permutations=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+                                       number_of_rounds=5)
     assert toy_cipher.evaluate([0x9abc, 0x3333555577779999bbbbcccc]) == 61185
 
 

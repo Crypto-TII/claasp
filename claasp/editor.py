@@ -943,16 +943,14 @@ def add_round(cipher):
         }
     """
     cipher.rounds.add_round()
-    cipher.set_id(
-        make_cipher_id(
-            cipher.family_name,
-            cipher.inputs,
-            cipher.inputs_bit_size,
-            cipher.output_bit_size,
-            cipher.number_of_rounds,
-        )
+    cipher.id = make_cipher_id(
+        cipher.family_name,
+        cipher.inputs,
+        cipher.inputs_bit_size,
+        cipher.output_bit_size,
+        cipher.number_of_rounds,
     )
-    cipher.set_file_name(make_file_name(cipher.id))
+    cipher.file_name = make_file_name(cipher.id)
 
 
 def add_round_key_output_component(cipher, input_id_links, input_bit_positions, output_bit_size):
@@ -1768,9 +1766,9 @@ def propagate_equivalences(cipher, round_id, component_id, new_expanded_links, n
                 unique_lengths, unique_links = get_unique_links_information(new_links)
                 final_input_positions = get_final_input_positions(new_input_positions, unique_lengths)
                 input_id_links = input_id_link[:id_index] + unique_links + input_id_link[id_index + 1 :]
-                component.set_input_id_links(input_id_links)
+                component.input_id_links = input_id_links
                 input_bit_positions = component.input_bit_positions
-                component.set_input_bit_positions(
+                component.input_bit_positions = (
                     input_bit_positions[:id_index] + final_input_positions + input_bit_positions[id_index + 1 :]
                 )
                 while [] in component.input_bit_positions:
