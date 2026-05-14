@@ -85,16 +85,16 @@ class Permutation(Component):
             word_size = coerce_exact_int(word_size, "word_size")
         except ValueError as e:
             raise ValueError(str(e))
-        
+
         if word_size <= 0:
             raise ValueError(f"word_size must be a positive integer, got {word_size}")
-        
+
         # Validate that output_bit_size is divisible by word_size
         if output_bit_size % word_size != 0:
             raise ValueError(
                 f"output_bit_size ({output_bit_size}) must be divisible by word_size ({word_size})"
             )
-        
+
         # Validate permutation_description length
         expected_perm_len = output_bit_size // word_size
         if len(permutation_description) != expected_perm_len:
@@ -103,7 +103,7 @@ class Permutation(Component):
                 f"does not match expected length ({expected_perm_len}) "
                 f"for output_bit_size={output_bit_size} and word_size={word_size}"
             )
-        
+
         # Validate that permutation_description is a valid permutation
         perm_set = set(permutation_description)
         valid_range = set(range(expected_perm_len))
@@ -111,7 +111,7 @@ class Permutation(Component):
             missing = valid_range - perm_set
             duplicates = [x for x in permutation_description if permutation_description.count(x) > 1]
             out_of_range = [x for x in permutation_description if not isinstance(x, int) or x < 0 or x >= expected_perm_len]
-            
+
             error_parts = []
             if out_of_range:
                 error_parts.append(f"out-of-range values {set(out_of_range)}")
@@ -119,12 +119,12 @@ class Permutation(Component):
                 error_parts.append(f"missing values {missing}")
             if duplicates:
                 error_parts.append(f"duplicate values {set(duplicates)}")
-            
+
             raise ValueError(
                 f"permutation_description is not a valid permutation: {', '.join(error_parts)}. "
                 f"All values must be unique integers in range [0, {expected_perm_len - 1}]"
             )
-        
+
         component_id = f"permutation_{current_round_number}_{current_round_number_of_components}"
         component_type = PERMUTATION_COMPONENT
         input_len = sum(len(bits) for bits in input_bit_positions)
