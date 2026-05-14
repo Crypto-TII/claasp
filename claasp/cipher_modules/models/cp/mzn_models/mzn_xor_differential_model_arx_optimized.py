@@ -19,7 +19,7 @@ from copy import deepcopy
 from minizinc import Status
 
 from claasp.cipher_modules.models.cp.mzn_model import MznModel
-from claasp.name_mappings import CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, WORD_OPERATION
+from claasp.name_mappings import CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, PERMUTATION_COMPONENT, WORD_OPERATION
 
 
 class MznXorDifferentialModelARXOptimized(MznModel):
@@ -174,7 +174,7 @@ class MznXorDifferentialModelARXOptimized(MznModel):
         variables = []
         self._variables_declarations = []
         constraints = self.fix_variables_value_constraints_for_ARX(fixed_variables)
-        component_types = [CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, WORD_OPERATION]
+        component_types = [CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, PERMUTATION_COMPONENT, WORD_OPERATION]
         operation_types = ["MODADD", "MODSUB", "ROTATE", "SHIFT", "SHIFT_BY_VARIABLE_AMOUNT", "XOR"]
         self._model_constraints = constraints
 

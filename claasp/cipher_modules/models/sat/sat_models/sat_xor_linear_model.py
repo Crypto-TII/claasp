@@ -33,6 +33,7 @@ from claasp.name_mappings import (
     INTERMEDIATE_OUTPUT,
     LINEAR_LAYER,
     MIX_COLUMN,
+    PERMUTATION_COMPONENT,
     SBOX,
     WORD_OPERATION,
     XOR_LINEAR,
@@ -104,7 +105,16 @@ class SatXorLinearModel(SatModel):
             fixed_variables = get_single_key_scenario_format_for_fixed_values(self._cipher)
         constraints = SatXorLinearModel.fix_variables_value_xor_linear_constraints(fixed_variables)
         self._model_constraints = constraints
-        component_types = (CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, LINEAR_LAYER, SBOX, MIX_COLUMN, WORD_OPERATION)
+        component_types = (
+            CONSTANT,
+            INTERMEDIATE_OUTPUT,
+            CIPHER_OUTPUT,
+            LINEAR_LAYER,
+            PERMUTATION_COMPONENT,
+            SBOX,
+            MIX_COLUMN,
+            WORD_OPERATION,
+        )
         operation_types = ("AND", "MODADD", "NOT", "ROTATE", "SHIFT", "XOR", "OR", "MODSUB")
 
         for component in self._cipher.get_all_components():

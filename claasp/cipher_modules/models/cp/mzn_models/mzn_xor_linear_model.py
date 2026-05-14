@@ -31,6 +31,7 @@ from claasp.name_mappings import (
     LINEAR_LAYER,
     SBOX,
     MIX_COLUMN,
+    PERMUTATION_COMPONENT,
     WORD_OPERATION,
     INPUT_KEY,
 )
@@ -155,6 +156,7 @@ class MznXorLinearModel(MznModel):
                 INTERMEDIATE_OUTPUT,
                 CIPHER_OUTPUT,
                 LINEAR_LAYER,
+                PERMUTATION_COMPONENT,
                 SBOX,
                 MIX_COLUMN,
                 WORD_OPERATION,

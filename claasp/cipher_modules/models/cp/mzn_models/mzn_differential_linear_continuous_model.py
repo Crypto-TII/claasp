@@ -4,7 +4,7 @@ import time
 from minizinc import Instance, Model, Solver, Status
 from claasp.cipher_modules.models.cp.mzn_model import MznModel
 from claasp.cipher_modules.models.cp.minizinc_utils.mzn_continuous_predicates import get_continuous_operations
-from claasp.name_mappings import CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, WORD_OPERATION
+from claasp.name_mappings import CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, PERMUTATION_COMPONENT, WORD_OPERATION
 
 class MznDifferentialLinearContinuousModel(MznModel):
     def __init__(self, cipher):
@@ -29,7 +29,7 @@ class MznDifferentialLinearContinuousModel(MznModel):
         component_and_model_types = []
         self.added_component_ids = set() 
         operation_types = ["MODADD", "ROTATE", "XOR"]
-        component_types = [CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, WORD_OPERATION]
+        component_types = [CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, PERMUTATION_COMPONENT, WORD_OPERATION]
 
         fixed_constraints = []
         if fixed_values:
