@@ -2,6 +2,12 @@ import pytest
 
 from claasp.components.permutation_component import Permutation
 from claasp.cipher_modules.models.milp.milp_model import MilpModel
+from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import (
+    MilpBitwiseDeterministicTruncatedXorDifferentialModel,
+)
+from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import (
+    MilpWordwiseDeterministicTruncatedXorDifferentialModel,
+)
 from claasp.ciphers.single_component_ciphers.permutation_cipher import PermutationCipher
 from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
 
@@ -150,3 +156,29 @@ def test_milp_and_vectorized_helpers():
     assert permutation_component.get_byte_based_vectorized_python_code(["component_input"]) == [
         "  permutation_0_0 = byte_vector_permutation(['component_input'], [1, 3, 2, 0], 1, 4)"
     ]
+
+
+def test_milp_bitwise_deterministic_truncated_constraints():
+    cipher = PermutationCipher(bit_size=4, permutation_description=[1, 3, 2, 0])
+    permutation_component = cipher.component_from_id("permutation_0_0")
+    milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(cipher)
+    milp.init_model_in_sage_milp_class()
+
+    variables, constraints = permutation_component.milp_bitwise_deterministic_truncated_xor_differential_constraints(
+        milp
+    )
+
+    assert len(variables) == 8
+    assert len(constraints) == 4
+
+
+def test_milp_wordwise_deterministic_truncated_constraints():
+    component = Permutation(0, 0, ["input"], [[0, 1, 2, 3, 4, 5, 6, 7]], 8, [1, 0], word_size=4)
+    cipher = PermutationCipher(bit_size=8, permutation_description=[1, 0], word_size=4)
+    milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(cipher)
+    milp.init_model_in_sage_milp_class()
+
+    variables, constraints = component.milp_wordwise_deterministic_truncated_xor_differential_constraints(milp)
+
+    assert len(variables) == 24
+    assert len(constraints) == 12

@@ -342,6 +342,149 @@ class Permutation(Component):
     def milp_xor_linear_mask_propagation_constraints(self, model):
         return self.milp_constraints(model)
 
+    def milp_bitwise_deterministic_truncated_xor_differential_constraints(self, model):
+        """
+        Return a list of MILP variables and constraints for PERMUTATION in the bitwise
+        deterministic truncated XOR differential model.
+
+        INPUT:
+
+        - ``model`` -- **model object**; a model instance
+
+        EXAMPLES::
+
+            sage: from claasp.components.permutation_component import Permutation
+            sage: from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import MilpBitwiseDeterministicTruncatedXorDifferentialModel
+            sage: from claasp.ciphers.single_component_ciphers.permutation_cipher import PermutationCipher
+            sage: component = Permutation(0, 0, ['input'], [[0, 1, 2, 3]], 4, [1, 3, 2, 0])
+            sage: cipher = PermutationCipher(bit_size=4, permutation_description=[1, 3, 2, 0])
+            sage: milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(cipher)
+            sage: milp.init_model_in_sage_milp_class()
+            sage: variables, constraints = component.milp_bitwise_deterministic_truncated_xor_differential_constraints(milp)
+            sage: variables
+            [('x_class[input_0]', x_0),
+             ('x_class[input_1]', x_1),
+             ('x_class[input_2]', x_2),
+             ('x_class[input_3]', x_3),
+             ('x_class[permutation_0_0_0]', x_4),
+             ('x_class[permutation_0_0_1]', x_5),
+             ('x_class[permutation_0_0_2]', x_6),
+             ('x_class[permutation_0_0_3]', x_7)]
+            sage: constraints
+            [x_4 == x_3, x_5 == x_0, x_6 == x_2, x_7 == x_1]
+        """
+        x_class = model.trunc_binvar
+
+        input_vars, output_vars = self._get_input_output_variables()
+        variables = [(f"x_class[{var}]", x_class[var]) for var in input_vars + output_vars]
+
+        bit_perm = self._bit_perm()
+        constraints = [
+            x_class[output_var] == x_class[input_vars[bit_perm[i]]]
+            for i, output_var in enumerate(output_vars)
+        ]
+
+        return variables, constraints
+
+    def milp_wordwise_deterministic_truncated_xor_differential_constraints(self, model):
+        """
+        Returns a list of MILP variables and a list of constraints for PERMUTATION
+        component in the wordwise deterministic truncated XOR differential model.
+
+        INPUT:
+
+        - ``model`` -- **model object**; a model instance
+
+        EXAMPLES::
+            sage: from claasp.components.permutation_component import Permutation
+            sage: from claasp.ciphers.single_component_ciphers.permutation_cipher import PermutationCipher
+            sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import MilpWordwiseDeterministicTruncatedXorDifferentialModel
+            sage: component = Permutation(0, 0, ['input'], [[0, 1, 2, 3, 4, 5, 6, 7]], 8, [1, 0], word_size=4)
+            sage: cipher = PermutationCipher(bit_size=8, permutation_description=[1, 0], word_size=4)
+            sage: milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(cipher)
+            sage: milp.init_model_in_sage_milp_class()
+            sage: variables, constraints = component.milp_wordwise_deterministic_truncated_xor_differential_constraints(milp)
+            sage: variables
+            [('x[input_word_0_class_bit_0]', x_0),
+             ('x[input_word_0_class_bit_1]', x_1),
+             ('x[input_0]', x_2),
+             ('x[input_1]', x_3),
+             ('x[input_2]', x_4),
+             ('x[input_3]', x_5),
+             ('x[input_word_1_class_bit_0]', x_6),
+             ('x[input_word_1_class_bit_1]', x_7),
+             ('x[input_4]', x_8),
+             ('x[input_5]', x_9),
+             ('x[input_6]', x_10),
+             ('x[input_7]', x_11),
+             ('x[permutation_0_0_word_0_class_bit_0]', x_12),
+             ('x[permutation_0_0_word_0_class_bit_1]', x_13),
+             ('x[permutation_0_0_0]', x_14),
+             ('x[permutation_0_0_1]', x_15),
+             ('x[permutation_0_0_2]', x_16),
+             ('x[permutation_0_0_3]', x_17),
+             ('x[permutation_0_0_word_1_class_bit_0]', x_18),
+             ('x[permutation_0_0_word_1_class_bit_1]', x_19),
+             ('x[permutation_0_0_4]', x_20),
+             ('x[permutation_0_0_5]', x_21),
+             ('x[permutation_0_0_6]', x_22),
+             ('x[permutation_0_0_7]', x_23)]
+            sage: constraints
+            [x_12 == x_6,
+             x_13 == x_7,
+             x_14 == x_8,
+             x_15 == x_9,
+             x_16 == x_10,
+             x_17 == x_11,
+             x_18 == x_0,
+             x_19 == x_1,
+             x_20 == x_2,
+             x_21 == x_3,
+             x_22 == x_4,
+             x_23 == x_5]
+        """
+        x = model.binary_variable
+        model_word_size = model.word_size
+
+        if self.input_bit_size % model_word_size != 0 or self.output_bit_size % model_word_size != 0:
+            raise ValueError(
+                f"{self.id}: input/output size must be divisible by model.word_size={model_word_size}"
+            )
+
+        input_tuples, output_tuples = self._get_wordwise_input_output_full_tuples(model)
+        variables = [
+            (f"x[{var}]", x[var])
+            for word_tuple in input_tuples + output_tuples
+            for var in word_tuple
+        ]
+        constraints = []
+
+        bit_perm = self._bit_perm()
+        for output_word_idx, output_full_tuple in enumerate(output_tuples):
+            output_bit_start = output_word_idx * model_word_size
+            input_bit_indexes = [bit_perm[output_bit_start + i] for i in range(model_word_size)]
+            input_word_indexes = {input_bit_index // model_word_size for input_bit_index in input_bit_indexes}
+
+            if len(input_word_indexes) != 1:
+                raise ValueError(
+                    f"{self.id}: permutation mixes bits across model words "
+                    f"(model.word_size={model_word_size}); unsupported in wordwise model"
+                )
+
+            input_word_idx = input_word_indexes.pop()
+            input_full_tuple = input_tuples[input_word_idx]
+            constraints.extend(
+                x[output_class_var] == x[input_class_var]
+                for output_class_var, input_class_var in zip(output_full_tuple[:2], input_full_tuple[:2])
+            )
+            for output_bit_offset, input_bit_index in enumerate(input_bit_indexes):
+                input_bit_offset = input_bit_index % model_word_size
+                constraints.append(
+                    x[output_full_tuple[output_bit_offset + 2]] == x[input_full_tuple[input_bit_offset + 2]]
+                )
+
+        return variables, constraints
+
     def get_bit_based_vectorized_python_code(self, params, convert_output_to_bytes):
         """
         Return a list of strings for Python code that evaluates the PERMUTATION component.
