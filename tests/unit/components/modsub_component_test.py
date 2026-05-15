@@ -1,5 +1,5 @@
-from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
 from claasp.cipher import Cipher
+from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
 from claasp.components.modsub_component import ModSub
 from claasp.name_mappings import PERMUTATION
 

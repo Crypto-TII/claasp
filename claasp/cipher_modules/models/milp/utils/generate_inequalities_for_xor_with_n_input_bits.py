@@ -20,7 +20,9 @@
 The target of this module is to generate MILP inequalities for a XOR operation between n input bits.
 """
 
-import pickle, os
+import os
+import pickle
+
 from claasp.cipher_modules.models.milp import MILP_AUXILIARY_FILE_PATH
 
 file_name = "dictionary_containing_xor_inequalities_between_n_input_bits.obj"

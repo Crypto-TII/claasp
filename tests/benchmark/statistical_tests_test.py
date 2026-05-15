@@ -1,8 +1,7 @@
-import pytest
 
-from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
-from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.cipher_modules.statistical_tests.nist_statistical_tests import NISTStatisticalTests
+from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
 
 speck = SpeckBlockCipher()
 aes = ToyAESBlockCipher()

@@ -16,20 +16,19 @@
 # ****************************************************************************
 
 import sys
-
 from copy import deepcopy
 
 from claasp.components.and_component import And
 from claasp.components.cipher_output_component import CipherOutput
 from claasp.components.constant_component import Constant
 from claasp.components.fsr_component import Fsr
+from claasp.components.idea_modmul_component import IdeaModmul
 from claasp.components.intermediate_output_component import IntermediateOutput
 from claasp.components.linear_layer_component import LinearLayer
 from claasp.components.mix_column_component import MixColumn
 from claasp.components.modadd_component import ModAdd
 from claasp.components.modmul_component import ModMul
 from claasp.components.modsub_component import ModSub
-from claasp.components.idea_modmul_component import IdeaModmul
 from claasp.components.not_component import Not
 from claasp.components.or_component import Or
 from claasp.components.permutation_component import Permutation
@@ -47,10 +46,10 @@ from claasp.components.variable_shift_component import VariableShift
 from claasp.components.word_permutation_component import WordPermutation
 from claasp.components.xor_component import Xor
 from claasp.name_mappings import (
-    INTERMEDIATE_OUTPUT,
     CIPHER_OUTPUT,
     CONSTANT,
     INPUT_KEY,
+    INTERMEDIATE_OUTPUT,
     LINEAR_LAYER,
     PERMUTATION_COMPONENT,
 )

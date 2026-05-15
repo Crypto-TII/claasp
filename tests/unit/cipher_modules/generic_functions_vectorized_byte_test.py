@@ -1,5 +1,6 @@
-from claasp.cipher_modules.generic_functions_vectorized_byte import *
 import numpy as np
+
+from claasp.cipher_modules.generic_functions_vectorized_byte import *
 
 
 def test_byte_vector_is_consecutive():

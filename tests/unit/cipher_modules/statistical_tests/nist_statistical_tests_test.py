@@ -16,13 +16,15 @@ Test Coverage:
 """
 
 import os
-import sys
 import shutil
+import sys
 from io import StringIO
-import pytest
+
 import numpy as np
-from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
+import pytest
+
 from claasp.cipher_modules.statistical_tests.nist_statistical_tests import NISTStatisticalTests
+from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
 
 
 @pytest.fixture(scope="function", autouse=True)

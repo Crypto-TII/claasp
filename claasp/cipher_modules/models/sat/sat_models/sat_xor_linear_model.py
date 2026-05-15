@@ -20,11 +20,11 @@ import time
 from claasp.cipher_modules.models.sat import solvers
 from claasp.cipher_modules.models.sat.sat_model import SatModel
 from claasp.cipher_modules.models.sat.utils import constants, utils
-from claasp.cipher_modules.models.sat.utils.constants import OUTPUT_BIT_ID_SUFFIX, INPUT_BIT_ID_SUFFIX
+from claasp.cipher_modules.models.sat.utils.constants import INPUT_BIT_ID_SUFFIX, OUTPUT_BIT_ID_SUFFIX
 from claasp.cipher_modules.models.utils import (
     get_bit_bindings,
-    set_component_solution,
     get_single_key_scenario_format_for_fixed_values,
+    set_component_solution,
 )
 from claasp.name_mappings import (
     CIPHER_OUTPUT,

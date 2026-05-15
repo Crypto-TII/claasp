@@ -17,7 +17,7 @@
 
 
 from claasp.cipher import Cipher
-from claasp.name_mappings import BLOCK_CIPHER, INPUT_PLAINTEXT, INPUT_KEY
+from claasp.name_mappings import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
 
 input_types = [INPUT_KEY, INPUT_PLAINTEXT]
 PARAMETERS_CONFIGURATION_LIST = [

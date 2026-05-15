@@ -29,8 +29,8 @@ https://cs.ru.nl/~joan/papers/JDA_VRI_Rijndael_2002.pdf [RijndaelDesign]_.
 
 
 import pytest
-from claasp.ciphers.block_ciphers.rijndael_block_cipher import RijndaelBlockCipher
 
+from claasp.ciphers.block_ciphers.rijndael_block_cipher import RijndaelBlockCipher
 
 D3_VECTOR_SETS = [
     (128, 128, [

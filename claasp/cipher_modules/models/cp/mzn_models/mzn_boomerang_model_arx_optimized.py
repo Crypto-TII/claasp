@@ -15,14 +15,15 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 from copy import deepcopy
+
 from minizinc import Status
 
 from claasp.cipher_modules.graph_generator import split_cipher_graph_into_top_bottom
 from claasp.cipher_modules.models.cp.minizinc_utils.mzn_bct_predicates import get_bct_operations
+from claasp.cipher_modules.models.cp.minizinc_utils.utils import group_strings_by_pattern
 from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model_arx_optimized import (
     MznXorDifferentialModelARXOptimized,
 )
-from claasp.cipher_modules.models.cp.minizinc_utils.utils import group_strings_by_pattern
 
 
 class MznBoomerangModelARXOptimized(MznXorDifferentialModelARXOptimized):

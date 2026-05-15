@@ -1,13 +1,16 @@
 import pytest
-from sage.rings.integer_ring import ZZ
-from sage.structure.sequence import Sequence
 from sage.modules.free_module import VectorSpace
+from sage.rings.finite_rings.finite_field_constructor import FiniteField as GF
+from sage.rings.integer_ring import ZZ
 from sage.rings.polynomial.pbori.pbori import BooleanPolynomialRing
 from sage.rings.polynomial.polynomial_ring_constructor import PolynomialRing
-from sage.rings.finite_rings.finite_field_constructor import FiniteField as GF
+from sage.structure.sequence import Sequence
 
-from claasp.cipher_modules.models.algebraic.constraints import (mod_addition_polynomials, mod_subtraction_polynomials,
-                                                                equality_polynomials)
+from claasp.cipher_modules.models.algebraic.constraints import (
+    equality_polynomials,
+    mod_addition_polynomials,
+    mod_subtraction_polynomials,
+)
 
 
 def test_equality_polynomials():

@@ -19,10 +19,10 @@ import os
 import pickle
 from typing import Any
 
-from claasp.input import Input
 from claasp.cipher_modules.generic_functions import THETA_GASTON
 from claasp.component import linear_layer_to_binary_matrix
 from claasp.components.linear_layer_component import LinearLayer
+from claasp.input import Input
 
 # Global matrix cache
 _cached_matrices: dict[str, Any] = {}

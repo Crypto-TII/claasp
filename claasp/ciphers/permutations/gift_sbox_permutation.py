@@ -20,8 +20,8 @@ from copy import deepcopy
 
 from claasp.cipher import Cipher
 from claasp.DTOs.component_state import ComponentState
-from claasp.name_mappings import INPUT_PLAINTEXT, INPUT_KEY, PERMUTATION
-from claasp.utils.utils import simplify_inputs, get_inputs_parameter
+from claasp.name_mappings import INPUT_KEY, INPUT_PLAINTEXT, PERMUTATION
+from claasp.utils.utils import get_inputs_parameter, simplify_inputs
 
 KEY_NUM = 8
 KEY_SIZE = 16

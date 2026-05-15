@@ -17,9 +17,8 @@
 
 from claasp.cipher import Cipher
 from claasp.DTOs.component_state import ComponentState
+from claasp.name_mappings import INPUT_FRAME, INPUT_KEY, STREAM_CIPHER
 from claasp.utils.utils import get_inputs_parameter
-from claasp.name_mappings import STREAM_CIPHER, INPUT_KEY, INPUT_FRAME
-
 
 BIT_LENGTH = "BIT_LENGTH"
 TAPPED_BITS = "TAPPED_BITS"

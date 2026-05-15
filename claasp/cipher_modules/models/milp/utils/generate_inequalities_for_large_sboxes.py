@@ -22,8 +22,10 @@ The target of this module is to generate MILP inequalities for small and large s
 The logic minimizer espresso is required for this module. It is already installed in the docker.
 """
 
-import pickle, os
+import os
+import pickle
 import subprocess
+
 from claasp.cipher_modules.models.milp import MILP_AUXILIARY_FILE_PATH
 
 large_sbox_file_name = "dictionary_that_contains_inequalities_for_large_sboxes.obj"

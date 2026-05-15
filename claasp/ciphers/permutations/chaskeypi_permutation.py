@@ -15,10 +15,10 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-from claasp.DTOs.component_state import ComponentState
 from claasp.cipher import Cipher
+from claasp.DTOs.component_state import ComponentState
 from claasp.name_mappings import INPUT_PLAINTEXT, PERMUTATION
-from claasp.utils.utils import get_inputs_parameter, coerce_exact_int
+from claasp.utils.utils import coerce_exact_int, get_inputs_parameter
 
 _DEFAULT_ROTATIONS = (-5, -8, -13, -7, -16)
 _NUMBER_OF_WORDS = 4

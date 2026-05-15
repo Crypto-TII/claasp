@@ -15,10 +15,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-import os
 import subprocess
 import time as tm
-
 from copy import deepcopy
 
 from claasp.cipher_modules.models.cp.mzn_model import SOLVE_SATISFY

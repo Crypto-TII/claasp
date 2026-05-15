@@ -20,7 +20,6 @@ import numpy as np
 from claasp.cipher import Cipher
 from claasp.name_mappings import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
 
-
 round_constants = [
     0x0000000000000000,
     0x13198A2E03707344,

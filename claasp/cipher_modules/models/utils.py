@@ -15,28 +15,29 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-import re
 import json
 import math
 import os
+import re
 from concurrent.futures import ProcessPoolExecutor
 from copy import deepcopy
 
 import numpy as np
 
 from claasp.name_mappings import (
-    CONSTANT,
     CIPHER_OUTPUT,
-    INTERMEDIATE_OUTPUT,
-    WORD_OPERATION,
-    LINEAR_LAYER,
-    SBOX,
-    MIX_COLUMN,
+    CONSTANT,
     INPUT_KEY,
-    INPUT_PLAINTEXT,
     INPUT_MESSAGE,
+    INPUT_PLAINTEXT,
     INPUT_STATE,
+    INTERMEDIATE_OUTPUT,
+    LINEAR_LAYER,
+    MIX_COLUMN,
+    SBOX,
+    WORD_OPERATION,
 )
+
 
 def hex_to_bitlist(hex_str):
     if not hex_str.startswith(("0x", "0X")):

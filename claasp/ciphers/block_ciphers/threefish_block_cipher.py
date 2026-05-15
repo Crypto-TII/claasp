@@ -18,9 +18,8 @@
 from math import log2
 
 from claasp.cipher import Cipher
-from claasp.name_mappings import BLOCK_CIPHER, INPUT_PLAINTEXT, INPUT_KEY, INPUT_TWEAK
+from claasp.name_mappings import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT, INPUT_TWEAK
 from claasp.utils.utils import extract_inputs
-
 
 ROUND_CONSTANTS = [
     [[0x0E, 0x10], [0x2E, 0x24, 0x13, 0x25], [0x18, 0x0D, 0x08, 0x2F, 0x08, 0x11, 0x16, 0x25]],

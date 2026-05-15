@@ -17,7 +17,7 @@
 
 from minizinc import Status
 
-from claasp.cipher_modules.models.cp.mzn_model import MznModel, SOLVE_SATISFY
+from claasp.cipher_modules.models.cp.mzn_model import SOLVE_SATISFY, MznModel
 from claasp.cipher_modules.models.cp.solvers import SOLVER_DEFAULT
 from claasp.cipher_modules.models.utils import (
     check_if_implemented_component,

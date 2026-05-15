@@ -44,7 +44,7 @@ For any further information, visit `CryptoMiniSat - XOR clauses
 from claasp.cipher_modules.models.sat.sat_models.sat_xor_linear_model import SatXorLinearModel
 from claasp.cipher_modules.models.sat.utils import utils
 from claasp.cipher_modules.models.utils import get_bit_bindings
-from claasp.name_mappings import CONSTANT, LINEAR_LAYER, PERMUTATION_COMPONENT, SBOX, MIX_COLUMN, WORD_OPERATION
+from claasp.name_mappings import CONSTANT, LINEAR_LAYER, MIX_COLUMN, PERMUTATION_COMPONENT, SBOX, WORD_OPERATION
 
 
 class CmsSatXorLinearModel(SatXorLinearModel):

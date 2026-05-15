@@ -8,7 +8,6 @@ from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_t
 from claasp.ciphers.single_component_ciphers.linear_layer_cipher import LinearLayerCipher
 from claasp.components.linear_layer_component import LinearLayer
 
-
 MATRIX = [
     [1, 0, 1, 0],
     [1, 1, 0, 1],

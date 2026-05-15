@@ -26,9 +26,8 @@ symmetric cipher whose plaintext is the initial state and key is the input.
 """
 
 from claasp.cipher import Cipher
-from claasp.name_mappings import HASH_FUNCTION, INPUT_MESSAGE
 from claasp.DTOs.component_state import ComponentState
-
+from claasp.name_mappings import HASH_FUNCTION, INPUT_MESSAGE
 
 PARAMETERS_CONFIGURATION_LIST = [{"word_size": 32, "number_of_rounds": 80}]
 

@@ -1,6 +1,6 @@
 import pytest
 
-from claasp.components.permutation_component import Permutation
+from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
 from claasp.cipher_modules.models.milp.milp_model import MilpModel
 from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import (
     MilpBitwiseDeterministicTruncatedXorDifferentialModel,
@@ -9,8 +9,7 @@ from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_t
     MilpWordwiseDeterministicTruncatedXorDifferentialModel,
 )
 from claasp.ciphers.single_component_ciphers.permutation_cipher import PermutationCipher
-from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
-
+from claasp.components.permutation_component import Permutation
 
 PERMUTATION = [1, 3, 2, 0]
 

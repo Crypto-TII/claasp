@@ -1,10 +1,7 @@
-from sage.numerical.mip import MixedIntegerLinearProgram
 from sage.numerical.linear_functions import LinearFunction
+from sage.numerical.mip import MixedIntegerLinearProgram
 
-from claasp.utils.sequence_operations import shift_left
-from claasp.utils.sequence_operations import shift_right
-from claasp.utils.sequence_operations import rotate_left
-from claasp.utils.sequence_operations import rotate_right
+from claasp.utils.sequence_operations import rotate_left, rotate_right, shift_left, shift_right
 
 
 def test_rotate_left():

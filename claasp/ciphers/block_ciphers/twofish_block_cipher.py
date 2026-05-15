@@ -21,7 +21,6 @@ from itertools import chain
 from claasp.cipher import Cipher
 from claasp.name_mappings import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
 
-
 PARAMETERS_CONFIGURATION_LIST = [{"key_length": 128, "number_of_rounds": 16}]
 
 

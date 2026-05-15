@@ -1,9 +1,13 @@
-from claasp.cipher_modules.models.cp.mzn_models.mzn_differential_linear_continuous_model import MznDifferentialLinearContinuousModel
-from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-from claasp.cipher_modules.models.cp.mzn_model import MznModel
+
+from minizinc import Instance, Model, Solver
+
 from claasp.cipher_modules.models.cp.minizinc_utils.mzn_continuous_predicates import get_continuous_operations
-from minizinc import Model, Solver, Instance
-import re
+from claasp.cipher_modules.models.cp.mzn_model import MznModel
+from claasp.cipher_modules.models.cp.mzn_models.mzn_differential_linear_continuous_model import (
+    MznDifferentialLinearContinuousModel,
+)
+from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+
 
 def test_cp_modadd_test_vectors():
     cipher = SpeckBlockCipher(number_of_rounds=1)

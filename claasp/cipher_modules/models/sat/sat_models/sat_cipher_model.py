@@ -21,8 +21,8 @@ from claasp.cipher_modules.models.sat import solvers
 from claasp.cipher_modules.models.sat.sat_model import SatModel
 from claasp.cipher_modules.models.utils import set_component_solution
 from claasp.name_mappings import (
-    CIPHER_OUTPUT,
     CIPHER,
+    CIPHER_OUTPUT,
     CONSTANT,
     INTERMEDIATE_OUTPUT,
     LINEAR_LAYER,

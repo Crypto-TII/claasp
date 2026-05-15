@@ -1,4 +1,5 @@
-from claasp.ciphers.hash_functions.whirlpool_hash_function import  WhirlpoolHashFunction
+from claasp.ciphers.hash_functions.whirlpool_hash_function import WhirlpoolHashFunction
+
 
 def test_whirlpool_hash_function():
     whirlpool = WhirlpoolHashFunction()

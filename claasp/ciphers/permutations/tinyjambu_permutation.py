@@ -19,9 +19,9 @@
 from copy import deepcopy
 
 from claasp.cipher import Cipher
-from claasp.utils.utils import get_inputs_parameter
 from claasp.DTOs.component_state import ComponentState
-from claasp.name_mappings import INPUT_PLAINTEXT, INPUT_KEY, PERMUTATION
+from claasp.name_mappings import INPUT_KEY, INPUT_PLAINTEXT, PERMUTATION
+from claasp.utils.utils import get_inputs_parameter
 
 STATE_SIZE = 128
 PARAMETERS_CONFIGURATION_LIST = [{"key_bit_size": 128, "number_of_rounds": 640}]

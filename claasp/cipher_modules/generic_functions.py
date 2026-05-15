@@ -17,19 +17,19 @@
 
 
 # using bitstring module to manage bits
-from math import log
 from copy import copy
+from math import log
+
 from bitstring import BitArray  # pip3 install bitstring
-
 from sage.crypto.sbox import SBox
-from sage.rings.quotient_ring import QuotientRing
-from sage.matrix.constructor import matrix, Matrix
+from sage.matrix.constructor import Matrix, matrix
 from sage.modules.free_module_element import vector
-from sage.rings.polynomial.polynomial_ring_constructor import PolynomialRing
 from sage.rings.finite_rings.finite_field_constructor import FiniteField as GF
+from sage.rings.polynomial.polynomial_ring_constructor import PolynomialRing
+from sage.rings.quotient_ring import QuotientRing
 
-from claasp.utils.utils import int_to_poly, poly_to_int
 from claasp.cipher_modules.models.algebraic.boolean_polynomial_ring import BooleanPolynomialRing
+from claasp.utils.utils import int_to_poly, poly_to_int
 
 number_of_inputs_expression = "  #in = {}"
 input_expression = "  in  = {}"

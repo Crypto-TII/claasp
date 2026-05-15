@@ -18,7 +18,7 @@
 
 from claasp.cipher import Cipher
 from claasp.DTOs.component_state import ComponentState
-from claasp.name_mappings import STREAM_CIPHER, INPUT_STATE
+from claasp.name_mappings import INPUT_STATE, STREAM_CIPHER
 
 PARAMETERS_CONFIGURATION_LIST = [
     {"key_bit_size": 128, "lfsr_state_bit_size": 128, "fsm_bit_size": 4, "keystream_bit_len": 125}

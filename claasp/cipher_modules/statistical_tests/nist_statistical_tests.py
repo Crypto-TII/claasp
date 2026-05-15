@@ -25,7 +25,6 @@ import numpy as np
 from claasp.cipher_modules.statistical_tests.dataset_generator import DatasetGenerator, DatasetType
 from claasp.cipher_modules.statistical_tests.nist_sts import NISTTests
 
-
 # NIST STS final report IDs; used to label rows and offset template variants.
 TEST_ID_TABLE = {
     'Frequency': 1,

@@ -1,8 +1,9 @@
+from claasp.cipher_modules.avalanche_tests import AvalancheTests
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
 from claasp.ciphers.permutations.ascon_permutation import AsconPermutation
 from claasp.ciphers.permutations.keccak_permutation import KeccakPermutation
-from claasp.cipher_modules.avalanche_tests import AvalancheTests
+from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
+
 
 def test_avalanche_probability_vectors():
     speck = SpeckBlockCipher(block_bit_size=16, key_bit_size=32, number_of_rounds=5)

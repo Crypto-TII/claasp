@@ -17,9 +17,9 @@
 
 
 from claasp.cipher import Cipher
-from claasp.utils.utils import extract_inputs
+from claasp.name_mappings import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
 from claasp.utils.integer_functions import wordlist_to_int
-from claasp.name_mappings import BLOCK_CIPHER, INPUT_PLAINTEXT, INPUT_KEY
+from claasp.utils.utils import extract_inputs
 
 permutation = [0, 10, 5, 15, 14, 4, 11, 1, 9, 3, 12, 6, 7, 13, 2, 8]
 PARAMETERS_CONFIGURATION_LIST = [

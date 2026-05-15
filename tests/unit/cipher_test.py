@@ -1,41 +1,42 @@
 import os
-import sys
 import os.path
-import numpy as np
-from io import StringIO
+import sys
 from decimal import Decimal
+from io import StringIO
+
+import numpy as np
 
 from claasp.cipher import Cipher
+from claasp.cipher_modules.algebraic_tests import AlgebraicTests
+from claasp.ciphers.block_ciphers.bea1_block_cipher import BEA1BlockCipher
+from claasp.ciphers.block_ciphers.des_block_cipher import DESBlockCipher
+from claasp.ciphers.block_ciphers.hight_block_cipher import HightBlockCipher
 from claasp.ciphers.block_ciphers.lblock_block_cipher import LBlockBlockCipher
-from claasp.ciphers.block_ciphers.tea_block_cipher import TeaBlockCipher
-from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
-from claasp.ciphers.block_ciphers.xtea_block_cipher import XTeaBlockCipher
-from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation
-from claasp.ciphers.permutations.keccak_invertible_permutation import KeccakInvertiblePermutation
-from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
+from claasp.ciphers.block_ciphers.lea_block_cipher import LeaBlockCipher
 from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
 from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
-from claasp.ciphers.single_component_ciphers.identity_cipher import IdentityCipher
-from claasp.ciphers.permutations.ascon_sbox_sigma_permutation import AsconSboxSigmaPermutation
+from claasp.ciphers.block_ciphers.qarmav2_with_mixcolumn_block_cipher import QARMAv2MixColumnBlockCipher
+from claasp.ciphers.block_ciphers.raiden_block_cipher import RaidenBlockCipher
 from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
 from claasp.ciphers.block_ciphers.skinny_block_cipher import SkinnyBlockCipher
-from claasp.ciphers.permutations.spongent_pi_permutation import SpongentPiPermutation
-from claasp.ciphers.permutations.photon_permutation import PhotonPermutation
-from claasp.ciphers.block_ciphers.lea_block_cipher import LeaBlockCipher
-from claasp.ciphers.permutations.sparkle_permutation import SparklePermutation
-from claasp.ciphers.permutations.xoodoo_invertible_permutation import XoodooInvertiblePermutation
-from claasp.ciphers.permutations.gift_sbox_permutation import GiftSboxPermutation
-from claasp.ciphers.block_ciphers.raiden_block_cipher import RaidenBlockCipher
-from claasp.ciphers.block_ciphers.hight_block_cipher import HightBlockCipher
-from claasp.ciphers.block_ciphers.des_block_cipher import DESBlockCipher
+from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+from claasp.ciphers.block_ciphers.tea_block_cipher import TeaBlockCipher
 from claasp.ciphers.block_ciphers.twofish_block_cipher import TwofishBlockCipher
+from claasp.ciphers.block_ciphers.xtea_block_cipher import XTeaBlockCipher
+from claasp.ciphers.permutations.ascon_sbox_sigma_permutation import AsconSboxSigmaPermutation
+from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation
+from claasp.ciphers.permutations.gift_sbox_permutation import GiftSboxPermutation
+from claasp.ciphers.permutations.keccak_invertible_permutation import KeccakInvertiblePermutation
+from claasp.ciphers.permutations.photon_permutation import PhotonPermutation
 from claasp.ciphers.permutations.salsa_permutation import SalsaPermutation
-from claasp.ciphers.block_ciphers.bea1_block_cipher import BEA1BlockCipher
-from claasp.ciphers.block_ciphers.qarmav2_with_mixcolumn_block_cipher import QARMAv2MixColumnBlockCipher
+from claasp.ciphers.permutations.sparkle_permutation import SparklePermutation
+from claasp.ciphers.permutations.spongent_pi_permutation import SpongentPiPermutation
+from claasp.ciphers.permutations.xoodoo_invertible_permutation import XoodooInvertiblePermutation
+from claasp.ciphers.single_component_ciphers.identity_cipher import IdentityCipher
+from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
+from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
 from claasp.ciphers.toys.toyspn1 import ToySPN1
-from claasp.cipher_modules.algebraic_tests import AlgebraicTests
-from claasp.name_mappings import BLOCK_CIPHER, PERMUTATION, INPUT_KEY, INPUT_PLAINTEXT
+from claasp.name_mappings import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT, PERMUTATION
 
 EVALUATION_PY = 'evaluation.py'
 DICTIONARY_EXAMPLE_PY = "claasp/ciphers/dictionary_example.py"

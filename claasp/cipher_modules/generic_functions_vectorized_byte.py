@@ -16,9 +16,10 @@
 # ****************************************************************************
 
 
-import numpy as np
-from functools import reduce
 import math
+from functools import reduce
+
+import numpy as np
 
 NB = 8  # Number of bits of the representation
 

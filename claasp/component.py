@@ -17,8 +17,8 @@
 
 
 from copy import deepcopy
-from bitstring import BitArray
 
+from bitstring import BitArray
 from sage.matrix.constructor import matrix
 from sage.modules.free_module import VectorSpace
 from sage.modules.free_module_element import vector

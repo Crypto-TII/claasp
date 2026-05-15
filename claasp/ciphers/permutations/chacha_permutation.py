@@ -17,7 +17,7 @@
 
 
 from claasp.cipher import Cipher
-from claasp.ciphers.permutations.util import sub_quarter_round_latin_dances, init_latin_dances_cipher
+from claasp.ciphers.permutations.util import init_latin_dances_cipher, sub_quarter_round_latin_dances
 from claasp.name_mappings import INPUT_PLAINTEXT, PERMUTATION
 
 COLUMNS = [[0, 4, 8, 12], [1, 5, 9, 13], [2, 6, 10, 14], [3, 7, 11, 15]]

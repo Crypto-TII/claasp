@@ -1,7 +1,7 @@
-from claasp.components.or_component import Or
+from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
 from claasp.cipher_modules.models.cp.mzn_model import MznModel
 from claasp.ciphers.single_component_ciphers.or_cipher import OrCipher
-from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
+from claasp.components.or_component import Or
 
 
 def test_algebraic_polynomials():

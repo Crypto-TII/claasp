@@ -28,9 +28,9 @@ from sage.crypto.sbox import SBox
 
 from claasp.cipher_modules.component_analysis_tests import branch_number
 from claasp.cipher_modules.models.cp.minizinc_utils import usefulfunctions
-from claasp.cipher_modules.models.cp.solvers import CP_SOLVERS_INTERNAL, CP_SOLVERS_EXTERNAL, SOLVER_DEFAULT
+from claasp.cipher_modules.models.cp.solvers import CP_SOLVERS_EXTERNAL, CP_SOLVERS_INTERNAL, SOLVER_DEFAULT
+from claasp.cipher_modules.models.utils import convert_solver_solution_to_dictionary
 from claasp.name_mappings import (
-    SBOX,
     CIPHER,
     CIPHER_OUTPUT,
     CONSTANT,
@@ -38,16 +38,15 @@ from claasp.name_mappings import (
     LINEAR_LAYER,
     MIX_COLUMN,
     PERMUTATION_COMPONENT,
-    WORD_OPERATION,
     SATISFIABLE,
-    UNSATISFIABLE,
+    SBOX,
     SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL,
-    SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL_OPTIMAL_SOLUTION,
     SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL_ONE_SOLUTION,
-    XOR_DIFFERENTIAL_LINEAR_ONE_SOLUTION
+    SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL_OPTIMAL_SOLUTION,
+    UNSATISFIABLE,
+    WORD_OPERATION,
+    XOR_DIFFERENTIAL_LINEAR_ONE_SOLUTION,
 )
-
-from claasp.cipher_modules.models.utils import write_model_to_file, convert_solver_solution_to_dictionary
 
 SOLVE_SATISFY = "solve satisfy;"
 CONSTRAINT_TYPE_ERROR = "Constraint type not defined"

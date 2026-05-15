@@ -1,5 +1,5 @@
 from claasp.cipher import Cipher
-from claasp.name_mappings import BLOCK_CIPHER, INPUT_PLAINTEXT, INPUT_KEY
+from claasp.name_mappings import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
 
 
 class HeysBlockCipher(Cipher):

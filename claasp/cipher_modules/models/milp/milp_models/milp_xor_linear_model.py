@@ -16,9 +16,9 @@
 # ****************************************************************************
 
 
-import time
 import os
 import sys
+import time
 
 import numpy as np
 from bitstring import BitArray
@@ -33,8 +33,8 @@ from claasp.cipher_modules.models.milp.utils.milp_name_mappings import (
     MILP_BUILDING_MESSAGE,
     MILP_DEFAULT_WEIGHT_PRECISION,
     MILP_PROBABILITY_SUFFIX,
-    MILP_XOR_LINEAR_OBJECTIVE,
     MILP_XOR_LINEAR,
+    MILP_XOR_LINEAR_OBJECTIVE,
 )
 from claasp.cipher_modules.models.milp.utils.utils import (
     _filter_fixed_variables,

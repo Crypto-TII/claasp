@@ -22,11 +22,12 @@ from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_tr
     MilpBitwiseDeterministicTruncatedXorDifferentialModel,
 )
 from claasp.cipher_modules.models.milp.solvers import SOLVER_DEFAULT
-from claasp.cipher_modules.models.milp.utils import utils as milp_utils, milp_truncated_utils
+from claasp.cipher_modules.models.milp.utils import milp_truncated_utils
+from claasp.cipher_modules.models.milp.utils import utils as milp_utils
 from claasp.cipher_modules.models.milp.utils.milp_name_mappings import (
     MILP_BACKWARD_SUFFIX,
-    MILP_BITWISE_IMPOSSIBLE_AUTO,
     MILP_BITWISE_IMPOSSIBLE,
+    MILP_BITWISE_IMPOSSIBLE_AUTO,
     MILP_BUILDING_MESSAGE,
 )
 from claasp.name_mappings import CIPHER_OUTPUT, INPUT_KEY

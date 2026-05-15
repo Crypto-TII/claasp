@@ -3,7 +3,7 @@
 # ****************************************************************************
 
 from claasp.ciphers.single_component_ciphers._base import SingleComponentCipher, add_cipher_output_from_component
-from claasp.name_mappings import PERMUTATION, INPUT_PLAINTEXT
+from claasp.name_mappings import INPUT_PLAINTEXT, PERMUTATION
 
 PARAMETERS_CONFIGURATION_LIST = [{"bit_size": 384}]
 

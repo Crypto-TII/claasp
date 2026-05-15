@@ -1,6 +1,6 @@
 from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_linear_model import MznXorLinearModel
 from claasp.cipher_modules.models.cp.solvers import CHUFFED
-from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
+from claasp.cipher_modules.models.utils import integer_to_bit_list, set_fixed_variables
 from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher

@@ -18,22 +18,23 @@
 
 import math
 import time as tm
+
 from sage.crypto.sbox import SBox
 
-from claasp.cipher_modules.models.cp.mzn_model import MznModel, SOLVE_SATISFY
+from claasp.cipher_modules.models.cp.mzn_model import SOLVE_SATISFY, MznModel
+from claasp.cipher_modules.models.cp.solvers import SOLVER_DEFAULT
 from claasp.cipher_modules.models.utils import get_single_key_scenario_format_for_fixed_values
 from claasp.name_mappings import (
+    CIPHER_OUTPUT,
     CONSTANT,
     INTERMEDIATE_OUTPUT,
-    CIPHER_OUTPUT,
-    SBOX,
+    LINEAR_LAYER,
     MIX_COLUMN,
     PERMUTATION_COMPONENT,
+    SBOX,
     WORD_OPERATION,
     XOR_DIFFERENTIAL,
-    LINEAR_LAYER,
 )
-from claasp.cipher_modules.models.cp.solvers import SOLVER_DEFAULT
 
 
 def and_xor_differential_probability_ddt(numadd):

@@ -17,8 +17,6 @@
 
 
 from claasp.components.modular_component import Modular
-from claasp.cipher_modules.models.smt.utils import utils as smt_utils
-from claasp.cipher_modules.models.sat.utils import utils as sat_utils
 
 
 class IdeaModmul(Modular):

@@ -1,7 +1,7 @@
 from claasp.cipher_modules.models.sat.sat_models.sat_cipher_model import SatCipherModel
 from claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model import SatXorDifferentialModel
 from claasp.cipher_modules.models.sat.solvers import CRYPTOMINISAT_EXT, KISSAT_EXT
-from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
+from claasp.cipher_modules.models.utils import integer_to_bit_list, set_fixed_variables
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.name_mappings import CIPHER, SATISFIABLE, UNSATISFIABLE, XOR_DIFFERENTIAL
 

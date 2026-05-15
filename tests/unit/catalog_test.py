@@ -3,8 +3,9 @@ import builtins
 from pathlib import Path
 from types import SimpleNamespace
 
-import claasp.catalog as catalog_module
 import pytest
+
+import claasp.catalog as catalog_module
 from claasp.catalog import Catalog, CipherInfo
 
 

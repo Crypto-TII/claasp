@@ -17,12 +17,13 @@
 # ****************************************************************************
 
 
-import random
-import numpy as np
 import math as math
+import random
+from copy import deepcopy
 from enum import Enum
 from operator import xor
-from copy import deepcopy
+
+import numpy as np
 
 
 class DatasetType(Enum):

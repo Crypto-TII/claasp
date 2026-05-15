@@ -19,17 +19,13 @@ import math
 import re
 import time as tm
 
-from claasp.cipher_modules.models.cp.mzn_model import MznModel, SOLVE_SATISFY
+from claasp.cipher_modules.models.cp.mzn_model import SOLVE_SATISFY, MznModel
 from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_linear_model import MznXorLinearModel
 from claasp.cipher_modules.models.cp.solvers import SOLVER_DEFAULT
 from claasp.cipher_modules.models.utils import get_bit_bindings
 from claasp.name_mappings import (
     CIPHER_OUTPUT,
     CONSTANT,
-    INPUT_KEY,
-    INPUT_PLAINTEXT,
-    INPUT_TWEAK,
-    INTERMEDIATE_OUTPUT,
     LINEAR_LAYER,
     MIX_COLUMN,
     SBOX,

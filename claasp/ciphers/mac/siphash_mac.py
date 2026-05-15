@@ -19,7 +19,6 @@ from claasp.cipher import Cipher
 from claasp.DTOs.component_state import ComponentState
 from claasp.name_mappings import HASH_FUNCTION, INPUT_KEY, INPUT_MESSAGE
 
-
 PARAMETERS_CONFIGURATION_LIST = [
     {
         'message_byte_size': 15,

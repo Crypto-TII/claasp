@@ -17,9 +17,9 @@
 
 
 from claasp.cipher import Cipher
-from claasp.utils.utils import get_ith_word
 from claasp.DTOs.component_state import ComponentState
-from claasp.name_mappings import BLOCK_CIPHER, INPUT_PLAINTEXT, INPUT_KEY
+from claasp.name_mappings import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
+from claasp.utils.utils import get_ith_word
 
 # fmt: off
 DELTA_CONSTANTS = [

@@ -16,7 +16,7 @@
 # ****************************************************************************
 
 from claasp.cipher import Cipher
-from claasp.name_mappings import BLOCK_CIPHER, INPUT_PLAINTEXT, INPUT_KEY
+from claasp.name_mappings import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
 
 PARAMETERS_CONFIGURATION_LIST = [{"block_bit_size": 16, "key_bit_size": 96, "number_of_rounds": 5}]
 

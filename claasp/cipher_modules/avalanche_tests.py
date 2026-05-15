@@ -1,30 +1,31 @@
 
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
 
-import sys
 import math
-import numpy as np
-from math import log
-from claasp.cipher_modules import evaluator
-from claasp.name_mappings import INTERMEDIATE_OUTPUT, CIPHER_OUTPUT
+
 import matplotlib.pyplot as plt
+import numpy as np
 from matplotlib.colors import LinearSegmentedColormap
+
+from claasp.cipher_modules import evaluator
+from claasp.name_mappings import CIPHER_OUTPUT, INTERMEDIATE_OUTPUT
+
 
 class AvalancheTests:
     def __init__(self, cipher):
@@ -433,8 +434,8 @@ class AvalancheTests:
 
 
     def _set_vector_entropy(self, criterion, input_diff, input_tag, number_of_occurrence, output_tag, vector):
-        vector_entropy = [round((-proba * log(proba, 2)) - (1 - proba) *
-                                log(1 - proba, 2), 5) if proba not in [0, 1] else 0 for proba in vector]
+        vector_entropy = [round((-proba * math.log(proba, 2)) - (1 - proba) *
+                                math.log(1 - proba, 2), 5) if proba not in [0, 1] else 0 for proba in vector]
         criterion[input_tag][output_tag][input_diff][number_of_occurrence][
             "avalanche_entropy_vectors"] = vector_entropy
 
@@ -544,6 +545,3 @@ class AvalancheTests:
         # plt.show()
         print("graph can be plot with the build-in method plot.show()")
         return plt
-
-
-

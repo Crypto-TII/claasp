@@ -1,6 +1,5 @@
 from claasp.cipher import Cipher
-from claasp.name_mappings import INPUT_PLAINTEXT, INPUT_KEY, BLOCK_CIPHER
-
+from claasp.name_mappings import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
 
 PARAMETERS_CONFIGURATION_LIST = [{"block_bit_size": 128, "key_bit_size": 128, "number_of_rounds": 35}]
 # fmt: off

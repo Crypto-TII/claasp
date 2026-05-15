@@ -15,7 +15,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-import pytest
 from claasp.ciphers.block_ciphers.msx_block_cipher import MSXBlockCipher
 
 """

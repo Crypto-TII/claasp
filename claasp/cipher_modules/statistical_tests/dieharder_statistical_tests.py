@@ -16,10 +16,11 @@
 # ****************************************************************************
 
 
-import os
 import math
+import os
 import time
-from datetime import timedelta, datetime
+from datetime import datetime, timedelta
+
 import matplotlib.pyplot as plt
 
 from claasp.cipher_modules.statistical_tests.dataset_generator import DatasetGenerator, DatasetType

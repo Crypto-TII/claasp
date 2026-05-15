@@ -22,12 +22,13 @@ from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_t
     MilpWordwiseDeterministicTruncatedXorDifferentialModel,
 )
 from claasp.cipher_modules.models.milp.solvers import SOLVER_DEFAULT
-from claasp.cipher_modules.models.milp.utils import utils as milp_utils, milp_truncated_utils
+from claasp.cipher_modules.models.milp.utils import milp_truncated_utils
+from claasp.cipher_modules.models.milp.utils import utils as milp_utils
 from claasp.cipher_modules.models.milp.utils.milp_name_mappings import (
     MILP_BACKWARD_SUFFIX,
     MILP_BUILDING_MESSAGE,
-    MILP_WORDWISE_IMPOSSIBLE_AUTO,
     MILP_WORDWISE_IMPOSSIBLE,
+    MILP_WORDWISE_IMPOSSIBLE_AUTO,
 )
 from claasp.name_mappings import CIPHER_OUTPUT, INPUT_KEY
 

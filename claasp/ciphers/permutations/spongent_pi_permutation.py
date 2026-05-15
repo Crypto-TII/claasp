@@ -17,9 +17,9 @@
 
 
 from claasp.cipher import Cipher
+from claasp.DTOs.component_state import ComponentState
 from claasp.name_mappings import INPUT_PLAINTEXT
 from claasp.utils.utils import get_inputs_parameter
-from claasp.DTOs.component_state import ComponentState
 
 SBOX_CELL_SIZE = 8
 CONSTANT_ZERO_LEN = 7
