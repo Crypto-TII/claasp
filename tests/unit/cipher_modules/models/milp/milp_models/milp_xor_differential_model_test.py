@@ -26,7 +26,7 @@ def test_find_all_xor_differential_trails_with_fixed_weight():
 def test_find_all_xor_differential_trails_with_weight_at_most():
     speck = SpeckBlockCipher(block_bit_size=8, key_bit_size=16, number_of_rounds=2)
     milp = MilpXorDifferentialModel(speck)
-    trails = milp.find_all_xor_differential_trails_with_weight_at_most(0, 1)
+    trails = milp.find_all_xor_differential_trails_with_weight_at_most(1, 0)
     assert len(trails) == 7
     for trail in trails:
         assert 0.0 <= trail["total_weight"] <= 1.0

@@ -21,9 +21,9 @@ from claasp.name_mappings import BLOCK_CIPHER, INPUT_PLAINTEXT, INPUT_KEY
 PARAMETERS_CONFIGURATION_LIST = [{"block_bit_size": 16, "key_bit_size": 96, "number_of_rounds": 5}]
 
 
-class ToyCipherFour(Cipher):
+class CipherFourBlockCipher(Cipher):
     """
-    Construct an instance of the ToyCipherFour class.
+    Construct an instance of the CipherFourBlockCipher class.
     This class implements CipherFOUR [Knudsen2011TheBC]_,
     with a default block size of 16 bits and a key size of 96 bits.
     This toy block cipher splits the key into multiple round keys.
@@ -44,8 +44,8 @@ class ToyCipherFour(Cipher):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.toys.toy_cipherfour import ToyCipherFour
-        sage: toy_cipher = ToyCipherFour()
+        sage: from claasp.ciphers.toys.cipherfour_block_cipher import CipherFourBlockCipher
+        sage: toy_cipher = CipherFourBlockCipher()
         sage: plaintext = 0x1234; key = 0x111122223333444455556666
         sage: toy_cipher.evaluate([plaintext, key])
         17897
@@ -54,12 +54,12 @@ class ToyCipherFour(Cipher):
         sage: toy_cipher.number_of_rounds
         5
 
-        sage: toy_cipher = ToyCipherFour(block_bit_size=16, key_bit_size=80, number_of_rounds=10)
+        sage: toy_cipher = CipherFourBlockCipher(block_bit_size=16, key_bit_size=80, number_of_rounds=10)
         sage: plaintext = 0x5678; key = 0x123456781234567812abcdef
         sage: hex(toy_cipher.evaluate([plaintext, key]))
         '0xbeec'
 
-        sage: toy_cipher = ToyCipherFour(block_bit_size=16, key_bit_size=80, sbox=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0], permutations=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], number_of_rounds=5)
+        sage: toy_cipher = CipherFourBlockCipher(block_bit_size=16, key_bit_size=80, sbox=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0], permutations=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], number_of_rounds=5)
         sage: plaintext = 0x9abc; key = 0x3333555577779999bbbbcccc
         sage: hex(toy_cipher.evaluate([plaintext, key]))
         '0xef01'

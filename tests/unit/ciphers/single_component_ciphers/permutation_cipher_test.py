@@ -6,3 +6,9 @@ def test_permutation_cipher_is_bijection_on_small_domain():
     outputs = {cipher.evaluate([x]) for x in range(16)}
     assert cipher.type == "permutation"
     assert len(outputs) == 16
+
+
+def test_permutation_cipher_default_description_reverses_bits():
+    cipher = PermutationCipher(bit_size=4)
+
+    assert cipher.evaluate([0b1100]) == 0b0011

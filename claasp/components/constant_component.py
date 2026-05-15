@@ -575,7 +575,7 @@ class Constant(Component):
             sage: constant_xor_differential_constraints[0]
             'constraint constant_0_0_y0 = 0;'
         """
-        var_names = self._define_var(model.input_postfix, model.output_postfix, model.data_type)
+        var_names = self.minizinc_define_var(model.input_postfix, model.output_postfix, model.data_type)
         constant_component_string = []
         constant_str_values = [f"{self.id}_{model.output_postfix}{i}" for i in range(self.output_bit_size)]
         for constant_str in constant_str_values:

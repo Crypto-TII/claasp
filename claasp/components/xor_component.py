@@ -181,7 +181,7 @@ class Xor(Component):
         component_id = f"xor_{current_round_number}_{current_round_number_of_components}"
         component_type = WORD_OPERATION
         input_len = sum(map(len, input_bit_positions))
-        description = ["XOR", int(input_len / output_bit_size)]
+        description = ["XOR", input_len // output_bit_size]
         component_input = Input(input_len, input_id_links, input_bit_positions)
         super().__init__(component_id, component_type, component_input, output_bit_size, description)
 
@@ -297,10 +297,7 @@ class Xor(Component):
         return cp_declarations, cp_constraints
 
     def cp_continuous_differential_propagation_constraints(self, model):
-
-        input_id_links = self.input_id_links
         output_id_link = self.id
-        input_bit_positions = self.input_bit_positions
         input_len = self.output_bit_size
 
         cp_declarations = []
@@ -315,7 +312,7 @@ class Xor(Component):
         )
 
         return cp_declarations, cp_constraints
-        
+
     def cp_deterministic_truncated_xor_differential_constraints(self):
         r"""
         Return list declarations and constraints for XOR component CP deterministic truncated XOR differential model.
@@ -1149,7 +1146,7 @@ class Xor(Component):
         if self.description[0].lower() != "xor":
             raise ValueError("component must be Boolean XOR word_operation")
 
-        var_names = self._define_var(model.input_postfix, model.output_postfix, model.data_type)
+        var_names = self.minizinc_define_var(model.input_postfix, model.output_postfix, model.data_type)
 
         mzn_constraints = []
         component_id = self.id
@@ -1498,7 +1495,7 @@ class Xor(Component):
             for input_bit in input_bit_positions:
                 input_bits += len(input_bit)
             xor_component = Xor("", "", input_id_link, input_bit_positions, input_bits)
-            xor_component.set_description(["XOR", numadd + 1])
+            xor_component.description = ["XOR", numadd + 1]
             model.list_of_xor_components.append(xor_component)
         cp_constraints = []
 

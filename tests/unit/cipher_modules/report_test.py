@@ -242,7 +242,7 @@ def test_save_as_latex_table():
     report_sts.save_as_latex_table()
     report_sts.clean_reports()
 
-def test_save_as_DataFrame():
+def test_save_as_dataframe():
     speck = SpeckBlockCipher(number_of_rounds=2)
     cp = MznXorDifferentialModel(speck)
     plaintext = set_fixed_variables(
@@ -259,14 +259,14 @@ def test_save_as_DataFrame():
 
     avalanche_results = AvalancheTests(speck).avalanche_tests()
     avalanche_report = Report(avalanche_results)
-    avalanche_report.save_as_DataFrame(fixed_input='plaintext',fixed_output='round_output',fixed_test='avalanche_weight_vectors')
+    avalanche_report.save_as_dataframe(fixed_input='plaintext',fixed_output='round_output',fixed_test='avalanche_weight_vectors')
     avalanche_report.clean_reports()
     trail_report = Report(trail)
-    trail_report.save_as_DataFrame()
+    trail_report.save_as_dataframe()
     trail_report.clean_reports()
     dieharder = DieharderTests(speck)
     report_sts = Report(dieharder.dieharder_statistical_tests('avalanche', dieharder_test_option=100))
-    report_sts.save_as_DataFrame()
+    report_sts.save_as_dataframe()
     report_sts.clean_reports()
 
 def test_save_as_json():
@@ -322,3 +322,57 @@ def test_show(monkeypatch, tmp_path):
 
     assert captured_fig_shows, 'Expected Plotly show to be invoked at least once'
     assert component_charts, 'Expected component analysis radar chart to be produced'
+
+
+def test_report_accepts_cp_trail_output():
+    """
+    Test that Report can be instantiated with CP model trail output directly,
+    without requiring explicit 'input_parameters' or 'test_name' nesting.
+    This validates that Report gracefully handles single-trial dictionaries
+    from find_one_xor_differential_trail_with_fixed_weight and similar methods.
+    """
+    speck = SpeckBlockCipher(block_bit_size=8, key_bit_size=16, number_of_rounds=2)
+    cp = MznXorDifferentialModel(speck)
+    trail = cp.find_one_xor_differential_trail_with_fixed_weight(1, solver_name='chuffed', solve_external=False)
+
+    assert 'test_name' in trail
+    assert trail['test_name'] == 'find_one_xor_differential_trail_with_fixed_weight'
+
+    trail_report = Report(trail)
+    assert trail_report.cipher == speck
+    assert trail_report.test_name == 'find_one_xor_differential_trail_with_fixed_weight'
+
+
+def test_save_as_dataframe_uses_runtime_cwd_default(monkeypatch, tmp_path):
+    class DummyCipher:
+        id = 'dummy_cipher'
+
+    report = Report({'cipher': DummyCipher(), 'test_name': 'dummy_trail'})
+    captured = {}
+
+    def fake_export(self, file_format, output_dir, fixed_input=None, fixed_output=None, fixed_test=None):
+        captured['file_format'] = file_format
+        captured['output_dir'] = output_dir
+
+    monkeypatch.setattr(Report, '_export', fake_export)
+    monkeypatch.chdir(tmp_path)
+
+    report.save_as_dataframe()
+
+    assert captured['file_format'] == '.csv'
+    assert captured['output_dir'] == str(tmp_path / 'test_reports')
+
+
+def test_clean_reports_uses_runtime_cwd_default(monkeypatch, tmp_path):
+    class DummyCipher:
+        id = 'dummy_cipher'
+
+    report = Report({'cipher': DummyCipher(), 'test_name': 'dummy_trail'})
+    monkeypatch.chdir(tmp_path)
+    reports_dir = tmp_path / 'test_reports'
+    reports_dir.mkdir()
+    (reports_dir / 'sentinel.txt').write_text('ok')
+
+    report.clean_reports()
+
+    assert not reports_dir.exists()

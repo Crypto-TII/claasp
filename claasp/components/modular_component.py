@@ -210,10 +210,7 @@ class Modular(Component):
         return result
 
     def cp_continuous_differential_propagation_constraints(self, model):
-        
-        input_id_links = self.input_id_links
         output_id_link = self.id
-        input_bit_positions = self.input_bit_positions
         input_len = self.output_bit_size
 
         cp_declarations = []
@@ -227,7 +224,7 @@ class Modular(Component):
         )
 
         return cp_declarations, cp_constraints
-        
+
     def cp_deterministic_truncated_xor_differential_constraints(self):
         """
         Return lists of variables and constraints for Modular Addition/Substraction in CP deterministic truncated XOR differential model.
@@ -1171,7 +1168,7 @@ class Modular(Component):
             raise ValueError("component must be modular addition, or modular substraction")
 
         round_number = model.cipher.get_round_from_component_id(self.id)
-        var_names = self._define_var(model.input_postfix, model.output_postfix, model.data_type)
+        var_names = self.minizinc_define_var(model.input_postfix, model.output_postfix, model.data_type)
         mzn_constraints = []
         component_id = self.id
         ninput_words = self.description[1]

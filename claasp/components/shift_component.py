@@ -651,7 +651,7 @@ class Shift(Component):
             'var bool: shift_0_0_y1;'],
             ['constraint RSHIFT(array1d(0..2-1, [shift_0_0_x0,shift_0_0_x1]), 1)=array1d(0..2-1, [shift_0_0_y0,shift_0_0_y1]);\n'])
         """
-        var_names = self._define_var(model.input_postfix, model.output_postfix, model.data_type)
+        var_names = self.minizinc_define_var(model.input_postfix, model.output_postfix, model.data_type)
         shift_const = self.description[1]
         ninputs = noutputs = self.output_bit_size
         input_vars = [self.id + "_" + model.input_postfix + str(i) for i in range(ninputs)]
