@@ -127,6 +127,35 @@ def linear_layer(input, matrix, verbosity=False):
     return output
 
 
+def permutation(input, permutation_description, word_size=1, verbosity=False):
+    """
+    Computes a (word-wise or bitwise) permutation.
+
+    INPUT:
+
+    - ``input`` -- **BitArray object**; a BitArray
+        - ``permutation_description`` -- **list**; a list of integers representing the permutation mapping.
+            When ``word_size=1``, each entry is a destination bit index for the corresponding source bit.
+            When ``word_size > 1``, each entry is a destination word index and the description has
+            ``len(input) // word_size`` entries.
+    - ``word_size`` -- **integer** (default: ``1``); number of bits per word
+    - ``verbosity`` -- **boolean** (default: `False`); set this flag to True to print the input/output
+    """
+    output = BitArray(length=input.len)
+    for src_idx, dst_idx in enumerate(permutation_description):
+        output[dst_idx * word_size: (dst_idx + 1) * word_size] = \
+            input[src_idx * word_size: (src_idx + 1) * word_size]
+
+    if verbosity:
+        print("PERMUTATION:")
+        print("  perm  = {}".format(permutation_description))
+        print("  word_size = {}".format(word_size))
+        print(input_expression.format(input.bin))
+        print(output_expression.format(output.bin))
+
+    return output
+
+
 def mix_column_generalized(input_vector, input_matrix, polynomial, word_size, verbosity=False):
     """
     INPUT:

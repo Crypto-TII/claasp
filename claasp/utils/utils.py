@@ -461,3 +461,53 @@ def poly_to_int(polynom, word_size, a):
     output = int("0b" + output, base=2)
 
     return output
+
+
+def coerce_exact_int(value, parameter_name):
+    """
+    Coerce a value to an exact integer, raising an error if it's not truly an integer.
+
+    This function ensures that a value is an exact integer in both Sage and Python environments.
+    It rejects booleans, floats that are not integers, and non-numeric types.
+
+    INPUT:
+
+    - ``value`` -- **any**; the value to coerce to an integer
+    - ``parameter_name`` -- **string**; the name of the parameter (for error messages)
+
+    OUTPUT:
+
+    - **integer**; the coerced integer value
+
+    RAISES:
+
+    - **ValueError**; if the value is a boolean, cannot be converted to int, or is a float not equal to its integer conversion
+
+    EXAMPLES::
+
+        sage: from claasp.utils.utils import coerce_exact_int
+        sage: coerce_exact_int(5, "test_param")
+        5
+        sage: coerce_exact_int(5.0, "test_param")
+        5
+        sage: try:
+        ....:     coerce_exact_int(5.5, "test_param")
+        ....: except ValueError as e:
+        ....:     print(str(e))
+        test_param must be an integer
+        sage: try:
+        ....:     coerce_exact_int(True, "test_param")
+        ....: except ValueError as e:
+        ....:     print(str(e))
+        test_param must be an integer
+    """
+    if isinstance(value, bool):
+        raise ValueError(f"{parameter_name} must be an integer")
+    try:
+        coerced = int(value)
+    except (TypeError, ValueError):
+        raise ValueError(f"{parameter_name} must be an integer")
+    if coerced != value:
+        raise ValueError(f"{parameter_name} must be an integer")
+
+    return coerced

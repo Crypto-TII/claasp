@@ -29,6 +29,7 @@ from claasp.name_mappings import (
     INTERMEDIATE_OUTPUT,
     LINEAR_LAYER,
     MIX_COLUMN,
+    PERMUTATION_COMPONENT,
     SBOX,
     WORD_OPERATION,
     XOR_DIFFERENTIAL,
@@ -75,7 +76,16 @@ class SatXorDifferentialModel(SatModel):
             fixed_variables = get_single_key_scenario_format_for_fixed_values(self._cipher)
         constraints = SatModel.fix_variables_value_constraints(fixed_variables)
         self._model_constraints = constraints
-        component_types = (CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, LINEAR_LAYER, SBOX, MIX_COLUMN, WORD_OPERATION)
+        component_types = (
+            CONSTANT,
+            INTERMEDIATE_OUTPUT,
+            CIPHER_OUTPUT,
+            LINEAR_LAYER,
+            PERMUTATION_COMPONENT,
+            SBOX,
+            MIX_COLUMN,
+            WORD_OPERATION,
+        )
         operation_types = ("AND", "MODADD", "MODSUB", "NOT", "OR", "ROTATE", "SHIFT", "XOR")
 
         for component in self._cipher.get_all_components():

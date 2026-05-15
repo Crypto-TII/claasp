@@ -17,7 +17,7 @@
 
 
 from claasp.cipher_modules.models.cp.mzn_model import MznModel
-from claasp.name_mappings import CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, WORD_OPERATION
+from claasp.name_mappings import CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, PERMUTATION_COMPONENT, WORD_OPERATION
 
 
 class MznDeterministicTruncatedXorDifferentialModelARXOptimized(MznModel):
@@ -52,7 +52,7 @@ class MznDeterministicTruncatedXorDifferentialModelARXOptimized(MznModel):
         self._model_constraints = constraints
 
         for component in self._cipher.get_all_components():
-            component_types = [CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, WORD_OPERATION]
+            component_types = [CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, PERMUTATION_COMPONENT, WORD_OPERATION]
             operation = component.description[0]
             operation_types = ["ROTATE", "SHIFT"]
 

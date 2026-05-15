@@ -187,3 +187,14 @@ def test_weight_constraints():
     sat = SatXorDifferentialModel(speck)
     sat.build_xor_differential_trail_model()
     assert len(sat.weight_constraints(7)) == 2
+
+
+def test_parallel_counter_branch():
+    speck = SpeckBlockCipher(number_of_rounds=3)
+    sat = SatModel(speck, counter="parallel")
+
+    variables, constraints = sat._parallel_counter(["hw_0", "hw_1", "hw_2"], 5)
+
+    assert variables
+    assert constraints
+    assert any(variable.startswith("r_") for variable in variables)
