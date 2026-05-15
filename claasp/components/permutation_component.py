@@ -221,6 +221,15 @@ class Permutation(Component):
 
         return output_bit_ids, constraints
 
+    def cms_constraints(self):
+        return self.sat_constraints()
+
+    def cms_xor_differential_propagation_constraints(self, model=None):
+        return self.cms_constraints()
+
+    def cms_xor_linear_mask_propagation_constraints(self, model=None):
+        return self.cms_constraints()
+
     def sat_bitwise_deterministic_truncated_xor_differential_constraints(self):
         """
         Return a list of variables and a list of clauses for PERMUTATION in SAT bitwise deterministic
@@ -280,6 +289,9 @@ class Permutation(Component):
 
     def sat_xor_linear_mask_propagation_constraints(self, model=None):
         return self.sat_constraints()
+
+    def sat_semi_deterministic_truncated_xor_differential_constraints(self):
+        return self.sat_bitwise_deterministic_truncated_xor_differential_constraints()
 
     def smt_constraints(self):
         """
@@ -450,6 +462,9 @@ class Permutation(Component):
             for i in range(self.output_bit_size)
         ]
         return cp_declarations, cp_constraints
+
+    def cp_deterministic_truncated_xor_differential_constraints(self):
+        return self.cp_deterministic_truncated_xor_differential_trail_constraints()
 
     def cp_semi_deterministic_truncated_xor_differential_constraints(self):
         """
