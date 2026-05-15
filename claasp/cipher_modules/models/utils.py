@@ -30,6 +30,7 @@ from claasp.name_mappings import (
     INTERMEDIATE_OUTPUT,
     WORD_OPERATION,
     LINEAR_LAYER,
+    PERMUTATION_COMPONENT,
     SBOX,
     MIX_COLUMN,
     INPUT_KEY,
@@ -57,7 +58,7 @@ def add_arcs(arcs, component, curr_input_bit_ids, input_bit_size, intermediate_o
 
 
 def check_if_implemented_component(component):
-    component_types = (CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, LINEAR_LAYER, SBOX, MIX_COLUMN, WORD_OPERATION)
+    component_types = (CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, LINEAR_LAYER, PERMUTATION_COMPONENT, SBOX, MIX_COLUMN, WORD_OPERATION)
     operation = component.description[0]
     operation_types = ("AND", "OR", "MODADD", "MODSUB", "NOT", "ROTATE", "SHIFT", "XOR")
     if component.type not in component_types or (component.type == WORD_OPERATION and operation not in operation_types):

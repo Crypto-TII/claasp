@@ -295,6 +295,44 @@ class Permutation(Component):
 
         return cp_declarations, cp_constraints
 
+    def cp_deterministic_truncated_xor_differential_trail_constraints(self):
+        """
+        Return lists of declarations and constraints for PERMUTATION in CP deterministic truncated xor differential model.
+
+        A permutation propagates differences deterministically: each output bit copies its
+        corresponding input bit, so the truncated-model value (0, 1, or 2) is preserved.
+
+        INPUT:
+
+        - None
+
+        EXAMPLES::
+
+            sage: from claasp.components.permutation_component import Permutation
+            sage: component = Permutation(0, 0, ['input'], [[0, 1, 2, 3]], 4, [1, 3, 2, 0])
+            sage: declarations, constraints = component.cp_deterministic_truncated_xor_differential_trail_constraints()
+            sage: declarations
+            []
+            sage: constraints
+            ['constraint if ((input[3] < 2)) then permutation_0_0[0] = (input[3]) mod 2 else permutation_0_0[0] = 2 endif;',
+             'constraint if ((input[0] < 2)) then permutation_0_0[1] = (input[0]) mod 2 else permutation_0_0[1] = 2 endif;',
+             'constraint if ((input[2] < 2)) then permutation_0_0[2] = (input[2]) mod 2 else permutation_0_0[2] = 2 endif;',
+             'constraint if ((input[1] < 2)) then permutation_0_0[3] = (input[1]) mod 2 else permutation_0_0[3] = 2 endif;']
+        """
+        all_inputs = []
+        for id_link, bit_positions in zip(self.input_id_links, self.input_bit_positions):
+            all_inputs.extend([f"{id_link}[{position}]" for position in bit_positions])
+
+        bit_perm = self._bit_perm()
+        cp_declarations = []
+        cp_constraints = [
+            f"constraint if (({all_inputs[bit_perm[i]]} < 2)) then "
+            f"{self.id}[{i}] = ({all_inputs[bit_perm[i]]}) mod 2 "
+            f"else {self.id}[{i}] = 2 endif;"
+            for i in range(self.output_bit_size)
+        ]
+        return cp_declarations, cp_constraints
+
     def cp_xor_differential_propagation_constraints(self, model):
         # TODO: keep the model argument for API parity with LinearLayer;
         # remove this unused parameter in a later cleanup PR after harmonizing call sites.
