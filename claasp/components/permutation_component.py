@@ -295,6 +295,44 @@ class Permutation(Component):
 
         return cp_declarations, cp_constraints
 
+    def cp_xor_differential_propagation_constraints(self, model):
+        # TODO: keep the model argument for API parity with LinearLayer;
+        # remove this unused parameter in a later cleanup PR after harmonizing call sites.
+        return self.cp_constraints()
+
+    def cp_xor_linear_mask_propagation_constraints(self, model=None):
+        """
+        Return declarations and constraints for PERMUTATION in CP xor linear model.
+
+        INPUT:
+
+        - ``model`` -- **model object** (default: `None`); unused, kept for API compatibility
+
+        EXAMPLES::
+
+            sage: from claasp.components.permutation_component import Permutation
+            sage: component = Permutation(0, 0, ['input'], [[0, 1, 2, 3]], 4, [1, 3, 2, 0])
+            sage: declarations, constraints = component.cp_xor_linear_mask_propagation_constraints()
+            sage: declarations
+            ['array[0..3] of var 0..1:permutation_0_0_i;', 'array[0..3] of var 0..1:permutation_0_0_o;']
+            sage: constraints
+            ['constraint permutation_0_0_o[0]=permutation_0_0_i[3];',
+             'constraint permutation_0_0_o[1]=permutation_0_0_i[0];',
+             'constraint permutation_0_0_o[2]=permutation_0_0_i[2];',
+             'constraint permutation_0_0_o[3]=permutation_0_0_i[1];']
+        """
+        cp_declarations = [
+            f"array[0..{self.input_bit_size - 1}] of var 0..1:{self.id}_i;",
+            f"array[0..{self.output_bit_size - 1}] of var 0..1:{self.id}_o;",
+        ]
+        bit_perm = self._bit_perm()
+        cp_constraints = [
+            f"constraint {self.id}_o[{i}]={self.id}_i[{bit_perm[i]}];"
+            for i in range(self.output_bit_size)
+        ]
+
+        return cp_declarations, cp_constraints
+
     def milp_constraints(self, model):
         """
         Return a list of variables and a list of MILP constraints for PERMUTATION.

@@ -40,6 +40,22 @@ def test_cp_constraints():
     ]
 
 
+def test_cp_xor_linear_mask_propagation_constraints():
+    permutation_component = make_permutation_component()
+    declarations, constraints = permutation_component.cp_xor_linear_mask_propagation_constraints()
+
+    assert declarations == [
+        "array[0..3] of var 0..1:permutation_0_0_i;",
+        "array[0..3] of var 0..1:permutation_0_0_o;",
+    ]
+    assert constraints == [
+        "constraint permutation_0_0_o[0]=permutation_0_0_i[3];",
+        "constraint permutation_0_0_o[1]=permutation_0_0_i[0];",
+        "constraint permutation_0_0_o[2]=permutation_0_0_i[2];",
+        "constraint permutation_0_0_o[3]=permutation_0_0_i[1];",
+    ]
+
+
 def test_sat_constraints():
     permutation_component = make_permutation_component()
     output_bit_ids, constraints = permutation_component.sat_constraints()
