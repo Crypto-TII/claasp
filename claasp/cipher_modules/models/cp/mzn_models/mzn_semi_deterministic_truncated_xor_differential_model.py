@@ -24,6 +24,7 @@ from claasp.name_mappings import (
     CIPHER_OUTPUT,
     CONSTANT,
     INTERMEDIATE_OUTPUT,
+    PERMUTATION_COMPONENT,
     WORD_OPERATION,
     SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL_OPTIMAL_SOLUTION,
     SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL_ONE_SOLUTION,
@@ -54,7 +55,7 @@ class MznSemiDeterministicTruncatedXorDifferentialModel(MznModel):
 
     @staticmethod
     def _allowed_component_and_operations():
-        allowed_component_types = (CIPHER_OUTPUT, INTERMEDIATE_OUTPUT, WORD_OPERATION, CONSTANT)
+        allowed_component_types = (CIPHER_OUTPUT, INTERMEDIATE_OUTPUT, WORD_OPERATION, CONSTANT, PERMUTATION_COMPONENT)
         allowed_operations = ("MODADD", "MODSUB", "XOR", "ROTATE", "SHIFT", "NOT")
         return allowed_component_types, allowed_operations
 

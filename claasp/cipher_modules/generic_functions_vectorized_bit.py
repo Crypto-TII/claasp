@@ -1,26 +1,27 @@
-
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-import inspect
-
 import numpy as np
 
 DEBUG_MODE = False
+
+# Constants for verbosity output
+INPUT_LABEL = "Input : "
+OUTPUT_LABEL = "Output : "
 
 
 def bit_vector_to_integer(arr):
@@ -101,10 +102,10 @@ def bit_vector_SBOX(input, sbox, verbosity=False, output_bit_size = None):
         output = output[-output_bit_size:]
     if verbosity:
         print("SBox")
-        print("Input : ", input.transpose())
+        print(INPUT_LABEL, input.transpose())
         print("Int input : ", int_val.transpose())
         print("Int output : ", int_output.transpose())
-        print("Output : ", output.transpose())
+        print(OUTPUT_LABEL, output.transpose())
         print("---")
 
     return output
@@ -121,6 +122,7 @@ def bit_vector_XOR(input, number_of_inputs, output_bit_size, verbosity=False):
     - ``output_bit_size`` -- **integer**; is an integer representing the bit size of the output
     - ``verbosity`` -- **boolean**; (default: `False`); set this flag to True to print the input/output
     """
+    input_concatenated = bit_vector_CONCAT(input)
     output = 0
     if number_of_inputs == len(input) and np.all([x.shape[0] == output_bit_size for x in input]):
         for i in range(number_of_inputs):
@@ -140,11 +142,11 @@ def bit_vector_XOR(input, number_of_inputs, output_bit_size, verbosity=False):
     output &= 1
 
     if DEBUG_MODE:
-        intInputs = [bit_vector_to_integer(inputConcatenated[i * output_bit_size:(i + 1) * output_bit_size])
-                     for i in range(len(inputConcatenated))]
+        int_inputs = [bit_vector_to_integer(input_concatenated[i * output_bit_size:(i + 1) * output_bit_size])
+                     for i in range(len(input_concatenated))]
         X = 0
-        for i in range(len(inputConcatenated)):
-            X ^= intInputs[i]
+        for i in range(len(input_concatenated)):
+            X ^= int_inputs[i]
         assert np.all(X == bit_vector_to_integer(output))
 
     if verbosity:
@@ -204,18 +206,19 @@ def bit_vector_AND(input, number_of_inputs, output_bit_size, verbosity=False):
     - ``output_bit_size`` -- **integer**; is an integer representing the bit size of the output
     - ``verbosity`` -- **boolean**; (default: `False`); set this flag to True to print the input/output
     """
-    output = 1  # copy(inputConcatenated[0:output_bit_size])
+    output = 1  # copy(input_concatenated[0:output_bit_size])
     if number_of_inputs == len(input):
         for i in range(number_of_inputs):
             output = output & input[i]
     else:
-        inputConcatenated = bit_vector_CONCAT(input)
+        input_concatenated = bit_vector_CONCAT(input)
         for i in range(number_of_inputs):
-            output = output & inputConcatenated[i * output_bit_size:(i + 1) * output_bit_size]
+            output = output & input_concatenated[i * output_bit_size:(i + 1) * output_bit_size]
     if verbosity:
+        input_concatenated = bit_vector_CONCAT(input)
         print("AND:")
         print([input[i].transpose() for i in range(len(input))])
-        print([inputConcatenated[i].transpose() for i in range(len(inputConcatenated))])
+        print([input_concatenated[i].transpose() for i in range(len(input_concatenated))])
         print(" Output:")
         print(output.transpose())
 
@@ -233,14 +236,14 @@ def bit_vector_OR(input, number_of_inputs, output_bit_size, verbosity=False):
     - ``output_bit_size`` -- **integer**; is an integer representing the bit size of the output
     - ``verbosity`` -- **boolean**; (default: `False`); set this flag to True to print the input/output
     """
-    output = 0  # copy(inputConcatenated[0:output_bit_size])
+    output = 0  # copy(input_concatenated[0:output_bit_size])
     if number_of_inputs == len(input):
         for i in range(number_of_inputs):
             output = output | input[i]
     else:
-        inputConcatenated = bit_vector_CONCAT(input)
+        input_concatenated = bit_vector_CONCAT(input)
         for i in range(number_of_inputs):
-            output = output | inputConcatenated[i * output_bit_size:(i + 1) * output_bit_size]
+            output = output | input_concatenated[i * output_bit_size:(i + 1) * output_bit_size]
     if verbosity:
         print_component_info(input, output, "OR:")
 
@@ -256,8 +259,8 @@ def bit_vector_NOT(input, verbosity=False):
       - ``input`` -- -- **np.array(dtype = np.uint8)** A binary numpy matrix with one row per bit, and one column per sample.
       - ``verbosity`` -- **boolean**; (default: `False`); set this flag to True to print the input/output
     """
-    inputConcatenated = bit_vector_CONCAT(input)
-    output = inputConcatenated ^ 1
+    input_concatenated = bit_vector_CONCAT(input)
+    output = input_concatenated ^ 1
     if verbosity:
         print_component_info(input, output, "NOT:")
 
@@ -292,10 +295,10 @@ def bit_vector_SHIFT_BY_VARIABLE_AMOUNT(input, input_size, shift_direction, verb
             output[:i, ind] = 0
 
     if DEBUG_MODE:
-        b = to_integer(input1) % input_size
-        a = to_integer(input0)
+        b = bit_vector_to_integer(input1) % input_size
+        a = bit_vector_to_integer(input0)
         X = (a << b) & (2**input_size - 1)
-        assert np.all(X == to_integer(output))
+        assert np.all(X == bit_vector_to_integer(output))
 
     if verbosity:
         print("VARIABLE_SHIFT:")
@@ -314,11 +317,11 @@ def bit_vector_MODADD(input, number_of_inputs, output_bit_size, verbosity=False)
     - ``output_bit_size`` -- **integer**; is an integer representing the bit size of the output
     - ``verbosity`` -- **boolean**; (default: `False`); set this flag to True to print the input/output
     """
+    input_concatenated = bit_vector_CONCAT(input)
     if number_of_inputs == len(input):
         inputsList = input
     else:
-        inputConcatenated = bit_vector_CONCAT(input)
-        inputsList = [inputConcatenated[i * output_bit_size:(i + 1) * output_bit_size] for i in range(number_of_inputs)]
+        inputsList = [input_concatenated[i * output_bit_size:(i + 1) * output_bit_size] for i in range(number_of_inputs)]
     Sum = 0  # np.zeros(shape=(1, inputsList[0].shape[1]), dtype=np.uint8)
     maxCols = np.max([x.shape[1] for x in inputsList])
     output = np.zeros(shape=(inputsList[0].shape[0], maxCols), dtype=np.uint8)
@@ -331,12 +334,12 @@ def bit_vector_MODADD(input, number_of_inputs, output_bit_size, verbosity=False)
         Sum = (Sum >> 1)
 
     if DEBUG_MODE:
-        intInputs = [to_integer(inputConcatenated[i * output_bit_size:(i + 1) * output_bit_size])
-                     for i in range(len(inputConcatenated))]
+        int_inputs = [bit_vector_to_integer(input_concatenated[i * output_bit_size:(i + 1) * output_bit_size])
+                     for i in range(len(input_concatenated))]
         X = 0
-        for i in range(len(inputConcatenated)):
-            X = (X + intInputs[i]) % 2**word_size
-        assert np.all(X == to_integer(output))
+        for i in range(len(input_concatenated)):
+            X = (X + int_inputs[i]) % 2**word_size
+        assert np.all(X == bit_vector_to_integer(output))
 
     if verbosity:
         print_component_info(input, output, "MODADD:")
@@ -355,41 +358,41 @@ def bit_vector_MODMUL(input, number_of_inputs, output_bit_size, verbosity=False)
     - ``output_bit_size`` -- **integer**; is an integer representing the bit size of the output
     - ``verbosity`` -- **boolean**; (default: `False`); set this flag to True to print the input/output
     """
+    input_concatenated = bit_vector_CONCAT(input)
     if number_of_inputs == len(input):
         inputs_list = input
     else:
-        input_concatenated = bit_vector_CONCAT(input)
         inputs_list = [input_concatenated[i * output_bit_size:(i + 1) * output_bit_size] for i in range(number_of_inputs)]
-    
+
     word_size = output_bit_size
     modulus = 2**word_size
-    
+
     val_out = bit_vector_to_integer(inputs_list[0])
     a_calc = val_out.astype(object) if word_size > 32 else val_out.astype(np.uint64)
-    
+
     for i in range(1, number_of_inputs):
         val_next = bit_vector_to_integer(inputs_list[i])
         b_calc = val_next.astype(object) if word_size > 32 else val_next.astype(np.uint64)
         a_calc = (a_calc * b_calc) % modulus
-        
+
     output = np.zeros(shape=(output_bit_size, inputs_list[0].shape[1]), dtype=np.uint8)
     for i in range(output_bit_size):
         bit_position = output_bit_size - 1 - i
         output[bit_position] = (a_calc >> i) & 1
 
     if DEBUG_MODE:
-        intInputs = [bit_vector_to_integer(input_concatenated[i * output_bit_size:(i + 1) * output_bit_size])
+        int_inputs = [bit_vector_to_integer(input_concatenated[i * output_bit_size:(i + 1) * output_bit_size])
                      for i in range(number_of_inputs)]
         if word_size > 32:
-            a_check = intInputs[0].astype(object) if hasattr(intInputs[0], 'astype') else int(intInputs[0])
+            a_check = int_inputs[0].astype(object) if hasattr(int_inputs[0], 'astype') else int(int_inputs[0])
             for i in range(1, number_of_inputs):
-                b_check = intInputs[i].astype(object) if hasattr(intInputs[i], 'astype') else int(intInputs[i])
+                b_check = int_inputs[i].astype(object) if hasattr(int_inputs[i], 'astype') else int(int_inputs[i])
                 a_check = (a_check * b_check) % modulus
             X = a_check
         else:
-            X = intInputs[0]
+            X = int_inputs[0]
             for i in range(1, number_of_inputs):
-                X = (X * intInputs[i]) % modulus
+                X = (X * int_inputs[i]) % modulus
         assert np.all(X == bit_vector_to_integer(output))
 
     if verbosity:
@@ -410,11 +413,11 @@ def bit_vector_MODSUB(input, number_of_inputs, output_bit_size, verbosity=False)
     - ``verbosity`` -- **boolean**; (default: `False`); set this flag to True to print the input/output
     """
     assert number_of_inputs == 2  # Other cases not implemented
-    inputConcatenated = bit_vector_CONCAT(input)
+    input_concatenated = bit_vector_CONCAT(input)
     Sum = np.uint8(0)
     inputsList = [0 for _ in range(3)]
-    inputsList[0] = inputConcatenated[0:output_bit_size]
-    inputsList[1] = 1 - inputConcatenated[output_bit_size:]  # negation
+    inputsList[0] = input_concatenated[0:output_bit_size]
+    inputsList[1] = 1 - input_concatenated[output_bit_size:]  # negation
     one = np.zeros(shape=inputsList[0].shape, dtype=np.uint8)
     one[-1] += 1
     inputsList[2] = one
@@ -427,10 +430,10 @@ def bit_vector_MODSUB(input, number_of_inputs, output_bit_size, verbosity=False)
         output[pos] = (Sum & 1)
         Sum = (Sum >> 1)
     if DEBUG_MODE:
-        intInputs = [to_integer(inputConcatenated[i * output_bit_size:(i + 1) * output_bit_size])
-                     for i in range(len(inputConcatenated))]
-        X = (intInputs[0] - intInputs[1]) % (2**word_size)
-        assert np.all(X == to_integer(output))
+        int_inputs = [bit_vector_to_integer(input_concatenated[i * output_bit_size:(i + 1) * output_bit_size])
+                     for i in range(len(input_concatenated))]
+        X = (int_inputs[0] - int_inputs[1]) % (2**word_size)
+        assert np.all(X == bit_vector_to_integer(output))
 
     if verbosity:
         print_component_info(input, output, "MODSUB:")
@@ -441,11 +444,11 @@ def bit_vector_MODSUB(input, number_of_inputs, output_bit_size, verbosity=False)
 def bit_vector_idea_modmul(input, number_of_inputs, output_bit_size, modulus, verbosity=False):
     """
     Computes the modular multiplication of 2 binary inputs.
-    
+
     For IDEA-compatible moduli (2^n + 1), automatically applies special mapping:
     - Input value 0 is treated as 2^n before multiplication
     - Output value 2^n is mapped back to 0 after reduction
-    
+
     This implements the multiplicative group structure required by ciphers like IDEA.
 
     INPUT:
@@ -455,9 +458,9 @@ def bit_vector_idea_modmul(input, number_of_inputs, output_bit_size, modulus, ve
     - ``output_bit_size`` -- **integer**; the bit size of the output
     - ``modulus`` -- **integer**; the modulus for the multiplication operation
     - ``verbosity`` -- **boolean**; (default: `False`); set this flag to True to print the input/output
-    
+
     EXAMPLES::
-    
+
         sage: from claasp.cipher_modules.generic_functions_vectorized_bit import bit_vector_idea_modmul
         sage: import numpy as np
         sage: # Standard modular multiplication
@@ -465,7 +468,7 @@ def bit_vector_idea_modmul(input, number_of_inputs, output_bit_size, modulus, ve
         sage: b = np.array([[0], [1], [0], [1]], dtype=np.uint8)  # 5 in 4-bit
         sage: result = bit_vector_idea_modmul([a, b], 2, 4, 16)
         sage: # (3 * 5) % 16 = 15
-        
+
         sage: # IDEA mapping (automatic) with modulus 2^16 + 1 = 65537
         sage: a = np.zeros((16, 1), dtype=np.uint8)  # 0 treated as 2^16
         sage: b = np.zeros((16, 1), dtype=np.uint8)
@@ -474,49 +477,49 @@ def bit_vector_idea_modmul(input, number_of_inputs, output_bit_size, modulus, ve
         sage: # With mapping: (2^16 * 1) % 65537 = 65536 -> maps back to 0
     """
     assert number_of_inputs == 2, "idea_modmul requires exactly 2 inputs"
-    
+
     # Concatenate inputs and split into two operands
     input_concatenated = bit_vector_CONCAT(input)
-    inputs_list = [input_concatenated[0:output_bit_size], 
+    inputs_list = [input_concatenated[0:output_bit_size],
                   input_concatenated[output_bit_size:2*output_bit_size]]
-    
+
     # Convert bit vectors to integers for each sample (column)
     val1 = bit_vector_to_integer(inputs_list[0])
     val2 = bit_vector_to_integer(inputs_list[1])
-    
+
     # Define word_size
     word_size = output_bit_size
     max_value = 2**word_size
-    
+
     # Always apply input mapping: 0 -> 2^n
     a = np.where(val1 == 0, max_value, val1)
     b = np.where(val2 == 0, max_value, val2)
-    
+
     # Perform modular multiplication (IDEA uses 16-bit, fits in uint64)
     a_calc = a.astype(np.uint64)
     b_calc = b.astype(np.uint64)
     mod_calc = np.uint64(modulus)
     result_int = (a_calc * b_calc) % mod_calc
-    
+
     # Always apply reverse mapping: 2^n -> 0
     final_result = np.where(result_int == max_value, 0, result_int).astype(np.uint64)
-    
+
     # Convert integer result back to bit vector
     output = np.zeros(shape=(output_bit_size, inputs_list[0].shape[1]), dtype=np.uint8)
     for i in range(output_bit_size):
         bit_position = output_bit_size - 1 - i
         output[bit_position] = (final_result >> i) & 1
-    
+
     if DEBUG_MODE:
         # Verify the computation with overflow protection
         int_inputs = [bit_vector_to_integer(input_concatenated[i * output_bit_size:(i + 1) * output_bit_size])
                      for i in range(2)]
-        
+
         # Apply same mapping logic
         max_value = 2**word_size
         a_check = np.where(int_inputs[0] == 0, max_value, int_inputs[0])
         b_check = np.where(int_inputs[1] == 0, max_value, int_inputs[1])
-        
+
         # Use object dtype for large word sizes to prevent overflow
         if word_size > 32:
             a_check = a_check.astype(object) if hasattr(a_check, 'astype') else int(a_check)
@@ -524,16 +527,16 @@ def bit_vector_idea_modmul(input, number_of_inputs, output_bit_size, modulus, ve
             X = (a_check * b_check) % modulus
         else:
             X = (a_check * b_check) % modulus
-        
+
         # Always apply reverse mapping
         X = np.where(X == max_value, 0, X)
-        
+
         assert np.all(X == bit_vector_to_integer(output)), \
             f"MODMUL verification failed: expected {X}, got {bit_vector_to_integer(output)}"
-    
+
     if verbosity:
         print_component_info(input, output, "idea_modmul:")
-    
+
     return output
 
 
@@ -548,15 +551,15 @@ def bit_vector_ROTATE(input, rotation_amount, verbosity=False):
         negative for left rotation
     - ``verbosity`` -- **boolean**; (default: `False`); set this flag to True to print the input/output
     """
-    inputConcatenated = bit_vector_CONCAT(input)
-    output = np.roll(inputConcatenated, rotation_amount, axis=0)
+    input_concatenated = bit_vector_CONCAT(input)
+    output = np.roll(input_concatenated, rotation_amount, axis=0)
     if verbosity:
         print("ROTATE:")
         print("  r   = {}".format(rotation_amount))
-        print("Input : ", input)
-        if inputConcatenated is not None:
-            print("Input concatenated : ", inputConcatenated)
-        print("Output : ", output)
+        print(INPUT_LABEL, input)
+        if input_concatenated is not None:
+            print("Input concatenated : ", input_concatenated)
+        print(OUTPUT_LABEL, output)
         print("---")
 
     return output
@@ -572,8 +575,8 @@ def bit_vector_SHIFT(input, shift_amount, verbosity=False):
         negative for left rotation
     - ``verbosity`` -- **boolean**; (default: `False`); set this flag to True to print the input/output
     """
-    inputConcatenated = bit_vector_CONCAT(input)
-    output = np.roll(inputConcatenated, shift_amount, axis=0)
+    input_concatenated = bit_vector_CONCAT(input)
+    output = np.roll(input_concatenated, shift_amount, axis=0)
     if shift_amount < 0:
         output[shift_amount:, :] = 0
     else:
@@ -581,7 +584,7 @@ def bit_vector_SHIFT(input, shift_amount, verbosity=False):
     if verbosity:
         print("ROTATE:")
         print("  r   = {}".format(shift_amount))
-        print(input.transpose())
+        print(input_concatenated.transpose())
         print(output.transpose())
 
     return output
@@ -670,6 +673,36 @@ def bit_vector_mix_column_poly0(input, matrix, verbosity=False):
         print("MIXCOLUMN poly 0:")
         print(input.transpose())
         print(output.transpose())
+        print("---")
+
+    return output
+
+
+def bit_vector_permutation(input, permutation, word_size=1, verbosity=False):
+    """
+    Computes a (word-wise or bitwise) permutation of binary values.
+
+    INPUT:
+
+    - ``input`` -- **np.array(dtype = np.uint8)** A binary numpy matrix with one row per bit, and one column per sample.
+        - ``permutation`` -- **list**; a list of integers representing the permutation mapping.
+            When ``word_size=1``, each entry is a destination bit index for the corresponding source bit.
+            When ``word_size > 1``, each entry is a destination word index.
+    - ``word_size`` -- **integer** (default: ``1``); number of bits per word
+    - ``verbosity`` -- **boolean**; (default: `False`); set this flag to True to print the input/output
+    """
+    input_concatenated = bit_vector_CONCAT(input)
+    output = np.zeros(input_concatenated.shape, dtype=np.uint8)
+    for i, perm_idx in enumerate(permutation):
+        for j in range(word_size):
+            output[perm_idx * word_size + j] = input_concatenated[i * word_size + j]
+
+    if verbosity:
+        print("PERMUTATION:")
+        print("  perm   = {}".format(permutation))
+        print("  word_size = {}".format(word_size))
+        print(INPUT_LABEL, input_concatenated)
+        print(OUTPUT_LABEL, output)
         print("---")
 
     return output

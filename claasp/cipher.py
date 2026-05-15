@@ -224,6 +224,7 @@ class Cipher:
         input_bit_positions,
         output_bit_size,
         permutation_description,
+        word_size=1,
     ):
         return editor.add_permutation_component(
             self,
@@ -231,6 +232,7 @@ class Cipher:
             input_bit_positions,
             output_bit_size,
             permutation_description,
+            word_size,
         )
 
     def add_reverse_component(self, input_id_links, input_bit_positions, output_bit_size):

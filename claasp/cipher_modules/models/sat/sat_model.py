@@ -64,7 +64,7 @@ from sage.sat.solvers.satsolver import SAT
 from claasp.cipher_modules.models.sat import solvers
 from claasp.cipher_modules.models.sat.utils import utils
 from claasp.cipher_modules.models.utils import set_component_solution, convert_solver_solution_to_dictionary
-from claasp.editor import remove_permutations, remove_rotations
+from claasp.editor import is_fixed_rotate_component, replace_bit_reordering_components_as_direct_wiring
 from claasp.name_mappings import (
     SBOX,
     CIPHER_OUTPUT,
@@ -72,6 +72,7 @@ from claasp.name_mappings import (
     INTERMEDIATE_OUTPUT,
     LINEAR_LAYER,
     MIX_COLUMN,
+    PERMUTATION_COMPONENT,
     WORD_OPERATION,
 )
 
@@ -85,14 +86,17 @@ class SatModel:
 
         - ``cipher`` -- **Cipher object**; an instance of the cipher.
         - ``counter`` -- **string** (default: `sequential`)
-        - ``compact`` -- **boolean** (default: False); set to True for using a simplified cipher (it will remove
-          rotations and permutations)
+        - ``compact`` -- **boolean** (default: False); set to True for using a simplified cipher where fixed
+            rotations and permutation-only steps are inlined into downstream wiring
         """
-        # remove rotations and permutations (if any)
+        # inline rotations and permutation-only steps (if any)
         internal_cipher = copy.deepcopy(cipher)
         if compact:
-            internal_cipher = remove_permutations(internal_cipher)
-            internal_cipher = remove_rotations(internal_cipher)
+            internal_cipher = replace_bit_reordering_components_as_direct_wiring(
+                internal_cipher,
+                lambda component: component.type in {PERMUTATION_COMPONENT, LINEAR_LAYER}
+                or is_fixed_rotate_component(component),
+            )
 
         # set the counter to fix the weight
         if counter == "sequential":
@@ -593,7 +597,16 @@ class SatModel:
     def build_generic_sat_model_from_dictionary(self, component_and_model_types):
         self._variables_list = []
         self._model_constraints = []
-        component_types = (CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER, MIX_COLUMN, SBOX, WORD_OPERATION)
+        component_types = (
+            CIPHER_OUTPUT,
+            CONSTANT,
+            INTERMEDIATE_OUTPUT,
+            LINEAR_LAYER,
+            MIX_COLUMN,
+            PERMUTATION_COMPONENT,
+            SBOX,
+            WORD_OPERATION,
+        )
         operation_types = ("AND", "MODADD", "MODSUB", "NOT", "OR", "ROTATE", "SHIFT", "SHIFT_BY_VARIABLE_AMOUNT", "XOR")
 
         for component_and_model_type in component_and_model_types:
@@ -623,13 +636,9 @@ class SatModel:
     @property
     def model_constraints(self):
         """
-        Return the model specified by ``model_type``.
+        Return the generated SAT clauses.
 
-        If the key refers to one of the available solver, Otherwise will raise a KeyError exception.
-
-        INPUT:
-
-        - ``model_type`` -- **string**; the model to retrieve
+        Raise ``ValueError`` if no model has been generated yet.
 
         EXAMPLES::
 
@@ -637,10 +646,44 @@ class SatModel:
             sage: from claasp.cipher_modules.models.sat.sat_model import SatModel
             sage: speck = SpeckBlockCipher(number_of_rounds=4)
             sage: sat = SatModel(speck)
-            sage: sat.model_constraints('xor_differential')
+            sage: sat.model_constraints
             Traceback (most recent call last):
             ...
             ValueError: No model generated
+
+            sage: from claasp.ciphers.single_component_ciphers.sbox_cipher import SboxCipher
+            sage: from claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model import SatXorDifferentialModel
+            sage: sat = SatXorDifferentialModel(SboxCipher())
+            sage: sat.build_xor_differential_trail_model()
+            sage: sat.model_constraints
+            ['plaintext_0 plaintext_1 plaintext_2 plaintext_3',
+            '-plaintext_3 sbox_0_0_3',
+            'plaintext_3 -sbox_0_0_3',
+            '-plaintext_2 sbox_0_0_2',
+            'plaintext_2 -sbox_0_0_2',
+            '-plaintext_1 sbox_0_0_1',
+            'plaintext_1 -sbox_0_0_1',
+            '-plaintext_0 sbox_0_0_0',
+            'plaintext_0 -sbox_0_0_0',
+            '-hw_sbox_0_0_3',
+            '-hw_sbox_0_0_2',
+            '-hw_sbox_0_0_1',
+            '-hw_sbox_0_0_0',
+            'cipher_output_0_1_0 -sbox_0_0_0',
+            'sbox_0_0_0 -cipher_output_0_1_0',
+            'cipher_output_0_1_1 -sbox_0_0_1',
+            'sbox_0_0_1 -cipher_output_0_1_1',
+            'cipher_output_0_1_2 -sbox_0_0_2',
+            'sbox_0_0_2 -cipher_output_0_1_2',
+            'cipher_output_0_1_3 -sbox_0_0_3',
+            'sbox_0_0_3 -cipher_output_0_1_3']
+            
+            sage: from claasp.ciphers.single_component_ciphers.sbox_cipher import SboxCipher
+            sage: from claasp.cipher_modules.models.sat.sat_models.sat_cipher_model import SatCipherModel
+            sage: sat = SatCipherModel(SboxCipher())
+            sage: sat.build_cipher_model()
+            sage: len(sat.model_constraints) > 0
+            True
         """
         if not self._model_constraints:
             raise ValueError("No model generated")

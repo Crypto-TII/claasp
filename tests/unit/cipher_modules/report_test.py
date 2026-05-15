@@ -1,6 +1,8 @@
 import copy
+import io
 import pickle
 from pathlib import Path
+from contextlib import redirect_stdout
 
 from plotly.basedatatypes import BaseFigure
 
@@ -376,3 +378,13 @@ def test_clean_reports_uses_runtime_cwd_default(monkeypatch, tmp_path):
     report.clean_reports()
 
     assert not reports_dir.exists()
+
+
+def test_show_rejects_invalid_hex_word_size():
+    report = Report({'cipher': object(), 'test_name': 'dummy_trail'})
+    stdout = io.StringIO()
+
+    with redirect_stdout(stdout):
+        report.show(show_as_hex=True, word_size=1)
+
+    assert 'Incorrect word_size: if show_as_hex=True, word_size has to be a multiple of 4' in stdout.getvalue()

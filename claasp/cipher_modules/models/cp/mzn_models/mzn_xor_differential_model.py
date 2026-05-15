@@ -28,6 +28,7 @@ from claasp.name_mappings import (
     CIPHER_OUTPUT,
     SBOX,
     MIX_COLUMN,
+    PERMUTATION_COMPONENT,
     WORD_OPERATION,
     XOR_DIFFERENTIAL,
     LINEAR_LAYER,
@@ -145,7 +146,16 @@ class MznXorDifferentialModel(MznModel):
         if fixed_variables == []:
             fixed_variables = get_single_key_scenario_format_for_fixed_values(self._cipher)
         constraints = self.fix_variables_value_constraints(fixed_variables)
-        component_types = (CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, LINEAR_LAYER, SBOX, MIX_COLUMN, WORD_OPERATION)
+        component_types = (
+            CONSTANT,
+            INTERMEDIATE_OUTPUT,
+            CIPHER_OUTPUT,
+            LINEAR_LAYER,
+            PERMUTATION_COMPONENT,
+            SBOX,
+            MIX_COLUMN,
+            WORD_OPERATION,
+        )
         operation_types = ("AND", "MODADD", "MODSUB", "NOT", "OR", "ROTATE", "SHIFT", "XOR")
         self._model_constraints = constraints
 

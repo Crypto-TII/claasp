@@ -21,7 +21,15 @@ from copy import deepcopy
 from claasp.input import Input
 from claasp.component import Component
 from claasp.cipher_modules.models.cp.mzn_model import MznModel, SOLVE_SATISFY
-from claasp.name_mappings import CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, SBOX, MIX_COLUMN, WORD_OPERATION
+from claasp.name_mappings import (
+    CONSTANT,
+    INTERMEDIATE_OUTPUT,
+    CIPHER_OUTPUT,
+    SBOX,
+    MIX_COLUMN,
+    PERMUTATION_COMPONENT,
+    WORD_OPERATION,
+)
 
 
 def build_xor_truncated_table(numadd):
@@ -139,7 +147,15 @@ class MznXorDifferentialNumberOfActiveSboxesModel(MznModel):
         self._variables_declarations.extend(self.input_xor_differential_first_step_constraints(possible_sboxes))
 
         for component in self._cipher.get_all_components():
-            component_types = [CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, SBOX, MIX_COLUMN, WORD_OPERATION]
+            component_types = [
+                CONSTANT,
+                INTERMEDIATE_OUTPUT,
+                CIPHER_OUTPUT,
+                SBOX,
+                MIX_COLUMN,
+                PERMUTATION_COMPONENT,
+                WORD_OPERATION,
+            ]
             operation = component.description[0]
             operation_types = ["ROTATE", "SHIFT", "XOR", "NOT"]
             if component.type not in component_types or (
