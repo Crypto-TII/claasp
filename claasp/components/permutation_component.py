@@ -19,7 +19,7 @@
 from claasp.input import Input
 from claasp.component import Component
 from claasp.cipher_modules.models.smt.utils import utils as smt_utils
-from claasp.cipher_modules.models.sat.utils import utils as sat_utils
+from claasp.cipher_modules.models.sat.utils import constants, utils as sat_utils
 from claasp.name_mappings import PERMUTATION_COMPONENT
 from claasp.utils.utils import coerce_exact_int
 
@@ -221,11 +221,77 @@ class Permutation(Component):
 
         return output_bit_ids, constraints
 
+    def cms_constraints(self):
+        return self.sat_constraints()
+
+    def cms_xor_differential_propagation_constraints(self, model=None):
+        return self.cms_constraints()
+
+    def cms_xor_linear_mask_propagation_constraints(self, model=None):
+        return self.cms_constraints()
+
+    def sat_bitwise_deterministic_truncated_xor_differential_constraints(self):
+        """
+        Return a list of variables and a list of clauses for PERMUTATION in SAT bitwise deterministic
+        truncated XOR differential model.
+
+        A permutation copies each input bit to the corresponding output bit; the 2-bit truncated
+        encoding is therefore preserved verbatim.
+
+        INPUT:
+
+        - None
+
+        EXAMPLES::
+
+            sage: from claasp.components.permutation_component import Permutation
+            sage: component = Permutation(0, 0, ['input'], [[0, 1, 2, 3]], 4, [1, 3, 2, 0])
+            sage: variables, constraints = component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
+            sage: variables
+            ['permutation_0_0_0_0',
+             'permutation_0_0_1_0',
+             'permutation_0_0_2_0',
+             'permutation_0_0_3_0',
+             'permutation_0_0_0_1',
+             'permutation_0_0_1_1',
+             'permutation_0_0_2_1',
+             'permutation_0_0_3_1']
+            sage: constraints
+            ['permutation_0_0_0_0 -input_3_0',
+             'input_3_0 -permutation_0_0_0_0',
+             'permutation_0_0_0_1 -input_3_1',
+             'input_3_1 -permutation_0_0_0_1',
+             'permutation_0_0_1_0 -input_0_0',
+             'input_0_0 -permutation_0_0_1_0',
+             'permutation_0_0_1_1 -input_0_1',
+             'input_0_1 -permutation_0_0_1_1',
+             'permutation_0_0_2_0 -input_2_0',
+             'input_2_0 -permutation_0_0_2_0',
+             'permutation_0_0_2_1 -input_2_1',
+             'input_2_1 -permutation_0_0_2_1',
+             'permutation_0_0_3_0 -input_1_0',
+             'input_1_0 -permutation_0_0_3_0',
+             'permutation_0_0_3_1 -input_1_1',
+             'input_1_1 -permutation_0_0_3_1']
+        """
+        in_ids_0, in_ids_1 = self._generate_input_double_ids()
+        _, out_ids_0, out_ids_1 = self._generate_output_double_ids()
+        bit_perm = self._bit_perm()
+        constraints = []
+        for i in range(len(out_ids_0)):
+            constraints.extend(sat_utils.cnf_equivalent([out_ids_0[i], in_ids_0[bit_perm[i]]]))
+            constraints.extend(sat_utils.cnf_equivalent([out_ids_1[i], in_ids_1[bit_perm[i]]]))
+
+        return out_ids_0 + out_ids_1, constraints
+
     def sat_xor_differential_propagation_constraints(self, model=None):
         return self.sat_constraints()
 
     def sat_xor_linear_mask_propagation_constraints(self, model=None):
         return self.sat_constraints()
+
+    def sat_semi_deterministic_truncated_xor_differential_constraints(self):
+        return self.sat_bitwise_deterministic_truncated_xor_differential_constraints()
 
     def smt_constraints(self):
         """
@@ -261,6 +327,70 @@ class Permutation(Component):
 
         return output_bit_ids, constraints
 
+    def smt_xor_differential_propagation_constraints(self, model):
+        """
+        Return a variable list and SMT-LIB list asserts representing PERMUTATION for SMT XOR DIFFERENTIAL model.
+
+        Delegates to :meth:`smt_constraints` since permutation propagates differences as plain
+        bit equalities.
+
+        INPUT:
+
+        - ``model`` -- **model object**; a model instance (unused, kept for API parity)
+
+        EXAMPLES::
+
+            sage: from claasp.components.permutation_component import Permutation
+            sage: component = Permutation(0, 0, ['input'], [[0, 1, 2, 3]], 4, [1, 3, 2, 0])
+            sage: component.smt_xor_differential_propagation_constraints(None) == component.smt_constraints()
+            True
+        """
+        return self.smt_constraints()
+
+    def smt_xor_linear_mask_propagation_constraints(self, model=None):
+        """
+        Return a variable list and SMT-LIB list asserts representing PERMUTATION for SMT XOR LINEAR model.
+
+        For a permutation, linear mask propagation satisfies
+        ``output_mask[i] = input_mask[bit_perm[i]]`` (the mask at output position ``i`` equals the
+        mask at the source input position).  This uses component-local ``_i`` / ``_o`` variable names
+        as expected by the SMT XOR linear model.
+
+        INPUT:
+
+        - ``model`` -- **model object** (default: `None`); unused, kept for API parity
+
+        EXAMPLES::
+
+            sage: from claasp.components.permutation_component import Permutation
+            sage: component = Permutation(0, 0, ['input'], [[0, 1, 2, 3]], 4, [1, 3, 2, 0])
+            sage: variables, constraints = component.smt_xor_linear_mask_propagation_constraints()
+            sage: variables
+            ['permutation_0_0_0_i',
+             'permutation_0_0_1_i',
+             'permutation_0_0_2_i',
+             'permutation_0_0_3_i',
+             'permutation_0_0_0_o',
+             'permutation_0_0_1_o',
+             'permutation_0_0_2_o',
+             'permutation_0_0_3_o']
+            sage: constraints
+            ['(assert (= permutation_0_0_0_o permutation_0_0_3_i))',
+             '(assert (= permutation_0_0_1_o permutation_0_0_0_i))',
+             '(assert (= permutation_0_0_2_o permutation_0_0_2_i))',
+             '(assert (= permutation_0_0_3_o permutation_0_0_1_i))']
+        """
+        input_bit_len, input_bit_ids = self._generate_component_input_ids()
+        out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
+        output_bit_len, output_bit_ids = self._generate_output_ids(suffix=out_suffix)
+        bit_perm = self._bit_perm()
+        constraints = []
+        for i in range(output_bit_len):
+            equation = smt_utils.smt_equivalent([output_bit_ids[i], input_bit_ids[bit_perm[i]]])
+            constraints.append(smt_utils.smt_assert(equation))
+
+        return input_bit_ids + output_bit_ids, constraints
+
     def cp_constraints(self):
         """
         Return lists of declarations and constraints for PERMUTATION component for CP CIPHER model.
@@ -290,6 +420,164 @@ class Permutation(Component):
         cp_declarations = []
         cp_constraints = [
             f"constraint {self.id}[{i}] = {all_inputs[bit_perm[i]]};"
+            for i in range(self.output_bit_size)
+        ]
+
+        return cp_declarations, cp_constraints
+
+    def cp_deterministic_truncated_xor_differential_trail_constraints(self):
+        """
+        Return lists of declarations and constraints for PERMUTATION in CP deterministic truncated xor differential model.
+
+        A permutation propagates differences deterministically: each output bit copies its
+        corresponding input bit, so the truncated-model value (0, 1, or 2) is preserved.
+
+        INPUT:
+
+        - None
+
+        EXAMPLES::
+
+            sage: from claasp.components.permutation_component import Permutation
+            sage: component = Permutation(0, 0, ['input'], [[0, 1, 2, 3]], 4, [1, 3, 2, 0])
+            sage: declarations, constraints = component.cp_deterministic_truncated_xor_differential_trail_constraints()
+            sage: declarations
+            []
+            sage: constraints
+            ['constraint if ((input[3] < 2)) then permutation_0_0[0] = (input[3]) mod 2 else permutation_0_0[0] = 2 endif;',
+             'constraint if ((input[0] < 2)) then permutation_0_0[1] = (input[0]) mod 2 else permutation_0_0[1] = 2 endif;',
+             'constraint if ((input[2] < 2)) then permutation_0_0[2] = (input[2]) mod 2 else permutation_0_0[2] = 2 endif;',
+             'constraint if ((input[1] < 2)) then permutation_0_0[3] = (input[1]) mod 2 else permutation_0_0[3] = 2 endif;']
+        """
+        all_inputs = []
+        for id_link, bit_positions in zip(self.input_id_links, self.input_bit_positions):
+            all_inputs.extend([f"{id_link}[{position}]" for position in bit_positions])
+
+        bit_perm = self._bit_perm()
+        cp_declarations = []
+        cp_constraints = [
+            f"constraint if (({all_inputs[bit_perm[i]]} < 2)) then "
+            f"{self.id}[{i}] = ({all_inputs[bit_perm[i]]}) mod 2 "
+            f"else {self.id}[{i}] = 2 endif;"
+            for i in range(self.output_bit_size)
+        ]
+        return cp_declarations, cp_constraints
+
+    def cp_deterministic_truncated_xor_differential_constraints(self):
+        return self.cp_deterministic_truncated_xor_differential_trail_constraints()
+
+    def cp_semi_deterministic_truncated_xor_differential_constraints(self):
+        """
+        Return lists of declarations and constraints for PERMUTATION in CP semi-deterministic
+        truncated XOR differential model.
+
+        Delegates to :meth:`cp_deterministic_truncated_xor_differential_trail_constraints`
+        (same semantics as LinearLayer).
+
+        INPUT:
+
+        - None
+
+        EXAMPLES::
+
+            sage: from claasp.components.permutation_component import Permutation
+            sage: component = Permutation(0, 0, ['input'], [[0, 1, 2, 3]], 4, [1, 3, 2, 0])
+            sage: component.cp_semi_deterministic_truncated_xor_differential_constraints() == \
+            ...       component.cp_deterministic_truncated_xor_differential_trail_constraints()
+            True
+        """
+        return self.cp_deterministic_truncated_xor_differential_trail_constraints()
+
+    def cp_wordwise_deterministic_truncated_xor_differential_constraints(self, model):
+        """
+        Return lists of declarations and constraints for PERMUTATION in CP wordwise deterministic
+        truncated XOR differential model.
+
+        Each output word copies the active/value status of the corresponding input word according to
+        the permutation.  The permutation must be word-aligned (all source bits of an output word
+        must come from the same input word); otherwise a :exc:`ValueError` is raised.
+
+        INPUT:
+
+        - ``model`` -- **model object**; a model instance with a ``word_size`` attribute
+
+        EXAMPLES::
+
+            sage: from claasp.components.permutation_component import Permutation
+            sage: DummyModel = type('DummyModel', (), {'word_size': 4})
+            sage: component = Permutation(0, 0, ['input'], [[0, 1, 2, 3, 4, 5, 6, 7]], 8, [1, 0], word_size=4)
+            sage: declarations, constraints = component.cp_wordwise_deterministic_truncated_xor_differential_constraints(DummyModel())
+            sage: declarations
+            []
+            sage: constraints
+            ['constraint if ((input_active[1] == 0)) then permutation_0_0_active[0] = 0 /\\ permutation_0_0_value[0] = 0 elsepermutation_0_0_active[0] = 3 /\\ permutation_0_0_value[0] = -2 endif;',
+             'constraint if ((input_active[0] == 0)) then permutation_0_0_active[1] = 0 /\\ permutation_0_0_value[1] = 0 elsepermutation_0_0_active[1] = 3 /\\ permutation_0_0_value[1] = -2 endif;']
+        """
+        word_size = model.word_size
+        output_num_words = self.output_bit_size // word_size
+
+        all_inputs_active = []
+        for id_link, bit_positions in zip(self.input_id_links, self.input_bit_positions):
+            all_inputs_active.extend([
+                f"{id_link}_active[{bit_positions[j * word_size] // word_size}]"
+                for j in range(len(bit_positions) // word_size)
+            ])
+
+        bit_perm = self._bit_perm()
+        cp_constraints = []
+        for out_word_idx in range(output_num_words):
+            output_bit_start = out_word_idx * word_size
+            input_bit_indexes = [bit_perm[output_bit_start + k] for k in range(word_size)]
+            input_word_idxs = {b // word_size for b in input_bit_indexes}
+            if len(input_word_idxs) != 1:
+                raise ValueError(
+                    f"{self.id}: permutation mixes bits across model words "
+                    f"(model.word_size={word_size}); unsupported in wordwise model"
+                )
+            in_word_idx = input_word_idxs.pop()
+            input_active = all_inputs_active[in_word_idx]
+            cp_constraint = (
+                f"constraint if (({input_active} == 0)) then "
+                f"{self.id}_active[{out_word_idx}] = 0 /\\ {self.id}_value[{out_word_idx}] = 0 else"
+                f"{self.id}_active[{out_word_idx}] = 3 /\\ {self.id}_value[{out_word_idx}] = -2 endif;"
+            )
+            cp_constraints.append(cp_constraint)
+
+        return [], cp_constraints
+
+    def cp_xor_differential_propagation_constraints(self, model):
+        # TODO: keep the model argument for API parity with LinearLayer;
+        # remove this unused parameter in a later cleanup PR after harmonizing call sites.
+        return self.cp_constraints()
+
+    def cp_xor_linear_mask_propagation_constraints(self, model=None):
+        """
+        Return declarations and constraints for PERMUTATION in CP xor linear model.
+
+        INPUT:
+
+        - ``model`` -- **model object** (default: `None`); unused, kept for API compatibility
+
+        EXAMPLES::
+
+            sage: from claasp.components.permutation_component import Permutation
+            sage: component = Permutation(0, 0, ['input'], [[0, 1, 2, 3]], 4, [1, 3, 2, 0])
+            sage: declarations, constraints = component.cp_xor_linear_mask_propagation_constraints()
+            sage: declarations
+            ['array[0..3] of var 0..1:permutation_0_0_i;', 'array[0..3] of var 0..1:permutation_0_0_o;']
+            sage: constraints
+            ['constraint permutation_0_0_o[0]=permutation_0_0_i[3];',
+             'constraint permutation_0_0_o[1]=permutation_0_0_i[0];',
+             'constraint permutation_0_0_o[2]=permutation_0_0_i[2];',
+             'constraint permutation_0_0_o[3]=permutation_0_0_i[1];']
+        """
+        cp_declarations = [
+            f"array[0..{self.input_bit_size - 1}] of var 0..1:{self.id}_i;",
+            f"array[0..{self.output_bit_size - 1}] of var 0..1:{self.id}_o;",
+        ]
+        bit_perm = self._bit_perm()
+        cp_constraints = [
+            f"constraint {self.id}_o[{i}]={self.id}_i[{bit_perm[i]}];"
             for i in range(self.output_bit_size)
         ]
 
@@ -482,6 +770,55 @@ class Permutation(Component):
                 constraints.append(
                     x[output_full_tuple[output_bit_offset + 2]] == x[input_full_tuple[input_bit_offset + 2]]
                 )
+
+        return variables, constraints
+
+    def milp_bitwise_deterministic_truncated_xor_differential_binary_constraints(self, model):
+        """
+        Return a list of MILP variables and constraints for PERMUTATION in the bitwise
+        deterministic truncated XOR differential model (binary encoding).
+
+        Each output class variable equals the corresponding permuted input class variable.
+        Binary linking constraints are added for all input and output variables.
+
+        INPUT:
+
+        - ``model`` -- **model object**; a model instance
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.single_component_ciphers.permutation_cipher import PermutationCipher
+            sage: from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import MilpBitwiseDeterministicTruncatedXorDifferentialModel
+            sage: cipher = PermutationCipher(bit_size=4, permutation_description=[1, 3, 2, 0])
+            sage: component = cipher.component_from_id('permutation_0_0')
+            sage: milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(cipher)
+            sage: milp.init_model_in_sage_milp_class()
+            sage: variables, constraints = component.milp_bitwise_deterministic_truncated_xor_differential_binary_constraints(milp)
+            sage: variables
+            [('x_class[plaintext_0]', x_0),
+             ('x_class[plaintext_1]', x_1),
+             ('x_class[plaintext_2]', x_2),
+             ('x_class[plaintext_3]', x_3),
+             ('x_class[permutation_0_0_0]', x_4),
+             ('x_class[permutation_0_0_1]', x_5),
+             ('x_class[permutation_0_0_2]', x_6),
+             ('x_class[permutation_0_0_3]', x_7)]
+        """
+        x_class = model.trunc_binvar
+        x = model.binary_variable
+
+        input_ids, output_ids = self._get_input_output_variables()
+        variables = [(f"x_class[{var}]", x_class[var]) for var in input_ids + output_ids]
+
+        input_id_tuples, output_id_tuples = self._get_input_output_variables_tuples()
+        linking_constraints = model.link_binary_tuples_to_integer_variables(
+            input_id_tuples + output_id_tuples, input_ids + output_ids
+        )
+        constraints = list(linking_constraints)
+
+        bit_perm = self._bit_perm()
+        for i, output_id in enumerate(output_ids):
+            constraints.append(x_class[output_id] == x_class[input_ids[bit_perm[i]]])
 
         return variables, constraints
 
