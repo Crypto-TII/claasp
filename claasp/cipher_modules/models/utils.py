@@ -34,6 +34,7 @@ from claasp.name_mappings import (
     INTERMEDIATE_OUTPUT,
     LINEAR_LAYER,
     MIX_COLUMN,
+    PERMUTATION_COMPONENT,
     SBOX,
     WORD_OPERATION,
 )
@@ -58,7 +59,7 @@ def add_arcs(arcs, component, curr_input_bit_ids, input_bit_size, intermediate_o
 
 
 def check_if_implemented_component(component):
-    component_types = (CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, LINEAR_LAYER, SBOX, MIX_COLUMN, WORD_OPERATION)
+    component_types = (CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, LINEAR_LAYER, PERMUTATION_COMPONENT, SBOX, MIX_COLUMN, WORD_OPERATION)
     operation = component.description[0]
     operation_types = ("AND", "OR", "MODADD", "MODSUB", "NOT", "ROTATE", "SHIFT", "XOR")
     if component.type not in component_types or (component.type == WORD_OPERATION and operation not in operation_types):
@@ -1405,16 +1406,16 @@ def _sample_truncated_difference_from_string(pattern, num_samples, state_size, r
     """
     Build a (state_size // 8, num_samples) uint8 matrix with per-sample input differences
     that satisfy the truncated pattern.
-    
+
     Pattern is a string of length = state_size over {'0','1','2','?'}:
       - '0' or '1': fixed bit value
       - '2' or '?': unconstrained (random)
-    
+
     Bit index 0 corresponds to the MSB of the state (MSB-first ordering).
-    
+
     Bits are packed into bytes using big-endian order, i.e., index 0 becomes
     the MSB of byte 0.
-    
+
     Returns:
         A (state_size // 8, num_samples) array of dtype uint8.
     """
@@ -1439,7 +1440,7 @@ def _sample_truncated_difference_from_string(pattern, num_samples, state_size, r
 
     # Pack bit rows into bytes (big-endian: position 0 = MSB of byte 0)
     input_diff_samples = np.packbits(bits, axis=1, bitorder='big')
-    
+
     return input_diff_samples.T
 
 
