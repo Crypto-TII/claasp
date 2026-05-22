@@ -16,8 +16,8 @@
 # ****************************************************************************
 
 
-from sage.structure.sequence import Sequence
 from sage.rings.polynomial.pbori.pbori import BooleanPolynomialRing
+from sage.structure.sequence import Sequence
 
 
 class AlgebraicModel:

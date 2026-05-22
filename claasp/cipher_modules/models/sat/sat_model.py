@@ -63,16 +63,16 @@ from sage.sat.solvers.satsolver import SAT
 
 from claasp.cipher_modules.models.sat import solvers
 from claasp.cipher_modules.models.sat.utils import utils
-from claasp.cipher_modules.models.utils import set_component_solution, convert_solver_solution_to_dictionary
+from claasp.cipher_modules.models.utils import convert_solver_solution_to_dictionary, set_component_solution
 from claasp.editor import is_fixed_rotate_component, replace_bit_reordering_components_as_direct_wiring
 from claasp.name_mappings import (
-    SBOX,
     CIPHER_OUTPUT,
     CONSTANT,
     INTERMEDIATE_OUTPUT,
     LINEAR_LAYER,
     MIX_COLUMN,
     PERMUTATION_COMPONENT,
+    SBOX,
     WORD_OPERATION,
 )
 

@@ -1,6 +1,6 @@
 try:
-    from sage.all import *
     import apport_python_hook
+    from sage.all import *
 except ImportError:
     pass
 else:

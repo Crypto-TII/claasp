@@ -15,15 +15,24 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
+import re
+import shutil
+import subprocess
+import tempfile
+from itertools import combinations, product
+from math import log2, pi
+from pathlib import Path
+
+import matplotlib.pyplot as plt
 from sage.crypto.sbox import SBox
+from sage.matrix.constructor import Matrix, matrix
 from sage.matrix.special import identity_matrix
-from sage.matrix.constructor import matrix, Matrix
-from sage.rings.polynomial.pbori.pbori import BooleanPolynomialRing
 from sage.rings.finite_rings.finite_field_constructor import FiniteField as GF
+from sage.rings.polynomial.pbori.pbori import BooleanPolynomialRing
 from sage.rings.polynomial.polynomial_ring_constructor import PolynomialRing
 
+from claasp.cipher_modules.generic_functions import ROTATE, SHIFT, mix_column_generalized
 from claasp.component import linear_layer_to_binary_matrix
-from claasp.cipher_modules.generic_functions import SHIFT, ROTATE, mix_column_generalized
 from claasp.name_mappings import (
     CIPHER_OUTPUT,
     CONSTANT,
@@ -33,16 +42,6 @@ from claasp.name_mappings import (
     SBOX,
     WORD_OPERATION,
 )
-
-import matplotlib.pyplot as plt
-from math import pi, log2
-from itertools import combinations, product
-import re
-import shutil
-import subprocess
-import tempfile
-from pathlib import Path
-
 
 BRANCH_NUMBER_NON_EMPTY_MATRIX_MSG = "Branch number requires a non-empty matrix"
 

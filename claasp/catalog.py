@@ -11,14 +11,13 @@ EXAMPLES::
 from __future__ import annotations
 
 import ast
-from functools import lru_cache
 import importlib
 import json
 import re
 import shutil
 from dataclasses import dataclass
+from functools import lru_cache
 from pathlib import Path
-
 
 ABSTRACT_COMPONENT_CLASS_NAMES = frozenset({"MultiInputNonlinearLogicalOperator", "Modular"})
 IO_COMPONENT_CLASS_NAMES = frozenset({"CipherOutput", "IntermediateOutput"})

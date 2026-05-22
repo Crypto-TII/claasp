@@ -1,9 +1,10 @@
-from claasp.components.and_component import And
 from claasp.cipher_modules.models.cp.mzn_model import MznModel
+from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import (
+    MilpBitwiseDeterministicTruncatedXorDifferentialModel,
+)
 from claasp.ciphers.single_component_ciphers.and_cipher import AndCipher
-from claasp.components.and_component import cp_xor_differential_probability_ddt, cp_xor_linear_probability_lat
-from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import \
-    MilpBitwiseDeterministicTruncatedXorDifferentialModel
+from claasp.components.and_component import And, cp_xor_differential_probability_ddt, cp_xor_linear_probability_lat
+
 
 def test_cp_xor_differential_probability_ddt():
     assert cp_xor_differential_probability_ddt(2) == [4, 0, 2, 2, 2, 2, 2, 2]

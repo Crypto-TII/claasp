@@ -7,6 +7,7 @@ from sage.rings.polynomial.polynomial_ring_constructor import PolynomialRing
 from claasp.cipher_modules.component_analysis_tests import (
     binary_matrix_of_linear_component,
     get_inverse_matrix_in_integer_representation,
+    int_to_poly,
 )
 from claasp.cipher_modules.graph_generator import create_networkx_graph_from_input_ids
 from claasp.component import Component
@@ -17,7 +18,6 @@ from claasp.components import (
     modsub_component,
 )
 from claasp.input import Input
-from claasp.cipher_modules.component_analysis_tests import int_to_poly
 from claasp.name_mappings import (
     CIPHER_INPUT,
     CIPHER_OUTPUT,

@@ -15,29 +15,30 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-import re
 import json
 import math
 import os
+import re
 from concurrent.futures import ProcessPoolExecutor
 from copy import deepcopy
 
 import numpy as np
 
 from claasp.name_mappings import (
-    CONSTANT,
     CIPHER_OUTPUT,
+    CONSTANT,
+    INPUT_KEY,
+    INPUT_MESSAGE,
+    INPUT_PLAINTEXT,
+    INPUT_STATE,
     INTERMEDIATE_OUTPUT,
-    WORD_OPERATION,
     LINEAR_LAYER,
+    MIX_COLUMN,
     PERMUTATION_COMPONENT,
     SBOX,
-    MIX_COLUMN,
-    INPUT_KEY,
-    INPUT_PLAINTEXT,
-    INPUT_MESSAGE,
-    INPUT_STATE,
+    WORD_OPERATION,
 )
+
 
 def hex_to_bitlist(hex_str):
     if not hex_str.startswith(("0x", "0X")):
@@ -1405,16 +1406,16 @@ def _sample_truncated_difference_from_string(pattern, num_samples, state_size, r
     """
     Build a (state_size // 8, num_samples) uint8 matrix with per-sample input differences
     that satisfy the truncated pattern.
-    
+
     Pattern is a string of length = state_size over {'0','1','2','?'}:
       - '0' or '1': fixed bit value
       - '2' or '?': unconstrained (random)
-    
+
     Bit index 0 corresponds to the MSB of the state (MSB-first ordering).
-    
+
     Bits are packed into bytes using big-endian order, i.e., index 0 becomes
     the MSB of byte 0.
-    
+
     Returns:
         A (state_size // 8, num_samples) array of dtype uint8.
     """
@@ -1439,7 +1440,7 @@ def _sample_truncated_difference_from_string(pattern, num_samples, state_size, r
 
     # Pack bit rows into bytes (big-endian: position 0 = MSB of byte 0)
     input_diff_samples = np.packbits(bits, axis=1, bitorder='big')
-    
+
     return input_diff_samples.T
 
 

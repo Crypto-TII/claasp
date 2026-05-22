@@ -1,14 +1,14 @@
 import pytest
 
-from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
-from claasp.ciphers.stream_ciphers.trivium_stream_cipher import TriviumStreamCipher
-from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-from claasp.ciphers.permutations.gimli_permutation import GimliPermutation
-from claasp.ciphers.permutations.ascon_permutation import AsconPermutation
-from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
-from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import *
-from claasp.name_mappings import BLOCK_CIPHER
 from claasp.cipher import Cipher
+from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import *
+from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
+from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+from claasp.ciphers.permutations.ascon_permutation import AsconPermutation
+from claasp.ciphers.permutations.gimli_permutation import GimliPermutation
+from claasp.ciphers.stream_ciphers.trivium_stream_cipher import TriviumStreamCipher
+from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
+from claasp.name_mappings import BLOCK_CIPHER
 
 """
 

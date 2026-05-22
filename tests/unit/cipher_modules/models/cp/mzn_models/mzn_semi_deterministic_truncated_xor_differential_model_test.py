@@ -1,23 +1,24 @@
 import pytest
+from minizinc import Instance, Model, Solver
 
+from claasp.cipher_modules.models.cp.minizinc_utils.usefulfunctions import MINIZINC_USEFUL_FUNCTIONS
 from claasp.cipher_modules.models.cp.mzn_models.mzn_semi_deterministic_truncated_xor_differential_model import (
     MznSemiDeterministicTruncatedXorDifferentialModel,
 )
-
-
-from claasp.cipher_modules.models.cp.solvers import CPSAT
-from claasp.cipher_modules.models.cp.solvers import CHUFFED
-from claasp.cipher_modules.models.utils import differential_truncated_checker_permutation_input_and_output_truncated, integer_to_bit_list, set_fixed_variables
-from claasp.cipher_modules.models.cp.minizinc_utils.usefulfunctions import MINIZINC_USEFUL_FUNCTIONS
+from claasp.cipher_modules.models.cp.solvers import CHUFFED, CPSAT
+from claasp.cipher_modules.models.utils import (
+    differential_truncated_checker_permutation_input_and_output_truncated,
+    integer_to_bit_list,
+    set_fixed_variables,
+)
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.ciphers.permutations.chacha_permutation import ROUND_MODE_HALF, ChachaPermutation
 from claasp.name_mappings import (
     INPUT_KEY,
     INPUT_PLAINTEXT,
-    SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL_OPTIMAL_SOLUTION,
     SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL_ONE_SOLUTION,
+    SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL_OPTIMAL_SOLUTION,
 )
-from minizinc import Model, Solver, Instance
 
 
 def test_build_semi_deterministic_truncated_xor_differential_trail_model():
@@ -113,7 +114,6 @@ constraint counter_based_modadd_semideterministic(a, b, c, delta_carry, costs, 3
 
 def test_modular_component_semideterministic_probability_sample():
     from claasp.components.modular_component import Modular
-    from claasp.name_mappings import WORD_OPERATION
 
     comp = Modular(
         current_round_number=0,

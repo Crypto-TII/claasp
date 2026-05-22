@@ -16,12 +16,12 @@
 # ****************************************************************************
 
 from sage.modules.free_module_element import vector
-from sage.rings.polynomial.polynomial_ring_constructor import PolynomialRing
 from sage.rings.finite_rings.finite_field_constructor import FiniteField as GF
+from sage.rings.polynomial.polynomial_ring_constructor import PolynomialRing
 
-from claasp.input import Input
-from claasp.component import Component
 from claasp.cipher_modules.generic_functions import _bits_to_words_array
+from claasp.component import Component
+from claasp.input import Input
 
 
 def _get_polynomial_from_binary_polynomial_index_list(polynomial_index_list, R):

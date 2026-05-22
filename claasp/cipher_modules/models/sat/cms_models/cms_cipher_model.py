@@ -42,8 +42,8 @@ For any further information, visit `CryptoMiniSat - XOR clauses
 """
 
 from claasp.cipher_modules.models.sat.sat_model import SatModel
-from claasp.cipher_modules.models.sat.utils import utils
 from claasp.cipher_modules.models.sat.sat_models.sat_cipher_model import SatCipherModel
+from claasp.cipher_modules.models.sat.utils import utils
 from claasp.name_mappings import (
     CIPHER_OUTPUT,
     CONSTANT,

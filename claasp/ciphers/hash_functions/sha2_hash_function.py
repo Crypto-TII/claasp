@@ -27,9 +27,8 @@ the input.
 """
 
 from claasp.cipher import Cipher
-from claasp.name_mappings import HASH_FUNCTION, INPUT_MESSAGE
 from claasp.DTOs.component_state import ComponentState
-
+from claasp.name_mappings import HASH_FUNCTION, INPUT_MESSAGE
 
 PARAMETERS_CONFIGURATION_LIST = [
     {"output_bit_size": 256, "number_of_rounds": 64},

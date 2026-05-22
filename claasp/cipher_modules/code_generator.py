@@ -24,9 +24,19 @@ from subprocess import call
 import claasp
 from claasp.cipher_modules.generic_functions_vectorized_byte import get_number_of_bytes_needed_for_bit_size
 from claasp.component import free_input
-from claasp.name_mappings import (SBOX, LINEAR_LAYER, MIX_COLUMN, WORD_OPERATION, CONSTANT,
-                                  PADDING, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT,
-                                  FSR, CIPHER_INVERSE_SUFFIX, PERMUTATION_COMPONENT)
+from claasp.name_mappings import (
+    CIPHER_INVERSE_SUFFIX,
+    CIPHER_OUTPUT,
+    CONSTANT,
+    FSR,
+    INTERMEDIATE_OUTPUT,
+    LINEAR_LAYER,
+    MIX_COLUMN,
+    PADDING,
+    PERMUTATION_COMPONENT,
+    SBOX,
+    WORD_OPERATION,
+)
 
 tii_path = inspect.getfile(claasp)
 tii_dir_path = os.path.dirname(tii_path)

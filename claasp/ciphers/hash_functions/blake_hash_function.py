@@ -21,7 +21,6 @@ from math import sqrt
 from claasp.cipher import Cipher
 from claasp.name_mappings import HASH_FUNCTION, INPUT_MESSAGE, INPUT_STATE
 
-
 PARAMETERS_CONFIGURATION_LIST = [
     {"block_bit_size": 512, "state_bit_size": 512, "number_of_rounds": 28},
     {"block_bit_size": 1024, "state_bit_size": 1024, "number_of_rounds": 32, "word_size": 64},

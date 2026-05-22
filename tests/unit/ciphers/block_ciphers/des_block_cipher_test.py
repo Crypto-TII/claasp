@@ -2,7 +2,6 @@ from claasp.ciphers.block_ciphers.des_block_cipher import DESBlockCipher
 
 
 def test_des_block_cipher():
-    import numpy as np
     des = DESBlockCipher()
     assert des.type == 'block_cipher'
     assert des.family_name == 'des_block_cipher'

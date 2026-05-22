@@ -18,8 +18,8 @@
 import time
 
 from claasp.cipher_modules.models.smt import solvers
-from claasp.cipher_modules.models.smt.utils import constants, utils
 from claasp.cipher_modules.models.smt.smt_model import SmtModel
+from claasp.cipher_modules.models.smt.utils import constants, utils
 from claasp.cipher_modules.models.smt.utils.constants import INPUT_BIT_ID_SUFFIX, OUTPUT_BIT_ID_SUFFIX
 from claasp.cipher_modules.models.utils import (
     get_bit_bindings,

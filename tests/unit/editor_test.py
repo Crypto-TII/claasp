@@ -7,7 +7,11 @@ from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.ciphers.block_ciphers.ublock_block_cipher import UblockBlockCipher
 from claasp.ciphers.single_component_ciphers.permutation_cipher import PermutationCipher
-from claasp.editor import get_component_reordering, is_fixed_rotate_component, replace_bit_reordering_components_as_direct_wiring
+from claasp.editor import (
+    get_component_reordering,
+    is_fixed_rotate_component,
+    replace_bit_reordering_components_as_direct_wiring,
+)
 from claasp.name_mappings import LINEAR_LAYER, PERMUTATION, PERMUTATION_COMPONENT
 
 

@@ -16,20 +16,21 @@
 # ****************************************************************************
 
 
-from claasp.input import Input
-from claasp.component import Component
-from claasp.cipher_modules.models.smt.utils import utils as smt_utils
-from claasp.cipher_modules.models.sat.utils import constants, utils as sat_utils
 from claasp.cipher_modules.models.milp.utils import utils as milp_utils
+from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_wordwise_truncated_xor_with_n_input_bits import (
+    output_dictionary_that_contains_wordwise_truncated_xor_inequalities,
+    update_dictionary_that_contains_wordwise_truncated_xor_inequalities_between_n_inputs,
+)
 from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_xor_with_n_input_bits import (
     output_dictionary_that_contains_xor_inequalities,
     update_dictionary_that_contains_xor_inequalities_between_n_input_bits,
 )
-from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_wordwise_truncated_xor_with_n_input_bits import (
-    update_dictionary_that_contains_wordwise_truncated_xor_inequalities_between_n_inputs,
-    output_dictionary_that_contains_wordwise_truncated_xor_inequalities,
-)
 from claasp.cipher_modules.models.milp.utils.utils import espresso_pos_to_constraints
+from claasp.cipher_modules.models.sat.utils import constants
+from claasp.cipher_modules.models.sat.utils import utils as sat_utils
+from claasp.cipher_modules.models.smt.utils import utils as smt_utils
+from claasp.component import Component
+from claasp.input import Input
 from claasp.name_mappings import WORD_OPERATION
 
 

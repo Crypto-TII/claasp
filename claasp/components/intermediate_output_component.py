@@ -16,13 +16,13 @@
 # ****************************************************************************
 
 
-from claasp.components.cipher_output_component import CipherOutput
+from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_xor_with_n_input_bits import (
+    output_dictionary_that_contains_xor_inequalities,
+    update_dictionary_that_contains_xor_inequalities_between_n_input_bits,
+)
 from claasp.cipher_modules.models.sat.utils import utils as sat_utils
 from claasp.cipher_modules.models.smt.utils import utils as smt_utils
-from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_xor_with_n_input_bits import (
-    update_dictionary_that_contains_xor_inequalities_between_n_input_bits,
-    output_dictionary_that_contains_xor_inequalities,
-)
+from claasp.components.cipher_output_component import CipherOutput
 
 
 def update_xor_linear_constraints_for_more_than_one_bit(constraints, intermediate_var, linked_components, x):

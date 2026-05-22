@@ -17,8 +17,7 @@
 
 
 from claasp.cipher import Cipher
-from claasp.name_mappings import INPUT_KEY, INPUT_PLAINTEXT, BLOCK_CIPHER
-
+from claasp.name_mappings import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
 
 # AES configuration: (key_size, Nk, Nr)
 # AES-128: key_size=128, Nk=4, Nr=10

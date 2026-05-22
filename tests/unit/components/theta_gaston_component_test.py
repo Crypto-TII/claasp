@@ -1,6 +1,5 @@
 from claasp.components.theta_gaston_component import ThetaGaston
 
-
 ROTATIONS = [1, 18, 23, 25, 32, 52, 60, 63]
 
 

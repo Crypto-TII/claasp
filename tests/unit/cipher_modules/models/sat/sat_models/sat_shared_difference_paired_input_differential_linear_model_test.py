@@ -7,11 +7,11 @@ from claasp.cipher_modules.models.sat.sat_models.sat_shared_difference_paired_in
 )
 from claasp.cipher_modules.models.sat.solvers import KISSAT_EXT
 from claasp.cipher_modules.models.utils import (
-    set_fixed_variables,
     integer_to_bit_list,
+    set_fixed_variables,
     shared_difference_paired_input_differential_linear_checker_permutation,
 )
-from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation, ROUND_MODE_HALF
+from claasp.ciphers.permutations.chacha_permutation import ROUND_MODE_HALF, ChachaPermutation
 from claasp.components.intermediate_output_component import IntermediateOutput
 from claasp.components.modsub_component import ModSub
 

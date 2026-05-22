@@ -65,8 +65,8 @@ def cutting_off_greedy(valid_points):
     - ``valid_points`` -- **matrix**; the polyhedron representing the convex hull
     """
     from sage.modules.free_module import VectorSpace
-    from sage.rings.finite_rings.finite_field_constructor import GF
     from sage.modules.free_module_element import vector
+    from sage.rings.finite_rings.finite_field_constructor import GF
 
     chosen_ineqs = []
     poly = convex_hull(valid_points)

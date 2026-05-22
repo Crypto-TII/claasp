@@ -22,16 +22,14 @@ import sys
 
 import claasp
 from claasp import editor
-from claasp.cipher_modules import code_generator
-from claasp.cipher_modules import tester, evaluator
+from claasp.cipher_modules import code_generator, evaluator, tester
 from claasp.cipher_modules.inverse_cipher import *
 from claasp.cipher_modules.inverse_cipher import _prune_components_outside_round_range
 from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
 from claasp.components.cipher_output_component import CipherOutput
 from claasp.compound_xor_differential_cipher import convert_to_compound_xor_cipher
-from claasp.rounds import Rounds
 from claasp.name_mappings import CIPHER_INVERSE_SUFFIX
-
+from claasp.rounds import Rounds
 
 tii_path = inspect.getfile(claasp)
 tii_dir_path = os.path.dirname(tii_path)
@@ -1523,8 +1521,8 @@ class Cipher:
         - ``solver`` -- **string**; the name of the solver to use for the search
         """
         from claasp.cipher_modules.models.utils import (
-            set_fixed_variables,
             integer_to_bit_list,
+            set_fixed_variables,
         )
 
         model = self.get_model(technique, f"xor_{type}")

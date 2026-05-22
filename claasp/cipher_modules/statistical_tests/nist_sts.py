@@ -70,12 +70,13 @@ Larger samples (1 million+ bits) provide more statistical power but require
 higher-quality random sources to avoid false failures.
 """
 
-import numpy as np
 import math
 from typing import Any, Dict, List, Optional
+
+import numpy as np
 from scipy import special as spc
-from scipy.stats import norm
 from scipy.fft import fft
+from scipy.stats import norm
 
 
 class NISTTests:

@@ -17,32 +17,32 @@
 
 import math
 import subprocess
-from itertools import product, combinations
+from itertools import combinations, product
 from math import log
 from operator import xor
 
 from sage.arith.misc import is_power_of_two
 from sage.crypto.sbox import SBox
 
+from claasp.cipher_modules.models.milp.utils import utils as milp_utils
+from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_large_sboxes import (
+    get_dictionary_that_contains_inequalities_for_large_sboxes,
+    update_dictionary_that_contains_inequalities_for_large_sboxes,
+)
+from claasp.cipher_modules.models.milp.utils.generate_sbox_inequalities_for_trail_search import (
+    get_dictionary_that_contains_inequalities_for_small_sboxes,
+    update_dictionary_that_contains_inequalities_for_small_sboxes,
+)
 from claasp.cipher_modules.models.milp.utils.generate_undisturbed_bits_inequalities_for_sboxes import (
-    update_dictionary_that_contains_inequalities_for_sboxes_with_undisturbed_bits,
     get_dictionary_that_contains_inequalities_for_sboxes_with_undisturbed_bits,
+    update_dictionary_that_contains_inequalities_for_sboxes_with_undisturbed_bits,
 )
 from claasp.cipher_modules.models.milp.utils.milp_name_mappings import MILP_DEFAULT_WEIGHT_PRECISION
 from claasp.cipher_modules.models.milp.utils.utils import espresso_pos_to_constraints
-from claasp.input import Input
-from claasp.component import Component, free_input
 from claasp.cipher_modules.models.sat.utils import constants
 from claasp.cipher_modules.models.smt.utils import utils as smt_utils
-from claasp.cipher_modules.models.milp.utils import utils as milp_utils
-from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_large_sboxes import (
-    update_dictionary_that_contains_inequalities_for_large_sboxes,
-    get_dictionary_that_contains_inequalities_for_large_sboxes,
-)
-from claasp.cipher_modules.models.milp.utils.generate_sbox_inequalities_for_trail_search import (
-    update_dictionary_that_contains_inequalities_for_small_sboxes,
-    get_dictionary_that_contains_inequalities_for_small_sboxes,
-)
+from claasp.component import Component, free_input
+from claasp.input import Input
 
 
 def check_table_feasibility(table, table_type, solver):

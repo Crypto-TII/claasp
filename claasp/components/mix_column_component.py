@@ -20,25 +20,25 @@ from copy import deepcopy
 
 from sage.all import ZZ
 from sage.matrix.constructor import Matrix
-from sage.structure.sequence import Sequence
 from sage.modules.free_module_element import vector
 from sage.rings.finite_rings.finite_field_constructor import FiniteField
 from sage.rings.polynomial.polynomial_ring_constructor import PolynomialRing
+from sage.structure.sequence import Sequence
 
-from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_wordwise_truncated_mds_matrices import (
-    update_dictionary_that_contains_wordwise_truncated_mds_inequalities,
-    output_dictionary_that_contains_wordwise_truncated_mds_inequalities,
-)
-from claasp.cipher_modules.models.milp.utils.utils import espresso_pos_to_constraints
-from claasp.input import Input
-from claasp.component import Component, free_input
-from claasp.utils.utils import int_to_poly
-from claasp.components.linear_layer_component import LinearLayer
 from claasp.cipher_modules.component_analysis_tests import (
     binary_matrix_of_linear_component,
     branch_number,
     has_maximal_branch_number,
 )
+from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_wordwise_truncated_mds_matrices import (
+    output_dictionary_that_contains_wordwise_truncated_mds_inequalities,
+    update_dictionary_that_contains_wordwise_truncated_mds_inequalities,
+)
+from claasp.cipher_modules.models.milp.utils.utils import espresso_pos_to_constraints
+from claasp.component import Component, free_input
+from claasp.components.linear_layer_component import LinearLayer
+from claasp.input import Input
+from claasp.utils.utils import int_to_poly
 
 
 def _field_from_int(field, value):

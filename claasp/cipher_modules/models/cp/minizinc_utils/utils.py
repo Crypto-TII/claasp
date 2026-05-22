@@ -1,4 +1,3 @@
-import os
 
 
 def filter_out_strings_containing_substring(strings_list, substring):

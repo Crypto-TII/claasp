@@ -1,10 +1,13 @@
-from datetime import timedelta
 import math
 import time
+from datetime import timedelta
+
 from minizinc import Instance, Model, Solver, Status
-from claasp.cipher_modules.models.cp.mzn_model import MznModel
+
 from claasp.cipher_modules.models.cp.minizinc_utils.mzn_continuous_predicates import get_continuous_operations
-from claasp.name_mappings import CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, PERMUTATION_COMPONENT, WORD_OPERATION
+from claasp.cipher_modules.models.cp.mzn_model import MznModel
+from claasp.name_mappings import CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, PERMUTATION_COMPONENT, WORD_OPERATION
+
 
 class MznDifferentialLinearContinuousModel(MznModel):
     def __init__(self, cipher):

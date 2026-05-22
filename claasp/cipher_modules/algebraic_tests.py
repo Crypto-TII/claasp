@@ -87,7 +87,7 @@ class AlgebraicTests:
             nmonomials_up_to_round.append(Fseq.nmonomials())
             max_deg_of_equations_up_to_round.append(Fseq.maximal_degree())
 
-            from cysignals.alarm import alarm, cancel_alarm, AlarmInterrupt
+            from cysignals.alarm import AlarmInterrupt, alarm, cancel_alarm
             try:
                 alarm(timeout_in_seconds)
                 Fseq.groebner_basis()

@@ -15,19 +15,21 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-import time
-import sys
-from copy import deepcopy
-from sage.crypto.sbox import SBox
-from collections import Counter
-from sage.rings.polynomial.pbori.pbori import BooleanPolynomialRing
-from claasp.cipher_modules.graph_generator import create_networkx_graph_from_input_ids, _get_predecessors_subgraph
-from claasp.cipher_modules.component_analysis_tests import binary_matrix_of_linear_component
-from claasp.name_mappings import INTERMEDIATE_OUTPUT
-from gurobipy import Model, GRB, Env
 import os
 import secrets
+import sys
+import time
+from collections import Counter
+from copy import deepcopy
+
+from gurobipy import GRB, Env, Model
 from sage.all import GF
+from sage.crypto.sbox import SBox
+from sage.rings.polynomial.pbori.pbori import BooleanPolynomialRing
+
+from claasp.cipher_modules.component_analysis_tests import binary_matrix_of_linear_component
+from claasp.cipher_modules.graph_generator import _get_predecessors_subgraph, create_networkx_graph_from_input_ids
+from claasp.name_mappings import INTERMEDIATE_OUTPUT
 
 verbosity = False
 

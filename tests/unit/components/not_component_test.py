@@ -1,9 +1,11 @@
-from claasp.components.not_component import Not
-from claasp.cipher_modules.models.milp.milp_model import MilpModel
-from claasp.ciphers.single_component_ciphers.not_cipher import NotCipher
 from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
-from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import \
-    MilpBitwiseDeterministicTruncatedXorDifferentialModel
+from claasp.cipher_modules.models.milp.milp_model import MilpModel
+from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import (
+    MilpBitwiseDeterministicTruncatedXorDifferentialModel,
+)
+from claasp.ciphers.single_component_ciphers.not_cipher import NotCipher
+from claasp.components.not_component import Not
+
 
 def test_algebraic_polynomials():
     cipher = NotCipher(bit_size=64)

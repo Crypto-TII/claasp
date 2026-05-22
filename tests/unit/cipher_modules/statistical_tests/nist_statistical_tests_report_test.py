@@ -1,7 +1,7 @@
 from pathlib import Path
 
-from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
 from claasp.cipher_modules.statistical_tests.nist_statistical_tests_report import NISTStatisticalTestsReport
+from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
 
 
 def _sample_nist_results(cipher):

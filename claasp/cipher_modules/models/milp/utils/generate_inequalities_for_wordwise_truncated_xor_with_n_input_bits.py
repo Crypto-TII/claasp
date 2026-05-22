@@ -23,12 +23,14 @@ The target of this module is to generate MILP inequalities for a wordwise trunca
 """
 
 import itertools
-from math import ceil, log
-import pickle, os
+import os
+import pickle
 from functools import reduce
+from math import ceil, log
+
+from claasp.cipher_modules.models.milp import MILP_AUXILIARY_FILE_PATH
 from claasp.cipher_modules.models.milp.utils import utils as milp_utils
 from claasp.cipher_modules.models.milp.utils.utils import generate_product_of_sum_from_espresso
-from claasp.cipher_modules.models.milp import MILP_AUXILIARY_FILE_PATH
 
 input_patterns_file_name = "dictionary_containing_truncated_input_pattern_inequalities.obj"
 xor_n_inputs_file_name = "dictionary_containing_truncated_xor_inequalities_between_n_input_bits.obj"

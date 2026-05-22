@@ -54,7 +54,6 @@ import time
 
 from claasp.cipher_modules.models.sat import solvers
 
-
 # ----------------- #
 #    - General -    #
 # ----------------- #

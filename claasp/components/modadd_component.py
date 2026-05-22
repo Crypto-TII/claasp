@@ -16,9 +16,9 @@
 # ****************************************************************************
 
 
-from claasp.components.modular_component import Modular
-from claasp.cipher_modules.models.smt.utils import utils as smt_utils
 from claasp.cipher_modules.models.sat.utils import utils as sat_utils
+from claasp.cipher_modules.models.smt.utils import utils as smt_utils
+from claasp.components.modular_component import Modular
 
 
 def cms_modadd(output_ids, input0_ids, input1_ids, carry_ids):

@@ -1,5 +1,6 @@
 from claasp.ciphers.block_ciphers.twine_block_cipher import TwineBlockCipher
 
+
 def test_twine_block_cipher():
     twine = TwineBlockCipher()
     assert twine.type == 'block_cipher'

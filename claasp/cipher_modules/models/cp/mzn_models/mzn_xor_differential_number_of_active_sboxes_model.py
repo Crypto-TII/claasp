@@ -18,16 +18,16 @@
 
 from copy import deepcopy
 
-from claasp.input import Input
+from claasp.cipher_modules.models.cp.mzn_model import SOLVE_SATISFY, MznModel
 from claasp.component import Component
-from claasp.cipher_modules.models.cp.mzn_model import MznModel, SOLVE_SATISFY
+from claasp.input import Input
 from claasp.name_mappings import (
+    CIPHER_OUTPUT,
     CONSTANT,
     INTERMEDIATE_OUTPUT,
-    CIPHER_OUTPUT,
-    SBOX,
     MIX_COLUMN,
     PERMUTATION_COMPONENT,
+    SBOX,
     WORD_OPERATION,
 )
 

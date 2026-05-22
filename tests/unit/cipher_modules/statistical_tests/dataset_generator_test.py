@@ -1,5 +1,5 @@
-from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.cipher_modules.statistical_tests.dataset_generator import DatasetGenerator
+from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 
 numpy_array_type = "<class 'numpy.ndarray'>"
 

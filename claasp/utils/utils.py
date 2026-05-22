@@ -18,7 +18,7 @@
 import json
 import pprint
 import random
-from collections import defaultdict, Counter
+from collections import Counter, defaultdict
 from copy import deepcopy
 from decimal import Decimal
 from random import randrange
@@ -27,7 +27,7 @@ import numpy as np
 from sage.rings.integer_ring import IntegerRing
 
 from claasp.DTOs.component_state import ComponentState
-from claasp.name_mappings import INPUT_PLAINTEXT, INPUT_KEY
+from claasp.name_mappings import INPUT_KEY, INPUT_PLAINTEXT
 
 
 def aggregate_list_of_dictionary(dataset, group_by_key, sum_value_keys):

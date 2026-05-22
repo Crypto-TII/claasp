@@ -1,7 +1,18 @@
 from bitstring import BitArray
-from claasp.cipher_modules.generic_functions import (ROTATE, SIGMA, THETA_KECCAK, THETA_XOODOO, SHIFT, idea_modmul,
-                                                     fsr_binary, fsr_word, index_list_to_expression_str,
-                                                     index_list_to_expression_str_word)
+
+from claasp.cipher_modules.generic_functions import (
+    ROTATE,
+    SHIFT,
+    SIGMA,
+    THETA_KECCAK,
+    THETA_XOODOO,
+    fsr_binary,
+    fsr_word,
+    idea_modmul,
+    index_list_to_expression_str,
+    index_list_to_expression_str_word,
+)
+
 
 def test_ROTATE():
     b = BitArray("0x8")

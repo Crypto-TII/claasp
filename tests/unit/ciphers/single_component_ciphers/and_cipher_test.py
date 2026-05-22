@@ -1,7 +1,7 @@
 import pytest
 
-from claasp.ciphers.single_component_ciphers.and_cipher import AndCipher
 from claasp.ciphers.single_component_ciphers._base import build_block_cipher_inputs
+from claasp.ciphers.single_component_ciphers.and_cipher import AndCipher
 
 
 def test_and_cipher_properties():

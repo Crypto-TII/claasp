@@ -16,10 +16,10 @@
 # ****************************************************************************
 
 
-from claasp.input import Input
-from claasp.component import Component
-from claasp.cipher_modules.models.smt.utils import utils as smt_utils
 from claasp.cipher_modules.models.sat.utils import constants, utils as sat_utils
+from claasp.cipher_modules.models.smt.utils import utils as smt_utils
+from claasp.component import Component
+from claasp.input import Input
 from claasp.name_mappings import PERMUTATION_COMPONENT
 from claasp.utils.utils import coerce_exact_int
 

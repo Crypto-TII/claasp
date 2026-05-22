@@ -14,9 +14,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
+import numpy as np
+
 from claasp.cipher import Cipher
 from claasp.name_mappings import INPUT_KEY, INPUT_PLAINTEXT
-import numpy as np
 
 
 class KalynaBlockCipher(Cipher):

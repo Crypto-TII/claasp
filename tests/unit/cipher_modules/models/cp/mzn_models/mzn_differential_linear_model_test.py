@@ -1,21 +1,23 @@
 import itertools
 import math
+
 import pytest
 
 from claasp.cipher_modules.models.cp.mzn_models.mzn_differential_linear_model import MznDifferentialLinearModel
 from claasp.cipher_modules.models.cp.solvers import CPSAT
 from claasp.cipher_modules.models.utils import (
     differential_linear_checker_for_block_cipher_single_key,
+    differential_truncated_checker_single_key,
     integer_to_bit_list,
     set_fixed_variables,
     truncated_differential_linear_checker_permutation,
-    differential_truncated_checker_single_key
 )
 from claasp.ciphers.block_ciphers.ballet_block_cipher import BalletBlockCipher
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation, ROUND_MODE_HALF
-from claasp.name_mappings import INPUT_PLAINTEXT, SATISFIABLE, INPUT_KEY, INPUT_MESSAGE
 from claasp.ciphers.mac.siphash_mac import SiphashMAC
+from claasp.ciphers.permutations.chacha_permutation import ROUND_MODE_HALF, ChachaPermutation
+from claasp.name_mappings import INPUT_KEY, INPUT_MESSAGE, INPUT_PLAINTEXT, SATISFIABLE
+
 
 def _split_components(cipher, top_rounds_end, middle_rounds_end):
     top_part_components = []
@@ -333,6 +335,7 @@ def test_differential_linear_trail_6_rounds_ballet_cp_case():
     assert trail["status"] == SATISFIABLE
 
     import math
+
     from claasp.cipher_modules.models.utils import differential_linear_checker_for_block_cipher_single_key
 
     input_difference_str = trail["components_values"]["plaintext"]["value"]

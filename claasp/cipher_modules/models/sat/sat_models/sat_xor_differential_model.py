@@ -16,16 +16,24 @@
 # ****************************************************************************
 
 import time
-from math import log2, pow
 from copy import deepcopy
+from math import log2, pow
 
 from claasp.cipher_modules.models.sat import solvers
 from claasp.cipher_modules.models.sat.sat_model import SatModel
 from claasp.cipher_modules.models.sat.sat_models.sat_cipher_model import SatCipherModel
-from claasp.cipher_modules.models.utils import set_component_solution, get_single_key_scenario_format_for_fixed_values, set_fixed_variables, hex_to_bitlist, join_and_sanitize_strings
+from claasp.cipher_modules.models.utils import (
+    get_single_key_scenario_format_for_fixed_values,
+    hex_to_bitlist,
+    join_and_sanitize_strings,
+    set_component_solution,
+    set_fixed_variables,
+)
 from claasp.name_mappings import (
     CIPHER_OUTPUT,
     CONSTANT,
+    INPUT_KEY,
+    INPUT_PLAINTEXT,
     INTERMEDIATE_OUTPUT,
     LINEAR_LAYER,
     MIX_COLUMN,
@@ -33,8 +41,6 @@ from claasp.name_mappings import (
     SBOX,
     WORD_OPERATION,
     XOR_DIFFERENTIAL,
-    INPUT_KEY,
-    INPUT_PLAINTEXT,
 )
 
 

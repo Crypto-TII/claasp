@@ -20,7 +20,7 @@ import time
 from claasp.cipher_modules.models.smt import solvers
 from claasp.cipher_modules.models.smt.smt_model import SmtModel
 from claasp.cipher_modules.models.smt.utils import constants, utils
-from claasp.cipher_modules.models.utils import set_component_solution, get_single_key_scenario_format_for_fixed_values
+from claasp.cipher_modules.models.utils import get_single_key_scenario_format_for_fixed_values, set_component_solution
 from claasp.name_mappings import (
     CIPHER_OUTPUT,
     CONSTANT,

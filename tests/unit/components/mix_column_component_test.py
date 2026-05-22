@@ -1,4 +1,3 @@
-import pytest
 
 from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
 from claasp.cipher_modules.models.cp.mzn_model import MznModel

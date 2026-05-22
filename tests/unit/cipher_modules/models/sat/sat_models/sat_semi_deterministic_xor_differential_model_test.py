@@ -3,13 +3,13 @@ from claasp.cipher_modules.models.sat.sat_models.sat_semi_deterministic_truncate
 )
 from claasp.cipher_modules.models.sat.solvers import CADICAL_EXT
 from claasp.cipher_modules.models.utils import (
-    set_fixed_variables,
     differential_truncated_checker_permutation,
     integer_to_bit_list,
+    set_fixed_variables,
 )
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation, ROUND_MODE_HALF
-from claasp.name_mappings import INPUT_PLAINTEXT, INPUT_KEY
+from claasp.ciphers.permutations.chacha_permutation import ROUND_MODE_HALF, ChachaPermutation
+from claasp.name_mappings import INPUT_KEY, INPUT_PLAINTEXT
 
 
 def test_find_one_semi_deterministic_truncated_xor_differential_trail():

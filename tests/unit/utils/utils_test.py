@@ -1,16 +1,18 @@
-import os
 import inspect
+import os
 
 import claasp
-from claasp.utils.utils import point_pair
-from claasp.utils.utils import sgn_function
-from claasp.utils.utils import signed_distance
-from claasp.utils.utils import pprint_dictionary
-from claasp.utils.utils import pprint_dictionary_to_file
-from claasp.utils.utils import bytes_positions_to_little_endian_for_32_bits
-from claasp.utils.utils import coerce_exact_int
-from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.cipher_modules.avalanche_tests import AvalancheTests
+from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+from claasp.utils.utils import (
+    bytes_positions_to_little_endian_for_32_bits,
+    coerce_exact_int,
+    point_pair,
+    pprint_dictionary,
+    pprint_dictionary_to_file,
+    sgn_function,
+    signed_distance,
+)
 
 
 def test_bytes_positions_to_little_endian_for_32_bits():

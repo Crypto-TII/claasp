@@ -26,13 +26,14 @@ from claasp.cipher_modules.models.sat.sat_models.sat_semi_deterministic_truncate
     SatSemiDeterministicTruncatedXorDifferentialModel,
 )
 from claasp.cipher_modules.models.sat.sat_models.sat_xor_linear_model import SatXorLinearModel
-from claasp.cipher_modules.models.sat.utils import utils as sat_utils, constants
+from claasp.cipher_modules.models.sat.utils import constants
+from claasp.cipher_modules.models.sat.utils import utils as sat_utils
 from claasp.cipher_modules.models.sat.utils.utils import (
     _generate_component_model_types,
-    _update_component_model_types_for_truncated_components,
     _update_component_model_types_for_linear_components,
+    _update_component_model_types_for_truncated_components,
 )
-from claasp.cipher_modules.models.utils import set_component_solution, get_bit_bindings
+from claasp.cipher_modules.models.utils import get_bit_bindings, set_component_solution
 from claasp.name_mappings import INPUT_KEY, INPUT_PLAINTEXT, INPUT_TWEAK
 
 

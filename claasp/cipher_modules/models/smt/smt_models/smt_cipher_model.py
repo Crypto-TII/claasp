@@ -23,8 +23,8 @@ from claasp.cipher_modules.models.smt.utils import constants
 from claasp.cipher_modules.models.smt.utils.utils import get_component_hex_value
 from claasp.cipher_modules.models.utils import set_component_solution
 from claasp.name_mappings import (
-    CIPHER_OUTPUT,
     CIPHER,
+    CIPHER_OUTPUT,
     CONSTANT,
     INTERMEDIATE_OUTPUT,
     LINEAR_LAYER,

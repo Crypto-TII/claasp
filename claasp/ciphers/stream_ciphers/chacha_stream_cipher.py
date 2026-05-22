@@ -17,10 +17,10 @@
 # ****************************************************************************
 
 
+from claasp.ciphers.permutations.chacha_permutation import ROUND_MODE_SINGLE, ChachaPermutation
 from claasp.DTOs.component_state import ComponentState
-from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation, ROUND_MODE_HALF, ROUND_MODE_SINGLE
+from claasp.name_mappings import INPUT_BLOCK_COUNT, INPUT_KEY, INPUT_NONCE, INPUT_PLAINTEXT, STREAM_CIPHER
 from claasp.utils.utils import bytes_positions_to_little_endian_for_multiple_of_32
-from claasp.name_mappings import STREAM_CIPHER, INPUT_PLAINTEXT, INPUT_NONCE, INPUT_BLOCK_COUNT, INPUT_KEY
 
 INPUT_CONSTANTS = "chacha_constants"
 PARAMETERS_CONFIGURATION_LIST = [{'block_bit_size': 512, 'key_bit_size': 256, 'number_of_rounds': 20}]

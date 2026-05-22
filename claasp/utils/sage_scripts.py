@@ -15,8 +15,9 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-import yaml
 from os import listdir
+
+import yaml
 
 from claasp.name_mappings import BLOCK_CIPHER, HASH_FUNCTION, PERMUTATION, STREAM_CIPHER
 

@@ -41,7 +41,7 @@ import subprocess
 import time
 import tracemalloc
 
-from sage.numerical.mip import MixedIntegerLinearProgram, MIPSolverException
+from sage.numerical.mip import MIPSolverException, MixedIntegerLinearProgram
 
 from claasp.cipher_modules.models.milp.solvers import (
     MILP_SOLVERS_EXTERNAL,

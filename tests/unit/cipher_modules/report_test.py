@@ -1,26 +1,25 @@
 import copy
 import io
 import pickle
-from pathlib import Path
 from contextlib import redirect_stdout
+from pathlib import Path
 
 from plotly.basedatatypes import BaseFigure
 
-from claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model import SatXorDifferentialModel
-from claasp.cipher_modules.models.smt.smt_models.smt_xor_differential_model import SmtXorDifferentialModel
-from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model import MznXorDifferentialModel
-from claasp.cipher_modules.models.utils import set_fixed_variables
-from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
-from claasp.cipher_modules.report import Report
-from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
-from claasp.cipher_modules.statistical_tests.dieharder_statistical_tests import DieharderTests
-from claasp.cipher_modules.neural_network_tests import NeuralNetworkTests
 from claasp.cipher_modules.algebraic_tests import AlgebraicTests
 from claasp.cipher_modules.avalanche_tests import AvalancheTests
 from claasp.cipher_modules.component_analysis_tests import CipherComponentsAnalysis
 from claasp.cipher_modules.continuous_diffusion_analysis import ContinuousDiffusionAnalysis
-
+from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model import MznXorDifferentialModel
+from claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model import SatXorDifferentialModel
+from claasp.cipher_modules.models.smt.smt_models.smt_xor_differential_model import SmtXorDifferentialModel
+from claasp.cipher_modules.models.utils import set_fixed_variables
+from claasp.cipher_modules.neural_network_tests import NeuralNetworkTests
+from claasp.cipher_modules.report import Report
+from claasp.cipher_modules.statistical_tests.dieharder_statistical_tests import DieharderTests
+from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
+from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
+from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 
 CACHE_DIR = Path(__file__).resolve().parent / 'data'
 CACHE_FILE = CACHE_DIR / 'report_test_cache.pkl'

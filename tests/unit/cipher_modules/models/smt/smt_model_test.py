@@ -1,8 +1,8 @@
 import pytest
 
 from claasp.cipher_modules.models.smt.smt_model import SmtModel
+from claasp.cipher_modules.models.utils import integer_to_bit_list, set_fixed_variables
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
 from claasp.name_mappings import INPUT_PLAINTEXT
 
 

@@ -17,8 +17,8 @@
 
 
 from claasp.cipher import Cipher
-from claasp.name_mappings import BLOCK_CIPHER, INPUT_PLAINTEXT, INPUT_KEY
-from claasp.utils.utils import get_number_of_rounds_from, extract_inputs
+from claasp.name_mappings import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
+from claasp.utils.utils import extract_inputs, get_number_of_rounds_from
 
 PARAMETERS_CONFIGURATION_LIST = [
     {"block_bit_size": 64, "key_bit_size": 128, "number_of_rounds": 8, "steps": 3},

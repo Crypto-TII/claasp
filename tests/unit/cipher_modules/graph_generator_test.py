@@ -1,8 +1,10 @@
-from claasp.cipher_modules.graph_generator import split_cipher_graph_into_top_bottom
+from claasp.cipher_modules.graph_generator import (
+    _get_descendants_subgraph,
+    create_networkx_graph_from_input_ids,
+    split_cipher_graph_into_top_bottom,
+)
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation, ROUND_MODE_HALF
-from claasp.cipher_modules.graph_generator import create_networkx_graph_from_input_ids, _get_descendants_subgraph
-
+from claasp.ciphers.permutations.chacha_permutation import ROUND_MODE_HALF, ChachaPermutation
 
 e0_graph_nodes = [
     'rot_0_8', 'rot_1_14', 'xor_1_4', 'rot_0_11', 'xor_0_1', 'modadd_0_21', 'modadd_0_9', 'rot_0_20', 'xor_1_22',

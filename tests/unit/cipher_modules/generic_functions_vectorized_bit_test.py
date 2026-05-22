@@ -1,26 +1,27 @@
 import numpy as np
 
 import claasp.cipher_modules.generic_functions_vectorized_bit as gf
-
-from claasp.cipher_modules.generic_functions_vectorized_bit import bit_vector_AND
-from claasp.cipher_modules.generic_functions_vectorized_bit import bit_vector_CONCAT
-from claasp.cipher_modules.generic_functions_vectorized_bit import bit_vector_MODADD
-from claasp.cipher_modules.generic_functions_vectorized_bit import bit_vector_MODMUL
-from claasp.cipher_modules.generic_functions_vectorized_bit import bit_vector_MODSUB
-from claasp.cipher_modules.generic_functions_vectorized_bit import bit_vector_NOT
-from claasp.cipher_modules.generic_functions_vectorized_bit import bit_vector_OR
-from claasp.cipher_modules.generic_functions_vectorized_bit import bit_vector_ROTATE
-from claasp.cipher_modules.generic_functions_vectorized_bit import bit_vector_SBOX
-from claasp.cipher_modules.generic_functions_vectorized_bit import bit_vector_SHIFT
-from claasp.cipher_modules.generic_functions_vectorized_bit import bit_vector_SHIFT_BY_VARIABLE_AMOUNT
-from claasp.cipher_modules.generic_functions_vectorized_bit import bit_vector_XOR
-from claasp.cipher_modules.generic_functions_vectorized_bit import bit_vector_select_word
-from claasp.cipher_modules.generic_functions_vectorized_bit import bit_vector_idea_modmul
-from claasp.cipher_modules.generic_functions_vectorized_bit import bit_vector_linear_layer
-from claasp.cipher_modules.generic_functions_vectorized_bit import bit_vector_mix_column_poly0
-from claasp.cipher_modules.generic_functions_vectorized_bit import bit_vector_permutation
-from claasp.cipher_modules.generic_functions_vectorized_bit import bit_vector_print_as_hex_values
-from claasp.cipher_modules.generic_functions_vectorized_bit import bit_vector_to_integer
+from claasp.cipher_modules.generic_functions_vectorized_bit import (
+    bit_vector_AND,
+    bit_vector_CONCAT,
+    bit_vector_idea_modmul,
+    bit_vector_linear_layer,
+    bit_vector_mix_column_poly0,
+    bit_vector_MODADD,
+    bit_vector_MODMUL,
+    bit_vector_MODSUB,
+    bit_vector_NOT,
+    bit_vector_OR,
+    bit_vector_permutation,
+    bit_vector_print_as_hex_values,
+    bit_vector_ROTATE,
+    bit_vector_SBOX,
+    bit_vector_select_word,
+    bit_vector_SHIFT,
+    bit_vector_SHIFT_BY_VARIABLE_AMOUNT,
+    bit_vector_to_integer,
+    bit_vector_XOR,
+)
 
 
 def _bits(value, width):

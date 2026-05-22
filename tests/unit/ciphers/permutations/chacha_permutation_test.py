@@ -1,4 +1,4 @@
-from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation, ROUND_MODE_HALF, ROUND_MODE_SINGLE
+from claasp.ciphers.permutations.chacha_permutation import ROUND_MODE_HALF, ROUND_MODE_SINGLE, ChachaPermutation
 
 
 def test_chacha_permutation():

@@ -1,5 +1,5 @@
-from claasp.components.shift_rows_component import ShiftRows
 from claasp.ciphers.single_component_ciphers.shift_rows_cipher import ShiftRowsCipher
+from claasp.components.shift_rows_component import ShiftRows
 
 
 def make_shift_rows_component():

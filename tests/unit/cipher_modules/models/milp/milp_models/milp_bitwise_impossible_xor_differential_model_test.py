@@ -6,7 +6,6 @@ from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
 from claasp.ciphers.permutations.ascon_sbox_sigma_permutation import AsconSboxSigmaPermutation
 from claasp.name_mappings import INPUT_KEY, INPUT_PLAINTEXT, SATISFIABLE
 
-
 SIMON_INCOMPATIBLE_ROUND_OUTPUT = "????????00?????0???????0????????"
 
 

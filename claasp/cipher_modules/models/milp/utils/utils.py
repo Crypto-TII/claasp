@@ -18,10 +18,9 @@
 import datetime
 import pickle
 import re
-
 from subprocess import run
-from bitstring import BitArray
 
+from bitstring import BitArray
 from sage.numerical.mip import MIPSolverException
 
 from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_large_sboxes import (
@@ -34,16 +33,15 @@ from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_xor_with_
 from claasp.cipher_modules.models.milp.utils.milp_name_mappings import (
     MILP_BACKWARD_SUFFIX,
     MILP_BITWISE_DETERMINISTIC_TRUNCATED,
-    MILP_BITWISE_IMPOSSIBLE_AUTO,
     MILP_BITWISE_IMPOSSIBLE,
+    MILP_BITWISE_IMPOSSIBLE_AUTO,
     MILP_TRUNCATED_XOR_DIFFERENTIAL_OBJECTIVE,
     MILP_WORDWISE_DETERMINISTIC_TRUNCATED,
-    MILP_WORDWISE_IMPOSSIBLE_AUTO,
     MILP_WORDWISE_IMPOSSIBLE,
+    MILP_WORDWISE_IMPOSSIBLE_AUTO,
     MILP_XOR_DIFFERENTIAL_OBJECTIVE,
 )
 from claasp.name_mappings import SBOX
-
 
 ### -------------------------External solver parsing methods------------------------- ###
 

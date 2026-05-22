@@ -1,6 +1,6 @@
 from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model import (
-    and_xor_differential_probability_ddt,
     MznXorDifferentialModel,
+    and_xor_differential_probability_ddt,
 )
 from claasp.cipher_modules.models.cp.solvers import CHUFFED
 from claasp.cipher_modules.models.utils import set_fixed_variables

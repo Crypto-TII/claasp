@@ -16,8 +16,8 @@
 # ****************************************************************************
 
 from claasp.cipher_modules.models.cp.mzn_models.mzn_deterministic_truncated_xor_differential_model import (
-    MznDeterministicTruncatedXorDifferentialModel,
     SOLVE_SATISFY,
+    MznDeterministicTruncatedXorDifferentialModel,
 )
 from claasp.cipher_modules.models.cp.solvers import SOLVER_DEFAULT
 from claasp.name_mappings import (

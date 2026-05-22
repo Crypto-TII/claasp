@@ -21,21 +21,21 @@ import time as tm
 
 from sage.crypto.sbox import SBox
 
-from claasp.cipher_modules.models.cp.mzn_model import MznModel, SOLVE_SATISFY, CONSTRAINT_TYPE_ERROR
+from claasp.cipher_modules.models.cp.mzn_model import SOLVE_SATISFY, MznModel
+from claasp.cipher_modules.models.cp.solvers import SOLVER_DEFAULT
 from claasp.cipher_modules.models.utils import get_bit_bindings, get_single_key_scenario_format_for_fixed_values
 from claasp.name_mappings import (
-    INTERMEDIATE_OUTPUT,
-    XOR_LINEAR,
-    CONSTANT,
     CIPHER_OUTPUT,
+    CONSTANT,
+    INPUT_KEY,
+    INTERMEDIATE_OUTPUT,
     LINEAR_LAYER,
-    SBOX,
     MIX_COLUMN,
     PERMUTATION_COMPONENT,
+    SBOX,
     WORD_OPERATION,
-    INPUT_KEY,
+    XOR_LINEAR,
 )
-from claasp.cipher_modules.models.cp.solvers import SOLVER_DEFAULT
 
 
 class MznXorLinearModel(MznModel):

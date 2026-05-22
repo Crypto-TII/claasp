@@ -1,6 +1,8 @@
 import pytest
-from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+
 from claasp.cipher_modules.neural_network_tests import NeuralNetworkTests
+from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+
 
 def test_find_good_input_difference_for_neural_distinguisher():
     cipher = SpeckBlockCipher()

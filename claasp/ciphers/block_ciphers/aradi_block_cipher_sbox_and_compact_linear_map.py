@@ -17,8 +17,8 @@
 
 
 from claasp.cipher import Cipher
-from claasp.name_mappings import BLOCK_CIPHER, INPUT_PLAINTEXT, INPUT_KEY
 from claasp.component import linear_layer_to_binary_matrix
+from claasp.name_mappings import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
 
 input_types = [INPUT_KEY, INPUT_PLAINTEXT]
 PARAMETERS_CONFIGURATION_LIST = [{"block_bit_size": 128, "key_bit_size": 256, "number_of_rounds": 16}]

@@ -16,10 +16,11 @@
 # ****************************************************************************
 
 from math import ceil, floor, log2
+
 from sage.symbolic.constants import e, golden_ratio
 
 from claasp.cipher import Cipher
-from claasp.name_mappings import BLOCK_CIPHER, INPUT_PLAINTEXT, INPUT_KEY
+from claasp.name_mappings import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
 
 PARAMETERS_CONFIGURATION_LIST = [
     {"number_of_rounds": 16, "word_size": 16, "key_size": 64},

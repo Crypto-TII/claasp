@@ -1,12 +1,14 @@
-from claasp.components.shift_component import Shift
 from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
 from claasp.cipher_modules.models.cp.mzn_model import MznModel
 from claasp.cipher_modules.models.milp.milp_model import MilpModel
-from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import \
-    MilpBitwiseDeterministicTruncatedXorDifferentialModel
-from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import \
-    MilpWordwiseDeterministicTruncatedXorDifferentialModel
+from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import (
+    MilpBitwiseDeterministicTruncatedXorDifferentialModel,
+)
+from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import (
+    MilpWordwiseDeterministicTruncatedXorDifferentialModel,
+)
 from claasp.ciphers.single_component_ciphers.shift_cipher import ShiftCipher
+from claasp.components.shift_component import Shift
 
 
 def make_shift_component(bit_size=32, parameter=4):

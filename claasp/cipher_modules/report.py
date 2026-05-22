@@ -12,7 +12,6 @@ from plotly.subplots import make_subplots
 
 from claasp.cipher_modules.component_analysis_tests import CipherComponentsAnalysis
 from claasp.cipher_modules.statistical_tests.dieharder_statistical_tests import DieharderTests
-from claasp.cipher_modules.statistical_tests.nist_statistical_tests import NISTStatisticalTests
 from claasp.cipher_modules.statistical_tests.nist_statistical_tests_report import NISTStatisticalTestsReport
 
 
