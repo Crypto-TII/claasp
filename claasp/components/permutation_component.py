@@ -202,8 +202,8 @@ class Permutation(Component):
 
             sage: from claasp.components.permutation_component import Permutation
             sage: permutation_component = Permutation(0, 0, ['input'], [[0, 1, 2, 3]], 4, [1, 3, 2, 0])
-            sage: output_bit_ids, constraints = permutation_component.sat_constraints()
-            sage: output_bit_ids
+            sage: output_ids, constraints = permutation_component.sat_constraints()
+            sage: output_ids
             ['permutation_0_0_0', 'permutation_0_0_1', 'permutation_0_0_2', 'permutation_0_0_3']
             sage: constraints
             ['permutation_0_0_0 -input_3', 'input_3 -permutation_0_0_0',
@@ -211,24 +211,24 @@ class Permutation(Component):
              'permutation_0_0_2 -input_2', 'input_2 -permutation_0_0_2',
              'permutation_0_0_3 -input_1', 'input_1 -permutation_0_0_3']
         """
-        input_bit_ids = self._generate_input_ids()
-        output_bit_len, output_bit_ids = self._generate_output_ids()
+        input_ids = self._generate_input_ids()
+        output_ids = self._generate_output_ids()
         bit_perm = self._bit_perm()
-        input_bit_ids_permuted = [input_bit_ids[bit_perm[i]] for i in range(output_bit_len)]
+        input_ids_permuted = [input_ids[position] for position in bit_perm]
         constraints = []
-        for i in range(output_bit_len):
-            constraints.extend(sat_utils.cnf_equivalent([output_bit_ids[i], input_bit_ids_permuted[i]]))
+        for output_id, input_id_permuted in zip(output_ids, input_ids_permuted):
+            constraints.extend(sat_utils.cnf_equivalent([output_id, input_id_permuted]))
 
-        return output_bit_ids, constraints
+        return output_ids, constraints
 
     def cms_constraints(self):
         return self.sat_constraints()
 
     def cms_xor_differential_propagation_constraints(self, model=None):
-        return self.cms_constraints()
+        return self.sat_xor_differential_propagation_constraints()
 
     def cms_xor_linear_mask_propagation_constraints(self, model=None):
-        return self.cms_constraints()
+        return self.sat_xor_linear_mask_propagation_constraints()
 
     def sat_bitwise_deterministic_truncated_xor_differential_constraints(self):
         """
@@ -274,21 +274,64 @@ class Permutation(Component):
              'permutation_0_0_3_1 -input_1_1',
              'input_1_1 -permutation_0_0_3_1']
         """
-        in_ids_0, in_ids_1 = self._generate_input_double_ids()
-        _, out_ids_0, out_ids_1 = self._generate_output_double_ids()
+        input_ids_0, input_ids_1 = self._generate_input_double_ids()
+        output_ids_0, output_ids_1 = self._generate_output_double_ids()
         bit_perm = self._bit_perm()
         constraints = []
-        for i in range(len(out_ids_0)):
-            constraints.extend(sat_utils.cnf_equivalent([out_ids_0[i], in_ids_0[bit_perm[i]]]))
-            constraints.extend(sat_utils.cnf_equivalent([out_ids_1[i], in_ids_1[bit_perm[i]]]))
+        for output_id_0, output_id_1, position in zip(output_ids_0, output_ids_1, bit_perm):
+            constraints.extend(sat_utils.cnf_equivalent([output_id_0, input_ids_0[position]]))
+            constraints.extend(sat_utils.cnf_equivalent([output_id_1, input_ids_1[position]]))
 
-        return out_ids_0 + out_ids_1, constraints
+        return output_ids_0 + output_ids_1, constraints
 
     def sat_xor_differential_propagation_constraints(self, model=None):
         return self.sat_constraints()
 
     def sat_xor_linear_mask_propagation_constraints(self, model=None):
-        return self.sat_constraints()
+        """
+        Return a list of variables and a list of clauses representing PERMUTATION for SAT XOR LINEAR model
+
+        .. SEEALSO::
+
+            :ref:`sat-standard` for the format.
+
+        INPUT:
+
+        - ``model`` -- **model object** (default: `None`); a model instance
+
+        EXAMPLES::
+
+            sage: from claasp.components.permutation_component import Permutation
+            sage: permutation_component = Permutation(0, 0, ['input'], [[0, 1, 2, 3]], 4, [1, 3, 2, 0])
+            sage: output_ids, constraints = permutation_component.sat_xor_linear_mask_propagation_constraints()
+            sage: output_ids
+            ['permutation_0_0_0_i',
+             'permutation_0_0_1_i',
+             'permutation_0_0_2_i',
+             'permutation_0_0_3_i',
+             'permutation_0_0_0_o',
+             'permutation_0_0_1_o',
+             'permutation_0_0_2_o',
+             'permutation_0_0_3_o']
+            sage: constraints
+            ['permutation_0_0_0_o -permutation_0_0_3_i',
+             'permutation_0_0_3_i -permutation_0_0_0_o',
+             'permutation_0_0_1_o -permutation_0_0_0_i',
+             'permutation_0_0_0_i -permutation_0_0_1_o',
+             'permutation_0_0_2_o -permutation_0_0_2_i',
+             'permutation_0_0_2_i -permutation_0_0_2_o',
+             'permutation_0_0_3_o -permutation_0_0_1_i',
+             'permutation_0_0_1_i -permutation_0_0_3_o']
+        """
+        input_ids = self._generate_component_input_ids()
+        output_ids = self._generate_output_ids(suffix=constants.OUTPUT_BIT_ID_SUFFIX)
+        bit_perm = self._bit_perm()
+        input_ids_permuted = [input_ids[position] for position in bit_perm]
+        constraints = []
+        for output_id, input_id_permuted in zip(output_ids, input_ids_permuted):
+            constraints.extend(sat_utils.cnf_equivalent([output_id, input_id_permuted]))
+
+        return input_ids + output_ids, constraints
 
     def sat_semi_deterministic_truncated_xor_differential_constraints(self):
         return self.sat_bitwise_deterministic_truncated_xor_differential_constraints()
@@ -307,8 +350,8 @@ class Permutation(Component):
 
             sage: from claasp.components.permutation_component import Permutation
             sage: permutation_component = Permutation(0, 0, ['input'], [[0, 1, 2, 3]], 4, [1, 3, 2, 0])
-            sage: output_bit_ids, constraints = permutation_component.smt_constraints()
-            sage: output_bit_ids
+            sage: output_ids, constraints = permutation_component.smt_constraints()
+            sage: output_ids
             ['permutation_0_0_0', 'permutation_0_0_1', 'permutation_0_0_2', 'permutation_0_0_3']
             sage: constraints
             ['(assert (= permutation_0_0_0 input_3))',
@@ -316,16 +359,16 @@ class Permutation(Component):
              '(assert (= permutation_0_0_2 input_2))',
              '(assert (= permutation_0_0_3 input_1))']
         """
-        input_bit_ids = self._generate_input_ids()
-        output_bit_len, output_bit_ids = self._generate_output_ids()
+        input_ids = self._generate_input_ids()
+        output_ids = self._generate_output_ids()
         bit_perm = self._bit_perm()
-        input_bit_ids_permuted = [input_bit_ids[bit_perm[i]] for i in range(output_bit_len)]
+        input_ids_permuted = [input_ids[position] for position in bit_perm]
         constraints = []
-        for i in range(output_bit_len):
-            equation = smt_utils.smt_equivalent([output_bit_ids[i], input_bit_ids_permuted[i]])
+        for output_id, input_id_permuted in zip(output_ids, input_ids_permuted):
+            equation = smt_utils.smt_equivalent([output_id, input_id_permuted])
             constraints.append(smt_utils.smt_assert(equation))
 
-        return output_bit_ids, constraints
+        return output_ids, constraints
 
     def smt_xor_differential_propagation_constraints(self, model):
         """
@@ -380,16 +423,16 @@ class Permutation(Component):
              '(assert (= permutation_0_0_2_o permutation_0_0_2_i))',
              '(assert (= permutation_0_0_3_o permutation_0_0_1_i))']
         """
-        input_bit_len, input_bit_ids = self._generate_component_input_ids()
-        out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
-        output_bit_len, output_bit_ids = self._generate_output_ids(suffix=out_suffix)
+        input_ids = self._generate_component_input_ids()
+        output_ids = self._generate_output_ids(suffix=constants.OUTPUT_BIT_ID_SUFFIX)
         bit_perm = self._bit_perm()
+        input_ids_permuted = [input_ids[position] for position in bit_perm]
         constraints = []
-        for i in range(output_bit_len):
-            equation = smt_utils.smt_equivalent([output_bit_ids[i], input_bit_ids[bit_perm[i]]])
+        for output_id, input_id_permuted in zip(output_ids, input_ids_permuted):
+            equation = smt_utils.smt_equivalent([output_id, input_id_permuted])
             constraints.append(smt_utils.smt_assert(equation))
 
-        return input_bit_ids + output_bit_ids, constraints
+        return input_ids + output_ids, constraints
 
     def cp_constraints(self):
         """

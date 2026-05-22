@@ -488,17 +488,18 @@ class MultiInputNonlinearLogicalOperator(Component):
             sage: component.sat_bitwise_deterministic_truncated_xor_differential_constraints()[:1]
             (['and_0_0_0_0', 'and_0_0_1_0', 'and_0_0_0_1', 'and_0_0_1_1'],)
         """
-        in_ids_0, in_ids_1 = self._generate_input_double_ids()
-        out_len, out_ids_0, out_ids_1 = self._generate_output_double_ids()
+        input_ids_0, input_ids_1 = self._generate_input_double_ids()
+        output_ids_0, output_ids_1 = self._generate_output_double_ids()
+        output_size = self.output_bit_size
         constraints = []
-        for i in range(out_len):
-            constraints.extend([f"{out_ids_0[i]} -{in_id}" for in_id in in_ids_0[i::out_len]])
-            constraints.extend([f"{out_ids_0[i]} -{in_id}" for in_id in in_ids_1[i::out_len]])
-            constraints.append(f"{out_ids_0[i]} -{out_ids_1[i]}")
-            clause = f"{' '.join(in_ids_0[i::out_len])} {' '.join(in_ids_1[i::out_len])} -{out_ids_0[i]}"
+        for i in range(output_size):
+            constraints.extend([f"{output_ids_0[i]} -{input_id}" for input_id in input_ids_0[i::output_size]])
+            constraints.extend([f"{output_ids_0[i]} -{input_id}" for input_id in input_ids_1[i::output_size]])
+            constraints.append(f"{output_ids_0[i]} -{output_ids_1[i]}")
+            clause = f"{' '.join(input_ids_0[i::output_size])} {' '.join(input_ids_1[i::output_size])} -{output_ids_0[i]}"
             constraints.append(clause)
 
-        return out_ids_0 + out_ids_1, constraints
+        return output_ids_0 + output_ids_1, constraints
 
     def sat_xor_differential_propagation_constraints(self, model=None):
         """
@@ -519,17 +520,18 @@ class MultiInputNonlinearLogicalOperator(Component):
             sage: component.sat_xor_differential_propagation_constraints()[:1]
             (['and_0_0_0', 'and_0_0_1', 'hw_and_0_0_0', 'hw_and_0_0_1'],)
         """
-        input_bit_ids = self._generate_input_ids()
-        output_bit_len, output_bit_ids = self._generate_output_ids()
-        hw_bit_ids = [f"hw_{output_bit_ids[i]}" for i in range(output_bit_len)]
+        input_ids = self._generate_input_ids()
+        output_ids = self._generate_output_ids()
+        output_size = self.output_bit_size
+        hw_bit_ids = [f"hw_{output_ids[i]}" for i in range(output_size)]
         constraints = []
-        for i in range(output_bit_len):
+        for i in range(output_size):
             constraints.extend(
                 sat_utils.cnf_and_differential(
-                    input_bit_ids[i], input_bit_ids[output_bit_len + i], output_bit_ids[i], hw_bit_ids[i]
+                    input_ids[i], input_ids[output_size + i], output_ids[i], hw_bit_ids[i]
                 )
             )
-        result = output_bit_ids + hw_bit_ids, constraints
+        result = output_ids + hw_bit_ids, constraints
 
         return result
 
@@ -548,20 +550,19 @@ class MultiInputNonlinearLogicalOperator(Component):
             sage: component.sat_xor_linear_mask_propagation_constraints()[:1]
             (['and_0_0_0_i', 'and_0_0_1_i', 'and_0_0_2_i', 'and_0_0_3_i', 'and_0_0_0_o', 'and_0_0_1_o', 'hw_and_0_0_0_o', 'hw_and_0_0_1_o'],)
         """
-        _, input_bit_ids = self._generate_component_input_ids()
-        out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
-        output_bit_len, output_bit_ids = self._generate_output_ids(out_suffix)
-        hw_bit_ids = [f"hw_{output_bit_ids[i]}" for i in range(output_bit_len)]
+        input_ids = self._generate_component_input_ids()
+        output_ids = self._generate_output_ids(suffix=constants.OUTPUT_BIT_ID_SUFFIX)
+        output_size = self.output_bit_size
+        hw_bit_ids = [f"hw_{output_ids[i]}" for i in range(output_size)]
         constraints = []
-        for i in range(output_bit_len):
+        for i in range(output_size):
             constraints.extend(
                 sat_utils.cnf_and_linear(
-                    input_bit_ids[i], input_bit_ids[output_bit_len + i], output_bit_ids[i], hw_bit_ids[i]
+                    input_ids[i], input_ids[output_size + i], output_ids[i], hw_bit_ids[i]
                 )
             )
-        result = input_bit_ids + output_bit_ids + hw_bit_ids, constraints
 
-        return result
+        return input_ids + output_ids + hw_bit_ids, constraints
 
     def smt_xor_differential_propagation_constraints(self, model=None):
         """
@@ -586,24 +587,25 @@ class MultiInputNonlinearLogicalOperator(Component):
             sage: component.smt_xor_differential_propagation_constraints()[:1]
             (['and_0_0_0', 'and_0_0_1', 'hw_and_0_0_0', 'hw_and_0_0_1'],)
         """
-        input_bit_ids = self._generate_input_ids()
-        output_bit_len, output_bit_ids = self._generate_output_ids()
-        hw_bit_ids = [f"hw_{output_bit_ids[i]}" for i in range(output_bit_len)]
+        input_ids = self._generate_input_ids()
+        output_ids = self._generate_output_ids()
+        output_size = self.output_bit_size
+        hw_bit_ids = [f"hw_{output_ids[i]}" for i in range(output_size)]
         constraints = []
-        for i in range(output_bit_len):
+        for i in range(output_size):
             minterm_0 = smt_utils.smt_and(
                 (
-                    smt_utils.smt_not(input_bit_ids[i]),
-                    smt_utils.smt_not(input_bit_ids[output_bit_len + i]),
-                    smt_utils.smt_not(output_bit_ids[i]),
+                    smt_utils.smt_not(input_ids[i]),
+                    smt_utils.smt_not(input_ids[output_size + i]),
+                    smt_utils.smt_not(output_ids[i]),
                     smt_utils.smt_not(hw_bit_ids[i]),
                 )
             )
-            minterm_1 = smt_utils.smt_and((input_bit_ids[i], hw_bit_ids[i]))
-            minterm_2 = smt_utils.smt_and((input_bit_ids[output_bit_len + i], hw_bit_ids[i]))
+            minterm_1 = smt_utils.smt_and((input_ids[i], hw_bit_ids[i]))
+            minterm_2 = smt_utils.smt_and((input_ids[output_size + i], hw_bit_ids[i]))
             sop = smt_utils.smt_or((minterm_0, minterm_1, minterm_2))
             constraints.append(smt_utils.smt_assert(sop))
-        result = output_bit_ids + hw_bit_ids, constraints
+        result = output_ids + hw_bit_ids, constraints
 
         return result
 
@@ -622,23 +624,22 @@ class MultiInputNonlinearLogicalOperator(Component):
             sage: component.smt_xor_linear_mask_propagation_constraints()[:1]
             (['and_0_0_0_i', 'and_0_0_1_i', 'and_0_0_2_i', 'and_0_0_3_i', 'and_0_0_0_o', 'and_0_0_1_o', 'hw_and_0_0_0_o', 'hw_and_0_0_1_o'],)
         """
-        _, input_bit_ids = self._generate_component_input_ids()
-        out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
-        output_bit_len, output_bit_ids = self._generate_output_ids(out_suffix)
-        hw_bit_ids = [f"hw_{output_bit_ids[i]}" for i in range(output_bit_len)]
+        input_ids = self._generate_component_input_ids()
+        output_ids = self._generate_output_ids(suffix=constants.OUTPUT_BIT_ID_SUFFIX)
+        output_size = self.output_bit_size
+        hw_bit_ids = [f"hw_{output_ids[i]}" for i in range(output_size)]
         constraints = []
-        for i in range(output_bit_len):
+        for i in range(output_size):
             minterm_0 = smt_utils.smt_and(
                 (
-                    smt_utils.smt_not(input_bit_ids[i]),
-                    smt_utils.smt_not(input_bit_ids[output_bit_len + i]),
-                    smt_utils.smt_not(output_bit_ids[i]),
+                    smt_utils.smt_not(input_ids[i]),
+                    smt_utils.smt_not(input_ids[output_size + i]),
+                    smt_utils.smt_not(output_ids[i]),
                     smt_utils.smt_not(hw_bit_ids[i]),
                 )
             )
-            minterm_1 = smt_utils.smt_and((output_bit_ids[i], hw_bit_ids[i]))
+            minterm_1 = smt_utils.smt_and((output_ids[i], hw_bit_ids[i]))
             sop = smt_utils.smt_or((minterm_0, minterm_1))
             constraints.append(smt_utils.smt_assert(sop))
-        result = input_bit_ids + output_bit_ids + hw_bit_ids, constraints
 
-        return result
+        return input_ids + output_ids + hw_bit_ids, constraints

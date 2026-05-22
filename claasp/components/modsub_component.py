@@ -298,58 +298,59 @@ class ModSub(Modular):
             sage: modsub_component.sat_constraints()[:1]
             (['temp_carry_input2_0', 'temp_input_input2_0', 'temp_input_input2_1', 'carry_modsub_0_0_0', 'modsub_0_0_0', 'modsub_0_0_1'],)
         """
-        input_bit_ids = self._generate_input_ids()
-        output_bit_len, output_bit_ids = self._generate_output_ids()
-        temp_carry_bit_ids = [f"temp_carry_{input_bit_ids[output_bit_len + i]}" for i in range(output_bit_len - 1)]
-        temp_input_bit_ids = [f"temp_input_{input_bit_ids[output_bit_len + i]}" for i in range(output_bit_len)]
-        carry_bit_ids = [f"carry_{output_bit_ids[i]}" for i in range(output_bit_len - 1)]
+        input_ids = self._generate_input_ids()
+        output_ids = self._generate_output_ids()
+        output_size = self.output_bit_size
+        temp_carry_bit_ids = [f"temp_carry_{input_ids[output_size + i]}" for i in range(output_size - 1)]
+        temp_input_ids = [f"temp_input_{input_ids[output_size + i]}" for i in range(output_size)]
+        carry_bit_ids = [f"carry_{output_ids[i]}" for i in range(output_size - 1)]
         constraints = []
         # carries complement 2
-        for i in range(output_bit_len - 2):
+        for i in range(output_size - 2):
             constraints.extend(
                 sat_utils.cnf_carry_comp2(
-                    temp_carry_bit_ids[i], input_bit_ids[output_bit_len + i + 1], temp_carry_bit_ids[i + 1]
+                    temp_carry_bit_ids[i], input_ids[output_size + i + 1], temp_carry_bit_ids[i + 1]
                 )
             )
         constraints.extend(
-            sat_utils.cnf_inequality(temp_carry_bit_ids[output_bit_len - 2], input_bit_ids[2 * output_bit_len - 1])
+            sat_utils.cnf_inequality(temp_carry_bit_ids[output_size - 2], input_ids[2 * output_size - 1])
         )
         # results complement 2
-        for i in range(output_bit_len - 1):
+        for i in range(output_size - 1):
             constraints.extend(
                 sat_utils.cnf_result_comp2(
-                    temp_input_bit_ids[i], input_bit_ids[output_bit_len + i], temp_carry_bit_ids[i]
+                    temp_input_ids[i], input_ids[output_size + i], temp_carry_bit_ids[i]
                 )
             )
         constraints.extend(
-            sat_utils.cnf_equivalent([temp_input_bit_ids[output_bit_len - 1], input_bit_ids[2 * output_bit_len - 1]])
+            sat_utils.cnf_equivalent([temp_input_ids[output_size - 1], input_ids[2 * output_size - 1]])
         )
         # carries
-        for i in range(output_bit_len - 2):
+        for i in range(output_size - 2):
             constraints.extend(
                 sat_utils.cnf_carry(
-                    carry_bit_ids[i], input_bit_ids[i + 1], temp_input_bit_ids[i + 1], carry_bit_ids[i + 1]
+                    carry_bit_ids[i], input_ids[i + 1], temp_input_ids[i + 1], carry_bit_ids[i + 1]
                 )
             )
         constraints.extend(
             sat_utils.cnf_and(
-                carry_bit_ids[output_bit_len - 2],
-                (input_bit_ids[output_bit_len - 1], temp_input_bit_ids[output_bit_len - 1]),
+                carry_bit_ids[output_size - 2],
+                (input_ids[output_size - 1], temp_input_ids[output_size - 1]),
             )
         )
         # results
-        for i in range(output_bit_len - 1):
+        for i in range(output_size - 1):
             constraints.extend(
-                sat_utils.cnf_xor(output_bit_ids[i], [input_bit_ids[i], temp_input_bit_ids[i], carry_bit_ids[i]])
+                sat_utils.cnf_xor(output_ids[i], [input_ids[i], temp_input_ids[i], carry_bit_ids[i]])
             )
         constraints.extend(
             sat_utils.cnf_xor(
-                output_bit_ids[output_bit_len - 1],
-                [input_bit_ids[output_bit_len - 1], temp_input_bit_ids[output_bit_len - 1]],
+                output_ids[output_size - 1],
+                [input_ids[output_size - 1], temp_input_ids[output_size - 1]],
             )
         )
 
-        return temp_carry_bit_ids + temp_input_bit_ids + carry_bit_ids + output_bit_ids, constraints
+        return temp_carry_bit_ids + temp_input_ids + carry_bit_ids + output_ids, constraints
 
     def smt_constraints(self):
         """
@@ -372,51 +373,52 @@ class ModSub(Modular):
             sage: modsub_component.smt_constraints()[:1]
             (['temp_carry_input2_0', 'temp_input_input2_0', 'temp_input_input2_1', 'carry_modsub_0_0_0', 'modsub_0_0_0', 'modsub_0_0_1'],)
         """
-        input_bit_ids = self._generate_input_ids()
-        output_bit_len, output_bit_ids = self._generate_output_ids()
-        temp_carry_bit_ids = [f"temp_carry_{input_bit_ids[output_bit_len + i]}" for i in range(output_bit_len - 1)]
-        temp_input_bit_ids = [f"temp_input_{input_bit_ids[output_bit_len + i]}" for i in range(output_bit_len)]
-        carry_bit_ids = [f"carry_{output_bit_ids[i]}" for i in range(output_bit_len - 1)]
+        input_ids = self._generate_input_ids()
+        output_ids = self._generate_output_ids()
+        output_size = self.output_bit_size
+        temp_carry_bit_ids = [f"temp_carry_{input_ids[output_size + i]}" for i in range(output_size - 1)]
+        temp_input_ids = [f"temp_input_{input_ids[output_size + i]}" for i in range(output_size)]
+        carry_bit_ids = [f"carry_{output_ids[i]}" for i in range(output_size - 1)]
         constraints = []
 
         # carries complement 2
-        for i in range(output_bit_len - 2):
+        for i in range(output_size - 2):
             operation = smt_utils.smt_and(
-                (smt_utils.smt_not(input_bit_ids[output_bit_len + i + 1]), temp_carry_bit_ids[i + 1])
+                (smt_utils.smt_not(input_ids[output_size + i + 1]), temp_carry_bit_ids[i + 1])
             )
             equation = smt_utils.smt_equivalent((temp_carry_bit_ids[i], operation))
             constraints.append(smt_utils.smt_assert(equation))
         distinction = smt_utils.smt_distinct(
-            temp_carry_bit_ids[output_bit_len - 2], input_bit_ids[2 * output_bit_len - 1]
+            temp_carry_bit_ids[output_size - 2], input_ids[2 * output_size - 1]
         )
         constraints.append(smt_utils.smt_assert(distinction))
 
         # results complement 2
-        for i in range(output_bit_len - 1):
-            operation = smt_utils.smt_xor((smt_utils.smt_not(input_bit_ids[output_bit_len + i]), temp_carry_bit_ids[i]))
-            equation = smt_utils.smt_equivalent((temp_input_bit_ids[i], operation))
+        for i in range(output_size - 1):
+            operation = smt_utils.smt_xor((smt_utils.smt_not(input_ids[output_size + i]), temp_carry_bit_ids[i]))
+            equation = smt_utils.smt_equivalent((temp_input_ids[i], operation))
             constraints.append(smt_utils.smt_assert(equation))
         equation = smt_utils.smt_equivalent(
-            (temp_input_bit_ids[output_bit_len - 1], input_bit_ids[2 * output_bit_len - 1])
+            (temp_input_ids[output_size - 1], input_ids[2 * output_size - 1])
         )
         constraints.append(smt_utils.smt_assert(equation))
 
         # carries
-        for i in range(output_bit_len - 2):
-            operation = smt_utils.smt_carry(input_bit_ids[i + 1], temp_input_bit_ids[i + 1], carry_bit_ids[i + 1])
+        for i in range(output_size - 2):
+            operation = smt_utils.smt_carry(input_ids[i + 1], temp_input_ids[i + 1], carry_bit_ids[i + 1])
             equation = smt_utils.smt_equivalent((carry_bit_ids[i], operation))
             constraints.append(smt_utils.smt_assert(equation))
-        operation = smt_utils.smt_and((input_bit_ids[output_bit_len - 1], temp_input_bit_ids[output_bit_len - 1]))
-        equation = smt_utils.smt_equivalent((carry_bit_ids[output_bit_len - 2], operation))
+        operation = smt_utils.smt_and((input_ids[output_size - 1], temp_input_ids[output_size - 1]))
+        equation = smt_utils.smt_equivalent((carry_bit_ids[output_size - 2], operation))
         constraints.append(smt_utils.smt_assert(equation))
 
         # results
-        for i in range(output_bit_len - 1):
-            operation = smt_utils.smt_xor((input_bit_ids[i], temp_input_bit_ids[i], carry_bit_ids[i]))
-            equation = smt_utils.smt_equivalent((output_bit_ids[i], operation))
+        for i in range(output_size - 1):
+            operation = smt_utils.smt_xor((input_ids[i], temp_input_ids[i], carry_bit_ids[i]))
+            equation = smt_utils.smt_equivalent((output_ids[i], operation))
             constraints.append(smt_utils.smt_assert(equation))
-        operation = smt_utils.smt_xor((input_bit_ids[output_bit_len - 1], temp_input_bit_ids[output_bit_len - 1]))
-        equation = smt_utils.smt_equivalent((output_bit_ids[output_bit_len - 1], operation))
+        operation = smt_utils.smt_xor((input_ids[output_size - 1], temp_input_ids[output_size - 1]))
+        equation = smt_utils.smt_equivalent((output_ids[output_size - 1], operation))
         constraints.append(smt_utils.smt_assert(equation))
 
-        return temp_carry_bit_ids + temp_input_bit_ids + carry_bit_ids + output_bit_ids, constraints
+        return temp_carry_bit_ids + temp_input_ids + carry_bit_ids + output_ids, constraints

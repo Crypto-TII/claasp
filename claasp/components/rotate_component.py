@@ -183,7 +183,7 @@ class Rotate(Component):
             )
 
         return cp_declarations, cp_constraints
-        
+
     def cp_deterministic_truncated_xor_differential_trail_constraints(self):
         return self.cp_constraints()
 
@@ -633,15 +633,15 @@ class Rotate(Component):
             sage: rotate_component.sat_constraints()
             (['rot_0_0_0', 'rot_0_0_1'], ['rot_0_0_0 -input_1', 'input_1 -rot_0_0_0', 'rot_0_0_1 -input_0', 'input_0 -rot_0_0_1'])
         """
-        input_bit_ids = self._generate_input_ids()
-        output_bit_len, output_bit_ids = self._generate_output_ids()
+        input_ids = self._generate_input_ids()
+        output_ids = self._generate_output_ids()
         rotation = self.description[1]
-        input_bit_ids_rotated = input_bit_ids[-rotation:] + input_bit_ids[:-rotation]
+        input_ids_rotated = input_ids[-rotation:] + input_ids[:-rotation]
         constraints = []
-        for i in range(output_bit_len):
-            constraints.extend(sat_utils.cnf_equivalent([output_bit_ids[i], input_bit_ids_rotated[i]]))
+        for output_id, input_id_rotated in zip(output_ids, input_ids_rotated):
+            constraints.extend(sat_utils.cnf_equivalent([output_id, input_id_rotated]))
 
-        return output_bit_ids, constraints
+        return output_ids, constraints
 
     def sat_bitwise_deterministic_truncated_xor_differential_constraints(self):
         """
@@ -666,18 +666,18 @@ class Rotate(Component):
             sage: rotate_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
             (['rot_0_0_0_0', 'rot_0_0_1_0', 'rot_0_0_0_1', 'rot_0_0_1_1'], ['rot_0_0_0_0 -input_1_0', 'input_1_0 -rot_0_0_0_0', 'rot_0_0_1_0 -input_0_0', 'input_0_0 -rot_0_0_1_0', 'rot_0_0_0_1 -input_1_1', 'input_1_1 -rot_0_0_0_1', 'rot_0_0_1_1 -input_0_1', 'input_0_1 -rot_0_0_1_1'])
         """
-        in_ids_0, in_ids_1 = self._generate_input_double_ids()
-        _, out_ids_0, out_ids_1 = self._generate_output_double_ids()
+        input_ids_0, input_ids_1 = self._generate_input_double_ids()
+        output_ids_0, output_ids_1 = self._generate_output_double_ids()
         rotation = self.description[1]
-        in_ids_0_rotated = in_ids_0[-rotation:] + in_ids_0[:-rotation]
-        in_ids_1_rotated = in_ids_1[-rotation:] + in_ids_1[:-rotation]
+        input_ids_0_rotated = input_ids_0[-rotation:] + input_ids_0[:-rotation]
+        input_ids_1_rotated = input_ids_1[-rotation:] + input_ids_1[:-rotation]
         constraints = []
-        for out_id, in_id in zip(out_ids_0, in_ids_0_rotated):
-            constraints.extend(sat_utils.cnf_equivalent([out_id, in_id]))
-        for out_id, in_id in zip(out_ids_1, in_ids_1_rotated):
-            constraints.extend(sat_utils.cnf_equivalent([out_id, in_id]))
+        for output_id, input_id in zip(output_ids_0, input_ids_0_rotated):
+            constraints.extend(sat_utils.cnf_equivalent([output_id, input_id]))
+        for output_id, input_id in zip(output_ids_1, input_ids_1_rotated):
+            constraints.extend(sat_utils.cnf_equivalent([output_id, input_id]))
 
-        return out_ids_0 + out_ids_1, constraints
+        return output_ids_0 + output_ids_1, constraints
 
     def sat_semi_deterministic_truncated_xor_differential_constraints(self):
         return self.sat_bitwise_deterministic_truncated_xor_differential_constraints()
@@ -727,17 +727,15 @@ class Rotate(Component):
             sage: rotate_component.sat_xor_linear_mask_propagation_constraints()
             (['rot_0_0_0_i', 'rot_0_0_1_i', 'rot_0_0_0_o', 'rot_0_0_1_o'], ['rot_0_0_0_o -rot_0_0_1_i', 'rot_0_0_1_i -rot_0_0_0_o', 'rot_0_0_1_o -rot_0_0_0_i', 'rot_0_0_0_i -rot_0_0_1_o'])
         """
-        _, input_bit_ids = self._generate_component_input_ids()
-        out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
-        output_bit_len, output_bit_ids = self._generate_output_ids(out_suffix)
+        input_ids = self._generate_component_input_ids()
+        output_ids = self._generate_output_ids(suffix=constants.OUTPUT_BIT_ID_SUFFIX)
         rotation = self.description[1]
-        input_bit_ids_rotated = input_bit_ids[-rotation:] + input_bit_ids[:-rotation]
+        input_ids_rotated = input_ids[-rotation:] + input_ids[:-rotation]
         constraints = []
-        for i in range(output_bit_len):
-            constraints.extend(sat_utils.cnf_equivalent([output_bit_ids[i], input_bit_ids_rotated[i]]))
-        result = input_bit_ids + output_bit_ids, constraints
+        for output_id, input_id_rotated in zip(output_ids, input_ids_rotated):
+            constraints.extend(sat_utils.cnf_equivalent([output_id, input_id_rotated]))
 
-        return result
+        return input_ids + output_ids, constraints
 
     def smt_constraints(self):
         """
@@ -758,16 +756,16 @@ class Rotate(Component):
             sage: rotate_component.smt_constraints()
             (['rot_0_0_0', 'rot_0_0_1'], ['(assert (= rot_0_0_0 input_1))', '(assert (= rot_0_0_1 input_0))'])
         """
-        input_bit_ids = self._generate_input_ids()
-        output_bit_len, output_bit_ids = self._generate_output_ids()
+        input_ids = self._generate_input_ids()
+        output_ids = self._generate_output_ids()
         rotation = self.description[1]
-        input_bit_ids_rotated = input_bit_ids[-rotation:] + input_bit_ids[:-rotation]
+        input_ids_rotated = input_ids[-rotation:] + input_ids[:-rotation]
         constraints = []
-        for i in range(output_bit_len):
-            equation = smt_utils.smt_equivalent([output_bit_ids[i], input_bit_ids_rotated[i]])
+        for output_id, input_id_rotated in zip(output_ids, input_ids_rotated):
+            equation = smt_utils.smt_equivalent([output_id, input_id_rotated])
             constraints.append(smt_utils.smt_assert(equation))
 
-        return output_bit_ids, constraints
+        return output_ids, constraints
 
     def smt_xor_differential_propagation_constraints(self, model=None):
         """
@@ -812,15 +810,13 @@ class Rotate(Component):
             sage: rotate_component.smt_xor_linear_mask_propagation_constraints()
             (['rot_0_0_0_i', 'rot_0_0_1_i', 'rot_0_0_0_o', 'rot_0_0_1_o'], ['(assert (= rot_0_0_0_o rot_0_0_1_i))', '(assert (= rot_0_0_1_o rot_0_0_0_i))'])
         """
-        _, input_bit_ids = self._generate_component_input_ids()
-        out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
-        output_bit_len, output_bit_ids = self._generate_output_ids(out_suffix)
+        input_ids = self._generate_component_input_ids()
+        output_ids = self._generate_output_ids(suffix=constants.OUTPUT_BIT_ID_SUFFIX)
         rotation = self.description[1]
-        input_bit_ids_rotated = input_bit_ids[-rotation:] + input_bit_ids[:-rotation]
+        input_ids_rotated = input_ids[-rotation:] + input_ids[:-rotation]
         constraints = []
-        for i in range(output_bit_len):
-            equation = smt_utils.smt_equivalent([output_bit_ids[i], input_bit_ids_rotated[i]])
+        for output_id, input_id_rotated in zip(output_ids, input_ids_rotated):
+            equation = smt_utils.smt_equivalent([output_id, input_id_rotated])
             constraints.append(smt_utils.smt_assert(equation))
-        result = input_bit_ids + output_bit_ids, constraints
 
-        return result
+        return input_ids + output_ids, constraints

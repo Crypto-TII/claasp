@@ -507,13 +507,13 @@ class Not(Component):
             sage: constraints[0]
             'not_0_0_0 input0_0'
         """
-        input_bit_ids = self._generate_input_ids()
-        output_bit_len, output_bit_ids = self._generate_output_ids()
+        input_ids = self._generate_input_ids()
+        output_ids = self._generate_output_ids()
         constraints = []
-        for i in range(output_bit_len):
-            constraints.extend(sat_utils.cnf_inequality(output_bit_ids[i], input_bit_ids[i]))
+        for output_id, input_id in zip(output_ids, input_ids):
+            constraints.extend(sat_utils.cnf_inequality(output_id, input_id))
 
-        return output_bit_ids, constraints
+        return output_ids, constraints
 
     def sat_bitwise_deterministic_truncated_xor_differential_constraints(self):
         """
@@ -542,16 +542,16 @@ class Not(Component):
             sage: len(output_ids)
             64
         """
-        in_ids_0, in_ids_1 = self._generate_input_double_ids()
-        _, out_ids_0, out_ids_1 = self._generate_output_double_ids()
+        input_ids_0, input_ids_1 = self._generate_input_double_ids()
+        output_ids_0, output_ids_1 = self._generate_output_double_ids()
         constraints = []
-        for out_id, in_id in zip(out_ids_0, in_ids_0):
-            constraints.extend(sat_utils.cnf_equivalent([out_id, in_id]))
-        for out_id, in_id_0, in_id_1 in zip(out_ids_1, in_ids_0, in_ids_1):
-            constraints.append(f"{in_id_0} {in_id_1} {out_id}")
-            constraints.append(f"{in_id_0} -{in_id_1} -{out_id}")
+        for output_id, input_id in zip(output_ids_0, input_ids_0):
+            constraints.extend(sat_utils.cnf_equivalent([output_id, input_id]))
+        for output_id, input_id_0, input_id_1 in zip(output_ids_1, input_ids_0, input_ids_1):
+            constraints.append(f"{input_id_0} {input_id_1} {output_id}")
+            constraints.append(f"{input_id_0} -{input_id_1} -{output_id}")
 
-        return out_ids_0 + out_ids_1, constraints
+        return output_ids_0 + output_ids_1, constraints
 
     def sat_xor_differential_propagation_constraints(self, model=None):
         """
@@ -578,13 +578,13 @@ class Not(Component):
             sage: constraints[0]
             'not_0_0_0 -input0_0'
         """
-        input_bit_ids = self._generate_input_ids()
-        output_bit_len, output_bit_ids = self._generate_output_ids()
+        input_ids = self._generate_input_ids()
+        output_ids = self._generate_output_ids()
         constraints = []
-        for i in range(output_bit_len):
-            constraints.extend(sat_utils.cnf_equivalent([output_bit_ids[i], input_bit_ids[i]]))
-        result = output_bit_ids, constraints
-        return result
+        for output_id, input_id in zip(output_ids, input_ids):
+            constraints.extend(sat_utils.cnf_equivalent([output_id, input_id]))
+
+        return output_ids, constraints
 
     def sat_xor_linear_mask_propagation_constraints(self, model=None):
         """
@@ -613,14 +613,13 @@ class Not(Component):
             sage: constraints[0]
             'not_0_0_0_i -not_0_0_0_o'
         """
-        _, input_bit_ids = self._generate_component_input_ids()
-        out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
-        output_bit_len, output_bit_ids = self._generate_output_ids(suffix=out_suffix)
+        input_ids = self._generate_component_input_ids()
+        output_ids = self._generate_output_ids(suffix=constants.OUTPUT_BIT_ID_SUFFIX)
         constraints = []
-        for i in range(output_bit_len):
-            constraints.extend(sat_utils.cnf_equivalent([input_bit_ids[i], output_bit_ids[i]]))
-        result = input_bit_ids + output_bit_ids, constraints
-        return result
+        for input_id, output_id in zip(input_ids, output_ids):
+            constraints.extend(sat_utils.cnf_equivalent([input_id, output_id]))
+
+        return input_ids + output_ids, constraints
 
     def smt_constraints(self):
         """
@@ -645,14 +644,14 @@ class Not(Component):
             sage: constraints[0]
             '(assert (distinct not_0_0_0 input0_0))'
         """
-        input_bit_ids = self._generate_input_ids()
-        output_bit_len, output_bit_ids = self._generate_output_ids()
+        input_ids = self._generate_input_ids()
+        output_ids = self._generate_output_ids()
         constraints = []
-        for i in range(output_bit_len):
-            equation = smt_utils.smt_distinct(output_bit_ids[i], input_bit_ids[i])
+        for output_id, input_id in zip(output_ids, input_ids):
+            equation = smt_utils.smt_distinct(output_id, input_id)
             constraints.append(smt_utils.smt_assert(equation))
 
-        return output_bit_ids, constraints
+        return output_ids, constraints
 
     def smt_xor_differential_propagation_constraints(self, model=None):
         """
@@ -675,14 +674,14 @@ class Not(Component):
             sage: constraints[0]
             '(assert (= not_0_0_0 input0_0))'
         """
-        input_bit_ids = self._generate_input_ids()
-        output_bit_len, output_bit_ids = self._generate_output_ids()
+        input_ids = self._generate_input_ids()
+        output_ids = self._generate_output_ids()
         constraints = []
-        for i in range(output_bit_len):
-            equation = smt_utils.smt_equivalent([output_bit_ids[i], input_bit_ids[i]])
+        for output_id, input_id in zip(output_ids, input_ids):
+            equation = smt_utils.smt_equivalent([output_id, input_id])
             constraints.append(smt_utils.smt_assert(equation))
-        result = output_bit_ids, constraints
-        return result
+
+        return output_ids, constraints
 
     def smt_xor_linear_mask_propagation_constraints(self, model=None):
         """
@@ -705,12 +704,11 @@ class Not(Component):
             sage: constraints[0]
             '(assert (= not_0_0_0_i not_0_0_0_o))'
         """
-        _, input_bit_ids = self._generate_component_input_ids()
-        out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
-        _, output_bit_ids = self._generate_output_ids(suffix=out_suffix)
+        input_ids = self._generate_component_input_ids()
+        output_ids = self._generate_output_ids(suffix=constants.OUTPUT_BIT_ID_SUFFIX)
         constraints = [
-            smt_utils.smt_assert(smt_utils.smt_equivalent((input_bit_id, output_bit_id)))
-            for input_bit_id, output_bit_id in zip(input_bit_ids, output_bit_ids)
+            smt_utils.smt_assert(smt_utils.smt_equivalent((input_id, output_id)))
+            for input_id, output_id in zip(input_ids, output_ids)
         ]
-        result = input_bit_ids + output_bit_ids, constraints
-        return result
+
+        return input_ids + output_ids, constraints

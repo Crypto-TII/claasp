@@ -253,15 +253,15 @@ class Xor(Component):
             (['xor_0_0_0', 'xor_0_0_1'],
             ['x -xor_0_0_0 plaintext_0 key_0', 'x -xor_0_0_1 plaintext_1 key_1'])
         """
-        input_bit_ids = self._generate_input_ids()
-        output_bit_len, output_bit_ids = self._generate_output_ids()
+        input_ids = self._generate_input_ids()
+        output_ids = self._generate_output_ids()
         constraints = []
-        for i in range(output_bit_len):
-            operands = [f"x -{output_bit_ids[i]}"]
-            operands.extend(input_bit_ids[i::output_bit_len])
+        for i, output_id in enumerate(output_ids):
+            operands = [f"x -{output_id}"]
+            operands.extend(input_ids[i::self.output_bit_size])
             constraints.append(" ".join(operands))
 
-        return output_bit_ids, constraints
+        return output_ids, constraints
 
     def cms_xor_differential_propagation_constraints(self, model=None):
         return self.cms_constraints()
@@ -1216,16 +1216,14 @@ class Xor(Component):
             'xor_0_0_1 plaintext_1 -key_1',
             '-xor_0_0_1 -plaintext_1 -key_1'])
         """
-        input_bit_ids = self._generate_input_ids()
-        output_bit_len, output_bit_ids = self._generate_output_ids()
+        input_ids = self._generate_input_ids()
+        output_ids = self._generate_output_ids()
         constraints = []
-        for i in range(output_bit_len):
-            result_bit_ids = [f"inter_{j}_{output_bit_ids[i]}" for j in range(self.description[1] - 2)] + [
-                output_bit_ids[i]
-            ]
-            constraints.extend(sat_utils.cnf_xor_seq(result_bit_ids, input_bit_ids[i::output_bit_len]))
+        for i, output_id in enumerate(output_ids):
+            result_bit_ids = [f"inter_{j}_{output_id}" for j in range(self.description[1] - 2)] + [output_id]
+            constraints.extend(sat_utils.cnf_xor_seq(result_bit_ids, input_ids[i::self.output_bit_size]))
 
-        return output_bit_ids, constraints
+        return output_ids, constraints
 
     def sat_bitwise_deterministic_truncated_xor_differential_constraints(self):
         """
@@ -1261,18 +1259,18 @@ class Xor(Component):
             'key_1_1 xor_0_0_1_0 xor_0_0_1_1 -plaintext_1_1',
             'xor_0_0_1_0 -plaintext_1_1 -key_1_1 -xor_0_0_1_1'])
         """
-        in_ids_0, in_ids_1 = self._generate_input_double_ids()
-        out_len, out_ids_0, out_ids_1 = self._generate_output_double_ids()
-        in_ids = [(id_0, id_1) for id_0, id_1 in zip(in_ids_0, in_ids_1)]
-        out_ids = [(id_0, id_1) for id_0, id_1 in zip(out_ids_0, out_ids_1)]
+        input_ids_0, input_ids_1 = self._generate_input_double_ids()
+        output_ids_0, output_ids_1 = self._generate_output_double_ids()
+        input_ids = [input_ids for input_ids in zip(input_ids_0, input_ids_1)]
+        output_ids = [output_ids for output_ids in zip(output_ids_0, output_ids_1)]
         constraints = []
-        for i, out_id in enumerate(out_ids):
+        for i, output_id in enumerate(output_ids):
             result_ids = [
                 (f"inter_{j}_{self.id}_{i}_0", f"inter_{j}_{self.id}_{i}_1") for j in range(self.description[1] - 2)
-            ] + [out_id]
-            constraints.extend(sat_utils.cnf_xor_truncated_seq(result_ids, in_ids[i::out_len]))
+            ] + [output_id]
+            constraints.extend(sat_utils.cnf_xor_truncated_seq(result_ids, input_ids[i::self.output_bit_size]))
 
-        return out_ids_0 + out_ids_1, constraints
+        return output_ids_0 + output_ids_1, constraints
 
     def sat_semi_deterministic_truncated_xor_differential_constraints(self):
         return self.sat_bitwise_deterministic_truncated_xor_differential_constraints()
@@ -1337,16 +1335,14 @@ class Xor(Component):
             'xor_0_0_3_i -xor_0_0_1_i',
             'xor_0_0_1_o -xor_0_0_3_i'])
         """
-        _, input_bit_ids = self._generate_component_input_ids()
-        out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
-        output_bit_len, output_bit_ids = self._generate_output_ids(suffix=out_suffix)
-        bit_ids = input_bit_ids + output_bit_ids
+        input_ids = self._generate_component_input_ids()
+        output_ids = self._generate_output_ids(suffix=constants.OUTPUT_BIT_ID_SUFFIX)
+        bit_ids = input_ids + output_ids
         constraints = []
-        for i in range(output_bit_len):
-            constraints.extend(sat_utils.cnf_equivalent(bit_ids[i::output_bit_len]))
-        result = bit_ids, constraints
+        for i in range(self.output_bit_size):
+            constraints.extend(sat_utils.cnf_equivalent(bit_ids[i::self.output_bit_size]))
 
-        return result
+        return bit_ids, constraints
 
     def smt_constraints(self):
         """
@@ -1369,15 +1365,15 @@ class Xor(Component):
             ['(assert (= xor_0_0_0 (xor plaintext_0 key_0)))',
             '(assert (= xor_0_0_1 (xor plaintext_1 key_1)))'])
         """
-        input_bit_ids = self._generate_input_ids()
-        output_bit_len, output_bit_ids = self._generate_output_ids()
+        input_ids = self._generate_input_ids()
+        output_ids = self._generate_output_ids()
         constraints = []
-        for i in range(output_bit_len):
-            operation = smt_utils.smt_xor(input_bit_ids[i::output_bit_len])
-            equation = smt_utils.smt_equivalent([output_bit_ids[i], operation])
+        for i, output_id in enumerate(output_ids):
+            operation = smt_utils.smt_xor(input_ids[i::self.output_bit_size])
+            equation = smt_utils.smt_equivalent([output_id, operation])
             constraints.append(smt_utils.smt_assert(equation))
 
-        return output_bit_ids, constraints
+        return output_ids, constraints
 
     def smt_xor_differential_propagation_constraints(self, model=None):
         """
@@ -1428,17 +1424,15 @@ class Xor(Component):
             ['(assert (= xor_0_0_0_o xor_0_0_0_i xor_0_0_2_i))',
             '(assert (= xor_0_0_1_o xor_0_0_1_i xor_0_0_3_i))'])
         """
-        _, input_bit_ids = self._generate_component_input_ids()
-        out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
-        output_bit_len, output_bit_ids = self._generate_output_ids(suffix=out_suffix)
-        bit_ids = output_bit_ids + input_bit_ids
+        input_ids = self._generate_component_input_ids()
+        output_ids = self._generate_output_ids(suffix=constants.OUTPUT_BIT_ID_SUFFIX)
+        bit_ids = output_ids + input_ids
         constraints = []
-        for i in range(output_bit_len):
-            equation = smt_utils.smt_equivalent(bit_ids[i::output_bit_len])
+        for i in range(self.output_bit_size):
+            equation = smt_utils.smt_equivalent(bit_ids[i::self.output_bit_size])
             constraints.append(smt_utils.smt_assert(equation))
-        result = bit_ids, constraints
 
-        return result
+        return bit_ids, constraints
 
     def cp_transform_xor_components_for_first_step(self, model):
         """

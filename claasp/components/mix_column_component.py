@@ -864,8 +864,8 @@ class MixColumn(LinearLayer):
         self.description = matrix_transposed
         variables, constraints = super().sat_constraints()
         self.description = original_description
-        result = variables, constraints
-        return result
+
+        return variables, constraints
 
     def sat_bitwise_deterministic_truncated_xor_differential_constraints(self):
         """
@@ -920,9 +920,10 @@ class MixColumn(LinearLayer):
         matrix_transposed = [[matrix[i][j] for i in range(matrix.nrows())] for j in range(matrix.ncols())]
         original_description = deepcopy(self.description)
         self.description = matrix_transposed
-        out_ids, constraints = super().sat_bitwise_deterministic_truncated_xor_differential_constraints()
+        variables, constraints = super().sat_bitwise_deterministic_truncated_xor_differential_constraints()
         self.description = original_description
-        return out_ids, constraints
+
+        return variables, constraints
 
     def sat_xor_differential_propagation_constraints(self, model=None):
         """
@@ -1022,8 +1023,8 @@ class MixColumn(LinearLayer):
         self.description = matrix_transposed
         variables, constraints = super().sat_xor_linear_mask_propagation_constraints()
         self.description = original_description
-        result = variables, constraints
-        return result
+
+        return variables, constraints
 
     def smt_constraints(self):
         """
@@ -1060,8 +1061,8 @@ class MixColumn(LinearLayer):
         self.description = matrix_transposed
         variables, constraints = super().smt_constraints()
         self.description = original_description
-        result = variables, constraints
-        return result
+
+        return variables, constraints
 
     def smt_xor_differential_propagation_constraints(self, model=None):
         """
@@ -1141,5 +1142,5 @@ class MixColumn(LinearLayer):
         self.description = matrix_transposed
         variables, constraints = super().smt_xor_linear_mask_propagation_constraints()
         self.description = original_description
-        result = variables, constraints
-        return result
+
+        return variables, constraints

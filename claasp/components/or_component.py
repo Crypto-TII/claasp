@@ -295,13 +295,13 @@ class Or(MultiInputNonlinearLogicalOperator):
             'or_0_0_1 -input2_1',
             '-or_0_0_1 input1_1 input2_1'])
         """
-        input_bit_ids = self._generate_input_ids()
-        output_bit_len, output_bit_ids = self._generate_output_ids()
+        input_ids = self._generate_input_ids()
+        output_ids = self._generate_output_ids()
         constraints = []
-        for i in range(output_bit_len):
-            constraints.extend(sat_utils.cnf_or(output_bit_ids[i], input_bit_ids[i::output_bit_len]))
+        for i, output_id in enumerate(output_ids):
+            constraints.extend(sat_utils.cnf_or(output_id, input_ids[i::self.output_bit_size]))
 
-        return output_bit_ids, constraints
+        return output_ids, constraints
 
     def smt_constraints(self):
         """
@@ -324,12 +324,12 @@ class Or(MultiInputNonlinearLogicalOperator):
             ['(assert (= or_0_0_0 (or input1_0 input2_0)))',
             '(assert (= or_0_0_1 (or input1_1 input2_1)))'])
         """
-        input_bit_ids = self._generate_input_ids()
-        output_bit_len, output_bit_ids = self._generate_output_ids()
+        input_ids = self._generate_input_ids()
+        output_ids = self._generate_output_ids()
         constraints = []
-        for i in range(output_bit_len):
-            operation = smt_utils.smt_or(input_bit_ids[i::output_bit_len])
-            equation = smt_utils.smt_equivalent((output_bit_ids[i], operation))
+        for i,output_id in enumerate(output_ids):
+            operation = smt_utils.smt_or(input_ids[i::self.output_bit_size])
+            equation = smt_utils.smt_equivalent((output_id, operation))
             constraints.append(smt_utils.smt_assert(equation))
 
-        return output_bit_ids, constraints
+        return output_ids, constraints

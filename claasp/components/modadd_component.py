@@ -252,35 +252,36 @@ class ModAdd(Modular):
             sage: modadd_component.cms_constraints()[:1]
             (['carry_modadd_0_0_0', 'modadd_0_0_0', 'modadd_0_0_1'],)
         """
-        input_bit_ids = self._generate_input_ids()
-        output_bit_len, output_bit_ids = self._generate_output_ids()
-        carry_bit_ids = [f"carry_{output_bit_ids[i]}" for i in range(output_bit_len - 1)]
+        input_ids = self._generate_input_ids()
+        output_ids = self._generate_output_ids()
+        output_size = self.output_bit_size
+        carry_bit_ids = [f"carry_{output_ids[i]}" for i in range(output_size - 1)]
         constraints = []
         # carries
-        for i in range(output_bit_len - 2):
+        for i in range(output_size - 2):
             constraints.extend(
                 sat_utils.cnf_carry(
-                    carry_bit_ids[i], input_bit_ids[i + 1], input_bit_ids[output_bit_len + i + 1], carry_bit_ids[i + 1]
+                    carry_bit_ids[i], input_ids[i + 1], input_ids[output_size + i + 1], carry_bit_ids[i + 1]
                 )
             )
         constraints.extend(
             sat_utils.cnf_and(
-                carry_bit_ids[output_bit_len - 2],
-                (input_bit_ids[output_bit_len - 1], input_bit_ids[2 * output_bit_len - 1]),
+                carry_bit_ids[output_size - 2],
+                (input_ids[output_size - 1], input_ids[2 * output_size - 1]),
             )
         )
         # results for CryptoMiniSat can be implemented using the leading x
-        for i in range(output_bit_len - 1):
+        for i in range(output_size - 1):
             constraints.append(
-                f"x -{output_bit_ids[i]} {input_bit_ids[i]} {input_bit_ids[output_bit_len + i]} {carry_bit_ids[i]}"
+                f"x -{output_ids[i]} {input_ids[i]} {input_ids[output_size + i]} {carry_bit_ids[i]}"
             )
         constraints.append(
-            f"x -{output_bit_ids[output_bit_len - 1]} "
-            f"{input_bit_ids[output_bit_len - 1]} "
-            f"{input_bit_ids[2 * output_bit_len - 1]}"
+            f"x -{output_ids[output_size - 1]} "
+            f"{input_ids[output_size - 1]} "
+            f"{input_ids[2 * output_size - 1]}"
         )
 
-        return carry_bit_ids + output_bit_ids, constraints
+        return carry_bit_ids + output_ids, constraints
 
     def cp_constraints(self):
         """
@@ -387,10 +388,11 @@ class ModAdd(Modular):
             (['carry_0_modadd_0_0_0', 'modadd_0_0_0', 'modadd_0_0_1'],)
         """
         input_ids = self._generate_input_ids()
-        output_len, output_ids = self._generate_output_ids()
+        output_ids = self._generate_output_ids()
+        output_size = self.output_bit_size
         num_of_addenda = self.description[1]
         # reformat of the in_ids
-        inputs_ids = [input_ids[i * output_len : (i + 1) * output_len] for i in range(num_of_addenda)]
+        inputs_ids = [input_ids[i * output_size : (i + 1) * output_size] for i in range(num_of_addenda)]
         # carries
         carries_ids = [[f"carry_{i}_{output_id}" for output_id in output_ids[:-1]] for i in range(num_of_addenda - 1)]
         # reformat of the outputs_ids
@@ -424,10 +426,11 @@ class ModAdd(Modular):
             (['carry_0_modadd_0_0_0', 'modadd_0_0_0', 'modadd_0_0_1'],)
         """
         input_ids = self._generate_input_ids()
-        output_len, output_ids = self._generate_output_ids()
+        output_ids = self._generate_output_ids()
+        output_size = self.output_bit_size
         num_of_addenda = self.description[1]
         # reformat of the in_ids
-        inputs_ids = [input_ids[i * output_len : (i + 1) * output_len] for i in range(num_of_addenda)]
+        inputs_ids = [input_ids[i * output_size : (i + 1) * output_size] for i in range(num_of_addenda)]
         # carries
         carries_ids = [[f"carry_{i}_{output_id}" for output_id in output_ids[:-1]] for i in range(num_of_addenda - 1)]
         # reformat of the outputs_ids

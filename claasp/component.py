@@ -286,14 +286,11 @@ class Component:
             sage: component_input = Input(4, ['input'], [[0, 1, 2, 3]])
             sage: component = Component('my_component_id', 'my_component_type', component_input, 4, [])
             sage: component._generate_component_input_ids()
-            (4, ['my_component_id_0_i', 'my_component_id_1_i', 'my_component_id_2_i', 'my_component_id_3_i'])
+            ['my_component_id_0_i', 'my_component_id_1_i', 'my_component_id_2_i', 'my_component_id_3_i']
         """
-        input_id_link = self.id
-        in_suffix = constants.INPUT_BIT_ID_SUFFIX
-        input_bit_size = self.input_bit_size
-        input_bit_ids = [f"{input_id_link}_{i}{in_suffix}" for i in range(input_bit_size)]
+        input_ids = [f"{self.id}_{i}{constants.INPUT_BIT_ID_SUFFIX}" for i in range(self.input_bit_size)]
 
-        return input_bit_size, input_bit_ids
+        return input_ids
 
     def _generate_input_ids(self, suffix=""):
         """
@@ -310,13 +307,11 @@ class Component:
             sage: component._generate_input_ids(suffix="my_suffix")
             ['input_0my_suffix', 'input_1my_suffix', 'input_2my_suffix', 'input_3my_suffix']
         """
-        input_id_link = self.input_id_links
-        input_bit_positions = self.input_bit_positions
-        input_bit_ids = []
-        for link, positions in zip(input_id_link, input_bit_positions):
-            input_bit_ids.extend([f"{link}_{j}{suffix}" for j in positions])
+        input_ids = []
+        for i, link in enumerate(self.input_id_links):
+            input_ids.extend([f"{link}_{position}{suffix}" for position in self.input_bit_positions[i]])
 
-        return input_bit_ids
+        return input_ids
 
     def _generate_input_double_ids(self):
         """
@@ -331,10 +326,10 @@ class Component:
             sage: component._generate_input_double_ids()
             (['input_0_0', 'input_1_0', 'input_2_0', 'input_3_0'], ['input_0_1', 'input_1_1', 'input_2_1', 'input_3_1'])
         """
-        in_ids_0 = self._generate_input_ids(suffix="_0")
-        in_ids_1 = self._generate_input_ids(suffix="_1")
+        input_ids_0 = self._generate_input_ids(suffix="_0")
+        input_ids_1 = self._generate_input_ids(suffix="_1")
 
-        return in_ids_0, in_ids_1
+        return input_ids_0, input_ids_1
 
     def _generate_output_ids(self, suffix=""):
         """
@@ -347,13 +342,11 @@ class Component:
             sage: component_input = Input(4, ['input'], [[0, 1, 2, 3]])
             sage: component = Component('my_component_id', 'my_component_type', component_input, 4, [])
             sage: component._generate_output_ids()
-            (4, ['my_component_id_0', 'my_component_id_1', 'my_component_id_2', 'my_component_id_3'])
+            ['my_component_id_0', 'my_component_id_1', 'my_component_id_2', 'my_component_id_3']
         """
-        output_id_link = self.id
-        output_bit_size = self.output_bit_size
-        output_bit_ids = [f"{output_id_link}_{j}{suffix}" for j in range(output_bit_size)]
+        output_bit_ids = [f"{self.id}_{j}{suffix}" for j in range(self.output_bit_size)]
 
-        return output_bit_size, output_bit_ids
+        return output_bit_ids
 
     def _generate_output_double_ids(self):
         """
@@ -366,12 +359,12 @@ class Component:
             sage: component_input = Input(4, ['input'], [[0, 1, 2, 3]])
             sage: component = Component('my_component_id', 'my_component_type', component_input, 4, [])
             sage: component._generate_output_double_ids()
-            (4, ['my_component_id_0_0', 'my_component_id_1_0', 'my_component_id_2_0', 'my_component_id_3_0'], ['my_component_id_0_1', 'my_component_id_1_1', 'my_component_id_2_1', 'my_component_id_3_1'])
+            (['my_component_id_0_0', 'my_component_id_1_0', 'my_component_id_2_0', 'my_component_id_3_0'], ['my_component_id_0_1', 'my_component_id_1_1', 'my_component_id_2_1', 'my_component_id_3_1'])
         """
-        out_len, out_ids_0 = self._generate_output_ids(suffix="_0")
-        _, out_ids_1 = self._generate_output_ids(suffix="_1")
+        output_ids_0 = self._generate_output_ids(suffix="_0")
+        output_ids_1 = self._generate_output_ids(suffix="_1")
 
-        return out_len, out_ids_0, out_ids_1
+        return output_ids_0, output_ids_1
 
     def _get_independent_input_output_variables(self):
         """
