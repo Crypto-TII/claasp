@@ -1,3 +1,5 @@
+import math
+
 def get_continuous_operations():
     """
     Returns the MiniZinc code required for continuous correlation propagation.
@@ -56,3 +58,39 @@ def get_continuous_operations():
     } in 
         array1d(0..n-1, [if int_var[i] = 0 then -1.0 else 1.0 endif|i in 0..n-1]);
     """
+
+
+def active_bit_correlation_expression(mask_expr, correlation_expr):
+    """Return the masked active-bit expression used in continuous correlation products."""
+    return (
+        f"if {mask_expr} = 0 then 1.0 "
+        f"else {mask_expr} * abs({correlation_expr}) endif"
+    )
+
+
+def piecewise_log2_approximation_expression(correlation_expr, scale=1.0, else_value="0.0"):
+    """Return the shared piecewise linear approximation of -log2(correlation)."""
+    scale_prefix = "" if math.isclose(scale, 1.0) else f"{scale} * "
+    return (
+        f"{scale_prefix}(\n"
+        f"if {correlation_expr} <= 0.001021453702391378 then\n"
+        f"-19931.57001201849*{correlation_expr}+29.89737278555626\n"
+        f"elseif {correlation_expr} <= 0.004151650554233785 /\\ {correlation_expr} > 0.001021453702391378 then\n"
+        f"-584.962260272084*{correlation_expr}+10.13570866882117\n"
+        f"elseif {correlation_expr} <= 0.01359667098324998 /\\ {correlation_expr} > 0.004151650554233785 then\n"
+        f"-192.6450521799878*{correlation_expr}+8.506944714410169\n"
+        f"elseif {correlation_expr} <= 0.05399137458004444 /\\ {correlation_expr} > 0.01359667098324998 then\n"
+        f"-50.62607129324977*{correlation_expr}+6.575959357916722\n"
+        f"elseif {correlation_expr} <= 0.1420480516058986 /\\ {correlation_expr} > 0.05399137458004444 then\n"
+        f"-11.87410019056137*{correlation_expr}+4.483687170396419\n"
+        f"elseif {correlation_expr} <= 0.2463455066216964 /\\ {correlation_expr} > 0.1420480516058986 then\n"
+        f"-8.613130253286352*{correlation_expr}+4.020472744461092\n"
+        f"elseif {correlation_expr} <= 0.595815289564374 /\\ {correlation_expr} > 0.2463455066216964 then\n"
+        f"-3.761918786389538*{correlation_expr}+2.825398597919413\n"
+        f"elseif {correlation_expr} <= 0.998000001 /\\ {correlation_expr} > 0.595815289564374 then\n"
+        f"-1.444862453710759*{correlation_expr}+1.44486100812744\n"
+        f"else\n"
+        f"{else_value}\n"
+        f"endif\n"
+        ")"
+    )
