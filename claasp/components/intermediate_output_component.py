@@ -126,6 +126,24 @@ class IntermediateOutput(CipherOutput):
             sage: constraints[0]
             'constraint intermediate_output_0_0_o[0] = intermediate_output_0_0_i[0];'
         """
+        # --- HOTFIX: Bulletproof guard clause for continuous DL border ---
+        # If the model uses continuous middle propagation and ANY of this IO's
+        # input sources belongs to the middle part, we must NOT generate our
+        # own fork constraint. Doing so would mix Float (continuous correlation)
+        # with Int (linear mask), crashing MiniZinc with a type error on `mod`.
+        #
+        # We check self.input_id_links directly — this is the IO's own wiring,
+        # independent of whether the IO appears in bottom_part_component_ids
+        # (IO components may live in a separate tracking structure).
+        # The central model's _collect_border_sources() will later consolidate
+        # the fork into a single linear_border_mask[idx] constraint.
+        if hasattr(model, '_is_continuous_middle') and model._is_continuous_middle():
+            middle_ids = getattr(model, 'middle_part_component_ids', set())
+            if any(src_id in middle_ids for src_id in self.input_id_links):
+                # Short-circuit: source is a Float continuous variable.
+                # Return only base class constraints (input=output identity).
+                return super().cp_xor_linear_mask_propagation_constraints(model)
+
         variables, constraints = super().cp_xor_linear_mask_propagation_constraints(model)
         bit_bindings = model.bit_bindings_for_intermediate_output[self.id]
         for intermediate_var, linked_components in bit_bindings.items():
