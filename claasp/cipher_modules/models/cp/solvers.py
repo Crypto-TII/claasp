@@ -105,4 +105,18 @@ CP_SOLVERS_EXTERNAL = [
             },
         },
     },
+    {
+        "solver_brand_name": "SCIP",
+        "solver_name": SCIP,  # keyword to call the solver
+        "keywords": {
+            "command": {
+                "executable": ["minizinc"],
+                "options": ["--input-from-stdin", "--solver-statistics"],
+                "input_file": [],
+                "output_file": [],
+                "solver": ["--solver", SCIP],
+                "format": ["executable", "options", "solver"],
+            },
+        },
+    },
 ]
