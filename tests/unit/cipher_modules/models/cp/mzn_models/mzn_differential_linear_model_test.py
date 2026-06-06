@@ -1,10 +1,11 @@
 import itertools
 import math
-
+import subprocess
+# pyrefly: ignore [missing-import]
 import pytest
 
 from claasp.cipher_modules.models.cp.mzn_models.mzn_differential_linear_model import MznDifferentialLinearModel
-from claasp.cipher_modules.models.cp.solvers import CPSAT
+from claasp.cipher_modules.models.cp.solvers import CPSAT, SCIP
 from claasp.cipher_modules.models.utils import (
     differential_linear_checker_for_block_cipher_single_key,
     differential_truncated_checker_single_key,
@@ -16,7 +17,7 @@ from claasp.ciphers.block_ciphers.ballet_block_cipher import BalletBlockCipher
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.ciphers.mac.siphash_mac import SiphashMAC
 from claasp.ciphers.permutations.chacha_permutation import ROUND_MODE_HALF, ChachaPermutation
-from claasp.name_mappings import INPUT_KEY, INPUT_MESSAGE, INPUT_PLAINTEXT, SATISFIABLE
+from claasp.name_mappings import INPUT_KEY, INPUT_MESSAGE, INPUT_PLAINTEXT, SATISFIABLE, XOR_DIFFERENTIAL_LINEAR_ONE_SOLUTION
 
 
 def _split_components(cipher, top_rounds_end, middle_rounds_end):
@@ -42,6 +43,18 @@ def _split_components(cipher, top_rounds_end, middle_rounds_end):
         "bottom_part_components": bottom_part_components,
     }
 
+def _fixed_from_hex_test(cipher, component_id, hex_value):
+    if component_id in cipher.inputs:
+        idx = list(cipher.inputs).index(component_id)
+        bit_size = cipher.inputs_bit_size[idx]
+    else:
+        bit_size = cipher.get_component_from_id(component_id).output_bit_size
+    return set_fixed_variables(
+        component_id=component_id,
+        constraint_type="equal",
+        bit_positions=list(range(bit_size)),
+        bit_values=integer_to_bit_list(int(hex_value, 16), bit_size, "big"),
+    )
 
 @pytest.mark.parametrize(
     "cipher_cls,cipher_kwargs,top_rounds_end,middle_rounds_end",
@@ -87,6 +100,29 @@ def test_parse_linear_bit_id_handles_valid_and_invalid_formats():
 
     with pytest.raises(ValueError, match="Invalid linear bit identifier"):
         model._parse_linear_bit_id("invalid_bit_id")
+
+
+def test_single_key_weight_bottom_component_ids_exclude_key_schedule_for_speck():
+    speck = SpeckBlockCipher(number_of_rounds=9)
+    component_model_list = _split_components(speck, top_rounds_end=4, middle_rounds_end=6)
+    model = MznDifferentialLinearModel(
+        speck,
+        component_model_list,
+        middle_part_model="cp_continuous_differential_propagation_constraints",
+        single_key=True,
+    )
+
+    effective_bottom_ids = model._weight_bottom_component_ids()
+
+    assert effective_bottom_ids.issubset(model.bottom_part_component_ids)
+    # Speck key-schedule branch components must not contribute to the single-key linear weight.
+    assert "modadd_6_2" not in effective_bottom_ids
+    assert "modadd_7_2" not in effective_bottom_ids
+    assert "modadd_8_2" not in effective_bottom_ids
+    # Data-path branch components must still contribute.
+    assert "modadd_6_7" in effective_bottom_ids
+    assert "modadd_7_7" in effective_bottom_ids
+    assert "modadd_8_7" in effective_bottom_ids
 
 
 def test_normalize_middle_part_components_values_hex_and_unknown_bits():
@@ -816,3 +852,246 @@ def test_optimal_semi_deterministic_differential_linear_trail_siphash():
     print("Status:", trail["status"])
     print("Total weight:", trail["total_weight"])
     assert trail["status"] == SATISFIABLE
+# ──────────────────────────────────────────────────────────────────────
+# Tests for continuous middle model (cp_continuous_differential_propagation_constraints)
+# ──────────────────────────────────────────────────────────────────────
+
+def test_differential_linear_trail_continuous_middle_speck_build():
+    """
+    Speck32/64, 3 rounds: 1 top (diff) + 1 middle (continuous) + 1 bottom (linear).
+
+    Input difference from Table 4 of [BGGMP2023]: (0x0010, 0x5000).
+    Verifies the model builds correctly and can be solved with SCIP.
+    """
+    speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=3)
+    component_list = _split_components(speck, top_rounds_end=1, middle_rounds_end=2)
+    model = MznDifferentialLinearModel(
+        speck,
+        component_list,
+        middle_part_model="cp_continuous_differential_propagation_constraints",
+    )
+
+    plaintext = set_fixed_variables(
+        "plaintext", "equal", list(range(32)),
+        integer_to_bit_list(0x00105000, 32, "big"),
+    )
+    key = set_fixed_variables(
+        "key", "equal", list(range(64)),
+        integer_to_bit_list(0, 64, "big"),
+    )
+
+    model.build_xor_differential_linear_model(
+        weight=-1,
+        fixed_variables=[plaintext, key],
+    )
+
+    # Verify model structure
+    full_model = model.assemble_model()
+
+    # Check continuous predicates are present
+    assert "continuous_modadd" in full_model
+    assert "continuous_xor" in full_model
+
+    # Check DL-to-linear connection
+    assert "linear_mask_times_diff_lin_output" in full_model
+    assert "differential_linear_correlation" in full_model
+    assert "product(linear_mask_times_diff_lin_output)" in full_model
+
+    # Check weight constraint does NOT include middle probability for continuous
+    assert "weight = " in full_model
+
+    # Check state declarations don't have var 0..2 (no truncated middle)
+    declarations = model._state_declarations()
+    decl_text = "\n".join(declarations)
+    assert "var 0..2" not in decl_text
+
+def test_differential_linear_trail_continuous_middle_9_rounds_speck_table4_full_model_float_search_scip():
+    """
+    Full integrated 9-round Speck32/64 differential-linear model using native MiniZinc SCIP.
+    """
+    speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=9)
+    component_model_list = _split_components(speck, top_rounds_end=4, middle_rounds_end=6)
+
+    model = MznDifferentialLinearModel(
+        speck,
+        component_model_list,
+        middle_part_model="cp_continuous_differential_propagation_constraints",
+        single_key=True,
+    )
+    TABLE_4_COMBINED_DIFF_FIXED = {
+        "plaintext": "0xA8400010",
+        "key": "0x0000000000000000",
+        "intermediate_output_0_6": "0x81408100",
+        "intermediate_output_1_12": "0x00020400",
+        "intermediate_output_2_12": "0x00001000",
+        "intermediate_output_3_12": "0x10005000",
+        "xor_1_5": "0x0000",
+        "xor_2_5": "0x0000",
+        "xor_3_5": "0x0000",
+    }
+    TABLE_4_LIN_FIXED = {
+        "intermediate_output_6_12": "0x00000020",
+        "intermediate_output_7_12": "0x00800080",
+        "cipher_output_8_12": "0x02050204",
+    }
+    fixed_values = [
+        model.get_fixed_variable_from_hex(comp_id, hex_val) 
+        for comp_id, hex_val in {**TABLE_4_COMBINED_DIFF_FIXED, **TABLE_4_LIN_FIXED}.items()
+    ]
+
+    model.build_xor_differential_linear_model(
+        weight=-1, 
+        fixed_variables=fixed_values,
+        optimization_objective=(
+            "solve :: float_search(linear_mask_times_diff_lin_output, 1e-12, largest, indomain_split, complete) "
+            "minimize correlation_log2_approximation;"
+        )
+    )
+
+    full_model = model.assemble_model()
+    assert "minimize correlation_log2_approximation;" in full_model
+
+    command = ["minizinc", "--input-from-stdin", "--solver-statistics", "--solver", "scip"]
+    solver_process = subprocess.run(command, input=full_model, capture_output=True, text=True, check=False)
+
+    if solver_process.returncode != 0 and "Unknown solver" in solver_process.stderr:
+        pytest.skip("Native MiniZinc SCIP solver is not available in this environment")
+
+    assert solver_process.returncode == 0
+    solver_output = solver_process.stdout.splitlines()
+    assert all("--solver fscip" not in line for line in solver_output)
+    assert "UNSATISFIABLE" not in solver_process.stdout
+    assert "----------" in solver_process.stdout
+
+    _, _, components_values, _ = model._parse_solver_output(
+        solver_output, XOR_DIFFERENTIAL_LINEAR_ONE_SOLUTION, solve_external=True, solver_name=SCIP
+    )
+    
+    solution = components_values["solution1"]
+    top_sum, bottom_sum = 0.0, 0.0
+    seen_top, seen_bottom = set(), set()
+
+    for component_id, component_solution in solution.items():
+        if not isinstance(component_solution, dict):
+            continue
+        weight = float(component_solution.get("weight", 0))
+        base_component_id = model._base_component_id(component_id)
+        if base_component_id in model.top_part_component_ids and base_component_id not in seen_top:
+            top_sum += weight
+            seen_top.add(base_component_id)
+        if base_component_id in model._weight_bottom_component_ids() and base_component_id not in seen_bottom:
+            bottom_sum += weight
+            seen_bottom.add(base_component_id)
+
+    assert top_sum == 7
+    assert bottom_sum == 2
+
+    correlation_values = [
+        float(line.split("=", 1)[1].strip())
+        for line in solver_output if line.startswith("differential_linear_correlation =")
+    ]
+    assert correlation_values
+    correlation_value = max(correlation_values)
+
+    expected_corr = 0.745481409287476
+    expected_total_probability = -11.42375571965992
+    total_probability = math.log2(correlation_value) - top_sum - bottom_sum*2
+
+    assert min(abs(value - expected_corr) for value in correlation_values) < 1e-6
+    assert abs(total_probability - expected_total_probability) < 1e-6
+
+
+def test_differential_linear_trail_continuous_middle_9_rounds_speck_table6_full_model_float_search_scip():
+    """
+    Full integrated 9-round Speck32/64 differential-linear model for Table 6 using native MiniZinc SCIP.
+    """
+    speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=9)
+    component_model_list = _split_components(speck, top_rounds_end=4, middle_rounds_end=6)
+
+    model = MznDifferentialLinearModel(
+        speck,
+        component_model_list,
+        middle_part_model="cp_continuous_differential_propagation_constraints",
+        single_key=True,
+    )
+    TABLE_6_COMBINED_DIFF_FIXED = {
+        "plaintext": "0x20540800",
+        "key": "0x0000000000000000",
+        "intermediate_output_0_6": "0xA0408040",
+        "intermediate_output_1_12": "0x01000002",
+        "intermediate_output_2_12": "0x00000008",
+        "intermediate_output_3_12": "0x00080028",
+        "xor_1_5": "0x0000",
+        "xor_2_5": "0x0000",
+        "xor_3_5": "0x0000",
+    }
+    TABLE_6_LIN_FIXED = {
+        "intermediate_output_6_12": "0x00200020",
+        "intermediate_output_7_12": "0x00814081",
+        "cipher_output_8_12": "0x0C000E01",
+    }
+    fixed_values = [
+        model.get_fixed_variable_from_hex(comp_id, hex_val)
+        for comp_id, hex_val in {**TABLE_6_COMBINED_DIFF_FIXED, **TABLE_6_LIN_FIXED}.items()
+    ]
+
+    model.build_xor_differential_linear_model(
+        weight=-1,
+        fixed_variables=fixed_values,
+        optimization_objective=(
+            "solve :: float_search(linear_mask_times_diff_lin_output, 1e-12, largest, indomain_split, complete) "
+            "minimize correlation_log2_approximation;"
+        )
+    )
+
+    full_model = model.assemble_model()
+    assert "minimize correlation_log2_approximation;" in full_model
+
+    command = ["minizinc", "--input-from-stdin", "--solver-statistics", "--solver", "scip"]
+    solver_process = subprocess.run(command, input=full_model, capture_output=True, text=True, check=False)
+
+    if solver_process.returncode != 0 and "Unknown solver" in solver_process.stderr:
+        pytest.skip("Native MiniZinc SCIP solver is not available in this environment")
+
+    assert solver_process.returncode == 0
+    solver_output = solver_process.stdout.splitlines()
+    assert all("--solver fscip" not in line for line in solver_output)
+    assert "UNSATISFIABLE" not in solver_process.stdout
+    assert "----------" in solver_process.stdout
+
+    _, _, components_values, _ = model._parse_solver_output(
+        solver_output, XOR_DIFFERENTIAL_LINEAR_ONE_SOLUTION, solve_external=True, solver_name=SCIP
+    )
+
+    solution = components_values["solution1"]
+    top_sum, bottom_sum = 0.0, 0.0
+    seen_top, seen_bottom = set(), set()
+
+    for component_id, component_solution in solution.items():
+        if not isinstance(component_solution, dict):
+            continue
+        weight = float(component_solution.get("weight", 0))
+        base_component_id = model._base_component_id(component_id)
+        if base_component_id in model.top_part_component_ids and base_component_id not in seen_top:
+            top_sum += weight
+            seen_top.add(base_component_id)
+        if base_component_id in model._weight_bottom_component_ids() and base_component_id not in seen_bottom:
+            bottom_sum += weight
+            seen_bottom.add(base_component_id)
+
+    assert top_sum == 7
+    assert bottom_sum == 3
+
+    correlation_values = [
+        float(line.split("=", 1)[1].strip())
+        for line in solver_output if line.startswith("differential_linear_correlation =")
+    ]
+    assert correlation_values
+    correlation_value = max(correlation_values)
+
+    expected_corr = 0.7759094272693416
+    expected_total_probability = -13.36603983996931
+    total_probability = math.log2(correlation_value) - top_sum - bottom_sum*2
+
+    assert min(abs(value - expected_corr) for value in correlation_values) < 1e-6
+    assert abs(total_probability - expected_total_probability) < 1e-6

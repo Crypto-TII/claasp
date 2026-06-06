@@ -1,13 +1,14 @@
+from datetime import timedelta
 import math
 import time
-from datetime import timedelta
-
 from minizinc import Instance, Model, Solver, Status
-
-from claasp.cipher_modules.models.cp.minizinc_utils.mzn_continuous_predicates import get_continuous_operations
 from claasp.cipher_modules.models.cp.mzn_model import MznModel
-from claasp.name_mappings import CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, PERMUTATION_COMPONENT, WORD_OPERATION
-
+from claasp.cipher_modules.models.cp.minizinc_utils.mzn_continuous_predicates import (
+    active_bit_correlation_expression,
+    get_continuous_operations,
+    piecewise_log2_approximation_expression,
+)
+from claasp.name_mappings import CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, PERMUTATION_COMPONENT, WORD_OPERATION
 
 class MznDifferentialLinearContinuousModel(MznModel):
     def __init__(self, cipher):
@@ -120,8 +121,7 @@ class MznDifferentialLinearContinuousModel(MznModel):
         cipher_output_id = self._get_cipher_output_id()
 
         active_bit_correlations_entries = ", ".join([
-            f"if output_mask[{i}] = 0 then 1.0 "
-            f"else output_mask[{i}] * abs({cipher_output_id}[{i}]) endif"
+            active_bit_correlation_expression(f"output_mask[{i}]", f"{cipher_output_id}[{i}]")
             for i in range(block_size)
         ])
 
@@ -144,28 +144,10 @@ class MznDifferentialLinearContinuousModel(MznModel):
         self._model_constraints.append(
             "constraint sum(array1d(output_mask)) >= 1;"
         )
-        self._model_constraints.append("""
-        constraint correlation_log2_approximation =
-        if differential_linear_correlation <= 0.001021453702391378 then
-        -19931.57001201849*differential_linear_correlation+29.89737278555626
-        elseif differential_linear_correlation <= 0.004151650554233785 /\\ differential_linear_correlation > 0.001021453702391378 then
-        -584.962260272084*differential_linear_correlation+10.13570866882117
-        elseif differential_linear_correlation <= 0.01359667098324998 /\\ differential_linear_correlation > 0.004151650554233785 then
-        -192.6450521799878*differential_linear_correlation+8.506944714410169
-        elseif differential_linear_correlation <= 0.05399137458004444 /\\ differential_linear_correlation > 0.01359667098324998 then
-        -50.62607129324977*differential_linear_correlation+6.575959357916722
-        elseif differential_linear_correlation <= 0.1420480516058986 /\\ differential_linear_correlation > 0.05399137458004444 then
-        -11.87410019056137*differential_linear_correlation+4.483687170396419
-        elseif differential_linear_correlation <= 0.2463455066216964 /\\ differential_linear_correlation > 0.1420480516058986 then
-        -8.613130253286352*differential_linear_correlation+4.020472744461092
-        elseif differential_linear_correlation <= 0.595815289564374 /\\ differential_linear_correlation > 0.2463455066216964 then
-        -3.761918786389538*differential_linear_correlation+2.825398597919413
-        elseif differential_linear_correlation <= 0.998000001 /\\ differential_linear_correlation > 0.595815289564374 then
-        -1.444862453710759*differential_linear_correlation+1.44486100812744
-        else
-        1=1
-        endif;
-        """)
+        self._model_constraints.append(
+            "constraint correlation_log2_approximation = "
+            f"{piecewise_log2_approximation_expression('differential_linear_correlation')};"
+        )
 
     def find_lowest_continuous_correlation(self, fixed_values=[], solver_name="scip"):
         self.build_differential_linear_continuous_trail_model(fixed_values=fixed_values)
