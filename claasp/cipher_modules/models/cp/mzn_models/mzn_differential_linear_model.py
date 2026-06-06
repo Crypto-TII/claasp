@@ -857,16 +857,30 @@ class MznDifferentialLinearModel(MznModel):
         ):
             return parsed
 
-        return self._process_differential_linear_parsed_output(parsed, solve_external, continuous_xor_differential_linear_model)
+        return self._process_differential_linear_parsed_output(parsed, solve_external, continuous_xor_differential_linear_model, output_to_parse=output_to_parse)
 
-    def _process_differential_linear_parsed_output(self, parsed, solve_external, continuous_xor_differential_linear_model):
+    def _process_differential_linear_parsed_output(self, parsed, solve_external, continuous_xor_differential_linear_model, output_to_parse=None):
         if not solve_external:
             if isinstance(parsed, list):
                 for solution in parsed:
                     self._set_differential_linear_total_weight(solution)
+                    if continuous_xor_differential_linear_model and output_to_parse is not None:
+                        try:
+                            # if output_to_parse is a Result list, this might be tricky, but usually it's just one Result
+                            if hasattr(output_to_parse, "__getitem__"):
+                                solution["differential_linear_correlation"] = float(output_to_parse["differential_linear_correlation"])
+                                solution["correlation_log2_approximation"] = float(output_to_parse["correlation_log2_approximation"])
+                        except Exception:
+                            pass
                 return parsed
 
             self._set_differential_linear_total_weight(parsed)
+            if continuous_xor_differential_linear_model and output_to_parse is not None:
+                try:
+                    parsed["differential_linear_correlation"] = float(output_to_parse["differential_linear_correlation"])
+                    parsed["correlation_log2_approximation"] = float(output_to_parse["correlation_log2_approximation"])
+                except Exception:
+                    pass
             return parsed
 
         if continuous_xor_differential_linear_model:
@@ -874,14 +888,45 @@ class MznDifferentialLinearModel(MznModel):
         else:
             solver_time, memory, components_values, _ = parsed
             
+        diff_lin_corrs = []
+        log2_approxs = []
+        if continuous_xor_differential_linear_model and output_to_parse is not None:
+            lines = output_to_parse if isinstance(output_to_parse, list) else (
+                output_to_parse.splitlines() if isinstance(output_to_parse, str) else []
+            )
+            for line in lines:
+                if isinstance(line, str):
+                    if line.startswith("differential_linear_correlation ="):
+                        try:
+                            diff_lin_corrs.append(float(line.split("=", 1)[1].strip()))
+                        except ValueError:
+                            pass
+                    elif line.startswith("correlation_log2_approximation ="):
+                        try:
+                            log2_approxs.append(float(line.split("=", 1)[1].strip()))
+                        except ValueError:
+                            pass
+
         total_weight = []
         solution_keys = sorted(
             components_values.keys(),
             key=lambda key: int(key.replace("solution", "")) if key.startswith("solution") else 0,
         )
-        for solution_key in solution_keys:
+        
+        for i, solution_key in enumerate(solution_keys):
             solution_components_values = components_values.get(solution_key, {})
             total_weight.append(str(self._differential_linear_total_weight_from_components(solution_components_values)))
+            if continuous_xor_differential_linear_model:
+                if i < len(diff_lin_corrs):
+                    solution_components_values["differential_linear_correlation"] = diff_lin_corrs[i]
+                elif diff_lin_corrs:
+                    solution_components_values["differential_linear_correlation"] = diff_lin_corrs[-1]
+                
+                if i < len(log2_approxs):
+                    solution_components_values["correlation_log2_approximation"] = log2_approxs[i]
+                elif log2_approxs:
+                    solution_components_values["correlation_log2_approximation"] = log2_approxs[-1]
+                    
         return solver_time, memory, components_values, total_weight
 
     def _ensure_components_values(self, solution):
@@ -965,12 +1010,13 @@ class MznDifferentialLinearModel(MznModel):
         num_of_processors=None,
         timelimit=None,
         solve_external=False,
+        optimization_objective=None,
     ):
         if fixed_values is None:
             fixed_values = []
 
         start = tm.time()
-        self.build_xor_differential_linear_model(weight=weight, fixed_variables=fixed_values)
+        self.build_xor_differential_linear_model(weight=weight, fixed_variables=fixed_values, optimization_objective=optimization_objective)
         build_time = tm.time() - start
 
         solution = self.solve(
@@ -1007,12 +1053,13 @@ class MznDifferentialLinearModel(MznModel):
         timelimit=None,
         solve_external=False,
         include_non_optimal_solutions=False,
+        optimization_objective=None,
     ):
         if fixed_values is None:
             fixed_values = []
 
         start = tm.time()
-        self.build_xor_differential_linear_model(weight=-1, fixed_variables=fixed_values)
+        self.build_xor_differential_linear_model(weight=-1, fixed_variables=fixed_values, optimization_objective=optimization_objective)
         build_time = tm.time() - start
 
         solution = self.solve(

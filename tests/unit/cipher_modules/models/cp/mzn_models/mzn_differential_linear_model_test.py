@@ -939,35 +939,22 @@ def test_differential_linear_trail_continuous_middle_9_rounds_speck_table4_full_
         for comp_id, hex_val in {**TABLE_4_COMBINED_DIFF_FIXED, **TABLE_4_LIN_FIXED}.items()
     ]
 
-    model.build_xor_differential_linear_model(
-        weight=-1, 
-        fixed_variables=fixed_values,
-        optimization_objective=(
-            "solve :: float_search(linear_mask_times_diff_lin_output, 1e-12, largest, indomain_split, complete) "
-            "minimize correlation_log2_approximation;"
-        )
+    optimization_objective = (
+        "solve :: float_search(linear_mask_times_diff_lin_output, 1e-12, largest, indomain_split, complete) "
+        "minimize correlation_log2_approximation;"
     )
 
-    full_model = model.assemble_model()
-    assert "minimize correlation_log2_approximation;" in full_model
-
-    command = ["minizinc", "--input-from-stdin", "--solver-statistics", "--solver", "scip"]
-    solver_process = subprocess.run(command, input=full_model, capture_output=True, text=True, check=False)
-
-    if solver_process.returncode != 0 and "Unknown solver" in solver_process.stderr:
-        pytest.skip("Native MiniZinc SCIP solver is not available in this environment")
-
-    assert solver_process.returncode == 0
-    solver_output = solver_process.stdout.splitlines()
-    assert all("--solver fscip" not in line for line in solver_output)
-    assert "UNSATISFIABLE" not in solver_process.stdout
-    assert "----------" in solver_process.stdout
-
-    _, _, components_values, _ = model._parse_solver_output(
-        solver_output, XOR_DIFFERENTIAL_LINEAR_ONE_SOLUTION, solve_external=True, solver_name=SCIP
+    trail = model.find_one_differential_linear_trail_with_fixed_weight(
+        weight=-1,
+        fixed_values=fixed_values,
+        solver_name="scip",
+        solve_external=True,
+        optimization_objective=optimization_objective
     )
-    
-    solution = components_values["solution1"]
+
+    assert trail["status"] in ["SATISFIABLE", "SATISFIED", "OPTIMAL_SOLUTION"]
+
+    solution = trail["components_values"]
     top_sum, bottom_sum = 0.0, 0.0
     seen_top, seen_bottom = set(), set()
 
@@ -986,18 +973,13 @@ def test_differential_linear_trail_continuous_middle_9_rounds_speck_table4_full_
     assert top_sum == 7
     assert bottom_sum == 2
 
-    correlation_values = [
-        float(line.split("=", 1)[1].strip())
-        for line in solver_output if line.startswith("differential_linear_correlation =")
-    ]
-    assert correlation_values
-    correlation_value = max(correlation_values)
+    correlation_value = float(solution["differential_linear_correlation"])
 
     expected_corr = 0.745481409287476
     expected_total_probability = -11.42375571965992
     total_probability = math.log2(correlation_value) - top_sum - bottom_sum*2
 
-    assert min(abs(value - expected_corr) for value in correlation_values) < 1e-6
+    assert abs(correlation_value - expected_corr) < 1e-6
     assert abs(total_probability - expected_total_probability) < 1e-6
 
 
@@ -1035,35 +1017,22 @@ def test_differential_linear_trail_continuous_middle_9_rounds_speck_table6_full_
         for comp_id, hex_val in {**TABLE_6_COMBINED_DIFF_FIXED, **TABLE_6_LIN_FIXED}.items()
     ]
 
-    model.build_xor_differential_linear_model(
+    optimization_objective = (
+        "solve :: float_search(linear_mask_times_diff_lin_output, 1e-12, largest, indomain_split, complete) "
+        "minimize correlation_log2_approximation;"
+    )
+
+    trail = model.find_one_differential_linear_trail_with_fixed_weight(
         weight=-1,
-        fixed_variables=fixed_values,
-        optimization_objective=(
-            "solve :: float_search(linear_mask_times_diff_lin_output, 1e-12, largest, indomain_split, complete) "
-            "minimize correlation_log2_approximation;"
-        )
+        fixed_values=fixed_values,
+        solver_name="scip",
+        solve_external=True,
+        optimization_objective=optimization_objective
     )
 
-    full_model = model.assemble_model()
-    assert "minimize correlation_log2_approximation;" in full_model
+    assert trail["status"] in ["SATISFIABLE", "SATISFIED", "OPTIMAL_SOLUTION"]
 
-    command = ["minizinc", "--input-from-stdin", "--solver-statistics", "--solver", "scip"]
-    solver_process = subprocess.run(command, input=full_model, capture_output=True, text=True, check=False)
-
-    if solver_process.returncode != 0 and "Unknown solver" in solver_process.stderr:
-        pytest.skip("Native MiniZinc SCIP solver is not available in this environment")
-
-    assert solver_process.returncode == 0
-    solver_output = solver_process.stdout.splitlines()
-    assert all("--solver fscip" not in line for line in solver_output)
-    assert "UNSATISFIABLE" not in solver_process.stdout
-    assert "----------" in solver_process.stdout
-
-    _, _, components_values, _ = model._parse_solver_output(
-        solver_output, XOR_DIFFERENTIAL_LINEAR_ONE_SOLUTION, solve_external=True, solver_name=SCIP
-    )
-
-    solution = components_values["solution1"]
+    solution = trail["components_values"]
     top_sum, bottom_sum = 0.0, 0.0
     seen_top, seen_bottom = set(), set()
 
@@ -1082,16 +1051,11 @@ def test_differential_linear_trail_continuous_middle_9_rounds_speck_table6_full_
     assert top_sum == 7
     assert bottom_sum == 3
 
-    correlation_values = [
-        float(line.split("=", 1)[1].strip())
-        for line in solver_output if line.startswith("differential_linear_correlation =")
-    ]
-    assert correlation_values
-    correlation_value = max(correlation_values)
+    correlation_value = float(solution["differential_linear_correlation"])
 
     expected_corr = 0.7759094272693416
     expected_total_probability = -13.36603983996931
     total_probability = math.log2(correlation_value) - top_sum - bottom_sum*2
 
-    assert min(abs(value - expected_corr) for value in correlation_values) < 1e-6
+    assert abs(correlation_value - expected_corr) < 1e-6
     assert abs(total_probability - expected_total_probability) < 1e-6
