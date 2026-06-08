@@ -1,23 +1,23 @@
 import itertools
 import math
-import subprocess
-# pyrefly: ignore [missing-import]
 import pytest
 
 from claasp.cipher_modules.models.cp.mzn_models.mzn_differential_linear_model import MznDifferentialLinearModel
-from claasp.cipher_modules.models.cp.solvers import CPSAT, SCIP
+from claasp.cipher_modules.models.cp.solvers import CPSAT
 from claasp.cipher_modules.models.utils import (
     differential_linear_checker_for_block_cipher_single_key,
     differential_truncated_checker_single_key,
+    linear_checker_for_block_cipher_single_key,
     integer_to_bit_list,
     set_fixed_variables,
     truncated_differential_linear_checker_permutation,
 )
 from claasp.ciphers.block_ciphers.ballet_block_cipher import BalletBlockCipher
+from claasp.ciphers.block_ciphers.lea_block_cipher import LeaBlockCipher
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.ciphers.mac.siphash_mac import SiphashMAC
 from claasp.ciphers.permutations.chacha_permutation import ROUND_MODE_HALF, ChachaPermutation
-from claasp.name_mappings import INPUT_KEY, INPUT_MESSAGE, INPUT_PLAINTEXT, SATISFIABLE, XOR_DIFFERENTIAL_LINEAR_ONE_SOLUTION
+from claasp.name_mappings import INPUT_KEY, INPUT_MESSAGE, INPUT_PLAINTEXT, SATISFIABLE
 
 
 def _split_components(cipher, top_rounds_end, middle_rounds_end):
@@ -973,7 +973,7 @@ def test_differential_linear_trail_continuous_middle_9_rounds_speck_table4_full_
     assert top_sum == 7
     assert bottom_sum == 2
 
-    correlation_value = float(solution["differential_linear_correlation"])
+    correlation_value = float(solution["differential_linear_correlation"]["value"])
 
     expected_corr = 0.745481409287476
     expected_total_probability = -11.42375571965992
@@ -981,6 +981,191 @@ def test_differential_linear_trail_continuous_middle_9_rounds_speck_table4_full_
 
     assert abs(correlation_value - expected_corr) < 1e-6
     assert abs(total_probability - expected_total_probability) < 1e-6
+
+    def parse_trail_value(val_str):
+        if val_str.startswith("0x"):
+            return int(val_str, 16)
+        return int(val_str, 2)
+
+    plaintext_val = parse_trail_value(solution["plaintext"]["value"])
+    key_val = parse_trail_value(solution["key"]["value"])
+
+    # 1. Differential Part Verification
+    speck_top = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=4)
+    intermediate_diff_val = parse_trail_value(solution["intermediate_output_3_12"]["value"])
+    intermediate_diff_str = bin(intermediate_diff_val)[2:].zfill(32)
+    prob_weight = differential_truncated_checker_single_key(
+        speck_top, plaintext_val, intermediate_diff_str, 1 << 20, 32, key_val, 64, seed=42
+    )
+    assert prob_weight != 0, "The experimental probability for differential part must be > 0"
+    theoretical_prob_weight = sum(
+        float(v.get("weight", 0)) for k, v in solution.items() 
+        if isinstance(v, dict) and "weight" in v and "_" in k and k.split("_")[1].isdigit() and int(k.split("_")[1]) < 4
+    )
+    print(f"\n=== Speck 9-Round Table 4 Differential Part Verification ===")
+    print(f"Theoretical Probability Weight: {theoretical_prob_weight}")
+    print(f"Experimental Probability Weight: {-prob_weight}")
+    print(f"Absolute Difference: {abs(theoretical_prob_weight - (-prob_weight))}")
+    print("==========================================================\n")
+
+    # 2. Linear Part Verification
+    speck_bottom = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=3)
+    linear_mask_str = solution.get("linear_border_mask_", {}).get("value") or solution.get("linear_border_mask", {}).get("value", "")
+    linear_input_mask_val = model.get_linear_border_mask_as_int("intermediate_output_4_12", linear_mask_str)
+    linear_input_mask_str = bin(linear_input_mask_val)[2:].zfill(32)
+
+    cipher_output_key = next(k for k in solution if k.startswith("cipher_output_") and k.endswith("_o"))
+    linear_output_mask_str = bin(parse_trail_value(solution[cipher_output_key]["value"]))[2:].zfill(32)
+    
+    lin_corr = linear_checker_for_block_cipher_single_key(
+        speck_bottom, linear_input_mask_str, linear_output_mask_str, 1 << 20, 32, 64, key_val, seed=42
+    )
+    assert abs(lin_corr) != 0, "The experimental correlation for linear part must be non-zero"
+
+    theoretical_lin_weight = sum(
+        float(v.get("weight", 0)) for k, v in solution.items() 
+        if isinstance(v, dict) and "weight" in v and k.endswith("_o") and "_" in k and k.split("_")[1].isdigit() and int(k.split("_")[1]) >= 6
+    )
+    theoretical_lin_corr = 2 ** (-theoretical_lin_weight)
+    
+    print(f"\n=== Speck 9-Round Table 4 Linear Part Verification ===")
+    print(f"Theoretical Linear Correlation: {theoretical_lin_corr}")
+    print(f"Experimental Linear Correlation: {lin_corr}")
+    print(f"Absolute Difference: {abs(theoretical_lin_corr - lin_corr)}")
+    print("======================================================\n")
+
+
+def test_lea_differential_linear_trail_continuous_middle_4_rounds_float_search_scip():
+    """
+    Test for 4-round LEA block cipher using native SCIP integration.
+    """
+    round_limit = 4
+    lea = LeaBlockCipher(
+        block_bit_size=128, 
+        key_bit_size=128, 
+        number_of_rounds=round_limit, 
+        reorder_input_and_output=False
+    )
+    
+    middle_part = [c.id for c in lea.get_components_in_round(1)]
+    bottom_part = [c.id for c in lea.get_components_in_round(2)]
+    bottom_part.extend([c.id for c in lea.get_components_in_round(3)])
+
+    model = MznDifferentialLinearModel(
+        lea,
+        {"middle_part_components": middle_part, "bottom_part_components": bottom_part},
+        middle_part_model="cp_continuous_differential_propagation_constraints",
+        single_key=True,
+    )
+    LEA_DIFF_FIXED = {
+        "plaintext": "0x80000000800000008000000080040000",
+        "key": "0x00000000000000000000000000000000",
+        "intermediate_output_0_29": "0x00000000000000000000800080000000",
+        "intermediate_output_2_29": "0x000000000000000000000000d5151529",
+        "cipher_output_3_29": "0x5d836b50d98961da3dfee2df250cf374"
+    }
+    
+    fixed_values = [
+        model.get_fixed_variable_from_hex(comp_id, hex_val)
+        for comp_id, hex_val in LEA_DIFF_FIXED.items()
+    ]
+    #fixed_values.append(set_fixed_variables(f"cipher_output_{round_limit-1}_29_i", "not_equal", list(range(128)), [0] * 128))
+
+    optimization_objective = (
+        "constraint abs(differential_linear_correlation) >= 1e-20;\n"
+        "solve :: float_search(linear_mask_times_diff_lin_output, 1e-20, largest, indomain_split, complete) "
+        "satisfy;"
+    )
+
+    trail = model.find_one_differential_linear_trail_with_fixed_weight(
+        weight=-1,
+        fixed_values=fixed_values,
+        solver_name="scip",
+        solve_external=True,
+        optimization_objective=optimization_objective
+    )
+    assert trail["status"] in ["SATISFIABLE", "SATISFIED", "OPTIMAL_SOLUTION"]
+
+    solution = trail["components_values"]
+    print(solution)
+
+    print("linear_border_mask:", solution.get("linear_border_mask", {}).get("value"))
+    print("differential_linear_correlation:", solution.get("differential_linear_correlation", {}).get("value"))
+
+    def parse_trail_value(val_str):
+        if val_str.startswith("0x"):
+            return int(val_str, 16)
+        return int(val_str, 2)
+
+    plaintext_val = parse_trail_value(solution["plaintext"]["value"])
+    key_val = parse_trail_value(solution["key"]["value"])
+
+    # 1. Differential Part Verification
+    lea_1 = LeaBlockCipher(
+        block_bit_size=128, key_bit_size=128, number_of_rounds=1, reorder_input_and_output=False
+    )
+    # Reconstruct 128-bit output difference from the components 
+    intermediate_diff_val = parse_trail_value(solution["intermediate_output_0_29"]["value"])
+    intermediate_diff_str = bin(intermediate_diff_val)[2:].zfill(128)
+    prob_weight = differential_truncated_checker_single_key(
+        lea_1,
+        plaintext_val,
+        intermediate_diff_str,
+        1 << 20,
+        128,
+        key_val,
+        128,
+        seed=42,
+    )
+    assert prob_weight != 0, "The experimental probability for differential part must be > 0"
+    theoretical_prob_weight = sum(
+        float(v.get("weight", 0)) for k, v in solution.items() 
+        if isinstance(v, dict) and "weight" in v and "_" in k and k.split("_")[1].isdigit() and int(k.split("_")[1]) < 1
+    )
+    print(f"\n=== LEA 4-Round Differential Part Verification ===")
+    print(f"Theoretical Probability Weight: {theoretical_prob_weight}")
+    print(f"Experimental Probability Weight: {-prob_weight}") # experimental is returned as negative log2
+    print(f"Absolute Difference: {abs(theoretical_prob_weight - (-prob_weight))}")
+    print("==================================================\n")
+    # assert abs(theoretical_prob_weight - (-prob_weight)) < 2.0, "Experimental probability weight deviates too much"
+
+    # 2. Linear Part Verification
+    lea_2 = LeaBlockCipher(
+        block_bit_size=128, key_bit_size=128, number_of_rounds=2, reorder_input_and_output=False
+    )
+    # Extract linear mask from the auxiliary linear_border_mask variable using the helper
+    linear_mask_str = solution.get("linear_border_mask_", {}).get("value")
+    if not linear_mask_str:
+        linear_mask_str = solution.get("linear_border_mask", {}).get("value", "")
+        
+    linear_input_mask_val = model.get_linear_border_mask_as_int("intermediate_output_1_29", linear_mask_str)
+    linear_input_mask_str = bin(linear_input_mask_val)[2:].zfill(128)
+
+    cipher_output_key = next(k for k in solution if k.startswith("cipher_output_") and k.endswith("_o"))
+    linear_output_mask_str = bin(parse_trail_value(solution[cipher_output_key]["value"]))[2:].zfill(128)
+    lin_corr = linear_checker_for_block_cipher_single_key(
+        lea_2,
+        linear_input_mask_str,
+        linear_output_mask_str,
+        1 << 20,
+        128,
+        128,
+        key_val,
+        seed=42,
+    )
+    assert abs(lin_corr) != 0, "The experimental correlation for linear part must be non-zero"
+    
+    theoretical_lin_weight = sum(
+        float(v.get("weight", 0)) for k, v in solution.items() 
+        if isinstance(v, dict) and "weight" in v and k.endswith("_o") and "_" in k and k.split("_")[1].isdigit() and int(k.split("_")[1]) >= 2
+    )
+    theoretical_lin_corr = 2 ** (-theoretical_lin_weight)
+    
+    print(f"\n=== LEA 4-Round Linear Part Verification ===")
+    print(f"Theoretical Linear Correlation: {theoretical_lin_corr}")
+    print(f"Experimental Linear Correlation: {lin_corr}")
+    print(f"Absolute Difference: {abs(theoretical_lin_corr - lin_corr)}")
+    print("============================================\n")
 
 
 def test_differential_linear_trail_continuous_middle_9_rounds_speck_table6_full_model_float_search_scip():
@@ -1051,7 +1236,7 @@ def test_differential_linear_trail_continuous_middle_9_rounds_speck_table6_full_
     assert top_sum == 7
     assert bottom_sum == 3
 
-    correlation_value = float(solution["differential_linear_correlation"])
+    correlation_value = float(solution["differential_linear_correlation"]["value"])
 
     expected_corr = 0.7759094272693416
     expected_total_probability = -13.36603983996931
@@ -1059,3 +1244,55 @@ def test_differential_linear_trail_continuous_middle_9_rounds_speck_table6_full_
 
     assert abs(correlation_value - expected_corr) < 1e-6
     assert abs(total_probability - expected_total_probability) < 1e-6
+
+    def parse_trail_value(val_str):
+        if val_str.startswith("0x"):
+            return int(val_str, 16)
+        return int(val_str, 2)
+
+    plaintext_val = parse_trail_value(solution["plaintext"]["value"])
+    key_val = parse_trail_value(solution["key"]["value"])
+
+    # 1. Differential Part Verification
+    speck_top = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=4)
+    intermediate_diff_val = parse_trail_value(solution["intermediate_output_3_12"]["value"])
+    intermediate_diff_str = bin(intermediate_diff_val)[2:].zfill(32)
+    prob_weight = differential_truncated_checker_single_key(
+        speck_top, plaintext_val, intermediate_diff_str, 1 << 20, 32, key_val, 64, seed=42
+    )
+    assert prob_weight != 0, "The experimental probability for differential part must be > 0"
+    theoretical_prob_weight = sum(
+        float(v.get("weight", 0)) for k, v in solution.items() 
+        if isinstance(v, dict) and "weight" in v and "_" in k and k.split("_")[1].isdigit() and int(k.split("_")[1]) < 4
+    )
+    print(f"\n=== Speck 9-Round Table 6 Differential Part Verification ===")
+    print(f"Theoretical Probability Weight: {theoretical_prob_weight}")
+    print(f"Experimental Probability Weight: {-prob_weight}")
+    print(f"Absolute Difference: {abs(theoretical_prob_weight - (-prob_weight))}")
+    print("==========================================================\n")
+
+    # 2. Linear Part Verification
+    speck_bottom = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=3)
+    linear_mask_str = solution.get("linear_border_mask_", {}).get("value") or solution.get("linear_border_mask", {}).get("value", "")
+    linear_input_mask_val = model.get_linear_border_mask_as_int("intermediate_output_5_12", linear_mask_str)
+    linear_input_mask_str = bin(linear_input_mask_val)[2:].zfill(32)
+
+    cipher_output_key = next(k for k in solution if k.startswith("cipher_output_") and k.endswith("_o"))
+    linear_output_mask_str = bin(parse_trail_value(solution[cipher_output_key]["value"]))[2:].zfill(32)
+    
+    lin_corr = linear_checker_for_block_cipher_single_key(
+        speck_bottom, linear_input_mask_str, linear_output_mask_str, 1 << 20, 32, 64, key_val, seed=42
+    )
+    assert abs(lin_corr) != 0, "The experimental correlation for linear part must be non-zero"
+
+    theoretical_lin_weight = sum(
+        float(v.get("weight", 0)) for k, v in solution.items() 
+        if isinstance(v, dict) and "weight" in v and k.endswith("_o") and "_" in k and k.split("_")[1].isdigit() and int(k.split("_")[1]) >= 6
+    )
+    theoretical_lin_corr = 2 ** (-theoretical_lin_weight)
+    
+    print(f"\n=== Speck 9-Round Table 6 Linear Part Verification ===")
+    print(f"Theoretical Linear Correlation: {theoretical_lin_corr}")
+    print(f"Experimental Linear Correlation: {lin_corr}")
+    print(f"Absolute Difference: {abs(theoretical_lin_corr - lin_corr)}")
+    print("======================================================\n")

@@ -483,6 +483,10 @@ class MznDifferentialLinearModel(MznModel):
         constraints.append("constraint differential_linear_correlation = product(linear_mask_times_diff_lin_output);")
         constraints.append("constraint differential_linear_correlation != 0.0;")
 
+        self.mzn_output_directives.append('output ["linear_border_mask="++show(linear_border_mask)++"\\n"];')
+        self.mzn_output_directives.append('output ["linear_mask_times_diff_lin_output="++show(linear_mask_times_diff_lin_output)++"\\n"];')
+        self.mzn_output_directives.append('output ["differential_linear_correlation="++show(differential_linear_correlation)++"\\n"];')
+
         return constraints
 
     def _filter_border_components_for_single_key(self, border_components):
@@ -747,6 +751,9 @@ class MznDifferentialLinearModel(MznModel):
             solution["total_weight"] = total_weight[0]
 
     def set_component_solution_value(self, component_solution, truncated, value):
+        if self._is_continuous_middle() and ("." in value or "-" in value):
+            component_solution["value"] = value
+            return
         if "2" in value:
             component_solution["value"] = value
             return
@@ -1095,3 +1102,61 @@ class MznDifferentialLinearModel(MznModel):
             fixed_variables = []
 
         return MznXorLinearModel.fix_variables_value_xor_linear_constraints(self, fixed_variables)
+
+    def _parse_solver_output(
+        self, output_to_parse, model_type, truncated=False, solve_external=False, solver_name=SOLVER_DEFAULT
+    ):
+        result = super()._parse_solver_output(
+            output_to_parse, model_type, truncated, solve_external, solver_name
+        )
+        if not solve_external:
+            return result
+
+        components_values = result[2]
+        aux_vars = ["linear_border_mask", "linear_mask_times_diff_lin_output", "differential_linear_correlation"]
+        solution_number = 1
+        for string in output_to_parse:
+            if "----------" in string:
+                solution_number += 1
+                continue
+            for aux_var in aux_vars:
+                prefix = f"{aux_var}="
+                if string.startswith(prefix):
+                    val = string[len(prefix):].strip().strip(";")
+                    if val.startswith("[") and val.endswith("]"):
+                        val = "".join(val[1:-1].split(", "))
+                    if f"solution{solution_number}" not in components_values:
+                        components_values[f"solution{solution_number}"] = {}
+                    components_values[f"solution{solution_number}"][aux_var] = {"value": val, "weight": 0.0}
+                elif string.startswith(f"{aux_var}_"):
+                    val = string.split("=")[1].strip().strip(";")
+                    if f"solution{solution_number}" not in components_values:
+                        components_values[f"solution{solution_number}"] = {}
+                    if aux_var not in components_values[f"solution{solution_number}"]:
+                        components_values[f"solution{solution_number}"][aux_var] = {"value": "", "weight": 0.0}
+                    components_values[f"solution{solution_number}"][aux_var]["value"] += val
+
+        return result
+
+    def get_linear_border_mask_as_int(self, component_id: str, linear_border_mask_str: str) -> int:
+        """
+        Reconstructs the linear input mask for a specific component at the boundary
+        using the linear_border_mask array output from the solver.
+        """
+        mask_str = linear_border_mask_str.strip("[]")
+        if not mask_str:
+            return 0
+            
+        bool_vals = [x.strip().lower() == "true" for x in mask_str.split(",")]
+        
+        border_components = self._get_truncated_xor_differential_components_in_border()
+        border_sources = self._collect_border_sources(border_components)
+        ordered_sources = self._order_border_sources(border_sources)
+        
+        mask_int = 0
+        for idx, (source_bit_expr, _) in enumerate(ordered_sources):
+            comp_id, _, bit_index = self._parse_linear_bit_id(source_bit_expr)
+            if comp_id == component_id and idx < len(bool_vals) and bool_vals[idx]:
+                mask_int |= (1 << bit_index)
+                
+        return mask_int
