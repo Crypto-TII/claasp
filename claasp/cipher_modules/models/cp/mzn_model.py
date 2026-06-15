@@ -65,8 +65,7 @@ class MiniZincModelParts:
 
 
 class MznModel:
-
-    def __init__(self, cipher, sat_or_milp='sat'):
+    def __init__(self, cipher, sat_or_milp="sat"):
         self._cipher = cipher
         self.initialise_model()
         if sat_or_milp not in ("sat", "milp"):
@@ -93,7 +92,7 @@ class MznModel:
         self.carries_vars = []
         self.probability_modadd_vars_per_round = [[] for _ in range(self._cipher.number_of_rounds)]
         self.component_probability_var = {}
-        
+
     def initialise_model(self):
         self._variables_declarations = []
         self._model_constraints = []
@@ -207,6 +206,18 @@ class MznModel:
         component_solution["weight"] = component_weight
         components_values[f"solution{solution_number}"][f"{component}"] = component_solution
 
+    def _process_metadata(self, metadata, component):
+        probability_var = metadata.get("probability_var")
+        if probability_var:
+            self.probability_vars.append(probability_var)
+            self.component_probability_var[component.id] = probability_var
+
+            if hasattr(self._cipher, "get_round_from_component_id"):
+                round_index = self._cipher.get_round_from_component_id(component.id)
+
+                if round_index < len(self.probability_modadd_vars_per_round):
+                    self.probability_modadd_vars_per_round[round_index].append(probability_var)
+
     def build_generic_cp_model_from_dictionary(self, component_and_model_types, fixed_variables=None):
         variables = []
         self._variables_declarations = []
@@ -221,15 +232,16 @@ class MznModel:
             SBOX,
             WORD_OPERATION,
         ]
-        operation_types = ['AND', 'MODADD', 'MODSUB', 'NOT', 'OR', 'ROTATE', 'SHIFT', 'SHIFT_BY_VARIABLE_AMOUNT', 'XOR']
+        operation_types = ["AND", "MODADD", "MODSUB", "NOT", "OR", "ROTATE", "SHIFT", "SHIFT_BY_VARIABLE_AMOUNT", "XOR"]
 
         for component_and_model_type in component_and_model_types:
             component = component_and_model_type["component_object"]
             model_type = component_and_model_type["model_type"]
             operation = component.description[0]
             if component.type not in component_types or (
-                    WORD_OPERATION == component.type and operation not in operation_types):
-                print(f'{component.id} not yet implemented')
+                WORD_OPERATION == component.type and operation not in operation_types
+            ):
+                print(f"{component.id} not yet implemented")
             else:
                 cp_generic_propagation_constraints = getattr(component, model_type)
                 try:
@@ -242,21 +254,12 @@ class MznModel:
                     metadata = {}
                 elif len(result) == 3:
                     variables, constraints, metadata = result
+                    self._process_metadata(metadata, component)
                 else:
                     raise ValueError("Unexpected return value from component generator")
 
                 self._model_constraints.extend(constraints)
                 self._variables_declarations.extend(variables)
-
-                if metadata:
-                    probability_var = metadata.get("probability_var")
-                    if probability_var:
-                        self.probability_vars.append(probability_var)
-                        self.component_probability_var[component.id] = probability_var
-                        if hasattr(self._cipher, "get_round_from_component_id"):
-                            round_index = self._cipher.get_round_from_component_id(component.id)
-                            if round_index < len(self.probability_modadd_vars_per_round):
-                                self.probability_modadd_vars_per_round[round_index].append(probability_var)
 
     def build_mix_column_truncated_table(self, component):
         """
@@ -443,7 +446,8 @@ class MznModel:
                 for v in bit_values:
                     variables_values.extend([(v[0], i) for i in v[1]])
                 values_constraints = [
-                    f"{component_id}[{position}] {sign} {variables_values[i][0]}[{variables_values[i][1]}]" for i, position in enumerate(bit_positions)
+                    f"{component_id}[{position}] {sign} {variables_values[i][0]}[{variables_values[i][1]}]"
+                    for i, position in enumerate(bit_positions)
                 ]
             else:
                 values_constraints = [
@@ -848,7 +852,7 @@ class MznModel:
             "impossible_xor_differential",
         ):
             truncated = True
-        
+
         solutions = []
         if solve_external:
             command = self.get_command_for_solver_process(
@@ -872,7 +876,7 @@ class MznModel:
             bit_mzn_model.add_string(mzn_model_string)
             instance = Instance(solver_name_mzn, bit_mzn_model)
             start = time.time()
-            if processes_ != None and timeout_in_seconds_ != None:
+            if processes_ is not None and timeout_in_seconds_ is not None:
                 solver_output = instance.solve(
                     processes=processes_,
                     timeout=timedelta(seconds=int(timeout_in_seconds_)),
@@ -1017,7 +1021,7 @@ class MznModel:
         bit_mzn_model = Model()
         bit_mzn_model.add_string(mzn_model_string)
         instance = Instance(solver_name_mzn, bit_mzn_model)
-        if processes_ != None and timeout_in_seconds_ != None:
+        if processes_ is not None and timeout_in_seconds_ is not None:
             result = instance.solve(
                 processes=processes_,
                 timeout=timedelta(seconds=int(timeout_in_seconds_)),
@@ -1071,11 +1075,11 @@ class MznModel:
         """
         solver_names = []
 
-        keys = ['solver_brand_name', 'solver_name']
+        keys = ["solver_brand_name", "solver_name"]
         for solver in CP_SOLVERS_INTERNAL:
             solver_names.append({key: solver[key] for key in keys})
         if verbose:
-            keys = ['solver_brand_name', 'solver_name', 'keywords']
+            keys = ["solver_brand_name", "solver_name", "keywords"]
 
         for solver in CP_SOLVERS_EXTERNAL:
             solver_names.append({key: solver[key] for key in keys})

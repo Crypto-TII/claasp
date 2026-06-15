@@ -134,10 +134,9 @@ class MznSemiDeterministicTruncatedXorDifferentialModel(MznModel):
         cp_constraints = []
 
         for component_id in cipher.get_all_components_ids():
-            #at least one of the outputs bit difference should be active for the output cipher
+            # at least one of the outputs bit difference should be active for the output cipher
             if "cipher_output" in component_id:
                 cp_constraints.append(f"constraint count({component_id}, 1) > 0;")
-
 
         solve_directive = "solve minimize weight;" if (minimize and self.probability_vars) else SOLVE_SATISFY
         cp_constraints.append(solve_directive)
@@ -149,7 +148,7 @@ class MznSemiDeterministicTruncatedXorDifferentialModel(MznModel):
             new_constraint += f'"{component_id} = "++ show({component_id})++ "\\n" ++'
             probability_var = self.component_probability_var.get(component_id)
             if probability_var:
-                new_constraint += f"show({probability_var}) ++ \"\\n\" ++"
+                new_constraint += f'show({probability_var}) ++ "\\n" ++'
             else:
                 new_constraint += '"0" ++ "\\n" ++'
         new_constraint += '"Trail weight = " ++ show(weight)];'
@@ -171,9 +170,7 @@ class MznSemiDeterministicTruncatedXorDifferentialModel(MznModel):
         if fixed_values is None:
             fixed_values = []
 
-        self.build_cp_semi_deterministic_truncated_xor_differential_trail(
-            fixed_variables=fixed_values, minimize=False
-        )
+        self.build_cp_semi_deterministic_truncated_xor_differential_trail(fixed_variables=fixed_values, minimize=False)
         return self.solve(
             SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL_ONE_SOLUTION,
             solver_name=solver_name,
@@ -197,9 +194,7 @@ class MznSemiDeterministicTruncatedXorDifferentialModel(MznModel):
         if fixed_values is None:
             fixed_values = []
 
-        self.build_cp_semi_deterministic_truncated_xor_differential_trail(
-            fixed_variables=fixed_values, minimize=True
-        )
+        self.build_cp_semi_deterministic_truncated_xor_differential_trail(fixed_variables=fixed_values, minimize=True)
 
         return self.solve(
             SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL_OPTIMAL_SOLUTION,

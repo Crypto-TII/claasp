@@ -41,7 +41,10 @@ from claasp.name_mappings import (
 class MznXorLinearModel(MznModel):
     def __init__(self, cipher):
         super().__init__(cipher)
-        format_func = lambda record: f"{record[0]}_{record[2]}[{record[1]}]"
+
+        def format_func(record):
+            return f"{record[0]}_{record[2]}[{record[1]}]"
+
         self.bit_bindings, self.bit_bindings_for_intermediate_output = get_bit_bindings(cipher, format_func)
 
     def and_xor_linear_probability_lat(self, numadd):

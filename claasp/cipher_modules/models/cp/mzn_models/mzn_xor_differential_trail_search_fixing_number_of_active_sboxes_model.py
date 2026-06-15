@@ -336,7 +336,7 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
                     value = value.replace(" = ", "")
                     table_of_solutions = table_of_solutions + value.replace("\n", "") + ","
         table_of_solutions = table_of_solutions[:-1] + "]);"
-        
+
         return table_of_solutions
 
     def get_solutions_dictionaries_with_build_time(
@@ -480,7 +480,14 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
             for key in command_options["format"]:
                 command.extend(command_options[key])
 
-            model = "\n".join(self._model_prefix) + "\n" + table_of_solutions + "\n".join(self._variables_declarations) + "\n".join(self._model_constraints) + "\n"
+            model = (
+                "\n".join(self._model_prefix)
+                + "\n"
+                + table_of_solutions
+                + "\n".join(self._variables_declarations)
+                + "\n".join(self._model_constraints)
+                + "\n"
+            )
             solver_process = subprocess.run(command, input=model, capture_output=True, text=True)
             if solver_process.returncode < 0:
                 raise ValueError("something went wrong with solver subprocess... sorry!")

@@ -21,8 +21,7 @@ from claasp.name_mappings import CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, P
 
 
 class MznDeterministicTruncatedXorDifferentialModelARXOptimized(MznModel):
-
-    def __init__(self, cipher, sat_or_milp='sat'):
+    def __init__(self, cipher, sat_or_milp="sat"):
         super().__init__(cipher, sat_or_milp)
 
     def build_deterministic_truncated_xor_differential_trail_model(self, fixed_variables=[]):

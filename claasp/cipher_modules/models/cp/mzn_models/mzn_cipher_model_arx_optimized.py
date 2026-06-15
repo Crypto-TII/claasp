@@ -21,8 +21,7 @@ from claasp.name_mappings import CIPHER_OUTPUT, INTERMEDIATE_OUTPUT, PERMUTATION
 
 
 class MznCipherModelARXOptimized(MznModel):
-
-    def __init__(self, cipher, sat_or_milp='sat'):
+    def __init__(self, cipher, sat_or_milp="sat"):
         super().__init__(cipher, sat_or_milp)
 
     def build_cipher_model(self, fixed_variables=[]):
