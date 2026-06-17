@@ -8,6 +8,7 @@ import numpy as np
 
 from claasp.cipher import Cipher
 from claasp.cipher_modules.algebraic_tests import AlgebraicTests
+from claasp.ciphers.block_ciphers.ballet_block_cipher import BalletBlockCipher
 from claasp.ciphers.block_ciphers.bea1_block_cipher import BEA1BlockCipher
 from claasp.ciphers.block_ciphers.des_block_cipher import DESBlockCipher
 from claasp.ciphers.block_ciphers.hight_block_cipher import HightBlockCipher
@@ -20,8 +21,10 @@ from claasp.ciphers.block_ciphers.raiden_block_cipher import RaidenBlockCipher
 from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
 from claasp.ciphers.block_ciphers.skinny_block_cipher import SkinnyBlockCipher
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+from claasp.ciphers.block_ciphers.splight_block_cipher import SplightBlockCipher
 from claasp.ciphers.block_ciphers.tea_block_cipher import TeaBlockCipher
 from claasp.ciphers.block_ciphers.twofish_block_cipher import TwofishBlockCipher
+from claasp.ciphers.block_ciphers.ublock_block_cipher import UblockBlockCipher
 from claasp.ciphers.block_ciphers.xtea_block_cipher import XTeaBlockCipher
 from claasp.ciphers.permutations.ascon_sbox_sigma_permutation import AsconSboxSigmaPermutation
 from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation
@@ -680,3 +683,24 @@ def test_cipher_inverse():
     ciphertext = qarmav2.evaluate([key, plaintext, tweak])
     cipher_inv = qarmav2.cipher_inverse()
     assert cipher_inv.evaluate([ciphertext, tweak, key]) == plaintext
+
+    key = 0x0123456789abcdeffedcba9876543210
+    plaintext = 0x0123456789abcdeffedcba9876543210
+    cipher = UblockBlockCipher(block_bit_size=128, key_bit_size=128, number_of_rounds=2)
+    ciphertext = cipher.evaluate([plaintext, key])
+    cipher_inv = cipher.cipher_inverse()
+    assert cipher_inv.evaluate([ciphertext, key]) == plaintext
+
+    key = 0x0123456789abcdeffedcba9876543210
+    plaintext = 0x0123456789abcdeffedcba9876543210
+    cipher = BalletBlockCipher(block_bit_size=128, key_bit_size=128, number_of_rounds=2)
+    ciphertext = cipher.evaluate([plaintext, key])
+    cipher_inv = cipher.cipher_inverse()
+    assert cipher_inv.evaluate([ciphertext, key]) == plaintext
+
+    key = 0x0123456789abcdeffedcba9876543210
+    plaintext = 0x0123456789abcdef
+    cipher = SplightBlockCipher(block_bit_size=64, key_bit_size=128, number_of_rounds=2)
+    ciphertext = cipher.evaluate([plaintext, key])
+    cipher_inv = cipher.cipher_inverse()
+    assert cipher_inv.evaluate([ciphertext, key]) == plaintext
