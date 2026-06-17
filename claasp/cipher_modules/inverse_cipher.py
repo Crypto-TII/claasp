@@ -354,15 +354,30 @@ def get_all_equivalent_bits(self):
 
 
 def get_equivalent_input_bit_from_output_bit(
-    potential_unwanted_component, base_component, available_bits, all_equivalent_bits, key_schedule_components, self
+    potential_unwanted_component,
+    base_component,
+    available_bits,
+    all_equivalent_bits,
+    key_schedule_components,
+    self,
+    base_component_input_index=None,
 ):
     all_bit_names = get_all_bit_names(self)
     potential_unwanted_bits = []
     potential_unwanted_bits_names = []
     input_bit_positions_of_potential_unwanted_component = []
-    for index, input_id_link in enumerate(base_component.input_id_links):
-        if input_id_link == potential_unwanted_component.id:
-            input_bit_positions_of_potential_unwanted_component = base_component.input_bit_positions[index]
+    if base_component_input_index is not None:
+        # When the same link appears more than once among the inputs (e.g. a round key whose
+        # words are reassembled from disjoint slices of a single key-schedule component), the
+        # specific occurrence must be used; matching only by id would collapse them to the last
+        # occurrence and lose the other slices.
+        input_bit_positions_of_potential_unwanted_component = base_component.input_bit_positions[
+            base_component_input_index
+        ]
+    else:
+        for index, input_id_link in enumerate(base_component.input_id_links):
+            if input_id_link == potential_unwanted_component.id:
+                input_bit_positions_of_potential_unwanted_component = base_component.input_bit_positions[index]
 
     for i in input_bit_positions_of_potential_unwanted_component:
         output_bit = {"component_id": potential_unwanted_component.id, "position": i, "type": "output"}
@@ -423,6 +438,7 @@ def compute_input_id_links_and_input_bit_positions_for_inverse_component_from_in
                     all_equivalent_bits,
                     key_schedule_components,
                     self,
+                    base_component_input_index=i,
                 )
             )
             input_id_links.append(equivalent_component)
@@ -539,10 +555,21 @@ def are_there_enough_available_inputs_to_evaluate_component(
                             if index_list == index_id:
                                 break
                             starting_bit += len(list_bit_positions)
-                        output_component_bit_name = f"{output_component.id}_{starting_bit}_output_updated"
-                        if is_bit_adjacent_to_list_of_bits(
-                            output_component_bit_name, link_bit_names, all_equivalent_bits
-                        ):
+                        # The output_updated bits of an inverted component are indexed in
+                        # output space (0..output_bit_size), which does not coincide with the
+                        # input-space offset (starting_bit) when the recovered link is not the
+                        # first input (e.g. a multi-input XOR). Scan the producer's actual
+                        # output_updated bits for adjacency to the needed link bits; phase 2
+                        # below verifies full coverage per input bit.
+                        is_adjacent = any(
+                            is_bit_adjacent_to_list_of_bits(
+                                f"{output_component.id}_{k}_output_updated",
+                                link_bit_names,
+                                all_equivalent_bits,
+                            )
+                            for k in range(output_component.output_bit_size)
+                        )
+                        if is_adjacent:
                             # can_be_evaluated[index] = True
                             available_output_components.append(output_component)
 
@@ -1140,6 +1167,31 @@ def find_correct_order(id1, list1, id2, list2, all_equivalent_bits):
     return list2_ordered
 
 
+def find_equivalent_output_updated_positions(link, link_positions, producer, all_equivalent_bits):
+    """
+    Map each requested bit ``{link}_{p}_output`` to the position ``q`` of ``producer`` such that
+    ``{producer.id}_{q}_output_updated`` carries that value.
+
+    Returns the ordered list of producer output positions, or ``[]`` if any requested bit is not
+    covered. Unlike the input-space ``starting_bit`` heuristic, this resolves the value through the
+    producer's output space, which is required when the recovered link is not the producer's first
+    input (e.g. a size-reducing inverted multi-input XOR/MODADD).
+    """
+    positions = []
+    for p in link_positions:
+        link_bit_name = f"{link}_{p}_output"
+        equivalents = all_equivalent_bits.get(link_bit_name, [])
+        found = None
+        for q in range(producer.output_bit_size):
+            if f"{producer.id}_{q}_output_updated" in equivalents:
+                found = q
+                break
+        if found is None:
+            return []
+        positions.append(found)
+    return positions
+
+
 def find_correct_order_for_inversion(list1, list2, component):
     list2_ordered = []
     for i in list1:
@@ -1339,6 +1391,21 @@ def evaluated_component(component, available_bits, key_schedule_component_ids, a
                                     break
                                 else:
                                     accumulator += len(available_output_component.input_bit_positions[j])  # changed
+                        else:
+                            # The input-space ``starting_bit`` heuristic above fails when the
+                            # recovered link is not the producer's first input (e.g. a size-reducing
+                            # inverted multi-input XOR). Resolve the bits through the producer's
+                            # output space instead.
+                            output_updated_positions = find_equivalent_output_updated_positions(
+                                link,
+                                original_input_bit_positions_of_link,
+                                available_output_component,
+                                all_equivalent_bits,
+                            )
+                            if len(output_updated_positions) == len(original_input_bit_positions_of_link):
+                                input_id_links.append(available_output_component.id)
+                                input_bit_positions.append(output_updated_positions)
+                                break
     else:
         input_id_links = [[]]
         input_bit_positions = [[]]
@@ -1465,7 +1532,13 @@ def _remove_non_key_components_from_rounds(cipher, list_of_rounds, key_schedule_
 
     for current_round in list_of_rounds:
         for component in set(current_round.components) - set(key_schedule_components):
-            if component.type == INTERMEDIATE_OUTPUT and component.description == ["round_output"]:
+            # The non-key intermediate output of a round is its state round output. It is usually
+            # tagged "round_output", but some ciphers (e.g. AES) use a custom tag such as
+            # "state_after_round_N"; prefer "round_output" when present, otherwise fall back to the
+            # round's (single) non-key intermediate output so partial-cipher rewiring still works.
+            if component.type == INTERMEDIATE_OUTPUT and (
+                current_round.id not in intermediate_outputs or component.description == ["round_output"]
+            ):
                 intermediate_outputs[current_round.id] = component
             cipher.rounds.remove_round_component(current_round.id, component)
             removed_component_ids.append(component.id)

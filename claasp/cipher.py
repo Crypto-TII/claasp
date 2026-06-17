@@ -597,22 +597,38 @@ class Cipher:
     def _replace_partial_cipher_last_round_output(self, partial_cipher, end_round, removed_components_ids):
         removed_components_ids.append(CIPHER_OUTPUT)
         last_round = partial_cipher.rounds_as_list[end_round]
-        for component in last_round.components:
-            if component.description == ["round_output"]:
-                last_round.remove_component(component)
-                new_cipher_output = Component(
-                    component.id,
-                    CIPHER_OUTPUT,
-                    Input(
-                        component.output_bit_size,
-                        component.input_id_links,
-                        component.input_bit_positions,
-                    ),
+
+        def _promote_to_cipher_output(component):
+            last_round.remove_component(component)
+            new_cipher_output = Component(
+                component.id,
+                CIPHER_OUTPUT,
+                Input(
                     component.output_bit_size,
-                    [CIPHER_OUTPUT],
-                )
-                new_cipher_output.__class__ = CipherOutput
-                last_round.add_component(new_cipher_output)
+                    component.input_id_links,
+                    component.input_bit_positions,
+                ),
+                component.output_bit_size,
+                [CIPHER_OUTPUT],
+            )
+            new_cipher_output.__class__ = CipherOutput
+            last_round.add_component(new_cipher_output)
+
+        components_to_promote = [c for c in last_round.components if c.description == ["round_output"]]
+        if not components_to_promote:
+            # Some ciphers (e.g. AES) tag their state round output with a custom description
+            # (e.g. "state_after_round_N") instead of the conventional "round_output". In that case
+            # fall back to the end round's non-key-schedule intermediate output(s) so that a cipher
+            # output is still produced. Without one, the partial cipher has no terminal for
+            # cipher_inverse() to seed the backward pass from and cannot be inverted.
+            key_schedule_component_ids = set(get_key_schedule_component_ids(self))
+            components_to_promote = [
+                c
+                for c in last_round.components
+                if c.type == INTERMEDIATE_OUTPUT and c.id not in key_schedule_component_ids
+            ]
+        for component in components_to_promote:
+            _promote_to_cipher_output(component)
 
     def add_suffix_to_components(self, suffix, component_id_list=None):
         renamed_inputs = self.inputs
