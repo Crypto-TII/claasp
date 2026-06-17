@@ -26,6 +26,7 @@ from claasp.ciphers.block_ciphers.sparx_block_cipher import SparxBlockCipher
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.ciphers.block_ciphers.splight_block_cipher import SplightBlockCipher
 from claasp.ciphers.block_ciphers.tea_block_cipher import TeaBlockCipher
+from claasp.ciphers.block_ciphers.threefish_block_cipher import ThreefishBlockCipher
 from claasp.ciphers.block_ciphers.twofish_block_cipher import TwofishBlockCipher
 from claasp.ciphers.block_ciphers.ublock_block_cipher import UblockBlockCipher
 from claasp.ciphers.block_ciphers.xtea_block_cipher import XTeaBlockCipher
@@ -735,3 +736,11 @@ def test_cipher_inverse():
     ciphertext = cipher.evaluate([plaintext, key])
     cipher_inv = cipher.cipher_inverse()
     assert cipher_inv.evaluate([ciphertext, key]) == plaintext
+
+    plaintext = 0xF8F9FAFBFCFDFEFFF0F1F2F3F4F5F6F7E8E9EAEBECEDEEEFE0E1E2E3E4E5E6E7
+    key = 0x17161514131211101F1E1D1C1B1A191827262524232221202F2E2D2C2B2A2928
+    tweak = 0x07060504030201000F0E0D0C0B0A0908
+    cipher = ThreefishBlockCipher(number_of_rounds=2)
+    ciphertext = cipher.evaluate([plaintext, key, tweak])
+    cipher_inv = cipher.cipher_inverse()
+    assert cipher_inv.evaluate([ciphertext, key, tweak]) == plaintext

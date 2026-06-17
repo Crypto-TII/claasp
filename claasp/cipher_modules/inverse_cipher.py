@@ -1170,6 +1170,49 @@ def is_output_bits_updated_equivalent_to_input_bits(output_bits_updated_list, in
     return True
 
 
+def resolve_evaluated_input_via_equivalence(component, available_bits, all_equivalent_bits):
+    """
+    Wire a forward-evaluated component by resolving each of its input bits, through the bit
+    equivalence map, to an already-recovered value (an available ``output_updated`` bit).
+
+    Returns ``(input_id_links, input_bit_positions)`` reading from the components that actually
+    carry the needed value in the inverse cipher, or ``None`` if any input bit cannot be resolved.
+
+    This is needed when a component's declared input link does not itself carry the wanted value in
+    the inverse cipher (e.g. a dead-end ``round_output`` snapshot whose source component was
+    inverted, so the source's ``output_updated`` holds a different value than the snapshot captured,
+    as in Threefish). All bits of an equivalence class hold the same value, so any available
+    representative is correct.
+    """
+    available_output_updated = {
+        (bit["component_id"], bit["position"]) for bit in available_bits if bit["type"] == "output_updated"
+    }
+    flat_sources = []
+    for index, link in enumerate(component.input_id_links):
+        for position in component.input_bit_positions[index]:
+            bit_name = f"{link}_{position}_output"
+            resolved = None
+            for equivalent_bit in all_equivalent_bits.get(bit_name, []):
+                if equivalent_bit.endswith("_output_updated"):
+                    source_id, source_position = equivalent_bit[: -len("_output_updated")].rsplit("_", 1)
+                    if (source_id, int(source_position)) in available_output_updated:
+                        resolved = (source_id, int(source_position))
+                        break
+            if resolved is None:
+                return None
+            flat_sources.append(resolved)
+
+    input_id_links = []
+    input_bit_positions = []
+    for source_id, source_position in flat_sources:
+        if input_id_links and input_id_links[-1] == source_id:
+            input_bit_positions[-1].append(source_position)
+        else:
+            input_id_links.append(source_id)
+            input_bit_positions.append([source_position])
+    return input_id_links, input_bit_positions
+
+
 def find_correct_order(id1, list1, id2, list2, all_equivalent_bits):
     list2_ordered = []
     for i in list1:
@@ -1429,6 +1472,15 @@ def evaluated_component(component, available_bits, key_schedule_component_ids, a
     for index in sorted(empty_indices, reverse=True):
         del input_id_links[index]
         del input_bit_positions[index]
+
+    # If the wiring assembled above does not cover the whole input (e.g. a dead-end round_output
+    # snapshot whose source was inverted, so the value it captured is not the source's recovered
+    # output but lives on other recovered components - as in Threefish), resolve the input bits
+    # through the equivalence map to the components that actually carry that value.
+    if component.type != "cipher_input" and sum(len(p) for p in input_bit_positions) != component.input_bit_size:
+        resolved = resolve_evaluated_input_via_equivalence(component, available_bits, all_equivalent_bits)
+        if resolved is not None:
+            input_id_links, input_bit_positions = resolved
 
     evaluated_component = Component(
         component.id,
