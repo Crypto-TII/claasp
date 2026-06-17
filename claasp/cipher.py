@@ -442,52 +442,18 @@ class Cipher:
         key_schedule_component_ids = get_key_schedule_component_ids(self)
         all_equivalent_bits = get_all_equivalent_bits(self)
         while len(cipher_components_tmp) > 0:
-            # print(len(cipher_components_tmp))
             number_of_unprocessed_components = 0
             for c in cipher_components_tmp:
-                # print(c.id, "---------", len(cipher_components_tmp))
-                # OPTION 1 - Add components that are not invertible
-                if are_there_enough_available_inputs_to_evaluate_component(
-                    c,
-                    available_bits,
-                    all_equivalent_bits,
-                    key_schedule_component_ids,
-                    self,
-                ):
-                    # print("--------> evaluated")
-                    inverted_component = evaluated_component(
-                        c,
-                        available_bits,
-                        key_schedule_component_ids,
-                        all_equivalent_bits,
-                        self,
-                    )
-                    update_available_bits_with_component_output_bits(c, available_bits, self)
-                    inverted_cipher_components.append(inverted_component)
-                    cipher_components_tmp.remove(c)
-                # OPTION 2 - Add components that are invertible
-                elif (
-                    is_possibly_invertible_component(c)
-                    and are_there_enough_available_inputs_to_perform_inversion(
-                        c, available_bits, all_equivalent_bits, self
-                    )
-                ) or (c.type == CIPHER_INPUT and (c.description[0] == INPUT_KEY or c.description[0] == INPUT_TWEAK)):
-                    # print("--------> inverted")
-                    inverted_component = component_inverse(
-                        c,
-                        available_bits,
-                        all_equivalent_bits,
-                        key_schedule_component_ids,
-                        self,
-                    )
-                    update_available_bits_with_component_input_bits(c, available_bits)
-                    update_available_bits_with_component_output_bits(c, available_bits, self)
+                inverted_component = apply_inversion_step(
+                    c, available_bits, all_equivalent_bits, key_schedule_component_ids, self
+                )
+                if inverted_component is not None:
                     inverted_cipher_components.append(inverted_component)
                     cipher_components_tmp.remove(c)
                 else:
                     number_of_unprocessed_components += 1
                     if number_of_unprocessed_components == len(cipher_components_tmp):
-                        raise Error("Unable to invert cipher for now.")
+                        raise Error(inversion_stall_message(cipher_components_tmp))
 
                         # STEP 3 - rebuild cipher
         for _ in range(self.number_of_rounds):
