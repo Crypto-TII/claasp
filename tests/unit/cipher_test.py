@@ -15,12 +15,14 @@ from claasp.ciphers.block_ciphers.hight_block_cipher import HightBlockCipher
 from claasp.ciphers.block_ciphers.kasumi_block_cipher import KasumiBlockCipher
 from claasp.ciphers.block_ciphers.lblock_block_cipher import LBlockBlockCipher
 from claasp.ciphers.block_ciphers.lea_block_cipher import LeaBlockCipher
+from claasp.ciphers.block_ciphers.lowmc_block_cipher import LowMCBlockCipher
 from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
 from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
 from claasp.ciphers.block_ciphers.qarmav2_with_mixcolumn_block_cipher import QARMAv2MixColumnBlockCipher
 from claasp.ciphers.block_ciphers.raiden_block_cipher import RaidenBlockCipher
 from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
 from claasp.ciphers.block_ciphers.skinny_block_cipher import SkinnyBlockCipher
+from claasp.ciphers.block_ciphers.sparx_block_cipher import SparxBlockCipher
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.ciphers.block_ciphers.splight_block_cipher import SplightBlockCipher
 from claasp.ciphers.block_ciphers.tea_block_cipher import TeaBlockCipher
@@ -717,5 +719,19 @@ def test_cipher_inverse():
     plaintext = 0xfedcba0987654321
     cipher = KasumiBlockCipher(number_of_rounds=2)
     ciphertext = cipher.evaluate([key, plaintext])
+    cipher_inv = cipher.cipher_inverse()
+    assert cipher_inv.evaluate([ciphertext, key]) == plaintext
+
+    key = 0x00112233445566778899aabbccddeeff
+    plaintext = 0x0123456789abcdef
+    cipher = SparxBlockCipher(number_of_rounds=2)
+    ciphertext = cipher.evaluate([plaintext, key])
+    cipher_inv = cipher.cipher_inverse()
+    assert cipher_inv.evaluate([ciphertext, key]) == plaintext
+
+    key = 0x800000000000000000000000000000000000000000000000
+    plaintext = 0xABFF00000000000000000000000000000000000000000000
+    cipher = LowMCBlockCipher(block_bit_size=192, key_bit_size=192, number_of_rounds=4)
+    ciphertext = cipher.evaluate([plaintext, key])
     cipher_inv = cipher.cipher_inverse()
     assert cipher_inv.evaluate([ciphertext, key]) == plaintext

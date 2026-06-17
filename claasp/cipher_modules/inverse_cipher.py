@@ -1001,11 +1001,14 @@ def component_inverse(component, available_bits, all_equivalent_bits, key_schedu
                 component, available_bits, all_equivalent_bits, key_schedule_components, self
             )
         )
-        input_id_links = input_id_links_from_input_components + input_id_links_from_output_components
-        input_bit_positions = input_bit_positions_from_input_components + input_bit_positions_from_output_components
-        input_id_links, input_bit_positions = order_input_id_links_for_modadd(
-            component, input_id_links, input_bit_positions, available_bits, self
-        )
+        # MODSUB is non-commutative: minuend - subtrahend. The minuend is the recovered output of
+        # the original MODADD (sourced from output components); the subtrahend(s) are the known
+        # operands (sourced from input components). Place the minuend first directly, rather than
+        # relying on a positional reorder that conflates a producer's input- and output-bit spaces
+        # (which mis-orders the operand whenever the minuend is read through a bit-reorganizing
+        # component such as a linear layer, e.g. Sparx).
+        input_id_links = input_id_links_from_output_components + input_id_links_from_input_components
+        input_bit_positions = input_bit_positions_from_output_components + input_bit_positions_from_input_components
         inverse_component = Component(
             component.id,
             component.type,
