@@ -276,9 +276,7 @@ class MznDifferentialLinearContinuousModel(MznModel):
         return val
 
     def solve_for_ARX(self, solver_name="scip", timeout_in_seconds_=30, processes_=4):
-        constraints = self._model_constraints
-        variables = self._variables_declarations
-        mzn_model_string =  "\n".join(variables) + "\n".join(constraints) 
+        mzn_model_string = self.assemble_model()
         solver_name_mzn = Solver.lookup(solver_name)
         bit_mzn_model = Model()
         bit_mzn_model.add_string(mzn_model_string)
