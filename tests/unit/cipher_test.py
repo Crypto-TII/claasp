@@ -12,6 +12,7 @@ from claasp.ciphers.block_ciphers.ballet_block_cipher import BalletBlockCipher
 from claasp.ciphers.block_ciphers.bea1_block_cipher import BEA1BlockCipher
 from claasp.ciphers.block_ciphers.des_block_cipher import DESBlockCipher
 from claasp.ciphers.block_ciphers.hight_block_cipher import HightBlockCipher
+from claasp.ciphers.block_ciphers.kasumi_block_cipher import KasumiBlockCipher
 from claasp.ciphers.block_ciphers.lblock_block_cipher import LBlockBlockCipher
 from claasp.ciphers.block_ciphers.lea_block_cipher import LeaBlockCipher
 from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
@@ -711,3 +712,10 @@ def test_cipher_inverse():
     ciphertext = cipher.evaluate([plaintext])
     cipher_inv = cipher.cipher_inverse()
     assert cipher_inv.evaluate([ciphertext]) == plaintext
+
+    key = 0x9900aabbccddeeff1122334455667788
+    plaintext = 0xfedcba0987654321
+    cipher = KasumiBlockCipher(number_of_rounds=2)
+    ciphertext = cipher.evaluate([key, plaintext])
+    cipher_inv = cipher.cipher_inverse()
+    assert cipher_inv.evaluate([ciphertext, key]) == plaintext
