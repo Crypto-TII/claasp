@@ -28,6 +28,7 @@ from claasp.ciphers.block_ciphers.ublock_block_cipher import UblockBlockCipher
 from claasp.ciphers.block_ciphers.xtea_block_cipher import XTeaBlockCipher
 from claasp.ciphers.permutations.ascon_sbox_sigma_permutation import AsconSboxSigmaPermutation
 from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation
+from claasp.ciphers.permutations.chaskeypi_permutation import ChaskeyPiPermutation
 from claasp.ciphers.permutations.gift_sbox_permutation import GiftSboxPermutation
 from claasp.ciphers.permutations.keccak_invertible_permutation import KeccakInvertiblePermutation
 from claasp.ciphers.permutations.photon_permutation import PhotonPermutation
@@ -704,3 +705,9 @@ def test_cipher_inverse():
     ciphertext = cipher.evaluate([plaintext, key])
     cipher_inv = cipher.cipher_inverse()
     assert cipher_inv.evaluate([ciphertext, key]) == plaintext
+
+    plaintext = 0x0123456789abcdeffedcba9876543210
+    cipher = ChaskeyPiPermutation(number_of_rounds=2)
+    ciphertext = cipher.evaluate([plaintext])
+    cipher_inv = cipher.cipher_inverse()
+    assert cipher_inv.evaluate([ciphertext]) == plaintext

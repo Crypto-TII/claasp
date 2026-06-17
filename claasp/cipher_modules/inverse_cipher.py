@@ -361,12 +361,18 @@ def get_equivalent_input_bit_from_output_bit(
     key_schedule_components,
     self,
     base_component_input_index=None,
+    override_positions=None,
 ):
     all_bit_names = get_all_bit_names(self)
     potential_unwanted_bits = []
     potential_unwanted_bits_names = []
     input_bit_positions_of_potential_unwanted_component = []
-    if base_component_input_index is not None:
+    if override_positions is not None:
+        # Only consider an explicit subset of the link's positions. Used when a link is only
+        # partially available (e.g. a MODADD whose packed input is one recovered operand and one
+        # known operand sourced from an equivalent recovered component, as in Chaskey).
+        input_bit_positions_of_potential_unwanted_component = override_positions
+    elif base_component_input_index is not None:
         # When the same link appears more than once among the inputs (e.g. a round key whose
         # words are reassembled from disjoint slices of a single key-schedule component), the
         # specific occurrence must be used; matching only by id would collapse them to the last
@@ -416,33 +422,37 @@ def compute_input_id_links_and_input_bit_positions_for_inverse_component_from_in
     input_id_links = []
     input_bit_positions = []
     for i in range(len(component.input_id_links)):
-        component_available = True
-        bits = []
-        for j in range(len(component.input_bit_positions[i])):
-            bit = {
-                "component_id": component.input_id_links[i],
-                "position": component.input_bit_positions[i][j],
-                "type": "output",
-            }
-            bits.append(bit)
-            if not is_bit_contained_in(bit, available_bits):
-                component_available = False
-                break
-        if component_available:
-            potential_unwanted_component = component_from_id(component.input_id_links[i], self)
-            equivalent_component, input_bit_positions_of_equivalent_component = (
-                get_equivalent_input_bit_from_output_bit(
-                    potential_unwanted_component,
-                    component,
-                    available_bits,
-                    all_equivalent_bits,
-                    key_schedule_components,
-                    self,
-                    base_component_input_index=i,
-                )
+        # Source the positions of this link that are already known (available as a forward
+        # "output"). A fully-available link yields all its positions (unchanged behaviour); a
+        # partially-available link yields only its known sub-range, which lets us invert an
+        # operation whose packed input mixes a recovered operand with a known one (e.g. a Chaskey
+        # MODADD where one half is the recovered output and the other half is a known operand
+        # available through an equivalent recovered component).
+        available_positions = [
+            position
+            for position in component.input_bit_positions[i]
+            if is_bit_contained_in(
+                {"component_id": component.input_id_links[i], "position": position, "type": "output"},
+                available_bits,
             )
-            input_id_links.append(equivalent_component)
-            input_bit_positions.append(input_bit_positions_of_equivalent_component)
+        ]
+        if not available_positions:
+            continue
+        potential_unwanted_component = component_from_id(component.input_id_links[i], self)
+        equivalent_component, input_bit_positions_of_equivalent_component = (
+            get_equivalent_input_bit_from_output_bit(
+                potential_unwanted_component,
+                component,
+                available_bits,
+                all_equivalent_bits,
+                key_schedule_components,
+                self,
+                base_component_input_index=i,
+                override_positions=available_positions,
+            )
+        )
+        input_id_links.append(equivalent_component)
+        input_bit_positions.append(input_bit_positions_of_equivalent_component)
 
     return input_id_links, input_bit_positions
 
@@ -646,7 +656,9 @@ def are_there_enough_available_inputs_to_perform_inversion(component, available_
                             output_component_bit_name, link_bit_names, all_equivalent_bits
                         ) and (output_component_bit in available_bits):
                             nb_available_output_component_bits += 1
-                    if nb_available_output_component_bits == output_component.output_bit_size:
+                    if nb_available_output_component_bits == output_component.output_bit_size or (
+                        len(link_bit_names) > 0 and nb_available_output_component_bits >= len(link_bit_names)
+                    ):
                         can_be_used_for_inversion[index] = True
 
     # Merging available bits from inputs and output
