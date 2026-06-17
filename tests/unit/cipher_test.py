@@ -39,6 +39,7 @@ from claasp.ciphers.permutations.photon_permutation import PhotonPermutation
 from claasp.ciphers.permutations.salsa_permutation import SalsaPermutation
 from claasp.ciphers.permutations.sparkle_permutation import SparklePermutation
 from claasp.ciphers.permutations.spongent_pi_permutation import SpongentPiPermutation
+from claasp.ciphers.permutations.tinyjambu_permutation import TinyJambuPermutation
 from claasp.ciphers.permutations.xoodoo_invertible_permutation import XoodooInvertiblePermutation
 from claasp.ciphers.single_component_ciphers.identity_cipher import IdentityCipher
 from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
@@ -744,3 +745,10 @@ def test_cipher_inverse():
     ciphertext = cipher.evaluate([plaintext, key, tweak])
     cipher_inv = cipher.cipher_inverse()
     assert cipher_inv.evaluate([ciphertext, key, tweak]) == plaintext
+
+    key = 0x1234
+    plaintext = 0xffff
+    cipher = TinyJambuPermutation(number_of_rounds=2)
+    ciphertext = cipher.evaluate([key, plaintext])
+    cipher_inv = cipher.cipher_inverse()
+    assert cipher_inv.evaluate([ciphertext, key]) == plaintext

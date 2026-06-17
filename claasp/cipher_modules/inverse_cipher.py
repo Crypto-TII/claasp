@@ -602,6 +602,26 @@ def _get_successor_components(component_id, cipher):
     return list(graph_cipher.successors(component_id))
 
 
+def _input_bit_value_is_recovered(link, position, available_bits, all_equivalent_bits):
+    """
+    True if the value of input bit ``{link}[position]`` is already known in the inverse cipher,
+    either directly (its own ``output_updated`` is available) or through the equivalence map (some
+    other recovered component carries the same value as an available ``output_updated`` bit).
+
+    This lets the inversion-readiness credit a known operand even when it is only reachable through
+    the equivalence map (e.g. a shift-register state bit that equals a ciphertext bit, as in
+    TinyJambu), rather than requiring the operand's own link to be available.
+    """
+    if {"component_id": link, "position": position, "type": "output_updated"} in available_bits:
+        return True
+    for equivalent_bit in all_equivalent_bits.get(f"{link}_{position}_output", []):
+        if equivalent_bit.endswith("_output_updated"):
+            source_id, source_position = equivalent_bit[: -len("_output_updated")].rsplit("_", 1)
+            if {"component_id": source_id, "position": int(source_position), "type": "output_updated"} in available_bits:
+                return True
+    return False
+
+
 def are_there_enough_available_inputs_to_perform_inversion(component, available_bits, all_equivalent_bits, self):
     """
     NOTE: it assumes that the component input size is a multiple of the output size
@@ -662,10 +682,19 @@ def are_there_enough_available_inputs_to_perform_inversion(component, available_
                         can_be_used_for_inversion[index] = True
 
     # Merging available bits from inputs and output
-    bit_lists_link_to_component_from_input_and_output = bit_lists_link_to_component_from_output_and_available
+    bit_lists_link_to_component_from_input_and_output = list(bit_lists_link_to_component_from_output_and_available)
     for index, bits_list in enumerate(bit_lists_link_to_component_from_input):
         if can_be_used_for_inversion[index]:
             bit_lists_link_to_component_from_input_and_output += bits_list
+        else:
+            # Credit input bits whose value is individually known (directly or via the equivalence
+            # map), so a partially-available input link still contributes its known bits. The bit
+            # being recovered is simply not available and therefore not counted - which is correct.
+            for bit in bits_list:
+                if _input_bit_value_is_recovered(
+                    bit["component_id"], bit["position"], available_bits, all_equivalent_bits
+                ):
+                    bit_lists_link_to_component_from_input_and_output.append(bit)
 
     if component.id == INPUT_PLAINTEXT or INTERMEDIATE_OUTPUT in component.id:
         return len(bit_lists_link_to_component_from_input_and_output) >= component.output_bit_size
