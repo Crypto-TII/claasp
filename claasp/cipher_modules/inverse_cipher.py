@@ -952,112 +952,119 @@ def find_equivalent_output_updated_positions(link, link_positions, producer, all
     return positions
 
 
+def _wire_input_link_for_evaluation(
+    component, input_index, starting_bit_position, available_bits, all_equivalent_bits, self
+):
+    """Resolve one input link of a forward-evaluated component to the recovered component(s) that
+    carry its value, returning parallel lists ``(ids, positions)`` to append to the rebuilt wiring.
+
+    Two strategies, in order:
+
+    1. **Direct** — if the declared source has all its output bits recovered and those recovered
+       bits are equivalent to this component's input bits, reuse the declared link as-is.
+    2. **Alternative source** — otherwise scan components that consume the same link for one whose
+       recovered ``output_updated`` bits are equivalent to the needed link bits, wiring through
+       either the input-space ``starting_bit`` heuristic or, when that fails (the recovered link is
+       not the producer's first input, e.g. a size-reducing inverted multi-input XOR), the
+       producer's output space via ``find_equivalent_output_updated_positions``.
+
+    May return zero, one, or several contributions (the alternative-source scan does not stop after
+    the first adjacent match unless it resolves through output space); an empty result means the
+    link could not be wired from currently-recovered bits.
+    """
+    ids = []
+    positions = []
+    original_input_component = component_from_id(component.input_id_links[input_index], self)
+
+    output_bits_updated_list = [
+        f"{original_input_component.id}_{j}_output_updated" for j in component.input_bit_positions[input_index]
+    ]
+    input_bits_list = [
+        f"{component.id}_{k}_input"
+        for k in range(starting_bit_position, starting_bit_position + len(component.input_bit_positions[input_index]))
+    ]
+    flag = is_output_bits_updated_equivalent_to_input_bits(output_bits_updated_list, input_bits_list, all_equivalent_bits)
+    if all_output_bits_available(original_input_component, available_bits) and flag:
+        ids.append(component.input_id_links[input_index])
+        positions.append(component.input_bit_positions[input_index])
+        return ids, positions
+
+    # select component for which the connected components have all their inputs available
+    link = component.input_id_links[input_index]
+    original_input_bit_positions_of_link = component.input_bit_positions[input_index]
+    available_output_components = get_available_output_components(original_input_component, available_bits, self)
+    link_bit_names = [f"{link}_{l}_output" for l in range(original_input_component.output_bit_size)]
+    for available_output_component in available_output_components:
+        if (available_output_component.id not in component.input_id_links) and (
+            available_output_component.id != component.id
+        ):
+            index_id_list = [
+                _
+                for _, x in enumerate(available_output_component.input_id_links)
+                if x == link
+                and set(original_input_bit_positions_of_link) <= set(available_output_component.input_bit_positions[_])
+            ]
+            index_id = index_id_list[0] if index_id_list else available_output_component.input_id_links.index(link)
+            starting_bit = 0
+            for index_list, list_bit_positions in enumerate(available_output_component.input_bit_positions):
+                if index_list == index_id:
+                    break
+                starting_bit += len(list_bit_positions)
+            available_output_component_bit_name = f"{available_output_component.id}_{starting_bit}_output_updated"
+            if is_bit_adjacent_to_list_of_bits(
+                available_output_component_bit_name, link_bit_names, all_equivalent_bits
+            ):
+                ids.append(available_output_component.id)
+                # get input bit positions
+                accumulator = 0
+                for j in range(len(available_output_component.input_id_links)):
+                    if j == index_id:
+                        if set(original_input_bit_positions_of_link) < set(
+                            available_output_component.input_bit_positions[j]
+                        ):
+                            accumulator += (
+                                original_input_bit_positions_of_link[0]
+                                - available_output_component.input_bit_positions[j][0]
+                            )
+                        l = list(range(accumulator, accumulator + len(component.input_bit_positions[input_index])))
+                        l_ordered = find_correct_order(
+                            link,
+                            original_input_bit_positions_of_link,
+                            available_output_component.id,
+                            l,
+                            all_equivalent_bits,
+                        )
+                        positions.append(l_ordered)
+                        break
+                    else:
+                        accumulator += len(available_output_component.input_bit_positions[j])
+            else:
+                # The input-space ``starting_bit`` heuristic above fails when the recovered link is
+                # not the producer's first input (e.g. a size-reducing inverted multi-input XOR).
+                # Resolve the bits through the producer's output space instead.
+                output_updated_positions = find_equivalent_output_updated_positions(
+                    link, original_input_bit_positions_of_link, available_output_component, all_equivalent_bits
+                )
+                if len(output_updated_positions) == len(original_input_bit_positions_of_link):
+                    ids.append(available_output_component.id)
+                    positions.append(output_updated_positions)
+                    break
+    return ids, positions
+
+
 def evaluated_component(component, available_bits, key_schedule_component_ids, all_equivalent_bits, self):
     input_id_links = []
     input_bit_positions = []
 
     if component.type != "cipher_input":
-        components_with_same_input_bits = []
         starting_bit_position = 0
         for i in range(len(component.input_id_links)):
-            components_with_same_input_bits = get_all_components_with_the_same_input_id_link_and_input_bit_positions(
-                component.input_id_links[i], component.input_bit_positions[i], self
+            ids, positions = _wire_input_link_for_evaluation(
+                component, i, starting_bit_position, available_bits, all_equivalent_bits, self
             )
-            components_with_same_input_bits.remove(component)
-
-            # check if the original input component has all output bits available
-            original_input_component = component_from_id(component.input_id_links[i], self)
-            output_bits_updated_list = []
-            for j in component.input_bit_positions[i]:
-                output_bit_updated_name = f"{original_input_component.id}_{j}_output_updated"
-                output_bits_updated_list.append(output_bit_updated_name)
-            input_bits_list = []
-            for k in range(starting_bit_position, starting_bit_position + len(component.input_bit_positions[i])):
-                input_bit_name = f"{component.id}_{k}_input"
-                input_bits_list.append(input_bit_name)
             starting_bit_position += len(component.input_bit_positions[i])
-            flag = is_output_bits_updated_equivalent_to_input_bits(
-                output_bits_updated_list, input_bits_list, all_equivalent_bits
-            )
-            if all_output_bits_available(original_input_component, available_bits) and flag:
-                input_id_links.append(component.input_id_links[i])
-                input_bit_positions.append(component.input_bit_positions[i])
-            else:
-                # select component for which the connected components have all their inputs available
-                link = component.input_id_links[i]
-                original_input_bit_positions_of_link = component.input_bit_positions[i]
-                available_output_components = get_available_output_components(
-                    original_input_component, available_bits, self
-                )
-                link_bit_names = []
-                for l in range(original_input_component.output_bit_size):
-                    link_bit_name = f"{link}_{l}_output"
-                    link_bit_names.append(link_bit_name)
-                for _, available_output_component in enumerate(available_output_components):
-                    if (available_output_component.id not in component.input_id_links) and (
-                        available_output_component.id != component.id
-                    ):
-                        index_id_list = [
-                            _
-                            for _, x in enumerate(available_output_component.input_id_links)
-                            if x == link
-                            and set(original_input_bit_positions_of_link)
-                            <= set(available_output_component.input_bit_positions[_])
-                        ]
-                        index_id = (
-                            index_id_list[0] if index_id_list else available_output_component.input_id_links.index(link)
-                        )
-                        starting_bit = 0
-                        for index_list, list_bit_positions in enumerate(available_output_component.input_bit_positions):
-                            if index_list == index_id:
-                                break
-                            starting_bit += len(list_bit_positions)
-                        available_output_component_bit_name = (
-                            f"{available_output_component.id}_{starting_bit}_output_updated"
-                        )
-                        if is_bit_adjacent_to_list_of_bits(
-                            available_output_component_bit_name, link_bit_names, all_equivalent_bits
-                        ):
-                            # if all_input_bits_available(c, available_bits):
-                            input_id_links.append(available_output_component.id)
-                            # get input bit positions
-                            accumulator = 0
-                            for j in range(len(available_output_component.input_id_links)):
-                                if j == index_id:
-                                    if set(original_input_bit_positions_of_link) < set(
-                                        available_output_component.input_bit_positions[j]
-                                    ):
-                                        accumulator += (
-                                            original_input_bit_positions_of_link[0]
-                                            - available_output_component.input_bit_positions[j][0]
-                                        )
-                                    l = list(range(accumulator, accumulator + len(component.input_bit_positions[i])))
-                                    l_ordered = find_correct_order(
-                                        link,
-                                        original_input_bit_positions_of_link,
-                                        available_output_component.id,
-                                        l,
-                                        all_equivalent_bits,
-                                    )
-                                    input_bit_positions.append(l_ordered)
-                                    break
-                                else:
-                                    accumulator += len(available_output_component.input_bit_positions[j])
-                        else:
-                            # The input-space ``starting_bit`` heuristic above fails when the
-                            # recovered link is not the producer's first input (e.g. a size-reducing
-                            # inverted multi-input XOR). Resolve the bits through the producer's
-                            # output space instead.
-                            output_updated_positions = find_equivalent_output_updated_positions(
-                                link,
-                                original_input_bit_positions_of_link,
-                                available_output_component,
-                                all_equivalent_bits,
-                            )
-                            if len(output_updated_positions) == len(original_input_bit_positions_of_link):
-                                input_id_links.append(available_output_component.id)
-                                input_bit_positions.append(output_updated_positions)
-                                break
+            input_id_links.extend(ids)
+            input_bit_positions.extend(positions)
     else:
         input_id_links = [[]]
         input_bit_positions = [[]]
