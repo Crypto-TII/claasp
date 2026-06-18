@@ -250,74 +250,6 @@ def links_from_known_inputs(
     return input_id_links, input_bit_positions
 
 
-def are_there_enough_available_inputs_to_evaluate_component(
-    component, available_bits, all_equivalent_bits, key_schedule_components, self
-):
-    #  check input links
-    component_input_bits_list = component_input_bits(component)
-    can_be_evaluated = [True] * len(component_input_bits_list)
-    available_output_components = []
-    if component.type in (CONSTANT, CIPHER_INPUT):
-        return False
-    for index, bits_list in enumerate(component_input_bits_list):
-        if not are_these_bits_available(bits_list, available_bits):
-            can_be_evaluated[index] = False
-    available_input_components = [
-        component_from_id(c_id, self)
-        for i, c_id in enumerate(component.input_id_links)
-        if can_be_evaluated[i] == True
-    ]
-
-    if sum(can_be_evaluated) == len(can_be_evaluated):
-        return True
-    else:
-        for index, link in enumerate(component.input_id_links):
-            if not can_be_evaluated[index]:
-                component_of_link = component_from_id(link, self)
-                output_components = get_output_components(component_of_link, self)
-                link_bit_names = []
-                for bit in component_input_bits_list[index]:
-                    link_bit_name = f"{bit['component_id']}_{bit['position']}_output"
-                    link_bit_names.append(link_bit_name)
-                for _, output_component in enumerate(output_components):
-                    if (output_component.id not in component.input_id_links) and (output_component.id != component.id):
-                        index_id = output_component.input_id_links.index(link)
-                        starting_bit = 0
-                        for index_list, list_bit_positions in enumerate(output_component.input_bit_positions):
-                            if index_list == index_id:
-                                break
-                            starting_bit += len(list_bit_positions)
-                        # The output_updated bits of an inverted component are indexed in
-                        # output space (0..output_bit_size), which does not coincide with the
-                        # input-space offset (starting_bit) when the recovered link is not the
-                        # first input (e.g. a multi-input XOR). Scan the producer's actual
-                        # output_updated bits for adjacency to the needed link bits; phase 2
-                        # below verifies full coverage per input bit.
-                        is_adjacent = any(
-                            is_bit_adjacent_to_list_of_bits(
-                                f"{output_component.id}_{k}_output_updated",
-                                link_bit_names,
-                                all_equivalent_bits,
-                            )
-                            for k in range(output_component.output_bit_size)
-                        )
-                        if is_adjacent:
-                            available_output_components.append(output_component)
-
-        list_of_bit_names = []
-        for c in available_output_components:
-            for i in range(c.output_bit_size):
-                list_of_bit_names.append(f"{c.id}_{i}_output_updated")
-        for c in available_input_components:
-            for i in range(c.output_bit_size):
-                list_of_bit_names.append(f"{c.id}_{i}_output")
-        for i in range(component.input_bit_size):
-            bit_name = f"{component.id}_{i}_input"
-            if not is_bit_adjacent_to_list_of_bits(bit_name, list_of_bit_names, all_equivalent_bits):
-                return False
-        return True
-
-
 def _get_successor_components(component_id, cipher):
     graph_cipher = create_networkx_graph_from_input_ids(cipher)
     return list(graph_cipher.successors(component_id))
@@ -805,16 +737,21 @@ def component_inverse(component, available_bits, all_equivalent_bits, key_schedu
 
 
 def try_evaluate(component, available_bits, all_equivalent_bits, key_schedule_component_ids, self):
-    """Forward-evaluate the component when all its inputs are known, then commit its recovered
-    output bits to the availability state. Returns the rebuilt component, or ``None`` if it is
-    not yet evaluable. Readiness check, build and commit are deliberately co-located here.
+    """Attempt to forward-evaluate the component by sourcing every input bit from an
+    already-recovered value. Returns the rebuilt component (committing its recovered outputs), or
+    ``None`` if not all input bits can be sourced yet.
+
+    Readiness is *derived* from the build attempt: the component is evaluable iff the pure wiring
+    covers the whole input. There is no separate readiness predicate to keep in sync with the
+    builder - the single ``_evaluate_wiring`` traversal decides both (Phase 2).
     """
-    if not are_there_enough_available_inputs_to_evaluate_component(
-        component, available_bits, all_equivalent_bits, key_schedule_component_ids, self
-    ):
+    if component.type in (CONSTANT, CIPHER_INPUT):
         return None
-    inverted_component = evaluated_component(
-        component, available_bits, key_schedule_component_ids, all_equivalent_bits, self
+    input_id_links, input_bit_positions = _evaluate_wiring(component, available_bits, all_equivalent_bits, self)
+    if sum(len(positions) for positions in input_bit_positions) != component.input_bit_size:
+        return None
+    inverted_component = _build_evaluated_component(
+        component, input_id_links, input_bit_positions, available_bits, all_equivalent_bits
     )
     update_available_bits_with_component_output_bits(component, available_bits, self)
     return inverted_component
@@ -1041,7 +978,16 @@ def _wire_input_link_for_evaluation(
     return ids, positions
 
 
-def evaluated_component(component, available_bits, key_schedule_component_ids, all_equivalent_bits, self):
+def _evaluate_wiring(component, available_bits, all_equivalent_bits, self):
+    """Compute the forward-evaluation wiring ``(input_id_links, input_bit_positions)`` for a
+    component, sourcing each input bit from an already-recovered value.
+
+    Pure: reads ``available_bits`` / ``all_equivalent_bits`` but mutates nothing. The returned
+    wiring may not cover the whole input (when not enough is recovered yet) - callers check
+    coverage. This is the single traversal both the builder (``_build_evaluated_component``) and the
+    readiness check derive from, so the "can I evaluate?" decision and the construction can never
+    drift apart.
+    """
     input_id_links = []
     input_bit_positions = []
 
@@ -1072,26 +1018,32 @@ def evaluated_component(component, available_bits, key_schedule_component_ids, a
         if resolved is not None:
             input_id_links, input_bit_positions = resolved
 
-    evaluated_component = Component(
+    return input_id_links, input_bit_positions
+
+
+def _build_evaluated_component(component, input_id_links, input_bit_positions, available_bits, all_equivalent_bits):
+    """Build the rebuilt forward-evaluated component from its (already complete) wiring and commit
+    its recovered output bits to the availability/equivalence state. Mutating counterpart to the
+    pure ``_evaluate_wiring``."""
+    evaluated = Component(
         component.id,
         component.type,
         Input(component.input_bit_size, input_id_links, input_bit_positions),
         component.output_bit_size,
         component.description,
     )
-    evaluated_component.__class__ = component.__class__
-    setattr(evaluated_component, "round", getattr(component, "round"))
+    evaluated.__class__ = component.__class__
+    setattr(evaluated, "round", getattr(component, "round"))
 
     id = component.id
-    for i in range(evaluated_component.output_bit_size):
+    for i in range(evaluated.output_bit_size):
         output_bit_name_updated = f"{id}_{i}_output_updated"
-        bit = {"component_id": id, "position": i, "type": "output_updated"}
-        available_bits.append(bit)
+        available_bits.append({"component_id": id, "position": i, "type": "output_updated"})
         output_bit_name = f"{id}_{i}_output"
         add_equivalence(
             all_equivalent_bits, output_bit_name, output_bit_name_updated, ensure_a=True, symmetric=False
         )
 
-    return evaluated_component
+    return evaluated
 
 
