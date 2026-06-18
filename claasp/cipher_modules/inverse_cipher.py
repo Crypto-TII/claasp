@@ -47,6 +47,9 @@ from claasp.cipher_modules.inverse.cipher_view import (
     is_bit_contained_in,
 )
 from claasp.cipher_modules.inverse.equivalence import (
+    add_equivalence,
+    bits_equivalent,
+    equivalent_bit_names,
     equivalent_bits_in_common,
     get_all_bit_names,
     get_all_equivalent_bits,
@@ -183,7 +186,7 @@ def get_equivalent_input_bit_from_output_bit(
 
     equivalent_bits = []
     for potential_unwanted_bits_name in potential_unwanted_bits_names:
-        for equivalent_bit in all_equivalent_bits[potential_unwanted_bits_name]:
+        for equivalent_bit in equivalent_bit_names(potential_unwanted_bits_name, all_equivalent_bits):
             if (
                 (equivalent_bit in all_bit_names.keys())
                 and (all_bit_names[equivalent_bit]["component_id"] != base_component.id)
@@ -474,14 +477,13 @@ def find_input_id_link_bits_equivalent(inverse_component, component, all_equival
     for index, input_id_link in enumerate(inverse_component.input_id_links):
         for position, i in enumerate(inverse_component.input_bit_positions[index]):
             potential_equivalent_bit_name = f"{input_id_link}_{i}_output_updated"
-            if potential_equivalent_bit_name in all_equivalent_bits.keys():
-                list_of_keys += all_equivalent_bits[potential_equivalent_bit_name]
+            list_of_keys += equivalent_bit_names(potential_equivalent_bit_name, all_equivalent_bits)
     offset = 0
     for index, input_id_link in enumerate(component.input_id_links):
         for pos, i in enumerate(component.input_bit_positions[index]):
             output_bit_name = f"{input_id_link}_{i}_output"
             if output_bit_name in all_equivalent_bits and not any(
-                "output_updated" in item for item in all_equivalent_bits[output_bit_name]
+                "output_updated" in item for item in equivalent_bit_names(output_bit_name, all_equivalent_bits)
             ):
                 bit_positions.append(offset + pos)
         offset += len(component.input_bit_positions[index])
@@ -495,14 +497,7 @@ def update_output_bits(inverse_component, self, all_equivalent_bits, available_b
             bit = {"component_id": id, "position": i, "type": "output_updated"}
             available_bits.append(bit)
             input_bit_name = f"{id}_{bit_positions[i]}_input"
-            all_equivalent_bits[input_bit_name].append(output_bit_name_updated)
-            if output_bit_name_updated not in all_equivalent_bits.keys():
-                all_equivalent_bits[output_bit_name_updated] = []
-            all_equivalent_bits[output_bit_name_updated].append(input_bit_name)
-            for name in all_equivalent_bits[input_bit_name]:
-                if name != output_bit_name_updated:
-                    all_equivalent_bits[output_bit_name_updated].append(name)
-                    all_equivalent_bits[name].append(output_bit_name_updated)
+            add_equivalence(all_equivalent_bits, input_bit_name, output_bit_name_updated)
 
     id = inverse_component.id
     component = component_from_id(id, self)
@@ -517,15 +512,9 @@ def update_output_bits(inverse_component, self, all_equivalent_bits, available_b
             bit = {"component_id": id, "position": i, "type": "output_updated"}
             available_bits.append(bit)
             input_bit_name = f"{id}_{i}_output"
-            if input_bit_name not in all_equivalent_bits.keys():
-                all_equivalent_bits[input_bit_name] = []
-            all_equivalent_bits[input_bit_name].append(output_bit_name_updated)
-            if output_bit_name_updated not in all_equivalent_bits.keys():
-                all_equivalent_bits[output_bit_name_updated] = []
-            all_equivalent_bits[output_bit_name_updated].append(input_bit_name)
-            for name in all_equivalent_bits[input_bit_name]:
-                if name != output_bit_name_updated:
-                    all_equivalent_bits[output_bit_name_updated].append(name)
+            add_equivalence(
+                all_equivalent_bits, input_bit_name, output_bit_name_updated, ensure_a=True, symmetric=False
+            )
     elif component.input_bit_size == component.output_bit_size:
         _add_output_bit_equivalences(
             id, range(component.output_bit_size), component, all_equivalent_bits, available_bits
@@ -894,7 +883,7 @@ def resolve_evaluated_input_via_equivalence(component, available_bits, all_equiv
         for position in component.input_bit_positions[index]:
             bit_name = f"{link}_{position}_output"
             resolved = None
-            for equivalent_bit in all_equivalent_bits.get(bit_name, []):
+            for equivalent_bit in equivalent_bit_names(bit_name, all_equivalent_bits):
                 if equivalent_bit.endswith("_output_updated"):
                     source_id, source_position = equivalent_bit[: -len("_output_updated")].rsplit("_", 1)
                     if (source_id, int(source_position)) in available_output_updated:
@@ -921,7 +910,7 @@ def find_correct_order(id1, list1, id2, list2, all_equivalent_bits):
         bit = f"{id1}_{i}_output"
         for j in list2:
             bit_potentially_equivalent = f"{id2}_{j}_input"
-            if bit_potentially_equivalent in all_equivalent_bits[bit]:
+            if bits_equivalent(bit, bit_potentially_equivalent, all_equivalent_bits):
                 list2_ordered.append(j)
                 break
     return list2_ordered
@@ -940,7 +929,7 @@ def find_equivalent_output_updated_positions(link, link_positions, producer, all
     positions = []
     for p in link_positions:
         link_bit_name = f"{link}_{p}_output"
-        equivalents = all_equivalent_bits.get(link_bit_name, [])
+        equivalents = equivalent_bit_names(link_bit_name, all_equivalent_bits)
         found = None
         for q in range(producer.output_bit_size):
             if f"{producer.id}_{q}_output_updated" in equivalents:
@@ -1099,15 +1088,9 @@ def evaluated_component(component, available_bits, key_schedule_component_ids, a
         bit = {"component_id": id, "position": i, "type": "output_updated"}
         available_bits.append(bit)
         output_bit_name = f"{id}_{i}_output"
-        if output_bit_name not in all_equivalent_bits.keys():
-            all_equivalent_bits[output_bit_name] = []
-        all_equivalent_bits[output_bit_name].append(output_bit_name_updated)
-        if output_bit_name_updated not in all_equivalent_bits.keys():
-            all_equivalent_bits[output_bit_name_updated] = []
-        all_equivalent_bits[output_bit_name_updated].append(output_bit_name)
-        for name in all_equivalent_bits[output_bit_name]:
-            if name != output_bit_name_updated:
-                all_equivalent_bits[output_bit_name_updated].append(name)
+        add_equivalence(
+            all_equivalent_bits, output_bit_name, output_bit_name_updated, ensure_a=True, symmetric=False
+        )
 
     return evaluated_component
 

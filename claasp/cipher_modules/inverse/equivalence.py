@@ -5,6 +5,51 @@ from claasp.cipher_modules.inverse.cipher_view import get_cipher_components
 from claasp.name_mappings import CIPHER_OUTPUT, INTERMEDIATE_OUTPUT
 
 
+# --- Equivalence primitives (the single seam every read goes through) ----------------------
+# The whole engine asks two questions of the equivalence relation: "are these two bits the same
+# value?" and "what bits are equivalent to this one?". Routing every call site through these two
+# functions means the relation has exactly one definition and one place to change its
+# implementation (Phase 3c: union-find). They are currently thin wrappers over the adjacency dict
+# - behaviour-identical to the inline ``x in all_equivalent_bits[y]`` / ``.get(y, [])`` they
+# replace (the dict is a union of cliques, so direct membership already equals transitive closure;
+# measured at 0 divergences over 38M calls).
+
+
+def bits_equivalent(bit_name, other_bit_name, all_equivalent_bits):
+    """Whether ``other_bit_name`` is recorded as equivalent to ``bit_name`` (same value)."""
+    return other_bit_name in all_equivalent_bits.get(bit_name, [])
+
+
+def equivalent_bit_names(bit_name, all_equivalent_bits):
+    """The bit-names recorded as equivalent to ``bit_name`` (empty list if it has none)."""
+    return all_equivalent_bits.get(bit_name, [])
+
+
+def add_equivalence(all_equivalent_bits, bit_a, bit_b, ensure_a=False, symmetric=True):
+    """Record ``bit_b`` as the same value as ``bit_a``, extending ``bit_a``'s class to include it.
+
+    The relation is stored as a union of cliques (every pair in a class linked directly), so this
+    links ``bit_b`` to ``bit_a`` and to each of ``bit_a``'s existing members - keeping direct
+    membership equal to transitive closure. This is the single *write* seam mirroring the read
+    seam above; 3c will reimplement both over a union-find.
+
+    Two flags capture the (verbatim) differences between the original inline call sites:
+    ``ensure_a`` creates ``bit_a``'s entry when a site does not already guarantee it; ``symmetric``
+    also appends ``bit_b`` to each existing member's own list (the readiness-evaluation site did
+    this, the dynamic-output sites did not).
+    """
+    if ensure_a:
+        all_equivalent_bits.setdefault(bit_a, [])
+    all_equivalent_bits[bit_a].append(bit_b)
+    all_equivalent_bits.setdefault(bit_b, [])
+    all_equivalent_bits[bit_b].append(bit_a)
+    for name in all_equivalent_bits[bit_a]:
+        if name != bit_b:
+            all_equivalent_bits[bit_b].append(name)
+            if symmetric:
+                all_equivalent_bits[name].append(bit_b)
+
+
 # --- Phase 3b shadow instrumentation -------------------------------------------------------
 # Off-by-default measurement hook. When enabled, every adjacency query also computes the
 # *transitive* answer (would the value-class/union-find model decide the same thing?) and records
@@ -91,12 +136,7 @@ def _shadow_record(bit_name, list_of_bit_names, all_equivalent_bits, engine_answ
 
 
 def is_bit_adjacent_to_list_of_bits(bit_name, list_of_bit_names, all_equivalent_bits):
-    engine_answer = False
-    if bit_name in all_equivalent_bits:
-        for name in list_of_bit_names:
-            if name in all_equivalent_bits[bit_name]:
-                engine_answer = True
-                break
+    engine_answer = any(bits_equivalent(bit_name, name, all_equivalent_bits) for name in list_of_bit_names)
     if _SHADOW["enabled"]:
         _shadow_record(bit_name, list_of_bit_names, all_equivalent_bits, engine_answer)
     return engine_answer
@@ -110,7 +150,7 @@ def equivalent_bits_in_common(bits_of_an_output_component, component_bits, all_e
             return []
         for bit2 in component_bits:
             bit_name2 = f"{bit2['component_id']}_{bit2['position']}_{bit2['type']}"
-            if bit_name2 in all_equivalent_bits[bit_name1]:
+            if bits_equivalent(bit_name1, bit_name2, all_equivalent_bits):
                 bits_in_common.append(bit1)
                 break
     return bits_in_common

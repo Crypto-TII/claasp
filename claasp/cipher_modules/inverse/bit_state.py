@@ -6,7 +6,7 @@ from claasp.cipher_modules.inverse.cipher_view import (
     get_output_components,
     is_bit_contained_in,
 )
-from claasp.cipher_modules.inverse.equivalence import is_bit_adjacent_to_list_of_bits
+from claasp.cipher_modules.inverse.equivalence import equivalent_bit_names, is_bit_adjacent_to_list_of_bits
 
 
 def component_input_bits(component):
@@ -51,7 +51,7 @@ def _input_bit_value_is_recovered(link, position, available_bits, all_equivalent
     """
     if {"component_id": link, "position": position, "type": "output_updated"} in available_bits:
         return True
-    for equivalent_bit in all_equivalent_bits.get(f"{link}_{position}_output", []):
+    for equivalent_bit in equivalent_bit_names(f"{link}_{position}_output", all_equivalent_bits):
         if equivalent_bit.endswith("_output_updated"):
             source_id, source_position = equivalent_bit[: -len("_output_updated")].rsplit("_", 1)
             if {"component_id": source_id, "position": int(source_position), "type": "output_updated"} in available_bits:
