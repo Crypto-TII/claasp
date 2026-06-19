@@ -5,14 +5,13 @@ from claasp.cipher_modules.inverse.cipher_view import get_cipher_components
 from claasp.name_mappings import CIPHER_OUTPUT, INTERMEDIATE_OUTPUT
 
 
-# --- Equivalence primitives (the single seam every read goes through) ----------------------
-# The whole engine asks two questions of the equivalence relation: "are these two bits the same
-# value?" and "what bits are equivalent to this one?". Routing every call site through these two
-# functions means the relation has exactly one definition and one place to change its
-# implementation (Phase 3c: union-find). They are currently thin wrappers over the adjacency dict
-# - behaviour-identical to the inline ``x in all_equivalent_bits[y]`` / ``.get(y, [])`` they
-# replace (the dict is a union of cliques, so direct membership already equals transitive closure;
-# measured at 0 divergences over 38M calls).
+# --- Equivalence read/write helpers --------------------------------------------------------
+# The engine asks two questions of the equivalence relation: "are these two bits the same value?"
+# and "what bits are equivalent to this one?". These named helpers give those one definition each.
+# The relation is an adjacency dict kept as a union of cliques (every pair in a class linked
+# directly), so direct membership already equals transitive closure.
+# (A union-find replacement was prototyped and measured 15-40% slower - small classes make the
+# C-level dict ``in`` beat a Python ``find()`` - so the dict stays. See inversion_gate_log.md.)
 
 
 def bits_equivalent(bit_name, other_bit_name, all_equivalent_bits):
@@ -50,96 +49,9 @@ def add_equivalence(all_equivalent_bits, bit_a, bit_b, ensure_a=False, symmetric
                 all_equivalent_bits[name].append(bit_b)
 
 
-# --- Phase 3b shadow instrumentation -------------------------------------------------------
-# Off-by-default measurement hook. When enabled, every adjacency query also computes the
-# *transitive* answer (would the value-class/union-find model decide the same thing?) and records
-# divergences, WITHOUT changing what the engine returns. This is how we measure - across real
-# ciphers - whether routing the engine's direct-adjacency checks through transitive closure would
-# change any decision, before committing to that switch. When disabled it is a no-op.
-_SHADOW = {
-    "enabled": False,
-    "cipher": None,
-    "calls": 0,
-    "divergences": 0,
-    "false_to_true": 0,  # engine said not-adjacent, closure says same-class (the case that matters)
-    "true_to_false": 0,  # must stay 0: adjacency implies closure (sanity check on the BFS)
-    "per_cipher": {},
-    "samples": [],
-    "max_samples": 60,
-}
-
-
-def shadow_enable(cipher_name=None):
-    _SHADOW["enabled"] = True
-    _SHADOW["cipher"] = cipher_name
-    _SHADOW["per_cipher"].setdefault(cipher_name, {"calls": 0, "divergences": 0, "false_to_true": 0})
-
-
-def shadow_set_cipher(cipher_name):
-    _SHADOW["cipher"] = cipher_name
-    _SHADOW["per_cipher"].setdefault(cipher_name, {"calls": 0, "divergences": 0, "false_to_true": 0})
-
-
-def shadow_disable():
-    _SHADOW["enabled"] = False
-
-
-def shadow_report():
-    return dict(_SHADOW)
-
-
-def _reachable_any(start, targets, all_equivalent_bits):
-    """Whether ``start`` reaches any name in ``targets`` through the equivalence map (transitive
-    closure / same value class). Identity counts as reachable."""
-    if start in targets:
-        return True
-    seen = {start}
-    frontier = [start]
-    while frontier:
-        next_frontier = []
-        for node in frontier:
-            for neighbour in all_equivalent_bits.get(node, []):
-                if neighbour in targets:
-                    return True
-                if neighbour not in seen:
-                    seen.add(neighbour)
-                    next_frontier.append(neighbour)
-        frontier = next_frontier
-    return False
-
-
-def _shadow_record(bit_name, list_of_bit_names, all_equivalent_bits, engine_answer):
-    targets = set(list_of_bit_names)
-    transitive_answer = _reachable_any(bit_name, targets, all_equivalent_bits)
-    bucket = _SHADOW["per_cipher"].setdefault(
-        _SHADOW["cipher"], {"calls": 0, "divergences": 0, "false_to_true": 0}
-    )
-    _SHADOW["calls"] += 1
-    bucket["calls"] += 1
-    if transitive_answer != engine_answer:
-        _SHADOW["divergences"] += 1
-        bucket["divergences"] += 1
-        if engine_answer is False and transitive_answer is True:
-            _SHADOW["false_to_true"] += 1
-            bucket["false_to_true"] += 1
-        else:
-            _SHADOW["true_to_false"] += 1
-        if len(_SHADOW["samples"]) < _SHADOW["max_samples"]:
-            _SHADOW["samples"].append(
-                {
-                    "cipher": _SHADOW["cipher"],
-                    "bit": bit_name,
-                    "engine": engine_answer,
-                    "transitive": transitive_answer,
-                }
-            )
-
-
 def is_bit_adjacent_to_list_of_bits(bit_name, list_of_bit_names, all_equivalent_bits):
-    engine_answer = any(bits_equivalent(bit_name, name, all_equivalent_bits) for name in list_of_bit_names)
-    if _SHADOW["enabled"]:
-        _shadow_record(bit_name, list_of_bit_names, all_equivalent_bits, engine_answer)
-    return engine_answer
+    """Whether ``bit_name`` is the same value as any name in ``list_of_bit_names``."""
+    return any(bits_equivalent(bit_name, name, all_equivalent_bits) for name in list_of_bit_names)
 
 
 def equivalent_bits_in_common(bits_of_an_output_component, component_bits, all_equivalent_bits):
