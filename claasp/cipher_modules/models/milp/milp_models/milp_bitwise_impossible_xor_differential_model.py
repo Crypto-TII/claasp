@@ -180,7 +180,7 @@ class MilpBitwiseImpossibleXorDifferentialModel(MilpBitwiseDeterministicTruncate
         x_class = self._trunc_binvar
         p = self._integer_variable
 
-        if component_id_list == None:
+        if component_id_list is None:
             return self.add_constraints_to_build_in_sage_milp_class(fixed_variables=fixed_variables)
         assert set(component_id_list) <= set(self._cipher.get_all_components_ids()) - set(
             get_key_schedule_component_ids(self._cipher)
