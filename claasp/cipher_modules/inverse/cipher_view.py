@@ -143,9 +143,13 @@ def _are_all_bits_available(id, input_bit_positions_len, offset, available_bits)
 
 
 def get_available_output_components(component, available_bits, self, return_index=False):
-    cipher_components = get_cipher_components(self)
+    # Iterate only the components that actually consume `component` (the view's `consumers`
+    # index, built in component order), not every component in the cipher. The inner loop's
+    # `component.id == c.input_id_links[i]` guard means non-consumers contributed nothing
+    # anyway, so this is behaviour-identical - but turns an O(total components) scan per call
+    # (the dominant cost post the O(1) membership fix - ~82% of a Keccak inverse) into O(deg).
     available_output_components = []
-    for c in cipher_components:
+    for c in _cipher_view(self).consumers.get(component.id, []):
         accumulator = 0
         for i in range(len(c.input_id_links)):
             if (component.id == c.input_id_links[i]) and (c not in available_output_components):
