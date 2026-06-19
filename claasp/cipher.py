@@ -438,7 +438,7 @@ class Cipher:
 
         inverted_cipher_components = []
         cipher_components_tmp = get_cipher_components(self)
-        available_bits = []
+        available_bits = AvailableBits()
         key_schedule_component_ids = get_key_schedule_component_ids(self)
         all_equivalent_bits = get_all_equivalent_bits(self)
         while len(cipher_components_tmp) > 0:

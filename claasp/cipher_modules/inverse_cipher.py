@@ -36,6 +36,7 @@ from claasp.name_mappings import (
 )
 
 from claasp.cipher_modules.inverse.cipher_view import (
+    AvailableBits,
     _CipherView,
     _are_all_bits_available,
     _cipher_view,

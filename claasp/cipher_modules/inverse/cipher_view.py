@@ -83,7 +83,45 @@ def get_output_components(component, self):
     return list(_cipher_view(self).consumers.get(component.id, []))
 
 
+class AvailableBits:
+    """List-like store of recovered bits with O(1) membership.
+
+    ``available_bits`` was a plain ``list`` of ``{"component_id", "position", "type"}`` dicts,
+    so every ``is_bit_contained_in`` / ``bit in available_bits`` was an O(n) linear scan over a
+    list that grows with every recovered bit - O(n^2) over a full inversion, and the single
+    biggest cost in profiling (e.g. 78% of a Keccak inverse). This wrapper keeps the exact list
+    semantics every call site relies on (append-order, iteration, ``len``, duplicates) but also
+    maintains a ``set`` of ``(component_id, position, type)`` keys so membership is O(1).
+    """
+
+    __slots__ = ("_list", "_keys")
+
+    def __init__(self):
+        self._list = []
+        self._keys = set()
+
+    @staticmethod
+    def _key(bit):
+        return (bit["component_id"], bit["position"], bit["type"])
+
+    def append(self, bit):
+        self._list.append(bit)
+        self._keys.add(self._key(bit))
+
+    def __contains__(self, bit):
+        return self._key(bit) in self._keys
+
+    def __iter__(self):
+        return iter(self._list)
+
+    def __len__(self):
+        return len(self._list)
+
+
 def is_bit_contained_in(bit, available_bits):
+    keys = getattr(available_bits, "_keys", None)
+    if keys is not None:  # fast path for AvailableBits (O(1)); falls back for plain lists
+        return (bit["component_id"], bit["position"], bit["type"]) in keys
     for b in available_bits:
         if bit["component_id"] == b["component_id"] and bit["position"] == b["position"] and bit["type"] == b["type"]:
             return True
