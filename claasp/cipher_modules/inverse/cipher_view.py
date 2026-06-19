@@ -19,7 +19,7 @@ class _CipherView:
     inversion, so the view is cached per cipher object (weakly, to avoid leaks).
     """
 
-    __slots__ = ("components", "by_id", "consumers")
+    __slots__ = ("components", "by_id", "consumers", "consumer_links")
 
     def __init__(self, cipher):
         components = cipher.get_all_components()
@@ -34,15 +34,28 @@ class _CipherView:
             components.append(input_component)
         self.components = components
         self.by_id = {component.id: component for component in components}
+        # consumers[id]        -> [consuming component, ...] (each once, in component order)
+        # consumer_links[id]   -> [(consuming component, [(offset, nbits), ...]), ...] where the
+        #                         offset/nbits locate, in the consumer's input-bit space, each link
+        #                         that reads `id`. Precomputed once so get_available_output_components
+        #                         need not rescan every consumer's input_id_links / recompute the
+        #                         accumulator on each call.
         consumers = {}
+        consumer_links = {}
         for component in components:
-            seen = set()
-            for link in component.input_id_links:
+            accumulator = 0
+            per_consumed = {}
+            for index, link in enumerate(component.input_id_links):
+                nbits = len(component.input_bit_positions[index])
                 # links are component-id strings; synthetic inputs carry [[]] placeholders.
-                if isinstance(link, str) and link not in seen:
-                    seen.add(link)
-                    consumers.setdefault(link, []).append(component)
+                if isinstance(link, str):
+                    per_consumed.setdefault(link, []).append((accumulator, nbits))
+                accumulator += nbits
+            for link, offsets in per_consumed.items():
+                consumers.setdefault(link, []).append(component)
+                consumer_links.setdefault(link, []).append((component, offsets))
         self.consumers = consumers
+        self.consumer_links = consumer_links
 
 
 _CIPHER_VIEW_CACHE = weakref.WeakKeyDictionary()
@@ -143,26 +156,21 @@ def _are_all_bits_available(id, input_bit_positions_len, offset, available_bits)
 
 
 def get_available_output_components(component, available_bits, self, return_index=False):
-    # Iterate only the components that actually consume `component` (the view's `consumers`
-    # index, built in component order), not every component in the cipher. The inner loop's
-    # `component.id == c.input_id_links[i]` guard means non-consumers contributed nothing
-    # anyway, so this is behaviour-identical - but turns an O(total components) scan per call
-    # (the dominant cost post the O(1) membership fix - ~82% of a Keccak inverse) into O(deg).
+    # Iterate the precomputed consumer_links index (the consumers of `component`, each paired with
+    # the (offset, nbits) of every input link that reads it - see _CipherView). This drops the
+    # per-call rescan of each consumer's input_id_links and the accumulator recomputation (the
+    # residual cost after the consumers-index change). _are_all_bits_available still runs per link
+    # (it depends on the live available_bits). Behaviour-identical to the previous loop: same
+    # consumer order, same link order; non-index mode adds each consumer at most once (first
+    # available link), index mode emits one entry per available link.
     available_output_components = []
-    for c in _cipher_view(self).consumers.get(component.id, []):
-        accumulator = 0
-        for i in range(len(c.input_id_links)):
-            if (component.id == c.input_id_links[i]) and (c not in available_output_components):
-                all_bits_available = _are_all_bits_available(
-                    c.id, len(c.input_bit_positions[i]), accumulator, available_bits
-                )
-                if all_bits_available:
-                    if return_index:
-                        available_output_components.append(
-                            (c, list(range(accumulator, accumulator + len(c.input_bit_positions[i]))))
-                        )
-                    else:
-                        available_output_components.append(c)
-            accumulator += len(c.input_bit_positions[i])
+    for c, link_offsets in _cipher_view(self).consumer_links.get(component.id, []):
+        for offset, nbits in link_offsets:
+            if _are_all_bits_available(c.id, nbits, offset, available_bits):
+                if return_index:
+                    available_output_components.append((c, list(range(offset, offset + nbits))))
+                else:
+                    available_output_components.append(c)
+                    break
 
     return available_output_components
