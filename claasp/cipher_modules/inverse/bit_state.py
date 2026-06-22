@@ -1,5 +1,4 @@
-"""Per-component bit accounting and availability helpers for the inversion engine.
-Extracted from inverse_cipher.py (behaviour unchanged)."""
+"""Per-component bit accounting and availability helpers for the inversion engine."""
 
 from claasp.cipher_modules.inverse.cipher_view import (
     add_bit_to_bit_list,

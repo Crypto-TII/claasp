@@ -251,10 +251,8 @@ def links_from_known_inputs(
 
 
 def _get_successor_components(component_id, cipher):
-    # Successors of component_id = the components that read it as an input. This is exactly the
-    # CipherView `consumers` index (built from the same input_id_links the networkx graph's edges
-    # come from), so use it instead of rebuilding the whole graph (via as_python_dictionary()) on
-    # every call - this runs per INTERMEDIATE_OUTPUT component on every worklist pass.
+    # Successors of component_id = the components that read it as an input, i.e. the CipherView
+    # `consumers` index. (Called per intermediate_output component on every worklist pass.)
     return list(_cipher_view(cipher).consumers.get(component_id, []))
 
 
@@ -746,7 +744,7 @@ def try_evaluate(component, available_bits, all_equivalent_bits, key_schedule_co
 
     Readiness is *derived* from the build attempt: the component is evaluable iff the pure wiring
     covers the whole input. There is no separate readiness predicate to keep in sync with the
-    builder - the single ``_evaluate_wiring`` traversal decides both (Phase 2).
+    builder - the single ``_evaluate_wiring`` traversal decides both.
     """
     if component.type in (CONSTANT, CIPHER_INPUT):
         return None

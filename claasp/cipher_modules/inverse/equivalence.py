@@ -1,17 +1,11 @@
-"""Bit-equivalence map and bit-name helpers for the inversion engine.
-Extracted from inverse_cipher.py (behaviour unchanged)."""
+"""Bit-equivalence map and bit-name helpers for the inversion engine."""
 
 from claasp.cipher_modules.inverse.cipher_view import get_cipher_components
 from claasp.name_mappings import CIPHER_OUTPUT, INTERMEDIATE_OUTPUT
 
 
-# --- Equivalence read/write helpers --------------------------------------------------------
-# The engine asks two questions of the equivalence relation: "are these two bits the same value?"
-# and "what bits are equivalent to this one?". These named helpers give those one definition each.
-# The relation is an adjacency dict kept as a union of cliques (every pair in a class linked
-# directly), so direct membership already equals transitive closure.
-# (A union-find replacement was prototyped and measured 15-40% slower - small classes make the
-# C-level dict ``in`` beat a Python ``find()`` - so the dict stays. See inversion_gate_log.md.)
+# The equivalence relation is an adjacency dict kept as a union of cliques (every pair in a class
+# linked directly), so direct membership already equals transitive closure.
 
 
 def bits_equivalent(bit_name, other_bit_name, all_equivalent_bits):
@@ -25,17 +19,10 @@ def equivalent_bit_names(bit_name, all_equivalent_bits):
 
 
 def add_equivalence(all_equivalent_bits, bit_a, bit_b, ensure_a=False, symmetric=True):
-    """Record ``bit_b`` as the same value as ``bit_a``, extending ``bit_a``'s class to include it.
+    """Record ``bit_b`` as the same value as ``bit_a``, linking it into ``bit_a``'s clique.
 
-    The relation is stored as a union of cliques (every pair in a class linked directly), so this
-    links ``bit_b`` to ``bit_a`` and to each of ``bit_a``'s existing members - keeping direct
-    membership equal to transitive closure. This is the single *write* seam mirroring the read
-    seam above; 3c will reimplement both over a union-find.
-
-    Two flags capture the (verbatim) differences between the original inline call sites:
-    ``ensure_a`` creates ``bit_a``'s entry when a site does not already guarantee it; ``symmetric``
-    also appends ``bit_b`` to each existing member's own list (the readiness-evaluation site did
-    this, the dynamic-output sites did not).
+    ``ensure_a`` creates ``bit_a``'s entry if absent; ``symmetric`` also appends ``bit_b`` to each
+    existing member's list (keeping each class a fully-connected clique).
     """
     if ensure_a:
         all_equivalent_bits.setdefault(bit_a, [])

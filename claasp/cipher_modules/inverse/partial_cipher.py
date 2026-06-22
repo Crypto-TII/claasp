@@ -1,5 +1,4 @@
-"""Partial-cipher extraction and inverse-graph rebuild helpers.
-Extracted from inverse_cipher.py (behaviour unchanged)."""
+"""Partial-cipher extraction and inverse-graph rebuild helpers."""
 
 from copy import deepcopy
 

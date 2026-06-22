@@ -1,5 +1,5 @@
 """Cached, indexed read-only view of a cipher, plus the low-level component/bit lookups
-used by the inversion engine. Extracted from inverse_cipher.py (behaviour unchanged).
+used by the inversion engine.
 """
 
 import weakref
@@ -13,10 +13,9 @@ from claasp.name_mappings import INPUT_KEY
 class _CipherView:
     """Cached, indexed read-only view of a cipher used by the inversion engine.
 
-    The component list (plus the synthetic ``cipher_input`` components) and its indexes are
-    built once; previously every ``component_from_id`` / ``get_output_components`` call
-    rebuilt the whole list, making the traversal O(n^2). The cipher is not mutated during
-    inversion, so the view is cached per cipher object (weakly, to avoid leaks).
+    The component list (plus the synthetic ``cipher_input`` components) and its indexes are built
+    once. The cipher is not mutated during inversion, so the view is cached per cipher object
+    (weakly, to avoid leaks).
     """
 
     __slots__ = ("components", "by_id", "consumers", "consumer_links")
@@ -37,9 +36,7 @@ class _CipherView:
         # consumers[id]        -> [consuming component, ...] (each once, in component order)
         # consumer_links[id]   -> [(consuming component, [(offset, nbits), ...]), ...] where the
         #                         offset/nbits locate, in the consumer's input-bit space, each link
-        #                         that reads `id`. Precomputed once so get_available_output_components
-        #                         need not rescan every consumer's input_id_links / recompute the
-        #                         accumulator on each call.
+        #                         that reads `id`.
         consumers = {}
         consumer_links = {}
         for component in components:
@@ -70,8 +67,8 @@ def _cipher_view(cipher):
 
 
 def get_cipher_components(self):
-    # Return a fresh shallow copy: callers (e.g. the cipher_inverse worklist) mutate the
-    # returned list with .remove(). The cached view's list and indexes stay intact.
+    # Return a fresh shallow copy so callers can mutate the returned list without disturbing the
+    # cached view's list and indexes.
     return list(_cipher_view(self).components)
 
 
@@ -99,12 +96,9 @@ def get_output_components(component, self):
 class AvailableBits:
     """List-like store of recovered bits with O(1) membership.
 
-    ``available_bits`` was a plain ``list`` of ``{"component_id", "position", "type"}`` dicts,
-    so every ``is_bit_contained_in`` / ``bit in available_bits`` was an O(n) linear scan over a
-    list that grows with every recovered bit - O(n^2) over a full inversion, and the single
-    biggest cost in profiling (e.g. 78% of a Keccak inverse). This wrapper keeps the exact list
-    semantics every call site relies on (append-order, iteration, ``len``, duplicates) but also
-    maintains a ``set`` of ``(component_id, position, type)`` keys so membership is O(1).
+    Keeps list semantics (append-order, iteration, ``len``, duplicates) and additionally maintains
+    a ``set`` of ``(component_id, position, type)`` keys, so membership tests are O(1) rather than a
+    linear scan over a list that grows with every recovered bit.
     """
 
     __slots__ = ("_list", "_keys")
@@ -156,13 +150,10 @@ def _are_all_bits_available(id, input_bit_positions_len, offset, available_bits)
 
 
 def get_available_output_components(component, available_bits, self, return_index=False):
-    # Iterate the precomputed consumer_links index (the consumers of `component`, each paired with
-    # the (offset, nbits) of every input link that reads it - see _CipherView). This drops the
-    # per-call rescan of each consumer's input_id_links and the accumulator recomputation (the
-    # residual cost after the consumers-index change). _are_all_bits_available still runs per link
-    # (it depends on the live available_bits). Behaviour-identical to the previous loop: same
-    # consumer order, same link order; non-index mode adds each consumer at most once (first
-    # available link), index mode emits one entry per available link.
+    # Iterate the precomputed consumer_links index (each consumer of `component` paired with the
+    # (offset, nbits) of every input link that reads it). _are_all_bits_available runs per link
+    # since it depends on the live available_bits. Non-index mode adds each consumer at most once
+    # (first available link); index mode emits one entry per available link.
     available_output_components = []
     for c, link_offsets in _cipher_view(self).consumer_links.get(component.id, []):
         for offset, nbits in link_offsets:
