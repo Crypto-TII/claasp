@@ -441,21 +441,25 @@ class Cipher:
         available_bits = AvailableBits()
         key_schedule_component_ids = get_key_schedule_component_ids(self)
         all_equivalent_bits = get_all_equivalent_bits(self)
-        while len(cipher_components_tmp) > 0:
-            number_of_unprocessed_components = 0
+        while cipher_components_tmp:
+            # Rebuild the worklist each pass instead of list.remove(c) mid-iteration: remove() is an
+            # O(n) scan (O(n^2) over a pass) and mutating the list while iterating it silently skips
+            # the element after each removed one. Collect the still-unprocessed components and, if a
+            # whole pass makes no progress, the inversion is stalled.
+            unprocessed_components = []
             for c in cipher_components_tmp:
                 inverted_component = apply_inversion_step(
                     c, available_bits, all_equivalent_bits, key_schedule_component_ids, self
                 )
                 if inverted_component is not None:
                     inverted_cipher_components.append(inverted_component)
-                    cipher_components_tmp.remove(c)
                 else:
-                    number_of_unprocessed_components += 1
-                    if number_of_unprocessed_components == len(cipher_components_tmp):
-                        raise Error(inversion_stall_message(cipher_components_tmp))
+                    unprocessed_components.append(c)
+            if len(unprocessed_components) == len(cipher_components_tmp):
+                raise Error(inversion_stall_message(cipher_components_tmp))
+            cipher_components_tmp = unprocessed_components
 
-                        # STEP 3 - rebuild cipher
+        # STEP 3 - rebuild cipher
         for _ in range(self.number_of_rounds):
             inverted_cipher.add_round()
         for component in inverted_cipher_components:

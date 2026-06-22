@@ -10,7 +10,6 @@ from claasp.cipher_modules.component_analysis_tests import (
     get_inverse_matrix_in_integer_representation,
     int_to_poly,
 )
-from claasp.cipher_modules.graph_generator import create_networkx_graph_from_input_ids
 from claasp.component import Component
 from claasp.components import (
     cipher_output_component,
@@ -252,8 +251,11 @@ def links_from_known_inputs(
 
 
 def _get_successor_components(component_id, cipher):
-    graph_cipher = create_networkx_graph_from_input_ids(cipher)
-    return list(graph_cipher.successors(component_id))
+    # Successors of component_id = the components that read it as an input. This is exactly the
+    # CipherView `consumers` index (built from the same input_id_links the networkx graph's edges
+    # come from), so use it instead of rebuilding the whole graph (via as_python_dictionary()) on
+    # every call - this runs per INTERMEDIATE_OUTPUT component on every worklist pass.
+    return list(_cipher_view(cipher).consumers.get(component_id, []))
 
 
 def inversion_stall_message(stuck_components):
