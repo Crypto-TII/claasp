@@ -534,7 +534,7 @@ def test_cipher_inverse():
     cipher = ToyAESBlockCipher(number_of_rounds=2)
     ciphertext = cipher.evaluate([key, plaintext])
     cipher_inv = cipher.cipher_inverse()
-    assert cipher_inv.evaluate([ciphertext, key]) == plaintext
+    assert cipher_inv.evaluate([key, ciphertext]) == plaintext
 
     key = 0x0e2ddd5c5b4ca9d4
     plaintext = 0xb779ee0a
@@ -641,7 +641,7 @@ def test_cipher_inverse():
     plaintext = 0x0123456789ABCDEF
     ciphertext = cipher.evaluate([key, plaintext])
     cipher_inv = cipher.cipher_inverse()
-    assert cipher_inv.evaluate([ciphertext, key]) == plaintext
+    assert cipher_inv.evaluate([key, ciphertext]) == plaintext
 
     cipher = SalsaPermutation(number_of_rounds=2)
     plaintext = 0xffff
@@ -654,7 +654,7 @@ def test_cipher_inverse():
     plaintext = 0x47a57eff5d6475a68916
     ciphertext = cipher.evaluate([key, plaintext])
     cipher_inv = cipher.cipher_inverse()
-    assert cipher_inv.evaluate([ciphertext, key]) == plaintext
+    assert cipher_inv.evaluate([key, ciphertext]) == plaintext
 
     plaintext = 0x1234
     cipher = KeccakInvertiblePermutation(number_of_rounds=2, word_size=8)
@@ -673,7 +673,7 @@ def test_cipher_inverse():
     plaintext = 0x90AFE91BB288544F2C32DC239B2635E6
     ciphertext = cipher.evaluate([key, plaintext])
     cipher_inv = cipher.cipher_inverse()
-    assert cipher_inv.evaluate([ciphertext, key]) == plaintext
+    assert cipher_inv.evaluate([key, ciphertext]) == plaintext
 
     cipher = LBlockBlockCipher(number_of_rounds=2)
     key = 0x012345689abcdeffedc
@@ -688,7 +688,7 @@ def test_cipher_inverse():
     tweak = 0x7e5c3a18f6d4b2901eb852fc9630da74
     ciphertext = qarmav2.evaluate([key, plaintext, tweak])
     cipher_inv = qarmav2.cipher_inverse()
-    assert cipher_inv.evaluate([ciphertext, tweak, key]) == plaintext
+    assert cipher_inv.evaluate([key, ciphertext, tweak]) == plaintext
 
     key = 0x0123456789abcdeffedcba9876543210
     plaintext = 0x0123456789abcdeffedcba9876543210
@@ -722,7 +722,7 @@ def test_cipher_inverse():
     cipher = KasumiBlockCipher(number_of_rounds=2)
     ciphertext = cipher.evaluate([key, plaintext])
     cipher_inv = cipher.cipher_inverse()
-    assert cipher_inv.evaluate([ciphertext, key]) == plaintext
+    assert cipher_inv.evaluate([key, ciphertext]) == plaintext
 
     key = 0x00112233445566778899aabbccddeeff
     plaintext = 0x0123456789abcdef
@@ -751,4 +751,4 @@ def test_cipher_inverse():
     cipher = TinyJambuPermutation(number_of_rounds=2)
     ciphertext = cipher.evaluate([key, plaintext])
     cipher_inv = cipher.cipher_inverse()
-    assert cipher_inv.evaluate([ciphertext, key]) == plaintext
+    assert cipher_inv.evaluate([key, ciphertext]) == plaintext

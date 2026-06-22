@@ -475,6 +475,26 @@ class Cipher:
                     component
                 )
 
+        # STEP 3b - order the inverse inputs in one-to-one correspondence with the forward
+        # cipher's inputs: each surviving forward input (key, tweak, ...) keeps its position, and
+        # the forward input replaced by the inverse's ciphertext input (the original cipher_output,
+        # now an input here) takes that input's slot. Otherwise the input order would depend on the
+        # worklist processing order rather than mirroring the forward primitive.
+        bit_size_by_input = dict(zip(inverted_cipher.inputs, inverted_cipher.inputs_bit_size))
+        new_inverse_inputs = [input_id for input_id in inverted_cipher.inputs if input_id not in self.inputs]
+        ordered_inputs = []
+        new_inputs_placed = False
+        for forward_input in self.inputs:
+            if forward_input in bit_size_by_input:
+                ordered_inputs.append(forward_input)
+            elif not new_inputs_placed:
+                ordered_inputs.extend(new_inverse_inputs)
+                new_inputs_placed = True
+        if not new_inputs_placed:
+            ordered_inputs.extend(new_inverse_inputs)
+        inverted_cipher._inputs = ordered_inputs
+        inverted_cipher._inputs_bit_size = [bit_size_by_input[input_id] for input_id in ordered_inputs]
+
         sorted_inverted_cipher = sort_cipher_graph(inverted_cipher)
 
         return sorted_inverted_cipher
