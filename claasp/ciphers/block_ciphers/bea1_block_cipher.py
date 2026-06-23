@@ -485,11 +485,10 @@ class BEA1BlockCipher(Cipher):
                     for i in range(4)
                 ]
 
-                self.add_intermediate_output_component(
+                self.add_round_output_component(
                     [mx1.id, mx2.id],
                     [list(range(self.sbox_bit_size * 4))] * 2,
                     self.sbox_bit_size * 8,
-                    "round_output",
                 )
             else:
                 # shift rows

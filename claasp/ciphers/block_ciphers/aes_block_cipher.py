@@ -445,14 +445,12 @@ class AESBlockCipher(Cipher):
                                              [list(range(self.CIPHER_BLOCK_SIZE))],
                                              self.CIPHER_BLOCK_SIZE)
         else:
-            self.add_intermediate_output_component([state_component.id],
-                                                   [list(range(self.CIPHER_BLOCK_SIZE))],
-                                                   self.CIPHER_BLOCK_SIZE,
-                                                   f"state_after_round_{round_number}")
-    
+            self.add_round_output_component([state_component.id],
+                                            [list(range(self.CIPHER_BLOCK_SIZE))],
+                                            self.CIPHER_BLOCK_SIZE)
+
     def add_keyschedule_round_output(self, w):
         """Output the round key schedule."""
-        self.add_intermediate_output_component([w[i].id for i in range(self.NUM_ROWS)],
-                                              [list(range(self.WORD_BIT_SIZE)) for _ in range(self.NUM_ROWS)],
-                                              self.CIPHER_BLOCK_SIZE,
-                                              "round_key_output")
+        self.add_round_key_output_component([w[i].id for i in range(self.NUM_ROWS)],
+                                            [list(range(self.WORD_BIT_SIZE)) for _ in range(self.NUM_ROWS)],
+                                            self.CIPHER_BLOCK_SIZE)
