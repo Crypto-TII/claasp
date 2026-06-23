@@ -18,7 +18,7 @@
 
 from copy import deepcopy
 
-from claasp.cipher_modules.models.cp.mzn_model import SOLVE_SATISFY, MznModel
+from claasp.cipher_modules.models.cp.mzn_model import SOLVE_SATISFY, MiniZincModelParts, MznModel
 from claasp.component import Component
 from claasp.input import Input
 from claasp.name_mappings import (
@@ -175,7 +175,13 @@ class MznXorDifferentialNumberOfActiveSboxesModel(MznModel):
             self._variables_declarations.extend(variables)
             self._first_step.append(constraints)
         self._first_step.extend(self.final_xor_differential_first_step_constraints(weight))
-        self._first_step = self._model_prefix + self._variables_declarations + self._first_step
+        self._first_step = self.assemble_model_lines(
+            MiniZincModelParts(
+                prefix=list(self._model_prefix),
+                variables=list(self._variables_declarations),
+                constraints=list(self._first_step),
+            )
+        )
 
     def create_xor_component(self, component1, component2, nmax):
         """
