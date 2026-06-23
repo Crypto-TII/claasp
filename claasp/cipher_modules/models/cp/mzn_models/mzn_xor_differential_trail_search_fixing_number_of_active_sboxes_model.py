@@ -480,14 +480,9 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
             for key in command_options["format"]:
                 command.extend(command_options[key])
 
-            model = (
-                "\n".join(self._model_prefix)
-                + "\n"
-                + table_of_solutions
-                + "\n".join(self._variables_declarations)
-                + "\n".join(self._model_constraints)
-                + "\n"
-            )
+            parts = self.current_model_parts()
+            parts.prefix = parts.prefix + [table_of_solutions]
+            model = self.assemble_model(parts)
             solver_process = subprocess.run(command, input=model, capture_output=True, text=True)
             if solver_process.returncode < 0:
                 raise ValueError("something went wrong with solver subprocess... sorry!")
@@ -553,7 +548,7 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
             if model_type == "xor_differential_first_step":
                 model = "\n".join(self._first_step) + "\n"
             else:
-                model = "\n".join(self._model_prefix + self._variables_declarations + self._model_constraints) + "\n"
+                model = self.assemble_model()
         if num_of_processors is not None:
             command_options["options"].insert(0, f"-p {num_of_processors}")
         if timelimit is not None:

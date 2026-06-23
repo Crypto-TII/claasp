@@ -1010,13 +1010,7 @@ class MznModel:
             sage: result.statistics['nSolutions']
             1
         """
-        mzn_model_string = self.assemble_model(
-            MiniZincModelParts(
-                prefix=list(self._model_prefix),
-                variables=list(self._model_constraints),
-                constraints=list(self._variables_declarations),
-            )
-        )
+        mzn_model_string = self.assemble_model()
         solver_name_mzn = Solver.lookup(solver_name)
         bit_mzn_model = Model()
         bit_mzn_model.add_string(mzn_model_string)
@@ -1124,18 +1118,13 @@ class MznModel:
         else:
             filename = f"{file_path}/{prefix}_{self.cipher_id}_mzn_{self.sat_or_milp}.mzn"
 
+        parts = self.current_model_parts()
+        # Prepend comments to prefix if any exist
+        if self.mzn_comments:
+            parts.prefix = self.mzn_comments + parts.prefix
+
         with open(filename, "w") as file:
-            file.write(
-                self.assemble_model(
-                    MiniZincModelParts(
-                        prefix=list(self._model_prefix),
-                        variables=self.mzn_comments + list(self._variables_declarations),
-                        constraints=list(self._model_constraints),
-                        outputs=list(self.mzn_output_directives),
-                        carries_outputs=list(self.mzn_carries_output_directives),
-                    )
-                )
-            )
+            file.write(self.assemble_model(parts))
 
     @property
     def cipher(self):

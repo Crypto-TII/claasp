@@ -1410,7 +1410,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
             number_of_rounds = self._cipher.number_of_rounds
             final_round = self._cipher.number_of_rounds
         command = self.get_command_for_solver_process(model_type, solver_name, processes_, timeout_in_seconds_)
-        model = "\n".join(self._model_prefix + self._variables_declarations + self._model_constraints) + "\n"
+        model = self.assemble_model()
         start = time.time()
         solver_process = subprocess.run(command, input=model, capture_output=True, text=True)
         end = time.time()

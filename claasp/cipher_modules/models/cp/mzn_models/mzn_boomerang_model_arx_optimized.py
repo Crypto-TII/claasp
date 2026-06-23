@@ -21,6 +21,7 @@ from minizinc import Status
 from claasp.cipher_modules.graph_generator import split_cipher_graph_into_top_bottom
 from claasp.cipher_modules.models.cp.minizinc_utils.mzn_bct_predicates import get_bct_operations
 from claasp.cipher_modules.models.cp.minizinc_utils.utils import group_strings_by_pattern
+from claasp.cipher_modules.models.cp.mzn_model import MiniZincModelParts
 from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model_arx_optimized import (
     MznXorDifferentialModelARXOptimized,
 )
@@ -206,12 +207,11 @@ class MznBoomerangModelARXOptimized(MznXorDifferentialModelARXOptimized):
         self.probability_vars = top_cipher_probability_vars + bottom_cipher_probability_vars
 
     def write_minizinc_model_to_file(self, file_path, prefix=""):
-        model_string_top = "\n".join(self.differential_model_top_cipher.mzn_comments) + "\n".join(
-            self.differential_model_top_cipher.mzn_output_directives
-        )
-
-        model_string_bottom = "\n".join(self.differential_model_bottom_cipher.mzn_comments) + "\n".join(
-            self.differential_model_bottom_cipher.mzn_output_directives
+        output_directives = (
+            self.differential_model_top_cipher.mzn_comments
+            + self.differential_model_top_cipher.mzn_output_directives
+            + self.differential_model_bottom_cipher.mzn_comments
+            + self.differential_model_bottom_cipher.mzn_output_directives
         )
         if prefix == "":
             filename = f"{file_path}/{self.original_cipher.id}_mzn_{self.differential_model_top_cipher.sat_or_milp}.mzn"
@@ -221,17 +221,13 @@ class MznBoomerangModelARXOptimized(MznXorDifferentialModelARXOptimized):
             filename += f"{self.differential_model_top_cipher.sat_or_milp}.mzn"
             self.filename = filename
 
-        f = open(filename, "w")
-        f.write(
-            model_string_top
-            + "\n"
-            + model_string_bottom
-            + "\n"
-            + "\n".join(self._variables_declarations)
-            + "\n"
-            + "\n".join(self._model_constraints)
+        parts = MiniZincModelParts(
+            prefix=output_directives,
+            variables=list(self._variables_declarations),
+            constraints=list(self._model_constraints),
         )
-        f.close()
+        with open(filename, "w") as file:
+            file.write(self.assemble_model(parts))
 
     def parse_components_with_solution(self, result, solution):
         dict_of_component_value = {}
