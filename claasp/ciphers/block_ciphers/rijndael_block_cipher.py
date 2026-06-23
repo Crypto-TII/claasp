@@ -186,7 +186,7 @@ class RijndaelBlockCipher(Cipher):
             if round_index == self.rounds_count - 1:
                 self._emit_cipher_output(state)
             else:
-                self._emit_round_output(state, round_index)
+                self._emit_round_output(state)
 
     def _expand_key_schedule(self):
         total_words = self.state_columns * (self.rounds_count + 1)
@@ -340,20 +340,18 @@ class RijndaelBlockCipher(Cipher):
         )
         return ComponentState([round_state.id], [list(range(self.block_bit_size))])
 
-    def _emit_round_output(self, state, round_index):
-        self.add_intermediate_output_component(
+    def _emit_round_output(self, state):
+        self.add_round_output_component(
             state.id,
             state.input_bit_positions,
             self.block_bit_size,
-            f"state_after_round_{round_index}",
         )
 
     def _emit_round_key_output(self, round_key):
-        self.add_intermediate_output_component(
+        self.add_round_key_output_component(
             round_key.id,
             round_key.input_bit_positions,
             self.block_bit_size,
-            "round_key_output",
         )
 
     def _emit_cipher_output(self, state):

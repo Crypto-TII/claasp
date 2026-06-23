@@ -113,11 +113,10 @@ class FancyBlockCipher(Cipher):
                 type1_key_schedule_and = self.add_and_component_to_even_round(
                     key_bit_size, round_number, type1_key_schedule_xor, type2_key_schedule_and
                 )
-                self.add_intermediate_output_component(
+                self.add_round_key_output_component(
                     [type1_key_schedule_xor.id, type1_key_schedule_and.id],
                     [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]],
                     key_bit_size,
-                    "round_key_output",
                 )
                 constant = self.add_constant_component(block_bit_size, 0xFEDCBA)
                 type1_xor_with_key = self.add_xor_component(
@@ -137,11 +136,10 @@ class FancyBlockCipher(Cipher):
                         block_bit_size,
                     )
                 else:
-                    self.add_intermediate_output_component(
+                    self.add_round_output_component(
                         [type1_xor_with_key.id],
                         [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]],
                         block_bit_size,
-                        "round_output",
                     )
 
             else:
@@ -164,11 +162,10 @@ class FancyBlockCipher(Cipher):
                     [list(range(int(key_bit_size / 2))) for _ in range(2)],
                     int(key_bit_size / 2),
                 )
-                self.add_intermediate_output_component(
+                self.add_round_key_output_component(
                     [type2_key_schedule_xor.id, type2_key_schedule_and.id],
                     [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]],
                     key_bit_size,
-                    "round_key_output",
                 )
 
                 # Modular addition 8
@@ -251,11 +248,10 @@ class FancyBlockCipher(Cipher):
                         block_bit_size,
                     )
                 else:
-                    self.add_intermediate_output_component(
+                    self.add_round_output_component(
                         [type2_modadd1.id, type2_xor1.id, type2_modadd2.id, type2_xor2.id],
                         [[0, 1, 2, 3, 4, 5], [0, 1, 2, 3, 4, 5], [0, 1, 2, 3, 4, 5], [0, 1, 2, 3, 4, 5]],
                         block_bit_size,
-                        "round_output",
                     )
 
     def add_sbox_components_layer_in_even_rounds(
