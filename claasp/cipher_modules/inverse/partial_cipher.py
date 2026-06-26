@@ -1,7 +1,5 @@
 """Partial-cipher extraction and inverse-graph rebuild helpers."""
 
-from copy import deepcopy
-
 from claasp import editor
 from claasp.name_mappings import INPUT_KEY, INTERMEDIATE_OUTPUT
 

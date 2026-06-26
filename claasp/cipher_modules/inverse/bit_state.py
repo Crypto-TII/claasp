@@ -75,7 +75,6 @@ def update_available_bits_with_component_output_bits(component, available_bits, 
                         c_input_bit = {"component_id": c.id, "position": accumulator + j, "type": "input"}
                         add_bit_to_bit_list(c_input_bit, available_bits)
             accumulator += len(c.input_bit_positions[i])
-    return
 
 
 def update_available_bits_with_component_input_bits(component, available_bits):
@@ -92,7 +91,6 @@ def update_available_bits_with_component_input_bits(component, available_bits):
                 "type": "output",
             }
             add_bit_to_bit_list(bit1, available_bits)
-    return
 
 
 def all_output_bits_available(component, available_bits):

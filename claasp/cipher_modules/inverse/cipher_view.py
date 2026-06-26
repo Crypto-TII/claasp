@@ -136,7 +136,6 @@ def is_bit_contained_in(bit, available_bits):
 def add_bit_to_bit_list(bit, bit_list):
     if not is_bit_contained_in(bit, bit_list):
         bit_list.append(bit)
-    return
 
 
 def _are_all_bits_available(id, input_bit_positions_len, offset, available_bits):
