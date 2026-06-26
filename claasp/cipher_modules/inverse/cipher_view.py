@@ -17,7 +17,7 @@ class _CipherView:
     (weakly, to avoid leaks).
     """
 
-    __slots__ = ("components", "by_id", "consumers", "consumer_links", "all_bit_names")
+    __slots__ = ("components", "by_id", "consumer_links", "all_bit_names")
 
     def __init__(self, cipher):
         components = cipher.get_all_components()
@@ -29,11 +29,9 @@ class _CipherView:
             components.append(input_component)
         self.components = components
         self.by_id = {component.id: component for component in components}
-        # consumers[id]        -> [consuming component, ...] (each once, in component order)
         # consumer_links[id]   -> [(consuming component, [(offset, nbits), ...]), ...] where the
         #                         offset/nbits locate, in the consumer's input-bit space, each link
         #                         that reads `id`.
-        consumers = {}
         consumer_links = {}
         for component in components:
             accumulator = 0
@@ -45,9 +43,7 @@ class _CipherView:
                     per_consumed.setdefault(link, []).append((accumulator, nbits))
                 accumulator += nbits
             for link, offsets in per_consumed.items():
-                consumers.setdefault(link, []).append(component)
                 consumer_links.setdefault(link, []).append((component, offsets))
-        self.consumers = consumers
         self.consumer_links = consumer_links
         # all_bit_names: whole-cipher {bit_name: bit_dict} map used by get_equivalent_input_bit.
         # Built once here instead of on every call to get_all_bit_names.
@@ -93,10 +89,6 @@ def get_cipher_components(self):
     # Return a fresh shallow copy so callers can mutate the returned list without disturbing the
     # cached view's list and indexes.
     return list(_cipher_view(self).components)
-
-
-def get_output_components(component, self):
-    return list(_cipher_view(self).consumers.get(component.id, []))
 
 
 class AvailableBits:

@@ -2,7 +2,6 @@
 
 from claasp.cipher_modules.inverse.cipher_view import (
     add_bit_to_bit_list,
-    get_output_components,
     is_bit_contained_in,
 )
 from claasp.cipher_modules.inverse.equivalence import equivalent_bit_names, is_bit_adjacent_to_list_of_bits
@@ -20,7 +19,7 @@ def component_input_bits(component):
 
 def component_output_bits(component, self):
     # set of list_bits needed to invert
-    output_components = get_output_components(component, self)
+    output_components = self.get_successor_components(component)
     component_output_bits_list = []
     for c in output_components:
         tmp = []
@@ -59,7 +58,7 @@ def _input_bit_value_is_recovered(link, position, available_bits, all_equivalent
 
 
 def update_available_bits_with_component_output_bits(component, available_bits, cipher):
-    output_components = get_output_components(component, cipher)
+    output_components = cipher.get_successor_components(component)
 
     for i in range(component.output_bit_size):
         bit = {"component_id": component.id, "position": i, "type": "output"}

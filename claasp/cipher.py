@@ -880,6 +880,9 @@ class Cipher:
         """
         return self._rounds.component_from_id(component_id)
 
+    def get_successor_components(self, component):
+        return self._rounds.get_successor_components(component.id)
+
     def get_components_in_round(self, round_number):
         return self._rounds.components_in_round(round_number)
 
@@ -1765,3 +1768,4 @@ class Cipher:
     def update_input_id_links_from_component_id(self, component_id, new_input_id_links):
         round_number = self.get_round_from_component_id(component_id)
         self._rounds.rounds[round_number].update_input_id_links_from_component_id(component_id, new_input_id_links)
+        self._rounds._invalidate_indexes()

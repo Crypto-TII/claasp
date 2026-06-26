@@ -23,8 +23,28 @@ class Rounds:
     def __init__(self):
         self._current_round_number = None  # No rounds added on creation
         self._rounds = []
+        self._by_id = None
+        self._consumers = None
+
+    def _build_indexes(self):
+        by_id = {}
+        consumers = {}
+        for component in self.get_all_components():
+            by_id[component.id] = component
+            seen = set()
+            for link in component.input_id_links:
+                if isinstance(link, str) and link not in seen:
+                    consumers.setdefault(link, []).append(component)
+                    seen.add(link)
+        self._by_id = by_id
+        self._consumers = consumers
+
+    def _invalidate_indexes(self):
+        self._by_id = None
+        self._consumers = None
 
     def add_component(self, component):
+        self._invalidate_indexes()
         self.current_round.add_component(component)
 
     def add_round(self):
@@ -111,11 +131,17 @@ class Rounds:
         return components_ids
 
     def component_from_id(self, component_id):
-        for cipher_round in self._rounds:
-            component = cipher_round.component_from_id(component_id)
-            if component is not None:
-                return component
-        raise ValueError(f"Component with id {component_id} not found.")
+        if self._by_id is None:
+            self._build_indexes()
+        component = self._by_id.get(component_id)
+        if component is None:
+            raise ValueError(f"Component with id {component_id} not found.")
+        return component
+
+    def get_successor_components(self, component_id):
+        if self._consumers is None:
+            self._build_indexes()
+        return self._consumers.get(component_id, [])
 
     def get_round_from_component_id(self, component_id):
         for cipher_round in self._rounds:
@@ -150,9 +176,11 @@ class Rounds:
             requested_round.print_round_as_python_dictionary()
 
     def remove_round_component(self, round_number, component):
+        self._invalidate_indexes()
         self._rounds[round_number].remove_component(component)
 
     def remove_round_component_from_id(self, round_number, component_id):
+        self._invalidate_indexes()
         self._rounds[round_number].remove_component_from_id(component_id)
 
     def round_at(self, round_number):

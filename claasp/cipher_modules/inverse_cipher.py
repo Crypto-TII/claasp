@@ -36,7 +36,6 @@ from claasp.cipher_modules.inverse.cipher_view import (
     _cipher_view,
     get_available_output_components,
     get_cipher_components,
-    get_output_components,
     is_bit_contained_in,
 )
 from claasp.cipher_modules.inverse.equivalence import (
@@ -268,7 +267,7 @@ def are_there_enough_available_inputs_to_perform_inversion(component, available_
     # STEP 1 - Special case for output components which have no output links (only cipher output)
     if (component.type == CIPHER_OUTPUT) or (component.id == INPUT_KEY):
         return True
-    if component.type == INTERMEDIATE_OUTPUT and get_output_components(component, self) == []:
+    if component.type == INTERMEDIATE_OUTPUT and self.get_successor_components(component) == []:
         return False
 
     # STEP 2 - Other components
@@ -292,7 +291,7 @@ def are_there_enough_available_inputs_to_perform_inversion(component, available_
     for index, link in enumerate(component.input_id_links):
         if not can_be_used_for_inversion[index]:
             component_of_link = component_from_id(link, self)
-            output_components = get_output_components(component_of_link, self)
+            output_components = self.get_successor_components(component_of_link)
             link_bit_names = []
             for bit in bit_lists_link_to_component_from_input[index]:
                 link_bit_name = f"{bit['component_id']}_{bit['position']}_output"
@@ -700,7 +699,7 @@ def component_inverse(component, available_bits, all_equivalent_bits, key_schedu
     handler = _INVERSION_RULES.get(_inversion_rule_key(component))
     if handler is None:
         return Component("NA", "NA", Input(0, [[]], [[]]), component.output_bit_size, ["NA"])
-    output_components = get_output_components(component, self)
+    output_components = self.get_successor_components(component)
     available_output_components = get_available_output_components(component, available_bits, self)
     return handler(
         component,
