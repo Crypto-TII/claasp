@@ -1994,6 +1994,13 @@ def remove_round_component_from_id(cipher, round_id, component_id):
     cipher.rounds.remove_round_component_from_id(round_id, component_id)
 
 
+def remove_components(cipher, components):
+    component_set = set(components)
+    for current_round in cipher.rounds_as_list:
+        for component in component_set.intersection(current_round.components):
+            cipher.rounds.remove_round_component(current_round.id, component)
+
+
 def sort_cipher(cipher):
     """
     Sort the cipher in a way that each component input is defined before the current component.

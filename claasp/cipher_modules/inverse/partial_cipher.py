@@ -2,6 +2,7 @@
 
 from copy import deepcopy
 
+from claasp import editor
 from claasp.name_mappings import CONSTANT, INPUT_KEY, INPUT_TWEAK, INTERMEDIATE_OUTPUT
 
 
@@ -96,12 +97,6 @@ def sort_cipher_graph(cipher):
     return cipher
 
 
-def _remove_key_schedule_components(cipher, key_schedule_components):
-    for current_round in cipher.rounds_as_list:
-        for key_component in set(key_schedule_components).intersection(current_round.components):
-            cipher.rounds.remove_round_component(current_round.id, key_component)
-
-
 def _remove_non_key_components_from_rounds(cipher, list_of_rounds, key_schedule_components):
     removed_component_ids = []
     intermediate_outputs = {}
@@ -141,7 +136,7 @@ def _prune_components_outside_round_range(
     ]
 
     if not keep_key_schedule:
-        _remove_key_schedule_components(cipher, key_schedule_components)
+        editor.remove_components(cipher, key_schedule_components)
 
     removed_component_ids, intermediate_outputs = _remove_non_key_components_from_rounds(
         cipher, list_of_rounds, key_schedule_components
