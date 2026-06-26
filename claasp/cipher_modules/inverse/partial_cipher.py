@@ -3,22 +3,7 @@
 from copy import deepcopy
 
 from claasp import editor
-from claasp.name_mappings import CONSTANT, INPUT_KEY, INPUT_TWEAK, INTERMEDIATE_OUTPUT
-
-
-def get_key_schedule_component_ids(self):
-    key_schedule_component_ids = [input for input in self.inputs if INPUT_KEY in input or INPUT_TWEAK in input]
-    component_list = self.get_all_components()
-    for c in component_list:
-        flag_belong_to_key_schedule = True
-        for link in c.input_id_links:
-            if link not in key_schedule_component_ids:
-                flag_belong_to_key_schedule = False
-                break
-        if flag_belong_to_key_schedule or (c.type == CONSTANT):
-            key_schedule_component_ids.append(c.id)
-
-    return key_schedule_component_ids
+from claasp.name_mappings import INPUT_KEY, INTERMEDIATE_OUTPUT
 
 
 def cipher_find_component(cipher, round_number, component_id):
@@ -130,7 +115,7 @@ def _prune_components_outside_round_range(
     - ``keep_key_schedule`` -- boolean indicating whether to keep key schedule components
     """
     list_of_rounds = cipher.rounds_as_list[:start_round] + cipher.rounds_as_list[end_round + 1 :]
-    key_schedule_component_ids = get_key_schedule_component_ids(cipher)
+    key_schedule_component_ids = editor.get_key_schedule_component_ids(cipher)
     key_schedule_components = [
         cipher.component_from_id(id) for id in key_schedule_component_ids if INPUT_KEY not in id
     ]

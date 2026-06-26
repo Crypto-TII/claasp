@@ -49,10 +49,10 @@ from claasp.cipher_modules.inverse.equivalence import (
 )
 from claasp.cipher_modules.inverse.partial_cipher import (
     _prune_components_outside_round_range,
-    get_key_schedule_component_ids,
     sort_cipher_graph,
     update_input_links_from_rounds,
 )
+from claasp.editor import get_key_schedule_component_ids
 from claasp.cipher_modules.inverse.bit_state import (
     _input_bit_value_is_recovered,
     all_output_bits_available,

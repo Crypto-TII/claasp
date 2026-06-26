@@ -49,6 +49,7 @@ from claasp.name_mappings import (
     CIPHER_OUTPUT,
     CONSTANT,
     INPUT_KEY,
+    INPUT_TWEAK,
     INTERMEDIATE_OUTPUT,
     LINEAR_LAYER,
     PERMUTATION_COMPONENT,
@@ -1815,6 +1816,14 @@ def remove_cipher_input_keys(cipher):
         cipher_without_key_schedule.inputs.pop(key_index)
         cipher_without_key_schedule.inputs_bit_size.pop(key_index)
     return cipher_without_key_schedule
+
+
+def get_key_schedule_component_ids(cipher):
+    key_schedule_ids = [cid for cid in cipher.inputs if INPUT_KEY in cid or INPUT_TWEAK in cid]
+    for c in cipher.get_all_components():
+        if c.type == CONSTANT or all(link in key_schedule_ids for link in c.input_id_links):
+            key_schedule_ids.append(c.id)
+    return key_schedule_ids
 
 
 def remove_forbidden_parents(rounds, cipher_without_key_schedule):
