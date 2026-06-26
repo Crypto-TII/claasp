@@ -216,11 +216,10 @@ class ToyAESBlockCipher(Cipher):
             remaining_xors, xor1 = self.create_xor_components(
                 constant, key_sboxes_components, remaining_xors, xor1, round_number
             )
-            self.add_intermediate_output_component(
+            self.add_round_key_output_component(
                 [remaining_xors[i].id for i in range(self.num_rows)],
                 [list(range(self.row_size)) for _ in range(self.num_rows)],
                 self.key_block_size,
-                "round_key_output",
             )
             add_round_key = self.create_round_key(
                 mix_column_components, remaining_xors, round_number, shift_row_components
@@ -387,7 +386,7 @@ class ToyAESBlockCipher(Cipher):
                 [add_round_key.id], [list(range(self.cipher_block_size))], self.cipher_block_size
             )
         else:
-            self.add_intermediate_output_component(
-                [add_round_key.id], [list(range(self.cipher_block_size))], self.cipher_block_size, "round_output"
+            self.add_round_output_component(
+                [add_round_key.id], [list(range(self.cipher_block_size))], self.cipher_block_size
             )
             self.add_round()

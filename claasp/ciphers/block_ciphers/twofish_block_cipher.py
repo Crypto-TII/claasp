@@ -308,11 +308,10 @@ class TwofishBlockCipher(Cipher):
                     self.cipher_block_size,
                 )
             else:
-                self.add_intermediate_output_component(
+                self.add_round_output_component(
                     [state[i].id for i in range(4)],
                     [list(range(32)) for _ in range(4)],
                     self.cipher_block_size,
-                    "round_output",
                 )
                 self.add_round()
 

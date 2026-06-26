@@ -427,7 +427,7 @@ class DESBlockCipher(Cipher):
                     self.cipher_block_size,
                     list(range(self.cipher_block_size)),
                 )
-                self.add_intermediate_output_component(
-                    [state.id], [list(range(self.cipher_block_size))], self.cipher_block_size, "round_output"
+                self.add_round_output_component(
+                    [state.id], [list(range(self.cipher_block_size))], self.cipher_block_size
                 )
                 self.add_round()
