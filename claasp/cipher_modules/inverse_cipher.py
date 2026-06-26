@@ -49,7 +49,6 @@ from claasp.cipher_modules.inverse.equivalence import (
 )
 from claasp.cipher_modules.inverse.partial_cipher import (
     _prune_components_outside_round_range,
-    sort_cipher_graph,
     update_input_links_from_rounds,
 )
 from claasp.editor import get_key_schedule_component_ids

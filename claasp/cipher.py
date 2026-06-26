@@ -496,9 +496,9 @@ class Cipher:
         inverted_cipher._inputs = ordered_inputs
         inverted_cipher._inputs_bit_size = [bit_size_by_input[input_id] for input_id in ordered_inputs]
 
-        sorted_inverted_cipher = sort_cipher_graph(inverted_cipher)
+        inverted_cipher.sort_cipher()
 
-        return sorted_inverted_cipher
+        return inverted_cipher
 
     def get_partial_cipher(self, start_round=None, end_round=None, keep_key_schedule=True):
         if start_round is None:
