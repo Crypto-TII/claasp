@@ -6,7 +6,7 @@ import weakref
 
 from claasp.component import Component
 from claasp.input import Input
-from claasp.name_mappings import INPUT_KEY
+from claasp.name_mappings import CIPHER_OUTPUT, INPUT_KEY, INTERMEDIATE_OUTPUT
 
 
 class _CipherView:
@@ -17,7 +17,7 @@ class _CipherView:
     (weakly, to avoid leaks).
     """
 
-    __slots__ = ("components", "by_id", "consumers", "consumer_links")
+    __slots__ = ("components", "by_id", "consumers", "consumer_links", "all_bit_names")
 
     def __init__(self, cipher):
         components = cipher.get_all_components()
@@ -49,6 +49,33 @@ class _CipherView:
                 consumer_links.setdefault(link, []).append((component, offsets))
         self.consumers = consumers
         self.consumer_links = consumer_links
+        # all_bit_names: whole-cipher {bit_name: bit_dict} map used by get_equivalent_input_bit.
+        # Built once here instead of on every call to get_all_bit_names.
+        bit_names = {}
+        for c in components:
+            if c.type == INTERMEDIATE_OUTPUT:
+                continue
+            starting_bit_position = 0
+            for index, input_id_link in enumerate(c.input_id_links):
+                if not isinstance(input_id_link, str):
+                    starting_bit_position += len(c.input_bit_positions[index])
+                    continue
+                for j, i in enumerate(c.input_bit_positions[index]):
+                    out_name = f"{input_id_link}_{i}_output"
+                    if out_name not in bit_names:
+                        bit_names[out_name] = {"component_id": input_id_link, "position": i, "type": "output"}
+                    in_name = f"{c.id}_{starting_bit_position + j}_input"
+                    if in_name not in bit_names:
+                        bit_names[in_name] = {"component_id": c.id, "position": starting_bit_position + j, "type": "input"}
+                    if c.type != CIPHER_OUTPUT:
+                        out_upd_name = f"{input_id_link}_{i}_output_updated"
+                        if out_upd_name not in bit_names:
+                            bit_names[out_upd_name] = {"component_id": input_id_link, "position": i, "type": "output_updated"}
+                    out_upd_name2 = f"{c.id}_{starting_bit_position + j}_output_updated"
+                    if out_upd_name2 not in bit_names:
+                        bit_names[out_upd_name2] = {"component_id": c.id, "position": starting_bit_position + j, "type": "output_updated"}
+                starting_bit_position += len(c.input_bit_positions[index])
+        self.all_bit_names = bit_names
 
 
 _CIPHER_VIEW_CACHE = weakref.WeakKeyDictionary()

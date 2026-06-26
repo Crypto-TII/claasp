@@ -1,7 +1,6 @@
 """Bit-equivalence map and bit-name helpers for the inversion engine."""
 
-from claasp.cipher_modules.inverse.cipher_view import get_cipher_components
-from claasp.name_mappings import CIPHER_OUTPUT, INTERMEDIATE_OUTPUT
+from claasp.cipher_modules.inverse.cipher_view import _cipher_view
 
 
 # The equivalence relation is an adjacency dict kept as a union of cliques (every pair in a class
@@ -56,40 +55,7 @@ def equivalent_bits_in_common(bits_of_an_output_component, component_bits, all_e
 
 
 def get_all_bit_names(self):
-    dictio = {}
-    cipher_components = get_cipher_components(self)
-    for c in cipher_components:
-        if c.type != INTERMEDIATE_OUTPUT:
-            starting_bit_position = 0
-            for index, input_id_link in enumerate(c.input_id_links):
-                j = 0
-                for i in c.input_bit_positions[index]:
-                    output_bit = {"component_id": input_id_link, "position": i, "type": "output"}
-                    output_bit_name = f"{input_id_link}_{i}_output"
-                    input_bit = {"component_id": c.id, "position": starting_bit_position + j, "type": "input"}
-                    input_bit_name = c.id + "_" + str(starting_bit_position + j) + "_input"
-                    if output_bit_name not in dictio:
-                        dictio[output_bit_name] = output_bit
-                    if input_bit_name not in dictio:
-                        dictio[input_bit_name] = input_bit
-
-                    if c.type != CIPHER_OUTPUT:
-                        output_updated_bit = {"component_id": input_id_link, "position": i, "type": "output_updated"}
-                        output_updated_bit_name = f"{input_id_link}_{i}_output_updated"
-                        if output_updated_bit_name not in dictio:
-                            dictio[output_updated_bit_name] = output_updated_bit
-                    output_updated_bit = {
-                        "component_id": c.id,
-                        "position": starting_bit_position + j,
-                        "type": "output_updated",
-                    }
-                    output_updated_bit_name = f"{c.id}_{starting_bit_position + j}_output_updated"
-                    if output_updated_bit_name not in dictio:
-                        dictio[output_updated_bit_name] = output_updated_bit
-                    j += 1
-                starting_bit_position += len(c.input_bit_positions[index])
-
-    return dictio
+    return _cipher_view(self).all_bit_names
 
 
 def get_all_equivalent_bits(self):
