@@ -21,14 +21,11 @@ class _CipherView:
 
     def __init__(self, cipher):
         components = cipher.get_all_components()
-        for component in components:
-            setattr(component, "round", int(component.id.split("_")[-2]))
         for index, input_id in enumerate(cipher.inputs):
             description = [INPUT_KEY] if INPUT_KEY in input_id else [input_id]
             input_component = Component(
                 input_id, "cipher_input", Input(0, [[]], [[]]), cipher.inputs_bit_size[index], description
             )
-            setattr(input_component, "round", -1)
             components.append(input_component)
         self.components = components
         self.by_id = {component.id: component for component in components}

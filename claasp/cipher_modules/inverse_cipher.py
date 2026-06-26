@@ -442,10 +442,9 @@ def _links_from_outputs(component, output_components, all_equivalent_bits, self)
     )
 
 
-def _finalize_inverse(inverse_component, component, self, all_equivalent_bits, available_bits, klass, round_value, update=True):
-    """Common epilogue: set the component's class and round, then register its recovered bits."""
+def _finalize_inverse(inverse_component, component, self, all_equivalent_bits, available_bits, klass, update=True):
+    """Common epilogue: set the component's class, then register its recovered bits."""
     inverse_component.__class__ = klass
-    setattr(inverse_component, "round", round_value)
     if update:
         update_output_bits(inverse_component, self, all_equivalent_bits, available_bits)
     return inverse_component
@@ -461,7 +460,7 @@ def _invert_sbox(component, available_bits, all_equivalent_bits, key_schedule_co
         list(SBox(component.description).inverse()),
     )
     return _finalize_inverse(
-        inverse_component, component, self, all_equivalent_bits, available_bits, component.__class__, component.round
+        inverse_component, component, self, all_equivalent_bits, available_bits, component.__class__
     )
 
 
@@ -476,7 +475,7 @@ def _invert_linear_layer(component, available_bits, all_equivalent_bits, key_sch
         list(inv_binary_matrix),
     )
     return _finalize_inverse(
-        inverse_component, component, self, all_equivalent_bits, available_bits, component.__class__, component.round
+        inverse_component, component, self, all_equivalent_bits, available_bits, component.__class__
     )
 
 
@@ -494,7 +493,7 @@ def _invert_permutation(component, available_bits, all_equivalent_bits, key_sche
         [inverse_permutation, word_size],
     )
     return _finalize_inverse(
-        inverse_component, component, self, all_equivalent_bits, available_bits, component.__class__, component.round
+        inverse_component, component, self, all_equivalent_bits, available_bits, component.__class__
     )
 
 
@@ -524,7 +523,7 @@ def _invert_mix_column(component, available_bits, all_equivalent_bits, key_sched
         )
         klass = component.__class__
     return _finalize_inverse(
-        inverse_component, component, self, all_equivalent_bits, available_bits, klass, component.round
+        inverse_component, component, self, all_equivalent_bits, available_bits, klass
     )
 
 
@@ -539,7 +538,7 @@ def _invert_sigma(component, available_bits, all_equivalent_bits, key_schedule_c
         list(inv_binary_matrix.transpose()),
     )
     return _finalize_inverse(
-        inverse_component, component, self, all_equivalent_bits, available_bits, component.__class__, component.round
+        inverse_component, component, self, all_equivalent_bits, available_bits, component.__class__
     )
 
 
@@ -556,7 +555,7 @@ def _invert_xor(component, available_bits, all_equivalent_bits, key_schedule_com
         component.description,
     )
     return _finalize_inverse(
-        inverse_component, component, self, all_equivalent_bits, available_bits, component.__class__, component.round
+        inverse_component, component, self, all_equivalent_bits, available_bits, component.__class__
     )
 
 
@@ -570,7 +569,7 @@ def _invert_rotate(component, available_bits, all_equivalent_bits, key_schedule_
         [component.description[0], -component.description[1]],
     )
     return _finalize_inverse(
-        inverse_component, component, self, all_equivalent_bits, available_bits, component.__class__, component.round
+        inverse_component, component, self, all_equivalent_bits, available_bits, component.__class__
     )
 
 
@@ -584,7 +583,7 @@ def _invert_not(component, available_bits, all_equivalent_bits, key_schedule_com
         [component.description[0], component.description[1]],
     )
     return _finalize_inverse(
-        inverse_component, component, self, all_equivalent_bits, available_bits, component.__class__, component.round
+        inverse_component, component, self, all_equivalent_bits, available_bits, component.__class__
     )
 
 
@@ -606,7 +605,7 @@ def _invert_modadd(component, available_bits, all_equivalent_bits, key_schedule_
         ["MODSUB", component.description[1], component.description[2]],
     )
     return _finalize_inverse(
-        inverse_component, component, self, all_equivalent_bits, available_bits, modsub_component.ModSub, component.round
+        inverse_component, component, self, all_equivalent_bits, available_bits, modsub_component.ModSub
     )
 
 
@@ -615,7 +614,7 @@ def _invert_constant(component, available_bits, all_equivalent_bits, key_schedul
         component.id, component.type, Input(0, [[]], [[]]), component.output_bit_size, component.description
     )
     return _finalize_inverse(
-        inverse_component, component, self, all_equivalent_bits, available_bits, component.__class__, component.round
+        inverse_component, component, self, all_equivalent_bits, available_bits, component.__class__
     )
 
 
@@ -623,7 +622,6 @@ def _invert_cipher_output(component, available_bits, all_equivalent_bits, key_sc
     inverse_component = Component(
         component.id, CIPHER_INPUT, Input(0, [[]], [[]]), component.output_bit_size, [CIPHER_INPUT]
     )
-    setattr(inverse_component, "round", -1)
     update_output_bits(inverse_component, self, all_equivalent_bits, available_bits)
     return inverse_component
 
@@ -639,7 +637,7 @@ def _invert_cipher_input_data(component, available_bits, all_equivalent_bits, ke
     )
     return _finalize_inverse(
         inverse_component, component, self, all_equivalent_bits, available_bits,
-        cipher_output_component.CipherOutput, component.round, update=False,
+        cipher_output_component.CipherOutput, update=False,
     )
 
 
@@ -648,7 +646,7 @@ def _invert_cipher_input_key(component, available_bits, all_equivalent_bits, key
         component.id, CIPHER_INPUT, Input(0, [[]], [[]]), component.output_bit_size, [component.id]
     )
     return _finalize_inverse(
-        inverse_component, component, self, all_equivalent_bits, available_bits, component.__class__, -1
+        inverse_component, component, self, all_equivalent_bits, available_bits, component.__class__
     )
 
 
@@ -663,7 +661,7 @@ def _invert_intermediate_output(component, available_bits, all_equivalent_bits, 
     )
     return _finalize_inverse(
         inverse_component, component, self, all_equivalent_bits, available_bits,
-        intermediate_output_component.IntermediateOutput, component.round,
+        intermediate_output_component.IntermediateOutput
     )
 
 
@@ -1012,7 +1010,6 @@ def _build_evaluated_component(component, input_id_links, input_bit_positions, a
         component.description,
     )
     evaluated.__class__ = component.__class__
-    setattr(evaluated, "round", getattr(component, "round"))
 
     id = component.id
     for i in range(evaluated.output_bit_size):
