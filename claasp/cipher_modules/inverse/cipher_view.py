@@ -3,7 +3,6 @@ used by the inversion engine.
 """
 
 import weakref
-from copy import copy
 
 from claasp.component import Component
 from claasp.input import Input
@@ -70,23 +69,6 @@ def get_cipher_components(self):
     # Return a fresh shallow copy so callers can mutate the returned list without disturbing the
     # cached view's list and indexes.
     return list(_cipher_view(self).components)
-
-
-def get_all_components_with_the_same_input_id_link_and_input_bit_positions(input_id_link, input_bit_positions, self):
-    cipher_components = get_cipher_components(self)
-    output_list = []
-    for c in cipher_components:
-        for i in range(len(c.input_id_links)):
-            copy_input_bit_positions = copy(input_bit_positions)
-            copy_input_bit_positions.sort()
-            list_to_be_compared = copy(c.input_bit_positions[i])
-            list_to_be_compared.sort()
-            if input_id_link == c.input_id_links[i] and all(
-                ele in copy_input_bit_positions for ele in list_to_be_compared
-            ):
-                output_list.append(c)
-                break
-    return output_list
 
 
 def get_output_components(component, self):

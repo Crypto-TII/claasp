@@ -1,6 +1,3 @@
-import weakref
-from copy import *
-
 from sage.crypto.sbox import SBox
 from sage.rings.finite_rings.finite_field_constructor import FiniteField as GF
 from sage.rings.polynomial.polynomial_ring_constructor import PolynomialRing
@@ -36,11 +33,7 @@ from claasp.name_mappings import (
 
 from claasp.cipher_modules.inverse.cipher_view import (
     AvailableBits,
-    _CipherView,
-    _are_all_bits_available,
     _cipher_view,
-    add_bit_to_bit_list,
-    get_all_components_with_the_same_input_id_link_and_input_bit_positions,
     get_available_output_components,
     get_cipher_components,
     get_output_components,
@@ -57,15 +50,8 @@ from claasp.cipher_modules.inverse.equivalence import (
 )
 from claasp.cipher_modules.inverse.partial_cipher import (
     _prune_components_outside_round_range,
-    _remove_key_schedule_components,
-    _remove_non_key_components_from_rounds,
-    cipher_find_component,
-    delete_orphan_links,
     get_key_schedule_component_ids,
-    get_most_recent_intermediate_output,
-    get_relative_position,
     sort_cipher_graph,
-    topological_sort,
     update_input_links_from_rounds,
 )
 from claasp.cipher_modules.inverse.bit_state import (

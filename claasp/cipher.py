@@ -19,6 +19,7 @@ import importlib
 import inspect
 import os
 import sys
+from copy import deepcopy
 
 import claasp
 from claasp import editor
