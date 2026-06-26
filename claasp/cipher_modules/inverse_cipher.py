@@ -70,9 +70,7 @@ from claasp.cipher_modules.inverse.partial_cipher import (
 )
 from claasp.cipher_modules.inverse.bit_state import (
     _input_bit_value_is_recovered,
-    all_input_bits_available,
     all_output_bits_available,
-    all_output_updated_bits_available,
     are_these_bits_available,
     component_input_bits,
     component_output_bits,
@@ -250,12 +248,6 @@ def links_from_known_inputs(
     return input_id_links, input_bit_positions
 
 
-def _get_successor_components(component_id, cipher):
-    # Successors of component_id = the components that read it as an input, i.e. the CipherView
-    # `consumers` index. (Called per intermediate_output component on every worklist pass.)
-    return list(_cipher_view(cipher).consumers.get(component_id, []))
-
-
 def inversion_stall_message(stuck_components):
     """Human-readable diagnostic for a ``cipher_inverse()`` that can no longer make progress.
 
@@ -290,7 +282,7 @@ def are_there_enough_available_inputs_to_perform_inversion(component, available_
     # STEP 1 - Special case for output components which have no output links (only cipher output)
     if (component.type == CIPHER_OUTPUT) or (component.id == INPUT_KEY):
         return True
-    if component.type == INTERMEDIATE_OUTPUT and _get_successor_components(component.id, self) == []:
+    if component.type == INTERMEDIATE_OUTPUT and get_output_components(component, self) == []:
         return False
 
     # STEP 2 - Other components

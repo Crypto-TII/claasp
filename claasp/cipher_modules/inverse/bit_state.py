@@ -96,22 +96,6 @@ def update_available_bits_with_component_input_bits(component, available_bits):
     return
 
 
-def all_input_bits_available(component, available_bits):
-    for i in range(component.input_bit_size):
-        bit = {"component_id": component.id, "position": i, "type": "input"}
-        if not is_bit_contained_in(bit, available_bits):
-            return False
-    return True
-
-
-def all_output_updated_bits_available(component, available_bits):
-    for i in range(component.input_bit_size):
-        bit = {"component_id": component.id, "position": i, "type": "output_updated"}
-        if not is_bit_contained_in(bit, available_bits):
-            return False
-    return True
-
-
 def all_output_bits_available(component, available_bits):
     for i in range(component.output_bit_size):
         bit = {"component_id": component.id, "position": i, "type": "output_updated"}
