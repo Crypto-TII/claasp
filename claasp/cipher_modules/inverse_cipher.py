@@ -516,6 +516,41 @@ def _links_from_recovered_outputs(
     return _group_links_by_component(flat_ids, flat_positions)
 
 
+def _positions_for_link(potential_unwanted_component, base_component, base_component_input_index, override_positions):
+    """Return the input bit positions of the candidate component that this link covers.
+
+    Three cases: an explicit subset supplied by the caller (partial-link override, e.g.
+    Chaskey MODADD), a specific occurrence identified by index (e.g. a key whose words are
+    reassembled from disjoint slices of one key-schedule component), or the first match by id.
+    """
+    if override_positions is not None:
+        return override_positions
+    if base_component_input_index is not None:
+        return base_component.input_bit_positions[base_component_input_index]
+    for index, input_id_link in enumerate(base_component.input_id_links):
+        if input_id_link == potential_unwanted_component.id:
+            return base_component.input_bit_positions[index]
+    return []
+
+
+def _is_valid_recovered_equivalent(bit_name, all_bit_names, base_component_id, available_bits, key_schedule_components):
+    """Return True if ``bit_name`` is a recovered output bit usable as an alternative source.
+
+    Rejects bits that belong to the component being inverted, bits not yet recovered,
+    bits coming from key-schedule components, and bits whose type is not ``output_updated``
+    (meaning the value has not yet been recovered by the inverse pass).
+    """
+    if bit_name not in all_bit_names:
+        return False
+    bit = all_bit_names[bit_name]
+    return (
+        bit["component_id"] != base_component_id
+        and bit in available_bits
+        and bit["component_id"] not in key_schedule_components
+        and bit["type"] == "output_updated"
+    )
+
+
 def _get_equivalent_input_bit_from_output_bit(
     potential_unwanted_component,
     base_component,
@@ -526,57 +561,28 @@ def _get_equivalent_input_bit_from_output_bit(
     base_component_input_index=None,
     override_positions=None,
 ):
-    all_bit_names = _get_all_bit_names(self)
-    potential_unwanted_bits = []
-    potential_unwanted_bits_names = []
-    input_bit_positions_of_potential_unwanted_component = []
-    if override_positions is not None:
-        # Only consider an explicit subset of the link's positions. Used when a link is only
-        # partially available (e.g. a MODADD whose packed input is one recovered operand and one
-        # known operand sourced from an equivalent recovered component, as in Chaskey).
-        input_bit_positions_of_potential_unwanted_component = override_positions
-    elif base_component_input_index is not None:
-        # When the same link appears more than once among the inputs (e.g. a round key whose
-        # words are reassembled from disjoint slices of a single key-schedule component), the
-        # specific occurrence must be used; matching only by id would collapse them to the last
-        # occurrence and lose the other slices.
-        input_bit_positions_of_potential_unwanted_component = base_component.input_bit_positions[
-            base_component_input_index
-        ]
-    else:
-        for index, input_id_link in enumerate(base_component.input_id_links):
-            if input_id_link == potential_unwanted_component.id:
-                input_bit_positions_of_potential_unwanted_component = base_component.input_bit_positions[index]
+    """Find a recovered component whose output bits are equivalent to those of the candidate link.
 
-    for i in input_bit_positions_of_potential_unwanted_component:
-        output_bit = {"component_id": potential_unwanted_component.id, "position": i, "type": "output"}
-        output_bit_name = f"{potential_unwanted_component.id}_{i}_output"
-        potential_unwanted_bits.append(output_bit)
-        potential_unwanted_bits_names.append(output_bit_name)
+    Returns ``(component_id, positions)`` — either the original candidate (if no better
+    source exists) or the recovered component that can substitute for it.
+    """
+    all_bit_names = _get_all_bit_names(self)
+    positions = _positions_for_link(
+        potential_unwanted_component, base_component, base_component_input_index, override_positions
+    )
+    link_bit_names = [f"{potential_unwanted_component.id}_{i}_output" for i in positions]
 
     equivalent_bits = []
-    for potential_unwanted_bits_name in potential_unwanted_bits_names:
-        for equivalent_bit in _equivalent_bit_names(potential_unwanted_bits_name, all_equivalent_bits):
-            if (
-                (equivalent_bit in all_bit_names)
-                and (all_bit_names[equivalent_bit]["component_id"] != base_component.id)
-                and (all_bit_names[equivalent_bit] in available_bits)
-                and (all_bit_names[equivalent_bit]["component_id"] not in key_schedule_components)
-                and (all_bit_names[equivalent_bit]["type"] == "output_updated")
-            ):
-                if len(equivalent_bits) == 0:
-                    equivalent_bits.append(equivalent_bit)
-                elif all_bit_names[equivalent_bit]["component_id"] == all_bit_names[equivalent_bits[0]]["component_id"]:
+    for bit_name in link_bit_names:
+        for equivalent_bit in _equivalent_bit_names(bit_name, all_equivalent_bits):
+            if _is_valid_recovered_equivalent(equivalent_bit, all_bit_names, base_component.id, available_bits, key_schedule_components):
+                if not equivalent_bits or all_bit_names[equivalent_bit]["component_id"] == all_bit_names[equivalent_bits[0]]["component_id"]:
                     equivalent_bits.append(equivalent_bit)
 
-    if len(equivalent_bits) == 0:
-        return potential_unwanted_component.id, input_bit_positions_of_potential_unwanted_component
-    else:
-        input_bit_positions = []
-        for bit in equivalent_bits:
-            input_bit_positions.append(all_bit_names[bit]["position"])
-        input_bit_positions.sort()
-        return all_bit_names[equivalent_bits[0]]["component_id"], input_bit_positions
+    if not equivalent_bits:
+        return potential_unwanted_component.id, positions
+    input_bit_positions = sorted(all_bit_names[bit]["position"] for bit in equivalent_bits)
+    return all_bit_names[equivalent_bits[0]]["component_id"], input_bit_positions
 
 
 def _links_from_known_inputs(
