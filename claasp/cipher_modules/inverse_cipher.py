@@ -1245,103 +1245,100 @@ def _find_equivalent_output_updated_positions(link, link_positions, producer, al
     return positions
 
 
+def _input_offset_of_link(component, link_index):
+    """Return the flat input-bit offset where the link at index ``link_index`` begins in ``component``'s input."""
+    return sum(len(component.input_bit_positions[j]) for j in range(link_index))
+
+
+def _find_link_index_for_source(candidate, source_link, needed_positions):
+    """Return the index of the link in ``candidate`` that comes from ``source_link`` and covers ``needed_positions``."""
+    matches = [
+        i for i, x in enumerate(candidate.input_id_links)
+        if x == source_link and set(needed_positions) <= set(candidate.input_bit_positions[i])
+    ]
+    return matches[0] if matches else candidate.input_id_links.index(source_link)
+
+
+def _try_direct_source(component, input_index, starting_bit_position, source, available_bits, all_equivalent_bits):
+    """Return ``([source_id], [positions])`` if the declared source is already fully recovered with
+    bits equivalent to what we need, otherwise ``None``."""
+    output_bits_updated = [f"{source.id}_{j}_output_updated" for j in component.input_bit_positions[input_index]]
+    input_bits = [
+        f"{component.id}_{k}_input"
+        for k in range(starting_bit_position, starting_bit_position + len(component.input_bit_positions[input_index]))
+    ]
+    if (_all_output_bits_available(source, available_bits)
+            and _is_output_bits_updated_equivalent_to_input_bits(output_bits_updated, input_bits, all_equivalent_bits)):
+        return [component.input_id_links[input_index]], [component.input_bit_positions[input_index]]
+    return None
+
+
+def _try_wire_via_candidate(candidate, link, needed_positions, link_bit_names, all_equivalent_bits):
+    """Try to source ``needed_positions`` of ``link`` from a candidate alternative component.
+
+    Returns ``(candidate_id, positions, is_complete)`` where ``is_complete=True`` means this fully
+    resolves the link and the caller should stop scanning, or ``None`` if the candidate cannot help.
+
+    Two sub-strategies:
+    - Input-space heuristic (``is_complete=False``): the candidate's ``output_updated`` at the
+      computed input offset is equivalent to the source bits; positions are derived from that offset.
+      The caller keeps scanning because more candidates may be needed.
+    - Output-space fallback (``is_complete=True``): used when the heuristic fails (e.g. the
+      recovered link is not the candidate's first input, as in a size-reducing inverted XOR).
+      Resolves through the candidate's output space; stops scanning on success.
+    """
+    link_index = _find_link_index_for_source(candidate, link, needed_positions)
+    offset = _input_offset_of_link(candidate, link_index)
+    probe_bit = f"{candidate.id}_{offset}_output_updated"
+
+    if _is_bit_adjacent_to_list_of_bits(probe_bit, link_bit_names, all_equivalent_bits):
+        if set(needed_positions) < set(candidate.input_bit_positions[link_index]):
+            offset += needed_positions[0] - candidate.input_bit_positions[link_index][0]
+        l = list(range(offset, offset + len(needed_positions)))
+        ordered = _find_correct_order(link, needed_positions, candidate.id, l, all_equivalent_bits)
+        return candidate.id, ordered, False
+
+    out_positions = _find_equivalent_output_updated_positions(link, needed_positions, candidate, all_equivalent_bits)
+    if len(out_positions) == len(needed_positions):
+        return candidate.id, out_positions, True
+
+    return None
+
+
 def _wire_input_link_for_evaluation(
     component, input_index, starting_bit_position, available_bits, all_equivalent_bits, self
 ):
     """Resolve one input link of a forward-evaluated component to the recovered component(s) that
-    carry its value, returning parallel lists ``(ids, positions)`` to append to the rebuilt wiring.
+    carry its value, returning ``(ids, positions)`` to append to the rebuilt wiring.
 
-    Two strategies, in order:
-
-    1. **Direct** — if the declared source has all its output bits recovered and those recovered
-       bits are equivalent to this component's input bits, reuse the declared link as-is.
-    2. **Alternative source** — otherwise scan components that consume the same link for one whose
-       recovered ``output_updated`` bits are equivalent to the needed link bits, wiring through
-       either the input-space ``starting_bit`` heuristic or, when that fails (the recovered link is
-       not the producer's first input, e.g. a size-reducing inverted multi-input XOR), the
-       producer's output space via ``_find_equivalent_output_updated_positions``.
-
-    May return zero, one, or several contributions (the alternative-source scan does not stop after
-    the first adjacent match unless it resolves through output space); an empty result means the
-    link could not be wired from currently-recovered bits.
+    Strategy 1: use the declared source directly if it is already fully recovered and equivalent
+    to what we need (see ``_try_direct_source``).
+    Strategy 2: scan components that also read from the same source; for each valid candidate, try
+    the input-space heuristic first (may accumulate multiple contributions), then the output-space
+    fallback (stops on first full resolution). See ``_try_wire_via_candidate``.
     """
+    link = component.input_id_links[input_index]
+    needed_positions = component.input_bit_positions[input_index]
+    source = _component_from_id(link, self)
+
+    direct = _try_direct_source(component, input_index, starting_bit_position, source, available_bits, all_equivalent_bits)
+    if direct is not None:
+        return direct
+
     ids = []
     positions = []
-    original_input_component = _component_from_id(component.input_id_links[input_index], self)
-
-    output_bits_updated_list = [
-        f"{original_input_component.id}_{j}_output_updated" for j in component.input_bit_positions[input_index]
-    ]
-    input_bits_list = [
-        f"{component.id}_{k}_input"
-        for k in range(starting_bit_position, starting_bit_position + len(component.input_bit_positions[input_index]))
-    ]
-    flag = _is_output_bits_updated_equivalent_to_input_bits(output_bits_updated_list, input_bits_list, all_equivalent_bits)
-    if _all_output_bits_available(original_input_component, available_bits) and flag:
-        ids.append(component.input_id_links[input_index])
-        positions.append(component.input_bit_positions[input_index])
-        return ids, positions
-
-    # select component for which the connected components have all their inputs available
-    link = component.input_id_links[input_index]
-    original_input_bit_positions_of_link = component.input_bit_positions[input_index]
-    available_output_components = _get_available_output_components(original_input_component, available_bits, self)
-    link_bit_names = [f"{link}_{l}_output" for l in range(original_input_component.output_bit_size)]
-    for available_output_component in available_output_components:
-        if (available_output_component.id not in component.input_id_links) and (
-            available_output_component.id != component.id
-        ):
-            index_id_list = [
-                _
-                for _, x in enumerate(available_output_component.input_id_links)
-                if x == link
-                and set(original_input_bit_positions_of_link) <= set(available_output_component.input_bit_positions[_])
-            ]
-            index_id = index_id_list[0] if index_id_list else available_output_component.input_id_links.index(link)
-            starting_bit = 0
-            for index_list, list_bit_positions in enumerate(available_output_component.input_bit_positions):
-                if index_list == index_id:
-                    break
-                starting_bit += len(list_bit_positions)
-            available_output_component_bit_name = f"{available_output_component.id}_{starting_bit}_output_updated"
-            if _is_bit_adjacent_to_list_of_bits(
-                available_output_component_bit_name, link_bit_names, all_equivalent_bits
-            ):
-                ids.append(available_output_component.id)
-                # get input bit positions
-                accumulator = 0
-                for j in range(len(available_output_component.input_id_links)):
-                    if j == index_id:
-                        if set(original_input_bit_positions_of_link) < set(
-                            available_output_component.input_bit_positions[j]
-                        ):
-                            accumulator += (
-                                original_input_bit_positions_of_link[0]
-                                - available_output_component.input_bit_positions[j][0]
-                            )
-                        l = list(range(accumulator, accumulator + len(component.input_bit_positions[input_index])))
-                        l_ordered = _find_correct_order(
-                            link,
-                            original_input_bit_positions_of_link,
-                            available_output_component.id,
-                            l,
-                            all_equivalent_bits,
-                        )
-                        positions.append(l_ordered)
-                        break
-                    else:
-                        accumulator += len(available_output_component.input_bit_positions[j])
-            else:
-                # The input-space ``starting_bit`` heuristic above fails when the recovered link is
-                # not the producer's first input (e.g. a size-reducing inverted multi-input XOR).
-                # Resolve the bits through the producer's output space instead.
-                output_updated_positions = _find_equivalent_output_updated_positions(
-                    link, original_input_bit_positions_of_link, available_output_component, all_equivalent_bits
-                )
-                if len(output_updated_positions) == len(original_input_bit_positions_of_link):
-                    ids.append(available_output_component.id)
-                    positions.append(output_updated_positions)
-                    break
+    link_bit_names = [f"{link}_{l}_output" for l in range(source.output_bit_size)]
+    for candidate in _get_available_output_components(source, available_bits, self):
+        if candidate.id in component.input_id_links or candidate.id == component.id:
+            continue
+        result = _try_wire_via_candidate(candidate, link, needed_positions, link_bit_names, all_equivalent_bits)
+        if result is None:
+            continue
+        candidate_id, candidate_positions, is_complete = result
+        ids.append(candidate_id)
+        positions.append(candidate_positions)
+        if is_complete:
+            break
     return ids, positions
 
 
