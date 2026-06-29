@@ -647,124 +647,103 @@ def _inversion_stall_message(stuck_components):
     return "\n".join(lines)
 
 
+def _count_equivalent_available_bits(output_component, link_bit_names, available_bits, all_equivalent_bits):
+    """Count how many of ``output_component``'s recovered output bits are equivalent to bits in ``link_bit_names``."""
+    count = 0
+    for i in range(output_component.output_bit_size):
+        bit_name = f"{output_component.id}_{i}_output_updated"
+        bit = {"component_id": output_component.id, "position": i, "type": "output_updated"}
+        if _is_bit_adjacent_to_list_of_bits(bit_name, link_bit_names, all_equivalent_bits) and bit in available_bits:
+            count += 1
+    return count
+
+
+def _link_is_sourceable_via_outputs(index, component, input_bits, available_bits, all_equivalent_bits, self):
+    """Return True if the unavailable input link at ``index`` can be sourced through an equivalent recovered component.
+
+    Scans the successors of the link's source for a component whose recovered output bits are
+    equivalent to the link bits and cover the full link (or enough of it).
+    """
+    link = component.input_id_links[index]
+    source = _component_from_id(link, self)
+    link_bit_names = [f"{b['component_id']}_{b['position']}_output" for b in input_bits[index]]
+    for output_component in self.get_successor_components(source):
+        if (output_component.id in component.input_id_links
+                or output_component.id == component.id
+                or output_component.type == INTERMEDIATE_OUTPUT):
+            continue
+        n = _count_equivalent_available_bits(output_component, link_bit_names, available_bits, all_equivalent_bits)
+        if n == output_component.output_bit_size or (link_bit_names and n >= len(link_bit_names)):
+            return True
+    return False
+
+
 def _are_there_enough_available_inputs_to_perform_inversion(component, available_bits, all_equivalent_bits, self):
+    """Return True if the currently recovered bits are sufficient to invert ``component``.
+
+    Counts available credits from two sources — bits reachable through successor components
+    (output path) and bits reachable through input links (directly or via equivalent recovered
+    components) — and checks whether their total meets the inversion threshold.
+
+    Assumes the component input size is a multiple of its output size.
     """
-    NOTE: it assumes that the component input size is a multiple of the output size
-    """
-    # STEP 1 - Special case for output components which have no output links (only cipher output)
-    if (component.type == CIPHER_OUTPUT) or (component.id == INPUT_KEY):
+    if component.type == CIPHER_OUTPUT or component.id == INPUT_KEY:
         return True
-    if component.type == INTERMEDIATE_OUTPUT and self.get_successor_components(component) == []:
+    if component.type == INTERMEDIATE_OUTPUT and not self.get_successor_components(component):
         return False
 
-    # STEP 2 - Other components
-    bit_lists_link_to_component_from_output = _component_output_bits(component, self)
-    component_output_bits_list = []
-    for i in range(component.output_bit_size):
-        component_output_bits_list.append({"component_id": component.id, "position": i, "type": "output"})
-    bit_lists_link_to_component_from_output_and_available = []
-    for bit_list in bit_lists_link_to_component_from_output:
-        bits_in_common = _equivalent_bits_in_common(bit_list, component_output_bits_list, all_equivalent_bits)
-        for bit in bits_in_common:
-            if bit in available_bits:
-                bit_lists_link_to_component_from_output_and_available.append(bit)
+    # Collect bits available via the output path (successor components already recovered).
+    component_output_bits = [{"component_id": component.id, "position": i, "type": "output"} for i in range(component.output_bit_size)]
+    available_from_output = [
+        bit
+        for bit_list in _component_output_bits(component, self)
+        for bit in _equivalent_bits_in_common(bit_list, component_output_bits, all_equivalent_bits)
+        if bit in available_bits
+    ]
 
-    # handling available bits from inputs
-    bit_lists_link_to_component_from_input = _component_input_bits(component)
-    can_be_used_for_inversion = [True] * len(bit_lists_link_to_component_from_input)
-    for index, bits_list in enumerate(bit_lists_link_to_component_from_input):
-        if not _are_these_bits_available(bits_list, available_bits):
-            can_be_used_for_inversion[index] = False
-    for index, link in enumerate(component.input_id_links):
-        if not can_be_used_for_inversion[index]:
-            component_of_link = _component_from_id(link, self)
-            output_components = self.get_successor_components(component_of_link)
-            link_bit_names = []
-            for bit in bit_lists_link_to_component_from_input[index]:
-                link_bit_name = f"{bit['component_id']}_{bit['position']}_output"
-                link_bit_names.append(link_bit_name)
-            for output_component in output_components:
-                nb_available_output_component_bits = 0
-                if (
-                    (output_component.id not in component.input_id_links)
-                    and (output_component.id != component.id)
-                    and (output_component.type != INTERMEDIATE_OUTPUT)
-                ):
-                    for i in range(output_component.output_bit_size):
-                        output_component_bit_name = f"{output_component.id}_{i}_output_updated"
-                        output_component_bit = {
-                            "component_id": output_component.id,
-                            "position": i,
-                            "type": "output_updated",
-                        }
-                        if _is_bit_adjacent_to_list_of_bits(
-                            output_component_bit_name, link_bit_names, all_equivalent_bits
-                        ) and (output_component_bit in available_bits):
-                            nb_available_output_component_bits += 1
-                    if nb_available_output_component_bits == output_component.output_bit_size or (
-                        len(link_bit_names) > 0 and nb_available_output_component_bits >= len(link_bit_names)
-                    ):
-                        can_be_used_for_inversion[index] = True
+    # Determine which input links are usable (directly available or sourceable via outputs).
+    input_bits = _component_input_bits(component)
+    usable = [_are_these_bits_available(bits, available_bits) for bits in input_bits]
+    for index in range(len(component.input_id_links)):
+        if not usable[index]:
+            usable[index] = _link_is_sourceable_via_outputs(index, component, input_bits, available_bits, all_equivalent_bits, self)
 
-    # Merging available bits from inputs and output
-    bit_lists_link_to_component_from_input_and_output = list(bit_lists_link_to_component_from_output_and_available)
-    for index, bits_list in enumerate(bit_lists_link_to_component_from_input):
-        if can_be_used_for_inversion[index]:
-            bit_lists_link_to_component_from_input_and_output += bits_list
+    # Merge credits: full link bits for usable links, individually known bits for unusable ones.
+    total_available = list(available_from_output)
+    for index, bits in enumerate(input_bits):
+        if usable[index]:
+            total_available += bits
         else:
-            # Credit input bits whose value is individually known (directly or via the equivalence
-            # map), so a partially-available input link still contributes its known bits. The bit
-            # being recovered is simply not available and therefore not counted - which is correct.
-            for bit in bits_list:
-                if _input_bit_value_is_recovered(
-                    bit["component_id"], bit["position"], available_bits, all_equivalent_bits
-                ):
-                    bit_lists_link_to_component_from_input_and_output.append(bit)
+            # A partially-available link still contributes the bits whose value is individually
+            # known (directly or via the equivalence map).
+            total_available += [
+                b for b in bits
+                if _input_bit_value_is_recovered(b["component_id"], b["position"], available_bits, all_equivalent_bits)
+            ]
 
-    if component.id == INPUT_PLAINTEXT or INTERMEDIATE_OUTPUT in component.id:
-        return len(bit_lists_link_to_component_from_input_and_output) >= component.output_bit_size
-    else:
-        return len(bit_lists_link_to_component_from_input_and_output) >= component.input_bit_size
+    threshold = component.output_bit_size if (component.id == INPUT_PLAINTEXT or INTERMEDIATE_OUTPUT in component.id) else component.input_bit_size
+    return len(total_available) >= threshold
+
+
+_ALWAYS_INVERTIBLE_TYPES = frozenset({
+    LINEAR_LAYER, PERMUTATION_COMPONENT, MIX_COLUMN, CONSTANT,
+    CIPHER_INPUT, CIPHER_OUTPUT, INTERMEDIATE_OUTPUT,
+})
+_INVERTIBLE_WORD_OPS = frozenset({"ROTATE", "XOR", "SIGMA", "MODADD", "NOT"})
 
 
 def _is_possibly_invertible_component(component):
-    # if sbox is a permutation
-    if component.type == SBOX and len(list(set(component.description))) == len(component.description):
-        is_invertible = True
-    # if sbox is NOT a permutation, then cannot be inverted
-    elif component.type == SBOX and len(list(set(component.description))) != len(component.description):
-        is_invertible = False
-    elif component.type == LINEAR_LAYER:
-        is_invertible = True
-    elif component.type == PERMUTATION_COMPONENT:
-        is_invertible = True
-    elif component.type == MIX_COLUMN:
-        is_invertible = True
-    # for rotations and shift rows
-    elif component.type == WORD_OPERATION and component.description[0] == "ROTATE":
-        is_invertible = True
-    elif component.type == CONSTANT:
-        is_invertible = True
-    elif component.type == WORD_OPERATION and component.description[0] == "SHIFT":
-        is_invertible = False
-    elif component.type == WORD_OPERATION and component.description[0] == "XOR":
-        is_invertible = True
-    elif component.type == WORD_OPERATION and component.description[0] == "SIGMA":
-        is_invertible = True
-    elif component.type == WORD_OPERATION and component.description[0] == "MODADD":
-        is_invertible = True
-    elif component.type == WORD_OPERATION and component.description[0] == "OR":
-        is_invertible = False
-    elif component.type == WORD_OPERATION and component.description[0] == "AND":
-        is_invertible = False
-    elif component.type == WORD_OPERATION and component.description[0] == "NOT":
-        is_invertible = True
-    elif component.type in [CIPHER_INPUT, CIPHER_OUTPUT, INTERMEDIATE_OUTPUT]:
-        is_invertible = True
-    else:
-        is_invertible = False
+    """Return True if the engine has an inversion rule for this component type.
 
-    return is_invertible
+    For SBOX this means the S-box is a permutation (all output values distinct).
+    For WORD_OPERATION this depends on the operation. All other invertible types
+    are listed in ``_ALWAYS_INVERTIBLE_TYPES``.
+    """
+    if component.type == SBOX:
+        return len(set(component.description)) == len(component.description)
+    if component.type == WORD_OPERATION:
+        return component.description[0] in _INVERTIBLE_WORD_OPS
+    return component.type in _ALWAYS_INVERTIBLE_TYPES
 
 
 def _find_input_id_link_bits_equivalent(inverse_component, component, all_equivalent_bits):
