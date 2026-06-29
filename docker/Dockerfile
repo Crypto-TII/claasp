@@ -143,10 +143,21 @@ RUN cd /opt/sts-2.1.2/sts-2.1.2 \
 
 
 # Installing Minizinc
-RUN wget https://github.com/MiniZinc/MiniZincIDE/releases/download/2.9.4/MiniZincIDE-2.9.4-bundle-linux-x86_64.tgz \
-    && pwd && tar -xf MiniZincIDE-2.9.4-bundle-linux-x86_64.tgz 
-RUN mv MiniZincIDE-2.9.4-bundle-linux-x86_64 /MiniZinc \
-    && rm MiniZincIDE-2.9.4-bundle-linux-x86_64.tgz
+# No official Linux arm64 bundle exists for 2.9.4, so on arm64 we build from source
+# and install under /MiniZinc to keep all downstream path references identical.
+RUN if [ "$TARGETARCH" = "arm64" ]; then \
+        wget https://github.com/MiniZinc/libminizinc/archive/refs/tags/2.9.4.tar.gz \
+        && tar -xf 2.9.4.tar.gz \
+        && rm 2.9.4.tar.gz \
+        && cmake -B libminizinc-2.9.4/build -S libminizinc-2.9.4 -DCMAKE_INSTALL_PREFIX=/MiniZinc \
+        && cmake --build libminizinc-2.9.4/build -j$(nproc) \
+        && cmake --install libminizinc-2.9.4/build; \
+    else \
+        wget https://github.com/MiniZinc/MiniZincIDE/releases/download/2.9.4/MiniZincIDE-2.9.4-bundle-linux-x86_64.tgz \
+        && tar -xf MiniZincIDE-2.9.4-bundle-linux-x86_64.tgz \
+        && mv MiniZincIDE-2.9.4-bundle-linux-x86_64 /MiniZinc \
+        && rm MiniZincIDE-2.9.4-bundle-linux-x86_64.tgz; \
+    fi
 
 # Copy all MiniZinc components to system locations
 RUN cp /MiniZinc/bin/* /usr/local/bin/
@@ -259,10 +270,12 @@ RUN cd glucose-syrup/parallel \
 
 ENV PATH="/opt/glucose-syrup/simp:/opt/glucose-syrup/parallel:${PATH}"
 
-# Installing MathSat
-RUN wget https://mathsat.fbk.eu/release/mathsat-5.6.11-linux-x86_64.tar.gz \
-    && tar -xf mathsat-5.6.11-linux-x86_64.tar.gz \
-    && rm mathsat-5.6.11-linux-x86_64.tar.gz
+# Installing MathSat (x86_64 only — no Linux arm64 binary available from the vendor)
+RUN if [ "$TARGETARCH" != "arm64" ]; then \
+        wget https://mathsat.fbk.eu/release/mathsat-5.6.11-linux-x86_64.tar.gz \
+        && tar -xf mathsat-5.6.11-linux-x86_64.tar.gz \
+        && rm mathsat-5.6.11-linux-x86_64.tar.gz; \
+    fi
 
 ENV PATH="/opt/mathsat-5.6.11-linux-x86_64/bin:${PATH}"
 
