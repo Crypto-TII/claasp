@@ -137,7 +137,10 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
 
         constraints.extend([sum(inconsistent_vars) == 1])
         for inconsistent_index in range(output_size):
-            incompatibility_constraints = [forward_vars[inconsistent_index] + backward_vars[inconsistent_index] <= 2]
+            incompatibility_constraints = [
+                forward_vars[inconsistent_index] + backward_vars[inconsistent_index] <= 2,
+                forward_vars[inconsistent_index] + backward_vars[inconsistent_index] >= 1,
+            ]
             dummy = x[
                 f"dummy_incompatibility_{x[forward_vars[inconsistent_index]]}_or_{x[backward_vars[inconsistent_index]]}_is_0"
             ]
@@ -278,7 +281,11 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
 
             incompatibility_constraints.extend([sum(inconsistent_vars) == 1])
             for inconsistent_index in range(output_size):
-                incompatibility_constraint = [forward_vars[inconsistent_index] + backward_vars[inconsistent_index] <= 2]
+                # >= 1 forbids the spurious (0, 0) witness (both sides zero is consistency, not a clash).
+                incompatibility_constraint = [
+                    forward_vars[inconsistent_index] + backward_vars[inconsistent_index] <= 2,
+                    forward_vars[inconsistent_index] + backward_vars[inconsistent_index] >= 1,
+                ]
                 incompatibility_constraints.extend(
                     milp_utils.milp_if_then(
                         inconsistent_vars[inconsistent_index],
