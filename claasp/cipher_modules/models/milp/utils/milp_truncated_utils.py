@@ -40,6 +40,7 @@ def generate_incompatiblity_constraints_for_component(
         if model_type == MILP_BITWISE_IMPOSSIBLE_AUTO:
             incompatibility_constraint = [forward_vars[inconsistent_index] + backward_vars[inconsistent_index] == 1]
         else:
+            # Only allow (0, 1), (0, 2), (1, 0), (2, 0)
             incompatibility_constraint = [
                 forward_vars[inconsistent_index] + backward_vars[inconsistent_index] <= 2,
                 forward_vars[inconsistent_index] + backward_vars[inconsistent_index] >= 1,
