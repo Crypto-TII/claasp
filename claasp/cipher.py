@@ -526,7 +526,7 @@ class Cipher:
             sage: speck = SpeckBlockCipher(number_of_rounds=4)
             sage: partial = speck.get_partial_cipher(1, 2)
             sage: partial.inputs
-            ['intermediate_output_1_12', 'key']
+            ['intermediate_output_0_6', 'key']
             sage: partial.get_all_components_ids()[-1]
             'intermediate_output_3_11'
         """
