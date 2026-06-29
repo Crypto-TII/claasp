@@ -78,6 +78,15 @@ def _build_consumer_links(components):
     return consumer_links
 
 
+def _add_bit_name_entries(bit_names, source_id, consumer_id, source_pos, consumer_pos, include_source_updated):
+    """Register the output, input, and output_updated bit name entries for one wiring connection."""
+    bit_names.setdefault(f"{source_id}_{source_pos}_output", {"component_id": source_id, "position": source_pos, "type": "output"})
+    bit_names.setdefault(f"{consumer_id}_{consumer_pos}_input", {"component_id": consumer_id, "position": consumer_pos, "type": "input"})
+    if include_source_updated:
+        bit_names.setdefault(f"{source_id}_{source_pos}_output_updated", {"component_id": source_id, "position": source_pos, "type": "output_updated"})
+    bit_names.setdefault(f"{consumer_id}_{consumer_pos}_output_updated", {"component_id": consumer_id, "position": consumer_pos, "type": "output_updated"})
+
+
 def _build_all_bit_names(components):
     """Build a map from every bit name in the cipher to its component id, position, and type (output / input / output_updated)."""
     bit_names = {}
@@ -90,19 +99,7 @@ def _build_all_bit_names(components):
                 starting_bit_position += len(c.input_bit_positions[index])
                 continue
             for j, i in enumerate(c.input_bit_positions[index]):
-                out_name = f"{input_id_link}_{i}_output"
-                if out_name not in bit_names:
-                    bit_names[out_name] = {"component_id": input_id_link, "position": i, "type": "output"}
-                in_name = f"{c.id}_{starting_bit_position + j}_input"
-                if in_name not in bit_names:
-                    bit_names[in_name] = {"component_id": c.id, "position": starting_bit_position + j, "type": "input"}
-                if c.type != CIPHER_OUTPUT:
-                    out_upd_name = f"{input_id_link}_{i}_output_updated"
-                    if out_upd_name not in bit_names:
-                        bit_names[out_upd_name] = {"component_id": input_id_link, "position": i, "type": "output_updated"}
-                out_upd_name2 = f"{c.id}_{starting_bit_position + j}_output_updated"
-                if out_upd_name2 not in bit_names:
-                    bit_names[out_upd_name2] = {"component_id": c.id, "position": starting_bit_position + j, "type": "output_updated"}
+                _add_bit_name_entries(bit_names, input_id_link, c.id, i, starting_bit_position + j, c.type != CIPHER_OUTPUT)
             starting_bit_position += len(c.input_bit_positions[index])
     return bit_names
 
@@ -447,36 +444,44 @@ def _is_output_bits_updated_equivalent_to_input_bits(output_bits_updated_list, i
     )
 
 
+def _input_positions_from_source(c, source_id):
+    """Return the input bit positions of ``c`` that are fed by ``source_id``."""
+    positions = []
+    accumulator = 0
+    for index, link in enumerate(c.input_id_links):
+        if link == source_id:
+            positions += list(range(accumulator, accumulator + len(c.input_bit_positions[index])))
+        accumulator += len(c.input_bit_positions[index])
+    return positions
+
+
+def _find_output_position_for_input(c, input_pos, all_equivalent_bits):
+    """Given that input position ``input_pos`` of ``c`` carries the target value, return the output
+    position of ``c`` that carries the same value, or ``None`` if none does."""
+    input_bit = f"{c.id}_{input_pos}_input"
+    if c.input_bit_size == c.output_bit_size:
+        if _is_bit_adjacent_to_list_of_bits(input_bit, [f"{c.id}_{input_pos}_output_updated"], all_equivalent_bits):
+            return input_pos
+    else:
+        for j in range(c.output_bit_size):
+            if _is_bit_adjacent_to_list_of_bits(input_bit, [f"{c.id}_{j}_output_updated"], all_equivalent_bits):
+                return j
+    return None
+
+
 def _find_component_carrying_bit(output_bit_name, source_id, candidates, all_equivalent_bits):
     """Among the candidate components, find the one whose recovered output carries the same value as
     ``output_bit_name``. Returns ``(component_id, output_position)`` or ``None`` if not found."""
     for c in candidates:
         if not _is_possibly_invertible_component(c):
             continue
-        # Collect the input positions of c that come from source_id.
-        starting_bit_position = 0
-        positions_from_source = []
-        for index, link in enumerate(c.input_id_links):
-            if link == source_id:
-                positions_from_source += list(
-                    range(starting_bit_position, starting_bit_position + len(c.input_bit_positions[index]))
-                )
-            starting_bit_position += len(c.input_bit_positions[index])
-        for i in positions_from_source:
+        for i in _input_positions_from_source(c, source_id):
             consumer_input_bit = f"{c.id}_{i}_input"
             if not _is_bit_adjacent_to_list_of_bits(output_bit_name, [consumer_input_bit], all_equivalent_bits):
                 continue
-            if c.input_bit_size == c.output_bit_size:
-                if _is_bit_adjacent_to_list_of_bits(
-                    consumer_input_bit, [f"{c.id}_{i}_output_updated"], all_equivalent_bits
-                ):
-                    return c.id, i
-            else:
-                for j in range(c.output_bit_size):
-                    if _is_bit_adjacent_to_list_of_bits(
-                        consumer_input_bit, [f"{c.id}_{j}_output_updated"], all_equivalent_bits
-                    ):
-                        return c.id, j
+            output_pos = _find_output_position_for_input(c, i, all_equivalent_bits)
+            if output_pos is not None:
+                return c.id, output_pos
     return None
 
 
