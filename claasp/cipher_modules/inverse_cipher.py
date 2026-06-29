@@ -62,6 +62,51 @@ from claasp.editor import get_key_schedule_component_ids
 # ===========================================================================
 
 
+def _build_consumer_links(components):
+    """Build a map from each component id to the list of components that read from it, with the bit offset and width of each link."""
+    consumer_links = {}
+    for component in components:
+        accumulator = 0
+        per_consumed = {}
+        for index, link in enumerate(component.input_id_links):
+            nbits = len(component.input_bit_positions[index])
+            if isinstance(link, str):  # synthetic inputs carry [[]] placeholders, not strings
+                per_consumed.setdefault(link, []).append((accumulator, nbits))
+            accumulator += nbits
+        for link, offsets in per_consumed.items():
+            consumer_links.setdefault(link, []).append((component, offsets))
+    return consumer_links
+
+
+def _build_all_bit_names(components):
+    """Build a map from every bit name in the cipher to its component id, position, and type (output / input / output_updated)."""
+    bit_names = {}
+    for c in components:
+        if c.type == INTERMEDIATE_OUTPUT:
+            continue
+        starting_bit_position = 0
+        for index, input_id_link in enumerate(c.input_id_links):
+            if not isinstance(input_id_link, str):
+                starting_bit_position += len(c.input_bit_positions[index])
+                continue
+            for j, i in enumerate(c.input_bit_positions[index]):
+                out_name = f"{input_id_link}_{i}_output"
+                if out_name not in bit_names:
+                    bit_names[out_name] = {"component_id": input_id_link, "position": i, "type": "output"}
+                in_name = f"{c.id}_{starting_bit_position + j}_input"
+                if in_name not in bit_names:
+                    bit_names[in_name] = {"component_id": c.id, "position": starting_bit_position + j, "type": "input"}
+                if c.type != CIPHER_OUTPUT:
+                    out_upd_name = f"{input_id_link}_{i}_output_updated"
+                    if out_upd_name not in bit_names:
+                        bit_names[out_upd_name] = {"component_id": input_id_link, "position": i, "type": "output_updated"}
+                out_upd_name2 = f"{c.id}_{starting_bit_position + j}_output_updated"
+                if out_upd_name2 not in bit_names:
+                    bit_names[out_upd_name2] = {"component_id": c.id, "position": starting_bit_position + j, "type": "output_updated"}
+            starting_bit_position += len(c.input_bit_positions[index])
+    return bit_names
+
+
 class _CipherView:
     """Cached, indexed read-only view of a cipher, purpose-built for the inversion engine:
 
@@ -103,49 +148,8 @@ class _CipherView:
             components.append(input_component)
         self.components = components
         self.by_id = {component.id: component for component in components}
-        # consumer_links[id]   -> [(consuming component, [(offset, nbits), ...]), ...] where the
-        #                         offset/nbits locate, in the consumer's input-bit space, each link
-        #                         that reads `id`.
-        consumer_links = {}
-        for component in components:
-            accumulator = 0
-            per_consumed = {}
-            for index, link in enumerate(component.input_id_links):
-                nbits = len(component.input_bit_positions[index])
-                # links are component-id strings; synthetic inputs carry [[]] placeholders.
-                if isinstance(link, str):
-                    per_consumed.setdefault(link, []).append((accumulator, nbits))
-                accumulator += nbits
-            for link, offsets in per_consumed.items():
-                consumer_links.setdefault(link, []).append((component, offsets))
-        self.consumer_links = consumer_links
-        # all_bit_names: whole-cipher {bit_name: bit_dict} map used by get_equivalent_input_bit.
-        # Built once here instead of on every call to _get_all_bit_names.
-        bit_names = {}
-        for c in components:
-            if c.type == INTERMEDIATE_OUTPUT:
-                continue
-            starting_bit_position = 0
-            for index, input_id_link in enumerate(c.input_id_links):
-                if not isinstance(input_id_link, str):
-                    starting_bit_position += len(c.input_bit_positions[index])
-                    continue
-                for j, i in enumerate(c.input_bit_positions[index]):
-                    out_name = f"{input_id_link}_{i}_output"
-                    if out_name not in bit_names:
-                        bit_names[out_name] = {"component_id": input_id_link, "position": i, "type": "output"}
-                    in_name = f"{c.id}_{starting_bit_position + j}_input"
-                    if in_name not in bit_names:
-                        bit_names[in_name] = {"component_id": c.id, "position": starting_bit_position + j, "type": "input"}
-                    if c.type != CIPHER_OUTPUT:
-                        out_upd_name = f"{input_id_link}_{i}_output_updated"
-                        if out_upd_name not in bit_names:
-                            bit_names[out_upd_name] = {"component_id": input_id_link, "position": i, "type": "output_updated"}
-                    out_upd_name2 = f"{c.id}_{starting_bit_position + j}_output_updated"
-                    if out_upd_name2 not in bit_names:
-                        bit_names[out_upd_name2] = {"component_id": c.id, "position": starting_bit_position + j, "type": "output_updated"}
-                starting_bit_position += len(c.input_bit_positions[index])
-        self.all_bit_names = bit_names
+        self.consumer_links = _build_consumer_links(components)
+        self.all_bit_names = _build_all_bit_names(components)
 
 
 _CIPHER_VIEW_CACHE = weakref.WeakKeyDictionary()
@@ -1150,6 +1154,17 @@ def _component_from_id(component_id, self):
     return _cipher_view(self).by_id.get(component_id)
 
 
+def _find_recovered_bit_for(bit_name, all_equivalent_bits, available_output_updated):
+    """Look up ``bit_name`` in the equivalence map and return the first already-recovered bit
+    that carries the same value, as ``(component_id, position)``, or ``None`` if none is available."""
+    for equivalent_bit in _equivalent_bit_names(bit_name, all_equivalent_bits):
+        if equivalent_bit.endswith("_output_updated"):
+            source_id, source_position = equivalent_bit[: -len("_output_updated")].rsplit("_", 1)
+            if (source_id, int(source_position)) in available_output_updated:
+                return source_id, int(source_position)
+    return None
+
+
 def _resolve_evaluated_input_via_equivalence(component, available_bits, all_equivalent_bits):
     """
     Wire a forward-evaluated component by resolving each of its input bits, through the bit
@@ -1170,14 +1185,9 @@ def _resolve_evaluated_input_via_equivalence(component, available_bits, all_equi
     flat_sources = []
     for index, link in enumerate(component.input_id_links):
         for position in component.input_bit_positions[index]:
-            bit_name = f"{link}_{position}_output"
-            resolved = None
-            for equivalent_bit in _equivalent_bit_names(bit_name, all_equivalent_bits):
-                if equivalent_bit.endswith("_output_updated"):
-                    source_id, source_position = equivalent_bit[: -len("_output_updated")].rsplit("_", 1)
-                    if (source_id, int(source_position)) in available_output_updated:
-                        resolved = (source_id, int(source_position))
-                        break
+            resolved = _find_recovered_bit_for(
+                f"{link}_{position}_output", all_equivalent_bits, available_output_updated
+            )
             if resolved is None:
                 return None
             flat_sources.append(resolved)
