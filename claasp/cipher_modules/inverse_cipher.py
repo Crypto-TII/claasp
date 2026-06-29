@@ -301,31 +301,23 @@ def _get_all_bit_names(self):
     return _cipher_view(self).all_bit_names
 
 
-def _get_all_equivalent_bits(self):
-    """Seed the bit-equivalence map from the cipher's wiring.
-
-    Each output bit of a link and the input bit it feeds carry the same value, so they start out
-    in the same equivalence class. Returns an adjacency dict ``{bit_name: [equivalent_bit_name,
-    ...]}`` (each class stored as a fully-connected clique); the engine grows it as it recovers
-    more bits.
-    """
+def _build_forward_equivalence_edges(cipher):
+    """Walk the cipher's wiring and collect, for each output bit, the list of input bits it connects to."""
     dictio = {}
-    component_list = self.get_all_components()
-    for c in component_list:
+    for c in cipher.get_all_components():
         current_bit_position = 0
         for index, input_id_link in enumerate(c.input_id_links):
-            if c.type == "constant":
-                input_bit_positions = list(range(c.output_bit_size))
-            else:
-                input_bit_positions = c.input_bit_positions[index]
+            input_bit_positions = list(range(c.output_bit_size)) if c.type == "constant" else c.input_bit_positions[index]
             for i in input_bit_positions:
                 output_bit_name = f"{input_id_link}_{i}_output"
                 input_bit_name = f"{c.id}_{current_bit_position}_input"
                 current_bit_position += 1
-                if output_bit_name not in dictio:
-                    dictio[output_bit_name] = []
-                dictio[output_bit_name].append(input_bit_name)
+                dictio.setdefault(output_bit_name, []).append(input_bit_name)
+    return dictio
 
+
+def _close_forward_edge(dictio):
+    """Make the one-way connection map two-way: if A connects to B, then B connects to A and to every other bit A connects to."""
     updated_dictio = {}
     for key, values in dictio.items():
         updated_dictio[key] = values
@@ -336,8 +328,18 @@ def _get_all_equivalent_bits(self):
             for other_value in values:
                 if other_value != value:
                     updated_dictio[value].append(other_value)
-
     return updated_dictio
+
+
+def _get_all_equivalent_bits(self):
+    """Seed the bit-equivalence map from the cipher's wiring.
+
+    Each output bit of a link and the input bit it feeds carry the same value, so they start out
+    in the same equivalence class. Returns an adjacency dict ``{bit_name: [equivalent_bit_name,
+    ...]}`` (each class stored as a fully-connected clique); the engine grows it as it recovers
+    more bits.
+    """
+    return _close_forward_edge(_build_forward_equivalence_edges(self))
 
 
 def _component_input_bits(component):
@@ -387,6 +389,19 @@ def _input_bit_value_is_recovered(link, position, available_bits, all_equivalent
     return False
 
 
+def _register_consumer_input_bits(component_id, consumer, available_bits):
+    """Add the input bits of ``consumer`` (where it reads from ``component_id``) to ``available_bits``."""
+    accumulator = 0
+    for i in range(len(consumer.input_id_links)):
+        if consumer.input_id_links[i] == component_id:
+            for j in range(len(consumer.input_bit_positions[i])):
+                component_output_bit = {"component_id": component_id, "position": j, "type": "output"}
+                if _is_bit_contained_in(component_output_bit, available_bits):
+                    c_input_bit = {"component_id": consumer.id, "position": accumulator + j, "type": "input"}
+                    _add_bit_to_bit_list(c_input_bit, available_bits)
+        accumulator += len(consumer.input_bit_positions[i])
+
+
 def _update_available_bits_with_component_output_bits(component, available_bits, cipher):
     output_components = cipher.get_successor_components(component)
 
@@ -394,17 +409,8 @@ def _update_available_bits_with_component_output_bits(component, available_bits,
         bit = {"component_id": component.id, "position": i, "type": "output"}
         _add_bit_to_bit_list(bit, available_bits)
 
-    # add bits of the connected output components
     for c in output_components:
-        accumulator = 0
-        for i in range(len(c.input_id_links)):
-            if c.input_id_links[i] == component.id:
-                for j in range(len(c.input_bit_positions[i])):
-                    component_output_bit = {"component_id": component.id, "position": j, "type": "output"}
-                    if _is_bit_contained_in(component_output_bit, available_bits):
-                        c_input_bit = {"component_id": c.id, "position": accumulator + j, "type": "input"}
-                        _add_bit_to_bit_list(c_input_bit, available_bits)
-            accumulator += len(c.input_bit_positions[i])
+        _register_consumer_input_bits(component.id, c, available_bits)
 
 
 def _update_available_bits_with_component_input_bits(component, available_bits):
@@ -437,68 +443,68 @@ def _is_output_bits_updated_equivalent_to_input_bits(output_bits_updated_list, i
     )
 
 
+def _find_component_carrying_bit(output_bit_name, source_id, candidates, all_equivalent_bits):
+    """Among the candidate components, find the one whose recovered output carries the same value as
+    ``output_bit_name``. Returns ``(component_id, output_position)`` or ``None`` if not found."""
+    for c in candidates:
+        if not _is_possibly_invertible_component(c):
+            continue
+        # Collect the input positions of c that come from source_id.
+        starting_bit_position = 0
+        positions_from_source = []
+        for index, link in enumerate(c.input_id_links):
+            if link == source_id:
+                positions_from_source += list(
+                    range(starting_bit_position, starting_bit_position + len(c.input_bit_positions[index]))
+                )
+            starting_bit_position += len(c.input_bit_positions[index])
+        for i in positions_from_source:
+            consumer_input_bit = f"{c.id}_{i}_input"
+            if not _is_bit_adjacent_to_list_of_bits(output_bit_name, [consumer_input_bit], all_equivalent_bits):
+                continue
+            if c.input_bit_size == c.output_bit_size:
+                if _is_bit_adjacent_to_list_of_bits(
+                    consumer_input_bit, [f"{c.id}_{i}_output_updated"], all_equivalent_bits
+                ):
+                    return c.id, i
+            else:
+                for j in range(c.output_bit_size):
+                    if _is_bit_adjacent_to_list_of_bits(
+                        consumer_input_bit, [f"{c.id}_{j}_output_updated"], all_equivalent_bits
+                    ):
+                        return c.id, j
+    return None
+
+
+def _group_links_by_component(flat_ids, flat_positions):
+    """Group flat (id, position) pairs so that consecutive bits from the same component share one entry."""
+    input_id_links = [flat_ids[0]]
+    input_bit_positions = []
+    current_positions = []
+    for link, pos in zip(flat_ids, flat_positions):
+        if link == input_id_links[-1]:
+            current_positions.append(pos)
+        else:
+            input_bit_positions.append(current_positions)
+            input_id_links.append(link)
+            current_positions = [pos]
+    input_bit_positions.append(current_positions)
+    return input_id_links, input_bit_positions
+
+
 def _links_from_recovered_outputs(
     component, available_output_components, all_equivalent_bits, self
 ):
-    tmp_input_id_links = []
-    tmp_input_bit_positions = []
+    flat_ids = []
+    flat_positions = []
     for bit_position in range(component.output_bit_size):
-        bit_name_input = f"{component.id}_{bit_position}_output"
-        flag_link_found = False
-        for c in available_output_components:
-            if _is_possibly_invertible_component(c):
-                starting_bit_position = 0
-                l = []
-                for index, link in enumerate(c.input_id_links):
-                    if link == component.id:
-                        l += list(
-                            range(starting_bit_position, starting_bit_position + len(c.input_bit_positions[index]))
-                        )
-                    starting_bit_position += len(c.input_bit_positions[index])
-                for i in l:
-                    bit_name = f"{c.id}_{i}_input"
-                    if _is_bit_adjacent_to_list_of_bits(bit_name_input, [bit_name], all_equivalent_bits):
-                        if c.input_bit_size == c.output_bit_size:
-                            bit_name_output_updated = f"{c.id}_{i}_output_updated"
-                            if _is_bit_adjacent_to_list_of_bits(
-                                bit_name, [bit_name_output_updated], all_equivalent_bits
-                            ):
-                                tmp_input_id_links.append(c.id)
-                                tmp_input_bit_positions.append(i)
-                                flag_link_found = True
-                                break
-                        else:
-                            for j in range(c.output_bit_size):
-                                bit_name_output_updated = f"{c.id}_{j}_output_updated"
-                                if _is_bit_adjacent_to_list_of_bits(
-                                    bit_name, [bit_name_output_updated], all_equivalent_bits
-                                ):
-                                    tmp_input_id_links.append(c.id)
-                                    tmp_input_bit_positions.append(j)
-                                    flag_link_found = True
-                                    break
-                            if flag_link_found:
-                                break
-                if flag_link_found:
-                    break
-
-    input_id_links = []
-    input_bit_positions = []
-    pivot = tmp_input_id_links[0]
-    input_bit_position_of_pivot = []
-    input_id_links.append(pivot)
-    for index, link in enumerate(tmp_input_id_links):
-        if link == pivot:
-            input_bit_position_of_pivot.append(tmp_input_bit_positions[index])
-        else:
-            input_bit_positions.append(input_bit_position_of_pivot)
-            pivot = link
-            input_id_links.append(pivot)
-            input_bit_position_of_pivot = []
-            input_bit_position_of_pivot.append(tmp_input_bit_positions[index])
-    input_bit_positions.append(input_bit_position_of_pivot)
-
-    return input_id_links, input_bit_positions
+        bit_name = f"{component.id}_{bit_position}_output"
+        result = _find_component_carrying_bit(bit_name, component.id, available_output_components, all_equivalent_bits)
+        if result is not None:
+            component_id, position = result
+            flat_ids.append(component_id)
+            flat_positions.append(position)
+    return _group_links_by_component(flat_ids, flat_positions)
 
 
 def _get_equivalent_input_bit_from_output_bit(
