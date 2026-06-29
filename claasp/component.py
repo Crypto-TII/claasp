@@ -27,6 +27,7 @@ from sage.rings.finite_rings.finite_field_constructor import FiniteField as GF
 from claasp.cipher_modules.models.sat.utils import constants
 from claasp.DTOs.power_of_2_word_based_dto import PowerOf2WordBasedDTO
 from claasp.name_mappings import (
+    CIPHER_INPUT,
     CIPHER_OUTPUT,
     INTERMEDIATE_OUTPUT,
     LINEAR_LAYER,
@@ -742,6 +743,15 @@ class Component:
     @id.setter
     def id(self, id_string):
         self._id = id_string
+
+    @property
+    def round(self):
+        if self._type == CIPHER_INPUT:
+            return -1
+        try:
+            return int(self._id.split("_")[-2])
+        except (ValueError, IndexError):
+            return -1
 
     @property
     def input_bit_size(self):

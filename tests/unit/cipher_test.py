@@ -8,29 +8,38 @@ import numpy as np
 
 from claasp.cipher import Cipher
 from claasp.cipher_modules.algebraic_tests import AlgebraicTests
+from claasp.ciphers.block_ciphers.ballet_block_cipher import BalletBlockCipher
 from claasp.ciphers.block_ciphers.bea1_block_cipher import BEA1BlockCipher
 from claasp.ciphers.block_ciphers.des_block_cipher import DESBlockCipher
 from claasp.ciphers.block_ciphers.hight_block_cipher import HightBlockCipher
+from claasp.ciphers.block_ciphers.kasumi_block_cipher import KasumiBlockCipher
 from claasp.ciphers.block_ciphers.lblock_block_cipher import LBlockBlockCipher
 from claasp.ciphers.block_ciphers.lea_block_cipher import LeaBlockCipher
+from claasp.ciphers.block_ciphers.lowmc_block_cipher import LowMCBlockCipher
 from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
 from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
 from claasp.ciphers.block_ciphers.qarmav2_with_mixcolumn_block_cipher import QARMAv2MixColumnBlockCipher
 from claasp.ciphers.block_ciphers.raiden_block_cipher import RaidenBlockCipher
 from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
 from claasp.ciphers.block_ciphers.skinny_block_cipher import SkinnyBlockCipher
+from claasp.ciphers.block_ciphers.sparx_block_cipher import SparxBlockCipher
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+from claasp.ciphers.block_ciphers.splight_block_cipher import SplightBlockCipher
 from claasp.ciphers.block_ciphers.tea_block_cipher import TeaBlockCipher
+from claasp.ciphers.block_ciphers.threefish_block_cipher import ThreefishBlockCipher
 from claasp.ciphers.block_ciphers.twofish_block_cipher import TwofishBlockCipher
+from claasp.ciphers.block_ciphers.ublock_block_cipher import UblockBlockCipher
 from claasp.ciphers.block_ciphers.xtea_block_cipher import XTeaBlockCipher
 from claasp.ciphers.permutations.ascon_sbox_sigma_permutation import AsconSboxSigmaPermutation
 from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation
+from claasp.ciphers.permutations.chaskeypi_permutation import ChaskeyPiPermutation
 from claasp.ciphers.permutations.gift_sbox_permutation import GiftSboxPermutation
 from claasp.ciphers.permutations.keccak_invertible_permutation import KeccakInvertiblePermutation
 from claasp.ciphers.permutations.photon_permutation import PhotonPermutation
 from claasp.ciphers.permutations.salsa_permutation import SalsaPermutation
 from claasp.ciphers.permutations.sparkle_permutation import SparklePermutation
 from claasp.ciphers.permutations.spongent_pi_permutation import SpongentPiPermutation
+from claasp.ciphers.permutations.tinyjambu_permutation import TinyJambuPermutation
 from claasp.ciphers.permutations.xoodoo_invertible_permutation import XoodooInvertiblePermutation
 from claasp.ciphers.single_component_ciphers.identity_cipher import IdentityCipher
 from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
@@ -525,7 +534,7 @@ def test_cipher_inverse():
     cipher = ToyAESBlockCipher(number_of_rounds=2)
     ciphertext = cipher.evaluate([key, plaintext])
     cipher_inv = cipher.cipher_inverse()
-    assert cipher_inv.evaluate([ciphertext, key]) == plaintext
+    assert cipher_inv.evaluate([key, ciphertext]) == plaintext
 
     key = 0x0e2ddd5c5b4ca9d4
     plaintext = 0xb779ee0a
@@ -632,7 +641,7 @@ def test_cipher_inverse():
     plaintext = 0x0123456789ABCDEF
     ciphertext = cipher.evaluate([key, plaintext])
     cipher_inv = cipher.cipher_inverse()
-    assert cipher_inv.evaluate([ciphertext, key]) == plaintext
+    assert cipher_inv.evaluate([key, ciphertext]) == plaintext
 
     cipher = SalsaPermutation(number_of_rounds=2)
     plaintext = 0xffff
@@ -645,7 +654,7 @@ def test_cipher_inverse():
     plaintext = 0x47a57eff5d6475a68916
     ciphertext = cipher.evaluate([key, plaintext])
     cipher_inv = cipher.cipher_inverse()
-    assert cipher_inv.evaluate([ciphertext, key]) == plaintext
+    assert cipher_inv.evaluate([key, ciphertext]) == plaintext
 
     plaintext = 0x1234
     cipher = KeccakInvertiblePermutation(number_of_rounds=2, word_size=8)
@@ -664,7 +673,7 @@ def test_cipher_inverse():
     plaintext = 0x90AFE91BB288544F2C32DC239B2635E6
     ciphertext = cipher.evaluate([key, plaintext])
     cipher_inv = cipher.cipher_inverse()
-    assert cipher_inv.evaluate([ciphertext, key]) == plaintext
+    assert cipher_inv.evaluate([key, ciphertext]) == plaintext
 
     cipher = LBlockBlockCipher(number_of_rounds=2)
     key = 0x012345689abcdeffedc
@@ -679,4 +688,67 @@ def test_cipher_inverse():
     tweak = 0x7e5c3a18f6d4b2901eb852fc9630da74
     ciphertext = qarmav2.evaluate([key, plaintext, tweak])
     cipher_inv = qarmav2.cipher_inverse()
-    assert cipher_inv.evaluate([ciphertext, tweak, key]) == plaintext
+    assert cipher_inv.evaluate([key, ciphertext, tweak]) == plaintext
+
+    key = 0x0123456789abcdeffedcba9876543210
+    plaintext = 0x0123456789abcdeffedcba9876543210
+    cipher = UblockBlockCipher(block_bit_size=128, key_bit_size=128, number_of_rounds=2)
+    ciphertext = cipher.evaluate([plaintext, key])
+    cipher_inv = cipher.cipher_inverse()
+    assert cipher_inv.evaluate([ciphertext, key]) == plaintext
+
+    key = 0x0123456789abcdeffedcba9876543210
+    plaintext = 0x0123456789abcdeffedcba9876543210
+    cipher = BalletBlockCipher(block_bit_size=128, key_bit_size=128, number_of_rounds=2)
+    ciphertext = cipher.evaluate([plaintext, key])
+    cipher_inv = cipher.cipher_inverse()
+    assert cipher_inv.evaluate([ciphertext, key]) == plaintext
+
+    key = 0x0123456789abcdeffedcba9876543210
+    plaintext = 0x0123456789abcdef
+    cipher = SplightBlockCipher(block_bit_size=64, key_bit_size=128, number_of_rounds=2)
+    ciphertext = cipher.evaluate([plaintext, key])
+    cipher_inv = cipher.cipher_inverse()
+    assert cipher_inv.evaluate([ciphertext, key]) == plaintext
+
+    plaintext = 0x0123456789abcdeffedcba9876543210
+    cipher = ChaskeyPiPermutation(number_of_rounds=2)
+    ciphertext = cipher.evaluate([plaintext])
+    cipher_inv = cipher.cipher_inverse()
+    assert cipher_inv.evaluate([ciphertext]) == plaintext
+
+    key = 0x9900aabbccddeeff1122334455667788
+    plaintext = 0xfedcba0987654321
+    cipher = KasumiBlockCipher(number_of_rounds=2)
+    ciphertext = cipher.evaluate([key, plaintext])
+    cipher_inv = cipher.cipher_inverse()
+    assert cipher_inv.evaluate([key, ciphertext]) == plaintext
+
+    key = 0x00112233445566778899aabbccddeeff
+    plaintext = 0x0123456789abcdef
+    cipher = SparxBlockCipher(number_of_rounds=2)
+    ciphertext = cipher.evaluate([plaintext, key])
+    cipher_inv = cipher.cipher_inverse()
+    assert cipher_inv.evaluate([ciphertext, key]) == plaintext
+
+    key = 0x800000000000000000000000000000000000000000000000
+    plaintext = 0xABFF00000000000000000000000000000000000000000000
+    cipher = LowMCBlockCipher(block_bit_size=192, key_bit_size=192, number_of_rounds=4)
+    ciphertext = cipher.evaluate([plaintext, key])
+    cipher_inv = cipher.cipher_inverse()
+    assert cipher_inv.evaluate([ciphertext, key]) == plaintext
+
+    plaintext = 0xF8F9FAFBFCFDFEFFF0F1F2F3F4F5F6F7E8E9EAEBECEDEEEFE0E1E2E3E4E5E6E7
+    key = 0x17161514131211101F1E1D1C1B1A191827262524232221202F2E2D2C2B2A2928
+    tweak = 0x07060504030201000F0E0D0C0B0A0908
+    cipher = ThreefishBlockCipher(number_of_rounds=2)
+    ciphertext = cipher.evaluate([plaintext, key, tweak])
+    cipher_inv = cipher.cipher_inverse()
+    assert cipher_inv.evaluate([ciphertext, key, tweak]) == plaintext
+
+    key = 0x1234
+    plaintext = 0xffff
+    cipher = TinyJambuPermutation(number_of_rounds=2)
+    ciphertext = cipher.evaluate([key, plaintext])
+    cipher_inv = cipher.cipher_inverse()
+    assert cipher_inv.evaluate([key, ciphertext]) == plaintext
