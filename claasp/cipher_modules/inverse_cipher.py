@@ -1,3 +1,25 @@
+"""Cipher inversion engine.
+
+Given a CLAASP ``Cipher``, build its inverse: a new ``Cipher`` that maps outputs back to inputs
+(e.g. ciphertext + key back to plaintext). The engine walks the cipher's component graph and, for
+each component, either
+
+* **evaluates it forward**, when all of its inputs are already known, or
+* **inverts it**, when its output and enough of its inputs are known.
+
+Components are processed in repeated passes until every one has been rebuilt; a pass that makes no
+progress means the cipher cannot be inverted from the information available (see
+``_inversion_stall_message``). A bit-equivalence map records which bits are known to carry the same
+value, so a needed operand can be sourced from any equivalent recovered bit; a cached, indexed view
+of the cipher (``_CipherView``) and an O(1) recovered-bit store (``_AvailableBits``) keep the
+repeated lookups cheap.
+
+The public entry point is ``Cipher.cipher_inverse()``; the functions in this module are its
+building blocks.
+"""
+
+import weakref
+
 from sage.crypto.sbox import SBox
 from sage.rings.finite_rings.finite_field_constructor import FiniteField as GF
 from sage.rings.polynomial.polynomial_ring_constructor import PolynomialRing
@@ -31,40 +53,391 @@ from claasp.name_mappings import (
     WORD_OPERATION,
 )
 
-from claasp.cipher_modules.inverse.cipher_view import (
-    AvailableBits,
-    _cipher_view,
-    get_available_output_components,
-    get_cipher_components,
-    is_bit_contained_in,
-)
-from claasp.cipher_modules.inverse.equivalence import (
-    add_equivalence,
-    bits_equivalent,
-    equivalent_bit_names,
-    equivalent_bits_in_common,
-    get_all_bit_names,
-    get_all_equivalent_bits,
-    is_bit_adjacent_to_list_of_bits,
-)
-from claasp.cipher_modules.inverse.partial_cipher import (
-    _prune_components_outside_round_range,
-    update_input_links_from_rounds,
-)
 from claasp.editor import get_key_schedule_component_ids
-from claasp.cipher_modules.inverse.bit_state import (
-    _input_bit_value_is_recovered,
-    all_output_bits_available,
-    are_these_bits_available,
-    component_input_bits,
-    component_output_bits,
-    is_output_bits_updated_equivalent_to_input_bits,
-    update_available_bits_with_component_input_bits,
-    update_available_bits_with_component_output_bits,
-)
 
 
-def links_from_recovered_outputs(
+# ===========================================================================
+# Inversion-engine internals: the cached indexed cipher view,
+# the recovered-bit store and low-level bit lookups, and the bit-equivalence map.
+# ===========================================================================
+
+
+class _CipherView:
+    """Cached, indexed read-only view of a cipher, purpose-built for the inversion engine:
+
+    * **Inputs as nodes.** The inverter must *process* the cipher's inputs (turn the plaintext input
+      into the inverse's cipher output, keep key/tweak inputs as inputs). But a cipher stores its
+      inputs as id strings + bit sizes (``cipher.inputs`` / ``cipher.inputs_bit_size``), not as
+      components. So the view appends one synthetic ``cipher_input`` ``Component`` per input, letting
+      the whole engine treat inputs and real components through one uniform code path.
+    * **Built-once indexes.** Inversion runs many repeated passes over every component, each doing
+      id lookups, successor lookups, and bit-name lookups. Recomputing those per call would be
+      O(n) each and dominate the run. The view precomputes them once:
+
+        - ``components``    -- real components + the synthetic input nodes.
+        - ``by_id``        -- ``{id: component}`` including inputs (O(1) resolve of any link,
+                              ``None`` on miss, unlike ``Cipher.component_from_id`` which raises and
+                              omits inputs).
+        - ``consumer_links`` -- ``{id: [(consumer, [(offset, nbits), ...]), ...]}``: who reads each
+                              component, with the offset/width of every reading link, so
+                              availability checks know exactly which input bits to test.
+        - ``all_bit_names`` -- the whole-cipher ``{bit_name: bit_dict}`` map over the engine's
+                              ``output`` / ``output_updated`` / ``input`` bit model, used by the
+                              equivalence lookups.
+
+    These indexes are inversion-specific (especially ``consumer_links`` offsets and the
+    ``output_updated`` bit model), which is why the view lives here and is not promoted onto
+    ``Cipher``. The cipher is a fixed snapshot during inversion, so the view is built once and cached
+    per cipher object.
+    """
+
+    __slots__ = ("components", "by_id", "consumer_links", "all_bit_names")
+
+    def __init__(self, cipher):
+        components = cipher.get_all_components()
+        for index, input_id in enumerate(cipher.inputs):
+            description = [INPUT_KEY] if INPUT_KEY in input_id else [input_id]
+            input_component = Component(
+                input_id, "cipher_input", Input(0, [[]], [[]]), cipher.inputs_bit_size[index], description
+            )
+            components.append(input_component)
+        self.components = components
+        self.by_id = {component.id: component for component in components}
+        # consumer_links[id]   -> [(consuming component, [(offset, nbits), ...]), ...] where the
+        #                         offset/nbits locate, in the consumer's input-bit space, each link
+        #                         that reads `id`.
+        consumer_links = {}
+        for component in components:
+            accumulator = 0
+            per_consumed = {}
+            for index, link in enumerate(component.input_id_links):
+                nbits = len(component.input_bit_positions[index])
+                # links are component-id strings; synthetic inputs carry [[]] placeholders.
+                if isinstance(link, str):
+                    per_consumed.setdefault(link, []).append((accumulator, nbits))
+                accumulator += nbits
+            for link, offsets in per_consumed.items():
+                consumer_links.setdefault(link, []).append((component, offsets))
+        self.consumer_links = consumer_links
+        # all_bit_names: whole-cipher {bit_name: bit_dict} map used by get_equivalent_input_bit.
+        # Built once here instead of on every call to _get_all_bit_names.
+        bit_names = {}
+        for c in components:
+            if c.type == INTERMEDIATE_OUTPUT:
+                continue
+            starting_bit_position = 0
+            for index, input_id_link in enumerate(c.input_id_links):
+                if not isinstance(input_id_link, str):
+                    starting_bit_position += len(c.input_bit_positions[index])
+                    continue
+                for j, i in enumerate(c.input_bit_positions[index]):
+                    out_name = f"{input_id_link}_{i}_output"
+                    if out_name not in bit_names:
+                        bit_names[out_name] = {"component_id": input_id_link, "position": i, "type": "output"}
+                    in_name = f"{c.id}_{starting_bit_position + j}_input"
+                    if in_name not in bit_names:
+                        bit_names[in_name] = {"component_id": c.id, "position": starting_bit_position + j, "type": "input"}
+                    if c.type != CIPHER_OUTPUT:
+                        out_upd_name = f"{input_id_link}_{i}_output_updated"
+                        if out_upd_name not in bit_names:
+                            bit_names[out_upd_name] = {"component_id": input_id_link, "position": i, "type": "output_updated"}
+                    out_upd_name2 = f"{c.id}_{starting_bit_position + j}_output_updated"
+                    if out_upd_name2 not in bit_names:
+                        bit_names[out_upd_name2] = {"component_id": c.id, "position": starting_bit_position + j, "type": "output_updated"}
+                starting_bit_position += len(c.input_bit_positions[index])
+        self.all_bit_names = bit_names
+
+
+_CIPHER_VIEW_CACHE = weakref.WeakKeyDictionary()
+
+
+def _cipher_view(cipher):
+    view = _CIPHER_VIEW_CACHE.get(cipher)
+    if view is None:
+        view = _CipherView(cipher)
+        _CIPHER_VIEW_CACHE[cipher] = view
+    return view
+
+
+def _cipher_view_components_with_inputs(self):
+    """Return the cipher's components plus one synthetic ``cipher_input`` component per cipher input.
+
+    Inversion-engine internal: this is the node set the inversion loop walks. Unlike
+    ``Cipher.get_all_components()`` (real components only), the cipher's inputs (plaintext, key, ...)
+    appear here as first-class nodes, so the engine can process them uniformly (e.g. invert the
+    plaintext input into the inverse's cipher output). A fresh shallow copy is returned so callers
+    can use it as a mutable worklist without disturbing the cached view.
+    """
+    # Return a fresh shallow copy so callers can mutate the returned list without disturbing the
+    # cached view's list and indexes.
+    return list(_cipher_view(self).components)
+
+
+class _AvailableBits:
+    """List-like store of recovered bits with O(1) membership.
+
+    Keeps list semantics (append-order, iteration, ``len``, duplicates) and additionally maintains
+    a ``set`` of ``(component_id, position, type)`` keys, so membership tests are O(1) rather than a
+    linear scan over a list that grows with every recovered bit.
+    """
+
+    __slots__ = ("_list", "_keys")
+
+    def __init__(self):
+        self._list = []
+        self._keys = set()
+
+    @staticmethod
+    def _key(bit):
+        return (bit["component_id"], bit["position"], bit["type"])
+
+    def append(self, bit):
+        self._list.append(bit)
+        self._keys.add(self._key(bit))
+
+    def __contains__(self, bit):
+        return self._key(bit) in self._keys
+
+    def __iter__(self):
+        return iter(self._list)
+
+    def __len__(self):
+        return len(self._list)
+
+
+def _is_bit_contained_in(bit, available_bits):
+    keys = getattr(available_bits, "_keys", None)
+    if keys is not None:  # fast path for _AvailableBits (O(1)); falls back for plain lists
+        return (bit["component_id"], bit["position"], bit["type"]) in keys
+    for b in available_bits:
+        if bit["component_id"] == b["component_id"] and bit["position"] == b["position"] and bit["type"] == b["type"]:
+            return True
+    return False
+
+
+def _add_bit_to_bit_list(bit, bit_list):
+    if not _is_bit_contained_in(bit, bit_list):
+        bit_list.append(bit)
+
+
+def _are_all_bits_available(id, input_bit_positions_len, offset, available_bits):
+    for j in range(input_bit_positions_len):
+        bit = {"component_id": id, "position": offset + j, "type": "input"}
+        if not _is_bit_contained_in(bit, available_bits):
+            return False
+    return True
+
+
+def _get_available_output_components(component, available_bits, self, return_index=False):
+    # Iterate the precomputed consumer_links index (each consumer of `component` paired with the
+    # (offset, nbits) of every input link that reads it). _are_all_bits_available runs per link
+    # since it depends on the live available_bits. Non-index mode adds each consumer at most once
+    # (first available link); index mode emits one entry per available link.
+    available_output_components = []
+    for c, link_offsets in _cipher_view(self).consumer_links.get(component.id, []):
+        for offset, nbits in link_offsets:
+            if _are_all_bits_available(c.id, nbits, offset, available_bits):
+                if return_index:
+                    available_output_components.append((c, list(range(offset, offset + nbits))))
+                else:
+                    available_output_components.append(c)
+                    break
+
+    return available_output_components
+
+
+# The equivalence relation is an adjacency dict kept as a union of cliques (every pair in a class
+# linked directly), so direct membership already equals transitive closure.
+
+
+def _bits_equivalent(bit_name, other_bit_name, all_equivalent_bits):
+    """Whether ``other_bit_name`` is recorded as equivalent to ``bit_name`` (same value)."""
+    return other_bit_name in all_equivalent_bits.get(bit_name, [])
+
+
+def _equivalent_bit_names(bit_name, all_equivalent_bits):
+    """The bit-names recorded as equivalent to ``bit_name`` (empty list if it has none)."""
+    return all_equivalent_bits.get(bit_name, [])
+
+
+def _add_equivalence(all_equivalent_bits, bit_a, bit_b, ensure_a=False, symmetric=True):
+    """Record ``bit_b`` as the same value as ``bit_a``, linking it into ``bit_a``'s clique.
+
+    ``ensure_a`` creates ``bit_a``'s entry if absent; ``symmetric`` also appends ``bit_b`` to each
+    existing member's list (keeping each class a fully-connected clique).
+    """
+    if ensure_a:
+        all_equivalent_bits.setdefault(bit_a, [])
+    all_equivalent_bits[bit_a].append(bit_b)
+    all_equivalent_bits.setdefault(bit_b, [])
+    all_equivalent_bits[bit_b].append(bit_a)
+    for name in all_equivalent_bits[bit_a]:
+        if name != bit_b:
+            all_equivalent_bits[bit_b].append(name)
+            if symmetric:
+                all_equivalent_bits[name].append(bit_b)
+
+
+def _is_bit_adjacent_to_list_of_bits(bit_name, list_of_bit_names, all_equivalent_bits):
+    """Whether ``bit_name`` is the same value as any name in ``list_of_bit_names``."""
+    return any(_bits_equivalent(bit_name, name, all_equivalent_bits) for name in list_of_bit_names)
+
+
+def _equivalent_bits_in_common(bits_of_an_output_component, component_bits, all_equivalent_bits):
+    bits_in_common = []
+    for bit1 in bits_of_an_output_component:
+        bit_name1 = f"{bit1['component_id']}_{bit1['position']}_{bit1['type']}"
+        if bit_name1 not in all_equivalent_bits:
+            return []
+        for bit2 in component_bits:
+            bit_name2 = f"{bit2['component_id']}_{bit2['position']}_{bit2['type']}"
+            if _bits_equivalent(bit_name1, bit_name2, all_equivalent_bits):
+                bits_in_common.append(bit1)
+                break
+    return bits_in_common
+
+
+def _get_all_bit_names(self):
+    return _cipher_view(self).all_bit_names
+
+
+def _get_all_equivalent_bits(self):
+    """Seed the bit-equivalence map from the cipher's wiring.
+
+    Each output bit of a link and the input bit it feeds carry the same value, so they start out
+    in the same equivalence class. Returns an adjacency dict ``{bit_name: [equivalent_bit_name,
+    ...]}`` (each class stored as a fully-connected clique); the engine grows it as it recovers
+    more bits.
+    """
+    dictio = {}
+    component_list = self.get_all_components()
+    for c in component_list:
+        current_bit_position = 0
+        for index, input_id_link in enumerate(c.input_id_links):
+            if c.type == "constant":
+                input_bit_positions = list(range(c.output_bit_size))
+            else:
+                input_bit_positions = c.input_bit_positions[index]
+            for i in input_bit_positions:
+                output_bit_name = f"{input_id_link}_{i}_output"
+                input_bit_name = f"{c.id}_{current_bit_position}_input"
+                current_bit_position += 1
+                if output_bit_name not in dictio:
+                    dictio[output_bit_name] = []
+                dictio[output_bit_name].append(input_bit_name)
+
+    updated_dictio = {}
+    for key, values in dictio.items():
+        updated_dictio[key] = values
+        for value in values:
+            if value not in dictio:
+                updated_dictio[value] = []
+            updated_dictio[value].append(key)
+            for other_value in values:
+                if other_value != value:
+                    updated_dictio[value].append(other_value)
+
+    return updated_dictio
+
+
+def _component_input_bits(component):
+    component_input_bits_list = []
+    for index, link in enumerate(component.input_id_links):
+        tmp = []
+        for position in component.input_bit_positions[index]:
+            tmp.append({"component_id": link, "position": position, "type": "output_updated"})
+        component_input_bits_list.append(tmp)
+    return component_input_bits_list
+
+
+def _component_output_bits(component, self):
+    # set of list_bits needed to invert
+    output_components = self.get_successor_components(component)
+    component_output_bits_list = []
+    for c in output_components:
+        tmp = []
+        for j in range(c.output_bit_size):
+            bit = {"component_id": c.id, "position": j, "type": "output_updated"}
+            tmp.append(bit)
+        component_output_bits_list.append(tmp)
+    return component_output_bits_list
+
+
+def _are_these_bits_available(bits_list, available_bits):
+    return all(bit in available_bits for bit in bits_list)
+
+
+def _input_bit_value_is_recovered(link, position, available_bits, all_equivalent_bits):
+    """
+    True if the value of input bit ``{link}[position]`` is already known in the inverse cipher,
+    either directly (its own ``output_updated`` is available) or through the equivalence map (some
+    other recovered component carries the same value as an available ``output_updated`` bit).
+
+    This lets the inversion-readiness credit a known operand even when it is only reachable through
+    the equivalence map (e.g. a shift-register state bit that equals a ciphertext bit, as in
+    TinyJambu), rather than requiring the operand's own link to be available.
+    """
+    if {"component_id": link, "position": position, "type": "output_updated"} in available_bits:
+        return True
+    for equivalent_bit in _equivalent_bit_names(f"{link}_{position}_output", all_equivalent_bits):
+        if equivalent_bit.endswith("_output_updated"):
+            source_id, source_position = equivalent_bit[: -len("_output_updated")].rsplit("_", 1)
+            if {"component_id": source_id, "position": int(source_position), "type": "output_updated"} in available_bits:
+                return True
+    return False
+
+
+def _update_available_bits_with_component_output_bits(component, available_bits, cipher):
+    output_components = cipher.get_successor_components(component)
+
+    for i in range(component.output_bit_size):
+        bit = {"component_id": component.id, "position": i, "type": "output"}
+        _add_bit_to_bit_list(bit, available_bits)
+
+    # add bits of the connected output components
+    for c in output_components:
+        accumulator = 0
+        for i in range(len(c.input_id_links)):
+            if c.input_id_links[i] == component.id:
+                for j in range(len(c.input_bit_positions[i])):
+                    component_output_bit = {"component_id": component.id, "position": j, "type": "output"}
+                    if _is_bit_contained_in(component_output_bit, available_bits):
+                        c_input_bit = {"component_id": c.id, "position": accumulator + j, "type": "input"}
+                        _add_bit_to_bit_list(c_input_bit, available_bits)
+            accumulator += len(c.input_bit_positions[i])
+
+
+def _update_available_bits_with_component_input_bits(component, available_bits):
+    for i in range(component.input_bit_size):
+        bit = {"component_id": component.id, "position": i, "type": "input"}
+        _add_bit_to_bit_list(bit, available_bits)
+
+    # add bits of the connected input components
+    for i in range(len(component.input_id_links)):
+        for j in range(len(component.input_bit_positions[i])):
+            bit1 = {
+                "component_id": component.input_id_links[i],
+                "position": component.input_bit_positions[i][j],
+                "type": "output",
+            }
+            _add_bit_to_bit_list(bit1, available_bits)
+
+
+def _all_output_bits_available(component, available_bits):
+    return all(
+        _is_bit_contained_in({"component_id": component.id, "position": i, "type": "output_updated"}, available_bits)
+        for i in range(component.output_bit_size)
+    )
+
+
+def _is_output_bits_updated_equivalent_to_input_bits(output_bits_updated_list, input_bits_list, all_equivalent_bits):
+    return all(
+        _is_bit_adjacent_to_list_of_bits(bit, input_bits_list, all_equivalent_bits)
+        for bit in output_bits_updated_list
+    )
+
+
+def _links_from_recovered_outputs(
     component, available_output_components, all_equivalent_bits, self
 ):
     tmp_input_id_links = []
@@ -73,7 +446,7 @@ def links_from_recovered_outputs(
         bit_name_input = f"{component.id}_{bit_position}_output"
         flag_link_found = False
         for c in available_output_components:
-            if is_possibly_invertible_component(c):
+            if _is_possibly_invertible_component(c):
                 starting_bit_position = 0
                 l = []
                 for index, link in enumerate(c.input_id_links):
@@ -84,10 +457,10 @@ def links_from_recovered_outputs(
                     starting_bit_position += len(c.input_bit_positions[index])
                 for i in l:
                     bit_name = f"{c.id}_{i}_input"
-                    if is_bit_adjacent_to_list_of_bits(bit_name_input, [bit_name], all_equivalent_bits):
+                    if _is_bit_adjacent_to_list_of_bits(bit_name_input, [bit_name], all_equivalent_bits):
                         if c.input_bit_size == c.output_bit_size:
                             bit_name_output_updated = f"{c.id}_{i}_output_updated"
-                            if is_bit_adjacent_to_list_of_bits(
+                            if _is_bit_adjacent_to_list_of_bits(
                                 bit_name, [bit_name_output_updated], all_equivalent_bits
                             ):
                                 tmp_input_id_links.append(c.id)
@@ -97,7 +470,7 @@ def links_from_recovered_outputs(
                         else:
                             for j in range(c.output_bit_size):
                                 bit_name_output_updated = f"{c.id}_{j}_output_updated"
-                                if is_bit_adjacent_to_list_of_bits(
+                                if _is_bit_adjacent_to_list_of_bits(
                                     bit_name, [bit_name_output_updated], all_equivalent_bits
                                 ):
                                     tmp_input_id_links.append(c.id)
@@ -128,7 +501,7 @@ def links_from_recovered_outputs(
     return input_id_links, input_bit_positions
 
 
-def get_equivalent_input_bit_from_output_bit(
+def _get_equivalent_input_bit_from_output_bit(
     potential_unwanted_component,
     base_component,
     available_bits,
@@ -138,7 +511,7 @@ def get_equivalent_input_bit_from_output_bit(
     base_component_input_index=None,
     override_positions=None,
 ):
-    all_bit_names = get_all_bit_names(self)
+    all_bit_names = _get_all_bit_names(self)
     potential_unwanted_bits = []
     potential_unwanted_bits_names = []
     input_bit_positions_of_potential_unwanted_component = []
@@ -168,9 +541,9 @@ def get_equivalent_input_bit_from_output_bit(
 
     equivalent_bits = []
     for potential_unwanted_bits_name in potential_unwanted_bits_names:
-        for equivalent_bit in equivalent_bit_names(potential_unwanted_bits_name, all_equivalent_bits):
+        for equivalent_bit in _equivalent_bit_names(potential_unwanted_bits_name, all_equivalent_bits):
             if (
-                (equivalent_bit in all_bit_names.keys())
+                (equivalent_bit in all_bit_names)
                 and (all_bit_names[equivalent_bit]["component_id"] != base_component.id)
                 and (all_bit_names[equivalent_bit] in available_bits)
                 and (all_bit_names[equivalent_bit]["component_id"] not in key_schedule_components)
@@ -191,7 +564,7 @@ def get_equivalent_input_bit_from_output_bit(
         return all_bit_names[equivalent_bits[0]]["component_id"], input_bit_positions
 
 
-def links_from_known_inputs(
+def _links_from_known_inputs(
     component, available_bits, all_equivalent_bits, key_schedule_components, self
 ):
     input_id_links = []
@@ -206,16 +579,16 @@ def links_from_known_inputs(
         available_positions = [
             position
             for position in component.input_bit_positions[i]
-            if is_bit_contained_in(
+            if _is_bit_contained_in(
                 {"component_id": component.input_id_links[i], "position": position, "type": "output"},
                 available_bits,
             )
         ]
         if not available_positions:
             continue
-        potential_unwanted_component = component_from_id(component.input_id_links[i], self)
+        potential_unwanted_component = _component_from_id(component.input_id_links[i], self)
         equivalent_component, input_bit_positions_of_equivalent_component = (
-            get_equivalent_input_bit_from_output_bit(
+            _get_equivalent_input_bit_from_output_bit(
                 potential_unwanted_component,
                 component,
                 available_bits,
@@ -232,7 +605,7 @@ def links_from_known_inputs(
     return input_id_links, input_bit_positions
 
 
-def inversion_stall_message(stuck_components):
+def _inversion_stall_message(stuck_components):
     """Human-readable diagnostic for a ``cipher_inverse()`` that can no longer make progress.
 
     Lists how many components are stuck and of which kinds, plus a sample with their input
@@ -259,7 +632,7 @@ def inversion_stall_message(stuck_components):
     return "\n".join(lines)
 
 
-def are_there_enough_available_inputs_to_perform_inversion(component, available_bits, all_equivalent_bits, self):
+def _are_there_enough_available_inputs_to_perform_inversion(component, available_bits, all_equivalent_bits, self):
     """
     NOTE: it assumes that the component input size is a multiple of the output size
     """
@@ -270,26 +643,26 @@ def are_there_enough_available_inputs_to_perform_inversion(component, available_
         return False
 
     # STEP 2 - Other components
-    bit_lists_link_to_component_from_output = component_output_bits(component, self)
+    bit_lists_link_to_component_from_output = _component_output_bits(component, self)
     component_output_bits_list = []
     for i in range(component.output_bit_size):
         component_output_bits_list.append({"component_id": component.id, "position": i, "type": "output"})
     bit_lists_link_to_component_from_output_and_available = []
     for bit_list in bit_lists_link_to_component_from_output:
-        bits_in_common = equivalent_bits_in_common(bit_list, component_output_bits_list, all_equivalent_bits)
+        bits_in_common = _equivalent_bits_in_common(bit_list, component_output_bits_list, all_equivalent_bits)
         for bit in bits_in_common:
             if bit in available_bits:
                 bit_lists_link_to_component_from_output_and_available.append(bit)
 
     # handling available bits from inputs
-    bit_lists_link_to_component_from_input = component_input_bits(component)
+    bit_lists_link_to_component_from_input = _component_input_bits(component)
     can_be_used_for_inversion = [True] * len(bit_lists_link_to_component_from_input)
     for index, bits_list in enumerate(bit_lists_link_to_component_from_input):
-        if not are_these_bits_available(bits_list, available_bits):
+        if not _are_these_bits_available(bits_list, available_bits):
             can_be_used_for_inversion[index] = False
     for index, link in enumerate(component.input_id_links):
         if not can_be_used_for_inversion[index]:
-            component_of_link = component_from_id(link, self)
+            component_of_link = _component_from_id(link, self)
             output_components = self.get_successor_components(component_of_link)
             link_bit_names = []
             for bit in bit_lists_link_to_component_from_input[index]:
@@ -309,7 +682,7 @@ def are_there_enough_available_inputs_to_perform_inversion(component, available_
                             "position": i,
                             "type": "output_updated",
                         }
-                        if is_bit_adjacent_to_list_of_bits(
+                        if _is_bit_adjacent_to_list_of_bits(
                             output_component_bit_name, link_bit_names, all_equivalent_bits
                         ) and (output_component_bit in available_bits):
                             nb_available_output_component_bits += 1
@@ -339,7 +712,7 @@ def are_there_enough_available_inputs_to_perform_inversion(component, available_
         return len(bit_lists_link_to_component_from_input_and_output) >= component.input_bit_size
 
 
-def is_possibly_invertible_component(component):
+def _is_possibly_invertible_component(component):
     # if sbox is a permutation
     if component.type == SBOX and len(list(set(component.description))) == len(component.description):
         is_invertible = True
@@ -379,37 +752,37 @@ def is_possibly_invertible_component(component):
     return is_invertible
 
 
-def find_input_id_link_bits_equivalent(inverse_component, component, all_equivalent_bits):
+def _find_input_id_link_bits_equivalent(inverse_component, component, all_equivalent_bits):
     bit_positions = []
     list_of_keys = []
 
     for index, input_id_link in enumerate(inverse_component.input_id_links):
         for position, i in enumerate(inverse_component.input_bit_positions[index]):
             potential_equivalent_bit_name = f"{input_id_link}_{i}_output_updated"
-            list_of_keys += equivalent_bit_names(potential_equivalent_bit_name, all_equivalent_bits)
+            list_of_keys += _equivalent_bit_names(potential_equivalent_bit_name, all_equivalent_bits)
     offset = 0
     for index, input_id_link in enumerate(component.input_id_links):
         for pos, i in enumerate(component.input_bit_positions[index]):
             output_bit_name = f"{input_id_link}_{i}_output"
             if output_bit_name in all_equivalent_bits and not any(
-                "output_updated" in item for item in equivalent_bit_names(output_bit_name, all_equivalent_bits)
+                "output_updated" in item for item in _equivalent_bit_names(output_bit_name, all_equivalent_bits)
             ):
                 bit_positions.append(offset + pos)
         offset += len(component.input_bit_positions[index])
     return bit_positions
 
 
-def update_output_bits(inverse_component, self, all_equivalent_bits, available_bits):
+def _update_output_bits(inverse_component, self, all_equivalent_bits, available_bits):
     def _add_output_bit_equivalences(id, bit_positions, component, all_equivalent_bits, available_bits):
         for i in range(component.output_bit_size):
             output_bit_name_updated = f"{id}_{i}_output_updated"
             bit = {"component_id": id, "position": i, "type": "output_updated"}
             available_bits.append(bit)
             input_bit_name = f"{id}_{bit_positions[i]}_input"
-            add_equivalence(all_equivalent_bits, input_bit_name, output_bit_name_updated)
+            _add_equivalence(all_equivalent_bits, input_bit_name, output_bit_name_updated)
 
     id = inverse_component.id
-    component = component_from_id(id, self)
+    component = _component_from_id(id, self)
 
     if (
         (component.description == [INPUT_KEY])
@@ -421,7 +794,7 @@ def update_output_bits(inverse_component, self, all_equivalent_bits, available_b
             bit = {"component_id": id, "position": i, "type": "output_updated"}
             available_bits.append(bit)
             input_bit_name = f"{id}_{i}_output"
-            add_equivalence(
+            _add_equivalence(
                 all_equivalent_bits, input_bit_name, output_bit_name_updated, ensure_a=True, symmetric=False
             )
     elif component.input_bit_size == component.output_bit_size:
@@ -429,13 +802,13 @@ def update_output_bits(inverse_component, self, all_equivalent_bits, available_b
             id, range(component.output_bit_size), component, all_equivalent_bits, available_bits
         )
     else:
-        input_bit_positions = find_input_id_link_bits_equivalent(inverse_component, component, all_equivalent_bits)
+        input_bit_positions = _find_input_id_link_bits_equivalent(inverse_component, component, all_equivalent_bits)
         _add_output_bit_equivalences(id, input_bit_positions, component, all_equivalent_bits, available_bits)
 
 
 def _links_from_outputs(component, output_components, all_equivalent_bits, self):
     """Input links/positions for a reversed component, sourced from its (recovered) outputs."""
-    return links_from_recovered_outputs(
+    return _links_from_recovered_outputs(
         component, output_components, all_equivalent_bits, self
     )
 
@@ -444,7 +817,7 @@ def _finalize_inverse(inverse_component, component, self, all_equivalent_bits, a
     """Common epilogue: set the component's class, then register its recovered bits."""
     inverse_component.__class__ = klass
     if update:
-        update_output_bits(inverse_component, self, all_equivalent_bits, available_bits)
+        _update_output_bits(inverse_component, self, all_equivalent_bits, available_bits)
     return inverse_component
 
 
@@ -542,7 +915,7 @@ def _invert_sigma(component, available_bits, all_equivalent_bits, key_schedule_c
 
 def _invert_xor(component, available_bits, all_equivalent_bits, key_schedule_components, self, oc, aoc):
     links_out, positions_out = _links_from_outputs(component, oc, all_equivalent_bits, self)
-    links_in, positions_in = links_from_known_inputs(
+    links_in, positions_in = _links_from_known_inputs(
         component, available_bits, all_equivalent_bits, key_schedule_components, self
     )
     inverse_component = Component(
@@ -587,7 +960,7 @@ def _invert_not(component, available_bits, all_equivalent_bits, key_schedule_com
 
 def _invert_modadd(component, available_bits, all_equivalent_bits, key_schedule_components, self, oc, aoc):
     links_out, positions_out = _links_from_outputs(component, aoc, all_equivalent_bits, self)
-    links_in, positions_in = links_from_known_inputs(
+    links_in, positions_in = _links_from_known_inputs(
         component, available_bits, all_equivalent_bits, key_schedule_components, self
     )
     # MODSUB is non-commutative: minuend - subtrahend. The minuend is the recovered output of the
@@ -620,7 +993,7 @@ def _invert_cipher_output(component, available_bits, all_equivalent_bits, key_sc
     inverse_component = Component(
         component.id, CIPHER_INPUT, Input(0, [[]], [[]]), component.output_bit_size, [CIPHER_INPUT]
     )
-    update_output_bits(inverse_component, self, all_equivalent_bits, available_bits)
+    _update_output_bits(inverse_component, self, all_equivalent_bits, available_bits)
     return inverse_component
 
 
@@ -693,13 +1066,13 @@ _INVERSION_RULES = {
 }
 
 
-def component_inverse(component, available_bits, all_equivalent_bits, key_schedule_components, self):
+def _component_inverse(component, available_bits, all_equivalent_bits, key_schedule_components, self):
     """Return the reversed form of an invertible component (assumes it is actually invertible)."""
     handler = _INVERSION_RULES.get(_inversion_rule_key(component))
     if handler is None:
         return Component("NA", "NA", Input(0, [[]], [[]]), component.output_bit_size, ["NA"])
     output_components = self.get_successor_components(component)
-    available_output_components = get_available_output_components(component, available_bits, self)
+    available_output_components = _get_available_output_components(component, available_bits, self)
     return handler(
         component,
         available_bits,
@@ -711,7 +1084,7 @@ def component_inverse(component, available_bits, all_equivalent_bits, key_schedu
     )
 
 
-def try_evaluate(component, available_bits, all_equivalent_bits, key_schedule_component_ids, self):
+def _try_evaluate(component, available_bits, all_equivalent_bits, self):
     """Attempt to forward-evaluate the component by sourcing every input bit from an
     already-recovered value. Returns the rebuilt component (committing its recovered outputs), or
     ``None`` if not all input bits can be sourced yet.
@@ -728,52 +1101,50 @@ def try_evaluate(component, available_bits, all_equivalent_bits, key_schedule_co
     inverted_component = _build_evaluated_component(
         component, input_id_links, input_bit_positions, available_bits, all_equivalent_bits
     )
-    update_available_bits_with_component_output_bits(component, available_bits, self)
+    _update_available_bits_with_component_output_bits(component, available_bits, self)
     return inverted_component
 
 
-def try_invert(component, available_bits, all_equivalent_bits, key_schedule_component_ids, self):
+def _try_invert(component, available_bits, all_equivalent_bits, key_schedule_component_ids, self):
     """Invert the component when its output plus enough inputs are known (or it is a key/tweak
     input), then commit both its recovered input and output bits. Returns the reversed
     component, or ``None`` if it cannot be inverted yet. Readiness check, build and commit are
     deliberately co-located here.
     """
-    is_invertible = is_possibly_invertible_component(component) and are_there_enough_available_inputs_to_perform_inversion(
+    is_invertible = _is_possibly_invertible_component(component) and _are_there_enough_available_inputs_to_perform_inversion(
         component, available_bits, all_equivalent_bits, self
     )
     is_key_or_tweak_input = component.type == CIPHER_INPUT and component.description[0] in (INPUT_KEY, INPUT_TWEAK)
     if not (is_invertible or is_key_or_tweak_input):
         return None
-    inverted_component = component_inverse(
+    inverted_component = _component_inverse(
         component, available_bits, all_equivalent_bits, key_schedule_component_ids, self
     )
-    update_available_bits_with_component_input_bits(component, available_bits)
-    update_available_bits_with_component_output_bits(component, available_bits, self)
+    _update_available_bits_with_component_input_bits(component, available_bits)
+    _update_available_bits_with_component_output_bits(component, available_bits, self)
     return inverted_component
 
 
-def apply_inversion_step(component, available_bits, all_equivalent_bits, key_schedule_component_ids, self):
+def _apply_inversion_step(component, available_bits, all_equivalent_bits, key_schedule_component_ids, self):
     """Process one component during inversion.
 
     Tries first to **evaluate it forward** (when all its inputs are known), otherwise to
     **invert it** (when its output plus enough inputs are known, or it is a key/tweak input).
     Each branch co-locates its readiness check with the build and the bit-availability commit
-    (see ``try_evaluate`` / ``try_invert``). Returns the rebuilt/reversed component, or ``None``
+    (see ``_try_evaluate`` / ``_try_invert``). Returns the rebuilt/reversed component, or ``None``
     if the component cannot be processed yet.
     """
-    inverted_component = try_evaluate(
-        component, available_bits, all_equivalent_bits, key_schedule_component_ids, self
-    )
+    inverted_component = _try_evaluate(component, available_bits, all_equivalent_bits, self)
     if inverted_component is not None:
         return inverted_component
-    return try_invert(component, available_bits, all_equivalent_bits, key_schedule_component_ids, self)
+    return _try_invert(component, available_bits, all_equivalent_bits, key_schedule_component_ids, self)
 
 
-def component_from_id(component_id, self):
+def _component_from_id(component_id, self):
     return _cipher_view(self).by_id.get(component_id)
 
 
-def resolve_evaluated_input_via_equivalence(component, available_bits, all_equivalent_bits):
+def _resolve_evaluated_input_via_equivalence(component, available_bits, all_equivalent_bits):
     """
     Wire a forward-evaluated component by resolving each of its input bits, through the bit
     equivalence map, to an already-recovered value (an available ``output_updated`` bit).
@@ -795,7 +1166,7 @@ def resolve_evaluated_input_via_equivalence(component, available_bits, all_equiv
         for position in component.input_bit_positions[index]:
             bit_name = f"{link}_{position}_output"
             resolved = None
-            for equivalent_bit in equivalent_bit_names(bit_name, all_equivalent_bits):
+            for equivalent_bit in _equivalent_bit_names(bit_name, all_equivalent_bits):
                 if equivalent_bit.endswith("_output_updated"):
                     source_id, source_position = equivalent_bit[: -len("_output_updated")].rsplit("_", 1)
                     if (source_id, int(source_position)) in available_output_updated:
@@ -816,19 +1187,19 @@ def resolve_evaluated_input_via_equivalence(component, available_bits, all_equiv
     return input_id_links, input_bit_positions
 
 
-def find_correct_order(id1, list1, id2, list2, all_equivalent_bits):
+def _find_correct_order(id1, list1, id2, list2, all_equivalent_bits):
     list2_ordered = []
     for i in list1:
         bit = f"{id1}_{i}_output"
         for j in list2:
             bit_potentially_equivalent = f"{id2}_{j}_input"
-            if bits_equivalent(bit, bit_potentially_equivalent, all_equivalent_bits):
+            if _bits_equivalent(bit, bit_potentially_equivalent, all_equivalent_bits):
                 list2_ordered.append(j)
                 break
     return list2_ordered
 
 
-def find_equivalent_output_updated_positions(link, link_positions, producer, all_equivalent_bits):
+def _find_equivalent_output_updated_positions(link, link_positions, producer, all_equivalent_bits):
     """
     Map each requested bit ``{link}_{p}_output`` to the position ``q`` of ``producer`` such that
     ``{producer.id}_{q}_output_updated`` carries that value.
@@ -841,7 +1212,7 @@ def find_equivalent_output_updated_positions(link, link_positions, producer, all
     positions = []
     for p in link_positions:
         link_bit_name = f"{link}_{p}_output"
-        equivalents = equivalent_bit_names(link_bit_name, all_equivalent_bits)
+        equivalents = _equivalent_bit_names(link_bit_name, all_equivalent_bits)
         found = None
         for q in range(producer.output_bit_size):
             if f"{producer.id}_{q}_output_updated" in equivalents:
@@ -867,7 +1238,7 @@ def _wire_input_link_for_evaluation(
        recovered ``output_updated`` bits are equivalent to the needed link bits, wiring through
        either the input-space ``starting_bit`` heuristic or, when that fails (the recovered link is
        not the producer's first input, e.g. a size-reducing inverted multi-input XOR), the
-       producer's output space via ``find_equivalent_output_updated_positions``.
+       producer's output space via ``_find_equivalent_output_updated_positions``.
 
     May return zero, one, or several contributions (the alternative-source scan does not stop after
     the first adjacent match unless it resolves through output space); an empty result means the
@@ -875,7 +1246,7 @@ def _wire_input_link_for_evaluation(
     """
     ids = []
     positions = []
-    original_input_component = component_from_id(component.input_id_links[input_index], self)
+    original_input_component = _component_from_id(component.input_id_links[input_index], self)
 
     output_bits_updated_list = [
         f"{original_input_component.id}_{j}_output_updated" for j in component.input_bit_positions[input_index]
@@ -884,8 +1255,8 @@ def _wire_input_link_for_evaluation(
         f"{component.id}_{k}_input"
         for k in range(starting_bit_position, starting_bit_position + len(component.input_bit_positions[input_index]))
     ]
-    flag = is_output_bits_updated_equivalent_to_input_bits(output_bits_updated_list, input_bits_list, all_equivalent_bits)
-    if all_output_bits_available(original_input_component, available_bits) and flag:
+    flag = _is_output_bits_updated_equivalent_to_input_bits(output_bits_updated_list, input_bits_list, all_equivalent_bits)
+    if _all_output_bits_available(original_input_component, available_bits) and flag:
         ids.append(component.input_id_links[input_index])
         positions.append(component.input_bit_positions[input_index])
         return ids, positions
@@ -893,7 +1264,7 @@ def _wire_input_link_for_evaluation(
     # select component for which the connected components have all their inputs available
     link = component.input_id_links[input_index]
     original_input_bit_positions_of_link = component.input_bit_positions[input_index]
-    available_output_components = get_available_output_components(original_input_component, available_bits, self)
+    available_output_components = _get_available_output_components(original_input_component, available_bits, self)
     link_bit_names = [f"{link}_{l}_output" for l in range(original_input_component.output_bit_size)]
     for available_output_component in available_output_components:
         if (available_output_component.id not in component.input_id_links) and (
@@ -912,7 +1283,7 @@ def _wire_input_link_for_evaluation(
                     break
                 starting_bit += len(list_bit_positions)
             available_output_component_bit_name = f"{available_output_component.id}_{starting_bit}_output_updated"
-            if is_bit_adjacent_to_list_of_bits(
+            if _is_bit_adjacent_to_list_of_bits(
                 available_output_component_bit_name, link_bit_names, all_equivalent_bits
             ):
                 ids.append(available_output_component.id)
@@ -928,7 +1299,7 @@ def _wire_input_link_for_evaluation(
                                 - available_output_component.input_bit_positions[j][0]
                             )
                         l = list(range(accumulator, accumulator + len(component.input_bit_positions[input_index])))
-                        l_ordered = find_correct_order(
+                        l_ordered = _find_correct_order(
                             link,
                             original_input_bit_positions_of_link,
                             available_output_component.id,
@@ -943,7 +1314,7 @@ def _wire_input_link_for_evaluation(
                 # The input-space ``starting_bit`` heuristic above fails when the recovered link is
                 # not the producer's first input (e.g. a size-reducing inverted multi-input XOR).
                 # Resolve the bits through the producer's output space instead.
-                output_updated_positions = find_equivalent_output_updated_positions(
+                output_updated_positions = _find_equivalent_output_updated_positions(
                     link, original_input_bit_positions_of_link, available_output_component, all_equivalent_bits
                 )
                 if len(output_updated_positions) == len(original_input_bit_positions_of_link):
@@ -989,7 +1360,7 @@ def _evaluate_wiring(component, available_bits, all_equivalent_bits, self):
     # output but lives on other recovered components - as in Threefish), resolve the input bits
     # through the equivalence map to the components that actually carry that value.
     if component.type != "cipher_input" and sum(len(p) for p in input_bit_positions) != component.input_bit_size:
-        resolved = resolve_evaluated_input_via_equivalence(component, available_bits, all_equivalent_bits)
+        resolved = _resolve_evaluated_input_via_equivalence(component, available_bits, all_equivalent_bits)
         if resolved is not None:
             input_id_links, input_bit_positions = resolved
 
@@ -1014,7 +1385,7 @@ def _build_evaluated_component(component, input_id_links, input_bit_positions, a
         output_bit_name_updated = f"{id}_{i}_output_updated"
         available_bits.append({"component_id": id, "position": i, "type": "output_updated"})
         output_bit_name = f"{id}_{i}_output"
-        add_equivalence(
+        _add_equivalence(
             all_equivalent_bits, output_bit_name, output_bit_name_updated, ensure_a=True, symmetric=False
         )
 
