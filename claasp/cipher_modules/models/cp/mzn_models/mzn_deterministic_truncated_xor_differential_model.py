@@ -402,7 +402,6 @@ class MznDeterministicTruncatedXorDifferentialModel(MznModel):
                ...
               'constraint count(plaintext,1) > 0;'])
         """
-        number_of_rounds = self._cipher.number_of_rounds
 
         cp_constraints = []
         cp_declarations = [
@@ -410,7 +409,6 @@ class MznDeterministicTruncatedXorDifferentialModel(MznModel):
             for input_, bit_size in zip(self._cipher.inputs, self._cipher.inputs_bit_size)
         ]
         cipher = self._cipher
-        rounds = number_of_rounds
         for component in cipher.get_all_components():
             output_id_link = component.id
             output_size = int(component.output_bit_size)

@@ -336,7 +336,7 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
                     value = value.replace(" = ", "")
                     table_of_solutions = table_of_solutions + value.replace("\n", "") + ","
         table_of_solutions = table_of_solutions[:-1] + "]);"
-        
+
         return table_of_solutions
 
     def get_solutions_dictionaries_with_build_time(

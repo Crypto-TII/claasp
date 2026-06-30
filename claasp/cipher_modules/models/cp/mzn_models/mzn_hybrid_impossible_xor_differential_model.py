@@ -165,9 +165,7 @@ class MznHybridImpossibleXorDifferentialModel(MznImpossibleXorDifferentialModel)
         )
         set_of_constraints = deterministic_truncated_xor_differential
 
-        self._model_constraints = self.clean_constraints(
-            set_of_constraints, initial_round, middle_round, final_round
-        )
+        self._model_constraints = self.clean_constraints(set_of_constraints, initial_round, middle_round, final_round)
 
     def build_improbable_forward_model(self, forward_components, clean=False):
         direct_variables = []

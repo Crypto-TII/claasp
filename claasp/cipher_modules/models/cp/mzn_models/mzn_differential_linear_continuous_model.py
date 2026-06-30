@@ -22,15 +22,12 @@ class MznDifferentialLinearContinuousModel(MznModel):
             values = entry.get("bit_values") if "bit_values" in entry else entry.get("value")
 
             array_name = component_id if component_id in self._cipher.inputs else f"x1_{component_id}"
-            constraints.extend([
-                f"constraint {array_name}[{pos}] = {val};" 
-                for pos, val in zip(positions, values)
-            ])
+            constraints.extend([f"constraint {array_name}[{pos}] = {val};" for pos, val in zip(positions, values)])
         return constraints
 
     def build_differential_linear_continuous_trail_model(self, fixed_values=[]):
         component_and_model_types = []
-        self.added_component_ids = set() 
+        self.added_component_ids = set()
         operation_types = ["MODADD", "ROTATE", "XOR"]
         component_types = [CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, PERMUTATION_COMPONENT, WORD_OPERATION]
 
@@ -45,7 +42,7 @@ class MznDifferentialLinearContinuousModel(MznModel):
                 fixed_constraints = self.fix_variables_value_constraints_for_ARX(fixed_values)
             else:
                 fixed_constraints = self.fix_variables_value_constraints(fixed_values)
-        
+
         for component in self._cipher.get_all_components():
             operation = component.description[0]
             if component.type not in component_types or (
@@ -53,16 +50,12 @@ class MznDifferentialLinearContinuousModel(MznModel):
             ):
                 print(f"{component.id} not yet implemented")
             else:
-                component_and_model_types.append({
-                    "component_object": component,
-                    "model_type": "cp_continuous_differential_propagation_constraints"
-                })
+                component_and_model_types.append(
+                    {"component_object": component, "model_type": "cp_continuous_differential_propagation_constraints"}
+                )
                 self.added_component_ids.add(component.id)
 
-        self.build_generic_cp_model_from_dictionary(
-            component_and_model_types, 
-            fixed_variables=fixed_values
-        )
+        self.build_generic_cp_model_from_dictionary(component_and_model_types, fixed_variables=fixed_values)
 
         # Ensure fixed-value constraints are explicitly included even when
         # generic model builder does not prepend them.
@@ -73,12 +66,10 @@ class MznDifferentialLinearContinuousModel(MznModel):
         self._model_constraints.extend(self.connect_components())
         self._variables_declarations.insert(0, get_continuous_operations())
         self.add_linear_mask_variables()
-        
+
     def add_linear_mask_variables(self):
         block_size = self._cipher.output_bit_size
-        output_mask = (
-            f"array[0..{block_size - 1}] of var 0..1: output_mask;"
-        )
+        output_mask = f"array[0..{block_size - 1}] of var 0..1: output_mask;"
         self._variables_declarations.append(output_mask)
 
     def init_input_declarations(self):
@@ -92,14 +83,12 @@ class MznDifferentialLinearContinuousModel(MznModel):
         constraints = []
         for component in self._cipher.get_all_components():
             for idx, link_id in enumerate(component.input_id_links):
-                input_array = f"x{idx+1}_{component.id}"
-                
+                input_array = f"x{idx + 1}_{component.id}"
+
                 if link_id in self._cipher.inputs:
                     source_positions = component.input_bit_positions[idx]
                     for bit_idx, source_bit_pos in enumerate(source_positions):
-                        constraints.append(
-                            f"constraint {input_array}[{bit_idx}] = {link_id}[{source_bit_pos}];"
-                        )
+                        constraints.append(f"constraint {input_array}[{bit_idx}] = {link_id}[{source_bit_pos}];")
                 elif link_id in self.added_component_ids:
                     constraints.append(f"constraint {input_array} = {link_id};")
         return constraints
@@ -114,36 +103,31 @@ class MznDifferentialLinearContinuousModel(MznModel):
             if component.type == CIPHER_OUTPUT:
                 return component.id
         raise ValueError("cipher_output component not found")
-    
+
     def _build_linear_mask_correlation_constraints(self):
         block_size = self._cipher.output_bit_size
         cipher_output_id = self._get_cipher_output_id()
 
-        active_bit_correlations_entries = ", ".join([
-            f"if output_mask[{i}] = 0 then 1.0 "
-            f"else output_mask[{i}] * abs({cipher_output_id}[{i}]) endif"
-            for i in range(block_size)
-        ])
+        active_bit_correlations_entries = ", ".join(
+            [
+                f"if output_mask[{i}] = 0 then 1.0 else output_mask[{i}] * abs({cipher_output_id}[{i}]) endif"
+                for i in range(block_size)
+            ]
+        )
 
         active_bit_correlations_decl = (
             f"array[0..{block_size - 1}] of var lower..upper: active_bit_correlations = "
             f"array1d(0..{block_size - 1}, [{active_bit_correlations_entries}]);"
         )
         self._variables_declarations.append(active_bit_correlations_decl)
-    
+
     def _build_difflin_corr_constraints(self):
         self._variables_declarations.append("var lower..upper: differential_linear_correlation;")
         self._variables_declarations.append("var float: correlation_log2_approximation;")
 
-        self._model_constraints.append(
-            "constraint differential_linear_correlation = product(active_bit_correlations);"
-        )
-        self._model_constraints.append(
-            "constraint differential_linear_correlation != 0.0;"
-        )
-        self._model_constraints.append(
-            "constraint sum(array1d(output_mask)) >= 1;"
-        )
+        self._model_constraints.append("constraint differential_linear_correlation = product(active_bit_correlations);")
+        self._model_constraints.append("constraint differential_linear_correlation != 0.0;")
+        self._model_constraints.append("constraint sum(array1d(output_mask)) >= 1;")
         self._model_constraints.append("""
         constraint correlation_log2_approximation =
         if differential_linear_correlation <= 0.001021453702391378 then
@@ -180,17 +164,60 @@ class MznDifferentialLinearContinuousModel(MznModel):
         result = self.solve_for_ARX(solver_name=solver_name)
         return self._parse_result(result, solver_name)
 
+    def _handle_input(self, component_id, result, parsed):
+        val = result[component_id]
+        if val is not None:
+            parsed["components_values"][component_id] = {
+                "value": self._format_continuous_value(val),
+                "weight": 0,
+            }
+
+    def _handle_output(self, component_id, result, parsed):
+        output_val = result[component_id]
+        if output_val is not None:
+            if component_id.startswith("cipher_output_"):
+                parsed["components_values"][component_id] = {
+                    "value": self._format_continuous_value(output_val),
+                    "weight": 0,
+                }
+            elif component_id.startswith("intermediate_output_") and self._cipher.number_of_rounds > 1:
+                formatted = self._format_continuous_value(output_val)
+                if len(formatted) == self._cipher.output_bit_size:
+                    parsed["components_values"][component_id] = {"value": formatted, "weight": 0}
+
+    def _handle_operation(self, component_id, result, parsed):
+        input_vars = []
+        for prefix in ["x1_", "x2_"]:
+            try:
+                input_vars.extend(result[f"{prefix}{component_id}"])
+            except (KeyError, AttributeError):
+                pass
+
+        if input_vars:
+            parsed["components_values"][f"{component_id}_i"] = {
+                "value": self._format_continuous_value(input_vars),
+                "weight": 0,
+            }
+
+        output_val = result[component_id]
+        if output_val is not None:
+            parsed["components_values"][f"{component_id}_o"] = {
+                "value": self._format_continuous_value(output_val),
+                "weight": 0,
+            }
+
     def _parse_result(self, result, solver_name):
 
         parsed = {
             "cipher": self.cipher_id,
             "model_type": "continuous_differential",
             "solver_name": solver_name,
-            "solving_time_seconds": getattr(self, '_last_solve_time', -1),
-            "memory_megabytes": str(self._last_result_stats.get('trailMem', '-1'))
-                if hasattr(self, '_last_result_stats') else '-1',
+            "solving_time_seconds": getattr(self, "_last_solve_time", -1),
+            "memory_megabytes": str(self._last_result_stats.get("trailMem", "-1"))
+            if hasattr(self, "_last_result_stats")
+            else "-1",
             "components_values": {},
-            "status": str(result.status)
+            "status": str(result.status),
         }
 
         if result.status not in [Status.SATISFIED, Status.OPTIMAL_SOLUTION]:
@@ -199,49 +226,13 @@ class MznDifferentialLinearContinuousModel(MznModel):
         for component_id in sorted(self.added_component_ids):
             try:
                 if component_id in self._cipher.inputs:
-                    val = result[component_id]
-                    if val is not None:
-                        parsed["components_values"][component_id] = {
-                            "value": self._format_continuous_value(val),
-                            "weight": 0
-                        }
+                    self._handle_input(component_id, result, parsed)
 
                 elif component_id.startswith(("intermediate_output_", "cipher_output_")):
-                    output_val = result[component_id]
-                    if output_val is not None:
-                        if component_id.startswith("cipher_output_"):
-                            parsed["components_values"][component_id] = {
-                                "value": self._format_continuous_value(output_val),
-                                "weight": 0
-                            }
-                        elif component_id.startswith("intermediate_output_") and self._cipher.number_of_rounds > 1:
-                            formatted = self._format_continuous_value(output_val)
-                            if len(formatted) == self._cipher.output_bit_size:
-                                parsed["components_values"][component_id] = {
-                                    "value": formatted,
-                                    "weight": 0
-                                }
+                    self._handle_output(component_id, result, parsed)
 
                 elif component_id.startswith(("rot_", "modadd_", "xor_")):
-                    input_vars = []
-                    for prefix in ["x1_", "x2_"]:
-                        try:
-                            input_vars.extend(result[f"{prefix}{component_id}"])
-                        except (KeyError, AttributeError):
-                            pass
-
-                    if input_vars:
-                        parsed["components_values"][f"{component_id}_i"] = {
-                            "value": self._format_continuous_value(input_vars),
-                            "weight": 0
-                        }
-
-                    output_val = result[component_id]
-                    if output_val is not None:
-                        parsed["components_values"][f"{component_id}_o"] = {
-                            "value": self._format_continuous_value(output_val),
-                            "weight": 0
-                        }
+                    self._handle_operation(component_id, result, parsed)
 
             except (KeyError, AttributeError):
                 continue
@@ -269,7 +260,7 @@ class MznDifferentialLinearContinuousModel(MznModel):
             parsed["output_mask"] = list(result["output_mask"])
         except (KeyError, AttributeError, TypeError):
             pass
-        
+
     def _format_continuous_value(self, val):
         if isinstance(val, list):
             return [round(v, 6) for v in val]
@@ -281,15 +272,12 @@ class MznDifferentialLinearContinuousModel(MznModel):
         bit_mzn_model = Model()
         bit_mzn_model.add_string(mzn_model_string)
         instance = Instance(solver_name_mzn, bit_mzn_model)
-        
+
         start = time.time()
-        result = instance.solve(
-            processes=processes_,
-            timeout=timedelta(seconds=int(timeout_in_seconds_))
-        )
+        result = instance.solve(processes=processes_, timeout=timedelta(seconds=int(timeout_in_seconds_)))
         end = time.time()
-        
+
         self._last_solve_time = end - start
-        self._last_result_stats = result.statistics if hasattr(result, 'statistics') else {}
-        
+        self._last_result_stats = result.statistics if hasattr(result, "statistics") else {}
+
         return result

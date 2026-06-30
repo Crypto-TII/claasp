@@ -84,9 +84,7 @@ class MznDifferentialLinearModel(MznModel):
 
         self.middle_part_model = middle_part_model
         if self.middle_part_model not in self._ALLOWED_MIDDLE_MODELS:
-            raise ValueError(
-                f"middle_part_model should be one of {sorted(self._ALLOWED_MIDDLE_MODELS)}"
-            )
+            raise ValueError(f"middle_part_model should be one of {sorted(self._ALLOWED_MIDDLE_MODELS)}")
 
         self._validate_component_partitioning()
         self._validate_arx_only_cipher()
@@ -158,9 +156,7 @@ class MznDifferentialLinearModel(MznModel):
                 domain = "0..2"
             else:
                 domain = "0..1"
-            declarations.append(
-                f"array[0..{component.output_bit_size - 1}] of var {domain}: {component.id};"
-            )
+            declarations.append(f"array[0..{component.output_bit_size - 1}] of var {domain}: {component.id};")
 
         return declarations
 
@@ -218,16 +214,11 @@ class MznDifferentialLinearModel(MznModel):
             source_bit_expr = f"{source_component_id}[{int(source_bit_index)}]"
             for successor_bit in successor_bits:
                 successor_component_id, successor_bit_index, successor_side = successor_bit
-                if (
-                    successor_side != "i"
-                    or successor_component_id not in self.middle_part_component_ids
-                ):
+                if successor_side != "i" or successor_component_id not in self.middle_part_component_ids:
                     continue
 
                 successor_bit_expr = f"{successor_component_id}[{int(successor_bit_index)}]"
-                constraints.append(
-                    f"constraint {successor_bit_expr} = if {source_bit_expr} = 1 then 1 else 0 endif;"
-                )
+                constraints.append(f"constraint {successor_bit_expr} = if {source_bit_expr} = 1 then 1 else 0 endif;")
 
         return constraints
 
@@ -329,7 +320,7 @@ class MznDifferentialLinearModel(MznModel):
     @staticmethod
     def _append_probability_output(output, probability_output):
         if probability_output:
-            return output + f"show({probability_output}) ++ \"\\n\" ++"
+            return output + f'show({probability_output}) ++ "\\n" ++'
         return output + '"0" ++ "\\n" ++'
 
     def _component_output_header(self, component):
@@ -496,12 +487,10 @@ class MznDifferentialLinearModel(MznModel):
             return 0.0
         if middle_sum == 1:
             raise ValueError("Unexpected probability weight 1 in middle part")
-        return abs(math.log(abs(2 * (2**(-1*middle_sum)) - 1), 2))
+        return abs(math.log(abs(2 * (2 ** (-1 * middle_sum)) - 1), 2))
 
     def _differential_linear_total_weight_from_components(self, components_values):
-        p_weight, middle_sum, q_weight, _ = (
-            self._collect_differential_linear_component_weights(components_values)
-        )
+        p_weight, middle_sum, q_weight, _ = self._collect_differential_linear_component_weights(components_values)
         return round(p_weight + middle_sum + (2 * q_weight), 10)
 
     def _set_differential_linear_total_weight(self, solution):
@@ -549,7 +538,9 @@ class MznDifferentialLinearModel(MznModel):
             )
             for solution_key in solution_keys:
                 solution_components_values = components_values.get(solution_key, {})
-                total_weight.append(str(self._differential_linear_total_weight_from_components(solution_components_values)))
+                total_weight.append(
+                    str(self._differential_linear_total_weight_from_components(solution_components_values))
+                )
             return solver_time, memory, components_values, total_weight
 
         return parsed
@@ -560,7 +551,6 @@ class MznDifferentialLinearModel(MznModel):
         if solution.get("status") != "SATISFIABLE":
             return
         self._normalize_middle_part_components_values(solution)
-
 
     def build_xor_differential_linear_model(self, weight=-1, fixed_variables=None):
         if fixed_variables is None:
@@ -657,7 +647,6 @@ class MznDifferentialLinearModel(MznModel):
             processes_=num_of_processors,
             solve_external=solve_external,
             intermediate_solutions_=include_non_optimal_solutions,
-
         )
         if isinstance(solution, list):
             for partial_solution in solution:
