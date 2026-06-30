@@ -815,10 +815,15 @@ class MixColumn(LinearLayer):
             constraints.extend(minimized_constraints)
         else:
             M = self.description[0]
-            bin_matrix = binary_matrix_of_linear_component(self)
+            if self.description[2] != model.word_size:
+                bin_matrix = binary_matrix_of_linear_component(self)
+            else:
+                bin_matrix = Matrix([[1 if M[i][j] else 0 for i in range(len(M))] for j in range(len(M[0]))])
             bin_matrix_transposed = [list(_) for _ in list(zip(*bin_matrix))]
+            original_description = deepcopy(self.description)
             self.description = bin_matrix_transposed
             variables, constraints = super().milp_wordwise_deterministic_truncated_xor_differential_constraints(model)
+            self.description = original_description
         return variables, constraints
 
     def sat_constraints(self):

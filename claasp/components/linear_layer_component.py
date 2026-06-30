@@ -760,7 +760,6 @@ class LinearLayer(Component):
         if M.ncols() > model.word_size and [len(input) for input in self.input_bit_positions] != [
             model.word_size
         ] * len(self.input_bit_positions):
-            # self.print()
             # truncated matrix
             matrix = [
                 [
