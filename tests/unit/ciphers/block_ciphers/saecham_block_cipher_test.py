@@ -28,7 +28,7 @@ def test_saecham_block_cipher_structure():
     reduced = SaechamBlockCipher(number_of_rounds=4)
     assert reduced.number_of_rounds == 4
     assert reduced.id == 'saecham_block_cipher_k128_p64_o64_r4'
-    assert reduced.component_from(3, 0).id == 'constant_3_0'
+    assert reduced.component_from(3, 0).id == 'rot_3_0'
 
 
 def test_saecham_paper_vector():
