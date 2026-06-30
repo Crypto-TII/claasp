@@ -45,10 +45,13 @@ from claasp.components.variable_rotate_component import VariableRotate
 from claasp.components.variable_shift_component import VariableShift
 from claasp.components.word_permutation_component import WordPermutation
 from claasp.components.xor_component import Xor
+from claasp.component import Component
+from claasp.input import Input
 from claasp.name_mappings import (
     CIPHER_OUTPUT,
     CONSTANT,
     INPUT_KEY,
+    INPUT_TWEAK,
     INTERMEDIATE_OUTPUT,
     LINEAR_LAYER,
     PERMUTATION_COMPONENT,
@@ -1817,6 +1820,40 @@ def remove_cipher_input_keys(cipher):
     return cipher_without_key_schedule
 
 
+def get_key_schedule_component_ids(cipher):
+    """
+    Return the ids of the cipher's key-schedule components.
+
+    A component belongs to the key schedule if it is a key/tweak input, a constant, or fed only by
+    other key-schedule components. Used to keep the key schedule intact when slicing or inverting.
+
+    INPUT:
+
+    - ``cipher`` -- **Cipher object**; an instance of a cipher.
+
+    EXAMPLES::
+
+        sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+        sage: from claasp.editor import get_key_schedule_component_ids
+        sage: speck = SpeckBlockCipher(number_of_rounds=2)
+        sage: get_key_schedule_component_ids(speck)
+        ['key',
+         'intermediate_output_0_5',
+         'constant_1_0',
+         'rot_1_1',
+         'modadd_1_2',
+         'xor_1_3',
+         'rot_1_4',
+         'xor_1_5',
+         'intermediate_output_1_11']
+    """
+    key_schedule_ids = [cid for cid in cipher.inputs if INPUT_KEY in cid or INPUT_TWEAK in cid]
+    for c in cipher.get_all_components():
+        if c.type == CONSTANT or all(link in key_schedule_ids for link in c.input_id_links):
+            key_schedule_ids.append(c.id)
+    return key_schedule_ids
+
+
 def remove_forbidden_parents(rounds, cipher_without_key_schedule):
     forbidden_parents = {INPUT_KEY, CONSTANT}
     for cipher_round in rounds:
@@ -1994,6 +2031,31 @@ def remove_round_component_from_id(cipher, round_id, component_id):
     cipher.rounds.remove_round_component_from_id(round_id, component_id)
 
 
+def remove_components(cipher, components):
+    """
+    Remove the given components from the cipher, wherever they sit across the rounds.
+
+    INPUT:
+
+    - ``cipher`` -- **Cipher object**; an instance of a cipher.
+    - ``components`` -- **list**; a list of ``Component`` objects to removed.
+
+    EXAMPLES::
+
+        sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+        sage: from claasp.editor import remove_components
+        sage: speck = SpeckBlockCipher(number_of_rounds=2)
+        sage: target = speck.get_all_components()[0]
+        sage: remove_components(speck, [target])
+        sage: target.id in speck.get_all_components_ids()
+        False
+    """
+    component_set = set(components)
+    for current_round in cipher.rounds_as_list:
+        for component in component_set.intersection(current_round.components):
+            cipher.rounds.remove_round_component(current_round.id, component)
+
+
 def sort_cipher(cipher):
     """
     Sort the cipher in a way that each component input is defined before the current component.
@@ -2137,3 +2199,174 @@ def get_output_bit_size_from_id(cipher_list, component_id):
         raise ValueError(f"{component_id} not found.")
     except ValueError as e:
         sys.exit(str(e))
+
+
+# ---------------------------------------------------------------------------
+# Partial-cipher extraction
+# ---------------------------------------------------------------------------
+
+
+def _extract_partial_cipher(cipher, partial_cipher, start_round, end_round, keep_key_schedule):
+    """Turn ``partial_cipher`` (a copy of ``cipher``) into the slice of rounds ``[start_round,
+    end_round]``: prune out-of-range components, rewire the dangling links onto the slice boundary,
+    and re-terminate the front/back inputs and outputs.
+    """
+    removed_components_ids, intermediate_outputs = _prune_components_outside_round_range(
+        partial_cipher, start_round, end_round, keep_key_schedule
+    )
+    if not keep_key_schedule:
+        _add_missing_key_schedule_inputs(cipher, partial_cipher)
+    if start_round > 0:
+        _rewire_partial_cipher_inputs_from_start_round(
+            cipher, partial_cipher, start_round, end_round, removed_components_ids, intermediate_outputs
+        )
+    if end_round < cipher.number_of_rounds - 1:
+        _replace_partial_cipher_last_round_output(cipher, partial_cipher, end_round, removed_components_ids)
+
+
+def _remap_positions_into_output(target_link, target_bit_positions, intermediate_output):
+    if target_link == intermediate_output.id:
+        return target_bit_positions
+
+    intermediate_output_position_links = {}
+    current_bit_position = 0
+    for input_id_link, input_bit_positions in zip(
+        intermediate_output.input_id_links, intermediate_output.input_bit_positions
+    ):
+        for i in input_bit_positions:
+            intermediate_output_position_links[(input_id_link, i)] = current_bit_position
+            current_bit_position += 1
+
+    return [
+        intermediate_output_position_links[(target_link, bit)]
+        for bit in target_bit_positions
+        if (target_link, bit) in intermediate_output_position_links
+    ]
+
+
+def _get_most_recent_intermediate_output(target_link, intermediate_outputs):
+    for index in sorted(intermediate_outputs, reverse=True):
+        if target_link in intermediate_outputs[index].input_id_links or target_link == intermediate_outputs[index].id:
+            return intermediate_outputs[index]
+    raise ValueError(f"No intermediate output carries the removed link {target_link!r}.")
+
+
+def _rewire_removed_links(cipher_rounds, removed_components, intermediate_outputs):
+    removed_components = set(removed_components)
+    for cipher_round in cipher_rounds:
+        for component in cipher_round.components:
+            for i, link in enumerate(component.input_id_links):
+                if link in removed_components:
+                    intermediate_output = _get_most_recent_intermediate_output(link, intermediate_outputs)
+                    component.input_id_links[i] = intermediate_output.id
+                    component.input_bit_positions[i] = _remap_positions_into_output(
+                        link, component.input_bit_positions[i], intermediate_output
+                    )
+
+
+def _discard_rounds_collecting_intermediate_outputs(cipher, discarded_rounds, key_schedule_components):
+    key_set = set(key_schedule_components)
+    intermediate_outputs = {}
+    to_remove = []
+
+    for current_round in discarded_rounds:
+        round_removals = [c for c in current_round.components if c not in key_set]
+        # Record the round's intermediate output for rewiring: prefer the canonical "round_output",
+        # else fall back to the first intermediate output.
+        outputs = [c for c in round_removals if c.type == INTERMEDIATE_OUTPUT]
+        if outputs:
+            intermediate_outputs[current_round.id] = next(
+                (c for c in outputs if c.description == ["round_output"]), outputs[0]
+            )
+        to_remove.extend(round_removals)
+
+    remove_components(cipher, to_remove)
+    return [c.id for c in to_remove], intermediate_outputs
+
+
+def _prune_components_outside_round_range(cipher, start_round, end_round, keep_key_schedule):
+    """Remove the components outside the round range ``[start_round, end_round]``.
+
+    Returns the ids of the removed components and the per-round intermediate outputs needed to
+    rewire the surviving links onto the slice's boundary.
+    """
+    discarded_rounds = cipher.rounds_as_list[:start_round] + cipher.rounds_as_list[end_round + 1 :]
+    key_schedule_component_ids = get_key_schedule_component_ids(cipher)
+    key_schedule_components = [
+        cipher.component_from_id(id) for id in key_schedule_component_ids if INPUT_KEY not in id
+    ]
+
+    if not keep_key_schedule:
+        remove_components(cipher, key_schedule_components)
+
+    return _discard_rounds_collecting_intermediate_outputs(cipher, discarded_rounds, key_schedule_components)
+
+
+def _rewire_partial_cipher_inputs_from_start_round(
+    cipher, partial_cipher, start_round, end_round, removed_components_ids, intermediate_outputs
+):
+    """Replace the partial cipher's initial inputs with the previous round output and rewire links."""
+    for input_type in {cipher_input for cipher_input in cipher.inputs if INPUT_KEY not in cipher_input}:
+        removed_components_ids.append(input_type)
+        input_index = partial_cipher.inputs.index(input_type)
+        partial_cipher.inputs.pop(input_index)
+        partial_cipher.inputs_bit_size.pop(input_index)
+
+    previous_round_output = intermediate_outputs[start_round - 1]
+    partial_cipher.inputs.insert(0, previous_round_output.id)
+    partial_cipher.inputs_bit_size.insert(0, previous_round_output.output_bit_size)
+    _rewire_removed_links(
+        partial_cipher.rounds_as_list[start_round : end_round + 1],
+        removed_components_ids,
+        intermediate_outputs,
+    )
+
+
+def _add_missing_key_schedule_inputs(cipher, partial_cipher):
+    """Add the key-schedule inputs still referenced by the partial cipher's remaining components."""
+    key_schedule_component_ids = set(get_key_schedule_component_ids(cipher))
+    existing_inputs = set(partial_cipher.inputs)
+    all_input_links = (
+        input_id_link
+        for current_round in partial_cipher.rounds_as_list
+        for component in current_round.components
+        for input_id_link in component.input_id_links
+    )
+
+    for input_id_link in all_input_links:
+        if input_id_link in key_schedule_component_ids and input_id_link not in existing_inputs:
+            partial_cipher.inputs.append(input_id_link)
+            partial_cipher.inputs_bit_size.append(cipher.component_from_id(input_id_link).output_bit_size)
+            existing_inputs.add(input_id_link)
+
+
+def _replace_partial_cipher_last_round_output(cipher, partial_cipher, end_round, removed_components_ids):
+    removed_components_ids.append(CIPHER_OUTPUT)
+    last_round = partial_cipher.rounds_as_list[end_round]
+
+    def _promote_to_cipher_output(component):
+        last_round.remove_component(component)
+        new_cipher_output = Component(
+            component.id,
+            CIPHER_OUTPUT,
+            Input(
+                component.output_bit_size,
+                component.input_id_links,
+                component.input_bit_positions,
+            ),
+            component.output_bit_size,
+            [CIPHER_OUTPUT],
+        )
+        new_cipher_output.__class__ = CipherOutput
+        last_round.add_component(new_cipher_output)
+
+    components_to_promote = [c for c in last_round.components if c.description == ["round_output"]]
+    if not components_to_promote:
+        key_schedule_component_ids = set(get_key_schedule_component_ids(cipher))
+        components_to_promote = [
+            c
+            for c in last_round.components
+            if c.type == INTERMEDIATE_OUTPUT and c.id not in key_schedule_component_ids
+        ]
+    for component in components_to_promote:
+        _promote_to_cipher_output(component)
