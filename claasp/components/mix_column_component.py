@@ -146,6 +146,23 @@ class MixColumn(LinearLayer):
             cp_declarations.extend(variables)
             cp_constraints.extend(constraints)
 
+    def _is_permutation_matrix(self):
+        """Return True if description[0] is a square permutation matrix (exactly one non-zero per row and column)."""
+        matrix = self.description[0]
+        n = len(matrix)
+        if not matrix or not all(len(row) == n for row in matrix):
+            return False
+        col_seen = [False] * n
+        for row in matrix:
+            nonzero = [j for j, x in enumerate(row) if x != 0]
+            if len(nonzero) != 1:
+                return False
+            j = nonzero[0]
+            if col_seen[j]:
+                return False
+            col_seen[j] = True
+        return True
+
     def _cp_build_truncated_table(self, word_size):
         """
         Return a model that generates the list of possible input/output couples for the given MIX COLUMN for CP.
@@ -471,6 +488,24 @@ class MixColumn(LinearLayer):
         if is_mix:
             cp_declarations.append(f"array[0..{number_of_mix - 1}] of var 0..1: {output_id_link}_i;")
         cp_declarations.append(f"array[0..{(output_size - 1) // model.word_size}] of var 0..1: {output_id_link};")
+
+        matrix = description[0]
+        words_per_cell = description[2] // model.word_size if model.word_size else 1
+        if (
+            not is_mix
+            and description[2] % model.word_size == 0
+            and self._is_permutation_matrix()
+        ):
+            cp_constraints = []
+            for j, row in enumerate(matrix):
+                k = next(i for i, x in enumerate(row) if x != 0)
+                for off in range(words_per_cell):
+                    cp_constraints.append(
+                        f"constraint {output_id_link}[{j * words_per_cell + off}] = {all_inputs[k * words_per_cell + off]};"
+                    )
+            model.mix_column_mant.append(self)
+            return cp_declarations, cp_constraints
+
         already_in = False
         for mant in model.mix_column_mant:
             if description == mant.description:
