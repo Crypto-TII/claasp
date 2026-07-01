@@ -207,7 +207,7 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
         x_class = self._trunc_wordvar
         p = self._integer_variable
 
-        if component_id_list == None:
+        if component_id_list is None:
             return self.add_constraints_to_build_in_sage_milp_class(fixed_bits=fixed_bits, fixed_words=fixed_words)
 
         assert set(component_id_list) <= set(self._cipher.get_all_components_ids()) - set(

@@ -96,7 +96,9 @@ class MznXorDifferentialModelARXOptimized(MznModel):
         return parsed_solution
 
     @staticmethod
-    def _parse_result(result, solver_name, total_weight, model_type, _variables_declarations, cipher_id, probability_vars):
+    def _parse_result(
+        result, solver_name, total_weight, model_type, _variables_declarations, cipher_id, probability_vars
+    ):
         def _entry_matches(entry, prefix):
             valid_starts = [f"var bool: {prefix}", f"var 0..1: {prefix}"]
             return any(entry.startswith(vs) for vs in valid_starts)
