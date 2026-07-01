@@ -550,6 +550,59 @@ class Permutation(Component):
         # remove this unused parameter in a later cleanup PR after harmonizing call sites.
         return self.cp_constraints()
 
+    def cp_xor_differential_propagation_first_step_constraints(self, model):
+        """
+        Return word-level activity declarations and constraints for PERMUTATION in the first-step
+        active S-box count model.
+
+        Each output word is active iff at least one of the input words whose bits contribute to it
+        is active (logical OR / max over binary activity variables).
+
+        INPUT:
+
+        - ``model`` -- **model object**; a model instance with a ``word_size`` attribute
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
+            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_number_of_active_sboxes_model import MznXorDifferentialNumberOfActiveSboxesModel
+            sage: cipher = PresentBlockCipher(number_of_rounds=1)
+            sage: cp = MznXorDifferentialNumberOfActiveSboxesModel(cipher)
+            sage: cp.initialise_model()
+            sage: perm = cipher.component_from_id('permutation_0_1')
+            sage: declarations, constraints = perm.cp_xor_differential_propagation_first_step_constraints(cp)
+            sage: len(constraints) == cipher.block_bit_size // cp.word_size
+            True
+        """
+        output_id = self.id
+        model_word_size = model.word_size
+        output_num_words = self.output_bit_size // model_word_size
+
+        all_inputs = []
+        for id_link, bit_positions in zip(self.input_id_links, self.input_bit_positions):
+            all_inputs.extend([
+                f"{id_link}[{bit_positions[j * model_word_size] // model_word_size}]"
+                for j in range(len(bit_positions) // model_word_size)
+            ])
+
+        cp_declarations = [f"array[0..{output_num_words - 1}] of var 0..1: {output_id};"]
+
+        bit_perm = self._bit_perm()
+        cp_constraints = []
+        for j in range(output_num_words):
+            contributing = sorted({
+                bit_perm[j * model_word_size + off] // model_word_size
+                for off in range(model_word_size)
+            })
+            contributing_refs = [all_inputs[k] for k in contributing]
+            if len(contributing_refs) == 1:
+                cp_constraints.append(f"constraint {output_id}[{j}] = {contributing_refs[0]};")
+            else:
+                refs_str = ", ".join(contributing_refs)
+                cp_constraints.append(f"constraint {output_id}[{j}] = max([{refs_str}]);")
+
+        return cp_declarations, cp_constraints
+
     def cp_xor_linear_mask_propagation_constraints(self, model=None):
         """
         Return declarations and constraints for PERMUTATION in CP xor linear model.

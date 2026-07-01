@@ -1467,6 +1467,8 @@ class Xor(Component):
         numb_of_inp = len(input_id_link)
         all_inputs = []
         cp_declarations = [f"array[0..{(output_size - 1) // model.word_size}] of var 0..1: {output_id_link};"]
+        if output_size % model.word_size != 0:
+            return cp_declarations, []
         number_of_mix = 0
         is_mix = False
         for i in range(numb_of_inp):

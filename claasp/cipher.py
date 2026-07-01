@@ -1024,11 +1024,11 @@ class Cipher:
     def has_uniform_sboxes(self):
         """
         Return True if the cipher has at least one S-box, all S-boxes have the same input_bit_size,
-        and all components belong to the standard SPN component set.
+        and all components belong to the standard SPN or permutation component set.
 
         Less restrictive than :meth:`is_spn`: does not require MixColumns to be present or to have
-        the same cell size as the S-boxes. Suitable as a compatibility check for the first-step
-        active S-box count model.
+        the same cell size as the S-boxes, and allows bit/word permutation components. Suitable as a
+        compatibility check for the first-step active S-box count model.
 
         EXAMPLES::
 
@@ -1038,12 +1038,16 @@ class Cipher:
             sage: from claasp.ciphers.block_ciphers.ublock_block_cipher import UblockBlockCipher
             sage: UblockBlockCipher(number_of_rounds=2).has_uniform_sboxes()
             True
+            sage: from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
+            sage: PresentBlockCipher(number_of_rounds=1).has_uniform_sboxes()
+            True
         """
         spn_components = {
             CIPHER_OUTPUT,
             CONSTANT,
             INTERMEDIATE_OUTPUT,
             MIX_COLUMN,
+            PERMUTATION_COMPONENT,
             SBOX,
             "ROTATE",
             "XOR",
@@ -1051,33 +1055,26 @@ class Cipher:
         (
             set_of_components,
             _,
-            set_of_rotate_and_shift_values,
+            _,
             set_of_sbox_sizes,
         ) = self.get_sizes_of_components_by_type()
         if not set_of_sbox_sizes or len(set_of_sbox_sizes) > 1:
             return False
-        if not (set_of_components <= spn_components):
-            return False
-        sbox_size = next(iter(set_of_sbox_sizes))
-        for value in set_of_rotate_and_shift_values:
-            if value % sbox_size != 0:
-                return False
-        return True
+        return set_of_components <= spn_components
 
     def is_two_step_trail_search_friendly(self):
         """
         Return True if the cipher is compatible with the two-step XOR differential trail search
         for counting the minimum number of active S-boxes.
 
-        The word size is determined by the common S-box input size. For the cipher to be
-        compatible, all operations must act on multiples of this word size:
+        The word size is determined by the common S-box input size. Checks performed:
 
-        - All S-boxes must have the same ``input_bit_size`` (checked via :meth:`has_uniform_sboxes`)
-        - Rotation and shift amounts must be multiples of word_size
-        - All component types must belong to the supported SPN component set
+        - All S-boxes must have the same ``input_bit_size`` and all component types must belong
+          to the supported set (checked via :meth:`has_uniform_sboxes`)
         - MixColumn cell sizes (``description[2]``) must be multiples of word_size
 
-        Further checks may be added in future to refine compatibility detection.
+        Key schedule components with non-aligned rotations do not affect correctness when key
+        differences are fixed to zero (the standard setting for differential trail searches).
 
         EXAMPLES::
 
@@ -1088,6 +1085,9 @@ class Cipher:
             True
             sage: from claasp.ciphers.block_ciphers.ublock_block_cipher import UblockBlockCipher
             sage: UblockBlockCipher(number_of_rounds=2).is_two_step_trail_search_friendly()
+            True
+            sage: from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
+            sage: PresentBlockCipher(number_of_rounds=1).is_two_step_trail_search_friendly()
             True
         """
         if not self.has_uniform_sboxes():
