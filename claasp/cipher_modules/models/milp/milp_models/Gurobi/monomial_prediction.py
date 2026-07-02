@@ -291,6 +291,18 @@ class MilpMonomialPredictionModel:
         self._sbox_ineq_cache[desc] = (chosen, n, m)
         return self._sbox_ineq_cache[desc]
 
+    def _map_sbox_output_vars(self, component, output_vars, m):
+        needed = sorted(self._occurences[component.id].keys())  # matches output_vars order
+        out_all = [None] * m
+        for idx, pos in enumerate(needed):
+            out_all[pos] = output_vars[idx]
+        for q in range(m):
+            if out_all[q] is None:  # output bit unused downstream -> pin to 0
+                var = self._model.addVar(vtype=GRB.BINARY, name=f"{component.id}_unused_out_{q}")
+                self._model.addConstr(var == 0)
+                out_all[q] = var
+        return out_all
+
     def add_sbox_constraints(self, component):
         """
         Constrain the S-box's input variables (the exponents u) and output-bit variables
@@ -309,15 +321,7 @@ class MilpMonomialPredictionModel:
         self._model.update()
 
         ineqs, n, m = self.get_sbox_inequalities(component)
-        needed = sorted(list(self._occurences[component.id].keys()))  # matches output_vars order
-        out_all = [None] * m
-        for idx, pos in enumerate(needed):
-            out_all[pos] = output_vars[idx]
-        for q in range(m):
-            if out_all[q] is None:  # output bit unused downstream -> pin to 0
-                var = self._model.addVar(vtype=GRB.BINARY, name=f"{component.id}_unused_out_{q}")
-                self._model.addConstr(var == 0)
-                out_all[q] = var
+        out_all = self._map_sbox_output_vars(component, output_vars, m)
         self._model.update()
 
         for ie in ineqs:
