@@ -42,6 +42,39 @@ class MiniZincPredicateModule:
 
 
 class MiniZincPredicateRegistry:
+    """
+    Store MiniZinc predicate modules and render them with their dependencies.
+
+    INPUT:
+
+    - ``modules`` -- **list** (default: `None`); predicate modules to register
+
+    EXAMPLES::
+
+        sage: from claasp.cipher_modules.models.cp.minizinc_utils.mzn_predicate_registry import (
+        ....:     MiniZincPredicateModule, MiniZincPredicateRegistry)
+        sage: registry = MiniZincPredicateRegistry([
+        ....:     MiniZincPredicateModule("globals", 'include "globals.mzn";'),
+        ....:     MiniZincPredicateModule(
+        ....:         "bit_helpers",
+        ....:         "predicate eq_bit(var 0..1: a, var 0..1: b) = (a = b);",
+        ....:         dependencies=("globals",)),
+        ....:     MiniZincPredicateModule(
+        ....:         "eq_constraint", "constraint eq_bit(x[1], y[1]);",
+        ....:         dependencies=("bit_helpers", "globals")),
+        ....: ])
+        sage: registry.render_modules(["eq_constraint", "bit_helpers"])
+        ['include "globals.mzn";', 'predicate eq_bit(var 0..1: a, var 0..1: b) = (a = b);', 'constraint eq_bit(x[1], y[1]);']
+
+        sage: registry.module_names()
+        ('globals', 'bit_helpers', 'eq_constraint')
+
+        sage: registry.render_modules(["missing"])
+        Traceback (most recent call last):
+        ...
+        ValueError: MiniZinc predicate module 'missing' is not registered
+    """
+
     def __init__(self, modules=None):
         self._modules = {}
         for module in modules or []:

@@ -260,7 +260,7 @@ def test_fix_variables_value_constraints():
 
 
 def test_model_constraints():
-    with pytest.raises(Exception):
+    with pytest.raises(ValueError, match="No model generated"):
         speck = SpeckBlockCipher(number_of_rounds=4)
         mzn = MznModel(speck)
         mzn.model_constraints()
