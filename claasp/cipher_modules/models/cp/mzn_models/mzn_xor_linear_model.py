@@ -136,6 +136,7 @@ class MznXorLinearModel(MznModel):
             sage: cp.build_xor_linear_trail_model(-1, fixed_variables)
         """
         self.initialise_model()
+        self.require_legacy_minizinc_predicates()
         self.sbox_mant = []
         self.c = 0
         self._variables_declarations = []

@@ -173,6 +173,7 @@ class MznXorDifferentialModelARXOptimized(MznModel):
             sage: minizinc = MznXorDifferentialModelARXOptimized(speck)
             sage: minizinc.build_xor_differential_trail_model()
         """
+        self.require_legacy_minizinc_predicates()
         variables = []
         self._variables_declarations = []
         constraints = self.fix_variables_value_constraints_for_ARX(fixed_variables)

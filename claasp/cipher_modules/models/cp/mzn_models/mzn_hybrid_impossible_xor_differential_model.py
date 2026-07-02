@@ -103,6 +103,7 @@ class MznHybridImpossibleXorDifferentialModel(MznImpossibleXorDifferentialModel)
             sage: mzn.build_hybrid_impossible_xor_differential_trail_model(fixed_variables, 4, 1, 3, 4, False, False)
         """
         self.initialise_model()
+        self.require_legacy_minizinc_predicates()
         if number_of_rounds is None:
             number_of_rounds = self._cipher.number_of_rounds
         if final_round is None:
@@ -165,7 +166,9 @@ class MznHybridImpossibleXorDifferentialModel(MznImpossibleXorDifferentialModel)
         )
         set_of_constraints = deterministic_truncated_xor_differential
 
-        self._model_constraints = self.clean_constraints(set_of_constraints, initial_round, middle_round, final_round)
+        self._model_constraints = self.clean_constraints(
+            set_of_constraints, initial_round, middle_round, final_round
+        )
 
     def build_improbable_forward_model(self, forward_components, clean=False):
         direct_variables = []

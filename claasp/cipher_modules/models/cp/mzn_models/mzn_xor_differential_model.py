@@ -21,6 +21,7 @@ import time as tm
 
 from sage.crypto.sbox import SBox
 
+from claasp.cipher_modules.models.cp.minizinc_utils.mzn_predicate_registry import MINIZINC_XOR_DIFFERENTIAL_HELPERS
 from claasp.cipher_modules.models.cp.mzn_model import SOLVE_SATISFY, MznModel
 from claasp.cipher_modules.models.cp.solvers import SOLVER_DEFAULT
 from claasp.cipher_modules.models.utils import get_single_key_scenario_format_for_fixed_values
@@ -130,6 +131,7 @@ class MznXorDifferentialModel(MznModel):
             sage: cp.build_xor_differential_trail_model()
         """
         self.initialise_model()
+        self.require_predicate_module(MINIZINC_XOR_DIFFERENTIAL_HELPERS)
         self.c = 0
         self.sbox_mant = []
         self.input_sbox = []

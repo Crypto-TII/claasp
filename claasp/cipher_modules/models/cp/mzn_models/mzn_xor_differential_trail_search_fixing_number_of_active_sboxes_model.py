@@ -68,6 +68,7 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
             ....: integer_to_bit_list(0, 128, 'little'))]
             sage: cp.build_xor_differential_trail_second_step_model(-1, fixed_variables)
         """
+        self.require_legacy_minizinc_predicates()
         self.c = 0
         self.sbox_mant = []
         self.component_and_probability = {}
@@ -433,6 +434,7 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
              'building_time': 3.7489726543426514}
         """
         self.initialise_model()
+        self.require_legacy_minizinc_predicates()
         possible_sboxes = 0
         if weight > 0:
             possible_sboxes = self.find_possible_number_of_active_sboxes(weight)

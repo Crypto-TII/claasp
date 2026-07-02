@@ -45,6 +45,7 @@ class MznCipherModelARXOptimized(MznModel):
             sage: minizinc.build_cipher_model()
             ...
         """
+        self.require_legacy_minizinc_predicates()
         self._variables_declarations = []
         variables = []
         constraints = self.fix_variables_value_constraints_for_ARX(fixed_variables)

@@ -2,6 +2,8 @@ from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model impor
     MznXorDifferentialModel,
     and_xor_differential_probability_ddt,
 )
+from claasp.cipher_modules.models.cp.minizinc_utils.mzn_predicate_registry import MINIZINC_XOR_DIFFERENTIAL_HELPERS
+from claasp.cipher_modules.models.cp.minizinc_utils.usefulfunctions import MINIZINC_USEFUL_FUNCTIONS
 from claasp.cipher_modules.models.cp.solvers import CHUFFED
 from claasp.cipher_modules.models.utils import set_fixed_variables
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
@@ -13,11 +15,23 @@ def test_and_xor_differential_probability_ddt():
     assert and_xor_differential_probability_ddt(2) == [4, 0, 2, 2, 2, 2, 2, 2]
 
 
+def test_build_xor_differential_trail_model_uses_selective_predicate_module():
+    speck = SpeckBlockCipher(block_bit_size=8, key_bit_size=16, number_of_rounds=1)
+    mzn = MznXorDifferentialModel(speck)
+
+    mzn.build_xor_differential_trail_model()
+
+    assert mzn._required_predicate_modules == [MINIZINC_XOR_DIFFERENTIAL_HELPERS]
+    assert MINIZINC_USEFUL_FUNCTIONS not in mzn._model_prefix
+    assert mzn._model_prefix[0] == 'include "globals.mzn";'
+    assert "function array[int] of var 0..1: Eq" in mzn._model_prefix[1]
+    assert "function array[int] of var 0..2: LShift" in mzn._model_prefix[1]
+
+
 def test_find_all_xor_differential_trails_with_fixed_weight():
     speck = SpeckBlockCipher(block_bit_size=8, key_bit_size=16, number_of_rounds=2)
     mzn = MznXorDifferentialModel(speck)
     trails = mzn.find_all_xor_differential_trails_with_fixed_weight(1, solver_name=CHUFFED, solve_external=True)
-
     assert len(trails) == 6
 
     trails = mzn.find_all_xor_differential_trails_with_fixed_weight(1, solver_name=CHUFFED, solve_external=False)

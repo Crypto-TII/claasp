@@ -133,6 +133,7 @@ class MznXorDifferentialNumberOfActiveSboxesModel(MznModel):
             sage: cp.build_xor_differential_trail_first_step_model(-1, fixed_variables)
         """
         self.initialise_model()
+        self.require_legacy_minizinc_predicates()
         variables = []
         self.list_of_xor_all_inputs = []
         self.list_of_xor_components = []

@@ -557,6 +557,7 @@ class MznDifferentialLinearModel(MznModel):
             fixed_variables = []
 
         self.initialise_model()
+        self.require_legacy_minizinc_predicates()
         model_entries = self._component_model_entries()
         fixed_constraints = self._partition_fixed_value_constraints(fixed_variables)
 

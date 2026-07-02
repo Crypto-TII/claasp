@@ -26,6 +26,7 @@ class MznDifferentialLinearContinuousModel(MznModel):
         return constraints
 
     def build_differential_linear_continuous_trail_model(self, fixed_values=[]):
+        self.require_legacy_minizinc_predicates()
         component_and_model_types = []
         self.added_component_ids = set()
         operation_types = ["MODADD", "ROTATE", "XOR"]

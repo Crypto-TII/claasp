@@ -56,6 +56,7 @@ class MznCipherModel(MznModel):
             sage: cp.build_cipher_model(fixed_variables)
         """
         self.initialise_model()
+        self.require_legacy_minizinc_predicates()
         self.sbox_mant = []
         variables = []
         self._variables_declarations = self.input_declarations()

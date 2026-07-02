@@ -27,7 +27,10 @@ from minizinc import Instance, Model, Solver, Status
 from sage.crypto.sbox import SBox
 
 from claasp.cipher_modules.component_analysis_tests import branch_number
-from claasp.cipher_modules.models.cp.minizinc_utils import usefulfunctions
+from claasp.cipher_modules.models.cp.minizinc_utils.mzn_predicate_registry import (
+    LEGACY_MINIZINC_USEFUL_FUNCTIONS,
+    build_default_minizinc_predicate_registry,
+)
 from claasp.cipher_modules.models.cp.solvers import CP_SOLVERS_EXTERNAL, CP_SOLVERS_INTERNAL, SOLVER_DEFAULT
 from claasp.cipher_modules.models.utils import convert_solver_solution_to_dictionary
 from claasp.name_mappings import (
@@ -115,7 +118,24 @@ class MznModel:
         self.probability_vars = []
         self.probability_modadd_vars_per_round = [[] for _ in range(self._cipher.number_of_rounds)]
         self.component_probability_var = {}
-        self._model_prefix = ['include "globals.mzn";', f"{usefulfunctions.MINIZINC_USEFUL_FUNCTIONS}"]
+        self._predicate_registry = build_default_minizinc_predicate_registry()
+        self._required_predicate_modules = []
+        self._refresh_model_prefix_from_predicate_modules()
+
+    def _refresh_model_prefix_from_predicate_modules(self):
+        self._model_prefix = self._predicate_registry.render_modules(self._required_predicate_modules)
+
+    def require_predicate_module(self, module_name):
+        if module_name not in self._required_predicate_modules:
+            self._required_predicate_modules.append(module_name)
+            self._refresh_model_prefix_from_predicate_modules()
+
+    def require_predicate_modules(self, module_names):
+        for module_name in module_names:
+            self.require_predicate_module(module_name)
+
+    def require_legacy_minizinc_predicates(self):
+        self.require_predicate_module(LEGACY_MINIZINC_USEFUL_FUNCTIONS)
 
     def current_model_parts(self):
         return MiniZincModelParts(
@@ -219,6 +239,7 @@ class MznModel:
                     self.probability_modadd_vars_per_round[round_index].append(probability_var)
 
     def build_generic_cp_model_from_dictionary(self, component_and_model_types, fixed_variables=None):
+        self.require_legacy_minizinc_predicates()
         variables = []
         self._variables_declarations = []
         self._model_constraints = []

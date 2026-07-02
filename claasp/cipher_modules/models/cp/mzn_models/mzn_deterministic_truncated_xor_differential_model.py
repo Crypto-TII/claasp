@@ -102,6 +102,7 @@ class MznDeterministicTruncatedXorDifferentialModel(MznModel):
             sage: cp.build_deterministic_truncated_xor_differential_trail_model(fixed_variables)
         """
         self.initialise_model()
+        self.require_legacy_minizinc_predicates()
         if number_of_rounds is None:
             number_of_rounds = self._cipher.number_of_rounds
 

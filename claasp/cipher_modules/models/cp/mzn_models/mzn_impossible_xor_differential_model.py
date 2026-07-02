@@ -131,6 +131,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
             sage: cp.build_impossible_xor_differential_trail_with_extensions_model(fixed_variables, 5, 2, 3, 4, False)
         """
         self.initialise_model()
+        self.require_legacy_minizinc_predicates()
         if number_of_rounds is None:
             number_of_rounds = self._cipher.number_of_rounds
         inverse_cipher = self.inverse_cipher
@@ -241,6 +242,7 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
             initial_round, middle_round, final_round, number_of_rounds
         )
         self.initialise_model()
+        self.require_legacy_minizinc_predicates()
         if fully_automatic:
             number_of_rounds = self._cipher.number_of_rounds
             initial_round = 1

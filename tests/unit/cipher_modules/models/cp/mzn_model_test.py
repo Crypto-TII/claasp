@@ -4,6 +4,12 @@ import pytest
 from minizinc import Status
 
 import claasp.cipher_modules.models.cp.mzn_model as mzn_model_module
+from claasp.cipher_modules.models.cp.minizinc_utils import usefulfunctions
+from claasp.cipher_modules.models.cp.minizinc_utils.mzn_predicate_registry import (
+    LEGACY_MINIZINC_USEFUL_FUNCTIONS,
+    MiniZincPredicateModule,
+    MiniZincPredicateRegistry,
+)
 from claasp.cipher_modules.models.cp.mzn_model import MiniZincModelParts, MznModel
 from claasp.cipher_modules.models.cp.mzn_models.mzn_cipher_model_arx_optimized import MznCipherModelARXOptimized
 from claasp.cipher_modules.models.cp.mzn_models.mzn_deterministic_truncated_xor_differential_model_arx_optimized import (
@@ -60,6 +66,48 @@ def test_minizinc_model_parts_lines_concatenates_in_order():
         "solve satisfy;",
         'output ["x=", show(x)];',
     ]
+
+
+def test_minizinc_predicate_registry_orders_dependencies_and_deduplicates():
+    registry = MiniZincPredicateRegistry(
+        [
+            MiniZincPredicateModule("base", "% base"),
+            MiniZincPredicateModule("middle", "% middle", dependencies=("base",)),
+            MiniZincPredicateModule("top", "% top", dependencies=("middle", "base")),
+        ]
+    )
+
+    assert registry.render_modules(["top", "middle"]) == ["% base", "% middle", "% top"]
+
+
+def test_minizinc_predicate_registry_rejects_unknown_modules():
+    registry = MiniZincPredicateRegistry()
+
+    with pytest.raises(ValueError, match="not registered"):
+        registry.render_modules(["missing"])
+
+
+def test_mzn_model_starts_without_required_predicate_modules():
+    speck = SpeckBlockCipher(number_of_rounds=1)
+    model = MznModel(speck)
+
+    assert model._required_predicate_modules == []
+    assert model._model_prefix == []
+
+
+def test_mzn_model_requires_legacy_predicates_through_registry():
+    speck = SpeckBlockCipher(number_of_rounds=1)
+    model = MznModel(speck)
+
+    model.require_legacy_minizinc_predicates()
+
+    assert model._required_predicate_modules == [LEGACY_MINIZINC_USEFUL_FUNCTIONS]
+    assert model._model_prefix == ['include "globals.mzn";', usefulfunctions.MINIZINC_USEFUL_FUNCTIONS]
+
+    model.require_predicate_module(LEGACY_MINIZINC_USEFUL_FUNCTIONS)
+
+    assert model._required_predicate_modules == [LEGACY_MINIZINC_USEFUL_FUNCTIONS]
+    assert model._model_prefix == ['include "globals.mzn";', usefulfunctions.MINIZINC_USEFUL_FUNCTIONS]
 
 
 @pytest.mark.parametrize(

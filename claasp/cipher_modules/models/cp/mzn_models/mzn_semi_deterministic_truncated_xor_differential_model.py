@@ -108,6 +108,7 @@ class MznSemiDeterministicTruncatedXorDifferentialModel(MznModel):
             raise ValueError("number_of_rounds must match the cipher instance number_of_rounds")
 
         self.initialise_model()
+        self.require_legacy_minizinc_predicates()
         input_declarations, input_constraints = self.input_deterministic_truncated_xor_differential_constraints()
 
         component_and_model_types = self._build_component_and_model_types()
