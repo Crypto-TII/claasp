@@ -188,8 +188,7 @@ def test_find_superpoly_by_divide_and_conquer_speck():
     )
     assert str(res) == "k²7*k²8 + k²7*k³6 + k²7*k³13 + k²8*k³5 + k²8*k³12 + k²8 + k³5*k³6 + k³5*k³13 + k³6*k³12 + k³6 + k³12*k³13 + k³13"
 
-# S-boxes taken from CLAASP cipher definitions. Only xoodoo (hull path) and aes
-# (ANF-circuit path) are active, to keep the test fast; the rest are commented out.
+# S-boxes taken from CLAASP cipher definitions.
 SBOXES_UNDER_TEST = [
     ("xoodoo", 3, [0, 5, 3, 2, 6, 1, 4, 7]),
     # ("aradi", 4, [0, 1, 2, 3, 4, 13, 15, 6, 8, 11, 5, 14, 12, 7, 10, 9]),
@@ -236,11 +235,5 @@ def _check_sbox_anf(name, n, sbox):
 
 @pytest.mark.skip(reason="Requires Gurobi license")
 def test_sbox_anf_correctness():
-    """
-    Verify exact S-box (3SDP-woU) modeling on several S-boxes up to 5 bits. For each,
-    recover the ANF of every output bit from a single-S-box cipher and check the ANFs
-    reconstruct the full S-box truth table over all 2^n inputs.
-    """
     for name, n, sbox in SBOXES_UNDER_TEST:
         _check_sbox_anf(name, n, sbox)
-
