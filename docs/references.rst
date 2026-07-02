@@ -271,6 +271,11 @@
         CryptologyePrint Archive, Report 2020/1058, 2020. :
         https://eprint.iacr.org/2020/1058
 
+.. [DampersSAECHAM2025]
+        Dampers, A. et al. : *SAECHAM: A Lightweight Block Cipher based on
+        CHAM* : Implementation repository (2025) :
+        https://github.com/dampers/SAECHAM-implementations
+
 .. _claasp-ref-E:
 
 .. only:: html
@@ -333,6 +338,12 @@
 .. only:: html
 
         **J**
+
+.. [JeongCHAM2020]
+        Jeong I. R., Lee J. W. : *Revised version of block cipher CHAM* :
+        In Information Security and Cryptology – ICISC 2019, Lecture Notes in
+        Computer Science, vol. 11975, pp. 1–19. Springer (2020) :
+        https://doi.org/10.1007/978-3-030-40921-0_1
 
 .. [JV2018]
         Joux A., Vitse V. : *A crossbred algorithm for solving boolean
@@ -474,6 +485,13 @@
         Daemen J., Rijmen V. : *The Design of Rijndael AES -- The Advanced
         Encryption Standard* (2001) :
         https://cs.ru.nl/~joan/papers/JDA_VRI_Rijndael_2002.pdf
+
+.. [RohCHAM2018]
+        Roh D., Koo B., Jung Y., Jeong I. R., Lee J. W., Kwon D., Kim W.-H. :
+        *CHAM: A Family of Lightweight Block Ciphers for Resource-Constrained
+        Devices* : In Information Security and Cryptology – ICISC 2017, Lecture
+        Notes in Computer Science, vol. 10779, pp. 3–25. Springer (2018) :
+        https://doi.org/10.1007/978-3-319-78556-1_1
 
 .. _claasp-ref-S:
 
