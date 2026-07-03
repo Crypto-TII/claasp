@@ -23,12 +23,13 @@ from collections import Counter
 from copy import deepcopy
 
 from gurobipy import GRB, Env, Model
-from sage.all import GF
+from sage.all import GF, Polyhedron
 from sage.crypto.sbox import SBox
 from sage.rings.polynomial.pbori.pbori import BooleanPolynomialRing
 
 from claasp.cipher_modules.component_analysis_tests import binary_matrix_of_linear_component
 from claasp.cipher_modules.graph_generator import _get_predecessors_subgraph, create_networkx_graph_from_input_ids
+from claasp.cipher_modules.models.milp.utils.generate_sbox_inequalities_for_trail_search import cutting_off_milp
 from claasp.name_mappings import INTERMEDIATE_OUTPUT
 
 verbosity = False
@@ -59,6 +60,8 @@ class MilpMonomialPredictionModel:
         self._unused_variables = []
         self._used_predecessors_sorted = None
         self._constants = {}
+        self._sbox_valid_cache = {}
+        self._sbox_ineq_cache = {}
 
     def build_gurobi_model(self):
         if os.getenv("GUROBI_COMPUTE_SERVER") is not None:
@@ -218,7 +221,128 @@ class MilpMonomialPredictionModel:
         self._model.update()
         return copy_monomials_deg
 
+    def get_valid_monomial_exponents_table(self, component):
+        """
+        Exact 3SDP-woU monomial-transition table of the S-box, read from its output ANFs.
+
+        Returns ``v_mask -> set(u_mask)``: for each output-monomial exponent v (selecting
+        the output bits with v_q=1), the input-monomial exponents u whose monomial x^u
+        survives with odd multiplicity over GF(2) in the product ``prod_{q: v_q=1}
+        y_q(x)`` of the selected output-bit ANFs.
+        """
+        desc = tuple(component.description)
+        if desc in self._sbox_valid_cache:
+            return self._sbox_valid_cache[desc]
+        n = component.input_bit_size
+        m = component.output_bit_size
+        B = BooleanPolynomialRing(n, "x")
+        anfs = [B(a) for a in self.get_anfs_from_sbox(component)]
+        names = list(B.variable_names())
+        table = {}
+        for v_mask in range(1 << m):
+            prod = B(1)
+            for q in range(m):
+                if (v_mask >> q) & 1:
+                    prod = prod * anfs[q]
+            us = set()
+            for mon in prod.monomials():
+                u = 0
+                for var in mon.variables():
+                    u |= 1 << names.index(str(var))
+                us.add(u)
+            table[v_mask] = us
+        self._sbox_valid_cache[desc] = (table, n, m)
+        return self._sbox_valid_cache[desc]
+
+    def get_sbox_inequalities(self, component):
+        """
+        Compact, exact MILP encoding of ``get_valid_monomial_exponents_table``.
+
+        A point ``z = (u_0..u_{n-1}, v_0..v_{m-1})`` is VALID if (u, v) is a valid trail and
+        INVALID otherwise. Returns inequalities ``(b, a_0, ..., a_{n+m-1})`` meaning
+        ``b + sum_k a_k z_k >= 0`` that hold on every valid point and are violated by every
+        invalid one: the convex-hull facets of the valid points, minimised via CLAASP's
+        ``cutting_off_milp``, plus a no-good cut for any invalid point inside the hull (so it
+        is exact for any S-box).
+        """
+        desc = tuple(component.description)
+        if desc in self._sbox_ineq_cache:
+            return self._sbox_ineq_cache[desc]
+        table, n, m = self.get_valid_monomial_exponents_table(component)
+        dim = n + m
+        valid = set()
+        for v_mask, us in table.items():
+            for u in us:
+                valid.add(tuple([(u >> j) & 1 for j in range(n)] + [(v_mask >> q) & 1 for q in range(m)]))
+        invalid = {tuple((i >> k) & 1 for k in range(dim)) for i in range(1 << dim)} - valid
+
+        poly = Polyhedron(vertices=[list(p) for p in valid])
+        reduced = cutting_off_milp({1: poly})[1]
+        chosen = [tuple(int(c) for c in ie.vector()) for ie in reduced]  # (b, a_0..)
+
+        def excludes(ie, p):
+            return ie[0] + sum(ie[k + 1] * p[k] for k in range(dim)) < 0
+
+        for p in invalid:  # invalid points inside the hull are uncut by facets -> explicit no-good cut
+            if not any(excludes(ie, p) for ie in chosen):
+                b = sum(p) - 1
+                chosen.append(tuple([b] + [(-1 if p[k] == 1 else 1) for k in range(dim)]))
+
+        self._sbox_ineq_cache[desc] = (chosen, n, m)
+        return self._sbox_ineq_cache[desc]
+
+    def _map_sbox_output_vars(self, component, output_vars, m):
+        needed = sorted(self._occurences[component.id].keys())  # matches output_vars order
+        out_all = [None] * m
+        for idx, pos in enumerate(needed):
+            out_all[pos] = output_vars[idx]
+        for q in range(m):
+            if out_all[q] is None:  # output bit unused downstream -> pin to 0
+                var = self._model.addVar(vtype=GRB.BINARY, name=f"{component.id}_unused_out_{q}")
+                self._model.addConstr(var == 0)
+                out_all[q] = var
+        return out_all
+
     def add_sbox_constraints(self, component):
+        """
+        Constrain the S-box's input variables (the exponents u) and output-bit variables
+        (the exponents v) to the exact monomial-trail relation.
+
+        Large S-boxes (e.g. 8-bit AES): the (u, v) point set lives in {0,1}^(n+m), and
+        building its convex hull becomes infeasible once n+m > 12, so fall back to the
+        ANF-circuit model. That fallback is exact for single-output-bit queries
+        (|v| = 1).
+        """
+        if (1 << (component.input_bit_size + component.output_bit_size)) > 4096:
+            return self.add_sbox_constraints_anf_circuit(component)
+
+        output_vars = self.get_output_vars(component)
+        input_vars = self.get_input_vars(component)
+        self._model.update()
+
+        ineqs, n, m = self.get_sbox_inequalities(component)
+        out_all = self._map_sbox_output_vars(component, output_vars, m)
+        self._model.update()
+
+        for ie in ineqs:
+            expr = ie[0]
+            for j in range(n):
+                if ie[1 + j] != 0:
+                    expr = expr + ie[1 + j] * input_vars[j]
+            for q in range(m):
+                if ie[1 + n + q] != 0:
+                    expr = expr + ie[1 + n + q] * out_all[q]
+            self._model.addConstr(expr >= 0)
+
+        self.set_as_used_variables(list(input_vars) + list(output_vars))
+        self._model.update()
+
+    def add_sbox_constraints_anf_circuit(self, component):
+        """
+        ANF-circuit S-box model (fallback for large S-boxes). Builds each needed
+        output bit as the XOR of its ANF monomials, with products via AND gadgets
+        on copied inputs.
+        """
         output_vars = self.get_output_vars(component)
         input_vars_concat = self.get_input_vars(component)
         self._model.update()
@@ -1215,6 +1339,8 @@ class MilpMonomialPredictionModel:
         self._unused_variables = []
         self._used_predecessors_sorted = None
         self._constants = {}
+        self._sbox_valid_cache = {}
+        self._sbox_ineq_cache = {}
 
     def find_anf_of_specific_output_bit(
         self, output_bit_index, fixed_degree=None, which_var_degree=None, chosen_cipher_output=None
