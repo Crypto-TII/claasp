@@ -1433,7 +1433,7 @@ def remove_components_from_rounds(cipher, start_round, end_round, keep_key_sched
     copy_of_the_cipher = deepcopy(cipher)
     list_of_rounds = cipher.rounds_as_list[:start_round] + cipher.rounds_as_list[end_round + 1:]
     key_schedule_component_ids = get_key_schedule_component_ids(cipher)
-    key_schedule_components = [cipher.get_component_from_id(id) for id in key_schedule_component_ids if INPUT_KEY not in id]
+    key_schedule_components = [cipher.component_from_id(id) for id in key_schedule_component_ids if INPUT_KEY not in id]
 
 def _remove_key_schedule_components(cipher, key_schedule_components):
     for current_round in cipher.rounds_as_list:
@@ -1441,9 +1441,14 @@ def _remove_key_schedule_components(cipher, key_schedule_components):
             cipher.rounds.remove_round_component(current_round.id, key_component)
 
 
-def _remove_non_key_components_from_rounds(cipher, list_of_rounds, key_schedule_components):
+def _remove_non_key_components_from_rounds(cipher, list_of_rounds, key_schedule_components,keep_key_schedule,key_schedule_component_ids):
     removed_component_ids = []
     intermediate_outputs = {}
+    copy_of_the_cipher = deepcopy(cipher)
+    component_output_sizes = {component.id: component.output_bit_size for component in cipher.get_all_components()}
+    for component in key_schedule_components:
+        if component is not None:
+            component_output_sizes[component.id] = component.output_bit_size
 
     for current_round in list_of_rounds:
         for component in set(current_round.components) - set(key_schedule_components):
@@ -1459,7 +1464,12 @@ def _remove_non_key_components_from_rounds(cipher, list_of_rounds, key_schedule_
                 for input_id_link in components.input_id_links:
                     if input_id_link in key_schedule_component_ids and input_id_link not in cipher.inputs:
                         cipher.inputs.append(input_id_link)
-                        new_input_bit_size = copy_of_the_cipher.get_component_from_id(input_id_link).output_bit_size
+                        new_input_bit_size = component_output_sizes.get(input_id_link)
+                        if new_input_bit_size is None:
+                            component_in_copy = copy_of_the_cipher.component_from_id(input_id_link)
+                            if component_in_copy is None:
+                                continue
+                            new_input_bit_size = component_in_copy.output_bit_size
                         cipher.inputs_bit_size.append(new_input_bit_size)
 
     return removed_component_ids, intermediate_outputs
@@ -1487,7 +1497,7 @@ def _prune_components_outside_round_range(
         _remove_key_schedule_components(cipher, key_schedule_components)
 
     removed_component_ids, intermediate_outputs = _remove_non_key_components_from_rounds(
-        cipher, list_of_rounds, key_schedule_components
+        cipher, list_of_rounds, key_schedule_components, keep_key_schedule, key_schedule_component_ids
     )
 
     return removed_component_ids, intermediate_outputs

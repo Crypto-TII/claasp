@@ -116,7 +116,7 @@ class MznModel:
         self.probability_vars = []
         self.probability_modadd_vars_per_round = [[] for _ in range(self._cipher.number_of_rounds)]
         self.component_probability_var = {}
-        self._model_prefix = ['include "globals.mzn";', f"{usefulfunctions.MINIZINC_USEFUL_FUNCTIONS}"]
+        self._model_prefix = [f"{usefulfunctions.MINIZINC_USEFUL_FUNCTIONS}"]
 
     def current_model_parts(self):
         return MiniZincModelParts(

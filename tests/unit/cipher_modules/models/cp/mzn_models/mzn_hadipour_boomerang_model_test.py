@@ -5,19 +5,23 @@ from claasp.ciphers.block_ciphers.lea_block_cipher import LeaBlockCipher
 from claasp.ciphers.block_ciphers.twine_block_cipher import TwineBlockCipher
 from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
 from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
+from claasp.ciphers.block_ciphers.katan_block_cipher import KatanBlockCipher
+from claasp.ciphers.permutations.chaskeypi_permutation import ChaskeyPiPermutation
 
 
 
 def test_build_boomerang_model_chacha():
-    cipher = ChachaPermutation(number_of_rounds=7)
+    # cipher = ChachaPermutation(number_of_rounds=7)
     # cipher = SpeckBlockCipher(number_of_rounds=10)
-    # cipher = LeaBlockCipher(number_of_rounds=14)
+    cipher = LeaBlockCipher(number_of_rounds=12)
     # cipher = SpeckBlockCipher(block_bit_size=48, key_bit_size=72, number_of_rounds=12)
     # cipher = SimonBlockCipher(block_bit_size=48, key_bit_size=72, number_of_rounds=16)
+    # cipher = KatanBlockCipher(number_of_rounds=5)
+    # cipher = ChaskeyPiPermutation(number_of_rounds=5, word_size=16)
 
-    top_part_number_of_rounds = 2
-    middle_part_number_of_rounds = 2
-    bottom_part_number_of_rounds = 3
+    top_part_number_of_rounds = 5
+    middle_part_number_of_rounds = 1
+    bottom_part_number_of_rounds = 6
 
     component_dict = {
         "top_part_number_of_rounds": top_part_number_of_rounds,

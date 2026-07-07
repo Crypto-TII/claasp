@@ -657,6 +657,8 @@ class Modular(Component):
             model.c_lower += 1
             model.component_and_probability[output_id_link] = probability_lower
 
+        # print(cp_declarations)
+        # print(cp_constraints)
         result = cp_declarations, cp_constraints
         return result
 

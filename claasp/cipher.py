@@ -695,7 +695,7 @@ class Cipher:
                     for input_id_link in components.input_id_links:
                         if input_id_link in key_schedule_component_ids and input_id_link not in partial_cipher_inverse.inputs:
                             partial_cipher_inverse.inputs.append(input_id_link)
-                            new_input_bit_size = copy_of_inverse_cipher.get_component_from_id(input_id_link).output_bit_size
+                            new_input_bit_size = copy_of_inverse_cipher.component_from_id(input_id_link).output_bit_size
                             partial_cipher_inverse.inputs_bit_size.append(new_input_bit_size)
 
         return partial_cipher_inverse

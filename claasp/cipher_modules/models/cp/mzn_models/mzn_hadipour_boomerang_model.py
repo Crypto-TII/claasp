@@ -15,7 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-from claasp.cipher_modules.models.cp.mzn_model import MznModel, solve_satisfy
+from claasp.cipher_modules.models.cp.mzn_model import MznModel #, solve_satisfy
 from claasp.cipher_modules.models.sat.utils.utils import _generate_component_model_types, _set_model_type_for_components
 from claasp.name_mappings import SBOX, CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER, MIX_COLUMN, WORD_OPERATION
 from claasp.cipher_modules.models.cp.minizinc_utils.mzn_bct_predicates import get_bct_operations
@@ -40,8 +40,14 @@ class MznHadipourBoomerangModel(MznModel):
         self.bottom_part_number_of_rounds = boomerang_structure["bottom_part_number_of_rounds"]
 
         total_number_of_rounds = self.top_part_number_of_rounds + self.middle_part_number_of_rounds + self.bottom_part_number_of_rounds
+        # print(f'Total number of rounds: {total_number_of_rounds}')
+        # print(f'Cipher number of rounds: {cipher.number_of_rounds}')
+        # cipher.print_as_python_dictionary()
+        
         assert total_number_of_rounds == cipher.number_of_rounds
 
+        cipher.print_as_python_dictionary()
+        
         e0em_cipher = cipher.get_partial_cipher(
             start_round=0,
             end_round=self.top_part_number_of_rounds + self.middle_part_number_of_rounds - 1,
@@ -353,7 +359,7 @@ class MznHadipourBoomerangModel(MznModel):
         nablaR = 'pre_' + middle_non_linear_transition_ids_lo + '_1'
         deltaLL = middle_non_linear_transition_ids_up
         nablaLL = middle_non_linear_transition_ids_lo
-        branch_size = self.cipher.get_component_from_id(middle_non_linear_transition_ids_up).output_bit_size
+        branch_size = self.cipher.component_from_id(middle_non_linear_transition_ids_up).output_bit_size
         self.count_middle_p += 1
         self.count_index_for_assign_p_with_upper_lower_middle_p += 1
 
@@ -398,10 +404,10 @@ class MznHadipourBoomerangModel(MznModel):
         """
         cipher_inputs = self._cipher.inputs
         cp_constraints = []
-        if weight == -1:
-            cp_constraints.append('solve:: int_search(p, smallest, indomain_min, complete) minimize weight;')
-        else:
-            cp_constraints.append(solve_satisfy)
+        # if weight == -1:
+        cp_constraints.append('solve:: int_search(p, smallest, indomain_min, complete) minimize weight;')
+        # else:
+        #     cp_constraints.append(solve_satisfy)
         new_constraint = 'output['
         for element in cipher_inputs:
             new_constraint = new_constraint + f'\"{element} = \"++ show({element}) ++ \"\\n\" ++'
@@ -712,6 +718,7 @@ class MznHadipourBoomerangModel(MznModel):
         return      
         
     def build_hadipour_boomerang_model(self, weight=-1):
+        
         component_and_model_types = _generate_component_model_types(
             self.cipher,
             model_type="cp_xor_differential_propagation_constraints_boomerang"
@@ -729,18 +736,17 @@ class MznHadipourBoomerangModel(MznModel):
         self.branch_size = 0
 
         self.build_generic_mzn_model_from_dictionary(component_and_model_types)
-        self.initial_constrain()
 
         variables, constraints = self.input_xor_differential_constraints()
-        self._model_prefix.extend(variables)
+        self._variables_list.extend(variables)
         self._model_constraints.extend(constraints)
+        self._model_constraints = self._variables_list + self._model_constraints
     
         for input in self.cipher._inputs:
             if 'plaintext' not in input and 'cipher_output' not in input:
                 self._model_constraints.extend([f'constraint sum({input}) = 0;'])
         
         self._model_constraints.extend(self.final_xor_differential_constraints(weight))
-        self._model_constraints = self._model_prefix + self._model_constraints
 
         ### JUST FOR MODULAR ADDITION OPERATOR
         if any('MODADD' in component.description[0] for component in self._cipher.get_all_components()):
@@ -758,7 +764,7 @@ class MznHadipourBoomerangModel(MznModel):
 
             self._model_constraints.extend([get_approx_logarithm_operation()])
 
-
+        self.initial_constrain()
         self.write_minizinc_model_to_file(".")
 
         # # debug stuff
