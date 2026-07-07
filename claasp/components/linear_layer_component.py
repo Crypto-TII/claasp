@@ -757,11 +757,7 @@ class LinearLayer(Component):
         constraints = []
 
         M = Matrix(self.description)
-        if M.ncols() > model.word_size and [len(input) for input in self.input_bit_positions] != [
-            model.word_size
-        ] * len(self.input_bit_positions):
-            # self.print()
-            # truncated matrix
+        if M.ncols() > model.word_size:
             matrix = [
                 [
                     not M[i : i + model.word_size, j : j + model.word_size].is_zero()
