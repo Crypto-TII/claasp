@@ -2412,7 +2412,7 @@ class MilpMonomialPredictionModel:
             sage: milp = MilpMonomialPredictionModel(cipher)  # doctest: +SKIP
             sage: cube = ["p1", "p2"] # doctest: +SKIP
             sage: milp.is_balanced_at_specific_output_bit_over_cube(0, cube)  # doctest: +SKIP
-            True
+            ...
         """
         self.build_generic_model_for_specific_output_bit(
             output_bit_index, fixed_degree=None, which_var_degree=None, chosen_cipher_output=chosen_cipher_output
