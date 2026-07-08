@@ -2218,6 +2218,77 @@ class MilpMonomialPredictionModel:
 
         return degree_upper_bound
 
+    def is_balanced_at_specific_output_bit_over_cube(
+        self,
+        output_bit_index,
+        cube,
+        chosen_cipher_output=None,
+    ):
+        r"""
+        Feasibility-based integral distinguisher check.
+
+        Fixes cube bits to 1 and non-cube public bits to 0. If the model is INFEASIBLE,
+        the output bit is provably balanced over the cube (zero-sum).
+
+        INPUT:
+        - ``output_bit_index`` -- **integer**
+        - ``cube`` -- **list of strings**
+        - ``chosen_cipher_output`` -- **string** (default: ``None``)
+
+        OUTPUT:
+        - **bool**; ``True`` if balanced, ``False`` if not proved.
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
+            sage: cipher = SimonBlockCipher(number_of_rounds=4)
+            sage: from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel
+            sage: milp = MilpMonomialPredictionModel(cipher)
+            sage: cube = ["p1", "p2"]
+            sage: milp.is_balanced_at_specific_output_bit_over_cube(0, cube)
+            True
+        """
+        self.build_generic_model_for_specific_output_bit(
+            output_bit_index, fixed_degree=None, which_var_degree=None, chosen_cipher_output=chosen_cipher_output
+        )
+        m = self._model
+        m.Params.OutputFlag = 0
+        m.setParam(GRB.Param.PoolSearchMode, 0)
+
+        cube_verbose = self.var_list_to_input_positions(cube)
+        cube_set = set(cube_verbose)
+
+        # public non-cube input bits (plaintext / IV) -> 0
+        for inp, sz in zip(self._cipher.inputs, self._cipher.inputs_bit_size):
+            if inp[0] in ("p", "i"):
+                for i in range(sz):
+                    if (inp, i) in cube_set:
+                        continue
+                    v = m.getVarByName(f"{inp}[{i}]")
+                    if v is not None:
+                        m.addConstr(v == 0)
+        # active cube bits -> 1
+        for inp_name, idx in cube_verbose:
+            v = m.getVarByName(f"{inp_name}[{idx}]")
+            if v is not None:
+                m.addConstr(v == 1)
+
+        m.setObjective(0, GRB.MINIMIZE)
+        m.update()
+        m.optimize()
+
+        balanced = (m.Status == GRB.INFEASIBLE)
+        self._log_experiment(
+            "balanced for cube",
+            {
+                "output_bit_index": output_bit_index,
+                "chosen_cipher_output": chosen_cipher_output,
+                "cube": cube,
+            },
+            balanced,
+        )
+        return balanced
+
     def find_superpoly_of_specific_output_bit(
         self,
         output_bit_index,
