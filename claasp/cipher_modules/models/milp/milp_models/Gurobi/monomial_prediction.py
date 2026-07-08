@@ -1673,6 +1673,7 @@ class MilpMonomialPredictionModel:
         m = self._model
         return [m.getVarByName(f"key[{i}]") for i in range(key_size) if m.getVarByName(f"key[{i}]") is not None]
 
+
     def _set_pool_enumeration_params(self):
         """Configure Gurobi to enumerate every optimal solution in the pool."""
         m = self._model
@@ -1686,14 +1687,39 @@ class MilpMonomialPredictionModel:
         degree-drop rule. Returns ``candidate_degree`` if at least one
         degree-``candidate_degree`` monomial has odd multiplicity, otherwise
         ``candidate_degree - 1``.
+
+        Aggregates parity over the complete input monomial (all symbolic inputs)
+        to avoid incorrect cancellations.
         """
         m = self._model
+        target_vars_set = set(target_vars)
+
+        inputs_info = []
+        for prio, inp_name in enumerate(self._cipher.inputs):
+            if inp_name not in self._variables:
+                continue
+            prefix = self._prefix_for_input(inp_name)
+            for idx, d in self._variables[inp_name].items():
+                inputs_info.append((prefix, idx, d["original"]))
+
         monomial_parity = {}
+
         for s in range(m.SolCount):
             m.Params.SolutionNumber = s
-            active_indices = tuple(j for j, v in enumerate(target_vars) if v.Xn > 0.5)
-            if len(active_indices) == candidate_degree:
-                monomial_parity[active_indices] = monomial_parity.get(active_indices, 0) ^ 1
+
+            # Identify the full input monomial for this trail
+            toks = []
+            deg = 0
+            for prefix, idx, var in inputs_info:
+                if var.Xn > 0.5:
+                    toks.append(f"{prefix}{idx}")
+                    if var in target_vars_set:
+                        deg += 1
+
+            if deg == candidate_degree:
+                mono = "1" if not toks else "".join(toks)
+                monomial_parity[mono] = monomial_parity.get(mono, 0) ^ 1
+
         return candidate_degree if any(val == 1 for val in monomial_parity.values()) else candidate_degree - 1
 
     def _run_exact_degree_per_bit_loop(self, output_vars, target_vars):
