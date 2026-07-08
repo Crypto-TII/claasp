@@ -43,7 +43,7 @@ class MilpMonomialPredictionModel:
     Given a number of rounds of a chosen cipher and a chosen output bit, this module produces a model that can either:
     - find the ANF of this chosen output bit,
     - find an upper bound of this ANF,
-    - find the exact degree of this ANF (slower),
+    - find a tight upper bound on the algebraic degree via parity (slower),
     - find the superpoly of this ANF given a chosen cube.
 
     This module can only be used if the user possesses a Gurobi license.
@@ -1381,9 +1381,9 @@ class MilpMonomialPredictionModel:
         EXAMPLES::
 
             # Example 1: Compute the ANF of the first ciphertext bit in SIMON (round 1)
-            sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
-            sage: cipher = SimonBlockCipher(number_of_rounds=1)
-            sage: from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel
+            sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher # doctest: +SKIP
+            sage: cipher = SimonBlockCipher(number_of_rounds=1) # doctest: +SKIP
+            sage: from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel # doctest: +SKIP
             sage: milp = MilpMonomialPredictionModel(cipher) # doctest: +SKIP
             sage: milp.find_anf_of_specific_output_bit(0) # doctest: +SKIP
             sage: R = milp.get_boolean_polynomial_ring() # doctest: +SKIP
@@ -1449,9 +1449,9 @@ class MilpMonomialPredictionModel:
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
-            sage: cipher = SimonBlockCipher(number_of_rounds=2)
-            sage: from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel
+            sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher # doctest: +SKIP
+            sage: cipher = SimonBlockCipher(number_of_rounds=2) # doctest: +SKIP
+            sage: from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel # doctest: +SKIP
             sage: milp = MilpMonomialPredictionModel(cipher) # doctest: +SKIP
             sage: milp.check_anf_correctness(0, endian="msb") # doctest: +SKIP
             ...
@@ -1509,12 +1509,29 @@ class MilpMonomialPredictionModel:
         Leaves non-cube public variables symbolic.
 
         INPUT:
+
         - ``output_bit_index`` -- **integer**; index of the cipher output bit.
+
         - ``cube`` -- **list of strings**; variable names forming the cube.
+          Example: ``["i9", "i19", "i29", "i39", "i49", "i59", "i69", "i79"]``.
+
         - ``chosen_cipher_output`` -- **string** (default: ``None``); intermediate component ID.
 
         OUTPUT:
+
         - **BooleanPolynomial**; the resulting partial ANF.
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.stream_ciphers.trivium_stream_cipher import TriviumStreamCipher
+            sage: cipher = TriviumStreamCipher(keystream_bit_len=1, number_of_initialization_clocks=590)
+            sage: from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel
+            sage: milp = MilpMonomialPredictionModel(cipher) # doctest: +SKIP
+            sage: cube = ["i9", "i19", "i29", "i39", "i49", "i59", "i69", "i79"]
+            sage: partial_anf = milp.find_partial_anf_at_cube_of_specific_output_bit(output_bit_index=0, cube=cube) # doctest: +SKIP
+            sage: R = milp.get_boolean_polynomial_ring() # doctest: +SKIP
+            sage: partial_anf == R("k20*i60*i61 + k20*i60*i74 + k20*i60 + k20*i73 + i8*i60*i61 + i8*i60*i74 + i8*i60 + i8*i73 + i60*i61*i71 + i60*i61*i72*i73 + i60*i71*i74 + i60*i71 + i60*i72*i73*i74 + i60*i72*i73 + i71*i73 + i72*i73") # doctest: +SKIP
+            ...
         """
         fixed_degree = None
         which_var_degree = None
@@ -1557,15 +1574,30 @@ class MilpMonomialPredictionModel:
         """
         Compute a tight upper bound on the algebraic degree of the partial ANF
         corresponding to a specific output bit under a given cube.
+
         If the highest degree monomials have even parity, it returns d-1 as the bound.
 
         INPUT:
+
         - ``output_bit_index`` -- **integer**; index of the cipher output bit.
+
         - ``cube`` -- **list of strings**; variable names forming the cube.
+
         - ``chosen_cipher_output`` -- **string** (default: ``None``); intermediate component ID.
 
         OUTPUT:
+
         - **integer**; tight upper bound on the algebraic degree.
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.stream_ciphers.trivium_stream_cipher import TriviumStreamCipher # doctest: +SKIP
+            sage: cipher = TriviumStreamCipher(keystream_bit_len=1, number_of_initialization_clocks=590) # doctest: +SKIP
+            sage: from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel # doctest: +SKIP
+            sage: milp = MilpMonomialPredictionModel(cipher) # doctest: +SKIP
+            sage: cube = ["i9", "i19", "i29", "i39", "i49", "i59", "i69", "i79"] # doctest: +SKIP
+            sage: milp.find_tight_upper_bound_degree_via_parity_of_partial_anf_at_cube_of_specific_output_bit(0, cube) # doctest: +SKIP
+            ...
         """
         self.build_generic_model_for_specific_output_bit(
             output_bit_index, None, None, chosen_cipher_output
@@ -1643,7 +1675,32 @@ class MilpMonomialPredictionModel:
         Compute a tight upper bound on the algebraic degree of the superpoly
         corresponding to a specific output bit under a given cube.
         Fixes all non-cube public variables to zero.
+
         If the highest degree monomials have even parity, it returns d-1 as the bound.
+
+        INPUT:
+
+        - ``output_bit_index`` -- **integer**; index (0-based, counting from the most
+          significant bit) of the cipher output bit.
+
+        - ``cube`` -- **list of strings**; variable names forming the cube.
+
+        - ``chosen_cipher_output`` -- **string** (default: ``None``); specify a cipher component
+          ID if targeting an intermediate output.
+
+        OUTPUT:
+
+        - **integer**; tight upper bound on the algebraic degree of the superpoly.
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.stream_ciphers.trivium_stream_cipher import TriviumStreamCipher # doctest: +SKIP
+            sage: cipher = TriviumStreamCipher(keystream_bit_len=1, number_of_initialization_clocks=200) # doctest: +SKIP
+            sage: from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel # doctest: +SKIP
+            sage: milp = MilpMonomialPredictionModel(cipher) # doctest: +SKIP
+            sage: cube = ["i53"] # doctest: +SKIP
+            sage: milp.find_tight_upper_bound_degree_via_parity_of_superpoly_of_specific_output_bit(0, cube) # doctest: +SKIP
+            ...
         """
         self.build_generic_model_for_specific_output_bit(
             output_bit_index, None, None, chosen_cipher_output
@@ -1704,7 +1761,7 @@ class MilpMonomialPredictionModel:
     def _resolve_input_group_vars(self, which_var_degree):
         """Return the binary variables of the chosen input group, used as
         the objective by ``find_upper_bound_degree_of_all_output_bits`` and
-        ``find_exact_degree_of_all_output_bits``.
+        ``find_tight_upper_bound_degree_via_parity_of_all_output_bits``.
         """
         if which_var_degree is None:
             target_inputs = [(self._cipher.inputs[0], self._cipher.inputs_bit_size[0])]
@@ -1889,9 +1946,9 @@ class MilpMonomialPredictionModel:
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.stream_ciphers.trivium_stream_cipher import TriviumStreamCipher
-            sage: cipher = TriviumStreamCipher(keystream_bit_len=1, number_of_initialization_clocks=508)
-            sage: from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel
+            sage: from claasp.ciphers.stream_ciphers.trivium_stream_cipher import TriviumStreamCipher # doctest: +SKIP
+            sage: cipher = TriviumStreamCipher(keystream_bit_len=1, number_of_initialization_clocks=508) # doctest: +SKIP
+            sage: from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel # doctest: +SKIP
             sage: milp = MilpMonomialPredictionModel(cipher) # doctest: +SKIP
             sage: milp.find_upper_bound_degree_of_specific_output_bit(0, which_var_degree="i") # doctest: +SKIP
             ...
@@ -1966,9 +2023,9 @@ class MilpMonomialPredictionModel:
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
-            sage: cipher = SimonBlockCipher(number_of_rounds=4)
-            sage: from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel
+            sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher # doctest: +SKIP
+            sage: cipher = SimonBlockCipher(number_of_rounds=4) # doctest: +SKIP
+            sage: from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel # doctest: +SKIP
             sage: milp = MilpMonomialPredictionModel(cipher) # doctest: +SKIP
             sage: milp.find_upper_bound_degree_of_all_output_bits(which_var_degree="p") # doctest: +SKIP
             ...
@@ -2017,8 +2074,37 @@ class MilpMonomialPredictionModel:
     ):
         """
         Compute a tight upper bound on the algebraic degree of the ANF
-        for a specific cipher output bit with respect to a chosen input variable.
+        for a specific cipher output bit with respect to a chosen input variable group.
+
         If the highest degree monomials have even parity, it returns d-1 as the bound.
+
+        INPUT:
+
+        - ``output_bit_index`` -- **integer**; index (0-based, counting from the most
+          significant bit) of the cipher output bit to analyze.
+
+        - ``which_var_degree`` -- **string** (default: ``None``); prefix identifying which
+          input group the algebraic degree should be computed over:
+            * ``"k"`` → degree with respect to key bits
+            * ``"p"`` → degree with respect to plaintext bits
+            * ``"i"`` → degree with respect to IV bits
+          If ``None`` (default), the first input listed in ``self._cipher.inputs`` is used.
+
+        - ``chosen_cipher_output`` -- **string** (default: ``None``); specify a cipher component
+          ID if the computation targets an intermediate output instead of the final cipher output.
+
+        OUTPUT:
+
+        - **integer**; tight upper bound on the algebraic degree of the selected output bit.
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.stream_ciphers.trivium_stream_cipher import TriviumStreamCipher
+            sage: cipher = TriviumStreamCipher(keystream_bit_len=1, number_of_initialization_clocks=508)
+            sage: from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel
+            sage: milp = MilpMonomialPredictionModel(cipher) # doctest: +SKIP
+            sage: milp.find_tight_upper_bound_degree_via_parity_of_specific_output_bit(0, which_var_degree="i") # doctest: +SKIP
+            ...
         """
         fixed_degree = None
         self.build_generic_model_for_specific_output_bit(
@@ -2061,7 +2147,34 @@ class MilpMonomialPredictionModel:
     def find_tight_upper_bound_degree_via_parity_of_all_output_bits(self, which_var_degree=None, chosen_cipher_output=None):
         """
         Compute a tight upper bound on the algebraic degree for all cipher output bits.
+
         If the highest degree monomials have even parity, it returns d-1 as the bound.
+
+        INPUT:
+
+        - ``which_var_degree`` -- **string** (default: ``None``); prefix indicating which
+          variable group the algebraic degree should be computed over:
+            * ``"k"`` → key bits
+            * ``"p"`` → plaintext bits
+            * ``"i"`` → IV bits
+          If ``None`` (default), the degree is computed with respect to the first input
+          listed in ``self._cipher.inputs``.
+
+        - ``chosen_cipher_output`` -- **string** (default: ``None``); specify a cipher
+          component ID if the computation targets an intermediate output instead of the final cipher output.
+
+        OUTPUT:
+
+        - **list of integers**; tight upper bound on the algebraic degrees of all cipher output bits.
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
+            sage: cipher = SimonBlockCipher(number_of_rounds=4)
+            sage: from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel
+            sage: milp = MilpMonomialPredictionModel(cipher) # doctest: +SKIP
+            sage: milp.find_tight_upper_bound_degree_via_parity_of_all_output_bits(which_var_degree="p") # doctest: +SKIP
+            ...
         """
         global verbosity
         old_verbosity = verbosity
@@ -2117,11 +2230,11 @@ class MilpMonomialPredictionModel:
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
-            sage: cipher = SimonBlockCipher(number_of_rounds=13)
-            sage: from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel
+            sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher # doctest: +SKIP
+            sage: cipher = SimonBlockCipher(number_of_rounds=13) # doctest: +SKIP
+            sage: from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel # doctest: +SKIP
             sage: milp = MilpMonomialPredictionModel(cipher)  # doctest: +SKIP
-            sage: cube = [f"p{i}" for i in range(1, 32)]
+            sage: cube = [f"p{i}" for i in range(1, 32)] # doctest: +SKIP
             sage: d = milp.find_degree_in_cube_vars_of_specific_output_bit(16, cube)  # doctest: +SKIP
             ...
         """
@@ -2199,11 +2312,11 @@ class MilpMonomialPredictionModel:
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
-            sage: cipher = SimonBlockCipher(number_of_rounds=13)
-            sage: from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel
+            sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher # doctest: +SKIP
+            sage: cipher = SimonBlockCipher(number_of_rounds=13) # doctest: +SKIP
+            sage: from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel # doctest: +SKIP
             sage: milp = MilpMonomialPredictionModel(cipher)  # doctest: +SKIP
-            sage: cube = [f"p{i}" for i in range(1, 32)]
+            sage: cube = [f"p{i}" for i in range(1, 32)] # doctest: +SKIP
             sage: d = milp.find_upper_bound_degree_of_cube_monomial_of_specific_output_bit(16, cube)  # doctest: +SKIP
             ...
         """
@@ -2264,12 +2377,12 @@ class MilpMonomialPredictionModel:
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
-            sage: cipher = SimonBlockCipher(number_of_rounds=4)
-            sage: from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel
-            sage: milp = MilpMonomialPredictionModel(cipher)
-            sage: cube = ["p1", "p2"]
-            sage: milp.is_balanced_at_specific_output_bit_over_cube(0, cube)
+            sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher # doctest: +SKIP
+            sage: cipher = SimonBlockCipher(number_of_rounds=4) # doctest: +SKIP
+            sage: from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel # doctest: +SKIP
+            sage: milp = MilpMonomialPredictionModel(cipher)  # doctest: +SKIP
+            sage: cube = ["p1", "p2"] # doctest: +SKIP
+            sage: milp.is_balanced_at_specific_output_bit_over_cube(0, cube)  # doctest: +SKIP
             True
         """
         self.build_generic_model_for_specific_output_bit(
@@ -2324,12 +2437,30 @@ class MilpMonomialPredictionModel:
         Fixes all non-cube public variables to zero.
 
         INPUT:
-        - ``output_bit_index`` -- **integer**
-        - ``cube`` -- **list of strings**
-        - ``chosen_cipher_output`` -- **string** (default: ``None``)
+
+        - ``output_bit_index`` -- **integer**; index (0-based, counting from the most
+          significant bit) of the cipher output bit.
+
+        - ``cube`` -- **list of strings**; variable names forming the cube.
+          Example: ``["i53"]``.
+
+        - ``chosen_cipher_output`` -- **string** (default: ``None``); specify a cipher component
+          ID if targeting an intermediate output.
 
         OUTPUT:
-        - **Sage BooleanPolynomial**; the superpoly over key variables.
+
+        - **Sage BooleanPolynomial**; Boolean polynomial over key variables.
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.stream_ciphers.trivium_stream_cipher import TriviumStreamCipher
+            sage: cipher = TriviumStreamCipher(keystream_bit_len=1, number_of_initialization_clocks=200)
+            sage: from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel
+            sage: milp = MilpMonomialPredictionModel(cipher) # doctest: +SKIP
+            sage: cube = ["i53"]
+            sage: superpoly = milp.find_superpoly_of_specific_output_bit(0, cube) # doctest: +SKIP
+            sage: superpoly # doctest: +SKIP
+            ...
         """
         self.build_generic_model_for_specific_output_bit(
             output_bit_index, fixed_degree=None, which_var_degree=None, chosen_cipher_output=chosen_cipher_output
@@ -2840,7 +2971,7 @@ def _eval_boolean_poly(poly, valuation):
 def _build_trial_assignment(cipher, needed_prefixes, public_assign_bits):
     """Build one input assignment for a correctness trial: random key bits and
     fixed/zero public bits. Extracted from
-    ``check_correctness_of_keycoeff_of_cube_monomial_or_superpoly``; logic unchanged.
+    ``check_correctness_of_partial_anf_or_superpoly``; logic unchanged.
     """
     assign = {}
     for name, size in zip(cipher.inputs, cipher.inputs_bit_size):
@@ -2877,7 +3008,7 @@ def _cube_sum_parity(cipher, assign, cube_pos, size_map, output_bit_index):
     return acc
 
 
-def check_correctness_of_keycoeff_of_cube_monomial_or_superpoly(
+def check_correctness_of_partial_anf_or_superpoly(
     cipher, output_bit_index, cube, poly, public_assign_bits=None, trials=16
 ):
     """
@@ -2927,8 +3058,8 @@ def check_correctness_of_keycoeff_of_cube_monomial_or_superpoly(
         sage: from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import *
         sage: milp = MilpMonomialPredictionModel(cipher) # doctest: +SKIP
         sage: cube = ["i53"]
-        sage: coef_poly = milp.find_keycoeff_of_cube_monomial_of_specific_output_bit(0, cube) # doctest: +SKIP
-        sage: check_correctness_of_keycoeff_of_cube_monomial_or_superpoly(cipher, 0, cube, coef_poly) # doctest: +SKIP
+        sage: coef_poly = milp.find_superpoly_of_specific_output_bit(0, cube) # doctest: +SKIP
+        sage: check_correctness_of_partial_anf_or_superpoly(cipher, 0, cube, coef_poly) # doctest: +SKIP
         ...
 
         sage: from claasp.ciphers.stream_ciphers.trivium_stream_cipher import TriviumStreamCipher
@@ -2937,7 +3068,7 @@ def check_correctness_of_keycoeff_of_cube_monomial_or_superpoly(
         sage: milp = MilpMonomialPredictionModel(cipher) # doctest: +SKIP
         sage: cube = ['i9', 'i19', 'i29', 'i39', 'i49', 'i59', 'i69', 'i79']
         sage: superpoly = milp.find_superpoly_of_specific_output_bit(0, cube) # doctest: +SKIP
-        sage: check_correctness_of_keycoeff_of_cube_monomial_or_superpoly(cipher, 0, cube, superpoly) # doctest: +SKIP
+        sage: check_correctness_of_partial_anf_or_superpoly(cipher, 0, cube, superpoly) # doctest: +SKIP
         ...
 
         # by defult non-cube public variables assign to zero but that can be assigned
@@ -2945,7 +3076,7 @@ def check_correctness_of_keycoeff_of_cube_monomial_or_superpoly(
         # From the following dictionary 'pub' all non-cube public vars will be set to constant 1.
 
         sage: pub = {"initialization_vector": (1 << 80) - 1} # Every non cube vars set to 1.
-        sage: check_correctness_of_keycoeff_of_cube_monomial_or_superpoly(cipher, 0, cube, superpoly, public_assign_bits= pub) # doctest: +SKIP
+        sage: check_correctness_of_partial_anf_or_superpoly(cipher, 0, cube, superpoly, public_assign_bits= pub) # doctest: +SKIP
         ...
 
         #  A short example
@@ -2955,10 +3086,10 @@ def check_correctness_of_keycoeff_of_cube_monomial_or_superpoly(
         sage: milp = MilpMonomialPredictionModel(cipher) # doctest: +SKIP
         sage: cube = ['p2', 'p3']
         sage: superpoly = milp.find_superpoly_of_specific_output_bit(0, cube) # doctest: +SKIP
-        sage: check_correctness_of_keycoeff_of_cube_monomial_or_superpoly(cipher, 0, cube, superpoly) # doctest: +SKIP
+        sage: check_correctness_of_partial_anf_or_superpoly(cipher, 0, cube, superpoly) # doctest: +SKIP
         ...
         sage: pub = {"plaintext": 0xfda120472589641} # Set to 1 or 0 the plaintext vars according to the given pattern.
-        sage: check_correctness_of_keycoeff_of_cube_monomial_or_superpoly(cipher, 0, cube, superpoly, public_assign_bits= pub) # doctest: +SKIP
+        sage: check_correctness_of_partial_anf_or_superpoly(cipher, 0, cube, superpoly, public_assign_bits= pub) # doctest: +SKIP
         ...
 
     """
