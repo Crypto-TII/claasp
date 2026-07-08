@@ -62,6 +62,7 @@ class MilpMonomialPredictionModel:
         self._constants = {}
         self._sbox_valid_cache = {}
         self._sbox_ineq_cache = {}
+        self._gurobi_params = {}
 
     def build_gurobi_model(self):
         if os.getenv("GUROBI_COMPUTE_SERVER") is not None:
@@ -73,6 +74,8 @@ class MilpMonomialPredictionModel:
             model = Model()
         model.Params.LogToConsole = 0
         self._model = model
+        for param, value in self._gurobi_params.items():
+            self._model.setParam(param, value)
 
     def get_all_variables_as_list(self):
         for component_id in list(self._variables.keys())[:-1]:
@@ -1582,10 +1585,16 @@ class MilpMonomialPredictionModel:
         m.update()
         m.optimize()
 
-        if m.Status != GRB.OPTIMAL:
-            return -1
-        d = int(round(m.ObjVal))
-        tight_degree = self._tight_upper_bound_degree_from_solution_pool(key_vars, d)
+        if m.Status == GRB.OPTIMAL:
+            d = int(round(m.ObjVal))
+            tight_degree = self._tight_upper_bound_degree_from_solution_pool(key_vars, d)
+        elif m.Status == GRB.INFEASIBLE:
+            tight_degree = -1
+        else:
+            raise RuntimeError(
+                f"Gurobi failed to find a guaranteed optimal solution (Status: {m.Status}). "
+                "A guaranteed optimal solution is required for parity-based results."
+            )
         
         self._log_experiment(
             "tight upper bound degree partial anf",
@@ -1652,12 +1661,17 @@ class MilpMonomialPredictionModel:
         m.update()
         m.optimize()
 
-        if m.Status != GRB.OPTIMAL:
+        if m.Status == GRB.OPTIMAL:
+            d = int(round(m.ObjVal))
+            tight_degree = self._tight_upper_bound_degree_from_solution_pool(key_vars, d)
+        elif m.Status == GRB.INFEASIBLE:
             print(MODEL_INFEASIBLE_MSG) if verbosity else None
             tight_degree = -1
         else:
-            d = int(round(m.ObjVal))
-            tight_degree = self._tight_upper_bound_degree_from_solution_pool(key_vars, d)
+            raise RuntimeError(
+                f"Gurobi failed to find a guaranteed optimal solution (Status: {m.Status}). "
+                "A guaranteed optimal solution is required for parity-based results."
+            )
 
         self._log_experiment(
             "tight upper bound degree superpoly",
@@ -1802,11 +1816,16 @@ class MilpMonomialPredictionModel:
             c = m.addConstr(output_vars[i] == 1)
             m.update()
             m.optimize()
-            if m.Status != GRB.OPTIMAL:
-                print(f"[INFO] Model not optimal for output bit {i}") if verbosity else None
+            if m.Status == GRB.OPTIMAL:
+                degrees.append(self._tight_upper_bound_degree_from_solution_pool(target_vars, int(round(m.ObjVal))))
+            elif m.Status == GRB.INFEASIBLE:
+                print(f"[INFO] Model infeasible for output bit {i}") if verbosity else None
                 degrees.append(-1)
             else:
-                degrees.append(self._tight_upper_bound_degree_from_solution_pool(target_vars, int(round(m.ObjVal))))
+                raise RuntimeError(
+                    f"Gurobi failed to find a guaranteed optimal solution for bit {i} (Status: {m.Status}). "
+                    "A guaranteed optimal solution is required for parity-based results."
+                )
             m.remove(c)
             m.update()
         return degrees
@@ -2015,12 +2034,17 @@ class MilpMonomialPredictionModel:
         m.update()
         m.optimize()
 
-        if self._model.Status != GRB.OPTIMAL:
+        if m.Status == GRB.OPTIMAL:
+            d = int(round(m.ObjVal))
+            tight_degree = self._tight_upper_bound_degree_from_solution_pool(vars_target, d)
+        elif m.Status == GRB.INFEASIBLE:
             print(MODEL_INFEASIBLE_MSG) if verbosity else None
             tight_degree = -1
         else:
-            d = int(round(m.ObjVal))
-            tight_degree = self._tight_upper_bound_degree_from_solution_pool(vars_target, d)
+            raise RuntimeError(
+                f"Gurobi failed to find a guaranteed optimal solution (Status: {m.Status}). "
+                "A guaranteed optimal solution is required for parity-based results."
+            )
 
         self._log_experiment(
             "tight upper bound degree",
