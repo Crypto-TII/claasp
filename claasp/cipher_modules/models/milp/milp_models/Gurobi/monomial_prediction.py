@@ -1802,13 +1802,14 @@ class MilpMonomialPredictionModel:
         m.setParam(GRB.Param.PoolSolutions, 200000000)
         m.setParam(GRB.Param.PoolGap, 0.0)
 
-    def _verify_pool_completeness(self, experiment_name="computation"):
+    def _verify_pool_completeness(self, experiment_name="computation", model=None):
         """
         Verify that the solver status is optimal and the solution pool was not
         truncated. Missing trails can flip parity results, leading to incorrect
-        ANF or degree reports.
+        ANF or degree reports. ``model`` defaults to ``self._model`` but may be a
+        sub-model (e.g. a divide-and-conquer core model).
         """
-        m = self._model
+        m = model if model is not None else self._model
         if m.Status == GRB.SUBOPTIMAL:
             msg = f"[ERROR] Gurobi returned SUBOPTIMAL status for {experiment_name}. Result is unreliable."
             print(msg)
@@ -1821,6 +1822,34 @@ class MilpMonomialPredictionModel:
             return False
         return True
 
+    def _collect_input_vars_info(self):
+        """Return ``[(prefix, idx, gurobi_var), ...]`` for every symbolic input bit,
+        in a fixed order so that identical monomials always stringify identically.
+        """
+        inputs_info = []
+        for inp_name in self._cipher.inputs:
+            if inp_name not in self._variables:
+                continue
+            prefix = self._prefix_for_input(inp_name)
+            for idx, var_d in self._variables[inp_name].items():
+                inputs_info.append((prefix, idx, var_d["original"]))
+        return inputs_info
+
+    def _solution_full_monomial(self, inputs_info, target_vars_set):
+        """For the currently selected pool solution, return
+        ``(full_monomial_string, degree_in_target_vars)``. The monomial string is
+        built over the complete input support so distinct monomials are not merged.
+        """
+        toks = []
+        deg = 0
+        for prefix, idx, var in inputs_info:
+            if var.Xn > 0.5:
+                toks.append(f"{prefix}{idx}")
+                if var in target_vars_set:
+                    deg += 1
+        mono = "1" if not toks else "".join(toks)
+        return mono, deg
+
     def _tight_upper_bound_degree_from_solution_pool(self, target_vars, candidate_degree):
         """Walk the current Gurobi solution pool and apply the parity /
         degree-drop rule. If the highest degree monomials have even parity, it returns d-1 as the bound.
@@ -1829,36 +1858,20 @@ class MilpMonomialPredictionModel:
         to avoid incorrect cancellations.
         """
         m = self._model
-        # Reject suboptimal results
+        # Reject suboptimal or truncated pools
         if m.Status != GRB.OPTIMAL:
+            return -1
+        if not self._verify_pool_completeness("tight upper bound degree"):
             return -1
 
         target_vars_set = set(target_vars)
-
-        inputs_info = []
-        for prio, inp_name in enumerate(self._cipher.inputs):
-            if inp_name not in self._variables:
-                continue
-            prefix = self._prefix_for_input(inp_name)
-            for idx, var_d in self._variables[inp_name].items():
-                inputs_info.append((prefix, idx, var_d["original"]))
-
-        if not self._verify_pool_completeness("tight upper bound degree"):
-            return -1
+        inputs_info = self._collect_input_vars_info()
 
         monomial_parity = {}
         for s in range(m.SolCount):
             m.Params.SolutionNumber = s
-            toks = []
-            deg = 0
-            for prefix, idx, var in inputs_info:
-                if var.Xn > 0.5:
-                    toks.append(f"{prefix}{idx}")
-                    if var in target_vars_set:
-                        deg += 1
-
+            mono, deg = self._solution_full_monomial(inputs_info, target_vars_set)
             if deg == candidate_degree:
-                mono = "1" if not toks else "".join(toks)
                 monomial_parity[mono] = monomial_parity.get(mono, 0) ^ 1
 
         return candidate_degree if any(val == 1 for val in monomial_parity.values()) else candidate_degree - 1
@@ -2355,6 +2368,22 @@ class MilpMonomialPredictionModel:
 
         return degree_upper_bound
 
+    def _fix_non_cube_public_bits_to_zero(self, cube_set):
+        """Constrain every public (plaintext/IV) input bit not in the cube to 0.
+
+        ``cube_set`` is a set of ``(input_name, bit_index)`` tuples.
+        """
+        m = self._model
+        for inp, sz in zip(self._cipher.inputs, self._cipher.inputs_bit_size):
+            if inp[0] not in ("p", "i"):
+                continue
+            for i in range(sz):
+                if (inp, i) in cube_set:
+                    continue
+                v = m.getVarByName(f"{inp}[{i}]")
+                if v is not None:
+                    m.addConstr(v == 0)
+
     def is_balanced_at_specific_output_bit_over_cube(
         self,
         output_bit_index,
@@ -2396,14 +2425,7 @@ class MilpMonomialPredictionModel:
         cube_set = set(cube_verbose)
 
         # public non-cube input bits (plaintext / IV) -> 0
-        for inp, sz in zip(self._cipher.inputs, self._cipher.inputs_bit_size):
-            if inp[0] in ("p", "i"):
-                for i in range(sz):
-                    if (inp, i) in cube_set:
-                        continue
-                    v = m.getVarByName(f"{inp}[{i}]")
-                    if v is not None:
-                        m.addConstr(v == 0)
+        self._fix_non_cube_public_bits_to_zero(cube_set)
         # active cube bits -> 1
         for inp_name, idx in cube_verbose:
             v = m.getVarByName(f"{inp_name}[{idx}]")
@@ -2482,16 +2504,8 @@ class MilpMonomialPredictionModel:
         cube_vars = [m.getVarByName(f"{a}[{b}]") for (a, b) in cube_verbose]
         m.addConstr(sum(cube_vars) == len(cube))
 
-        # Fix all other non-key input bits to 0
-        for inp, sz in zip(self._cipher.inputs, self._cipher.inputs_bit_size):
-            pref = inp[0]
-            if pref in {"p", "i"}:
-                for i in range(sz):
-                    if (inp, i) in cube_set:
-                        continue
-                    v = m.getVarByName(f"{inp}[{i}]")
-                    if v is not None:
-                        m.addConstr(v == 0)
+        # Fix all other non-cube public input bits to 0
+        self._fix_non_cube_public_bits_to_zero(cube_set)
 
         m.setObjective(0.0, GRB.MAXIMIZE)
         m.update()
@@ -2617,7 +2631,7 @@ class MilpMonomialPredictionModel:
     def _constrain_cube_and_public_vars(self, cube, key_input_indices):
         cube_verbose = self.var_list_to_input_positions(cube)
         cube_vars_set = {f"{term[0]}[{term[1]}]" for term in cube_verbose}
-        
+
         # If no key_input_indices provided, identify all key inputs
         if key_input_indices is None:
             key_input_indices = [i for i, inp in enumerate(self._cipher.inputs) if "key" in inp.lower()]
@@ -2627,15 +2641,22 @@ class MilpMonomialPredictionModel:
             if var_term is not None:
                 self._model.addConstr(var_term == 1)
 
+        self._fix_non_key_non_cube_bits_to_zero(cube_vars_set, key_input_indices)
+
+    def _fix_non_key_non_cube_bits_to_zero(self, cube_vars_set, key_input_indices):
+        """Constrain every non-key input bit whose Gurobi name is not in
+        ``cube_vars_set`` to 0. ``cube_vars_set`` holds ``"input[bit]"`` names.
+        """
         for i, inp in enumerate(self._cipher.inputs):
             if i in key_input_indices:
                 continue
             for bit in range(self._cipher.inputs_bit_size[i]):
                 var_name = f"{inp}[{bit}]"
-                if var_name not in cube_vars_set:
-                    var_term = self._model.getVarByName(var_name)
-                    if var_term is not None:
-                        self._model.addConstr(var_term == 0)
+                if var_name in cube_vars_set:
+                    continue
+                var_term = self._model.getVarByName(var_name)
+                if var_term is not None:
+                    self._model.addConstr(var_term == 0)
 
     def _get_escape_idx(self, link_id, middle_round, skip_for_enum):
         used_predecessors = []
@@ -2717,6 +2738,11 @@ class MilpMonomialPredictionModel:
         return feasible_states
 
     def _get_input_masks(self, active_model, wrapper_model, sub_cipher):
+        if not self._verify_pool_completeness("divide-and-conquer enumeration", model=active_model):
+            raise RuntimeError(
+                "Divide-and-conquer pool enumeration is incomplete (suboptimal status or pool "
+                "cap reached); the parity-based coefficient would be unreliable."
+            )
         inputs = []
         for inp_name in sub_cipher.inputs:
             if not inp_name.startswith("intermediate_output") and inp_name in wrapper_model._variables:
