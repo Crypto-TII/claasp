@@ -22,9 +22,9 @@ from sage.rings.finite_rings.finite_field_constructor import GF
 from sage.rings.polynomial.polynomial_ring_constructor import PolynomialRing
 
 from claasp.cipher import Cipher
-from claasp.name_mappings import INPUT_PLAINTEXT, PERMUTATION
 from claasp.DTOs.component_state import ComponentState
-from claasp.utils.utils import simplify_inputs, get_ci, layer_and_lane_initialization
+from claasp.name_mappings import INPUT_PLAINTEXT, PERMUTATION
+from claasp.utils.utils import get_ci, layer_and_lane_initialization, simplify_inputs
 
 LANE_NUM = 4
 PLANE_NUM = 3

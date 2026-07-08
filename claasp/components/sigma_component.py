@@ -16,10 +16,10 @@
 # ****************************************************************************
 
 
-from claasp.input import Input
 from claasp.cipher_modules.generic_functions import SIGMA
 from claasp.component import linear_layer_to_binary_matrix
 from claasp.components.linear_layer_component import LinearLayer
+from claasp.input import Input
 
 
 class Sigma(LinearLayer):

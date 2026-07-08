@@ -1,8 +1,7 @@
 from claasp.cipher_modules.models.cp.mzn_models.mzn_wordwise_deterministic_truncated_xor_differential_model import (
     MznWordwiseDeterministicTruncatedXorDifferentialModel,
 )
-from claasp.cipher_modules.models.cp.solvers import CHUFFED
-from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
+from claasp.cipher_modules.models.utils import set_fixed_variables
 from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
 
 

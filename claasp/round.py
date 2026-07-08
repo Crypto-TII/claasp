@@ -129,4 +129,4 @@ class Round:
             if component.id == component_id:
                 break
             i += 1
-        self._components[i].set_input_id_links(new_input_id_links)
+        self._components[i].input_id_links = new_input_id_links

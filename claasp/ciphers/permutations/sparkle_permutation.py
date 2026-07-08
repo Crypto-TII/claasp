@@ -19,9 +19,9 @@
 from copy import deepcopy
 
 from claasp.cipher import Cipher
+from claasp.DTOs.component_state import ComponentState
 from claasp.name_mappings import INPUT_PLAINTEXT, PERMUTATION
 from claasp.utils.utils import get_inputs_parameter
-from claasp.DTOs.component_state import ComponentState
 
 WORD_SIZE = 32
 AZ_ROTATE = [(31, 24), (17, 17), (0, 31), (24, 16)]

@@ -1,5 +1,6 @@
 from claasp.components.modmul_component import ModMul
 
+
 def test_modmul_component_creation():
     component = ModMul(
         current_round_number=1,

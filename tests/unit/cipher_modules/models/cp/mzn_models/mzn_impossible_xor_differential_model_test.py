@@ -3,9 +3,9 @@ from claasp.cipher_modules.models.cp.mzn_models.mzn_impossible_xor_differential_
 )
 from claasp.cipher_modules.models.cp.solvers import CHUFFED
 from claasp.cipher_modules.models.utils import set_fixed_variables
-from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
-from claasp.name_mappings import INPUT_PLAINTEXT, INPUT_KEY, UNSATISFIABLE
+from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+from claasp.name_mappings import INPUT_KEY, INPUT_PLAINTEXT, UNSATISFIABLE
 
 
 def test_build_impossible_xor_differential_trail_with_extensions_model():

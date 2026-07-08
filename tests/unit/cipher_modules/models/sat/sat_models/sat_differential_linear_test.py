@@ -4,15 +4,15 @@ import math
 from claasp.cipher_modules.models.sat.sat_models.sat_differential_linear_model import SatDifferentialLinearModel
 from claasp.cipher_modules.models.sat.solvers import CADICAL_EXT
 from claasp.cipher_modules.models.utils import (
-    set_fixed_variables,
-    integer_to_bit_list,
     differential_linear_checker_for_block_cipher_single_key,
+    integer_to_bit_list,
+    set_fixed_variables,
     truncated_differential_linear_checker_permutation,
 )
 from claasp.ciphers.block_ciphers.aradi_block_cipher_sbox import AradiBlockCipherSBox
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation, ROUND_MODE_HALF
-from claasp.name_mappings import INPUT_PLAINTEXT, INPUT_KEY, SATISFIABLE
+from claasp.ciphers.permutations.chacha_permutation import ROUND_MODE_HALF, ChachaPermutation
+from claasp.name_mappings import INPUT_KEY, INPUT_PLAINTEXT, SATISFIABLE
 
 
 def test_differential_linear_trail_with_fixed_weight_6_rounds_speck():

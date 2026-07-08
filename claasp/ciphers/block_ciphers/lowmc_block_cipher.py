@@ -16,13 +16,11 @@
 # ****************************************************************************
 
 
-from os.path import dirname
-from os.path import exists
-from os.path import realpath
+from os.path import dirname, exists, realpath
 
 from claasp.cipher import Cipher
 from claasp.ciphers.block_ciphers import lowmc_generate_matrices
-from claasp.name_mappings import BLOCK_CIPHER, INPUT_PLAINTEXT, INPUT_KEY
+from claasp.name_mappings import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
 
 PARAMETERS_CONFIGURATION_LIST = [
     # See https://tches.iacr.org/index.php/TCHES/article/view/8680/8239 Table 6

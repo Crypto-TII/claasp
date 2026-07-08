@@ -18,11 +18,11 @@ import sys
 from datetime import datetime
 
 import sphinx.ext.intersphinx
-from sphinx.highlighting import PygmentsBridge
 from pygments.formatters.latex import LatexFormatter
-from sage.env import SAGE_DOC_SRC, SAGE_DOC, SAGE_SRC, MATHJAX_DIR
 from sage.docs.conf import *
+from sage.env import MATHJAX_DIR, SAGE_DOC_SRC, SAGE_SRC
 from sage.misc.latex_macros import sage_mathjax_macros
+from sphinx.highlighting import PygmentsBridge
 
 project = u"CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives"
 year = datetime.now().year

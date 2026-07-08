@@ -16,15 +16,16 @@
 # ****************************************************************************
 
 
-from claasp.cipher_modules.models.cp.mzn_model import MznModel, SOLVE_SATISFY
+from claasp.cipher_modules.models.cp.mzn_model import SOLVE_SATISFY, MznModel
 from claasp.cipher_modules.models.cp.solvers import SOLVER_DEFAULT
 from claasp.name_mappings import (
-    CIPHER_OUTPUT,
     CIPHER,
+    CIPHER_OUTPUT,
     CONSTANT,
     INTERMEDIATE_OUTPUT,
     LINEAR_LAYER,
     MIX_COLUMN,
+    PERMUTATION_COMPONENT,
     SBOX,
     WORD_OPERATION,
 )
@@ -59,7 +60,16 @@ class MznCipherModel(MznModel):
         variables = []
         self._variables_declarations = self.input_declarations()
         constraints = self.fix_variables_value_constraints(fixed_variables)
-        component_types = (CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER, MIX_COLUMN, SBOX, WORD_OPERATION)
+        component_types = (
+            CIPHER_OUTPUT,
+            CONSTANT,
+            INTERMEDIATE_OUTPUT,
+            LINEAR_LAYER,
+            MIX_COLUMN,
+            PERMUTATION_COMPONENT,
+            SBOX,
+            WORD_OPERATION,
+        )
         operation_types = ("AND", "MODADD", "MODSUB", "NOT", "OR", "ROTATE", "SHIFT", "SHIFT_BY_VARIABLE_AMOUNT", "XOR")
         self._model_constraints = constraints
 

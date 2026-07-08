@@ -1,31 +1,31 @@
-import os
-import shutil
 import builtins
+import shutil
 from types import SimpleNamespace
 
-import pytest
 import matplotlib.pyplot as plt
-import claasp.cipher_modules.component_analysis_tests as cat_module
-from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
-from claasp.cipher_modules.component_analysis_tests import (
-    CipherComponentsAnalysis,
-    compute_branch_number_from_binary_matrix,
-    compute_branch_number_from_binary_matrix_with_sage,
-    compute_branch_number_from_binary_matrix_with_bounded_enumeration,
-    compute_branch_number_from_binary_matrix_with_minizinc,
-    compute_branch_number_from_field_matrix,
-    compute_branch_number_from_field_matrix_with_sage,
-    compute_branch_number_from_field_matrix_with_bounded_enumeration,
-    compute_branch_number_from_field_matrix_with_minizinc,
-    branch_number,
-)
-from claasp.ciphers.stream_ciphers.bluetooth_stream_cipher_e0 import BluetoothStreamCipherE0
-from claasp.ciphers.stream_ciphers.trivium_stream_cipher import TriviumStreamCipher
-from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
+import pytest
 from sage.all import Matrix, identity_matrix
 from sage.rings.finite_rings.finite_field_constructor import FiniteField as GF
 from sage.rings.polynomial.polynomial_ring_constructor import PolynomialRing
+
+import claasp.cipher_modules.component_analysis_tests as cat_module
+from claasp.cipher_modules.component_analysis_tests import (
+    CipherComponentsAnalysis,
+    branch_number,
+    compute_branch_number_from_binary_matrix,
+    compute_branch_number_from_binary_matrix_with_bounded_enumeration,
+    compute_branch_number_from_binary_matrix_with_minizinc,
+    compute_branch_number_from_binary_matrix_with_sage,
+    compute_branch_number_from_field_matrix,
+    compute_branch_number_from_field_matrix_with_bounded_enumeration,
+    compute_branch_number_from_field_matrix_with_minizinc,
+    compute_branch_number_from_field_matrix_with_sage,
+)
+from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+from claasp.ciphers.stream_ciphers.bluetooth_stream_cipher_e0 import BluetoothStreamCipherE0
+from claasp.ciphers.stream_ciphers.trivium_stream_cipher import TriviumStreamCipher
+from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
+from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
 
 
 @pytest.fixture(scope="module")

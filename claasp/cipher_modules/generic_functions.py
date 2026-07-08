@@ -17,19 +17,19 @@
 
 
 # using bitstring module to manage bits
-from math import log
 from copy import copy
+from math import log
+
 from bitstring import BitArray  # pip3 install bitstring
-
 from sage.crypto.sbox import SBox
-from sage.rings.quotient_ring import QuotientRing
-from sage.matrix.constructor import matrix, Matrix
+from sage.matrix.constructor import Matrix, matrix
 from sage.modules.free_module_element import vector
-from sage.rings.polynomial.polynomial_ring_constructor import PolynomialRing
 from sage.rings.finite_rings.finite_field_constructor import FiniteField as GF
+from sage.rings.polynomial.polynomial_ring_constructor import PolynomialRing
+from sage.rings.quotient_ring import QuotientRing
 
-from claasp.utils.utils import int_to_poly, poly_to_int
 from claasp.cipher_modules.models.algebraic.boolean_polynomial_ring import BooleanPolynomialRing
+from claasp.utils.utils import int_to_poly, poly_to_int
 
 number_of_inputs_expression = "  #in = {}"
 input_expression = "  in  = {}"
@@ -121,6 +121,35 @@ def linear_layer(input, matrix, verbosity=False):
     if verbosity:
         print("LINEAR LAYER:")
         print("  M   = {}".format(matrix))
+        print(input_expression.format(input.bin))
+        print(output_expression.format(output.bin))
+
+    return output
+
+
+def permutation(input, permutation_description, word_size=1, verbosity=False):
+    """
+    Computes a (word-wise or bitwise) permutation.
+
+    INPUT:
+
+    - ``input`` -- **BitArray object**; a BitArray
+        - ``permutation_description`` -- **list**; a list of integers representing the permutation mapping.
+            When ``word_size=1``, each entry is a destination bit index for the corresponding source bit.
+            When ``word_size > 1``, each entry is a destination word index and the description has
+            ``len(input) // word_size`` entries.
+    - ``word_size`` -- **integer** (default: ``1``); number of bits per word
+    - ``verbosity`` -- **boolean** (default: `False`); set this flag to True to print the input/output
+    """
+    output = BitArray(length=input.len)
+    for src_idx, dst_idx in enumerate(permutation_description):
+        output[dst_idx * word_size: (dst_idx + 1) * word_size] = \
+            input[src_idx * word_size: (src_idx + 1) * word_size]
+
+    if verbosity:
+        print("PERMUTATION:")
+        print("  perm  = {}".format(permutation_description))
+        print("  word_size = {}".format(word_size))
         print(input_expression.format(input.bin))
         print(output_expression.format(output.bin))
 
@@ -1181,8 +1210,8 @@ def _bits_to_words_array(input, bits_inside_word, word_gf):
 
     for i in range(num_words):
         c = 0
-        for j, m in enumerate(monomials):
-            c += (input[(i * bits_inside_word) + j]) * monomials[j]
+        for j, monomial in enumerate(monomials):
+            c += (input[(i * bits_inside_word) + j]) * monomial
         word_array[i] = c
 
     return word_array

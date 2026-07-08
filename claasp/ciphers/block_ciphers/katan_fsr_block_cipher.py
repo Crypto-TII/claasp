@@ -52,13 +52,13 @@ The gate-level cipher outputs ``reversed(l2 + l1)``.  In FSR coordinates that
 equals  FSR[len_l2 .. block-1] ++ FSR[0 .. len_l2-1].
 """
 
-from claasp.DTOs.component_state import ComponentState
 from claasp.cipher import Cipher
 from claasp.ciphers.block_ciphers.katan_block_cipher import (
     CONFIGURATION,
     get_ir_bit,
     normalize_number_of_rounds,
 )
+from claasp.DTOs.component_state import ComponentState
 from claasp.name_mappings import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
 
 PARAMETERS_CONFIGURATION_LIST = [

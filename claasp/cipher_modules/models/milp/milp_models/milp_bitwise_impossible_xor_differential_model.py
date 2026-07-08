@@ -22,11 +22,12 @@ from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_tr
     MilpBitwiseDeterministicTruncatedXorDifferentialModel,
 )
 from claasp.cipher_modules.models.milp.solvers import SOLVER_DEFAULT
-from claasp.cipher_modules.models.milp.utils import utils as milp_utils, milp_truncated_utils
+from claasp.cipher_modules.models.milp.utils import milp_truncated_utils
+from claasp.cipher_modules.models.milp.utils import utils as milp_utils
 from claasp.cipher_modules.models.milp.utils.milp_name_mappings import (
     MILP_BACKWARD_SUFFIX,
-    MILP_BITWISE_IMPOSSIBLE_AUTO,
     MILP_BITWISE_IMPOSSIBLE,
+    MILP_BITWISE_IMPOSSIBLE_AUTO,
     MILP_BUILDING_MESSAGE,
 )
 from claasp.name_mappings import CIPHER_OUTPUT, INPUT_KEY
@@ -179,7 +180,7 @@ class MilpBitwiseImpossibleXorDifferentialModel(MilpBitwiseDeterministicTruncate
         x_class = self._trunc_binvar
         p = self._integer_variable
 
-        if component_id_list == None:
+        if component_id_list is None:
             return self.add_constraints_to_build_in_sage_milp_class(fixed_variables=fixed_variables)
         assert set(component_id_list) <= set(self._cipher.get_all_components_ids()) - set(
             get_key_schedule_component_ids(self._cipher)

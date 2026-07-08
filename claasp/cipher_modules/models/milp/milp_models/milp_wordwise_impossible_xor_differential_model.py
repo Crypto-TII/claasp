@@ -22,12 +22,13 @@ from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_t
     MilpWordwiseDeterministicTruncatedXorDifferentialModel,
 )
 from claasp.cipher_modules.models.milp.solvers import SOLVER_DEFAULT
-from claasp.cipher_modules.models.milp.utils import utils as milp_utils, milp_truncated_utils
+from claasp.cipher_modules.models.milp.utils import milp_truncated_utils
+from claasp.cipher_modules.models.milp.utils import utils as milp_utils
 from claasp.cipher_modules.models.milp.utils.milp_name_mappings import (
     MILP_BACKWARD_SUFFIX,
     MILP_BUILDING_MESSAGE,
-    MILP_WORDWISE_IMPOSSIBLE_AUTO,
     MILP_WORDWISE_IMPOSSIBLE,
+    MILP_WORDWISE_IMPOSSIBLE_AUTO,
 )
 from claasp.name_mappings import CIPHER_OUTPUT, INPUT_KEY
 
@@ -136,7 +137,11 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
 
         constraints.extend([sum(inconsistent_vars) == 1])
         for inconsistent_index in range(output_size):
-            incompatibility_constraints = [forward_vars[inconsistent_index] + backward_vars[inconsistent_index] <= 2]
+            # Only allow (0, 1), (0, 2), (1, 0), (2, 0)
+            incompatibility_constraints = [
+                forward_vars[inconsistent_index] + backward_vars[inconsistent_index] <= 2,
+                forward_vars[inconsistent_index] + backward_vars[inconsistent_index] >= 1,
+            ]
             dummy = x[
                 f"dummy_incompatibility_{x[forward_vars[inconsistent_index]]}_or_{x[backward_vars[inconsistent_index]]}_is_0"
             ]
@@ -202,7 +207,7 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
         x_class = self._trunc_wordvar
         p = self._integer_variable
 
-        if component_id_list == None:
+        if component_id_list is None:
             return self.add_constraints_to_build_in_sage_milp_class(fixed_bits=fixed_bits, fixed_words=fixed_words)
 
         assert set(component_id_list) <= set(self._cipher.get_all_components_ids()) - set(
@@ -277,7 +282,11 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
 
             incompatibility_constraints.extend([sum(inconsistent_vars) == 1])
             for inconsistent_index in range(output_size):
-                incompatibility_constraint = [forward_vars[inconsistent_index] + backward_vars[inconsistent_index] <= 2]
+                # Only allow (0, 1), (0, 2), (1, 0), (2, 0)
+                incompatibility_constraint = [
+                    forward_vars[inconsistent_index] + backward_vars[inconsistent_index] <= 2,
+                    forward_vars[inconsistent_index] + backward_vars[inconsistent_index] >= 1,
+                ]
                 incompatibility_constraints.extend(
                     milp_utils.milp_if_then(
                         inconsistent_vars[inconsistent_index],

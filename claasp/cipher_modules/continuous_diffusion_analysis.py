@@ -21,10 +21,18 @@ from multiprocessing import Pool
 import numpy as np
 
 from claasp.cipher_modules import evaluator
-from claasp.cipher_modules.generic_functions_continuous_diffusion_analysis import (get_sbox_precomputations,
-                                                                                   get_mix_column_precomputations)
-from claasp.utils.utils import (merging_list_of_lists, aggregate_list_of_dictionary, generate_sample_from_gf_2_n,
-                                group_list_by_key, point_pair, signed_distance)
+from claasp.cipher_modules.generic_functions_continuous_diffusion_analysis import (
+    get_mix_column_precomputations,
+    get_sbox_precomputations,
+)
+from claasp.utils.utils import (
+    aggregate_list_of_dictionary,
+    generate_sample_from_gf_2_n,
+    group_list_by_key,
+    merging_list_of_lists,
+    point_pair,
+    signed_distance,
+)
 
 
 class ContinuousDiffusionAnalysis:

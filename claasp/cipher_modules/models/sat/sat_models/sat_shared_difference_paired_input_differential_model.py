@@ -27,13 +27,12 @@ from claasp.cipher_modules.models.utils import set_component_solution
 def add_prefix_id_to_components(cipher, prefix):
     all_components = cipher.rounds.get_all_components()
     for component in all_components:
-        component.set_id(f"{prefix}_{component.id}")
+        component.id = f"{prefix}_{component.id}"
         new_input_id_links = [
             f"{prefix}_{input_id_link}" if input_id_link not in cipher.inputs else input_id_link
             for input_id_link in component.input_id_links
         ]
-
-        component.set_input_id_links(new_input_id_links)
+        component.input_id_links = new_input_id_links
 
     return 0
 

@@ -16,8 +16,8 @@
 # ****************************************************************************
 
 
-from claasp.input import Input
 from claasp.component import Component
+from claasp.input import Input
 from claasp.name_mappings import WORD_OPERATION
 
 

@@ -11,14 +11,13 @@ EXAMPLES::
 from __future__ import annotations
 
 import ast
-from functools import lru_cache
 import importlib
 import json
 import re
 import shutil
 from dataclasses import dataclass
+from functools import lru_cache
 from pathlib import Path
-
 
 ABSTRACT_COMPONENT_CLASS_NAMES = frozenset({"MultiInputNonlinearLogicalOperator", "Modular"})
 IO_COMPONENT_CLASS_NAMES = frozenset({"CipherOutput", "IntermediateOutput"})
@@ -965,7 +964,7 @@ class Catalog:
             sage: # Filter by required components (AND logic).
             sage: rows = catalog.ciphers(filters='toys', has_components=['sbox', 'xor'])['rows']
             sage: rows[0]['class_name']
-            'FancyBlockCipher'
+            'CipherFourBlockCipher'
 
             sage: # include_metadata=True adds runtime attributes from the default instance.
             sage: meta = catalog.ciphers(filters='stream_ciphers', include_metadata=True)
@@ -1343,17 +1342,17 @@ class Catalog:
                 ],
                 "rows": [
                     {
-                        "class_name": "FancyBlockCipher",
-                        "tags": [
-                            "sbox_based",
-                            "toys"
-                        ]
+                    "class_name": "CipherFourBlockCipher",
+                    "tags": [
+                        "sbox_based",
+                        "toys"
+                    ]
                     },
             ...
 
             sage: Catalog().show_ciphers(filters='toys', include_metadata=True, exclude_columns=['module_name', 'category', 'components', 'tags'], fmt='csv')
             class_name,family_name,cipher_type,inputs,inputs_bit_size,output_bit_size,number_of_rounds,id,metadata_error
-            FancyBlockCipher,...
+            CipherFourBlockCipher,...
             ...
         """
         table = self.ciphers(

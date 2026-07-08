@@ -1,17 +1,17 @@
 
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
@@ -24,9 +24,19 @@ from subprocess import call
 import claasp
 from claasp.cipher_modules.generic_functions_vectorized_byte import get_number_of_bytes_needed_for_bit_size
 from claasp.component import free_input
-from claasp.name_mappings import (SBOX, LINEAR_LAYER, MIX_COLUMN, WORD_OPERATION, CONSTANT,
-                                  PADDING, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT,
-                                  FSR, CIPHER_INVERSE_SUFFIX)
+from claasp.name_mappings import (
+    CIPHER_INVERSE_SUFFIX,
+    CIPHER_OUTPUT,
+    CONSTANT,
+    FSR,
+    INTERMEDIATE_OUTPUT,
+    LINEAR_LAYER,
+    MIX_COLUMN,
+    PADDING,
+    PERMUTATION_COMPONENT,
+    SBOX,
+    WORD_OPERATION,
+)
 
 tii_path = inspect.getfile(claasp)
 tii_dir_path = os.path.dirname(tii_path)
@@ -218,54 +228,6 @@ def get_word_operation_component_bit_based_c_code(component, verbosity):
 
     return word_operation_code
 
-def generate_bit_based_vectorized_python_code_string(cipher, store_intermediate_outputs=False,
-                                                     verbosity=False, convert_output_to_bytes=False):
-    """
-    Return string python code needed to evaluate a cipher using a vectorized implementation bit based oriented.
-
-    INPUT:
-
-    - ``cipher`` -- **Cipher object**; a cipher instance
-    - ``store_intermediate_outputs`` -- **boolean** (default: `False`); set this flag to True in order to return a list
-      with each round output
-    - ``verbosity`` -- **boolean** (default: `False`); set to True to make the Python code print the input/output of
-      each component
-    - ``convert_output_to_bytes`` -- **boolean** (default: `False`)
-
-    EXAMPLES::
-
-        sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-        sage: from claasp.cipher_modules import code_generator
-        sage: speck = SpeckBlockCipher()
-        sage: string_python_code = code_generator.generate_bit_based_vectorized_python_code_string(speck)
-        sage: string_python_code.split("\n")[0]
-        'from claasp.cipher_modules.generic_functions_vectorized_bit import *'
-    """
-    code = ['from claasp.cipher_modules.generic_functions_vectorized_bit import *\n',
-            'def evaluate(input, store_intermediate_outputs):', '  intermediateOutputs={}']
-
-    code.extend([f'  {cipher.inputs[i]}=input[{i}]' for i in range(len(cipher.inputs))])
-    for component in cipher.get_all_components():
-        params = prepare_input_bit_based_vectorized_python_code_string(component)
-        component_types_allowed = ['constant', 'linear_layer', 'mix_column',
-                                   'sbox', 'cipher_output', 'intermediate_output', 'fsr']
-        component_descriptions_allowed = ['ROTATE', 'SHIFT', 'SHIFT_BY_VARIABLE_AMOUNT', 'NOT', 'XOR',
-                                          'MODADD', 'MODMUL', 'MODSUB', 'OR', 'AND']
-        if component.type in component_types_allowed or (component.type == 'word_operation' and
-                                                         component.description[0] in component_descriptions_allowed):
-            code.extend(component.get_bit_based_vectorized_python_code(params, convert_output_to_bytes))
-        name = component.id
-        if True and component.type != 'constant':
-            code.append(f'  bit_vector_print_as_hex_values("{name}_output", {name})')
-    if store_intermediate_outputs:
-        code.append('  return intermediateOutputs')
-    elif CIPHER_INVERSE_SUFFIX in cipher.id:
-        code.append('  return intermediateOutputs["plaintext"]')
-    else:
-        code.append('  return intermediateOutputs["cipher_output"]')
-
-    return '\n'.join(code)
-
 
 def generate_bit_based_vectorized_python_code_string(cipher, store_intermediate_outputs=False,
                                                      verbosity=False, convert_output_to_bytes=False):
@@ -296,7 +258,7 @@ def generate_bit_based_vectorized_python_code_string(cipher, store_intermediate_
     code.extend([f'  {cipher.inputs[i]}=input[{i}]' for i in range(len(cipher.inputs))])
     for component in cipher.get_all_components():
         params = prepare_input_bit_based_vectorized_python_code_string(component)
-        component_types_allowed = ['constant', 'linear_layer', 'mix_column',
+        component_types_allowed = ['constant', 'linear_layer', 'mix_column', 'permutation',
                                    'sbox', 'cipher_output', 'intermediate_output', 'fsr']
         component_descriptions_allowed = ['ROTATE', 'SHIFT', 'SHIFT_BY_VARIABLE_AMOUNT', 'NOT', 'XOR',
                                           'MODADD', 'MODMUL', 'MODSUB', 'OR', 'AND']
@@ -367,7 +329,7 @@ def generate_byte_based_vectorized_python_code_string(cipher, store_intermediate
     for component in cipher.get_all_components():
         formatted_component_inputs = prepare_input_byte_based_vectorized_python_code_string(output_bit_sizes, component)
         output_bit_sizes[component.id] = component.output_bit_size
-        component_types_allowed = ['constant', 'linear_layer', 'mix_column',
+        component_types_allowed = ['constant', 'linear_layer', 'mix_column', 'permutation',
                                    'sbox', 'cipher_output', 'intermediate_output', 'fsr']
         component_descriptions_allowed = ['ROTATE', 'SHIFT', 'SHIFT_BY_VARIABLE_AMOUNT', 'NOT', 'XOR',
                                           'MODADD', 'MODMUL', 'MODSUB', 'IDEA_MODMUL', 'OR', 'AND']
@@ -468,6 +430,8 @@ def get_number_of_inputs(component):
         number_of_inputs = len(component.description[0][0])
     elif component.type == 'linear_layer':
         number_of_inputs = len(component.description[0])
+    elif component.type == PERMUTATION_COMPONENT:
+        number_of_inputs = 1
     elif component.type == 'sbox':
         number_of_inputs = 1
     elif 'output' in component.type:
@@ -657,6 +621,10 @@ def build_function_call(component):
         polynomial = component.description[1]
         word_size = component.description[2]
         return f"mix_column_generalized(component_input, {mix_column_matrix}, {polynomial}, {word_size})"
+    elif component.type == PERMUTATION_COMPONENT:
+        permutation_list = component.description[0]
+        word_size = component.description[1]
+        return f"permutation(component_input, {permutation_list}, {word_size})"
     elif component.type == WORD_OPERATION:
         if component.description[0] in ('SHIFT_BY_VARIABLE_AMOUNT', 'ROTATE_BY_VARIABLE_AMOUNT'):
             return f"{component.description[0]}" \

@@ -1,45 +1,56 @@
 import math
 import os
+import pickle
 import sys
 from contextlib import redirect_stdout
 from io import StringIO
-import pickle
+
 import numpy as np
 import pytest
 
 from claasp.cipher_modules.models.milp.milp_models.milp_xor_linear_model import MilpXorLinearModel
+from claasp.cipher_modules.models.utils import (
+    _sample_truncated_difference_from_string,
+    _w_diff_linear_sk,
+    _w_diff_perm,
+    _w_diff_trunc_perm,
+    _w_diff_trunc_perm_io,
+    _w_diff_trunc_sk,
+    _w_linear_sk,
+    _w_sdpi_diff_linear_perm,
+    _w_sdpi_diff_perm,
+    _w_trunc_diff_linear_perm,
+    check_if_implemented_component,
+    convert_solver_solution_to_dictionary,
+    differential_checker_permutation,
+    differential_linear_checker_for_block_cipher_single_key,
+    differential_truncated_checker_permutation,
+    differential_truncated_checker_permutation_input_and_output_truncated,
+    differential_truncated_checker_single_key,
+    find_sign_for_xor_linear_trails,
+    get_related_key_scenario_format_for_fixed_values,
+    get_single_key_scenario_format_for_fixed_values,
+    hex_to_bitlist,
+    integer_to_bit_list,
+    join_and_sanitize_strings,
+    linear_checker_for_block_cipher_single_key,
+    print_components_values,
+    set_component_solution,
+    set_component_value_weight_sign,
+    set_fixed_variables,
+    shared_difference_paired_input_differential_checker_permutation,
+    shared_difference_paired_input_differential_linear_checker_permutation,
+    to_bias_for_xor_linear_trail,
+    to_correlation_for_xor_linear_trail,
+    to_probability_for_xor_linear_trail,
+    truncated_differential_linear_checker_permutation,
+    write_model_to_file,
+    write_solution_to_file,
+)
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-from claasp.cipher_modules.models.utils import (convert_solver_solution_to_dictionary, differential_linear_checker_for_block_cipher_single_key, truncated_differential_linear_checker_permutation, integer_to_bit_list,
-                                                set_fixed_variables, to_bias_for_xor_linear_trail,
-                                                to_probability_for_xor_linear_trail,
-                                                to_correlation_for_xor_linear_trail,
-                                                find_sign_for_xor_linear_trails, print_components_values,
-                                                write_solution_to_file,
-                                                get_single_key_scenario_format_for_fixed_values,
-                                                get_related_key_scenario_format_for_fixed_values,
-                                                differential_truncated_checker_permutation,
-                                                differential_checker_permutation,
-                                                differential_truncated_checker_permutation_input_and_output_truncated,
-                                                hex_to_bitlist,
-                                                linear_checker_for_block_cipher_single_key,
-                                                add_arcs,
-                                                check_if_implemented_component,
-                                                get_previous_output_bit_ids,
-                                                set_component_value_weight_sign,
-                                                set_component_solution,
-                                                join_and_sanitize_strings,
-                                                write_model_to_file,
-                                                differential_truncated_checker_single_key,
-                                                _sample_truncated_difference_from_string,
-                                                shared_difference_paired_input_differential_checker_permutation,
-                                                shared_difference_paired_input_differential_linear_checker_permutation,
-                                                _w_diff_linear_sk, _w_linear_sk, _w_diff_perm,
-                                                _w_diff_trunc_perm, _w_diff_trunc_sk,
-                                                _w_sdpi_diff_perm, _w_sdpi_diff_linear_perm,
-                                                _w_diff_trunc_perm_io, _w_trunc_diff_linear_perm)
 from claasp.ciphers.permutations.chacha_permutation import ROUND_MODE_HALF, ChachaPermutation
 from claasp.ciphers.permutations.salsa_permutation import SalsaPermutation
-from claasp.name_mappings import INTERMEDIATE_OUTPUT, WORD_OPERATION
+from claasp.name_mappings import WORD_OPERATION
 
 NOT_EQUAL = 'not equal'
 

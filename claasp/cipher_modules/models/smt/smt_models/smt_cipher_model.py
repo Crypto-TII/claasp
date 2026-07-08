@@ -23,12 +23,13 @@ from claasp.cipher_modules.models.smt.utils import constants
 from claasp.cipher_modules.models.smt.utils.utils import get_component_hex_value
 from claasp.cipher_modules.models.utils import set_component_solution
 from claasp.name_mappings import (
-    CIPHER_OUTPUT,
     CIPHER,
+    CIPHER_OUTPUT,
     CONSTANT,
     INTERMEDIATE_OUTPUT,
     LINEAR_LAYER,
     MIX_COLUMN,
+    PERMUTATION_COMPONENT,
     SBOX,
     WORD_OPERATION,
 )
@@ -64,7 +65,16 @@ class SmtCipherModel(SmtModel):
         variables = []
         self._variables_list = []
         constraints = self.fix_variables_value_constraints(fixed_variables)
-        component_types = (CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER, MIX_COLUMN, SBOX, WORD_OPERATION)
+        component_types = (
+            CIPHER_OUTPUT,
+            CONSTANT,
+            INTERMEDIATE_OUTPUT,
+            LINEAR_LAYER,
+            MIX_COLUMN,
+            PERMUTATION_COMPONENT,
+            SBOX,
+            WORD_OPERATION,
+        )
         operation_types = ("AND", "MODADD", "MODSUB", "NOT", "OR", "ROTATE", "SHIFT", "SHIFT_BY_VARIABLE_AMOUNT", "XOR")
         self._model_constraints = constraints
 

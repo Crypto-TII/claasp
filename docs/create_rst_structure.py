@@ -1,8 +1,7 @@
 import os
 import sys
-
-from shutil import copyfile
 from pathlib import Path
+from shutil import copyfile
 
 EXCLUDED_FOLDERS = ["__pycache__", "DTOs", "tii_reports"]
 EXCLUDED_FILES = ["__init__.py", "constants.py", ".DS_Store", "name_mappings.py", "finalAnalysisReportExample.txt"]

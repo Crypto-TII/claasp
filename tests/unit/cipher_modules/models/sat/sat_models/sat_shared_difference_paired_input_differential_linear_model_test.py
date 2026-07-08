@@ -7,11 +7,11 @@ from claasp.cipher_modules.models.sat.sat_models.sat_shared_difference_paired_in
 )
 from claasp.cipher_modules.models.sat.solvers import KISSAT_EXT
 from claasp.cipher_modules.models.utils import (
-    set_fixed_variables,
     integer_to_bit_list,
+    set_fixed_variables,
     shared_difference_paired_input_differential_linear_checker_permutation,
 )
-from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation, ROUND_MODE_HALF
+from claasp.ciphers.permutations.chacha_permutation import ROUND_MODE_HALF, ChachaPermutation
 from claasp.components.intermediate_output_component import IntermediateOutput
 from claasp.components.modsub_component import ModSub
 
@@ -20,7 +20,7 @@ def add_prefix_id_to_inputs(chacha_permutation, prefix):
     new_inputs = []
     for chacha_permutation_input in chacha_permutation.inputs:
         new_inputs.append(f"{prefix}_{chacha_permutation_input}")
-    chacha_permutation.set_inputs(new_inputs, chacha_permutation.inputs_bit_size)
+    chacha_permutation.inputs = new_inputs
 
 
 def add_ciphertext_and_new_plaintext_to_inputs(chacha_permutation):
@@ -51,7 +51,7 @@ def add_ciphertext_and_new_plaintext_to_inputs(chacha_permutation):
         "round_output",
     )
     round_object.add_component(new_intermediate_output_component)
-    new_intermediate_output_component.set_id(chacha_permutation.inputs[0])
+    new_intermediate_output_component.id = chacha_permutation.inputs[0]
     chacha_permutation.inputs.pop(0)
     chacha_permutation.inputs_bit_size.pop(0)
 
@@ -59,9 +59,9 @@ def add_ciphertext_and_new_plaintext_to_inputs(chacha_permutation):
 def add_prefix_id_to_components(chacha_permutation, prefix):
     all_components = chacha_permutation.rounds.get_all_components()
     for component in all_components:
-        component.set_id(f"{prefix}_{component.id}")
+        component.id = f"{prefix}_{component.id}"
         new_input_id_links = [f"{prefix}_{input_id_link}" for input_id_link in component.input_id_links]
-        component.set_input_id_links(new_input_id_links)
+        component.input_id_links = new_input_id_links
     return 0
 
 

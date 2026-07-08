@@ -20,25 +20,25 @@ from copy import deepcopy
 
 from sage.all import ZZ
 from sage.matrix.constructor import Matrix
-from sage.structure.sequence import Sequence
 from sage.modules.free_module_element import vector
 from sage.rings.finite_rings.finite_field_constructor import FiniteField
 from sage.rings.polynomial.polynomial_ring_constructor import PolynomialRing
+from sage.structure.sequence import Sequence
 
-from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_wordwise_truncated_mds_matrices import (
-    update_dictionary_that_contains_wordwise_truncated_mds_inequalities,
-    output_dictionary_that_contains_wordwise_truncated_mds_inequalities,
-)
-from claasp.cipher_modules.models.milp.utils.utils import espresso_pos_to_constraints
-from claasp.input import Input
-from claasp.component import Component, free_input
-from claasp.utils.utils import int_to_poly
-from claasp.components.linear_layer_component import LinearLayer
 from claasp.cipher_modules.component_analysis_tests import (
     binary_matrix_of_linear_component,
     branch_number,
     has_maximal_branch_number,
 )
+from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_wordwise_truncated_mds_matrices import (
+    output_dictionary_that_contains_wordwise_truncated_mds_inequalities,
+    update_dictionary_that_contains_wordwise_truncated_mds_inequalities,
+)
+from claasp.cipher_modules.models.milp.utils.utils import espresso_pos_to_constraints
+from claasp.component import Component, free_input
+from claasp.components.linear_layer_component import LinearLayer
+from claasp.input import Input
+from claasp.utils.utils import int_to_poly
 
 
 def _field_from_int(field, value):
@@ -377,9 +377,9 @@ class MixColumn(LinearLayer):
         matrix = binary_matrix_of_linear_component(self)
         matrix_transposed = [[matrix[i][j] for i in range(matrix.nrows())] for j in range(matrix.ncols())]
         original_description = deepcopy(self.description)
-        self.set_description(matrix_transposed)
+        self.description = matrix_transposed
         cp_declarations, cp_constraints = super().cp_constraints()
-        self.set_description(original_description)
+        self.description = original_description
 
         return cp_declarations, cp_constraints
 
@@ -407,9 +407,9 @@ class MixColumn(LinearLayer):
         matrix = binary_matrix_of_linear_component(self)
         matrix_transposed = [[matrix[i][j] for i in range(matrix.nrows())] for j in range(matrix.ncols())]
         original_description = deepcopy(self.description)
-        self.set_description(matrix_transposed)
+        self.description = matrix_transposed
         cp_declarations, cp_constraints = super().cp_deterministic_truncated_xor_differential_constraints()
-        self.set_description(original_description)
+        self.description = original_description
 
         return cp_declarations, cp_constraints
 
@@ -698,9 +698,9 @@ class MixColumn(LinearLayer):
         bin_matrix = binary_matrix_of_linear_component(self)
         matrix_transposed = [[bin_matrix[i][j] for i in range(bin_matrix.nrows())] for j in range(bin_matrix.ncols())]
         original_description = deepcopy(self.description)
-        self.set_description(matrix_transposed)
+        self.description = matrix_transposed
         variables, constraints = super().milp_constraints(model)
-        self.set_description(original_description)
+        self.description = original_description
 
         return variables, constraints
 
@@ -739,9 +739,9 @@ class MixColumn(LinearLayer):
         bin_matrix = binary_matrix_of_linear_component(self)
         matrix_transposed = [[bin_matrix[i][j] for i in range(bin_matrix.nrows())] for j in range(bin_matrix.ncols())]
         original_description = deepcopy(self.description)
-        self.set_description(matrix_transposed)
+        self.description = matrix_transposed
         variables, constraints = super().milp_xor_linear_mask_propagation_constraints(model)
-        self.set_description(original_description)
+        self.description = original_description
         result = variables, constraints
         return result
 
@@ -814,11 +814,12 @@ class MixColumn(LinearLayer):
             minimized_constraints = espresso_pos_to_constraints(inequalities, all_vars)
             constraints.extend(minimized_constraints)
         else:
-            M = self.description[0]
-            bin_matrix = Matrix([[1 if M[i][j] else 0 for i in range(len(M))] for j in range(len(M[0]))])
+            bin_matrix = binary_matrix_of_linear_component(self)
             bin_matrix_transposed = [list(_) for _ in list(zip(*bin_matrix))]
-            self.set_description(bin_matrix_transposed)
+            original_description = deepcopy(self.description)
+            self.description = bin_matrix_transposed
             variables, constraints = super().milp_wordwise_deterministic_truncated_xor_differential_constraints(model)
+            self.description = original_description
         return variables, constraints
 
     def sat_constraints(self):
@@ -861,9 +862,9 @@ class MixColumn(LinearLayer):
         matrix = binary_matrix_of_linear_component(self)
         matrix_transposed = [[matrix[i][j] for i in range(matrix.nrows())] for j in range(matrix.ncols())]
         original_description = deepcopy(self.description)
-        self.set_description(matrix_transposed)
+        self.description = matrix_transposed
         variables, constraints = super().sat_constraints()
-        self.set_description(original_description)
+        self.description = original_description
         result = variables, constraints
         return result
 
@@ -919,9 +920,9 @@ class MixColumn(LinearLayer):
         matrix = binary_matrix_of_linear_component(self)
         matrix_transposed = [[matrix[i][j] for i in range(matrix.nrows())] for j in range(matrix.ncols())]
         original_description = deepcopy(self.description)
-        self.set_description(matrix_transposed)
+        self.description = matrix_transposed
         out_ids, constraints = super().sat_bitwise_deterministic_truncated_xor_differential_constraints()
-        self.set_description(original_description)
+        self.description = original_description
         return out_ids, constraints
 
     def sat_xor_differential_propagation_constraints(self, model=None):
@@ -1019,9 +1020,9 @@ class MixColumn(LinearLayer):
         matrix = binary_matrix_of_linear_component(self)
         matrix_transposed = [[matrix[i][j] for i in range(matrix.nrows())] for j in range(matrix.ncols())]
         original_description = deepcopy(self.description)
-        self.set_description(matrix_transposed)
+        self.description = matrix_transposed
         variables, constraints = super().sat_xor_linear_mask_propagation_constraints()
-        self.set_description(original_description)
+        self.description = original_description
         result = variables, constraints
         return result
 
@@ -1057,9 +1058,9 @@ class MixColumn(LinearLayer):
         matrix = binary_matrix_of_linear_component(self)
         matrix_transposed = [[matrix[i][j] for i in range(matrix.nrows())] for j in range(matrix.ncols())]
         original_description = deepcopy(self.description)
-        self.set_description(matrix_transposed)
+        self.description = matrix_transposed
         variables, constraints = super().smt_constraints()
-        self.set_description(original_description)
+        self.description = original_description
         result = variables, constraints
         return result
 
@@ -1138,8 +1139,8 @@ class MixColumn(LinearLayer):
         matrix = binary_matrix_of_linear_component(self)
         matrix_transposed = [[matrix[i][j] for i in range(matrix.nrows())] for j in range(matrix.ncols())]
         original_description = deepcopy(self.description)
-        self.set_description(matrix_transposed)
+        self.description = matrix_transposed
         variables, constraints = super().smt_xor_linear_mask_propagation_constraints()
-        self.set_description(original_description)
+        self.description = original_description
         result = variables, constraints
         return result

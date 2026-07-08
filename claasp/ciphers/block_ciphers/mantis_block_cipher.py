@@ -15,10 +15,10 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
+
 from claasp.cipher import Cipher
 from claasp.name_mappings import INPUT_KEY, INPUT_PLAINTEXT, INPUT_TWEAK
 from claasp.utils.utils import extract_inputs
-import numpy as np
 
 MANTIS_ROUND_CONSTANTS = [
     0x13198a2e03707344,

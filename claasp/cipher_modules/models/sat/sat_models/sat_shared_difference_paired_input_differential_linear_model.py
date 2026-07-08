@@ -21,12 +21,13 @@ from copy import deepcopy
 from claasp.cipher_modules.models.sat import solvers
 from claasp.cipher_modules.models.sat.sat_model import SatModel
 from claasp.cipher_modules.models.sat.sat_models.sat_xor_linear_model import SatXorLinearModel
-from claasp.cipher_modules.models.sat.utils import utils as sat_utils, constants
+from claasp.cipher_modules.models.sat.utils import constants
+from claasp.cipher_modules.models.sat.utils import utils as sat_utils
 from claasp.cipher_modules.models.sat.utils.utils import (
     _generate_component_model_types,
     _update_component_model_types_for_linear_components,
 )
-from claasp.cipher_modules.models.utils import set_component_solution, get_bit_bindings
+from claasp.cipher_modules.models.utils import get_bit_bindings, set_component_solution
 
 
 class SharedDifferencePairedInputDifferentialLinearModel(SatModel):
@@ -84,7 +85,7 @@ class SharedDifferencePairedInputDifferentialLinearModel(SatModel):
                 for input_id_link in regular_component_copy.input_id_links
             ]
 
-            regular_component_copy.set_input_id_links(new_input_id_links)
+            regular_component_copy.input_id_links = new_input_id_links
 
             cipher._rounds.rounds[round_number]._components.extend([regular_component_copy])
             new_regular_components.append(

@@ -1,5 +1,5 @@
 from claasp.cipher_modules.models.milp.milp_models.milp_xor_differential_model import MilpXorDifferentialModel
-from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
+from claasp.cipher_modules.models.utils import integer_to_bit_list, set_fixed_variables
 from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.ciphers.block_ciphers.tea_block_cipher import TeaBlockCipher
@@ -26,7 +26,7 @@ def test_find_all_xor_differential_trails_with_fixed_weight():
 def test_find_all_xor_differential_trails_with_weight_at_most():
     speck = SpeckBlockCipher(block_bit_size=8, key_bit_size=16, number_of_rounds=2)
     milp = MilpXorDifferentialModel(speck)
-    trails = milp.find_all_xor_differential_trails_with_weight_at_most(0, 1)
+    trails = milp.find_all_xor_differential_trails_with_weight_at_most(1, 0)
     assert len(trails) == 7
     for trail in trails:
         assert 0.0 <= trail["total_weight"] <= 1.0

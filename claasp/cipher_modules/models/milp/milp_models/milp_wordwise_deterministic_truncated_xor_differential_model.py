@@ -22,18 +22,18 @@ from numpy import array_split
 from claasp.cipher_modules.models.milp.milp_model import MilpModel
 from claasp.cipher_modules.models.milp.solvers import SOLVER_DEFAULT
 from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_wordwise_truncated_xor_with_n_input_bits import (
-    update_dictionary_that_contains_wordwise_truncated_input_inequalities,
     output_dictionary_that_contains_wordwise_truncated_input_inequalities,
+    update_dictionary_that_contains_wordwise_truncated_input_inequalities,
 )
 from claasp.cipher_modules.models.milp.utils.milp_name_mappings import (
-    MILP_WORDWISE_DETERMINISTIC_TRUNCATED,
     MILP_BUILDING_MESSAGE,
     MILP_TRUNCATED_XOR_DIFFERENTIAL_OBJECTIVE,
+    MILP_WORDWISE_DETERMINISTIC_TRUNCATED,
 )
 from claasp.cipher_modules.models.milp.utils.milp_truncated_utils import (
     fix_variables_value_deterministic_truncated_xor_differential_constraints,
 )
-from claasp.cipher_modules.models.milp.utils.utils import espresso_pos_to_constraints, _get_variables_values_as_string
+from claasp.cipher_modules.models.milp.utils.utils import _get_variables_values_as_string, espresso_pos_to_constraints
 from claasp.cipher_modules.models.utils import set_component_solution
 from claasp.editor import get_output_bit_size_from_id
 from claasp.name_mappings import (
@@ -42,6 +42,7 @@ from claasp.name_mappings import (
     INTERMEDIATE_OUTPUT,
     LINEAR_LAYER,
     MIX_COLUMN,
+    PERMUTATION_COMPONENT,
     SBOX,
     WORD_OPERATION,
 )
@@ -177,6 +178,7 @@ class MilpWordwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
                 CONSTANT,
                 INTERMEDIATE_OUTPUT,
                 LINEAR_LAYER,
+                PERMUTATION_COMPONENT,
                 MIX_COLUMN,
                 SBOX,
                 WORD_OPERATION,

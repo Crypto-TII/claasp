@@ -1,18 +1,26 @@
 import os
-import secrets
 import random
-import numpy as np
+import secrets
 from math import sqrt
-from claasp.cipher_modules import evaluator
-from keras.callbacks import ModelCheckpoint
 
+import numpy as np
 import tensorflow as tf
+from keras.callbacks import ModelCheckpoint
+from keras.layers import BatchNormalization, Dense, LeakyReLU
+from keras.models import Model, Sequential
+from tensorflow.keras.layers import (
+    Activation,
+    Add,
+    BatchNormalization,
+    Conv1D,
+    Dense,
+    Input,
+)
 from tensorflow.keras.models import Model
-from tensorflow.keras.layers import Input, Conv1D, Dense, Dropout, Lambda, concatenate, BatchNormalization, Activation, \
-    Add
 from tensorflow.keras.regularizers import l2
-from keras.models import Sequential, Model
-from keras.layers import Dense, BatchNormalization, LeakyReLU
+
+from claasp.cipher_modules import evaluator
+
 
 class NeuralNetworkTests:
     def __init__(self, cipher):
@@ -722,8 +730,8 @@ class NeuralNetworkTests:
     def _make_resnet(self, input_size, num_filters=32, num_outputs=1, d1=64, d2=64, word_size=16, ks=3,
                      reg_param=10 ** -5,
                      final_activation='sigmoid', depth=1):
+        from keras.layers import Activation, Add, BatchNormalization, Conv1D, Dense, Flatten, Input, Permute, Reshape
         from keras.models import Model
-        from keras.layers import Dense, Conv1D, Input, Reshape, Permute, Add, Flatten, BatchNormalization, Activation
         from keras.regularizers import l2
         inp = Input(shape=(input_size,))
         rs = Reshape((input_size // word_size, word_size))(inp)

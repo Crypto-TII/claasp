@@ -17,7 +17,7 @@
 
 
 from claasp.cipher import Cipher
-from claasp.name_mappings import STREAM_CIPHER, INPUT_KEY, INPUT_INITIALIZATION_VECTOR
+from claasp.name_mappings import INPUT_INITIALIZATION_VECTOR, INPUT_KEY, STREAM_CIPHER
 
 PARAMETERS_CONFIGURATION_LIST = [
     {

@@ -17,8 +17,8 @@
 
 from claasp.cipher import Cipher
 from claasp.DTOs.component_state import ComponentState
+from claasp.name_mappings import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
 from claasp.utils.utils import get_number_of_rounds_from
-from claasp.name_mappings import BLOCK_CIPHER, INPUT_PLAINTEXT, INPUT_KEY
 
 
 class MSXBlockCipher(Cipher):
@@ -26,7 +26,7 @@ class MSXBlockCipher(Cipher):
     Return a cipher object of the MSX block cipher family.
 
     The MSX family includes MSX-64 and MSX-128 configurations. This implementation
-    models the cipher using CLAASP components (modular addition, modular 
+    models the cipher using CLAASP components (modular addition, modular
     multiplication, XOR, and rotations).
 
     INPUT:
@@ -102,10 +102,10 @@ class MSXBlockCipher(Cipher):
         return b3 + b2 + b1 + b0
 
     def _store_le_word(self, w: ComponentState) -> ComponentState:
-        b0 = ComponentState(w.id, [[i for i in range(24, 32)]])
-        b1 = ComponentState(w.id, [[i for i in range(16, 24)]])
-        b2 = ComponentState(w.id, [[i for i in range(8, 16)]])
-        b3 = ComponentState(w.id, [[i for i in range(0, 8)]])
+        b0 = ComponentState(w.id, [list(range(24, 32))])
+        b1 = ComponentState(w.id, [list(range(16, 24))])
+        b2 = ComponentState(w.id, [list(range(8, 16))])
+        b3 = ComponentState(w.id, [list(range(8))])
         return ComponentState(
             b0.id + b1.id + b2.id + b3.id,
             b0.input_bit_positions + b1.input_bit_positions + b2.input_bit_positions + b3.input_bit_positions,
@@ -129,7 +129,7 @@ class MSXBlockCipher(Cipher):
 
     def _key_schedule_initialization_64(self):
         k = self._key_words_from_input(4)
-        
+
         C = [
             732050807, 568877293, 527446341, 505872366, 942805254, 634010619,
             1296924710, 3826869025, 515107230, 1130980195, 2149511253, 539907735,
@@ -166,7 +166,7 @@ class MSXBlockCipher(Cipher):
         params = steps[step % 6]
         src = params[0]
         dsts = params[1:]
-        
+
         tmp = st[src]
         new_st = list(st)
         for rot, dst in zip([1, 2, 3, 4, 5], dsts):
@@ -249,7 +249,7 @@ class MSXBlockCipher(Cipher):
         params = steps[step % 8]
         src = params[0]
         dsts = params[1]
-        
+
         tmp = st[src]
         new_st = list(st)
         for rot, dst in zip(range(1, 10), dsts):
@@ -273,8 +273,6 @@ class MSXBlockCipher(Cipher):
             rk_buffer = rk_buffer[6:]
             return grp
 
-        L = None
-        R = None
         for i in range(self.n_rounds):
             self.add_round()
             if i == 0:
@@ -288,7 +286,7 @@ class MSXBlockCipher(Cipher):
             F_out = self.round_function(W1, rk_group, c_i)
             self.add_xor_component(W0.id + F_out.id, W0.input_bit_positions + F_out.input_bit_positions, self.word_size)
             W0_next = ComponentState([self.get_current_component_id()], [list(range(self.word_size))])
-            
+
             W0_new = W1
             W1_new = W0_next
             W0, W1 = W0_new, W1_new
@@ -335,8 +333,7 @@ class MSXBlockCipher(Cipher):
 
             c_i = self._const32(self.CON + ((call_counter & 0xFFFF) << 16))
             call_counter += 1
-            r_mod = i % 4
-            
+
             rk_group1 = next_rk_group()
             rk_group2 = next_rk_group()
 
@@ -344,7 +341,7 @@ class MSXBlockCipher(Cipher):
             F1 = self.round_function(W1, rk_group1, c_i)
             self.add_xor_component(W0.id + F1.id, W0.input_bit_positions + F1.input_bit_positions, self.word_size)
             W0_next = ComponentState([self.get_current_component_id()], [list(range(self.word_size))])
-            
+
             F2 = self.round_function(W3, rk_group2, c_i)
             self.add_xor_component(W2.id + F2.id, W2.input_bit_positions + F2.input_bit_positions, self.word_size)
             W2_next = ComponentState([self.get_current_component_id()], [list(range(self.word_size))])
@@ -358,10 +355,10 @@ class MSXBlockCipher(Cipher):
 
         # shifted_blocks = [W0, W1, W2, W3]
         # total_shifts = self.n_rounds % 4
-        
+
         # aligned_blocks = shifted_blocks[-total_shifts:] + shifted_blocks[:-total_shifts] if total_shifts > 0 else shifted_blocks
         # O0, O1, O2, O3 = aligned_blocks
-        
+
         if i == self.n_rounds - 1:
             W0_out = self._store_le_word(W0)
             W1_out = self._store_le_word(W1)
@@ -387,8 +384,8 @@ class MSXBlockCipher(Cipher):
 
     def round_function(self, x: ComponentState, rk_group, c: ComponentState) -> ComponentState:
         n = self.word_size
-        x_low16 = ComponentState(x.id, [[i for i in range(16, 32)]])
-        x_high16 = ComponentState(x.id, [[i for i in range(0, 16)]])
+        x_low16 = ComponentState(x.id, [list(range(16, 32))])
+        x_high16 = ComponentState(x.id, [list(range(16))])
         zero16 = self._zero_bits(16)
         x0_32 = ComponentState(
             zero16.id + x_low16.id,
@@ -420,8 +417,8 @@ class MSXBlockCipher(Cipher):
         self.add_xor_component(w1.id + c.id, w1.input_bit_positions + c.input_bit_positions, n)
         w1 = ComponentState([self.get_current_component_id()], [list(range(n))])
 
-        hi16_w0 = ComponentState(w0.id, [[i for i in range(0, 16)]])
-        hi16_w1 = ComponentState(w1.id, [[i for i in range(0, 16)]])
+        hi16_w0 = ComponentState(w0.id, [list(range(16))])
+        hi16_w1 = ComponentState(w1.id, [list(range(16))])
         y = ComponentState(
             hi16_w1.id + hi16_w0.id,
             hi16_w1.input_bit_positions + hi16_w0.input_bit_positions,

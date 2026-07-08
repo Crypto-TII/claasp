@@ -20,7 +20,7 @@ import os
 import pickle
 
 from joblib import Parallel, delayed
-from sympy import symbols, And, Not, to_cnf, Equivalent, Xor
+from sympy import And, Equivalent, Not, Xor, symbols, to_cnf
 
 
 def save_list(data, filename):

@@ -176,7 +176,7 @@ SAT_SOLVERS_EXTERNAL = [
         "keywords": {
             "command": {
                 "executable": "parkissat",
-                "options": ["-shr-sleep=500000", "-shr-lit=1500", "-initshuffle"],
+                "options": ["-c=1", "-shr-sleep=500000", "-shr-lit=1500", "-initshuffle"],
                 "input_file": "",
                 "solve": "",
                 "output_file": "",

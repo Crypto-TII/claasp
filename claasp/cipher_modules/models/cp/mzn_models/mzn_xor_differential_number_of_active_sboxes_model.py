@@ -18,10 +18,18 @@
 
 from copy import deepcopy
 
-from claasp.input import Input
+from claasp.cipher_modules.models.cp.mzn_model import SOLVE_SATISFY, MiniZincModelParts, MznModel
 from claasp.component import Component
-from claasp.cipher_modules.models.cp.mzn_model import MznModel, SOLVE_SATISFY
-from claasp.name_mappings import CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, SBOX, MIX_COLUMN, WORD_OPERATION
+from claasp.input import Input
+from claasp.name_mappings import (
+    CIPHER_OUTPUT,
+    CONSTANT,
+    INTERMEDIATE_OUTPUT,
+    MIX_COLUMN,
+    PERMUTATION_COMPONENT,
+    SBOX,
+    WORD_OPERATION,
+)
 
 
 def build_xor_truncated_table(numadd):
@@ -139,7 +147,15 @@ class MznXorDifferentialNumberOfActiveSboxesModel(MznModel):
         self._variables_declarations.extend(self.input_xor_differential_first_step_constraints(possible_sboxes))
 
         for component in self._cipher.get_all_components():
-            component_types = [CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, SBOX, MIX_COLUMN, WORD_OPERATION]
+            component_types = [
+                CONSTANT,
+                INTERMEDIATE_OUTPUT,
+                CIPHER_OUTPUT,
+                SBOX,
+                MIX_COLUMN,
+                PERMUTATION_COMPONENT,
+                WORD_OPERATION,
+            ]
             operation = component.description[0]
             operation_types = ["ROTATE", "SHIFT", "XOR", "NOT"]
             if component.type not in component_types or (
@@ -159,7 +175,13 @@ class MznXorDifferentialNumberOfActiveSboxesModel(MznModel):
             self._variables_declarations.extend(variables)
             self._first_step.append(constraints)
         self._first_step.extend(self.final_xor_differential_first_step_constraints(weight))
-        self._first_step = self._model_prefix + self._variables_declarations + self._first_step
+        self._first_step = self.assemble_model_lines(
+            MiniZincModelParts(
+                prefix=list(self._model_prefix),
+                variables=list(self._variables_declarations),
+                constraints=list(self._first_step),
+            )
+        )
 
     def create_xor_component(self, component1, component2, nmax):
         """

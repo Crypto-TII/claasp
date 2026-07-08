@@ -16,9 +16,10 @@
 # ****************************************************************************
 
 
-import numpy as np
-from functools import reduce
 import math
+from functools import reduce
+
+import numpy as np
 
 NB = 8  # Number of bits of the representation
 
@@ -660,3 +661,38 @@ def byte_vector_mix_column_poly0(input, matrix, word_size):
                                             number_of_inputs=1,
                                             words_per_input=get_number_of_bytes_needed_for_bit_size(word_size*len(tmp)),
                                             actual_inputs_bits=[word_size for _ in tmp])[0]
+
+
+def byte_vector_permutation(input, permutation, word_size, input_bit_size):
+    """
+    Computes the result of a (word-wise or bitwise) permutation operation on bit values.
+
+    INPUT:
+
+    - ``input`` -- **list**; A list of numpy byte matrices, one per input
+        - ``permutation`` -- **list**; a list of integers representing the permutation mapping.
+            When ``word_size=1``, each entry is a destination bit index for the corresponding source bit.
+            When ``word_size > 1``, each entry is a destination word index.
+    - ``word_size`` -- **integer**; number of bits per word (1 for bitwise permutation)
+    - ``input_bit_size`` -- **integer**; size in bits of the input
+    """
+    # Convert byte input to bits
+    bin_input = np.unpackbits(input[0], axis=0)
+
+    # Trim to the actual input size if not a multiple of 8
+    if input_bit_size % 8 != 0:
+        bits_to_cut = 8 - (input_bit_size % 8)
+        bin_input = bin_input[bits_to_cut:, :]
+
+    # Apply permutation (expand word-level permutation to bit level)
+    output = np.zeros((input_bit_size, bin_input.shape[1]), dtype=np.uint8)
+    for i, perm_idx in enumerate(permutation):
+        for j in range(word_size):
+            output[perm_idx * word_size + j] = bin_input[i * word_size + j]
+
+    # Convert back to bytes
+    if input_bit_size % 8 != 0:
+        bits_to_pad = 8 - (input_bit_size % 8)
+        output = np.vstack([np.zeros((bits_to_pad, output.shape[1]), dtype=np.uint8), output])
+
+    return np.packbits(output, axis=0)

@@ -16,20 +16,19 @@
 # ****************************************************************************
 
 import sys
-
 from copy import deepcopy
 
 from claasp.components.and_component import And
 from claasp.components.cipher_output_component import CipherOutput
 from claasp.components.constant_component import Constant
 from claasp.components.fsr_component import Fsr
+from claasp.components.idea_modmul_component import IdeaModmul
 from claasp.components.intermediate_output_component import IntermediateOutput
 from claasp.components.linear_layer_component import LinearLayer
 from claasp.components.mix_column_component import MixColumn
 from claasp.components.modadd_component import ModAdd
 from claasp.components.modmul_component import ModMul
 from claasp.components.modsub_component import ModSub
-from claasp.components.idea_modmul_component import IdeaModmul
 from claasp.components.not_component import Not
 from claasp.components.or_component import Or
 from claasp.components.permutation_component import Permutation
@@ -46,12 +45,16 @@ from claasp.components.variable_rotate_component import VariableRotate
 from claasp.components.variable_shift_component import VariableShift
 from claasp.components.word_permutation_component import WordPermutation
 from claasp.components.xor_component import Xor
+from claasp.component import Component
+from claasp.input import Input
 from claasp.name_mappings import (
-    INTERMEDIATE_OUTPUT,
     CIPHER_OUTPUT,
     CONSTANT,
     INPUT_KEY,
+    INPUT_TWEAK,
+    INTERMEDIATE_OUTPUT,
     LINEAR_LAYER,
+    PERMUTATION_COMPONENT,
 )
 
 CIPHER_ROUND_NOT_FOUND_ERROR = (
@@ -746,9 +749,10 @@ def add_permutation_component(
     input_bit_positions,
     output_bit_size,
     permutation_description,
+    word_size=1,
 ):
     """
-    Create a permutation component to permute the bit position in the editor.
+    Create a permutation component to permute the bit (or word) position in the editor.
 
     INPUT:
 
@@ -756,7 +760,11 @@ def add_permutation_component(
     - ``input_id_links`` -- **list**; the list of input_id links
     - ``input_bit_positions`` -- **list**; the list of input_bits corresponding to the input_id links
     - ``output_bit_size`` -- **integer**; the output bits of the component
-    - ``permutation_description`` -- **string**; the description of the permutation
+    - ``permutation_description`` -- **list**; the description of the permutation as a source-to-destination
+        mapping. When ``word_size=1``, ``permutation_description[i]`` is the destination bit index for source
+        bit ``i``. When ``word_size > 1``, ``permutation_description[i]`` is the destination word index for
+        source word ``i`` and the list has ``output_bit_size // word_size`` entries.
+    - ``word_size`` -- **integer** (default: ``1``); number of bits per word
 
     EXAMPLES::
 
@@ -774,13 +782,13 @@ def add_permutation_component(
         cipher_number_of_rounds = 1
         <BLANKLINE>
             # round = 0 - round component = 0
-            id = linear_layer_0_0
-            type = linear_layer
+            id = permutation_0_0
+            type = permutation
             input_bit_size = 4
             input_id_link = ['input']
             input_bit_positions = [[0, 1, 2, 3]]
             output_bit_size = 4
-            description = [[0, 0, 0, 1], [0, 0, 1, 0], [0, 1, 0, 0], [1, 0, 0, 0]]
+            description = [[3, 2, 1, 0], 1]
         cipher_reference_code = None
     """
     if cipher.current_round_number is None:
@@ -794,6 +802,7 @@ def add_permutation_component(
         input_bit_positions,
         output_bit_size,
         permutation_description,
+        word_size,
     )
     add_component(cipher, new_component)
     return new_component
@@ -936,16 +945,14 @@ def add_round(cipher):
         }
     """
     cipher.rounds.add_round()
-    cipher.set_id(
-        make_cipher_id(
-            cipher.family_name,
-            cipher.inputs,
-            cipher.inputs_bit_size,
-            cipher.output_bit_size,
-            cipher.number_of_rounds,
-        )
+    cipher.id = make_cipher_id(
+        cipher.family_name,
+        cipher.inputs,
+        cipher.inputs_bit_size,
+        cipher.output_bit_size,
+        cipher.number_of_rounds,
     )
-    cipher.set_file_name(make_file_name(cipher.id))
+    cipher.file_name = make_file_name(cipher.id)
 
 
 def add_round_key_output_component(cipher, input_id_links, input_bit_positions, output_bit_size):
@@ -1685,6 +1692,49 @@ def is_linear_layer_permutation(matrix, matrix_transposed):
     return has_only_one_1_in_rows and has_only_one_1_in_cols
 
 
+def get_linear_layer_permutation_mapping(component):
+    matrix = component.description
+    nrows = len(matrix)
+    ncols = len(matrix[0])
+    matrix_is_square = nrows == ncols
+    if not matrix_is_square:
+        return None
+
+    matrix_transposed = [[matrix[i][j] for i in range(nrows)] for j in range(ncols)]
+    if not is_linear_layer_permutation(matrix, matrix_transposed):
+        return None
+
+    return [row.index(1) for row in matrix_transposed]
+
+
+def is_fixed_rotate_component(component):
+    return component.type == "word_operation" and component.description[0] == "ROTATE"
+
+
+def get_component_reordering(component):
+    """
+    Return the bit-source index for each output bit of a reorder-only component.
+
+    The returned list maps each output bit position to the corresponding input bit index.
+    Only components that preserve values and merely reorder bits are supported:
+    dedicated permutation components, rotation components, and linear layers whose
+    matrix is a permutation matrix. Return ``None`` for all other components.
+    """
+    if component.type == PERMUTATION_COMPONENT:
+        return component._bit_perm()
+
+    if is_fixed_rotate_component(component):
+        amount = component.description[1]
+        size = component.output_bit_size
+        bit_positions = list(range(size))
+        return bit_positions[-amount:] + bit_positions[:-amount]
+
+    if component.type == LINEAR_LAYER:
+        return get_linear_layer_permutation_mapping(component)
+
+    return None
+
+
 def make_cipher_id(family_name, inputs, inputs_bit_size, output_bit_size, number_of_rounds):
     tokens = [f"{family_name}",]
     for input_, size in zip(inputs, inputs_bit_size):
@@ -1718,67 +1768,47 @@ def propagate_equivalences(cipher, round_id, component_id, new_expanded_links, n
                 unique_lengths, unique_links = get_unique_links_information(new_links)
                 final_input_positions = get_final_input_positions(new_input_positions, unique_lengths)
                 input_id_links = input_id_link[:id_index] + unique_links + input_id_link[id_index + 1 :]
-                component.set_input_id_links(input_id_links)
+                component.input_id_links = input_id_links
                 input_bit_positions = component.input_bit_positions
-                component.set_input_bit_positions(
+                component.input_bit_positions = (
                     input_bit_positions[:id_index] + final_input_positions + input_bit_positions[id_index + 1 :]
                 )
                 while [] in component.input_bit_positions:
                     component.input_bit_positions.remove([])
 
 
-def propagate_permutations(cipher):
-    cipher_without_permutations = deepcopy(cipher)
-    ids_of_permutations = []
-    for round_ in cipher_without_permutations.rounds_as_list:
-        for component in round_.components:
-            if component.type == LINEAR_LAYER:
-                matrix = component.description
-                nrows = len(matrix)
-                ncols = len(matrix[0])
-                matrix_is_square = nrows == ncols
-                if matrix_is_square:
-                    matrix_transposed = [[matrix[i][j] for i in range(nrows)] for j in range(ncols)]
-                    if is_linear_layer_permutation(matrix, matrix_transposed):
-                        ids_of_permutations.append(component.id)
-                        input_bit_positions = component.input_bit_positions
-                        expanded_links = generate_expanded_links(component, input_bit_positions)
-                        flat_input_bit_positions = [
-                            position for positions in input_bit_positions for position in positions
-                        ]
-                        new_expanded_links = [expanded_links[row.index(1)] for row in matrix_transposed]
-                        new_positions = [flat_input_bit_positions[row.index(1)] for row in matrix_transposed]
-                        propagate_equivalences(
-                            cipher_without_permutations,
-                            round_.id,
-                            component.id,
-                            new_expanded_links,
-                            new_positions,
-                        )
-    return (ids_of_permutations, cipher_without_permutations)
+def propagate_reorder_only_components(cipher, should_propagate):
+    """
+    Push reorder-only components forward by rewriting downstream input links.
 
-
-def propagate_rotations(cipher):
-    cipher_without_rotations = deepcopy(cipher)
-    for round_ in cipher_without_rotations.rounds_as_list:
+    The function deep-copies ``cipher`` and, for every component selected by
+    ``should_propagate``, computes the output-to-input bit mapping and rewires all
+    later consumers so they point directly to the original sources. This preserves
+    behavior while making the selected reorder-only components removable.
+    """
+    propagated_cipher = deepcopy(cipher)
+    propagated_component_ids = []
+    for round_ in propagated_cipher.rounds_as_list:
         for component in round_.components:
-            if component.description[0] == "ROTATE":
-                input_bit_positions = component.input_bit_positions
-                expanded_links = []
-                for link, positions in zip(component.input_id_links, input_bit_positions):
-                    expanded_links.extend([link] * len(positions))
-                flat_input_bit_positions = [position for positions in input_bit_positions for position in positions]
-                amount = component.description[1]
-                new_expanded_links = expanded_links[-amount:] + expanded_links[:-amount]
-                new_positions = flat_input_bit_positions[-amount:] + flat_input_bit_positions[:-amount]
-                propagate_equivalences(
-                    cipher_without_rotations,
-                    round_.id,
-                    component.id,
-                    new_expanded_links,
-                    new_positions,
-                )
-    return cipher_without_rotations
+            bit_mapping = get_component_reordering(component)
+            if bit_mapping is None or not should_propagate(component):
+                continue
+
+            propagated_component_ids.append(component.id)
+            input_bit_positions = component.input_bit_positions
+            expanded_links = generate_expanded_links(component, input_bit_positions)
+            flat_input_bit_positions = [position for positions in input_bit_positions for position in positions]
+            new_expanded_links = [expanded_links[index] for index in bit_mapping]
+            new_positions = [flat_input_bit_positions[index] for index in bit_mapping]
+            propagate_equivalences(
+                propagated_cipher,
+                round_.id,
+                component.id,
+                new_expanded_links,
+                new_positions,
+            )
+
+    return propagated_component_ids, propagated_cipher
 
 
 def remove_cipher_input_keys(cipher):
@@ -1788,6 +1818,40 @@ def remove_cipher_input_keys(cipher):
         cipher_without_key_schedule.inputs.pop(key_index)
         cipher_without_key_schedule.inputs_bit_size.pop(key_index)
     return cipher_without_key_schedule
+
+
+def get_key_schedule_component_ids(cipher):
+    """
+    Return the ids of the cipher's key-schedule components.
+
+    A component belongs to the key schedule if it is a key/tweak input, a constant, or fed only by
+    other key-schedule components. Used to keep the key schedule intact when slicing or inverting.
+
+    INPUT:
+
+    - ``cipher`` -- **Cipher object**; an instance of a cipher.
+
+    EXAMPLES::
+
+        sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+        sage: from claasp.editor import get_key_schedule_component_ids
+        sage: speck = SpeckBlockCipher(number_of_rounds=2)
+        sage: get_key_schedule_component_ids(speck)
+        ['key',
+         'intermediate_output_0_5',
+         'constant_1_0',
+         'rot_1_1',
+         'modadd_1_2',
+         'xor_1_3',
+         'rot_1_4',
+         'xor_1_5',
+         'intermediate_output_1_11']
+    """
+    key_schedule_ids = [cid for cid in cipher.inputs if INPUT_KEY in cid or INPUT_TWEAK in cid]
+    for c in cipher.get_all_components():
+        if c.type == CONSTANT or all(link in key_schedule_ids for link in c.input_id_links):
+            key_schedule_ids.append(c.id)
+    return key_schedule_ids
 
 
 def remove_forbidden_parents(rounds, cipher_without_key_schedule):
@@ -1900,172 +1964,63 @@ def remove_orphan_components(cipher_without_key_schedule):
                 cipher_without_key_schedule.remove_round_component(cipher_round.id, component)
 
 
-def remove_permutations(cipher):
+def replace_bit_reordering_components_as_direct_wiring(cipher, should_inline):
     """
-    Remove rotation components from the cipher instance keeping its effect.
+    Inline selected reorder-only components by rewiring their consumers.
 
     INPUT:
 
-    - ``cipher`` -- **Cipher object**; an instance of the object cipher
+    - ``cipher`` -- **Cipher object**; cipher to copy and simplify.
+    - ``should_inline`` -- **callable**; predicate receiving each component from
+        the copied cipher and returning ``True`` when that component should be
+        considered for rewiring.
+
+    OUTPUT:
+
+    - **Cipher object**; a deep-copied cipher where selected reorder-only
+        components have been replaced by direct wiring in downstream consumers.
+
+    The helper first rewrites later consumers using
+    ``propagate_reorder_only_components`` and then drops the now-redundant
+    component nodes from the copied cipher. The bit reordering remains part of
+    the cipher design, but it is encoded directly in downstream input links and
+    bit positions rather than as an explicit intermediate component.
+
+    Components with bit-reordering behavior are:
+
+    - dedicated permutation components, which always reorder bits;
+    - fixed rotation components, which always reorder bits;
+    - linear layers whose binary matrix is a permutation matrix.
+
+    Other linear layers are not reorder-only and are left in place even if
+    ``should_inline`` selects them.
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
-        sage: from claasp.editor import remove_permutations
-        sage: present = PresentBlockCipher(number_of_rounds=5)
-        sage: removed_permutations_present = remove_permutations(present)
-        sage: removed_permutations_present.print_as_python_dictionary()
-        cipher = {
-        ...
-        'cipher_rounds' : [
-          ...
-          {
-            # round = 0 - round component = 16
-            'id': 'sbox_0_16',
-            'type': 'sbox',
-            'input_bit_size': 4,
-            'input_id_link': ['xor_0_0'],
-            'input_bit_positions': [[60, 61, 62, 63]],
-            'output_bit_size': 4,
-            'description': [12, 5, 6, 11, 9, 0, 10, 13, 3, 14, 15, 8, 4, 7, 1, 2],
-          },
-          {
-            # round = 0 - round component = 17
-            'id': 'rot_0_18',
-            'type': 'word_operation',
-            'input_bit_size': 80,
-            'input_id_link': ['key'],
-            'input_bit_positions': [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79]],
-            'output_bit_size': 80,
-            'description': ['ROTATE', -61],
-          },
-          {
-            # round = 0 - round component = 18
-            'id': 'sbox_0_19',
-            'type': 'sbox',
-            'input_bit_size': 4,
-            'input_id_link': ['rot_0_18'],
-            'input_bit_positions': [[0, 1, 2, 3]],
-            'output_bit_size': 4,
-            'description': [12, 5, 6, 11, 9, 0, 10, 13, 3, 14, 15, 8, 4, 7, 1, 2],
-          },
-          ...
-            return int_to_bytearray(state, 64)
-        ''',
-        }
+        sage: from claasp.cipher import Cipher
+        sage: from claasp.editor import replace_bit_reordering_components_as_direct_wiring
+        sage: from claasp.name_mappings import PERMUTATION, PERMUTATION_COMPONENT, INPUT_MESSAGE
+        sage: cipher = Cipher("toy", PERMUTATION, [INPUT_MESSAGE], [4], 4)
+        sage: cipher.add_round()
+        sage: permutation_component = cipher.add_permutation_component([INPUT_MESSAGE], [[0, 1, 2, 3]], 4, [3, 2, 1, 0])
+        sage: output_component = cipher.add_cipher_output_component([permutation_component.id], [[0, 1, 2, 3]], 4)
+        sage: simplified = replace_bit_reordering_components_as_direct_wiring(
+        ....:     cipher, lambda component: component.type == PERMUTATION_COMPONENT
+        ....: )
+        sage: any(c.type == PERMUTATION_COMPONENT for r in simplified.rounds_as_list for c in r.components)
+        False
+        sage: cipher.evaluate([0b1010]) == simplified.evaluate([0b1010])
+        True
     """
-    (ids_of_permutations, cipher_without_permutations) = propagate_permutations(cipher)
+    removed_component_ids, simplified_cipher = propagate_reorder_only_components(cipher, should_inline)
     for round_ in cipher.rounds_as_list:
         for component in round_.components:
-            if component.id in ids_of_permutations:
-                cipher_without_permutations.remove_round_component_from_id(round_.id, component.id)
-    return cipher_without_permutations
+            if component.id in removed_component_ids:
+                simplified_cipher.remove_round_component_from_id(round_.id, component.id)
+
+    return simplified_cipher
 
 
-def remove_rotations(cipher):
-    """
-    Remove rotation components from the cipher instance keeping its effect.
-
-    INPUT:
-
-    - ``cipher`` -- **Cipher object**; an instance of the object cipher
-
-    EXAMPLES::
-
-        sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-        sage: from claasp.editor import remove_rotations
-        sage: speck = SpeckBlockCipher(number_of_rounds=5)
-        sage: removed_rotations_speck = remove_rotations(speck)
-        sage: removed_rotations_speck.print_as_python_dictionary()
-        cipher = {
-        'cipher_id': 'speck_p32_k64_o32_r5',
-        'cipher_type': 'block_cipher',
-        'cipher_inputs': ['plaintext', 'key'],
-        'cipher_inputs_bit_size': [32, 64],
-        'cipher_output_bit_size': 32,
-        'cipher_number_of_rounds': 5,
-        'cipher_rounds' : [
-          # round 0
-          [
-          {
-            # round = 0 - round component = 0
-            'id': 'modadd_0_1',
-            'type': 'word_operation',
-            'input_bit_size': 32,
-            'input_id_link': ['plaintext', 'plaintext'],
-            'input_bit_positions': [[9, 10, 11, 12, 13, 14, 15, 0, 1, 2, 3, 4, 5, 6, 7, 8], [16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31]],
-            'output_bit_size': 16,
-            'description': ['MODADD', 2, None],
-          },
-          ...
-          ],
-          # round 1
-          [
-          {
-            # round = 1 - round component = 0
-            'id': 'constant_1_0',
-            'type': 'constant',
-            'input_bit_size': 0,
-            'input_id_link': [''],
-            'input_bit_positions': [[]],
-            'output_bit_size': 16,
-            'description': ['0x0000'],
-          },
-          ...
-          ],
-          # round 2
-          [
-          {
-            # round = 2 - round component = 0
-            'id': 'constant_2_0',
-            'type': 'constant',
-            'input_bit_size': 0,
-            'input_id_link': [''],
-            'input_bit_positions': [[]],
-            'output_bit_size': 16,
-            'description': ['0x0001'],
-          },
-          ...
-          ],
-          # round 3
-          [
-          {
-            # round = 3 - round component = 0
-            'id': 'constant_3_0',
-            'type': 'constant',
-            'input_bit_size': 0,
-            'input_id_link': [''],
-            'input_bit_positions': [[]],
-            'output_bit_size': 16,
-            'description': ['0x0002'],
-          },
-          ...
-          ],
-          # round 4
-          [
-          {
-            # round = 4 - round component = 0
-            'id': 'constant_4_0',
-            'type': 'constant',
-            'input_bit_size': 0,
-            'input_id_link': [''],
-            'input_bit_positions': [[]],
-            'output_bit_size': 16,
-            'description': ['0x0003'],
-          },
-          ...
-          ],
-          ],
-        'cipher_reference_code': None,
-        }
-
-    """
-    cipher_without_rotations = propagate_rotations(cipher)
-    for round_ in cipher.rounds_as_list:
-        for component in round_.components:
-            if component.description[0] == "ROTATE":
-                cipher_without_rotations.remove_round_component_from_id(round_.id, component.id)
-    return cipher_without_rotations
 
 
 def remove_round_component(cipher, round_id, component):
@@ -2074,6 +2029,31 @@ def remove_round_component(cipher, round_id, component):
 
 def remove_round_component_from_id(cipher, round_id, component_id):
     cipher.rounds.remove_round_component_from_id(round_id, component_id)
+
+
+def remove_components(cipher, components):
+    """
+    Remove the given components from the cipher, wherever they sit across the rounds.
+
+    INPUT:
+
+    - ``cipher`` -- **Cipher object**; an instance of a cipher.
+    - ``components`` -- **list**; a list of ``Component`` objects to removed.
+
+    EXAMPLES::
+
+        sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+        sage: from claasp.editor import remove_components
+        sage: speck = SpeckBlockCipher(number_of_rounds=2)
+        sage: target = speck.get_all_components()[0]
+        sage: remove_components(speck, [target])
+        sage: target.id in speck.get_all_components_ids()
+        False
+    """
+    component_set = set(components)
+    for current_round in cipher.rounds_as_list:
+        for component in component_set.intersection(current_round.components):
+            cipher.rounds.remove_round_component(current_round.id, component)
 
 
 def sort_cipher(cipher):
@@ -2219,3 +2199,174 @@ def get_output_bit_size_from_id(cipher_list, component_id):
         raise ValueError(f"{component_id} not found.")
     except ValueError as e:
         sys.exit(str(e))
+
+
+# ---------------------------------------------------------------------------
+# Partial-cipher extraction
+# ---------------------------------------------------------------------------
+
+
+def _extract_partial_cipher(cipher, partial_cipher, start_round, end_round, keep_key_schedule):
+    """Turn ``partial_cipher`` (a copy of ``cipher``) into the slice of rounds ``[start_round,
+    end_round]``: prune out-of-range components, rewire the dangling links onto the slice boundary,
+    and re-terminate the front/back inputs and outputs.
+    """
+    removed_components_ids, intermediate_outputs = _prune_components_outside_round_range(
+        partial_cipher, start_round, end_round, keep_key_schedule
+    )
+    if not keep_key_schedule:
+        _add_missing_key_schedule_inputs(cipher, partial_cipher)
+    if start_round > 0:
+        _rewire_partial_cipher_inputs_from_start_round(
+            cipher, partial_cipher, start_round, end_round, removed_components_ids, intermediate_outputs
+        )
+    if end_round < cipher.number_of_rounds - 1:
+        _replace_partial_cipher_last_round_output(cipher, partial_cipher, end_round, removed_components_ids)
+
+
+def _remap_positions_into_output(target_link, target_bit_positions, intermediate_output):
+    if target_link == intermediate_output.id:
+        return target_bit_positions
+
+    intermediate_output_position_links = {}
+    current_bit_position = 0
+    for input_id_link, input_bit_positions in zip(
+        intermediate_output.input_id_links, intermediate_output.input_bit_positions
+    ):
+        for i in input_bit_positions:
+            intermediate_output_position_links[(input_id_link, i)] = current_bit_position
+            current_bit_position += 1
+
+    return [
+        intermediate_output_position_links[(target_link, bit)]
+        for bit in target_bit_positions
+        if (target_link, bit) in intermediate_output_position_links
+    ]
+
+
+def _get_most_recent_intermediate_output(target_link, intermediate_outputs):
+    for index in sorted(intermediate_outputs, reverse=True):
+        if target_link in intermediate_outputs[index].input_id_links or target_link == intermediate_outputs[index].id:
+            return intermediate_outputs[index]
+    raise ValueError(f"No intermediate output carries the removed link {target_link!r}.")
+
+
+def _rewire_removed_links(cipher_rounds, removed_components, intermediate_outputs):
+    removed_components = set(removed_components)
+    for cipher_round in cipher_rounds:
+        for component in cipher_round.components:
+            for i, link in enumerate(component.input_id_links):
+                if link in removed_components:
+                    intermediate_output = _get_most_recent_intermediate_output(link, intermediate_outputs)
+                    component.input_id_links[i] = intermediate_output.id
+                    component.input_bit_positions[i] = _remap_positions_into_output(
+                        link, component.input_bit_positions[i], intermediate_output
+                    )
+
+
+def _discard_rounds_collecting_intermediate_outputs(cipher, discarded_rounds, key_schedule_components):
+    key_set = set(key_schedule_components)
+    intermediate_outputs = {}
+    to_remove = []
+
+    for current_round in discarded_rounds:
+        round_removals = [c for c in current_round.components if c not in key_set]
+        # Record the round's intermediate output for rewiring: prefer the canonical "round_output",
+        # else fall back to the first intermediate output.
+        outputs = [c for c in round_removals if c.type == INTERMEDIATE_OUTPUT]
+        if outputs:
+            intermediate_outputs[current_round.id] = next(
+                (c for c in outputs if c.description == ["round_output"]), outputs[0]
+            )
+        to_remove.extend(round_removals)
+
+    remove_components(cipher, to_remove)
+    return [c.id for c in to_remove], intermediate_outputs
+
+
+def _prune_components_outside_round_range(cipher, start_round, end_round, keep_key_schedule):
+    """Remove the components outside the round range ``[start_round, end_round]``.
+
+    Returns the ids of the removed components and the per-round intermediate outputs needed to
+    rewire the surviving links onto the slice's boundary.
+    """
+    discarded_rounds = cipher.rounds_as_list[:start_round] + cipher.rounds_as_list[end_round + 1 :]
+    key_schedule_component_ids = get_key_schedule_component_ids(cipher)
+    key_schedule_components = [
+        cipher.component_from_id(id) for id in key_schedule_component_ids if INPUT_KEY not in id
+    ]
+
+    if not keep_key_schedule:
+        remove_components(cipher, key_schedule_components)
+
+    return _discard_rounds_collecting_intermediate_outputs(cipher, discarded_rounds, key_schedule_components)
+
+
+def _rewire_partial_cipher_inputs_from_start_round(
+    cipher, partial_cipher, start_round, end_round, removed_components_ids, intermediate_outputs
+):
+    """Replace the partial cipher's initial inputs with the previous round output and rewire links."""
+    for input_type in {cipher_input for cipher_input in cipher.inputs if INPUT_KEY not in cipher_input}:
+        removed_components_ids.append(input_type)
+        input_index = partial_cipher.inputs.index(input_type)
+        partial_cipher.inputs.pop(input_index)
+        partial_cipher.inputs_bit_size.pop(input_index)
+
+    previous_round_output = intermediate_outputs[start_round - 1]
+    partial_cipher.inputs.insert(0, previous_round_output.id)
+    partial_cipher.inputs_bit_size.insert(0, previous_round_output.output_bit_size)
+    _rewire_removed_links(
+        partial_cipher.rounds_as_list[start_round : end_round + 1],
+        removed_components_ids,
+        intermediate_outputs,
+    )
+
+
+def _add_missing_key_schedule_inputs(cipher, partial_cipher):
+    """Add the key-schedule inputs still referenced by the partial cipher's remaining components."""
+    key_schedule_component_ids = set(get_key_schedule_component_ids(cipher))
+    existing_inputs = set(partial_cipher.inputs)
+    all_input_links = (
+        input_id_link
+        for current_round in partial_cipher.rounds_as_list
+        for component in current_round.components
+        for input_id_link in component.input_id_links
+    )
+
+    for input_id_link in all_input_links:
+        if input_id_link in key_schedule_component_ids and input_id_link not in existing_inputs:
+            partial_cipher.inputs.append(input_id_link)
+            partial_cipher.inputs_bit_size.append(cipher.component_from_id(input_id_link).output_bit_size)
+            existing_inputs.add(input_id_link)
+
+
+def _replace_partial_cipher_last_round_output(cipher, partial_cipher, end_round, removed_components_ids):
+    removed_components_ids.append(CIPHER_OUTPUT)
+    last_round = partial_cipher.rounds_as_list[end_round]
+
+    def _promote_to_cipher_output(component):
+        last_round.remove_component(component)
+        new_cipher_output = Component(
+            component.id,
+            CIPHER_OUTPUT,
+            Input(
+                component.output_bit_size,
+                component.input_id_links,
+                component.input_bit_positions,
+            ),
+            component.output_bit_size,
+            [CIPHER_OUTPUT],
+        )
+        new_cipher_output.__class__ = CipherOutput
+        last_round.add_component(new_cipher_output)
+
+    components_to_promote = [c for c in last_round.components if c.description == ["round_output"]]
+    if not components_to_promote:
+        key_schedule_component_ids = set(get_key_schedule_component_ids(cipher))
+        components_to_promote = [
+            c
+            for c in last_round.components
+            if c.type == INTERMEDIATE_OUTPUT and c.id not in key_schedule_component_ids
+        ]
+    for component in components_to_promote:
+        _promote_to_cipher_output(component)

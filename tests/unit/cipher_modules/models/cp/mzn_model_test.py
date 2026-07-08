@@ -1,23 +1,24 @@
-import pytest
 from types import SimpleNamespace
 
-from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
-from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
+import pytest
+from minizinc import Status
+
 import claasp.cipher_modules.models.cp.mzn_model as mzn_model_module
 from claasp.cipher_modules.models.cp.mzn_model import MiniZincModelParts, MznModel
-from claasp.ciphers.block_ciphers.raiden_block_cipher import RaidenBlockCipher
-from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model import MznXorDifferentialModel
-from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model_arx_optimized import (
-    MznXorDifferentialModelARXOptimized,
-)
 from claasp.cipher_modules.models.cp.mzn_models.mzn_cipher_model_arx_optimized import MznCipherModelARXOptimized
 from claasp.cipher_modules.models.cp.mzn_models.mzn_deterministic_truncated_xor_differential_model_arx_optimized import (
     MznDeterministicTruncatedXorDifferentialModelARXOptimized,
 )
+from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model import MznXorDifferentialModel
+from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model_arx_optimized import (
+    MznXorDifferentialModelARXOptimized,
+)
 from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_linear_model import MznXorLinearModel
-from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list, get_bit_bindings
-from minizinc import Model, Solver, Instance, Status
+from claasp.cipher_modules.models.utils import get_bit_bindings, integer_to_bit_list, set_fixed_variables
+from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
+from claasp.ciphers.block_ciphers.raiden_block_cipher import RaidenBlockCipher
+from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
 
 
 class _FakeDuration:

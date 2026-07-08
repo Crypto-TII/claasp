@@ -1,7 +1,6 @@
 from claasp.cipher import Cipher
 from claasp.DTOs.component_state import ComponentState
-from claasp.name_mappings import STREAM_CIPHER, INPUT_KEY, INPUT_INITIALIZATION_VECTOR
-
+from claasp.name_mappings import INPUT_INITIALIZATION_VECTOR, INPUT_KEY, STREAM_CIPHER
 
 # fmt: off
 Sbox1 = [

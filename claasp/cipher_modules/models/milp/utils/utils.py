@@ -18,10 +18,9 @@
 import datetime
 import pickle
 import re
-
 from subprocess import run
-from bitstring import BitArray
 
+from bitstring import BitArray
 from sage.numerical.mip import MIPSolverException
 
 from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_large_sboxes import (
@@ -34,16 +33,15 @@ from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_xor_with_
 from claasp.cipher_modules.models.milp.utils.milp_name_mappings import (
     MILP_BACKWARD_SUFFIX,
     MILP_BITWISE_DETERMINISTIC_TRUNCATED,
-    MILP_BITWISE_IMPOSSIBLE_AUTO,
     MILP_BITWISE_IMPOSSIBLE,
+    MILP_BITWISE_IMPOSSIBLE_AUTO,
     MILP_TRUNCATED_XOR_DIFFERENTIAL_OBJECTIVE,
     MILP_WORDWISE_DETERMINISTIC_TRUNCATED,
-    MILP_WORDWISE_IMPOSSIBLE_AUTO,
     MILP_WORDWISE_IMPOSSIBLE,
+    MILP_WORDWISE_IMPOSSIBLE_AUTO,
     MILP_XOR_DIFFERENTIAL_OBJECTIVE,
 )
 from claasp.name_mappings import SBOX
-
 
 ### -------------------------External solver parsing methods------------------------- ###
 
@@ -207,7 +205,7 @@ def milp_less(model, a, b, big_m):
 
     """
     d = model.binary_variable
-    a_less_b = d[str(a) + "_less_" + str(b) + "_dummy"]
+    a_less_b = d[f"{a}_less_{b}_dummy"]
     constraints = [a <= b - 1 + big_m * (1 - a_less_b), a >= b - big_m * a_less_b]
 
     return a_less_b, constraints
@@ -247,7 +245,7 @@ def milp_and(model, a, b):
 
     """
     d = model.binary_variable
-    a_and_b = d[str(a) + "_and_" + str(b) + "_dummy"]
+    a_and_b = d[f"{a}_and_{b}_dummy"]
 
     constraint = [a + b - 1 <= a_and_b, a_and_b <= a, a_and_b <= b]
 
@@ -261,7 +259,7 @@ def milp_or(model, a, b):
 
     """
     d = model.binary_variable
-    a_or_b = d[str(a) + "_or_" + str(b) + "_dummy"]
+    a_or_b = d[f"{a}_or_{b}_dummy"]
 
     constraint = [a + b >= a_or_b, a_or_b >= a, a_or_b >= b]
 
@@ -778,15 +776,13 @@ def _get_component_values_for_impossible_models(model, objective_variables, comp
             for c in full_cipher_components[index:]
         ]
         list_component_ids = model._forward_cipher.inputs + updated_cipher_components
-    elif model._incompatible_components != None:
+    elif model._incompatible_components is not None:
         full_cipher_components = model._cipher.get_all_components_ids()
         backward_components = model._backward_cipher.get_all_components_ids() + model._backward_cipher.inputs
 
         indices = []
         for id in model._incompatible_components:
-            backward_incompatible_component = model._backward_cipher.component_from_id(
-                id + f"{MILP_BACKWARD_SUFFIX}"
-            )
+            backward_incompatible_component = model._backward_cipher.component_from_id(f"{id}{MILP_BACKWARD_SUFFIX}")
             input_ids, _ = backward_incompatible_component._get_input_output_variables()
             renamed_input_ids = {
                 "_".join(id.split("_")[:-2]) if MILP_BACKWARD_SUFFIX in id else "_".join(id.split("_")[:-1])
@@ -817,8 +813,8 @@ def _get_component_values_for_impossible_models(model, objective_variables, comp
 def _get_variables_values_as_string(component_id, components_variables, suffix, suffix_length):
     diff_str = ""
     for i in range(suffix_length):
-        if component_id + "_" + str(i) + suffix in components_variables:
-            bit = components_variables[component_id + "_" + str(i) + suffix]
+        if f"{component_id}_{i}{suffix}" in components_variables:
+            bit = components_variables[f"{component_id}_{i}{suffix}"]
             diff_str += f"{bit}".split(".")[0]
         else:
             diff_str += "*"

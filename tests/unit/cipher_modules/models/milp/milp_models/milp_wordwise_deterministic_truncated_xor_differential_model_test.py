@@ -2,8 +2,8 @@ from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_t
     MilpWordwiseDeterministicTruncatedXorDifferentialModel,
 )
 from claasp.cipher_modules.models.utils import get_single_key_scenario_format_for_fixed_values, set_fixed_variables
-from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
 from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
+from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
 from claasp.name_mappings import INPUT_KEY, INPUT_PLAINTEXT, SATISFIABLE
 
 

@@ -19,19 +19,24 @@ import importlib
 import inspect
 import os
 import sys
+from copy import deepcopy
 
 import claasp
 from claasp import editor
-from claasp.cipher_modules import code_generator
-from claasp.cipher_modules import tester, evaluator
+from claasp.cipher_modules import code_generator, evaluator, tester
 from claasp.cipher_modules.inverse_cipher import *
-from claasp.cipher_modules.inverse_cipher import _prune_components_outside_round_range
+from claasp.cipher_modules.inverse_cipher import (
+    _apply_inversion_step,
+    _AvailableBits,
+    _cipher_view_components_with_inputs,
+    _get_all_equivalent_bits,
+    _inversion_stall_message,
+)
 from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
 from claasp.components.cipher_output_component import CipherOutput
 from claasp.compound_xor_differential_cipher import convert_to_compound_xor_cipher
-from claasp.rounds import Rounds
 from claasp.name_mappings import CIPHER_INVERSE_SUFFIX
-
+from claasp.rounds import Rounds
 
 tii_path = inspect.getfile(claasp)
 tii_dir_path = os.path.dirname(tii_path)
@@ -224,6 +229,7 @@ class Cipher:
         input_bit_positions,
         output_bit_size,
         permutation_description,
+        word_size=1,
     ):
         return editor.add_permutation_component(
             self,
@@ -231,6 +237,7 @@ class Cipher:
             input_bit_positions,
             output_bit_size,
             permutation_description,
+            word_size,
         )
 
     def add_reverse_component(self, input_id_links, input_bit_positions, output_bit_size):
@@ -437,59 +444,29 @@ class Cipher:
         )
 
         inverted_cipher_components = []
-        cipher_components_tmp = get_cipher_components(self)
-        available_bits = []
+        cipher_components_tmp = _cipher_view_components_with_inputs(self)
+        available_bits = _AvailableBits()
         key_schedule_component_ids = get_key_schedule_component_ids(self)
-        all_equivalent_bits = get_all_equivalent_bits(self)
-        while len(cipher_components_tmp) > 0:
-            # print(len(cipher_components_tmp))
-            number_of_unprocessed_components = 0
+        all_equivalent_bits = _get_all_equivalent_bits(self)
+        while cipher_components_tmp:
+            # Rebuild the worklist each pass instead of list.remove(c) mid-iteration: remove() is an
+            # O(n) scan (O(n^2) over a pass) and mutating the list while iterating it silently skips
+            # the element after each removed one. Collect the still-unprocessed components and, if a
+            # whole pass makes no progress, the inversion is stalled.
+            unprocessed_components = []
             for c in cipher_components_tmp:
-                # print(c.id, "---------", len(cipher_components_tmp))
-                # OPTION 1 - Add components that are not invertible
-                if are_there_enough_available_inputs_to_evaluate_component(
-                    c,
-                    available_bits,
-                    all_equivalent_bits,
-                    key_schedule_component_ids,
-                    self,
-                ):
-                    # print("--------> evaluated")
-                    inverted_component = evaluated_component(
-                        c,
-                        available_bits,
-                        key_schedule_component_ids,
-                        all_equivalent_bits,
-                        self,
-                    )
-                    update_available_bits_with_component_output_bits(c, available_bits, self)
+                inverted_component = _apply_inversion_step(
+                    c, available_bits, all_equivalent_bits, key_schedule_component_ids, self
+                )
+                if inverted_component is not None:
                     inverted_cipher_components.append(inverted_component)
-                    cipher_components_tmp.remove(c)
-                # OPTION 2 - Add components that are invertible
-                elif (
-                    is_possibly_invertible_component(c)
-                    and are_there_enough_available_inputs_to_perform_inversion(
-                        c, available_bits, all_equivalent_bits, self
-                    )
-                ) or (c.type == CIPHER_INPUT and (c.description[0] == INPUT_KEY or c.description[0] == INPUT_TWEAK)):
-                    # print("--------> inverted")
-                    inverted_component = component_inverse(
-                        c,
-                        available_bits,
-                        all_equivalent_bits,
-                        key_schedule_component_ids,
-                        self,
-                    )
-                    update_available_bits_with_component_input_bits(c, available_bits)
-                    update_available_bits_with_component_output_bits(c, available_bits, self)
-                    inverted_cipher_components.append(inverted_component)
-                    cipher_components_tmp.remove(c)
                 else:
-                    number_of_unprocessed_components += 1
-                    if number_of_unprocessed_components == len(cipher_components_tmp):
-                        raise Error("Unable to invert cipher for now.")
+                    unprocessed_components.append(c)
+            if len(unprocessed_components) == len(cipher_components_tmp):
+                raise Error(_inversion_stall_message(cipher_components_tmp))
+            cipher_components_tmp = unprocessed_components
 
-                        # STEP 3 - rebuild cipher
+        # STEP 3 - rebuild cipher
         for _ in range(self.number_of_rounds):
             inverted_cipher.add_round()
         for component in inverted_cipher_components:
@@ -505,11 +482,54 @@ class Cipher:
                     component
                 )
 
-        sorted_inverted_cipher = sort_cipher_graph(inverted_cipher)
+        # STEP 3b - order the inverse inputs in one-to-one correspondence with the forward
+        # cipher's inputs: each surviving forward input (key, tweak, ...) keeps its position, and
+        # the forward input replaced by the inverse's ciphertext input (the original cipher_output,
+        # now an input here) takes that input's slot. Otherwise the input order would depend on the
+        # worklist processing order rather than mirroring the forward primitive.
+        bit_size_by_input = dict(zip(inverted_cipher.inputs, inverted_cipher.inputs_bit_size))
+        new_inverse_inputs = [input_id for input_id in inverted_cipher.inputs if input_id not in self.inputs]
+        ordered_inputs = []
+        new_inputs_placed = False
+        for forward_input in self.inputs:
+            if forward_input in bit_size_by_input:
+                ordered_inputs.append(forward_input)
+            elif not new_inputs_placed:
+                ordered_inputs.extend(new_inverse_inputs)
+                new_inputs_placed = True
+        if not new_inputs_placed:
+            ordered_inputs.extend(new_inverse_inputs)
+        inverted_cipher._inputs = ordered_inputs
+        inverted_cipher._inputs_bit_size = [bit_size_by_input[input_id] for input_id in ordered_inputs]
 
-        return sorted_inverted_cipher
+        inverted_cipher.sort_cipher()
+
+        return inverted_cipher
 
     def get_partial_cipher(self, start_round=None, end_round=None, keep_key_schedule=True):
+        """
+        Return a new cipher made of the rounds ``[start_round, end_round]`` of this cipher.
+
+        Components outside the range are pruned and the dangling links are rewired onto the slice
+        boundary. When ``start_round > 0`` the slice's data input is re-rooted to the state entering
+        ``start_round``; ``keep_key_schedule`` controls whether the key schedule is retained.
+
+        INPUT:
+
+        - ``start_round`` -- **integer** (default: 0); first round to keep
+        - ``end_round`` -- **integer** (default: last round); last round to keep
+        - ``keep_key_schedule`` -- **bool** (default: True); keep the full key-schedule components
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: speck = SpeckBlockCipher(number_of_rounds=4)
+            sage: partial = speck.get_partial_cipher(1, 2)
+            sage: partial.inputs
+            ['intermediate_output_0_6', 'key']
+            sage: partial.get_all_components_ids()[-1]
+            'intermediate_output_3_11'
+        """
         if start_round is None:
             start_round = 0
         if end_round is None:
@@ -529,90 +549,9 @@ class Cipher:
         for round in self.rounds_as_list:
             partial_cipher.rounds_as_list.append(deepcopy(round))
 
-        removed_components_ids, intermediate_outputs = _prune_components_outside_round_range(
-            partial_cipher,
-            start_round,
-            end_round,
-            keep_key_schedule
-        )
-
-        if not keep_key_schedule:
-            self._add_missing_key_schedule_inputs(partial_cipher)
-
-        if start_round > 0:
-            self._rewire_partial_cipher_inputs_from_start_round(
-                partial_cipher,
-                start_round,
-                end_round,
-                removed_components_ids,
-                intermediate_outputs,
-            )
-
-        if end_round < self.number_of_rounds - 1:
-            self._replace_partial_cipher_last_round_output(partial_cipher, end_round, removed_components_ids)
+        editor._extract_partial_cipher(self, partial_cipher, start_round, end_round, keep_key_schedule)
 
         return partial_cipher
-
-    def _rewire_partial_cipher_inputs_from_start_round(
-        self,
-        partial_cipher,
-        start_round,
-        end_round,
-        removed_components_ids,
-        intermediate_outputs,
-    ):
-        """Replace initial inputs with the previous round output and rewire links."""
-        for input_type in {cipher_input for cipher_input in self.inputs if INPUT_KEY not in cipher_input}:
-            removed_components_ids.append(input_type)
-            input_index = partial_cipher.inputs.index(input_type)
-            partial_cipher.inputs.pop(input_index)
-            partial_cipher.inputs_bit_size.pop(input_index)
-
-        previous_round_output = intermediate_outputs[start_round - 1]
-        partial_cipher.inputs.insert(0, previous_round_output.id)
-        partial_cipher.inputs_bit_size.insert(0, previous_round_output.output_bit_size)
-        update_input_links_from_rounds(
-            partial_cipher.rounds_as_list[start_round : end_round + 1],
-            removed_components_ids,
-            intermediate_outputs,
-        )
-
-    def _add_missing_key_schedule_inputs(self, partial_cipher):
-        """Add key-schedule inputs referenced by remaining components."""
-        key_schedule_component_ids = set(get_key_schedule_component_ids(self))
-        existing_inputs = set(partial_cipher.inputs)
-        all_input_links = (
-            input_id_link
-            for current_round in partial_cipher.rounds_as_list
-            for component in current_round.components
-            for input_id_link in component.input_id_links
-        )
-
-        for input_id_link in all_input_links:
-            if input_id_link in key_schedule_component_ids and input_id_link not in existing_inputs:
-                partial_cipher.inputs.append(input_id_link)
-                partial_cipher.inputs_bit_size.append(self.component_from_id(input_id_link).output_bit_size)
-                existing_inputs.add(input_id_link)
-
-    def _replace_partial_cipher_last_round_output(self, partial_cipher, end_round, removed_components_ids):
-        removed_components_ids.append(CIPHER_OUTPUT)
-        last_round = partial_cipher.rounds_as_list[end_round]
-        for component in last_round.components:
-            if component.description == ["round_output"]:
-                last_round.remove_component(component)
-                new_cipher_output = Component(
-                    component.id,
-                    CIPHER_OUTPUT,
-                    Input(
-                        component.output_bit_size,
-                        component.input_id_links,
-                        component.input_bit_positions,
-                    ),
-                    component.output_bit_size,
-                    [CIPHER_OUTPUT],
-                )
-                new_cipher_output.__class__ = CipherOutput
-                last_round.add_component(new_cipher_output)
 
     def add_suffix_to_components(self, suffix, component_id_list=None):
         renamed_inputs = self.inputs
@@ -685,9 +624,7 @@ class Cipher:
         ]
 
         if not keep_key_schedule:
-            for current_round in partial_cipher_inverse.rounds_as_list:
-                for key_component in set(key_schedule_components).intersection(current_round.components):
-                    partial_cipher_inverse.rounds.remove_round_component(current_round.id, key_component)
+            editor.remove_components(partial_cipher_inverse, key_schedule_components)
 
             for current_round in partial_cipher_inverse.rounds_as_list:
             ######## we move the key_schedule elements survived in the input id links in the cipher input
@@ -882,6 +819,9 @@ class Cipher:
             [0, 2, 4, 6, 8, 10, 12, 14, 1, 3, 5, 7, 9, 11, 13, 15]
         """
         return self._rounds.component_from_id(component_id)
+
+    def get_successor_components(self, component):
+        return self._rounds.get_successor_components(component.id)
 
     def get_components_in_round(self, round_number):
         return self._rounds.components_in_round(round_number)
@@ -1461,16 +1401,6 @@ class Cipher:
     def remove_round_component_from_id(self, round_id, component_id):
         editor.remove_round_component_from_id(self, round_id, component_id)
 
-    def set_file_name(self, file_name):
-        self._file_name = file_name
-
-    def set_id(self, cipher_id):
-        self._id = cipher_id
-
-    def set_inputs(self, inputs_ids_list, inputs_bit_size_list):
-        self._inputs = inputs_ids_list
-        self._inputs_bit_size = inputs_bit_size_list
-
     def sort_cipher(self):
         return editor.sort_cipher(self)
 
@@ -1549,8 +1479,8 @@ class Cipher:
         - ``solver`` -- **string**; the name of the solver to use for the search
         """
         from claasp.cipher_modules.models.utils import (
-            set_fixed_variables,
             integer_to_bit_list,
+            set_fixed_variables,
         )
 
         model = self.get_model(technique, f"xor_{type}")
@@ -1663,17 +1593,33 @@ class Cipher:
     def file_name(self):
         return self._file_name
 
+    @file_name.setter
+    def file_name(self, file_name):
+        self._file_name = file_name
+
     @property
     def id(self):
         return self._id
+
+    @id.setter
+    def id(self, cipher_id):
+        self._id = cipher_id
 
     @property
     def inputs(self):
         return self._inputs
 
+    @inputs.setter
+    def inputs(self, inputs):
+        self._inputs = inputs
+
     @property
     def inputs_bit_size(self):
         return self._inputs_bit_size
+
+    @inputs_bit_size.setter
+    def input_bit_size(self, input_bit_size):
+        self._inputs_bit_size = input_bit_size
 
     @property
     def number_of_rounds(self):
@@ -1770,3 +1716,4 @@ class Cipher:
     def update_input_id_links_from_component_id(self, component_id, new_input_id_links):
         round_number = self.get_round_from_component_id(component_id)
         self._rounds.rounds[round_number].update_input_id_links_from_component_id(component_id, new_input_id_links)
+        self._rounds._invalidate_indexes()

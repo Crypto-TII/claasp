@@ -13,7 +13,6 @@ from claasp.cipher_modules.models.smt.smt_model import SmtModel
 from claasp.ciphers.single_component_ciphers.sbox_cipher import SboxCipher
 from claasp.components.sbox_component import Sbox
 
-
 PRESENT_SBOX = [12, 5, 6, 11, 9, 0, 10, 13, 3, 14, 15, 8, 4, 7, 1, 2]
 
 

@@ -16,9 +16,9 @@
 # ****************************************************************************
 
 
+from claasp.cipher_modules.models.milp.utils import utils as milp_utils
 from claasp.cipher_modules.models.sat.utils import utils as sat_utils
 from claasp.cipher_modules.models.smt.utils import utils as smt_utils
-from claasp.cipher_modules.models.milp.utils import utils as milp_utils
 from claasp.components.multi_input_non_linear_logical_operator_component import MultiInputNonlinearLogicalOperator
 
 

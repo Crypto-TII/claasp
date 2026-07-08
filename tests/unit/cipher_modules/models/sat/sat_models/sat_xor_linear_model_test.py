@@ -1,8 +1,8 @@
 import math
 
-from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.cipher_modules.models.sat.sat_models.sat_xor_linear_model import SatXorLinearModel
-from claasp.cipher_modules.models.utils import set_fixed_variables, linear_checker_for_block_cipher_single_key
+from claasp.cipher_modules.models.utils import linear_checker_for_block_cipher_single_key, set_fixed_variables
+from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 
 
 def test_branch_xor_linear_constraints():

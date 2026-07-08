@@ -15,21 +15,26 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-import time
-import sys
-from copy import deepcopy
-from sage.crypto.sbox import SBox
-from collections import Counter
-from sage.rings.polynomial.pbori.pbori import BooleanPolynomialRing
-from claasp.cipher_modules.graph_generator import create_networkx_graph_from_input_ids, _get_predecessors_subgraph
-from claasp.cipher_modules.component_analysis_tests import binary_matrix_of_linear_component
-from claasp.name_mappings import INTERMEDIATE_OUTPUT
-from gurobipy import Model, GRB, Env
 import os
 import secrets
-from sage.all import GF
+import sys
+import time
+from collections import Counter
+from copy import deepcopy
+
+from gurobipy import GRB, Env, Model
+from sage.all import GF, Polyhedron
+from sage.crypto.sbox import SBox
+from sage.rings.polynomial.pbori.pbori import BooleanPolynomialRing
+
+from claasp.cipher_modules.component_analysis_tests import binary_matrix_of_linear_component
+from claasp.cipher_modules.graph_generator import _get_predecessors_subgraph, create_networkx_graph_from_input_ids
+from claasp.cipher_modules.models.milp.utils.generate_sbox_inequalities_for_trail_search import cutting_off_milp
+from claasp.name_mappings import INTERMEDIATE_OUTPUT
 
 verbosity = False
+
+MODEL_INFEASIBLE_MSG = "[INFO] Model is infeasible"
 
 
 class MilpMonomialPredictionModel:
@@ -55,11 +60,13 @@ class MilpMonomialPredictionModel:
         self._unused_variables = []
         self._used_predecessors_sorted = None
         self._constants = {}
+        self._sbox_valid_cache = {}
+        self._sbox_ineq_cache = {}
 
     def build_gurobi_model(self):
-        if os.getenv('GUROBI_COMPUTE_SERVER') is not None:
+        if os.getenv("GUROBI_COMPUTE_SERVER") is not None:
             env = Env(empty=True)
-            env.setParam('ComputeServer', os.getenv('GUROBI_COMPUTE_SERVER'))
+            env.setParam("ComputeServer", os.getenv("GUROBI_COMPUTE_SERVER"))
             env.start()
             model = Model(env=env)
         else:
@@ -102,7 +109,7 @@ class MilpMonomialPredictionModel:
                     self._used_variables.append(v.VarName)
                     if "copy" in v.VarName.split("_"):
                         i = v.VarName.split("_").index("copy")
-                        tmp1 = v.VarName.split("_")[(i + 2):]
+                        tmp1 = v.VarName.split("_")[(i + 2) :]
                         tmp2 = "_".join(tmp1)
                         self._used_variables.append(tmp2)
                 self._unused_variables = [x for x in self._unused_variables if x != v.VarName]
@@ -123,8 +130,8 @@ class MilpMonomialPredictionModel:
 
     def get_anfs_from_sbox(self, component):
         anfs = []
-        B = BooleanPolynomialRing(component.output_bit_size, 'x')
-        C = BooleanPolynomialRing(component.output_bit_size, 'x')
+        B = BooleanPolynomialRing(component.output_bit_size, "x")
+        C = BooleanPolynomialRing(component.output_bit_size, "x")
         var_names = [f"x{i}" for i in range(component.output_bit_size)]
         d = {}
         for i in range(component.output_bit_size):
@@ -139,7 +146,7 @@ class MilpMonomialPredictionModel:
         return anfs
 
     def get_monomial_occurences(self, component):
-        B = BooleanPolynomialRing(component.input_bit_size, 'x')
+        B = BooleanPolynomialRing(component.input_bit_size, "x")
         anfs = self.get_anfs_from_sbox(component)
 
         anfs = [B(anfs[i]) for i in range(component.input_bit_size)]
@@ -151,7 +158,8 @@ class MilpMonomialPredictionModel:
         sbox = SBox(component.description)
         for deg in range(sbox.max_degree() + 1):
             monomials_degree_based[deg] = dict(
-                Counter([monomial for monomial in monomials if monomial.degree() == deg]))
+                Counter([monomial for monomial in monomials if monomial.degree() == deg])
+            )
             if deg >= 2:
                 for monomial in monomials_degree_based[deg].keys():
                     deg1_monomials = monomial.variables()
@@ -174,22 +182,25 @@ class MilpMonomialPredictionModel:
 
     def create_gurobi_vars_sbox(self, component, input_vars_concat):
         monomial_occurences = self.get_monomial_occurences(component)
-        B = BooleanPolynomialRing(component.input_bit_size, 'x')
-        x = B.variable_names()
+        B = BooleanPolynomialRing(component.input_bit_size, "x")
 
         copy_xi = {}
         for index, xi in enumerate(monomial_occurences[1].keys()):
             nb_occurence_xi = monomial_occurences[1][B(xi)]
             if nb_occurence_xi != 0:
-                copy_xi[B(xi)] = self._model.addVars(list(range(nb_occurence_xi)), vtype=GRB.BINARY,
-                                                     name="copy_" + input_vars_concat[index].VarName + "_as_" + str(xi))
+                copy_xi[B(xi)] = self._model.addVars(
+                    list(range(nb_occurence_xi)),
+                    vtype=GRB.BINARY,
+                    name="copy_" + input_vars_concat[index].VarName + "_as_" + str(xi),
+                )
                 self._model.update()
                 self.set_as_used_variables(list(copy_xi[B(xi)].values()))
                 self.set_as_used_variables([input_vars_concat[index]])
                 for i in range(nb_occurence_xi):
                     self._model.addConstr(input_vars_concat[index] >= copy_xi[B(xi)][i])
                 self._model.addConstr(
-                    sum(copy_xi[B(xi)][i] for i in range(nb_occurence_xi)) >= input_vars_concat[index])
+                    sum(copy_xi[B(xi)][i] for i in range(nb_occurence_xi)) >= input_vars_concat[index]
+                )
 
         copy_monomials_deg = {}
         for deg in list(monomial_occurences.keys()):
@@ -210,13 +221,133 @@ class MilpMonomialPredictionModel:
         self._model.update()
         return copy_monomials_deg
 
+    def get_valid_monomial_exponents_table(self, component):
+        """
+        Exact 3SDP-woU monomial-transition table of the S-box, read from its output ANFs.
+
+        Returns ``v_mask -> set(u_mask)``: for each output-monomial exponent v (selecting
+        the output bits with v_q=1), the input-monomial exponents u whose monomial x^u
+        survives with odd multiplicity over GF(2) in the product ``prod_{q: v_q=1}
+        y_q(x)`` of the selected output-bit ANFs.
+        """
+        desc = tuple(component.description)
+        if desc in self._sbox_valid_cache:
+            return self._sbox_valid_cache[desc]
+        n = component.input_bit_size
+        m = component.output_bit_size
+        B = BooleanPolynomialRing(n, "x")
+        anfs = [B(a) for a in self.get_anfs_from_sbox(component)]
+        names = list(B.variable_names())
+        table = {}
+        for v_mask in range(1 << m):
+            prod = B(1)
+            for q in range(m):
+                if (v_mask >> q) & 1:
+                    prod = prod * anfs[q]
+            us = set()
+            for mon in prod.monomials():
+                u = 0
+                for var in mon.variables():
+                    u |= 1 << names.index(str(var))
+                us.add(u)
+            table[v_mask] = us
+        self._sbox_valid_cache[desc] = (table, n, m)
+        return self._sbox_valid_cache[desc]
+
+    def get_sbox_inequalities(self, component):
+        """
+        Compact, exact MILP encoding of ``get_valid_monomial_exponents_table``.
+
+        A point ``z = (u_0..u_{n-1}, v_0..v_{m-1})`` is VALID if (u, v) is a valid trail and
+        INVALID otherwise. Returns inequalities ``(b, a_0, ..., a_{n+m-1})`` meaning
+        ``b + sum_k a_k z_k >= 0`` that hold on every valid point and are violated by every
+        invalid one: the convex-hull facets of the valid points, minimised via CLAASP's
+        ``cutting_off_milp``, plus a no-good cut for any invalid point inside the hull (so it
+        is exact for any S-box).
+        """
+        desc = tuple(component.description)
+        if desc in self._sbox_ineq_cache:
+            return self._sbox_ineq_cache[desc]
+        table, n, m = self.get_valid_monomial_exponents_table(component)
+        dim = n + m
+        valid = set()
+        for v_mask, us in table.items():
+            for u in us:
+                valid.add(tuple([(u >> j) & 1 for j in range(n)] + [(v_mask >> q) & 1 for q in range(m)]))
+        invalid = {tuple((i >> k) & 1 for k in range(dim)) for i in range(1 << dim)} - valid
+
+        poly = Polyhedron(vertices=[list(p) for p in valid])
+        reduced = cutting_off_milp({1: poly})[1]
+        chosen = [tuple(int(c) for c in ie.vector()) for ie in reduced]  # (b, a_0..)
+
+        def excludes(ie, p):
+            return ie[0] + sum(ie[k + 1] * p[k] for k in range(dim)) < 0
+
+        for p in invalid:  # invalid points inside the hull are uncut by facets -> explicit no-good cut
+            if not any(excludes(ie, p) for ie in chosen):
+                b = sum(p) - 1
+                chosen.append(tuple([b] + [(-1 if p[k] == 1 else 1) for k in range(dim)]))
+
+        self._sbox_ineq_cache[desc] = (chosen, n, m)
+        return self._sbox_ineq_cache[desc]
+
+    def _map_sbox_output_vars(self, component, output_vars, m):
+        needed = sorted(self._occurences[component.id].keys())  # matches output_vars order
+        out_all = [None] * m
+        for idx, pos in enumerate(needed):
+            out_all[pos] = output_vars[idx]
+        for q in range(m):
+            if out_all[q] is None:  # output bit unused downstream -> pin to 0
+                var = self._model.addVar(vtype=GRB.BINARY, name=f"{component.id}_unused_out_{q}")
+                self._model.addConstr(var == 0)
+                out_all[q] = var
+        return out_all
+
     def add_sbox_constraints(self, component):
+        """
+        Constrain the S-box's input variables (the exponents u) and output-bit variables
+        (the exponents v) to the exact monomial-trail relation.
+
+        Large S-boxes (e.g. 8-bit AES): the (u, v) point set lives in {0,1}^(n+m), and
+        building its convex hull becomes infeasible once n+m > 12, so fall back to the
+        ANF-circuit model. That fallback is exact for single-output-bit queries
+        (|v| = 1).
+        """
+        if (1 << (component.input_bit_size + component.output_bit_size)) > 4096:
+            return self.add_sbox_constraints_anf_circuit(component)
+
+        output_vars = self.get_output_vars(component)
+        input_vars = self.get_input_vars(component)
+        self._model.update()
+
+        ineqs, n, m = self.get_sbox_inequalities(component)
+        out_all = self._map_sbox_output_vars(component, output_vars, m)
+        self._model.update()
+
+        for ie in ineqs:
+            expr = ie[0]
+            for j in range(n):
+                if ie[1 + j] != 0:
+                    expr = expr + ie[1 + j] * input_vars[j]
+            for q in range(m):
+                if ie[1 + n + q] != 0:
+                    expr = expr + ie[1 + n + q] * out_all[q]
+            self._model.addConstr(expr >= 0)
+
+        self.set_as_used_variables(list(input_vars) + list(output_vars))
+        self._model.update()
+
+    def add_sbox_constraints_anf_circuit(self, component):
+        """
+        ANF-circuit S-box model (fallback for large S-boxes). Builds each needed
+        output bit as the XOR of its ANF monomials, with products via AND gadgets
+        on copied inputs.
+        """
         output_vars = self.get_output_vars(component)
         input_vars_concat = self.get_input_vars(component)
         self._model.update()
 
-        B = BooleanPolynomialRing(component.input_bit_size, 'x')
-        x = B.variable_names()
+        B = BooleanPolynomialRing(component.input_bit_size, "x")
         anfs = self.get_anfs_from_sbox(component)
         anfs = [B(anfs[i]) for i in range(component.input_bit_size)]
 
@@ -237,7 +368,8 @@ class MilpMonomialPredictionModel:
                     for deg1_monomial in monomial.variables():
                         current_deg1 = copy_monomials_deg[1][deg1_monomial]["current"]
                         self._model.addConstr(
-                            copy_monomials_deg[deg][current] == copy_monomials_deg[1][deg1_monomial][current_deg1])
+                            copy_monomials_deg[deg][current] == copy_monomials_deg[1][deg1_monomial][current_deg1]
+                        )
                         self.set_as_used_variables([copy_monomials_deg[deg][current]])
                         copy_monomials_deg[1][deg1_monomial]["current"] += 1
                     constr += copy_monomials_deg[deg][current]
@@ -263,13 +395,11 @@ class MilpMonomialPredictionModel:
             copies[index][0] = var
             copies[index]["current"] = current
             self.set_as_used_variables([var])
-            new_vars = self._model.addVars(list(range(number_of_1s)), vtype=GRB.BINARY,
-                                           name="copy_" + var.VarName)
+            new_vars = self._model.addVars(list(range(number_of_1s)), vtype=GRB.BINARY, name="copy_" + var.VarName)
             self._model.update()
             for i in range(number_of_1s):
                 self._model.addConstr(var >= new_vars[i])
-            self._model.addConstr(
-                sum(new_vars[i] for i in range(number_of_1s)) >= var)
+            self._model.addConstr(sum(new_vars[i] for i in range(number_of_1s)) >= var)
             self._model.update()
             for i in range(1, number_of_1s + 1):
                 copies[index][i] = new_vars[i - 1]
@@ -305,7 +435,8 @@ class MilpMonomialPredictionModel:
         rotate_offset = component.description[1]
         for index, bit_pos in enumerate(list(self._occurences[component.id].keys())):
             self._model.addConstr(
-                output_vars[index] == input_vars_concat[(bit_pos - rotate_offset) % component.output_bit_size])
+                output_vars[index] == input_vars_concat[(bit_pos - rotate_offset) % component.output_bit_size]
+            )
             self.set_as_used_variables([input_vars_concat[(bit_pos - rotate_offset) % component.output_bit_size]])
         self._model.update()
 
@@ -343,15 +474,11 @@ class MilpMonomialPredictionModel:
 
                 if input_name.startswith("constant"):
                     const_comp = self._cipher.component_from_id(input_name)
-                    value = (int(const_comp.description[0], 16) >>
-                             (const_comp.output_bit_size - 1 - pos)) & 1
+                    value = (int(const_comp.description[0], 16) >> (const_comp.output_bit_size - 1 - pos)) & 1
                     const_bits_per_bit[output_index].append(value)
                 else:
                     copy_index = len(self._variables[input_name][pos]["copies"])
-                    copy_var = self._model.addVar(
-                        vtype=GRB.BINARY,
-                        name=f"copy_{copy_index}_{input_name}[{pos}]"
-                    )
+                    copy_var = self._model.addVar(vtype=GRB.BINARY, name=f"copy_{copy_index}_{input_name}[{pos}]")
                     self._variables[input_name][pos]["copies"].append(copy_var)
                     var_inputs_per_bit[output_index].append(copy_var)
                 current_output_index += 1
@@ -370,7 +497,7 @@ class MilpMonomialPredictionModel:
 
     def get_output_vars(self, component):
         output_vars = []
-        
+
         # Components that iterate over bit indices (or where its required to track all output bits, even unused ones) must use the padded logic.
         safe_components = ["MODADD", "MODMUL", "XOR", "AND"]
         desc_str = str(component.description[0])
@@ -380,14 +507,14 @@ class MilpMonomialPredictionModel:
             output_vars = self._get_unpadded_output_vars(component)
         else:
             output_vars = self._get_padded_output_vars(component)
-                
+
         self._model.update()
         return output_vars
 
     def _get_unpadded_output_vars(self, component):
         output_vars = []
         tmp = sorted(self._occurences[component.id].keys())
-        
+
         # Use _variables dict if available (created by create_gurobi_vars_from_all_components)
         if component.id in self._variables:
             vars_dict = self._variables[component.id]
@@ -415,7 +542,6 @@ class MilpMonomialPredictionModel:
             output_vars.append(var)
         return output_vars
 
-
     def get_input_vars(self, component):
         input_vars_concat = []
         for index, input_name in enumerate(component.input_id_links):
@@ -440,7 +566,7 @@ class MilpMonomialPredictionModel:
             raise ValueError("add_modadd_constraints: input length not even")
         n = total // 2
         a_bits = input_vars_concat[:n]
-        b_bits = input_vars_concat[n:2 * n]
+        b_bits = input_vars_concat[n : 2 * n]
         z_bits = output_vars
 
         # Rerverse endianess
@@ -451,11 +577,11 @@ class MilpMonomialPredictionModel:
         # Create carry-out variables for bits 0..n-1
         carry_vars = [None] * n
         for i in range(n - 1):
-            carry_vars[i] = self._model.addVar(vtype=GRB.BINARY,
-                                               name=f"modadd_carry_{component.id}_{i}")
+            carry_vars[i] = self._model.addVar(vtype=GRB.BINARY, name=f"modadd_carry_{component.id}_{i}")
         # top carry fixed to 0
-        carry_vars[n - 1] = self._model.addVar(vtype=GRB.BINARY, lb=0, ub=0,
-                                               name=f"modadd_carry_{component.id}_{n - 1}_zero")
+        carry_vars[n - 1] = self._model.addVar(
+            vtype=GRB.BINARY, lb=0, ub=0, name=f"modadd_carry_{component.id}_{n - 1}_zero"
+        )
         self._model.update()
 
         for i in range(n):
@@ -469,8 +595,7 @@ class MilpMonomialPredictionModel:
             else:
                 c_in = carry_vars[i - 1]
 
-            s_i = self._model.addVar(vtype=GRB.INTEGER, lb=0, ub=3,
-                                     name=f"modadd_sum_{component.id}_{i}")
+            s_i = self._model.addVar(vtype=GRB.INTEGER, lb=0, ub=3, name=f"modadd_sum_{component.id}_{i}")
             if c_in is not None:
                 self._model.addConstr(s_i == ai + bi + c_in)
             else:
@@ -482,7 +607,6 @@ class MilpMonomialPredictionModel:
             self.set_as_used_variables([ai, bi, zi, t_i, s_i])
 
         self._model.update()
-
 
     def add_modmul_constraints(self, component):
         """
@@ -496,8 +620,8 @@ class MilpMonomialPredictionModel:
         if total % 2 != 0:
             raise ValueError("add_modmul_constraints: input length not even")
         n = total // 2
-        x_bits = list(reversed(input_vars_concat[:n])) # index 0 is LSB
-        y_bits = list(reversed(input_vars_concat[n:2 * n]))
+        x_bits = list(reversed(input_vars_concat[:n]))  # index 0 is LSB
+        y_bits = list(reversed(input_vars_concat[n : 2 * n]))
         z_bits_out = list(reversed(output_vars))
 
         tag = f"modmul_{component.id}"
@@ -548,8 +672,11 @@ class MilpMonomialPredictionModel:
                 else:
                     shifted.append(p_matrix[k - j][j])
 
-            next_z = z_bits_out if j == n - 1 else \
-                     [self._model.addVar(vtype=GRB.BINARY, name=f"{tag}_zacc_{j+1}_{i}") for i in range(n)]
+            next_z = (
+                z_bits_out
+                if j == n - 1
+                else [self._model.addVar(vtype=GRB.BINARY, name=f"{tag}_zacc_{j + 1}_{i}") for i in range(n)]
+            )
             self._model.update()
 
             # Carry-ripple adder: next_z = z_acc + shifted
@@ -558,7 +685,7 @@ class MilpMonomialPredictionModel:
             self._model.update()
 
             for i in range(n):
-                c_in = carry_vars[i-1] if i > 0 else 0
+                c_in = carry_vars[i - 1] if i > 0 else 0
                 s_i = self._model.addVar(vtype=GRB.INTEGER, lb=0, ub=3, name=f"{tag}_s_{j}_{i}")
                 self._model.addConstr(s_i == z_acc[i] + shifted[i] + c_in)
                 self._model.addConstr(next_z[i] + 2 * carry_vars[i] == s_i)
@@ -591,7 +718,7 @@ class MilpMonomialPredictionModel:
         input_vars_concat = self.get_input_vars(component)
         self._model.update()
 
-        interm_input_vars = self._model.addVars(list(range(output_bit_size)), vtype=GRB.BINARY, name=f"interm_input")
+        interm_input_vars = self._model.addVars(list(range(output_bit_size)), vtype=GRB.BINARY, name="interm_input")
         for i in range(output_bit_size):
             self._model.addConstr(interm_input_vars[i] == input_vars_concat[i])
             self.set_as_used_variables([input_vars_concat[i]])
@@ -657,8 +784,9 @@ class MilpMonomialPredictionModel:
             for index in range(output_bit_size):
                 s[clock + 1].append(tmp[(index + 1) % output_bit_size])
 
-        interm_output_vars = self._model.addVars(list(range(output_bit_size)), vtype=GRB.BINARY,
-                                                 name=f"interm_{component.id}_output")
+        interm_output_vars = self._model.addVars(
+            list(range(output_bit_size)), vtype=GRB.BINARY, name=f"interm_{component.id}_output"
+        )
         self._model.update()
         self._variables[f"interm_{component.id}_output"] = {}
         for index, var in enumerate(interm_output_vars.values()):
@@ -723,10 +851,7 @@ class MilpMonomialPredictionModel:
                 output_index = pos % output_size
 
                 copy_index = len(self._variables[input_name][pos]["copies"])
-                copy_var = self._model.addVar(
-                    vtype=GRB.BINARY,
-                    name=f"copy_{copy_index}_{input_name}[{pos}]"
-                )
+                copy_var = self._model.addVar(vtype=GRB.BINARY, name=f"copy_{copy_index}_{input_name}[{pos}]")
                 self._variables[input_name][pos]["copies"].append(copy_var)
                 var_inputs_per_bit[output_index].append(copy_var)
 
@@ -762,7 +887,9 @@ class MilpMonomialPredictionModel:
 
     def add_constraints(self, predecessors, input_id_link_needed, block_needed, skip_components=None):
         self.build_gurobi_model()
-        self.create_gurobi_vars_from_all_components(predecessors, input_id_link_needed, block_needed, skip_components=skip_components)
+        self.create_gurobi_vars_from_all_components(
+            predecessors, input_id_link_needed, block_needed, skip_components=skip_components
+        )
 
         used_predecessors_sorted = self.order_predecessors(list(self._occurences.keys()))
         self._used_predecessors_sorted = used_predecessors_sorted
@@ -820,12 +947,11 @@ class MilpMonomialPredictionModel:
         ids = self._cipher.inputs + predecessors
         for name in ids:
             self._fill_occurences_for_name(name, predecessors, skip_components, occurences)
-            
+
         self._fill_occurences_for_link_needed(input_id_link_needed, block_needed, occurences)
         self._fill_occurences_for_cipher_output(input_id_link_needed, occurences)
 
-        occurences_final = {comp_id: self.find_copy_indexes(pos_list) 
-                           for comp_id, pos_list in occurences.items()}
+        occurences_final = {comp_id: self.find_copy_indexes(pos_list) for comp_id, pos_list in occurences.items()}
 
         self._occurences = occurences_final
         return occurences_final
@@ -859,13 +985,13 @@ class MilpMonomialPredictionModel:
             occurences[cipher_id] = [[i for i in range(component.output_bit_size)]]
 
     def find_copy_indexes(self, input_bit_positions):
-        l = {}
+        copy_indexes = {}
         for input_bit_position in input_bit_positions:
-            for pos in input_bit_position:
-                if pos not in l.keys():
-                    l[pos] = 0
-                l[pos] += 1
-        return l
+            for position in input_bit_position:
+                if position not in copy_indexes:
+                    copy_indexes[position] = 0
+                copy_indexes[position] += 1
+        return copy_indexes
 
     def order_predecessors(self, used_predecessors):
         for component_id in self._cipher.inputs:
@@ -884,15 +1010,18 @@ class MilpMonomialPredictionModel:
         for r in range(self._cipher.number_of_rounds):
             used_predecessors_sorted += list(final[r].keys())
 
-        l = []
-        for component_id in self._cipher.inputs:
-            if component_id in self._occurences:
-                l.append(component_id)
-        used_predecessors_sorted = l + used_predecessors_sorted
+        component_ids_in_occurences = [
+            component_id for component_id in self._cipher.inputs if component_id in self._occurences
+        ]
+        used_predecessors_sorted = component_ids_in_occurences + used_predecessors_sorted
         return used_predecessors_sorted
 
-    def create_gurobi_vars_from_all_components(self, predecessors, input_id_link_needed, block_needed, skip_components=None):
-        occurences = self.get_where_component_is_used(predecessors, input_id_link_needed, block_needed, skip_components=skip_components)
+    def create_gurobi_vars_from_all_components(
+        self, predecessors, input_id_link_needed, block_needed, skip_components=None
+    ):
+        occurences = self.get_where_component_is_used(
+            predecessors, input_id_link_needed, block_needed, skip_components=skip_components
+        )
 
         all_vars = {}
         used_predecessors_sorted = self.order_predecessors(list(occurences.keys()))
@@ -902,15 +1031,17 @@ class MilpMonomialPredictionModel:
             if component_id != cipher_id:
                 for pos in occurences[component_id]:
                     all_vars[component_id][pos] = {}
-                    all_vars[component_id][pos]["original"] = self._model.addVar(vtype=GRB.BINARY,
-                                                                                 name=component_id + f"[{pos}]")
+                    all_vars[component_id][pos]["original"] = self._model.addVar(
+                        vtype=GRB.BINARY, name=component_id + f"[{pos}]"
+                    )
                     all_vars[component_id][pos]["copies"] = []
             else:
                 component = self._cipher.component_from_id(cipher_id)
                 for pos in range(component.output_bit_size):
                     all_vars[component_id][pos] = {}
-                    all_vars[component_id][pos]["original"] = self._model.addVar(vtype=GRB.BINARY,
-                                                                                 name=component_id + f"[{pos}]")
+                    all_vars[component_id][pos]["original"] = self._model.addVar(
+                        vtype=GRB.BINARY, name=component_id + f"[{pos}]"
+                    )
                     all_vars[component_id][pos]["copies"] = []
 
         self._model.update()
@@ -920,35 +1051,28 @@ class MilpMonomialPredictionModel:
         occurences = self._occurences
         return len(occurences[self._cipher.inputs[0]])
 
-    def build_generic_model_for_specific_output_bit(self, output_bit_index, fixed_degree=None,
-                                                    which_var_degree=None,
-                                                    chosen_cipher_output=None,
-                                                    skip_components=None,
-                                                    do_pruning=True):
+    def build_generic_model_for_specific_output_bit(
+        self,
+        output_bit_index,
+        fixed_degree=None,
+        which_var_degree=None,
+        chosen_cipher_output=None,
+        skip_components=None,
+        do_pruning=True,
+    ):
         start = time.time()
         if skip_components is None:
             # This prevents diversion to dead-end taps while preserving cipher paths (e.g. Trivium keystream bits).
-            G = create_networkx_graph_from_input_ids(self._cipher)
-            skip_components = {
-                n for n, d in G.out_degree() if d == 0 
-                and self._cipher.component_from_id(n).type == INTERMEDIATE_OUTPUT
-            }
-            if chosen_cipher_output in skip_components:
-                skip_components.remove(chosen_cipher_output)
+            skip_components = self._get_default_skip_components(chosen_cipher_output)
 
-        if chosen_cipher_output is not None:
-            input_id_link_needed = chosen_cipher_output
-        else:
-            input_id_link_needed = self.get_cipher_output_component_id()
+        input_id_link_needed = (
+            chosen_cipher_output if chosen_cipher_output is not None else self.get_cipher_output_component_id()
+        )
         component = self._cipher.component_from_id(input_id_link_needed)
         block_needed = list(range(component.output_bit_size))
         output_bit_index_previous_comp = output_bit_index
 
-        G = create_networkx_graph_from_input_ids(self._cipher)
-        predecessors = list(_get_predecessors_subgraph(G, [input_id_link_needed]))
-        for input_id in self._cipher.inputs + ['']:
-            if input_id in predecessors:
-                predecessors.remove(input_id)
+        predecessors = self._get_predecessors_for_link(input_id_link_needed)
 
         self.add_constraints(predecessors, input_id_link_needed, block_needed, skip_components=skip_components)
 
@@ -971,27 +1095,7 @@ class MilpMonomialPredictionModel:
         self._model.addConstr(output_vars[output_bit_index_previous_comp] == 1)
 
         if fixed_degree is not None:
-            if which_var_degree is not None:
-                var_input_name = next(
-                    (inp for inp in self._cipher.inputs if inp.startswith(which_var_degree)),
-                    None
-                )
-                if var_input_name is None:
-                    raise ValueError(f"No input found matching prefix '{which_var_degree}'")
-            else:
-                var_input_name = self._cipher.inputs[0]
-
-            input_index = self._cipher.inputs.index(var_input_name)
-            input_size = self._cipher.inputs_bit_size[input_index]
-
-            vars_to_constrain = []
-            for i in range(input_size):
-                v = self._model.getVarByName(f"{var_input_name}[{i}]")
-                if v is not None:
-                    vars_to_constrain.append(v)
-
-            self._model.addConstr(sum(vars_to_constrain) == fixed_degree,
-                                  name=f"degree_{var_input_name}_{fixed_degree}")
+            self._apply_fixed_degree_constraint(fixed_degree, which_var_degree)
 
         if do_pruning:
             self.set_unused_variables_to_zero()
@@ -1003,27 +1107,54 @@ class MilpMonomialPredictionModel:
             print(f"########## building_time : {building_time}")
         self._model.update()
 
+    def _apply_fixed_degree_constraint(self, fixed_degree, which_var_degree):
+        """Constrain the Hamming weight of the chosen input group to ``fixed_degree``.
 
-    def build_model_with_input_output_constraints(self, output_indices, chosen_cipher_output=None, skip_components=None, do_pruning=True):
+        Extracted from ``build_generic_model_for_specific_output_bit`` so that
+        method stays below the cognitive-complexity threshold; logic is unchanged.
+        """
+        if which_var_degree is not None:
+            var_input_name = next((inp for inp in self._cipher.inputs if inp.startswith(which_var_degree)), None)
+            if var_input_name is None:
+                raise ValueError(f"No input found matching prefix '{which_var_degree}'")
+        else:
+            var_input_name = self._cipher.inputs[0]
+
+        input_index = self._cipher.inputs.index(var_input_name)
+        input_size = self._cipher.inputs_bit_size[input_index]
+
+        vars_to_constrain = []
+        for i in range(input_size):
+            v = self._model.getVarByName(f"{var_input_name}[{i}]")
+            if v is not None:
+                vars_to_constrain.append(v)
+
+        self._model.addConstr(sum(vars_to_constrain) == fixed_degree, name=f"degree_{var_input_name}_{fixed_degree}")
+
+    def build_model_with_input_output_constraints(
+        self, output_indices, chosen_cipher_output=None, skip_components=None, do_pruning=True
+    ):
         r"""
         Build an enumeration ready Gurobi MILP model with specific output constraints.
-        
-        This method extends the base model generation by allowing multiple output bits 
-        to be explicitly constrained to 1, or by leaving all output bits unconstrained 
+
+        This method extends the base model generation by allowing multiple output bits
+        to be explicitly constrained to 1, or by leaving all output bits unconstrained
         (free variables) if ``output_indices`` is set to ``None``.
         """
         if skip_components is None:
             skip_components = self._get_default_skip_components(chosen_cipher_output)
 
-        input_id_link_needed = chosen_cipher_output if chosen_cipher_output is not None else self.get_cipher_output_component_id()
-             
+        input_id_link_needed = (
+            chosen_cipher_output if chosen_cipher_output is not None else self.get_cipher_output_component_id()
+        )
+
         component = self._cipher.component_from_id(input_id_link_needed)
         block_needed = list(range(component.output_bit_size))
-        
+
         predecessors = self._get_predecessors_for_link(input_id_link_needed)
-            
+
         self.add_constraints(predecessors, input_id_link_needed, block_needed, skip_components=skip_components)
-        
+
         var_from_block_needed = self._get_vars_from_block_needed(input_id_link_needed, block_needed)
 
         # Map to dictionary, then create a distinct list variable to avoid shadowing
@@ -1035,7 +1166,7 @@ class MilpMonomialPredictionModel:
         for i in range(len(block_needed)):
             self._model.addConstr(output_vars[i] == var_from_block_needed[i])
             self.set_as_used_variables([output_vars[i], var_from_block_needed[i]])
-            
+
         self._apply_output_indices_constraints(output_indices, output_vars, block_needed)
 
         if do_pruning:
@@ -1046,17 +1177,15 @@ class MilpMonomialPredictionModel:
     def _get_default_skip_components(self, chosen_cipher_output):
         G = create_networkx_graph_from_input_ids(self._cipher)
         skip_components = {
-            n for n, d in G.out_degree() if d == 0 
-            and self._cipher.component_from_id(n).type == INTERMEDIATE_OUTPUT
+            n for n, d in G.out_degree() if d == 0 and self._cipher.component_from_id(n).type == INTERMEDIATE_OUTPUT
         }
-        if chosen_cipher_output in skip_components:
-            skip_components.remove(chosen_cipher_output)
+        skip_components.discard(chosen_cipher_output)
         return skip_components
 
     def _get_predecessors_for_link(self, input_id_link_needed):
         G = create_networkx_graph_from_input_ids(self._cipher)
         predecessors = list(_get_predecessors_subgraph(G, [input_id_link_needed]))
-        for input_id in self._cipher.inputs + ['']:
+        for input_id in self._cipher.inputs + [""]:
             if input_id in predecessors:
                 predecessors.remove(input_id)
         return predecessors
@@ -1069,7 +1198,7 @@ class MilpMonomialPredictionModel:
         else:
             # Fallback if component not populated in variables
             for i in block_needed:
-                 var_from_block_needed.append(self._model.getVarByName(f"{input_id_link_needed}[{i}]"))
+                var_from_block_needed.append(self._model.getVarByName(f"{input_id_link_needed}[{i}]"))
         return var_from_block_needed
 
     def _apply_output_indices_constraints(self, output_indices, output_vars, block_needed):
@@ -1078,10 +1207,6 @@ class MilpMonomialPredictionModel:
             for i in range(len(block_needed)):
                 val = 1 if i in output_set else 0
                 self._model.addConstr(output_vars[i] == val)
-
-
-
-
 
     def _prefix_for_input(self, name: str) -> str:
         return name[:1].lower()
@@ -1113,9 +1238,9 @@ class MilpMonomialPredictionModel:
         end = time.time()
         printing_time = end - start
         if verbosity:
-            print('Number of solutions (might cancel each other) found: ' + str(sol_count))
+            print("Number of solutions (might cancel each other) found: " + str(sol_count))
             print(f"########## printing_time : {printing_time}")
-            print(f'Number of monomials found: {len(mono_set)}')
+            print(f"Number of monomials found: {len(mono_set)}")
         monomials_list = sorted(mono_set)
         return self.anf_list_to_boolean_poly(monomials_list)
 
@@ -1143,7 +1268,7 @@ class MilpMonomialPredictionModel:
                 while i < len(term):
                     var = term[i]
                     i += 1
-                    digits = ''
+                    digits = ""
                     while i < len(term) and term[i].isdigit():
                         digits += term[i]
                         i += 1
@@ -1189,7 +1314,7 @@ class MilpMonomialPredictionModel:
         for var in var_list:
             prefix = var[0]
             total_idx = int(var[1:])
-            
+
             # Find which input component this total_idx belongs to
             found = False
             curr = 0
@@ -1214,9 +1339,12 @@ class MilpMonomialPredictionModel:
         self._unused_variables = []
         self._used_predecessors_sorted = None
         self._constants = {}
+        self._sbox_valid_cache = {}
+        self._sbox_ineq_cache = {}
 
-    def find_anf_of_specific_output_bit(self, output_bit_index, fixed_degree=None, which_var_degree=None,
-                                        chosen_cipher_output=None):
+    def find_anf_of_specific_output_bit(
+        self, output_bit_index, fixed_degree=None, which_var_degree=None, chosen_cipher_output=None
+    ):
         """
         Build and solve the MILP model to compute the Algebraic Normal Form (ANF)
         of a specific output bit of the cipher using the Monomial Prediction (MP) approach.
@@ -1262,8 +1390,9 @@ class MilpMonomialPredictionModel:
             ...
         """
 
-        self.build_generic_model_for_specific_output_bit(output_bit_index, fixed_degree, which_var_degree,
-                                                         chosen_cipher_output)
+        self.build_generic_model_for_specific_output_bit(
+            output_bit_index, fixed_degree, which_var_degree, chosen_cipher_output
+        )
         self._model.setParam("PoolSolutions", 200000000)
         self._model.setParam(GRB.Param.PoolSearchMode, 2)
 
@@ -1277,7 +1406,7 @@ class MilpMonomialPredictionModel:
                 "which_var_degree": which_var_degree,
                 "chosen_cipher_output": chosen_cipher_output,
             },
-            anf
+            anf,
         )
 
         return anf
@@ -1329,8 +1458,6 @@ class MilpMonomialPredictionModel:
         anf_poly = self.find_anf_of_specific_output_bit(output_bit_index)
         print("ANF:", anf_poly) if verbosity else None
 
-        B = self.get_boolean_polynomial_ring()
-
         # 3) Helper: evaluate the ANF polynomial for a given input assignment
         def evaluate_poly(assignments):
             var_values = {}
@@ -1352,9 +1479,7 @@ class MilpMonomialPredictionModel:
         output_size = self._cipher.output_bit_size
         for trial, assign in enumerate(test_vectors):
             print(f"trial = {trial}") if verbosity else None
-            cipher_output = self._cipher.evaluate(
-                [assign[inp] for inp in self._cipher.inputs]
-            )
+            cipher_output = self._cipher.evaluate([assign[inp] for inp in self._cipher.inputs])
             if endian == "msb":
                 real_index = output_size - 1 - output_bit_index
             else:
@@ -1402,8 +1527,9 @@ class MilpMonomialPredictionModel:
 
         fixed_degree = None
         which_var_degree = None
-        self.build_generic_model_for_specific_output_bit(output_bit_index, fixed_degree, which_var_degree,
-                                                         chosen_cipher_output)
+        self.build_generic_model_for_specific_output_bit(
+            output_bit_index, fixed_degree, which_var_degree, chosen_cipher_output
+        )
         self._model.setParam("PoolSolutions", 200000000)
         self._model.setParam(GRB.Param.PoolSearchMode, 2)
 
@@ -1429,13 +1555,12 @@ class MilpMonomialPredictionModel:
                 "chosen_cipher_output": chosen_cipher_output,
                 "cube": cube,
             },
-            poly_sub
+            poly_sub,
         )
 
         return poly_sub
 
-    def find_exact_degree_of_superpoly_of_specific_output_bit(
-            self, output_bit_index, cube, chosen_cipher_output=None):
+    def find_exact_degree_of_superpoly_of_specific_output_bit(self, output_bit_index, cube, chosen_cipher_output=None):
         """
         Compute the exact algebraic degree of the superpoly
         corresponding to a specific cipher output bit under a given cube.
@@ -1455,13 +1580,11 @@ class MilpMonomialPredictionModel:
         fixed_degree = None
         which_var_degree = None
         self.build_generic_model_for_specific_output_bit(
-            output_bit_index, fixed_degree, which_var_degree, chosen_cipher_output)
+            output_bit_index, fixed_degree, which_var_degree, chosen_cipher_output
+        )
 
         m = self._model
-        m.Params.OutputFlag = 0
-        m.setParam(GRB.Param.PoolSearchMode, 2)
-        m.setParam(GRB.Param.PoolSolutions, 200000000)
-        m.setParam(GRB.Param.PoolGap, 0.0)
+        self._set_pool_enumeration_params()
 
         cube_verbose = self.var_list_to_input_positions(cube)
         for term in cube_verbose:
@@ -1470,19 +1593,7 @@ class MilpMonomialPredictionModel:
                 m.addConstr(var_term == 1)
         m.update()
 
-        key_input_index = None
-        for i, inp in enumerate(self._cipher.inputs):
-            if inp.startswith("k"):
-                key_input_index = i
-                break
-        if key_input_index is None:
-            raise ValueError("No key input found in cipher definition.")
-
-        key_size = self._cipher.inputs_bit_size[key_input_index]
-        key_vars = [
-            m.getVarByName(f"key[{i}]") for i in range(key_size)
-            if m.getVarByName(f"key[{i}]") is not None
-        ]
+        key_vars = self._resolve_key_vars()
 
         m.setObjective(sum(key_vars), GRB.MAXIMIZE)
         m.update()
@@ -1490,22 +1601,12 @@ class MilpMonomialPredictionModel:
 
         degree_drop = False
         if m.Status not in [GRB.OPTIMAL, GRB.SUBOPTIMAL]:
-            print(f"[INFO] Model is infeasible") if verbosity else None
+            print(MODEL_INFEASIBLE_MSG) if verbosity else None
             exact_degree = -1
         else:
             d = int(round(m.ObjVal))
-            monomial_parity = {}
-            for s in range(m.SolCount):
-                m.Params.SolutionNumber = s
-                active_indices = tuple(i for i, v in enumerate(key_vars) if v.Xn > 0.5)
-                if len(active_indices) == d:
-                    monomial_parity[active_indices] = monomial_parity.get(active_indices, 0) ^ 1
-
-            if any(val == 1 for val in monomial_parity.values()):
-                exact_degree = d
-            else:
-                degree_drop = True
-                exact_degree = d - 1
+            exact_degree = self._exact_degree_from_solution_pool(key_vars, d)
+            degree_drop = exact_degree < d
 
         self._log_experiment(
             "exact degree superpoly",
@@ -1513,12 +1614,109 @@ class MilpMonomialPredictionModel:
                 "output_bit_index": output_bit_index,
                 "chosen_cipher_output": chosen_cipher_output,
                 "cube": cube,
-                "degree_drop": degree_drop
+                "degree_drop": degree_drop,
             },
-            exact_degree
+            exact_degree,
         )
 
         return exact_degree
+
+    def _init_master_for_all_output_bits(self, chosen_cipher_output):
+        """Build the MILP master used by the three ``find_*_of_all_output_bits``
+        methods: full cipher constraints, the output-variable array and the
+        Hamming-weight-1 constraint on the output. Returns the list of
+        output binary variables. The caller then sets its own objective and
+        solver parameters before iterating per output bit.
+        """
+        self.re_init()
+        self.build_model_with_input_output_constraints(
+            output_indices=None,
+            chosen_cipher_output=chosen_cipher_output,
+        )
+        output_vars = list(self._variables["output"].values())
+        self._model.addConstr(sum(output_vars) == 1, name="hw_one_output")
+        return output_vars
+
+    def _resolve_input_group_vars(self, which_var_degree):
+        """Return the binary variables of the chosen input group, used as
+        the objective by ``find_upper_bound_degree_of_all_output_bits`` and
+        ``find_exact_degree_of_all_output_bits``.
+        """
+        if which_var_degree is None:
+            target_inputs = [(self._cipher.inputs[0], self._cipher.inputs_bit_size[0])]
+        else:
+            target_inputs = [
+                (inp, size)
+                for inp, size in zip(self._cipher.inputs, self._cipher.inputs_bit_size)
+                if inp.startswith(which_var_degree)
+            ]
+        target_vars = []
+        for inp, size in target_inputs:
+            for bit in range(size):
+                v = self._model.getVarByName(f"{inp}[{bit}]")
+                if v is not None:
+                    target_vars.append(v)
+        return target_vars
+
+    def _resolve_key_vars(self):
+        """Return the Gurobi variables of the cipher's key input.
+
+        Raises ``ValueError`` if the cipher definition has no key input.
+        """
+        key_input_index = next(
+            (i for i, inp in enumerate(self._cipher.inputs) if inp.startswith("k")),
+            None,
+        )
+        if key_input_index is None:
+            raise ValueError("No key input found in cipher definition.")
+        key_size = self._cipher.inputs_bit_size[key_input_index]
+        m = self._model
+        return [m.getVarByName(f"key[{i}]") for i in range(key_size) if m.getVarByName(f"key[{i}]") is not None]
+
+    def _set_pool_enumeration_params(self):
+        """Configure Gurobi to enumerate every optimal solution in the pool."""
+        m = self._model
+        m.Params.OutputFlag = 0
+        m.setParam(GRB.Param.PoolSearchMode, 2)
+        m.setParam(GRB.Param.PoolSolutions, 200000000)
+        m.setParam(GRB.Param.PoolGap, 0.0)
+
+    def _exact_degree_from_solution_pool(self, target_vars, candidate_degree):
+        """Walk the current Gurobi solution pool and apply the parity /
+        degree-drop rule. Returns ``candidate_degree`` if at least one
+        degree-``candidate_degree`` monomial has odd multiplicity, otherwise
+        ``candidate_degree - 1``.
+        """
+        m = self._model
+        monomial_parity = {}
+        for s in range(m.SolCount):
+            m.Params.SolutionNumber = s
+            active_indices = tuple(j for j, v in enumerate(target_vars) if v.Xn > 0.5)
+            if len(active_indices) == candidate_degree:
+                monomial_parity[active_indices] = monomial_parity.get(active_indices, 0) ^ 1
+        return candidate_degree if any(val == 1 for val in monomial_parity.values()) else candidate_degree - 1
+
+    def _run_exact_degree_per_bit_loop(self, output_vars, target_vars):
+        """Per-output-bit loop with parity enumeration.
+
+        For each output bit i, add ``output_vars[i] == 1`` to the master,
+        solve, derive the exact degree from the solution pool, then remove
+        the constraint. Returns the list of per-bit exact degrees.
+        """
+        m = self._model
+        degrees = []
+        for i in range(len(output_vars)):
+            c = m.addConstr(output_vars[i] == 1)
+            m.update()
+            m.optimize()
+            if m.Status not in [GRB.OPTIMAL, GRB.SUBOPTIMAL]:
+                print(f"[INFO] Model is infeasible for output bit {i}") if verbosity else None
+                degrees.append(-1)
+            else:
+                degrees.append(self._exact_degree_from_solution_pool(target_vars, int(round(m.ObjVal))))
+            m.remove(c)
+            m.update()
+        return degrees
 
     def find_exact_degree_of_superpoly_of_all_output_bits(self, cube, chosen_cipher_output=None):
         """
@@ -1539,29 +1737,40 @@ class MilpMonomialPredictionModel:
         old_verbosity = verbosity
         verbosity = False
 
-        degrees = []
-        output_size = self._cipher.output_bit_size
+        output_vars = self._init_master_for_all_output_bits(chosen_cipher_output)
+        m = self._model
 
-        for i in range(output_size):
-            self.re_init()
-            deg_exact = self.find_exact_degree_of_superpoly_of_specific_output_bit(
-                i, cube, chosen_cipher_output)
-            degrees.append(deg_exact)
+        for term in self.var_list_to_input_positions(cube):
+            var_term = m.getVarByName(f"{term[0]}[{term[1]}]")
+            if var_term is not None:
+                m.addConstr(var_term == 1)
+
+        key_input_index = next(
+            (i for i, inp in enumerate(self._cipher.inputs) if inp.startswith("k")),
+            None,
+        )
+        if key_input_index is None:
+            raise ValueError("No key input found in cipher definition.")
+        key_size = self._cipher.inputs_bit_size[key_input_index]
+        key_vars = [m.getVarByName(f"key[{i}]") for i in range(key_size) if m.getVarByName(f"key[{i}]") is not None]
+        m.setObjective(sum(key_vars), GRB.MAXIMIZE)
+        self._set_pool_enumeration_params()
+        m.update()
+
+        degrees = self._run_exact_degree_per_bit_loop(output_vars, key_vars)
 
         verbosity = old_verbosity
         self._log_experiment(
             "all output bits exact degree superpoly",
-            {
-                "chosen_cipher_output": chosen_cipher_output,
-                "cube": cube
-            },
-            degrees
+            {"chosen_cipher_output": chosen_cipher_output, "cube": cube},
+            degrees,
         )
 
         return degrees
 
-    def find_upper_bound_degree_of_specific_output_bit(self, output_bit_index, which_var_degree=None,
-                                                       chosen_cipher_output=None):
+    def find_upper_bound_degree_of_specific_output_bit(
+        self, output_bit_index, which_var_degree=None, chosen_cipher_output=None
+    ):
         """
         Compute an upper bound on the algebraic degree of a specific cipher output bit
         with respect to a chosen input variable (e.g., key, IV, or plaintext).
@@ -1594,8 +1803,9 @@ class MilpMonomialPredictionModel:
             ...
         """
         fixed_degree = None
-        self.build_generic_model_for_specific_output_bit(output_bit_index, fixed_degree, which_var_degree,
-                                                         chosen_cipher_output)
+        self.build_generic_model_for_specific_output_bit(
+            output_bit_index, fixed_degree, which_var_degree, chosen_cipher_output
+        )
 
         self._model.setParam(GRB.Param.PoolSearchMode, 0)  # single optimal solution (fastest)
         self._model.setParam("MIPGap", 0)
@@ -1622,7 +1832,7 @@ class MilpMonomialPredictionModel:
         self.optimize_model()
 
         if self._model.Status not in [GRB.OPTIMAL, GRB.SUBOPTIMAL]:
-            print(f"[INFO] Model is infeasible") if verbosity else None
+            print(MODEL_INFEASIBLE_MSG) if verbosity else None
             degree_upper_bound = -1
         else:
             degree_upper_bound = int(round(self._model.ObjVal))
@@ -1634,7 +1844,7 @@ class MilpMonomialPredictionModel:
                 "chosen_cipher_output": chosen_cipher_output,
                 "which_var_degree": which_var_degree,
             },
-            degree_upper_bound
+            degree_upper_bound,
         )
 
         return degree_upper_bound
@@ -1672,13 +1882,29 @@ class MilpMonomialPredictionModel:
         global verbosity
         old_verbosity = verbosity
         verbosity = False
+
+        output_vars = self._init_master_for_all_output_bits(chosen_cipher_output)
+        target_vars = self._resolve_input_group_vars(which_var_degree)
+        m = self._model
+        m.setObjective(sum(target_vars), GRB.MAXIMIZE)
+        m.setParam(GRB.Param.PoolSearchMode, 0)
+        m.setParam("MIPGap", 0)
+        m.Params.OutputFlag = 0
+        m.update()
+
         degrees = []
-        for i in range(self._cipher.output_bit_size):
-            self.re_init()
-            degree = self.find_upper_bound_degree_of_specific_output_bit(
-                i, which_var_degree=which_var_degree, chosen_cipher_output=chosen_cipher_output
-            )
-            degrees.append(degree)
+        for i in range(len(output_vars)):
+            c = m.addConstr(output_vars[i] == 1)
+            m.update()
+            m.optimize()
+            if m.Status in (GRB.OPTIMAL, GRB.SUBOPTIMAL):
+                degrees.append(int(round(m.ObjVal)))
+            else:
+                print(f"[INFO] Model is infeasible for output bit {i}") if verbosity else None
+                degrees.append(-1)
+            m.remove(c)
+            m.update()
+
         verbosity = old_verbosity
 
         self._log_experiment(
@@ -1687,13 +1913,14 @@ class MilpMonomialPredictionModel:
                 "chosen_cipher_output": chosen_cipher_output,
                 "which_var_degree": which_var_degree,
             },
-            degrees
+            degrees,
         )
 
         return degrees
 
-    def find_exact_degree_of_specific_output_bit(self, output_bit_index, which_var_degree=None,
-                                                 chosen_cipher_output=None):
+    def find_exact_degree_of_specific_output_bit(
+        self, output_bit_index, which_var_degree=None, chosen_cipher_output=None
+    ):
         """
         Compute the exact algebraic degree of a specific cipher output bit
         with respect to a chosen input variable group (e.g., key, IV, or plaintext).
@@ -1732,30 +1959,14 @@ class MilpMonomialPredictionModel:
         """
 
         fixed_degree = None
-        self.build_generic_model_for_specific_output_bit(output_bit_index, fixed_degree, which_var_degree,
-                                                         chosen_cipher_output)
+        self.build_generic_model_for_specific_output_bit(
+            output_bit_index, fixed_degree, which_var_degree, chosen_cipher_output
+        )
 
         m = self._model
-        m.Params.OutputFlag = 0
-        m.setParam(GRB.Param.PoolSearchMode, 2)  # enumerate all optimal solutions
-        m.setParam(GRB.Param.PoolSolutions, 200000000)  # large enough for enumeration
-        m.setParam(GRB.Param.PoolGap, 0.0)  # ensure only optimal solutions are put in the Pool
+        self._set_pool_enumeration_params()  # enumerate all optimal solutions
 
-        if which_var_degree is None:
-            target_inputs = [(self._cipher.inputs[0], self._cipher.inputs_bit_size[0])]
-        else:
-            target_inputs = [
-                (inp, size)
-                for inp, size in zip(self._cipher.inputs, self._cipher.inputs_bit_size)
-                if inp.startswith(which_var_degree)
-            ]
-
-        vars_target = []
-        for inp, size in target_inputs:
-            for i in range(size):
-                var = m.getVarByName(f"{inp}[{i}]")
-                if var is not None:
-                    vars_target.append(var)
+        vars_target = self._resolve_input_group_vars(which_var_degree)
 
         m.setObjective(sum(vars_target), GRB.MAXIMIZE)
         m.update()
@@ -1763,23 +1974,13 @@ class MilpMonomialPredictionModel:
 
         degree_drop = False
         if self._model.Status not in [GRB.OPTIMAL, GRB.SUBOPTIMAL]:
-            print(f"[INFO] Model is infeasible") if verbosity else None
+            print(MODEL_INFEASIBLE_MSG) if verbosity else None
             exact_degree = -1
         else:
             d = int(round(m.ObjVal))
-            # Gather all distinct monomials of degree d and compute parity
-            monomial_parity = {}
-            for s in range(m.SolCount):
-                m.Params.SolutionNumber = s
-                active_indices = tuple(i for i, v in enumerate(vars_target) if v.Xn > 0.5)
-                if len(active_indices) == d:
-                    monomial_parity[active_indices] = monomial_parity.get(active_indices, 0) ^ 1
-
-            if any(val == 1 for val in monomial_parity.values()):
-                exact_degree = d
-            else:
-                degree_drop = True
-                exact_degree = d - 1
+            # Gather all distinct monomials of degree d and compute parity (mod 2)
+            exact_degree = self._exact_degree_from_solution_pool(vars_target, d)
+            degree_drop = exact_degree < d
 
         self._log_experiment(
             "exact degree",
@@ -1787,9 +1988,9 @@ class MilpMonomialPredictionModel:
                 "output_bit_index": output_bit_index,
                 "chosen_cipher_output": chosen_cipher_output,
                 "which_var_degree": which_var_degree,
-                "degree_drop": degree_drop
+                "degree_drop": degree_drop,
             },
-            exact_degree
+            exact_degree,
         )
 
         return exact_degree
@@ -1826,13 +2027,15 @@ class MilpMonomialPredictionModel:
         global verbosity
         old_verbosity = verbosity
         verbosity = False
-        degrees = []
-        for i in range(self._cipher.output_bit_size):
-            self.re_init()
-            degree = self.find_exact_degree_of_specific_output_bit(
-                i, which_var_degree=which_var_degree, chosen_cipher_output=chosen_cipher_output
-            )
-            degrees.append(degree)
+
+        output_vars = self._init_master_for_all_output_bits(chosen_cipher_output)
+        target_vars = self._resolve_input_group_vars(which_var_degree)
+        self._model.setObjective(sum(target_vars), GRB.MAXIMIZE)
+        self._set_pool_enumeration_params()
+        self._model.update()
+
+        degrees = self._run_exact_degree_per_bit_loop(output_vars, target_vars)
+
         verbosity = old_verbosity
 
         self._log_experiment(
@@ -1841,7 +2044,7 @@ class MilpMonomialPredictionModel:
                 "chosen_cipher_output": chosen_cipher_output,
                 "which_var_degree": which_var_degree,
             },
-            degrees
+            degrees,
         )
 
         return degrees
@@ -1900,7 +2103,7 @@ class MilpMonomialPredictionModel:
         m.setObjective(sum(cube_vars), GRB.MAXIMIZE)
 
         # Fix all other non-cube public input bits to 0
-        for (inp, sz) in zip(self._cipher.inputs, self._cipher.inputs_bit_size):
+        for inp, sz in zip(self._cipher.inputs, self._cipher.inputs_bit_size):
             pref = inp[0]
             if pref in {"p", "i"}:
                 for i in range(sz):
@@ -1922,12 +2125,8 @@ class MilpMonomialPredictionModel:
 
         self._log_experiment(
             "degree in cube vars",
-            {
-                "output_bit_index": output_bit_index,
-                "chosen_cipher_output": chosen_cipher_output,
-                "cube": cube
-            },
-            degree_in_cube_vars
+            {"output_bit_index": output_bit_index, "chosen_cipher_output": chosen_cipher_output, "cube": cube},
+            degree_in_cube_vars,
         )
 
         return degree_in_cube_vars
@@ -1998,16 +2197,12 @@ class MilpMonomialPredictionModel:
 
         self._log_experiment(
             "upper bound degree of cube monomial",
-            {
-                "output_bit_index": output_bit_index,
-                "chosen_cipher_output": chosen_cipher_output,
-                "cube": cube
-            },
-            degree_upper_bound
+            {"output_bit_index": output_bit_index, "chosen_cipher_output": chosen_cipher_output, "cube": cube},
+            degree_upper_bound,
         )
 
         return degree_upper_bound
-    
+
     def find_keycoeff_of_cube_monomial_of_specific_output_bit(
         self,
         output_bit_index,
@@ -2067,7 +2262,7 @@ class MilpMonomialPredictionModel:
         cube_set = {(a, b) for (a, b) in cube_verbose}
 
         # Fix cube bits to 1
-        for (inp_name, idx) in cube_verbose:
+        for inp_name, idx in cube_verbose:
             v = m.getVarByName(f"{inp_name}[{idx}]")
             m.addConstr(v == 1)
 
@@ -2075,7 +2270,7 @@ class MilpMonomialPredictionModel:
         m.addConstr(sum(cube_vars) == len(cube))
 
         # Fix all other non-key input bits to 0
-        for (inp, sz) in zip(self._cipher.inputs, self._cipher.inputs_bit_size):
+        for inp, sz in zip(self._cipher.inputs, self._cipher.inputs_bit_size):
             pref = inp[0]
             if pref in {"p", "i"}:
                 for i in range(sz):
@@ -2102,14 +2297,9 @@ class MilpMonomialPredictionModel:
 
         self._log_experiment(
             "key coefficient of cube monomial",
-            {
-                "output_bit_index": output_bit_index,
-                "chosen_cipher_output": chosen_cipher_output,
-                "cube": cube
-            },
-            key_coef_poly
+            {"output_bit_index": output_bit_index, "chosen_cipher_output": chosen_cipher_output, "cube": cube},
+            key_coef_poly,
         )
-
 
         return key_coef_poly
 
@@ -2117,7 +2307,7 @@ class MilpMonomialPredictionModel:
         self,
         experiment_name: str,
         details: dict,
-        content: str,
+        content: object,
     ):
         """
         Internal helper to log experiment results to a timestamped text file.
@@ -2126,7 +2316,7 @@ class MilpMonomialPredictionModel:
         Args:
             experiment_name (str): Short label for the experiment (e.g., "ANF", "superpoly").
             details (dict): Key-value pairs to include in the header (e.g., output_bit_index, cube, etc.).
-            content (str): The main content to log (e.g., a polynomial, integer, or list).
+            content (object): The main content to log (e.g., a polynomial, integer, or list); stringified before writing.
             folder (str): Target folder name for logs (default: "monomial_prediction_experiments").
         """
         if not verbosity:
@@ -2150,22 +2340,20 @@ class MilpMonomialPredictionModel:
             print(f"[WARNING] Failed to save {experiment_name} to file: {e}")
 
     def _setup_key_variables_and_ring(self):
-        key_input_indices = [
-            i for i, inp in enumerate(self._cipher.inputs) if "key" in inp.lower()
-        ]
+        key_input_indices = [i for i, inp in enumerate(self._cipher.inputs) if "key" in inp.lower()]
         has_key = len(key_input_indices) > 0
-        
+
         if not has_key:
-            B = BooleanPolynomialRing(1, 'k0')
+            B = BooleanPolynomialRing(1, "k0")
             return key_input_indices, False, B, B.gens()
-        
+
         key_var_names = []
         SUPERSCRIPTS = str.maketrans("0123456789", "⁰¹²³⁴⁵⁶⁷⁸⁹")
         for i in key_input_indices:
             inp_name = self._cipher.inputs[i]
             size = self._cipher.inputs_bit_size[i]
-            parts = inp_name.split('_')
-            
+            parts = inp_name.split("_")
+
             if len(parts) >= 2 and "key" in parts[0].lower() and parts[1].isdigit():
                 round_sup = parts[1].translate(SUPERSCRIPTS)
                 key_var_names.extend([f"k{round_sup}{b}" for b in range(size)])
@@ -2178,12 +2366,14 @@ class MilpMonomialPredictionModel:
 
     def _get_split_ciphers(self, middle_round, verbosity):
         if not (0 < middle_round < self._cipher.number_of_rounds):
-            raise ValueError(f"Middle round {middle_round} out of valid range (1 to {self._cipher.number_of_rounds - 1})")
-        
+            raise ValueError(
+                f"Middle round {middle_round} out of valid range (1 to {self._cipher.number_of_rounds - 1})"
+            )
+
         cipher_copy = deepcopy(self._cipher)
         cipher1 = cipher_copy.get_partial_cipher(0, middle_round - 1)
         cipher2 = cipher_copy.get_partial_cipher(middle_round, self._cipher.number_of_rounds - 1)
-        
+
         if "key" not in self._cipher.inputs:
             if verbosity:
                 print("Propagating remove_key_schedule to sub-ciphers.")
@@ -2195,7 +2385,7 @@ class MilpMonomialPredictionModel:
         for comp in mid_round_obj.components:
             if comp.type == INTERMEDIATE_OUTPUT and "round_output" in comp.description:
                 return comp
-        
+
         c_idx = middle_round + self._cipher.components_before_round_starts + 1
         comp = self._cipher.component_from_id(f"intermediate_output_{middle_round}_{c_idx}")
         if comp is None:
@@ -2214,12 +2404,12 @@ class MilpMonomialPredictionModel:
     def _constrain_cube_and_public_vars(self, cube, key_input_indices):
         cube_verbose = self.var_list_to_input_positions(cube)
         cube_vars_set = {f"{term[0]}[{term[1]}]" for term in cube_verbose}
-        
+
         for var_name in cube_vars_set:
             var_term = self._model.getVarByName(var_name)
             if var_term is not None:
                 self._model.addConstr(var_term == 1)
-        
+
         for i, inp in enumerate(self._cipher.inputs):
             if i in key_input_indices:
                 continue
@@ -2236,16 +2426,16 @@ class MilpMonomialPredictionModel:
             for comp in r_tmp.components:
                 if link_id in comp.input_id_links and comp.id not in skip_for_enum:
                     used_predecessors.append(comp.id)
-        
+
         tmp = {r: {} for r in range(self._cipher.number_of_rounds)}
         for c_id in used_predecessors:
             r = int(c_id.split("_")[-2])
             tmp[r][c_id] = int(c_id.split("_")[-1])
-        
+
         used_predecessors_sorted = []
         for r in range(self._cipher.number_of_rounds):
             used_predecessors_sorted += list(dict(sorted(tmp[r].items(), key=lambda item: item[1])).keys())
-        
+
         for idx, c_id in enumerate(used_predecessors_sorted):
             if int(c_id.split("_")[-2]) > middle_round - 1:
                 return idx
@@ -2254,7 +2444,7 @@ class MilpMonomialPredictionModel:
     def _get_mid_var_for_link(self, var_dict, link_id, middle_round, skip_for_enum):
         if not skip_for_enum:
             return var_dict.get("copies", [var_dict["original"]])[-1]
-            
+
         escape_idx = self._get_escape_idx(link_id, middle_round, skip_for_enum)
         if escape_idx <= 0:
             return var_dict["original"]
@@ -2265,11 +2455,11 @@ class MilpMonomialPredictionModel:
     def _resolve_mid_var(self, link_id, pos, skip_for_enum, middle_round):
         if link_id in self._variables and pos in self._variables[link_id]:
             return self._get_mid_var_for_link(self._variables[link_id][pos], link_id, middle_round, skip_for_enum)
-        
+
         src = self._model.getVarByName(f"{link_id}[{pos}]")
         if src is not None:
             return src
-            
+
         dummy = self._model.addVar(vtype=GRB.BINARY, name=f"dead_end_{link_id}[{pos}]")
         self._model.addConstr(dummy == 0)
         return dummy
@@ -2280,7 +2470,7 @@ class MilpMonomialPredictionModel:
             for pos in round_output_comp.input_bit_positions[link_idx]:
                 v = self._resolve_mid_var(link_id, pos, skip_for_enum, middle_round)
                 mid_vars_list.append(v)
-        
+
         self._model.update()
         if len(mid_vars_list) != round_output_comp.output_bit_size:
             raise ValueError("Could not collect mid-state bits")
@@ -2297,13 +2487,13 @@ class MilpMonomialPredictionModel:
                     if mid_vars_list:
                         lhs = sum((1 - v) if state[i] else v for i, v in enumerate(mid_vars_list))
                         model.cbLazy(lhs >= 1)
-        
+
         self._model.setParam(GRB.Param.LazyConstraints, 1)
         self._model.setParam(GRB.Param.PoolSearchMode, 2)
         self._model.setParam(GRB.Param.PoolSolutions, 2000000000)
         self._model.setObjective(0.0, GRB.MAXIMIZE)
         self._model.optimize(mid_state_callback)
-        
+
         if verbosity:
             print(f"Middle state enumeration complete. Found {len(feasible_states)} feasible states.")
             sys.stdout.flush()
@@ -2323,7 +2513,7 @@ class MilpMonomialPredictionModel:
             active_model.setParam(GRB.Param.SolutionNumber, sn)
             mask = sum((1 << i) for i, var in enumerate(inputs) if var is not None and var.Xn > 0.5)
             masks_parity[mask] = masks_parity.get(mask, 0) ^ 1
-        
+
         return {m: p for m, p in masks_parity.items() if p == 1}
 
     def _build_bit_map(self, sub_cipher, wrapper_model, ring_var_map):
@@ -2351,7 +2541,7 @@ class MilpMonomialPredictionModel:
         model_wrap.build_model_with_input_output_constraints(None, do_pruning=True)
         cube_locs = model_wrap.var_list_to_input_positions(cube)
         cube_set = {(p[0], p[1]) for p in cube_locs}
-        
+
         for inp_name, size in zip(cipher.inputs, cipher.inputs_bit_size):
             if "key" not in inp_name.lower():
                 self._add_left_model_constraints(model_wrap, inp_name, size, cube_set)
@@ -2371,7 +2561,7 @@ class MilpMonomialPredictionModel:
             self._prepare_left_model(model_wrap, cipher, cube)
         else:
             model_wrap.build_generic_model_for_specific_output_bit(output_bit_index, do_pruning=True)
-        
+
         model_wrap._model.update()
         keys_m = self._get_model_key_vars(model_wrap, cipher)
         if keys_m:
@@ -2380,8 +2570,9 @@ class MilpMonomialPredictionModel:
 
     def _apply_state_to_outputs(self, m_core, state):
         for i, val in enumerate(state):
-             v_copy = m_core.getVarByName(f"output[{i}]")
-             if v_copy is not None: m_core.addConstr(v_copy == val)
+            v_copy = m_core.getVarByName(f"output[{i}]")
+            if v_copy is not None:
+                m_core.addConstr(v_copy == val)
 
     def _apply_state_to_inputs(self, m_core, model_wrap, state):
         inp_name = model_wrap._cipher.inputs[0]
@@ -2392,7 +2583,8 @@ class MilpMonomialPredictionModel:
                 v_orig = model_wrap._variables[inp_name][i]["original"]
                 if v_orig is not None:
                     v_copy = m_core.getVarByName(v_orig.VarName)
-                    if v_copy is not None: m_core.addConstr(v_copy == val)
+                    if v_copy is not None:
+                        m_core.addConstr(v_copy == val)
 
     def _setup_core_model(self, model_wrap, state, apply_to_inputs=False):
         m_core = model_wrap._model.copy()
@@ -2400,7 +2592,7 @@ class MilpMonomialPredictionModel:
         m_core.setParam(GRB.Param.PoolSolutions, 2000000000)
         m_core.setParam(GRB.Param.OutputFlag, 0)
         m_core.setParam(GRB.Param.MIPFocus, 3)
-        
+
         if not apply_to_inputs:
             self._apply_state_to_outputs(m_core, state)
         else:
@@ -2410,51 +2602,60 @@ class MilpMonomialPredictionModel:
     def _compute_monomial(self, m1, m2, map1, map2, boolean_ring, k_vars):
         mon = boolean_ring(1)
         for sub_bit, ring_idx in map1.items():
-            if (m1 >> sub_bit) & 1: mon *= k_vars[ring_idx]
+            if (m1 >> sub_bit) & 1:
+                mon *= k_vars[ring_idx]
         for sub_bit, ring_idx in map2.items():
-            if (m2 >> sub_bit) & 1: mon *= k_vars[ring_idx]
+            if (m2 >> sub_bit) & 1:
+                mon *= k_vars[ring_idx]
         return mon
 
-    def _accumulate_poly(self, c1, masks1, c2, masks2, map1, map2, total_poly, total_raw, has_key, boolean_ring, k_vars):
+    def _accumulate_poly(
+        self, c1, masks1, c2, masks2, map1, map2, total_poly, total_raw, has_key, boolean_ring, k_vars
+    ):
         total_raw += c1 * c2
         if not has_key:
             total_poly += boolean_ring(c1 * c2)
             return total_poly, total_raw
-            
+
         for m1 in masks1:
             for m2 in masks2:
                 total_poly += self._compute_monomial(m1, m2, map1, map2, boolean_ring, k_vars)
         return total_poly, total_raw
 
-    def _process_single_feasible_state(self, state, model1, cipher1, model2, cipher2, map1, map2, has_key, boolean_ring, k_vars):
+    def _process_single_feasible_state(
+        self, state, model1, cipher1, model2, cipher2, map1, map2, has_key, boolean_ring, k_vars
+    ):
         m1_core = self._setup_core_model(model1, state, apply_to_inputs=False)
         m1_core.optimize()
         c1 = m1_core.SolCount
-        
+
         if c1 == 0:
             m1_core.dispose()
             return boolean_ring(0), 0, c1
-        
+
         masks1 = self._get_input_masks(m1_core, model1, cipher1)
 
         m2_core = self._setup_core_model(model2, state, apply_to_inputs=True)
         m2_core.optimize()
         c2 = m2_core.SolCount
-        
+
         if c2 == 0:
             m1_core.dispose()
             m2_core.dispose()
-            return boolean_ring(0), 0, c1*c2
-        
+            return boolean_ring(0), 0, c1 * c2
+
         masks2 = self._get_input_masks(m2_core, model2, cipher2)
-        
-        poly_delta, raw = self._accumulate_poly(c1, masks1, c2, masks2, map1, map2, boolean_ring(0), 0, has_key, boolean_ring, k_vars)
+
+        poly_delta, raw = self._accumulate_poly(
+            c1, masks1, c2, masks2, map1, map2, boolean_ring(0), 0, has_key, boolean_ring, k_vars
+        )
         m1_core.dispose()
         m2_core.dispose()
-        return poly_delta, raw, c1*c2
+        return poly_delta, raw, c1 * c2
 
     def find_coefficient_of_cube_by_divide_and_conquer(
-            self, output_bit_index, middle_round, cube, chosen_cipher_output=None, verbosity=False):
+        self, output_bit_index, middle_round, cube, chosen_cipher_output=None, verbosity=False
+    ):
         """
         Compute the superpoly (coefficient of the cube monomial) in terms of key variables.
         """
@@ -2462,6 +2663,7 @@ class MilpMonomialPredictionModel:
         cipher1, cipher2 = self._get_split_ciphers(middle_round, verbosity)
 
         from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel
+
         model1 = MilpMonomialPredictionModel(cipher1)
         model2 = MilpMonomialPredictionModel(cipher2)
 
@@ -2486,7 +2688,7 @@ class MilpMonomialPredictionModel:
 
         self._prepare_model_for_counting(model1, cipher1, True, cube, output_bit_index)
         self._prepare_model_for_counting(model2, cipher2, False, cube, output_bit_index)
-        
+
         map1 = self._build_bit_map(cipher1, model1, ring_var_map)
         map2 = self._build_bit_map(cipher2, model2, ring_var_map)
 
@@ -2494,7 +2696,7 @@ class MilpMonomialPredictionModel:
 
         for idx, state in enumerate(feasible_states):
             if verbosity and (idx == 0 or (idx + 1) % 10 == 0 or (idx + 1) == len(feasible_states)):
-                print(f"Processing state {idx+1}/{len(feasible_states)}...")
+                print(f"Processing state {idx + 1}/{len(feasible_states)}...")
                 sys.stdout.flush()
 
             poly_delta, raw, prod = self._process_single_feasible_state(
@@ -2507,13 +2709,13 @@ class MilpMonomialPredictionModel:
         if verbosity:
             print(f"Final Parity: {parity % 2}")
             print(f"Total counted solutions (with multiplicity): {total_raw_solutions}")
-        
+
         return total_poly
+
 
 ################################
 ######## END OF CLASS ##########
 ################################
-
 
 
 def _valuation_from_assign(cipher, full_assign_bits, allowed_prefixes=None):
@@ -2525,13 +2727,12 @@ def _valuation_from_assign(cipher, full_assign_bits, allowed_prefixes=None):
         w = full_assign_bits[name]
         for i in range(size):  # i is MSB index
             bit = (w >> (size - 1 - i)) & 1
-            val[f'{pref}{i}'] = bit
+            val[f"{pref}{i}"] = bit
     return val
 
 
 def _parse_cube_positions(cipher, cube_tokens):
-    pref_map = {name[0]: (name, size)
-                for name, size in zip(cipher.inputs, cipher.inputs_bit_size)}
+    pref_map = {name[0]: (name, size) for name, size in zip(cipher.inputs, cipher.inputs_bit_size)}
     out = []
     for tok in cube_tokens:
         pref, msb_pos = tok[0], int(tok[1:])
@@ -2550,8 +2751,49 @@ def _eval_boolean_poly(poly, valuation):
     return int(GF(2)(poly(**vals)))
 
 
-def check_correctness_of_keycoeff_of_cube_monomial_or_superpoly(cipher, output_bit_index, cube, poly,
-                                     public_assign_bits=None, trials=16):
+def _build_trial_assignment(cipher, needed_prefixes, public_assign_bits):
+    """Build one input assignment for a correctness trial: random key bits and
+    fixed/zero public bits. Extracted from
+    ``check_correctness_of_keycoeff_of_cube_monomial_or_superpoly``; logic unchanged.
+    """
+    assign = {}
+    for name, size in zip(cipher.inputs, cipher.inputs_bit_size):
+        if name.startswith("k"):
+            assign[name] = secrets.randbits(size)
+        elif needed_prefixes <= {"k"}:
+            assign[name] = 0
+        elif public_assign_bits and name in public_assign_bits:
+            assign[name] = int(public_assign_bits[name])
+        else:
+            assign[name] = 0
+    return assign
+
+
+def _cube_sum_parity(cipher, assign, cube_pos, size_map, output_bit_index):
+    """Cube-sum the chosen output bit over all ``2**len(cube_pos)`` settings of the
+    cube variables, keeping the rest of ``assign`` fixed. Returns the parity (0/1).
+    """
+    acc = 0
+    for a in range(1 << len(cube_pos)):
+        cur = dict(assign)
+        for j, (inp_name, msb_pos) in enumerate(cube_pos):
+            size = size_map[inp_name]
+            lsb_idx = size - 1 - msb_pos  # MSB is first
+            mask = 1 << lsb_idx
+            if (a >> j) & 1:
+                cur[inp_name] |= mask
+            else:
+                cur[inp_name] &= ~mask
+
+        output = cipher.evaluate([cur[name] for name in cipher.inputs])
+        out_lsb_idx = cipher.output_bit_size - 1 - output_bit_index
+        acc ^= (output >> out_lsb_idx) & 1
+    return acc
+
+
+def check_correctness_of_keycoeff_of_cube_monomial_or_superpoly(
+    cipher, output_bit_index, cube, poly, public_assign_bits=None, trials=16
+):
     """
     Check the correctness of a computed cube monomial coefficient or superpoly
     for a specific cipher output bit, by evaluating the cipher multiple times
@@ -2635,40 +2877,12 @@ def check_correctness_of_keycoeff_of_cube_monomial_or_superpoly(cipher, output_b
 
     """
     cube_pos = _parse_cube_positions(cipher, cube)
-    m = len(cube_pos)
     size_map = dict(zip(cipher.inputs, cipher.inputs_bit_size))
     needed_prefixes = {str(v)[0] for v in poly.variables()}
 
     for _ in range(trials):
-        # random keys, fixed/zero publics
-        assign = {}
-        for name, size in zip(cipher.inputs, cipher.inputs_bit_size):
-            if name.startswith('k'):
-                assign[name] = secrets.randbits(size)
-            else:
-                if needed_prefixes <= {'k'}:
-                    assign[name] = 0
-                else:
-                    if public_assign_bits and name in public_assign_bits:
-                        assign[name] = int(public_assign_bits[name])
-                    else:
-                        assign[name] = 0
-
-        acc = 0
-        for a in range(1 << m):
-            cur = dict(assign)
-            for j, (inp_name, msb_pos) in enumerate(cube_pos):
-                size = size_map[inp_name]
-                lsb_idx = size - 1 - msb_pos  # MSB is first
-                mask = 1 << lsb_idx
-                if (a >> j) & 1:
-                    cur[inp_name] |= mask
-                else:
-                    cur[inp_name] &= ~mask
-
-            output = cipher.evaluate([cur[name] for name in cipher.inputs])
-            out_lsb_idx = cipher.output_bit_size - 1 - output_bit_index
-            acc ^= (output >> out_lsb_idx) & 1
+        assign = _build_trial_assignment(cipher, needed_prefixes, public_assign_bits)
+        acc = _cube_sum_parity(cipher, assign, cube_pos, size_map, output_bit_index)
 
         vals = _valuation_from_assign(cipher, assign, allowed_prefixes=needed_prefixes)
         rhs = _eval_boolean_poly(poly, vals)
@@ -2676,4 +2890,3 @@ def check_correctness_of_keycoeff_of_cube_monomial_or_superpoly(cipher, output_b
         if acc != rhs:
             return False
     return True
-

@@ -19,7 +19,7 @@ from copy import deepcopy
 from minizinc import Status
 
 from claasp.cipher_modules.models.cp.mzn_model import MznModel
-from claasp.name_mappings import CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, WORD_OPERATION
+from claasp.name_mappings import CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, PERMUTATION_COMPONENT, WORD_OPERATION
 
 
 class MznXorDifferentialModelARXOptimized(MznModel):
@@ -75,7 +75,7 @@ class MznXorDifferentialModelARXOptimized(MznModel):
                 int_value = sum([2**i if bit else 0 for i, bit in enumerate(bool_list)])
                 component_id = "_".join(sublist[0].split("_")[:-1])
                 weight = 0
-                if component_id.startswith("modadd") or component_id.startswith("modsub"):
+                if component_id.startswith(("modadd", "modsub")):
                     weight = probability_vars_weights_[f"p_{component_id}_0"]["weight"]
                 temp_result[component_id] = {"value": hex(int_value)[2:], "weight": weight, "sign": 1}
 
@@ -96,7 +96,9 @@ class MznXorDifferentialModelARXOptimized(MznModel):
         return parsed_solution
 
     @staticmethod
-    def _parse_result(result, solver_name, total_weight, model_type, _variables_declarations, cipher_id, probability_vars):
+    def _parse_result(
+        result, solver_name, total_weight, model_type, _variables_declarations, cipher_id, probability_vars
+    ):
         def _entry_matches(entry, prefix):
             valid_starts = [f"var bool: {prefix}", f"var 0..1: {prefix}"]
             return any(entry.startswith(vs) for vs in valid_starts)
@@ -174,7 +176,7 @@ class MznXorDifferentialModelARXOptimized(MznModel):
         variables = []
         self._variables_declarations = []
         constraints = self.fix_variables_value_constraints_for_ARX(fixed_variables)
-        component_types = [CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, WORD_OPERATION]
+        component_types = [CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, PERMUTATION_COMPONENT, WORD_OPERATION]
         operation_types = ["MODADD", "MODSUB", "ROTATE", "SHIFT", "SHIFT_BY_VARIABLE_AMOUNT", "XOR"]
         self._model_constraints = constraints
 
@@ -577,7 +579,7 @@ class MznXorDifferentialModelARXOptimized(MznModel):
         permutation_components = cipher_permutation.get_all_components()
         probability_vars_from_permutation = []
         for permutation_component in permutation_components:
-            if permutation_component.id.startswith("modadd") or permutation_component.id.startswith("modsub"):
+            if permutation_component.id.startswith(("modadd", "modsub")):
                 for probability_var in self.probability_vars:
                     if probability_var.startswith(f"p_{permutation_component.id}"):
                         probability_vars_from_permutation.append(probability_var)
@@ -601,7 +603,7 @@ class MznXorDifferentialModelARXOptimized(MznModel):
         key_schedule_ids = set(all_components_ids) - set(permutation_component_ids)
         key_schedule_prob_var_ids = []
         for key_schedule_id in key_schedule_ids:
-            if key_schedule_id.startswith("modadd") or key_schedule_id.startswith("modsub"):
+            if key_schedule_id.startswith(("modadd", "modsub")):
                 for probability_var in self.probability_vars:
                     if probability_var.startswith(f"p_{key_schedule_id}"):
                         key_schedule_prob_var_ids.append(probability_var)

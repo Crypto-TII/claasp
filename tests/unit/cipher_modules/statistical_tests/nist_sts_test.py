@@ -15,9 +15,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-import json
-import os
-from pathlib import Path
 
 import numpy as np
 import pytest

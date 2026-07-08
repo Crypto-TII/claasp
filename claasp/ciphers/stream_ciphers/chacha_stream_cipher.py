@@ -1,26 +1,26 @@
 
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
 
+from claasp.ciphers.permutations.chacha_permutation import ROUND_MODE_SINGLE, ChachaPermutation
 from claasp.DTOs.component_state import ComponentState
-from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation, ROUND_MODE_HALF, ROUND_MODE_SINGLE
+from claasp.name_mappings import INPUT_BLOCK_COUNT, INPUT_KEY, INPUT_NONCE, INPUT_PLAINTEXT, STREAM_CIPHER
 from claasp.utils.utils import bytes_positions_to_little_endian_for_multiple_of_32
-from claasp.name_mappings import STREAM_CIPHER, INPUT_PLAINTEXT, INPUT_NONCE, INPUT_BLOCK_COUNT, INPUT_KEY
 
 INPUT_CONSTANTS = "chacha_constants"
 PARAMETERS_CONFIGURATION_LIST = [{'block_bit_size': 512, 'key_bit_size': 256, 'number_of_rounds': 20}]
@@ -125,6 +125,6 @@ class ChachaStreamCipher(ChachaPermutation):
         for component_number in range(self.get_number_of_components_in_round(last_round)):
             component = self.component_from(last_round, component_number)
             if component.type == "cipher_output":
-                component.set_input_id_links(lst_ids)
+                component.input_id_links = lst_ids
 
         self.sort_cipher()

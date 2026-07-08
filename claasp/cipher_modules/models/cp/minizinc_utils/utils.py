@@ -1,6 +1,3 @@
-import os
-
-
 def filter_out_strings_containing_substring(strings_list, substring):
     return [string for string in strings_list if substring not in string]
 

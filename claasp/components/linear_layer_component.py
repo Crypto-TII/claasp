@@ -20,20 +20,21 @@ from sage.matrix.constructor import Matrix
 from sage.modules.free_module_element import vector
 from sage.rings.finite_rings.finite_field_constructor import FiniteField
 
+from claasp.cipher_modules.models.milp.utils import utils as milp_utils
 from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_wordwise_truncated_xor_with_n_input_bits import (
-    update_dictionary_that_contains_xor_inequalities_for_specific_wordwise_matrix,
     output_dictionary_that_contains_wordwise_truncated_xor_inequalities,
+    update_dictionary_that_contains_xor_inequalities_for_specific_wordwise_matrix,
+)
+from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_xor_with_n_input_bits import (
+    output_dictionary_that_contains_xor_inequalities,
+    update_dictionary_that_contains_xor_inequalities_for_specific_matrix,
 )
 from claasp.cipher_modules.models.milp.utils.utils import espresso_pos_to_constraints
-from claasp.input import Input
-from claasp.component import Component, free_input
+from claasp.cipher_modules.models.sat.utils import constants
+from claasp.cipher_modules.models.sat.utils import utils as sat_utils
 from claasp.cipher_modules.models.smt.utils import utils as smt_utils
-from claasp.cipher_modules.models.sat.utils import constants, utils as sat_utils
-from claasp.cipher_modules.models.milp.utils import utils as milp_utils
-from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_xor_with_n_input_bits import (
-    update_dictionary_that_contains_xor_inequalities_for_specific_matrix,
-    output_dictionary_that_contains_xor_inequalities,
-)
+from claasp.component import Component, free_input
+from claasp.input import Input
 
 
 def update_constraints_for_more_than_one_bit(
@@ -756,11 +757,7 @@ class LinearLayer(Component):
         constraints = []
 
         M = Matrix(self.description)
-        if M.ncols() > model.word_size and [len(input) for input in self.input_bit_positions] != [
-            model.word_size
-        ] * len(self.input_bit_positions):
-            # self.print()
-            # truncated matrix
+        if M.ncols() > model.word_size:
             matrix = [
                 [
                     not M[i : i + model.word_size, j : j + model.word_size].is_zero()

@@ -22,18 +22,16 @@ from io import StringIO
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set
 
-import numpy as np
 import pytest
 
 from claasp.cipher_modules.statistical_tests.nist_sts import (
     NISTTests,
-    parse_final_analysis_report,
-    parse_nist_stats,
     _detect_nist_skip_reason,
     _normalize_test_name,
     _stats_indicates_not_applicable,
+    parse_final_analysis_report,
+    parse_nist_stats,
 )
-
 
 DATASETS = [
     {

@@ -21,26 +21,30 @@ import time as tm
 
 from sage.crypto.sbox import SBox
 
-from claasp.cipher_modules.models.cp.mzn_model import MznModel, SOLVE_SATISFY, CONSTRAINT_TYPE_ERROR
+from claasp.cipher_modules.models.cp.mzn_model import SOLVE_SATISFY, MznModel
+from claasp.cipher_modules.models.cp.solvers import SOLVER_DEFAULT
 from claasp.cipher_modules.models.utils import get_bit_bindings, get_single_key_scenario_format_for_fixed_values
 from claasp.name_mappings import (
-    INTERMEDIATE_OUTPUT,
-    XOR_LINEAR,
-    CONSTANT,
     CIPHER_OUTPUT,
-    LINEAR_LAYER,
-    SBOX,
-    MIX_COLUMN,
-    WORD_OPERATION,
+    CONSTANT,
     INPUT_KEY,
+    INTERMEDIATE_OUTPUT,
+    LINEAR_LAYER,
+    MIX_COLUMN,
+    PERMUTATION_COMPONENT,
+    SBOX,
+    WORD_OPERATION,
+    XOR_LINEAR,
 )
-from claasp.cipher_modules.models.cp.solvers import SOLVER_DEFAULT
 
 
 class MznXorLinearModel(MznModel):
     def __init__(self, cipher):
         super().__init__(cipher)
-        format_func = lambda record: f"{record[0]}_{record[2]}[{record[1]}]"
+
+        def format_func(record):
+            return f"{record[0]}_{record[2]}[{record[1]}]"
+
         self.bit_bindings, self.bit_bindings_for_intermediate_output = get_bit_bindings(cipher, format_func)
 
     def and_xor_linear_probability_lat(self, numadd):
@@ -155,6 +159,7 @@ class MznXorLinearModel(MznModel):
                 INTERMEDIATE_OUTPUT,
                 CIPHER_OUTPUT,
                 LINEAR_LAYER,
+                PERMUTATION_COMPONENT,
                 SBOX,
                 MIX_COLUMN,
                 WORD_OPERATION,

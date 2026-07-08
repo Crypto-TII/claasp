@@ -21,7 +21,6 @@ from itertools import chain
 from claasp.cipher import Cipher
 from claasp.name_mappings import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
 
-
 PARAMETERS_CONFIGURATION_LIST = [{"key_length": 128, "number_of_rounds": 16}]
 
 
@@ -309,11 +308,10 @@ class TwofishBlockCipher(Cipher):
                     self.cipher_block_size,
                 )
             else:
-                self.add_intermediate_output_component(
+                self.add_round_output_component(
                     [state[i].id for i in range(4)],
                     [list(range(32)) for _ in range(4)],
                     self.cipher_block_size,
-                    "round_output",
                 )
                 self.add_round()
 

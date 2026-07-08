@@ -1,24 +1,25 @@
 import copy
+import io
 import pickle
+from contextlib import redirect_stdout
 from pathlib import Path
 
 from plotly.basedatatypes import BaseFigure
 
-from claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model import SatXorDifferentialModel
-from claasp.cipher_modules.models.smt.smt_models.smt_xor_differential_model import SmtXorDifferentialModel
-from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model import MznXorDifferentialModel
-from claasp.cipher_modules.models.utils import set_fixed_variables
-from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
-from claasp.cipher_modules.report import Report
-from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
-from claasp.cipher_modules.statistical_tests.dieharder_statistical_tests import DieharderTests
-from claasp.cipher_modules.neural_network_tests import NeuralNetworkTests
 from claasp.cipher_modules.algebraic_tests import AlgebraicTests
 from claasp.cipher_modules.avalanche_tests import AvalancheTests
 from claasp.cipher_modules.component_analysis_tests import CipherComponentsAnalysis
 from claasp.cipher_modules.continuous_diffusion_analysis import ContinuousDiffusionAnalysis
-
+from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model import MznXorDifferentialModel
+from claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model import SatXorDifferentialModel
+from claasp.cipher_modules.models.smt.smt_models.smt_xor_differential_model import SmtXorDifferentialModel
+from claasp.cipher_modules.models.utils import set_fixed_variables
+from claasp.cipher_modules.neural_network_tests import NeuralNetworkTests
+from claasp.cipher_modules.report import Report
+from claasp.cipher_modules.statistical_tests.dieharder_statistical_tests import DieharderTests
+from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
+from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
+from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 
 CACHE_DIR = Path(__file__).resolve().parent / 'data'
 CACHE_FILE = CACHE_DIR / 'report_test_cache.pkl'
@@ -324,6 +325,25 @@ def test_show(monkeypatch, tmp_path):
     assert component_charts, 'Expected component analysis radar chart to be produced'
 
 
+def test_report_accepts_cp_trail_output():
+    """
+    Test that Report can be instantiated with CP model trail output directly,
+    without requiring explicit 'input_parameters' or 'test_name' nesting.
+    This validates that Report gracefully handles single-trial dictionaries
+    from find_one_xor_differential_trail_with_fixed_weight and similar methods.
+    """
+    speck = SpeckBlockCipher(block_bit_size=8, key_bit_size=16, number_of_rounds=2)
+    cp = MznXorDifferentialModel(speck)
+    trail = cp.find_one_xor_differential_trail_with_fixed_weight(1, solver_name='chuffed', solve_external=False)
+
+    assert 'test_name' in trail
+    assert trail['test_name'] == 'find_one_xor_differential_trail_with_fixed_weight'
+
+    trail_report = Report(trail)
+    assert trail_report.cipher == speck
+    assert trail_report.test_name == 'find_one_xor_differential_trail_with_fixed_weight'
+
+
 def test_save_as_dataframe_uses_runtime_cwd_default(monkeypatch, tmp_path):
     class DummyCipher:
         id = 'dummy_cipher'
@@ -357,3 +377,13 @@ def test_clean_reports_uses_runtime_cwd_default(monkeypatch, tmp_path):
     report.clean_reports()
 
     assert not reports_dir.exists()
+
+
+def test_show_rejects_invalid_hex_word_size():
+    report = Report({'cipher': object(), 'test_name': 'dummy_trail'})
+    stdout = io.StringIO()
+
+    with redirect_stdout(stdout):
+        report.show(show_as_hex=True, word_size=1)
+
+    assert 'Incorrect word_size: if show_as_hex=True, word_size has to be a multiple of 4' in stdout.getvalue()

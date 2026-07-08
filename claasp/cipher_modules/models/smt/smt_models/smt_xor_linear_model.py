@@ -18,8 +18,8 @@
 import time
 
 from claasp.cipher_modules.models.smt import solvers
-from claasp.cipher_modules.models.smt.utils import constants, utils
 from claasp.cipher_modules.models.smt.smt_model import SmtModel
+from claasp.cipher_modules.models.smt.utils import constants, utils
 from claasp.cipher_modules.models.smt.utils.constants import INPUT_BIT_ID_SUFFIX, OUTPUT_BIT_ID_SUFFIX
 from claasp.cipher_modules.models.utils import (
     get_bit_bindings,
@@ -33,6 +33,7 @@ from claasp.name_mappings import (
     INTERMEDIATE_OUTPUT,
     LINEAR_LAYER,
     MIX_COLUMN,
+    PERMUTATION_COMPONENT,
     SBOX,
     WORD_OPERATION,
     XOR_LINEAR,
@@ -113,6 +114,7 @@ class SmtXorLinearModel(SmtModel):
                 INTERMEDIATE_OUTPUT,
                 CIPHER_OUTPUT,
                 LINEAR_LAYER,
+                PERMUTATION_COMPONENT,
                 SBOX,
                 MIX_COLUMN,
                 WORD_OPERATION,

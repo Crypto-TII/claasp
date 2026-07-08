@@ -16,20 +16,21 @@
 # ****************************************************************************
 
 
-from claasp.input import Input
-from claasp.component import Component
-from claasp.cipher_modules.models.smt.utils import utils as smt_utils
-from claasp.cipher_modules.models.sat.utils import constants, utils as sat_utils
 from claasp.cipher_modules.models.milp.utils import utils as milp_utils
+from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_wordwise_truncated_xor_with_n_input_bits import (
+    output_dictionary_that_contains_wordwise_truncated_xor_inequalities,
+    update_dictionary_that_contains_wordwise_truncated_xor_inequalities_between_n_inputs,
+)
 from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_xor_with_n_input_bits import (
     output_dictionary_that_contains_xor_inequalities,
     update_dictionary_that_contains_xor_inequalities_between_n_input_bits,
 )
-from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_wordwise_truncated_xor_with_n_input_bits import (
-    update_dictionary_that_contains_wordwise_truncated_xor_inequalities_between_n_inputs,
-    output_dictionary_that_contains_wordwise_truncated_xor_inequalities,
-)
 from claasp.cipher_modules.models.milp.utils.utils import espresso_pos_to_constraints
+from claasp.cipher_modules.models.sat.utils import constants
+from claasp.cipher_modules.models.sat.utils import utils as sat_utils
+from claasp.cipher_modules.models.smt.utils import utils as smt_utils
+from claasp.component import Component
+from claasp.input import Input
 from claasp.name_mappings import WORD_OPERATION
 
 
@@ -181,7 +182,7 @@ class Xor(Component):
         component_id = f"xor_{current_round_number}_{current_round_number_of_components}"
         component_type = WORD_OPERATION
         input_len = sum(map(len, input_bit_positions))
-        description = ["XOR", int(input_len / output_bit_size)]
+        description = ["XOR", input_len // output_bit_size]
         component_input = Input(input_len, input_id_links, input_bit_positions)
         super().__init__(component_id, component_type, component_input, output_bit_size, description)
 
@@ -318,10 +319,7 @@ class Xor(Component):
         return cp_declarations, cp_constraints 
 
     def cp_continuous_differential_propagation_constraints(self, model):
-
-        input_id_links = self.input_id_links
         output_id_link = self.id
-        input_bit_positions = self.input_bit_positions
         input_len = self.output_bit_size
 
         cp_declarations = []
@@ -336,7 +334,7 @@ class Xor(Component):
         )
 
         return cp_declarations, cp_constraints
-        
+
     def cp_deterministic_truncated_xor_differential_constraints(self):
         r"""
         Return list declarations and constraints for XOR component CP deterministic truncated XOR differential model.
@@ -1523,7 +1521,7 @@ class Xor(Component):
             for input_bit in input_bit_positions:
                 input_bits += len(input_bit)
             xor_component = Xor("", "", input_id_link, input_bit_positions, input_bits)
-            xor_component.set_description(["XOR", numadd + 1])
+            xor_component.description = ["XOR", numadd + 1]
             model.list_of_xor_components.append(xor_component)
         cp_constraints = []
 

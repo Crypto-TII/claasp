@@ -6,7 +6,7 @@ from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 def test_find_all_xor_differential_trails_with_weight_at_most():
     speck = SpeckBlockCipher(number_of_rounds=5)
     smt = SmtXorDifferentialModel(speck)
-    trails = smt.find_all_xor_differential_trails_with_weight_at_most(9, 10)
+    trails = smt.find_all_xor_differential_trails_with_weight_at_most(10, 9)
     assert len(trails) == 28
 
 

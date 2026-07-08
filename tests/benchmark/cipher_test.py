@@ -1,12 +1,10 @@
-import pytest
 import numpy as np
-
-from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
-from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+import pytest
 
 from claasp.cipher_modules.avalanche_tests import AvalancheTests
 from claasp.cipher_modules.generic_functions_vectorized_byte import get_number_of_bytes_needed_for_bit_size
-
+from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
 
 speck = SpeckBlockCipher()
 aes = ToyAESBlockCipher()

@@ -34,6 +34,7 @@ from claasp.name_mappings import (
     INTERMEDIATE_OUTPUT,
     LINEAR_LAYER,
     MIX_COLUMN,
+    PERMUTATION_COMPONENT,
     SBOX,
     WORD_OPERATION,
 )
@@ -158,6 +159,7 @@ class MilpBitwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
                 CONSTANT,
                 INTERMEDIATE_OUTPUT,
                 LINEAR_LAYER,
+                PERMUTATION_COMPONENT,
                 MIX_COLUMN,
                 SBOX,
                 WORD_OPERATION,

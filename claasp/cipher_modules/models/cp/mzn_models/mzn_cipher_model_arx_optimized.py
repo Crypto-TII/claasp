@@ -17,12 +17,11 @@
 
 
 from claasp.cipher_modules.models.cp.mzn_model import MznModel
-from claasp.name_mappings import CIPHER_OUTPUT, INTERMEDIATE_OUTPUT, WORD_OPERATION
+from claasp.name_mappings import CIPHER_OUTPUT, INTERMEDIATE_OUTPUT, PERMUTATION_COMPONENT, WORD_OPERATION
 
 
 class MznCipherModelARXOptimized(MznModel):
-
-    def __init__(self, cipher, sat_or_milp='sat'):
+    def __init__(self, cipher, sat_or_milp="sat"):
         super().__init__(cipher, sat_or_milp)
 
     def build_cipher_model(self, fixed_variables=[]):
@@ -50,7 +49,7 @@ class MznCipherModelARXOptimized(MznModel):
         variables = []
         constraints = self.fix_variables_value_constraints_for_ARX(fixed_variables)
         self._model_constraints = constraints
-        component_types = [CIPHER_OUTPUT, INTERMEDIATE_OUTPUT, WORD_OPERATION]
+        component_types = [CIPHER_OUTPUT, INTERMEDIATE_OUTPUT, PERMUTATION_COMPONENT, WORD_OPERATION]
         operation_types = ["ROTATE", "SHIFT", "XOR"]
 
         for component in self._cipher.get_all_components():

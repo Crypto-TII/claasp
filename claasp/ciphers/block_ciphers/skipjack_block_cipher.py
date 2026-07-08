@@ -33,8 +33,7 @@ Cipher Specifications:
 
 from claasp.cipher import Cipher
 from claasp.DTOs.component_state import ComponentState
-from claasp.name_mappings import INPUT_PLAINTEXT, INPUT_KEY
-
+from claasp.name_mappings import INPUT_KEY, INPUT_PLAINTEXT
 
 # SKIPJACK F-Table (S-box 8x8 bits)
 SKIPJACK_FTABLE = [

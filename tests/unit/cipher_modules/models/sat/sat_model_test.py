@@ -1,13 +1,13 @@
 import pytest
 
-from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
-from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
-from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-from claasp.ciphers.block_ciphers.tea_block_cipher import TeaBlockCipher
 from claasp.cipher_modules.models.sat.sat_model import SatModel
 from claasp.cipher_modules.models.sat.sat_models.sat_cipher_model import SatCipherModel
 from claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model import SatXorDifferentialModel
 from claasp.cipher_modules.models.sat.solvers import CRYPTOMINISAT, CRYPTOMINISAT_EXT, KISSAT_EXT, PARKISSAT_EXT
+from claasp.cipher_modules.models.utils import integer_to_bit_list, set_fixed_variables
+from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
+from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+from claasp.ciphers.block_ciphers.tea_block_cipher import TeaBlockCipher
 
 
 def test_solve():
@@ -187,3 +187,14 @@ def test_weight_constraints():
     sat = SatXorDifferentialModel(speck)
     sat.build_xor_differential_trail_model()
     assert len(sat.weight_constraints(7)) == 2
+
+
+def test_parallel_counter_branch():
+    speck = SpeckBlockCipher(number_of_rounds=3)
+    sat = SatModel(speck, counter="parallel")
+
+    variables, constraints = sat._parallel_counter(["hw_0", "hw_1", "hw_2"], 5)
+
+    assert variables
+    assert constraints
+    assert any(variable.startswith("r_") for variable in variables)

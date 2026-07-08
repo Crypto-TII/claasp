@@ -18,8 +18,7 @@
 
 from claasp.cipher import Cipher
 from claasp.DTOs.component_state import ComponentState
-from claasp.name_mappings import INPUT_PLAINTEXT, INPUT_KEY
-
+from claasp.name_mappings import INPUT_KEY, INPUT_PLAINTEXT
 
 SBOX = [
     [0x1, 0x7, 0xE, 0xD, 0x0, 0x5, 0x8, 0x3, 0x4, 0xF, 0xA, 0x6, 0x9, 0xC, 0xB, 0x2],

@@ -23,11 +23,13 @@ using model 5 from https://tosc.iacr.org/index.php/ToSC/article/view/8702/8294
 
 """
 
+import os
+import pickle
 from itertools import product
 from math import ceil, log
-import pickle, os
-from claasp.cipher_modules.models.milp.utils import utils as milp_utils
+
 from claasp.cipher_modules.models.milp import MILP_AUXILIARY_FILE_PATH
+from claasp.cipher_modules.models.milp.utils import utils as milp_utils
 
 wordwise_truncated_mds_file_name = "dictionary_containing_truncated_mds_inequalities.obj"
 wordwise_truncated_mds_file_path = os.path.join(MILP_AUXILIARY_FILE_PATH, wordwise_truncated_mds_file_name)

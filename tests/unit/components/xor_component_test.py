@@ -1,11 +1,14 @@
-from claasp.cipher_modules.models.cp.mzn_model import MznModel
-from claasp.ciphers.single_component_ciphers.xor_cipher import XorCipher
 from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
+from claasp.cipher_modules.models.cp.mzn_model import MznModel
+from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import (
+    MilpBitwiseDeterministicTruncatedXorDifferentialModel,
+)
+from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import (
+    MilpWordwiseDeterministicTruncatedXorDifferentialModel,
+)
+from claasp.ciphers.single_component_ciphers.xor_cipher import XorCipher
 from claasp.components.xor_component import Xor, cp_build_truncated_table, generic_with_constant_sign_linear_constraints
-from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import \
-    MilpBitwiseDeterministicTruncatedXorDifferentialModel
-from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import \
-    MilpWordwiseDeterministicTruncatedXorDifferentialModel
+
 
 def test_cp_build_truncated_table():
     assert cp_build_truncated_table(3) == 'array[0..4, 1..3] of int: xor_truncated_table_3 = ' \
