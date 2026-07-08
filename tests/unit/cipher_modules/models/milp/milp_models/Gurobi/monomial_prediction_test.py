@@ -144,7 +144,7 @@ def test_check_correctness_of_superpoly():
     milp = MilpMonomialPredictionModel(cipher)
     cube = ["p0", "p9"]
     keycoeff = milp.find_superpoly_of_specific_output_bit(0, cube)
-    res = check_correctness_of_keycoeff_of_cube_monomial_or_superpoly(cipher, 0, cube, keycoeff)
+    res = check_correctness_of_partial_anf_or_superpoly(cipher, 0, cube, keycoeff)
     assert res == True
 
 @pytest.mark.skip(reason="Requires Gurobi license")
@@ -274,12 +274,12 @@ def test_find_superpoly_simon_13():
     assert res == 0
 
 @pytest.mark.skip(reason="Requires Gurobi license")
-def test_check_correctness_of_keycoeff_trivium_200():
+def test_check_correctness_of_partial_anf_or_superpoly_trivium_200():
     cipher = TriviumStreamCipher(keystream_bit_len=1, number_of_initialization_clocks=200)
     milp = MilpMonomialPredictionModel(cipher)
     cube = ["i53"]
     coef_poly = milp.find_superpoly_of_specific_output_bit(0, cube)
-    assert check_correctness_of_keycoeff_of_cube_monomial_or_superpoly(cipher, 0, cube, coef_poly)
+    assert check_correctness_of_partial_anf_or_superpoly(cipher, 0, cube, coef_poly)
 
 @pytest.mark.skip(reason="Requires Gurobi license")
 def test_find_coefficient_of_cube_by_divide_and_conquer_gaston():
