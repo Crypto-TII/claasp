@@ -1212,6 +1212,9 @@ class MilpMonomialPredictionModel:
         return name[:1].lower()
 
     def get_solutions(self):
+        if not self._verify_pool_completeness("ANF/Superpoly"):
+            return self.get_boolean_polynomial_ring()(0)
+
         start = time.time()
         sol_count = self._model.SolCount
         inputs = []
@@ -1252,6 +1255,8 @@ class MilpMonomialPredictionModel:
         if verbosity:
             print(self._model)
             print(f"########## solving_time : {solving_time}")
+            print(f"########## solver_status : {self._model.Status}")
+            print(f"########## solution_count : {self._model.SolCount}")
 
     def anf_list_to_boolean_poly(self, anf_list):
         B = self.get_boolean_polynomial_ring()
@@ -1600,7 +1605,7 @@ class MilpMonomialPredictionModel:
         m.optimize()
 
         degree_drop = False
-        if m.Status not in [GRB.OPTIMAL, GRB.SUBOPTIMAL]:
+        if self._model.Status not in [GRB.OPTIMAL, GRB.SUBOPTIMAL]:
             print(MODEL_INFEASIBLE_MSG) if verbosity else None
             exact_degree = -1
         else:
@@ -1682,6 +1687,25 @@ class MilpMonomialPredictionModel:
         m.setParam(GRB.Param.PoolSolutions, 200000000)
         m.setParam(GRB.Param.PoolGap, 0.0)
 
+    def _verify_pool_completeness(self, experiment_name="computation"):
+        """
+        Verify that the solver status is optimal and the solution pool was not
+        truncated. Missing trails can flip parity results, leading to incorrect
+        ANF or degree reports.
+        """
+        m = self._model
+        if m.Status == GRB.SUBOPTIMAL:
+            msg = f"[ERROR] Gurobi returned SUBOPTIMAL status for {experiment_name}. Result is unreliable."
+            print(msg)
+            return False
+
+        if m.SolCount >= m.Params.PoolSolutions:
+            msg = (f"[ERROR] Solution pool reached limit ({m.Params.PoolSolutions}) during {experiment_name}. "
+                   "Some trails were likely missed, making parity-based results incorrect.")
+            print(msg)
+            return False
+        return True
+
     def _exact_degree_from_solution_pool(self, target_vars, candidate_degree):
         """Walk the current Gurobi solution pool and apply the parity /
         degree-drop rule. Returns ``candidate_degree`` if at least one
@@ -1699,15 +1723,15 @@ class MilpMonomialPredictionModel:
             if inp_name not in self._variables:
                 continue
             prefix = self._prefix_for_input(inp_name)
-            for idx, d in self._variables[inp_name].items():
-                inputs_info.append((prefix, idx, d["original"]))
+            for idx, var_d in self._variables[inp_name].items():
+                inputs_info.append((prefix, idx, var_d["original"]))
+
+        if not self._verify_pool_completeness("exact degree"):
+            return -1
 
         monomial_parity = {}
-
         for s in range(m.SolCount):
             m.Params.SolutionNumber = s
-
-            # Identify the full input monomial for this trail
             toks = []
             deg = 0
             for prefix, idx, var in inputs_info:
@@ -2004,7 +2028,6 @@ class MilpMonomialPredictionModel:
             exact_degree = -1
         else:
             d = int(round(m.ObjVal))
-            # Gather all distinct monomials of degree d and compute parity (mod 2)
             exact_degree = self._exact_degree_from_solution_pool(vars_target, d)
             degree_drop = exact_degree < d
 
@@ -2148,14 +2171,16 @@ class MilpMonomialPredictionModel:
             return -1
 
         degree_in_cube_vars = int(round(m.ObjVal))
+        # Use existing heuristic logic for now
+        exact_degree = self._exact_degree_from_solution_pool(cube_vars, degree_in_cube_vars)
 
         self._log_experiment(
             "degree in cube vars",
             {"output_bit_index": output_bit_index, "chosen_cipher_output": chosen_cipher_output, "cube": cube},
-            degree_in_cube_vars,
+            exact_degree,
         )
 
-        return degree_in_cube_vars
+        return exact_degree
 
     def find_upper_bound_degree_of_cube_monomial_of_specific_output_bit(
         self,
@@ -2535,6 +2560,12 @@ class MilpMonomialPredictionModel:
                     inputs.append(copy_var)
 
         masks_parity = {}
+        # Solver status check for divide-and-conquer (C#3)
+        if active_model.Status == GRB.SUBOPTIMAL:
+            print("[ERROR] Suboptimal status in divide-and-conquer sub-model.")
+        if active_model.SolCount >= active_model.Params.PoolSolutions:
+            print(f"[ERROR] Solution pool limit hit ({active_model.Params.PoolSolutions}) in divide-and-conquer.")
+
         for sn in range(active_model.SolCount):
             active_model.setParam(GRB.Param.SolutionNumber, sn)
             mask = sum((1 << i) for i, var in enumerate(inputs) if var is not None and var.Xn > 0.5)
