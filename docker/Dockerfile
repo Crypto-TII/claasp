@@ -151,7 +151,8 @@ RUN if [ "$TARGETARCH" = "arm64" ]; then \
         && rm 2.9.4.tar.gz \
         && cmake -B libminizinc-2.9.4/build -S libminizinc-2.9.4 -DCMAKE_INSTALL_PREFIX=/MiniZinc \
         && cmake --build libminizinc-2.9.4/build -j$(nproc) \
-        && cmake --install libminizinc-2.9.4/build; \
+        && cmake --install libminizinc-2.9.4/build \
+        && rm -rf libminizinc-2.9.4; \
     else \
         wget https://github.com/MiniZinc/MiniZincIDE/releases/download/2.9.4/MiniZincIDE-2.9.4-bundle-linux-x86_64.tgz \
         && tar -xf MiniZincIDE-2.9.4-bundle-linux-x86_64.tgz \
@@ -274,10 +275,9 @@ ENV PATH="/opt/glucose-syrup/simp:/opt/glucose-syrup/parallel:${PATH}"
 RUN if [ "$TARGETARCH" != "arm64" ]; then \
         wget https://mathsat.fbk.eu/release/mathsat-5.6.11-linux-x86_64.tar.gz \
         && tar -xf mathsat-5.6.11-linux-x86_64.tar.gz \
-        && rm mathsat-5.6.11-linux-x86_64.tar.gz; \
+        && rm mathsat-5.6.11-linux-x86_64.tar.gz \
+        && ln -sf /opt/mathsat-5.6.11-linux-x86_64/bin/* /usr/local/bin/; \
     fi
-
-ENV PATH="/opt/mathsat-5.6.11-linux-x86_64/bin:${PATH}"
 
 # Installing Minisat
 RUN wget https://github.com/stp/minisat/archive/refs/tags/releases/2.2.1.zip \
@@ -314,15 +314,17 @@ RUN cd cadical-rel-1.5.3 \
 ENV PATH="/opt/cadical-rel-1.5.3/build:${PATH}"
 
 # Installing Yices
+# The build output directory name is derived from the host triple (e.g.
+# x86_64-pc-linux-gnu-release or aarch64-unknown-linux-gnu-release), so we
+# symlink the built binaries into /usr/local/bin instead of hard-coding it.
 RUN wget https://github.com/SRI-CSL/yices2/archive/refs/tags/yices-2.7.0.tar.gz \
     && tar -xf yices-2.7.0.tar.gz \
     && rm yices-2.7.0.tar.gz \
     && cd yices2-yices-2.7.0 \
     && autoconf \
     && ./configure --enable-thread-safety \
-    && make -j4
-
-ENV PATH="/opt/yices2-yices-2.7.0/build/x86_64-pc-linux-gnu-release/dist/bin:${PATH}"
+    && make -j4 \
+    && ln -sf /opt/yices2-yices-2.7.0/build/*/dist/bin/* /usr/local/bin/
 
 COPY required_dependencies/sage_numerical_backends_gurobi-9.3.1.tar.gz /opt/
 RUN cd /opt/ && sage -pip install sage_numerical_backends_gurobi-9.3.1.tar.gz
