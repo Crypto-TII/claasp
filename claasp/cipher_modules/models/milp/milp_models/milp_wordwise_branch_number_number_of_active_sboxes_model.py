@@ -15,9 +15,10 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
+import itertools
 import time
 
-from claasp.cipher_modules.component_analysis_tests import branch_number
+from claasp.cipher_modules.component_analysis_tests import binary_matrix_of_linear_component, branch_number
 from claasp.cipher_modules.models.milp.milp_model import MilpModel
 from claasp.cipher_modules.models.milp.solvers import SOLVER_DEFAULT
 from claasp.cipher_modules.models.utils import convert_solver_solution_to_dictionary
@@ -25,6 +26,7 @@ from claasp.name_mappings import (
     CIPHER_OUTPUT,
     CONSTANT,
     INTERMEDIATE_OUTPUT,
+    LINEAR_LAYER,
     MIX_COLUMN,
     PERMUTATION_COMPONENT,
     SBOX,
@@ -60,6 +62,7 @@ class MilpWordwiseBranchNumberNumberOfActiveSboxesModel(MilpModel):
         super().__init__(cipher, n_window_heuristic, verbose)
         self._word_size = None
         self._word_variable = None
+        self._linear_layer_branch_number_cache = {}
 
     def init_model_in_sage_milp_class(self, solver_name=SOLVER_DEFAULT):
         """
@@ -131,6 +134,85 @@ class MilpWordwiseBranchNumberNumberOfActiveSboxesModel(MilpModel):
         constraints += [d >= w[word_id] for word_id in word_ids]
         return constraints
 
+    def _word_branch_number_bounded(self, component, max_input_word_weight=2):
+        """
+        Return the word-level differential branch number of an arbitrary linear component, computed by bounded
+        enumeration over low-word-weight inputs (mirroring the bit-level bounded-enumeration fallback already
+        used elsewhere in claasp for branch number computation, e.g.
+        ``compute_branch_number_from_binary_matrix_with_bounded_enumeration``).
+
+        Unlike :py:func:`~cipher_modules.component_analysis_tests.branch_number`, which only computes a
+        *bit*-level branch number for a ``linear_layer`` component (its word-level path is for
+        ``mix_column``/field-matrix components only), this enumerates over WORD-granularity truncated inputs
+        directly, so it applies to any linear component regardless of whether it has a clean field-matrix
+        structure -- in particular, a cipher's diffusion layer compiled into a single bit matrix (e.g.
+        ``UblockSingleLinearLayerBlockCipher``'s consolidated rotate+XOR+permutation layer).
+
+        Returns an upper bound on the true branch number (exact if the true minimum is achieved at input word
+        weight <= ``max_input_word_weight``, which is typical since branch numbers are usually small). The
+        result is cached per matrix, since the same matrix is normally reused unchanged across rounds.
+
+        INPUT:
+
+        - ``component`` -- **Component object**; a linear component (``linear_layer`` or ``mix_column``)
+        - ``max_input_word_weight`` -- **integer** (default: `2`); maximum number of active input words tried
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.ublock_single_linear_layer_block_cipher import UblockSingleLinearLayerBlockCipher
+            sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_branch_number_number_of_active_sboxes_model import (
+            ....: MilpWordwiseBranchNumberNumberOfActiveSboxesModel)
+            sage: ublock = UblockSingleLinearLayerBlockCipher(number_of_rounds=1, use_mix_column=False)
+            sage: milp = MilpWordwiseBranchNumberNumberOfActiveSboxesModel(ublock)
+            sage: milp.init_model_in_sage_milp_class()
+            sage: linear_layer = [c for c in ublock.get_all_components() if c.type == 'linear_layer'][0]
+            sage: milp._word_branch_number_bounded(linear_layer, max_input_word_weight=1) # doctest: +SKIP
+            12
+        """
+        cache_key = (tuple(map(tuple, component.description)), self._word_size)
+        if cache_key in self._linear_layer_branch_number_cache:
+            return self._linear_layer_branch_number_cache[cache_key]
+
+        binary_matrix = binary_matrix_of_linear_component(component)
+        n_bits = binary_matrix.nrows()
+        word_size = self._word_size
+        n_words = n_bits // word_size
+        columns = []
+        for i in range(n_bits):
+            col = 0
+            for j in range(n_bits):
+                if binary_matrix[j, i]:
+                    col |= 1 << j
+            columns.append(col)
+
+        def output_active_word_count(output_mask):
+            count = 0
+            for word_index in range(n_words):
+                word_mask = ((1 << word_size) - 1) << (word_index * word_size)
+                if output_mask & word_mask:
+                    count += 1
+            return count
+
+        best = None
+        for k in range(1, max_input_word_weight + 1):
+            if best is not None and k >= best:
+                break
+            for word_subset in itertools.combinations(range(n_words), k):
+                bit_indices = [w * word_size + offset for w in word_subset for offset in range(word_size)]
+                for bits_choice in range(1, 2 ** (word_size * k)):
+                    output_mask = 0
+                    remaining = bits_choice
+                    for idx in bit_indices:
+                        if remaining & 1:
+                            output_mask ^= columns[idx]
+                        remaining >>= 1
+                    total = k + output_active_word_count(output_mask)
+                    if best is None or total < best:
+                        best = total
+
+        self._linear_layer_branch_number_cache[cache_key] = best
+        return best
+
     def _component_constraints(self, component):
         output_ids = self._own_word_ids(component.id, component.output_bit_size)
         w = self._word_variable
@@ -161,6 +243,14 @@ class MilpWordwiseBranchNumberNumberOfActiveSboxesModel(MilpModel):
             return self._branch_number_constraints(
                 self._resolved_input_word_ids(component) + output_ids,
                 branch_number(component, "differential", "word"),
+            )
+
+        if component.type == LINEAR_LAYER:
+            # branch_number()'s word-level path only supports mix_column (field-matrix) components; a generic
+            # linear_layer's bit matrix needs the bounded word-weight enumeration below instead.
+            return self._branch_number_constraints(
+                self._resolved_input_word_ids(component) + output_ids,
+                self._word_branch_number_bounded(component),
             )
 
         if component.type == WORD_OPERATION:
