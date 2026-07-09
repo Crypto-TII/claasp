@@ -28,6 +28,7 @@ jobs:
 
       - name: Run remote-pytest
         run: |
+          uname -a
           pytest -v -s tests/unit/cipher_modules/models/cp/mzn_model_test.py::test_build_generic_cp_model_from_dictionary_xor_differential
         env:
           GUROBI_COMPUTE_SERVER: ${{ secrets.GUROBI_COMPUTE_SERVER }}
