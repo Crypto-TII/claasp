@@ -780,6 +780,42 @@ class MixColumn(LinearLayer):
         result = variables, constraints
         return result
 
+    def milp_bitwise_deterministic_truncated_xor_differential_constraints(self, model):
+        """
+        Returns a list of variables and a list of constraints for mix column component in the bitwise
+        deterministic truncated XOR differential model.
+
+        MixColumn stores its description as ``[word_matrix, rotation, word_size]`` rather than a plain bit
+        matrix, so the generic :py:meth:`~LinearLayer.milp_bitwise_deterministic_truncated_xor_differential_constraints`
+        cannot be inherited directly (it indexes ``self.description`` as a bit matrix). This expands the word
+        matrix to its bit-level equivalent first, mirroring :py:meth:`milp_constraints` and
+        :py:meth:`milp_xor_linear_mask_propagation_constraints`.
+
+        INPUT:
+
+        - ``model`` -- **model object**; a model instance
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.single_component_ciphers.mix_column_cipher import MixColumnCipher
+            sage: from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import MilpBitwiseDeterministicTruncatedXorDifferentialModel
+            sage: cipher = MixColumnCipher(word_size=2, matrix=[[1, 0], [0, 1]], irreducible_polynomial=0)
+            sage: milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(cipher)
+            sage: milp.init_model_in_sage_milp_class()
+            sage: mix_column_component = cipher.component_from(0, 0)
+            sage: variables, constraints = mix_column_component.milp_bitwise_deterministic_truncated_xor_differential_constraints(milp)
+            sage: constraints
+            [x_4 == x_0, x_5 == x_1, x_6 == x_2, x_7 == x_3]
+        """
+        bin_matrix = binary_matrix_of_linear_component(self)
+        matrix_transposed = [[bin_matrix[i][j] for i in range(bin_matrix.nrows())] for j in range(bin_matrix.ncols())]
+        original_description = deepcopy(self.description)
+        self.description = matrix_transposed
+        variables, constraints = super().milp_bitwise_deterministic_truncated_xor_differential_constraints(model)
+        self.description = original_description
+
+        return variables, constraints
+
     def milp_wordwise_deterministic_truncated_xor_differential_constraints(self, model):
         """
         Returns a list of variables and a list of constraints for mix column
