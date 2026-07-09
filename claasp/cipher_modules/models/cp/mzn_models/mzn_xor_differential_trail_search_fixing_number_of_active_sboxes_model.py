@@ -453,9 +453,10 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
 
         for i in range(len(CP_SOLVERS_EXTERNAL)):
             if second_step_solver_name == CP_SOLVERS_EXTERNAL[i]["solver_name"]:
-                command_options = deepcopy(CP_SOLVERS_EXTERNAL[i]["keywords"]["command"])
+                base_command_options = CP_SOLVERS_EXTERNAL[i]["keywords"]["command"]
 
         for attempt in range(10000):
+            command_options = deepcopy(base_command_options)
             if weight == -1:
                 start = tm.time()
                 self.transform_first_step_model(attempt, first_step_solution[0])
@@ -489,7 +490,11 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
 
             solver_output = solver_process.stdout.splitlines()
 
-            if any(UNSATISFIABLE in line for line in solver_output) and weight not in (-1, 0):
+            if any(UNSATISFIABLE in line for line in solver_output):
+                if weight == -1:
+                    # The relaxed first-step pattern(s) for this active-S-box count are not
+                    # realisable by any concrete trail; retry with the next higher count.
+                    continue
                 return UNSATISFIABLE
 
             time, memory, components_values, total_weight = self._parse_solver_output(
@@ -501,6 +506,8 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
             )
 
             return solutions
+
+        raise ValueError("No feasible XOR differential trail found within the active S-box search bound")
 
     def solve_model(self, model_type, solver_name=SOLVER_DEFAULT, num_of_processors=None, timelimit=None):
         """
