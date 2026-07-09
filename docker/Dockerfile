@@ -211,6 +211,53 @@ RUN echo '\
 }\
 ' > /usr/local/share/minizinc/solvers/choco.msc
 
+# Installing OR-Tools (CP-SAT backend for MiniZinc)
+# Google ships one release tarball per platform; each already bundles a
+# MiniZinc solver descriptor, but under an id/tags that don't match the
+# "cp-sat" name claasp uses everywhere (see cipher_modules/models/cp/solvers.py),
+# so we register our own descriptor pointing at the extracted files instead.
+ARG ORTOOLS_VERSION=9.9.3963
+RUN set -eux; \
+    cd /opt; \
+    if [ "$TARGETARCH" = "arm64" ]; then \
+        wget -q "https://github.com/google/or-tools/releases/download/v9.9/or-tools_arm64_debian-11_cpp_v${ORTOOLS_VERSION}.tar.gz" -O or-tools.tar.gz; \
+        tar -xzf or-tools.tar.gz; \
+        rm or-tools.tar.gz; \
+        mv "or-tools_aarch64_Debian-11_cpp_v${ORTOOLS_VERSION}" or-tools; \
+    else \
+        wget -q "https://github.com/google/or-tools/releases/download/v9.9/or-tools_amd64_ubuntu-22.04_cpp_v${ORTOOLS_VERSION}.tar.gz" -O or-tools.tar.gz; \
+        tar -xzf or-tools.tar.gz; \
+        rm or-tools.tar.gz; \
+        mv "or-tools_x86_64_Ubuntu-22.04_cpp_v${ORTOOLS_VERSION}" or-tools; \
+    fi; \
+    cp /opt/or-tools/bin/fzn-cp-sat /usr/local/bin/; \
+    chmod +x /usr/local/bin/fzn-cp-sat; \
+    mkdir -p /usr/local/lib/or-tools; \
+    cp /opt/or-tools/lib/*.so* /usr/local/lib/or-tools/; \
+    echo "/usr/local/lib/or-tools" > /etc/ld.so.conf.d/or-tools.conf; \
+    ldconfig; \
+    mkdir -p /usr/local/share/minizinc/cpsat; \
+    cp -r /opt/or-tools/share/minizinc/cpsat/* /usr/local/share/minizinc/cpsat/; \
+    rm -rf /opt/or-tools
+
+RUN mkdir -p /usr/local/share/minizinc/solvers \
+  && printf '%s\n' \
+  '{' \
+  '  "name": "OR-Tools CP-SAT",' \
+  "  \"version\": \"${ORTOOLS_VERSION}\"," \
+  '  "id": "cp-sat",' \
+  '  "executable": "/usr/local/bin/fzn-cp-sat",' \
+  '  "mznlib": "/usr/local/share/minizinc/cpsat",' \
+  '  "tags": ["cp-sat", "ortools", "cp", "int", "lcg"],' \
+  '  "stdFlags": ["-a", "-f", "-p", "-r", "-s", "-v"],' \
+  '  "supportsMzn": false,' \
+  '  "supportsFzn": true,' \
+  '  "needsSolns2Out": true,' \
+  '  "needsMznExecutable": false,' \
+  '  "needsStdlibDir": false,' \
+  '  "isGUIApplication": false' \
+  '}' > /usr/local/share/minizinc/solvers/cp-sat.msc
+
 # Installing CryptoMiniSat
 # explicit commits are used instead of releases because
 # no semantic versioning is used for cadical and cadiback
