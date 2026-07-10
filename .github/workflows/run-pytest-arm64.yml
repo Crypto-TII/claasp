@@ -13,8 +13,7 @@ concurrency:
 jobs:
   run-pytest-arm64:
     if: ${{ !github.event.repository.fork }}
-    runs-on: [self-hosted, ARM64]
-
+    runs-on: arm64
     # Run the job steps inside your specified Docker image
     container:
       image: tiicrc/claasp-lib:develop-arm64
@@ -30,6 +29,24 @@ jobs:
         run: |
           uname -a
           pytest -v -s tests/unit/cipher_modules/models/cp/mzn_model_test.py::test_build_generic_cp_model_from_dictionary_xor_differential
-          make remote-pytest
+          # make remote-pytest
+          pytest -v -s tests/unit/cipher_test.py::test_algebraic_tests
+        env:
+          GUROBI_COMPUTE_SERVER: ${{ secrets.GUROBI_COMPUTE_SERVER }}
+  run-pytest:
+    if: ${{ !github.event.repository.fork }}
+    runs-on: self-hosted
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4  # Upgraded to v4 for better support/performance
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Run remote-pytest
+        run: |
+          uname -a
+          pytest -v -s tests/unit/cipher_modules/models/cp/mzn_model_test.py::test_build_generic_cp_model_from_dictionary_xor_differential
+          pytest -v -s tests/unit/cipher_test.py::test_algebraic_tests
         env:
           GUROBI_COMPUTE_SERVER: ${{ secrets.GUROBI_COMPUTE_SERVER }}
