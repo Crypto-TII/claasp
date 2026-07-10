@@ -82,16 +82,16 @@ def test_find_lowest_number_of_active_sboxes_ublock_round_2_is_a_loose_lower_bou
     # state through many chained word-XORs (a generalised-Feistel/ARX-style mixing expressed as separate
     # ROTATE and XOR components), unlike AES's single wide-trail MixColumn per round. The word-level
     # branch-number relaxation of [MWGP2011]_ cannot rule out chained pairwise cancellations across those
-    # separate XORs, so it reports a trivial lower bound of 1 regardless of round count here, well below
-    # the uBlock paper's true value of 8 for 2 rounds. UblockSingleLinearLayerBlockCipher below, which
-    # compiles the same diffusion into one consolidated linear-layer component, does much better.
+    # separate XORs, so it reports a loose lower bound of 6 here, below the uBlock paper's true value of 8
+    # for 2 rounds. UblockSingleLinearLayerBlockCipher below, which compiles the same diffusion into one
+    # consolidated linear-layer component, does much better (exact for rounds 1-2).
     cipher = UblockBlockCipher(number_of_rounds=2)
     milp = MilpWordwiseBranchNumberNumberOfActiveSboxesModel(cipher)
     fixed_variables = get_single_key_scenario_format_for_fixed_values(cipher)
 
     solution = milp.find_lowest_number_of_active_sboxes(fixed_variables)
 
-    assert int(round(float(solution["total_weight"]))) == 1
+    assert int(round(float(solution["total_weight"]))) == 6
 
 
 def test_find_lowest_number_of_active_sboxes_ublock_single_linear_layer_rounds_1_and_2():

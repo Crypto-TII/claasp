@@ -452,13 +452,17 @@ class MilpWordwiseBranchNumberNumberOfActiveSboxesModel(MilpModel):
         if cell_size % self._word_size != 0:
             raise NotImplementedError(f"{component.id}: MixColumn cell size is not a multiple of the word size")
         words_per_cell = cell_size // self._word_size
-        flat_input_ids = self._flat_input_word_ids(component)
+        # _resolved_input_word_ids (one id per WORD) here, not _flat_input_word_ids (one id per BIT, with
+        # each word's id repeated word_size times) -- indexing the latter with word-granularity offsets
+        # like cell_k * words_per_cell + offset reads from the wrong, much-too-narrow range whenever
+        # words_per_cell > 1, silently collapsing most of the permutation onto a handful of source words.
+        input_ids = self._resolved_input_word_ids(component)
         constraints = []
         for cell_j, row in enumerate(matrix):
             cell_k = next(i for i, value in enumerate(row) if value != 0)
             for offset in range(words_per_cell):
                 output_id = output_ids[cell_j * words_per_cell + offset]
-                input_id = flat_input_ids[(cell_k * words_per_cell + offset)]
+                input_id = input_ids[(cell_k * words_per_cell + offset)]
                 constraints.append(w[output_id] == w[input_id])
         return constraints
 
