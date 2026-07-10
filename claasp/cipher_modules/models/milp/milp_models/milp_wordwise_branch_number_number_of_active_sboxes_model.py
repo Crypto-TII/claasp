@@ -18,7 +18,9 @@
 import itertools
 import time
 
-from claasp.cipher_modules.component_analysis_tests import binary_matrix_of_linear_component, branch_number
+import numpy as np
+
+from claasp.cipher_modules.component_analysis_tests import binary_matrix_of_linear_component
 from claasp.cipher_modules.models.milp.milp_model import MilpModel
 from claasp.cipher_modules.models.milp.solvers import SOLVER_DEFAULT
 from claasp.cipher_modules.models.utils import convert_solver_solution_to_dictionary
@@ -34,6 +36,15 @@ from claasp.name_mappings import (
 )
 
 MILP_WORDWISE_BRANCH_NUMBER_ACTIVE_SBOXES = "wordwise_branch_number_number_of_active_sboxes"
+
+
+def _popcount64(a):
+    """Vectorised population count for a numpy uint64 array (the classic SWAR bit trick), since the numpy
+    version bundled with Sage predates ``numpy.bitwise_count`` (added in numpy 2.0)."""
+    a = a - ((a >> np.uint64(1)) & np.uint64(0x5555555555555555))
+    a = (a & np.uint64(0x3333333333333333)) + ((a >> np.uint64(2)) & np.uint64(0x3333333333333333))
+    a = (a + (a >> np.uint64(4))) & np.uint64(0x0F0F0F0F0F0F0F0F)
+    return (a * np.uint64(0x0101010101010101)) >> np.uint64(56)
 
 
 class MilpWordwiseBranchNumberNumberOfActiveSboxesModel(MilpModel):
@@ -52,10 +63,26 @@ class MilpWordwiseBranchNumberNumberOfActiveSboxesModel(MilpModel):
     are supported; components without a simple word-level differential model (AND, OR, modular addition/
     subtraction, non-word-aligned rotations or shifts) raise ``NotImplementedError``.
 
+    [MWGP2011]_ reports that none of their AES optimization problems (up to 14 rounds) took longer than 0.40s
+    to solve on a single core, using CPLEX. This model reproduces that magnitude: with the internal (GLPK)
+    solver, real AES-128 rounds 1-2 solve in ~0.2-0.35s each including model build; rounds 3-4 grow to ~0.9s
+    and ~2.5s respectively as GLPK's own branch-and-bound (a slower, open-source solver than CPLEX) starts to
+    dominate. Model *build* time itself -- the part specific to this implementation, as opposed to the solver
+    -- is consistently under 0.4s through round 4, thanks to two optimizations over a naive port of the
+    technique: :py:meth:`_word_branch_number_bounded` computes each linear component's word-level branch
+    number directly from plain-integer GF(2) arithmetic on the bit-expanded matrix rather than through
+    :py:func:`~cipher_modules.component_analysis_tests.branch_number` (whose "bounded"/"sage" methods pay for
+    Sage's generic finite-field arithmetic -- ~5-13s for a single 4x4 GF(2^8) AES MixColumn matrix, alone), and
+    is cached per matrix (the same matrix is normally reused across many component instances -- e.g. one per
+    AES column, four per round -- and across rounds); and the bounded enumeration over candidate word values is
+    vectorised with numpy via a meet-in-the-middle split whenever the component's output fits in 64 bits (see
+    :py:meth:`_min_output_word_weight_numpy`), which covers AES's MixColumn (32 bits) though not e.g. uBlock's
+    128-bit consolidated linear layer (which falls back to :py:meth:`_min_output_word_weight_gray_code`).
+
     REFERENCES:
 
     .. [MWGP2011] Mouha, N., Wang, Q., Gu, D., Preneel, B. (2011). Differential and Linear Cryptanalysis using
-       Mixed-Integer Linear Programming. Inscrypt 2011, LNCS 7537.
+       Mixed-Integer Linear Programming. Inscrypt 2011, LNCS 7537. https://mouha.be/wp-content/uploads/milp.pdf
     """
 
     def __init__(self, cipher, n_window_heuristic=None, verbose=False):
@@ -134,23 +161,75 @@ class MilpWordwiseBranchNumberNumberOfActiveSboxesModel(MilpModel):
         constraints += [d >= w[word_id] for word_id in word_ids]
         return constraints
 
+    def _component_matrix_cache_key(self, component):
+        # mix_column stores description as [word_matrix, rotation, word_size] (rotation/word_size are plain
+        # ints); linear_layer stores description as the bit matrix directly. Normalise both to a hashable key.
+        if component.type == MIX_COLUMN:
+            return (
+                tuple(map(tuple, component.description[0])),
+                component.description[1],
+                component.description[2],
+                self._word_size,
+            )
+        return (tuple(map(tuple, component.description)), self._word_size)
+
+    @staticmethod
+    def _gf_multiply(a, b, reduction_constant, word_size):
+        """Multiply ``a`` and ``b`` in GF(2**word_size) with the given (already-reduced, i.e. without the
+        degree-word_size term) modulus, via the standard carry-less multiply-and-reduce algorithm."""
+        result = 0
+        high_bit = 1 << (word_size - 1)
+        mask = (1 << word_size) - 1
+        for _ in range(word_size):
+            if b & 1:
+                result ^= a
+            carry = a & high_bit
+            a = (a << 1) & mask
+            if carry:
+                a ^= reduction_constant
+            b >>= 1
+        return result
+
+    def _mix_column_bit_columns(self, component, word_size):
+        """Return, for a MixColumn field-matrix component, one integer per input bit whose binary expansion is
+        that bit's contribution (as a column of the expanded bit matrix) to every output bit -- built directly
+        from the field matrix via plain-integer GF(2**word_size) arithmetic (see :py:meth:`_gf_multiply`)."""
+        field_matrix, polynomial, cell_word_size = component.description
+        reduction_constant = polynomial & ((1 << cell_word_size) - 1)
+        state_size = len(field_matrix)
+        columns = [0] * (state_size * cell_word_size)
+        for output_word, row in enumerate(field_matrix):
+            for input_word, field_element in enumerate(row):
+                if field_element == 0:
+                    continue
+                for input_bit_offset in range(cell_word_size):
+                    product = self._gf_multiply(field_element, 1 << input_bit_offset, reduction_constant, cell_word_size)
+                    if product == 0:
+                        continue
+                    column_index = input_word * cell_word_size + input_bit_offset
+                    columns[column_index] |= product << (output_word * cell_word_size)
+        return columns
+
     def _word_branch_number_bounded(self, component, max_input_word_weight=2):
         """
-        Return the word-level differential branch number of an arbitrary linear component, computed by bounded
-        enumeration over low-word-weight inputs (mirroring the bit-level bounded-enumeration fallback already
-        used elsewhere in claasp for branch number computation, e.g.
-        ``compute_branch_number_from_binary_matrix_with_bounded_enumeration``).
+        Return the word-level differential branch number of an arbitrary linear component (``linear_layer`` or
+        non-permutation ``mix_column``), computed by bounded enumeration over low-word-weight inputs at the
+        *bit* level (via :py:func:`~cipher_modules.component_analysis_tests.binary_matrix_of_linear_component`),
+        mirroring the bit-level bounded-enumeration fallback already used elsewhere in claasp for branch number
+        computation, e.g. ``compute_branch_number_from_binary_matrix_with_bounded_enumeration``.
 
-        Unlike :py:func:`~cipher_modules.component_analysis_tests.branch_number`, which only computes a
-        *bit*-level branch number for a ``linear_layer`` component (its word-level path is for
-        ``mix_column``/field-matrix components only), this enumerates over WORD-granularity truncated inputs
-        directly, so it applies to any linear component regardless of whether it has a clean field-matrix
-        structure -- in particular, a cipher's diffusion layer compiled into a single bit matrix (e.g.
-        ``UblockSingleLinearLayerBlockCipher``'s consolidated rotate+XOR+permutation layer).
+        This deliberately avoids :py:func:`~cipher_modules.component_analysis_tests.branch_number`. For
+        ``mix_column`` it delegates to field-matrix computation (``compute_branch_number_from_field_matrix``),
+        which -- for the "bounded"/"sage" methods -- pays for Sage's generic finite-field arithmetic on every
+        candidate; measured at ~5.4s for a single 4x4 GF(2^8) AES MixColumn matrix (method="sage" did not
+        return within 90s). Working with the *expanded bit matrix* directly and plain integer XOR sidesteps
+        field arithmetic entirely, bringing that same computation under a millisecond. For ``linear_layer`` it
+        is the only word-level option at all: ``branch_number()``'s word-level path only supports mix_column.
 
         Returns an upper bound on the true branch number (exact if the true minimum is achieved at input word
-        weight <= ``max_input_word_weight``, which is typical since branch numbers are usually small). The
-        result is cached per matrix, since the same matrix is normally reused unchanged across rounds.
+        weight <= ``max_input_word_weight``, which is typical since branch numbers are usually small -- e.g.
+        AES's is 5, found here at weight 2). The result is cached per matrix, since the same matrix is normally
+        reused unchanged across many component instances (e.g. one per AES column, four per round) and rounds.
 
         INPUT:
 
@@ -168,30 +247,49 @@ class MilpWordwiseBranchNumberNumberOfActiveSboxesModel(MilpModel):
             sage: linear_layer = [c for c in ublock.get_all_components() if c.type == 'linear_layer'][0]
             sage: milp._word_branch_number_bounded(linear_layer, max_input_word_weight=1) # doctest: +SKIP
             12
+
+            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+            sage: aes = AESBlockCipher(number_of_rounds=2)
+            sage: milp_aes = MilpWordwiseBranchNumberNumberOfActiveSboxesModel(aes)
+            sage: milp_aes.init_model_in_sage_milp_class()
+            sage: mix_column = [c for c in aes.get_all_components() if c.type == 'mix_column'][0]
+            sage: milp_aes._word_branch_number_bounded(mix_column)
+            5
         """
-        cache_key = (tuple(map(tuple, component.description)), self._word_size)
+        cache_key = self._component_matrix_cache_key(component)
         if cache_key in self._linear_layer_branch_number_cache:
             return self._linear_layer_branch_number_cache[cache_key]
 
-        binary_matrix = binary_matrix_of_linear_component(component)
-        n_bits = binary_matrix.nrows()
         word_size = self._word_size
+        if component.type == MIX_COLUMN:
+            # binary_matrix_of_linear_component() expands a MixColumn via linear_layer_to_binary_matrix(),
+            # which evaluates the field-matrix multiplication through the generic cipher-evaluation machinery
+            # on a random invertible probe matrix and then solves a linear system to recover the bit matrix --
+            # ~13s for a single 4x4 GF(2^8) AES MixColumn. Building the bit matrix directly from the field
+            # matrix via plain-integer GF(2^word_size) multiplication (the standard AES-style carry-less
+            # multiply-and-reduce) is exact and takes well under a millisecond.
+            n_bits = component.output_bit_size
+            columns = self._mix_column_bit_columns(component, word_size)
+        else:
+            binary_matrix = binary_matrix_of_linear_component(component)
+            n_bits = binary_matrix.nrows()
+            columns = []
+            for i in range(n_bits):
+                col = 0
+                for j in range(n_bits):
+                    if binary_matrix[j, i]:
+                        col |= 1 << j
+                columns.append(col)
         n_words = n_bits // word_size
-        columns = []
-        for i in range(n_bits):
-            col = 0
-            for j in range(n_bits):
-                if binary_matrix[j, i]:
-                    col |= 1 << j
-            columns.append(col)
+        # Fold each word_size-bit group's OR down into its lowest bit, then a single popcount gives the
+        # word-weight in one step -- much cheaper than scanning n_words individually per candidate.
+        low_bit_mask = sum(1 << (i * word_size) for i in range(n_words))
 
         def output_active_word_count(output_mask):
-            count = 0
-            for word_index in range(n_words):
-                word_mask = ((1 << word_size) - 1) << (word_index * word_size)
-                if output_mask & word_mask:
-                    count += 1
-            return count
+            folded = output_mask
+            for shift in range(1, word_size):
+                folded |= output_mask >> shift
+            return (folded & low_bit_mask).bit_count()
 
         best = None
         for k in range(1, max_input_word_weight + 1):
@@ -199,19 +297,68 @@ class MilpWordwiseBranchNumberNumberOfActiveSboxesModel(MilpModel):
                 break
             for word_subset in itertools.combinations(range(n_words), k):
                 bit_indices = [w * word_size + offset for w in word_subset for offset in range(word_size)]
-                for bits_choice in range(1, 2 ** (word_size * k)):
-                    output_mask = 0
-                    remaining = bits_choice
-                    for idx in bit_indices:
-                        if remaining & 1:
-                            output_mask ^= columns[idx]
-                        remaining >>= 1
-                    total = k + output_active_word_count(output_mask)
-                    if best is None or total < best:
-                        best = total
+                bit_columns = [columns[idx] for idx in bit_indices]
+                n_bits_here = len(bit_columns)
+                if n_bits <= 64:
+                    candidate = self._min_output_word_weight_numpy(bit_columns, low_bit_mask, word_size)
+                else:
+                    candidate = self._min_output_word_weight_gray_code(bit_columns, output_active_word_count)
+                total = k + candidate
+                if best is None or total < best:
+                    best = total
 
         self._linear_layer_branch_number_cache[cache_key] = best
         return best
+
+    @staticmethod
+    def _min_output_word_weight_gray_code(bit_columns, output_active_word_count):
+        """Return the minimum word-weight achievable by XOR-ing any nonempty subset of ``bit_columns``,
+        via Gray-code enumeration (each successive candidate differs from the previous by exactly one column,
+        so updating the running XOR is O(1) instead of O(len(bit_columns))). Used when the outputs are too wide
+        (>64 bits) for the numpy fast path."""
+        best = None
+        output_mask = 0
+        prev_gray = 0
+        for i in range(1, 1 << len(bit_columns)):
+            gray = i ^ (i >> 1)
+            changed_bit = (gray ^ prev_gray).bit_length() - 1
+            output_mask ^= bit_columns[changed_bit]
+            prev_gray = gray
+            weight = output_active_word_count(output_mask)
+            if best is None or weight < best:
+                best = weight
+        return best
+
+    @staticmethod
+    def _min_output_word_weight_numpy(bit_columns, low_bit_mask, word_size):
+        """Return the minimum word-weight achievable by XOR-ing any nonempty subset of ``bit_columns`` (each
+        an integer < 2**64), via a numpy-vectorised meet-in-the-middle: split the columns into two halves,
+        precompute every subset-XOR of each half (a small O(2**half) DP), then form and score every pairing
+        of the two halves in one shot via broadcasting -- turning what would otherwise be millions of
+        individual Python-level loop iterations (the dominant cost of building this model for e.g. a real
+        AES MixColumn) into a handful of bulk array operations."""
+        n = len(bit_columns)
+        half = n // 2
+
+        def subset_xor_sums(values):
+            sums = np.zeros(1 << len(values), dtype=np.uint64)
+            for i in range(1, 1 << len(values)):
+                lsb = i & (-i)
+                j = lsb.bit_length() - 1
+                sums[i] = sums[i ^ lsb] ^ np.uint64(values[j])
+            return sums
+
+        left_sums = subset_xor_sums(bit_columns[:half])
+        right_sums = subset_xor_sums(bit_columns[half:])
+        combined = left_sums[:, None] ^ right_sums[None, :]
+
+        folded = combined.copy()
+        for shift in range(1, word_size):
+            folded |= combined >> np.uint64(shift)
+        weight_bits = folded & np.uint64(low_bit_mask)
+        weights = _popcount64(weight_bits)
+        weights[0, 0] = weights.max() + 1  # exclude the all-zero (empty subset) case
+        return int(weights.min())
 
     def _component_constraints(self, component):
         output_ids = self._own_word_ids(component.id, component.output_bit_size)
@@ -237,17 +384,9 @@ class MilpWordwiseBranchNumberNumberOfActiveSboxesModel(MilpModel):
         if component.type == PERMUTATION_COMPONENT:
             return self._exact_permutation_constraints(component, output_ids, component._bit_perm())
 
-        if component.type == MIX_COLUMN:
-            if component._is_permutation_matrix():
+        if component.type in (MIX_COLUMN, LINEAR_LAYER):
+            if component.type == MIX_COLUMN and component._is_permutation_matrix():
                 return self._mix_column_permutation_constraints(component, output_ids)
-            return self._branch_number_constraints(
-                self._resolved_input_word_ids(component) + output_ids,
-                branch_number(component, "differential", "word"),
-            )
-
-        if component.type == LINEAR_LAYER:
-            # branch_number()'s word-level path only supports mix_column (field-matrix) components; a generic
-            # linear_layer's bit matrix needs the bounded word-weight enumeration below instead.
             return self._branch_number_constraints(
                 self._resolved_input_word_ids(component) + output_ids,
                 self._word_branch_number_bounded(component),

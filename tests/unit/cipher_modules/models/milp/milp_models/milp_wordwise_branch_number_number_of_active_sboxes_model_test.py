@@ -1,3 +1,5 @@
+import time
+
 from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_branch_number_number_of_active_sboxes_model import (
     MilpWordwiseBranchNumberNumberOfActiveSboxesModel,
 )
@@ -28,9 +30,8 @@ def test_find_lowest_number_of_active_sboxes_toyaes():
 def test_find_lowest_number_of_active_sboxes_real_aes():
     # Same wide-trail bound as the ToyAES test above, on the real AES-128 implementation (8-bit S-box, real
     # key schedule) rather than the toy simplification -- confirms the model isn't accidentally relying on
-    # anything specific to the toy cipher's simpler structure. Limited to 2 rounds to keep the test fast; the
-    # bound is exact up to round 4 (round 4 verified manually in ~70s, matching 25).
-    expected_active_sboxes = {1: 1, 2: 5}
+    # anything specific to the toy cipher's simpler structure.
+    expected_active_sboxes = {1: 1, 2: 5, 3: 9, 4: 25}
     for number_of_rounds, expected in expected_active_sboxes.items():
         cipher = AESBlockCipher(number_of_rounds=number_of_rounds)
         milp = MilpWordwiseBranchNumberNumberOfActiveSboxesModel(cipher)
@@ -39,6 +40,29 @@ def test_find_lowest_number_of_active_sboxes_real_aes():
         solution = milp.find_lowest_number_of_active_sboxes(fixed_variables)
 
         assert int(round(float(solution["total_weight"]))) == expected
+
+
+def test_find_lowest_number_of_active_sboxes_real_aes_is_fast():
+    # [MWGP2011]_ reports that none of their AES active-S-box optimization problems (up to 14 rounds) took
+    # longer than 0.40s on a single core with CPLEX. This model's *build* time (as opposed to the MILP solve
+    # itself, which depends on the solver -- this uses the free GLPK, not CPLEX) is consistently under that
+    # bound through round 4 (see the class docstring for the full breakdown), thanks to computing each linear
+    # component's word-level branch number directly via plain-integer GF(2) arithmetic on the bit-expanded
+    # matrix, cached per matrix and vectorised with numpy -- rather than through
+    # cipher_modules.component_analysis_tests.branch_number(), whose field-arithmetic-based methods alone cost
+    # ~5-13s for a single 4x4 GF(2^8) AES MixColumn matrix. A generous 15s ceiling is used here (rather than
+    # asserting 0.4s directly) to absorb CI/CPU variance and the slower open-source solver, while still
+    # catching any regression back to that ~70s scale.
+    cipher = AESBlockCipher(number_of_rounds=4)
+    milp = MilpWordwiseBranchNumberNumberOfActiveSboxesModel(cipher)
+    fixed_variables = get_single_key_scenario_format_for_fixed_values(cipher)
+
+    start = time.time()
+    solution = milp.find_lowest_number_of_active_sboxes(fixed_variables)
+    elapsed = time.time() - start
+
+    assert int(round(float(solution["total_weight"]))) == 25
+    assert elapsed < 15, f"expected AES round 4 to solve in well under 15s, took {elapsed:.1f}s"
 
 
 def test_find_lowest_number_of_active_sboxes_ublock_round_1():
