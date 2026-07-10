@@ -78,11 +78,6 @@ class MilpWordwiseBranchNumberNumberOfActiveSboxesModel(MilpModel):
     vectorised with numpy via a meet-in-the-middle split whenever the component's output fits in 64 bits (see
     :py:meth:`_min_output_word_weight_numpy`), which covers AES's MixColumn (32 bits) though not e.g. uBlock's
     128-bit consolidated linear layer (which falls back to :py:meth:`_min_output_word_weight_gray_code`).
-
-    REFERENCES:
-
-    .. [MWGP2011] Mouha, N., Wang, Q., Gu, D., Preneel, B. (2011). Differential and Linear Cryptanalysis using
-       Mixed-Integer Linear Programming. Inscrypt 2011, LNCS 7537. https://mouha.be/wp-content/uploads/milp.pdf
     """
 
     def __init__(self, cipher, n_window_heuristic=None, verbose=False):
