@@ -21,6 +21,7 @@ from claasp.cipher_modules.models.milp.milp_models.milp_xor_differential_model i
 from claasp.cipher_modules.models.milp.solvers import SOLVER_DEFAULT
 from claasp.cipher_modules.models.milp.utils.milp_name_mappings import (
     MILP_BUILDING_MESSAGE,
+    MILP_DEFAULT_WEIGHT_PRECISION,
     MILP_XOR_DIFFERENTIAL_NUMBER_OF_ACTIVE_SBOXES,
     MILP_XOR_DIFFERENTIAL_OBJECTIVE,
 )
@@ -47,7 +48,9 @@ class MilpXorDifferentialNumberOfActiveSboxesModel(MilpXorDifferentialModel):
     past the true minimum. Working with concrete 0/1 difference bits throughout avoids this entirely.
     """
 
-    def add_constraints_to_build_in_sage_milp_class(self, fixed_variables=[]):
+    def add_constraints_to_build_in_sage_milp_class(
+        self, weight=-1, weight_precision=MILP_DEFAULT_WEIGHT_PRECISION, fixed_variables=[]
+    ):
         """
         Take the constraints contained in self._model_constraints and add them to the build-in sage class.
 
@@ -56,6 +59,10 @@ class MilpXorDifferentialNumberOfActiveSboxesModel(MilpXorDifferentialModel):
 
         INPUT:
 
+        - ``weight`` -- **integer** (default: `-1`); unused -- the objective here is a count of active S-boxes,
+          not a weight, so no weight constraint is ever added. Kept only to match the signature of the
+          overridden :py:meth:`~MilpXorDifferentialModel.add_constraints_to_build_in_sage_milp_class`.
+        - ``weight_precision`` -- **integer** (default: `2`); unused, for the same reason.
         - ``fixed_variables`` -- **list** (default: `[]`); dictionaries containing the variables to be fixed in
           standard format
 
@@ -117,7 +124,7 @@ class MilpXorDifferentialNumberOfActiveSboxesModel(MilpXorDifferentialModel):
         p = self._integer_variable
         mip.set_objective(p[MILP_XOR_DIFFERENTIAL_OBJECTIVE])
 
-        self.add_constraints_to_build_in_sage_milp_class(fixed_values)
+        self.add_constraints_to_build_in_sage_milp_class(fixed_variables=fixed_values)
         end = time.time()
         building_time = end - start
         solution = self.solve(MILP_XOR_DIFFERENTIAL_NUMBER_OF_ACTIVE_SBOXES, solver_name, external_solver_name)

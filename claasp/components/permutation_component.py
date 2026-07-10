@@ -569,7 +569,7 @@ class Permutation(Component):
             sage: cipher = PresentBlockCipher(number_of_rounds=1)
             sage: cp = MznXorDifferentialNumberOfActiveSboxesModel(cipher)
             sage: cp.initialise_model()
-            sage: perm = cipher.component_from_id('permutation_0_1')
+            sage: perm = cipher.component_from_id('permutation_0_17')
             sage: declarations, constraints = perm.cp_xor_differential_propagation_first_step_constraints(cp)
             sage: len(constraints) == cipher.block_bit_size // cp.word_size
             True

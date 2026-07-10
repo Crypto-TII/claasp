@@ -451,39 +451,17 @@ class MixColumn(LinearLayer):
             sage: DummyModel = type('DummyModel', (), {'word_size': 2, 'mix_column_mant': [], 'list_of_xor_components': []})
             sage: declarations, constraints = mix_column_component.cp_xor_differential_propagation_first_step_constraints(DummyModel())
             sage: declarations
-            ['array[0..1] of var 0..1: mix_column_0_0;',
-            'array[0..11, 1..4] of int: mix_column_truncated_table_mix_column_0_0 = array2d(0..11, 1..4, [0,0,0,0,0,0,1,1,0,1,0,1,0,1,1,0,0,1,1,1,1,0,0,1,1,0,1,0,1,0,1,1,1,1,0,0,1,1,0,1,1,1,1,0,1,1,1,1]);']
+            ['array[0..1] of var 0..1: mix_column_0_0;']
             sage: constraints
-            ['constraint table([in[0]]++[in[1]]++[mix_column_0_0[0]]++[mix_column_0_0[1]], mix_column_truncated_table_mix_column_0_0);']
+            ['constraint mix_column_0_0[0] = in[0];',
+             'constraint mix_column_0_0[1] = in[1];']
         """
         output_size = int(self.output_bit_size)
-        input_id_link = self.input_id_links
         output_id_link = self.id
-        input_bit_positions = self.input_bit_positions
         description = self.description
-        numb_of_inp = len(input_id_link)
-        all_inputs = []
-        mix_column_name = output_id_link
-        number_of_mix = 0
-        is_mix = False
-        additional_constraint = "no"
-        for i in range(numb_of_inp):
-            for j in range(len(input_bit_positions[i]) // model.word_size):
-                all_inputs.append(
-                    f"{input_id_link[i]}[{input_bit_positions[i][j * model.word_size] // model.word_size}]"
-                )
-            rem = len(input_bit_positions[i]) % model.word_size
-            if rem != 0:
-                rem = model.word_size - (len(input_bit_positions[i]) % model.word_size)
-                all_inputs.append(f"{output_id_link}_i[{number_of_mix}]")
-                number_of_mix += 1
-                is_mix = True
-                l = 1
-                while rem > 0:
-                    length = len(input_bit_positions[i + l])
-                    del input_bit_positions[i + l][0:rem]
-                    rem -= length
-                    l += 1
+
+        all_inputs, number_of_mix, is_mix = self._cp_first_step_flatten_inputs(model, output_id_link)
+
         cp_declarations = []
         if is_mix:
             cp_declarations.append(f"array[0..{number_of_mix - 1}] of var 0..1: {output_id_link}_i;")
@@ -491,48 +469,72 @@ class MixColumn(LinearLayer):
 
         matrix = description[0]
         words_per_cell = description[2] // model.word_size if model.word_size else 1
-        if (
-            not is_mix
-            and description[2] % model.word_size == 0
-            and self._is_permutation_matrix()
-        ):
-            cp_constraints = []
-            for j, row in enumerate(matrix):
-                k = next(i for i, x in enumerate(row) if x != 0)
-                for off in range(words_per_cell):
-                    cp_constraints.append(
-                        f"constraint {output_id_link}[{j * words_per_cell + off}] = {all_inputs[k * words_per_cell + off]};"
-                    )
+        if not is_mix and description[2] % model.word_size == 0 and self._is_permutation_matrix():
+            cp_constraints = self._cp_first_step_permutation_constraints(
+                matrix, words_per_cell, all_inputs, output_id_link
+            )
             model.mix_column_mant.append(self)
             return cp_declarations, cp_constraints
 
-        already_in = False
-        for mant in model.mix_column_mant:
-            if description == mant.description:
-                already_in = True
-                mix_column_name = mant.id
-                break
+        mix_column_name, already_in = self._cp_first_step_find_existing_mant(model, description)
         if not already_in:
             cp_declarations.append(self._cp_build_truncated_table(model.word_size))
+
         table_inputs = "++".join([f"[{input_}]" for input_ in all_inputs])
         table_outputs = "++".join([f"[{output_id_link}[{i}]]" for i in range(output_size // model.word_size)])
-        new_constraint = (
+        cp_constraints = [
             f"constraint table({table_inputs}++{table_outputs}, mix_column_truncated_table_{mix_column_name});"
-        )
-        cp_constraints = [new_constraint]
-        if additional_constraint == "yes":
-            self._cp_add_declarations_and_constraints(
-                model.word_size,
-                model.mix_column_mant,
-                model.list_of_xor_components,
-                cp_constraints,
-                cp_declarations,
-                mix_column_name,
-            )
+        ]
         model.mix_column_mant.append(self)
-        result = cp_declarations, cp_constraints
 
-        return result
+        return cp_declarations, cp_constraints
+
+    def _cp_first_step_flatten_inputs(self, model, output_id_link):
+        """Flatten this component's inputs to one CP reference per word, splitting off any misaligned remainder
+        bits into extra ``{output_id_link}_i`` mix variables (mutating ``self.input_bit_positions`` in place to
+        drop the bits already accounted for by those extra variables, as the original inline code did)."""
+        input_id_link = self.input_id_links
+        input_bit_positions = self.input_bit_positions
+        all_inputs = []
+        number_of_mix = 0
+        is_mix = False
+        for i in range(len(input_id_link)):
+            for j in range(len(input_bit_positions[i]) // model.word_size):
+                all_inputs.append(
+                    f"{input_id_link[i]}[{input_bit_positions[i][j * model.word_size] // model.word_size}]"
+                )
+            rem = len(input_bit_positions[i]) % model.word_size
+            if rem == 0:
+                continue
+            rem = model.word_size - rem
+            all_inputs.append(f"{output_id_link}_i[{number_of_mix}]")
+            number_of_mix += 1
+            is_mix = True
+            offset = 1
+            while rem > 0:
+                length = len(input_bit_positions[i + offset])
+                del input_bit_positions[i + offset][0:rem]
+                rem -= length
+                offset += 1
+        return all_inputs, number_of_mix, is_mix
+
+    @staticmethod
+    def _cp_first_step_permutation_constraints(matrix, words_per_cell, all_inputs, output_id_link):
+        cp_constraints = []
+        for j, row in enumerate(matrix):
+            k = next(i for i, x in enumerate(row) if x != 0)
+            for off in range(words_per_cell):
+                cp_constraints.append(
+                    f"constraint {output_id_link}[{j * words_per_cell + off}] = {all_inputs[k * words_per_cell + off]};"
+                )
+        return cp_constraints
+
+    def _cp_first_step_find_existing_mant(self, model, description):
+        """Return the id to reuse in the truncated table's name, and whether a matching mant was already declared."""
+        for mant in model.mix_column_mant:
+            if description == mant.description:
+                return mant.id, True
+        return self.id, False
 
     def cp_xor_differential_propagation_constraints(self, model):
         return self.cp_constraints()

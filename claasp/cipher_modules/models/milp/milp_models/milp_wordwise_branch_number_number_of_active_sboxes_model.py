@@ -147,15 +147,17 @@ class MilpWordwiseBranchNumberNumberOfActiveSboxesModel(MilpModel):
 
     def _component_matrix_cache_key(self, component):
         # mix_column stores description as [word_matrix, rotation, word_size] (rotation/word_size are plain
-        # ints); linear_layer stores description as the bit matrix directly. Normalise both to a hashable key.
+        # ints); linear_layer stores description as the bit matrix directly. Normalise both to a hashable,
+        # always-2-tuple key: (type-specific matrix data, word_size).
         if component.type == MIX_COLUMN:
-            return (
+            matrix_key = (
                 tuple(map(tuple, component.description[0])),
                 component.description[1],
                 component.description[2],
-                self._word_size,
             )
-        return (tuple(map(tuple, component.description)), self._word_size)
+        else:
+            matrix_key = (tuple(map(tuple, component.description)),)
+        return (matrix_key, self._word_size)
 
     def _word_branch_number(self, component):
         """
@@ -218,50 +220,59 @@ class MilpWordwiseBranchNumberNumberOfActiveSboxesModel(MilpModel):
 
     def _component_constraints(self, component):
         output_ids = self._own_word_ids(component.id, component.output_bit_size)
-        w = self._word_variable
 
         if component.type == CONSTANT:
-            return [w[output_id] == 0 for output_id in output_ids]
-
+            return self._constant_constraints(output_ids)
         if component.type == SBOX:
-            input_ids = self._resolved_input_word_ids(component)
-            if len(input_ids) != 1 or len(output_ids) != 1:
-                raise NotImplementedError(f"{component.id}: S-box input/output size does not match the word size")
-            # A bijective S-box maps a zero input difference to a zero output difference, and (by injectivity)
-            # a nonzero input difference to a nonzero output difference -- always, regardless of the DDT.
-            return [w[output_ids[0]] == w[input_ids[0]]]
-
+            return self._sbox_constraints(component, output_ids)
         if component.type in (INTERMEDIATE_OUTPUT, CIPHER_OUTPUT):
-            input_ids = self._resolved_input_word_ids(component)
-            if len(input_ids) != len(output_ids):
-                raise NotImplementedError(f"{component.id}: pass-through component word count mismatch")
-            return [w[output_id] == w[input_id] for output_id, input_id in zip(output_ids, input_ids)]
-
+            return self._pass_through_constraints(component, output_ids, "pass-through")
         if component.type == PERMUTATION_COMPONENT:
             return self._exact_permutation_constraints(component, output_ids, component._bit_perm())
-
         if component.type in (MIX_COLUMN, LINEAR_LAYER):
-            if component.type == MIX_COLUMN and component._is_permutation_matrix():
-                return self._mix_column_permutation_constraints(component, output_ids)
-            return self._branch_number_constraints(
-                self._resolved_input_word_ids(component) + output_ids,
-                self._word_branch_number(component),
-            )
-
+            return self._linear_component_constraints(component, output_ids)
         if component.type == WORD_OPERATION:
-            operation = component.description[0]
-            if operation == "XOR":
-                return self._xor_constraints(component, output_ids)
-            if operation == "NOT":
-                input_ids = self._resolved_input_word_ids(component)
-                if len(input_ids) != len(output_ids):
-                    raise NotImplementedError(f"{component.id}: NOT word count mismatch")
-                return [w[output_id] == w[input_id] for output_id, input_id in zip(output_ids, input_ids)]
-            if operation == "ROTATE":
-                return self._exact_permutation_constraints(component, output_ids, self._rotate_bit_perm(component))
-            raise NotImplementedError(f"{component.id}: word operation '{operation}' is not supported by this model")
+            return self._word_operation_constraints(component, output_ids)
 
         raise NotImplementedError(f"{component.id}: component type '{component.type}' is not supported by this model")
+
+    def _constant_constraints(self, output_ids):
+        w = self._word_variable
+        return [w[output_id] == 0 for output_id in output_ids]
+
+    def _sbox_constraints(self, component, output_ids):
+        w = self._word_variable
+        input_ids = self._resolved_input_word_ids(component)
+        if len(input_ids) != 1 or len(output_ids) != 1:
+            raise NotImplementedError(f"{component.id}: S-box input/output size does not match the word size")
+        # A bijective S-box maps a zero input difference to a zero output difference, and (by injectivity)
+        # a nonzero input difference to a nonzero output difference -- always, regardless of the DDT.
+        return [w[output_ids[0]] == w[input_ids[0]]]
+
+    def _pass_through_constraints(self, component, output_ids, label):
+        w = self._word_variable
+        input_ids = self._resolved_input_word_ids(component)
+        if len(input_ids) != len(output_ids):
+            raise NotImplementedError(f"{component.id}: {label} component word count mismatch")
+        return [w[output_id] == w[input_id] for output_id, input_id in zip(output_ids, input_ids)]
+
+    def _linear_component_constraints(self, component, output_ids):
+        if component.type == MIX_COLUMN and component._is_permutation_matrix():
+            return self._mix_column_permutation_constraints(component, output_ids)
+        return self._branch_number_constraints(
+            self._resolved_input_word_ids(component) + output_ids,
+            self._word_branch_number(component),
+        )
+
+    def _word_operation_constraints(self, component, output_ids):
+        operation = component.description[0]
+        if operation == "XOR":
+            return self._xor_constraints(component, output_ids)
+        if operation == "NOT":
+            return self._pass_through_constraints(component, output_ids, "NOT")
+        if operation == "ROTATE":
+            return self._exact_permutation_constraints(component, output_ids, self._rotate_bit_perm(component))
+        raise NotImplementedError(f"{component.id}: word operation '{operation}' is not supported by this model")
 
     def _xor_constraints(self, component, output_ids):
         # A component's input_id_links/input_bit_positions entries do not necessarily correspond 1:1 to XOR
@@ -322,6 +333,18 @@ class MilpWordwiseBranchNumberNumberOfActiveSboxesModel(MilpModel):
                 constraints.append(w[output_id] == w[input_id])
         return constraints
 
+    def _add_fixed_variable_constraint(self, fixed_variable):
+        mip = self._model
+        w = self._word_variable
+        word_ids = self._resolve_word_ids(fixed_variable["component_id"], list(fixed_variable["bit_positions"]))
+        if any(value != 0 for value in fixed_variable["bit_values"]):
+            raise NotImplementedError("only fixing to the all-zero word pattern is supported")
+        if fixed_variable["constraint_type"] == "equal":
+            for word_id in word_ids:
+                mip.add_constraint(w[word_id] == 0)
+        else:
+            mip.add_constraint(sum(w[word_id] for word_id in word_ids) >= 1)
+
     def build_wordwise_branch_number_number_of_active_sboxes_model(self, fixed_variables=[]):
         """
         Build the MILP model for the minimum number of active S-boxes, using word-level branch-number
@@ -351,14 +374,7 @@ class MilpWordwiseBranchNumberNumberOfActiveSboxesModel(MilpModel):
             self._own_word_ids(cipher_input, input_bit_size)
 
         for fixed_variable in fixed_variables:
-            word_ids = self._resolve_word_ids(fixed_variable["component_id"], list(fixed_variable["bit_positions"]))
-            if any(value != 0 for value in fixed_variable["bit_values"]):
-                raise NotImplementedError("only fixing to the all-zero word pattern is supported")
-            if fixed_variable["constraint_type"] == "equal":
-                for word_id in word_ids:
-                    mip.add_constraint(w[word_id] == 0)
-            else:
-                mip.add_constraint(sum(w[word_id] for word_id in word_ids) >= 1)
+            self._add_fixed_variable_constraint(fixed_variable)
 
         sbox_active_terms = []
         for component in self._cipher.get_all_components():
