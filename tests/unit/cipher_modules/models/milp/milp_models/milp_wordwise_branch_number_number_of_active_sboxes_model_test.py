@@ -45,14 +45,14 @@ def test_find_lowest_number_of_active_sboxes_real_aes():
 def test_find_lowest_number_of_active_sboxes_real_aes_is_fast():
     # [MWGP2011]_ reports that none of their AES active-S-box optimization problems (up to 14 rounds) took
     # longer than 0.40s on a single core with CPLEX. This model's *build* time (as opposed to the MILP solve
-    # itself, which depends on the solver -- this uses the free GLPK, not CPLEX) is consistently under that
-    # bound through round 4 (see the class docstring for the full breakdown), thanks to computing each linear
-    # component's word-level branch number directly via plain-integer GF(2) arithmetic on the bit-expanded
-    # matrix, cached per matrix and vectorised with numpy -- rather than through
-    # cipher_modules.component_analysis_tests.branch_number(), whose field-arithmetic-based methods alone cost
-    # ~5-13s for a single 4x4 GF(2^8) AES MixColumn matrix. A generous 15s ceiling is used here (rather than
-    # asserting 0.4s directly) to absorb CI/CPU variance and the slower open-source solver, while still
-    # catching any regression back to that ~70s scale.
+    # itself, which depends on the solver -- this uses the free GLPK, not CPLEX) is dominated by
+    # MilpWordwiseBranchNumberNumberOfActiveSboxesModel._word_branch_number computing each linear component's
+    # exact word-level branch number via the MiniZinc-based solvers in
+    # cipher_modules.component_analysis_tests (a real constraint solve, ~1-3s per unique matrix), but this is
+    # cached per matrix, so it is paid once (AES-128 only has one MixColumn matrix, reused across every column
+    # and round) rather than once per round. A generous 15s ceiling is used here (rather than asserting 0.4s
+    # directly) to absorb CI/CPU variance, MiniZinc process-spawn overhead, and the slower open-source solver,
+    # while still catching any regression back to the ~70s scale seen before this model was optimized.
     cipher = AESBlockCipher(number_of_rounds=4)
     milp = MilpWordwiseBranchNumberNumberOfActiveSboxesModel(cipher)
     fixed_variables = get_single_key_scenario_format_for_fixed_values(cipher)
