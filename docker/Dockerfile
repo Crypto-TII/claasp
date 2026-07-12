@@ -200,28 +200,14 @@ RUN echo '\
 ' > /usr/local/share/minizinc/solvers/choco.msc
 
 # Installing CryptoMiniSat
-# explicit commits are used instead of releases because
-# no semantic versioning is used for cadical and cadiback
-RUN git clone https://github.com/meelgroup/cadical.git \
-    && cd cadical \
-    && git checkout f5ac6ffa6eaaf72b407f6fb591091c5ff02271d8 \
-    && CXXFLAGS=-fPIC ./configure --competition \
-    && make -j4 \
-    && cp build/libcadical.so /usr/lib/
-
-RUN git clone https://github.com/meelgroup/cadiback.git \
-    && cd cadiback \
-    && git checkout 6050733173995f3cff6ecb04ac99d3691bd0b5e4 \
-    && CXX=c++ ./configure \
-    && make -j4 \
-    && cp libcadiback.so /usr/lib/
-
-RUN git clone https://github.com/msoos/cryptominisat.git \
-    && cd cryptominisat \
-    && git checkout 34ec41b3bb0332bd313e51d131298d30c52aa71f \
+RUN wget https://github.com/msoos/cryptominisat/archive/refs/tags/release/v5.14.7.tar.gz \
+    && tar -xf v5.14.7.tar.gz \
+    && rm v5.14.7.tar.gz \
+    && cd cryptominisat-release-v5.14.7 \
     && cmake -DENABLE_TESTING=OFF -DIPASIR=ON -B build -S . \
-    && cmake --build build -- -j4 \
-    && cmake --build build --target install
+    && cmake --build build
+
+ENV PATH="/opt/cryptominisat-release-v5.14.7/build/:${PATH}"
 
 # Installing Kissat
 RUN wget https://github.com/arminbiere/kissat/archive/refs/tags/rel-3.0.0.tar.gz \
