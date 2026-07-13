@@ -114,6 +114,3 @@ copyright: install
 
 local-installation:
 	./configure.sh
-
-sync:
-	rsync -av $(HOME)/projects/claasp claasp-runner:/home/ubuntu/
