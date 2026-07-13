@@ -31,6 +31,27 @@ jobs:
           make remote-pytest
         env:
           GUROBI_COMPUTE_SERVER: ${{ secrets.GUROBI_COMPUTE_SERVER }}
+
+  run-doctest-arm64:
+    if: ${{ !github.event.repository.fork }}
+    runs-on: arm64
+    # Run the job steps inside your specified Docker image
+    container:
+      image: tiicrc/claasp-lib:develop-arm64
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4  # Upgraded to v4 for better support/performance
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Run doctest
+        run: |
+          uname -a
+          make test
+        env:
+          GUROBI_COMPUTE_SERVER: ${{ secrets.GUROBI_COMPUTE_SERVER }}
   # run-pytest:
   #   if: ${{ !github.event.repository.fork }}
   #   runs-on: self-hosted
