@@ -1,0 +1,34 @@
+name: Generate and submit documentation
+on:
+  push:
+    branches:
+      - main
+permissions: write-all
+jobs:
+  generate-documentation:
+    runs-on: self-hosted-k3s
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        persist-credentials: false
+        fetch-depth: 0
+
+    - name: Generate documentation
+      run: make doc
+
+    - name: Commit & Push changes
+      uses: actions-js/push@master
+      with:
+        branch: 'main'
+        github_token: ${{ secrets.AUTHORIZATION_TOKEN }}
+        message: "Update documentation"
+        force: true
+
+    - name: Update develop branch
+      uses: morbalint/git-merge-action@v1
+      with:
+        target: 'develop'
+        source: 'main'
+        strategy_options: 'ours'
+        token: ${{ secrets.AUTHORIZATION_TOKEN }}

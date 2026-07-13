@@ -1,0 +1,84 @@
+name: Update changelog
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - main
+
+jobs:
+  update-changelog:
+    if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main' && github.event.pull_request.head.ref == 'develop'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+          ref: main
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Run bash file
+        run: |
+          git fetch 
+          chmod 777 run_update_changelog.sh
+          repository_name="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY"
+          should_add_last_changes_to_master=$(./run_update_changelog.sh $repository_name)
+          echo "should_add_last_changes_to_master=$should_add_last_changes_to_master" >> $GITHUB_ENV
+
+      - name: Commit push changes
+        uses: actions-js/push@master
+        if: ${{ env.should_add_last_changes_to_master == 'true' }}
+        with:
+          github_token: ${{ secrets.AUTHORIZATION_TOKEN }}
+          message: 'Changelog version updated'
+          tags: true
+          force: true
+
+      - name: Create tags
+        if: ${{ env.should_add_last_changes_to_master == 'true' }}
+        run: |
+          project_version=$(cat VERSION)
+          tag_name="$project_version"
+          release_message="Version $project_version"
+          echo "tag_name=$tag_name" >> $GITHUB_ENV
+          echo "release_message=$release_message" >> $GITHUB_ENV
+
+      - name: Create push tag
+        if: ${{ env.should_add_last_changes_to_master == 'true' }}
+        uses: rickstaa/action-create-tag@v1
+        with:
+          github_token: ${{ secrets.AUTHORIZATION_TOKEN }}
+          tag: ${{ env.tag_name }}
+          tag_exists_error: false
+          message: ${{ env.release_message }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
+      - name: Extract release notes
+        run: python3 extract_release_notes.py >> ./docs/release_notes.md
+
+      - name: Create release
+        if: ${{ env.should_add_last_changes_to_master == 'true' }}
+        uses: actions/create-release@v1
+        env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ env.tag_name }}
+          release_name: Release ${{ env.tag_name }}
+          body_path: ./docs/release_notes.md
+          draft: false
+          prerelease: false
+
+      - name: Update develop branch
+        if: ${{ env.should_add_last_changes_to_master == 'true' }}
+        uses: morbalint/git-merge-action@v1
+        with:
+          target: 'develop'
+          source: 'main'
+          token: ${{ secrets.AUTHORIZATION_TOKEN }}
+          strategy_options: 'ours'
