@@ -1,5 +1,5 @@
 ---
-name: Run pytest on arm64
+name: Run tests on arm64
 
 on:
   push:
@@ -11,16 +11,36 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  run-doctest-arm64:
+
+  run-pytest-arm64:
     if: ${{ !github.event.repository.fork }}
     runs-on: arm64
-    # Run the job steps inside your specified Docker image
     container:
       image: tiicrc/claasp-lib:develop-arm64
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4  # Upgraded to v4 for better support/performance
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Run pytest
+        run: |
+          uname -a
+          make remote-pytest
+        env:
+          GUROBI_COMPUTE_SERVER: ${{ secrets.GUROBI_COMPUTE_SERVER }}
+
+  run-doctest-arm64:
+    if: ${{ !github.event.repository.fork }}
+    runs-on: arm64
+    container:
+      image: tiicrc/claasp-lib:develop-arm64
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           persist-credentials: false
           fetch-depth: 0
