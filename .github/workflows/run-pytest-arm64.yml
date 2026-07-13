@@ -28,25 +28,23 @@ jobs:
       - name: Run remote-pytest
         run: |
           uname -a
-          pytest -v -s tests/unit/cipher_modules/models/cp/mzn_model_test.py::test_build_generic_cp_model_from_dictionary_xor_differential
-          # make remote-pytest
-          pytest -v -s tests/unit/cipher_test.py::test_algebraic_tests
+          make remote-pytest
         env:
           GUROBI_COMPUTE_SERVER: ${{ secrets.GUROBI_COMPUTE_SERVER }}
-  run-pytest:
-    if: ${{ !github.event.repository.fork }}
-    runs-on: self-hosted
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4  # Upgraded to v4 for better support/performance
-        with:
-          persist-credentials: false
-          fetch-depth: 0
+  # run-pytest:
+  #   if: ${{ !github.event.repository.fork }}
+  #   runs-on: self-hosted
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v4  # Upgraded to v4 for better support/performance
+  #       with:
+  #         persist-credentials: false
+  #         fetch-depth: 0
 
-      - name: Run remote-pytest
-        run: |
-          uname -a
-          pytest -v -s tests/unit/cipher_modules/models/cp/mzn_model_test.py::test_build_generic_cp_model_from_dictionary_xor_differential
-          pytest -v -s tests/unit/cipher_test.py::test_algebraic_tests
-        env:
-          GUROBI_COMPUTE_SERVER: ${{ secrets.GUROBI_COMPUTE_SERVER }}
+  #     - name: Run remote-pytest
+  #       run: |
+  #         uname -a
+  #         pytest -v -s tests/unit/cipher_modules/models/cp/mzn_model_test.py::test_build_generic_cp_model_from_dictionary_xor_differential
+  #         pytest -v -s tests/unit/cipher_test.py::test_algebraic_tests
+  #       env:
+  #         GUROBI_COMPUTE_SERVER: ${{ secrets.GUROBI_COMPUTE_SERVER }}
