@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+          uses: actions/checkout@v4
         with:
           fetch-depth: 0
           persist-credentials: false
@@ -55,7 +55,7 @@ jobs:
           message: ${{ env.release_message }}
 
       - name: Set up Python
-        uses: actions/setup-python@v2
+          uses: actions/setup-python@v5
         with:
           python-version: '3.x'
 
@@ -64,15 +64,12 @@ jobs:
 
       - name: Create release
         if: ${{ env.should_add_last_changes_to_master == 'true' }}
-        uses: actions/create-release@v1
-        env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ env.tag_name }}
-          release_name: Release ${{ env.tag_name }}
-          body_path: ./docs/release_notes.md
-          draft: false
-          prerelease: false
+          run: |
+            gh release create "${{ env.tag_name }}" \
+              --title "Release ${{ env.tag_name }}" \
+              --notes-file ./docs/release_notes.md
+          env:
+            GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Update develop branch
         if: ${{ env.should_add_last_changes_to_master == 'true' }}

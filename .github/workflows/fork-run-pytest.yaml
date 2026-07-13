@@ -1,9 +1,10 @@
-name: Run pytest for Forked projects
+name: Run tests for Forked projects
 
 on:
   push:
     branches:
-      - '**'
+      - develop
+      - main
   pull_request:
     types: [opened, synchronize, reopened, edited]
     branches:
@@ -15,6 +16,20 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  run-doctest:
+    if: ${{ github.event.repository.fork }}
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        persist-credentials: false
+        fetch-depth: 0
+
+    - name: Run doctest
+      # Reduced parallelism (-tp 4) to fit within the 7 GB / 2 vCPU GitHub-hosted limit.
+      run: docker run --rm -v $PWD:/home/sage/tii-claasp tiicrc/claasp-base:latest bash -lc "cd /home/sage/tii-claasp && make install && SAGE_TIMEOUT=600 sage -tp 4 claasp"
+
   run-pytest:
     if: ${{ github.event.repository.fork }}
     runs-on: ubuntu-latest
@@ -22,7 +37,7 @@ jobs:
     steps:
 
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
       with:
         persist-credentials: false
         fetch-depth: 0
