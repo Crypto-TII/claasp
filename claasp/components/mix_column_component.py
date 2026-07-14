@@ -451,10 +451,10 @@ class MixColumn(LinearLayer):
             sage: DummyModel = type('DummyModel', (), {'word_size': 2, 'mix_column_mant': [], 'list_of_xor_components': []})
             sage: declarations, constraints = mix_column_component.cp_xor_differential_propagation_first_step_constraints(DummyModel())
             sage: declarations
-            ['array[0..1] of var 0..1: mix_column_0_0;',
-            'array[0..11, 1..4] of int: mix_column_truncated_table_mix_column_0_0 = array2d(0..11, 1..4, [0,0,0,0,0,0,1,1,0,1,0,1,0,1,1,0,0,1,1,1,1,0,0,1,1,0,1,0,1,0,1,1,1,1,0,0,1,1,0,1,1,1,1,0,1,1,1,1]);']
+            ['array[0..1] of var 0..1: mix_column_0_0;']
             sage: constraints
-            ['constraint table([in[0]]++[in[1]]++[mix_column_0_0[0]]++[mix_column_0_0[1]], mix_column_truncated_table_mix_column_0_0);']
+            ['constraint mix_column_0_0[0] = in[0];',
+             'constraint mix_column_0_0[1] = in[1];']
         """
         output_size = int(self.output_bit_size)
         input_id_link = self.input_id_links
