@@ -6,6 +6,19 @@ from claasp.ciphers.block_ciphers.ublock_block_cipher import UblockBlockCipher
 from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
 
 
+def test_find_lowest_number_of_active_sboxes_toyaes_internal_solver():
+    cipher = ToyAESBlockCipher(word_size=4, state_size=4, number_of_rounds=1)
+    milp = MilpXorDifferentialNumberOfActiveSboxesModel(cipher)
+    fixed_variables = get_single_key_scenario_format_for_fixed_values(cipher)
+
+    solution = milp.find_lowest_number_of_active_sboxes(fixed_variables)
+
+    assert solution["model_type"] == "xor_differential_number_of_active_sboxes"
+    assert solution["solver_name"] == "GLPK"
+    assert solution["total_weight"] == 1.0
+    assert solution["building_time"] >= 0
+
+
 def test_find_lowest_number_of_active_sboxes_toyaes():
     # state_size=4 with a proper MDS MixColumn gives the same minimum active S-box counts as real AES
     # (Daemen & Rijmen, "The Design of Rijndael", 4-round wide-trail bound: 1, 5, 9, 25), independently

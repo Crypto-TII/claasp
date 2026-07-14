@@ -1,13 +1,21 @@
 import time
+from types import SimpleNamespace
 
+import pytest
+
+from claasp.cipher_modules.models.milp.milp_models import (
+    milp_wordwise_branch_number_number_of_active_sboxes_model as model_module,
+)
 from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_branch_number_number_of_active_sboxes_model import (
     MilpWordwiseBranchNumberNumberOfActiveSboxesModel,
 )
 from claasp.cipher_modules.models.utils import get_single_key_scenario_format_for_fixed_values
 from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.ciphers.block_ciphers.ublock_block_cipher import UblockBlockCipher
 from claasp.ciphers.block_ciphers.ublock_single_linear_layer_block_cipher import UblockSingleLinearLayerBlockCipher
 from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
+from claasp.name_mappings import MIX_COLUMN, WORD_OPERATION
 
 
 def test_find_lowest_number_of_active_sboxes_toyaes():
@@ -130,3 +138,83 @@ def test_find_lowest_number_of_active_sboxes_ublock_single_linear_layer_round_3_
     solution = milp.find_lowest_number_of_active_sboxes(fixed_variables)
 
     assert int(round(float(solution["total_weight"]))) == 8
+
+
+def test_init_model_requires_uniform_sbox_word_size():
+    cipher = SpeckBlockCipher(block_bit_size=8, key_bit_size=16, number_of_rounds=1)
+    milp = MilpWordwiseBranchNumberNumberOfActiveSboxesModel(cipher)
+
+    with pytest.raises(ValueError, match="exactly one, uniform S-box input size"):
+        milp.init_model_in_sage_milp_class()
+
+
+def test_wordwise_helpers_reject_unaligned_or_unsupported_cases():
+    cipher = ToyAESBlockCipher(word_size=4, state_size=4, number_of_rounds=1)
+    milp = MilpWordwiseBranchNumberNumberOfActiveSboxesModel(cipher)
+    milp.init_model_in_sage_milp_class()
+
+    with pytest.raises(NotImplementedError, match="not aligned"):
+        milp._resolve_word_ids("plaintext", [1, 2, 3, 4])
+
+    with pytest.raises(NotImplementedError, match="only fixing to the all-zero"):
+        milp._add_fixed_variable_constraint(
+            {
+                "component_id": "plaintext",
+                "constraint_type": "equal",
+                "bit_positions": range(4),
+                "bit_values": [1, 0, 0, 0],
+            }
+        )
+
+    unsupported = SimpleNamespace(
+        id="and_0_0",
+        type=WORD_OPERATION,
+        description=["AND"],
+        output_bit_size=4,
+    )
+    with pytest.raises(NotImplementedError, match="word operation 'AND'"):
+        milp._component_constraints(unsupported)
+
+
+def test_wordwise_permutation_helpers_reject_non_word_permutations():
+    cipher = ToyAESBlockCipher(word_size=4, state_size=4, number_of_rounds=1)
+    milp = MilpWordwiseBranchNumberNumberOfActiveSboxesModel(cipher)
+    milp.init_model_in_sage_milp_class()
+
+    rotate_right = SimpleNamespace(description=["ROTATE", 1], output_bit_size=8)
+    rotate_left = SimpleNamespace(description=["ROTATE", -1], output_bit_size=8)
+
+    assert milp._rotate_bit_perm(rotate_right) == [7, 0, 1, 2, 3, 4, 5, 6]
+    assert milp._rotate_bit_perm(rotate_left) == [1, 2, 3, 4, 5, 6, 7, 0]
+
+    bad_permutation = SimpleNamespace(
+        id="perm_0_0",
+        input_id_links=["plaintext"],
+        input_bit_positions=[list(range(8))],
+    )
+    with pytest.raises(NotImplementedError, match="not sourced from a single input word"):
+        milp._exact_permutation_constraints(
+            bad_permutation, ["perm_0_0_0", "perm_0_0_1"], [0, 4, 1, 2, 3, 5, 6, 7]
+        )
+
+    bad_mix_column = SimpleNamespace(id="mix_column_0_0", type=MIX_COLUMN, description=[[[1]], 0, 2])
+    with pytest.raises(NotImplementedError, match="cell size is not a multiple"):
+        milp._mix_column_permutation_constraints(bad_mix_column, ["mix_column_0_0_0"])
+
+
+def test_word_branch_number_is_cached(monkeypatch):
+    cipher = AESBlockCipher(number_of_rounds=2)
+    milp = MilpWordwiseBranchNumberNumberOfActiveSboxesModel(cipher)
+    milp.init_model_in_sage_milp_class()
+    mix_column = [component for component in cipher.get_all_components() if component.type == MIX_COLUMN][0]
+    calls = []
+
+    def fake_branch_number(matrix):
+        calls.append(matrix)
+        return 5
+
+    monkeypatch.setattr(model_module, "compute_branch_number_from_field_matrix_with_minizinc", fake_branch_number)
+
+    assert milp._word_branch_number(mix_column) == 5
+    assert milp._word_branch_number(mix_column) == 5
+    assert len(calls) == 1
