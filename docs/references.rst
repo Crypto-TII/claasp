@@ -562,6 +562,13 @@
 .. only:: html
 
         **W**
+.. [WARP] Subhadeep Banik, Zhenzhen Bao, Takanori Isobe,
+        Hiroyasu Kubo, Fukang Liu, Kazuhiko Minematsu,
+        Kosei Sakamoto, Nao Shibata, and Maki Shigeri.
+        *WARP: Revisiting GFN for Lightweight 128-Bit Block Cipher*.
+        In: Selected Areas in Cryptography (SAC 2020),
+        LNCS 12804, Springer, pp. 535–564, 2021.
+        DOI: 10.1007/978-3-030-81652-0_21.
 
 .. _claasp-ref-X:
 
