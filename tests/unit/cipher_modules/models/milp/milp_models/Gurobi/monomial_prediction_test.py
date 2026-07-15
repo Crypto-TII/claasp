@@ -4,6 +4,7 @@ from claasp.cipher import Cipher
 from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import *
 from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+from claasp.ciphers.block_ciphers.ublock_block_cipher import UblockBlockCipher
 from claasp.ciphers.permutations.ascon_permutation import AsconPermutation
 from claasp.ciphers.permutations.gimli_permutation import GimliPermutation
 from claasp.ciphers.permutations.gaston_permutation import GastonPermutation
@@ -129,6 +130,47 @@ def test_is_balanced_at_specific_output_bit_over_cube():
     assert is_balanced is False
 
 @pytest.mark.skip(reason="Requires Gurobi license")
+def test_is_cube_monomial_feasible_at_specific_output_bit_over_cube_keyless_ublock_6():
+    # uBlock-128, 6 rounds, 56-dim cube over plaintext bits [36..63] U [100..127].
+    # Output bit 1 is also feasible in the keyless model.
+    cipher = UblockBlockCipher(number_of_rounds=6)
+    milp = MilpMonomialPredictionModel(cipher)
+    cube = [f"p{i}" for i in range(36, 64)] + [f"p{i}" for i in range(100, 128)]
+
+    assert milp.is_cube_monomial_feasible_at_specific_output_bit_over_cube_keyless(1, cube) is True
+
+@pytest.mark.skip(reason="Requires Gurobi license")
+def test_is_balanced_at_specific_output_bit_over_cube_with_independent_round_keys_simon_4():
+    cipher = SimonBlockCipher(number_of_rounds=4)
+    milp = MilpMonomialPredictionModel(cipher)
+    cube = ["p1", "p2"]
+
+    assert milp.is_balanced_at_specific_output_bit_over_cube_with_independent_round_keys(0, cube) is True
+    assert milp.is_balanced_at_specific_output_bit_over_cube_with_independent_round_keys(4, cube) is False
+
+@pytest.mark.skip(reason="Requires Gurobi license")
+def test_find_upper_bound_degree_of_specific_output_bit_with_independent_round_keys_simon_4():
+    # Independent round keys give the same upper-bound degree as the full cipher here.
+    cipher = SimonBlockCipher(number_of_rounds=4)
+    milp = MilpMonomialPredictionModel(cipher)
+    assert milp.find_upper_bound_degree_of_specific_output_bit_with_independent_round_keys(0, which_var_degree="p") == 8
+
+@pytest.mark.skip(reason="Requires Gurobi license")
+def test_find_upper_bound_degree_of_all_output_bits_with_independent_round_keys_simon_4():
+    cipher = SimonBlockCipher(number_of_rounds=4)
+    milp = MilpMonomialPredictionModel(cipher)
+    expected = [8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5]
+    assert milp.find_upper_bound_degree_of_all_output_bits_with_independent_round_keys(which_var_degree="p") == expected
+
+@pytest.mark.skip(reason="Requires Gurobi license")
+def test_find_upper_bound_degree_in_cube_vars_of_specific_output_bit_with_independent_round_keys_simon_13():
+    # Same degree (30) as find_upper_bound_degree_in_cube_vars_of_specific_output_bit on the full cipher.
+    cipher = SimonBlockCipher(number_of_rounds=13)
+    milp = MilpMonomialPredictionModel(cipher)
+    cube = [f"p{i}" for i in range(1, 32)]
+    assert milp.find_upper_bound_degree_in_cube_vars_of_specific_output_bit_with_independent_round_keys(16, cube) == 30
+
+@pytest.mark.skip(reason="Requires Gurobi license")
 def test_find_superpoly_of_specific_output_bit():
     cipher = SimonBlockCipher(number_of_rounds=2)
     milp = MilpMonomialPredictionModel(cipher)
@@ -190,11 +232,11 @@ def test_msx64_degree_upper_bound():
     assert milp.find_upper_bound_degree_of_specific_output_bit(0) == 32
 
 @pytest.mark.skip(reason="Requires Gurobi license")
-def test_find_degree_in_cube_vars_of_specific_output_bit():
+def test_find_upper_bound_degree_in_cube_vars_of_specific_output_bit():
     cipher = SimonBlockCipher(number_of_rounds=13)
     milp = MilpMonomialPredictionModel(cipher)
     cube = [f"p{i}" for i in range(1, 32)]
-    d = milp.find_degree_in_cube_vars_of_specific_output_bit(16, cube)
+    d = milp.find_upper_bound_degree_in_cube_vars_of_specific_output_bit(16, cube)
     assert d == 30
 
 @pytest.mark.skip(reason="Requires Gurobi license")

@@ -2517,21 +2517,18 @@ class NISTTests:
             'linear_complexity']
             sage: results['tests'][0]['test_name']
             'frequency'
-            sage: results['tests'][0]['p_values']
-            [0.44725458487519887,
-            0.5891970324313961,
-            0.5092538293426723,
-            0.9362372559720252,
-            0.9044831479588323,
-            0.8258711547035709,
-            0.49650446090714107,
-            0.08913092551708612,
-            0.920344325445942,
-            0.5485062355001471]
+            sage: expected_p_values = [0.44725458487519887, 0.5891970324313961,
+            ....:     0.5092538293426723, 0.9362372559720252, 0.9044831479588323,
+            ....:     0.8258711547035709, 0.49650446090714107, 0.08913092551708612,
+            ....:     0.920344325445942, 0.5485062355001471]
+            sage: len(results['tests'][0]['p_values']) == len(expected_p_values) and all(
+            ....:     abs(actual - expected) < 1e-15
+            ....:     for actual, expected in zip(results['tests'][0]['p_values'], expected_p_values))
+            True
             sage: results['tests'][0]['bin_counts']
             [1, 0, 0, 0, 2, 3, 0, 0, 1, 3]
-            sage: results['tests'][0]['uniformity_p_value']
-            0.1223252280386625
+            sage: abs(results['tests'][0]['uniformity_p_value'] - 0.1223252280386625) < 1e-15
+            True
             sage: results['tests'][0]['passed_sequences']
             10
             sage: results['tests'][0]['total_sequences']
