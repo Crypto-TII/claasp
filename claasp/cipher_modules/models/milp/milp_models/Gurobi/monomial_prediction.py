@@ -2214,7 +2214,7 @@ class MilpMonomialPredictionModel:
 
         return degrees
 
-    def find_degree_in_cube_vars_of_specific_output_bit(
+    def find_upper_bound_degree_in_cube_vars_of_specific_output_bit(
         self,
         output_bit_index,
         cube,
@@ -2248,7 +2248,7 @@ class MilpMonomialPredictionModel:
             sage: from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel # doctest: +SKIP
             sage: milp = MilpMonomialPredictionModel(cipher)  # doctest: +SKIP
             sage: cube = [f"p{i}" for i in range(1, 32)] # doctest: +SKIP
-            sage: d = milp.find_degree_in_cube_vars_of_specific_output_bit(16, cube)  # doctest: +SKIP
+            sage: d = milp.find_upper_bound_degree_in_cube_vars_of_specific_output_bit(16, cube)  # doctest: +SKIP
             ...
         """
         self.build_generic_model_for_specific_output_bit(
@@ -2268,15 +2268,7 @@ class MilpMonomialPredictionModel:
         m.setObjective(sum(cube_vars), GRB.MAXIMIZE)
 
         # Fix all other non-cube public input bits to 0
-        for inp, sz in zip(self._cipher.inputs, self._cipher.inputs_bit_size):
-            pref = inp[0]
-            if pref in {"p", "i"}:
-                for i in range(sz):
-                    if (inp, i) in cube_set:
-                        continue
-                    v = m.getVarByName(f"{inp}[{i}]")
-                    if v is not None:
-                        m.addConstr(v == 0)
+        self._fix_non_cube_public_bits_to_zero(cube_set)
 
         m.update()
         m.optimize()
@@ -2295,6 +2287,64 @@ class MilpMonomialPredictionModel:
         )
 
         return degree_in_cube_vars
+
+    def find_upper_bound_degree_of_specific_output_bit_with_independent_round_keys(
+        self, output_bit_index, which_var_degree=None, chosen_cipher_output=None
+    ):
+        r"""
+        Same as :meth:`find_upper_bound_degree_of_specific_output_bit` on the independent-round-keys model (sound upper bound).
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher # doctest: +SKIP
+            sage: cipher = SimonBlockCipher(number_of_rounds=4) # doctest: +SKIP
+            sage: from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel # doctest: +SKIP
+            sage: milp = MilpMonomialPredictionModel(cipher) # doctest: +SKIP
+            sage: milp.find_upper_bound_degree_of_specific_output_bit_with_independent_round_keys(0, which_var_degree="p") # doctest: +SKIP
+            ...
+        """
+        return MilpMonomialPredictionModel(
+            self._cipher.remove_key_schedule(keep_round_key_injection=True)
+        ).find_upper_bound_degree_of_specific_output_bit(output_bit_index, which_var_degree, chosen_cipher_output)
+
+    def find_upper_bound_degree_of_all_output_bits_with_independent_round_keys(
+        self, which_var_degree=None, chosen_cipher_output=None
+    ):
+        r"""
+        Same as :meth:`find_upper_bound_degree_of_all_output_bits` on the independent-round-keys model (sound upper bound).
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher # doctest: +SKIP
+            sage: cipher = SimonBlockCipher(number_of_rounds=4) # doctest: +SKIP
+            sage: from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel # doctest: +SKIP
+            sage: milp = MilpMonomialPredictionModel(cipher) # doctest: +SKIP
+            sage: milp.find_upper_bound_degree_of_all_output_bits_with_independent_round_keys(which_var_degree="p") # doctest: +SKIP
+            ...
+        """
+        return MilpMonomialPredictionModel(
+            self._cipher.remove_key_schedule(keep_round_key_injection=True)
+        ).find_upper_bound_degree_of_all_output_bits(which_var_degree, chosen_cipher_output)
+
+    def find_upper_bound_degree_in_cube_vars_of_specific_output_bit_with_independent_round_keys(
+        self, output_bit_index, cube, chosen_cipher_output=None
+    ):
+        r"""
+        Same as :meth:`find_upper_bound_degree_in_cube_vars_of_specific_output_bit` on the independent-round-keys model (sound upper bound).
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher # doctest: +SKIP
+            sage: cipher = SimonBlockCipher(number_of_rounds=13) # doctest: +SKIP
+            sage: from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel # doctest: +SKIP
+            sage: milp = MilpMonomialPredictionModel(cipher) # doctest: +SKIP
+            sage: cube = [f"p{i}" for i in range(1, 32)] # doctest: +SKIP
+            sage: milp.find_upper_bound_degree_in_cube_vars_of_specific_output_bit_with_independent_round_keys(16, cube) # doctest: +SKIP
+            ...
+        """
+        return MilpMonomialPredictionModel(
+            self._cipher.remove_key_schedule(keep_round_key_injection=True)
+        ).find_upper_bound_degree_in_cube_vars_of_specific_output_bit(output_bit_index, cube, chosen_cipher_output)
 
     def find_upper_bound_degree_of_cube_monomial_of_specific_output_bit(
         self,
@@ -2447,6 +2497,70 @@ class MilpMonomialPredictionModel:
             balanced,
         )
         return balanced
+
+    def is_cube_monomial_feasible_at_specific_output_bit_over_cube_keyless(
+        self, output_bit_index, cube, chosen_cipher_output=None
+    ):
+        r"""
+        Feasibility filter on the *keyless* cipher (key schedule **and** round-key injection removed,
+        via ``remove_key_schedule(keep_round_key_injection=False)``). If the cube monomial is feasible
+        here, the real cipher is feasible too and balance cannot be proven, an infeasible result marks a candidate to confirm with
+        :meth:`is_balanced_at_specific_output_bit_over_cube_with_independent_round_keys`.
+
+        INPUT:
+        - ``output_bit_index`` -- **integer**
+        - ``cube`` -- **list of strings**
+        - ``chosen_cipher_output`` -- **string** (default: ``None``)
+
+        OUTPUT:
+        - **bool**; ``True`` if the cube monomial is feasible (reachable) in the keyless model, else ``False``.
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.ublock_block_cipher import UblockBlockCipher # doctest: +SKIP
+            sage: cipher = UblockBlockCipher(number_of_rounds=6) # doctest: +SKIP
+            sage: from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel # doctest: +SKIP
+            sage: milp = MilpMonomialPredictionModel(cipher) # doctest: +SKIP
+            sage: cube = [f"p{i}" for i in range(36, 64)] + [f"p{i}" for i in range(100, 128)]  # 56-dim cube # doctest: +SKIP
+            sage: milp.is_cube_monomial_feasible_at_specific_output_bit_over_cube_keyless(1, cube) # doctest: +SKIP
+            ...
+        """
+        keyless_cipher = self._cipher.remove_key_schedule(keep_round_key_injection=False)
+        sub_model = MilpMonomialPredictionModel(keyless_cipher)
+        return not sub_model.is_balanced_at_specific_output_bit_over_cube(output_bit_index, cube, chosen_cipher_output)
+
+    def is_balanced_at_specific_output_bit_over_cube_with_independent_round_keys(
+        self, output_bit_index, cube, chosen_cipher_output=None
+    ):
+        r"""
+        Feasibility-based balance check on the cipher with the key schedule removed but the independent round-key
+        injections kept.
+
+        This monomial-trail set is a superset of the real cipher's, so an INFEASIBLE (balanced) result
+        here **proves** the real cipher's bit is balanced over the cube . A FEASIBLE result is inconclusive (unknown).
+        INPUT:
+        - ``output_bit_index`` -- **integer**
+        - ``cube`` -- **list of strings**
+        - ``chosen_cipher_output`` -- **string** (default: ``None``)
+
+        OUTPUT:
+        - **bool**; ``True`` if balanced (infeasible), ``False`` if unknown.
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher # doctest: +SKIP
+            sage: cipher = SimonBlockCipher(number_of_rounds=4) # doctest: +SKIP
+            sage: from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel # doctest: +SKIP
+            sage: milp = MilpMonomialPredictionModel(cipher) # doctest: +SKIP
+            sage: cube = ["p1", "p2"] # doctest: +SKIP
+            sage: milp.is_balanced_at_specific_output_bit_over_cube_with_independent_round_keys(0, cube)  # bit 0 balanced # doctest: +SKIP
+            ... 
+            sage: milp.is_balanced_at_specific_output_bit_over_cube_with_independent_round_keys(4, cube)  # bit 4 unknown # doctest: +SKIP
+            ...
+        """
+        independent_keys_cipher = self._cipher.remove_key_schedule(keep_round_key_injection=True)
+        sub_model = MilpMonomialPredictionModel(independent_keys_cipher)
+        return sub_model.is_balanced_at_specific_output_bit_over_cube(output_bit_index, cube, chosen_cipher_output)
 
     def find_superpoly_of_specific_output_bit(
         self,

@@ -274,7 +274,9 @@ class TestNISTTests:
         # For now, just ensure it doesn't crash unexpectedly
         try:
             result = NISTTests.frequency_test(invalid_seq)
-        except (ValueError, AssertionError):
+            # If it doesn't raise, it should return a valid dict
+            assert isinstance(result, dict)
+        except ValueError:
             # It's acceptable to raise an error for invalid input
             return
 
