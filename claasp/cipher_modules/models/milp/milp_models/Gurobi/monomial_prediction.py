@@ -22,6 +22,7 @@ import time
 from collections import Counter
 from copy import deepcopy
 
+import numpy as np
 from gurobipy import GRB, Env, Model
 from sage.all import GF, Polyhedron
 from sage.crypto.sbox import SBox
@@ -30,8 +31,8 @@ from sage.rings.polynomial.pbori.pbori import BooleanPolynomialRing
 from claasp.cipher_modules.component_analysis_tests import binary_matrix_of_linear_component
 from claasp.cipher_modules.graph_generator import _get_predecessors_subgraph, create_networkx_graph_from_input_ids
 from claasp.cipher_modules.models.milp.utils.generate_sbox_inequalities_for_trail_search import cutting_off_milp
+from claasp.cipher_modules.models.milp.utils.utils import generate_product_of_sum_from_espresso
 from claasp.name_mappings import INTERMEDIATE_OUTPUT
-
 verbosity = False
 
 MODEL_INFEASIBLE_MSG = "[INFO] Model is infeasible"
@@ -62,6 +63,7 @@ class MilpMonomialPredictionModel:
         self._constants = {}
         self._sbox_valid_cache = {}
         self._sbox_ineq_cache = {}
+        self._sbox_espresso_cache = {}
         self._gurobi_params = {}
 
     def build_gurobi_model(self):
@@ -294,6 +296,102 @@ class MilpMonomialPredictionModel:
         self._sbox_ineq_cache[desc] = (chosen, n, m)
         return self._sbox_ineq_cache[desc]
 
+    def _espresso_clause_to_inequality(self, clause, dim):
+        """
+        Convert one Espresso product-of-sum clause (string over ``{'0', '1', '-'}``) into the
+        ``(b, a_0, ..., a_{dim-1})`` inequality ``b + sum_k a_k z_k >= 0``: ``a_k = -1`` for ``'1'``,
+        ``+1`` for ``'0'``, ``0`` for ``'-'``, and ``b = (number of '1' chars) - 1``.
+        """
+        a = [0] * dim
+        ones = 0
+        for k, char in enumerate(clause):
+            if char == "1":
+                a[k] = -1
+                ones += 1
+            elif char == "0":
+                a[k] = 1
+        return tuple([ones - 1] + a)
+
+    def _tightness_check_for_inequalities(self, chosen, valid, dim, chunk=1 << 13):
+        """
+        Sweep every point of ``{0,1}^dim`` and classify those the inequalities ``chosen`` admit,
+        returning ``(admitted_invalid, admitted_valid_count)``. The inequalities are tight.
+        """
+        A = np.array([[ie[1 + k] for k in range(dim)] for ie in chosen], dtype=np.int32)
+        b = np.array([ie[0] for ie in chosen], dtype=np.int32)
+        bit_shifts = np.arange(dim)
+        admitted_invalid = []
+        admitted_valid_count = 0
+        total = 1 << dim
+        for start in range(0, total, chunk):
+            idx = np.arange(start, min(start + chunk, total))
+            points = ((idx[:, None] >> bit_shifts[None, :]) & 1).astype(np.int32)
+            satisfied = ((points @ A.T) + b >= 0).all(axis=1)
+            for local in np.nonzero(satisfied)[0]:
+                point = tuple(int((idx[local] >> k) & 1) for k in range(dim))
+                if point in valid:
+                    admitted_valid_count += 1
+                else:
+                    admitted_invalid.append(point)
+        return admitted_invalid, admitted_valid_count
+
+    def get_sbox_inequalities_espresso(self, component):
+        """
+        Espresso variant of :meth:`get_sbox_inequalities` for large S-boxes (n + m > 10, where the
+        convex hull becomes impractical to build). The valid monomial-trail points form the ON-set of a boolean
+        function that ``espresso -epos`` minimises to a product-of-sum; a tightness check
+        (:meth:`_tightness_check_for_inequalities`) then adds a no-good cut for any invalid point
+        still admitted, so the result is exact for any S-box. Raises ``RuntimeError`` if the clauses
+        reject a valid trail.
+        """
+        desc = tuple(component.description)
+        if desc in self._sbox_espresso_cache:
+            return self._sbox_espresso_cache[desc]
+        table, n, m = self.get_valid_monomial_exponents_table(component)
+        dim = n + m
+        valid = set()
+        valid_points = []
+        for v_mask, us in table.items():
+            v_bits = [(v_mask >> q) & 1 for q in range(m)]
+            for u in us:
+                point = tuple([(u >> j) & 1 for j in range(n)] + v_bits)
+                valid.add(point)
+                valid_points.append("".join(str(bit) for bit in point))
+
+        clauses = generate_product_of_sum_from_espresso(valid_points)
+        chosen = [self._espresso_clause_to_inequality(clause, dim) for clause in clauses]
+
+        admitted_invalid, admitted_valid_count = self._tightness_check_for_inequalities(chosen, valid, dim)
+        if admitted_valid_count != len(valid):
+            raise RuntimeError(
+                f"Espresso encoding of S-box {component.id} rejects "
+                f"{len(valid) - admitted_valid_count} of {len(valid)} valid monomial trails"
+            )
+        for point in admitted_invalid:
+            b = sum(point) - 1
+            chosen.append(tuple([b] + [(-1 if point[k] == 1 else 1) for k in range(dim)]))
+
+        self._sbox_espresso_cache[desc] = (chosen, n, m)
+        return self._sbox_espresso_cache[desc]
+
+    def add_sbox_constraints_espresso(self, component):
+        """
+        Exact S-box model for large S-boxes via the Espresso inequalities of
+        :meth:`get_sbox_inequalities_espresso`. Falls back to the (looser) ANF-circuit model
+        :meth:`add_sbox_constraints_anf_circuit` if the ``espresso`` binary is unavailable.
+        """
+        try:
+            ineqs, n, m = self.get_sbox_inequalities_espresso(component)
+        except FileNotFoundError:
+            if verbosity:
+                print(
+                    f"[INFO] espresso binary not found; falling back to the (non-tight) ANF-circuit "
+                    f"model for S-box {component.id}"
+                )
+            return self.add_sbox_constraints_anf_circuit(component)
+
+        self._apply_sbox_inequalities(component, ineqs, n, m)
+
     def _map_sbox_output_vars(self, component, output_vars, m):
         needed = sorted(self._occurences[component.id].keys())  # matches output_vars order
         out_all = [None] * m
@@ -308,22 +406,27 @@ class MilpMonomialPredictionModel:
 
     def add_sbox_constraints(self, component):
         """
-        Constrain the S-box's input variables (the exponents u) and output-bit variables
-        (the exponents v) to the exact monomial-trail relation.
-
-        Large S-boxes (e.g. 8-bit AES): the (u, v) point set lives in {0,1}^(n+m), and
-        building its convex hull becomes infeasible once n+m > 12, so fall back to the
-        ANF-circuit model. That fallback is exact for single-output-bit queries
-        (|v| = 1).
+        Constrain the S-box's input (u) and output-bit (v) variables to the exact monomial-trail
+        relation, using the convex-hull inequalities for small S-boxes and the Espresso ones
+        (:meth:`add_sbox_constraints_espresso`) once ``n + m > 10``, where the convex hull becomes
+        too slow to build (both encodings are tight -- their feasible region is exactly the valid points).
         """
-        if (1 << (component.input_bit_size + component.output_bit_size)) > 4096:
-            return self.add_sbox_constraints_anf_circuit(component)
+        if (1 << (component.input_bit_size + component.output_bit_size)) > 1024:
+            return self.add_sbox_constraints_espresso(component)
 
+        ineqs, n, m = self.get_sbox_inequalities(component)
+        self._apply_sbox_inequalities(component, ineqs, n, m)
+
+    def _apply_sbox_inequalities(self, component, ineqs, n, m):
+        """
+        Add the S-box inequalities ``ineqs`` to the model, mapping ``z`` positions ``0..n-1`` to
+        the input-exponent variables and ``n..n+m-1`` to the output-bit variables. Shared by the
+        convex-hull and Espresso encodings.
+        """
         output_vars = self.get_output_vars(component)
         input_vars = self.get_input_vars(component)
         self._model.update()
 
-        ineqs, n, m = self.get_sbox_inequalities(component)
         out_all = self._map_sbox_output_vars(component, output_vars, m)
         self._model.update()
 
