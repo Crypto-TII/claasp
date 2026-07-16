@@ -10,7 +10,10 @@ from claasp.ciphers.permutations.gimli_permutation import GimliPermutation
 from claasp.ciphers.permutations.gaston_permutation import GastonPermutation
 from claasp.ciphers.stream_ciphers.trivium_stream_cipher import TriviumStreamCipher
 from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
+from claasp.ciphers.block_ciphers.kasumi_block_cipher import SBox7 as KASUMI_S7
+from claasp.ciphers.single_component_ciphers.sbox_cipher import SboxCipher
 from claasp.name_mappings import BLOCK_CIPHER
+from sage.crypto.sboxes import APN_6
 
 """
 
@@ -393,20 +396,18 @@ SBOXES_UNDER_TEST = [
     ("prince", 4, [11, 15, 3, 2, 10, 12, 9, 1, 6, 7, 8, 0, 14, 5, 13, 4]),
     ("gaston", 5, [0x00, 0x05, 0x0a, 0x0b, 0x14, 0x11, 0x16, 0x17, 0x09, 0x0c, 0x03, 0x02, 0x0d, 0x08, 0x0f, 0x0e,
                    0x12, 0x15, 0x18, 0x1b, 0x06, 0x01, 0x04, 0x07, 0x1a, 0x1d, 0x10, 0x13, 0x1e, 0x19, 0x1c, 0x1f]),
+    ("apn", 6, list(APN_6)),
+    ("kasumi_s7", 7, KASUMI_S7),
     ("aes", 8, AES_SBOX),
 ]
 
 
 def _check_sbox_anf(name, n, sbox):
-    cipher = Cipher(f"test_sbox_{name}", BLOCK_CIPHER, ["input"], [n], n)
-    cipher.add_round()
-    cipher.add_sbox_component(["input"], [list(range(n))], n, sbox)
-    cipher.add_cipher_output_component(["sbox_0_0"], [list(range(n))], n)
-
+    cipher = SboxCipher(bit_size=n, lookup_table=sbox)
     milp = MilpMonomialPredictionModel(cipher)
     anfs = [milp.find_anf_of_specific_output_bit(i) for i in range(n)]
     for x in range(2**n):
-        subs = {f"i{j}": (x >> (n - 1 - j)) & 1 for j in range(n)}
+        subs = {f"p{j}": (x >> (n - 1 - j)) & 1 for j in range(n)}
         computed = 0
         for anf in anfs:
             computed = (computed << 1) | int(anf.subs(subs))
