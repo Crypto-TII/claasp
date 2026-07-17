@@ -197,7 +197,21 @@ def test_wordwise_permutation_helpers_reject_non_word_permutations():
             bad_permutation, ["perm_0_0_0", "perm_0_0_1"], [0, 4, 1, 2, 3, 5, 6, 7]
         )
 
-    bad_mix_column = SimpleNamespace(id="mix_column_0_0", type=MIX_COLUMN, description=[[[1]], 0, 2])
+    not_a_permutation_mix_column = SimpleNamespace(
+        id="mix_column_0_0",
+        type=MIX_COLUMN,
+        description=[[[1, 1], [0, 1]], 0, 4],
+        _is_permutation_matrix=lambda: False,
+    )
+    with pytest.raises(NotImplementedError, match="require a permutation matrix"):
+        milp._mix_column_permutation_constraints(not_a_permutation_mix_column, ["mix_column_0_0_0"])
+
+    bad_mix_column = SimpleNamespace(
+        id="mix_column_0_1",
+        type=MIX_COLUMN,
+        description=[[[1]], 0, 2],
+        _is_permutation_matrix=lambda: True,
+    )
     with pytest.raises(NotImplementedError, match="cell size is not a multiple"):
         milp._mix_column_permutation_constraints(bad_mix_column, ["mix_column_0_0_0"])
 

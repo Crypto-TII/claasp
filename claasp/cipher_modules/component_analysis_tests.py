@@ -2198,7 +2198,7 @@ def compute_branch_number_from_binary_matrix_with_minizinc(
     )
 
 
-def compute_word_branch_number_from_binary_matrix(
+def compute_word_branch_number_from_binary_matrix_with_minizinc(
     binary_matrix,
     word_size,
     type="differential",
@@ -2256,7 +2256,7 @@ def compute_word_branch_number_from_binary_matrix(
         sage: import shutil
         sage: from sage.all import GF, Matrix
         sage: from claasp.cipher_modules.component_analysis_tests import (
-        ....:     compute_word_branch_number_from_binary_matrix, _expand_field_matrix_to_binary_matrix)
+        ....:     compute_word_branch_number_from_binary_matrix_with_minizinc, _expand_field_matrix_to_binary_matrix)
         sage: if shutil.which("minizinc") is None:
         ....:     print("MiniZinc not available")
         ....: else:
@@ -2265,7 +2265,7 @@ def compute_word_branch_number_from_binary_matrix(
         ....:     # to GF(2) and asking for the word-level branch number at word_size=2 must recover the same 3,
         ....:     # since word activity under this expansion is exactly field-element non-zero-ness.
         ....:     bit_matrix = _expand_field_matrix_to_binary_matrix([[1, 1], [1, 2]], word_size=2, irreducible_polynomial=0b111)
-        ....:     compute_word_branch_number_from_binary_matrix(bit_matrix, word_size=2)
+        ....:     compute_word_branch_number_from_binary_matrix_with_minizinc(bit_matrix, word_size=2)
         3
     """
     matrix, n = _prepare_binary_matrix(binary_matrix, type)

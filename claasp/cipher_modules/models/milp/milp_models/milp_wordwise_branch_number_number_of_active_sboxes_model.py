@@ -19,7 +19,7 @@ import time
 
 from claasp.cipher_modules.component_analysis_tests import (
     compute_branch_number_from_field_matrix_with_minizinc,
-    compute_word_branch_number_from_binary_matrix,
+    compute_word_branch_number_from_binary_matrix_with_minizinc,
     instantiate_matrix_over_correct_field,
 )
 from claasp.cipher_modules.models.milp.milp_model import MilpModel
@@ -47,6 +47,12 @@ class MilpWordwiseBranchNumberNumberOfActiveSboxesModel(MilpModel):
     via branch-number inequalities rather than bit-level DDT tables, and word-aligned permutations (bit
     rotations, uBlock-style word permutations) enforced via exact word equality.
 
+    The constraints are kept in this model rather than distributed across ``claasp.components`` because they are
+    not alternative MILP propagation constraints for each component's real bit-level semantics. They are a
+    model-specific wordwise abstraction: the same component can be represented by an exact word permutation, a
+    branch-number inequality, or rejected as unsupported depending on the cipher's S-box-derived word size and
+    this model's active-word relaxation.
+
     This is a different, and for permutation-heavy or ARX-mixing ciphers much cheaper, model than
     :py:class:`~MilpXorDifferentialNumberOfActiveSboxesModel`, which is bit-exact and DDT-based throughout and
     does not scale past a couple of rounds for such ciphers (see that class's docstring). The trade-off is
@@ -61,12 +67,12 @@ class MilpWordwiseBranchNumberNumberOfActiveSboxesModel(MilpModel):
     and ~2.5s respectively as GLPK's own branch-and-bound (a slower, open-source solver than CPLEX) starts to
     dominate. Model *build* time itself -- the part specific to this implementation, as opposed to the solver
     -- is dominated by :py:meth:`_word_branch_number` computing each linear component's *exact* word-level
-    branch number via :py:func:`~cipher_modules.component_analysis_tests.compute_branch_number_from_field_matrix_with_minizinc`
-    (``mix_column``) or :py:func:`~cipher_modules.component_analysis_tests.compute_word_branch_number_from_binary_matrix`
-    (``linear_layer``) -- both a real constraint solve (MiniZinc/OR-Tools), around 1-3s each for AES's and
-    uBlock's matrices respectively -- but this is cached per matrix, since the same matrix is normally reused
-    across many component instances (e.g. one per AES column, four per round) and rounds, so it is paid once
-    per unique matrix, not once per round.
+    branch number via the MiniZinc-backed branch-number helpers in
+    :py:mod:`~cipher_modules.component_analysis_tests` for ``mix_column`` and ``linear_layer`` components.
+    Both paths perform a real constraint solve (MiniZinc/OR-Tools), around 1-3s each for AES's and uBlock's
+    matrices respectively, but this is cached per matrix, since the same matrix is normally reused across many
+    component instances (e.g. one per AES column, four per round) and rounds, so it is paid once per unique
+    matrix, not once per round.
     """
 
     def __init__(self, cipher, n_window_heuristic=None, verbose=False):
@@ -166,11 +172,12 @@ class MilpWordwiseBranchNumberNumberOfActiveSboxesModel(MilpModel):
         :py:mod:`~cipher_modules.component_analysis_tests` rather than reimplementing the search here --
         :py:func:`~cipher_modules.component_analysis_tests.compute_branch_number_from_field_matrix_with_minizinc`
         for ``mix_column`` (already public), and
-        :py:func:`~cipher_modules.component_analysis_tests.compute_word_branch_number_from_binary_matrix` for
-        ``linear_layer`` (added alongside it, since :py:func:`~cipher_modules.component_analysis_tests.branch_number`'s
-        word-level path only covers ``mix_column``). See that function's docstring for how the two relate to
-        the module's *bit*-level branch-number functions. Cached per matrix, since the same matrix is normally
-        reused across many component instances (e.g. one per AES column, four per round) and rounds.
+        :py:func:`~cipher_modules.component_analysis_tests.compute_word_branch_number_from_binary_matrix_with_minizinc`
+        for ``linear_layer`` (added alongside it, since
+        :py:func:`~cipher_modules.component_analysis_tests.branch_number`'s word-level path only covers
+        ``mix_column``). See that function's docstring for how the two relate to the module's *bit*-level
+        branch-number functions. Cached per matrix, since the same matrix is normally reused across many
+        component instances (e.g. one per AES column, four per round) and rounds.
 
         INPUT:
 
@@ -213,7 +220,9 @@ class MilpWordwiseBranchNumberNumberOfActiveSboxesModel(MilpModel):
             )
             branch_num = compute_branch_number_from_field_matrix_with_minizinc(matrix)
         else:
-            branch_num = compute_word_branch_number_from_binary_matrix(component.description, word_size=self._word_size)
+            branch_num = compute_word_branch_number_from_binary_matrix_with_minizinc(
+                component.description, word_size=self._word_size
+            )
 
         self._linear_layer_branch_number_cache[cache_key] = branch_num
         return branch_num
@@ -313,6 +322,9 @@ class MilpWordwiseBranchNumberNumberOfActiveSboxesModel(MilpModel):
         return constraints
 
     def _mix_column_permutation_constraints(self, component, output_ids):
+        if component.type != MIX_COLUMN or not component._is_permutation_matrix():
+            raise NotImplementedError(f"{component.id}: MixColumn permutation constraints require a permutation matrix")
+
         w = self._word_variable
         matrix = component.description[0]
         cell_size = component.description[2]
