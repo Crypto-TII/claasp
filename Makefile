@@ -30,10 +30,18 @@ rundockerhub:
 	docker run -i -p 8887:8887 --mount type=bind,source=`pwd`,target=/home/sage/tii-claasp -t $(DOCKER_IMG_NAME) \
 	sh -c "cd /home/sage/tii-claasp && make install && cd /home/sage/tii-claasp && exec /bin/bash"
 
-builddocker-m1:
+# Build for x86_64/amd64. On an arm64 host (e.g. Apple Silicon) this image runs
+# under QEMU emulation, which is slower but ensures full compatibility with
+# x86_64-only dependencies (e.g. MathSat).
+builddocker-x86_64:
 	docker build -f docker/Dockerfile --platform linux/x86_64 --target claasp-base -t $(DOCKER_IMG_NAME) .
 
-rundocker-m1: builddocker-m1
+# Build for arm64. Runs natively on arm64 hosts (e.g. Apple Silicon); on an
+# x86_64 host this image runs under QEMU emulation.
+builddocker-arm64:
+	docker build -f docker/Dockerfile --platform linux/arm64 --target claasp-base -t $(DOCKER_IMG_NAME) .
+
+rundocker-m1: builddocker-x86_64
 	docker run -i -p 8888:8888 --mount type=bind,source=`pwd`,target=/home/sage/tii-claasp -t $(DOCKER_IMG_NAME) \
 	sh -c "cd /home/sage/tii-claasp && make install && cd /home/sage/tii-claasp && exec /bin/bash"
 
