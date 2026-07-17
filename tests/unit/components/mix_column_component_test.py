@@ -113,6 +113,84 @@ def test_cp_xor_linear_mask_propagation_constraints():
     )
 
 
+def test_is_permutation_matrix():
+    mix_column_component = make_mix_column_component()
+    assert mix_column_component._is_permutation_matrix() is False
+
+    permutation_matrix_component = MixColumn(
+        0,
+        0,
+        ["plaintext"],
+        [list(range(8))],
+        8,
+        [[[0, 1], [1, 0]], 0, 4],
+    )
+    assert permutation_matrix_component._is_permutation_matrix() is True
+
+    repeated_column_component = MixColumn(
+        0,
+        0,
+        ["plaintext"],
+        [list(range(8))],
+        8,
+        [[[1, 0], [1, 0]], 0, 4],
+    )
+    assert repeated_column_component._is_permutation_matrix() is False
+
+    non_square_component = MixColumn(
+        0,
+        0,
+        ["plaintext"],
+        [list(range(8))],
+        8,
+        [[[1, 0], [0]], 0, 4],
+    )
+    assert non_square_component._is_permutation_matrix() is False
+
+
+def test_cp_xor_differential_first_step_uses_equalities_for_permutation_matrix():
+    cp = MznModel(make_mix_column_cipher())
+    cp.word_size = 2
+    cp.mix_column_mant = []
+    cp.list_of_xor_components = []
+    mix_column_component = MixColumn(
+        0,
+        0,
+        ["plaintext"],
+        [list(range(8))],
+        8,
+        [[[0, 1], [1, 0]], 0, 4],
+    )
+
+    declarations, constraints = mix_column_component.cp_xor_differential_propagation_first_step_constraints(cp)
+
+    assert declarations == ["array[0..3] of var 0..1: mix_column_0_0;"]
+    assert constraints == [
+        "constraint mix_column_0_0[0] = plaintext[2];",
+        "constraint mix_column_0_0[1] = plaintext[3];",
+        "constraint mix_column_0_0[2] = plaintext[0];",
+        "constraint mix_column_0_0[3] = plaintext[1];",
+    ]
+    assert cp.mix_column_mant == [mix_column_component]
+
+
+def test_cp_xor_differential_first_step_uses_table_for_non_permutation_matrix():
+    cp = MznModel(make_mix_column_cipher())
+    cp.word_size = 4
+    cp.mix_column_mant = []
+    cp.list_of_xor_components = []
+    mix_column_component = make_mix_column_component()
+
+    declarations, constraints = mix_column_component.cp_xor_differential_propagation_first_step_constraints(cp)
+
+    assert declarations[0] == "array[0..1] of var 0..1: mix_column_0_0;"
+    assert declarations[1].startswith("array[0..11, 1..4] of int: mix_column_truncated_table_mix_column_0_0")
+    assert constraints == [
+        "constraint table([plaintext[0]]++[plaintext[1]]++[mix_column_0_0[0]]++[mix_column_0_0[1]], "
+        "mix_column_truncated_table_mix_column_0_0);"
+    ]
+
+
 def test_milp_constraints():
     cipher = make_mix_column_cipher()
     milp = MilpModel(cipher)

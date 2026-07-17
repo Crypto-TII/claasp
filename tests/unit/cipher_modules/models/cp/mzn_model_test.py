@@ -16,6 +16,7 @@ from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model_arx_o
 from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_linear_model import MznXorLinearModel
 from claasp.cipher_modules.models.utils import get_bit_bindings, integer_to_bit_list, set_fixed_variables
 from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
+from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
 from claasp.ciphers.block_ciphers.raiden_block_cipher import RaidenBlockCipher
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
@@ -110,6 +111,29 @@ def test_solver_names():
     # External solvers should have keywords when verbose=True
     external_solvers = [s for s in verbose_solver_names if 'keywords' in s]
     assert len(external_solvers) > 0
+
+
+def test_model_uses_sbox_word_size_for_two_step_friendly_cipher():
+    mzn = MznModel(PresentBlockCipher(number_of_rounds=1))
+
+    assert mzn.word_size == 4
+
+
+def test_first_step_fixed_variables_use_two_step_friendly_check():
+    present = PresentBlockCipher(number_of_rounds=1)
+    mzn = MznModel(present)
+    fixed_variables = [
+        set_fixed_variables("plaintext", "equal", list(range(4)), integer_to_bit_list(0, 4, "big"))
+    ]
+
+    constraints = mzn.fix_variables_value_constraints(fixed_variables, step="first_step")
+
+    assert constraints == ["constraint plaintext[0] = 0;"]
+
+    speck = SpeckBlockCipher(number_of_rounds=1)
+    mzn = MznModel(speck)
+    with pytest.raises(ValueError, match="Cipher is not SPN"):
+        mzn.fix_variables_value_constraints(fixed_variables, step="first_step")
 
 
 @pytest.mark.filterwarnings("ignore::DeprecationWarning:")

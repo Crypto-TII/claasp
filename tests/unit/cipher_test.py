@@ -356,6 +356,47 @@ def test_is_spn():
     assert aes.is_spn() is True
 
 
+def test_has_uniform_sboxes_accepts_permutation_diffusion_ciphers():
+    assert ToyAESBlockCipher(number_of_rounds=1).has_uniform_sboxes() is True
+    assert UblockBlockCipher(number_of_rounds=2).has_uniform_sboxes() is True
+    assert PresentBlockCipher(number_of_rounds=1).has_uniform_sboxes() is True
+    assert SpeckBlockCipher(number_of_rounds=1).has_uniform_sboxes() is False
+
+
+def test_has_uniform_sboxes_rejects_mixed_sbox_sizes():
+    cipher = Cipher("mixed_sboxes", BLOCK_CIPHER, [INPUT_PLAINTEXT], [8], 8)
+    cipher.add_round()
+    cipher.add_sbox_component([INPUT_PLAINTEXT], [[0, 1, 2, 3]], 4, list(range(16)))
+    cipher.add_sbox_component([INPUT_PLAINTEXT], [[4, 5, 6]], 3, list(range(8)))
+
+    assert cipher.has_uniform_sboxes() is False
+
+
+def test_has_uniform_sboxes_rejects_unsupported_component_types():
+    cipher = Cipher("unsupported_component", BLOCK_CIPHER, [INPUT_PLAINTEXT], [8], 8)
+    cipher.add_round()
+    sbox = cipher.add_sbox_component([INPUT_PLAINTEXT], [[0, 1, 2, 3]], 4, list(range(16)))
+    cipher.add_and_component([sbox.id], [list(range(4))], 4)
+
+    assert cipher.has_uniform_sboxes() is False
+
+
+def test_is_two_step_trail_search_friendly_checks_mix_column_cell_alignment():
+    friendly = Cipher("friendly", BLOCK_CIPHER, [INPUT_PLAINTEXT], [8], 8)
+    friendly.add_round()
+    sbox = friendly.add_sbox_component([INPUT_PLAINTEXT], [[0, 1, 2, 3]], 4, list(range(16)))
+    friendly.add_mix_column_component([sbox.id], [list(range(4))], 4, [[[1]], 0, 4])
+
+    unfriendly = Cipher("unfriendly", BLOCK_CIPHER, [INPUT_PLAINTEXT], [8], 8)
+    unfriendly.add_round()
+    sbox = unfriendly.add_sbox_component([INPUT_PLAINTEXT], [[0, 1, 2, 3]], 4, list(range(16)))
+    unfriendly.add_mix_column_component([sbox.id], [list(range(4))], 4, [[[1]], 0, 3])
+
+    assert friendly.is_two_step_trail_search_friendly() is True
+    assert unfriendly.is_two_step_trail_search_friendly() is False
+    assert SpeckBlockCipher(number_of_rounds=1).is_two_step_trail_search_friendly() is False
+
+
 def test_polynomial_system():
     tea = TeaBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=1)
     assert str(tea.polynomial_system()) == 'Polynomial Sequence with 288 Polynomials in 384 Variables'

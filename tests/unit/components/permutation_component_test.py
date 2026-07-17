@@ -213,6 +213,53 @@ def test_cp_xor_differential_wrapper_matches_cp_constraints():
     assert wrapper_constraints == cp_constraints
 
 
+def test_cp_xor_differential_first_step_constraints_for_word_permutation():
+    DummyModel = type("DummyModel", (), {"word_size": 4})
+    component = Permutation(0, 0, ["input"], [[0, 1, 2, 3, 4, 5, 6, 7]], 8, [1, 0], word_size=4)
+
+    declarations, constraints = component.cp_xor_differential_propagation_first_step_constraints(DummyModel())
+
+    assert declarations == ["array[0..1] of var 0..1: permutation_0_0;"]
+    assert constraints == [
+        "constraint permutation_0_0[0] = input[1];",
+        "constraint permutation_0_0[1] = input[0];",
+    ]
+
+
+def test_cp_xor_differential_first_step_constraints_or_mixed_input_words():
+    DummyModel = type("DummyModel", (), {"word_size": 2})
+    component = make_permutation_component()
+
+    declarations, constraints = component.cp_xor_differential_propagation_first_step_constraints(DummyModel())
+
+    assert declarations == ["array[0..1] of var 0..1: permutation_0_0;"]
+    assert constraints == [
+        "constraint permutation_0_0[0] = max([input[0], input[1]]);",
+        "constraint permutation_0_0[1] = max([input[0], input[1]]);",
+    ]
+
+
+def test_cp_xor_differential_first_step_constraints_with_multiple_input_links():
+    DummyModel = type("DummyModel", (), {"word_size": 2})
+    component = Permutation(
+        0,
+        0,
+        ["left", "right"],
+        [[0, 1], [0, 1]],
+        4,
+        [1, 0],
+        word_size=2,
+    )
+
+    declarations, constraints = component.cp_xor_differential_propagation_first_step_constraints(DummyModel())
+
+    assert declarations == ["array[0..1] of var 0..1: permutation_0_0;"]
+    assert constraints == [
+        "constraint permutation_0_0[0] = right[0];",
+        "constraint permutation_0_0[1] = left[0];",
+    ]
+
+
 def test_algebraic_polynomials():
     cipher = PermutationCipher(bit_size=4, permutation_description=[1, 3, 2, 0])
     permutation_component = cipher.component_from_id("permutation_0_0")
