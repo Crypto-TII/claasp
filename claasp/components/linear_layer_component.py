@@ -531,6 +531,12 @@ class LinearLayer(Component):
 
         return variables, constraints
 
+    def milp_wordwise_branch_number_number_of_active_sboxes_constraints(self, model):
+        output_ids = self._milp_wordwise_branch_number_active_sboxes_output_ids(model)
+        word_ids = model._resolved_input_word_ids(self) + output_ids
+
+        return model._branch_number_constraints(word_ids, model._word_branch_number(self))
+
     def milp_bitwise_deterministic_truncated_xor_differential_constraints(self, model):
         """
         Returns a list of variables and a list of constraints for linear layer

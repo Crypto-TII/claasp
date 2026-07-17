@@ -683,6 +683,13 @@ class Permutation(Component):
     def milp_xor_linear_mask_propagation_constraints(self, model):
         return self.milp_constraints(model)
 
+    def milp_wordwise_branch_number_number_of_active_sboxes_constraints(self, model):
+        output_ids = self._milp_wordwise_branch_number_active_sboxes_output_ids(model)
+
+        return self._milp_wordwise_branch_number_active_sboxes_exact_permutation_constraints(
+            model, output_ids, self._bit_perm()
+        )
+
     def milp_bitwise_deterministic_truncated_xor_differential_constraints(self, model):
         """
         Return a list of MILP variables and constraints for PERMUTATION in the bitwise

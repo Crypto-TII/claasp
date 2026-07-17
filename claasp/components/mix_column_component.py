@@ -782,6 +782,34 @@ class MixColumn(LinearLayer):
         result = variables, constraints
         return result
 
+    def milp_wordwise_branch_number_number_of_active_sboxes_constraints(self, model):
+        output_ids = self._milp_wordwise_branch_number_active_sboxes_output_ids(model)
+        if self._is_permutation_matrix():
+            return self._milp_wordwise_branch_number_active_sboxes_permutation_constraints(model, output_ids)
+
+        word_ids = model._resolved_input_word_ids(self) + output_ids
+        return model._branch_number_constraints(word_ids, model._word_branch_number(self))
+
+    def _milp_wordwise_branch_number_active_sboxes_permutation_constraints(self, model, output_ids):
+        if not self._is_permutation_matrix():
+            raise NotImplementedError(f"{self.id}: MixColumn permutation constraints require a permutation matrix")
+
+        w = model._word_variable
+        matrix = self.description[0]
+        cell_size = self.description[2]
+        if cell_size % model.word_size != 0:
+            raise NotImplementedError(f"{self.id}: MixColumn cell size is not a multiple of the word size")
+        words_per_cell = cell_size // model.word_size
+        input_ids = model._resolved_input_word_ids(self)
+        constraints = []
+        for cell_j, row in enumerate(matrix):
+            cell_k = next(i for i, value in enumerate(row) if value != 0)
+            for offset in range(words_per_cell):
+                output_id = output_ids[cell_j * words_per_cell + offset]
+                input_id = input_ids[(cell_k * words_per_cell + offset)]
+                constraints.append(w[output_id] == w[input_id])
+        return constraints
+
     def milp_bitwise_deterministic_truncated_xor_differential_constraints(self, model):
         """
         Returns a list of variables and a list of constraints for mix column component in the bitwise

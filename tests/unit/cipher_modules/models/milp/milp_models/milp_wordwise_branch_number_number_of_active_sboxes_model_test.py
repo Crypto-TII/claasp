@@ -3,6 +3,7 @@ from types import SimpleNamespace
 
 import pytest
 
+from claasp.component import Component
 from claasp.cipher_modules.models.milp.milp_models import (
     milp_wordwise_branch_number_number_of_active_sboxes_model as model_module,
 )
@@ -15,7 +16,9 @@ from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.ciphers.block_ciphers.ublock_block_cipher import UblockBlockCipher
 from claasp.ciphers.block_ciphers.ublock_single_linear_layer_block_cipher import UblockSingleLinearLayerBlockCipher
 from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
-from claasp.name_mappings import MIX_COLUMN, WORD_OPERATION
+from claasp.components.mix_column_component import MixColumn
+from claasp.components.rotate_component import Rotate
+from claasp.name_mappings import MIX_COLUMN, SBOX, WORD_OPERATION
 
 
 def test_find_lowest_number_of_active_sboxes_toyaes():
@@ -172,8 +175,8 @@ def test_wordwise_helpers_reject_unaligned_or_unsupported_cases():
         description=["AND"],
         output_bit_size=4,
     )
-    with pytest.raises(NotImplementedError, match="word operation 'AND'"):
-        milp._component_constraints(unsupported)
+    with pytest.raises(NotImplementedError, match="component type"):
+        Component.milp_wordwise_branch_number_number_of_active_sboxes_constraints(unsupported, milp)
 
 
 def test_wordwise_permutation_helpers_reject_non_word_permutations():
@@ -181,11 +184,11 @@ def test_wordwise_permutation_helpers_reject_non_word_permutations():
     milp = MilpWordwiseBranchNumberNumberOfActiveSboxesModel(cipher)
     milp.init_model_in_sage_milp_class()
 
-    rotate_right = SimpleNamespace(description=["ROTATE", 1], output_bit_size=8)
-    rotate_left = SimpleNamespace(description=["ROTATE", -1], output_bit_size=8)
+    rotate_right = Rotate(0, 0, ["plaintext"], [list(range(8))], 8, 4)
+    rotate_left = Rotate(0, 1, ["plaintext"], [list(range(8))], 8, -4)
 
-    assert milp._rotate_bit_perm(rotate_right) == [7, 0, 1, 2, 3, 4, 5, 6]
-    assert milp._rotate_bit_perm(rotate_left) == [1, 2, 3, 4, 5, 6, 7, 0]
+    assert len(rotate_right.milp_wordwise_branch_number_number_of_active_sboxes_constraints(milp)) == 2
+    assert len(rotate_left.milp_wordwise_branch_number_number_of_active_sboxes_constraints(milp)) == 2
 
     bad_permutation = SimpleNamespace(
         id="perm_0_0",
@@ -193,27 +196,25 @@ def test_wordwise_permutation_helpers_reject_non_word_permutations():
         input_bit_positions=[list(range(8))],
     )
     with pytest.raises(NotImplementedError, match="not sourced from a single input word"):
-        milp._exact_permutation_constraints(
-            bad_permutation, ["perm_0_0_0", "perm_0_0_1"], [0, 4, 1, 2, 3, 5, 6, 7]
+        Component._milp_wordwise_branch_number_active_sboxes_exact_permutation_constraints(
+            bad_permutation, milp, ["perm_0_0_0", "perm_0_0_1"], [0, 4, 1, 2, 3, 5, 6, 7]
         )
 
-    not_a_permutation_mix_column = SimpleNamespace(
-        id="mix_column_0_0",
-        type=MIX_COLUMN,
-        description=[[[1, 1], [0, 1]], 0, 4],
-        _is_permutation_matrix=lambda: False,
+    not_a_permutation_mix_column = MixColumn(
+        0, 0, ["plaintext"], [list(range(8))], 8, [[[1, 1], [0, 1]], 0, 4]
     )
     with pytest.raises(NotImplementedError, match="require a permutation matrix"):
-        milp._mix_column_permutation_constraints(not_a_permutation_mix_column, ["mix_column_0_0_0"])
+        not_a_permutation_mix_column._milp_wordwise_branch_number_active_sboxes_permutation_constraints(
+            milp, ["mix_column_0_0_0"]
+        )
 
-    bad_mix_column = SimpleNamespace(
-        id="mix_column_0_1",
-        type=MIX_COLUMN,
-        description=[[[1]], 0, 2],
-        _is_permutation_matrix=lambda: True,
+    bad_mix_column = MixColumn(
+        0, 1, ["plaintext"], [list(range(4))], 2, [[[1]], 0, 2]
     )
     with pytest.raises(NotImplementedError, match="cell size is not a multiple"):
-        milp._mix_column_permutation_constraints(bad_mix_column, ["mix_column_0_0_0"])
+        bad_mix_column._milp_wordwise_branch_number_active_sboxes_permutation_constraints(
+            milp, ["mix_column_0_1_0"]
+        )
 
 
 def test_word_branch_number_is_cached(monkeypatch):
@@ -232,3 +233,18 @@ def test_word_branch_number_is_cached(monkeypatch):
     assert milp._word_branch_number(mix_column) == 5
     assert milp._word_branch_number(mix_column) == 5
     assert len(calls) == 1
+
+
+def test_build_model_delegates_wordwise_constraints_to_components(monkeypatch):
+    cipher = ToyAESBlockCipher(word_size=4, state_size=4, number_of_rounds=1)
+    milp = MilpWordwiseBranchNumberNumberOfActiveSboxesModel(cipher)
+    milp.init_model_in_sage_milp_class()
+    monkeypatch.setattr(milp, "_word_branch_number", lambda _component: 5)
+
+    sbox_active_terms = milp.build_wordwise_branch_number_number_of_active_sboxes_model(
+        get_single_key_scenario_format_for_fixed_values(cipher)
+    )
+
+    expected_sboxes = [component for component in cipher.get_all_components() if component.type == SBOX]
+
+    assert len(sbox_active_terms) == len(expected_sboxes)

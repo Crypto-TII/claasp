@@ -25,16 +25,7 @@ from claasp.cipher_modules.component_analysis_tests import (
 from claasp.cipher_modules.models.milp.milp_model import MilpModel
 from claasp.cipher_modules.models.milp.solvers import SOLVER_DEFAULT
 from claasp.cipher_modules.models.utils import convert_solver_solution_to_dictionary
-from claasp.name_mappings import (
-    CIPHER_OUTPUT,
-    CONSTANT,
-    INTERMEDIATE_OUTPUT,
-    LINEAR_LAYER,
-    MIX_COLUMN,
-    PERMUTATION_COMPONENT,
-    SBOX,
-    WORD_OPERATION,
-)
+from claasp.name_mappings import MIX_COLUMN, SBOX
 
 MILP_WORDWISE_BRANCH_NUMBER_ACTIVE_SBOXES = "wordwise_branch_number_number_of_active_sboxes"
 
@@ -46,12 +37,6 @@ class MilpWordwiseBranchNumberNumberOfActiveSboxesModel(MilpModel):
     AES): one binary "is this word's difference nonzero" variable per word, XOR/linear-layer relations enforced
     via branch-number inequalities rather than bit-level DDT tables, and word-aligned permutations (bit
     rotations, uBlock-style word permutations) enforced via exact word equality.
-
-    The constraints are kept in this model rather than distributed across ``claasp.components`` because they are
-    not alternative MILP propagation constraints for each component's real bit-level semantics. They are a
-    model-specific wordwise abstraction: the same component can be represented by an exact word permutation, a
-    branch-number inequality, or rejected as unsupported depending on the cipher's S-box-derived word size and
-    this model's active-word relaxation.
 
     This is a different, and for permutation-heavy or ARX-mixing ciphers much cheaper, model than
     :py:class:`~MilpXorDifferentialNumberOfActiveSboxesModel`, which is bit-exact and DDT-based throughout and
@@ -227,124 +212,6 @@ class MilpWordwiseBranchNumberNumberOfActiveSboxesModel(MilpModel):
         self._linear_layer_branch_number_cache[cache_key] = branch_num
         return branch_num
 
-    def _component_constraints(self, component):
-        output_ids = self._own_word_ids(component.id, component.output_bit_size)
-
-        if component.type == CONSTANT:
-            return self._constant_constraints(output_ids)
-        if component.type == SBOX:
-            return self._sbox_constraints(component, output_ids)
-        if component.type in (INTERMEDIATE_OUTPUT, CIPHER_OUTPUT):
-            return self._pass_through_constraints(component, output_ids, "pass-through")
-        if component.type == PERMUTATION_COMPONENT:
-            return self._exact_permutation_constraints(component, output_ids, component._bit_perm())
-        if component.type in (MIX_COLUMN, LINEAR_LAYER):
-            return self._linear_component_constraints(component, output_ids)
-        if component.type == WORD_OPERATION:
-            return self._word_operation_constraints(component, output_ids)
-
-        raise NotImplementedError(f"{component.id}: component type '{component.type}' is not supported by this model")
-
-    def _constant_constraints(self, output_ids):
-        w = self._word_variable
-        return [w[output_id] == 0 for output_id in output_ids]
-
-    def _sbox_constraints(self, component, output_ids):
-        w = self._word_variable
-        input_ids = self._resolved_input_word_ids(component)
-        if len(input_ids) != 1 or len(output_ids) != 1:
-            raise NotImplementedError(f"{component.id}: S-box input/output size does not match the word size")
-        # A bijective S-box maps a zero input difference to a zero output difference, and (by injectivity)
-        # a nonzero input difference to a nonzero output difference -- always, regardless of the DDT.
-        return [w[output_ids[0]] == w[input_ids[0]]]
-
-    def _pass_through_constraints(self, component, output_ids, label):
-        w = self._word_variable
-        input_ids = self._resolved_input_word_ids(component)
-        if len(input_ids) != len(output_ids):
-            raise NotImplementedError(f"{component.id}: {label} component word count mismatch")
-        return [w[output_id] == w[input_id] for output_id, input_id in zip(output_ids, input_ids)]
-
-    def _linear_component_constraints(self, component, output_ids):
-        if component.type == MIX_COLUMN and component._is_permutation_matrix():
-            return self._mix_column_permutation_constraints(component, output_ids)
-        return self._branch_number_constraints(
-            self._resolved_input_word_ids(component) + output_ids,
-            self._word_branch_number(component),
-        )
-
-    def _word_operation_constraints(self, component, output_ids):
-        operation = component.description[0]
-        if operation == "XOR":
-            return self._xor_constraints(component, output_ids)
-        if operation == "NOT":
-            return self._pass_through_constraints(component, output_ids, "NOT")
-        if operation == "ROTATE":
-            return self._exact_permutation_constraints(component, output_ids, self._rotate_bit_perm(component))
-        raise NotImplementedError(f"{component.id}: word operation '{operation}' is not supported by this model")
-
-    def _xor_constraints(self, component, output_ids):
-        # A component's input_id_links/input_bit_positions entries do not necessarily correspond 1:1 to XOR
-        # operands: several entries can concatenate into a single, wider operand (e.g. two 64-bit halves XORed
-        # against one 128-bit round key). The true operand count is description[1]; operand o's words are the
-        # o-th chunk of len(output_ids) words in the flattened input word list.
-        number_of_operands = component.description[1]
-        flat_input_ids = self._flat_input_word_ids(component)
-        words_per_operand = len(output_ids)
-        if len(flat_input_ids) != number_of_operands * words_per_operand * self._word_size:
-            raise NotImplementedError(f"{component.id}: XOR input word count does not match operand count x output size")
-        operand_word_groups = []
-        for o in range(number_of_operands):
-            operand_bits = flat_input_ids[o * words_per_operand * self._word_size : (o + 1) * words_per_operand * self._word_size]
-            operand_word_groups.append([operand_bits[j * self._word_size] for j in range(words_per_operand)])
-        constraints = []
-        for j in range(len(output_ids)):
-            group_words = [operand_words[j] for operand_words in operand_word_groups] + [output_ids[j]]
-            constraints += self._branch_number_constraints(group_words, 2)
-        return constraints
-
-    def _rotate_bit_perm(self, component):
-        rotation_amount = abs(component.description[1])
-        input_len = component.output_bit_size
-        if component.description[1] == rotation_amount:
-            return [(i - rotation_amount) % input_len for i in range(input_len)]
-        return [(i + rotation_amount) % input_len for i in range(input_len)]
-
-    def _exact_permutation_constraints(self, component, output_ids, bit_perm):
-        w = self._word_variable
-        flat_input_ids = self._flat_input_word_ids(component)
-        constraints = []
-        for j, output_id in enumerate(output_ids):
-            source_words = {flat_input_ids[bit_perm[j * self._word_size + offset]] for offset in range(self._word_size)}
-            if len(source_words) != 1:
-                raise NotImplementedError(f"{component.id}: output word {j} is not sourced from a single input word")
-            constraints.append(w[output_id] == w[source_words.pop()])
-        return constraints
-
-    def _mix_column_permutation_constraints(self, component, output_ids):
-        if component.type != MIX_COLUMN or not component._is_permutation_matrix():
-            raise NotImplementedError(f"{component.id}: MixColumn permutation constraints require a permutation matrix")
-
-        w = self._word_variable
-        matrix = component.description[0]
-        cell_size = component.description[2]
-        if cell_size % self._word_size != 0:
-            raise NotImplementedError(f"{component.id}: MixColumn cell size is not a multiple of the word size")
-        words_per_cell = cell_size // self._word_size
-        # _resolved_input_word_ids (one id per WORD) here, not _flat_input_word_ids (one id per BIT, with
-        # each word's id repeated word_size times) -- indexing the latter with word-granularity offsets
-        # like cell_k * words_per_cell + offset reads from the wrong, much-too-narrow range whenever
-        # words_per_cell > 1, silently collapsing most of the permutation onto a handful of source words.
-        input_ids = self._resolved_input_word_ids(component)
-        constraints = []
-        for cell_j, row in enumerate(matrix):
-            cell_k = next(i for i, value in enumerate(row) if value != 0)
-            for offset in range(words_per_cell):
-                output_id = output_ids[cell_j * words_per_cell + offset]
-                input_id = input_ids[(cell_k * words_per_cell + offset)]
-                constraints.append(w[output_id] == w[input_id])
-        return constraints
-
     def _add_fixed_variable_constraint(self, fixed_variable):
         mip = self._model
         w = self._word_variable
@@ -390,7 +257,7 @@ class MilpWordwiseBranchNumberNumberOfActiveSboxesModel(MilpModel):
 
         sbox_active_terms = []
         for component in self._cipher.get_all_components():
-            for constraint in self._component_constraints(component):
+            for constraint in component.milp_wordwise_branch_number_number_of_active_sboxes_constraints(self):
                 mip.add_constraint(constraint)
             if component.type == SBOX:
                 sbox_active_terms.append(w[self._own_word_ids(component.id, component.output_bit_size)[0]])
