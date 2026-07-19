@@ -787,8 +787,12 @@ class MixColumn(LinearLayer):
         if self._is_permutation_matrix():
             return self._milp_wordwise_branch_number_active_sboxes_permutation_constraints(model, output_ids)
 
-        word_ids = model._resolved_input_word_ids(self) + output_ids
-        return model._branch_number_constraints(word_ids, model._word_branch_number(self))
+        input_ids = model._resolved_input_word_ids(self)
+        branch_number = model._word_branch_number(self)
+        if model._is_invertible_linear_map(self):
+            return model._invertible_linear_branch_number_constraints(input_ids, output_ids, branch_number)
+
+        return model._branch_number_constraints(input_ids + output_ids, branch_number)
 
     def _milp_wordwise_branch_number_active_sboxes_permutation_constraints(self, model, output_ids):
         if not self._is_permutation_matrix():

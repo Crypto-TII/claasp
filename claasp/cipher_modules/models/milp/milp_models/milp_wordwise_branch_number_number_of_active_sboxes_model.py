@@ -17,6 +17,9 @@
 
 import time
 
+from sage.matrix.constructor import Matrix
+from sage.rings.finite_rings.finite_field_constructor import FiniteField as GF
+
 from claasp.cipher_modules.component_analysis_tests import (
     compute_branch_number_from_field_matrix_with_minizinc,
     compute_word_branch_number_from_binary_matrix_with_minizinc,
@@ -135,6 +138,27 @@ class MilpWordwiseBranchNumberNumberOfActiveSboxesModel(MilpModel):
         constraints = [sum(w[word_id] for word_id in word_ids) >= branch_num * d]
         constraints += [d >= w[word_id] for word_id in word_ids]
         return constraints
+
+    def _invertible_linear_branch_number_constraints(self, input_word_ids, output_word_ids, branch_num):
+        constraints = self._branch_number_constraints(input_word_ids + output_word_ids, branch_num)
+        d = self._binary_variable[f"active_{'_'.join(input_word_ids + output_word_ids)}"]
+        constraints.append(sum(self._word_variable[word_id] for word_id in input_word_ids) >= d)
+        constraints.append(sum(self._word_variable[word_id] for word_id in output_word_ids) >= d)
+        return constraints
+
+    def _is_invertible_linear_map(self, component):
+        if component.input_bit_size != component.output_bit_size:
+            return False
+
+        if component.type == MIX_COLUMN:
+            field_matrix, polynomial, cell_word_size = component.description
+            matrix, _ = instantiate_matrix_over_correct_field(
+                field_matrix, int(polynomial), int(cell_word_size), component.input_bit_size, component.output_bit_size
+            )
+        else:
+            matrix = Matrix(GF(2), component.description)
+
+        return matrix.is_square() and matrix.rank() == matrix.nrows()
 
     def _component_matrix_cache_key(self, component):
         # mix_column stores description as [word_matrix, rotation, word_size] (rotation/word_size are plain

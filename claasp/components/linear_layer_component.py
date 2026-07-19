@@ -533,9 +533,12 @@ class LinearLayer(Component):
 
     def milp_wordwise_branch_number_number_of_active_sboxes_constraints(self, model):
         output_ids = self._milp_wordwise_branch_number_active_sboxes_output_ids(model)
-        word_ids = model._resolved_input_word_ids(self) + output_ids
+        input_ids = model._resolved_input_word_ids(self)
+        branch_number = model._word_branch_number(self)
+        if model._is_invertible_linear_map(self):
+            return model._invertible_linear_branch_number_constraints(input_ids, output_ids, branch_number)
 
-        return model._branch_number_constraints(word_ids, model._word_branch_number(self))
+        return model._branch_number_constraints(input_ids + output_ids, branch_number)
 
     def milp_bitwise_deterministic_truncated_xor_differential_constraints(self, model):
         """

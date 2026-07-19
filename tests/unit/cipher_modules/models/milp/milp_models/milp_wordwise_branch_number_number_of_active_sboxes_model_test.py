@@ -127,20 +127,19 @@ def test_find_lowest_number_of_active_sboxes_ublock_single_linear_layer_rounds_1
 
 def test_find_lowest_number_of_active_sboxes_ublock_single_linear_layer_round_3_is_still_a_loose_lower_bound():
     # Residual limitation, not a bug: consolidating each round's diffusion into a single linear-layer
-    # component (see the rounds-1-and-2 test above) fixes the *within-a-round* looseness, but each round's
-    # linear_layer is still treated as an independent, memoryless branch-number relation -- the model has no
-    # way to know that reusing the same cancellation pattern across multiple consecutive (structurally
-    # identical) rounds is implausible. So the reported bound plateaus at 8 from round 2 onward, rather than
-    # growing to the paper's 13, 24, 30, ... A tighter bound would need a relation spanning multiple rounds
-    # at once (e.g. the branch number of two or more consecutive linear layers combined), which is not
-    # implemented here.
+    # component (see the rounds-1-and-2 test above) fixes the *within-a-round* looseness. The model also
+    # enforces nonzero input and output activity for invertible linear maps. This improves the round-3 lower
+    # bound from 8 to 9, but it is still not the paper's true 13: each linear_layer is still treated as an
+    # independent, memoryless branch-number relation, so the model cannot rule out impossible active-word
+    # patterns across consecutive structurally identical rounds. A tighter bound would need a relation spanning
+    # multiple rounds at once (e.g. the branch number of two or more consecutive linear layers combined).
     cipher = UblockSingleLinearLayerBlockCipher(number_of_rounds=3, use_mix_column=False)
     milp = MilpWordwiseBranchNumberNumberOfActiveSboxesModel(cipher)
     fixed_variables = get_single_key_scenario_format_for_fixed_values(cipher)
 
     solution = milp.find_lowest_number_of_active_sboxes(fixed_variables)
 
-    assert int(round(float(solution["total_weight"]))) == 8
+    assert int(round(float(solution["total_weight"]))) == 9
 
 
 def test_init_model_requires_uniform_sbox_word_size():
