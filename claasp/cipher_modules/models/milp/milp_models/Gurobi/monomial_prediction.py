@@ -1488,7 +1488,7 @@ class MilpMonomialPredictionModel:
             sage: cipher = SimonBlockCipher(number_of_rounds=1) # doctest: +SKIP
             sage: from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel # doctest: +SKIP
             sage: milp = MilpMonomialPredictionModel(cipher) # doctest: +SKIP
-            sage: milp.find_anf_of_specific_output_bit(0) # doctest: +SKIP
+            sage: anf = milp.find_anf_of_specific_output_bit(0) # doctest: +SKIP
             sage: R = milp.get_boolean_polynomial_ring() # doctest: +SKIP
             sage: anf == R("p1*p8 + p2 + p16 + k48") # doctest: +SKIP
             ...
