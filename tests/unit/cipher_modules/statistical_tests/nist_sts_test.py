@@ -278,10 +278,7 @@ class TestNISTTests:
             assert isinstance(result, dict)
         except ValueError:
             # It's acceptable to raise an error for invalid input
-            return
-
-        # If it doesn't raise, it should return a valid dict
-        assert isinstance(result, dict)
+            pass
 
     def test_deterministic_behavior(self):
         """Test that same input produces same output (deterministic)."""
