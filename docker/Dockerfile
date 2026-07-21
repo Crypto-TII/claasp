@@ -119,7 +119,7 @@ RUN sage -pip install bitstring==4.0.1 \
     pygments==2.12.0 \
     pytest-benchmark==4.0.0 \
     pytest-cov==4.0.0 \
-    pytest-isolate==0.0.11 \
+    pytest-isolate==0.0.14 \
     pytest-xdist==3.2.0 \
     pytest==7.2.1 \
     ruff==0.15.2 \
