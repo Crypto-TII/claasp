@@ -76,14 +76,18 @@ def test_algebraic_tests():
                                   'max_degree_of_equations': [2],
                                   'test_passed': [True]}}
 
+<<<<<<< HEAD
     aes = ToyAESBlockCipher(word_size=4, state_size=2, number_of_rounds=1)
+=======
+    aes = ToyAESBlockCipher(word_size=2, state_size=2, number_of_rounds=1)
+>>>>>>> 5beba046 (Use smaller AES algebraic test fixture)
     d = AlgebraicTests(aes).algebraic_tests(5)
     compare_result = {'input_parameters': {'cipher': aes,
                                            'timeout_in_seconds': 5,
                                            'test_name': 'algebraic_tests'},
-                      'test_results': {'number_of_variables': [104],
-                                       'number_of_equations': [174],
-                                       'number_of_monomials': [272],
+                      'test_results': {'number_of_variables': [52],
+                                       'number_of_equations': [66],
+                                       'number_of_monomials': [88],
                                        'max_degree_of_equations': [2],
                                        'test_passed': [False]}}
 
