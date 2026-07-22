@@ -1,20 +1,20 @@
-from claasp.ciphers.permutations.gift_permutation import GiftPermutation
+from claasp.ciphers.block_ciphers.gift_sbox_block_cipher import GiftSboxBlockCipher
 
 
-def test_gift_permutation():
-    gift = GiftPermutation()
-    assert gift.family_name == 'gift'
-    assert gift.type == 'permutation'
+def test_gift_sbox_block_cipher():
+    gift = GiftSboxBlockCipher()
+    assert gift.family_name == 'gift_sbox'
+    assert gift.type == 'block_cipher'
     assert gift.number_of_rounds == 40
-    assert gift.id == 'gift_p128_k128_o128_r40'
-    assert gift.component_from(0, 0).id == 'and_0_0'
+    assert gift.id == 'gift_sbox_p128_k128_o128_r40'
+    assert gift.component_from(0, 0).id == 'sbox_0_0'
 
-    gift = GiftPermutation(number_of_rounds=4)
+    gift = GiftSboxBlockCipher(number_of_rounds=4)
     assert gift.number_of_rounds == 4
-    assert gift.id == 'gift_p128_k128_o128_r4'
+    assert gift.id == 'gift_sbox_p128_k128_o128_r4'
     assert gift.component_from(3, 0).id == 'rot_3_0'
 
-    gift = GiftPermutation(number_of_rounds=40)
+    gift = GiftSboxBlockCipher(number_of_rounds=40)
     key = 0x000102030405060708090A0B0C0D0E0F
     plaintext = 0x000102030405060708090A0B0C0D0E0F
     ciphertext = 0xA94AF7F9BA181DF9B2B00EB7DBFA93DF
