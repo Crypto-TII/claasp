@@ -114,3 +114,5 @@ copyright: install
 
 local-installation:
 	./configure.sh
+
+
