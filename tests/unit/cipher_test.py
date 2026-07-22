@@ -77,9 +77,9 @@ def test_algebraic_tests():
                                   'test_passed': [True]}}
 
     aes = ToyAESBlockCipher(word_size=4, state_size=2, number_of_rounds=1)
-    d = AlgebraicTests(aes).algebraic_tests(5)
+    d = AlgebraicTests(aes).algebraic_tests(10)
     compare_result = {'input_parameters': {'cipher': aes,
-                                           'timeout_in_seconds': 5,
+                                           'timeout_in_seconds': 10,
                                            'test_name': 'algebraic_tests'},
                       'test_results': {'number_of_variables': [104],
                                        'number_of_equations': [174],
