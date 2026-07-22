@@ -46,7 +46,10 @@ uint128_t bitstring_to_uint(BitString *input) {
     uint16_t input_byte_size = byte_size(input -> bit_size);
 
     for (int i = 0; i < input_byte_size; i++)
-        output_value |= input -> list[input_byte_size - 1 - i] << (i * 8);
+        output_value |= (uint128_t)(input -> list[input_byte_size - 1 - i]) << (i * 8);
+
+    if (input -> bit_size % 8 != 0)
+        output_value &= (((uint128_t)1) << input -> bit_size) - 1;
 
     return output_value;
 }
