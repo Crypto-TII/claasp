@@ -48,12 +48,10 @@ from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
 from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
 from claasp.ciphers.toys.toyspn1 import ToySPN1
 from claasp.name_mappings import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT, PERMUTATION
+from claasp.cipher_modules import code_generator
 
 EVALUATION_PY = 'evaluation.py'
 DICTIONARY_EXAMPLE_PY = "claasp/ciphers/dictionary_example.py"
-BIT_BASED_C_FUNCTIONS_O_FILE = 'claasp/cipher_modules/generic_bit_based_c_functions.o'
-FANCY_EVALUATE_O_FILE = 'claasp/cipher_modules/fancy_block_cipher_p24_k24_o24_r20_evaluate.o'
-FANCY_EVALUATE_C_FILE = 'claasp/cipher_modules/fancy_block_cipher_p24_k24_o24_r20_evaluate.c'
 
 
 def test_algebraic_tests():
@@ -97,16 +95,17 @@ def test_algebraic_tests_toy_aes():
 
 
 def test_delete_generated_evaluate_c_shared_library():
-    file_c = open(FANCY_EVALUATE_C_FILE, 'a')
-    file_o = open(FANCY_EVALUATE_O_FILE, 'a')
-    file_generic = open(BIT_BASED_C_FUNCTIONS_O_FILE, 'a')
-    file_c.close()
-    file_o.close()
-    file_generic.close()
-    FancyBlockCipher().delete_generated_evaluate_c_shared_library()
-    assert os.path.exists(FANCY_EVALUATE_C_FILE) is False
-    assert os.path.exists(FANCY_EVALUATE_O_FILE) is False
-    assert os.path.exists(BIT_BASED_C_FUNCTIONS_O_FILE) is False
+    fancy = FancyBlockCipher()
+    base = code_generator.TII_C_LIB_PATH + code_generator.evaluate_c_name(fancy)
+    c_file = base + ".c"
+    o_file = base + ".o"
+    generic_o_file = code_generator.TII_C_LIB_PATH + code_generator.generic_c_functions_o_name(fancy)
+    for path in (c_file, o_file, generic_o_file):
+        open(path, 'a').close()
+    fancy.delete_generated_evaluate_c_shared_library()
+    assert os.path.exists(c_file) is False
+    assert os.path.exists(o_file) is False
+    assert os.path.exists(generic_o_file) is False
 
 
 def test_evaluate_using_c():
