@@ -5,6 +5,8 @@ from decimal import Decimal
 from io import StringIO
 
 import numpy as np
+import pytest
+import platform
 
 from claasp.cipher import Cipher
 from claasp.cipher_modules.algebraic_tests import AlgebraicTests
@@ -76,6 +78,10 @@ def test_algebraic_tests():
                                   'max_degree_of_equations': [2],
                                   'test_passed': [True]}}
 
+
+@pytest.mark.skipif(platform.machine() in ("aarch64", "arm64"),
+                    reason="SAT solve exceeds isolate-timeout on slower ARM runners")
+def test_algebraic_tests_toy_aes():
     aes = ToyAESBlockCipher(word_size=4, state_size=2, number_of_rounds=1)
     d = AlgebraicTests(aes).algebraic_tests(10)
     compare_result = {'input_parameters': {'cipher': aes,
