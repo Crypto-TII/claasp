@@ -947,7 +947,7 @@ class MznModel:
     def solve_for_ARX(
         self,
         solver_name=None,
-        timeout_in_seconds_=30,
+        timeout_in_seconds_=60,
         processes_=4,
         nr_solutions_=None,
         random_seed_=None,
