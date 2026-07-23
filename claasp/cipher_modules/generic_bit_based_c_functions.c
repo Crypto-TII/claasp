@@ -695,7 +695,7 @@ BitString* left_shift(BitString *b, uint16_t shift_amount) {
     uint16_t last_shift = shift_amount % 8, bytes_to_shift = shift_amount / 8;
     uint8_t bits_to_shift, shifted_bits = 0;
 
-    for (int i = byte_size(b -> bit_size) - bytes_to_shift; i >= 0; i--) {
+    for (int i = byte_size(b -> bit_size) - bytes_to_shift - 1; i >= 0; i--) {
         bits_to_shift = b -> list[i + bytes_to_shift] >> (8 - last_shift);
         result -> list[i] = (b -> list[i + bytes_to_shift] << last_shift) + shifted_bits;
         shifted_bits = bits_to_shift;
@@ -723,7 +723,7 @@ BitString* right_rotate(BitString *b, uint16_t rotation_amount) {
     uint16_t last_shift = (b -> bit_size - rotation_amount) % 8, bytes_to_shift = (b -> bit_size - rotation_amount) / 8;
     uint8_t bits_to_shift, shifted_bits = 0;
 
-    for (int i = byte_size(b -> bit_size) - bytes_to_shift; i >= 0; i--) {
+    for (int i = byte_size(b -> bit_size) - bytes_to_shift - 1; i >= 0; i--) {
         bits_to_shift = b -> list[i + bytes_to_shift] >> (8 - last_shift);
         result -> list[i] = (b -> list[i + bytes_to_shift] << last_shift) + shifted_bits;
         shifted_bits = bits_to_shift;
@@ -752,7 +752,7 @@ BitString* left_rotate(BitString *b, uint16_t rotation_amount) {
     uint16_t last_shift = rotation_amount % 8, bytes_to_shift = rotation_amount / 8;
     uint8_t bits_to_shift, shifted_bits = 0;
 
-    for (int i = byte_size(b -> bit_size) - bytes_to_shift; i >= 0; i--) {
+    for (int i = byte_size(b -> bit_size) - bytes_to_shift - 1; i >= 0; i--) {
         bits_to_shift = b -> list[i + bytes_to_shift] >> (8 - last_shift);
         result -> list[i] = (b -> list[i + bytes_to_shift] << last_shift) + shifted_bits;
         shifted_bits = bits_to_shift;
