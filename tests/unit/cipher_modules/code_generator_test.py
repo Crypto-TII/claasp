@@ -1,5 +1,11 @@
+import os
+
 from claasp.cipher_modules.code_generator import (
+    TII_C_LIB_PATH,
+    delete_generated_evaluate_c_shared_library,
+    evaluate_c_name,
     generate_bit_based_vectorized_python_code_string,
+    generate_evaluate_c_code_shared_library,
     generic_c_functions_o_name,
     get_padding_component_bit_based_c_code,
     process_tag,
@@ -54,4 +60,24 @@ def test_get_padding_component_bit_based_c_code():
 
     code_verbose = "".join(get_padding_component_bit_based_c_code(component, verbosity=True))
     assert "// print_values" in code_verbose                  # verbosity=True -> print_values called
+
+
+def test_generate_evaluate_c_code_shared_library_word_based():
+    # XTea is power-of-2 word-based -> exercises the `if cipher_word_size:` branch
+    xtea = XTeaBlockCipher(number_of_rounds=2)
+    assert xtea.is_power_of_2_word_based()
+
+    c_file = TII_C_LIB_PATH + evaluate_c_name(xtea) + ".c"
+    o_file = TII_C_LIB_PATH + evaluate_c_name(xtea) + ".o"
+    generic_o = TII_C_LIB_PATH + generic_c_functions_o_name(xtea)
+    try:
+        generate_evaluate_c_code_shared_library(xtea, intermediate_output=False, verbosity=False)
+
+        assert os.path.exists(c_file)
+        assert os.path.exists(o_file)
+        assert os.path.exists(generic_o)
+        with open(c_file) as generated_c:
+            assert 'generic_word_based_c_functions.h' in generated_c.read()
+    finally:
+        delete_generated_evaluate_c_shared_library(xtea)
 
