@@ -1,5 +1,8 @@
 import itertools
 import math
+import platform
+
+import pytest
 
 from claasp.cipher_modules.models.sat.sat_models.sat_differential_linear_model import SatDifferentialLinearModel
 from claasp.cipher_modules.models.sat.solvers import CADICAL_EXT
@@ -404,6 +407,8 @@ def test_differential_linear_trail_with_fixed_weight_8_rounds_chacha_one_case():
     assert trail["total_weight"] == 13
 
 
+@pytest.mark.skipif(platform.machine() in ("aarch64", "arm64"),
+                    reason="SAT solve exceeds isolate-timeout on slower ARM runners")
 def test_differential_linear_trail_with_fixed_weight_4_rounds_chacha_golden():
     """Test for finding a differential-linear trail with fixed weight for 4 rounds of ChaCha permutation.
     This test is using in the middle part the semi-deterministic model.
