@@ -39,6 +39,7 @@ from claasp.cipher_modules.models.milp.utils.milp_name_mappings import (
     MILP_WORDWISE_DETERMINISTIC_TRUNCATED,
     MILP_WORDWISE_IMPOSSIBLE,
     MILP_WORDWISE_IMPOSSIBLE_AUTO,
+    MILP_XOR_DIFFERENTIAL_NUMBER_OF_ACTIVE_SBOXES,
     MILP_XOR_DIFFERENTIAL_OBJECTIVE,
 )
 from claasp.name_mappings import SBOX
@@ -106,6 +107,11 @@ def _parse_external_solver_output(model, solver_specs, model_type, solution_file
                 i for i in objective_variables.keys() if objective_variables[i] > 0 and "inconsistent" in i
             ][0]
             objective_value = "_".join(inconsistent_component_var.split("_")[:-3])
+        elif model_type == MILP_XOR_DIFFERENTIAL_NUMBER_OF_ACTIVE_SBOXES:
+            # objective is a plain count of active S-boxes, not a weight_precision-scaled probability
+            components_variables = _get_variables_value(model.binary_variable, read_file)
+            objective_variables = _get_variables_value(model.integer_variable, read_file)
+            objective_value = objective_variables[MILP_XOR_DIFFERENTIAL_OBJECTIVE]
         else:
             components_variables = _get_variables_value(model.binary_variable, read_file)
             objective_variables = _get_variables_value(model.integer_variable, read_file)
