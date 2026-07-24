@@ -1,4 +1,4 @@
-name: Build and push Intel and M1 images for testing
+name: Build and push Intel
 on:
   push:
     branches:
@@ -55,16 +55,3 @@ jobs:
         target: claasp-base
         cache-from: type=gha,scope=claasp-base
         cache-to: type=gha,scope=claasp-base,mode=max
-    
-    - name: Build & Push (m1)
-      uses: docker/build-push-action@v4
-      id: built-image-m1
-      with:
-        context: .
-        file: ./docker/Dockerfile
-        push: true
-        platforms: linux/arm64
-        tags: tiicrc/claasp-m1-base:${{ steps.tag.outputs.tag }}
-        target: claasp-base
-        cache-from: type=gha,scope=claasp-base-m1
-        cache-to: type=gha,scope=claasp-base-m1,mode=max

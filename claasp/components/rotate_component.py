@@ -520,6 +520,19 @@ class Rotate(Component):
     def milp_xor_differential_propagation_constraints(self, model):
         return self.milp_constraints(model)
 
+    def milp_wordwise_branch_number_number_of_active_sboxes_constraints(self, model):
+        output_ids = self._milp_wordwise_branch_number_active_sboxes_output_ids(model)
+        rotation_amount = abs(self.description[1])
+        input_len = self.output_bit_size
+        if self.description[1] == rotation_amount:
+            bit_perm = [(i - rotation_amount) % input_len for i in range(input_len)]
+        else:
+            bit_perm = [(i + rotation_amount) % input_len for i in range(input_len)]
+
+        return self._milp_wordwise_branch_number_active_sboxes_exact_permutation_constraints(
+            model, output_ids, bit_perm
+        )
+
     def milp_xor_linear_mask_propagation_constraints(self, model):
         """
         Return a list of variables and a list of constraints for ROTATE operation in MILP XOR LINEAR model.
