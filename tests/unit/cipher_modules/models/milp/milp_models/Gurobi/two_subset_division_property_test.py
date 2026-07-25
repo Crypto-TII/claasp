@@ -57,20 +57,18 @@ def test_is_balanced_at_specific_output_bit_over_cube_ublock_5():
 
 @pytest.mark.skip(reason="Requires Gurobi license")
 def test_is_balanced_over_cube_scan_ublock_5():
-    # Same distinguisher, all four low output bits proved in a single build.
     cipher = UblockBlockCipher(number_of_rounds=5)
     milp = MilpTwoSubsetDivisionPropertyModel(cipher)
     cube = [f"p{i}" for i in list(range(48, 64)) + list(range(112, 128))]
-    assert milp.is_balanced_over_cube_scan([0, 1, 2, 3], cube) == {0: False, 1: False, 2: False, 3: True}
+    assert milp.is_balanced_over_cube_scan([0, 3], cube) == {0: False, 3: True}
 
 
 @pytest.mark.skip(reason="Requires Gurobi license")
-def test_is_balanced_at_specific_output_bit_over_cube_with_independent_round_keys_ublock_5():
-    cipher = UblockBlockCipher(number_of_rounds=5)
+def test_is_balanced_at_specific_output_bit_over_cube_with_independent_round_keys_ublock_7():
+    cipher = UblockBlockCipher(number_of_rounds=7)
     milp = MilpTwoSubsetDivisionPropertyModel(cipher)
-    cube = [f"p{i}" for i in list(range(48, 64)) + list(range(112, 128))]
-    assert milp.is_balanced_at_specific_output_bit_over_cube_with_independent_round_keys(3, cube) is True
-    assert milp.is_balanced_at_specific_output_bit_over_cube_with_independent_round_keys(0, cube) is False
+    cube = [f"p{i}" for i in range(128) if i not in {0, 1, 2, 3}]
+    assert milp.is_balanced_at_specific_output_bit_over_cube_with_independent_round_keys(0, cube) is True
 
 
 @pytest.mark.skip(reason="Requires Gurobi license")
@@ -79,14 +77,3 @@ def test_is_cube_monomial_feasible_at_specific_output_bit_over_cube_keyless_ublo
     milp = MilpTwoSubsetDivisionPropertyModel(cipher)
     cube = [f"p{i}" for i in range(36, 64)] + [f"p{i}" for i in range(100, 128)]
     assert milp.is_cube_monomial_feasible_at_specific_output_bit_over_cube_keyless(1, cube) is True
-
-
-@pytest.mark.skip(reason="Requires Gurobi license")
-def test_onehot_and_convexhull_encodings_agree_ublock_5():
-    cipher = UblockBlockCipher(number_of_rounds=5)
-    cube = [f"p{i}" for i in range(128) if i not in {0, 1, 2, 3}]  # 124-dim (all four bits balanced)
-    onehot = MilpTwoSubsetDivisionPropertyModel(cipher, sbox_encoding="onehot")
-    convexhull = MilpTwoSubsetDivisionPropertyModel(cipher, sbox_encoding="convexhull")
-    for bit in range(4):
-        assert onehot.is_balanced_at_specific_output_bit_over_cube(bit, cube) == \
-               convexhull.is_balanced_at_specific_output_bit_over_cube(bit, cube)

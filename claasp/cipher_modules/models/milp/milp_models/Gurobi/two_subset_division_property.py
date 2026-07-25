@@ -232,8 +232,10 @@ class MilpTwoSubsetDivisionPropertyModel(MilpMonomialPredictionModel):
     ):
         r"""
         Sound balance check with the key schedule removed but the round-key
-        injections kept (2SDP sub-model). The two-subset division property is invariant under XOR with a constant, so a verdict proved keyless holds for every round key. A ``False`` result therefore
-        proves the output bit balanced for all keys.
+        injections kept (2SDP sub-model). The trail set is a superset of the real
+        cipher's, so an INFEASIBLE (balanced) result, returned as ``True``, still
+        proves the real bit balanced for every key.
+
         INPUT:
         - ``output_bit_index`` -- **integer**
         - ``cube`` -- **list of strings**
