@@ -524,6 +524,12 @@ class Constant(Component):
 
         return variables, constraints
 
+    def milp_wordwise_branch_number_number_of_active_sboxes_constraints(self, model):
+        w = model._word_variable
+        output_ids = self._milp_wordwise_branch_number_active_sboxes_output_ids(model)
+
+        return [w[output_id] == 0 for output_id in output_ids]
+
     def milp_xor_linear_mask_propagation_constraints(self, model):
         """
         Return a list of variables and a list of constraints for CONSTANT component for MILP xor linear.

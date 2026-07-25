@@ -100,17 +100,17 @@ class AlgebraicModel:
             sage: from claasp.ciphers.toys.toyspn1 import ToySPN1
             sage: toyspn = ToySPN1()
             sage: algebraic = AlgebraicModel(toyspn)
-            sage: algebraic.is_algebraically_secure(30)
+            sage: algebraic.is_algebraically_secure(60)
             False
         """
-        from cysignals.alarm import alarm, cancel_alarm
+        from cysignals.alarm import AlarmInterrupt, alarm, cancel_alarm
 
         try:
             alarm(timeout)
             self.polynomial_system().groebner_basis()
             cancel_alarm()
             result = False
-        except InterruptedError:
+        except AlarmInterrupt:
             result = True
 
         return result

@@ -44,11 +44,38 @@ tii_dir_path = os.path.dirname(tii_path)
 TII_C_LIB_PATH = f'{tii_dir_path}/cipher_modules/'
 
 
+def process_tag():
+    """Unique-per-OS-process suffix for generated C artifacts.
+
+    ``evaluate_using_c`` writes/compiles/links/deletes files under the shared
+    ``TII_C_LIB_PATH``. Under ``pytest -n=... --isolate`` many worker/forked
+    processes do this concurrently; with fixed file names one process links a
+    ``.o`` another is still compiling (or has just ``rm``-ed) -> a corrupt binary
+    and non-deterministic results (observed intermittently, esp. on slower arches
+    where the compile window is wider). Tagging every artifact with the PID gives
+    each process private files, so there is nothing to race over.
+    """
+    return str(os.getpid())
+
+
+def evaluate_c_name(cipher):
+    """Per-process base name of the generated evaluate program for ``cipher``."""
+    return f"{cipher.id}_evaluate_{process_tag()}"
+
+
+def generic_c_functions_o_name(cipher):
+    """Per-process object-file name of the generic C helper ``cipher`` links against."""
+    cipher_word_size = cipher.is_power_of_2_word_based()
+    if cipher_word_size:
+        return f"generic_word_{cipher_word_size}_based_c_functions_{process_tag()}.o"
+    return f"generic_bit_based_c_functions_{process_tag()}.o"
+
+
 def delete_generated_evaluate_c_shared_library(cipher):
-    name = cipher.id + "_evaluate"
-    call(["rm", TII_C_LIB_PATH + name + ".c"])
-    call(["rm", TII_C_LIB_PATH + name + ".o"])
-    call(["rm", TII_C_LIB_PATH + "generic_bit_based_c_functions.o"])
+    name = evaluate_c_name(cipher)
+    call(["rm", "-f", TII_C_LIB_PATH + name + ".c"])
+    call(["rm", "-f", TII_C_LIB_PATH + name + ".o"])
+    call(["rm", "-f", TII_C_LIB_PATH + generic_c_functions_o_name(cipher)])
 
 
 def generate_bit_based_c_code(cipher, intermediate_output, verbosity):
@@ -441,12 +468,13 @@ def get_number_of_inputs(component):
 
 
 def generate_evaluate_c_code_shared_library(cipher, intermediate_output, verbosity):
-    name = cipher.id + "_evaluate"
+    name = evaluate_c_name(cipher)
+    generic_o = generic_c_functions_o_name(cipher)
     cipher_word_size = cipher.is_power_of_2_word_based()
     if cipher_word_size:
-        if not os.path.exists(TII_C_LIB_PATH + f"generic_word_{cipher_word_size}_based_c_functions.o"):
-            call(["gcc", "-w", "-c", TII_C_LIB_PATH + "generic_word_based_c_functions.c", "-o", TII_C_LIB_PATH +
-                  f"generic_word_{cipher_word_size}_based_c_functions.o", "-D", f"word_size={cipher_word_size}"])
+        if not os.path.exists(TII_C_LIB_PATH + generic_o):
+            call(["gcc", "-w", "-c", TII_C_LIB_PATH + "generic_word_based_c_functions.c", "-o",
+                  TII_C_LIB_PATH + generic_o, "-D", f"word_size={cipher_word_size}"])
 
         f = open(TII_C_LIB_PATH + name + ".c", "w+")
         f.write(cipher.generate_word_based_c_code(cipher_word_size, intermediate_output, verbosity))
@@ -454,7 +482,7 @@ def generate_evaluate_c_code_shared_library(cipher, intermediate_output, verbosi
 
         call(["gcc",
               "-w",
-              TII_C_LIB_PATH + f"generic_word_{cipher_word_size}_based_c_functions.o",
+              TII_C_LIB_PATH + generic_o,
               TII_C_LIB_PATH + name + ".c",
               "-o",
               TII_C_LIB_PATH + name + ".o",
@@ -462,16 +490,15 @@ def generate_evaluate_c_code_shared_library(cipher, intermediate_output, verbosi
               f"word_size={cipher_word_size}"])
 
     else:
-        generic_bit_based_c_functions_o_file = "generic_bit_based_c_functions.o"
-        if not os.path.exists(TII_C_LIB_PATH + generic_bit_based_c_functions_o_file):
+        if not os.path.exists(TII_C_LIB_PATH + generic_o):
             call(["gcc", "-w", "-c", TII_C_LIB_PATH + "generic_bit_based_c_functions.c",
-                  "-o", TII_C_LIB_PATH + generic_bit_based_c_functions_o_file])
+                  "-o", TII_C_LIB_PATH + generic_o])
 
         f = open(TII_C_LIB_PATH + name + ".c", "w+")
         f.write(cipher.generate_bit_based_c_code(intermediate_output, verbosity))
         f.close()
 
-        call(["gcc", "-w", TII_C_LIB_PATH + generic_bit_based_c_functions_o_file,
+        call(["gcc", "-w", TII_C_LIB_PATH + generic_o,
               TII_C_LIB_PATH + name + ".c", "-o", TII_C_LIB_PATH + name + ".o"])
 
 

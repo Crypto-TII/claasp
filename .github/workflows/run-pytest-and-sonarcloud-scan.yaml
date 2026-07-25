@@ -64,6 +64,7 @@ jobs:
     - name: Run pytest
       run: |
         uname -a
+        make install
         make remote-pytest
       env:
         GUROBI_COMPUTE_SERVER: ${{ secrets.GUROBI_COMPUTE_SERVER }}

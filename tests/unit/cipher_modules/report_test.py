@@ -1,6 +1,8 @@
 import copy
 import io
+import os
 import pickle
+import tempfile
 from contextlib import redirect_stdout
 from pathlib import Path
 
@@ -31,18 +33,24 @@ _CACHE = None
 def _load_cache():
     global _CACHE
     if _CACHE is None:
-        if CACHE_FILE.exists():
+        try:
             with CACHE_FILE.open('rb') as cache_file:
                 _CACHE = pickle.load(cache_file)
-        else:
+        except (FileNotFoundError, EOFError, pickle.UnpicklingError):
             _CACHE = {}
     return _CACHE
 
 
 def _persist_cache():
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
-    with CACHE_FILE.open('wb') as cache_file:
-        pickle.dump(_CACHE, cache_file)
+    fd, tmp = tempfile.mkstemp(dir=CACHE_DIR, suffix='.tmp')
+    try:
+        with os.fdopen(fd, 'wb') as cache_file:
+            pickle.dump(_CACHE, cache_file)
+        os.replace(tmp, CACHE_FILE)
+    except BaseException:
+        os.unlink(tmp)
+        raise
 
 
 def _get_cached_result(key, factory):

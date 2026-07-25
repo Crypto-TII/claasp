@@ -676,6 +676,32 @@ class Component:
 
         return False
 
+    def milp_wordwise_branch_number_number_of_active_sboxes_constraints(self, model):
+        raise NotImplementedError(f"{self.id}: component type '{self.type}' is not supported by this model")
+
+    def _milp_wordwise_branch_number_active_sboxes_output_ids(self, model):
+        return model._own_word_ids(self.id, self.output_bit_size)
+
+    def _milp_wordwise_branch_number_active_sboxes_pass_through_constraints(self, model, output_ids, label):
+        w = model._word_variable
+        input_ids = model._resolved_input_word_ids(self)
+        if len(input_ids) != len(output_ids):
+            raise NotImplementedError(f"{self.id}: {label} component word count mismatch")
+        return [w[output_id] == w[input_id] for output_id, input_id in zip(output_ids, input_ids)]
+
+    def _milp_wordwise_branch_number_active_sboxes_exact_permutation_constraints(self, model, output_ids, bit_perm):
+        w = model._word_variable
+        flat_input_ids = model._flat_input_word_ids(self)
+        constraints = []
+        for j, output_id in enumerate(output_ids):
+            source_words = {
+                flat_input_ids[bit_perm[j * model.word_size + offset]] for offset in range(model.word_size)
+            }
+            if len(source_words) != 1:
+                raise NotImplementedError(f"{self.id}: output word {j} is not sourced from a single input word")
+            constraints.append(w[output_id] == w[source_words.pop()])
+        return constraints
+
     def print(self):
         print(f"    id = {self._id}")
         print(f"    type = {self._type}")

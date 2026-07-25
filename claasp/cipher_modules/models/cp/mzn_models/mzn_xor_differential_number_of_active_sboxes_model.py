@@ -67,6 +67,11 @@ class MznXorDifferentialNumberOfActiveSboxesModel(MznModel):
         self._first_step = []
         self._first_step_find_all_solutions = []
         super().__init__(cipher)
+        self.word_size = 4
+        for component in self._cipher.get_all_components():
+            if SBOX in component.type:
+                self.word_size = int(component.output_bit_size)
+                break
 
     def add_additional_xor_constraints(self, nmax, repetition):
         """

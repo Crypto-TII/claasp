@@ -20,6 +20,7 @@ from claasp.cipher_modules.component_analysis_tests import (
     compute_branch_number_from_field_matrix_with_bounded_enumeration,
     compute_branch_number_from_field_matrix_with_minizinc,
     compute_branch_number_from_field_matrix_with_sage,
+    compute_word_branch_number_from_binary_matrix_with_minizinc,
 )
 from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
 from claasp.ciphers.stream_ciphers.bluetooth_stream_cipher_e0 import BluetoothStreamCipherE0
@@ -395,6 +396,61 @@ class TestBinaryMatrixWithMiniZinc:
 
         assert result == 2
         assert attempted == expected_attempt_order
+
+
+class TestWordBranchNumberFromBinaryMatrixWithMiniZinc:
+    """Test suite for compute_word_branch_number_from_binary_matrix_with_minizinc."""
+
+    def test_word_grouping_is_forwarded_to_shared_minizinc_solver(self, monkeypatch):
+        captured = {}
+
+        def fake_compute_branch_number(binary_matrix, original_word_size, **kwargs):
+            captured["binary_matrix"] = binary_matrix
+            captured["original_word_size"] = original_word_size
+            captured["kwargs"] = kwargs
+            return 3
+
+        monkeypatch.setattr(
+            cat_module, "_compute_branch_number_from_expanded_binary_matrix_with_minizinc", fake_compute_branch_number
+        )
+
+        result = compute_word_branch_number_from_binary_matrix_with_minizinc(
+            [[1, 0, 1, 0], [0, 1, 0, 1], [1, 1, 0, 0], [0, 0, 1, 1]],
+            word_size=2,
+            solver="cp-sat",
+            threads=4,
+        )
+
+        assert result == 3
+        assert captured["binary_matrix"] == [[1, 0, 1, 0], [0, 1, 0, 1], [1, 1, 0, 0], [0, 0, 1, 1]]
+        assert captured["original_word_size"] == 2
+        assert captured["kwargs"]["solver"] == "cp-sat"
+        assert captured["kwargs"]["threads"] == 4
+
+    def test_rejects_matrix_dimension_not_multiple_of_word_size(self):
+        with pytest.raises(ValueError, match="not a multiple of word_size"):
+            compute_word_branch_number_from_binary_matrix_with_minizinc([[1, 0], [0, 1]], word_size=3)
+
+    def test_linear_mode_transposes_before_solving(self, monkeypatch):
+        captured = {}
+
+        def fake_compute_branch_number(binary_matrix, original_word_size, **kwargs):
+            del original_word_size, kwargs
+            captured["binary_matrix"] = binary_matrix
+            return 2
+
+        monkeypatch.setattr(
+            cat_module, "_compute_branch_number_from_expanded_binary_matrix_with_minizinc", fake_compute_branch_number
+        )
+
+        result = compute_word_branch_number_from_binary_matrix_with_minizinc(
+            [[1, 0], [1, 1]],
+            word_size=1,
+            type="linear",
+        )
+
+        assert result == 2
+        assert captured["binary_matrix"] == [[1, 1], [0, 1]]
 
 
 def _matrix_from_ints_over_gf2w(entries, word_size, polynomial):
@@ -1352,4 +1408,3 @@ class TestConsistency:
         # Both should be positive integers (they might be equal or different)
         assert isinstance(bn_diff, int) and bn_diff >= 1
         assert isinstance(bn_lin, int) and bn_lin >= 1
-

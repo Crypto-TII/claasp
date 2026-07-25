@@ -6,6 +6,7 @@ MILP_WORDWISE_DETERMINISTIC_TRUNCATED = "wordwise_deterministic_truncated_xor_di
 MILP_WORDWISE_IMPOSSIBLE = "wordwise_impossible_xor_differential"
 MILP_WORDWISE_IMPOSSIBLE_AUTO = "wordwise_impossible_xor_differential_fully_automated"
 MILP_XOR_DIFFERENTIAL = "xor_differential"
+MILP_XOR_DIFFERENTIAL_NUMBER_OF_ACTIVE_SBOXES = "xor_differential_number_of_active_sboxes"
 MILP_XOR_LINEAR = "xor_linear"
 
 # Model utils
