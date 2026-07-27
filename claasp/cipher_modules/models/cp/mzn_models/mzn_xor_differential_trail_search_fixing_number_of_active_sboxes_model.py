@@ -491,9 +491,11 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
             solver_output = solver_process.stdout.splitlines()
 
             if any(UNSATISFIABLE in line for line in solver_output):
+                # weight == -1 means we are only fixing the number of active S-boxes (first step):
+                # an UNSAT result here only rules out this particular count, not the whole search,
+                # so we retry with the next higher count instead of failing outright. For any other
+                # weight, UNSAT means no trail exists for that active-S-box count / weight.
                 if weight == -1:
-                    # The relaxed first-step pattern(s) for this active-S-box count are not
-                    # realisable by any concrete trail; retry with the next higher count.
                     continue
                 return UNSATISFIABLE
 
