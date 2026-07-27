@@ -386,6 +386,29 @@ def test_has_uniform_sboxes_rejects_unsupported_component_types():
     assert cipher.has_uniform_sboxes() is False
 
 
+def test_has_uniform_sboxes_accepts_shift_components():
+    from claasp.ciphers.block_ciphers.mantis_block_cipher import MantisBlockCipher
+
+    assert MantisBlockCipher(number_of_rounds=2).has_uniform_sboxes() is True
+
+    cipher = Cipher("with_shift", BLOCK_CIPHER, [INPUT_PLAINTEXT], [8], 8)
+    cipher.add_round()
+    sbox = cipher.add_sbox_component([INPUT_PLAINTEXT], [[0, 1, 2, 3]], 4, list(range(16)))
+    cipher.add_shift_component([sbox.id], [list(range(4))], 4, 1)
+
+    assert cipher.has_uniform_sboxes() is True
+
+
+def test_has_uniform_sboxes_rejects_linear_layer_components():
+    cipher = Cipher("with_linear_layer", BLOCK_CIPHER, [INPUT_PLAINTEXT], [8], 8)
+    cipher.add_round()
+    sbox = cipher.add_sbox_component([INPUT_PLAINTEXT], [[0, 1, 2, 3]], 4, list(range(16)))
+    cipher.add_linear_layer_component([sbox.id], [list(range(4))], 4, [[1, 0, 0, 0]] * 4)
+
+    assert cipher.has_uniform_sboxes() is False
+    assert cipher.is_two_step_trail_search_friendly() is False
+
+
 def test_is_two_step_trail_search_friendly_checks_mix_column_cell_alignment():
     friendly = Cipher("friendly", BLOCK_CIPHER, [INPUT_PLAINTEXT], [8], 8)
     friendly.add_round()

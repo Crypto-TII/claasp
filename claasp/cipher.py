@@ -975,6 +975,19 @@ class Cipher:
 
         return self._are_there_not_forbidden_components(forbidden_types, forbidden_descriptions)
 
+    def _uniform_sbox_size(self):
+        """
+        Return the common S-box ``input_bit_size`` if the cipher has at least one S-box and all
+        S-boxes share the same size, otherwise ``None``.
+
+        Shared by :meth:`is_spn` and :meth:`has_uniform_sboxes` so that the "does this cipher have
+        a single, well-defined S-box size" check lives in one place.
+        """
+        _, _, _, set_of_sbox_sizes = self.get_sizes_of_components_by_type()
+        if len(set_of_sbox_sizes) != 1:
+            return None
+        return next(iter(set_of_sbox_sizes))
+
     def is_spn(self):
         """
         Return True if the cipher is SPN.
@@ -1007,10 +1020,8 @@ class Cipher:
         ) = self.get_sizes_of_components_by_type()
         if (len(set_of_sbox_sizes) > 1) or (len(set_of_mix_column_sizes) > 1):
             return False
-        sbox_size = 0
+        sbox_size = self._uniform_sbox_size() or 0
         mix_column_size = 0
-        if len(set_of_sbox_sizes) > 0:
-            sbox_size = set_of_sbox_sizes.pop()
         if len(set_of_mix_column_sizes) > 0:
             mix_column_size = set_of_mix_column_sizes.pop()
         if sbox_size == 0 and mix_column_size == 0 or sbox_size != mix_column_size:
@@ -1027,8 +1038,9 @@ class Cipher:
         and all components belong to the standard SPN or permutation component set.
 
         Less restrictive than :meth:`is_spn`: does not require MixColumns to be present or to have
-        the same cell size as the S-boxes, and allows bit/word permutation components. Suitable as a
-        compatibility check for the first-step active S-box count model.
+        the same cell size as the S-boxes, and allows bit/word permutation components and SHIFT
+        components (e.g. Mantis). Suitable as a compatibility check for the first-step active
+        S-box count model.
 
         EXAMPLES::
 
@@ -1041,6 +1053,9 @@ class Cipher:
             sage: from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
             sage: PresentBlockCipher(number_of_rounds=1).has_uniform_sboxes()
             True
+            sage: from claasp.ciphers.block_ciphers.mantis_block_cipher import MantisBlockCipher
+            sage: MantisBlockCipher(number_of_rounds=2).has_uniform_sboxes()
+            True
         """
         spn_components = {
             CIPHER_OUTPUT,
@@ -1050,16 +1065,12 @@ class Cipher:
             PERMUTATION_COMPONENT,
             SBOX,
             "ROTATE",
+            "SHIFT",
             "XOR",
         }
-        (
-            set_of_components,
-            _,
-            _,
-            set_of_sbox_sizes,
-        ) = self.get_sizes_of_components_by_type()
-        if not set_of_sbox_sizes or len(set_of_sbox_sizes) > 1:
+        if self._uniform_sbox_size() is None:
             return False
+        set_of_components, _, _, _ = self.get_sizes_of_components_by_type()
         return set_of_components <= spn_components
 
     def is_two_step_trail_search_friendly(self):
