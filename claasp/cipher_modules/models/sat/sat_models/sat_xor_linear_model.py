@@ -20,11 +20,13 @@ import time
 from claasp.cipher_modules.models.sat import solvers
 from claasp.cipher_modules.models.sat.sat_model import SatModel
 from claasp.cipher_modules.models.sat.utils import constants, utils
-from claasp.cipher_modules.models.sat.utils.constants import INPUT_BIT_ID_SUFFIX, OUTPUT_BIT_ID_SUFFIX
+from claasp.cipher_modules.models.sat.utils.constants import OUTPUT_BIT_ID_SUFFIX, INPUT_BIT_ID_SUFFIX
 from claasp.cipher_modules.models.utils import (
     get_bit_bindings,
-    get_single_key_scenario_format_for_fixed_values,
     set_component_solution,
+    get_single_key_scenario_format_for_fixed_values,
+    join_and_sanitize_strings, 
+    save_trail_lower_bounds_and_time_estimates
 )
 from claasp.name_mappings import (
     CIPHER_OUTPUT,
@@ -258,7 +260,7 @@ class SatXorLinearModel(SatModel):
 
         return solutions_list
 
-    def find_lowest_weight_xor_linear_trail(self, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT, options=None):
+    def find_lowest_weight_xor_linear_trail(self, fixed_values=[], start_weight=0, solver_name=solvers.SOLVER_DEFAULT, options=None, log=False):
         """
         Return the solution representing a XOR LINEAR trail with the lowest possible weight.
         By default, the search removes the key schedule, if any.
@@ -299,24 +301,33 @@ class SatXorLinearModel(SatModel):
             sage: trail['total_weight']
             3.0
         """
-        current_weight = 0
-        start_building_time = time.time()
-        self.build_xor_linear_trail_model(weight=current_weight, fixed_variables=fixed_values)
-        end_building_time = time.time()
-        solution = self.solve(XOR_LINEAR, solver_name=solver_name, options=options)
-        solution["building_time_seconds"] = end_building_time - start_building_time
-        total_time = solution["solving_time_seconds"]
-        max_memory = solution["memory_megabytes"]
-        while solution["total_weight"] is None:
-            current_weight += 1
+        current_weight = start_weight
+        searched_weights, search_times = [], []
+        total_time, total_wall_time, max_memory = 0, 0, 0
+
+        while True:
             start_building_time = time.time()
             self.build_xor_linear_trail_model(weight=current_weight, fixed_variables=fixed_values)
             end_building_time = time.time()
             solution = self.solve(XOR_LINEAR, solver_name=solver_name, options=options)
             solution["building_time_seconds"] = end_building_time - start_building_time
             total_time += solution["solving_time_seconds"]
+            total_wall_time += solution["solving_wall_time_seconds"]
             max_memory = max((max_memory, solution["memory_megabytes"]))
+
+            if log: 
+                searched_weights.append(current_weight) 
+                search_times.append(solution["solving_wall_time_seconds"])
+                file_name = f'{self._cipher}__sat_find_lowest_weight_xor_linear_trail_from_below__{solver_name}solver{join_and_sanitize_strings(options)}.log'
+                save_trail_lower_bounds_and_time_estimates(file_name, solution, searched_weights, search_times)
+                
+            current_weight += 1
+
+            if solution["total_weight"] is not None:
+                break
+
         solution["solving_time_seconds"] = total_time
+        solution["solving_wall_time_seconds"] = total_wall_time
         solution["memory_megabytes"] = max_memory
         solution["test_name"] = "find_lowest_weight_xor_linear_trail"
 

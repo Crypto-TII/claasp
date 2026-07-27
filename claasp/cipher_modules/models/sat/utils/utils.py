@@ -54,6 +54,7 @@ import time
 
 from claasp.cipher_modules.models.sat import solvers
 
+
 # ----------------- #
 #    - General -    #
 # ----------------- #
@@ -760,7 +761,10 @@ def run_sat_solver(solver_specs, options, dimacs_input, host=None, env_vars_stri
     )
     if host:
         command = ["ssh", f"{host}"] + [env_vars_string] + command
+    start = time.time()
     solver_process = subprocess.run(command, input=dimacs_input, capture_output=True, text=True)
+    end = time.time()
+    solver_wall_time = end - start
     solver_output = solver_process.stdout.splitlines()
     status = [line for line in solver_output if line.startswith("s")][0].split()[1]
     values = []
@@ -791,7 +795,7 @@ def run_sat_solver(solver_specs, options, dimacs_input, host=None, env_vars_stri
     if solver_name == solvers.CRYPTOMINISAT_EXT:
         solver_memory = solver_memory / 10**3
 
-    return status, solver_time, solver_memory, values
+    return status, solver_time, solver_wall_time, solver_memory, values
 
 
 def run_minisat(solver_specs, options, dimacs_input, input_file_name, output_file_name):
@@ -803,7 +807,10 @@ def run_minisat(solver_specs, options, dimacs_input, input_file_name, output_fil
     )
     command.append(input_file_name)
     command.append(output_file_name)
+    start = time.time()
     solver_process = subprocess.run(command, capture_output=True, text=True)
+    end = time.time()
+    solver_wall_time = end - start
     solver_output = solver_process.stdout.splitlines()
     solver_time = _get_data(solver_specs["keywords"]["time"], solver_output)
     solver_memory = _get_data(solver_specs["keywords"]["memory"], solver_output)
@@ -815,7 +822,7 @@ def run_minisat(solver_specs, options, dimacs_input, input_file_name, output_fil
     os.remove(input_file_name)
     os.remove(output_file_name)
 
-    return status, solver_time, solver_memory, values
+    return status, solver_time, solver_wall_time, solver_memory, values
 
 
 def run_parkissat(solver_specs, options, dimacs_input, input_file_name):
@@ -830,27 +837,20 @@ def run_parkissat(solver_specs, options, dimacs_input, input_file_name):
     solver_process = subprocess.run(command, capture_output=True, text=True)
     end = time.time()
     solver_output = solver_process.stdout.splitlines()
-    solver_time = end - start
+    solver_wall_time = solver_time = end - start
     solver_memory = 0
-    # ParKissat is a parallel solver: comment lines (c ...) may appear before the
-    # status line in any order depending on thread scheduling.
-    status_line = next((line for line in solver_output if line.startswith("s ")), None)
-    if status_line is None:
-        raise RuntimeError(
-            f"parkissat produced no status line.\n"
-            f"stdout: {solver_process.stdout[:500]}\n"
-            f"stderr: {solver_process.stderr[:500]}"
-        )
-    status = status_line.split()[1]
+    status = solver_output[0].split()[1]
     values = ""
     if status == "SATISFIABLE":
-        value_lines = [line[2:] for line in solver_output if line.startswith("v ")]
+        solver_output = solver_output[1:]
+        solver_output = [s.replace("v ", "") for s in solver_output]
         values = []
-        for element in value_lines:
-            values.extend(element.split())
+        for element in solver_output:
+            substrings = element.split()
+            values.extend(substrings)
     os.remove(input_file_name)
 
-    return status, solver_time, solver_memory, values
+    return status, solver_time, solver_wall_time, solver_memory, values
 
 
 def run_yices(solver_specs, options, dimacs_input, input_file_name):
@@ -861,7 +861,10 @@ def run_yices(solver_specs, options, dimacs_input, input_file_name):
         [solver_specs["keywords"]["command"]["executable"]] + solver_specs["keywords"]["command"]["options"] + options
     )
     command.append(input_file_name)
+    start = time.time()
     solver_process = subprocess.run(command, capture_output=True, text=True)
+    end = time.time()
+    solver_wall_time = end - start
     solver_stats = solver_process.stderr.splitlines()
     solver_output = solver_process.stdout.splitlines()
     solver_time = _get_data(solver_specs["keywords"]["time"], solver_stats)
@@ -872,7 +875,7 @@ def run_yices(solver_specs, options, dimacs_input, input_file_name):
         values = solver_output[1].split()[:-1]
     os.remove(input_file_name)
 
-    return status, solver_time, solver_memory, values
+    return status, solver_time, solver_wall_time, solver_memory, values
 
 
 def _generate_component_model_types(speck_cipher):

@@ -15,30 +15,317 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
+import datetime
+import re
 import json
 import math
 import os
-import re
+
 from concurrent.futures import ProcessPoolExecutor
 from copy import deepcopy
 
 import numpy as np
 
 from claasp.name_mappings import (
-    CIPHER_OUTPUT,
     CONSTANT,
-    INPUT_KEY,
-    INPUT_MESSAGE,
-    INPUT_PLAINTEXT,
-    INPUT_STATE,
+    CIPHER_OUTPUT,
     INTERMEDIATE_OUTPUT,
+    WORD_OPERATION,
     LINEAR_LAYER,
-    MIX_COLUMN,
     PERMUTATION_COMPONENT,
     SBOX,
-    WORD_OPERATION,
+    MIX_COLUMN,
+    INPUT_KEY,
+    INPUT_PLAINTEXT,
+    INPUT_MESSAGE,
+    INPUT_STATE,
 )
 
+
+def save_trail_lower_bounds_and_time_estimates(file_name, solution, searched_weights, search_times):
+    current_weight = searched_weights[-1]
+    solving_time = search_times[-1]
+    timestamp = str(datetime.datetime.now().replace(microsecond=0))
+    with open(file_name,"a") as f:
+        message = timestamp + f" {solution['cipher']} has no {solution['model_type']} trail of weight <= {current_weight}\n"
+        message+= timestamp + f" {solution['solver_name']} terminated this search in {datetime.timedelta(seconds=round(solving_time,0))} (status: {solution['status']})\n"  # solver
+        if solution['status'] == 'UNSATISFIABLE' and len(searched_weights) >= 2:
+            pc, ci= 0.6, 95
+            try:
+                est = exponential_predict(
+                    searched_weights,  # parameter
+                    search_times,  # parameter
+                    x_new=[current_weight+i for i in range(1,11)], 
+                    prediction_quantile=pc, 
+                    ci=ci
+                )
+                message+= timestamp + f' If UNSAT, the next search (w={est[0]["x"]}) is expected to terminate in {datetime.timedelta(seconds=round(est[0]["y_pred"],0))} or within the time interval [{datetime.timedelta(seconds=round(est[0]["y_low"],0))}, {datetime.timedelta(seconds=round(est[0]["y_high"],0))}]\n'
+                message+= (f"obs_weights = {searched_weights}\n")
+                message+= (f"obs_solveTime_h = {[round(i/3600,4) for i in search_times]}\n")
+                message+= (f"next_weights = {[e['x'] for e in est]}\n")
+                message+= (f"estim_upperTime_h = {[round(e['y_high']/3600,4) for e in est]} # {ci}% confidence\n")
+                message+= (f"estim_expecTime_h = {[round(e['y_pred']/3600,4) for e in est]} # {pc*100}° percentile\n")
+                message+= (f"estim_lowerTime_h = {[round(e['y_low']/3600,4) for e in est]} # {ci}% confidence\n")
+            except Exception:
+                pass
+        elif solution['status'] == 'SATISFIABLE':
+            message+= str(solution)
+        f.write(message)
+
+
+def exponential_predict(
+    x_obs,
+    y_obs,
+    x_new,
+    ci=95,
+    n_bootstrap=400,
+    window=10,
+    seed=None,
+    prediction_quantile=0.6,
+    recency_weight_strength=1.5,
+):
+    """
+    Fit y = a * exp(bx) using weighted log-linear regression and estimate
+    prediction uncertainty using bootstrap resampling.
+
+    The fit is performed in log-space:
+
+        log(y) = b*x + log(a)
+
+    More recent observations can be weighted more heavily to better track
+    accelerating growth processes such as SAT/SMT runtime escalation.
+
+    Parameters
+    ----------
+    x_obs : array-like
+        Observed x values.
+
+    y_obs : array-like
+        Observed y values.
+        All values must be strictly positive.
+
+    x_new : float or array-like
+        One or more x values at which predictions should be generated.
+
+    ci : int, default 95
+        Confidence interval width in percent.
+
+    n_bootstrap : int, default 400
+        Number of bootstrap resamples.
+
+    window : int or None, default 6
+        Use only the most recent observations for fitting.
+
+    seed : int or None, default None
+        Random seed for reproducible bootstrap sampling.
+
+    prediction_quantile : float, default 0.6
+        Quantile used as the central prediction.
+
+        Typical values:
+          - 0.5 : median prediction
+          - 0.6 : mildly conservative
+          - 0.7 : strongly conservative
+
+    recency_weight_strength : float, default 1.5
+        Strength of exponential recency weighting.
+
+        Typical values:
+          - 0.0 : no weighting
+          - 1.0 : mild recency emphasis
+          - 1.5 : good default for accelerating runtimes
+          - 2.0+ : aggressive adaptation to recent growth
+        
+        Higher values adapt faster to accelerating trends but become
+        more sensitive to noise and outliers.
+        
+
+    Returns
+    -------
+    list[dict[str, float]]
+        One dictionary per prediction point:
+
+            {
+                "x": query point,
+                "y_pred": prediction,
+                "y_low": lower CI bound,
+                "y_high": upper CI bound,
+            }
+
+    Raises
+    ------
+    ValueError
+        If inputs are invalid.
+
+    RuntimeError
+        If all bootstrap fits fail.
+    """
+
+    # ------------------------------------------------------------------
+    # Input validation
+    # ------------------------------------------------------------------
+
+    x = np.asarray(x_obs, dtype=float)
+    y = np.asarray(y_obs, dtype=float)
+
+    x_new_array = np.asarray(x_new, dtype=float)
+
+    if x_new_array.ndim == 0:
+        x_new_array = np.array([x_new_array])
+
+    if x.ndim != 1 or y.ndim != 1:
+        raise ValueError("x_obs and y_obs must be 1-D arrays.")
+
+    if len(x) != len(y):
+        raise ValueError("x_obs and y_obs must have the same length.")
+
+    if len(x) < 2:
+        raise ValueError("At least 2 observations are required.")
+
+    if not (1 <= ci <= 99):
+        raise ValueError("ci must be between 1 and 99.")
+
+    if np.any(y <= 0):
+        raise ValueError("All y_obs values must be strictly positive.")
+
+    if not (0 < prediction_quantile < 1):
+        raise ValueError("prediction_quantile must be between 0 and 1.")
+
+    if recency_weight_strength < 0:
+        raise ValueError("recency_weight_strength must be >= 0.")
+
+    # ------------------------------------------------------------------
+    # Optional sliding window
+    # ------------------------------------------------------------------
+
+    if window is not None:
+        if window < 2:
+            raise ValueError("window must be >= 2.")
+
+        x = x[-window:]
+        y = y[-window:]
+
+    # ------------------------------------------------------------------
+    # Initial fit
+    # ------------------------------------------------------------------
+
+    log_y = np.log(y)
+
+    # Exponential recency weighting:
+    # newest observations receive the largest weights.
+    weights = np.exp(
+        np.linspace(
+            0,
+            recency_weight_strength,
+            len(x),
+        )
+    )
+
+    slope, intercept = np.polyfit(
+        x,
+        log_y,
+        deg=1,
+        w=weights,
+    )
+
+    fitted_log_y = slope * x + intercept
+    residuals = log_y - fitted_log_y
+
+    # ------------------------------------------------------------------
+    # Bootstrap
+    # ------------------------------------------------------------------
+
+    rng = np.random.default_rng(seed)
+
+    bootstrap_predictions = []
+
+    for _ in range(n_bootstrap):
+
+        sampled_residuals = rng.choice(
+            residuals,
+            size=len(x),
+            replace=True,
+        )
+
+        sampled_log_y = fitted_log_y + sampled_residuals
+
+        boot_slope, boot_intercept = np.polyfit(
+            x,
+            sampled_log_y,
+            deg=1,
+            w=weights,
+        )
+
+        prediction = np.exp(
+            boot_slope * x_new_array + boot_intercept
+        )
+
+        if np.all(np.isfinite(prediction)):
+            bootstrap_predictions.append(prediction)
+
+    if not bootstrap_predictions:
+        raise RuntimeError("All bootstrap fits failed.")
+
+    bootstrap_predictions = np.asarray(bootstrap_predictions)
+
+    valid_fraction = len(bootstrap_predictions) / n_bootstrap
+
+    if valid_fraction < 0.80:
+        print(
+            f"Warning: only {valid_fraction:.0%} "
+            f"of bootstrap fits were valid."
+        )
+
+    # ------------------------------------------------------------------
+    # Central prediction
+    # ------------------------------------------------------------------
+
+    central_prediction = np.percentile(
+        bootstrap_predictions,
+        prediction_quantile * 100,
+        axis=0,
+    )
+
+    # ------------------------------------------------------------------
+    # Confidence intervals
+    # ------------------------------------------------------------------
+
+    alpha = (100 - ci) / 2
+
+    lower_bounds = np.percentile(
+        bootstrap_predictions,
+        alpha,
+        axis=0,
+    )
+
+    upper_bounds = np.percentile(
+        bootstrap_predictions,
+        100 - alpha,
+        axis=0,
+    )
+
+    # ------------------------------------------------------------------
+    # Assemble result
+    # ------------------------------------------------------------------
+
+    results = []
+
+    for x_value, pred, low, high in zip(
+        x_new_array,
+        central_prediction,
+        lower_bounds,
+        upper_bounds,
+    ):
+        results.append(
+            {
+                "x": float(x_value),
+                "y_pred": float(pred),
+                "y_low": float(low),
+                "y_high": float(high),
+            }
+        )
+
+    return results
 
 def hex_to_bitlist(hex_str):
     if not hex_str.startswith(("0x", "0X")):
@@ -69,7 +356,7 @@ def check_if_implemented_component(component):
 
 
 def convert_solver_solution_to_dictionary(
-    cipher, model_type, solver_name, solve_time, memory, components_values, total_weight
+    cipher, model_type, solver_name, solve_time, solver_wall_time, memory, components_values, total_weight
 ):
     """
     Return a dictionary that represents the solution obtained from the solver.
@@ -79,7 +366,8 @@ def convert_solver_solution_to_dictionary(
     - ``cipher_id`` -- **string**; the cipher id
     - ``model_type`` -- **string**; the type of the model that has been solved
     - ``solver_name`` -- **string**; the solver used to get the solution
-    - ``solve_time`` -- **float**; the time (in seconds) consumed by the solver finding the solution
+    - ``solve_time`` -- **float**; the time (in seconds) reported by the solver to obtain the solution
+    - ``solver_wall_time`` -- **float**; the elapsed wall-clock time (in seconds) required to obtain the solution
     - ``memory`` -- **float**; the memory (in MB) consumed by the solver finding the solution
     - ``components_values`` -- **dictionary**; each key of the dictionary is the component id, each value is a
       dictionary whose keys are ``value`` and ``weight``
@@ -94,13 +382,14 @@ def convert_solver_solution_to_dictionary(
         sage: from claasp.cipher_modules.models.utils import convert_solver_solution_to_dictionary
         sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
         sage: speck = SpeckBlockCipher(number_of_rounds=4)
-        sage: convert_solver_solution_to_dictionary(speck.id, 'xor_differential', 'z3', 0.239, 175.5, [], 0)
+        sage: convert_solver_solution_to_dictionary(speck.id, 'xor_differential', 'z3', 0.239, 0.282, 175.5, [], 0)
         {'cipher': 'speck_p32_k64_o32_r4',
          'components_values': [],
          'memory_megabytes': 175.500000000000,
          'model_type': 'xor_differential',
          'solver_name': 'z3',
          'solving_time_seconds': 0.239000000000000,
+         'solving_wall_time_seconds': 0.282000000000000,
          'total_weight': 0}
     """
     return {
@@ -108,6 +397,7 @@ def convert_solver_solution_to_dictionary(
         "model_type": model_type,
         "solver_name": solver_name,
         "solving_time_seconds": solve_time,
+        "solving_wall_time_seconds": solver_wall_time,
         "memory_megabytes": memory,
         "components_values": components_values,
         "total_weight": total_weight,
@@ -1406,16 +1696,16 @@ def _sample_truncated_difference_from_string(pattern, num_samples, state_size, r
     """
     Build a (state_size // 8, num_samples) uint8 matrix with per-sample input differences
     that satisfy the truncated pattern.
-
+    
     Pattern is a string of length = state_size over {'0','1','2','?'}:
       - '0' or '1': fixed bit value
       - '2' or '?': unconstrained (random)
-
+    
     Bit index 0 corresponds to the MSB of the state (MSB-first ordering).
-
+    
     Bits are packed into bytes using big-endian order, i.e., index 0 becomes
     the MSB of byte 0.
-
+    
     Returns:
         A (state_size // 8, num_samples) array of dtype uint8.
     """
@@ -1440,7 +1730,7 @@ def _sample_truncated_difference_from_string(pattern, num_samples, state_size, r
 
     # Pack bit rows into bytes (big-endian: position 0 = MSB of byte 0)
     input_diff_samples = np.packbits(bits, axis=1, bitorder='big')
-
+    
     return input_diff_samples.T
 
 

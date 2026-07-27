@@ -63,16 +63,16 @@ from sage.sat.solvers.satsolver import SAT
 
 from claasp.cipher_modules.models.sat import solvers
 from claasp.cipher_modules.models.sat.utils import utils
-from claasp.cipher_modules.models.utils import convert_solver_solution_to_dictionary, set_component_solution
+from claasp.cipher_modules.models.utils import set_component_solution, convert_solver_solution_to_dictionary
 from claasp.editor import is_fixed_rotate_component, replace_bit_reordering_components_as_direct_wiring
 from claasp.name_mappings import (
+    SBOX,
     CIPHER_OUTPUT,
     CONSTANT,
     INTERMEDIATE_OUTPUT,
     LINEAR_LAYER,
     MIX_COLUMN,
     PERMUTATION_COMPONENT,
-    SBOX,
     WORD_OPERATION,
 )
 
@@ -317,24 +317,24 @@ class SatModel:
         # running the SAT solver
         file_id = f"{uuid.uuid4()}"
         if host is not None:
-            status, sat_time, sat_memory, values = utils.run_sat_solver(
+            status, sat_time, solver_wall_time, sat_memory, values = utils.run_sat_solver(
                 solver_specs, options, dimacs, host, env_vars_string
             )
         else:
             if solver_specs["keywords"]["is_dimacs_compliant"]:
-                status, sat_time, sat_memory, values = utils.run_sat_solver(solver_specs, options, dimacs)
+                status, sat_time, solver_wall_time, sat_memory, values = utils.run_sat_solver(solver_specs, options, dimacs)
             elif solver_specs["solver_name"] == solvers.MINISAT_EXT:
                 input_file = f"{self.cipher_id}_{file_id}_sat_input.cnf"
                 output_file = f"{self.cipher_id}_{file_id}_sat_output.cnf"
-                status, sat_time, sat_memory, values = utils.run_minisat(
+                status, sat_time, solver_wall_time, sat_memory, values = utils.run_minisat(
                     solver_specs, options, dimacs, input_file, output_file
                 )
             elif solver_specs["solver_name"] == solvers.PARKISSAT_EXT:
                 input_file = f"{self.cipher_id}_{file_id}_sat_input.cnf"
-                status, sat_time, sat_memory, values = utils.run_parkissat(solver_specs, options, dimacs, input_file)
+                status, sat_time, solver_wall_time, sat_memory, values = utils.run_parkissat(solver_specs, options, dimacs, input_file)
             elif solver_specs["solver_name"] == solvers.YICES_SAT_EXT:
                 input_file = f"{self.cipher_id}_{file_id}_sat_input.cnf"
-                status, sat_time, sat_memory, values = utils.run_yices(solver_specs, options, dimacs, input_file)
+                status, sat_time, solver_wall_time, sat_memory, values = utils.run_yices(solver_specs, options, dimacs, input_file)
 
         # parsing the solution
         if status == "SATISFIABLE":
@@ -346,7 +346,7 @@ class SatModel:
         if total_weight is not None:
             total_weight = float(total_weight)
         solution = convert_solver_solution_to_dictionary(
-            self._cipher, model_type, solver_name, sat_time, sat_memory, component_to_fields, total_weight
+            self._cipher, model_type, solver_name, sat_time, solver_wall_time, sat_memory, component_to_fields, total_weight
         )
         solution["status"] = status
 
