@@ -26,6 +26,13 @@ class Rounds:
         self._by_id = None
         self._consumers = None
 
+    def __setstate__(self, state):
+        # Objects pickled before the _by_id/_consumers indexes were introduced
+        # won't have them in their state; rebuild lazily on first access.
+        self.__dict__.update(state)
+        self._by_id = None
+        self._consumers = None
+
     def _build_indexes(self):
         by_id = {}
         consumers = {}

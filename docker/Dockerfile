@@ -119,8 +119,8 @@ RUN sage -pip install bitstring==4.0.1 \
     pygments==2.12.0 \
     pytest-benchmark==4.0.0 \
     pytest-cov==4.0.0 \
-    pytest-isolate==0.0.11 \
-    pytest-xdist==3.2.0 \
+    pytest-isolate==0.0.14 \
+    pytest-xdist==3.6.1 \
     pytest==7.2.1 \
     ruff==0.15.2 \
     sage-package==0.0.7 \
@@ -143,10 +143,22 @@ RUN cd /opt/sts-2.1.2/sts-2.1.2 \
 
 
 # Installing Minizinc
-RUN wget https://github.com/MiniZinc/MiniZincIDE/releases/download/2.9.4/MiniZincIDE-2.9.4-bundle-linux-x86_64.tgz \
-    && pwd && tar -xf MiniZincIDE-2.9.4-bundle-linux-x86_64.tgz 
-RUN mv MiniZincIDE-2.9.4-bundle-linux-x86_64 /MiniZinc \
-    && rm MiniZincIDE-2.9.4-bundle-linux-x86_64.tgz
+# No official Linux arm64 bundle exists for 2.9.4, so on arm64 we build from source
+# and install under /MiniZinc to keep all downstream path references identical.
+RUN if [ "$TARGETARCH" = "arm64" ]; then \
+        wget https://github.com/MiniZinc/libminizinc/archive/refs/tags/2.9.4.tar.gz \
+        && tar -xf 2.9.4.tar.gz \
+        && rm 2.9.4.tar.gz \
+        && cmake -B libminizinc-2.9.4/build -S libminizinc-2.9.4 -DCMAKE_INSTALL_PREFIX=/MiniZinc \
+        && cmake --build libminizinc-2.9.4/build -j$(nproc) \
+        && cmake --install libminizinc-2.9.4/build \
+        && rm -rf libminizinc-2.9.4; \
+    else \
+        wget https://github.com/MiniZinc/MiniZincIDE/releases/download/2.9.4/MiniZincIDE-2.9.4-bundle-linux-x86_64.tgz \
+        && tar -xf MiniZincIDE-2.9.4-bundle-linux-x86_64.tgz \
+        && mv MiniZincIDE-2.9.4-bundle-linux-x86_64 /MiniZinc \
+        && rm MiniZincIDE-2.9.4-bundle-linux-x86_64.tgz; \
+    fi
 
 # Copy all MiniZinc components to system locations
 RUN cp /MiniZinc/bin/* /usr/local/bin/
@@ -199,29 +211,62 @@ RUN echo '\
 }\
 ' > /usr/local/share/minizinc/solvers/choco.msc
 
+# Installing OR-Tools (CP-SAT backend for MiniZinc)
+# Google ships one release tarball per platform; each already bundles a
+# MiniZinc solver descriptor, but under an id/tags that don't match the
+# "cp-sat" name claasp uses everywhere (see cipher_modules/models/cp/solvers.py),
+# so we register our own descriptor pointing at the extracted files instead.
+ARG ORTOOLS_VERSION=9.9.3963
+RUN set -eux; \
+    cd /opt; \
+    if [ "$TARGETARCH" = "arm64" ]; then \
+        wget -q "https://github.com/google/or-tools/releases/download/v9.9/or-tools_arm64_debian-11_cpp_v${ORTOOLS_VERSION}.tar.gz" -O or-tools.tar.gz; \
+        tar -xzf or-tools.tar.gz; \
+        rm or-tools.tar.gz; \
+        mv "or-tools_aarch64_Debian-11_cpp_v${ORTOOLS_VERSION}" or-tools; \
+    else \
+        wget -q "https://github.com/google/or-tools/releases/download/v9.9/or-tools_amd64_ubuntu-22.04_cpp_v${ORTOOLS_VERSION}.tar.gz" -O or-tools.tar.gz; \
+        tar -xzf or-tools.tar.gz; \
+        rm or-tools.tar.gz; \
+        mv "or-tools_x86_64_Ubuntu-22.04_cpp_v${ORTOOLS_VERSION}" or-tools; \
+    fi; \
+    cp /opt/or-tools/bin/fzn-cp-sat /usr/local/bin/; \
+    chmod +x /usr/local/bin/fzn-cp-sat; \
+    mkdir -p /usr/local/lib/or-tools; \
+    cp /opt/or-tools/lib/*.so* /usr/local/lib/or-tools/; \
+    echo "/usr/local/lib/or-tools" > /etc/ld.so.conf.d/or-tools.conf; \
+    ldconfig; \
+    mkdir -p /usr/local/share/minizinc/cpsat; \
+    cp -r /opt/or-tools/share/minizinc/cpsat/* /usr/local/share/minizinc/cpsat/; \
+    rm -rf /opt/or-tools
+
+RUN mkdir -p /usr/local/share/minizinc/solvers \
+  && printf '%s\n' \
+  '{' \
+  '  "name": "OR-Tools CP-SAT",' \
+  "  \"version\": \"${ORTOOLS_VERSION}\"," \
+  '  "id": "cp-sat",' \
+  '  "executable": "/usr/local/bin/fzn-cp-sat",' \
+  '  "mznlib": "/usr/local/share/minizinc/cpsat",' \
+  '  "tags": ["cp-sat", "ortools", "cp", "int", "lcg"],' \
+  '  "stdFlags": ["-a", "-f", "-p", "-r", "-s", "-v"],' \
+  '  "supportsMzn": false,' \
+  '  "supportsFzn": true,' \
+  '  "needsSolns2Out": true,' \
+  '  "needsMznExecutable": false,' \
+  '  "needsStdlibDir": false,' \
+  '  "isGUIApplication": false' \
+  '}' > /usr/local/share/minizinc/solvers/cp-sat.msc
+
 # Installing CryptoMiniSat
-# explicit commits are used instead of releases because
-# no semantic versioning is used for cadical and cadiback
-RUN git clone https://github.com/meelgroup/cadical.git \
-    && cd cadical \
-    && git checkout f5ac6ffa6eaaf72b407f6fb591091c5ff02271d8 \
-    && CXXFLAGS=-fPIC ./configure --competition \
-    && make -j4 \
-    && cp build/libcadical.so /usr/lib/
-
-RUN git clone https://github.com/meelgroup/cadiback.git \
-    && cd cadiback \
-    && git checkout 6050733173995f3cff6ecb04ac99d3691bd0b5e4 \
-    && CXX=c++ ./configure \
-    && make -j4 \
-    && cp libcadiback.so /usr/lib/
-
-RUN git clone https://github.com/msoos/cryptominisat.git \
-    && cd cryptominisat \
-    && git checkout 34ec41b3bb0332bd313e51d131298d30c52aa71f \
+RUN wget https://github.com/msoos/cryptominisat/archive/refs/tags/release/v5.14.7.tar.gz \
+    && tar -xf v5.14.7.tar.gz \
+    && rm v5.14.7.tar.gz \
+    && cd cryptominisat-release-v5.14.7 \
     && cmake -DENABLE_TESTING=OFF -DIPASIR=ON -B build -S . \
-    && cmake --build build -- -j4 \
-    && cmake --build build --target install
+    && cmake --build build
+
+ENV PATH="/opt/cryptominisat-release-v5.14.7/build/:${PATH}"
 
 # Installing Kissat
 RUN wget https://github.com/arminbiere/kissat/archive/refs/tags/rel-3.0.0.tar.gz \
@@ -259,12 +304,13 @@ RUN cd glucose-syrup/parallel \
 
 ENV PATH="/opt/glucose-syrup/simp:/opt/glucose-syrup/parallel:${PATH}"
 
-# Installing MathSat
-RUN wget https://mathsat.fbk.eu/release/mathsat-5.6.11-linux-x86_64.tar.gz \
-    && tar -xf mathsat-5.6.11-linux-x86_64.tar.gz \
-    && rm mathsat-5.6.11-linux-x86_64.tar.gz
-
-ENV PATH="/opt/mathsat-5.6.11-linux-x86_64/bin:${PATH}"
+# Installing MathSat (x86_64 only — no Linux arm64 binary available from the vendor)
+RUN if [ "$TARGETARCH" != "arm64" ]; then \
+        wget https://mathsat.fbk.eu/release/mathsat-5.6.11-linux-x86_64.tar.gz \
+        && tar -xf mathsat-5.6.11-linux-x86_64.tar.gz \
+        && rm mathsat-5.6.11-linux-x86_64.tar.gz \
+        && ln -sf /opt/mathsat-5.6.11-linux-x86_64/bin/* /usr/local/bin/; \
+    fi
 
 # Installing Minisat
 RUN wget https://github.com/stp/minisat/archive/refs/tags/releases/2.2.1.zip \
@@ -301,15 +347,17 @@ RUN cd cadical-rel-1.5.3 \
 ENV PATH="/opt/cadical-rel-1.5.3/build:${PATH}"
 
 # Installing Yices
+# The build output directory name is derived from the host triple (e.g.
+# x86_64-pc-linux-gnu-release or aarch64-unknown-linux-gnu-release), so we
+# symlink the built binaries into /usr/local/bin instead of hard-coding it.
 RUN wget https://github.com/SRI-CSL/yices2/archive/refs/tags/yices-2.7.0.tar.gz \
     && tar -xf yices-2.7.0.tar.gz \
     && rm yices-2.7.0.tar.gz \
     && cd yices2-yices-2.7.0 \
     && autoconf \
     && ./configure --enable-thread-safety \
-    && make -j4
-
-ENV PATH="/opt/yices2-yices-2.7.0/build/x86_64-pc-linux-gnu-release/dist/bin:${PATH}"
+    && make -j4 \
+    && ln -sf /opt/yices2-yices-2.7.0/build/*/dist/bin/* /usr/local/bin/
 
 COPY required_dependencies/sage_numerical_backends_gurobi-9.3.1.tar.gz /opt/
 RUN cd /opt/ && sage -pip install sage_numerical_backends_gurobi-9.3.1.tar.gz

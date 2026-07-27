@@ -15,7 +15,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  run-pytest:
+  run-pytest-x86_64:
     if: ${{ !github.event.repository.fork }}
     runs-on: self-hosted
     steps:
@@ -49,6 +49,26 @@ jobs:
         path: /home/runner/_work/claasp/coverage.xml
         overwrite: true
 
+  run-pytest-arm64:
+    if: ${{ !github.event.repository.fork }}
+    runs-on: arm64
+    container:
+      image: tiicrc/claasp-lib:develop-arm64
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        persist-credentials: false
+        fetch-depth: 0
+
+    - name: Run pytest
+      run: |
+        uname -a
+        make install
+        make remote-pytest
+      env:
+        GUROBI_COMPUTE_SERVER: ${{ secrets.GUROBI_COMPUTE_SERVER }}
+
   run-code-coverage:
     runs-on: ubuntu-latest
     steps:
@@ -75,4 +95,4 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-    needs: run-pytest
+    needs: run-pytest-x86_64

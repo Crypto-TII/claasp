@@ -413,6 +413,11 @@ class Not(Component):
         result = variables, constraints
         return result
 
+    def milp_wordwise_branch_number_number_of_active_sboxes_constraints(self, model):
+        output_ids = self._milp_wordwise_branch_number_active_sboxes_output_ids(model)
+
+        return self._milp_wordwise_branch_number_active_sboxes_pass_through_constraints(model, output_ids, "NOT")
+
     def milp_xor_linear_mask_propagation_constraints(self, model):
         """
         Return a list of variables and a list of constraints for the NOT component for MILP xor linear.
