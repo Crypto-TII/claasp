@@ -563,15 +563,15 @@ class Permutation(Component):
 
         EXAMPLES::
 
-            sage: from claasp.components.permutation_component import Permutation
-            sage: DummyModel = type('DummyModel', (), {'word_size': 2})
-            sage: component = Permutation(0, 0, ['input'], [[0, 1, 2, 3]], 4, [1, 3, 2, 0])
-            sage: declarations, constraints = component.cp_xor_differential_propagation_first_step_constraints(DummyModel())
-            sage: declarations
-            ['array[0..1] of var 0..1: permutation_0_0;']
-            sage: constraints
-            ['constraint permutation_0_0[0] = max([input[0], input[1]]);',
-             'constraint permutation_0_0[1] = max([input[0], input[1]]);']
+            sage: from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
+            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_number_of_active_sboxes_model import MznXorDifferentialNumberOfActiveSboxesModel
+            sage: cipher = PresentBlockCipher(number_of_rounds=1)
+            sage: cp = MznXorDifferentialNumberOfActiveSboxesModel(cipher)
+            sage: cp.initialise_model()
+            sage: perm = cipher.component_from_id('permutation_0_17')
+            sage: declarations, constraints = perm.cp_xor_differential_propagation_first_step_constraints(cp)
+            sage: len(constraints) == cipher.block_bit_size // cp.word_size
+            True
         """
         output_id = self.id
         model_word_size = model.word_size
@@ -681,6 +681,13 @@ class Permutation(Component):
 
     def milp_xor_linear_mask_propagation_constraints(self, model):
         return self.milp_constraints(model)
+
+    def milp_wordwise_branch_number_number_of_active_sboxes_constraints(self, model):
+        output_ids = self._milp_wordwise_branch_number_active_sboxes_output_ids(model)
+
+        return self._milp_wordwise_branch_number_active_sboxes_exact_permutation_constraints(
+            model, output_ids, self._bit_perm()
+        )
 
     def milp_bitwise_deterministic_truncated_xor_differential_constraints(self, model):
         """

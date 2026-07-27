@@ -457,33 +457,11 @@ class MixColumn(LinearLayer):
              'constraint mix_column_0_0[1] = in[1];']
         """
         output_size = int(self.output_bit_size)
-        input_id_link = self.input_id_links
         output_id_link = self.id
-        input_bit_positions = self.input_bit_positions
         description = self.description
-        numb_of_inp = len(input_id_link)
-        all_inputs = []
-        mix_column_name = output_id_link
-        number_of_mix = 0
-        is_mix = False
-        additional_constraint = "no"
-        for i in range(numb_of_inp):
-            for j in range(len(input_bit_positions[i]) // model.word_size):
-                all_inputs.append(
-                    f"{input_id_link[i]}[{input_bit_positions[i][j * model.word_size] // model.word_size}]"
-                )
-            rem = len(input_bit_positions[i]) % model.word_size
-            if rem != 0:
-                rem = model.word_size - (len(input_bit_positions[i]) % model.word_size)
-                all_inputs.append(f"{output_id_link}_i[{number_of_mix}]")
-                number_of_mix += 1
-                is_mix = True
-                l = 1
-                while rem > 0:
-                    length = len(input_bit_positions[i + l])
-                    del input_bit_positions[i + l][0:rem]
-                    rem -= length
-                    l += 1
+
+        all_inputs, number_of_mix, is_mix = self._cp_first_step_flatten_inputs(model, output_id_link)
+
         cp_declarations = []
         if is_mix:
             cp_declarations.append(f"array[0..{number_of_mix - 1}] of var 0..1: {output_id_link}_i;")
@@ -491,48 +469,72 @@ class MixColumn(LinearLayer):
 
         matrix = description[0]
         words_per_cell = description[2] // model.word_size if model.word_size else 1
-        if (
-            not is_mix
-            and description[2] % model.word_size == 0
-            and self._is_permutation_matrix()
-        ):
-            cp_constraints = []
-            for j, row in enumerate(matrix):
-                k = next(i for i, x in enumerate(row) if x != 0)
-                for off in range(words_per_cell):
-                    cp_constraints.append(
-                        f"constraint {output_id_link}[{j * words_per_cell + off}] = {all_inputs[k * words_per_cell + off]};"
-                    )
+        if not is_mix and description[2] % model.word_size == 0 and self._is_permutation_matrix():
+            cp_constraints = self._cp_first_step_permutation_constraints(
+                matrix, words_per_cell, all_inputs, output_id_link
+            )
             model.mix_column_mant.append(self)
             return cp_declarations, cp_constraints
 
-        already_in = False
-        for mant in model.mix_column_mant:
-            if description == mant.description:
-                already_in = True
-                mix_column_name = mant.id
-                break
+        mix_column_name, already_in = self._cp_first_step_find_existing_mant(model, description)
         if not already_in:
             cp_declarations.append(self._cp_build_truncated_table(model.word_size))
+
         table_inputs = "++".join([f"[{input_}]" for input_ in all_inputs])
         table_outputs = "++".join([f"[{output_id_link}[{i}]]" for i in range(output_size // model.word_size)])
-        new_constraint = (
+        cp_constraints = [
             f"constraint table({table_inputs}++{table_outputs}, mix_column_truncated_table_{mix_column_name});"
-        )
-        cp_constraints = [new_constraint]
-        if additional_constraint == "yes":
-            self._cp_add_declarations_and_constraints(
-                model.word_size,
-                model.mix_column_mant,
-                model.list_of_xor_components,
-                cp_constraints,
-                cp_declarations,
-                mix_column_name,
-            )
+        ]
         model.mix_column_mant.append(self)
-        result = cp_declarations, cp_constraints
 
-        return result
+        return cp_declarations, cp_constraints
+
+    def _cp_first_step_flatten_inputs(self, model, output_id_link):
+        """Flatten this component's inputs to one CP reference per word, splitting off any misaligned remainder
+        bits into extra ``{output_id_link}_i`` mix variables (mutating ``self.input_bit_positions`` in place to
+        drop the bits already accounted for by those extra variables, as the original inline code did)."""
+        input_id_link = self.input_id_links
+        input_bit_positions = self.input_bit_positions
+        all_inputs = []
+        number_of_mix = 0
+        is_mix = False
+        for i in range(len(input_id_link)):
+            for j in range(len(input_bit_positions[i]) // model.word_size):
+                all_inputs.append(
+                    f"{input_id_link[i]}[{input_bit_positions[i][j * model.word_size] // model.word_size}]"
+                )
+            rem = len(input_bit_positions[i]) % model.word_size
+            if rem == 0:
+                continue
+            rem = model.word_size - rem
+            all_inputs.append(f"{output_id_link}_i[{number_of_mix}]")
+            number_of_mix += 1
+            is_mix = True
+            offset = 1
+            while rem > 0:
+                length = len(input_bit_positions[i + offset])
+                del input_bit_positions[i + offset][0:rem]
+                rem -= length
+                offset += 1
+        return all_inputs, number_of_mix, is_mix
+
+    @staticmethod
+    def _cp_first_step_permutation_constraints(matrix, words_per_cell, all_inputs, output_id_link):
+        cp_constraints = []
+        for j, row in enumerate(matrix):
+            k = next(i for i, x in enumerate(row) if x != 0)
+            for off in range(words_per_cell):
+                cp_constraints.append(
+                    f"constraint {output_id_link}[{j * words_per_cell + off}] = {all_inputs[k * words_per_cell + off]};"
+                )
+        return cp_constraints
+
+    def _cp_first_step_find_existing_mant(self, model, description):
+        """Return the id to reuse in the truncated table's name, and whether a matching mant was already declared."""
+        for mant in model.mix_column_mant:
+            if description == mant.description:
+                return mant.id, True
+        return self.id, False
 
     def cp_xor_differential_propagation_constraints(self, model):
         return self.cp_constraints()
@@ -779,6 +781,74 @@ class MixColumn(LinearLayer):
         self.description = original_description
         result = variables, constraints
         return result
+
+    def milp_wordwise_branch_number_number_of_active_sboxes_constraints(self, model):
+        output_ids = self._milp_wordwise_branch_number_active_sboxes_output_ids(model)
+        if self._is_permutation_matrix():
+            return self._milp_wordwise_branch_number_active_sboxes_permutation_constraints(model, output_ids)
+
+        input_ids = model._resolved_input_word_ids(self)
+        branch_number = model._word_branch_number(self)
+        if model._is_invertible_linear_map(self):
+            return model._invertible_linear_branch_number_constraints(input_ids, output_ids, branch_number)
+
+        return model._branch_number_constraints(input_ids + output_ids, branch_number)
+
+    def _milp_wordwise_branch_number_active_sboxes_permutation_constraints(self, model, output_ids):
+        if not self._is_permutation_matrix():
+            raise NotImplementedError(f"{self.id}: MixColumn permutation constraints require a permutation matrix")
+
+        w = model._word_variable
+        matrix = self.description[0]
+        cell_size = self.description[2]
+        if cell_size % model.word_size != 0:
+            raise NotImplementedError(f"{self.id}: MixColumn cell size is not a multiple of the word size")
+        words_per_cell = cell_size // model.word_size
+        input_ids = model._resolved_input_word_ids(self)
+        constraints = []
+        for cell_j, row in enumerate(matrix):
+            cell_k = next(i for i, value in enumerate(row) if value != 0)
+            for offset in range(words_per_cell):
+                output_id = output_ids[cell_j * words_per_cell + offset]
+                input_id = input_ids[(cell_k * words_per_cell + offset)]
+                constraints.append(w[output_id] == w[input_id])
+        return constraints
+
+    def milp_bitwise_deterministic_truncated_xor_differential_constraints(self, model):
+        """
+        Returns a list of variables and a list of constraints for mix column component in the bitwise
+        deterministic truncated XOR differential model.
+
+        MixColumn stores its description as ``[word_matrix, rotation, word_size]`` rather than a plain bit
+        matrix, so the generic :py:meth:`~LinearLayer.milp_bitwise_deterministic_truncated_xor_differential_constraints`
+        cannot be inherited directly (it indexes ``self.description`` as a bit matrix). This expands the word
+        matrix to its bit-level equivalent first, mirroring :py:meth:`milp_constraints` and
+        :py:meth:`milp_xor_linear_mask_propagation_constraints`.
+
+        INPUT:
+
+        - ``model`` -- **model object**; a model instance
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.single_component_ciphers.mix_column_cipher import MixColumnCipher
+            sage: from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import MilpBitwiseDeterministicTruncatedXorDifferentialModel
+            sage: cipher = MixColumnCipher(word_size=2, matrix=[[1, 0], [0, 1]], irreducible_polynomial=0)
+            sage: milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(cipher)
+            sage: milp.init_model_in_sage_milp_class()
+            sage: mix_column_component = cipher.component_from(0, 0)
+            sage: variables, constraints = mix_column_component.milp_bitwise_deterministic_truncated_xor_differential_constraints(milp)
+            sage: constraints
+            [x_4 == x_0, x_5 == x_1, x_6 == x_2, x_7 == x_3]
+        """
+        bin_matrix = binary_matrix_of_linear_component(self)
+        matrix_transposed = [[bin_matrix[i][j] for i in range(bin_matrix.nrows())] for j in range(bin_matrix.ncols())]
+        original_description = deepcopy(self.description)
+        self.description = matrix_transposed
+        variables, constraints = super().milp_bitwise_deterministic_truncated_xor_differential_constraints(model)
+        self.description = original_description
+
+        return variables, constraints
 
     def milp_wordwise_deterministic_truncated_xor_differential_constraints(self, model):
         """

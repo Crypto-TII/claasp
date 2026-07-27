@@ -432,6 +432,13 @@
         vol. 8781, pp. 306--323. Springer (2015).
         https://mouha.be/wp-content/uploads/chaskey12.c
 
+.. [MWGP2011]
+        Mouha N., Wang Q., Gu D., Preneel B. : *Differential and Linear
+        Cryptanalysis using Mixed-Integer Linear Programming* : In Inscrypt
+        2011, Lecture Notes in Computer Science, vol. 7537, pp. 57--76.
+        Springer (2012).
+        https://mouha.be/wp-content/uploads/milp.pdf
+
 .. [MUR2020]
         Murilo C., Rafael T., and Fabio B. : *Continuous
         Diffusion Analysis* : In IEEE Access.

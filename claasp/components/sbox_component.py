@@ -1753,6 +1753,15 @@ class Sbox(Component):
         )
         return variables, constraints
 
+    def milp_wordwise_branch_number_number_of_active_sboxes_constraints(self, model):
+        w = model._word_variable
+        output_ids = self._milp_wordwise_branch_number_active_sboxes_output_ids(model)
+        input_ids = model._resolved_input_word_ids(self)
+        if len(input_ids) != 1 or len(output_ids) != 1:
+            raise NotImplementedError(f"{self.id}: S-box input/output size does not match the word size")
+
+        return [w[output_ids[0]] == w[input_ids[0]]]
+
     def milp_wordwise_deterministic_truncated_xor_differential_constraints(self, model):
         """
         Models the wordwise Sbox component according to Model 4 from [SGWW2020]_
