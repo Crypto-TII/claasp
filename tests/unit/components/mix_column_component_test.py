@@ -184,7 +184,7 @@ def test_cp_xor_differential_first_step_uses_table_for_non_permutation_matrix():
     declarations, constraints = mix_column_component.cp_xor_differential_propagation_first_step_constraints(cp)
 
     assert declarations[0] == "array[0..1] of var 0..1: mix_column_0_0;"
-    assert declarations[1].startswith("array[0..11, 1..4] of int: mix_column_truncated_table_mix_column_0_0")
+    assert declarations[1].startswith("array[0..5, 1..4] of int: mix_column_truncated_table_mix_column_0_0")
     assert constraints == [
         "constraint table([plaintext[0]]++[plaintext[1]]++[mix_column_0_0[0]]++[mix_column_0_0[1]], "
         "mix_column_truncated_table_mix_column_0_0);"

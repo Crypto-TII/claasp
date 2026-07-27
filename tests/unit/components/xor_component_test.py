@@ -69,7 +69,7 @@ def test_cp_xor_differential_propagation_first_step_constraints():
     assert constraints == 'constraint table([plaintext[0]]++[key[0]], xor_truncated_table_2);'
 
 
-def test_cp_xor_differential_propagation_first_step_constraints_returns_no_constraints_for_partial_word():
+def test_cp_xor_differential_propagation_first_step_constraints_truncates_partial_word():
     cipher = XorCipher(word_bit_size=5, number_of_inputs=2)
     cp = MznModel(cipher)
     cp.word_size = 4
@@ -80,8 +80,10 @@ def test_cp_xor_differential_propagation_first_step_constraints_returns_no_const
         cp._variables_declarations,
     )
 
-    assert declarations == ["array[0..1] of var 0..1: xor_0_0;"]
-    assert constraints == []
+    assert declarations == [
+        "array[0..1, 1..2] of int: xor_truncated_table_2 = array2d(0..1, 1..2, [0,0,1,1]);"
+    ]
+    assert constraints == "constraint table([plaintext[0]]++[key[0]], xor_truncated_table_2);"
 
 
 def test_smt_constraints():
