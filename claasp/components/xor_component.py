@@ -692,6 +692,26 @@ class Xor(Component):
     def milp_xor_differential_propagation_constraints(self, model):
         return self.milp_constraints(model)
 
+    def milp_wordwise_branch_number_number_of_active_sboxes_constraints(self, model):
+        output_ids = self._milp_wordwise_branch_number_active_sboxes_output_ids(model)
+        number_of_operands = self.description[1]
+        flat_input_ids = model._flat_input_word_ids(self)
+        words_per_operand = len(output_ids)
+        if len(flat_input_ids) != number_of_operands * words_per_operand * model.word_size:
+            raise NotImplementedError(f"{self.id}: XOR input word count does not match operand count x output size")
+        operand_word_groups = []
+        for operand_index in range(number_of_operands):
+            start = operand_index * words_per_operand * model.word_size
+            end = (operand_index + 1) * words_per_operand * model.word_size
+            operand_bits = flat_input_ids[start:end]
+            operand_word_groups.append([operand_bits[j * model.word_size] for j in range(words_per_operand)])
+
+        constraints = []
+        for j, output_id in enumerate(output_ids):
+            group_words = [operand_words[j] for operand_words in operand_word_groups] + [output_id]
+            constraints += model._branch_number_constraints(group_words, 2)
+        return constraints
+
     def milp_xor_linear_constraints(self, model):
         """
         Return a list of variables and a list of constraints for XOR operation in MILP XOR LINEAR model.
@@ -1467,6 +1487,8 @@ class Xor(Component):
         numb_of_inp = len(input_id_link)
         all_inputs = []
         cp_declarations = [f"array[0..{(output_size - 1) // model.word_size}] of var 0..1: {output_id_link};"]
+        if output_size % model.word_size != 0:
+            return cp_declarations, []
         number_of_mix = 0
         is_mix = False
         for i in range(numb_of_inp):
