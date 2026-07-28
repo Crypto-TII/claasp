@@ -179,9 +179,9 @@ class AlgebraicModel:
             sage: AlgebraicModel(tea).polynomial_system()
             Polynomial Sequence with 288 Polynomials in 384 Variables
 
-            sage: from claasp.ciphers.permutations.gift_permutation import GiftPermutation
+            sage: from claasp.ciphers.block_ciphers.gift_block_cipher import GiftBlockCipher
             sage: from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
-            sage: gift = GiftPermutation(number_of_rounds=1)
+            sage: gift = GiftBlockCipher(number_of_rounds=1)
             sage: AlgebraicModel(gift).polynomial_system()
             Polynomial Sequence with 448 Polynomials in 640 Variables
 
