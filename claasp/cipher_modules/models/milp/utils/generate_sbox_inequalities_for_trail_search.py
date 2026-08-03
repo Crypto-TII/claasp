@@ -69,6 +69,54 @@ def sbox_inequalities(sbox, analysis="differential", algorithm="milp"):
         raise ValueError("algorithm (%s) has to be one of ['greedy', 'milp']" % (algorithm,))
 
 
+def sbox_valid_transitions(sbox, analysis="differential"):
+    """
+    Return the valid (non-trivial) transitions of an S-box as ``(delta_in, delta_out, count)`` triples.
+
+    Unlike :func:`sbox_inequalities` / the espresso product-of-sum approach, this performs no
+    minimization: the valid transitions are simply the nonzero cells of the DDT (differential) or
+    LAT (linear), excluding the trivial ``delta_in == 0`` row. It is the raw material for the
+    one-hot MILP formulation, where each returned transition becomes one binary indicator variable.
+
+    INPUT:
+
+    - ``sbox`` -- **SBox object**; the S-box to model
+    - ``analysis`` -- **string** (default: `differential`); one of ``'differential'`` or ``'linear'``
+
+    OUTPUT:
+
+    - **list** of ``(delta_in, delta_out, count)`` tuples, where ``count`` is the (absolute) table
+      entry used to derive the transition weight.
+
+    EXAMPLES::
+
+        sage: from sage.crypto.sbox import SBox
+        sage: SBox_PRESENT = SBox([12,5,6,11,9,0,10,13,3,14,15,8,4,7,1,2])
+        sage: from claasp.cipher_modules.models.milp.utils.generate_sbox_inequalities_for_trail_search import sbox_valid_transitions
+        sage: transitions = sbox_valid_transitions(SBox_PRESENT)
+        sage: len(transitions)
+        96
+        sage: (1, 3, 4) in transitions
+        True
+    """
+    if analysis == "differential":
+        valid_transformations_matrix = sbox.difference_distribution_table()
+    elif analysis == "linear":
+        valid_transformations_matrix = sbox.linear_approximation_table()
+    else:
+        raise TypeError("analysis (%s) has to be one of ['differential', 'linear']" % (analysis,))
+
+    n, m = sbox.input_size(), sbox.output_size()
+    transitions = []
+    for delta_in in range(1, 1 << n):
+        for delta_out in range(0, 1 << m):
+            entry = valid_transformations_matrix[delta_in][delta_out]
+            if entry != 0:
+                transitions.append((delta_in, delta_out, abs(int(entry))))
+
+    return transitions
+
+
 def convex_hull(sbox, analysis="differential"):
     """
     Compute the convex hull of the differential or linear behaviour of the given S-box.

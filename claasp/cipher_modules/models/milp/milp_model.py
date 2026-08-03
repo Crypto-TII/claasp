@@ -140,7 +140,7 @@ def get_input_output_variables(component):
 class MilpModel:
     """Build MILP models for ciphers using Cipher."""
 
-    def __init__(self, cipher, n_window_heuristic=None, verbose=False):
+    def __init__(self, cipher, n_window_heuristic=None, verbose=False, sbox_modeling="espresso"):
         self._cipher = cipher
         self._variables_list = []
         self._model_constraints = []
@@ -151,6 +151,9 @@ class MilpModel:
         self._non_linear_component_id = []
         self._intermediate_output_names = []
         self._number_of_trails_found = 0
+        if sbox_modeling not in ("espresso", "one_hot"):
+            raise ValueError("sbox_modeling (%s) has to be one of ['espresso', 'one_hot']" % (sbox_modeling,))
+        self._sbox_modeling = sbox_modeling
         self._verbose_print = print if verbose else lambda *a, **k: None
 
     def fix_variables_value_constraints(self, fixed_variables=[]):
@@ -473,3 +476,15 @@ class MilpModel:
     @property
     def non_linear_component_id(self):
         return self._non_linear_component_id
+
+    @property
+    def sbox_modeling(self):
+        """
+        Return the S-box MILP formulation selector.
+
+        One of ``'espresso'`` (default, minimized product-of-sum inequalities with
+        big-M activation) or ``'one_hot'`` (one binary indicator per valid DDT
+        transition, big-M free). Consumed by
+        :py:meth:`~claasp.components.sbox_component.Sbox.milp_xor_differential_propagation_constraints`.
+        """
+        return self._sbox_modeling

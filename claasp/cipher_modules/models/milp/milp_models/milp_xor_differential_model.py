@@ -55,8 +55,8 @@ from claasp.name_mappings import (
 
 
 class MilpXorDifferentialModel(MilpModel):
-    def __init__(self, cipher, n_window_heuristic=None, verbose=False):
-        super().__init__(cipher, n_window_heuristic, verbose)
+    def __init__(self, cipher, n_window_heuristic=None, verbose=False, sbox_modeling="espresso"):
+        super().__init__(cipher, n_window_heuristic, verbose, sbox_modeling=sbox_modeling)
         self._weight_precision = MILP_DEFAULT_WEIGHT_PRECISION
         self._has_non_integer_weight = False
 

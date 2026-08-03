@@ -31,6 +31,7 @@ from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_large_sbo
 )
 from claasp.cipher_modules.models.milp.utils.generate_sbox_inequalities_for_trail_search import (
     get_dictionary_that_contains_inequalities_for_small_sboxes,
+    sbox_valid_transitions,
     update_dictionary_that_contains_inequalities_for_small_sboxes,
 )
 from claasp.cipher_modules.models.milp.utils.generate_undisturbed_bits_inequalities_for_sboxes import (
@@ -276,6 +277,85 @@ def milp_set_constraints_from_dictionnary_for_large_sbox(
         )
     constraints.append(constraint_choice_proba == x[f"{component_id}_active"])
     constraints.append(p[f"{component_id}_probability"] == constraint_compute_proba)
+
+    return constraints
+
+
+def milp_one_hot_probability_constraints(component_id, input_vars, output_vars, sbox, x, p, analysis, weight_precision):
+    """
+    Build the one-hot (indicator) MILP constraints for an S-box.
+
+    Shared by the XOR differential (DDT) and XOR linear (LAT) formulations. One binary indicator
+    ``{component_id}_onehot_{di}_{do}`` is created per valid transition ``(di, do)`` returned by
+    :func:`~claasp.cipher_modules.models.milp.utils.generate_sbox_inequalities_for_trail_search.sbox_valid_transitions`.
+    Selecting a transition pins the input/output bits (difference bits for ``'differential'``, mask
+    bits for ``'linear'``) and contributes its weight linearly. The formulation is big-M free and
+    its LP relaxation is exactly the convex hull of the valid points. The differential weight uses
+    exponent ``n`` (``-log2(count / 2^n)``); the linear (correlation) weight uses exponent ``n - 1``.
+
+    INPUT:
+
+    - ``component_id`` -- **string**; identifier of the S-box component
+    - ``input_vars`` -- **list**; names of the input (difference/mask) MILP variables, MSB first
+    - ``output_vars`` -- **list**; names of the output (difference/mask) MILP variables, MSB first
+    - ``sbox`` -- **SBox object**; the S-box to model
+    - ``x`` -- **boolean MIPVariable object**
+    - ``p`` -- **integer MIPVariable object**
+    - ``analysis`` -- **string**; one of ``'differential'`` or ``'linear'``
+    - ``weight_precision`` -- **integer**; number of decimals used when rounding the weight
+
+    OUTPUT:
+
+    - ``list`` -- the MILP constraints (one activation-sum, one per input bit, one per output bit,
+      one for the weight)
+
+    EXAMPLES::
+
+        sage: from claasp.ciphers.single_component_ciphers.sbox_cipher import SboxCipher
+        sage: from claasp.cipher_modules.models.milp.milp_model import MilpModel
+        sage: from claasp.components.sbox_component import milp_one_hot_probability_constraints
+        sage: from sage.crypto.sbox import SBox
+        sage: cipher = SboxCipher(bit_size=3)
+        sage: milp = MilpModel(cipher)
+        sage: milp.init_model_in_sage_milp_class()
+        sage: sbox_component = cipher.component_from(0, 0)
+        sage: input_vars, output_vars = sbox_component._get_input_output_variables()
+        sage: constraints = milp_one_hot_probability_constraints(
+        ....:     'sbox_0_0', input_vars, output_vars, SBox(sbox_component.description),
+        ....:     milp.binary_variable, milp.integer_variable, 'differential', 2
+        ....: )
+        sage: len(constraints)  # 1 activation-sum + 3 input + 3 output + 1 weight
+        8
+    """
+    input_size, output_size = sbox.input_size(), sbox.output_size()
+    exponent = input_size if analysis == "differential" else input_size - 1
+    transitions = sbox_valid_transitions(sbox, analysis=analysis)
+    transition_vars = {(di, do): x[f"{component_id}_onehot_{di}_{do}"] for di, do, _ in transitions}
+
+    # mip().sum is single-pass; builtin sum() is O(n^2) on Sage linear functions
+    mip_sum = x.mip().sum
+
+    constraints = [mip_sum(transition_vars.values()) == x[f"{component_id}_active"]]
+
+    for k in range(input_size):
+        bit = input_size - 1 - k
+        constraints.append(
+            x[input_vars[k]] == mip_sum(y for (di, do), y in transition_vars.items() if (di >> bit) & 1)
+        )
+    for k in range(output_size):
+        bit = output_size - 1 - k
+        constraints.append(
+            x[output_vars[k]] == mip_sum(y for (di, do), y in transition_vars.items() if (do >> bit) & 1)
+        )
+
+    constraints.append(
+        p[f"{component_id}_probability"]
+        == (10**weight_precision)
+        * mip_sum(
+            round(-log(count / 2**exponent, 2), weight_precision) * transition_vars[(di, do)]
+            for di, do, count in transitions
+        )
+    )
 
     return constraints
 
@@ -1568,6 +1648,126 @@ class Sbox(Component):
 
         return variables, constraints
 
+    def milp_one_hot_xor_differential_probability_constraints(
+        self, binary_variable, integer_variable, non_linear_component_id, weight_precision=MILP_DEFAULT_WEIGHT_PRECISION
+    ):
+        """
+        Return variables and constraints modeling an SBOX with the one-hot (indicator) formulation.
+
+        .. NOTE::
+
+            One binary indicator variable ``{id}_onehot_{di}_{do}`` is introduced per valid DDT
+            transition ``(di, do)`` (nonzero cell with ``di != 0``). Selecting a transition pins the
+            input/output difference bits to it and contributes its weight linearly. This is the
+            big-M-free alternative to :py:meth:`milp_large_xor_differential_probability_constraints`
+            (espresso). Its LP relaxation is exactly the convex hull of the valid points. The cost is
+            one binary variable per nonzero DDT entry, which grows quickly for large S-boxes.
+            Selected via ``MilpModel(..., sbox_modeling='one_hot')``.
+
+        INPUT:
+
+        - ``binary_variable`` -- **boolean MIPVariable object**
+        - ``integer_variable`` -- **integer MIPVariable object**
+        - ``non_linear_component_id`` -- **list**
+        - ``weight_precision`` -- **integer** (default: `2`); number of decimals used when rounding the weight.
+
+        OUTPUT:
+
+        - ``tuple`` -- ``(variables, constraints)``
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.single_component_ciphers.sbox_cipher import SboxCipher
+            sage: from claasp.cipher_modules.models.milp.milp_model import MilpModel
+            sage: cipher = SboxCipher(bit_size=3)
+            sage: milp = MilpModel(cipher)
+            sage: milp.init_model_in_sage_milp_class()
+            sage: sbox_component = cipher.component_from(0, 0)
+            sage: variables, constraints = sbox_component.milp_one_hot_xor_differential_probability_constraints(milp.binary_variable, milp.integer_variable, milp._non_linear_component_id)
+            sage: variables
+            [('x[plaintext_0]', x_0),
+             ('x[plaintext_1]', x_1),
+             ('x[plaintext_2]', x_2),
+             ('x[sbox_0_0_0]', x_3),
+             ('x[sbox_0_0_1]', x_4),
+             ('x[sbox_0_0_2]', x_5)]
+            sage: constraints[0]
+            x_6 + x_7 + x_8 + x_9 + x_10 + x_11 + x_12 == x_13
+            sage: constraints[-1]
+            x_14 == 0
+        """
+
+        x = binary_variable
+        input_vars, output_vars = self._get_input_output_variables()
+        variables = [(f"x[{var}]", x[var]) for var in input_vars + output_vars]
+        non_linear_component_id.append(self.id)
+        constraints = milp_one_hot_probability_constraints(
+            self.id, input_vars, output_vars, SBox(self.description),
+            binary_variable, integer_variable, "differential", weight_precision,
+        )
+
+        return variables, constraints
+
+    def milp_one_hot_xor_linear_probability_constraints(
+        self, binary_variable, integer_variable, non_linear_component_id, weight_precision=MILP_DEFAULT_WEIGHT_PRECISION
+    ):
+        """
+        Return variables and constraints modeling an SBOX with the one-hot (indicator) formulation.
+
+        .. NOTE::
+
+            One binary indicator variable ``{id}_onehot_{mi}_{mo}`` is introduced per valid LAT
+            transition ``(mi, mo)`` (nonzero cell with input mask ``mi != 0``). Selecting a transition
+            pins the input/output mask bits to it and contributes its correlation weight linearly.
+            This is the big-M-free alternative to :py:meth:`milp_large_xor_linear_probability_constraints`
+            (espresso). Its LP relaxation is exactly the convex hull of the valid points. The cost is
+            one binary variable per nonzero LAT entry, which grows quickly for large S-boxes.
+            Selected via ``MilpModel(..., sbox_modeling='one_hot')``.
+
+        INPUT:
+
+        - ``binary_variable`` -- **boolean MIPVariable object**
+        - ``integer_variable`` -- **integer MIPVariable object**
+        - ``non_linear_component_id`` -- **list**
+        - ``weight_precision`` -- **integer** (default: `2`); number of decimals used when rounding the weight.
+
+        OUTPUT:
+
+        - ``tuple`` -- ``(variables, constraints)``
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.single_component_ciphers.sbox_cipher import SboxCipher
+            sage: from claasp.cipher_modules.models.milp.milp_model import MilpModel
+            sage: cipher = SboxCipher(bit_size=3)
+            sage: milp = MilpModel(cipher)
+            sage: milp.init_model_in_sage_milp_class()
+            sage: sbox_component = cipher.component_from(0, 0)
+            sage: variables, constraints = sbox_component.milp_one_hot_xor_linear_probability_constraints(milp.binary_variable, milp.integer_variable, milp._non_linear_component_id)
+            sage: variables
+            [('x[sbox_0_0_0_i]', x_0),
+             ('x[sbox_0_0_1_i]', x_1),
+             ('x[sbox_0_0_2_i]', x_2),
+             ('x[sbox_0_0_0_o]', x_3),
+             ('x[sbox_0_0_1_o]', x_4),
+             ('x[sbox_0_0_2_o]', x_5)]
+            sage: constraints[0]
+            x_6 + x_7 + x_8 + x_9 + x_10 + x_11 + x_12 == x_13
+            sage: constraints[-1]
+            x_14 == 0
+        """
+
+        x = binary_variable
+        input_vars, output_vars = self._get_independent_input_output_variables()
+        variables = [(f"x[{var}]", x[var]) for var in input_vars + output_vars]
+        non_linear_component_id.append(self.id)
+        constraints = milp_one_hot_probability_constraints(
+            self.id, input_vars, output_vars, SBox(self.description),
+            binary_variable, integer_variable, "linear", weight_precision,
+        )
+
+        return variables, constraints
+
     def milp_small_xor_linear_probability_constraints(
         self, binary_variable, integer_variable, non_linear_component_id, weight_precision=MILP_DEFAULT_WEIGHT_PRECISION
     ):
@@ -1705,9 +1905,14 @@ class Sbox(Component):
         integer_variable = model.integer_variable
         non_linear_component_id = model.non_linear_component_id
         weight_precision = model.weight_precision
-        variables, constraints = self.milp_large_xor_differential_probability_constraints(
-            binary_variable, integer_variable, non_linear_component_id, weight_precision
-        )
+        if getattr(model, "sbox_modeling", "espresso") == "one_hot":
+            variables, constraints = self.milp_one_hot_xor_differential_probability_constraints(
+                binary_variable, integer_variable, non_linear_component_id, weight_precision
+            )
+        else:
+            variables, constraints = self.milp_large_xor_differential_probability_constraints(
+                binary_variable, integer_variable, non_linear_component_id, weight_precision
+            )
 
         return variables, constraints
 
@@ -1748,9 +1953,14 @@ class Sbox(Component):
         integer_variable = model.integer_variable
         non_linear_component_id = model.non_linear_component_id
         weight_precision = model.weight_precision
-        variables, constraints = self.milp_large_xor_linear_probability_constraints(
-            binary_variable, integer_variable, non_linear_component_id, weight_precision
-        )
+        if getattr(model, "sbox_modeling", "espresso") == "one_hot":
+            variables, constraints = self.milp_one_hot_xor_linear_probability_constraints(
+                binary_variable, integer_variable, non_linear_component_id, weight_precision
+            )
+        else:
+            variables, constraints = self.milp_large_xor_linear_probability_constraints(
+                binary_variable, integer_variable, non_linear_component_id, weight_precision
+            )
         return variables, constraints
 
     def milp_wordwise_branch_number_number_of_active_sboxes_constraints(self, model):

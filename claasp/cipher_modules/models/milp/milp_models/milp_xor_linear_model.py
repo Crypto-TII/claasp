@@ -63,8 +63,8 @@ from claasp.name_mappings import (
 
 
 class MilpXorLinearModel(MilpModel):
-    def __init__(self, cipher, n_window_heuristic=None, verbose=False):
-        super().__init__(cipher, n_window_heuristic, verbose)
+    def __init__(self, cipher, n_window_heuristic=None, verbose=False, sbox_modeling="espresso"):
+        super().__init__(cipher, n_window_heuristic, verbose, sbox_modeling=sbox_modeling)
         self.bit_bindings, self.bit_bindings_for_intermediate_output = get_bit_bindings(cipher, "_".join)
         self._weight_precision = MILP_DEFAULT_WEIGHT_PRECISION
         self._has_non_integer_weight = False
