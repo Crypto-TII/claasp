@@ -429,7 +429,7 @@ class MznModel:
             bit_values = component["bit_values"]
             if step == "first_step":
                 if not self._cipher.is_two_step_trail_search_friendly():
-                    raise ValueError("Cipher is not SPN")
+                    raise ValueError("Cipher not compatible with the two-step trail search")
                 input_length = len(bit_positions) // self.word_size
                 bit_positions = self.calculate_bit_positions(bit_positions, input_length)
                 bit_values = self.calculate_bit_values(bit_values, input_length)
