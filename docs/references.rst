@@ -65,6 +65,12 @@
         characteristics* : IACR Transactions on Symmetric Cryptology (2017):
         99-129 : https://tosc.iacr.org/index.php/ToSC/article/view/805/759
 
+.. [ABK1998]
+        Anderson R., Biham E., Knudsen L. : *Serpent: A Proposal for the
+        Advanced Encryption Standard* : First Advanced Encryption Standard
+        Candidate Conference, 1998 :
+        https://www.cl.cam.ac.uk/archive/rja14/Papers/serpent.pdf
+
 .. _claasp-ref-B:
 
 .. only:: html
