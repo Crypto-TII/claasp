@@ -19,6 +19,7 @@ import importlib
 import inspect
 import os
 import sys
+import warnings
 from copy import deepcopy
 
 import claasp
@@ -1035,12 +1036,21 @@ class Cipher:
     def has_uniform_sboxes(self):
         """
         Return True if the cipher has at least one S-box, all S-boxes have the same input_bit_size,
-        and all components belong to the standard SPN or permutation component set.
+        all S-boxes are square (``input_bit_size == output_bit_size``), and all components belong
+        to the standard SPN or permutation component set.
 
         Less restrictive than :meth:`is_spn`: does not require MixColumns to be present or to have
         the same cell size as the S-boxes, and allows bit/word permutation components and SHIFT
         components (e.g. Mantis). Suitable as a compatibility check for the first-step active
         S-box count model.
+
+        The square-S-box requirement matters because the first-step CP model derives its word
+        activity arrays from the S-box's ``output_bit_size`` (see
+        :meth:`Sbox.cp_xor_differential_first_step_constraints
+        <claasp.components.sbox_component.Sbox.cp_xor_differential_first_step_constraints>`) while
+        the common word size used everywhere else is taken from the S-box's ``input_bit_size``
+        (see :meth:`is_two_step_trail_search_friendly`); for a non-square S-box, such as DES's 6-to-4
+        S-boxes, the two disagree and the model would be built incorrectly.
 
         EXAMPLES::
 
@@ -1056,6 +1066,9 @@ class Cipher:
             sage: from claasp.ciphers.block_ciphers.mantis_block_cipher import MantisBlockCipher
             sage: MantisBlockCipher(number_of_rounds=2).has_uniform_sboxes()
             True
+            sage: from claasp.ciphers.block_ciphers.des_block_cipher import DESBlockCipher
+            sage: DESBlockCipher(number_of_rounds=1).has_uniform_sboxes()
+            False
         """
         spn_components = {
             CIPHER_OUTPUT,
@@ -1069,6 +1082,11 @@ class Cipher:
             "XOR",
         }
         if self._uniform_sbox_size() is None:
+            return False
+        if any(
+            component.type == SBOX and component.input_bit_size != component.output_bit_size
+            for component in self.get_all_components()
+        ):
             return False
         set_of_components, _, _, _ = self.get_sizes_of_components_by_type()
         return set_of_components <= spn_components
@@ -1085,7 +1103,9 @@ class Cipher:
         - MixColumn cell sizes (``description[2]``) must be multiples of word_size
 
         Key schedule components with non-aligned rotations do not affect correctness when key
-        differences are fixed to zero (the standard setting for differential trail searches).
+        differences are fixed to zero (the standard setting for differential trail searches), but
+        a warning is raised for them since the search may be unsound for other use cases (e.g.
+        LBlock, whose key schedule rotates by an amount that isn't a multiple of the word size).
 
         EXAMPLES::
 
@@ -1107,6 +1127,21 @@ class Cipher:
         for component in self.get_all_components():
             if component.type == MIX_COLUMN and component.description[2] % word_size != 0:
                 return False
+        key_schedule_component_ids = set(get_key_schedule_component_ids(self))
+        for component in self.get_all_components():
+            if (
+                component.id in key_schedule_component_ids
+                and component.type == WORD_OPERATION
+                and component.description[0] in ("ROTATE", "SHIFT")
+                and component.description[1] % word_size != 0
+            ):
+                warnings.warn(
+                    f"key schedule component '{component.id}' rotates/shifts by "
+                    f"{component.description[1]} bits, which is not a multiple of the word size "
+                    f"({word_size}); the two-step trail search assumes key differences are fixed "
+                    f"to zero and may be unsound otherwise.",
+                    stacklevel=2,
+                )
         return True
 
     def get_model(self, technique, problem):

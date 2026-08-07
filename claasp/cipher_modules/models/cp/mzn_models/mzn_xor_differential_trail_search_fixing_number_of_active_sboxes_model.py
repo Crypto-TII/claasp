@@ -451,9 +451,17 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
         end = tm.time()
         build_time += end - start
 
+        base_command_options = None
         for i in range(len(CP_SOLVERS_EXTERNAL)):
             if second_step_solver_name == CP_SOLVERS_EXTERNAL[i]["solver_name"]:
                 base_command_options = CP_SOLVERS_EXTERNAL[i]["keywords"]["command"]
+                break
+        if base_command_options is None:
+            external_solver_names = [solver["solver_name"] for solver in CP_SOLVERS_EXTERNAL]
+            raise ValueError(
+                f"second_step_solver_name '{second_step_solver_name}' is not a supported external CP "
+                f"solver; it must be one of {external_solver_names}"
+            )
 
         for attempt in range(10000):
             command_options = deepcopy(base_command_options)
@@ -491,12 +499,15 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
             solver_output = solver_process.stdout.splitlines()
 
             if any(UNSATISFIABLE in line for line in solver_output):
-                # weight == -1 means we are only fixing the number of active S-boxes (first step):
-                # an UNSAT result here only rules out this particular count, not the whole search,
-                # so we retry with the next higher count instead of failing outright. For any other
-                # weight, UNSAT means no trail exists for that active-S-box count / weight.
                 if weight == -1:
+                    # weight == -1 means we are only fixing the number of active S-boxes (first
+                    # step): an UNSAT result here only rules out this particular count, not the
+                    # whole search, so we retry with the next higher count instead of failing.
                     continue
+                # weight >= 0: UNSAT means no trail exists for this weight with the current fixed
+                # active-S-box configuration. Unlike weight == -1, this branch does not enumerate
+                # every first-step solution, so UNSAT is scoped to that one configuration, not to
+                # the whole search.
                 return UNSATISFIABLE
 
             time, memory, components_values, total_weight = self._parse_solver_output(

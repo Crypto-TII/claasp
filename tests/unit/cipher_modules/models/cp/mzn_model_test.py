@@ -132,7 +132,7 @@ def test_first_step_fixed_variables_use_two_step_friendly_check():
 
     speck = SpeckBlockCipher(number_of_rounds=1)
     mzn = MznModel(speck)
-    with pytest.raises(ValueError, match="Cipher is not SPN"):
+    with pytest.raises(ValueError, match="Cipher not compatible with the two-step trail search"):
         mzn.fix_variables_value_constraints(fixed_variables, step="first_step")
 
 
