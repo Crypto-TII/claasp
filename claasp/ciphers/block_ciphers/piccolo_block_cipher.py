@@ -35,6 +35,7 @@ GF16_IRREDUCIBLE_POLY = 0x13
 RP_PERMUTATION = [2, 7, 4, 1, 6, 3, 0, 5]
 
 BASE32_80 = 0x0f1e2d3c
+BASE32_128 = 0x6547a98b
 
 PARAMETERS_CONFIGURATION_LIST = [
     {'key_bit_size': 80, 'number_of_rounds': 25},
@@ -51,7 +52,6 @@ def _generate_constants(num_rounds: int, base32: int) -> List[int]:
     constants = []
     for i in range(num_rounds):
         c0 = _c5(0)
-        c_i = _c5(i)
         c_i1 = _c5(i + 1)
         const = (c_i1 << 27) | (c0 << 22) | (c_i1 << 17) | (0 << 15) | (c_i1 << 10) | (c0 << 5) | c_i1
         const = (const ^ base32) & 0xFFFFFFFF
@@ -59,6 +59,16 @@ def _generate_constants(num_rounds: int, base32: int) -> List[int]:
         constants.append((const >> 16) & 0xFFFF)
         constants.append(const & 0xFFFF)
     return constants
+
+
+def _piccolo128_key_selection_order(rounds: int) -> List[int]:
+    kk = list(range(8))
+    order = []
+    for i in range(2 * rounds):
+        if (i + 2) % 8 == 0:
+            kk = [kk[2], kk[1], kk[6], kk[7], kk[0], kk[3], kk[4], kk[5]]
+        order.append(kk[(i + 2) % 8])
+    return order
 
 
 class PiccoloBlockCipher(Cipher):
@@ -75,7 +85,7 @@ class PiccoloBlockCipher(Cipher):
 
     - ``key_bit_size`` -- **integer** (default: `80`); key size in bits (80 or 128)
     - ``number_of_rounds`` -- **integer** (default: `None`); number of rounds. The cipher uses the
-    corresponding amount given the other parameters (if available) when number_of_rounds is None
+      corresponding amount given the other parameters (if available) when number_of_rounds is None
 
     EXAMPLES::
 
@@ -84,6 +94,10 @@ class PiccoloBlockCipher(Cipher):
         sage: piccolo.number_of_rounds
         25
 
+        sage: piccolo128 = PiccoloBlockCipher(key_bit_size=128)
+        sage: ct = piccolo128.evaluate([0x0123456789abcdef, 0x00112233445566778899aabbccddeeff])
+        sage: hex(ct)
+        '0x5ec42cea657b89ff'
     """
 
     def __init__(self, key_bit_size=80, number_of_rounds=None):
@@ -108,7 +122,7 @@ class PiccoloBlockCipher(Cipher):
 
         self.add_round()
 
-        wk, rk = self.schedule_80(r)
+        wk, rk = (self.schedule_80(r) if self.key_bit_size == 80 else self.schedule_128(r))
 
         X0 = self._xor([X0, wk[0]])
         X2 = self._xor([X2, wk[1]])
@@ -163,6 +177,36 @@ class PiccoloBlockCipher(Cipher):
             rk_bits.append(self._xor([k[a], const_a]))
             rk_bits.append(self._xor([k[b], const_b]))
         return wk_bits, rk_bits
+
+    def schedule_128(self, r: int) -> Tuple[List[ComponentState], List[ComponentState]]:
+        def word(i):
+            return list(range(16 * i, 16 * i + 16))
+
+        word_n = 8
+
+        k = [ComponentState([INPUT_KEY], [word(i)]) for i in range(word_n)]
+        kL = [ComponentState(k[i].id, [k[i].input_bit_positions[0][0:8]]) for i in range(word_n)]
+        kR = [ComponentState(k[i].id, [k[i].input_bit_positions[0][8:16]]) for i in range(word_n)]
+
+        wk = [
+            ComponentState([INPUT_KEY], [kL[0].input_bit_positions[0] + kR[1].input_bit_positions[0]]),
+            ComponentState([INPUT_KEY], [kL[1].input_bit_positions[0] + kR[0].input_bit_positions[0]]),
+            ComponentState([INPUT_KEY], [kL[4].input_bit_positions[0] + kR[7].input_bit_positions[0]]),
+            ComponentState([INPUT_KEY], [kL[7].input_bit_positions[0] + kR[4].input_bit_positions[0]]),
+        ]
+
+        constants = _generate_constants(r, BASE32_128)
+        order = _piccolo128_key_selection_order(r)
+        rk = []
+
+        for i in range(2 * r):
+
+            const_id = self.add_constant_component(16, constants[i]).id
+            const = ComponentState([const_id], [list(range(16))])
+
+            rk.append(self._xor([k[order[i]], const]))
+
+        return wk, rk
 
     def _sbox_layer(self, state: ComponentState) -> ComponentState:
         ids, bits = get_inputs_parameter([state])
