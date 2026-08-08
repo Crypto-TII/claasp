@@ -536,6 +536,12 @@
         and linear characteristics with predefined properties* : Cryptology
         ePrint Archive (2014) : https://eprint.iacr.org/2014/747.pdf
 
+.. [SIHMAS2011] 
+        Shibutani, K., Isobe, T., Hiwatari, H., Mitsuda, A., Akishita, T., Shirai, T. (2011).
+        *Piccolo: An Ultra-Lightweight Blockcipher*. In: Preneel, B., Takagi, T. (eds) Cryptographic
+        Hardware and Embedded Systems -- CHES 2011. Lecture Notes in Computer Science, vol 6917,
+        pp. 342-357. Springer, Berlin, Heidelberg. https://doi.org/10.1007/978-3-642-23951-9_23
+
 .. [SW2023]
         Sun, L., Wang, M. : *SoK: Modeling for Large S-boxes Oriented to
         Differential Probabilities and Linear Correlations (Long Paper)* :
