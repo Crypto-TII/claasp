@@ -19,7 +19,6 @@ import importlib
 import inspect
 import os
 import sys
-import warnings
 from copy import deepcopy
 
 import claasp
@@ -1102,10 +1101,15 @@ class Cipher:
           to the supported set (checked via :meth:`has_uniform_sboxes`)
         - MixColumn cell sizes (``description[2]``) must be multiples of word_size
 
-        Key schedule components with non-aligned rotations do not affect correctness when key
-        differences are fixed to zero (the standard setting for differential trail searches), but
-        a warning is raised for them since the search may be unsound for other use cases (e.g.
-        LBlock, whose key schedule rotates by an amount that isn't a multiple of the word size).
+        Key schedule components with non-aligned rotations (e.g. LBlock) do not affect correctness
+        when key differences are fixed to zero (the standard setting for differential trail
+        searches), so they are not checked here.
+
+        Note that :meth:`~claasp.cipher_modules.models.cp.mzn_model.MznModel.initialise_model`
+        calls this method for every CP model, not just the two-step search, so any diagnostic
+        emitted from here (e.g. via the ``warnings`` module) would fire on unrelated model
+        construction and break doctests throughout the codebase; that is why this is a docstring
+        note rather than a runtime warning.
 
         EXAMPLES::
 
@@ -1127,21 +1131,6 @@ class Cipher:
         for component in self.get_all_components():
             if component.type == MIX_COLUMN and component.description[2] % word_size != 0:
                 return False
-        key_schedule_component_ids = set(get_key_schedule_component_ids(self))
-        for component in self.get_all_components():
-            if (
-                component.id in key_schedule_component_ids
-                and component.type == WORD_OPERATION
-                and component.description[0] in ("ROTATE", "SHIFT")
-                and component.description[1] % word_size != 0
-            ):
-                warnings.warn(
-                    f"key schedule component '{component.id}' rotates/shifts by "
-                    f"{component.description[1]} bits, which is not a multiple of the word size "
-                    f"({word_size}); the two-step trail search assumes key differences are fixed "
-                    f"to zero and may be unsound otherwise.",
-                    stacklevel=2,
-                )
         return True
 
     def get_model(self, technique, problem):
