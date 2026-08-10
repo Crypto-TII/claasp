@@ -269,16 +269,15 @@ RUN wget https://github.com/msoos/cryptominisat/archive/refs/tags/release/v5.14.
 ENV PATH="/opt/cryptominisat-release-v5.14.7/build/:${PATH}"
 
 # Installing Kissat
-RUN wget https://github.com/arminbiere/kissat/archive/refs/tags/rel-3.0.0.tar.gz \
-    && tar -xf rel-3.0.0.tar.gz \
-    && rm rel-3.0.0.tar.gz
-
-RUN cd kissat-rel-3.0.0/ \
+RUN wget https://github.com/arminbiere/kissat/archive/refs/tags/rel-4.0.4.tar.gz \
+    && tar -xf rel-4.0.4.tar.gz \
+    && rm rel-4.0.4.tar.gz \
+    && cd kissat-rel-4.0.4/ \
     && ./configure \
     && cd build/ \
     && make
 
-ENV PATH="/opt/kissat-rel-3.0.0/build/:${PATH}"
+ENV PATH="/opt/kissat-rel-4.0.4/build/:${PATH}"
 
 # Installing Parkissat
 RUN wget -O parkissat.tar.gz https://github.com/songfu1983/ParKissat-RS/archive/refs/heads/master.tar.gz \
