@@ -1122,6 +1122,85 @@ def linear_checker_for_block_cipher_single_key(
     return corr
 
 
+def _w_boomerang_sk(args):
+    (cipher, inverse, input_difference, output_difference, state_num_bytes, key_num_bytes,
+     fixed_key, chunk_size, seed) = args
+    rng = np.random.default_rng(seed)
+    fk = _repeat_input_difference(fixed_key, chunk_size, key_num_bytes)
+    delta_col = _repeat_input_difference(input_difference, chunk_size, state_num_bytes)      # (sb, n)
+    nabla_row = _repeat_input_difference(output_difference, chunk_size, state_num_bytes).T   # (n, sb)
+    plaintext_0 = rng.integers(0, 256, size=(state_num_bytes, chunk_size), dtype=np.uint8)
+    plaintext_1 = plaintext_0 ^ delta_col
+    ciphertext_0 = cipher.evaluate_vectorized([plaintext_0, fk])[0]                          # (n, sb)
+    ciphertext_1 = cipher.evaluate_vectorized([plaintext_1, fk])[0]
+    plaintext_2 = inverse.evaluate_vectorized([(ciphertext_0 ^ nabla_row).T, fk])[0]         # (n, sb)
+    plaintext_3 = inverse.evaluate_vectorized([(ciphertext_1 ^ nabla_row).T, fk])[0]
+    returned = plaintext_2 ^ plaintext_3
+    matches = np.all(returned == delta_col.T, axis=1)
+    return int(np.count_nonzero(matches))
+
+
+def boomerang_checker_for_block_cipher_single_key(
+    cipher, input_difference, output_difference, number_of_samples, block_size, key_size, fixed_key, seed=None,
+    num_workers=1
+):
+    """
+    Verify experimentally boomerang (BCT) distinguishers for block ciphers using the vectorized evaluator.
+
+    The sandwich/boomerang is checked directly: with a random plaintext ``P0`` and a fixed key,
+    ``P1 = P0 ^ input_difference``; the pair is encrypted, the ``output_difference`` is applied to both
+    ciphertexts, they are decrypted with the cipher's inverse, and the run is a success when the two
+    returned plaintexts differ exactly by ``input_difference``. The forward direction uses
+    ``cipher.evaluate_vectorized`` and the backward direction uses ``cipher.cipher_inverse()``.
+
+    INPUT:
+
+    - ``cipher`` -- **Cipher object**; invertible cipher providing ``evaluate_vectorized`` and ``cipher_inverse``
+    - ``input_difference`` -- **integer**; input XOR difference (delta)
+    - ``output_difference`` -- **integer**; output XOR difference (nabla)
+    - ``number_of_samples`` -- **integer**; number of random plaintext pairs
+    - ``block_size`` -- **integer**; block size in bits (must be multiple of 8)
+    - ``key_size`` -- **integer**; key size in bits (must be multiple of 8)
+    - ``fixed_key`` -- **integer**; fixed key value for the single-key scenario
+    - ``seed`` -- **integer** (default: `None`); seed for reproducible random sampling
+    - ``num_workers`` -- **integer** (default: `1`); number of parallel worker processes
+
+    OUTPUT:
+
+    - This method returns a **float**; the empirical boomerang probability in the interval ``[0, 1]``
+
+    EXAMPLES::
+
+        sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+        sage: from claasp.cipher_modules.models.utils import boomerang_checker_for_block_cipher_single_key
+        sage: speck = SpeckBlockCipher(number_of_rounds=5)
+        sage: boomerang_checker_for_block_cipher_single_key(speck, 0, 0, 1024, 32, 64, 0)
+        1.0
+    """
+    if block_size % 8 != 0:
+        raise ValueError("State size must be a multiple of 8.")
+    if key_size % 8 != 0:
+        raise ValueError("Key size must be a multiple of 8.")
+    state_num_bytes = int(block_size / 8)
+    key_num_bytes = int(key_size / 8)
+    # cast to Python int so `.to_bytes` / float division work when called with Sage Integers
+    input_difference = int(input_difference)
+    output_difference = int(output_difference)
+    fixed_key = int(fixed_key)
+    number_of_samples = int(number_of_samples)
+    if seed is not None:
+        seed = int(seed)
+    inverse = cipher.cipher_inverse()
+    fixed_args = (
+        cipher, inverse, input_difference, output_difference, state_num_bytes, key_num_bytes, fixed_key,
+    )
+    if num_workers > 1:
+        count, total = _parallel_dispatch(_w_boomerang_sk, fixed_args, number_of_samples, num_workers, seed)
+        return count / total
+    count = _w_boomerang_sk(fixed_args + (number_of_samples, seed))
+    return count / number_of_samples
+
+
 def differential_checker_permutation(
     cipher, input_difference, output_difference, number_of_samples, state_size, seed=None, num_workers=1
 ):
