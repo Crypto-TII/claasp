@@ -206,6 +206,14 @@
 
         **C**
 
+.. [CDGP1993] Claesen, L., Daemen, J., Genoe, M., & Peeters, G. (1993).
+        *Subterranean: A 600 Mbit/sec Cryptographic VLSI Chip*.
+        In Proceedings of the 1993 IEEE International Conference on
+        Computer Design: VLSI in Computers & Processors (ICCD '93),
+        Cambridge, MA, USA, October 3-6, 1993, pp. 610-613.
+        IEEE Computer Society.
+        https://doi.org/10.1109/ICCD.1993.393304
+
 .. [Cou2001]
         Courtois N. : *La sécurité des primitives cryptographiques basées sur
         des problèmes algébriques multivariables* : MQ, IP, MinRank, HFE. PhD
