@@ -217,9 +217,20 @@
         Transactions on Symmetric Cryptology, Vol 2017, Issue 4, pre-print :
         https://eprint.iacr.org/2018/161.pdf
 
+.. [CPV+22]
+        Coutinho, M., Passos, I., Vásquez, J.C.G. et al.
+        Latin Dances Reloaded: Improved Cryptanalysis Against Salsa and
+        ChaCha, and the Proposal of Forró. J Cryptol 36, 18 (2023).
+        https://doi.org/10.1007/s00145-023-09455-5
+
 .. [Cro2005]
         Crowley P. : *Truncated differential cryptanalysis of five rounds of
         Salsa20* : IACR 2005 : http://eprint.iacr.org/2005/375
+
+.. [CryptDances22]
+        Coutinho, M. et al. CryptDances: a GPU-based cryptanalysis
+        tool for ChaCha, Salsa and Forro (MIT licensed).
+        https://github.com/murcoutinho/cryptDances
 
 .. [CZZ2023]
         Cao, W., Zhang, W., Zhou, C. : *New Automatic Search Tool for Searching
