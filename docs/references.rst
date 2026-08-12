@@ -290,6 +290,13 @@
         CHAM* : Implementation repository (2025) :
         https://github.com/dampers/SAECHAM-implementations
 
+.. [DMR2019] 
+        Daemen, J., Massolino, P. M. C., and Rotella, Y.
+        *The Subterranean 2.0 cipher suite.*
+        Submission to the NIST Lightweight Cryptography Standardization process,
+        version 1.1, March 29, 2019.
+        https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/round-2/spec-doc-rnd2/subterranean-spec-round2.pdf
+
 .. _claasp-ref-E:
 
 .. only:: html
@@ -468,6 +475,13 @@
         National Institute of Standards and Technology (NIST) : *SKIPJACK and
         KEA Algorithm Specifications* : Version 2.0. 29 de mayo de 1998 :
         https://csrc.nist.gov/csrc/media/projects/cryptographic-algorithm-validation-program/documents/skipjack/skipjack.pdf
+
+.. [NISTLWCSUB] 
+        Daemen, J., Massolino, P. M. C., and Rotella, Y.
+        *Subterranean 2.0 -- Round 2 submission package*
+        (reference software, including subterranean_bit.py).
+        NIST Lightweight Cryptography Standardization process, Round 2 Candidates.
+        https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/round-2/submissions-rnd2/subterranean.zip
 
 .. _claasp-ref-O:
 
