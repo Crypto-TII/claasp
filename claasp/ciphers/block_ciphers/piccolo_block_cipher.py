@@ -235,9 +235,9 @@ class PiccoloBlockCipher(Cipher):
         diffusion = self._diffusion_layer(sbox1)
         return self._sbox_layer(diffusion)
 
-    def _round_permutation(self, X0: ComponentState, X1: ComponentState, X2: ComponentState,
-                           X3: ComponentState) -> Tuple[ComponentState, ComponentState, ComponentState, ComponentState]:
-        ids, bits = get_inputs_parameter([X0, X1, X2, X3])
+    def _round_permutation(self, x0: ComponentState, x1: ComponentState, x2: ComponentState,
+                           x3: ComponentState) -> Tuple[ComponentState, ComponentState, ComponentState, ComponentState]:
+        ids, bits = get_inputs_parameter([x0, x1, x2, x3])
 
         perm_id = self.add_word_permutation_component(ids, bits, self.block_bit_size, RP_PERMUTATION, 8).id
 
