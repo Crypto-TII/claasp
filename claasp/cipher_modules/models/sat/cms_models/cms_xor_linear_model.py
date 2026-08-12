@@ -42,9 +42,20 @@ For any further information, visit `CryptoMiniSat - XOR clauses
 """
 
 from claasp.cipher_modules.models.sat.sat_models.sat_xor_linear_model import SatXorLinearModel
-from claasp.cipher_modules.models.sat.utils import utils
+from claasp.cipher_modules.models.sat.utils import constants, utils
 from claasp.cipher_modules.models.utils import get_bit_bindings
-from claasp.name_mappings import CONSTANT, LINEAR_LAYER, MIX_COLUMN, PERMUTATION_COMPONENT, SBOX, WORD_OPERATION
+from claasp.name_mappings import (
+    CIPHER_OUTPUT,
+    CONSTANT,
+    INPUT_KEY,
+    INTERMEDIATE_OUTPUT,
+    LINEAR_LAYER,
+    MIX_COLUMN,
+    PERMUTATION_COMPONENT,
+    SBOX,
+    WORD_OPERATION,
+)
+from claasp.cipher_modules.models.utils import get_single_key_scenario_format_for_fixed_values
 
 
 class CmsSatXorLinearModel(SatXorLinearModel):
@@ -60,7 +71,8 @@ class CmsSatXorLinearModel(SatXorLinearModel):
         """
         utils.cms_add_clauses_to_solver(numerical_cnf, solver)
 
-    def branch_xor_linear_constraints(self):
+    @staticmethod
+    def branch_xor_linear_constraints(bit_bindings):
         """
         Return lists of variables and clauses for branch in XOR LINEAR model.
 
@@ -77,8 +89,8 @@ class CmsSatXorLinearModel(SatXorLinearModel):
             sage: from claasp.cipher_modules.models.sat.cms_models.cms_xor_linear_model import CmsSatXorLinearModel
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: speck = SpeckBlockCipher(number_of_rounds=3)
-            sage: sat = CmsSatXorLinearModel(speck)
-            sage: sat.branch_xor_linear_constraints()
+            sage: cms = CmsSatXorLinearModel(speck)
+            sage: cms.branch_xor_linear_constraints(cms.bit_bindings)
             ['x -plaintext_0_o rot_0_0_0_i',
              'x -plaintext_1_o rot_0_0_1_i',
              'x -plaintext_2_o rot_0_0_2_i',
@@ -88,9 +100,8 @@ class CmsSatXorLinearModel(SatXorLinearModel):
              'x -xor_2_10_15_o cipher_output_2_12_31_i']
         """
         constraints = []
-        for output_bit, input_bits in self.bit_bindings.items():
-            operands = [f"x -{output_bit}"] + input_bits
-            constraints.append(" ".join(operands))
+        for output_bit, input_bits in bit_bindings.items():
+            constraints.append(f"x -{output_bit} {' '.join(input_bits)}")
 
         return constraints
 
@@ -110,17 +121,30 @@ class CmsSatXorLinearModel(SatXorLinearModel):
             sage: speck = SpeckBlockCipher(number_of_rounds=22)
             sage: cms = CmsSatXorLinearModel(speck)
             sage: cms.build_xor_linear_trail_model()
-            ...
         """
         self._variables_list = []
         variables = []
-        constraints = self.fix_variables_value_xor_linear_constraints(fixed_variables)
+        if INPUT_KEY not in [variable["component_id"] for variable in fixed_variables]:
+            self._cipher = self._cipher.remove_key_schedule()
+            self.bit_bindings, self.bit_bindings_for_intermediate_output = get_bit_bindings(self._cipher, "_".join)
+        if fixed_variables == []:
+            fixed_variables = get_single_key_scenario_format_for_fixed_values(self._cipher)
+        constraints = CmsSatXorLinearModel.fix_variables_value_xor_linear_constraints(fixed_variables)
         self._model_constraints = constraints
+        component_types = (
+            CONSTANT,
+            INTERMEDIATE_OUTPUT,
+            CIPHER_OUTPUT,
+            LINEAR_LAYER,
+            PERMUTATION_COMPONENT,
+            SBOX,
+            MIX_COLUMN,
+            WORD_OPERATION,
+        )
+        operation_types = ("AND", "MODADD", "NOT", "ROTATE", "SHIFT", "XOR", "OR", "MODSUB")
 
         for component in self._cipher.get_all_components():
-            component_types = (CONSTANT, LINEAR_LAYER, PERMUTATION_COMPONENT, SBOX, MIX_COLUMN, WORD_OPERATION)
             operation = component.description[0]
-            operation_types = ("AND", "MODADD", "NOT", "ROTATE", "SHIFT", "XOR", "OR", "MODSUB")
             if component.type in component_types and (component.type != WORD_OPERATION or operation in operation_types):
                 variables, constraints = component.cms_xor_linear_mask_propagation_constraints(self)
             else:
@@ -129,7 +153,7 @@ class CmsSatXorLinearModel(SatXorLinearModel):
             self._variables_list.extend(variables)
             self._model_constraints.extend(constraints)
 
-        constraints = self.branch_xor_linear_constraints()
+        constraints = CmsSatXorLinearModel.branch_xor_linear_constraints(self.bit_bindings)
         self._model_constraints.extend(constraints)
 
         if weight != -1:
