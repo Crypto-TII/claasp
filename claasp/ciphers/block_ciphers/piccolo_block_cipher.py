@@ -173,7 +173,7 @@ class PiccoloBlockCipher(Cipher):
             elif m in (1, 4):
                 a, b = (0, 1)
             else:
-                a, b = (4, 4)     
+                a, b = (4, 4)
 
             const_a_id = self.add_constant_component(16, constants[2 * i]).id
             const_a = ComponentState([const_a_id], [list(range(16))])
@@ -251,7 +251,7 @@ class PiccoloBlockCipher(Cipher):
     def _xor(self, terms: List[ComponentState]) -> ComponentState:
         """XOR all the terms in the list and return the corresponding ComponentState object."""
         if len(terms) == 0:
-            raise Exception('Empty terms list.')
+            raise ValueError('Empty terms list.')
 
         ids, bits = get_inputs_parameter(terms)
         size = sum(len(p) for p in terms[0].input_bit_positions)
