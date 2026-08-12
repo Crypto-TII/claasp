@@ -47,16 +47,18 @@ TEST_VECTORS_V2 = [
 ]
 
 
-def test_subterranean_permutation():
-    """Test vectors from a custom implementation of [CDGP1993]_."""
-
+def test_subterranean_output_size():
     st = SubterraneanPermutation()
     assert st.output_bit_size == 257
 
-    for pt, key, rounds, expected in TEST_VECTORS:
-        subt = SubterraneanPermutation(number_of_rounds=rounds)
-        ct = subt.evaluate([pt, key])
-        assert ct == expected
+
+@pytest.mark.parametrize('pt,key,rounds,expected', TEST_VECTORS)
+def test_subterranean_permutation(pt, key, rounds, expected):
+    """Test vectors from a custom implementation of [CDGP1993]_."""
+
+    subt = SubterraneanPermutation(number_of_rounds=rounds)
+    ct = subt.evaluate([pt, key])
+    assert ct == expected
 
 
 @pytest.mark.parametrize('pt,expected', TEST_VECTORS_V2)
