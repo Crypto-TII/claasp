@@ -115,35 +115,35 @@ class PiccoloBlockCipher(Cipher):
                          cipher_inputs_bit_size=[self.block_bit_size, self.key_bit_size],
                          cipher_output_bit_size=self.block_bit_size)
 
-        X0 = ComponentState([INPUT_PLAINTEXT], [list(range(0, 16))])
-        X1 = ComponentState([INPUT_PLAINTEXT], [list(range(16, 32))])
-        X2 = ComponentState([INPUT_PLAINTEXT], [list(range(32, 48))])
-        X3 = ComponentState([INPUT_PLAINTEXT], [list(range(48, 64))])
+        x0 = ComponentState([INPUT_PLAINTEXT], [list(range(0, 16))])
+        x1 = ComponentState([INPUT_PLAINTEXT], [list(range(16, 32))])
+        x2 = ComponentState([INPUT_PLAINTEXT], [list(range(32, 48))])
+        x3 = ComponentState([INPUT_PLAINTEXT], [list(range(48, 64))])
 
         self.add_round()
 
         wk, rk = (self.schedule_80(r) if self.key_bit_size == 80 else self.schedule_128(r))
 
-        X0 = self._xor([X0, wk[0]])
-        X2 = self._xor([X2, wk[1]])
+        x0 = self._xor([x0, wk[0]])
+        x2 = self._xor([x2, wk[1]])
 
         for i in range(r):
             if i > 0:
                 self.add_round()
 
-            X1 = self._xor([X1, self._f_function(X0), rk[2 * i]])
-            X3 = self._xor([X3, self._f_function(X2), rk[2 * i + 1]])
+            x1 = self._xor([x1, self._f_function(x0), rk[2 * i]])
+            x3 = self._xor([x3, self._f_function(x2), rk[2 * i + 1]])
 
             if i < r - 1:
-                X0, X1, X2, X3 = self._round_permutation(X0, X1, X2, X3)
-                ids, bits = get_inputs_parameter([X0, X1, X2, X3])
+                x0, x1, x2, x3 = self._round_permutation(x0, x1, x2, x3)
+                ids, bits = get_inputs_parameter([x0, x1, x2, x3])
 
                 self.add_round_output_component(ids, bits, self.block_bit_size)
 
-        X0 = self._xor([X0, wk[2]])
-        X2 = self._xor([X2, wk[3]])
+        x0 = self._xor([x0, wk[2]])
+        x2 = self._xor([x2, wk[3]])
 
-        ids, bits = get_inputs_parameter([X0, X1, X2, X3])
+        ids, bits = get_inputs_parameter([x0, x1, x2, x3])
 
         self.add_cipher_output_component(ids, bits, self.block_bit_size)
 
@@ -151,14 +151,14 @@ class PiccoloBlockCipher(Cipher):
         def word(i):
             return list(range(16 * i, 16 * i + 16))
         k = [ComponentState([INPUT_KEY], [word(i)]) for i in range(5)]
-        kL = [ComponentState(k[i].id, [k[i].input_bit_positions[0][0:8]]) for i in range(5)]
-        kR = [ComponentState(k[i].id, [k[i].input_bit_positions[0][8:16]]) for i in range(5)]
+        key_left = [ComponentState(k[i].id, [k[i].input_bit_positions[0][0:8]]) for i in range(5)]
+        key_right = [ComponentState(k[i].id, [k[i].input_bit_positions[0][8:16]]) for i in range(5)]
 
         wk_bits = [
-            ComponentState([INPUT_KEY], [kL[0].input_bit_positions[0] + kR[1].input_bit_positions[0]]),
-            ComponentState([INPUT_KEY], [kL[1].input_bit_positions[0] + kR[0].input_bit_positions[0]]),
-            ComponentState([INPUT_KEY], [kL[4].input_bit_positions[0] + kR[3].input_bit_positions[0]]),
-            ComponentState([INPUT_KEY], [kL[3].input_bit_positions[0] + kR[4].input_bit_positions[0]]),
+            ComponentState([INPUT_KEY], [key_left[0].input_bit_positions[0] + key_right[1].input_bit_positions[0]]),
+            ComponentState([INPUT_KEY], [key_left[1].input_bit_positions[0] + key_right[0].input_bit_positions[0]]),
+            ComponentState([INPUT_KEY], [key_left[4].input_bit_positions[0] + key_right[3].input_bit_positions[0]]),
+            ComponentState([INPUT_KEY], [key_left[3].input_bit_positions[0] + key_right[4].input_bit_positions[0]]),
         ]
 
         constants = _generate_constants(r, BASE32_80)
@@ -185,14 +185,14 @@ class PiccoloBlockCipher(Cipher):
         word_n = 8
 
         k = [ComponentState([INPUT_KEY], [word(i)]) for i in range(word_n)]
-        kL = [ComponentState(k[i].id, [k[i].input_bit_positions[0][0:8]]) for i in range(word_n)]
-        kR = [ComponentState(k[i].id, [k[i].input_bit_positions[0][8:16]]) for i in range(word_n)]
+        key_left = [ComponentState(k[i].id, [k[i].input_bit_positions[0][0:8]]) for i in range(word_n)]
+        key_right = [ComponentState(k[i].id, [k[i].input_bit_positions[0][8:16]]) for i in range(word_n)]
 
         wk = [
-            ComponentState([INPUT_KEY], [kL[0].input_bit_positions[0] + kR[1].input_bit_positions[0]]),
-            ComponentState([INPUT_KEY], [kL[1].input_bit_positions[0] + kR[0].input_bit_positions[0]]),
-            ComponentState([INPUT_KEY], [kL[4].input_bit_positions[0] + kR[7].input_bit_positions[0]]),
-            ComponentState([INPUT_KEY], [kL[7].input_bit_positions[0] + kR[4].input_bit_positions[0]]),
+            ComponentState([INPUT_KEY], [key_left[0].input_bit_positions[0] + key_right[1].input_bit_positions[0]]),
+            ComponentState([INPUT_KEY], [key_left[1].input_bit_positions[0] + key_right[0].input_bit_positions[0]]),
+            ComponentState([INPUT_KEY], [key_left[4].input_bit_positions[0] + key_right[7].input_bit_positions[0]]),
+            ComponentState([INPUT_KEY], [key_left[7].input_bit_positions[0] + key_right[4].input_bit_positions[0]]),
         ]
 
         constants = _generate_constants(r, BASE32_128)
