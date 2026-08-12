@@ -167,7 +167,13 @@ class PiccoloBlockCipher(Cipher):
 
         for i in range(r):
             m = i % 5
-            a, b = (2, 3) if m in (0, 2) else (0, 1) if m in (1, 4) else (4, 4)
+
+            if m in (0, 2):
+                a, b = (2, 3)
+            elif m in (1, 4):
+                a, b = (0, 1)
+            else:
+                a, b = (4, 4)     
 
             const_a_id = self.add_constant_component(16, constants[2 * i]).id
             const_a = ComponentState([const_a_id], [list(range(16))])
