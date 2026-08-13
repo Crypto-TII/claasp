@@ -17,6 +17,7 @@
 
 import subprocess
 import time as tm
+import warnings
 from copy import deepcopy
 
 from claasp.cipher_modules.models.cp.mzn_model import SOLVE_SATISFY
@@ -29,7 +30,8 @@ from claasp.cipher_modules.models.cp.solvers import (
     SOLVER_DEFAULT,
 )
 from claasp.cipher_modules.models.utils import convert_solver_solution_to_dictionary
-from claasp.name_mappings import UNSATISFIABLE, XOR_DIFFERENTIAL
+from claasp.editor import get_key_schedule_component_ids
+from claasp.name_mappings import UNSATISFIABLE, WORD_OPERATION, XOR_DIFFERENTIAL
 
 
 class MznXorDifferentialFixingNumberOfActiveSboxesModel(
@@ -388,6 +390,38 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
 
         return cp_declarations, cp_constraints
 
+    def _warn_if_key_schedule_not_word_aligned(self):
+        """
+        Warn if the cipher's key schedule has ROTATE/SHIFT components whose amount is not a
+        multiple of ``self.word_size`` (e.g. LBlock).
+
+        The two-step trail search assumes key differences are fixed to zero, so non-aligned key
+        schedule rotations do not affect correctness for the standard differential trail search
+        setting; the search may be unsound for other use cases, hence the warning rather than a
+        hard failure.
+
+        This check lives here -- scoped to the two-step model's own solve entry point -- rather
+        than in :meth:`~claasp.cipher.Cipher.is_two_step_trail_search_friendly`, which
+        :meth:`~claasp.cipher_modules.models.cp.mzn_model.MznModel.initialise_model` calls for
+        every CP model, not just this one; emitting a warning from there fired on unrelated model
+        construction and broke doctests throughout the codebase.
+        """
+        key_schedule_component_ids = get_key_schedule_component_ids(self._cipher)
+        for component in self._cipher.get_all_components():
+            if (
+                component.id in key_schedule_component_ids
+                and component.type == WORD_OPERATION
+                and component.description[0] in ("ROTATE", "SHIFT")
+                and component.description[1] % self.word_size != 0
+            ):
+                warnings.warn(
+                    f"key schedule component '{component.id}' rotates/shifts by "
+                    f"{component.description[1]} bits, which is not a multiple of the word size "
+                    f"({self.word_size}); the two-step trail search assumes key differences are "
+                    f"fixed to zero and may be unsound otherwise.",
+                    stacklevel=2,
+                )
+
     def solve_full_two_steps_xor_differential_model(
         self,
         model_type="xor_differential_one_solution",
@@ -438,6 +472,8 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
             possible_sboxes = self.find_possible_number_of_active_sboxes(weight)
             if not possible_sboxes:
                 raise ValueError("There are no trails with the fixed weight!")
+
+        self._warn_if_key_schedule_not_word_aligned()
 
         start = tm.time()
         self.build_xor_differential_trail_first_step_model(weight, fixed_variables, nmax, repetition, possible_sboxes)

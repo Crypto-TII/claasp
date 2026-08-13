@@ -1,5 +1,7 @@
 from types import SimpleNamespace
 
+import pytest
+
 from claasp.cipher_modules.models.cp.mzn_models import (
     mzn_xor_differential_trail_search_fixing_number_of_active_sboxes_model as trail_search_model,
 )
@@ -8,6 +10,7 @@ from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_trail_searc
 )
 from claasp.cipher_modules.models.cp.solvers import CHUFFED
 from claasp.cipher_modules.models.utils import set_fixed_variables
+from claasp.ciphers.block_ciphers.lblock_block_cipher import LBlockBlockCipher
 from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
 from claasp.name_mappings import INPUT_KEY, INPUT_PLAINTEXT, UNSATISFIABLE, XOR_DIFFERENTIAL
 
@@ -201,3 +204,20 @@ def test_solve_full_two_steps_returns_unsat_for_fixed_weight(monkeypatch):
     assert calls["solve_model_types"] == ["xor_differential_first_step"]
     assert calls["models"] == ["table_for_['first_step_pattern'];"]
     assert solution == UNSATISFIABLE
+
+
+def test_solve_full_two_steps_warns_about_non_word_aligned_key_schedule_rotations(monkeypatch):
+    model = MznXorDifferentialFixingNumberOfActiveSboxesModel(LBlockBlockCipher(number_of_rounds=1))
+    _stub_two_step_model(model, monkeypatch, ["SAT\n"])
+
+    with pytest.warns(UserWarning, match="rot_0_13.*not a multiple of the word size"):
+        model.solve_full_two_steps_xor_differential_model("xor_differential_one_solution", -1, [], CHUFFED, CHUFFED)
+
+
+def test_solve_full_two_steps_does_not_warn_for_word_aligned_key_schedule(monkeypatch, recwarn):
+    model = MznXorDifferentialFixingNumberOfActiveSboxesModel(ToyAESBlockCipher(number_of_rounds=1))
+    _stub_two_step_model(model, monkeypatch, ["SAT\n"])
+
+    model.solve_full_two_steps_xor_differential_model("xor_differential_one_solution", -1, [], CHUFFED, CHUFFED)
+
+    assert len(recwarn) == 0
