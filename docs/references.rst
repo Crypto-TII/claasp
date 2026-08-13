@@ -68,6 +68,12 @@
 .. [A1997]
         Adams C. : *The CAST-128 Encryption Algorithm* : RFC 2144, Network
         Working Group, 1997 : https://datatracker.ietf.org/doc/html/rfc2144
+        
+.. [ABK1998]
+        Anderson R., Biham E., Knudsen L. : *Serpent: A Proposal for the
+        Advanced Encryption Standard* : First Advanced Encryption Standard
+        Candidate Conference, 1998 :
+        https://www.cl.cam.ac.uk/archive/rja14/Papers/serpent.pdf
 
 .. _claasp-ref-B:
 
@@ -215,9 +221,20 @@
         Transactions on Symmetric Cryptology, Vol 2017, Issue 4, pre-print :
         https://eprint.iacr.org/2018/161.pdf
 
+.. [CPV+22]
+        Coutinho, M., Passos, I., Vásquez, J.C.G. et al.
+        Latin Dances Reloaded: Improved Cryptanalysis Against Salsa and
+        ChaCha, and the Proposal of Forró. J Cryptol 36, 18 (2023).
+        https://doi.org/10.1007/s00145-023-09455-5
+
 .. [Cro2005]
         Crowley P. : *Truncated differential cryptanalysis of five rounds of
         Salsa20* : IACR 2005 : http://eprint.iacr.org/2005/375
+
+.. [CryptDances22]
+        Coutinho, M. et al. CryptDances: a GPU-based cryptanalysis
+        tool for ChaCha, Salsa and Forro (MIT licensed).
+        https://github.com/murcoutinho/cryptDances
 
 .. [CZZ2023]
         Cao, W., Zhang, W., Zhou, C. : *New Automatic Search Tool for Searching
@@ -435,6 +452,13 @@
         In Selected Areas in Cryptography -- SAC 2014, Lecture Notes in Computer Science,
         vol. 8781, pp. 306--323. Springer (2015).
         https://mouha.be/wp-content/uploads/chaskey12.c
+
+.. [MWGP2011]
+        Mouha N., Wang Q., Gu D., Preneel B. : *Differential and Linear
+        Cryptanalysis using Mixed-Integer Linear Programming* : In Inscrypt
+        2011, Lecture Notes in Computer Science, vol. 7537, pp. 57--76.
+        Springer (2012).
+        https://mouha.be/wp-content/uploads/milp.pdf
 
 .. [MUR2020]
         Murilo C., Rafael T., and Fabio B. : *Continuous

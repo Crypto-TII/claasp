@@ -97,6 +97,41 @@ class CipherOutput(Component):
     def cms_xor_differential_propagation_constraints(self, model):
         return self.cms_constraints()
 
+    def cms_xor_linear_mask_propagation_constraints(self, model=None):
+        """
+        Return a list of variables and a list of clauses for CIPHER OUTPUT for CMS XOR LINEAR model
+
+        .. SEEALSO::
+
+            :ref:`sat-standard` for the format
+
+        INPUT:
+
+        - ``model`` -- **model object** (default: `None`); a model instance
+
+        EXAMPLES::
+
+            sage: from claasp.components.cipher_output_component import CipherOutput
+            sage: output_component = CipherOutput(0, 0, ['xor_0_0', 'xor_0_1'], [[0, 1], [0, 1]], 4)
+            sage: output_component.cms_xor_linear_mask_propagation_constraints()
+            (['cipher_output_0_0_0_i',
+              'cipher_output_0_0_1_i',
+              ...
+              'cipher_output_0_0_2_o',
+              'cipher_output_0_0_3_o'],
+             ['x -cipher_output_0_0_0_o cipher_output_0_0_0_i',
+              'x -cipher_output_0_0_1_o cipher_output_0_0_1_i',
+              'x -cipher_output_0_0_2_o cipher_output_0_0_2_i',
+              'x -cipher_output_0_0_3_o cipher_output_0_0_3_i'])
+        """
+        _, input_bit_ids = self._generate_component_input_ids()
+        _, output_bit_ids = self._generate_output_ids(suffix=constants.OUTPUT_BIT_ID_SUFFIX)
+        constraints = []
+        for output_bit_id, input_bit_id in zip(output_bit_ids, input_bit_ids):
+            constraints.append(f"x -{output_bit_id} {input_bit_id}")
+
+        return input_bit_ids + output_bit_ids, constraints
+
     def cp_constraints(self):
         """
         Return a list of CP declarations and a list of CP constraints for OUTPUT component.
@@ -434,6 +469,13 @@ class CipherOutput(Component):
 
     def milp_xor_differential_propagation_constraints(self, model):
         return self.milp_constraints(model)
+
+    def milp_wordwise_branch_number_number_of_active_sboxes_constraints(self, model):
+        output_ids = self._milp_wordwise_branch_number_active_sboxes_output_ids(model)
+
+        return self._milp_wordwise_branch_number_active_sboxes_pass_through_constraints(
+            model, output_ids, "pass-through"
+        )
 
     def milp_xor_linear_mask_propagation_constraints(self, model):
         """

@@ -100,17 +100,17 @@ class AlgebraicModel:
             sage: from claasp.ciphers.toys.toyspn1 import ToySPN1
             sage: toyspn = ToySPN1()
             sage: algebraic = AlgebraicModel(toyspn)
-            sage: algebraic.is_algebraically_secure(30)
+            sage: algebraic.is_algebraically_secure(60)
             False
         """
-        from cysignals.alarm import alarm, cancel_alarm
+        from cysignals.alarm import AlarmInterrupt, alarm, cancel_alarm
 
         try:
             alarm(timeout)
             self.polynomial_system().groebner_basis()
             cancel_alarm()
             result = False
-        except InterruptedError:
+        except AlarmInterrupt:
             result = True
 
         return result
@@ -179,9 +179,9 @@ class AlgebraicModel:
             sage: AlgebraicModel(tea).polynomial_system()
             Polynomial Sequence with 288 Polynomials in 384 Variables
 
-            sage: from claasp.ciphers.permutations.gift_permutation import GiftPermutation
+            sage: from claasp.ciphers.block_ciphers.gift_block_cipher import GiftBlockCipher
             sage: from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
-            sage: gift = GiftPermutation(number_of_rounds=1)
+            sage: gift = GiftBlockCipher(number_of_rounds=1)
             sage: AlgebraicModel(gift).polynomial_system()
             Polynomial Sequence with 448 Polynomials in 640 Variables
 

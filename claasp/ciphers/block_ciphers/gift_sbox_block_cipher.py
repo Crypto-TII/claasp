@@ -20,7 +20,7 @@ from copy import deepcopy
 
 from claasp.cipher import Cipher
 from claasp.DTOs.component_state import ComponentState
-from claasp.name_mappings import INPUT_KEY, INPUT_PLAINTEXT, PERMUTATION
+from claasp.name_mappings import INPUT_KEY, INPUT_PLAINTEXT, BLOCK_CIPHER
 from claasp.utils.utils import get_inputs_parameter, simplify_inputs
 
 KEY_NUM = 8
@@ -61,20 +61,20 @@ ROUND_CONSTANT = [
 # fmt: on
 
 
-class GiftSboxPermutation(Cipher):
+class GiftSboxBlockCipher(Cipher):
     """
-    Construct an instance of the GIFTSboxPermutation class.
+    Construct an instance of the GiftSboxBlockCipher class.
 
     This class is used to store compact representations of a cipher, used to generate the corresponding cipher.
 
     INPUT:
 
-        - ``number_of_rounds`` -- **integer** (default: `40`); number of rounds of the permutation
+        - ``number_of_rounds`` -- **integer** (default: `40`); number of rounds of the block cipher
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.permutations.gift_sbox_permutation import GiftSboxPermutation
-        sage: gift = GiftSboxPermutation(number_of_rounds=40)
+        sage: from claasp.ciphers.block_ciphers.gift_sbox_block_cipher import GiftSboxBlockCipher
+        sage: gift = GiftSboxBlockCipher(number_of_rounds=40)
         sage: gift.number_of_rounds
         40
 
@@ -88,7 +88,7 @@ class GiftSboxPermutation(Cipher):
 
         super().__init__(
             family_name="gift_sbox",
-            cipher_type=PERMUTATION,
+            cipher_type=BLOCK_CIPHER,
             cipher_inputs=[INPUT_PLAINTEXT, INPUT_KEY],
             cipher_inputs_bit_size=[self.state_bit_size, self.key_bit_size],
             cipher_output_bit_size=self.state_bit_size,
