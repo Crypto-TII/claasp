@@ -66,7 +66,7 @@ class CastBlockCipher(Cipher):
         self.add_round()
 
         # fmt: off
-        S1 = [
+        s1 = [
             0x30fb40d4, 0x9fa0ff0b, 0x6beccd2f, 0x3f258c7a, 0x1e213f2f, 0x9c004dd3, 0x6003e540, 0xcf9fc949,
             0xbfd4af27, 0x88bbbdb5, 0xe2034090, 0x98d09675, 0x6e63a0e0, 0x15c361d2, 0xc2e7661d, 0x22d4ff8e,
             0x28683b6f, 0xc07fd059, 0xff2379c8, 0x775f50e2, 0x43c340d3, 0xdf2f8656, 0x887ca41a, 0xa2d2bd2d,
@@ -100,7 +100,7 @@ class CastBlockCipher(Cipher):
             0xbd91e046, 0x9a56456e, 0xdc39200c, 0x20c8c571, 0x962bda1c, 0xe1e696ff, 0xb141ab08, 0x7cca89b9,
             0x1a69e783, 0x02cc4843, 0xa2f7c579, 0x429ef47d, 0x427b169c, 0x5ac9f049, 0xdd8f0f00, 0x5c8165bf
         ]
-        S2 = [
+        s2 = [
             0x1f201094, 0xef0ba75b, 0x69e3cf7e, 0x393f4380, 0xfe61cf7a, 0xeec5207a, 0x55889c94, 0x72fc0651,
             0xada7ef79, 0x4e1d7235, 0xd55a63ce, 0xde0436ba, 0x99c430ef, 0x5f0c0794, 0x18dcdb7d, 0xa1d6eff3,
             0xa0b52f7b, 0x59e83605, 0xee15b094, 0xe9ffd909, 0xdc440086, 0xef944459, 0xba83ccb3, 0xe0c3cdfb,
@@ -134,7 +134,7 @@ class CastBlockCipher(Cipher):
             0x8f5ea2b3, 0xfc184642, 0x0a036b7a, 0x4fb089bd, 0x649da589, 0xa345415e, 0x5c038323, 0x3e5d3bb9,
             0x43d79572, 0x7e6dd07c, 0x06dfdf1e, 0x6c6cc4ef, 0x7160a539, 0x73bfbe70, 0x83877605, 0x4523ecf1
         ]
-        S3 = [
+        s3 = [
             0x8defc240, 0x25fa5d9f, 0xeb903dbf, 0xe810c907, 0x47607fff, 0x369fe44b, 0x8c1fc644, 0xaececa90,
             0xbeb1f9bf, 0xeefbcaea, 0xe8cf1950, 0x51df07ae, 0x920e8806, 0xf0ad0548, 0xe13c8d83, 0x927010d5,
             0x11107d9f, 0x07647db9, 0xb2e3e4d4, 0x3d4f285e, 0xb9afa820, 0xfade82e0, 0xa067268b, 0x8272792e,
@@ -168,7 +168,7 @@ class CastBlockCipher(Cipher):
             0x282f9350, 0x8334b362, 0xd91d1120, 0x2b6d8da0, 0x642b1e31, 0x9c305a00, 0x52bce688, 0x1b03588a,
             0xf7baefd5, 0x4142ed9c, 0xa4315c11, 0x83323ec5, 0xdfef4636, 0xa133c501, 0xe9d3531c, 0xee353783
         ]
-        S4 = [
+        s4 = [
             0x9db30420, 0x1fb6e9de, 0xa7be7bef, 0xd273a298, 0x4a4f7bdb, 0x64ad8c57, 0x85510443, 0xfa020ed1,
             0x7e287aff, 0xe60fb663, 0x095f35a1, 0x79ebf120, 0xfd059d43, 0x6497b7b1, 0xf3641f63, 0x241e4adf,
             0x28147f5f, 0x4fa2b8cd, 0xc9430040, 0x0cc32220, 0xfdd30b30, 0xc0a5374f, 0x1d2d00d9, 0x24147b15,
@@ -202,7 +202,7 @@ class CastBlockCipher(Cipher):
             0x8644213e, 0xb7dc59d0, 0x7965291f, 0xccd6fd43, 0x41823979, 0x932bcdf6, 0xb657c34d, 0x4edfd282,
             0x7ae5290c, 0x3cb9536b, 0x851e20fe, 0x9833557e, 0x13ecf0b0, 0xd3ffb372, 0x3f85c5c1, 0x0aef7ed2
         ]
-        S5 = [
+        s5 = [
             0x7ec90c04, 0x2c6e74b9, 0x9b0e66df, 0xa6337911, 0xb86a7fff, 0x1dd358f5, 0x44dd9d44, 0x1731167f,
             0x08fbf1fa, 0xe7f511cc, 0xd2051b00, 0x735aba00, 0x2ab722d8, 0x386381cb, 0xacf6243a, 0x69befd7a,
             0xe6a2e77f, 0xf0c720cd, 0xc4494816, 0xccf5c180, 0x38851640, 0x15b0a848, 0xe68b18cb, 0x4caadeff,
@@ -236,7 +236,7 @@ class CastBlockCipher(Cipher):
             0xd6cd2595, 0x68ff1ebf, 0x7555442c, 0xf19f06be, 0xf9e0659a, 0xeeb9491d, 0x34010718, 0xbb30cab8,
             0xe822fe15, 0x88570983, 0x750e6249, 0xda627e55, 0x5e76ffa8, 0xb1534546, 0x6d47de08, 0xefe9e7d4
         ]
-        S6 = [
+        s6 = [
             0xf6fa8f9d, 0x2cac6ce1, 0x4ca34867, 0xe2337f7c, 0x95db08e7, 0x016843b4, 0xeced5cbc, 0x325553ac,
             0xbf9f0960, 0xdfa1e2ed, 0x83f0579d, 0x63ed86b9, 0x1ab6a6b8, 0xde5ebe39, 0xf38ff732, 0x8989b138,
             0x33f14961, 0xc01937bd, 0xf506c6da, 0xe4625e7e, 0xa308ea99, 0x4e23e33c, 0x79cbd7cc, 0x48a14367,
@@ -270,7 +270,7 @@ class CastBlockCipher(Cipher):
             0x3b4cbf9f, 0x4a5de3ab, 0xe6051d35, 0xa0e1d855, 0xd36b4cf1, 0xf544edeb, 0xb0e93524, 0xbebb8fbd,
             0xa2d762cf, 0x49c92f54, 0x38b5f331, 0x7128a454, 0x48392905, 0xa65b1db8, 0x851c97bd, 0xd675cf2f
         ]
-        S7 = [
+        s7 = [
             0x85e04019, 0x332bf567, 0x662dbfff, 0xcfc65693, 0x2a8d7f6f, 0xab9bc912, 0xde6008a1, 0x2028da1f,
             0x0227bce7, 0x4d642916, 0x18fac300, 0x50f18b82, 0x2cb2cb11, 0xb232e75c, 0x4b3695f2, 0xb28707de,
             0xa05fbcf6, 0xcd4181e9, 0xe150210c, 0xe24ef1bd, 0xb168c381, 0xfde4e789, 0x5c79b0d8, 0x1e8bfd43,
@@ -304,7 +304,7 @@ class CastBlockCipher(Cipher):
             0x91da55f4, 0x40a230f3, 0xd1988f35, 0xb6e318d2, 0x3ffa50bc, 0x3d40f021, 0xc3c0bdae, 0x4958c24c,
             0x518f36b2, 0x84b1d370, 0x0fedce83, 0x878ddada, 0xf2a279c7, 0x94e01be8, 0x90716f4b, 0x954b8aa3
         ]
-        S8 = [
+        s8 = [
             0xe216300d, 0xbbddfffc, 0xa7ebdabd, 0x35648095, 0x7789f8b7, 0xe6c1121b, 0x0e241600, 0x052ce8b5,
             0x11a9cfb0, 0xe5952f11, 0xece7990a, 0x9386d174, 0x2a42931c, 0x76e38111, 0xb12def3a, 0x37ddddfc,
             0xde9adeb1, 0x0a0cc32c, 0xbe197029, 0x84a00940, 0xbb243a0f, 0xb4d137cf, 0xb44e79f0, 0x049eedfd,
@@ -339,78 +339,20 @@ class CastBlockCipher(Cipher):
             0x04f19130, 0xba6e4ec0, 0x99265164, 0x1ee7230d, 0x50b2ad80, 0xeaee6801, 0x8db2a283, 0xea8bf59e
         ]
         self.sbox = {
-            1: S1,
-            2: S2,
-            3: S3,
-            4: S4,
-            5: S5,
-            6: S6,
-            7: S7,
-            8: S8,
+            1: s1,
+            2: s2,
+            3: s3,
+            4: s4,
+            5: s5,
+            6: s6,
+            7: s7,
+            8: s8,
         }
         # fmt:on
 
-        if self.key_bit_size < 128:
-            padding_length = 128 - self.key_bit_size
-            zero_pad = self.add_constant_component(padding_length, 0)
-
-            input_key_id = self.add_permutation_component(
-                [INPUT_KEY, zero_pad.id],
-                [list(range(self.key_bit_size)), list(range(padding_length))],
-                128,
-                list(range(128))
-            ).id
-        else:
-            input_key_id = INPUT_KEY
-
-        # Key Schedule
-        z0123, z4567, z89AB, zCDEF = self._compute_z_from_x(input_key_id)
-        k1, k2, k3, k4 = self._compute_k1_to_k4(z0123, z4567, z89AB, zCDEF)
-
-        x0123, x4567, x89AB, xCDEF = self._compute_x_from_z(z0123, z4567, z89AB, zCDEF)
-        k5, k6, k7, k8 = self._compute_k5_to_k8(x0123, x4567, x89AB, xCDEF)
-
-        x_concatenation = self.add_permutation_component(
-            [x0123, x4567, x89AB, xCDEF],
-            [list(range(32))] * 4,
-            128,
-            list(range(128))
-        ).id
-
-        z0123, z4567, z89AB, zCDEF = self._compute_z_from_x(x_concatenation)
-        k9, k10, k11, k12 = self._compute_k9_to_k12(z0123, z4567, z89AB, zCDEF)
-
-        x0123, x4567, x89AB, xCDEF = self._compute_x_from_z(z0123, z4567, z89AB, zCDEF)
-        k13, k14, k15, k16 = self._compute_k13_to_k16(x0123, x4567, x89AB, xCDEF)
-
-        x_concatenation = self.add_permutation_component(
-            [x0123, x4567, x89AB, xCDEF],
-            [list(range(32))] * 4,
-            128,
-            list(range(128))
-        ).id
-
-        z0123, z4567, z89AB, zCDEF = self._compute_z_from_x(x_concatenation)
-        k17, k18, k19, k20 = self._compute_k1_to_k4(z0123, z4567, z89AB, zCDEF)
-
-        x0123, x4567, x89AB, xCDEF = self._compute_x_from_z(z0123, z4567, z89AB, zCDEF)
-        k21, k22, k23, k24 = self._compute_k5_to_k8(x0123, x4567, x89AB, xCDEF)
-
-        x_concatenation = self.add_permutation_component(
-            [x0123, x4567, x89AB, xCDEF],
-            [list(range(32))] * 4,
-            128,
-            list(range(128))
-        ).id
-
-        z0123, z4567, z89AB, zCDEF = self._compute_z_from_x(x_concatenation)
-        k25, k26, k27, k28 = self._compute_k9_to_k12(z0123, z4567, z89AB, zCDEF)
-
-        x0123, x4567, x89AB, xCDEF = self._compute_x_from_z(z0123, z4567, z89AB, zCDEF)
-        k29, k30, k31, k32 = self._compute_k13_to_k16(x0123, x4567, x89AB, xCDEF)
-
-        self.km = [k1, k2, k3, k4, k5, k6, k7, k8, k9, k10, k11, k12, k13, k14, k15, k16]
-        self.kr = [k17, k18, k19, k20, k21, k22, k23, k24, k25, k26, k27, k28, k29, k30, k31, k32]
+        key_schedule = self._construct_key_schedule()
+        self.km = key_schedule[:16]
+        self.kr = key_schedule[16:]
 
         current_block_id = INPUT_PLAINTEXT
         km_bits = list(range(32))
@@ -422,11 +364,11 @@ class CastBlockCipher(Cipher):
             current_km_id = self.km[round_num - 1]
             current_kr_id = self.kr[round_num - 1]
             if round_num % 3 == 1:
-                f_out = self.round_type1(current_block_id, current_km_id, km_bits, current_kr_id)
+                f_out = self._round_type1(current_block_id, current_km_id, km_bits, current_kr_id)
             elif round_num % 3 == 2:
-                f_out = self.round_type2(current_block_id, current_km_id, km_bits, current_kr_id)
+                f_out = self._round_type2(current_block_id, current_km_id, km_bits, current_kr_id)
             else:
-                f_out = self.round_type3(current_block_id, current_km_id, km_bits, current_kr_id)
+                f_out = self._round_type3(current_block_id, current_km_id, km_bits, current_kr_id)
 
             new_r = self.add_xor_component(
                 [current_block_id, f_out.id],
@@ -452,7 +394,7 @@ class CastBlockCipher(Cipher):
             [list(range(64))],
             64)
 
-    def round_type1(self, input_block_id, km_id, km_bits, kr_id):
+    def _round_type1(self, input_block_id, km_id, km_bits, kr_id):
         r_bits = list(range(32, 64))
 
         # compute I
@@ -505,7 +447,7 @@ class CastBlockCipher(Cipher):
 
         return f_out
 
-    def round_type2(self, input_block_id, km_id, km_bits, kr_id):
+    def _round_type2(self, input_block_id, km_id, km_bits, kr_id):
         r_bits = list(range(32, 64))
 
         # Compute I
@@ -557,7 +499,7 @@ class CastBlockCipher(Cipher):
 
         return f_out
 
-    def round_type3(self, input_block_id, km_id, km_bits, kr_id):
+    def _round_type3(self, input_block_id, km_id, km_bits, kr_id):
         r_bits = list(range(32, 64))
 
         # Compute I
@@ -640,7 +582,7 @@ class CastBlockCipher(Cipher):
         s8_xe = self.add_sbox_component([x_id], [self._get_byte_bits(14)], 32, self.sbox[8])
         s7_x8 = self.add_sbox_component([x_id], [self._get_byte_bits(8)], 32, self.sbox[7])
 
-        z0123 = self.add_xor_component(
+        z_0123 = self.add_xor_component(
             [x_id, s5_xd.id, s6_xf.id, s7_xc.id, s8_xe.id, s7_x8.id],
             [self._get_word_bits(0), list(range(32)), list(range(32)), list(range(32)), list(range(32)),
              list(range(32))],
@@ -648,13 +590,13 @@ class CastBlockCipher(Cipher):
         )
 
         # Compute z4z5z6z7
-        s5_z0 = self.add_sbox_component([z0123.id], [list(range(0, 8))], 32, self.sbox[5])
-        s6_z2 = self.add_sbox_component([z0123.id], [list(range(16, 24))], 32, self.sbox[6])
-        s7_z1 = self.add_sbox_component([z0123.id], [list(range(8, 16))], 32, self.sbox[7])
-        s8_z3 = self.add_sbox_component([z0123.id], [list(range(24, 32))], 32, self.sbox[8])
+        s5_z0 = self.add_sbox_component([z_0123.id], [list(range(0, 8))], 32, self.sbox[5])
+        s6_z2 = self.add_sbox_component([z_0123.id], [list(range(16, 24))], 32, self.sbox[6])
+        s7_z1 = self.add_sbox_component([z_0123.id], [list(range(8, 16))], 32, self.sbox[7])
+        s8_z3 = self.add_sbox_component([z_0123.id], [list(range(24, 32))], 32, self.sbox[8])
         s8_xa = self.add_sbox_component([x_id], [self._get_byte_bits(10)], 32, self.sbox[8])
 
-        z4567 = self.add_xor_component(
+        z_4567 = self.add_xor_component(
             [x_id, s5_z0.id, s6_z2.id, s7_z1.id, s8_z3.id, s8_xa.id],
             [self._get_word_bits(8), list(range(32)), list(range(32)), list(range(32)), list(range(32)),
              list(range(32))],
@@ -662,13 +604,13 @@ class CastBlockCipher(Cipher):
         )
 
         # Compute z8z9zAzB
-        s5_z7 = self.add_sbox_component([z4567.id], [list(range(24, 32))], 32, self.sbox[5])
-        s6_z6 = self.add_sbox_component([z4567.id], [list(range(16, 24))], 32, self.sbox[6])
-        s7_z5 = self.add_sbox_component([z4567.id], [list(range(8, 16))], 32, self.sbox[7])
-        s8_z4 = self.add_sbox_component([z4567.id], [list(range(0, 8))], 32, self.sbox[8])
+        s5_z7 = self.add_sbox_component([z_4567.id], [list(range(24, 32))], 32, self.sbox[5])
+        s6_z6 = self.add_sbox_component([z_4567.id], [list(range(16, 24))], 32, self.sbox[6])
+        s7_z5 = self.add_sbox_component([z_4567.id], [list(range(8, 16))], 32, self.sbox[7])
+        s8_z4 = self.add_sbox_component([z_4567.id], [list(range(0, 8))], 32, self.sbox[8])
         s5_x9 = self.add_sbox_component([x_id], [self._get_byte_bits(9)], 32, self.sbox[5])
 
-        z89AB = self.add_xor_component(
+        z_89ab = self.add_xor_component(
             [x_id, s5_z7.id, s6_z6.id, s7_z5.id, s8_z4.id, s5_x9.id],
             [self._get_word_bits(12), list(range(32)), list(range(32)), list(range(32)), list(range(32)),
              list(range(32))],
@@ -676,89 +618,89 @@ class CastBlockCipher(Cipher):
         )
 
         # Compute zCzDzEzF
-        s5_zA = self.add_sbox_component([z89AB.id], [list(range(16, 24))], 32, self.sbox[5])
-        s6_z9 = self.add_sbox_component([z89AB.id], [list(range(8, 16))], 32, self.sbox[6])
-        s7_zB = self.add_sbox_component([z89AB.id], [list(range(24, 32))], 32, self.sbox[7])
-        s8_z8 = self.add_sbox_component([z89AB.id], [list(range(0, 8))], 32, self.sbox[8])
-        s6_xB = self.add_sbox_component([x_id], [self._get_byte_bits(11)], 32, self.sbox[6])
+        s5_za = self.add_sbox_component([z_89ab.id], [list(range(16, 24))], 32, self.sbox[5])
+        s6_z9 = self.add_sbox_component([z_89ab.id], [list(range(8, 16))], 32, self.sbox[6])
+        s7_zb = self.add_sbox_component([z_89ab.id], [list(range(24, 32))], 32, self.sbox[7])
+        s8_z8 = self.add_sbox_component([z_89ab.id], [list(range(0, 8))], 32, self.sbox[8])
+        s6_xb = self.add_sbox_component([x_id], [self._get_byte_bits(11)], 32, self.sbox[6])
 
-        zCDEF = self.add_xor_component(
-            [x_id, s5_zA.id, s6_z9.id, s7_zB.id, s8_z8.id, s6_xB.id],
+        z_cdef = self.add_xor_component(
+            [x_id, s5_za.id, s6_z9.id, s7_zb.id, s8_z8.id, s6_xb.id],
             [self._get_word_bits(4), list(range(32)), list(range(32)), list(range(32)), list(range(32)),
              list(range(32))],
             32
         )
 
-        return z0123.id, z4567.id, z89AB.id, zCDEF.id
+        return z_0123.id, z_4567.id, z_89ab.id, z_cdef.id
 
-    def _compute_x_from_z(self, z0123_id, z4567_id, z89AB_id, zCDEF_id):
+    def _compute_x_from_z(self, z_0123_id, z_4567_id, z_89ab_id, z_cdef_id):
         """
         Compute x_i from z_i values
         """
         b0, b1, b2, b3 = list(range(0, 8)), list(range(8, 16)), list(range(16, 24)), list(range(24, 32))
 
         # Compute x0x1x2x3
-        s5_z5 = self.add_sbox_component([z4567_id], [b1], 32, self.sbox[5])
-        s6_z7 = self.add_sbox_component([z4567_id], [b3], 32, self.sbox[6])
-        s7_z4 = self.add_sbox_component([z4567_id], [b0], 32, self.sbox[7])
-        s8_z6 = self.add_sbox_component([z4567_id], [b2], 32, self.sbox[8])
-        s7_z0 = self.add_sbox_component([z0123_id], [b0], 32, self.sbox[7])
+        s5_z5 = self.add_sbox_component([z_4567_id], [b1], 32, self.sbox[5])
+        s6_z7 = self.add_sbox_component([z_4567_id], [b3], 32, self.sbox[6])
+        s7_z4 = self.add_sbox_component([z_4567_id], [b0], 32, self.sbox[7])
+        s8_z6 = self.add_sbox_component([z_4567_id], [b2], 32, self.sbox[8])
+        s7_z0 = self.add_sbox_component([z_0123_id], [b0], 32, self.sbox[7])
 
-        x0123 = self.add_xor_component(
-            [z89AB_id, s5_z5.id, s6_z7.id, s7_z4.id, s8_z6.id, s7_z0.id],
+        x_0123 = self.add_xor_component(
+            [z_89ab_id, s5_z5.id, s6_z7.id, s7_z4.id, s8_z6.id, s7_z0.id],
             [list(range(32))] * 6, 32
         )
 
         # Compute x4x5x6x7
-        s5_x0 = self.add_sbox_component([x0123.id], [b0], 32, self.sbox[5])
-        s6_x2 = self.add_sbox_component([x0123.id], [b2], 32, self.sbox[6])
-        s7_x1 = self.add_sbox_component([x0123.id], [b1], 32, self.sbox[7])
-        s8_x3 = self.add_sbox_component([x0123.id], [b3], 32, self.sbox[8])
-        s8_z2 = self.add_sbox_component([z0123_id], [b2], 32, self.sbox[8])
+        s5_x0 = self.add_sbox_component([x_0123.id], [b0], 32, self.sbox[5])
+        s6_x2 = self.add_sbox_component([x_0123.id], [b2], 32, self.sbox[6])
+        s7_x1 = self.add_sbox_component([x_0123.id], [b1], 32, self.sbox[7])
+        s8_x3 = self.add_sbox_component([x_0123.id], [b3], 32, self.sbox[8])
+        s8_z2 = self.add_sbox_component([z_0123_id], [b2], 32, self.sbox[8])
 
-        x4567 = self.add_xor_component(
-            [z0123_id, s5_x0.id, s6_x2.id, s7_x1.id, s8_x3.id, s8_z2.id],
+        x_4567 = self.add_xor_component(
+            [z_0123_id, s5_x0.id, s6_x2.id, s7_x1.id, s8_x3.id, s8_z2.id],
             [list(range(32))] * 6, 32
         )
 
         # Compute x8x9xAxB
-        s5_x7 = self.add_sbox_component([x4567.id], [b3], 32, self.sbox[5])
-        s6_x6 = self.add_sbox_component([x4567.id], [b2], 32, self.sbox[6])
-        s7_x5 = self.add_sbox_component([x4567.id], [b1], 32, self.sbox[7])
-        s8_x4 = self.add_sbox_component([x4567.id], [b0], 32, self.sbox[8])
-        s5_z1 = self.add_sbox_component([z0123_id], [b1], 32, self.sbox[5])
+        s5_x7 = self.add_sbox_component([x_4567.id], [b3], 32, self.sbox[5])
+        s6_x6 = self.add_sbox_component([x_4567.id], [b2], 32, self.sbox[6])
+        s7_x5 = self.add_sbox_component([x_4567.id], [b1], 32, self.sbox[7])
+        s8_x4 = self.add_sbox_component([x_4567.id], [b0], 32, self.sbox[8])
+        s5_z1 = self.add_sbox_component([z_0123_id], [b1], 32, self.sbox[5])
 
-        x89AB = self.add_xor_component(
-            [z4567_id, s5_x7.id, s6_x6.id, s7_x5.id, s8_x4.id, s5_z1.id],
+        x_89ab = self.add_xor_component(
+            [z_4567_id, s5_x7.id, s6_x6.id, s7_x5.id, s8_x4.id, s5_z1.id],
             [list(range(32))] * 6, 32
         )
 
         # Compute xCxDxExF
-        s5_xA = self.add_sbox_component([x89AB.id], [b2], 32, self.sbox[5])
-        s6_x9 = self.add_sbox_component([x89AB.id], [b1], 32, self.sbox[6])
-        s7_xB = self.add_sbox_component([x89AB.id], [b3], 32, self.sbox[7])
-        s8_x8 = self.add_sbox_component([x89AB.id], [b0], 32, self.sbox[8])
-        s6_z3 = self.add_sbox_component([z0123_id], [b3], 32, self.sbox[6])
+        s5_xa = self.add_sbox_component([x_89ab.id], [b2], 32, self.sbox[5])
+        s6_x9 = self.add_sbox_component([x_89ab.id], [b1], 32, self.sbox[6])
+        s7_xb = self.add_sbox_component([x_89ab.id], [b3], 32, self.sbox[7])
+        s8_x8 = self.add_sbox_component([x_89ab.id], [b0], 32, self.sbox[8])
+        s6_z3 = self.add_sbox_component([z_0123_id], [b3], 32, self.sbox[6])
 
-        xCDEF = self.add_xor_component(
-            [zCDEF_id, s5_xA.id, s6_x9.id, s7_xB.id, s8_x8.id, s6_z3.id],
+        x_cdef = self.add_xor_component(
+            [z_cdef_id, s5_xa.id, s6_x9.id, s7_xb.id, s8_x8.id, s6_z3.id],
             [list(range(32))] * 6, 32
         )
 
-        return x0123.id, x4567.id, x89AB.id, xCDEF.id
+        return x_0123.id, x_4567.id, x_89ab.id, x_cdef.id
 
-    def _compute_k1_to_k4(self, z0123_id, z4567_id, z89AB_id, zCDEF_id):
+    def _compute_k1_to_k4(self, z_0123_id, z_4567_id, z_89ab_id, z_cdef_id):
         """
         Compute k1-k4 key values from z values
         """
         b0, b1, b2, b3 = list(range(0, 8)), list(range(8, 16)), list(range(16, 24)), list(range(24, 32))
 
         # Compute K1 (or K17)
-        s5_z8 = self.add_sbox_component([z89AB_id], [b0], 32, self.sbox[5])
-        s6_z9 = self.add_sbox_component([z89AB_id], [b1], 32, self.sbox[6])
-        s7_z7 = self.add_sbox_component([z4567_id], [b3], 32, self.sbox[7])
-        s8_z6 = self.add_sbox_component([z4567_id], [b2], 32, self.sbox[8])
-        s5_z2 = self.add_sbox_component([z0123_id], [b2], 32, self.sbox[5])
+        s5_z8 = self.add_sbox_component([z_89ab_id], [b0], 32, self.sbox[5])
+        s6_z9 = self.add_sbox_component([z_89ab_id], [b1], 32, self.sbox[6])
+        s7_z7 = self.add_sbox_component([z_4567_id], [b3], 32, self.sbox[7])
+        s8_z6 = self.add_sbox_component([z_4567_id], [b2], 32, self.sbox[8])
+        s5_z2 = self.add_sbox_component([z_0123_id], [b2], 32, self.sbox[5])
 
         k1 = self.add_xor_component(
             [s5_z8.id, s6_z9.id, s7_z7.id, s8_z6.id, s5_z2.id],
@@ -766,79 +708,79 @@ class CastBlockCipher(Cipher):
         )
 
         # Compute K2 (or K18)
-        s5_zA = self.add_sbox_component([z89AB_id], [b2], 32, self.sbox[5])
-        s6_zB = self.add_sbox_component([z89AB_id], [b3], 32, self.sbox[6])
-        s7_z5 = self.add_sbox_component([z4567_id], [b1], 32, self.sbox[7])
-        s8_z4 = self.add_sbox_component([z4567_id], [b0], 32, self.sbox[8])
-        s6_z6 = self.add_sbox_component([z4567_id], [b2], 32, self.sbox[6])
+        s5_za = self.add_sbox_component([z_89ab_id], [b2], 32, self.sbox[5])
+        s6_zb = self.add_sbox_component([z_89ab_id], [b3], 32, self.sbox[6])
+        s7_z5 = self.add_sbox_component([z_4567_id], [b1], 32, self.sbox[7])
+        s8_z4 = self.add_sbox_component([z_4567_id], [b0], 32, self.sbox[8])
+        s6_z6 = self.add_sbox_component([z_4567_id], [b2], 32, self.sbox[6])
 
         k2 = self.add_xor_component(
-            [s5_zA.id, s6_zB.id, s7_z5.id, s8_z4.id, s6_z6.id],
+            [s5_za.id, s6_zb.id, s7_z5.id, s8_z4.id, s6_z6.id],
             [list(range(32))] * 5, 32
         )
 
         # Compute K3 (or K19)
-        s5_zC = self.add_sbox_component([zCDEF_id], [b0], 32, self.sbox[5])
-        s6_zD = self.add_sbox_component([zCDEF_id], [b1], 32, self.sbox[6])
-        s7_z3 = self.add_sbox_component([z0123_id], [b3], 32, self.sbox[7])
-        s8_z2 = self.add_sbox_component([z0123_id], [b2], 32, self.sbox[8])
-        s7_z9 = self.add_sbox_component([z89AB_id], [b1], 32, self.sbox[7])
+        s5_zc = self.add_sbox_component([z_cdef_id], [b0], 32, self.sbox[5])
+        s6_zd = self.add_sbox_component([z_cdef_id], [b1], 32, self.sbox[6])
+        s7_z3 = self.add_sbox_component([z_0123_id], [b3], 32, self.sbox[7])
+        s8_z2 = self.add_sbox_component([z_0123_id], [b2], 32, self.sbox[8])
+        s7_z9 = self.add_sbox_component([z_89ab_id], [b1], 32, self.sbox[7])
 
         k3 = self.add_xor_component(
-            [s5_zC.id, s6_zD.id, s7_z3.id, s8_z2.id, s7_z9.id],
+            [s5_zc.id, s6_zd.id, s7_z3.id, s8_z2.id, s7_z9.id],
             [list(range(32))] * 5, 32
         )
 
         # Compute K4 (or K20)
-        s5_zE = self.add_sbox_component([zCDEF_id], [b2], 32, self.sbox[5])
-        s6_zF = self.add_sbox_component([zCDEF_id], [b3], 32, self.sbox[6])
-        s7_z1 = self.add_sbox_component([z0123_id], [b1], 32, self.sbox[7])
-        s8_z0 = self.add_sbox_component([z0123_id], [b0], 32, self.sbox[8])
-        s8_zC = self.add_sbox_component([zCDEF_id], [b0], 32, self.sbox[8])
+        s5_ze = self.add_sbox_component([z_cdef_id], [b2], 32, self.sbox[5])
+        s6_zf = self.add_sbox_component([z_cdef_id], [b3], 32, self.sbox[6])
+        s7_z1 = self.add_sbox_component([z_0123_id], [b1], 32, self.sbox[7])
+        s8_z0 = self.add_sbox_component([z_0123_id], [b0], 32, self.sbox[8])
+        s8_zc = self.add_sbox_component([z_cdef_id], [b0], 32, self.sbox[8])
 
         k4 = self.add_xor_component(
-            [s5_zE.id, s6_zF.id, s7_z1.id, s8_z0.id, s8_zC.id],
+            [s5_ze.id, s6_zf.id, s7_z1.id, s8_z0.id, s8_zc.id],
             [list(range(32))] * 5, 32
         )
 
         return k1.id, k2.id, k3.id, k4.id
 
-    def _compute_k5_to_k8(self, x0123_id, x4567_id, x89AB_id, xCDEF_id):
+    def _compute_k5_to_k8(self, x_0123_id, x_4567_id, x_89ab_id, x_cdef_id):
         """
         Compute k5-k8 key values from x values
         """
         b0, b1, b2, b3 = list(range(0, 8)), list(range(8, 16)), list(range(16, 24)), list(range(24, 32))
 
         # Compute K5 (or K21)
-        s5_x3 = self.add_sbox_component([x0123_id], [b3], 32, self.sbox[5])
-        s6_x2 = self.add_sbox_component([x0123_id], [b2], 32, self.sbox[6])
-        s7_xC = self.add_sbox_component([xCDEF_id], [b0], 32, self.sbox[7])
-        s8_xD = self.add_sbox_component([xCDEF_id], [b1], 32, self.sbox[8])
-        s5_x8 = self.add_sbox_component([x89AB_id], [b0], 32, self.sbox[5])
+        s5_x3 = self.add_sbox_component([x_0123_id], [b3], 32, self.sbox[5])
+        s6_x2 = self.add_sbox_component([x_0123_id], [b2], 32, self.sbox[6])
+        s7_xc = self.add_sbox_component([x_cdef_id], [b0], 32, self.sbox[7])
+        s8_xd = self.add_sbox_component([x_cdef_id], [b1], 32, self.sbox[8])
+        s5_x8 = self.add_sbox_component([x_89ab_id], [b0], 32, self.sbox[5])
 
         k5 = self.add_xor_component(
-            [s5_x3.id, s6_x2.id, s7_xC.id, s8_xD.id, s5_x8.id],
+            [s5_x3.id, s6_x2.id, s7_xc.id, s8_xd.id, s5_x8.id],
             [list(range(32))] * 5, 32
         )
 
         # Compute K6 (or K22)
-        s5_x1 = self.add_sbox_component([x0123_id], [b1], 32, self.sbox[5])
-        s6_x0 = self.add_sbox_component([x0123_id], [b0], 32, self.sbox[6])
-        s7_xE = self.add_sbox_component([xCDEF_id], [b2], 32, self.sbox[7])
-        s8_xF = self.add_sbox_component([xCDEF_id], [b3], 32, self.sbox[8])
-        s6_xD = self.add_sbox_component([xCDEF_id], [b1], 32, self.sbox[6])
+        s5_x1 = self.add_sbox_component([x_0123_id], [b1], 32, self.sbox[5])
+        s6_x0 = self.add_sbox_component([x_0123_id], [b0], 32, self.sbox[6])
+        s7_xe = self.add_sbox_component([x_cdef_id], [b2], 32, self.sbox[7])
+        s8_xf = self.add_sbox_component([x_cdef_id], [b3], 32, self.sbox[8])
+        s6_xd = self.add_sbox_component([x_cdef_id], [b1], 32, self.sbox[6])
 
         k6 = self.add_xor_component(
-            [s5_x1.id, s6_x0.id, s7_xE.id, s8_xF.id, s6_xD.id],
+            [s5_x1.id, s6_x0.id, s7_xe.id, s8_xf.id, s6_xd.id],
             [list(range(32))] * 5, 32
         )
 
         # Compute K7 (or K23)
-        s5_x7 = self.add_sbox_component([x4567_id], [b3], 32, self.sbox[5])
-        s6_x6 = self.add_sbox_component([x4567_id], [b2], 32, self.sbox[6])
-        s7_x8 = self.add_sbox_component([x89AB_id], [b0], 32, self.sbox[7])
-        s8_x9 = self.add_sbox_component([x89AB_id], [b1], 32, self.sbox[8])
-        s7_x3 = self.add_sbox_component([x0123_id], [b3], 32, self.sbox[7])
+        s5_x7 = self.add_sbox_component([x_4567_id], [b3], 32, self.sbox[5])
+        s6_x6 = self.add_sbox_component([x_4567_id], [b2], 32, self.sbox[6])
+        s7_x8 = self.add_sbox_component([x_89ab_id], [b0], 32, self.sbox[7])
+        s8_x9 = self.add_sbox_component([x_89ab_id], [b1], 32, self.sbox[8])
+        s7_x3 = self.add_sbox_component([x_0123_id], [b3], 32, self.sbox[7])
 
         k7 = self.add_xor_component(
             [s5_x7.id, s6_x6.id, s7_x8.id, s8_x9.id, s7_x3.id],
@@ -846,55 +788,55 @@ class CastBlockCipher(Cipher):
         )
 
         # Compute K8 (or K24)
-        s5_x5 = self.add_sbox_component([x4567_id], [b1], 32, self.sbox[5])
-        s6_x4 = self.add_sbox_component([x4567_id], [b0], 32, self.sbox[6])
-        s7_xA = self.add_sbox_component([x89AB_id], [b2], 32, self.sbox[7])
-        s8_xB = self.add_sbox_component([x89AB_id], [b3], 32, self.sbox[8])
-        s8_x7 = self.add_sbox_component([x4567_id], [b3], 32, self.sbox[8])
+        s5_x5 = self.add_sbox_component([x_4567_id], [b1], 32, self.sbox[5])
+        s6_x4 = self.add_sbox_component([x_4567_id], [b0], 32, self.sbox[6])
+        s7_xa = self.add_sbox_component([x_89ab_id], [b2], 32, self.sbox[7])
+        s8_xb = self.add_sbox_component([x_89ab_id], [b3], 32, self.sbox[8])
+        s8_x7 = self.add_sbox_component([x_4567_id], [b3], 32, self.sbox[8])
 
         k8 = self.add_xor_component(
-            [s5_x5.id, s6_x4.id, s7_xA.id, s8_xB.id, s8_x7.id],
+            [s5_x5.id, s6_x4.id, s7_xa.id, s8_xb.id, s8_x7.id],
             [list(range(32))] * 5, 32
         )
 
         return k5.id, k6.id, k7.id, k8.id
 
-    def _compute_k9_to_k12(self, z0123_id, z4567_id, z89AB_id, zCDEF_id):
+    def _compute_k9_to_k12(self, z_0123_id, z_4567_id, z_89ab_id, z_cdef_id):
         """
         Compute k9-k12 key values from x values
         """
         b0, b1, b2, b3 = list(range(0, 8)), list(range(8, 16)), list(range(16, 24)), list(range(24, 32))
 
         # Compute K9 (or K25)
-        s5_z3 = self.add_sbox_component([z0123_id], [b3], 32, self.sbox[5])
-        s6_z2 = self.add_sbox_component([z0123_id], [b2], 32, self.sbox[6])
-        s7_zC = self.add_sbox_component([zCDEF_id], [b0], 32, self.sbox[7])
-        s8_zD = self.add_sbox_component([zCDEF_id], [b1], 32, self.sbox[8])
-        s5_z9 = self.add_sbox_component([z89AB_id], [b1], 32, self.sbox[5])
+        s5_z3 = self.add_sbox_component([z_0123_id], [b3], 32, self.sbox[5])
+        s6_z2 = self.add_sbox_component([z_0123_id], [b2], 32, self.sbox[6])
+        s7_zc = self.add_sbox_component([z_cdef_id], [b0], 32, self.sbox[7])
+        s8_zd = self.add_sbox_component([z_cdef_id], [b1], 32, self.sbox[8])
+        s5_z9 = self.add_sbox_component([z_89ab_id], [b1], 32, self.sbox[5])
 
         k9 = self.add_xor_component(
-            [s5_z3.id, s6_z2.id, s7_zC.id, s8_zD.id, s5_z9.id],
+            [s5_z3.id, s6_z2.id, s7_zc.id, s8_zd.id, s5_z9.id],
             [list(range(32))] * 5, 32
         )
 
         # Compute K10 (or K26)
-        s5_z1 = self.add_sbox_component([z0123_id], [b1], 32, self.sbox[5])
-        s6_z0 = self.add_sbox_component([z0123_id], [b0], 32, self.sbox[6])
-        s7_zE = self.add_sbox_component([zCDEF_id], [b2], 32, self.sbox[7])
-        s8_zF = self.add_sbox_component([zCDEF_id], [b3], 32, self.sbox[8])
-        s6_zC = self.add_sbox_component([zCDEF_id], [b0], 32, self.sbox[6])
+        s5_z1 = self.add_sbox_component([z_0123_id], [b1], 32, self.sbox[5])
+        s6_z0 = self.add_sbox_component([z_0123_id], [b0], 32, self.sbox[6])
+        s7_ze = self.add_sbox_component([z_cdef_id], [b2], 32, self.sbox[7])
+        s8_zf = self.add_sbox_component([z_cdef_id], [b3], 32, self.sbox[8])
+        s6_zc = self.add_sbox_component([z_cdef_id], [b0], 32, self.sbox[6])
 
         k10 = self.add_xor_component(
-            [s5_z1.id, s6_z0.id, s7_zE.id, s8_zF.id, s6_zC.id],
+            [s5_z1.id, s6_z0.id, s7_ze.id, s8_zf.id, s6_zc.id],
             [list(range(32))] * 5, 32
         )
 
         # Compute K11 (or K27)
-        s5_z7 = self.add_sbox_component([z4567_id], [b3], 32, self.sbox[5])
-        s6_z6 = self.add_sbox_component([z4567_id], [b2], 32, self.sbox[6])
-        s7_z8 = self.add_sbox_component([z89AB_id], [b0], 32, self.sbox[7])
-        s8_z9 = self.add_sbox_component([z89AB_id], [b1], 32, self.sbox[8])
-        s7_z2 = self.add_sbox_component([z0123_id], [b2], 32, self.sbox[7])
+        s5_z7 = self.add_sbox_component([z_4567_id], [b3], 32, self.sbox[5])
+        s6_z6 = self.add_sbox_component([z_4567_id], [b2], 32, self.sbox[6])
+        s7_z8 = self.add_sbox_component([z_89ab_id], [b0], 32, self.sbox[7])
+        s8_z9 = self.add_sbox_component([z_89ab_id], [b1], 32, self.sbox[8])
+        s7_z2 = self.add_sbox_component([z_0123_id], [b2], 32, self.sbox[7])
 
         k11 = self.add_xor_component(
             [s5_z7.id, s6_z6.id, s7_z8.id, s8_z9.id, s7_z2.id],
@@ -902,31 +844,31 @@ class CastBlockCipher(Cipher):
         )
 
         # Compute K12 (or K28)
-        s5_z5 = self.add_sbox_component([z4567_id], [b1], 32, self.sbox[5])
-        s6_z4 = self.add_sbox_component([z4567_id], [b0], 32, self.sbox[6])
-        s7_zA = self.add_sbox_component([z89AB_id], [b2], 32, self.sbox[7])
-        s8_zB = self.add_sbox_component([z89AB_id], [b3], 32, self.sbox[8])
-        s8_z6 = self.add_sbox_component([z4567_id], [b2], 32, self.sbox[8])
+        s5_z5 = self.add_sbox_component([z_4567_id], [b1], 32, self.sbox[5])
+        s6_z4 = self.add_sbox_component([z_4567_id], [b0], 32, self.sbox[6])
+        s7_za = self.add_sbox_component([z_89ab_id], [b2], 32, self.sbox[7])
+        s8_zb = self.add_sbox_component([z_89ab_id], [b3], 32, self.sbox[8])
+        s8_z6 = self.add_sbox_component([z_4567_id], [b2], 32, self.sbox[8])
 
         k12 = self.add_xor_component(
-            [s5_z5.id, s6_z4.id, s7_zA.id, s8_zB.id, s8_z6.id],
+            [s5_z5.id, s6_z4.id, s7_za.id, s8_zb.id, s8_z6.id],
             [list(range(32))] * 5, 32
         )
 
         return k9.id, k10.id, k11.id, k12.id
 
-    def _compute_k13_to_k16(self, x0123_id, x4567_id, x89AB_id, xCDEF_id):
+    def _compute_k13_to_k16(self, x_0123_id, x_4567_id, x_89ab_id, x_cdef_id):
         """
         Compute k13-k16 key values from x values
         """
         b0, b1, b2, b3 = list(range(0, 8)), list(range(8, 16)), list(range(16, 24)), list(range(24, 32))
 
         # Compute X13 (or K29)
-        s5_x8 = self.add_sbox_component([x89AB_id], [b0], 32, self.sbox[5])
-        s6_x9 = self.add_sbox_component([x89AB_id], [b1], 32, self.sbox[6])
-        s7_x7 = self.add_sbox_component([x4567_id], [b3], 32, self.sbox[7])
-        s8_x6 = self.add_sbox_component([x4567_id], [b2], 32, self.sbox[8])
-        s5_x3 = self.add_sbox_component([x0123_id], [b3], 32, self.sbox[5])
+        s5_x8 = self.add_sbox_component([x_89ab_id], [b0], 32, self.sbox[5])
+        s6_x9 = self.add_sbox_component([x_89ab_id], [b1], 32, self.sbox[6])
+        s7_x7 = self.add_sbox_component([x_4567_id], [b3], 32, self.sbox[7])
+        s8_x6 = self.add_sbox_component([x_4567_id], [b2], 32, self.sbox[8])
+        s5_x3 = self.add_sbox_component([x_0123_id], [b3], 32, self.sbox[5])
 
         k13 = self.add_xor_component(
             [s5_x8.id, s6_x9.id, s7_x7.id, s8_x6.id, s5_x3.id],
@@ -934,39 +876,104 @@ class CastBlockCipher(Cipher):
         )
 
         # Compute X14 (or K30)
-        s5_xA = self.add_sbox_component([x89AB_id], [b2], 32, self.sbox[5])
-        s6_xB = self.add_sbox_component([x89AB_id], [b3], 32, self.sbox[6])
-        s7_x5 = self.add_sbox_component([x4567_id], [b1], 32, self.sbox[7])
-        s8_x4 = self.add_sbox_component([x4567_id], [b0], 32, self.sbox[8])
-        s6_x7 = self.add_sbox_component([x4567_id], [b3], 32, self.sbox[6])
+        s5_xa = self.add_sbox_component([x_89ab_id], [b2], 32, self.sbox[5])
+        s6_xb = self.add_sbox_component([x_89ab_id], [b3], 32, self.sbox[6])
+        s7_x5 = self.add_sbox_component([x_4567_id], [b1], 32, self.sbox[7])
+        s8_x4 = self.add_sbox_component([x_4567_id], [b0], 32, self.sbox[8])
+        s6_x7 = self.add_sbox_component([x_4567_id], [b3], 32, self.sbox[6])
 
         k14 = self.add_xor_component(
-            [s5_xA.id, s6_xB.id, s7_x5.id, s8_x4.id, s6_x7.id],
+            [s5_xa.id, s6_xb.id, s7_x5.id, s8_x4.id, s6_x7.id],
             [list(range(32))] * 5, 32
         )
 
         # Compute X15 (or K31)
-        s5_xC = self.add_sbox_component([xCDEF_id], [b0], 32, self.sbox[5])
-        s6_xD = self.add_sbox_component([xCDEF_id], [b1], 32, self.sbox[6])
-        s7_x3 = self.add_sbox_component([x0123_id], [b3], 32, self.sbox[7])
-        s8_x2 = self.add_sbox_component([x0123_id], [b2], 32, self.sbox[8])
-        s7_x8 = self.add_sbox_component([x89AB_id], [b0], 32, self.sbox[7])
+        s5_xc = self.add_sbox_component([x_cdef_id], [b0], 32, self.sbox[5])
+        s6_xd = self.add_sbox_component([x_cdef_id], [b1], 32, self.sbox[6])
+        s7_x3 = self.add_sbox_component([x_0123_id], [b3], 32, self.sbox[7])
+        s8_x2 = self.add_sbox_component([x_0123_id], [b2], 32, self.sbox[8])
+        s7_x8 = self.add_sbox_component([x_89ab_id], [b0], 32, self.sbox[7])
 
         k15 = self.add_xor_component(
-            [s5_xC.id, s6_xD.id, s7_x3.id, s8_x2.id, s7_x8.id],
+            [s5_xc.id, s6_xd.id, s7_x3.id, s8_x2.id, s7_x8.id],
             [list(range(32))] * 5, 32
         )
 
         # Compute X16 (or K32)
-        s5_xE = self.add_sbox_component([xCDEF_id], [b2], 32, self.sbox[5])
-        s6_xF = self.add_sbox_component([xCDEF_id], [b3], 32, self.sbox[6])
-        s7_x1 = self.add_sbox_component([x0123_id], [b1], 32, self.sbox[7])
-        s8_x0 = self.add_sbox_component([x0123_id], [b0], 32, self.sbox[8])
-        s8_xD = self.add_sbox_component([xCDEF_id], [b1], 32, self.sbox[8])
+        s5_xe = self.add_sbox_component([x_cdef_id], [b2], 32, self.sbox[5])
+        s6_xf = self.add_sbox_component([x_cdef_id], [b3], 32, self.sbox[6])
+        s7_x1 = self.add_sbox_component([x_0123_id], [b1], 32, self.sbox[7])
+        s8_x0 = self.add_sbox_component([x_0123_id], [b0], 32, self.sbox[8])
+        s8_xd = self.add_sbox_component([x_cdef_id], [b1], 32, self.sbox[8])
 
         k16 = self.add_xor_component(
-            [s5_xE.id, s6_xF.id, s7_x1.id, s8_x0.id, s8_xD.id],
+            [s5_xe.id, s6_xf.id, s7_x1.id, s8_x0.id, s8_xd.id],
             [list(range(32))] * 5, 32
         )
 
         return k13.id, k14.id, k15.id, k16.id
+
+    def _construct_key_schedule(self):
+        if self.key_bit_size < 128:
+            padding_length = 128 - self.key_bit_size
+            zero_pad = self.add_constant_component(padding_length, 0)
+
+            input_key_id = self.add_permutation_component(
+                [INPUT_KEY, zero_pad.id],
+                [list(range(self.key_bit_size)), list(range(padding_length))],
+                128,
+                list(range(128))
+            ).id
+        else:
+            input_key_id = INPUT_KEY
+
+        # Key Schedule
+        z_0123, z_4567, z_89ab, z_cdef = self._compute_z_from_x(input_key_id)
+        k1, k2, k3, k4 = self._compute_k1_to_k4(z_0123, z_4567, z_89ab, z_cdef)
+
+        x_0123, x_4567, x_89ab, x_cdef = self._compute_x_from_z(z_0123, z_4567, z_89ab, z_cdef)
+        k5, k6, k7, k8 = self._compute_k5_to_k8(x_0123, x_4567, x_89ab, x_cdef)
+
+        x_concatenation = self.add_permutation_component(
+            [x_0123, x_4567, x_89ab, x_cdef],
+            [list(range(32))] * 4,
+            128,
+            list(range(128))
+        ).id
+
+        z_0123, z_4567, z_89ab, z_cdef = self._compute_z_from_x(x_concatenation)
+        k9, k10, k11, k12 = self._compute_k9_to_k12(z_0123, z_4567, z_89ab, z_cdef)
+
+        x_0123, x_4567, x_89ab, x_cdef = self._compute_x_from_z(z_0123, z_4567, z_89ab, z_cdef)
+        k13, k14, k15, k16 = self._compute_k13_to_k16(x_0123, x_4567, x_89ab, x_cdef)
+
+        x_concatenation = self.add_permutation_component(
+            [x_0123, x_4567, x_89ab, x_cdef],
+            [list(range(32))] * 4,
+            128,
+            list(range(128))
+        ).id
+
+        z_0123, z_4567, z_89ab, z_cdef = self._compute_z_from_x(x_concatenation)
+        k17, k18, k19, k20 = self._compute_k1_to_k4(z_0123, z_4567, z_89ab, z_cdef)
+
+        x_0123, x_4567, x_89ab, x_cdef = self._compute_x_from_z(z_0123, z_4567, z_89ab, z_cdef)
+        k21, k22, k23, k24 = self._compute_k5_to_k8(x_0123, x_4567, x_89ab, x_cdef)
+
+        x_concatenation = self.add_permutation_component(
+            [x_0123, x_4567, x_89ab, x_cdef],
+            [list(range(32))] * 4,
+            128,
+            list(range(128))
+        ).id
+
+        z_0123, z_4567, z_89ab, z_cdef = self._compute_z_from_x(x_concatenation)
+        k25, k26, k27, k28 = self._compute_k9_to_k12(z_0123, z_4567, z_89ab, z_cdef)
+
+        x_0123, x_4567, x_89ab, x_cdef = self._compute_x_from_z(z_0123, z_4567, z_89ab, z_cdef)
+        k29, k30, k31, k32 = self._compute_k13_to_k16(x_0123, x_4567, x_89ab, x_cdef)
+
+        key_schedule = [k1, k2, k3, k4, k5, k6, k7, k8, k9, k10, k11, k12, k13, k14, k15, k16,
+                  k17, k18, k19, k20, k21, k22, k23, k24, k25, k26, k27, k28, k29, k30, k31, k32]
+
+        return key_schedule
