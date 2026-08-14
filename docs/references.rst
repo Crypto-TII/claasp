@@ -82,6 +82,14 @@
         Equations* : In Proceedings of Fast Software Encryption 2003, LNCS
         2887, pp. 274-289, Springer-Verlag 2003
 
+.. [BDG+25] Y. Belkheyar, P. Derbez, S. Ghosh, G. Leander, S. Mella, L. Perrin,
+        S. Rasoolzadeh, L. Stennes, S. Sun, G. Van Assche, D. Vizár,
+        "ChiLow and ChiChi: New Constructions for Code Encryption",
+        in Advances in Cryptology -- EUROCRYPT 2025, S. Fehr and P.-A. Fouque (eds.),
+        LNCS, vol. 15607, Springer, 2025, pp. 212--243.
+        Cryptology ePrint Archive, Paper 2025/308,
+        https://eprint.iacr.org/2025/308
+
 .. [BFS2003]
         Bardet M., Faugère J.-C., Salvy B. : *Complexity of Gröbner basis
         computation for Semi-regular Overdetermined sequences over F2 with
