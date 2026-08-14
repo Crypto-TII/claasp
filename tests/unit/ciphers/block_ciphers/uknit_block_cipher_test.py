@@ -20,6 +20,7 @@ def test_vector_1():
     plaintext = 0x0000000000000000
     ciphertext = 0x034af0b3c687e424
     assert uknit.evaluate([plaintext, key]) == ciphertext
+    assert uknit.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext
 
 def test_vector_2():
     """Test Vector 2, from uKNIT test vectors, same as doctest"""
@@ -28,6 +29,7 @@ def test_vector_2():
     plaintext = 0x0123456789abcdef
     ciphertext = 0x7d4ef882c1f42dba
     assert uknit.evaluate([plaintext, key]) == ciphertext
+    assert uknit.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext
 
 def test_vector_3():
     """Test Vector 3, from uKNIT test vectors"""
@@ -36,6 +38,7 @@ def test_vector_3():
     plaintext = 0xffffffffffffffff
     ciphertext = 0xdb058583df8f186f
     assert uknit.evaluate([plaintext, key]) == ciphertext
+    assert uknit.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext
 
 def test_vector_4():
     """Test Vector 4, from uKNIT test vectors"""
@@ -44,3 +47,4 @@ def test_vector_4():
     plaintext = 0x1111111111111111
     ciphertext = 0x7c8ddaf0fead3409
     assert uknit.evaluate([plaintext, key]) == ciphertext
+    assert uknit.evaluate_vectorized([plaintext, key], evaluate_api=True) == ciphertext
