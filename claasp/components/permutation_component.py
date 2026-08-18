@@ -482,8 +482,7 @@ class Permutation(Component):
 
             sage: from claasp.components.permutation_component import Permutation
             sage: component = Permutation(0, 0, ['input'], [[0, 1, 2, 3]], 4, [1, 3, 2, 0])
-            sage: component.cp_semi_deterministic_truncated_xor_differential_constraints() == \
-            ...       component.cp_deterministic_truncated_xor_differential_trail_constraints()
+            sage: component.cp_semi_deterministic_truncated_xor_differential_constraints() == component.cp_deterministic_truncated_xor_differential_trail_constraints()
             True
         """
         return self.cp_deterministic_truncated_xor_differential_trail_constraints()

@@ -17,6 +17,7 @@
 
 import subprocess
 import time as tm
+import warnings
 from copy import deepcopy
 
 from claasp.cipher_modules.models.cp.mzn_model import SOLVE_SATISFY
@@ -29,7 +30,8 @@ from claasp.cipher_modules.models.cp.solvers import (
     SOLVER_DEFAULT,
 )
 from claasp.cipher_modules.models.utils import convert_solver_solution_to_dictionary
-from claasp.name_mappings import UNSATISFIABLE, XOR_DIFFERENTIAL
+from claasp.editor import get_key_schedule_component_ids
+from claasp.name_mappings import UNSATISFIABLE, WORD_OPERATION, XOR_DIFFERENTIAL
 
 
 class MznXorDifferentialFixingNumberOfActiveSboxesModel(
@@ -388,6 +390,38 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
 
         return cp_declarations, cp_constraints
 
+    def _warn_if_key_schedule_not_word_aligned(self):
+        """
+        Warn if the cipher's key schedule has ROTATE/SHIFT components whose amount is not a
+        multiple of ``self.word_size`` (e.g. LBlock).
+
+        The two-step trail search assumes key differences are fixed to zero, so non-aligned key
+        schedule rotations do not affect correctness for the standard differential trail search
+        setting; the search may be unsound for other use cases, hence the warning rather than a
+        hard failure.
+
+        This check lives here -- scoped to the two-step model's own solve entry point -- rather
+        than in :meth:`~claasp.cipher.Cipher.is_two_step_trail_search_friendly`, which
+        :meth:`~claasp.cipher_modules.models.cp.mzn_model.MznModel.initialise_model` calls for
+        every CP model, not just this one; emitting a warning from there fired on unrelated model
+        construction and broke doctests throughout the codebase.
+        """
+        key_schedule_component_ids = get_key_schedule_component_ids(self._cipher)
+        for component in self._cipher.get_all_components():
+            if (
+                component.id in key_schedule_component_ids
+                and component.type == WORD_OPERATION
+                and component.description[0] in ("ROTATE", "SHIFT")
+                and component.description[1] % self.word_size != 0
+            ):
+                warnings.warn(
+                    f"key schedule component '{component.id}' rotates/shifts by "
+                    f"{component.description[1]} bits, which is not a multiple of the word size "
+                    f"({self.word_size}); the two-step trail search assumes key differences are "
+                    f"fixed to zero and may be unsound otherwise.",
+                    stacklevel=2,
+                )
+
     def solve_full_two_steps_xor_differential_model(
         self,
         model_type="xor_differential_one_solution",
@@ -439,6 +473,8 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
             if not possible_sboxes:
                 raise ValueError("There are no trails with the fixed weight!")
 
+        self._warn_if_key_schedule_not_word_aligned()
+
         start = tm.time()
         self.build_xor_differential_trail_first_step_model(weight, fixed_variables, nmax, repetition, possible_sboxes)
         end = tm.time()
@@ -451,11 +487,20 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
         end = tm.time()
         build_time += end - start
 
+        base_command_options = None
         for i in range(len(CP_SOLVERS_EXTERNAL)):
             if second_step_solver_name == CP_SOLVERS_EXTERNAL[i]["solver_name"]:
-                command_options = deepcopy(CP_SOLVERS_EXTERNAL[i]["keywords"]["command"])
+                base_command_options = CP_SOLVERS_EXTERNAL[i]["keywords"]["command"]
+                break
+        if base_command_options is None:
+            external_solver_names = [solver["solver_name"] for solver in CP_SOLVERS_EXTERNAL]
+            raise ValueError(
+                f"second_step_solver_name '{second_step_solver_name}' is not a supported external CP "
+                f"solver; it must be one of {external_solver_names}"
+            )
 
         for attempt in range(10000):
+            command_options = deepcopy(base_command_options)
             if weight == -1:
                 start = tm.time()
                 self.transform_first_step_model(attempt, first_step_solution[0])
@@ -489,7 +534,16 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
 
             solver_output = solver_process.stdout.splitlines()
 
-            if any(UNSATISFIABLE in line for line in solver_output) and weight not in (-1, 0):
+            if any(UNSATISFIABLE in line for line in solver_output):
+                if weight == -1:
+                    # weight == -1 means we are only fixing the number of active S-boxes (first
+                    # step): an UNSAT result here only rules out this particular count, not the
+                    # whole search, so we retry with the next higher count instead of failing.
+                    continue
+                # weight >= 0: UNSAT means no trail exists for this weight with the current fixed
+                # active-S-box configuration. Unlike weight == -1, this branch does not enumerate
+                # every first-step solution, so UNSAT is scoped to that one configuration, not to
+                # the whole search.
                 return UNSATISFIABLE
 
             time, memory, components_values, total_weight = self._parse_solver_output(
@@ -501,6 +555,8 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
             )
 
             return solutions
+
+        raise ValueError("No feasible XOR differential trail found within the active S-box search bound")
 
     def solve_model(self, model_type, solver_name=SOLVER_DEFAULT, num_of_processors=None, timelimit=None):
         """
