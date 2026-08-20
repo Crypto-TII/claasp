@@ -77,6 +77,15 @@
 
         **B**
 
+.. [BBBGPUV2020]
+        Beierle C., Biryukov A., dos Santos L. C., Großschädl J., Perrin L.,
+        Udovenko A., Velichkov V., Wang Q. :
+        *Alzette: A 64-Bit ARX-Box (Feat. CRAX and TRAX)* :
+        In: Micciancio D., Ristenpart T. (eds.) Advances in Cryptology –
+        CRYPTO 2020, LNCS 12172, pp. 419–448. Springer, 2020.
+        DOI: 10.1007/978-3-030-56877-1_15.
+        IACR ePrint 2019/1378, https://eprint.iacr.org/2019/1378
+
 .. [BC2003]
         Biryukov A., Canniere C. D. : *Block Ciphers and Systems of Quadratic
         Equations* : In Proceedings of Fast Software Encryption 2003, LNCS
