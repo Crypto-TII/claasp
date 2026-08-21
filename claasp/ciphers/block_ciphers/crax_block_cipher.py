@@ -73,6 +73,15 @@ class CraxBlockCipher(Cipher):
 
         x ^= K_0 ;  y ^= K_1
 
+    REFERENCES:
+
+    Round function and round constants from Algorithm 1 and Equation (1) of
+    [BBBGPUV2020]_.  Test vectors are cross-checked against the independent
+    reference implementation at
+    https://github.com/jedisct1/zig-lwbc32/blob/main/src/crax.zig, which in
+    turn matches the reference C code (``craxs10_enc_ref``) given in
+    Appendix D.1 of [BBBGPUV2020]_.
+
     INPUT:
 
     - ``number_of_rounds`` -- **integer** (default: `10`); number of steps
