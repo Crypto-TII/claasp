@@ -63,9 +63,15 @@ class AlzettePermutation(Cipher):
       recommended by the designers for use in the SPARKLE permutation family
       are available as ``SPARKLE_CONSTANTS[0..7]`` in this module.
 
+    The test vectors below are cross-checked against an independent
+    re-implementation of the ``ARXBOX`` macro from the designers' own
+    reference implementation of SPARKLE (submitted to the NIST Lightweight
+    Cryptography project), see
+    https://github.com/cryptolu/sparkle/blob/master/software/sparkle/sparkle.c.
+
     EXAMPLES::
 
-        sage: from claasp.ciphers.permutations.alzette_permutation import AlzettePermutation
+        sage: from claasp.ciphers.permutations.alzette_permutation import AlzettePermutation, SPARKLE_CONSTANTS
         sage: alzette = AlzettePermutation()
         sage: alzette.number_of_rounds
         4
@@ -74,6 +80,13 @@ class AlzettePermutation(Cipher):
         'constant_0_0'
 
         sage: alzette.evaluate([0x0000000000000000]) == 0x44dd4de9e5581f2d
+        True
+
+        sage: alzette.evaluate([0xdeadbeefcafebabe]) == 0x9d50490c3a596770
+        True
+
+        sage: alzette_c1 = AlzettePermutation(round_constant=SPARKLE_CONSTANTS[1])
+        sage: alzette_c1.evaluate([0x0123456789abcdef]) == 0x6aa7eb426bcd187d
         True
     """
 
