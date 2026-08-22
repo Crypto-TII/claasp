@@ -65,6 +65,10 @@
         characteristics* : IACR Transactions on Symmetric Cryptology (2017):
         99-129 : https://tosc.iacr.org/index.php/ToSC/article/view/805/759
 
+.. [A1997]
+        Adams C. : *The CAST-128 Encryption Algorithm* : RFC 2144, Network
+        Working Group, 1997 : https://datatracker.ietf.org/doc/html/rfc2144
+        
 .. [ABK1998]
         Anderson R., Biham E., Knudsen L. : *Serpent: A Proposal for the
         Advanced Encryption Standard* : First Advanced Encryption Standard
