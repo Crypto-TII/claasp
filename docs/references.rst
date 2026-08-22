@@ -218,6 +218,14 @@
 
         **C**
 
+.. [CDGP1993] Claesen, L., Daemen, J., Genoe, M., & Peeters, G. (1993).
+        *Subterranean: A 600 Mbit/sec Cryptographic VLSI Chip*.
+        In Proceedings of the 1993 IEEE International Conference on
+        Computer Design: VLSI in Computers & Processors (ICCD '93),
+        Cambridge, MA, USA, October 3-6, 1993, pp. 610-613.
+        IEEE Computer Society.
+        https://doi.org/10.1109/ICCD.1993.393304
+
 .. [Cou2001]
         Courtois N. : *La sécurité des primitives cryptographiques basées sur
         des problèmes algébriques multivariables* : MQ, IP, MinRank, HFE. PhD
@@ -304,6 +312,13 @@
         Dampers, A. et al. : *SAECHAM: A Lightweight Block Cipher based on
         CHAM* : Implementation repository (2025) :
         https://github.com/dampers/SAECHAM-implementations
+
+.. [DMR2019] 
+        Daemen, J., Massolino, P. M. C., and Rotella, Y.
+        *The Subterranean 2.0 cipher suite.*
+        Submission to the NIST Lightweight Cryptography Standardization process,
+        version 1.1, March 29, 2019.
+        https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/round-2/spec-doc-rnd2/subterranean-spec-round2.pdf
 
 .. _claasp-ref-E:
 
@@ -490,6 +505,13 @@
         National Institute of Standards and Technology (NIST) : *SKIPJACK and
         KEA Algorithm Specifications* : Version 2.0. 29 de mayo de 1998 :
         https://csrc.nist.gov/csrc/media/projects/cryptographic-algorithm-validation-program/documents/skipjack/skipjack.pdf
+
+.. [NISTLWCSUB] 
+        Daemen, J., Massolino, P. M. C., and Rotella, Y.
+        *Subterranean 2.0 -- Round 2 submission package*
+        (reference software, including subterranean_bit.py).
+        NIST Lightweight Cryptography Standardization process, Round 2 Candidates.
+        https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/round-2/submissions-rnd2/subterranean.zip
 
 .. _claasp-ref-O:
 
