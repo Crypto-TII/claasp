@@ -356,6 +356,13 @@
         Huffman W. C., Pless V. : *Fundamentals of Error-Correcting Codes* :
         Cambridge Univ. Press, 2003
 
+.. [HKPT2026]
+        Hu, K., Khairallah, M., Peyrin, T., & Tan, Q.
+        (2026). uKNIT: Breaking Round-Alignment for Cipher Design.
+        IACR Transactions on Symmetric Cryptology, 2026(2).
+        https://doi.org/10.46586/tosc.a0zo-4njsuvm
+        https://github.com/syllab-ntu/UKNIT
+
 .. _claasp-ref-I:
 
 .. only:: html
