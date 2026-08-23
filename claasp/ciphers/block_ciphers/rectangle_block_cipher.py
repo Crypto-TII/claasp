@@ -38,7 +38,12 @@ RC = [
 class RectangleBlockCipher(Cipher):
     """
     Construct an instance of the RectangleBlockCipher class.
-    Reference: https://eprint.iacr.org/2014/084
+
+    REFERENCES:
+
+    Zhang, W., Bao, Z., Lin, D., Rijmen, V., Yang, B., & Verbauwhede, I. (2015).
+    *RECTANGLE: a bit-slice lightweight block cipher suitable for multiple platforms*.
+    [ZBL+2015]_
 
     The 64-bit state is a 4 x 16 array of bits, row i being bits 16i+15,...,16i of the state, with row 0 the
     least significant one. The S-box acts on the 16 columns and ShiftRow rotates row i to the left by 0, 1, 12
@@ -61,9 +66,6 @@ class RectangleBlockCipher(Cipher):
 
         sage: RectangleBlockCipher(number_of_rounds=2).number_of_rounds
         2
-
-        sage: rectangle.evaluate([0x0000000000000000, 0x00000000000000000000]) == 0x0874E8B1E3542D96
-        True
     """
 
     def __init__(self, key_bit_size=80, number_of_rounds=25):

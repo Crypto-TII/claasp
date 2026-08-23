@@ -1,3 +1,5 @@
+"""Test vectors from Table 10 of https://eprint.iacr.org/2014/084.pdf"""
+
 from claasp.ciphers.block_ciphers.rectangle_block_cipher import RectangleBlockCipher
 
 
@@ -7,7 +9,6 @@ def test_rectangle_block_cipher():
     assert rectangle.id == 'rectangle_p64_k80_o64_r4'
     assert rectangle.component_from(3, 0).id == 'xor_3_0'
 
-    # test vectors from https://eprint.iacr.org/2014/084, Table 10
     rectangle = RectangleBlockCipher()
     plaintext = 0x0000000000000000
     key = 0x00000000000000000000
