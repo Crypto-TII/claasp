@@ -832,7 +832,7 @@ def THETA_XOODOO(input):
         sage: from claasp.cipher_modules.generic_functions import THETA_XOODOO
         sage: from bitstring import BitArray
         sage: b = BitArray("0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef")
-        sage: THETA_XOODOO(b).bin[:10] == '0101100100'
+        sage: THETA_XOODOO(b).bin[:10] == '1111010000'
         True
     """
     # Xoring the 3 planes

@@ -88,7 +88,7 @@ class KeccakPermutation(Cipher):
     """
 
     def __init__(self, number_of_rounds=24, word_size=64):
-        maximum_number_of_rounds = 12 + 2 * (word_size.bit_length() - 1)
+        maximum_number_of_rounds = 12 + 2 * (int(word_size).bit_length() - 1)
         if word_size <= 0 or word_size & (word_size - 1) or number_of_rounds > maximum_number_of_rounds:
             raise ValueError('word_size must be a power of two and number_of_rounds must not exceed Keccak-f rounds')
         round_offset = maximum_number_of_rounds - number_of_rounds
