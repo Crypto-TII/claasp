@@ -847,27 +847,9 @@ def THETA_XOODOO(input):
         tmp = plane[i * 32 : (i + 1) * 32]
         plane_4_chunks.append(tmp)
 
-    # Rotation by 5 to the right on the z axis
-    chunks_rotated_by_5 = []
-    for i in range(4):
-        base = plane_4_chunks[i]
-        tmp = copy(base)
-        for j in range(base.len - 5):
-            tmp[j + 5] = base[j]
-        for j in range(5):
-            tmp[j] = base[base.len - 5 + j]
-        chunks_rotated_by_5.append(tmp)
-
-    # Rotation by 14 to the right on the z axis
-    chunks_rotated_by_14 = []
-    for i in range(4):
-        base = plane_4_chunks[i]
-        tmp = copy(base)
-        for j in range(base.len - 14):
-            tmp[j + 14] = base[j]
-        for j in range(14):
-            tmp[j] = base[base.len - 14 + j]
-        chunks_rotated_by_14.append(tmp)
+    # Xoodoo rotates lanes to the left on the z axis.
+    chunks_rotated_by_5 = [ROTATE(chunk, -5) for chunk in plane_4_chunks]
+    chunks_rotated_by_14 = [ROTATE(chunk, -14) for chunk in plane_4_chunks]
 
     # Rotation by 1 to the right on the x axis
     last_elt = chunks_rotated_by_5[-1]

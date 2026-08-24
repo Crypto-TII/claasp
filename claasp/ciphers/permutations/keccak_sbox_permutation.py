@@ -78,6 +78,7 @@ class KeccakSboxPermutation(Cipher):
     Construct an instance of the KeccakSboxPermutation class.
 
     This class is used to store compact representations of a cipher, used to generate the corresponding.
+    It is equivalent to the Keccak-p permutation implemented by the designers' XKCP reference package [XKCPREF]_.
 
     INPUT:
 
@@ -96,6 +97,10 @@ class KeccakSboxPermutation(Cipher):
     """
 
     def __init__(self, number_of_rounds=24, word_size=64):
+        maximum_number_of_rounds = 12 + 2 * (word_size.bit_length() - 1)
+        if word_size <= 0 or word_size & (word_size - 1) or number_of_rounds > maximum_number_of_rounds:
+            raise ValueError('word_size must be a power of two and number_of_rounds must not exceed Keccak-f rounds')
+        round_offset = maximum_number_of_rounds - number_of_rounds
         self.word_bit_size = word_size
         self.plane_size = Y_NUM * self.word_bit_size
         self.state_bit_size = X_NUM * self.plane_size
@@ -115,7 +120,7 @@ class KeccakSboxPermutation(Cipher):
             self.add_round()
 
             # round parameter
-            ci = self.get_ci(round_number)
+            ci = self.get_ci(round_number + round_offset)
             state = self.round_function(state, ci)
 
             self.add_output_component(number_of_rounds, round_number, state)

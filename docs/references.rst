@@ -80,6 +80,11 @@
         Competition, third-round submission, 2016 :
         https://competitions.cr.yp.to/round3/norxv30.pdf
 
+.. [ASCONREF]
+        Ascon Team : *ascon-c reference implementation for NIST SP 800-232* :
+        commit 446347f21b209f3921c65ece70027c366cbe1693 :
+        https://github.com/ascon/ascon-c/tree/446347f21b209f3921c65ece70027c366cbe1693
+
 .. _claasp-ref-B:
 
 .. only:: html
@@ -353,6 +358,17 @@
 
         **G**
 
+.. [GASTON2023]
+        El Hirch S., Daemen J., Rohit R. S., Makarim R. H. : *Twin Column
+        Parity Mixers and Gaston* : Cryptology ePrint Archive, Paper 2023/799,
+        2023 : https://eprint.iacr.org/2023/799
+
+.. [GIMLI2017]
+        Bernstein D. J., Kölbl S., Lucks S., Massolino P. M. C., Mendel F.,
+        Nawaz K., Schneider T., Schwabe P., Standaert F.-X., Todo Y., Viguier B. :
+        *Gimli: a cross-platform permutation* : CHES 2017 :
+        https://gimli.cr.yp.to/gimli-20170627.pdf
+
 .. [Go2019]
         Gohr A. : *Improving Attacks on Round-Reduced Speck32/64 using Deep Learning
 * : In Advances in Cryptology – CRYPTO 2019
@@ -412,6 +428,12 @@
 .. only:: html
 
         **K**
+
+.. [XKCPREF]
+        Keccak Team : *eXtended Keccak Code Package (XKCP), reference
+        implementations of Keccak-p and Xoodoo* : commit
+        eb5244d6b95fb1c434b211bac293093e18aa8fd1 :
+        https://github.com/XKCP/XKCP/tree/eb5244d6b95fb1c434b211bac293093e18aa8fd1
 
 .. [KPG1999]
         Kipnis A., Patarin J., Goubin L. : *Unbalanced oil and vinegar
