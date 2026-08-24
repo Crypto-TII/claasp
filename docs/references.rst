@@ -668,3 +668,9 @@
 .. only:: html
 
         **Z**
+
+.. [ZBL+2015]
+        Zhang W., Bao Z., Lin D., Rijmen V., Yang B., Verbauwhede I. :
+        *RECTANGLE: a bit-slice lightweight block cipher suitable for multiple
+        platforms* : Science China Information Sciences, 58(12), 1-15 (2015) :
+        https://eprint.iacr.org/2014/084.pdf
