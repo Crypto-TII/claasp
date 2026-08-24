@@ -75,6 +75,11 @@
         Candidate Conference, 1998 :
         https://www.cl.cam.ac.uk/archive/rja14/Papers/serpent.pdf
 
+.. [AJN2016]
+        Aumasson J.-P., Jovanovic P., Neves S. : *NORX v3.0* : CAESAR
+        Competition, third-round submission, 2016 :
+        https://competitions.cr.yp.to/round3/norxv30.pdf
+
 .. _claasp-ref-B:
 
 .. only:: html
