@@ -704,20 +704,20 @@ class Shift(Component):
             (['shift_0_0_0', 'shift_0_0_1'], ['-shift_0_0_0', 'shift_0_0_1 -input_0', 'input_0 -shift_0_0_1'])
         """
         input_bit_ids = self._generate_input_ids()
-        output_bit_len, output_bit_ids = self._generate_output_ids()
+        output_bit_ids = self._generate_output_ids()
         shift_amount = self.description[1]
         constraints = []
         if shift_amount < 0:
             shift_amount = -shift_amount
-            for i in range(output_bit_len - shift_amount):
-                constraints.extend(sat_utils.cnf_equivalent([output_bit_ids[i], input_bit_ids[i + shift_amount]]))
-            for i in range(output_bit_len - shift_amount, output_bit_len):
-                constraints.append(f"-{output_bit_ids[i]}")
+            for output_bit_id, input_bit_id in zip(output_bit_ids, input_bit_ids[shift_amount:]):
+                constraints.extend(sat_utils.cnf_equivalent([output_bit_id, input_bit_id]))
+            for output_bit_id in output_bit_ids[self.output_bit_size - shift_amount:]:
+                constraints.append(f"-{output_bit_id}")
         else:
-            for i in range(shift_amount):
-                constraints.append(f"-{output_bit_ids[i]}")
-            for i in range(shift_amount, output_bit_len):
-                constraints.extend(sat_utils.cnf_equivalent([output_bit_ids[i], input_bit_ids[i - shift_amount]]))
+            for output_bit_id in output_bit_ids[:shift_amount]:
+                constraints.append(f"-{output_bit_id}")
+            for output_bit_id, input_bit_id in zip(output_bit_ids[shift_amount:], input_bit_ids):
+                constraints.extend(sat_utils.cnf_equivalent([output_bit_id, input_bit_id]))
 
         return output_bit_ids, constraints
 
@@ -745,22 +745,22 @@ class Shift(Component):
             (['shift_0_0_0_0', 'shift_0_0_1_0', 'shift_0_0_0_1', 'shift_0_0_1_1'], ['-shift_0_0_0_0', '-shift_0_0_0_1', 'shift_0_0_1_0 -input_0_0', 'input_0_0 -shift_0_0_1_0', 'shift_0_0_1_1 -input_0_1', 'input_0_1 -shift_0_0_1_1'])
         """
         in_ids_0, in_ids_1 = self._generate_input_double_ids()
-        out_len, out_ids_0, out_ids_1 = self._generate_output_double_ids()
+        out_ids_0, out_ids_1 = self._generate_output_double_ids()
         shift_amount = self.description[1]
         constraints = []
         if shift_amount < 0:
             shift_amount = -shift_amount
-            for i in range(out_len - shift_amount):
+            for i in range(self.output_bit_size - shift_amount):
                 constraints.extend(sat_utils.cnf_equivalent([out_ids_0[i], in_ids_0[i + shift_amount]]))
                 constraints.extend(sat_utils.cnf_equivalent([out_ids_1[i], in_ids_1[i + shift_amount]]))
-            for i in range(out_len - shift_amount, out_len):
+            for i in range(self.output_bit_size - shift_amount, self.output_bit_size):
                 constraints.append(f"-{out_ids_0[i]}")
                 constraints.append(f"-{out_ids_1[i]}")
         else:
             for i in range(shift_amount):
                 constraints.append(f"-{out_ids_0[i]}")
                 constraints.append(f"-{out_ids_1[i]}")
-            for i in range(shift_amount, out_len):
+            for i in range(shift_amount, self.output_bit_size):
                 constraints.extend(sat_utils.cnf_equivalent([out_ids_0[i], in_ids_0[i - shift_amount]]))
                 constraints.extend(sat_utils.cnf_equivalent([out_ids_1[i], in_ids_1[i - shift_amount]]))
 
@@ -811,23 +811,21 @@ class Shift(Component):
             sage: shift_component.sat_xor_linear_mask_propagation_constraints()
             (['shift_0_0_0_i', 'shift_0_0_1_i', 'shift_0_0_0_o', 'shift_0_0_1_o'], ['shift_0_0_1_o -shift_0_0_0_i', 'shift_0_0_0_i -shift_0_0_1_o', '-shift_0_0_1_i'])
         """
-        _, input_bit_ids = self._generate_component_input_ids()
-        out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
-        output_bit_len, output_bit_ids = self._generate_output_ids(suffix=out_suffix)
+        input_bit_ids = self._generate_component_input_ids()
+        output_bit_ids = self._generate_output_ids(suffix=constants.OUTPUT_BIT_ID_SUFFIX)
         shift_amount = self.description[1]
         constraints = []
         if shift_amount < 0:
             shift_amount = -shift_amount
-            constraints.extend([f"-{input_bit_ids[i]}" for i in range(shift_amount)])
-            for i in range(output_bit_len - shift_amount):
-                constraints.extend(sat_utils.cnf_equivalent([output_bit_ids[i], input_bit_ids[i + shift_amount]]))
+            constraints.extend(f"-{input_bit_id}" for input_bit_id in input_bit_ids[:shift_amount])
+            for output_bit_id, input_bit_id in zip(output_bit_ids[:-shift_amount], input_bit_ids[shift_amount:]):
+                constraints.extend(sat_utils.cnf_equivalent([output_bit_id, input_bit_id]))
         else:
-            for i in range(shift_amount, output_bit_len):
-                constraints.extend(sat_utils.cnf_equivalent([output_bit_ids[i], input_bit_ids[i - shift_amount]]))
-            constraints.extend([f"-{input_bit_ids[i]}" for i in range(output_bit_len - shift_amount, output_bit_len)])
-        result = input_bit_ids + output_bit_ids, constraints
+            for output_bit_id, input_bit_id in zip(output_bit_ids[shift_amount:], input_bit_ids[:-shift_amount]):
+                constraints.extend(sat_utils.cnf_equivalent([output_bit_id, input_bit_id]))
+            constraints.extend(f"-{input_bit_id}" for input_bit_id in input_bit_ids[-shift_amount:])
 
-        return result
+        return input_bit_ids + output_bit_ids, constraints
 
     def smt_constraints(self):
         """
@@ -851,21 +849,21 @@ class Shift(Component):
             (['shift_0_0_0', 'shift_0_0_1'], ['(assert (not shift_0_0_0))', '(assert (= shift_0_0_1 input_0))'])
         """
         input_bit_ids = self._generate_input_ids()
-        output_bit_len, output_bit_ids = self._generate_output_ids()
+        output_bit_ids = self._generate_output_ids()
         shift_amount = self.description[1]
         constraints = []
         if shift_amount < 0:
             shift_amount = -shift_amount
-            for i in range(output_bit_len - shift_amount):
-                equation = smt_utils.smt_equivalent((output_bit_ids[i], input_bit_ids[i + shift_amount]))
+            for output_bit_id, input_bit_id in zip(output_bit_ids, input_bit_ids[shift_amount:]):
+                equation = smt_utils.smt_equivalent((output_bit_id, input_bit_id))
                 constraints.append(smt_utils.smt_assert(equation))
-            for i in range(output_bit_len - shift_amount, output_bit_len):
-                constraints.append(smt_utils.smt_assert(smt_utils.smt_not(output_bit_ids[i])))
+            for output_bit_id in output_bit_ids[self.output_bit_size - shift_amount:]:
+                constraints.append(smt_utils.smt_assert(smt_utils.smt_not(output_bit_id)))
         else:
-            for i in range(shift_amount):
-                constraints.append(smt_utils.smt_assert(smt_utils.smt_not(output_bit_ids[i])))
-            for i in range(shift_amount, output_bit_len):
-                equation = smt_utils.smt_equivalent((output_bit_ids[i], input_bit_ids[i - shift_amount]))
+            for output_bit_id in output_bit_ids[:shift_amount]:
+                constraints.append(smt_utils.smt_assert(smt_utils.smt_not(output_bit_id)))
+            for output_bit_id, input_bit_id in zip(output_bit_ids[shift_amount:], input_bit_ids):
+                equation = smt_utils.smt_equivalent((output_bit_id, input_bit_id))
                 constraints.append(smt_utils.smt_assert(equation))
 
         return output_bit_ids, constraints
@@ -913,27 +911,22 @@ class Shift(Component):
             sage: shift_component.smt_xor_linear_mask_propagation_constraints()
             (['shift_0_0_0_i', 'shift_0_0_1_i', 'shift_0_0_0_o', 'shift_0_0_1_o'], ['(assert (= shift_0_0_1_o shift_0_0_0_i))', '(assert (not shift_0_0_1_i))'])
         """
-        _, input_bit_ids = self._generate_component_input_ids()
-        out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
-        output_bit_len, output_bit_ids = self._generate_output_ids(suffix=out_suffix)
+        input_bit_ids = self._generate_component_input_ids()
+        output_bit_ids = self._generate_output_ids(suffix=constants.OUTPUT_BIT_ID_SUFFIX)
         shift_amount = self.description[1]
         constraints = []
         if shift_amount < 0:
             shift_amount = -shift_amount
-            constraints.extend([smt_utils.smt_assert(smt_utils.smt_not(input_bit_ids[i])) for i in range(shift_amount)])
-            for i in range(output_bit_len - shift_amount):
-                equation = smt_utils.smt_equivalent((output_bit_ids[i], input_bit_ids[i + shift_amount]))
+            for input_bit_id in input_bit_ids[:shift_amount]:
+                constraints.append(smt_utils.smt_assert(smt_utils.smt_not(input_bit_id)))
+            for output_bit_id, input_bit_id in zip(output_bit_ids[:-shift_amount], input_bit_ids[shift_amount:]):
+                equation = smt_utils.smt_equivalent((output_bit_id, input_bit_id))
                 constraints.append(smt_utils.smt_assert(equation))
         else:
-            for i in range(shift_amount, output_bit_len):
-                equation = smt_utils.smt_equivalent((output_bit_ids[i], input_bit_ids[i - shift_amount]))
+            for output_bit_id, input_bit_id in zip(output_bit_ids[shift_amount:], input_bit_ids[:-shift_amount]):
+                equation = smt_utils.smt_equivalent((output_bit_id, input_bit_id))
                 constraints.append(smt_utils.smt_assert(equation))
-            constraints.extend(
-                [
-                    smt_utils.smt_assert(smt_utils.smt_not(input_bit_ids[i]))
-                    for i in range(output_bit_len - shift_amount, output_bit_len)
-                ]
-            )
-        result = input_bit_ids + output_bit_ids, constraints
+            for input_bit_id in input_bit_ids[-shift_amount:]:
+                constraints.append(smt_utils.smt_assert(smt_utils.smt_not(input_bit_id)))
 
-        return result
+        return input_bit_ids + output_bit_ids, constraints

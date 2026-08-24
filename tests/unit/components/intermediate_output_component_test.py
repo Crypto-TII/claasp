@@ -144,10 +144,10 @@ def test_smt_xor_linear_mask_propagation_constraints():
     assert variables[-1] == "intermediate_output_0_0_3_i"
 
     assert constraints[:4] == [
-        "(assert (= intermediate_output_0_0_0_i intermediate_output_0_0_0_o))",
-        "(assert (= intermediate_output_0_0_1_i intermediate_output_0_0_1_o))",
-        "(assert (= intermediate_output_0_0_2_i intermediate_output_0_0_2_o))",
-        "(assert (= intermediate_output_0_0_3_i intermediate_output_0_0_3_o))",
+        "(assert (= intermediate_output_0_0_0_o intermediate_output_0_0_0_i))",
+        "(assert (= intermediate_output_0_0_1_o intermediate_output_0_0_1_i))",
+        "(assert (= intermediate_output_0_0_2_o intermediate_output_0_0_2_i))",
+        "(assert (= intermediate_output_0_0_3_o intermediate_output_0_0_3_i))",
     ]
     assert constraints[4] == "(assert (= intermediate_output_0_0_i intermediate_output_0_0_o))"
     assert constraints[5] == "(assert (= fork_bit_i (xor branch_0_o branch_1_o)))"
