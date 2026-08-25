@@ -39,6 +39,9 @@ from claasp.name_mappings import (
     WORD_OPERATION,
 )
 
+STATE_SIZE_MULTIPLE_OF_8_ERROR = "State size must be a multiple of 8."
+KEY_SIZE_MULTIPLE_OF_8_ERROR = "Key size must be a multiple of 8."
+
 
 def hex_to_bitlist(hex_str):
     if not hex_str.startswith(("0x", "0X")):
@@ -1025,9 +1028,9 @@ def differential_linear_checker_for_block_cipher_single_key(
     - This method returns a **float**; the empirical correlation in the interval ``[-1, 1]``
     """
     if block_size % 8 != 0:
-        raise ValueError("State size must be a multiple of 8.")
+        raise ValueError(STATE_SIZE_MULTIPLE_OF_8_ERROR)
     if key_size % 8 != 0:
-        raise ValueError("Key size must be a multiple of 8.")
+        raise ValueError(KEY_SIZE_MULTIPLE_OF_8_ERROR)
     state_num_bytes = int(block_size / 8)
     key_num_bytes = int(key_size / 8)
     if num_workers > 1:
@@ -1077,9 +1080,9 @@ def linear_checker_for_block_cipher_single_key(
     - This method returns a **float**; the empirical correlation in the interval ``[-1, 1]``
     """
     if block_size % 8 != 0:
-        raise ValueError("State size must be a multiple of 8.")
+        raise ValueError(STATE_SIZE_MULTIPLE_OF_8_ERROR)
     if key_size % 8 != 0:
-        raise ValueError("Key size must be a multiple of 8.")
+        raise ValueError(KEY_SIZE_MULTIPLE_OF_8_ERROR)
     if len(input_mask) != block_size:
         raise ValueError("Input mask length must be equal to block_size.")
     if len(output_mask) != block_size:
@@ -1174,13 +1177,23 @@ def boomerang_checker_for_block_cipher_single_key(
         sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
         sage: from claasp.cipher_modules.models.utils import boomerang_checker_for_block_cipher_single_key
         sage: speck = SpeckBlockCipher(number_of_rounds=5)
-        sage: boomerang_checker_for_block_cipher_single_key(speck, 0, 0, 1024, 32, 64, 0)
+        sage: input_difference = 0
+        sage: output_difference = 0
+        sage: boomerang_checker_for_block_cipher_single_key(
+        ....:     speck,
+        ....:     input_difference=input_difference,
+        ....:     output_difference=output_difference,
+        ....:     number_of_samples=1024,
+        ....:     block_size=32,
+        ....:     key_size=64,
+        ....:     fixed_key=0,
+        ....: )
         1.0
     """
     if block_size % 8 != 0:
-        raise ValueError("State size must be a multiple of 8.")
+        raise ValueError(STATE_SIZE_MULTIPLE_OF_8_ERROR)
     if key_size % 8 != 0:
-        raise ValueError("Key size must be a multiple of 8.")
+        raise ValueError(KEY_SIZE_MULTIPLE_OF_8_ERROR)
     state_num_bytes = int(block_size / 8)
     key_num_bytes = int(key_size / 8)
     # cast to Python int so `.to_bytes` / float division work when called with Sage Integers
@@ -1222,7 +1235,7 @@ def differential_checker_permutation(
     - This method returns a **float**; the empirical probability weight ``log2(matches / number_of_samples)``
     """
     if state_size % 8 != 0:
-        raise ValueError("State size must be a multiple of 8.")
+        raise ValueError(STATE_SIZE_MULTIPLE_OF_8_ERROR)
     num_bytes = int(state_size / 8)
 
     if num_workers > 1:
@@ -1269,7 +1282,7 @@ def differential_truncated_checker_permutation(
     - This method returns a **float**; the empirical probability weight, or ``-inf`` if no match is found
     """
     if state_size % 8 != 0:
-        raise ValueError("State size must be a multiple of 8.")
+        raise ValueError(STATE_SIZE_MULTIPLE_OF_8_ERROR)
     num_bytes = int(state_size / 8)
 
     if num_workers > 1:
@@ -1332,7 +1345,7 @@ def differential_truncated_checker_single_key(
     - This method returns a **float**; the empirical probability weight ``log2(matches / number_of_samples)``
     """
     if state_size % 8 != 0:
-        raise ValueError("State size must be a multiple of 8.")
+        raise ValueError(STATE_SIZE_MULTIPLE_OF_8_ERROR)
     num_bytes = int(state_size / 8)
     key_num_bytes = int(key_size / 8)
 
@@ -1389,7 +1402,7 @@ def shared_difference_paired_input_differential_checker_permutation(
     - This method returns a **float**; the empirical probability weight ``log2(matches / number_of_samples)``
     """
     if state_size % 8 != 0:
-        raise ValueError("State size must be a multiple of 8.")
+        raise ValueError(STATE_SIZE_MULTIPLE_OF_8_ERROR)
     num_bytes = int(state_size / 8)
 
     if num_workers > 1:
@@ -1445,7 +1458,7 @@ def shared_difference_paired_input_differential_linear_checker_permutation(
     - This method returns a **float**; the empirical correlation in the interval ``[-1, 1]``
     """
     if state_size % 8 != 0:
-        raise ValueError("State size must be a multiple of 8.")
+        raise ValueError(STATE_SIZE_MULTIPLE_OF_8_ERROR)
     num_bytes = int(state_size / 8)
 
     if num_workers > 1:
@@ -1504,7 +1517,7 @@ def _sample_truncated_difference_from_string(pattern, num_samples, state_size, r
         raise ValueError("pattern may only contain '0', '1', '2', or '?'.")
 
     if state_size % 8 != 0:
-        raise ValueError("State size must be a multiple of 8.")
+        raise ValueError(STATE_SIZE_MULTIPLE_OF_8_ERROR)
 
     # Fixed positions & values (MSB-first indexing)
     indices = np.arange(state_size)
@@ -1550,7 +1563,7 @@ def differential_truncated_checker_permutation_input_and_output_truncated(
     - This method returns a **float**; the empirical probability weight, or ``-inf`` if no match is found
     """
     if state_size % 8 != 0:
-        raise ValueError("State size must be a multiple of 8.")
+        raise ValueError(STATE_SIZE_MULTIPLE_OF_8_ERROR)
     if len(input_trunc_diff) != state_size or len(output_trunc_diff) != state_size:
         raise ValueError("Both truncated differences must have length == state_size.")
 
@@ -1619,7 +1632,7 @@ def truncated_differential_linear_checker_permutation(
     - This method returns a **float**; the empirical correlation in the interval ``[-1, 1]``
     """
     if state_size % 8 != 0:
-        raise ValueError("State size must be a multiple of 8.")
+        raise ValueError(STATE_SIZE_MULTIPLE_OF_8_ERROR)
     if len(input_trunc_diff) != state_size or len(output_mask) != state_size:
         raise ValueError("Both truncated differences must have length == state_size.")
 
