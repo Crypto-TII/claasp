@@ -1,11 +1,15 @@
 from claasp.ciphers.block_ciphers.gift_block_cipher import GiftBlockCipher
 
 
+# Test vectors from https://github.com/giftcipher/gift/tree/master/implementations/test%20vectors
+# (GIFT64_test_vector_1.txt through GIFT64_test_vector_3.txt).
 GIFT_64_TEST_VECTORS = [
     (0x0000000000000000, 0x00000000000000000000000000000000, 0xF62BC3EF34F775AC),
     (0xFEDCBA9876543210, 0xFEDCBA9876543210FEDCBA9876543210, 0xC1B71F66160FF587),
     (0xC450C7727A9B8A7D, 0xBD91731EB6BC2713A1F9F6FFC75044E7, 0xE3272885FA94BA8B),
 ]
+# Test vectors from https://github.com/giftcipher/gift/tree/master/implementations/test%20vectors
+# (GIFT128_test_vector_1.txt through GIFT128_test_vector_3.txt).
 GIFT_128_TEST_VECTORS = [
     (0x00000000000000000000000000000000, 0x00000000000000000000000000000000,
      0xCD0BD738388AD3F668B15A36CEB6FF92),

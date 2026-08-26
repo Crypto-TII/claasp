@@ -139,18 +139,7 @@ class GiftSboxBlockCipher(Cipher):
             # update key schedule
             if round_number != 0:
                 key_list = self.key_schedule(key_list)
-            if block_bit_size == 64:
-                round_key_u = deepcopy(key_list[6])
-                round_key_v = deepcopy(key_list[7])
-            else:
-                round_key_u = ComponentState(
-                    deepcopy(key_list[2].id) + deepcopy(key_list[3].id),
-                    deepcopy(key_list[2].input_bit_positions) + deepcopy(key_list[3].input_bit_positions),
-                )
-                round_key_v = ComponentState(
-                    deepcopy(key_list[6].id) + deepcopy(key_list[7].id),
-                    deepcopy(key_list[6].input_bit_positions) + deepcopy(key_list[7].input_bit_positions),
-                )
+            round_key_u, round_key_v = self.get_round_keys(key_list)
             # round function
             state = self.round_function(state, round_key_u, round_key_v, ci)
 
@@ -177,6 +166,21 @@ class GiftSboxBlockCipher(Cipher):
             key_new.append(deepcopy(key[i]))
 
         return key_new
+
+    def get_round_keys(self, key):
+        if self.state_bit_size == 64:
+            return deepcopy(key[6]), deepcopy(key[7])
+
+        round_key_u = ComponentState(
+            deepcopy(key[2].id) + deepcopy(key[3].id),
+            deepcopy(key[2].input_bit_positions) + deepcopy(key[3].input_bit_positions),
+        )
+        round_key_v = ComponentState(
+            deepcopy(key[6].id) + deepcopy(key[7].id),
+            deepcopy(key[6].input_bit_positions) + deepcopy(key[7].input_bit_positions),
+        )
+
+        return round_key_u, round_key_v
 
     def get_cipher_output_inputs(self, state):
         inputs_id = []
