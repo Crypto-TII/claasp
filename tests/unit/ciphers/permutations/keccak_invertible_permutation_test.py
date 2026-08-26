@@ -1,3 +1,5 @@
+import pytest
+
 from claasp.ciphers.permutations.keccak_invertible_permutation import KeccakInvertiblePermutation
 
 
@@ -17,3 +19,11 @@ def test_keccak_invertible_permutation():
     ciphertext = 0x8000000080008008 << (24 * 64)
     assert keccak.evaluate([plaintext]) == ciphertext
     assert keccak.evaluate_vectorized([plaintext], evaluate_api=True) == ciphertext
+
+
+def test_keccak_invertible_permutation_invalid_parameters():
+    with pytest.raises(ValueError):
+        KeccakInvertiblePermutation(word_size=48)
+
+    with pytest.raises(ValueError):
+        KeccakInvertiblePermutation(number_of_rounds=25, word_size=64)

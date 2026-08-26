@@ -1,3 +1,5 @@
+import pytest
+
 from claasp.ciphers.permutations.keccak_permutation import KeccakPermutation
 
 
@@ -38,3 +40,11 @@ def test_keccak_permutation_official_reference_vector():
     keccak_last_round = KeccakPermutation(number_of_rounds=1)
     ciphertext = 0x8000000080008008 << (24 * 64)
     assert keccak_last_round.evaluate([0]) == ciphertext
+
+
+def test_keccak_permutation_invalid_parameters():
+    with pytest.raises(ValueError):
+        KeccakPermutation(word_size=48)
+
+    with pytest.raises(ValueError):
+        KeccakPermutation(number_of_rounds=25, word_size=64)
