@@ -91,6 +91,11 @@
         Equations* : In Proceedings of Fast Software Encryption 2003, LNCS
         2887, pp. 274-289, Springer-Verlag 2003
 
+.. [BDDGR23]
+        Belkheyar Y., Daemen J., Dobraunig C., Ghosh S., Rasoolzadeh S. : *BipBip: A Low-Latency
+        Tweakable Block Cipher with Small Dimensions* : In IACR Transactions on Cryptographic
+        Hardware and Embedded Systems, vol. 2023, no. 1, pp. 326-368, 2023
+
 .. [BDG+25] Y. Belkheyar, P. Derbez, S. Ghosh, G. Leander, S. Mella, L. Perrin,
         S. Rasoolzadeh, L. Stennes, S. Sun, G. Van Assche, D. Vizár,
         "ChiLow and ChiChi: New Constructions for Code Encryption",
