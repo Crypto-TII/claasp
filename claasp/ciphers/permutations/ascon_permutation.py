@@ -32,6 +32,8 @@ class AsconPermutation(Cipher):
     Construct an instance of the AsconPermutation class.
 
     This class is used to store compact representations of a cipher, used to generate the corresponding cipher.
+    The round function and standard parameters follow the Ascon team's NIST SP 800-232 reference implementation
+    [ASCONREF]_.
 
     INPUT:
 

@@ -54,6 +54,8 @@ class GimliPermutation(Cipher):
     Construct an instance of the GimliPermutation class.
 
     This class is used to store compact representations of a cipher, used to generate the corresponding cipher.
+    The round function and standard 24-round instance follow the designers' specification and reference C code
+    [GIMLI2017]_.
 
     INPUT:
 
