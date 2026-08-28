@@ -374,6 +374,14 @@
         *Gimli: a cross-platform permutation* : CHES 2017 :
         https://gimli.cr.yp.to/gimli-20170627.pdf
 
+.. [GIFT2017]
+        Banik S., Pandey S. K., Peyrin T., Sasaki Y., Sim S. M., Todo Y. :
+        *GIFT: A Small Present -- Towards Reaching the Limit of Lightweight Encryption* :
+        In Cryptographic Hardware and Embedded Systems -- CHES 2017, Lecture Notes in Computer Science,
+        vol. 10529, pp. 321--345. Springer (2017) : https://doi.org/10.1007/978-3-319-66787-4_16.
+        Full version: https://eprint.iacr.org/2017/622.pdf.
+        Reference implementation and test vectors: https://github.com/giftcipher/gift.
+
 .. [Go2019]
         Gohr A. : *Improving Attacks on Round-Reduced Speck32/64 using Deep Learning
 * : In Advances in Cryptology – CRYPTO 2019
