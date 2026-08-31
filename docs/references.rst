@@ -65,6 +65,26 @@
         characteristics* : IACR Transactions on Symmetric Cryptology (2017):
         99-129 : https://tosc.iacr.org/index.php/ToSC/article/view/805/759
 
+.. [A1997]
+        Adams C. : *The CAST-128 Encryption Algorithm* : RFC 2144, Network
+        Working Group, 1997 : https://datatracker.ietf.org/doc/html/rfc2144
+        
+.. [ABK1998]
+        Anderson R., Biham E., Knudsen L. : *Serpent: A Proposal for the
+        Advanced Encryption Standard* : First Advanced Encryption Standard
+        Candidate Conference, 1998 :
+        https://www.cl.cam.ac.uk/archive/rja14/Papers/serpent.pdf
+
+.. [AJN2016]
+        Aumasson J.-P., Jovanovic P., Neves S. : *NORX v3.0* : CAESAR
+        Competition, third-round submission, 2016 :
+        https://competitions.cr.yp.to/round3/norxv30.pdf
+
+.. [ASCONREF]
+        Ascon Team : *ascon-c reference implementation for NIST SP 800-232* :
+        commit 446347f21b209f3921c65ece70027c366cbe1693 :
+        https://github.com/ascon/ascon-c/tree/446347f21b209f3921c65ece70027c366cbe1693
+
 .. _claasp-ref-B:
 
 .. only:: html
@@ -75,6 +95,19 @@
         Biryukov A., Canniere C. D. : *Block Ciphers and Systems of Quadratic
         Equations* : In Proceedings of Fast Software Encryption 2003, LNCS
         2887, pp. 274-289, Springer-Verlag 2003
+
+.. [BDDGR23]
+        Belkheyar Y., Daemen J., Dobraunig C., Ghosh S., Rasoolzadeh S. : *BipBip: A Low-Latency
+        Tweakable Block Cipher with Small Dimensions* : In IACR Transactions on Cryptographic
+        Hardware and Embedded Systems, vol. 2023, no. 1, pp. 326-368, 2023
+
+.. [BDG+25] Y. Belkheyar, P. Derbez, S. Ghosh, G. Leander, S. Mella, L. Perrin,
+        S. Rasoolzadeh, L. Stennes, S. Sun, G. Van Assche, D. Vizár,
+        "ChiLow and ChiChi: New Constructions for Code Encryption",
+        in Advances in Cryptology -- EUROCRYPT 2025, S. Fehr and P.-A. Fouque (eds.),
+        LNCS, vol. 15607, Springer, 2025, pp. 212--243.
+        Cryptology ePrint Archive, Paper 2025/308,
+        https://eprint.iacr.org/2025/308
 
 .. [BFS2003]
         Bardet M., Faugère J.-C., Salvy B. : *Complexity of Gröbner basis
@@ -200,6 +233,14 @@
 
         **C**
 
+.. [CDGP1993] Claesen, L., Daemen, J., Genoe, M., & Peeters, G. (1993).
+        *Subterranean: A 600 Mbit/sec Cryptographic VLSI Chip*.
+        In Proceedings of the 1993 IEEE International Conference on
+        Computer Design: VLSI in Computers & Processors (ICCD '93),
+        Cambridge, MA, USA, October 3-6, 1993, pp. 610-613.
+        IEEE Computer Society.
+        https://doi.org/10.1109/ICCD.1993.393304
+
 .. [Cou2001]
         Courtois N. : *La sécurité des primitives cryptographiques basées sur
         des problèmes algébriques multivariables* : MQ, IP, MinRank, HFE. PhD
@@ -211,9 +252,20 @@
         Transactions on Symmetric Cryptology, Vol 2017, Issue 4, pre-print :
         https://eprint.iacr.org/2018/161.pdf
 
+.. [CPV+22]
+        Coutinho, M., Passos, I., Vásquez, J.C.G. et al.
+        Latin Dances Reloaded: Improved Cryptanalysis Against Salsa and
+        ChaCha, and the Proposal of Forró. J Cryptol 36, 18 (2023).
+        https://doi.org/10.1007/s00145-023-09455-5
+
 .. [Cro2005]
         Crowley P. : *Truncated differential cryptanalysis of five rounds of
         Salsa20* : IACR 2005 : http://eprint.iacr.org/2005/375
+
+.. [CryptDances22]
+        Coutinho, M. et al. CryptDances: a GPU-based cryptanalysis
+        tool for ChaCha, Salsa and Forro (MIT licensed).
+        https://github.com/murcoutinho/cryptDances
 
 .. [CZZ2023]
         Cao, W., Zhang, W., Zhou, C. : *New Automatic Search Tool for Searching
@@ -276,6 +328,13 @@
         CHAM* : Implementation repository (2025) :
         https://github.com/dampers/SAECHAM-implementations
 
+.. [DMR2019] 
+        Daemen, J., Massolino, P. M. C., and Rotella, Y.
+        *The Subterranean 2.0 cipher suite.*
+        Submission to the NIST Lightweight Cryptography Standardization process,
+        version 1.1, March 29, 2019.
+        https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/round-2/spec-doc-rnd2/subterranean-spec-round2.pdf
+
 .. _claasp-ref-E:
 
 .. only:: html
@@ -304,6 +363,25 @@
 
         **G**
 
+.. [GASTON2023]
+        El Hirch S., Daemen J., Rohit R. S., Makarim R. H. : *Twin Column
+        Parity Mixers and Gaston* : Cryptology ePrint Archive, Paper 2023/799,
+        2023 : https://eprint.iacr.org/2023/799
+
+.. [GIMLI2017]
+        Bernstein D. J., Kölbl S., Lucks S., Massolino P. M. C., Mendel F.,
+        Nawaz K., Schneider T., Schwabe P., Standaert F.-X., Todo Y., Viguier B. :
+        *Gimli: a cross-platform permutation* : CHES 2017 :
+        https://gimli.cr.yp.to/gimli-20170627.pdf
+
+.. [GIFT2017]
+        Banik S., Pandey S. K., Peyrin T., Sasaki Y., Sim S. M., Todo Y. :
+        *GIFT: A Small Present -- Towards Reaching the Limit of Lightweight Encryption* :
+        In Cryptographic Hardware and Embedded Systems -- CHES 2017, Lecture Notes in Computer Science,
+        vol. 10529, pp. 321--345. Springer (2017) : https://doi.org/10.1007/978-3-319-66787-4_16.
+        Full version: https://eprint.iacr.org/2017/622.pdf.
+        Reference implementation and test vectors: https://github.com/giftcipher/gift.
+
 .. [Go2019]
         Gohr A. : *Improving Attacks on Round-Reduced Speck32/64 using Deep Learning
 * : In Advances in Cryptology – CRYPTO 2019
@@ -326,6 +404,13 @@
 .. [HP2003]
         Huffman W. C., Pless V. : *Fundamentals of Error-Correcting Codes* :
         Cambridge Univ. Press, 2003
+
+.. [HKPT2026]
+        Hu, K., Khairallah, M., Peyrin, T., & Tan, Q.
+        (2026). uKNIT: Breaking Round-Alignment for Cipher Design.
+        IACR Transactions on Symmetric Cryptology, 2026(2).
+        https://doi.org/10.46586/tosc.a0zo-4njsuvm
+        https://github.com/syllab-ntu/UKNIT
 
 .. _claasp-ref-I:
 
@@ -356,6 +441,12 @@
 .. only:: html
 
         **K**
+
+.. [XKCPREF]
+        Keccak Team : *eXtended Keccak Code Package (XKCP), reference
+        implementations of Keccak-p and Xoodoo* : commit
+        eb5244d6b95fb1c434b211bac293093e18aa8fd1 :
+        https://github.com/XKCP/XKCP/tree/eb5244d6b95fb1c434b211bac293093e18aa8fd1
 
 .. [KPG1999]
         Kipnis A., Patarin J., Goubin L. : *Unbalanced oil and vinegar
@@ -455,6 +546,13 @@
         KEA Algorithm Specifications* : Version 2.0. 29 de mayo de 1998 :
         https://csrc.nist.gov/csrc/media/projects/cryptographic-algorithm-validation-program/documents/skipjack/skipjack.pdf
 
+.. [NISTLWCSUB] 
+        Daemen, J., Massolino, P. M. C., and Rotella, Y.
+        *Subterranean 2.0 -- Round 2 submission package*
+        (reference software, including subterranean_bit.py).
+        NIST Lightweight Cryptography Standardization process, Round 2 Candidates.
+        https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/round-2/submissions-rnd2/subterranean.zip
+
 .. _claasp-ref-O:
 
 .. only:: html
@@ -530,6 +628,12 @@
         and linear characteristics with predefined properties* : Cryptology
         ePrint Archive (2014) : https://eprint.iacr.org/2014/747.pdf
 
+.. [SIHMAS2011] 
+        Shibutani, K., Isobe, T., Hiwatari, H., Mitsuda, A., Akishita, T., Shirai, T. (2011).
+        *Piccolo: An Ultra-Lightweight Blockcipher*. In: Preneel, B., Takagi, T. (eds) Cryptographic
+        Hardware and Embedded Systems -- CHES 2011. Lecture Notes in Computer Science, vol 6917,
+        pp. 342-357. Springer, Berlin, Heidelberg. https://doi.org/10.1007/978-3-642-23951-9_23
+
 .. [SW2023]
         Sun, L., Wang, M. : *SoK: Modeling for Large S-boxes Oriented to
         Differential Probabilities and Linear Correlations (Long Paper)* :
@@ -569,6 +673,13 @@
 .. only:: html
 
         **W**
+.. [WARP] Subhadeep Banik, Zhenzhen Bao, Takanori Isobe,
+        Hiroyasu Kubo, Fukang Liu, Kazuhiko Minematsu,
+        Kosei Sakamoto, Nao Shibata, and Maki Shigeri.
+        *WARP: Revisiting GFN for Lightweight 128-Bit Block Cipher*.
+        In: Selected Areas in Cryptography (SAC 2020),
+        LNCS 12804, Springer, pp. 535–564, 2021.
+        DOI: 10.1007/978-3-030-81652-0_21.
 
 .. _claasp-ref-X:
 
@@ -592,3 +703,9 @@
 .. only:: html
 
         **Z**
+
+.. [ZBL+2015]
+        Zhang W., Bao Z., Lin D., Rijmen V., Yang B., Verbauwhede I. :
+        *RECTANGLE: a bit-slice lightweight block cipher suitable for multiple
+        platforms* : Science China Information Sciences, 58(12), 1-15 (2015) :
+        https://eprint.iacr.org/2014/084.pdf

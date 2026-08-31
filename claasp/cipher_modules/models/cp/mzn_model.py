@@ -97,7 +97,7 @@ class MznModel:
         self._variables_declarations = []
         self._model_constraints = []
         self.c = 0
-        if self._cipher.is_spn():
+        if self._cipher.is_two_step_trail_search_friendly():
             for component in self._cipher.get_all_components():
                 if SBOX in component.type:
                     self.word_size = int(component.output_bit_size)
@@ -428,8 +428,8 @@ class MznModel:
             bit_positions = component["bit_positions"]
             bit_values = component["bit_values"]
             if step == "first_step":
-                if not self._cipher.is_spn():
-                    raise ValueError("Cipher is not SPN")
+                if not self._cipher.is_two_step_trail_search_friendly():
+                    raise ValueError("Cipher not compatible with the two-step trail search")
                 input_length = len(bit_positions) // self.word_size
                 bit_positions = self.calculate_bit_positions(bit_positions, input_length)
                 bit_values = self.calculate_bit_values(bit_values, input_length)

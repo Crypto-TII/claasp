@@ -97,6 +97,41 @@ class CipherOutput(Component):
     def cms_xor_differential_propagation_constraints(self, model):
         return self.cms_constraints()
 
+    def cms_xor_linear_mask_propagation_constraints(self, model=None):
+        """
+        Return a list of variables and a list of clauses for CIPHER OUTPUT for CMS XOR LINEAR model
+
+        .. SEEALSO::
+
+            :ref:`sat-standard` for the format
+
+        INPUT:
+
+        - ``model`` -- **model object** (default: `None`); a model instance
+
+        EXAMPLES::
+
+            sage: from claasp.components.cipher_output_component import CipherOutput
+            sage: output_component = CipherOutput(0, 0, ['xor_0_0', 'xor_0_1'], [[0, 1], [0, 1]], 4)
+            sage: output_component.cms_xor_linear_mask_propagation_constraints()
+            (['cipher_output_0_0_0_i',
+              'cipher_output_0_0_1_i',
+              ...
+              'cipher_output_0_0_2_o',
+              'cipher_output_0_0_3_o'],
+             ['x -cipher_output_0_0_0_o cipher_output_0_0_0_i',
+              'x -cipher_output_0_0_1_o cipher_output_0_0_1_i',
+              'x -cipher_output_0_0_2_o cipher_output_0_0_2_i',
+              'x -cipher_output_0_0_3_o cipher_output_0_0_3_i'])
+        """
+        input_bit_ids = self._generate_component_input_ids()
+        output_bit_ids = self._generate_output_ids(suffix=constants.OUTPUT_BIT_ID_SUFFIX)
+        constraints = []
+        for output_bit_id, input_bit_id in zip(output_bit_ids, input_bit_ids):
+            constraints.append(f"x -{output_bit_id} {input_bit_id}")
+
+        return input_bit_ids + output_bit_ids, constraints
+
     def cp_constraints(self):
         """
         Return a list of CP declarations and a list of CP constraints for OUTPUT component.
@@ -549,10 +584,10 @@ class CipherOutput(Component):
             (['cipher_output_0_0_0', 'cipher_output_0_0_1', 'cipher_output_0_0_2', 'cipher_output_0_0_3'], ['cipher_output_0_0_0 -xor_0_0_0', 'xor_0_0_0 -cipher_output_0_0_0', 'cipher_output_0_0_1 -xor_0_0_1', 'xor_0_0_1 -cipher_output_0_0_1', 'cipher_output_0_0_2 -xor_0_1_0', 'xor_0_1_0 -cipher_output_0_0_2', 'cipher_output_0_0_3 -xor_0_1_1', 'xor_0_1_1 -cipher_output_0_0_3'])
         """
         input_bit_ids = self._generate_input_ids()
-        output_bit_len, output_bit_ids = self._generate_output_ids()
+        output_bit_ids = self._generate_output_ids()
         constraints = []
-        for i in range(output_bit_len):
-            constraints.extend(sat_utils.cnf_equivalent([output_bit_ids[i], input_bit_ids[i]]))
+        for output_bit_id, input_bit_id in zip(output_bit_ids, input_bit_ids):
+            constraints.extend(sat_utils.cnf_equivalent([output_bit_id, input_bit_id]))
 
         return output_bit_ids, constraints
 
@@ -576,7 +611,7 @@ class CipherOutput(Component):
             (['cipher_output_0_0_0_0', 'cipher_output_0_0_1_0', 'cipher_output_0_0_2_0', 'cipher_output_0_0_3_0', 'cipher_output_0_0_0_1', 'cipher_output_0_0_1_1', 'cipher_output_0_0_2_1', 'cipher_output_0_0_3_1'], ['cipher_output_0_0_0_0 -xor_0_0_0_0', 'xor_0_0_0_0 -cipher_output_0_0_0_0', 'cipher_output_0_0_1_0 -xor_0_0_1_0', 'xor_0_0_1_0 -cipher_output_0_0_1_0', 'cipher_output_0_0_2_0 -xor_0_1_0_0', 'xor_0_1_0_0 -cipher_output_0_0_2_0', 'cipher_output_0_0_3_0 -xor_0_1_1_0', 'xor_0_1_1_0 -cipher_output_0_0_3_0', 'cipher_output_0_0_0_1 -xor_0_0_0_1', 'xor_0_0_0_1 -cipher_output_0_0_0_1', 'cipher_output_0_0_1_1 -xor_0_0_1_1', 'xor_0_0_1_1 -cipher_output_0_0_1_1', 'cipher_output_0_0_2_1 -xor_0_1_0_1', 'xor_0_1_0_1 -cipher_output_0_0_2_1', 'cipher_output_0_0_3_1 -xor_0_1_1_1', 'xor_0_1_1_1 -cipher_output_0_0_3_1'])
         """
         in_ids_0, in_ids_1 = self._generate_input_double_ids()
-        _, out_ids_0, out_ids_1 = self._generate_output_double_ids()
+        out_ids_0, out_ids_1 = self._generate_output_double_ids()
         constraints = []
         for out_id, in_id in zip(out_ids_0, in_ids_0):
             constraints.extend(sat_utils.cnf_equivalent([out_id, in_id]))
@@ -628,9 +663,8 @@ class CipherOutput(Component):
             sage: output_component.sat_xor_linear_mask_propagation_constraints()
             (['cipher_output_0_0_0_i', 'cipher_output_0_0_1_i', 'cipher_output_0_0_2_i', 'cipher_output_0_0_3_i', 'cipher_output_0_0_0_o', 'cipher_output_0_0_1_o', 'cipher_output_0_0_2_o', 'cipher_output_0_0_3_o'], ['cipher_output_0_0_0_i -cipher_output_0_0_0_o', 'cipher_output_0_0_0_o -cipher_output_0_0_0_i', 'cipher_output_0_0_1_i -cipher_output_0_0_1_o', 'cipher_output_0_0_1_o -cipher_output_0_0_1_i', 'cipher_output_0_0_2_i -cipher_output_0_0_2_o', 'cipher_output_0_0_2_o -cipher_output_0_0_2_i', 'cipher_output_0_0_3_i -cipher_output_0_0_3_o', 'cipher_output_0_0_3_o -cipher_output_0_0_3_i'])
         """
-        _, input_bit_ids = self._generate_component_input_ids()
-        out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
-        _, output_bit_ids = self._generate_output_ids(suffix=out_suffix)
+        input_bit_ids = self._generate_component_input_ids()
+        output_bit_ids = self._generate_output_ids(suffix=constants.OUTPUT_BIT_ID_SUFFIX)
         constraints = []
         for input_bit_id, output_bit_id in zip(input_bit_ids, output_bit_ids):
             constraints.extend(sat_utils.cnf_equivalent([input_bit_id, output_bit_id]))
@@ -653,10 +687,10 @@ class CipherOutput(Component):
                         (['cipher_output_0_0_0', 'cipher_output_0_0_1', 'cipher_output_0_0_2', 'cipher_output_0_0_3'], ['(assert (= cipher_output_0_0_0 xor_0_0_0))', '(assert (= cipher_output_0_0_1 xor_0_0_1))', '(assert (= cipher_output_0_0_2 xor_0_1_0))', '(assert (= cipher_output_0_0_3 xor_0_1_1))'])
         """
         input_bit_ids = self._generate_input_ids()
-        output_bit_len, output_bit_ids = self._generate_output_ids()
+        output_bit_ids = self._generate_output_ids()
         constraints = []
-        for i in range(output_bit_len):
-            equation = smt_utils.smt_equivalent([output_bit_ids[i], input_bit_ids[i]])
+        for output_bit_id, input_bit_id in zip(output_bit_ids, input_bit_ids):
+            equation = smt_utils.smt_equivalent([output_bit_id, input_bit_id])
             constraints.append(smt_utils.smt_assert(equation))
 
         return output_bit_ids, constraints
@@ -691,14 +725,21 @@ class CipherOutput(Component):
             sage: from claasp.components.cipher_output_component import CipherOutput
             sage: output_component = CipherOutput(0, 0, ['xor_0_0', 'xor_0_1'], [[0, 1], [0, 1]], 4)
             sage: output_component.smt_xor_linear_mask_propagation_constraints()
-            (['cipher_output_0_0_0_o', 'cipher_output_0_0_1_o', 'cipher_output_0_0_2_o', 'cipher_output_0_0_3_o', 'cipher_output_0_0_0_i', 'cipher_output_0_0_1_i', 'cipher_output_0_0_2_i', 'cipher_output_0_0_3_i'], ['(assert (= cipher_output_0_0_0_i cipher_output_0_0_0_o))', '(assert (= cipher_output_0_0_1_i cipher_output_0_0_1_o))', '(assert (= cipher_output_0_0_2_i cipher_output_0_0_2_o))', '(assert (= cipher_output_0_0_3_i cipher_output_0_0_3_o))'])
+            (['cipher_output_0_0_0_o',
+              'cipher_output_0_0_1_o',
+              ...
+              'cipher_output_0_0_2_i',
+              'cipher_output_0_0_3_i'],
+             ['(assert (= cipher_output_0_0_0_o cipher_output_0_0_0_i))',
+              '(assert (= cipher_output_0_0_1_o cipher_output_0_0_1_i))',
+              '(assert (= cipher_output_0_0_2_o cipher_output_0_0_2_i))',
+              '(assert (= cipher_output_0_0_3_o cipher_output_0_0_3_i))'])
         """
-        _, input_bit_ids = self._generate_component_input_ids()
-        out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
-        _, output_bit_ids = self._generate_output_ids(suffix=out_suffix)
+        input_bit_ids = self._generate_component_input_ids()
+        output_bit_ids = self._generate_output_ids(suffix=constants.OUTPUT_BIT_ID_SUFFIX)
         constraints = []
-        for ids in zip(input_bit_ids, output_bit_ids):
-            equation = smt_utils.smt_equivalent(ids)
+        for output_bit_id, input_bit_id in zip(output_bit_ids, input_bit_ids):
+            equation = smt_utils.smt_equivalent((output_bit_id, input_bit_id))
             constraints.append(smt_utils.smt_assert(equation))
-        result = output_bit_ids + input_bit_ids, constraints
-        return result
+
+        return output_bit_ids + input_bit_ids, constraints
