@@ -124,7 +124,8 @@ class ModMul(Modular):
             '-modmul_0_0_0_1'
         """
         in_ids_0, in_ids_1 = self._generate_input_double_ids()
-        out_len, out_ids_0, out_ids_1 = self._generate_output_double_ids()
+        out_ids_0, out_ids_1 = self._generate_output_double_ids()
+        out_len = self.output_bit_size
         constraints = []
         # Accumulated activity (running OR) from the least significant bit (index out_len-1) up to the most
         # significant (index 0): out_ids_0[j] marks "unknown" iff some operand bit at index >= j is
