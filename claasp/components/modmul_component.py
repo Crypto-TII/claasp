@@ -202,19 +202,19 @@ class ModMul(Modular):
             constraints.append(a_j <= a_x + a_y)
             activity.append(a_j)
 
-        # A_j = a_j OR ... OR a_{n-1}, accumulated from the least significant bit (index n-1) upwards.
-        # Each output bit is set to 2 * A_j, hence 0 or unknown, but never a determined 1.
-        A_prev = None
+        # acc_j = a_j OR ... OR a_{n-1}, accumulated from the least significant bit (index n-1)
+        # upwards. Each output bit is set to 2 * acc_j, hence 0 or unknown, never a determined 1.
+        acc_prev = None
         for j in range(n - 1, -1, -1):
-            A_j = model.binary_variable[f"A_{self.id}_{j}"]
+            acc_j = model.binary_variable[f"A_{self.id}_{j}"]
             if j == n - 1:
-                constraints.append(A_j == activity[j])
+                constraints.append(acc_j == activity[j])
             else:
-                # A_j = a_j OR A_{j+1}
-                constraints.append(A_j >= activity[j])
-                constraints.append(A_j >= A_prev)
-                constraints.append(A_j <= activity[j] + A_prev)
-            A_prev = A_j
-            constraints.append(x_class[output_vars[j]] == 2 * A_j)
+                # acc_j = a_j OR acc_{j+1}
+                constraints.append(acc_j >= activity[j])
+                constraints.append(acc_j >= acc_prev)
+                constraints.append(acc_j <= activity[j] + acc_prev)
+            acc_prev = acc_j
+            constraints.append(x_class[output_vars[j]] == 2 * acc_j)
 
         return variables, constraints
