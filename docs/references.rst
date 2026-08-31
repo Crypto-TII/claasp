@@ -681,6 +681,13 @@
         LNCS 12804, Springer, pp. 535–564, 2021.
         DOI: 10.1007/978-3-030-81652-0_21.
 
+.. [WHZDWS2025]
+
+        Wang J., Huang T., Zeng G., Ding T., Wu S., Sun S. : *THF: Designing
+        Low-Latency Tweakable Block Ciphers* : IACR Transactions on Symmetric
+        Cryptology, 2025(4), pp. 125-166, 2025 :
+        https://eprint.iacr.org/2025/1314
+
 .. _claasp-ref-X:
 
 .. only:: html

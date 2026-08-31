@@ -142,7 +142,7 @@ ROUND_CONSTANTS_PRIME_128 = [
 
 class BlinkBlockCipher(Cipher):
     """
-    Return a cipher object of the BLINK tweakable block cipher.
+    Return a cipher object of the BLINK tweakable block cipher as described in [WHZDWS2025]_.
 
     INPUT:
 
@@ -156,6 +156,23 @@ class BlinkBlockCipher(Cipher):
       number of rounds in the first part of the BLINK construction.
     - ``b`` -- **integer** (default: `3`);
       number of rounds in the second part of the BLINK construction.
+
+    EXAMPLES::
+
+        sage: from claasp.ciphers.block_ciphers.blink_block_cipher import BlinkBlockCipher
+        sage: blink = BlinkBlockCipher()
+        sage: key = int(
+        ....:     "d6a102d888a467e4d1d7dec33a246943e07c1dc6f302c57e762c2df9de6f0d21"
+        ....:     "6dd387874a0b52ce3022e0ad78c78a0697779021b38e7fa15e2b66350517f80f"
+        ....:     "2961c648d578bae174d70cb769c30a45cc40300fe8a342ca57a0bd0251ae39b6"
+        ....:     "21b8f104904374bbd6a102e234a664e421b8f104904374bbd6a102d888a666e4",
+        ....:     16,
+        ....: )
+        sage: plaintext = 0x0
+        sage: tweak = 0x0123456789abcdef0123456789abcdef
+        sage: ciphertext = 0x713fc1546d924bf9cb4e96812eeff9ac
+        sage: blink.evaluate([key, plaintext, tweak]) == ciphertext
+        True
     """
 
     def __init__(
@@ -397,7 +414,31 @@ class BlinkBlockCipher(Cipher):
 
         return output_state
 
-    def _add_forward_round(self, state, round_key, round_constant):
+    def _add_round_output(self, state, start_new_round=True):
+        """
+        Add the current BLINK round output.
+        """
+        self.add_round_output_component(
+            list(reversed(state)),
+            [
+                list(range(self.word_size))
+                for _ in range(self.number_of_cells)
+            ],
+            self.block_bit_size,
+        )
+
+        if start_new_round:
+            self.add_round()
+
+        return state
+
+    def _add_forward_round(
+        self,
+        state,
+        round_key,
+        round_constant,
+        start_new_round=True,
+    ):
         """
         Apply one forward BLINK round.
         """
@@ -406,10 +447,16 @@ class BlinkBlockCipher(Cipher):
         state = self._add_round_key(state, round_key)
         state = self._add_round_constant(state, round_constant)
         state = self._permute_cells(state)
-    
-        return state
 
-    def _add_inverse_round(self, state, round_key, round_constant):
+        return self._add_round_output(state, start_new_round)
+
+    def _add_inverse_round(
+        self,
+        state,
+        round_key,
+        round_constant,
+        start_new_round=True,
+    ):
         """
         Apply one inverse BLINK round.
         """
@@ -418,8 +465,8 @@ class BlinkBlockCipher(Cipher):
         state = self._add_round_constant(state, round_constant)
         state = self._add_mix_column_layer(state)
         state = self._add_sbox_layer(state)
-    
-        return state
+
+        return self._add_round_output(state, start_new_round)
 
     def _get_hash_keys(self):
         """
@@ -628,11 +675,12 @@ class BlinkBlockCipher(Cipher):
 
         for i in range(self.a):
             round_index = self.b + i
-    
+
             state = self._add_inverse_round(
                 state,
                 round_keys[round_index],
                 self.round_constants_prime[round_index],
+                start_new_round=i != self.a - 1,
             )
 
         state = self._xor_state_with_key(state, w2)
