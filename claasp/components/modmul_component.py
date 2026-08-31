@@ -17,6 +17,8 @@
 
 
 from claasp.components.modular_component import Modular
+from claasp.cipher_modules.models.sat.utils import utils as sat_utils
+from claasp.cipher_modules.models.milp.utils import utils as milp_utils
 
 
 class ModMul(Modular):
@@ -39,6 +41,8 @@ class ModMul(Modular):
         ``sum(len(p) for p in input_bit_positions) / output_bit_size``.
         Multiple operands are fully supported: the result is computed as a left-to-right sequential
         multiplication ``(a0 * a1 * a2 * ...) mod 2^output_bit_size``.
+        The deterministic truncated XOR differential models, SAT and MILP, support 2 operands only,
+        with modulus ``2^output_bit_size``.
 
     EXAMPLES::
 
@@ -80,3 +84,136 @@ class ModMul(Modular):
 
     def get_byte_based_vectorized_python_code(self, params):
         return [f"  {self.id} = byte_vector_MODMUL({params})"]
+
+    def sat_bitwise_deterministic_truncated_xor_differential_constraints(self):
+        """
+        Returns a list of variables and a list of clauses for modular multiplication component
+        in deterministic truncated XOR differential model.
+
+        This overrides the model inherited from :class:`Modular`, whose carry pivot is valid for an
+        addition but unsound for a product. The model accumulates the activity of the operands as a
+        running OR from the least significant bit upwards. The constraints are:
+            - 0, for every output bit below the lowest active or unknown operand bit;
+            - ? (unknown), for every output bit from that position upwards;
+
+        Note that encoding symbols for deterministic truncated XOR differential model
+        requires two variables per each symbol.
+
+        .. SEEALSO::
+
+            :ref:`sat-standard` for the format.
+
+        .. WARNING::
+
+            This method supports 2 operands only, with modulus ``2^output_bit_size``.
+
+        INPUT:
+
+        - None
+
+        EXAMPLES::
+
+            sage: from claasp.components.modmul_component import ModMul
+            sage: modmul_component = ModMul(0, 0, ['plaintext', 'key'], [list(range(4)), list(range(4))], 4, 16)
+            sage: output_ids, constraints = modmul_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
+            sage: len(output_ids)
+            8
+            sage: constraints[11]
+            '-modmul_0_0_2_0 plaintext_2_0 plaintext_2_1 key_2_0 key_2_1 modmul_0_0_3_0'
+            sage: constraints[-1]
+            '-modmul_0_0_0_1'
+        """
+        in_ids_0, in_ids_1 = self._generate_input_double_ids()
+        out_len, out_ids_0, out_ids_1 = self._generate_output_double_ids()
+        constraints = []
+        # Accumulated activity (running OR) from the least significant bit (index out_len-1) up to the most
+        # significant (index 0): out_ids_0[j] marks "unknown" iff some operand bit at index >= j is
+        # active or unknown. out_ids_1[j] is always 0, so no output bit is ever a determined 1.
+        for j in range(out_len - 1, -1, -1):
+            activity = [in_ids_0[j], in_ids_1[j], in_ids_0[j + out_len], in_ids_1[j + out_len]]
+            if j < out_len - 1:
+                activity = activity + [out_ids_0[j + 1]]
+            constraints.extend(sat_utils.cnf_or(out_ids_0[j], activity))
+            constraints.append(f"-{out_ids_1[j]}")
+        return out_ids_0 + out_ids_1, constraints
+
+    def milp_bitwise_deterministic_truncated_xor_differential_constraints(self, model):
+        """
+        Returns a list of variables and a list of constraints for modular multiplication component
+        in deterministic truncated XOR differential model.
+
+        This overrides the model inherited from :class:`Modular`, whose carry pivot is valid for an
+        addition but unsound for a product. Each bit is an integer in ``{0, 1, 2}``, with
+        ``0 = inactive``, ``1 = active`` and ``2 = unknown``. The activity of the operands is
+        accumulated as a running OR from the least significant bit upwards, and every output bit is
+        set to twice that accumulated flag. The constraints are:
+            - 0, for every output bit below the lowest active or unknown operand bit;
+            - 2 (unknown), for every output bit from that position upwards;
+            - no output bit is ever a determined 1.
+
+        .. WARNING::
+
+            This method supports 2 operands only, with modulus ``2^output_bit_size``.
+
+        INPUTS:
+
+        - ``model`` -- **model object**; a model instance
+
+        EXAMPLES::
+
+            sage: from claasp.cipher import Cipher
+            sage: from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import MilpBitwiseDeterministicTruncatedXorDifferentialModel
+            sage: from claasp.name_mappings import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
+            sage: class DummyMul(Cipher):
+            ....:     def __init__(self):
+            ....:         super().__init__('dummy_mul', BLOCK_CIPHER, [INPUT_PLAINTEXT, INPUT_KEY], [4, 4], 4)
+            ....:         self.add_round()
+            ....:         self.add_modmul_component([INPUT_PLAINTEXT, INPUT_KEY], [list(range(4)), list(range(4))], 4, 16)
+            ....:         self.add_cipher_output_component(['modmul_0_0'], [list(range(4))], 4)
+            sage: cipher = DummyMul()
+            sage: milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(cipher)
+            sage: milp.init_model_in_sage_milp_class()
+            sage: modmul = cipher.component_from_id('modmul_0_0')
+            sage: variables, constraints = modmul.milp_bitwise_deterministic_truncated_xor_differential_constraints(milp)
+            sage: len(variables)
+            12
+        """
+        x_class = model.trunc_binvar
+        input_vars, output_vars = self._get_input_output_variables()
+        n = len(output_vars)
+        variables = [(f"x_class[{var}]", x_class[var]) for var in input_vars + output_vars]
+
+        # big-M for the ">= 1" indicators; class values lie in [0, 2], so max + 2 is enough
+        big_m = model._model.get_max(x_class) + 2
+        constraints = []
+
+        # a_j = 1 iff operand 1 or operand 2 is active or unknown (class >= 1) at index j
+        activity = []
+        for j in range(n):
+            a_x, c_x = milp_utils.milp_geq(model, x_class[input_vars[j]], 1, big_m)
+            a_y, c_y = milp_utils.milp_geq(model, x_class[input_vars[j + n]], 1, big_m)
+            constraints.extend(c_x)
+            constraints.extend(c_y)
+            a_j = model.binary_variable[f"a_{self.id}_{j}"]
+            # a_j = a_x OR a_y
+            constraints.append(a_j >= a_x)
+            constraints.append(a_j >= a_y)
+            constraints.append(a_j <= a_x + a_y)
+            activity.append(a_j)
+
+        # A_j = a_j OR ... OR a_{n-1}, accumulated from the least significant bit (index n-1) upwards.
+        # Each output bit is set to 2 * A_j, hence 0 or unknown, but never a determined 1.
+        A_prev = None
+        for j in range(n - 1, -1, -1):
+            A_j = model.binary_variable[f"A_{self.id}_{j}"]
+            if j == n - 1:
+                constraints.append(A_j == activity[j])
+            else:
+                # A_j = a_j OR A_{j+1}
+                constraints.append(A_j >= activity[j])
+                constraints.append(A_j >= A_prev)
+                constraints.append(A_j <= activity[j] + A_prev)
+            A_prev = A_j
+            constraints.append(x_class[output_vars[j]] == 2 * A_j)
+
+        return variables, constraints
