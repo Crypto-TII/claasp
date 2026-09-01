@@ -247,7 +247,7 @@ class MilpModel:
 
         INPUT:
 
-        - ``weight`` -- **integer**; the total weight. If negative, no constraints on the weight is added
+        - ``weight`` -- **integer**; the total weight, or ``-1`` for no constraint.
         - ``weight_precision`` -- **integer** (default: `2`); the number of decimals to use when rounding the weight of the trail.
 
         EXAMPLES::
@@ -263,16 +263,48 @@ class MilpModel:
             sage: constraints
             [x_0 == 1000]
         """
-        p = self._integer_variable
-        variables = []
-        constraints = []
+        if weight == -1:
+            return [], []
 
-        if weight >= 0:
-            constraints.append(p["probability"] == (10**weight_precision) * weight)
-            variables = [("p[probability]", p["probability"])]
-        elif weight != -1:
-            self._model.set_max(p["probability"], -(10**weight_precision) * weight)
-            variables = [("p[probability]", p["probability"])]
+        return self.weight_range_constraints(weight, weight, weight_precision)
+
+    def weight_range_constraints(self, min_weight, max_weight, weight_precision=MILP_DEFAULT_WEIGHT_PRECISION):
+        """
+        Return a list of variables and a list of constraints that bound the total weight to ``[min_weight, max_weight]``.
+
+        Unlike :py:meth:`weight_constraints`, which pins the weight to a single value, this bounds it to a
+        range. Setting ``min_weight == max_weight`` is equivalent to fixing the weight.
+
+        INPUT:
+
+        - ``min_weight`` -- **integer**; lower bound on the total weight
+        - ``max_weight`` -- **integer**; upper bound on the total weight
+        - ``weight_precision`` -- **integer** (default: `2`); the number of decimals to use when rounding the weight of the trail.
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
+            sage: from claasp.cipher_modules.models.milp.milp_model import MilpModel
+            sage: simon = SimonBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
+            sage: milp = MilpModel(simon)
+            sage: milp.init_model_in_sage_milp_class()
+            sage: variables, constraints = milp.weight_range_constraints(3, 10)
+            sage: variables
+            [('p[probability]', x_0)]
+            sage: constraints
+            [300 <= x_0, x_0 <= 1000]
+            sage: milp.weight_range_constraints(5, 5)[1]
+            [x_0 == 500]
+        """
+        p = self._integer_variable
+        prec = 10**weight_precision
+        variables = [("p[probability]", p["probability"])]
+        if min_weight == max_weight:
+            constraints = [p["probability"] == prec * min_weight]
+        else:
+            constraints = [p["probability"] <= prec * max_weight]
+            if min_weight > 0:
+                constraints.insert(0, p["probability"] >= prec * min_weight)
 
         return variables, constraints
 
