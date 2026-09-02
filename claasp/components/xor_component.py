@@ -171,7 +171,6 @@ class Xor(Component):
         sage: print(component2.description)  # 4 total bits / output_bit_size 2 = 2 operands
         ['XOR', 2]
     """
-
     def __init__(
         self,
         current_round_number,
@@ -255,11 +254,11 @@ class Xor(Component):
             ['x -xor_0_0_0 plaintext_0 key_0', 'x -xor_0_0_1 plaintext_1 key_1'])
         """
         input_bit_ids = self._generate_input_ids()
-        output_bit_len, output_bit_ids = self._generate_output_ids()
+        output_bit_ids = self._generate_output_ids()
         constraints = []
-        for i in range(output_bit_len):
-            operands = [f"x -{output_bit_ids[i]}"]
-            operands.extend(input_bit_ids[i::output_bit_len])
+        for i, output_bit_id in enumerate(output_bit_ids):
+            operands = [f"x -{output_bit_id}"]
+            operands.extend(input_bit_ids[i::self.output_bit_size])
             constraints.append(" ".join(operands))
 
         return output_bit_ids, constraints
@@ -293,7 +292,7 @@ class Xor(Component):
             all_inputs.extend([f"{id_link}[{position}]" for position in bit_positions])
         cp_constraints = []
         for i in range(self.output_bit_size):
-            operation = " + ".join(all_inputs[i :: self.output_bit_size])
+            operation = " + ".join(all_inputs[i::self.output_bit_size])
             cp_constraints.append(f"constraint {self.id}[{i}] = ({operation}) mod 2;")
 
         return cp_declarations, cp_constraints
@@ -338,10 +337,10 @@ class Xor(Component):
             all_inputs.extend([f"{id_link}[{position}]" for position in bit_positions])
         cp_constraints = []
         for i in range(self.output_bit_size):
-            operation = " < 2) /\\ (".join(all_inputs[i :: self.output_bit_size])
+            operation = " < 2) /\\ (".join(all_inputs[i::self.output_bit_size])
             new_constraint = "constraint if (("
             new_constraint += operation + "< 2)) then "
-            operation2 = " + ".join(all_inputs[i :: self.output_bit_size])
+            operation2 = " + ".join(all_inputs[i::self.output_bit_size])
             new_constraint += f"{self.id}[{i}] = ({operation2}) mod 2 else {self.id}[{i}] = 2 endif;"
             cp_constraints.append(new_constraint)
 
@@ -373,7 +372,7 @@ class Xor(Component):
         ]
         cp_constraints = []
         for i in range(self.output_bit_size):
-            inputs = all_inputs[i :: self.output_bit_size]
+            inputs = all_inputs[i::self.output_bit_size]
             condition = " < 2) /\\ (".join(inputs) + " < 2"
             operation_sum = " + ".join(inputs)
             new_constraint = (
@@ -600,7 +599,10 @@ class Xor(Component):
         cp_constraints = []
         for i in range(self.output_bit_size):
             cp_constraints.extend(
-                [f"constraint {self.id}_o[{i}] = {self.id}_i[{i + input_len * j}];" for j in range(num_of_addenda)]
+                [
+                    f"constraint {self.id}_o[{i}] = {self.id}_i[{i + input_len * j}];"
+                    for j in range(num_of_addenda)
+                ]
             )
         result = cp_declarations, cp_constraints
 
@@ -1235,13 +1237,11 @@ class Xor(Component):
             '-xor_0_0_1 -plaintext_1 -key_1'])
         """
         input_bit_ids = self._generate_input_ids()
-        output_bit_len, output_bit_ids = self._generate_output_ids()
+        output_bit_ids = self._generate_output_ids()
         constraints = []
-        for i in range(output_bit_len):
-            result_bit_ids = [f"inter_{j}_{output_bit_ids[i]}" for j in range(self.description[1] - 2)] + [
-                output_bit_ids[i]
-            ]
-            constraints.extend(sat_utils.cnf_xor_seq(result_bit_ids, input_bit_ids[i::output_bit_len]))
+        for i, output_bit_id in enumerate(output_bit_ids):
+            result_bit_ids = [f"inter_{j}_{output_bit_id}" for j in range(self.description[1] - 2)] + [output_bit_id]
+            constraints.extend(sat_utils.cnf_xor_seq(result_bit_ids, input_bit_ids[i::self.output_bit_size]))
 
         return output_bit_ids, constraints
 
@@ -1280,7 +1280,7 @@ class Xor(Component):
             'xor_0_0_1_0 -plaintext_1_1 -key_1_1 -xor_0_0_1_1'])
         """
         in_ids_0, in_ids_1 = self._generate_input_double_ids()
-        out_len, out_ids_0, out_ids_1 = self._generate_output_double_ids()
+        out_ids_0, out_ids_1 = self._generate_output_double_ids()
         in_ids = [(id_0, id_1) for id_0, id_1 in zip(in_ids_0, in_ids_1)]
         out_ids = [(id_0, id_1) for id_0, id_1 in zip(out_ids_0, out_ids_1)]
         constraints = []
@@ -1288,7 +1288,7 @@ class Xor(Component):
             result_ids = [
                 (f"inter_{j}_{self.id}_{i}_0", f"inter_{j}_{self.id}_{i}_1") for j in range(self.description[1] - 2)
             ] + [out_id]
-            constraints.extend(sat_utils.cnf_xor_truncated_seq(result_ids, in_ids[i::out_len]))
+            constraints.extend(sat_utils.cnf_xor_truncated_seq(result_ids, in_ids[i::self.output_bit_size]))
 
         return out_ids_0 + out_ids_1, constraints
 
@@ -1355,16 +1355,14 @@ class Xor(Component):
             'xor_0_0_3_i -xor_0_0_1_i',
             'xor_0_0_1_o -xor_0_0_3_i'])
         """
-        _, input_bit_ids = self._generate_component_input_ids()
-        out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
-        output_bit_len, output_bit_ids = self._generate_output_ids(suffix=out_suffix)
+        input_bit_ids = self._generate_component_input_ids()
+        output_bit_ids = self._generate_output_ids(suffix=constants.OUTPUT_BIT_ID_SUFFIX)
         bit_ids = input_bit_ids + output_bit_ids
         constraints = []
-        for i in range(output_bit_len):
-            constraints.extend(sat_utils.cnf_equivalent(bit_ids[i::output_bit_len]))
-        result = bit_ids, constraints
+        for i in range(self.output_bit_size):
+            constraints.extend(sat_utils.cnf_equivalent(bit_ids[i::self.output_bit_size]))
 
-        return result
+        return bit_ids, constraints
 
     def smt_constraints(self):
         """
@@ -1388,11 +1386,11 @@ class Xor(Component):
             '(assert (= xor_0_0_1 (xor plaintext_1 key_1)))'])
         """
         input_bit_ids = self._generate_input_ids()
-        output_bit_len, output_bit_ids = self._generate_output_ids()
+        output_bit_ids = self._generate_output_ids()
         constraints = []
-        for i in range(output_bit_len):
-            operation = smt_utils.smt_xor(input_bit_ids[i::output_bit_len])
-            equation = smt_utils.smt_equivalent([output_bit_ids[i], operation])
+        for i, output_bit_id in enumerate(output_bit_ids):
+            operation = smt_utils.smt_xor(input_bit_ids[i::self.output_bit_size])
+            equation = smt_utils.smt_equivalent([output_bit_id, operation])
             constraints.append(smt_utils.smt_assert(equation))
 
         return output_bit_ids, constraints
@@ -1446,81 +1444,15 @@ class Xor(Component):
             ['(assert (= xor_0_0_0_o xor_0_0_0_i xor_0_0_2_i))',
             '(assert (= xor_0_0_1_o xor_0_0_1_i xor_0_0_3_i))'])
         """
-        _, input_bit_ids = self._generate_component_input_ids()
-        out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
-        output_bit_len, output_bit_ids = self._generate_output_ids(suffix=out_suffix)
+        input_bit_ids = self._generate_component_input_ids()
+        output_bit_ids = self._generate_output_ids(suffix=constants.OUTPUT_BIT_ID_SUFFIX)
         bit_ids = output_bit_ids + input_bit_ids
         constraints = []
-        for i in range(output_bit_len):
-            equation = smt_utils.smt_equivalent(bit_ids[i::output_bit_len])
+        for i in range(self.output_bit_size):
+            equation = smt_utils.smt_equivalent(bit_ids[i::self.output_bit_size])
             constraints.append(smt_utils.smt_assert(equation))
-        result = bit_ids, constraints
 
-        return result
-
-    def cp_transform_xor_components_for_first_step(self, model):
-        """
-        Transform a XOR component into components involving only one byte for CP.
-
-        INPUT:
-
-        - ``model`` -- **model object**; a model instance
-
-        EXAMPLES::
-
-            sage: from claasp.ciphers.single_component_ciphers.xor_cipher import XorCipher
-            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
-            sage: cipher = XorCipher(word_bit_size=8, number_of_inputs=2)
-            sage: cp = MznModel(cipher)
-            sage: cp.word_size = 8
-            sage: xor_component = cipher.component_from_id("xor_0_0")
-            sage: xor_component.cp_transform_xor_components_for_first_step(cp)
-            (['array[0..0] of var 0..1: xor_0_0;'], [])
-        """
-        output_size = int(self.output_bit_size)
-        input_id_link = self.input_id_links
-        output_id_link = self.id
-        input_bit_positions = self.input_bit_positions
-        numadd = self.description[1]
-        numb_of_inp = len(input_id_link)
-        all_inputs = []
-        cp_declarations = [f"array[0..{(output_size - 1) // model.word_size}] of var 0..1: {output_id_link};"]
-        if output_size % model.word_size != 0:
-            return cp_declarations, []
-        number_of_mix = 0
-        is_mix = False
-        for i in range(numb_of_inp):
-            for j in range(len(input_bit_positions[i]) // model.word_size):
-                all_inputs.append([input_id_link[i], input_bit_positions[i][j * model.word_size] // model.word_size])
-            rem = len(input_bit_positions[i]) % model.word_size
-            if rem != 0:
-                rem = model.word_size - (len(input_bit_positions[i]) % model.word_size)
-                all_inputs.append([f"{output_id_link}_i", number_of_mix])
-                number_of_mix += 1
-                is_mix = True
-                l = 1
-                while rem > 0:
-                    length = len(input_bit_positions[i + l])
-                    del input_bit_positions[i + l][0:rem]
-                    rem -= length
-                    l += 1
-        if is_mix:
-            cp_declarations.append(f"array[0..{number_of_mix - 1}] of var 0..1: {output_id_link}_i;")
-        all_inputs += [[output_id_link, i] for i in range(output_size // model.word_size)]
-        input_len = output_size // model.word_size
-        for i in range(input_len):
-            input_bit_positions, input_id_link = get_transformed_xor_input_links_and_positions(
-                model.word_size, all_inputs, i, input_len, numadd, numb_of_inp
-            )
-            input_bits = 0
-            for input_bit in input_bit_positions:
-                input_bits += len(input_bit)
-            xor_component = Xor("", "", input_id_link, input_bit_positions, input_bits)
-            xor_component.description = ["XOR", numadd + 1]
-            model.list_of_xor_components.append(xor_component)
-        cp_constraints = []
-
-        return cp_declarations, cp_constraints
+        return bit_ids, constraints
 
     def smt_xor_quasidifferential_propagation_constraints(
         self,
@@ -1632,3 +1564,68 @@ class Xor(Component):
             variables,
             constraints,
         )
+
+
+    def cp_transform_xor_components_for_first_step(self, model):
+        """
+        Transform a XOR component into components involving only one byte for CP.
+
+        INPUT:
+
+        - ``model`` -- **model object**; a model instance
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.single_component_ciphers.xor_cipher import XorCipher
+            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
+            sage: cipher = XorCipher(word_bit_size=8, number_of_inputs=2)
+            sage: cp = MznModel(cipher)
+            sage: cp.word_size = 8
+            sage: xor_component = cipher.component_from_id("xor_0_0")
+            sage: xor_component.cp_transform_xor_components_for_first_step(cp)
+            (['array[0..0] of var 0..1: xor_0_0;'], [])
+        """
+        output_size = int(self.output_bit_size)
+        input_id_link = self.input_id_links
+        output_id_link = self.id
+        input_bit_positions = self.input_bit_positions
+        numadd = self.description[1]
+        numb_of_inp = len(input_id_link)
+        all_inputs = []
+        cp_declarations = [f"array[0..{(output_size - 1) // model.word_size}] of var 0..1: {output_id_link};"]
+        if output_size % model.word_size != 0:
+            return cp_declarations, []
+        number_of_mix = 0
+        is_mix = False
+        for i in range(numb_of_inp):
+            for j in range(len(input_bit_positions[i]) // model.word_size):
+                all_inputs.append([input_id_link[i], input_bit_positions[i][j * model.word_size] // model.word_size])
+            rem = len(input_bit_positions[i]) % model.word_size
+            if rem != 0:
+                rem = model.word_size - (len(input_bit_positions[i]) % model.word_size)
+                all_inputs.append([f"{output_id_link}_i", number_of_mix])
+                number_of_mix += 1
+                is_mix = True
+                l = 1
+                while rem > 0:
+                    length = len(input_bit_positions[i + l])
+                    del input_bit_positions[i + l][0:rem]
+                    rem -= length
+                    l += 1
+        if is_mix:
+            cp_declarations.append(f"array[0..{number_of_mix - 1}] of var 0..1: {output_id_link}_i;")
+        all_inputs += [[output_id_link, i] for i in range(output_size // model.word_size)]
+        input_len = output_size // model.word_size
+        for i in range(input_len):
+            input_bit_positions, input_id_link = get_transformed_xor_input_links_and_positions(
+                model.word_size, all_inputs, i, input_len, numadd, numb_of_inp
+            )
+            input_bits = 0
+            for input_bit in input_bit_positions:
+                input_bits += len(input_bit)
+            xor_component = Xor("", "", input_id_link, input_bit_positions, input_bits)
+            xor_component.description = ["XOR", numadd + 1]
+            model.list_of_xor_components.append(xor_component)
+        cp_constraints = []
+
+        return cp_declarations, cp_constraints
