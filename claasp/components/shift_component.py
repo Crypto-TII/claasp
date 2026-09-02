@@ -49,6 +49,7 @@ class Shift(Component):
         sage: print(component.description)
         ['SHIFT', -1]
     """
+
     def __init__(
         self,
         current_round_number,
@@ -711,7 +712,7 @@ class Shift(Component):
             shift_amount = -shift_amount
             for output_bit_id, input_bit_id in zip(output_bit_ids, input_bit_ids[shift_amount:]):
                 constraints.extend(sat_utils.cnf_equivalent([output_bit_id, input_bit_id]))
-            for output_bit_id in output_bit_ids[self.output_bit_size - shift_amount:]:
+            for output_bit_id in output_bit_ids[self.output_bit_size - shift_amount :]:
                 constraints.append(f"-{output_bit_id}")
         else:
             for output_bit_id in output_bit_ids[:shift_amount]:
@@ -857,7 +858,7 @@ class Shift(Component):
             for output_bit_id, input_bit_id in zip(output_bit_ids, input_bit_ids[shift_amount:]):
                 equation = smt_utils.smt_equivalent((output_bit_id, input_bit_id))
                 constraints.append(smt_utils.smt_assert(equation))
-            for output_bit_id in output_bit_ids[self.output_bit_size - shift_amount:]:
+            for output_bit_id in output_bit_ids[self.output_bit_size - shift_amount :]:
                 constraints.append(smt_utils.smt_assert(smt_utils.smt_not(output_bit_id)))
         else:
             for output_bit_id in output_bit_ids[:shift_amount]:
@@ -930,3 +931,83 @@ class Shift(Component):
                 constraints.append(smt_utils.smt_assert(smt_utils.smt_not(input_bit_id)))
 
         return input_bit_ids + output_bit_ids, constraints
+
+    def smt_xor_quasidifferential_propagation_constraints(
+        self,
+        model,
+    ):
+        """
+        Return SMT constraints for SHIFT quasidifferential propagation.
+
+        SHIFT is linear but, unlike Rotate, NOT invertible: it discards
+        the bits shifted out. Per Beyne & Rijmen, Theorem 3.2 (5), a
+        linear map L propagates differences forwards (b = L(a)) and
+        masks backwards through its TRANSPOSE (u = L^T(v)). The
+        transpose of a shift is the shift in the OPPOSITE direction,
+        and the mask bits corresponding to positions that the shift
+        discards are forced to zero -- which is precisely the structure
+        already encoded by this class's own
+        smt_xor_linear_mask_propagation_constraints, reused here with
+        the qdt_-prefixed variable names of the quasidifferential
+        model.
+
+        Weight is 0: linear maps have a delta-function correlation and
+        contribute no weight loss.
+
+        INPUT:
+
+        - ``model`` -- **model object**; a model instance
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.single_component_ciphers.shift_cipher import ShiftCipher
+            sage: from claasp.cipher_modules.models.smt.smt_models.smt_xor_quasidifferential_model import SmtXorQuasidifferentialModel
+            sage: cipher = ShiftCipher(bit_size=2, parameter=1)
+            sage: shift_component = cipher.component_from_id('shift_0_0')
+            sage: smt = SmtXorQuasidifferentialModel(cipher)
+            sage: variables, constraints = shift_component.smt_xor_quasidifferential_propagation_constraints(smt)
+            sage: len(variables)
+            4
+        """
+
+        output_bit_ids, diff_constraints = self.smt_xor_differential_propagation_constraints(model)
+
+        input_bit_ids = self._generate_input_ids()
+
+        qdt_input_bit_ids = [f"qdt_{bit_id}" for bit_id in input_bit_ids]
+        qdt_output_bit_ids = [f"qdt_{bit_id}" for bit_id in output_bit_ids]
+
+        shift_amount = self.description[1]
+        mask_constraints = []
+
+        if shift_amount < 0:
+            shift_amount = -shift_amount
+
+            for qdt_input_bit_id in qdt_input_bit_ids[:shift_amount]:
+                mask_constraints.append(smt_utils.smt_assert(smt_utils.smt_not(qdt_input_bit_id)))
+
+            for qdt_output_bit_id, qdt_input_bit_id in zip(
+                qdt_output_bit_ids[:-shift_amount],
+                qdt_input_bit_ids[shift_amount:],
+            ):
+                equation = smt_utils.smt_equivalent((qdt_output_bit_id, qdt_input_bit_id))
+                mask_constraints.append(smt_utils.smt_assert(equation))
+
+        else:
+            for qdt_output_bit_id, qdt_input_bit_id in zip(
+                qdt_output_bit_ids[shift_amount:],
+                qdt_input_bit_ids[:-shift_amount],
+            ):
+                equation = smt_utils.smt_equivalent((qdt_output_bit_id, qdt_input_bit_id))
+                mask_constraints.append(smt_utils.smt_assert(equation))
+
+            for qdt_input_bit_id in qdt_input_bit_ids[-shift_amount:]:
+                mask_constraints.append(smt_utils.smt_assert(smt_utils.smt_not(qdt_input_bit_id)))
+
+        variables = output_bit_ids + qdt_output_bit_ids
+        constraints = diff_constraints + mask_constraints
+
+        return (
+            variables,
+            constraints,
+        )

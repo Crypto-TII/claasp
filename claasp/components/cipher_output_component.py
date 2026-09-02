@@ -50,6 +50,7 @@ class CipherOutput(Component):
         sage: print(component.description)
         ['cipher_output']
     """
+
     def __init__(
         self,
         current_round_number,
@@ -290,29 +291,23 @@ class CipherOutput(Component):
         component_id = self.id
         ninputs = self.input_bit_size
         num_links = len(self.input_id_links)
-        
+
         cp_declarations = []
         cp_constraints = []
-        
+
         for i in range(num_links):
             link_size = len(self.input_bit_positions[i])
-            cp_declarations.append(
-                f"array[0..{link_size - 1}] of var -1.0..1.0: x{i+1}_{component_id};"
-            )
-        
-        cp_declarations.append(
-            f"array[0..{ninputs - 1}] of var -1.0..1.0: {component_id};"
-        )
-        
+            cp_declarations.append(f"array[0..{link_size - 1}] of var -1.0..1.0: x{i + 1}_{component_id};")
+
+        cp_declarations.append(f"array[0..{ninputs - 1}] of var -1.0..1.0: {component_id};")
+
         output_idx = 0
         for i in range(num_links):
             link_size = len(self.input_bit_positions[i])
             for j in range(link_size):
-                cp_constraints.append(
-                    f"constraint {component_id}[{output_idx}] = x{i+1}_{component_id}[{j}];"
-                )
+                cp_constraints.append(f"constraint {component_id}[{output_idx}] = x{i + 1}_{component_id}[{j}];")
                 output_idx += 1
-        
+
         return cp_declarations, cp_constraints
 
     def get_byte_based_vectorized_python_code(self, params):
@@ -743,3 +738,50 @@ class CipherOutput(Component):
             constraints.append(smt_utils.smt_assert(equation))
 
         return output_bit_ids + input_bit_ids, constraints
+
+    def smt_xor_quasidifferential_propagation_constraints(
+        self,
+        model,
+    ):
+        """
+        Return SMT constraints for CIPHER OUTPUT quasidifferential propagation.
+
+        A cipher output (and, unless overridden for fork-handling,
+        an intermediate output -- see IntermediateOutput) is a pure
+        copy of its input. For an identity map, Theorem 3.2 (5) gives
+        trivial propagation for BOTH the difference and the mask:
+        b = a and u = v, with weight 0.
+
+        NOTE: if this component's input wire is also consumed
+        elsewhere (a "fork" in the cipher's data-flow graph), the
+        correct mask-propagation rule is NOT plain equality but an
+        XOR-combination of all the branches' masks (the dual of the
+        XOR-of-differences rule at a join point) -- see
+        Xor.smt_xor_quasidifferential_propagation_constraints for
+        that rule. This plain-identity version is only correct when
+        there is no such fork on this wire.
+        """
+
+        input_bit_ids = self._generate_input_ids()
+        output_bit_ids = self._generate_output_ids()
+
+        qdt_input_bit_ids = [f"qdt_{bit_id}" for bit_id in input_bit_ids]
+
+        qdt_output_bit_ids = [f"qdt_{bit_id}" for bit_id in output_bit_ids]
+
+        constraints = []
+
+        for output_bit_id, input_bit_id in zip(output_bit_ids, input_bit_ids):
+            equation = smt_utils.smt_equivalent([output_bit_id, input_bit_id])
+            constraints.append(smt_utils.smt_assert(equation))
+
+        for output_bit_id, input_bit_id in zip(qdt_output_bit_ids, qdt_input_bit_ids):
+            equation = smt_utils.smt_equivalent([output_bit_id, input_bit_id])
+            constraints.append(smt_utils.smt_assert(equation))
+
+        variables = output_bit_ids + qdt_output_bit_ids
+
+        return (
+            variables,
+            constraints,
+        )
