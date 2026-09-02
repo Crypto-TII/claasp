@@ -63,6 +63,7 @@ class MultiInputNonlinearLogicalOperator(Component):
         sage: print(component3.description)  # 6 total bits / output_bit_size 2 = 3 operands
         ['AND', 3]
     """
+
     def __init__(
         self,
         current_round_number,
@@ -492,10 +493,10 @@ class MultiInputNonlinearLogicalOperator(Component):
         out_ids_0, out_ids_1 = self._generate_output_double_ids()
         constraints = []
         for i in range(self.output_bit_size):
-            constraints.extend([f"{out_ids_0[i]} -{in_id}" for in_id in in_ids_0[i::self.output_bit_size]])
-            constraints.extend([f"{out_ids_0[i]} -{in_id}" for in_id in in_ids_1[i::self.output_bit_size]])
+            constraints.extend([f"{out_ids_0[i]} -{in_id}" for in_id in in_ids_0[i :: self.output_bit_size]])
+            constraints.extend([f"{out_ids_0[i]} -{in_id}" for in_id in in_ids_1[i :: self.output_bit_size]])
             constraints.append(f"{out_ids_0[i]} -{out_ids_1[i]}")
-            clause = f"{' '.join(in_ids_0[i::self.output_bit_size])} {' '.join(in_ids_1[i::self.output_bit_size])} -{out_ids_0[i]}"
+            clause = f"{' '.join(in_ids_0[i :: self.output_bit_size])} {' '.join(in_ids_1[i :: self.output_bit_size])} -{out_ids_0[i]}"
             constraints.append(clause)
 
         return out_ids_0 + out_ids_1, constraints
@@ -520,8 +521,8 @@ class MultiInputNonlinearLogicalOperator(Component):
             (['and_0_0_0', 'and_0_0_1', 'hw_and_0_0_0', 'hw_and_0_0_1'],)
         """
         input_bit_ids = self._generate_input_ids()
-        lhs_input_bit_ids = input_bit_ids[:self.output_bit_size]
-        rhs_input_bit_ids = input_bit_ids[self.output_bit_size:]
+        lhs_input_bit_ids = input_bit_ids[: self.output_bit_size]
+        rhs_input_bit_ids = input_bit_ids[self.output_bit_size :]
         output_bit_ids = self._generate_output_ids()
         hw_bit_ids = [f"hw_{output_bit_id}" for output_bit_id in output_bit_ids]
         constraints = []
@@ -550,8 +551,8 @@ class MultiInputNonlinearLogicalOperator(Component):
             (['and_0_0_0_i', 'and_0_0_1_i', 'and_0_0_2_i', 'and_0_0_3_i', 'and_0_0_0_o', 'and_0_0_1_o', 'hw_and_0_0_0_o', 'hw_and_0_0_1_o'],)
         """
         input_bit_ids = self._generate_component_input_ids()
-        lhs_input_bit_ids = input_bit_ids[:self.output_bit_size]
-        rhs_input_bit_ids = input_bit_ids[self.output_bit_size:]
+        lhs_input_bit_ids = input_bit_ids[: self.output_bit_size]
+        rhs_input_bit_ids = input_bit_ids[self.output_bit_size :]
         output_bit_ids = self._generate_output_ids(suffix=constants.OUTPUT_BIT_ID_SUFFIX)
         hw_bit_ids = [f"hw_{output_bit_id}" for output_bit_id in output_bit_ids]
         constraints = []
@@ -586,8 +587,8 @@ class MultiInputNonlinearLogicalOperator(Component):
             (['and_0_0_0', 'and_0_0_1', 'hw_and_0_0_0', 'hw_and_0_0_1'],)
         """
         input_bit_ids = self._generate_input_ids()
-        lhs_input_bit_ids = input_bit_ids[:self.output_bit_size]
-        rhs_input_bit_ids = input_bit_ids[self.output_bit_size:]
+        lhs_input_bit_ids = input_bit_ids[: self.output_bit_size]
+        rhs_input_bit_ids = input_bit_ids[self.output_bit_size :]
         output_bit_ids = self._generate_output_ids()
         hw_bit_ids = [f"hw_{output_bit_id}" for output_bit_id in output_bit_ids]
         constraints = []
@@ -626,8 +627,8 @@ class MultiInputNonlinearLogicalOperator(Component):
             (['and_0_0_0_i', 'and_0_0_1_i', 'and_0_0_2_i', 'and_0_0_3_i', 'and_0_0_0_o', 'and_0_0_1_o', 'hw_and_0_0_0_o', 'hw_and_0_0_1_o'],)
         """
         input_bit_ids = self._generate_component_input_ids()
-        lhs_input_bit_ids = input_bit_ids[:self.output_bit_size]
-        rhs_input_bit_ids = input_bit_ids[self.output_bit_size:]
+        lhs_input_bit_ids = input_bit_ids[: self.output_bit_size]
+        rhs_input_bit_ids = input_bit_ids[self.output_bit_size :]
         output_bit_ids = self._generate_output_ids(suffix=constants.OUTPUT_BIT_ID_SUFFIX)
         hw_bit_ids = [f"hw_{output_bit_id}" for output_bit_id in output_bit_ids]
         constraints = []

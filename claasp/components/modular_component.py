@@ -107,6 +107,7 @@ class Modular(Component):
         sage: print(component3.description)  # 6 total bits / output_bit_size 2 = 3 operands
         ['MODADD', 3, 4]
     """
+
     def __init__(
         self,
         current_round_number,
@@ -169,13 +170,19 @@ class Modular(Component):
              'hw_modular_0_0_3_o -modular_0_0_3_o modular_0_0_7_i']
         """
         input_bit_ids = self._generate_component_input_ids()
-        lhs_input_bit_ids = input_bit_ids[:self.output_bit_size]
-        rhs_input_bit_ids = input_bit_ids[self.output_bit_size:]
+        lhs_input_bit_ids = input_bit_ids[: self.output_bit_size]
+        rhs_input_bit_ids = input_bit_ids[self.output_bit_size :]
         output_bit_ids = self._generate_output_ids(suffix=constants.OUTPUT_BIT_ID_SUFFIX)
         hw_bit_ids = [f"hw_{output_bit_id}" for output_bit_id in output_bit_ids]
         constraints = [f"-{hw_bit_ids[0]}"]
         constraints.append(f"x -{hw_bit_ids[1]} {output_bit_ids[0]} {lhs_input_bit_ids[0]} {rhs_input_bit_ids[0]}")
-        for new_hw_bit_id, output_bit_id, lhs_input_bit_id, rhs_input_bit_id, hw_bit_id, in zip(
+        for (
+            new_hw_bit_id,
+            output_bit_id,
+            lhs_input_bit_id,
+            rhs_input_bit_id,
+            hw_bit_id,
+        ) in zip(
             hw_bit_ids[1:-1], output_bit_ids[1:-1], lhs_input_bit_ids[1:-1], rhs_input_bit_ids[1:-1], hw_bit_ids[2:]
         ):
             constraints.append(f"x {new_hw_bit_id} {output_bit_id} {lhs_input_bit_id} {rhs_input_bit_id} -{hw_bit_id}")
@@ -311,7 +318,10 @@ class Modular(Component):
         for i in range(num_add):
             cp_declarations.append(f"array[0..{input_len - 1}] of var 0..2: pre_{output_id_link}_{i};")
             cp_constraints.extend(
-                [f"constraint pre_{output_id_link}_{i}[{j}] = {all_inputs[i * input_len + j]};" for j in range(input_len)]
+                [
+                    f"constraint pre_{output_id_link}_{i}[{j}] = {all_inputs[i * input_len + j]};"
+                    for j in range(input_len)
+                ]
             )
 
         for i in range(num_add, 2 * num_add - 2):
@@ -1318,8 +1328,8 @@ class Modular(Component):
                 constraints_.extend(new_constraints)
 
         input_bit_ids = self._generate_input_ids()
-        lhs_input_bit_ids = input_bit_ids[:self.output_bit_size]
-        rhs_input_bit_ids = input_bit_ids[self.output_bit_size:]
+        lhs_input_bit_ids = input_bit_ids[: self.output_bit_size]
+        rhs_input_bit_ids = input_bit_ids[self.output_bit_size :]
         output_bit_ids = self._generate_output_ids()
         dummy_bit_ids = [f"dummy_{output_bit_id}" for output_bit_id in output_bit_ids[:-1]]
         hw_bit_ids = [f"hw_{output_bit_id}" for output_bit_id in output_bit_ids]
@@ -1333,10 +1343,17 @@ class Modular(Component):
         # Trail validity
         # <eq(alpha << 1, beta << 1, gamma << 1) & (alfa ^ beta ^ gamma ^ (beta << 1)) = 0>
         for hw_bit_id, dummy_bit_id, shifted_id, lhs_input_bit_id, rhs_input_bit_id, output_bit_id in zip(
-            hw_bit_ids[:-1], dummy_bit_ids, rhs_input_bit_ids[1:], lhs_input_bit_ids[:-1], rhs_input_bit_ids[:-1], output_bit_ids[:-1]
+            hw_bit_ids[:-1],
+            dummy_bit_ids,
+            rhs_input_bit_ids[1:],
+            lhs_input_bit_ids[:-1],
+            rhs_input_bit_ids[:-1],
+            output_bit_ids[:-1],
         ):
             constraints.extend(
-                sat_utils.cnf_lipmaa(hw_bit_id, dummy_bit_id, shifted_id, lhs_input_bit_id, rhs_input_bit_id, output_bit_id)
+                sat_utils.cnf_lipmaa(
+                    hw_bit_id, dummy_bit_id, shifted_id, lhs_input_bit_id, rhs_input_bit_id, output_bit_id
+                )
             )
         constraints.extend(sat_utils.cnf_xor(output_bit_ids[-1], [lhs_input_bit_ids[-1], rhs_input_bit_ids[-1]]))
 
@@ -1400,8 +1417,8 @@ class Modular(Component):
             '-carry_modular_0_0_3_0_0 -carry_modular_0_0_3_1_1'
         """
         in_ids_0, in_ids_1 = self._generate_input_double_ids()
-        lhs_in_ids_0, lhs_in_ids_1 = in_ids_0[:self.output_bit_size], in_ids_1[:self.output_bit_size]
-        rhs_in_ids_0, rhs_in_ids_1 = in_ids_0[self.output_bit_size:], in_ids_1[self.output_bit_size:]
+        lhs_in_ids_0, lhs_in_ids_1 = in_ids_0[: self.output_bit_size], in_ids_1[: self.output_bit_size]
+        rhs_in_ids_0, rhs_in_ids_1 = in_ids_0[self.output_bit_size :], in_ids_1[self.output_bit_size :]
         out_ids_0, out_ids_1 = self._generate_output_double_ids()
         carry_ids_0 = [f"carry_{out_id}_0" for out_id in out_ids_0]
         carry_ids_1 = [f"carry_{out_id}_1" for out_id in out_ids_1]
@@ -1626,15 +1643,21 @@ class Modular(Component):
             '-hw_modular_0_0_0_o'
         """
         input_bit_ids = self._generate_component_input_ids()
-        lhs_input_bit_ids = input_bit_ids[:self.output_bit_size]
-        rhs_input_bit_ids = input_bit_ids[self.output_bit_size:]
+        lhs_input_bit_ids = input_bit_ids[: self.output_bit_size]
+        rhs_input_bit_ids = input_bit_ids[self.output_bit_size :]
         output_bit_ids = self._generate_output_ids(suffix=constants.OUTPUT_BIT_ID_SUFFIX)
         hw_bit_ids = [f"hw_{output_bit_id}" for output_bit_id in output_bit_ids]
         constraints = [f"-{hw_bit_ids[0]}"]
         constraints.extend(
             sat_utils.cnf_xor(hw_bit_ids[1], [output_bit_ids[0], lhs_input_bit_ids[0], rhs_input_bit_ids[0]])
         )
-        for hw_bit_id, new_hw_bit_id, output_bit_id, lhs_input_bit_id, rhs_input_bit_id, in zip(
+        for (
+            hw_bit_id,
+            new_hw_bit_id,
+            output_bit_id,
+            lhs_input_bit_id,
+            rhs_input_bit_id,
+        ) in zip(
             hw_bit_ids[2:], hw_bit_ids[1:-1], output_bit_ids[1:-1], lhs_input_bit_ids[1:-1], rhs_input_bit_ids[1:-1]
         ):
             constraints.extend(
@@ -1674,8 +1697,8 @@ class Modular(Component):
             True
         """
         input_bit_ids = self._generate_input_ids()
-        lhs_input_bit_ids = input_bit_ids[:self.output_bit_size]
-        rhs_input_bit_ids = input_bit_ids[self.output_bit_size:]
+        lhs_input_bit_ids = input_bit_ids[: self.output_bit_size]
+        rhs_input_bit_ids = input_bit_ids[self.output_bit_size :]
         output_bit_ids = self._generate_output_ids()
         hw_bit_ids = [f"hw_{output_bit_id}" for output_bit_id in output_bit_ids]
         constraints = []
@@ -1728,15 +1751,21 @@ class Modular(Component):
             '(assert (not hw_modular_0_0_0_o))'
         """
         input_bit_ids = self._generate_component_input_ids()
-        lhs_input_bit_ids = input_bit_ids[:self.output_bit_size]
-        rhs_input_bit_ids = input_bit_ids[self.output_bit_size:]
+        lhs_input_bit_ids = input_bit_ids[: self.output_bit_size]
+        rhs_input_bit_ids = input_bit_ids[self.output_bit_size :]
         output_bit_ids = self._generate_output_ids(suffix=constants.OUTPUT_BIT_ID_SUFFIX)
         hw_bit_ids = [f"hw_{output_bit_id}" for output_bit_id in output_bit_ids]
         constraints = [smt_utils.smt_assert(smt_utils.smt_not(hw_bit_ids[0]))]
         operation = smt_utils.smt_xor((output_bit_ids[0], lhs_input_bit_ids[0], rhs_input_bit_ids[0]))
         equation = smt_utils.smt_equivalent((hw_bit_ids[1], operation))
         constraints.append(smt_utils.smt_assert(equation))
-        for hw_bit_id, new_hw_bit_id, output_bit_id, lhs_input_bit_id, rhs_input_bit_id, in zip(
+        for (
+            hw_bit_id,
+            new_hw_bit_id,
+            output_bit_id,
+            lhs_input_bit_id,
+            rhs_input_bit_id,
+        ) in zip(
             hw_bit_ids[2:], hw_bit_ids[1:-1], output_bit_ids[1:-1], lhs_input_bit_ids[1:-1], rhs_input_bit_ids[1:-1]
         ):
             operation = smt_utils.smt_xor((new_hw_bit_id, output_bit_id, lhs_input_bit_id, rhs_input_bit_id))

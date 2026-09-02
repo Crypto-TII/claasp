@@ -116,6 +116,7 @@ class MixColumn(LinearLayer):
         sage: print(component.description[1])
         1
     """
+
     def __init__(
         self,
         current_round_number,
@@ -1246,6 +1247,35 @@ class MixColumn(LinearLayer):
         original_description = deepcopy(self.description)
         self.description = matrix_transposed
         variables, constraints = super().smt_xor_linear_mask_propagation_constraints()
+        self.description = original_description
+        result = variables, constraints
+        return result
+
+    def smt_xor_quasidifferential_propagation_constraints(
+        self,
+        model,
+    ):
+        """
+        Return SMT constraints for MIX COLUMN quasidifferential propagation.
+
+        Same pattern used throughout this class for every other model
+        (differential, linear, MILP, SAT, ...): MixColumn stores its
+        description as ``[word_matrix, rotation/polynomial, word_size]``
+        rather than a plain bit matrix, so ``LinearLayer``'s methods --
+        which index ``self.description`` directly as a bit matrix --
+        cannot be inherited as-is. We expand to the bit-level matrix via
+        ``binary_matrix_of_linear_component``, temporarily swap
+        ``self.description`` to it, delegate to
+        ``LinearLayer.smt_xor_quasidifferential_propagation_constraints``
+        (which already implements Theorem 3.2(5): b = L(a) for the
+        difference, u = L^T(v) for the mask), and restore the original
+        description afterwards.
+        """
+        matrix = binary_matrix_of_linear_component(self)
+        matrix_transposed = [[matrix[i][j] for i in range(matrix.nrows())] for j in range(matrix.ncols())]
+        original_description = deepcopy(self.description)
+        self.description = matrix_transposed
+        variables, constraints = super().smt_xor_quasidifferential_propagation_constraints(model)
         self.description = original_description
         result = variables, constraints
         return result

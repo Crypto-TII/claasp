@@ -45,6 +45,7 @@ class WordPermutation(MixColumn):
         sage: print(component.description[2])
         2
     """
+
     def __init__(
         self,
         current_round_number,

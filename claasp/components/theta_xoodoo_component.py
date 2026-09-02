@@ -46,6 +46,7 @@ class ThetaXoodoo(LinearLayer):
         sage: print(component.input_bit_size)
         384
     """
+
     def __init__(
         self,
         current_round_number,

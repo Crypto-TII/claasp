@@ -14,7 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
-
+import numpy as np
+import pickle
 
 # ------------------------ #
 #    - Build formulae -    #
@@ -242,3 +243,150 @@ def get_component_hex_value(component, out_suffix, variable2value):
         hex_value = f"{value:#0{hex_digits + 2}x}"
 
     return hex_value
+
+
+def interleave_bits(x, y, n):
+    """Interleave the bits of x and y."""
+    z = 0
+
+    for i in range(n):
+        z |= (x & (1 << i)) << i | (y & (1 << i)) << (i + 1)
+
+    return z
+
+
+def to_quasidifferential_basis(x):
+    """Transform x into the quasidifferential basis."""
+    if len(x) == 1:
+        return x
+
+    if len(x) % 4 != 0:
+        raise ValueError("Input length must be divisible by 4.")
+
+    l = len(x) // 4
+
+    x_00 = to_quasidifferential_basis(x[:l])
+    x_01 = to_quasidifferential_basis(x[l : 2 * l])
+    x_10 = to_quasidifferential_basis(x[2 * l : 3 * l])
+    x_11 = to_quasidifferential_basis(x[3 * l :])
+
+    return np.concatenate(
+        [
+            x_00 + x_11,
+            x_01 + x_10,
+            x_00 - x_11,
+            x_01 - x_10,
+        ]
+    )
+
+
+def interleaved_transition_matrix(F, n, m):
+    """
+    Build the interleaved transition matrix of F.
+
+    This is the NumPy equivalent of the Sage implementation.
+    """
+    size_rows = 2 ** (2 * m)
+    size_cols = 2 ** (2 * n)
+
+    T = np.zeros(
+        (size_rows, size_cols),
+        dtype=np.float64,
+    )
+
+    for x in range(2**n):
+        for y in range(2**n):
+            i = interleave_bits(x, y, n)
+            j = interleave_bits(F(x), F(y), m)
+
+            T[j, i] = 1
+
+    return T
+
+
+def quasidifferential_transition_matrix(
+    F,
+    n,
+    m,
+):
+    """
+    Compute the quasidifferential transition matrix of F.
+    """
+    D = interleaved_transition_matrix(F, n, m)
+
+    # Transform columns.
+    for i in range(2 ** (2 * n)):
+        D[:, i] = to_quasidifferential_basis(D[:, i])
+
+    # Transform rows.
+    for i in range(2 ** (2 * m)):
+        D[i, :] = to_quasidifferential_basis(D[i, :])
+
+    return D / (2**n)
+
+
+def deinterleave_qdt_matrix(
+    D,
+    n,
+    m,
+    primary: str = "diff",
+):
+    """
+    Convert an interleaved QDT matrix to the requested ordering.
+    """
+    if primary not in ("diff", "mask"):
+        raise ValueError("primary must be either 'diff' or 'mask'.")
+
+    R = np.zeros_like(D)
+
+    for u in range(2**n):
+        for v in range(2**m):
+            for a in range(2**n):
+                for b in range(2**m):
+                    source_row = interleave_bits(b, v, m)
+                    source_col = interleave_bits(a, u, n)
+
+                    if primary == "mask":
+                        target_row = 2**m * v + b
+                        target_col = 2**n * u + a
+                    else:
+                        target_row = 2**m * b + v
+                        target_col = 2**n * a + u
+
+                    R[target_row, target_col] = D[
+                        source_row,
+                        source_col,
+                    ]
+
+    return R
+
+
+def generate_weight_tables(
+    D,
+    n,
+    m,
+):
+    weights = {}
+
+    for b in range(2**m):
+        for a in range(2**n):
+            weights[(b, a)] = {}
+
+            for v in range(2**m):
+                for u in range(2**n):
+                    coefficient = D[
+                        2**m * b + v,
+                        2**n * a + u,
+                    ]
+
+                    if coefficient == 0:
+                        continue
+
+                    w_loss = int(-np.log2(abs(coefficient)))
+
+                    if w_loss not in weights[(b, a)]:
+                        weights[(b, a)][w_loss] = []
+
+                    weights[(b, a)][w_loss].append((v, u))
+
+    return weights

@@ -46,6 +46,7 @@ class ThetaKeccak(LinearLayer):
         sage: print(component.input_bit_size)
         25
     """
+
     def __init__(
         self,
         current_round_number,

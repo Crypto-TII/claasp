@@ -63,6 +63,7 @@ class ThetaGaston(LinearLayer):
         sage: print(component.input_bit_size)
         320
     """
+
     def __init__(
         self,
         current_round_number,

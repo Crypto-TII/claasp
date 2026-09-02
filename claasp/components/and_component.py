@@ -128,6 +128,7 @@ class And(MultiInputNonlinearLogicalOperator):
         sage: print(component3.description)  # 6 total bits / output_bit_size 2 = 3 operands
         ['AND', 3]
     """
+
     def __init__(
         self,
         current_round_number,
@@ -396,7 +397,7 @@ class And(MultiInputNonlinearLogicalOperator):
         output_bit_ids = self._generate_output_ids()
         constraints = []
         for i, output_bit_id in enumerate(output_bit_ids):
-            constraints.extend(sat_utils.cnf_and(output_bit_id, input_bit_ids[i::self.output_bit_size]))
+            constraints.extend(sat_utils.cnf_and(output_bit_id, input_bit_ids[i :: self.output_bit_size]))
 
         return output_bit_ids, constraints
 
@@ -425,8 +426,148 @@ class And(MultiInputNonlinearLogicalOperator):
         output_bit_ids = self._generate_output_ids()
         constraints = []
         for i, output_bit_id in enumerate(output_bit_ids):
-            operation = smt_utils.smt_and(input_bit_ids[i::self.output_bit_size])
+            operation = smt_utils.smt_and(input_bit_ids[i :: self.output_bit_size])
             equation = smt_utils.smt_equivalent((output_bit_id, operation))
             constraints.append(smt_utils.smt_assert(equation))
 
         return output_bit_ids, constraints
+
+    def smt_xor_quasidifferential_propagation_constraints(
+        self,
+        model,
+    ):
+        """
+        Return SMT constraints for AND quasidifferential propagation.
+
+        Implements Theorem 5.1 of Beyne & Rijmen for a single bitwise
+        AND of 2 n-bit operands (a, b) -> c, extended bit-independently
+        via Theorem 3.2 (2) ("boxed maps": AND acts on each bit
+        independently, so its QDT is the tensor product of the 1-bit
+        QDTs).
+
+        Only 2-input AND is currently supported -- this is what Simon
+        actually uses, and Theorem 5.1 itself is stated for a single
+        pairwise AND. An n>2 input AND would need its own derivation,
+        so this deliberately raises NotImplementedError rather than
+        guessing; build_xor_quasidifferential_trail_model already
+        catches that and skips the component with a clear message.
+
+        Per bit i (a_i, b_i -> c_i; masks u_i, v_i on a, b and w_i on c):
+
+            c_i => (a_i or b_i)
+            (u_i or v_i) => (a_i or b_i or w_i)
+            (a_i and u_i) xor (b_i and v_i) == (c_i and w_i)
+
+        Local weight per bit is exactly (a_i or b_i or w_i): the
+        theorem's weight formula wt(a|b) + wt(w & ~a & ~b) reduces to
+        this single per-bit OR, since the two terms are mutually
+        exclusive at each bit position (if a_i|b_i is true the first
+        term contributes 1 and the second is forced to 0 by ~a&~b;
+        if a_i|b_i is false the first term is 0 and the second equals
+        w_i exactly).
+
+        INPUT:
+
+        - ``model`` -- **model object**; a model instance
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.single_component_ciphers.and_cipher import AndCipher
+            sage: from claasp.cipher_modules.models.smt.smt_models.smt_xor_quasidifferential_model import SmtXorQuasidifferentialModel
+            sage: cipher = AndCipher(word_bit_size=2, number_of_inputs=2)
+            sage: and_component = cipher.component_from_id('and_0_0')
+            sage: smt = SmtXorQuasidifferentialModel(cipher)
+            sage: variables, constraints = and_component.smt_xor_quasidifferential_propagation_constraints(smt)
+            sage: variables
+            ['and_0_0_0',
+             'and_0_0_1',
+             'qdt_and_0_0_0',
+             'qdt_and_0_0_1',
+             'hw_qdt_and_0_0_0',
+             'hw_qdt_and_0_0_1']
+            sage: len(constraints)
+            8
+            sage: constraints[0]
+            '(assert (=> and_0_0_0 (or plaintext_0 key_0)))'
+            sage: constraints[3]
+            '(assert (= hw_qdt_and_0_0_0 (or plaintext_0 key_0 qdt_and_0_0_0)))'
+        """
+
+        num_operands = self.description[1]
+
+        if num_operands != 2:
+            raise NotImplementedError(
+                f"{self.id}: quasidifferential propagation for AND is "
+                f"only implemented for 2 operands (Theorem 5.1 of "
+                f"Beyne & Rijmen); got {num_operands}."
+            )
+
+        word_size = self.output_bit_size
+
+        input_bit_ids = self._generate_input_ids()
+        output_bit_ids = self._generate_output_ids()
+
+        qdt_input_bit_ids = [f"qdt_{bit_id}" for bit_id in input_bit_ids]
+
+        qdt_output_bit_ids = [f"qdt_{bit_id}" for bit_id in output_bit_ids]
+
+        a_ids = input_bit_ids[:word_size]
+        b_ids = input_bit_ids[word_size:]
+
+        u_ids = qdt_input_bit_ids[:word_size]
+        v_ids = qdt_input_bit_ids[word_size:]
+
+        c_ids = output_bit_ids
+        w_ids = qdt_output_bit_ids
+
+        weight_bit_ids = [f"hw_qdt_{self.id}_{i}" for i in range(word_size)]
+
+        constraints = []
+
+        for i in range(word_size):
+            a, b, c = a_ids[i], b_ids[i], c_ids[i]
+            u, v, w = u_ids[i], v_ids[i], w_ids[i]
+
+            # c_i => (a_i or b_i)
+            validity_1 = smt_utils.smt_implies(
+                c,
+                smt_utils.smt_or([a, b]),
+            )
+            constraints.append(smt_utils.smt_assert(validity_1))
+
+            # (u_i or v_i) => (a_i or b_i or w_i)
+            validity_2 = smt_utils.smt_implies(
+                smt_utils.smt_or([u, v]),
+                smt_utils.smt_or([a, b, w]),
+            )
+            constraints.append(smt_utils.smt_assert(validity_2))
+
+            # (a_i and u_i) xor (b_i and v_i) == (c_i and w_i)
+            validity_3 = smt_utils.smt_equivalent(
+                [
+                    smt_utils.smt_xor(
+                        [
+                            smt_utils.smt_and([a, u]),
+                            smt_utils.smt_and([b, v]),
+                        ]
+                    ),
+                    smt_utils.smt_and([c, w]),
+                ]
+            )
+            constraints.append(smt_utils.smt_assert(validity_3))
+
+            # Local weight bit: hw_qdt_{id}_{i} := (a_i or b_i or w_i)
+            weight_definition = smt_utils.smt_equivalent(
+                [
+                    weight_bit_ids[i],
+                    smt_utils.smt_or([a, b, w]),
+                ]
+            )
+            constraints.append(smt_utils.smt_assert(weight_definition))
+
+        variables = output_bit_ids + qdt_output_bit_ids + weight_bit_ids
+
+        return (
+            variables,
+            constraints,
+        )

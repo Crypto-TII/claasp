@@ -171,6 +171,7 @@ class Xor(Component):
         sage: print(component2.description)  # 4 total bits / output_bit_size 2 = 2 operands
         ['XOR', 2]
     """
+
     def __init__(
         self,
         current_round_number,
@@ -254,11 +255,11 @@ class Xor(Component):
             ['x -xor_0_0_0 plaintext_0 key_0', 'x -xor_0_0_1 plaintext_1 key_1'])
         """
         input_bit_ids = self._generate_input_ids()
-        output_bit_ids = self._generate_output_ids()
+        output_bit_len, output_bit_ids = self._generate_output_ids()
         constraints = []
-        for i, output_bit_id in enumerate(output_bit_ids):
-            operands = [f"x -{output_bit_id}"]
-            operands.extend(input_bit_ids[i::self.output_bit_size])
+        for i in range(output_bit_len):
+            operands = [f"x -{output_bit_ids[i]}"]
+            operands.extend(input_bit_ids[i::output_bit_len])
             constraints.append(" ".join(operands))
 
         return output_bit_ids, constraints
@@ -292,7 +293,7 @@ class Xor(Component):
             all_inputs.extend([f"{id_link}[{position}]" for position in bit_positions])
         cp_constraints = []
         for i in range(self.output_bit_size):
-            operation = " + ".join(all_inputs[i::self.output_bit_size])
+            operation = " + ".join(all_inputs[i :: self.output_bit_size])
             cp_constraints.append(f"constraint {self.id}[{i}] = ({operation}) mod 2;")
 
         return cp_declarations, cp_constraints
@@ -337,10 +338,10 @@ class Xor(Component):
             all_inputs.extend([f"{id_link}[{position}]" for position in bit_positions])
         cp_constraints = []
         for i in range(self.output_bit_size):
-            operation = " < 2) /\\ (".join(all_inputs[i::self.output_bit_size])
+            operation = " < 2) /\\ (".join(all_inputs[i :: self.output_bit_size])
             new_constraint = "constraint if (("
             new_constraint += operation + "< 2)) then "
-            operation2 = " + ".join(all_inputs[i::self.output_bit_size])
+            operation2 = " + ".join(all_inputs[i :: self.output_bit_size])
             new_constraint += f"{self.id}[{i}] = ({operation2}) mod 2 else {self.id}[{i}] = 2 endif;"
             cp_constraints.append(new_constraint)
 
@@ -372,7 +373,7 @@ class Xor(Component):
         ]
         cp_constraints = []
         for i in range(self.output_bit_size):
-            inputs = all_inputs[i::self.output_bit_size]
+            inputs = all_inputs[i :: self.output_bit_size]
             condition = " < 2) /\\ (".join(inputs) + " < 2"
             operation_sum = " + ".join(inputs)
             new_constraint = (
@@ -599,10 +600,7 @@ class Xor(Component):
         cp_constraints = []
         for i in range(self.output_bit_size):
             cp_constraints.extend(
-                [
-                    f"constraint {self.id}_o[{i}] = {self.id}_i[{i + input_len * j}];"
-                    for j in range(num_of_addenda)
-                ]
+                [f"constraint {self.id}_o[{i}] = {self.id}_i[{i + input_len * j}];" for j in range(num_of_addenda)]
             )
         result = cp_declarations, cp_constraints
 
@@ -1237,11 +1235,13 @@ class Xor(Component):
             '-xor_0_0_1 -plaintext_1 -key_1'])
         """
         input_bit_ids = self._generate_input_ids()
-        output_bit_ids = self._generate_output_ids()
+        output_bit_len, output_bit_ids = self._generate_output_ids()
         constraints = []
-        for i, output_bit_id in enumerate(output_bit_ids):
-            result_bit_ids = [f"inter_{j}_{output_bit_id}" for j in range(self.description[1] - 2)] + [output_bit_id]
-            constraints.extend(sat_utils.cnf_xor_seq(result_bit_ids, input_bit_ids[i::self.output_bit_size]))
+        for i in range(output_bit_len):
+            result_bit_ids = [f"inter_{j}_{output_bit_ids[i]}" for j in range(self.description[1] - 2)] + [
+                output_bit_ids[i]
+            ]
+            constraints.extend(sat_utils.cnf_xor_seq(result_bit_ids, input_bit_ids[i::output_bit_len]))
 
         return output_bit_ids, constraints
 
@@ -1280,7 +1280,7 @@ class Xor(Component):
             'xor_0_0_1_0 -plaintext_1_1 -key_1_1 -xor_0_0_1_1'])
         """
         in_ids_0, in_ids_1 = self._generate_input_double_ids()
-        out_ids_0, out_ids_1 = self._generate_output_double_ids()
+        out_len, out_ids_0, out_ids_1 = self._generate_output_double_ids()
         in_ids = [(id_0, id_1) for id_0, id_1 in zip(in_ids_0, in_ids_1)]
         out_ids = [(id_0, id_1) for id_0, id_1 in zip(out_ids_0, out_ids_1)]
         constraints = []
@@ -1288,7 +1288,7 @@ class Xor(Component):
             result_ids = [
                 (f"inter_{j}_{self.id}_{i}_0", f"inter_{j}_{self.id}_{i}_1") for j in range(self.description[1] - 2)
             ] + [out_id]
-            constraints.extend(sat_utils.cnf_xor_truncated_seq(result_ids, in_ids[i::self.output_bit_size]))
+            constraints.extend(sat_utils.cnf_xor_truncated_seq(result_ids, in_ids[i::out_len]))
 
         return out_ids_0 + out_ids_1, constraints
 
@@ -1355,14 +1355,16 @@ class Xor(Component):
             'xor_0_0_3_i -xor_0_0_1_i',
             'xor_0_0_1_o -xor_0_0_3_i'])
         """
-        input_bit_ids = self._generate_component_input_ids()
-        output_bit_ids = self._generate_output_ids(suffix=constants.OUTPUT_BIT_ID_SUFFIX)
+        _, input_bit_ids = self._generate_component_input_ids()
+        out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
+        output_bit_len, output_bit_ids = self._generate_output_ids(suffix=out_suffix)
         bit_ids = input_bit_ids + output_bit_ids
         constraints = []
-        for i in range(self.output_bit_size):
-            constraints.extend(sat_utils.cnf_equivalent(bit_ids[i::self.output_bit_size]))
+        for i in range(output_bit_len):
+            constraints.extend(sat_utils.cnf_equivalent(bit_ids[i::output_bit_len]))
+        result = bit_ids, constraints
 
-        return bit_ids, constraints
+        return result
 
     def smt_constraints(self):
         """
@@ -1386,11 +1388,11 @@ class Xor(Component):
             '(assert (= xor_0_0_1 (xor plaintext_1 key_1)))'])
         """
         input_bit_ids = self._generate_input_ids()
-        output_bit_ids = self._generate_output_ids()
+        output_bit_len, output_bit_ids = self._generate_output_ids()
         constraints = []
-        for i, output_bit_id in enumerate(output_bit_ids):
-            operation = smt_utils.smt_xor(input_bit_ids[i::self.output_bit_size])
-            equation = smt_utils.smt_equivalent([output_bit_id, operation])
+        for i in range(output_bit_len):
+            operation = smt_utils.smt_xor(input_bit_ids[i::output_bit_len])
+            equation = smt_utils.smt_equivalent([output_bit_ids[i], operation])
             constraints.append(smt_utils.smt_assert(equation))
 
         return output_bit_ids, constraints
@@ -1444,15 +1446,17 @@ class Xor(Component):
             ['(assert (= xor_0_0_0_o xor_0_0_0_i xor_0_0_2_i))',
             '(assert (= xor_0_0_1_o xor_0_0_1_i xor_0_0_3_i))'])
         """
-        input_bit_ids = self._generate_component_input_ids()
-        output_bit_ids = self._generate_output_ids(suffix=constants.OUTPUT_BIT_ID_SUFFIX)
+        _, input_bit_ids = self._generate_component_input_ids()
+        out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
+        output_bit_len, output_bit_ids = self._generate_output_ids(suffix=out_suffix)
         bit_ids = output_bit_ids + input_bit_ids
         constraints = []
-        for i in range(self.output_bit_size):
-            equation = smt_utils.smt_equivalent(bit_ids[i::self.output_bit_size])
+        for i in range(output_bit_len):
+            equation = smt_utils.smt_equivalent(bit_ids[i::output_bit_len])
             constraints.append(smt_utils.smt_assert(equation))
+        result = bit_ids, constraints
 
-        return bit_ids, constraints
+        return result
 
     def cp_transform_xor_components_for_first_step(self, model):
         """
@@ -1517,3 +1521,114 @@ class Xor(Component):
         cp_constraints = []
 
         return cp_declarations, cp_constraints
+
+    def smt_xor_quasidifferential_propagation_constraints(
+        self,
+        model,
+    ):
+        """
+        Return SMT constraints for XOR quasidifferential propagation.
+
+        Handles an arbitrary number of operands (not just 2), matching
+        the general ``Xor`` component (``self.description[1]`` addends).
+
+        Per Beyne & Rijmen, XOR is a linear map, so Theorem 3.2 applies:
+
+        - difference propagation is the ordinary XOR rule (weight 0);
+        - mask propagation requires ALL masks meeting at the XOR node
+          (every input operand's mask AND the output mask) to be equal
+          -- the standard "branching" rule of linear cryptanalysis,
+          which is also what lets masks flow into a round-key XOR
+          branch (Section 4.4 of the paper).
+
+        INPUT:
+
+        - ``model`` -- **model object**; a model instance
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.single_component_ciphers.xor_cipher import XorCipher
+            sage: from claasp.cipher_modules.models.smt.smt_models.smt_xor_quasidifferential_model import SmtXorQuasidifferentialModel
+            sage: cipher = XorCipher(word_bit_size=2, number_of_inputs=2)
+            sage: xor_component = cipher.component_from_id('xor_0_0')
+            sage: smt = SmtXorQuasidifferentialModel(cipher)
+            sage: variables, constraints = xor_component.smt_xor_quasidifferential_propagation_constraints(smt)
+            sage: variables
+            ['xor_0_0_0', 'xor_0_0_1', 'qdt_xor_0_0_0', 'qdt_xor_0_0_1']
+            sage: constraints
+            ['(assert (= xor_0_0_0 (xor plaintext_0 key_0)))',
+             '(assert (= xor_0_0_1 (xor plaintext_1 key_1)))',
+             '(assert (= qdt_plaintext_0 qdt_xor_0_0_0))',
+             '(assert (= qdt_key_0 qdt_xor_0_0_0))',
+             '(assert (= qdt_plaintext_1 qdt_xor_0_0_1))',
+             '(assert (= qdt_key_1 qdt_xor_0_0_1))']
+        """
+
+        # Ordinary XOR difference input identifiers.
+        input_bit_ids = self._generate_input_ids()
+
+        # Ordinary XOR difference output identifiers.
+
+        output_bit_ids_result = self._generate_output_ids()
+
+        if (
+            isinstance(output_bit_ids_result, (tuple, list))
+            and output_bit_ids_result
+            and isinstance(output_bit_ids_result[-1], list)
+        ):
+            output_bit_ids = output_bit_ids_result[-1]
+        else:
+            output_bit_ids = output_bit_ids_result
+
+        # QDT input mask identifiers.
+        qdt_input_bit_ids = [f"qdt_{bit_id}" for bit_id in input_bit_ids]
+
+        # QDT output mask identifiers.
+        qdt_output_bit_ids = [f"qdt_{bit_id}" for bit_id in output_bit_ids]
+
+        word_size = self.output_bit_size
+
+        if word_size == 0 or len(input_bit_ids) % word_size != 0:
+            raise ValueError(f"Unexpected XOR input size for {self.id}: {len(input_bit_ids)} bits")
+
+        variables = output_bit_ids + qdt_output_bit_ids
+
+        constraints = []
+
+        # XOR difference propagation (n-ary):
+        #
+        # dz_i = dx_0_i XOR dx_1_i XOR ... XOR dx_{k-1}_i
+
+        for i, output_bit in enumerate(output_bit_ids):
+            operands = input_bit_ids[i::word_size]
+
+            equation = smt_utils.smt_equivalent(
+                [
+                    output_bit,
+                    smt_utils.smt_xor(operands),
+                ]
+            )
+
+            constraints.append(smt_utils.smt_assert(equation))
+
+        # QDT mask propagation (n-ary, branching rule):
+        #
+        # u_0_i = u_1_i = ... = u_{k-1}_i = uz_i
+
+        for i, output_bit in enumerate(qdt_output_bit_ids):
+            operand_masks = qdt_input_bit_ids[i::word_size]
+
+            for operand_mask in operand_masks:
+                equation = smt_utils.smt_equivalent(
+                    [
+                        operand_mask,
+                        output_bit,
+                    ]
+                )
+
+                constraints.append(smt_utils.smt_assert(equation))
+
+        return (
+            variables,
+            constraints,
+        )

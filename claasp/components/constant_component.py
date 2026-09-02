@@ -97,6 +97,7 @@ class Constant(Component):
         sage: print(component.description)
         ['0b0001000']
     """
+
     def __init__(self, current_round_number, current_round_number_of_components, output_bit_size, value):
         component_id = f"{CONSTANT}_{current_round_number}_{current_round_number_of_components}"
         component_type = CONSTANT
@@ -208,17 +209,12 @@ class Constant(Component):
         """
         size = self.output_bit_size
 
-        cp_declarations = [
-            f"array[0..{size - 1}] of var -1.0..1.0: {self.id};"
-        ]
+        cp_declarations = [f"array[0..{size - 1}] of var -1.0..1.0: {self.id};"]
 
-        cp_constraints = [
-            f"constraint {self.id}[{i}] = -1.0;"
-            for i in range(size)
-        ]
+        cp_constraints = [f"constraint {self.id}[{i}] = -1.0;" for i in range(size)]
 
         return cp_declarations, cp_constraints
-    
+
     def cp_deterministic_truncated_xor_differential_trail_constraints(self):
         return self.cp_xor_differential_propagation_constraints()
 
@@ -769,3 +765,42 @@ class Constant(Component):
         output_bit_ids = self._generate_output_ids(suffix=constants.OUTPUT_BIT_ID_SUFFIX)
 
         return output_bit_ids, []
+
+    def smt_xor_quasidifferential_propagation_constraints(
+        self,
+        model,
+    ):
+        """
+        Return SMT constraints for CONSTANT quasidifferential propagation.
+
+        Per Beyne & Rijmen, Theorem 3.2 (4): for a translation
+        F(x) = x + t (a constant is exactly such a translation),
+
+            D^F_(v,b),(u,a) = chi_v(t) * delta_v(u) * delta_b(a)
+
+        This factors into:
+
+        - the difference contributed by a constant is always 0
+          (identical to smt_xor_differential_propagation_constraints);
+        - the mask v is a FREE parameter: it never affects the local
+          weight (which is always 0 regardless of v), only the sign
+          chi_v(t) of the correlation. This weight-based search does
+          not track signs, so v is simply left unconstrained here --
+          exactly as smt_xor_linear_mask_propagation_constraints
+          already does for the ordinary linear model. Leaving it free
+          (rather than e.g. fixing it to 0) keeps it available for
+          any later sign/key-dependence analysis (cf.
+          generic_with_constant_sign_linear_constraints in
+          xor_component.py, and Section 4.4 of the paper).
+        """
+
+        output_bit_ids, diff_constraints = self.smt_xor_differential_propagation_constraints(model)
+
+        qdt_output_bit_ids = [f"qdt_{bit_id}" for bit_id in output_bit_ids]
+
+        variables = output_bit_ids + qdt_output_bit_ids
+
+        return (
+            variables,
+            diff_constraints,
+        )

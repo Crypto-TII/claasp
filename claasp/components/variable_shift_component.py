@@ -50,6 +50,7 @@ class VariableShift(Component):
         sage: print(component.description)
         ['SHIFT_BY_VARIABLE_AMOUNT', 1]
     """
+
     def __init__(
         self,
         current_round_number,
@@ -451,11 +452,11 @@ class VariableShift(Component):
             'var_shift_0_2_2 -state_0_var_shift_0_2_2 key_2',
             '-var_shift_0_2_3 state_0_var_shift_0_2_3',
             '-var_shift_0_2_3 -key_2',
-            'var_shift_0_2_3 -state_0_var_shift_0_2_3 key_2']  
+            'var_shift_0_2_3 -state_0_var_shift_0_2_3 key_2']
         """
         input_bit_ids = self._generate_input_ids()
-        input_ids = input_bit_ids[:self.output_bit_size]
-        shift_ids = input_bit_ids[self.output_bit_size:]
+        input_ids = input_bit_ids[: self.output_bit_size]
+        shift_ids = input_bit_ids[self.output_bit_size :]
         output_bit_ids = self._generate_output_ids()
         number_of_states = int(math.log2(self.output_bit_size)) - 1
         states = [[f"state_{i}_{output_bit_id}" for output_bit_id in output_bit_ids] for i in range(number_of_states)]
@@ -468,22 +469,24 @@ class VariableShift(Component):
         for i in range(1, number_of_states):
             # state is a copy if no shift, shifted otherwise
             for state_id, prev_state_id, shift_state_id in zip(
-                states[i][:self.output_bit_size - 2**i], states[i - 1], states[i - 1][2**i:]
+                states[i][: self.output_bit_size - 2**i], states[i - 1], states[i - 1][2**i :]
             ):
                 constraints.extend(sat_utils.cnf_vshift_id(state_id, prev_state_id, shift_state_id, shift_ids[-1 - i]))
             # state is a copy if no shift, null otherwise
             for state_id, prev_state_id in zip(
-                states[i][self.output_bit_size - 2**i:], states[i - 1][self.output_bit_size - 2**i:]
+                states[i][self.output_bit_size - 2**i :], states[i - 1][self.output_bit_size - 2**i :]
             ):
                 constraints.extend(sat_utils.cnf_vshift_false(state_id, prev_state_id, shift_ids[-1 - i]))
         # MSB straightforward in the output
         for output_id, prev_state_id, shift_state_id in zip(
-            output_bit_ids[:-2**number_of_states], states[-1], states[-1][2**number_of_states:]
+            output_bit_ids[: -(2**number_of_states)], states[-1], states[-1][2**number_of_states :]
         ):
             constraints.extend(
                 sat_utils.cnf_vshift_id(output_id, prev_state_id, shift_state_id, shift_ids[-1 - number_of_states])
             )
-        for output_id, prev_state_id in zip(output_bit_ids[-2**number_of_states:], states[-1][-2**number_of_states:]):
+        for output_id, prev_state_id in zip(
+            output_bit_ids[-(2**number_of_states) :], states[-1][-(2**number_of_states) :]
+        ):
             constraints.extend(sat_utils.cnf_vshift_false(output_id, prev_state_id, shift_ids[-1 - number_of_states]))
 
         return output_bit_ids, constraints
@@ -527,8 +530,8 @@ class VariableShift(Component):
             '(assert (ite key_2 (not var_shift_0_2_3) (= var_shift_0_2_3 state_0_var_shift_0_2_3)))']
         """
         input_bit_ids = self._generate_input_ids()
-        input_ids = input_bit_ids[:self.output_bit_size]
-        shift_ids = input_bit_ids[self.output_bit_size:]
+        input_ids = input_bit_ids[: self.output_bit_size]
+        shift_ids = input_bit_ids[self.output_bit_size :]
         output_bit_ids = self._generate_output_ids()
         states = []
         number_of_states = int(math.log2(self.output_bit_size)) - 1
@@ -549,14 +552,14 @@ class VariableShift(Component):
         # intermediate shifts
         for i in range(1, number_of_states):
             for state_id, prev_state_id, shift_state_id in zip(
-                states[i][:self.output_bit_size - 2**i], states[i - 1], states[i - 1][2**i:]
+                states[i][: self.output_bit_size - 2**i], states[i - 1], states[i - 1][2**i :]
             ):
                 consequent = smt_utils.smt_equivalent((state_id, shift_state_id))
                 alternative = smt_utils.smt_equivalent((state_id, prev_state_id))
                 shift = smt_utils.smt_ite(shift_ids[-1 - i], consequent, alternative)
                 constraints.append(smt_utils.smt_assert(shift))
             for state_id, prev_state_id in zip(
-                states[i][self.output_bit_size - 2**i:], states[i - 1][self.output_bit_size - 2**i:]
+                states[i][self.output_bit_size - 2**i :], states[i - 1][self.output_bit_size - 2**i :]
             ):
                 consequent = smt_utils.smt_not(state_id)
                 alternative = smt_utils.smt_equivalent((state_id, prev_state_id))
@@ -565,13 +568,15 @@ class VariableShift(Component):
 
         # last shift
         for output_id, prev_state_id, shift_state_id in zip(
-            output_bit_ids[:-2**number_of_states], states[-1], states[-1][2**number_of_states:]
+            output_bit_ids[: -(2**number_of_states)], states[-1], states[-1][2**number_of_states :]
         ):
             consequent = smt_utils.smt_equivalent((output_id, shift_state_id))
             alternative = smt_utils.smt_equivalent((output_id, prev_state_id))
             shift = smt_utils.smt_ite(shift_ids[-1 - number_of_states], consequent, alternative)
             constraints.append(smt_utils.smt_assert(shift))
-        for output_id, prev_state_id in zip(output_bit_ids[-2**number_of_states:], states[-1][-2**number_of_states:]):
+        for output_id, prev_state_id in zip(
+            output_bit_ids[-(2**number_of_states) :], states[-1][-(2**number_of_states) :]
+        ):
             consequent = smt_utils.smt_not(output_id)
             alternative = smt_utils.smt_equivalent((output_id, prev_state_id))
             shift = smt_utils.smt_ite(shift_ids[-1 - number_of_states], consequent, alternative)
