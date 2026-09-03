@@ -475,18 +475,18 @@ class ModSub(Modular):
         qdt_output_bit_ids = [f"qdt_{bit_id}" for bit_id in output_bit_ids]
 
         # MODSUB's own variables.
-        A_ids = input_bit_ids[:word_size]
-        B_ids = input_bit_ids[word_size:]
-        C_ids = output_bit_ids
+        modsub_a_ids = input_bit_ids[:word_size]
+        modsub_b_ids = input_bit_ids[word_size:]
+        modsub_c_ids = output_bit_ids
 
-        U_ids = qdt_input_bit_ids[:word_size]
-        V_ids = qdt_input_bit_ids[word_size:]
-        W_ids = qdt_output_bit_ids
+        modsub_u_ids = qdt_input_bit_ids[:word_size]
+        modsub_v_ids = qdt_input_bit_ids[word_size:]
+        modsub_w_ids = qdt_output_bit_ids
 
         # Apply the verified permutation to obtain MODADD's roles:
         # (a, b, c, u, v, w) = (C, B, A, W, V, U).
-        a_ids, b_ids, c_ids = C_ids, B_ids, A_ids
-        u_ids, v_ids, w_ids = W_ids, V_ids, U_ids
+        a_ids, b_ids, c_ids = modsub_c_ids, modsub_b_ids, modsub_a_ids
+        u_ids, v_ids, w_ids = modsub_w_ids, modsub_v_ids, modsub_u_ids
 
         constraints = []
         variables = list(output_bit_ids) + list(qdt_output_bit_ids)
@@ -505,8 +505,12 @@ class ModSub(Modular):
         abc_xor_ids = []
 
         for i in range(word_size):
-            a_prime_ids.append(new_named_formula("modsub_aprime", i, smt_utils.smt_xor([b_ids[i], c_ids[i]])))
-            b_prime_ids.append(new_named_formula("modsub_bprime", i, smt_utils.smt_xor([a_ids[i], c_ids[i]])))
+            a_prime_ids.append(
+                new_named_formula("modsub_aprime", i, smt_utils.smt_xor([b_ids[i], c_ids[i]]))
+            )
+            b_prime_ids.append(
+                new_named_formula("modsub_bprime", i, smt_utils.smt_xor([a_ids[i], c_ids[i]]))
+            )
             abc_xor_ids.append(
                 new_named_formula(
                     "modsub_abcxor",
@@ -531,8 +535,12 @@ class ModSub(Modular):
         uvw_xor_ids = []
 
         for i in range(word_size):
-            u_prime_ids.append(new_named_formula("modsub_uprime", i, smt_utils.smt_xor([u_ids[i], w_ids[i]])))
-            v_prime_ids.append(new_named_formula("modsub_vprime", i, smt_utils.smt_xor([v_ids[i], w_ids[i]])))
+            u_prime_ids.append(
+                new_named_formula("modsub_uprime", i, smt_utils.smt_xor([u_ids[i], w_ids[i]]))
+            )
+            v_prime_ids.append(
+                new_named_formula("modsub_vprime", i, smt_utils.smt_xor([v_ids[i], w_ids[i]]))
+            )
             uvw_xor_ids.append(
                 new_named_formula(
                     "modsub_uvwxor",
@@ -568,11 +576,16 @@ class ModSub(Modular):
         # x_{i+1}, and 0 at the last index.
 
         for i in range(word_size):
+
             if i == word_size - 1:
                 # LSB: eq is trivially true (all shifted-in bits are 0),
                 # so the condition reduces to a xor b xor c == 0.
                 constraints.append(
-                    smt_utils.smt_assert(smt_utils.smt_not(smt_utils.smt_xor([a_ids[i], b_ids[i], c_ids[i]])))
+                    smt_utils.smt_assert(
+                        smt_utils.smt_not(
+                            smt_utils.smt_xor([a_ids[i], b_ids[i], c_ids[i]])
+                        )
+                    )
                 )
             else:
                 bits_equal = smt_utils.smt_and(
@@ -581,14 +594,21 @@ class ModSub(Modular):
                         smt_utils.smt_equivalent([a_ids[i + 1], c_ids[i + 1]]),
                     ]
                 )
-                must_vanish = smt_utils.smt_xor([a_ids[i], b_ids[i], c_ids[i], b_ids[i + 1]])
-                constraints.append(
-                    smt_utils.smt_assert(smt_utils.smt_implies(bits_equal, smt_utils.smt_not(must_vanish)))
+                must_vanish = smt_utils.smt_xor(
+                    [a_ids[i], b_ids[i], c_ids[i], b_ids[i + 1]]
                 )
+                constraints.append(
+                    smt_utils.smt_assert(
+                        smt_utils.smt_implies(bits_equal, smt_utils.smt_not(must_vanish))
+                    )
+                )
+
+        # Validity + local weight, per bit (identical to ModAdd's).
 
         weight_bit_ids = []
 
         for i in range(word_size):
+
             a_p, b_p, c_p = a_prime_ids[i], b_prime_ids[i], c_prime_ids[i]
             u_p, v_p, w_p = u_prime_ids[i], v_prime_ids[i], w_prime_ids[i]
 
@@ -615,9 +635,13 @@ class ModSub(Modular):
             weight_bit_ids.append(weight_bit_id)
 
             if i == 0:
+                # Terza condizione del Teorema 5.2, sul bit piu'
+                # significativo.
                 top_bit_validity = smt_utils.smt_or(
                     [
-                        smt_utils.smt_and([smt_utils.smt_not(a_p), smt_utils.smt_not(b_p)]),
+                        smt_utils.smt_and(
+                            [smt_utils.smt_not(a_p), smt_utils.smt_not(b_p)]
+                        ),
                         smt_utils.smt_equivalent(
                             [
                                 smt_utils.smt_and([a_p, u_p]),
@@ -628,6 +652,7 @@ class ModSub(Modular):
                 )
                 constraints.append(smt_utils.smt_assert(top_bit_validity))
 
+               
                 weight_definition = smt_utils.smt_equivalent(
                     [
                         weight_bit_id,
