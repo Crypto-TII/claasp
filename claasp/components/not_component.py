@@ -48,6 +48,7 @@ class Not(Component):
         sage: print(component.description)
         ['NOT', 0]
     """
+
     def __init__(
         self,
         current_round_number,
@@ -717,3 +718,76 @@ class Not(Component):
         ]
         result = input_bit_ids + output_bit_ids, constraints
         return result
+
+    def smt_xor_quasidifferential_propagation_constraints(
+        self,
+        model,
+    ):
+        """
+        Return SMT constraints for NOT quasidifferential propagation.
+
+        NOT is an AFFINE map (x -> x xor 1), not a linear one. Per
+        Beyne & Rijmen, Theorem 3.2 (4), a translation by a constant t
+        propagates both differences and masks UNCHANGED, and
+        contributes only a SIGN factor chi_v(t) = (-1)^(v . t) -- here
+        t is the all-ones word, so the factor is (-1)^popcount(v).
+
+        The sign is deliberately NOT encoded as an SMT constraint: it
+        never affects the weight (which is 0 for an affine map), so
+        constraining it would only slow the search down. It is applied
+        afterwards by
+        SmtXorQuasidifferentialModel.compute_trail_sign, exactly as
+        done for the Constant component. Note that
+        Not.generic_sign_linear_constraints in this same file computes
+        the very same parity for the ordinary linear model.
+
+        INPUT:
+
+        - ``model`` -- **model object**; a model instance
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.single_component_ciphers.not_cipher import NotCipher
+            sage: from claasp.cipher_modules.models.smt.smt_models.smt_xor_quasidifferential_model import SmtXorQuasidifferentialModel
+            sage: cipher = NotCipher(bit_size=2)
+            sage: not_component = cipher.component_from(0, 0)
+            sage: smt = SmtXorQuasidifferentialModel(cipher)
+            sage: variables, constraints = not_component.smt_xor_quasidifferential_propagation_constraints(smt)
+            sage: len(variables)
+            4
+            sage: len(constraints)
+            4
+        """
+
+        # ------------------------------------------------------------
+        # Difference: unchanged (the constant cancels in a difference).
+        # ------------------------------------------------------------
+
+        output_bit_ids, diff_constraints = self.smt_xor_differential_propagation_constraints(model)
+
+        # ------------------------------------------------------------
+        # Mask: also unchanged (Theorem 3.2 (4)); only the sign, handled
+        # in post-processing, distinguishes NOT from a plain identity.
+        # ------------------------------------------------------------
+
+        input_bit_ids = self._generate_input_ids()
+
+        qdt_input_bit_ids = [f"qdt_{bit_id}" for bit_id in input_bit_ids]
+        qdt_output_bit_ids = [f"qdt_{bit_id}" for bit_id in output_bit_ids]
+
+        mask_constraints = []
+
+        for qdt_output_bit_id, qdt_input_bit_id in zip(
+            qdt_output_bit_ids,
+            qdt_input_bit_ids,
+        ):
+            equation = smt_utils.smt_equivalent([qdt_output_bit_id, qdt_input_bit_id])
+            mask_constraints.append(smt_utils.smt_assert(equation))
+
+        variables = output_bit_ids + qdt_output_bit_ids
+        constraints = diff_constraints + mask_constraints
+
+        return (
+            variables,
+            constraints,
+        )

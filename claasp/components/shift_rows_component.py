@@ -45,6 +45,7 @@ class ShiftRows(Rotate):
         sage: print(component.description)
         ['ROTATE', 2]
     """
+
     def __init__(
         self,
         current_round_number,

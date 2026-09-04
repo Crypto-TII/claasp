@@ -12,6 +12,10 @@ from claasp.cipher_modules.models.sat.sat_model import SatModel
 from claasp.cipher_modules.models.smt.smt_model import SmtModel
 from claasp.ciphers.single_component_ciphers.sbox_cipher import SboxCipher
 from claasp.components.sbox_component import Sbox
+from claasp.cipher_modules.models.smt.smt_models.smt_xor_quasidifferential_model import (
+    SmtXorQuasidifferentialModel,
+)
+from claasp.ciphers.block_ciphers.rectangle_block_cipher import RectangleBlockCipher
 
 PRESENT_SBOX = [12, 5, 6, 11, 9, 0, 10, 13, 3, 14, 15, 8, 4, 7, 1, 2]
 
@@ -313,3 +317,19 @@ def test_milp_wordwise_deterministic_truncated_xor_differential_simple_constrain
 
     assert str(variables[0]) == "('x_class[plaintext_word_0_class]', x_0)"
     assert constraints == []
+
+def test_smt_xor_quasidifferential_propagation_constraints():
+    cipher = RectangleBlockCipher(number_of_rounds=1)
+    model = SmtXorQuasidifferentialModel(cipher)
+    sbox_component = cipher.component_from_id('sbox_0_1')
+    variables, constraints = sbox_component.smt_xor_quasidifferential_propagation_constraints(model)
+
+    assert variables == ['sbox_0_1_0', 'sbox_0_1_1', 'sbox_0_1_2', 'sbox_0_1_3',
+                         'qdt_sbox_0_1_0', 'qdt_sbox_0_1_1', 'qdt_sbox_0_1_2', 'qdt_sbox_0_1_3',
+                         'hw_qdt_sbox_0_1_0', 'hw_qdt_sbox_0_1_1', 'hw_qdt_sbox_0_1_2']
+
+    # The sbox constraint is a single disjunction over every valid QDT
+    # transition: it is millions of characters long, so only its shape
+    # is checked here.
+    assert len(constraints) == 1
+    assert constraints[0].startswith('(assert (or')

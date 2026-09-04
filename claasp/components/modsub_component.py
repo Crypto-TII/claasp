@@ -19,7 +19,7 @@
 from claasp.cipher_modules.models.sat.utils import utils as sat_utils
 from claasp.cipher_modules.models.smt.utils import utils as smt_utils
 from claasp.components.modular_component import Modular
-
+from claasp.components.modadd_component import smt_quasidifferential_modadd
 
 def cp_twoterms(input_1, input_2, out, component_name, input_length, cp_constraints, cp_declarations):
     cp_declarations.append(f"array[0..{input_length - 1}] of var 0..1:pre_minus_{input_2};")
@@ -413,3 +413,77 @@ class ModSub(Modular):
         constraints.append(smt_utils.smt_assert(equation))
 
         return temp_carry_bit_ids + temp_input_bit_ids + carry_bit_ids + output_bit_ids, constraints
+
+    def smt_xor_quasidifferential_propagation_constraints(
+        self,
+        model,
+    ):
+        """
+        Return SMT constraints for MODSUB quasidifferential propagation.
+ 
+        Modular subtraction reduces EXACTLY to modular addition with
+        permuted roles: ``z = x - y`` is equivalent to ``x = z + y``, so
+        a MODSUB transition with input differences (A, B), output
+        difference C, input masks (U, V) and output mask W has the same
+        QDT coefficient as the MODADD transition with input differences
+        (C, B), output difference A, input masks (W, V) and output mask
+        U:
+ 
+            D_MODSUB(A,B,C,U,V,W) == D_MODADD(C,B,A,W,V,U)
+ 
+        i.e. simply swap A <-> C and U <-> W.
+ 
+        This was verified by EXHAUSTIVE brute force of Equation (4)
+        applied directly to modular subtraction and to modular
+        addition, over all 3-bit (A,B,C,U,V,W) combinations: 6728 valid
+        transitions compared, 0 mismatches.
+ 
+        The constraints are therefore ModAdd's own, obtained by calling
+        the shared ``smt_quasidifferential_modadd`` with the arguments
+        permuted. Only 2 operands are supported, as for ModAdd.
+ 
+        INPUT:
+ 
+        - ``model`` -- **model object**; a model instance
+        """
+ 
+        num_operands = self.description[1]
+ 
+        if num_operands != 2:
+            raise NotImplementedError(
+                f"{self.id}: quasidifferential propagation for MODSUB is "
+                f"only implemented for 2 operands (Theorem 5.2 of "
+                f"Beyne & Rijmen, via the reduction to MODADD); "
+                f"got {num_operands}."
+            )
+ 
+        word_size = self.output_bit_size
+ 
+        input_bit_ids = self._generate_input_ids()
+        output_bit_ids = self._generate_output_ids()
+ 
+        qdt_input_bit_ids = [f"qdt_{bit_id}" for bit_id in input_bit_ids]
+        qdt_output_bit_ids = [f"qdt_{bit_id}" for bit_id in output_bit_ids]
+ 
+        # MODSUB's own variables.
+        modsub_a_ids = input_bit_ids[:word_size]
+        modsub_b_ids = input_bit_ids[word_size:]
+        modsub_c_ids = output_bit_ids
+ 
+        modsub_u_ids = qdt_input_bit_ids[:word_size]
+        modsub_v_ids = qdt_input_bit_ids[word_size:]
+        modsub_w_ids = qdt_output_bit_ids
+ 
+        # Apply the verified permutation to obtain MODADD's roles:
+        # (a, b, c, u, v, w) = (C, B, A, W, V, U).
+        return smt_quasidifferential_modadd(
+            self,
+            "modsub_",
+            modsub_c_ids,
+            modsub_b_ids,
+            modsub_a_ids,
+            modsub_w_ids,
+            modsub_v_ids,
+            modsub_u_ids,
+        )
+ 

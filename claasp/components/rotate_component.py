@@ -49,6 +49,7 @@ class Rotate(Component):
         sage: print(component.description)
         ['ROTATE', -1]
     """
+
     def __init__(
         self,
         current_round_number,
@@ -158,7 +159,6 @@ class Rotate(Component):
         return cp_declarations, cp_constraints
 
     def cp_continuous_differential_propagation_constraints(self, model):
-
         output_id_link = self.id
         input_len = self.output_bit_size
         rot_val = self.description[1]
@@ -166,12 +166,8 @@ class Rotate(Component):
         cp_declarations = []
         cp_constraints = []
 
-        cp_declarations.append(
-            f"array[0..{input_len - 1}] of var -1.0..1.0: x1_{output_id_link};"
-        )
-        cp_declarations.append(
-            f"array[0..{input_len - 1}] of var -1.0..1.0: {output_id_link};"
-        )
+        cp_declarations.append(f"array[0..{input_len - 1}] of var -1.0..1.0: x1_{output_id_link};")
+        cp_declarations.append(f"array[0..{input_len - 1}] of var -1.0..1.0: {output_id_link};")
 
         if rot_val > 0:
             cp_constraints.append(
@@ -183,7 +179,7 @@ class Rotate(Component):
             )
 
         return cp_declarations, cp_constraints
-        
+
     def cp_deterministic_truncated_xor_differential_trail_constraints(self):
         return self.cp_constraints()
 
@@ -833,3 +829,76 @@ class Rotate(Component):
             constraints.append(smt_utils.smt_assert(equation))
 
         return input_bit_ids + output_bit_ids, constraints
+
+    def smt_xor_quasidifferential_propagation_constraints(
+        self,
+        model,
+    ):
+        """
+        Return SMT constraints for ROTATE quasidifferential propagation.
+
+        A bit rotation is a permutation matrix, hence orthogonal and
+        self-dual (P^{-1} = P^T): per Beyne & Rijmen, Theorem 3.2 (5)
+        and Section 4.3, mask and difference propagate through the
+        SAME rotation. This mirrors
+        Permutation.smt_xor_quasidifferential_propagation_constraints,
+        and is exactly what rectangle.py's own permute_bits() does
+        (applying the same bit permutation to both differences and
+        masks) for RECTANGLE's row rotations.
+
+        INPUT:
+
+        - ``model`` -- **model object**; a model instance
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.single_component_ciphers.rotate_cipher import RotateCipher
+            sage: from claasp.cipher_modules.models.smt.smt_models.smt_xor_quasidifferential_model import SmtXorQuasidifferentialModel
+            sage: cipher = RotateCipher(bit_size=2, parameter=1)
+            sage: rotate_component = cipher.component_from_id('rot_0_0')
+            sage: smt = SmtXorQuasidifferentialModel(cipher)
+            sage: variables, constraints = rotate_component.smt_xor_quasidifferential_propagation_constraints(smt)
+            sage: variables
+            ['rot_0_0_0', 'rot_0_0_1', 'qdt_rot_0_0_0', 'qdt_rot_0_0_1']
+            sage: constraints
+            ['(assert (= rot_0_0_0 plaintext_1))',
+             '(assert (= rot_0_0_1 plaintext_0))',
+             '(assert (= qdt_rot_0_0_0 qdt_plaintext_1))',
+             '(assert (= qdt_rot_0_0_1 qdt_plaintext_0))']
+        """
+
+        output_bit_ids, diff_constraints = self.smt_xor_differential_propagation_constraints(model)
+
+        input_bit_ids = self._generate_input_ids()
+
+        qdt_input_bit_ids = [f"qdt_{bit_id}" for bit_id in input_bit_ids]
+
+        qdt_output_bit_ids = [f"qdt_{bit_id}" for bit_id in output_bit_ids]
+
+        rotation = self.description[1]
+
+        qdt_input_bit_ids_rotated = qdt_input_bit_ids[-rotation:] + qdt_input_bit_ids[:-rotation]
+
+        mask_constraints = []
+
+        for output_bit_id, input_bit_id_rotated in zip(
+            qdt_output_bit_ids,
+            qdt_input_bit_ids_rotated,
+        ):
+            equation = smt_utils.smt_equivalent(
+                [
+                    output_bit_id,
+                    input_bit_id_rotated,
+                ]
+            )
+
+            mask_constraints.append(smt_utils.smt_assert(equation))
+
+        variables = output_bit_ids + qdt_output_bit_ids
+
+        constraints = diff_constraints + mask_constraints
+
+        return (
+            variables,
+            constraints,
+        )

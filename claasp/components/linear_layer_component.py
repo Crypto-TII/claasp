@@ -1151,3 +1151,85 @@ class LinearLayer(Component):
         dummy_bit_ids = [dummy_id for output_dummy_ids in outputs_dummy_ids for dummy_id in output_dummy_ids]
 
         return input_bit_ids + dummy_bit_ids + output_bit_ids, constraints
+
+    def smt_xor_quasidifferential_propagation_constraints(
+        self,
+        model,
+    ):
+        """
+        Return SMT constraints for LINEAR LAYER quasidifferential propagation.
+
+        Per Beyne & Rijmen, Theorem 3.2 (5): for a linear map L,
+
+            D^L_(v,b),(u,a) = delta_u(L^T(v)) * delta_b(L(a))
+
+        i.e. difference and mask propagation are two INDEPENDENT
+        constraint systems for a linear (non-sbox) component:
+
+        - b = L(a): identical to the ordinary XOR-differential model
+          for this component (``smt_xor_differential_propagation_constraints``);
+        - u = L^T(v): the same relation used by the existing, tested
+          ordinary linear-mask-propagation model
+          (``smt_xor_linear_mask_propagation_constraints``, via
+          ``sat_generate_ids_for_linear_layer``, which inverts
+          ``self.description``). We reuse that exact matrix logic
+          here rather than re-deriving the transpose direction, and
+          only rename the produced variables to the ``qdt_`` naming
+          convention used by the quasidifferential model (direct
+          reference to the upstream component's bit id, instead of
+          the ``_i``/``_o`` suffix convention used by the ordinary
+          linear model).
+        """
+
+        output_bit_ids, diff_constraints = LinearLayer.smt_constraints(self)
+
+        # Mask propagation: u = L^T(v).
+        #
+        # Same construction as sat_generate_ids_for_linear_layer /
+        # smt_xor_linear_mask_propagation_constraints (matrix
+        # inversion over GF(2)), but seeded directly with the
+        # qdt_ naming convention instead of the "_i"/"_o" one.
+
+        input_bit_ids = self._generate_input_ids()
+
+        qdt_input_bit_ids = [f"qdt_{bit_id}" for bit_id in input_bit_ids]
+
+        qdt_output_bit_ids = [f"qdt_{bit_id}" for bit_id in output_bit_ids]
+
+        inverse_matrix = Matrix(FiniteField(2), self.description).inverse()
+
+        outputs_dummy_ids = [[] for _ in range(self.output_bit_size)]
+        inputs_equivalent_ids = [[] for _ in range(self.input_bit_size)]
+
+        for i, qdt_input_bit_id in enumerate(qdt_input_bit_ids):
+            inputs_equivalent_ids[i] = [qdt_input_bit_id]
+            for j, qdt_output_bit_id in enumerate(qdt_output_bit_ids):
+                if inverse_matrix[j][i]:
+                    variable = f"qdt_dummy_{i}_{qdt_output_bit_id}"
+                    inputs_equivalent_ids[i].append(variable)
+                    outputs_dummy_ids[j].append(variable)
+
+        mask_constraints = []
+
+        for input_equivalent_ids in inputs_equivalent_ids:
+            equivalence = smt_utils.smt_equivalent(input_equivalent_ids)
+            mask_constraints.append(smt_utils.smt_assert(equivalence))
+
+        for i, qdt_output_bit_id in enumerate(qdt_output_bit_ids):
+            if len(outputs_dummy_ids[i]) == 1:
+                operation = outputs_dummy_ids[i][0]
+            else:
+                operation = smt_utils.smt_xor(outputs_dummy_ids[i])
+            equation = smt_utils.smt_equivalent((qdt_output_bit_id, operation))
+            mask_constraints.append(smt_utils.smt_assert(equation))
+
+        dummy_bit_ids = [dummy_id for output_dummy_ids in outputs_dummy_ids for dummy_id in output_dummy_ids]
+
+        variables = output_bit_ids + qdt_output_bit_ids + dummy_bit_ids
+
+        constraints = diff_constraints + mask_constraints
+
+        return (
+            variables,
+            constraints,
+        )

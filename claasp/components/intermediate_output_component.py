@@ -74,6 +74,7 @@ class IntermediateOutput(CipherOutput):
         sage: print(component.description)
         ['round_output']
     """
+
     def __init__(
         self,
         current_round_number,
