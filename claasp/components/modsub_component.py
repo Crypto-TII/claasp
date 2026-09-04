@@ -19,7 +19,7 @@
 from claasp.cipher_modules.models.sat.utils import utils as sat_utils
 from claasp.cipher_modules.models.smt.utils import utils as smt_utils
 from claasp.components.modular_component import Modular
-
+from claasp.components.modadd_component import smt_quasidifferential_modadd
 
 def cp_twoterms(input_1, input_2, out, component_name, input_length, cp_constraints, cp_declarations):
     cp_declarations.append(f"array[0..{input_length - 1}] of var 0..1:pre_minus_{input_2};")
@@ -420,44 +420,35 @@ class ModSub(Modular):
     ):
         """
         Return SMT constraints for MODSUB quasidifferential propagation.
-
+ 
         Modular subtraction reduces EXACTLY to modular addition with
-        permuted roles: z = x - y is equivalent to x = z + y, so a
-        MODSUB transition with input differences (A, B), output
-        difference C, input masks (U, V) and output mask W has the
-        same QDT coefficient as the MODADD transition with input
-        differences (C, B), output difference A, input masks (W, V)
-        and output mask U:
-
+        permuted roles: ``z = x - y`` is equivalent to ``x = z + y``, so
+        a MODSUB transition with input differences (A, B), output
+        difference C, input masks (U, V) and output mask W has the same
+        QDT coefficient as the MODADD transition with input differences
+        (C, B), output difference A, input masks (W, V) and output mask
+        U:
+ 
             D_MODSUB(A,B,C,U,V,W) == D_MODADD(C,B,A,W,V,U)
-
+ 
         i.e. simply swap A <-> C and U <-> W.
-
+ 
         This was verified by EXHAUSTIVE brute force of Equation (4)
         applied directly to modular subtraction and to modular
-        addition, over all 3-bit (A,B,C,U,V,W) combinations: 6728
-        valid transitions compared, 0 mismatches (and 255416
-        combinations where both coefficients vanish).
-
-        The constraints below are therefore ModAdd's own (Theorem 5.2
-        of Beyne & Rijmen), with that permutation applied. Note that
-        the two symmetric quantities -- A xor B xor C and U xor V xor W
-        -- are unchanged by the swap, so only the primed variables
-        a', b', u', v' differ from ModAdd's.
-
-        Only 2 operands are supported, matching both Theorem 5.2 and
-        this class's own SAT/SMT methods (which likewise assume two
-        operands). This raises NotImplementedError rather than
-        guessing; build_xor_quasidifferential_trail_model catches that
-        and skips the component with a clear message.
-
+        addition, over all 3-bit (A,B,C,U,V,W) combinations: 6728 valid
+        transitions compared, 0 mismatches.
+ 
+        The constraints are therefore ModAdd's own, obtained by calling
+        the shared ``smt_quasidifferential_modadd`` with the arguments
+        permuted. Only 2 operands are supported, as for ModAdd.
+ 
         INPUT:
-
+ 
         - ``model`` -- **model object**; a model instance
         """
-
+ 
         num_operands = self.description[1]
-
+ 
         if num_operands != 2:
             raise NotImplementedError(
                 f"{self.id}: quasidifferential propagation for MODSUB is "
@@ -465,213 +456,34 @@ class ModSub(Modular):
                 f"Beyne & Rijmen, via the reduction to MODADD); "
                 f"got {num_operands}."
             )
-
+ 
         word_size = self.output_bit_size
-
+ 
         input_bit_ids = self._generate_input_ids()
         output_bit_ids = self._generate_output_ids()
-
+ 
         qdt_input_bit_ids = [f"qdt_{bit_id}" for bit_id in input_bit_ids]
         qdt_output_bit_ids = [f"qdt_{bit_id}" for bit_id in output_bit_ids]
-
+ 
         # MODSUB's own variables.
         modsub_a_ids = input_bit_ids[:word_size]
         modsub_b_ids = input_bit_ids[word_size:]
         modsub_c_ids = output_bit_ids
-
+ 
         modsub_u_ids = qdt_input_bit_ids[:word_size]
         modsub_v_ids = qdt_input_bit_ids[word_size:]
         modsub_w_ids = qdt_output_bit_ids
-
+ 
         # Apply the verified permutation to obtain MODADD's roles:
         # (a, b, c, u, v, w) = (C, B, A, W, V, U).
-        a_ids, b_ids, c_ids = modsub_c_ids, modsub_b_ids, modsub_a_ids
-        u_ids, v_ids, w_ids = modsub_w_ids, modsub_v_ids, modsub_u_ids
-
-        constraints = []
-        variables = list(output_bit_ids) + list(qdt_output_bit_ids)
-
-        def new_named_formula(name_prefix, index, formula):
-            variable_name = f"{name_prefix}_{self.id}_{index}"
-            equation = smt_utils.smt_equivalent([variable_name, formula])
-            constraints.append(smt_utils.smt_assert(equation))
-            variables.append(variable_name)
-            return variable_name
-
-        # a' = b xor c ; b' = a xor c ; c' = M+(a xor b xor c)
-
-        a_prime_ids = []
-        b_prime_ids = []
-        abc_xor_ids = []
-
-        for i in range(word_size):
-            a_prime_ids.append(
-                new_named_formula("modsub_aprime", i, smt_utils.smt_xor([b_ids[i], c_ids[i]]))
-            )
-            b_prime_ids.append(
-                new_named_formula("modsub_bprime", i, smt_utils.smt_xor([a_ids[i], c_ids[i]]))
-            )
-            abc_xor_ids.append(
-                new_named_formula(
-                    "modsub_abcxor",
-                    i,
-                    smt_utils.smt_xor([a_ids[i], b_ids[i], c_ids[i]]),
-                )
-            )
-
-        c_prime_ids = ["false"] * word_size
-
-        for q in range(1, word_size):
-            c_prime_ids[q] = new_named_formula(
-                "modsub_cprime",
-                q,
-                smt_utils.smt_xor([abc_xor_ids[q], abc_xor_ids[q - 1]]),
-            )
-
-        # u' = u xor w ; v' = v xor w ; w' = M^T(u xor v xor w)
-
-        u_prime_ids = []
-        v_prime_ids = []
-        uvw_xor_ids = []
-
-        for i in range(word_size):
-            u_prime_ids.append(
-                new_named_formula("modsub_uprime", i, smt_utils.smt_xor([u_ids[i], w_ids[i]]))
-            )
-            v_prime_ids.append(
-                new_named_formula("modsub_vprime", i, smt_utils.smt_xor([v_ids[i], w_ids[i]]))
-            )
-            uvw_xor_ids.append(
-                new_named_formula(
-                    "modsub_uvwxor",
-                    i,
-                    smt_utils.smt_xor([u_ids[i], v_ids[i], w_ids[i]]),
-                )
-            )
-
-        w_prime_ids = ["false"] * word_size
-        prefix_xor = "false"
-
-        for q in range(1, word_size):
-            prefix_xor = new_named_formula(
-                "modsub_wprime",
-                q,
-                smt_utils.smt_xor([prefix_xor, uvw_xor_ids[q - 1]]),
-            )
-            w_prime_ids[q] = prefix_xor
-
-        # DIFFERENTIAL VALIDITY (Lipmaa-Moriai).
-        #
-        # Theorem 5.2's own conditions constrain the MASK side assuming
-        # the differential (a, b) -> c is already valid: common.py can
-        # omit this check because there a, b, c are CONSTANTS taken
-        # from a known-good characteristic. Here they are variables, so
-        # the classic modular-addition differential validity must be
-        # asserted explicitly, otherwise the solver returns "trails"
-        # whose true correlation is zero.
-        #
-        #   eq(a<<1, b<<1, c<<1) & (a xor b xor c xor (b<<1)) == 0
-        #
-        # In claasp's MSB-first indexing (index 0 = MSB), (x<<1)_i is
-        # x_{i+1}, and 0 at the last index.
-
-        for i in range(word_size):
-
-            if i == word_size - 1:
-                # LSB: eq is trivially true (all shifted-in bits are 0),
-                # so the condition reduces to a xor b xor c == 0.
-                constraints.append(
-                    smt_utils.smt_assert(
-                        smt_utils.smt_not(
-                            smt_utils.smt_xor([a_ids[i], b_ids[i], c_ids[i]])
-                        )
-                    )
-                )
-            else:
-                bits_equal = smt_utils.smt_and(
-                    [
-                        smt_utils.smt_equivalent([a_ids[i + 1], b_ids[i + 1]]),
-                        smt_utils.smt_equivalent([a_ids[i + 1], c_ids[i + 1]]),
-                    ]
-                )
-                must_vanish = smt_utils.smt_xor(
-                    [a_ids[i], b_ids[i], c_ids[i], b_ids[i + 1]]
-                )
-                constraints.append(
-                    smt_utils.smt_assert(
-                        smt_utils.smt_implies(bits_equal, smt_utils.smt_not(must_vanish))
-                    )
-                )
-
-        # Validity + local weight, per bit (identical to ModAdd's).
-
-        weight_bit_ids = []
-
-        for i in range(word_size):
-
-            a_p, b_p, c_p = a_prime_ids[i], b_prime_ids[i], c_prime_ids[i]
-            u_p, v_p, w_p = u_prime_ids[i], v_prime_ids[i], w_prime_ids[i]
-
-            validity_1 = smt_utils.smt_implies(
-                smt_utils.smt_or([u_p, v_p]),
-                smt_utils.smt_or([a_p, b_p, w_p]),
-            )
-            constraints.append(smt_utils.smt_assert(validity_1))
-
-            validity_2 = smt_utils.smt_equivalent(
-                [
-                    smt_utils.smt_xor(
-                        [
-                            smt_utils.smt_and([a_p, u_p]),
-                            smt_utils.smt_and([b_p, v_p]),
-                        ]
-                    ),
-                    smt_utils.smt_and([c_p, w_p]),
-                ]
-            )
-            constraints.append(smt_utils.smt_assert(validity_2))
-
-            weight_bit_id = f"hw_qdt_{self.id}_{i}"
-            weight_bit_ids.append(weight_bit_id)
-
-            if i == 0:
-                # Terza condizione del Teorema 5.2, sul bit piu'
-                # significativo.
-                top_bit_validity = smt_utils.smt_or(
-                    [
-                        smt_utils.smt_and(
-                            [smt_utils.smt_not(a_p), smt_utils.smt_not(b_p)]
-                        ),
-                        smt_utils.smt_equivalent(
-                            [
-                                smt_utils.smt_and([a_p, u_p]),
-                                smt_utils.smt_xor([u_p, v_p]),
-                            ]
-                        ),
-                    ]
-                )
-                constraints.append(smt_utils.smt_assert(top_bit_validity))
-
-               
-                weight_definition = smt_utils.smt_equivalent(
-                    [
-                        weight_bit_id,
-                        "false",
-                    ]
-                )
-            else:
-                weight_definition = smt_utils.smt_equivalent(
-                    [
-                        weight_bit_id,
-                        smt_utils.smt_or([a_p, b_p, w_p]),
-                    ]
-                )
-
-            constraints.append(smt_utils.smt_assert(weight_definition))
-
-        variables.extend(weight_bit_ids)
-
-        return (
-            variables,
-            constraints,
+        return smt_quasidifferential_modadd(
+            self,
+            "modsub_",
+            modsub_c_ids,
+            modsub_b_ids,
+            modsub_a_ids,
+            modsub_w_ids,
+            modsub_v_ids,
+            modsub_u_ids,
         )
+ 
