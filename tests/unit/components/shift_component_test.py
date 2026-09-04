@@ -9,7 +9,9 @@ from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_t
 )
 from claasp.ciphers.single_component_ciphers.shift_cipher import ShiftCipher
 from claasp.components.shift_component import Shift
-
+from claasp.cipher_modules.models.smt.smt_models.smt_xor_quasidifferential_model import (
+    SmtXorQuasidifferentialModel,
+)
 
 def make_shift_component(bit_size=32, parameter=4):
     return Shift(0, 0, ['plaintext'], [list(range(bit_size))], bit_size, parameter)
@@ -216,3 +218,15 @@ def test_milp_wordwise_deterministic_truncated_xor_differential_constraints():
     assert str(variables[0]) == "('x_class[in0_word_0_class]', x_0)"
     assert "('x[shift_0_18_31]'" in str(variables[-1])
     assert str(constraints[-1]).endswith('== 0')
+
+def test_smt_xor_quasidifferential_propagation_constraints():
+    cipher = ShiftCipher(bit_size=2, parameter=1)
+    model = SmtXorQuasidifferentialModel(cipher)
+    shift_component = cipher.component_from(0, 0)
+    variables, constraints = shift_component.smt_xor_quasidifferential_propagation_constraints(model)
+
+    assert variables == ['shift_0_0_0', 'shift_0_0_1', 'qdt_shift_0_0_0', 'qdt_shift_0_0_1']
+
+    assert len(constraints) == 4
+    assert constraints[0] == '(assert (not shift_0_0_0))'
+    assert constraints[-1] == '(assert (not qdt_plaintext_1))'

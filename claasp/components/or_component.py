@@ -340,93 +340,94 @@ class Or(MultiInputNonlinearLogicalOperator):
         model,
     ):
         """
-        Return SMT constraints for OR quasidifferential propagation.
-
-        OR is AND conjugated by complementation
-        (x1 | x2 = ~(~x1 & ~x2)). Since complementation leaves XOR
-        differences unchanged, OR's validity conditions and the
-        ABSOLUTE VALUES of its QDT coefficients -- hence its WEIGHT --
-        are IDENTICAL to AND's (Theorem 5.1). Only the SIGN differs,
-        by the translation factors of Theorem 3.2 (4): per bit, a
-        factor (-1)^(u + v + w).
-
+        Return SMT constraints for quasidifferential propagation of a
+        bitwise nonlinear logical operator (AND, OR).
+ 
+        AND is covered by Theorem 5.1 of Beyne & Rijmen. OR is AND
+        conjugated by complementation (``x1 | x2 = ~(~x1 & ~x2)``), and
+        since complementation leaves XOR differences unchanged, OR's
+        validity conditions and the ABSOLUTE VALUES of its QDT
+        coefficients -- hence its WEIGHT -- are IDENTICAL to AND's.
+        The two operations therefore share these constraints verbatim.
+ 
+        Only the SIGN differs, by the translation factors of Theorem
+        3.2 (4): per bit a factor ``(-1)^(u + v + w)`` for OR. The sign
+        is not encoded here -- it never affects the weight-based search
+        -- but applied in post-processing by
+        ``SmtXorQuasidifferentialModel.compute_trail_sign``, which
+        dispatches on the operation.
+ 
         This was established by exhaustive brute force of Equation (4)
         on the 1-bit case (all 64 combinations: same validity, same
-        absolute value, sign ratio exactly (-1)^(u+v+w)), and
+        absolute value, sign ratio exactly ``(-1)^(u+v+w)``), and
         cross-checked at word level over 200000 random 4-bit vectors
         (8403 valid transitions, 0 mismatches).
-
-        The constraints below are therefore the same as
-        And.smt_xor_quasidifferential_propagation_constraints; the
-        sign correction is applied in post-processing by
-        SmtXorQuasidifferentialModel.compute_trail_sign (via
-        _or_local_sign / _or_sign_word), since the sign never affects
-        the weight-based search.
-
-        Only 2-input OR is supported, matching And's own restriction:
-        Theorem 5.1 is stated for a single pairwise operation, so an
-        n>2 version would need its own derivation. This raises
-        NotImplementedError rather than guessing;
-        build_xor_quasidifferential_trail_model catches that and skips
-        the component with a clear message.
-
-        Per bit i (a_i, b_i -> c_i; masks u_i, v_i on the inputs and
-        w_i on the output):
-
+ 
+        Only 2 operands are supported: Theorem 5.1 is stated for a
+        single pairwise operation, so an n > 2 version would need its
+        own derivation. This raises ``NotImplementedError`` rather than
+        guessing; ``build_xor_quasidifferential_trail_model`` catches
+        that and skips the component with a clear message.
+ 
+        Per bit i (``a_i``, ``b_i`` -> ``c_i``; masks ``u_i``, ``v_i``
+        on the inputs and ``w_i`` on the output):
+ 
             c_i => (a_i or b_i)
             (u_i or v_i) => (a_i or b_i or w_i)
             (a_i and u_i) xor (b_i and v_i) == (c_i and w_i)
-
-        with local weight (a_i or b_i or w_i).
-
+ 
+        with local weight ``(a_i or b_i or w_i)``: Theorem 5.1's
+        ``wt(a|b) + wt(w & ~a & ~b)`` reduces to this single per-bit OR,
+        the two terms being mutually exclusive at each bit position.
+ 
         INPUT:
-
+ 
         - ``model`` -- **model object**; a model instance
         """
-
+ 
         num_operands = self.description[1]
-
+ 
         if num_operands != 2:
             raise NotImplementedError(
-                f"{self.id}: quasidifferential propagation for OR is "
-                f"only implemented for 2 operands (same restriction as "
-                f"AND, Theorem 5.1 of Beyne & Rijmen); got {num_operands}."
+                f"{self.id}: quasidifferential propagation for "
+                f"{self.description[0]} is only implemented for 2 operands "
+                f"(Theorem 5.1 of Beyne & Rijmen); got {num_operands}."
             )
-
+ 
         word_size = self.output_bit_size
-
+ 
         input_bit_ids = self._generate_input_ids()
         output_bit_ids = self._generate_output_ids()
-
+ 
         qdt_input_bit_ids = [f"qdt_{bit_id}" for bit_id in input_bit_ids]
         qdt_output_bit_ids = [f"qdt_{bit_id}" for bit_id in output_bit_ids]
-
+ 
         a_ids = input_bit_ids[:word_size]
         b_ids = input_bit_ids[word_size:]
-
+        c_ids = output_bit_ids
+ 
         u_ids = qdt_input_bit_ids[:word_size]
         v_ids = qdt_input_bit_ids[word_size:]
-
-        c_ids = output_bit_ids
         w_ids = qdt_output_bit_ids
-
+ 
         weight_bit_ids = [f"hw_qdt_{self.id}_{i}" for i in range(word_size)]
-
+ 
         constraints = []
-
+ 
         for i in range(word_size):
+ 
             a, b, c = a_ids[i], b_ids[i], c_ids[i]
             u, v, w = u_ids[i], v_ids[i], w_ids[i]
-
+ 
             validity_1 = smt_utils.smt_implies(c, smt_utils.smt_or([a, b]))
             constraints.append(smt_utils.smt_assert(validity_1))
-
+ 
             validity_2 = smt_utils.smt_implies(
                 smt_utils.smt_or([u, v]),
                 smt_utils.smt_or([a, b, w]),
             )
             constraints.append(smt_utils.smt_assert(validity_2))
-
+ 
             validity_3 = smt_utils.smt_equivalent(
                 [
                     smt_utils.smt_xor(
@@ -439,7 +440,7 @@ class Or(MultiInputNonlinearLogicalOperator):
                 ]
             )
             constraints.append(smt_utils.smt_assert(validity_3))
-
+ 
             weight_definition = smt_utils.smt_equivalent(
                 [
                     weight_bit_ids[i],
@@ -447,9 +448,9 @@ class Or(MultiInputNonlinearLogicalOperator):
                 ]
             )
             constraints.append(smt_utils.smt_assert(weight_definition))
-
+ 
         variables = output_bit_ids + qdt_output_bit_ids + weight_bit_ids
-
+ 
         return (
             variables,
             constraints,
