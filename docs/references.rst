@@ -727,3 +727,9 @@
         *RECTANGLE: a bit-slice lightweight block cipher suitable for multiple
         platforms* : Science China Information Sciences, 58(12), 1-15 (2015) :
         https://eprint.iacr.org/2014/084.pdf
+
+.. [ZDY+2019]
+        Zhang W., Ding T., Yang B., Bao Z., Xiang Z., Ji F., Zhao X. :
+        *KNOT: Algorithm Specifications and Supporting Document* : Submission to
+        the NIST Lightweight Cryptography project (2019) :
+        https://csrc.nist.gov/projects/lightweight-cryptography/round-1-candidates
