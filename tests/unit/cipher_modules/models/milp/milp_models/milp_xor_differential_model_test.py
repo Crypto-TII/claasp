@@ -101,3 +101,12 @@ def test_find_one_xor_differential_trail_with_fixed_weight():
     )
     trail = milp.find_one_xor_differential_trail_with_fixed_weight(5, fixed_values=[key, round_0_output, cipher_output])
     assert trail["total_weight"] == 5.0
+
+
+def test_find_one_xor_differential_trail_with_weight_at_most():
+    speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
+    trail = MilpXorDifferentialModel(speck).find_one_xor_differential_trail_with_weight_at_most(5)
+    assert 0.0 <= trail["total_weight"] <= 5.0
+
+    trail = MilpXorDifferentialModel(speck).find_one_xor_differential_trail_with_weight_at_most(5, 3)
+    assert 3.0 <= trail["total_weight"] <= 5.0

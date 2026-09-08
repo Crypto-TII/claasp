@@ -91,6 +91,15 @@
 
         **B**
 
+.. [BBBGPUV2020]
+        Beierle C., Biryukov A., Cardoso dos Santos L., Großschädl J.,
+        Perrin L., Udovenko A., Velichkov V., Wang Q. : *Alzette: A 64-bit
+        ARX-box (feat. CRAX and TRAX)* : In Advances in Cryptology -- CRYPTO
+        2020, LNCS 12172, pp. 419-448, Springer 2020 :
+        https://doi.org/10.1007/978-3-030-56877-1_15 (extended version:
+        Cryptology ePrint Archive, Paper 2019/1378,
+        https://eprint.iacr.org/2019/1378)
+
 .. [BC2003]
         Biryukov A., Canniere C. D. : *Block Ciphers and Systems of Quadratic
         Equations* : In Proceedings of Fast Software Encryption 2003, LNCS
@@ -267,6 +276,10 @@
         tool for ChaCha, Salsa and Forro (MIT licensed).
         https://github.com/murcoutinho/cryptDances
 
+.. [CryptoLUXSPARX]
+        CryptoLUX : *SPARX Reference C Implementation* :
+        https://github.com/cryptolu/SPARX/blob/master/ref-c/sparx.c
+
 .. [CZZ2023]
         Cao, W., Zhang, W., Zhou, C. : *New Automatic Search Tool for Searching
         for Impossible Differentials Using Undisturbed Bits* In: Deng, Y.,
@@ -284,6 +297,11 @@
         D'Anvers, J.-P., Karmakar, A., Roy S.S., Vercauteren F.: *Saber:
         Module-LWR Based Key Exchange, CPA-Secure Encryption and CCA-Secure
         KEM* : AFRICACRYPT 2018: 282-305.
+
+.. [DPUVGB2016]
+        Dinu D., Perrin L., Udovenko A., Velichkov V., Großschädl J.,
+        Biryukov A. : *Design Strategies for ARX with Provable Bounds:
+        Sparx and LAX* : ASIACRYPT 2016.
 
 .. [Din2021Cry]
         Dinur I. : *Cryptanalytic Applications of the Polynomial Method for
