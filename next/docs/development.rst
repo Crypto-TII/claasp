@@ -71,3 +71,14 @@ When Singular is on ``PATH``, the normal unit suite executes the generated
 program and verifies that Singular accepts it. Otherwise that one integration
 test is skipped. CI has a dedicated job that installs Singular and always runs
 the integration.
+
+Benchmarking batch evaluation
+-----------------------------
+
+Compare the scalar-loop reference with the one-traversal backend using:
+
+.. code-block:: console
+
+   PYTHONPATH=src python tools/benchmark_batch.py --batch-size 32
+
+Timings are deliberately not asserted in CI because shared runners are noisy.

@@ -188,7 +188,7 @@ path is correct and stable.
 - [x] Pinned BN254/width-3 Poseidon parameters and reference vector.
 - [x] Sage-free Sphinx site and doctest CI.
 - [x] Correctness-first batch evaluation contract.
-- [ ] Optimized batch evaluation.
+- [x] Dependency-free, one-graph-traversal batch evaluation and benchmark.
 - [x] Initial sparse prime-field polynomial representation and graph lowering.
 - [x] Singular polynomial exporter with executable integration test.
 - [ ] Further polynomial exporters and advanced lowering policies.
@@ -206,7 +206,7 @@ path is correct and stable.
 | Sparse prime-field polynomial IR | Achieved | `99e1f8f0` |
 | Field validation and Singular export | Achieved | `da245951` |
 | Pinned Poseidon parameter catalogue | Achieved | Bundled BN254/width-3 data and vector |
-| Optimized batch backend | Planned | Benchmark representations first |
+| Dependency-free transposed batch backend | Achieved | Differential tests and benchmark harness |
 | Additional polynomial exporters | Planned | Select msolve interchange format |
 | Traditional cipher validation | Planned | Speck, then AES/ToyAES |
 | Legacy analysis migration | Planned | Begins after graph API stabilizes |

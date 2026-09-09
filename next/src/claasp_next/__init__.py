@@ -2,7 +2,13 @@
 
 from claasp_next.core import Cipher, Component, Port, Round, Selection, ValueType
 from claasp_next.domains import BinaryExtensionField, Bit, PrimeField
-from claasp_next.evaluators import BatchEvaluationResult, BatchEvaluator, EvaluationResult, ScalarEvaluator
+from claasp_next.evaluators import (
+    BatchEvaluationResult,
+    BatchEvaluator,
+    EvaluationResult,
+    ScalarEvaluator,
+    TransposedBatchEvaluator,
+)
 
 __all__ = [
     "BinaryExtensionField",
@@ -17,5 +23,6 @@ __all__ = [
     "Round",
     "ScalarEvaluator",
     "Selection",
+    "TransposedBatchEvaluator",
     "ValueType",
 ]

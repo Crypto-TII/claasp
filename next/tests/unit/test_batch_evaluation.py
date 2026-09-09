@@ -1,6 +1,13 @@
 import pytest
 
-from claasp_next import BatchEvaluator, Bit, Cipher, ScalarEvaluator, ValueType
+from claasp_next import (
+    BatchEvaluator,
+    Bit,
+    Cipher,
+    ScalarEvaluator,
+    TransposedBatchEvaluator,
+    ValueType,
+)
 from claasp_next.ciphers import MiMCPermutation, PoseidonPermutation
 
 
@@ -58,3 +65,26 @@ def test_empty_batch_is_supported():
 
     assert result.items == ()
     assert result.outputs == ()
+
+
+@pytest.mark.parametrize("evaluator", [BatchEvaluator(), TransposedBatchEvaluator()])
+def test_batch_backends_have_identical_poseidon_values(evaluator):
+    cipher = PoseidonPermutation(
+        modulus=17,
+        exponent=3,
+        full_rounds=2,
+        partial_rounds=1,
+        round_constants=((1, 2), (3, 4), (5, 6)),
+        linear_layer=((1, 1), (1, 2)),
+    )
+    states = ((0, 1), (2, 3), (16, 16))
+    reference = BatchEvaluator().evaluate(cipher, {"state": states})
+    result = evaluator.evaluate(cipher, {"state": states})
+
+    assert result.outputs == reference.outputs
+    assert result.values_of("linear_map_2_4") == reference.values_of("linear_map_2_4")
+
+
+def test_transposed_backend_supports_empty_batches():
+    cipher = MiMCPermutation(17, 3, (1,))
+    assert TransposedBatchEvaluator().evaluate(cipher, {"state": ()}).items == ()
