@@ -3,7 +3,7 @@
 from collections.abc import Mapping
 
 from claasp_next.core.component import Component
-from claasp_next.core.port import Port
+from claasp_next.core.port import Port, Selection
 from claasp_next.core.round import Round
 from claasp_next.core.value_type import ValueType
 
@@ -36,6 +36,7 @@ class Cipher:
         self._ports = dict(ports)
         self._rounds: list[Round] = []
         self._components: dict[str, Component] = {}
+        self._output: Selection | None = None
 
     @property
     def family_name(self) -> str:
@@ -52,6 +53,10 @@ class Cipher:
     @property
     def components(self) -> tuple[Component, ...]:
         return tuple(self._components.values())
+
+    @property
+    def output(self) -> Selection | None:
+        return self._output
 
     def input(self, name: str) -> Port:
         try:
@@ -99,3 +104,16 @@ class Cipher:
         self._components[component.component_id] = component
         self._ports[component.component_id] = component.output
         return component.output
+
+    def set_output(self, output: Selection) -> None:
+        """Declare the ordered logical units returned by this cipher."""
+
+        if not isinstance(output, Selection):
+            raise TypeError("output must be a Selection")
+        try:
+            actual_port = self._ports[output.source.owner_id]
+        except KeyError as error:
+            raise ValueError("output source is not available in this graph") from error
+        if output.source != actual_port:
+            raise ValueError("output source does not match its graph port type")
+        self._output = output

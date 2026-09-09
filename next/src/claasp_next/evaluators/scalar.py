@@ -3,6 +3,7 @@
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 
+from claasp_next.components.algebraic import Add, LinearMap, Multiply, Power
 from claasp_next.components.structural import Concatenate, Constant, Identity, Permutation
 from claasp_next.core.cipher import Cipher
 from claasp_next.core.component import Component
@@ -16,6 +17,7 @@ class EvaluationResult:
     """Values produced for cipher inputs and component outputs."""
 
     values: Mapping[str, RuntimeValue]
+    output: RuntimeValue | None
 
     def value_of(self, source_id: str) -> RuntimeValue:
         try:
@@ -33,6 +35,10 @@ class ScalarEvaluator:
             Identity: self._evaluate_identity,
             Permutation: self._evaluate_permutation,
             Concatenate: self._evaluate_concatenate,
+            Add: self._evaluate_add,
+            Multiply: self._evaluate_multiply,
+            Power: self._evaluate_power,
+            LinearMap: self._evaluate_linear_map,
         }
 
     def register(self, component_type: type[Component], handler: Handler) -> None:
@@ -80,7 +86,13 @@ class ScalarEvaluator:
             )
             values[component.component_id] = output
 
-        return EvaluationResult(dict(values))
+        output = None
+        if cipher.output is not None:
+            output = tuple(
+                values[cipher.output.source.owner_id][position]
+                for position in cipher.output.positions
+            )
+        return EvaluationResult(dict(values), output)
 
     @staticmethod
     def _validate_value(source_id: str, value: RuntimeValue, size: int, domain: object) -> None:
@@ -104,3 +116,83 @@ class ScalarEvaluator:
     @staticmethod
     def _evaluate_concatenate(component: Concatenate, inputs: tuple[RuntimeValue, ...]) -> RuntimeValue:
         return tuple(scalar for component_input in inputs for scalar in component_input)
+
+    @staticmethod
+    def _add_scalar(domain: object, left: int, right: int) -> int:
+        from claasp_next.domains import BinaryExtensionField, Bit, PrimeField
+
+        if isinstance(domain, (Bit, BinaryExtensionField)):
+            return left ^ right
+        if isinstance(domain, PrimeField):
+            return (left + right) % domain.modulus
+        raise NotImplementedError(f"addition is not implemented for {type(domain).__name__}")
+
+    @staticmethod
+    def _multiply_scalar(domain: object, left: int, right: int) -> int:
+        from claasp_next.domains import BinaryExtensionField, Bit, PrimeField
+
+        if isinstance(domain, Bit):
+            return left & right
+        if isinstance(domain, PrimeField):
+            return (left * right) % domain.modulus
+        if isinstance(domain, BinaryExtensionField):
+            result = 0
+            multiplicand = left
+            multiplier = right
+            reduction = domain.modulus ^ (1 << domain.degree)
+            for _ in range(domain.degree):
+                if multiplier & 1:
+                    result ^= multiplicand
+                multiplier >>= 1
+                carry = multiplicand & (1 << (domain.degree - 1))
+                multiplicand = (multiplicand << 1) & ((1 << domain.degree) - 1)
+                if carry:
+                    multiplicand ^= reduction
+            return result
+        raise NotImplementedError(f"multiplication is not implemented for {type(domain).__name__}")
+
+    @classmethod
+    def _power_scalar(cls, domain: object, value: int, exponent: int) -> int:
+        result = 1
+        base = value
+        remaining = exponent
+        while remaining:
+            if remaining & 1:
+                result = cls._multiply_scalar(domain, result, base)
+            base = cls._multiply_scalar(domain, base, base)
+            remaining >>= 1
+        return result
+
+    @classmethod
+    def _evaluate_add(cls, component: Add, inputs: tuple[RuntimeValue, ...]) -> RuntimeValue:
+        domain = component.output_type.domain
+        output = list(inputs[0])
+        for operand in inputs[1:]:
+            output = [cls._add_scalar(domain, left, right) for left, right in zip(output, operand)]
+        return tuple(output)
+
+    @classmethod
+    def _evaluate_multiply(cls, component: Multiply, inputs: tuple[RuntimeValue, ...]) -> RuntimeValue:
+        domain = component.output_type.domain
+        output = list(inputs[0])
+        for operand in inputs[1:]:
+            output = [cls._multiply_scalar(domain, left, right) for left, right in zip(output, operand)]
+        return tuple(output)
+
+    @classmethod
+    def _evaluate_power(cls, component: Power, inputs: tuple[RuntimeValue, ...]) -> RuntimeValue:
+        domain = component.output_type.domain
+        return tuple(cls._power_scalar(domain, value, component.exponent) for value in inputs[0])
+
+    @classmethod
+    def _evaluate_linear_map(cls, component: LinearMap, inputs: tuple[RuntimeValue, ...]) -> RuntimeValue:
+        domain = component.inputs[0].value_type.domain
+        vector = inputs[0]
+        output = []
+        for row in component.matrix:
+            products = [cls._multiply_scalar(domain, coefficient, value) for coefficient, value in zip(row, vector)]
+            accumulator = products[0]
+            for product in products[1:]:
+                accumulator = cls._add_scalar(domain, accumulator, product)
+            output.append(accumulator)
+        return tuple(output)

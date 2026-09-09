@@ -160,3 +160,16 @@ PrimeField
 
 Polynomial representations and optimized evaluation follow only after this
 path is correct and stable.
+
+## Current implementation status
+
+- [x] Parallel Sage-free distribution and independent CI.
+- [x] Initial `Bit`, `PrimeField`, `BinaryExtensionField`, and `ValueType`.
+- [x] Typed ports, logical-unit selections, rounds, and acyclic graph checks.
+- [x] Domain-neutral constant, identity, concatenation, and permutation.
+- [x] Pure-Python scalar evaluator with explicit component dispatch.
+- [x] Addition, multiplication, power maps, and linear maps.
+- [x] Minimal MiMC vertical slice.
+- [ ] Poseidon vertical slice and externally sourced known-answer parameters.
+- [ ] Batch evaluation.
+- [ ] Polynomial intermediate representation.

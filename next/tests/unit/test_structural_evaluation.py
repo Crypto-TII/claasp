@@ -21,6 +21,7 @@ def test_same_permutation_operates_on_different_domains(domain, values):
     result = ScalarEvaluator().evaluate(cipher, {"state": values})
 
     assert result.value_of("permutation_0_0") == (values[2], values[0], values[1])
+    assert result.output is None
 
 
 def test_selection_identity_and_concatenation_use_logical_units():

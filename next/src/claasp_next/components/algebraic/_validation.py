@@ -1,0 +1,15 @@
+"""Shared validation for homogeneous algebraic components."""
+
+from claasp_next.core.port import Selection
+from claasp_next.core.value_type import ValueType
+
+
+def require_homogeneous_inputs(inputs: tuple[Selection, ...], operation: str) -> ValueType:
+    if not inputs:
+        raise ValueError(f"{operation} requires at least one input")
+    if any(not isinstance(item, Selection) for item in inputs):
+        raise TypeError(f"every {operation} input must be a Selection")
+    value_type = inputs[0].value_type
+    if any(item.value_type != value_type for item in inputs[1:]):
+        raise ValueError(f"{operation} inputs must have identical value types")
+    return value_type
