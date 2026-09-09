@@ -1,0 +1,54 @@
+Core concepts
+=============
+
+Domains and encodings
+---------------------
+
+A domain defines the mathematical meaning of a scalar. A Python integer is
+only its runtime representation. For example, ``0x57`` can represent an
+unsigned byte, a bit vector, or an element of :math:`GF(2^8)`; those values do
+not have the same multiplication operation.
+
+.. doctest::
+
+   >>> from claasp_next import BinaryExtensionField, PrimeField
+   >>> aes_field = BinaryExtensionField(8, 0x11B)
+   >>> aes_field.encoded_bit_size
+   8
+   >>> PrimeField(257).contains(256)
+   True
+   >>> PrimeField(257).contains(257)
+   False
+
+Logical-unit selections
+-----------------------
+
+Graph connections address domain elements rather than implicit bits. A
+selection preserves its source domain and obtains a new one-dimensional
+shape.
+
+.. doctest::
+
+   >>> from claasp_next import Port, ValueType
+   >>> state = Port("state", ValueType(PrimeField(257), (4,)))
+   >>> selected = state.select(3, 1)
+   >>> selected.positions
+   (3, 1)
+   >>> selected.value_type.unit_count
+   2
+
+Components and backends
+-----------------------
+
+Components are immutable operation descriptions. They do not contain methods
+for every evaluator or solver. An evaluator or analysis backend explicitly
+registers the component types it supports. Unsupported operations fail rather
+than being silently decomposed into bits.
+
+Parameter responsibility
+------------------------
+
+Cipher classes validate the structural consistency of supplied parameters.
+They do not imply that arbitrary constants, matrices, or round counts are
+cryptographically secure. Verified parameter catalogues and their provenance
+are separate from the generic construction classes.

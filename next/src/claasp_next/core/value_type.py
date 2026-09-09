@@ -9,7 +9,19 @@ from claasp_next.domains.base import Domain
 
 @dataclass(frozen=True, slots=True)
 class ValueType:
-    """A homogeneous shape over one scalar domain."""
+    """A homogeneous shape over one scalar domain.
+
+    The logical size is deliberately distinct from its binary encoding size.
+
+    EXAMPLES::
+
+        >>> from claasp_next import PrimeField, ValueType
+        >>> state_type = ValueType(PrimeField(17), (3,))
+        >>> state_type.unit_count
+        3
+        >>> state_type.encoded_bit_size
+        15
+    """
 
     domain: Domain
     shape: tuple[int, ...]

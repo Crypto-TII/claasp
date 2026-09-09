@@ -7,7 +7,19 @@ from claasp_next.core.value_type import ValueType
 
 @dataclass(frozen=True, slots=True)
 class Port:
-    """A named source of a typed value in a cipher graph."""
+    """A named source of a typed value in a cipher graph.
+
+    Positions refer to logical units rather than encoded bits.
+
+    EXAMPLES::
+
+        >>> from claasp_next import Port, PrimeField, ValueType
+        >>> state = Port("state", ValueType(PrimeField(17), (3,)))
+        >>> state.select(2, 0).positions
+        (2, 0)
+        >>> state.select_all().value_type.unit_count
+        3
+    """
 
     owner_id: str
     value_type: ValueType

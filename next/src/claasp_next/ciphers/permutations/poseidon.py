@@ -19,6 +19,23 @@ class PoseidonPermutation(Cipher):
     Parameter generation and endorsement are intentionally outside this class.
     Callers must supply constants and a matrix from an appropriate parameter
     generation procedure or specification.
+
+    EXAMPLES::
+
+        >>> from claasp_next.ciphers import PoseidonPermutation
+        >>> from claasp_next.evaluators import ScalarEvaluator
+        >>> cipher = PoseidonPermutation(
+        ...     modulus=17,
+        ...     exponent=3,
+        ...     full_rounds=2,
+        ...     partial_rounds=1,
+        ...     round_constants=((1, 2), (3, 4), (5, 6)),
+        ...     linear_layer=((1, 1), (1, 2)),
+        ... )
+        >>> ScalarEvaluator().evaluate(cipher, {"state": (0, 1)}).output
+        (4, 15)
+
+    These are teaching parameters, not a secure parameter set.
     """
 
     def __init__(

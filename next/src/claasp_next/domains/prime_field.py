@@ -12,6 +12,17 @@ class PrimeField(Domain):
     Primality verification is deliberately outside this first descriptor. A
     dedicated parameter-validation service will be added before cipher
     parameters can be accepted from untrusted sources.
+
+    EXAMPLES::
+
+        >>> from claasp_next import PrimeField
+        >>> field = PrimeField(17)
+        >>> field.contains(16)
+        True
+        >>> field.contains(17)
+        False
+        >>> field.encoded_bit_size
+        5
     """
 
     modulus: int

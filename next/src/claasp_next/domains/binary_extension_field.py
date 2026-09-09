@@ -11,6 +11,15 @@ class BinaryExtensionField(Domain):
 
     ``modulus`` stores the coefficients of the degree-``degree`` defining
     polynomial as bits, including its leading coefficient.
+
+    EXAMPLES::
+
+        >>> from claasp_next import BinaryExtensionField
+        >>> aes_field = BinaryExtensionField(8, 0x11B)
+        >>> aes_field.contains(0xFF)
+        True
+        >>> aes_field.encoded_bit_size
+        8
     """
 
     degree: int

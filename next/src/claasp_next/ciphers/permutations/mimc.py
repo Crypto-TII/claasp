@@ -8,7 +8,20 @@ from claasp_next.domains import PrimeField
 
 
 class MiMCPermutation(Cipher):
-    """Iterate ``x <- (x + c_i)^exponent`` over ``GF(modulus)``."""
+    """Iterate ``x <- (x + c_i)^exponent`` over ``GF(modulus)``.
+
+    EXAMPLES::
+
+        >>> from claasp_next.ciphers import MiMCPermutation
+        >>> from claasp_next.evaluators import ScalarEvaluator
+        >>> cipher = MiMCPermutation(17, 3, (1, 2, 4))
+        >>> len(cipher.rounds)
+        3
+        >>> ScalarEvaluator().evaluate(cipher, {"state": (5,)}).output
+        (5,)
+
+    These are teaching parameters, not a secure parameter set.
+    """
 
     def __init__(self, modulus: int, exponent: int, round_constants: Iterable[int]) -> None:
         field = PrimeField(modulus)

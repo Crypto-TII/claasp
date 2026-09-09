@@ -1,0 +1,65 @@
+Getting started
+===============
+
+Installation
+------------
+
+Install the development package from the ``next`` directory:
+
+.. code-block:: console
+
+   python -m pip install -e .
+
+No SageMath or solver package is required for construction and scalar
+evaluation.
+
+Evaluating MiMC
+---------------
+
+The following toy MiMC instance operates directly over :math:`GF(17)`:
+
+.. doctest::
+
+   >>> from claasp_next.ciphers import MiMCPermutation
+   >>> from claasp_next.evaluators import ScalarEvaluator
+   >>> mimc = MiMCPermutation(
+   ...     modulus=17,
+   ...     exponent=3,
+   ...     round_constants=(1, 2, 4),
+   ... )
+   >>> result = ScalarEvaluator().evaluate(mimc, {"state": (5,)})
+   >>> result.output
+   (5,)
+   >>> len(mimc.rounds)
+   3
+
+The parameters above are deliberately small teaching parameters and must not
+be used cryptographically.
+
+Building a typed graph
+----------------------
+
+A port contains three logical field elements even though its canonical binary
+encoding occupies 15 bits:
+
+.. doctest::
+
+   >>> from claasp_next import Cipher, PrimeField, ValueType
+   >>> from claasp_next.components import Permutation
+   >>> state_type = ValueType(PrimeField(17), (3,))
+   >>> state_type.unit_count
+   3
+   >>> state_type.encoded_bit_size
+   15
+   >>> cipher = Cipher("toy", {"state": state_type})
+   >>> cipher.add_round().number
+   0
+   >>> operation = Permutation(
+   ...     "permutation_0_0",
+   ...     cipher.input("state").select_all(),
+   ...     (2, 0, 1),
+   ... )
+   >>> output = cipher.add_component(operation)
+   >>> cipher.set_output(output.select_all())
+   >>> ScalarEvaluator().evaluate(cipher, {"state": (3, 5, 8)}).output
+   (8, 3, 5)

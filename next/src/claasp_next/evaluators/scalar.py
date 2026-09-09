@@ -27,7 +27,15 @@ class EvaluationResult:
 
 
 class ScalarEvaluator:
-    """Correctness-first evaluator using ordinary Python scalar values."""
+    """Correctness-first evaluator using ordinary Python scalar values.
+
+    EXAMPLES::
+
+        >>> from claasp_next.ciphers import MiMCPermutation
+        >>> cipher = MiMCPermutation(17, 3, (1, 2, 4))
+        >>> ScalarEvaluator().evaluate(cipher, {"state": (5,)}).output
+        (5,)
+    """
 
     def __init__(self) -> None:
         self._handlers: dict[type[Component], Handler] = {

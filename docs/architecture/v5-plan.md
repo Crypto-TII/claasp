@@ -34,6 +34,10 @@ differential comparison.
 6. Cross-domain conversions are explicit graph operations.
 7. Unsupported backend/component/domain combinations fail explicitly.
 8. Scalar evaluation is the correctness reference for optimized evaluators.
+9. Every public API includes CLAASP-style examples that are executable as
+   doctests.
+10. Documentation builds are warning-free and are tested independently of
+    Sage.
 
 ## Delivery milestones
 
@@ -121,6 +125,16 @@ Sage or solver packages.
 - Rename `claasp_next` to `claasp` only after its public API is accepted.
 - Stabilize in `develop`, publish prereleases, then release CLAASP 5.0.
 
+### Documentation throughout all milestones
+
+- Add user-oriented examples and API documentation with each public feature.
+- Write examples as executable doctests rather than unverified snippets.
+- Build HTML documentation automatically using a modern responsive theme.
+- Run both documentation doctests and Python-module doctests in CI.
+- Treat warnings and broken internal references as CI failures.
+- Add mathematical background and backend guides as the related features
+  arrive; documentation is not postponed to the release milestone.
+
 ## Branch and synchronization policy
 
 - `claasp-v5` is shared and is never rebased after publication.
@@ -172,5 +186,6 @@ path is correct and stable.
 - [x] Minimal MiMC vertical slice.
 - [x] Parameterized Poseidon full/partial-round vertical slice.
 - [ ] Externally sourced Poseidon known-answer parameter catalogue.
+- [x] Sage-free Sphinx site and doctest CI.
 - [ ] Batch evaluation.
 - [ ] Polynomial intermediate representation.
