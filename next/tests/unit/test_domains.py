@@ -42,3 +42,13 @@ def test_domains_are_immutable_and_hashable():
         PrimeField(17),
         PrimeField(19),
     }
+
+
+def test_prime_field_rejects_composite_modulus():
+    with pytest.raises(ValueError, match="must be prime"):
+        PrimeField(15)
+
+
+def test_binary_extension_field_rejects_reducible_polynomial():
+    with pytest.raises(ValueError, match="irreducible"):
+        BinaryExtensionField(4, 0b10101)

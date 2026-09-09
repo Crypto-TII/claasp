@@ -52,3 +52,14 @@ Cipher classes validate the structural consistency of supplied parameters.
 They do not imply that arbitrary constants, matrices, or round counts are
 cryptographically secure. Verified parameter catalogues and their provenance
 are separate from the generic construction classes.
+
+Field-definition validation
+---------------------------
+
+``PrimeField`` rejects composite moduli. The dependency-free test is
+deterministic below :math:`2^{64}` and uses strong Miller--Rabin probable-prime
+screening for larger values. Cryptographic parameter provenance is still
+required: probabilistic screening is not a primality certificate.
+
+``BinaryExtensionField`` verifies that its defining polynomial is irreducible
+over :math:`GF(2)` and currently supports the polynomial basis explicitly.

@@ -190,4 +190,5 @@ path is correct and stable.
 - [x] Correctness-first batch evaluation contract.
 - [ ] Optimized batch evaluation.
 - [x] Initial sparse prime-field polynomial representation and graph lowering.
-- [ ] Polynomial exporters and advanced lowering policies.
+- [x] Singular polynomial exporter with executable integration test.
+- [ ] Further polynomial exporters and advanced lowering policies.

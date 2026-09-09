@@ -3,6 +3,7 @@
 from dataclasses import dataclass
 
 from claasp_next.domains.base import Domain
+from claasp_next.domains.validation import is_irreducible_binary_polynomial
 
 
 @dataclass(frozen=True, slots=True)
@@ -39,6 +40,8 @@ class BinaryExtensionField(Domain):
             raise ValueError("modulus must have a nonzero constant coefficient")
         if self.basis != "polynomial":
             raise ValueError("only polynomial basis is currently supported")
+        if not is_irreducible_binary_polynomial(self.modulus, self.degree):
+            raise ValueError("modulus must be irreducible over GF(2)")
 
     @property
     def encoded_bit_size(self) -> int:
