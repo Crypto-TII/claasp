@@ -187,5 +187,6 @@ path is correct and stable.
 - [x] Parameterized Poseidon full/partial-round vertical slice.
 - [ ] Externally sourced Poseidon known-answer parameter catalogue.
 - [x] Sage-free Sphinx site and doctest CI.
-- [ ] Batch evaluation.
+- [x] Correctness-first batch evaluation contract.
+- [ ] Optimized batch evaluation.
 - [ ] Polynomial intermediate representation.

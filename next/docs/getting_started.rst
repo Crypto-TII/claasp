@@ -36,6 +36,26 @@ The following toy MiMC instance operates directly over :math:`GF(17)`:
 The parameters above are deliberately small teaching parameters and must not
 be used cryptographically.
 
+Evaluating a batch
+------------------
+
+The reference batch evaluator accepts one sequence of samples per cipher
+input. It shares scalar semantics and therefore supports arbitrary-size prime
+field elements without a machine-word restriction:
+
+.. doctest::
+
+   >>> from claasp_next.evaluators import BatchEvaluator
+   >>> batch = BatchEvaluator().evaluate(
+   ...     mimc,
+   ...     {"state": ((0,), (5,), (16,))},
+   ... )
+   >>> batch.outputs
+   ((7,), (5,), (11,))
+
+This implementation is the correctness reference. Future vectorized or native
+evaluators must produce identical results.
+
 Building a typed graph
 ----------------------
 
