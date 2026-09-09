@@ -1,0 +1,48 @@
+name: CLAASP next core
+
+on:
+  push:
+    branches:
+      - claasp-v5
+  pull_request:
+    branches:
+      - claasp-v5
+    paths:
+      - "next/**"
+      - "docs/architecture/**"
+      - ".github/workflows/claasp-next.yaml"
+
+concurrency:
+  group: claasp-next-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  sage-free-tests:
+    name: Sage-free Python ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+
+    defaults:
+      run:
+        working-directory: next
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install isolated development package
+        run: python -m pip install -e '.[dev]'
+
+      - name: Verify Sage is not installed
+        run: python -c "import importlib.util; assert importlib.util.find_spec('sage') is None"
+
+      - name: Run next-generation tests
+        run: python -m pytest
