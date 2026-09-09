@@ -33,3 +33,9 @@ Primitives
 
 .. automodule:: claasp_next.ciphers
    :members:
+
+Polynomial models
+-----------------
+
+.. automodule:: claasp_next.polynomial
+   :members:

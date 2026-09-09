@@ -189,4 +189,5 @@ path is correct and stable.
 - [x] Sage-free Sphinx site and doctest CI.
 - [x] Correctness-first batch evaluation contract.
 - [ ] Optimized batch evaluation.
-- [ ] Polynomial intermediate representation.
+- [x] Initial sparse prime-field polynomial representation and graph lowering.
+- [ ] Polynomial exporters and advanced lowering policies.
