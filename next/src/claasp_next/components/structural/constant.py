@@ -1,0 +1,27 @@
+"""Typed constant component."""
+
+from dataclasses import dataclass
+from collections.abc import Iterable
+
+from claasp_next.core.component import Component
+from claasp_next.core.value_type import ValueType
+
+
+@dataclass(frozen=True, slots=True, init=False)
+class Constant(Component):
+    """Produce a fixed homogeneous vector in a declared domain."""
+
+    values: tuple[int, ...]
+
+    def __init__(self, component_id: str, output_type: ValueType, values: Iterable[int]) -> None:
+        frozen_values = tuple(values)
+        object.__setattr__(self, "component_id", component_id)
+        object.__setattr__(self, "inputs", ())
+        object.__setattr__(self, "output_type", output_type)
+        object.__setattr__(self, "values", frozen_values)
+        Component.__post_init__(self)
+
+        if len(frozen_values) != output_type.unit_count:
+            raise ValueError("constant value count must match its output type")
+        for value in frozen_values:
+            output_type.domain.validate(value)

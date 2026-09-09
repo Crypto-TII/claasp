@@ -1,0 +1,106 @@
+"""Pure-Python reference evaluator."""
+
+from collections.abc import Callable, Mapping, Sequence
+from dataclasses import dataclass
+
+from claasp_next.components.structural import Concatenate, Constant, Identity, Permutation
+from claasp_next.core.cipher import Cipher
+from claasp_next.core.component import Component
+
+RuntimeValue = tuple[int, ...]
+Handler = Callable[[Component, tuple[RuntimeValue, ...]], RuntimeValue]
+
+
+@dataclass(frozen=True, slots=True)
+class EvaluationResult:
+    """Values produced for cipher inputs and component outputs."""
+
+    values: Mapping[str, RuntimeValue]
+
+    def value_of(self, source_id: str) -> RuntimeValue:
+        try:
+            return self.values[source_id]
+        except KeyError as error:
+            raise KeyError(f"evaluation source {source_id!r} does not exist") from error
+
+
+class ScalarEvaluator:
+    """Correctness-first evaluator using ordinary Python scalar values."""
+
+    def __init__(self) -> None:
+        self._handlers: dict[type[Component], Handler] = {
+            Constant: self._evaluate_constant,
+            Identity: self._evaluate_identity,
+            Permutation: self._evaluate_permutation,
+            Concatenate: self._evaluate_concatenate,
+        }
+
+    def register(self, component_type: type[Component], handler: Handler) -> None:
+        """Register or replace an exact component-type handler."""
+
+        if not isinstance(component_type, type) or not issubclass(component_type, Component):
+            raise TypeError("component_type must be a Component subclass")
+        if not callable(handler):
+            raise TypeError("handler must be callable")
+        self._handlers[component_type] = handler
+
+    def evaluate(self, cipher: Cipher, inputs: Mapping[str, Sequence[int]]) -> EvaluationResult:
+        if not isinstance(cipher, Cipher):
+            raise TypeError("cipher must be a Cipher")
+        expected_names = set(cipher.inputs)
+        actual_names = set(inputs)
+        if actual_names != expected_names:
+            missing = sorted(expected_names - actual_names)
+            unexpected = sorted(actual_names - expected_names)
+            raise ValueError(f"cipher inputs do not match: missing={missing}, unexpected={unexpected}")
+
+        values: dict[str, RuntimeValue] = {}
+        for name, port in cipher.inputs.items():
+            value = tuple(inputs[name])
+            self._validate_value(name, value, port.value_type.unit_count, port.value_type.domain)
+            values[name] = value
+
+        for component in cipher.components:
+            selected_inputs = tuple(
+                tuple(values[item.source.owner_id][position] for position in item.positions)
+                for item in component.inputs
+            )
+            try:
+                handler = self._handlers[type(component)]
+            except KeyError as error:
+                raise NotImplementedError(
+                    f"ScalarEvaluator does not support {type(component).__name__}"
+                ) from error
+            output = tuple(handler(component, selected_inputs))
+            self._validate_value(
+                component.component_id,
+                output,
+                component.output_type.unit_count,
+                component.output_type.domain,
+            )
+            values[component.component_id] = output
+
+        return EvaluationResult(dict(values))
+
+    @staticmethod
+    def _validate_value(source_id: str, value: RuntimeValue, size: int, domain: object) -> None:
+        if len(value) != size:
+            raise ValueError(f"{source_id!r} requires {size} logical units, got {len(value)}")
+        for scalar in value:
+            domain.validate(scalar)
+
+    @staticmethod
+    def _evaluate_constant(component: Constant, inputs: tuple[RuntimeValue, ...]) -> RuntimeValue:
+        return component.values
+
+    @staticmethod
+    def _evaluate_identity(component: Identity, inputs: tuple[RuntimeValue, ...]) -> RuntimeValue:
+        return inputs[0]
+
+    @staticmethod
+    def _evaluate_permutation(component: Permutation, inputs: tuple[RuntimeValue, ...]) -> RuntimeValue:
+        return tuple(inputs[0][position] for position in component.mapping)
+
+    @staticmethod
+    def _evaluate_concatenate(component: Concatenate, inputs: tuple[RuntimeValue, ...]) -> RuntimeValue:
+        return tuple(scalar for component_input in inputs for scalar in component_input)
