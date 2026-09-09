@@ -191,7 +191,8 @@ path is correct and stable.
 - [x] Dependency-free, one-graph-traversal batch evaluation and benchmark.
 - [x] Initial sparse prime-field polynomial representation and graph lowering.
 - [x] Singular polynomial exporter with executable integration test.
-- [ ] Further polynomial exporters and advanced lowering policies.
+- [x] msolve exporter with explicit characteristic limit and integration test.
+- [ ] Advanced polynomial lowering policies.
 
 ## Milestone tracker
 
@@ -207,6 +208,6 @@ path is correct and stable.
 | Field validation and Singular export | Achieved | `da245951` |
 | Pinned Poseidon parameter catalogue | Achieved | Bundled BN254/width-3 data and vector |
 | Dependency-free transposed batch backend | Achieved | Differential tests and benchmark harness |
-| Additional polynomial exporters | Planned | Select msolve interchange format |
+| msolve polynomial exporter | Achieved | Native format, validation, and optional integration test |
 | Traditional cipher validation | Planned | Speck, then AES/ToyAES |
 | Legacy analysis migration | Planned | Begins after graph API stabilizes |

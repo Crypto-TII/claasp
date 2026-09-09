@@ -25,8 +25,8 @@ output variables are retained, keeping round equations sparse instead of
 expanding the entire permutation into input variables.
 
 The built-in representation is intentionally not a general computer algebra
-system. Future exporters will translate it to tools such as Singular and
-msolve for Gröbner-basis experiments.
+system. Exporters translate it to Singular and msolve for Gröbner-basis
+experiments.
 
 Exporting to Singular
 ---------------------
@@ -47,3 +47,22 @@ control:
 Variables are renamed safely for the target syntax. Leading comments preserve
 the mapping from exported names to graph variables. When Singular is
 available, the integration tests also execute the generated program.
+
+Exporting to msolve
+-------------------
+
+The msolve exporter uses its native three-part interchange format: ordered
+variables, field characteristic, then comma-separated expanded equations.
+
+.. doctest::
+
+   >>> from claasp_next.polynomial.exporters import MsolveExporter
+   >>> exported = MsolveExporter().export(system)
+   >>> exported.splitlines()[:2]
+   ['x0,x1,x2,x3,x4,x5,x6', '17']
+
+msolve only accepts prime characteristics below ``2^31``. The exporter checks
+that limit explicitly; consequently it is intended for reduced small-field
+experiments and cannot directly consume the bundled BN254 Poseidon system.
+Variables are renamed ``x0``, ``x1``, and so on in the exact order returned by
+``system.variables``.
