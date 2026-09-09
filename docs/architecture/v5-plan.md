@@ -170,6 +170,7 @@ path is correct and stable.
 - [x] Pure-Python scalar evaluator with explicit component dispatch.
 - [x] Addition, multiplication, power maps, and linear maps.
 - [x] Minimal MiMC vertical slice.
-- [ ] Poseidon vertical slice and externally sourced known-answer parameters.
+- [x] Parameterized Poseidon full/partial-round vertical slice.
+- [ ] Externally sourced Poseidon known-answer parameter catalogue.
 - [ ] Batch evaluation.
 - [ ] Polynomial intermediate representation.
