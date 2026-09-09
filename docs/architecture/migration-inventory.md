@@ -41,6 +41,7 @@ dependency and executes its historical doctest suite through Sage. The
 | Serialization | Superseded by schema v5 | Round-trip tests |
 | Diagram compilers | Deferred | Snapshot/semantic tests |
 | Cipher catalogue | Incremental migration | Known-answer tests |
+| Concrete AO parameters | Port with explicit source revision and schema | Upstream reference vectors |
 
 ## Reference implementations
 

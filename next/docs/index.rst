@@ -15,6 +15,7 @@ Computer-algebra and solver integrations will be optional backends.
 
    getting_started
    concepts
+   parameters
    polynomial_models
    development
    api

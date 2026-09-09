@@ -34,6 +34,12 @@ Primitives
 .. automodule:: claasp_next.ciphers
    :members:
 
+Parameter catalogues
+--------------------
+
+.. automodule:: claasp_next.parameters
+   :members:
+
 Polynomial models
 -----------------
 

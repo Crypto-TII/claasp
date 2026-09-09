@@ -21,3 +21,6 @@ addopts = "-ra"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+"claasp_next.parameters.data" = ["*.json", "*.md"]

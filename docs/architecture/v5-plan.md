@@ -185,10 +185,28 @@ path is correct and stable.
 - [x] Addition, multiplication, power maps, and linear maps.
 - [x] Minimal MiMC vertical slice.
 - [x] Parameterized Poseidon full/partial-round vertical slice.
-- [ ] Externally sourced Poseidon known-answer parameter catalogue.
+- [x] Pinned BN254/width-3 Poseidon parameters and reference vector.
 - [x] Sage-free Sphinx site and doctest CI.
 - [x] Correctness-first batch evaluation contract.
 - [ ] Optimized batch evaluation.
 - [x] Initial sparse prime-field polynomial representation and graph lowering.
 - [x] Singular polynomial exporter with executable integration test.
 - [ ] Further polynomial exporters and advanced lowering policies.
+
+## Milestone tracker
+
+| Area | Status | Commit or next action |
+| --- | --- | --- |
+| Architecture and isolated package | Achieved | `6b2a1b66` |
+| Typed logical-unit graph | Achieved | `e683d05b` |
+| Scalar field evaluation and MiMC | Achieved | `83cc02e7` |
+| Parameterized Poseidon | Achieved | `e8ced5d9` |
+| Documentation and doctest pipeline | Achieved | `ca5baa82` |
+| Reference batch contract | Achieved | `2236b640` |
+| Sparse prime-field polynomial IR | Achieved | `99e1f8f0` |
+| Field validation and Singular export | Achieved | `da245951` |
+| Pinned Poseidon parameter catalogue | Achieved | Bundled BN254/width-3 data and vector |
+| Optimized batch backend | Planned | Benchmark representations first |
+| Additional polynomial exporters | Planned | Select msolve interchange format |
+| Traditional cipher validation | Planned | Speck, then AES/ToyAES |
+| Legacy analysis migration | Planned | Begins after graph API stabilizes |
