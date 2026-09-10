@@ -42,7 +42,7 @@ EXAMPLES::
     5
 
     sage: from claasp.ciphers.single_component_ciphers.rotate_cipher import RotateCipher
-    sage: RotateCipher(bit_size=8, parameter=1).evaluate([0b00000001])
+    sage: RotateCipher(bit_size=8, rotation_amount=1).evaluate([0b00000001])
     128
 
     sage: from claasp.ciphers.single_component_ciphers.reverse_cipher import ReverseCipher
@@ -50,7 +50,7 @@ EXAMPLES::
     11
 
     sage: from claasp.ciphers.single_component_ciphers.shift_cipher import ShiftCipher
-    sage: ShiftCipher(bit_size=8, parameter=1).type
+    sage: ShiftCipher(bit_size=8, shift_amount=1).type
     'hash_function'
 
     sage: from claasp.ciphers.single_component_ciphers.identity_cipher import IdentityCipher
