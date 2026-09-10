@@ -5,7 +5,7 @@
 from claasp.ciphers.single_component_ciphers._base import SingleComponentCipher, add_cipher_output_from_component
 from claasp.name_mappings import INPUT_PLAINTEXT, PERMUTATION
 
-PARAMETERS_CONFIGURATION_LIST = [{"bit_size": 8, "parameter": 1}]
+PARAMETERS_CONFIGURATION_LIST = [{"bit_size": 8, "rotation_amount": 1}]
 
 
 class RotateCipher(SingleComponentCipher):
@@ -15,7 +15,7 @@ class RotateCipher(SingleComponentCipher):
     INPUT:
 
     - ``bit_size`` -- **integer** (default: `8`); input and output bit size
-    - ``parameter`` -- **integer** (default: `1`); rotation amount (positive = left, negative = right)
+    - ``rotation_amount`` -- **integer** (default: `1`); rotation amount (positive = left, negative = right)
 
     EXAMPLES::
 
@@ -28,7 +28,7 @@ class RotateCipher(SingleComponentCipher):
         sage: cipher.number_of_rounds
         1
     """
-    def __init__(self, bit_size=8, parameter=1):
+    def __init__(self, bit_size=8, rotation_amount=1):
         super().__init__(
             family_name="rotate_cipher",
             cipher_type=PERMUTATION,
@@ -36,5 +36,7 @@ class RotateCipher(SingleComponentCipher):
             cipher_inputs_bit_size=[bit_size],
             cipher_output_bit_size=bit_size,
         )
-        rotate_component = self.add_rotate_component([INPUT_PLAINTEXT], [list(range(bit_size))], bit_size, parameter)
+        rotate_component = self.add_rotate_component(
+            [INPUT_PLAINTEXT], [list(range(bit_size))], bit_size, rotation_amount
+        )
         add_cipher_output_from_component(self, rotate_component)

@@ -76,7 +76,7 @@ class Shift(Component):
 
             sage: from claasp.ciphers.single_component_ciphers.shift_cipher import ShiftCipher
             sage: from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
-            sage: cipher = ShiftCipher(bit_size=2, parameter=1)
+            sage: cipher = ShiftCipher(bit_size=2, shift_amount=1)
             sage: shift_component = cipher.component_from_id('shift_0_0')
             sage: algebraic = AlgebraicModel(cipher)
             sage: shift_component.algebraic_polynomials(algebraic)
@@ -453,7 +453,7 @@ class Shift(Component):
 
             sage: from claasp.ciphers.single_component_ciphers.shift_cipher import ShiftCipher
             sage: from claasp.cipher_modules.models.milp.milp_model import MilpModel
-            sage: cipher = ShiftCipher(bit_size=2, parameter=1)
+            sage: cipher = ShiftCipher(bit_size=2, shift_amount=1)
             sage: milp = MilpModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
             sage: shift_component = cipher.component_from_id('shift_0_0')
@@ -494,7 +494,7 @@ class Shift(Component):
         EXAMPLE::
 
             sage: from claasp.ciphers.single_component_ciphers.shift_cipher import ShiftCipher
-            sage: cipher = ShiftCipher(bit_size=2, parameter=1)
+            sage: cipher = ShiftCipher(bit_size=2, shift_amount=1)
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import MilpBitwiseDeterministicTruncatedXorDifferentialModel
             sage: milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
@@ -538,7 +538,7 @@ class Shift(Component):
         EXAMPLE::
 
             sage: from claasp.ciphers.single_component_ciphers.shift_cipher import ShiftCipher
-            sage: cipher = ShiftCipher(bit_size=4, parameter=-4)
+            sage: cipher = ShiftCipher(bit_size=4, shift_amount=-4)
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import MilpWordwiseDeterministicTruncatedXorDifferentialModel
             sage: milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
@@ -599,7 +599,7 @@ class Shift(Component):
 
             sage: from claasp.ciphers.single_component_ciphers.shift_cipher import ShiftCipher
             sage: from claasp.cipher_modules.models.milp.milp_model import MilpModel
-            sage: cipher = ShiftCipher(bit_size=2, parameter=1)
+            sage: cipher = ShiftCipher(bit_size=2, shift_amount=1)
             sage: milp = MilpModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
             sage: shift_component = cipher.component_from_id('shift_0_0')
@@ -642,7 +642,7 @@ class Shift(Component):
 
             sage: from claasp.ciphers.single_component_ciphers.shift_cipher import ShiftCipher
             sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
-            sage: cipher = ShiftCipher(bit_size=2, parameter=1)
+            sage: cipher = ShiftCipher(bit_size=2, shift_amount=1)
             sage: minizinc = MznModel(cipher)
             sage: shift_component = cipher.component_from_id('shift_0_0')
             sage: shift_component.minizinc_constraints(minizinc)
