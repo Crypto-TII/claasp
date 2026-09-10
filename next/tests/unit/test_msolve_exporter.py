@@ -42,8 +42,8 @@ def test_exported_input_is_accepted_by_msolve():
     system = PolynomialSystem(
         field,
         ("x", "y"),
-        (x - 1, y - 2),
-        ("fix x", "fix y"),
+        (x - 3, y - x * x),
+        ("fix x", "quadratic relation"),
     )
 
     with TemporaryDirectory() as directory:

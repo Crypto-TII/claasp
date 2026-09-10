@@ -7,6 +7,18 @@ from claasp_next.polynomial.expression import Polynomial
 
 
 @dataclass(frozen=True, slots=True)
+class PolynomialSystemStatistics:
+    """Structural statistics for comparing lowering policies."""
+
+    variable_count: int
+    equation_count: int
+    term_count: int
+    maximum_degree: int
+    degree_histogram: tuple[tuple[int, int], ...]
+    variable_incidence: tuple[tuple[str, int], ...]
+
+
+@dataclass(frozen=True, slots=True)
 class PolynomialSystem:
     """An ordered system of equations interpreted as ``equation == 0``."""
 
@@ -33,3 +45,30 @@ class PolynomialSystem:
         """Evaluate every left-hand side in equation order."""
 
         return tuple(equation.evaluate(values) for equation in self.equations)
+
+    @property
+    def statistics(self) -> PolynomialSystemStatistics:
+        """Return deterministic size, degree, and incidence statistics."""
+
+        degrees: dict[int, int] = {}
+        incidence = {variable: 0 for variable in self.variables}
+        term_count = 0
+        for equation in self.equations:
+            degrees[equation.degree] = degrees.get(equation.degree, 0) + 1
+            term_count += len(equation.terms)
+            present = {
+                variable
+                for monomial, _ in equation.terms
+                for variable, _ in monomial.powers
+            }
+            for variable in present:
+                if variable in incidence:
+                    incidence[variable] += 1
+        return PolynomialSystemStatistics(
+            variable_count=len(self.variables),
+            equation_count=len(self.equations),
+            term_count=term_count,
+            maximum_degree=self.maximum_degree,
+            degree_histogram=tuple(sorted(degrees.items())),
+            variable_incidence=tuple(incidence.items()),
+        )

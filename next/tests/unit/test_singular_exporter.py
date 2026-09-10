@@ -4,7 +4,7 @@ import subprocess
 import pytest
 
 from claasp_next.ciphers import MiMCPermutation
-from claasp_next.polynomial import PrimeFieldPolynomialModel
+from claasp_next.polynomial import PowerLoweringPolicy, PrimeFieldPolynomialModel
 from claasp_next.polynomial.exporters import SingularExporter
 
 
@@ -30,7 +30,9 @@ def test_singular_export_validates_external_identifiers():
 
 @pytest.mark.skipif(shutil.which("Singular") is None, reason="Singular is not installed")
 def test_exported_program_is_accepted_by_singular():
-    system = PrimeFieldPolynomialModel(MiMCPermutation(17, 3, (1,))).polynomial_system()
+    system = PrimeFieldPolynomialModel(
+        MiMCPermutation(17, 5, (1,)), PowerLoweringPolicy.BINARY_CHAIN
+    ).polynomial_system()
     program = SingularExporter().export(system) + 'print(size(I));\n'
 
     completed = subprocess.run(

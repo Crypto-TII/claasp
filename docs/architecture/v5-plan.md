@@ -192,7 +192,7 @@ path is correct and stable.
 - [x] Initial sparse prime-field polynomial representation and graph lowering.
 - [x] Singular polynomial exporter with executable integration test.
 - [x] msolve exporter with explicit characteristic limit and integration test.
-- [ ] Advanced polynomial lowering policies.
+- [x] Direct and binary-chain power lowering with witnesses and statistics.
 - [x] Word domain, ARX components, and Speck64/128 known-answer validation.
 - [x] Byte-field S-box component and AES-128 known-answer validation.
 - [x] Bit-vector S-box component and PRESENT-80 known-answer validation.
@@ -213,4 +213,5 @@ path is correct and stable.
 | Dependency-free transposed batch backend | Achieved | Differential tests and benchmark harness |
 | msolve polynomial exporter | Achieved | Native format, validation, and optional integration test |
 | Traditional cipher validation | Achieved | Speck64/128, AES-128, and PRESENT-80 |
+| Advanced polynomial lowering | Achieved | Direct/binary-chain policies, witnesses, and statistics |
 | Legacy analysis migration | Planned | Begins after graph API stabilizes |

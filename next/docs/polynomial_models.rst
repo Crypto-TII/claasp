@@ -24,6 +24,38 @@ Each equation is interpreted as a left-hand side equal to zero. Component
 output variables are retained, keeping round equations sparse instead of
 expanding the entire permutation into input variables.
 
+Power-lowering policies
+-----------------------
+
+The default ``direct`` policy emits one equation such as
+:math:`y-x^5=0`. The ``binary_chain`` policy introduces deterministic
+auxiliary powers and replaces that equation by a multiplication chain with
+maximum degree two.
+
+.. doctest::
+
+   >>> from claasp_next.evaluators import ScalarEvaluator
+   >>> from claasp_next.polynomial import PowerLoweringPolicy
+   >>> power_cipher = MiMCPermutation(17, 5, (1,))
+   >>> direct = PrimeFieldPolynomialModel(power_cipher).polynomial_system()
+   >>> chain_model = PrimeFieldPolynomialModel(
+   ...     power_cipher, PowerLoweringPolicy.BINARY_CHAIN
+   ... )
+   >>> chained = chain_model.polynomial_system()
+   >>> direct.maximum_degree, chained.maximum_degree
+   (5, 2)
+   >>> chained.statistics.degree_histogram
+   ((1, 2), (2, 3))
+   >>> evaluation = ScalarEvaluator().evaluate(power_cipher, {"state": (3,)})
+   >>> chained.evaluate(chain_model.witness(evaluation))
+   (0, 0, 0, 0, 0)
+
+The witness helper derives each auxiliary value from the evaluated source
+wire. This provides a direct equivalence check between graph execution and a
+selected lowering. Statistics also report variable/equation/term counts and
+per-variable equation incidence. They describe structure, not solver cost or
+security.
+
 The built-in representation is intentionally not a general computer algebra
 system. Exporters translate it to Singular and msolve for Gröbner-basis
 experiments.

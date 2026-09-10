@@ -2,7 +2,12 @@ import pytest
 
 from claasp_next import Bit, Cipher, PrimeField, ScalarEvaluator, ValueType
 from claasp_next.ciphers import MiMCPermutation, PoseidonPermutation
-from claasp_next.polynomial import Monomial, Polynomial, PrimeFieldPolynomialModel
+from claasp_next.polynomial import (
+    Monomial,
+    Polynomial,
+    PowerLoweringPolicy,
+    PrimeFieldPolynomialModel,
+)
 
 
 def _assignment_from_evaluation(result):
@@ -59,3 +64,35 @@ def test_prime_field_model_rejects_bit_graph():
 
     with pytest.raises(ValueError, match="homogeneous prime field"):
         PrimeFieldPolynomialModel(cipher)
+
+
+def test_binary_chain_lowers_degree_and_witness_satisfies_auxiliary_equations():
+    cipher = MiMCPermutation(17, 5, (1,))
+    evaluation = ScalarEvaluator().evaluate(cipher, {"state": (3,)})
+    direct = PrimeFieldPolynomialModel(cipher).polynomial_system()
+    model = PrimeFieldPolynomialModel(cipher, PowerLoweringPolicy.BINARY_CHAIN)
+    chained = model.polynomial_system()
+
+    assert direct.maximum_degree == 5
+    assert chained.maximum_degree == 2
+    assert len(chained.variables) == len(direct.variables) + 2
+    assert chained.evaluate(model.witness(evaluation)) == (0,) * len(chained.equations)
+    assert chained.provenance[-1] == "power_0_2:unit=0:power=5"
+
+
+def test_polynomial_statistics_report_degrees_terms_and_incidence():
+    system = PrimeFieldPolynomialModel(
+        MiMCPermutation(17, 5, (1,)), power_lowering="binary_chain"
+    ).polynomial_system()
+    statistics = system.statistics
+
+    assert statistics.variable_count == 6
+    assert statistics.equation_count == 5
+    assert statistics.term_count == 11
+    assert statistics.degree_histogram == ((1, 2), (2, 3))
+    assert dict(statistics.variable_incidence)["power_0_2_0"] == 1
+
+
+def test_power_lowering_policy_is_validated():
+    with pytest.raises(ValueError, match="direct, binary_chain"):
+        PrimeFieldPolynomialModel(MiMCPermutation(17, 3, (1,)), "expanded")
