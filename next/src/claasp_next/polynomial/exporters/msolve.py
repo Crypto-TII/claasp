@@ -20,7 +20,7 @@ class MsolveExporter:
         >>> text.splitlines()[:2]
         ['x0,x1,x2,x3', '17']
         >>> text.endswith(chr(10))
-        False
+        True
     """
 
     MAX_CHARACTERISTIC = 1 << 31
@@ -39,7 +39,11 @@ class MsolveExporter:
         names = dict(zip(system.variables, external_names))
         equations = [self._polynomial(polynomial, names) for polynomial in system.equations]
         rendered_equations = ",\n".join(equations)
-        return "\n".join((",".join(external_names), str(system.field.modulus), rendered_equations))
+        # The final newline is accepted by current msolve and avoids an EOF
+        # parser crash in the msolve 0.6.5 package shipped by Ubuntu 24.04.
+        return "\n".join(
+            (",".join(external_names), str(system.field.modulus), rendered_equations)
+        ) + "\n"
 
     def _polynomial(self, polynomial: Polynomial, names: dict[str, str]) -> str:
         if not polynomial.terms:

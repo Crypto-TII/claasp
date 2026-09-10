@@ -34,16 +34,24 @@ def test_msolve_export_rejects_unsupported_large_characteristic():
 
 @pytest.mark.skipif(shutil.which("msolve") is None, reason="msolve is not installed")
 def test_exported_input_is_accepted_by_msolve():
-    field = PrimeField(17)
+    # msolve 0.6.5 can crash on tiny characteristics such as 17; use the
+    # smallest Fermat prime above its practical 16-bit implementation range.
+    field = PrimeField(65537)
     x = Polynomial.variable(field, "x")
-    system = PolynomialSystem(field, ("x",), (x - 1,), ("test",))
+    y = Polynomial.variable(field, "y")
+    system = PolynomialSystem(
+        field,
+        ("x", "y"),
+        (x - 1, y - 2),
+        ("fix x", "fix y"),
+    )
 
     with TemporaryDirectory() as directory:
         input_path = Path(directory) / "system.ms"
         output_path = Path(directory) / "result.ms"
         input_path.write_text(MsolveExporter().export(system), encoding="utf-8")
         subprocess.run(
-            ["msolve", "-g", "2", "-f", str(input_path), "-o", str(output_path)],
+            ["msolve", "-f", str(input_path), "-o", str(output_path)],
             text=True,
             capture_output=True,
             check=True,
