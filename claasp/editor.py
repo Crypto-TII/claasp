@@ -1921,7 +1921,7 @@ def remove_key_schedule(cipher, keep_round_key_injection=True):
     if not keep_round_key_injection:
         components_to_remove = {}
         for round_ in cipher_without_key_schedule.rounds_as_list:
-            for component in round_.components:
+            for component in list(round_.components):  # copy: components may be removed while iterating
                 key_indices = [
                     i
                     for i, link in enumerate(component.input_id_links)
@@ -1935,15 +1935,25 @@ def remove_key_schedule(cipher, keep_round_key_injection=True):
                     component._input._bit_size = sum(len(positions) for positions in component.input_bit_positions)
 
                     if len(component.input_bit_positions) == 1:
-                        components_to_remove[component.id] = component.input_id_links[0]
+                        # the XOR is now a plain wire: output bit j = source bit positions[j]
+                        components_to_remove[component.id] = (
+                            component.input_id_links[0],
+                            list(component.input_bit_positions[0]),
+                        )
                         cipher_without_key_schedule.remove_round_component_from_id(round_.id, component.id)
 
         for round_ in cipher_without_key_schedule.rounds_as_list:
             for component in round_.components:
                 for i, input_id in enumerate(component.input_id_links):
+                    positions = list(component.input_bit_positions[i])
                     while input_id in components_to_remove:
-                        input_id = components_to_remove[input_id]
+                        # consumers read the removed wire's OUTPUT bits: map them back to the source bits
+                        # (identity only when the wire read its source as [0, 1, ..., n-1])
+                        source_id, source_positions = components_to_remove[input_id]
+                        positions = [source_positions[position] for position in positions]
+                        input_id = source_id
                     component.input_id_links[i] = input_id
+                    component.input_bit_positions[i] = positions
 
                 component._input._bit_size = sum(len(positions) for positions in component.input_bit_positions)
 
