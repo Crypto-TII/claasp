@@ -18,37 +18,89 @@
 
 from claasp.cipher import Cipher
 from claasp.name_mappings import INPUT_STATE, PERMUTATION
-from claasp.utils.utils import extract_inputs
 
 PARAMETERS_CONFIGURATION_LIST = [{"number_of_rounds": 160}]
-reference_code = """
-def grain_core_encrypt(state):
-    from claasp.utils.integer_functions import bytearray_to_wordlist, wordlist_to_bytearray
 
-    state_bit_size = 80
-    rounds = {0}
+# Grain v1 ("Grain-80") core initialization feedback, expressed as absolute bit indices into the
+# single 160-bit concatenated state used by add_fsr_component (register 1 = LFSR, register 2 = NFSR):
+#   absolute index k, 0  <= k < 80  -> LFSR position s_k
+#   absolute index k, 80 <= k < 160 -> NFSR position b_(k-80)
+#
+# LFSR_CORE_POLY computes, per clock, the new LFSR bit that is fed into the register:
+#   new_s = f(x) XOR z_i
+# where f(x) = s_{i+62}+s_{i+51}+s_{i+38}+s_{i+23}+s_{i+13}+s_i is the linear LFSR feedback and z_i is
+# the full Grain v1 output/keystream bit (filter function h(x) XORed with a 7-bit linear sum of NFSR
+# taps). During the 160-clock initialization phase z_i is fed back into both registers.
+LFSR_CORE_POLY = [
+    [0], [13], [23], [38], [51], [62],  # f(x): LFSR linear feedback
+    [25], [143], [3, 64], [46, 64], [64, 143], [3, 25, 46], [3, 46, 64], [3, 46, 143], [25, 46, 143],
+    [46, 64, 143],  # h(x)
+    [81], [82], [84], [90], [111], [123], [136],  # 7-bit NFSR sum (taps 1,2,4,10,31,43,56 -> abs 80+k)
+]
 
-    s = bytearray_to_wordlist(state, 1, state_bit_size)
+# NFSR_CORE_POLY computes, per clock, the new NFSR bit that is fed into the register:
+#   new_b = (s_i + g(x)) XOR z_i
+# where g(x) is the (nonlinear) NFSR feedback polynomial (linear taps plus AND product terms) and z_i is
+# the same full output bit as above.
+NFSR_CORE_POLY = [
+    [80], [89], [94], [101], [108], [113], [117], [125], [132], [140], [142], [0],  # g(x) linear part + s_i
+    [143, 140], [117, 113], [95, 89],
+    [140, 132, 125], [113, 108, 101],
+    [143, 125, 108, 89], [140, 132, 117, 113], [143, 140, 101, 95],
+    [143, 140, 132, 125, 117], [113, 108, 101, 95, 89],
+    [132, 125, 117, 113, 108, 101],  # g(x) product/AND terms
+    [25], [143], [3, 64], [46, 64], [64, 143], [3, 25, 46], [3, 46, 64], [3, 46, 143], [25, 46, 143],
+    [46, 64, 143],  # h(x)
+    [81], [82], [84], [90], [111], [123], [136],  # 7-bit NFSR sum
+]
 
-    for _ in range(rounds):
-        new_bit = s[62] ^ s[51] ^ s[38] ^ s[23] ^ s[13] ^ s[0]
-        s[:79] = s[1:]
-        s[-1] = new_bit
-
-    return wordlist_to_bytearray(s, 1, state_bit_size)
-"""
+# One register per FSR, cell size (word size) of 1 bit, one clock performed per add_fsr_component call.
+GRAIN_CORE_DESCRIPTION = [[[80, LFSR_CORE_POLY], [80, NFSR_CORE_POLY]], 1]
 
 
 class GrainCorePermutation(Cipher):
     """
     Construct an instance of the GrainCorePermutation class.
 
-    This class is used to store compact representations of a cipher, used to generate the corresponding cipher.
+    This class implements the 160-clock key/IV-initialization core of **Grain v1** (the "Grain-80" variant:
+    80-bit key, 64-bit IV, 160-bit internal state), as specified by Hell, Johansson and Meier, "Grain: A
+    stream cipher for constrained environments" (2005), later tweaked and submitted to the eSTREAM project,
+    where the tweaked version became known as "Grain v1" and was selected for the eSTREAM portfolio. This is
+    **not** Grain-128, Grain-128a, or Grain-128AEAD -- those are different, incompatible members of the
+    Grain family with different state sizes and (for the 128a/AEAD variants) authentication.
+
+    Grain v1's internal state is 160 bits, made of an 80-bit LFSR (linear feedback shift register, denoted
+    ``s``) and an 80-bit NFSR (nonlinear feedback shift register, denoted ``b``). This class models exactly
+    one clock of the initialization ("key-scheduling") phase per round, applied to the full 160-bit state:
+
+    - LFSR feedback (linear): ``s_{i+80} = s_{i+62} + s_{i+51} + s_{i+38} + s_{i+23} + s_{i+13} + s_i``
+    - NFSR feedback (nonlinear): ``b_{i+80} = s_i + g(b_i, ..., b_{i+63})`` (see the reference for the full
+      polynomial ``g``, reproduced verbatim in ``NFSR_CORE_POLY`` below)
+    - Filter function: ``h(x)`` with ``x0=s_{i+3}, x1=s_{i+25}, x2=s_{i+46}, x3=s_{i+64}, x4=b_{i+63}``
+    - Output bit: ``z_i = h(x) + b_{i+1} + b_{i+2} + b_{i+4} + b_{i+10} + b_{i+31} + b_{i+43} + b_{i+56}``
+
+    During initialization, unlike during keystream generation, the output bit ``z_i`` is fed back (XORed)
+    into both the new LFSR bit and the new NFSR bit before they are shifted into their respective registers:
+    ``new_s = f(x) XOR z_i`` and ``new_b = (s_i + g(x)) XOR z_i``, where ``f(x)`` is the LFSR's own linear
+    feedback. This is exactly what ``INPUT_STATE`` clocked 160 times (``INITCLOCKS`` in the reference C
+    implementation) represents; the default ``number_of_rounds`` of 160 matches this.
+
+    The single 160-bit ``INPUT_STATE`` is laid out as follows:
+
+    - bits 0-79: LFSR content, with bit ``i`` holding ``s_i`` (``s_0`` at bit 0, ..., ``s_79`` at bit 79)
+    - bits 80-159: NFSR content, with bit ``80 + i`` holding ``b_i`` (``b_0`` at bit 80, ..., ``b_79`` at
+      bit 159)
+
+    This class purposefully stops at the end of the 160-clock initialization core: it does not perform
+    key/IV loading (turning an 80-bit key and 64-bit IV into the initial 160-bit state) and it does not
+    implement keystream generation (which, unlike initialization, does not feed ``z_i`` back into the
+    registers, and instead releases it as output). A full ``GrainStreamCipher`` implementing key/IV setup
+    and keystream extraction on top of this core is out of scope here.
 
     INPUT:
 
-    - ``number_of_rounds`` -- **integer** (default: `None`); number of rounds of the permutation. By default, the
-      cipher uses the corresponding amount given the other parameters (if available)
+    - ``number_of_rounds`` -- **integer** (default: `None`); number of initialization clocks of the
+      permutation. By default, the cipher uses 160 (Grain v1's ``INITCLOCKS``).
 
     EXAMPLES::
 
@@ -58,14 +110,14 @@ class GrainCorePermutation(Cipher):
         160
 
         sage: grain_core.component_from(0, 0).id
-        'xor_0_0'
+        'fsr_0_0'
 
-        sage: grain_core.print_cipher_structure_as_python_dictionary_to_file(  # doctest: +SKIP
-        ....: "claasp/graph_representations/permutations/" + gc.file_name)  # doctest: +SKIP
+        sage: grain_core.evaluate([0x0000000000000000ffff00000000000000000000]) == 0x4eb431bcc5344efb12da6d7b0599918a2f079726
+        True
     """
 
     def __init__(self, number_of_rounds=None):
-        self.state_bit_size = 80
+        self.state_bit_size = 160
 
         if number_of_rounds is None:
             n = PARAMETERS_CONFIGURATION_LIST[0]["number_of_rounds"]
@@ -78,20 +130,19 @@ class GrainCorePermutation(Cipher):
             cipher_inputs=[INPUT_STATE],
             cipher_inputs_bit_size=[self.state_bit_size],
             cipher_output_bit_size=self.state_bit_size,
-            cipher_reference_code=reference_code.format(n),
         )
 
-        state = [INPUT_STATE], [list(range(self.state_bit_size))]
+        state_id = INPUT_STATE
+        state_positions = list(range(self.state_bit_size))
 
         for _ in range(n):
             self.add_round()
 
-            state_id_list, state_bit_positions = extract_inputs(*state, [0, 13, 23, 38, 51, 62])
-            new_bit_id = self.add_xor_component(state_id_list, state_bit_positions, 1).id
+            state_id = self.add_fsr_component(
+                [state_id], [state_positions], self.state_bit_size, GRAIN_CORE_DESCRIPTION
+            ).id
+            state_positions = list(range(self.state_bit_size))
 
-            state_id_list, state_bit_positions = extract_inputs(*state, list(range(1, 80)))
-            state = state_id_list + [new_bit_id], state_bit_positions + [[0]]
+            self.add_round_output_component([state_id], [state_positions], self.state_bit_size)
 
-            self.add_round_output_component(*state, 80)
-
-        self.add_cipher_output_component(*state, 80)
+        self.add_cipher_output_component([state_id], [state_positions], self.state_bit_size)

@@ -415,6 +415,14 @@
 
         **H**
 
+.. [HJM2005]
+        Hell M., Johansson T., Meier W. : *Grain: A Stream Cipher for Constrained
+        Environments* : International Journal of Wireless and Mobile Computing,
+        2(1), 86-93, 2007 : originally presented at ECRYPT SASC 2005; a
+        subsequently tweaked version was submitted to eSTREAM as "Grain v1" and
+        selected for the eSTREAM Profile 2 portfolio :
+        https://www.ecrypt.eu.org/stream/p3ciphers/grain/grain_p3.pdf
+
 .. [He2002]
         Heys H. : *A Tutorial on Linear and Differential Cryptanalysis* : 2002
         : http://www.engr.mun.ca/~howard/PAPERS/ldc_tutorial.pdf
