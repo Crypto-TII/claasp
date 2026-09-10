@@ -17,6 +17,7 @@ Computer-algebra and solver integrations will be optional backends.
    concepts
    parameters
    batch_evaluation
+   traditional_ciphers
    polynomial_models
    development
    api

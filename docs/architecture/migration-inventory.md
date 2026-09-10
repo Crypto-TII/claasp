@@ -35,7 +35,7 @@ dependency and executes its historical doctest suite through Sage. The
 | Constants and outputs | Port as structural components | Unit tests |
 | S-box lookup table | Port as bit-vector finite map | Published vectors |
 | MixColumn | Superseded by typed linear map | AES comparison |
-| Modular integer operations | Deferred | ARX comparison |
+| Modular integer operations | Ported for word units | Speck64/128 vector |
 | Boolean algebraic model | Deferred as external backend | Existing model fixtures |
 | SAT/SMT/MILP/CP models | Deferred as external backends | Selected trail searches |
 | Serialization | Superseded by schema v5 | Round-trip tests |
@@ -52,6 +52,10 @@ The initial end-to-end set is:
 - Speck: integer modular arithmetic and rotations.
 - AES or ToyAES: bit encodings, lookup maps, and `GF(2^8)` linear algebra.
 - PRESENT or GIFT: conventional bit-oriented SPN.
+
+Speck64/128 is now the first completed traditional-cipher target. Its graph
+uses ``Word(32)`` units and dedicated rotate, XOR, and modular-add components;
+the published designers' vector and first-round intermediate value are tests.
 
 ## Update rule
 

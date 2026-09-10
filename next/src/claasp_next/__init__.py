@@ -1,7 +1,7 @@
 """Sage-independent typed core for the next major CLAASP release."""
 
 from claasp_next.core import Cipher, Component, Port, Round, Selection, ValueType
-from claasp_next.domains import BinaryExtensionField, Bit, PrimeField
+from claasp_next.domains import BinaryExtensionField, Bit, PrimeField, Word
 from claasp_next.evaluators import (
     BatchEvaluationResult,
     BatchEvaluator,
@@ -25,4 +25,5 @@ __all__ = [
     "Selection",
     "TransposedBatchEvaluator",
     "ValueType",
+    "Word",
 ]

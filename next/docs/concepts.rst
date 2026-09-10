@@ -11,7 +11,7 @@ not have the same multiplication operation.
 
 .. doctest::
 
-   >>> from claasp_next import BinaryExtensionField, PrimeField
+   >>> from claasp_next import BinaryExtensionField, PrimeField, Word
    >>> aes_field = BinaryExtensionField(8, 0x11B)
    >>> aes_field.encoded_bit_size
    8
@@ -19,6 +19,12 @@ not have the same multiplication operation.
    True
    >>> PrimeField(257).contains(257)
    False
+   >>> Word(8).contains(0x57)
+   True
+
+``Word(8)`` and ``BinaryExtensionField(8, 0x11B)`` share an encoding size but
+not algebra: the former supports modular integer addition and rotation, while
+the latter supports polynomial-basis field arithmetic.
 
 Logical-unit selections
 -----------------------

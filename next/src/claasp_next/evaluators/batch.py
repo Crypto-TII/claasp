@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from claasp_next.core import Cipher
 from claasp_next.components.algebraic import Add, LinearMap, Multiply, Power
 from claasp_next.components.structural import Concatenate, Constant, Identity, Permutation
+from claasp_next.components.word import ModularAdd, Rotate, Xor
 from claasp_next.evaluators.scalar import EvaluationResult, RuntimeValue, ScalarEvaluator
 
 
@@ -167,6 +168,9 @@ class TransposedBatchEvaluator(BatchEvaluator):
             Multiply: scalar._evaluate_multiply,
             Power: scalar._evaluate_power,
             LinearMap: scalar._evaluate_linear_map,
+            ModularAdd: scalar._evaluate_modular_add,
+            Rotate: scalar._evaluate_rotate,
+            Xor: scalar._evaluate_xor,
         }
         try:
             handler = handlers[type(component)]

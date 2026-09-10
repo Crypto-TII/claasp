@@ -5,6 +5,7 @@ from dataclasses import dataclass
 
 from claasp_next.components.algebraic import Add, LinearMap, Multiply, Power
 from claasp_next.components.structural import Concatenate, Constant, Identity, Permutation
+from claasp_next.components.word import ModularAdd, Rotate, Xor
 from claasp_next.core.cipher import Cipher
 from claasp_next.core.component import Component
 
@@ -47,6 +48,9 @@ class ScalarEvaluator:
             Multiply: self._evaluate_multiply,
             Power: self._evaluate_power,
             LinearMap: self._evaluate_linear_map,
+            ModularAdd: self._evaluate_modular_add,
+            Rotate: self._evaluate_rotate,
+            Xor: self._evaluate_xor,
         }
 
     def register(self, component_type: type[Component], handler: Handler) -> None:
@@ -204,3 +208,28 @@ class ScalarEvaluator:
                 accumulator = cls._add_scalar(domain, accumulator, product)
             output.append(accumulator)
         return tuple(output)
+
+    @staticmethod
+    def _evaluate_modular_add(
+        component: ModularAdd, inputs: tuple[RuntimeValue, ...]
+    ) -> RuntimeValue:
+        mask = (1 << component.output_type.domain.width) - 1
+        return tuple(sum(values) & mask for values in zip(*inputs))
+
+    @staticmethod
+    def _evaluate_xor(component: Xor, inputs: tuple[RuntimeValue, ...]) -> RuntimeValue:
+        output = list(inputs[0])
+        for operand in inputs[1:]:
+            output = [left ^ right for left, right in zip(output, operand)]
+        return tuple(output)
+
+    @staticmethod
+    def _evaluate_rotate(component: Rotate, inputs: tuple[RuntimeValue, ...]) -> RuntimeValue:
+        width = component.output_type.domain.width
+        amount = component.amount
+        mask = (1 << width) - 1
+        if amount == 0:
+            return inputs[0]
+        if component.direction == "left":
+            return tuple(((value << amount) | (value >> (width - amount))) & mask for value in inputs[0])
+        return tuple(((value >> amount) | (value << (width - amount))) & mask for value in inputs[0])
