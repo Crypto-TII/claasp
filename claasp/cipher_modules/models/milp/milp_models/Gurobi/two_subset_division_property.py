@@ -16,6 +16,7 @@
 # ****************************************************************************
 
 from gurobipy import GRB
+from sage.rings.polynomial.pbori.pbori import BooleanPolynomialRing
 
 from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel
 
@@ -28,9 +29,10 @@ class MilpTwoSubsetDivisionPropertyModel(MilpMonomialPredictionModel):
     propagation rules where the two-subset property parts from the exact
     monomial-prediction model: the weight-preserving COPY (:meth:`create_all_copies`,
     :meth:`create_copies_for_linear_layer`) and the 2SDP S-box trail table
-    (:meth:`get_valid_monomial_exponents_table`, :meth:`add_sbox_constraints`). The
-    linear components (XOR, ROTATE, SHIFT, constant, output) and the driver are
-    inherited unchanged.
+    (:meth:`get_valid_monomial_exponents_table`, :meth:`add_sbox_constraints`), plus the
+    XOR with a constant, which is transparent here (:meth:`_add_xor_bit_constraint`). The
+    other linear components (ROTATE, SHIFT, permutation, constant, output) and the driver
+    are inherited unchanged.
 
     An INFEASIBLE model proves the output bit balanced (an integral distinguisher).
     It is sound but coarser than the exact model (it certifies only a subset of its
@@ -40,9 +42,12 @@ class MilpTwoSubsetDivisionPropertyModel(MilpMonomialPredictionModel):
 
     The constructor's ``sbox_encoding`` flag picks the small-S-box encoder:
     ``"onehot"`` (default), ``"convexhull"``, or ``"espresso"`` (S-boxes over 5 bits
-    always use Espresso). Only SPN-style components are handled so far; the non-linear
-    ones without a 2SDP rule yet (AND, OR, NOT, MODADD, MODMUL, FSR) raise
-    :class:`NotImplementedError` until an override is added. Requires a Gurobi license.
+    always use Espresso). Besides the SPN-style components, the bitwise AND and OR
+    (:meth:`add_and_constraints`, :meth:`add_or_constraints`) and the modular addition
+    (:meth:`add_modadd_constraints`) have their two-subset rules, and constants are
+    transparent (:meth:`add_constant_constraints`); the components without a 2SDP rule yet
+    (NOT, MODMUL, FSR) raise :class:`NotImplementedError` until an override is added.
+    Requires a Gurobi license.
     """
 
     def __init__(self, cipher, sbox_encoding="onehot"):
@@ -85,6 +90,10 @@ class MilpTwoSubsetDivisionPropertyModel(MilpMonomialPredictionModel):
             for i in range(1, number_of_1s + 1):
                 copies[index][i] = new_vars[i - 1]
         return copies
+
+    def _add_xor_bit_constraint(self, output_var, vars_sum, const_val):
+        """Two-subset XOR: ``b == sum(a_i)``; a constant operand is transparent, whatever its value."""
+        self._model.addConstr(output_var == vars_sum)
 
     def get_valid_monomial_exponents_table(self, component):
         r"""
@@ -195,22 +204,168 @@ class MilpTwoSubsetDivisionPropertyModel(MilpMonomialPredictionModel):
     def _unsupported(self, name):
         raise NotImplementedError(
             f"The two-subset division property model currently supports SPN-style components "
-            f"(S-box, linear layer / bit-permutation, XOR, ROTATE, SHIFT, constant, output). "
+            f"(S-box, linear layer / bit-permutation, XOR, ROTATE, SHIFT, constant, output), AND, OR and MODADD. "
             f"Component '{name}' has a two-subset rule that is not yet implemented; use the exact "
             f"MilpMonomialPredictionModel, or add the corresponding 2SDP override to this class."
         )
 
     def add_and_constraints(self, component):
-        self._unsupported("AND")
+        r"""
+        Two-subset division trail of the bitwise AND (Xiang et al., ASIACRYPT 2016, model (2)):
+        for ``y = x_0 & ... & x_{k-1}`` with input exponents ``a_i`` and output exponent ``b``,
+
+        ``b >= a_i`` for every ``i`` and ``b <= a_0 + ... + a_{k-1}``,
+
+        i.e. the trails ``(0,...,0) -> 0`` and ``a -> 1`` for every nonzero ``a``.
+        """
+        self._add_max_rule_constraints(component, padded_output=True)
 
     def add_or_constraints(self, component):
-        self._unsupported("OR")
+        r"""
+        Two-subset division trail of the bitwise OR. The ANF ``x_0 | x_1 = x_0 + x_1 + x_0 x_1``
+        (and its ``k``-input analogue) contains the full product, so Todo's rule gives the same
+        trails as the AND: ``b >= a_i`` for every ``i`` and ``b <= a_0 + ... + a_{k-1}``.
+        """
+        self._add_max_rule_constraints(component, padded_output=False)
+
+    def _add_max_rule_constraints(self, component, padded_output):
+        """
+        ``b >= a_i``, ``b <= sum(a_i)`` per output bit, the operands being the ``k`` consecutive
+        blocks of the concatenated input. AND outputs are padded (indexed by position), OR outputs
+        are not (indexed in the order of the sorted used positions).
+        """
+        output_vars = self.get_output_vars(component)
+        input_vars_concat = self.get_input_vars(component)
+        self._model.update()
+
+        number_of_operands = component.description[1]
+        block_size = len(input_vars_concat) // number_of_operands
+        for index, bit_pos in enumerate(sorted(self._occurences[component.id].keys())):
+            output_var = output_vars[bit_pos] if padded_output else output_vars[index]
+            operands = [input_vars_concat[bit_pos + t * block_size] for t in range(number_of_operands)]
+            for operand in operands:
+                self._model.addConstr(output_var >= operand)
+            self._model.addConstr(output_var <= sum(operands))
+            self.set_as_used_variables(operands + [output_var])
+        self._model.update()
 
     def add_not_constraints(self, component):
         self._unsupported("NOT")
 
+    # ---- modular addition ---------------------------------------------------------------------
+
+    _FULL_ADDER_TABLE = None
+
+    @classmethod
+    def full_adder_two_subset_table(cls):
+        r"""
+        Two-subset division trails of one bit slice of the modular addition, the full adder
+        ``(x, y, c) -> (s, c')`` with ``s = x + y + c`` and ``c' = xy + xc + yc``, derived from
+        its ANF exactly as for an S-box (``u -> v`` iff some monomial of ``prod_{q: v_q=1} f_q``
+        dominates ``u``, then SizeReduce). Input bits are ``(x, y, c) = (bit 0, bit 1, bit 2)``
+        of ``u`` and output bits ``(s, c') = (bit 0, bit 1)`` of ``v``. The table has 11 trails:
+
+        ``000 -> 00``; a single active input ``-> 01`` or ``-> 10``; two active inputs ``-> 10``
+        (the carry only); ``111 -> 11``.
+
+        Chaining the slices is at least as tight as the COPY/AND/XOR decomposition of
+        Sun et al. (ePrint 2016/1101, Sect. 3.1), whose trails are these up to non-minimal
+        ones. A constant (or dropped) operand is handled by the same table with its bit fixed
+        to 0, which is their Sect. 3.3.
+        """
+        if cls._FULL_ADDER_TABLE is None:
+            ring = BooleanPolynomialRing(3, "x")
+            x, y, c = ring.gens()
+            anfs = [x + y + c, x * y + x * c + y * c]
+            names = [str(v) for v in ring.gens()]
+            table = []
+            for u in range(8):
+                reachable = []
+                for v in range(4):
+                    product = ring(1)
+                    for q in range(2):
+                        if (v >> q) & 1:
+                            product *= anfs[q]
+                    monomials = [sum(1 << names.index(str(var)) for var in mon.variables()) for mon in product.monomials()]
+                    if any((w & u) == u for w in monomials):
+                        reachable.append(v)
+                for v in reachable:
+                    if not any(v2 != v and (v2 & v) == v2 for v2 in reachable):
+                        table.append((u, v))
+            cls._FULL_ADDER_TABLE = table
+        return cls._FULL_ADDER_TABLE
+
     def add_modadd_constraints(self, component):
-        self._unsupported("MODADD")
+        r"""
+        Two-subset model of ``z = x_0 + x_1 + ... + x_{k-1} mod 2^n``: a ripple-carry chain of
+        full-adder slices (:meth:`full_adder_two_subset_table`), one-hot encoded, from the
+        least significant bit (carry-in fixed to 0) to the most significant one (carry-out
+        dropped, i.e. fixed to 0). More than two operands are added one after the other
+        through intermediate sums. Operands are the ``k`` consecutive ``n``-bit blocks of the
+        concatenated input, most significant bit first, like the output.
+        """
+        output_vars = self.get_output_vars(component)
+        input_vars_concat = self.get_input_vars(component)
+        self._model.update()
+
+        n = component.output_bit_size
+        k = component.description[1]
+        if len(input_vars_concat) != k * n:
+            raise ValueError(f"add_modadd_constraints: {component.id} has {len(input_vars_concat)} input bits for {k} operands of {n} bits")
+        operands = [input_vars_concat[t * n : (t + 1) * n] for t in range(k)]
+
+        acc = operands[0]
+        for t in range(1, k):
+            if t == k - 1:
+                result = output_vars
+            else:
+                result = [
+                    self._model.addVar(vtype=GRB.BINARY, name=f"modadd_{component.id}_sum{t}_{i}") for i in range(n)
+                ]
+                self._model.update()
+            self._add_two_subset_adder(f"{component.id}_{t}", acc, operands[t], result)
+            acc = result
+
+        self.set_as_used_variables(input_vars_concat + list(output_vars))
+        self._model.update()
+
+    def _add_two_subset_adder(self, tag, a_bits, b_bits, z_bits):
+        """One-hot ripple-carry adder ``z = a + b mod 2^n`` on MSB-first variable lists."""
+        n = len(z_bits)
+        table = self.full_adder_two_subset_table()
+        carry = self._model.addVar(vtype=GRB.BINARY, lb=0, ub=0, name=f"modadd_{tag}_carry_in")
+        self._model.update()
+        for i in reversed(range(n)):                          # i = n-1 is the least significant bit
+            carry_out = self._model.addVar(
+                vtype=GRB.BINARY, lb=0, ub=0 if i == 0 else 1, name=f"modadd_{tag}_carry_{i}"
+            )
+            selectors = [
+                self._model.addVar(vtype=GRB.BINARY, name=f"modadd_{tag}_trail_{i}_{t}") for t in range(len(table))
+            ]
+            self._model.update()
+            self._model.addConstr(sum(selectors) == 1)
+            for p, var in enumerate((a_bits[i], b_bits[i], carry)):
+                self._model.addConstr(var == sum(selectors[t] for t, (u, v) in enumerate(table) if (u >> p) & 1))
+            for q, var in enumerate((z_bits[i], carry_out)):
+                self._model.addConstr(var == sum(selectors[t] for t, (u, v) in enumerate(table) if (v >> q) & 1))
+            carry = carry_out
+        self._model.update()
+
+    # ---- constants ----------------------------------------------------------------------------
+
+    def add_constant_constraints(self, component):
+        """
+        Constants carry no weight in the two-subset property: every constant bit is fixed to
+        0, which makes XOR, AND, OR and modular addition with a constant transparent (Sun et
+        al., ePrint 2016/1101, Prop. 1-2 and Sect. 3.3). The exact model instead leaves the
+        1-bits free, since ``x + 1`` has the monomial ``1``.
+        """
+        self._constants[component.id] = {}
+        output_vars = self.get_output_vars(component)
+        for index, bit_pos in enumerate(sorted(self._occurences[component.id].keys())):
+            self._model.addConstr(output_vars[index] == 0)
+            self._constants[component.id][bit_pos] = 0
+        self._model.update()
 
     def add_modmul_constraints(self, component):
         self._unsupported("MODMUL")
@@ -220,12 +375,32 @@ class MilpTwoSubsetDivisionPropertyModel(MilpMonomialPredictionModel):
 
     def _keyless_submodel(self, keep_round_key_injection):
         """2SDP sub-model on the key-schedule-removed cipher, carrying the solver params and encoding."""
+        if not keep_round_key_injection:
+            self._check_round_keys_enter_by_xor()
         sub = type(self)(
             self._cipher.remove_key_schedule(keep_round_key_injection=keep_round_key_injection),
             sbox_encoding=self._sbox_encoding,
         )
         sub._gurobi_params = dict(self._gurobi_params)
         return sub
+
+    def _check_round_keys_enter_by_xor(self):
+        """
+        Dropping the round keys is sound only where they are XORed in (invariance under XOR
+        with a constant). ``remove_key_schedule(keep_round_key_injection=False)`` would also
+        strip a key operand from a modular addition, AND or OR and rewire the rest as a plain
+        wire, which is not a valid model; refuse, and point to the independent-round-key model.
+        """
+        with_round_keys = self._cipher.remove_key_schedule(keep_round_key_injection=True)
+        for component in with_round_keys.get_all_components():
+            takes_key = any(link == "key" or link.startswith("key_") for link in component.input_id_links)
+            is_xor = component.type == "word_operation" and component.description[0] == "XOR"
+            if takes_key and not is_xor and component.type != "intermediate_output":
+                raise ValueError(
+                    f"round keys enter component {component.id} ({component.description[0] if component.type == 'word_operation' else component.type}) "
+                    "other than by XOR, so the keyless model is not sound; use the independent-round-key "
+                    "methods (keep_round_key_injection=True) instead."
+                )
 
     def is_balanced_at_specific_output_bit_over_cube_with_independent_round_keys(
         self, output_bit_index, cube, chosen_cipher_output=None

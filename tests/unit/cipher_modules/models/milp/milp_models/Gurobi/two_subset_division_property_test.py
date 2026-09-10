@@ -3,6 +3,11 @@ import pytest
 from claasp.cipher_modules.models.milp.milp_models.Gurobi.two_subset_division_property import *
 from claasp.ciphers.block_ciphers.ublock_block_cipher import UblockBlockCipher
 from claasp.ciphers.single_component_ciphers.sbox_cipher import SboxCipher
+from claasp.ciphers.single_component_ciphers.and_cipher import AndCipher
+from claasp.ciphers.single_component_ciphers.or_cipher import OrCipher
+from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
+from claasp.ciphers.block_ciphers.lea_block_cipher import LeaBlockCipher
+from claasp.ciphers.block_ciphers.hight_block_cipher import HightBlockCipher
 
 """
 
@@ -43,7 +48,7 @@ def test_unsupported_component_raises():
     cipher = UblockBlockCipher(number_of_rounds=1)
     milp = MilpTwoSubsetDivisionPropertyModel(cipher)
     with pytest.raises(NotImplementedError):
-        milp.add_and_constraints(None)
+        milp.add_not_constraints(None)
 
 
 @pytest.mark.skip(reason="Requires Gurobi license")
@@ -77,3 +82,66 @@ def test_is_cube_monomial_feasible_at_specific_output_bit_over_cube_keyless_ublo
     milp = MilpTwoSubsetDivisionPropertyModel(cipher)
     cube = [f"p{i}" for i in range(36, 64)] + [f"p{i}" for i in range(100, 128)]
     assert milp.is_cube_monomial_feasible_at_specific_output_bit_over_cube_keyless(1, cube) is True
+
+
+@pytest.mark.skip(reason="Requires Gurobi license")
+def test_and_and_or_two_subset_trails():
+    # y = x0 & x1 and y = x0 | x1 have the same two-subset trails: with the output exponent fixed
+    # to 1 the feasible inputs are exactly (0,1), (1,0), (1,1)
+    from gurobipy import GRB
+
+    for cipher in (AndCipher(word_bit_size=1, number_of_inputs=2), OrCipher(word_bit_size=1, number_of_inputs=2)):
+        feasible = []
+        for a0 in (0, 1):
+            for a1 in (0, 1):
+                milp = MilpTwoSubsetDivisionPropertyModel(cipher)
+                milp.build_generic_model_for_specific_output_bit(0)
+                model = milp._model
+                model.Params.OutputFlag = 0
+                model.addConstr(model.getVarByName(f"{cipher.inputs[0]}[0]") == a0)
+                model.addConstr(model.getVarByName(f"{cipher.inputs[1]}[0]") == a1)
+                model.update()
+                model.optimize()
+                if model.Status == GRB.OPTIMAL:
+                    feasible.append((a0, a1))
+        assert feasible == [(0, 1), (1, 0), (1, 1)]
+
+
+@pytest.mark.skip(reason="Requires Gurobi license")
+def test_is_balanced_over_cube_scan_simon32_13():
+    # Xiang et al. 2016, E.1: 13-round SIMON32, (c a^15, a^16) -> (?^16, b^16); nothing one round later.
+    cube = [f"p{i}" for i in range(1, 32)]
+    cipher = SimonBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=13)
+    milp = MilpTwoSubsetDivisionPropertyModel(cipher)
+    result = milp.is_balanced_over_cube_scan(list(range(32)), cube, independent_round_keys=True)
+    assert [j for j in range(32) if result[j]] == list(range(16, 32))
+    cipher = SimonBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=14)
+    milp = MilpTwoSubsetDivisionPropertyModel(cipher)
+    assert milp.is_balanced_at_specific_output_bit_over_cube_with_independent_round_keys(16, cube) is False
+
+
+def test_full_adder_two_subset_table_has_11_trails():
+    # one bit slice of the modular addition, (x, y, c) -> (s, c'); no solve
+    table = MilpTwoSubsetDivisionPropertyModel.full_adder_two_subset_table()
+    assert len(table) == 11
+    assert (0b000, 0b00) in table and (0b111, 0b11) in table
+    # two active inputs reach the carry only, a single one reaches either output
+    assert {v for u, v in table if u == 0b110} == {0b10}
+    assert {v for u, v in table if u == 0b001} == {0b01, 0b10}
+
+
+def test_keyless_model_refused_when_round_keys_are_added():
+    # HIGHT adds its subkeys modularly: dropping them is not sound, the independent-key model must be used
+    milp = MilpTwoSubsetDivisionPropertyModel(HightBlockCipher(number_of_rounds=2))
+    with pytest.raises(ValueError):
+        milp._keyless_submodel(keep_round_key_injection=False)
+
+
+@pytest.mark.skip(reason="Requires Gurobi license")
+def test_is_cube_monomial_feasible_keyless_lea_6():
+    # Sun et al. (ePrint 2016/1101) B.2: 6-round LEA, (A^32, C^32, C^32, C^32) -> bit 4 of word X1 balanced, only
+    cipher = LeaBlockCipher(block_bit_size=128, key_bit_size=128, number_of_rounds=6, reorder_input_and_output=False)
+    milp = MilpTwoSubsetDivisionPropertyModel(cipher)
+    cube = [f"p{i}" for i in range(32)]
+    assert milp.is_cube_monomial_feasible_at_specific_output_bit_over_cube_keyless(36, cube) is False
+    assert milp.is_cube_monomial_feasible_at_specific_output_bit_over_cube_keyless(37, cube) is True
