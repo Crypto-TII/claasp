@@ -40,3 +40,27 @@ instances are available through ``number_of_rounds`` for analysis and retain
 the prefix of the standard schedule. This implementation currently targets
 only the 64-bit-block, 128-bit-key member; other Speck variants will be added
 only when they provide additional architectural validation.
+
+AES-128
+-------
+
+AES validates a different interpretation of an eight-bit unit. Its bytes are
+elements of :math:`GF(2^8)` in the polynomial basis defined by
+:math:`x^8+x^4+x^3+x+1`, rather than unsigned ``Word(8)`` values.
+
+.. doctest::
+
+   >>> from claasp_next.ciphers import AES128BlockCipher
+   >>> plaintext = tuple(bytes.fromhex("00112233445566778899aabbccddeeff"))
+   >>> key = tuple(bytes.fromhex("000102030405060708090a0b0c0d0e0f"))
+   >>> result = ScalarEvaluator().evaluate(
+   ...     AES128BlockCipher(), {"plaintext": plaintext, "key": key}
+   ... )
+   >>> bytes(result.output).hex()
+   '69c4e0d86a7b0430d8cdb78070b4c55a'
+
+The graph includes the AES-128 key expansion. SubBytes uses a reusable typed
+``SBox`` lookup, ShiftRows is a domain-neutral ``Permutation``, MixColumns is
+a ``LinearMap`` over the byte field, and AddRoundKey is field addition.
+``number_of_rounds`` constructs a prefix of the standard cipher; MixColumns
+is omitted only in standard round 10.

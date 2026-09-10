@@ -1,0 +1,42 @@
+"""Lookup-table substitution over canonically encoded units."""
+
+from collections.abc import Iterable
+from dataclasses import dataclass
+
+from claasp_next.core import Component, Selection
+from claasp_next.domains import BinaryExtensionField, Bit, Word
+
+
+@dataclass(frozen=True, slots=True, init=False)
+class SBox(Component):
+    """Apply one lookup table independently to every selected unit.
+
+    The input and output retain the same domain. This first representation is
+    intended for finite, densely encoded domains such as bytes, words, and
+    binary-extension-field elements.
+    """
+
+    table: tuple[int, ...]
+
+    def __init__(
+        self,
+        component_id: str,
+        component_input: Selection,
+        table: Iterable[int],
+    ) -> None:
+        if not isinstance(component_input, Selection):
+            raise TypeError("S-box input must be a Selection")
+        domain = component_input.value_type.domain
+        if not isinstance(domain, (Bit, Word, BinaryExtensionField)):
+            raise ValueError("S-box requires a densely encoded finite domain")
+        frozen_table = tuple(table)
+        expected_size = 1 << domain.encoded_bit_size
+        if len(frozen_table) != expected_size:
+            raise ValueError(f"S-box table must contain {expected_size} entries")
+        for value in frozen_table:
+            domain.validate(value)
+        object.__setattr__(self, "component_id", component_id)
+        object.__setattr__(self, "inputs", (component_input,))
+        object.__setattr__(self, "output_type", component_input.value_type)
+        object.__setattr__(self, "table", frozen_table)
+        Component.__post_init__(self)

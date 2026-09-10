@@ -5,6 +5,7 @@ from dataclasses import dataclass
 
 from claasp_next.components.algebraic import Add, LinearMap, Multiply, Power
 from claasp_next.components.structural import Concatenate, Constant, Identity, Permutation
+from claasp_next.components.substitution import SBox
 from claasp_next.components.word import ModularAdd, Rotate, Xor
 from claasp_next.core.cipher import Cipher
 from claasp_next.core.component import Component
@@ -51,6 +52,7 @@ class ScalarEvaluator:
             ModularAdd: self._evaluate_modular_add,
             Rotate: self._evaluate_rotate,
             Xor: self._evaluate_xor,
+            SBox: self._evaluate_sbox,
         }
 
     def register(self, component_type: type[Component], handler: Handler) -> None:
@@ -233,3 +235,7 @@ class ScalarEvaluator:
         if component.direction == "left":
             return tuple(((value << amount) | (value >> (width - amount))) & mask for value in inputs[0])
         return tuple(((value >> amount) | (value << (width - amount))) & mask for value in inputs[0])
+
+    @staticmethod
+    def _evaluate_sbox(component: SBox, inputs: tuple[RuntimeValue, ...]) -> RuntimeValue:
+        return tuple(component.table[value] for value in inputs[0])

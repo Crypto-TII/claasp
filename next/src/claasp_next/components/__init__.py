@@ -2,6 +2,7 @@
 
 from claasp_next.components.algebraic import Add, LinearMap, Multiply, Power
 from claasp_next.components.structural import Concatenate, Constant, Identity, Permutation
+from claasp_next.components.substitution import SBox
 from claasp_next.components.word import ModularAdd, Rotate, Xor
 
 __all__ = [
@@ -15,5 +16,6 @@ __all__ = [
     "Power",
     "ModularAdd",
     "Rotate",
+    "SBox",
     "Xor",
 ]

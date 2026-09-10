@@ -33,8 +33,8 @@ dependency and executes its historical doctest suite through Sage. The
 | Vectorized evaluation | Superseded by evaluator backend | Scalar/batch equivalence |
 | Permutation | Port as domain-neutral component | Multi-domain tests |
 | Constants and outputs | Port as structural components | Unit tests |
-| S-box lookup table | Port as bit-vector finite map | Published vectors |
-| MixColumn | Superseded by typed linear map | AES comparison |
+| S-box lookup table | Ported as typed finite-domain lookup | AES S-box and cipher vectors |
+| MixColumn | Superseded by typed linear map | AES-128 intermediate values |
 | Modular integer operations | Ported for word units | Speck64/128 vector |
 | Boolean algebraic model | Deferred as external backend | Existing model fixtures |
 | SAT/SMT/MILP/CP models | Deferred as external backends | Selected trail searches |
@@ -56,6 +56,13 @@ The initial end-to-end set is:
 Speck64/128 is now the first completed traditional-cipher target. Its graph
 uses ``Word(32)`` units and dedicated rotate, XOR, and modular-add components;
 the published designers' vector and first-round intermediate value are tests.
+
+AES-128 is the first completed byte/extension-field target. Its state uses
+``BinaryExtensionField(8, 0x11B)`` units, and its S-box, ShiftRows,
+MixColumns, AddRoundKey, and key expansion are checked against FIPS 197 output
+and intermediate values. A direct comparison with the Sage-backed legacy
+``AESBlockCipher`` also produced ``69c4e0d86a7b0430d8cdb78070b4c55a``
+for the FIPS AES-128 example.
 
 ## Update rule
 
