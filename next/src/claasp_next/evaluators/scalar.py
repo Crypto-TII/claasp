@@ -5,7 +5,7 @@ from dataclasses import dataclass
 
 from claasp_next.components.algebraic import Add, LinearMap, Multiply, Power
 from claasp_next.components.structural import Concatenate, Constant, Identity, Permutation
-from claasp_next.components.substitution import SBox
+from claasp_next.components.substitution import BitVectorSBox, SBox
 from claasp_next.components.word import ModularAdd, Rotate, Xor
 from claasp_next.core.cipher import Cipher
 from claasp_next.core.component import Component
@@ -53,6 +53,7 @@ class ScalarEvaluator:
             Rotate: self._evaluate_rotate,
             Xor: self._evaluate_xor,
             SBox: self._evaluate_sbox,
+            BitVectorSBox: self._evaluate_bit_vector_sbox,
         }
 
     def register(self, component_type: type[Component], handler: Handler) -> None:
@@ -239,3 +240,14 @@ class ScalarEvaluator:
     @staticmethod
     def _evaluate_sbox(component: SBox, inputs: tuple[RuntimeValue, ...]) -> RuntimeValue:
         return tuple(component.table[value] for value in inputs[0])
+
+    @staticmethod
+    def _evaluate_bit_vector_sbox(
+        component: BitVectorSBox, inputs: tuple[RuntimeValue, ...]
+    ) -> RuntimeValue:
+        value = 0
+        for bit in inputs[0]:
+            value = (value << 1) | bit
+        substituted = component.table[value]
+        width = component.output_type.unit_count
+        return tuple((substituted >> position) & 1 for position in range(width - 1, -1, -1))

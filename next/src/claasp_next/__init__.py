@@ -9,6 +9,7 @@ from claasp_next.evaluators import (
     ScalarEvaluator,
     TransposedBatchEvaluator,
 )
+from claasp_next.encoding import bits_from_int, int_from_bits
 
 __all__ = [
     "BinaryExtensionField",
@@ -26,4 +27,6 @@ __all__ = [
     "TransposedBatchEvaluator",
     "ValueType",
     "Word",
+    "bits_from_int",
+    "int_from_bits",
 ]

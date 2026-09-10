@@ -16,6 +16,12 @@ Core graph
 .. automodule:: claasp_next.core
    :members:
 
+Boundary encodings
+------------------
+
+.. automodule:: claasp_next.encoding
+   :members:
+
 Components
 ----------
 

@@ -29,7 +29,7 @@ dependency and executes its historical doctest suite through Sage. The
 | Cipher and round graph | Superseded by typed graph | Graph invariant tests |
 | Input bit positions | Superseded by logical-unit selections | Type/selection tests |
 | Component identifiers | Port semantics, redesign API | Determinism tests |
-| Bit scalar evaluation | Deferred until bit components | Differential tests |
+| Bit scalar evaluation | Ported for structural, XOR, and S-box operations | PRESENT-80 vectors |
 | Vectorized evaluation | Superseded by evaluator backend | Scalar/batch equivalence |
 | Permutation | Port as domain-neutral component | Multi-domain tests |
 | Constants and outputs | Port as structural components | Unit tests |
@@ -63,6 +63,12 @@ MixColumns, AddRoundKey, and key expansion are checked against FIPS 197 output
 and intermediate values. A direct comparison with the Sage-backed legacy
 ``AESBlockCipher`` also produced ``69c4e0d86a7b0430d8cdb78070b4c55a``
 for the FIPS AES-128 example.
+
+PRESENT-80 completes the initial bit-SPN target. Its graph exposes individual
+``Bit`` units, grouped 4-bit S-boxes, a domain-neutral pLayer permutation, and
+the full 80-bit key schedule. All four test vectors from the original paper
+are covered, and the all-zero vector was compared directly with the
+Sage-backed legacy ``PresentBlockCipher``.
 
 ## Update rule
 

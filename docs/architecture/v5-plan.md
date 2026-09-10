@@ -195,6 +195,7 @@ path is correct and stable.
 - [ ] Advanced polynomial lowering policies.
 - [x] Word domain, ARX components, and Speck64/128 known-answer validation.
 - [x] Byte-field S-box component and AES-128 known-answer validation.
+- [x] Bit-vector S-box component and PRESENT-80 known-answer validation.
 
 ## Milestone tracker
 
@@ -211,5 +212,5 @@ path is correct and stable.
 | Pinned Poseidon parameter catalogue | Achieved | Bundled BN254/width-3 data and vector |
 | Dependency-free transposed batch backend | Achieved | Differential tests and benchmark harness |
 | msolve polynomial exporter | Achieved | Native format, validation, and optional integration test |
-| Traditional cipher validation | In progress | Speck64/128 and AES-128 achieved; bit-SPN next |
+| Traditional cipher validation | Achieved | Speck64/128, AES-128, and PRESENT-80 |
 | Legacy analysis migration | Planned | Begins after graph API stabilizes |

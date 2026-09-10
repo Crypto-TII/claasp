@@ -64,3 +64,26 @@ The graph includes the AES-128 key expansion. SubBytes uses a reusable typed
 a ``LinearMap`` over the byte field, and AddRoundKey is field addition.
 ``number_of_rounds`` constructs a prefix of the standard cipher; MixColumns
 is omitted only in standard round 10.
+
+PRESENT-80
+----------
+
+PRESENT validates the individual-bit representation needed by Boolean
+analysis backends. Its 4-bit S-box is a ``BitVectorSBox`` connecting four
+separate ``Bit`` units, unlike AES's lookup over one byte-field unit.
+
+.. doctest::
+
+   >>> from claasp_next import bits_from_int, int_from_bits
+   >>> from claasp_next.ciphers import Present80BlockCipher
+   >>> result = ScalarEvaluator().evaluate(Present80BlockCipher(), {
+   ...     "plaintext": bits_from_int(0, 64),
+   ...     "key": bits_from_int(0, 80),
+   ... })
+   >>> f"{int_from_bits(result.output):016x}"
+   '5579c1387b228445'
+
+Cipher boundaries use MSB-first bit tuples. ``bits_from_int`` and
+``int_from_bits`` make that convention explicit and reject values that would
+otherwise be truncated. The graph contains all 31 substitution-permutation
+rounds, the 80-bit key schedule, and final whitening.
