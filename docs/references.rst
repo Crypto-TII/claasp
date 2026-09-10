@@ -80,16 +80,35 @@
         Competition, third-round submission, 2016 :
         https://competitions.cr.yp.to/round3/norxv30.pdf
 
+.. [ASCONREF]
+        Ascon Team : *ascon-c reference implementation for NIST SP 800-232* :
+        commit 446347f21b209f3921c65ece70027c366cbe1693 :
+        https://github.com/ascon/ascon-c/tree/446347f21b209f3921c65ece70027c366cbe1693
+
 .. _claasp-ref-B:
 
 .. only:: html
 
         **B**
 
+.. [BBBGPUV2020]
+        Beierle C., Biryukov A., Cardoso dos Santos L., Großschädl J.,
+        Perrin L., Udovenko A., Velichkov V., Wang Q. : *Alzette: A 64-bit
+        ARX-box (feat. CRAX and TRAX)* : In Advances in Cryptology -- CRYPTO
+        2020, LNCS 12172, pp. 419-448, Springer 2020 :
+        https://doi.org/10.1007/978-3-030-56877-1_15 (extended version:
+        Cryptology ePrint Archive, Paper 2019/1378,
+        https://eprint.iacr.org/2019/1378)
+
 .. [BC2003]
         Biryukov A., Canniere C. D. : *Block Ciphers and Systems of Quadratic
         Equations* : In Proceedings of Fast Software Encryption 2003, LNCS
         2887, pp. 274-289, Springer-Verlag 2003
+
+.. [BDDGR23]
+        Belkheyar Y., Daemen J., Dobraunig C., Ghosh S., Rasoolzadeh S. : *BipBip: A Low-Latency
+        Tweakable Block Cipher with Small Dimensions* : In IACR Transactions on Cryptographic
+        Hardware and Embedded Systems, vol. 2023, no. 1, pp. 326-368, 2023
 
 .. [BDG+25] Y. Belkheyar, P. Derbez, S. Ghosh, G. Leander, S. Mella, L. Perrin,
         S. Rasoolzadeh, L. Stennes, S. Sun, G. Van Assche, D. Vizár,
@@ -257,6 +276,10 @@
         tool for ChaCha, Salsa and Forro (MIT licensed).
         https://github.com/murcoutinho/cryptDances
 
+.. [CryptoLUXSPARX]
+        CryptoLUX : *SPARX Reference C Implementation* :
+        https://github.com/cryptolu/SPARX/blob/master/ref-c/sparx.c
+
 .. [CZZ2023]
         Cao, W., Zhang, W., Zhou, C. : *New Automatic Search Tool for Searching
         for Impossible Differentials Using Undisturbed Bits* In: Deng, Y.,
@@ -274,6 +297,11 @@
         D'Anvers, J.-P., Karmakar, A., Roy S.S., Vercauteren F.: *Saber:
         Module-LWR Based Key Exchange, CPA-Secure Encryption and CCA-Secure
         KEM* : AFRICACRYPT 2018: 282-305.
+
+.. [DPUVGB2016]
+        Dinu D., Perrin L., Udovenko A., Velichkov V., Großschädl J.,
+        Biryukov A. : *Design Strategies for ARX with Provable Bounds:
+        Sparx and LAX* : ASIACRYPT 2016.
 
 .. [Din2021Cry]
         Dinur I. : *Cryptanalytic Applications of the Polynomial Method for
@@ -353,6 +381,25 @@
 
         **G**
 
+.. [GASTON2023]
+        El Hirch S., Daemen J., Rohit R. S., Makarim R. H. : *Twin Column
+        Parity Mixers and Gaston* : Cryptology ePrint Archive, Paper 2023/799,
+        2023 : https://eprint.iacr.org/2023/799
+
+.. [GIMLI2017]
+        Bernstein D. J., Kölbl S., Lucks S., Massolino P. M. C., Mendel F.,
+        Nawaz K., Schneider T., Schwabe P., Standaert F.-X., Todo Y., Viguier B. :
+        *Gimli: a cross-platform permutation* : CHES 2017 :
+        https://gimli.cr.yp.to/gimli-20170627.pdf
+
+.. [GIFT2017]
+        Banik S., Pandey S. K., Peyrin T., Sasaki Y., Sim S. M., Todo Y. :
+        *GIFT: A Small Present -- Towards Reaching the Limit of Lightweight Encryption* :
+        In Cryptographic Hardware and Embedded Systems -- CHES 2017, Lecture Notes in Computer Science,
+        vol. 10529, pp. 321--345. Springer (2017) : https://doi.org/10.1007/978-3-319-66787-4_16.
+        Full version: https://eprint.iacr.org/2017/622.pdf.
+        Reference implementation and test vectors: https://github.com/giftcipher/gift.
+
 .. [Go2019]
         Gohr A. : *Improving Attacks on Round-Reduced Speck32/64 using Deep Learning
 * : In Advances in Cryptology – CRYPTO 2019
@@ -412,6 +459,12 @@
 .. only:: html
 
         **K**
+
+.. [XKCPREF]
+        Keccak Team : *eXtended Keccak Code Package (XKCP), reference
+        implementations of Keccak-p and Xoodoo* : commit
+        eb5244d6b95fb1c434b211bac293093e18aa8fd1 :
+        https://github.com/XKCP/XKCP/tree/eb5244d6b95fb1c434b211bac293093e18aa8fd1
 
 .. [KPG1999]
         Kipnis A., Patarin J., Goubin L. : *Unbalanced oil and vinegar
@@ -646,6 +699,13 @@
         LNCS 12804, Springer, pp. 535–564, 2021.
         DOI: 10.1007/978-3-030-81652-0_21.
 
+.. [WHZDWS2025]
+
+        Wang J., Huang T., Zeng G., Ding T., Wu S., Sun S. : *THF: Designing
+        Low-Latency Tweakable Block Ciphers* : IACR Transactions on Symmetric
+        Cryptology, 2025(4), pp. 125-166, 2025 :
+        https://eprint.iacr.org/2025/1314
+
 .. _claasp-ref-X:
 
 .. only:: html
@@ -674,3 +734,9 @@
         *RECTANGLE: a bit-slice lightweight block cipher suitable for multiple
         platforms* : Science China Information Sciences, 58(12), 1-15 (2015) :
         https://eprint.iacr.org/2014/084.pdf
+
+.. [ZDY+2019]
+        Zhang W., Ding T., Yang B., Bao Z., Xiang Z., Ji F., Zhao X. :
+        *KNOT: Algorithm Specifications and Supporting Document* : Submission to
+        the NIST Lightweight Cryptography project (2019) :
+        https://csrc.nist.gov/projects/lightweight-cryptography/round-1-candidates

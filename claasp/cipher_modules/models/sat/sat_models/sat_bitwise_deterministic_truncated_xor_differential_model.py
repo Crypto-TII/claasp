@@ -81,7 +81,7 @@ class SatBitwiseDeterministicTruncatedXorDifferentialModel(SatTruncatedXorDiffer
             SBOX,
             WORD_OPERATION,
         )
-        operation_types = ("AND", "MODADD", "MODSUB", "NOT", "OR", "ROTATE", "SHIFT", "XOR")
+        operation_types = ("AND", "MODADD", "MODMUL", "MODSUB", "NOT", "OR", "ROTATE", "SHIFT", "XOR")
 
         component_list = component_list or self._cipher.get_all_components()
         for component in component_list:

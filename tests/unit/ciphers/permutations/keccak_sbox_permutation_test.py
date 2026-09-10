@@ -1,3 +1,5 @@
+import pytest
+
 from claasp.ciphers.permutations.keccak_sbox_permutation import KeccakSboxPermutation
 
 
@@ -22,11 +24,7 @@ def test_keccak_sbox_permutation():
                     '000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'
                     '000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'
                     '000000000000000000', 16)
-    ciphertext = int('0x000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000'
-                     '00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'
-                     '00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'
-                     '00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'
-                     '0000000000000000000000', 16)
+    ciphertext = 0x8000000080008008 << (24 * 64)
     assert keccak.evaluate([plaintext]) == ciphertext
 
     keccak = KeccakSboxPermutation(number_of_rounds=24)
@@ -42,3 +40,11 @@ def test_keccak_sbox_permutation():
                      '30a13beaf1ff7b5ceca249', 16)
     assert keccak.evaluate([plaintext]) == ciphertext
     assert keccak.evaluate_vectorized([plaintext], evaluate_api=True) == ciphertext
+
+
+def test_keccak_sbox_permutation_invalid_parameters():
+    with pytest.raises(ValueError):
+        KeccakSboxPermutation(word_size=48)
+
+    with pytest.raises(ValueError):
+        KeccakSboxPermutation(number_of_rounds=25, word_size=64)
