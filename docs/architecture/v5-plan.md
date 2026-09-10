@@ -196,6 +196,7 @@ path is correct and stable.
 - [x] Word domain, ARX components, and Speck64/128 known-answer validation.
 - [x] Byte-field S-box component and AES-128 known-answer validation.
 - [x] Bit-vector S-box component and PRESENT-80 known-answer validation.
+- [x] Solver-independent Boolean CNF lowering, witnesses, and DIMACS export.
 
 ## Milestone tracker
 
@@ -214,4 +215,5 @@ path is correct and stable.
 | msolve polynomial exporter | Achieved | Native format, validation, and optional integration test |
 | Traditional cipher validation | Achieved | Speck64/128, AES-128, and PRESENT-80 |
 | Advanced polynomial lowering | Achieved | Direct/binary-chain policies, witnesses, and statistics |
-| Legacy analysis migration | Planned | Begins after graph API stabilizes |
+| Boolean CNF and DIMACS analysis layer | Achieved | Dependency-free IR, PRESENT witness validation, and exporter |
+| Remaining legacy analysis migration | In progress | Add optional SAT execution, then SMT/MILP/CP lowerings |

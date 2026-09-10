@@ -51,3 +51,12 @@ Polynomial models
 
 .. automodule:: claasp_next.polynomial
    :members:
+
+Boolean models
+--------------
+
+.. automodule:: claasp_next.boolean
+   :members:
+
+.. automodule:: claasp_next.boolean.exporters
+   :members:
