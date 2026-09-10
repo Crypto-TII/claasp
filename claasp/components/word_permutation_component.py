@@ -16,13 +16,24 @@
 # ****************************************************************************
 
 
-from claasp.components.mix_column_component import MixColumn
+from claasp.components.permutation_component import Permutation
 
 
-class WordPermutation(MixColumn):
+class WordPermutation(Permutation):
     """
     Construct a word permutation component.
 
+    A thin wrapper around :py:class:`~claasp.components.permutation_component.Permutation`
+    that accepts the "destination-takes-from-source" convention historically used by
+    ``WordPermutation``: ``permutation_description[i]`` is the index of the *input* word
+    that ends up at *output* word ``i`` (i.e. ``output[i] = input[permutation_description[i]]``).
+
+    ``Permutation`` itself uses the opposite, source-to-destination convention (each entry
+    gives the destination of the corresponding source word), so ``permutation_description``
+    is inverted into that convention before being handed to :py:meth:`Permutation.__init__`.
+    All constraint generation (algebraic, SAT, SMT, CP, MILP) and code generation is then
+    inherited unchanged from ``Permutation``, which already supports ``word_size > 1``
+    generically.
 
     INPUT:
 
@@ -30,20 +41,21 @@ class WordPermutation(MixColumn):
     - ``current_round_number_of_components`` -- **integer**; index of the component inside the round. ``0`` is valid.
     - ``input_id_links`` -- **list**; input component identifiers (usually strings). Must align with ``input_bit_positions``.
     - ``input_bit_positions`` -- **list**; bit positions for each input identifier (list of lists). Must align with ``input_id_links``.
-    - ``output_bit_size`` -- **integer**; output size in bits. ``0`` is valid only when supported by the component semantics.
-    - ``permutation_description`` -- **list**; permutation mapping description.
-    - ``word_size`` -- **integer**; word size used by the permutation construction.
+    - ``output_bit_size`` -- **integer**; output size in bits. Must be divisible by ``word_size``.
+    - ``permutation_description`` -- **list**; for each output word index ``i``, the index of the
+      input word that is copied to it (``output[i] = input[permutation_description[i]]``).
+    - ``word_size`` -- **integer**; number of bits per word.
 
     EXAMPLES::
 
         sage: from claasp.components.word_permutation_component import WordPermutation
-        sage: component = WordPermutation(0, 0, ['input'], [[0, 1, 2, 3]], 0, [1, 0], 2)
+        sage: component = WordPermutation(0, 0, ['input'], [[0, 1, 2, 3]], 4, [1, 0], 2)
         sage: print(component.id)
-        mix_column_0_0
+        permutation_0_0
         sage: print(component.type)
-        mix_column
-        sage: print(component.description[2])
-        2
+        permutation
+        sage: print(component.description)
+        [[1, 0], 2]
     """
     def __init__(
         self,
@@ -55,17 +67,19 @@ class WordPermutation(MixColumn):
         permutation_description,
         word_size,
     ):
-        matrix = []
-        for i in range(len(permutation_description)):
-            row = [0] * len(permutation_description)
-            row[permutation_description[i]] = 1
-            matrix.append(row)
-        description = [matrix, 0, word_size]
+        # ``permutation_description`` follows WordPermutation's historical destination-to-source
+        # convention: output word i is taken from input word permutation_description[i].
+        # ``Permutation`` expects the opposite, source-to-destination convention: entry src gives
+        # the destination of source word src. Invert accordingly.
+        src_to_dst = [0] * len(permutation_description)
+        for dst, src in enumerate(permutation_description):
+            src_to_dst[src] = dst
         super().__init__(
             current_round_number,
             current_round_number_of_components,
             input_id_links,
             input_bit_positions,
             output_bit_size,
-            description,
+            src_to_dst,
+            word_size,
         )
