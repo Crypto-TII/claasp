@@ -459,7 +459,7 @@ class MilpMonomialPredictionModel:
 
         copy_monomials_deg = self.create_gurobi_vars_sbox(component, input_vars_concat)
 
-        for index, bit_pos in enumerate(list(self._occurences[component.id].keys())):
+        for index, bit_pos in enumerate(sorted(self._occurences[component.id].keys())):
             constr = 0
             equality = True
             monomials = anfs[bit_pos].monomials()
@@ -539,7 +539,7 @@ class MilpMonomialPredictionModel:
         self._model.update()
 
         rotate_offset = component.description[1]
-        for index, bit_pos in enumerate(list(self._occurences[component.id].keys())):
+        for index, bit_pos in enumerate(sorted(self._occurences[component.id].keys())):
             self._model.addConstr(
                 output_vars[index] == input_vars_concat[(bit_pos - rotate_offset) % component.output_bit_size]
             )
@@ -553,7 +553,7 @@ class MilpMonomialPredictionModel:
 
         shift_offset = component.description[1]
 
-        for index, bit_pos in enumerate(self._occurences[component.id].keys()):
+        for index, bit_pos in enumerate(sorted(self._occurences[component.id].keys())):
             target = bit_pos - shift_offset
 
             if target < 0 or target >= component.output_bit_size:
@@ -562,6 +562,29 @@ class MilpMonomialPredictionModel:
                 self._model.addConstr(output_vars[index] == input_vars_concat[target])
                 self.set_as_used_variables([input_vars_concat[target]])
 
+        self._model.update()
+
+    def add_permutation_constraints(self, component):
+        """
+        Bit/word permutation as plain wire equalities (weight preserving, so identical in the
+        exact and the two-subset models). CLAASP's convention: ``description = [perm, word_size]``
+        with ``output word perm[i] = input word i`` (``word_size = 1`` for a bitwise permutation).
+        """
+        output_vars = self.get_output_vars(component)
+        input_vars_concat = self.get_input_vars(component)
+        self._model.update()
+
+        perm, word_size = component.description[0], component.description[1]
+        # source bit feeding each output bit
+        source_of_output = [None] * component.output_bit_size
+        for src_word, dst_word in enumerate(perm):
+            for b in range(word_size):
+                source_of_output[dst_word * word_size + b] = src_word * word_size + b
+
+        for index, bit_pos in enumerate(sorted(self._occurences[component.id].keys())):
+            src = source_of_output[bit_pos]
+            self._model.addConstr(output_vars[index] == input_vars_concat[src])
+            self.set_as_used_variables([input_vars_concat[src]])
         self._model.update()
 
     def add_xor_constraints(self, component):
@@ -595,11 +618,15 @@ class MilpMonomialPredictionModel:
             for v in var_inputs_per_bit[bit_idx]:
                 self.set_as_used_variables([v])
             const_val = sum(const_bits_per_bit[bit_idx]) % 2
-            if const_val == 0:
-                self._model.addConstr(output_vars[bit_idx] == vars_sum)
-            else:
-                self._model.addConstr(output_vars[bit_idx] >= vars_sum)
+            self._add_xor_bit_constraint(output_vars[bit_idx], vars_sum, const_val)
         self._model.update()
+
+    def _add_xor_bit_constraint(self, output_var, vars_sum, const_val):
+        # exact model: y = x (+) 1 has the monomials 1 and x, so the output may also be reached with no input
+        if const_val == 0:
+            self._model.addConstr(output_var == vars_sum)
+        else:
+            self._model.addConstr(output_var >= vars_sum)
 
     def get_output_vars(self, component):
         output_vars = []
@@ -806,10 +833,10 @@ class MilpMonomialPredictionModel:
         self._model.update()
 
         block_size = int(len(input_vars_concat) // component.description[1])
-        for index, bit_pos in enumerate(list(self._occurences[component.id].keys())):
-            self._model.addConstr(output_vars[index] == input_vars_concat[index])
-            self._model.addConstr(output_vars[index] == input_vars_concat[index + block_size])
-            self.set_as_used_variables([input_vars_concat[index], input_vars_concat[index + block_size]])
+        for bit_pos in sorted(self._occurences[component.id].keys()):  # padded outputs: index by position
+            self._model.addConstr(output_vars[bit_pos] == input_vars_concat[bit_pos])
+            self._model.addConstr(output_vars[bit_pos] == input_vars_concat[bit_pos + block_size])
+            self.set_as_used_variables([input_vars_concat[bit_pos], input_vars_concat[bit_pos + block_size]])
         self._model.update()
 
     def add_fsr_constraints(self, component):
@@ -913,9 +940,9 @@ class MilpMonomialPredictionModel:
         input_vars_concat = self.get_input_vars(component)
         self._model.update()
 
-        for index, bit_pos in enumerate(list(self._occurences[component.id].keys())):
-            self._model.addConstr(output_vars[index] >= input_vars_concat[index])
-            self.set_as_used_variables([input_vars_concat[index]])
+        for index, bit_pos in enumerate(sorted(self._occurences[component.id].keys())):
+            self._model.addConstr(output_vars[index] >= input_vars_concat[bit_pos])
+            self.set_as_used_variables([input_vars_concat[bit_pos]])
         self._model.update()
 
     def add_constant_constraints(self, component):
@@ -929,12 +956,12 @@ class MilpMonomialPredictionModel:
         else:
             raise ValueError("Unknown format: must start with 0b or 0x")
 
-        for i, bit_pos in enumerate(list(self._occurences[component.id].keys())):
-            if (const >> (component.output_bit_size - 1 - i)) & 1 == 0:
+        for i, bit_pos in enumerate(sorted(self._occurences[component.id].keys())):
+            if (const >> (component.output_bit_size - 1 - bit_pos)) & 1 == 0:
                 self._model.addConstr(output_vars[i] == 0)
-                self._constants[component.id][i] = 0
+                self._constants[component.id][bit_pos] = 0
             else:
-                self._constants[component.id][i] = 1
+                self._constants[component.id][bit_pos] = 1
         self._model.update()
 
     def add_or_constraints(self, component):
@@ -981,7 +1008,7 @@ class MilpMonomialPredictionModel:
         input_vars_concat = self.get_input_vars(component)
         self._model.update()
 
-        for index, bit_pos in enumerate(list(self._occurences[component.id].keys())):
+        for index, bit_pos in enumerate(sorted(self._occurences[component.id].keys())):
             self._model.addConstr(output_vars[index] == input_vars_concat[bit_pos])
             self.set_as_used_variables([input_vars_concat[bit_pos], output_vars[index]])
         self._model.update()
@@ -1020,6 +1047,8 @@ class MilpMonomialPredictionModel:
             self.add_constant_constraints(component)
         elif component.type in ["linear_layer", "mix_column"]:
             self.add_linear_layer_constraints(component)
+        elif component.type == "permutation":
+            self.add_permutation_constraints(component)
         elif component.type in ["cipher_output", "intermediate_output"]:
             self.add_intermediate_output_constraints(component)
         elif component.type == "word_operation":
