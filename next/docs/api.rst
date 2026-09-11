@@ -60,3 +60,6 @@ Boolean models
 
 .. automodule:: claasp_next.boolean.exporters
    :members:
+
+.. automodule:: claasp_next.boolean.solvers
+   :members:

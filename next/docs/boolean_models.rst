@@ -50,5 +50,27 @@ wires.
    'c 1 plaintext_0'
 
 Any command-line or Python SAT engine that accepts DIMACS can consume this
-text. Solver adapters belong outside the typed cipher graph and will be added
+text. Solver adapters live outside the typed cipher graph and can be added
 incrementally; the Boolean IR itself has no third-party dependency.
+
+Solving with MiniSat
+--------------------
+
+The optional command-line adapter invokes a locally installed ``minisat``
+executable. No Python solver package is required. Named assumptions add unit
+clauses for one solve without modifying the original formula; they are useful
+for fixing plaintext, key, or ciphertext bits.
+
+.. doctest::
+
+   >>> from claasp_next.boolean.solvers import MinisatSolver
+   >>> solver = MinisatSolver(timeout_seconds=30)
+   >>> solver.executable
+   'minisat'
+
+With MiniSat installed, a caller can run ``result = solver.solve(formula,
+{"plaintext_0": 0})``. A satisfiable result contains an assignment keyed by
+the original graph-derived variable names. ``result.status`` distinguishes
+``SATISFIABLE`` from ``UNSATISFIABLE``, and ``runtime_seconds``, ``stdout``,
+and ``stderr`` retain execution diagnostics. Missing executables, timeouts,
+malformed output, and nonstandard exit codes are reported explicitly.

@@ -197,6 +197,7 @@ path is correct and stable.
 - [x] Byte-field S-box component and AES-128 known-answer validation.
 - [x] Bit-vector S-box component and PRESENT-80 known-answer validation.
 - [x] Solver-independent Boolean CNF lowering, witnesses, and DIMACS export.
+- [x] Optional MiniSat execution with named assumptions and parsed assignments.
 
 ## Milestone tracker
 
@@ -216,4 +217,5 @@ path is correct and stable.
 | Traditional cipher validation | Achieved | Speck64/128, AES-128, and PRESENT-80 |
 | Advanced polynomial lowering | Achieved | Direct/binary-chain policies, witnesses, and statistics |
 | Boolean CNF and DIMACS analysis layer | Achieved | Dependency-free IR, PRESENT witness validation, and exporter |
-| Remaining legacy analysis migration | In progress | Add optional SAT execution, then SMT/MILP/CP lowerings |
+| MiniSat execution adapter | Achieved | SAT/UNSAT results, named assumptions, timeouts, and dedicated CI |
+| Remaining legacy analysis migration | In progress | Add cryptanalytic constraints, then SMT/MILP/CP lowerings |

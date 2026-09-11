@@ -17,7 +17,8 @@ docs = ["sphinx>=6", "furo>=2024.1.29"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-ra"
+addopts = '-ra -m "not external"'
+markers = ["external: requires an executable supplied by a dedicated integration job"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
