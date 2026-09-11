@@ -41,6 +41,14 @@ and validates a returned key by evaluating the cipher, rather than trusting
 SAT status alone. The reduced-round key is a feasibility witness, not a claim
 of uniqueness or an optimum.
 
+## Differential and linear trails
+
+| Legacy test | Semantic assertions and provenance | Disposition | v5 coverage |
+| --- | --- | --- | --- |
+| SAT/SMT `*_xor_differential_model_test.py` Speck32/64 five-round optimum | Minimum XOR-differential weight 9, repeated across legacy SAT and SMT backends | Scheduled for M10.3c | M10.3a first defines backend-neutral exact transition and trail weights; the eventual solver witness must be independently checked |
+| SAT/SMT `*_xor_linear_model_test.py` reduced Speck fixtures | Four-round optimum weight 3 and three-round feasible weight 7 | Scheduled for M10.3c | Same shared semantics and independent-check requirement |
+| S-box differential/linear component behavior used throughout legacy trail models | DDT probability and signed LAT correlation derived exhaustively from the lookup table | Ported in M10.3a | `test_trail_semantics.py` checks exact PRESENT transitions, impossible transitions, signs, weights, and trail aggregation |
+
 ## Analysis and tooling inventory
 
 These discovered suites receive row-level entries when their M10 increment

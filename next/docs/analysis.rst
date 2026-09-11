@@ -75,3 +75,24 @@ A reduced-round pair may admit several keys. Build an ``AnalysisProblem`` with
 the desired key projection and call ``enumerate_solutions(problem, limit=N)``
 to request distinct projected solutions. The facade adds blocking clauses and
 stops either at ``N`` or when the model becomes unsatisfiable.
+
+Differential and linear semantics
+---------------------------------
+
+Trail objects and component transition probabilities are independent of any
+SAT, SMT, MILP, or CP syntax. This also gives analysis results a second,
+solver-independent checker. For the published PRESENT S-box, for example:
+
+.. doctest::
+
+   >>> from claasp_next.analysis import SBoxTransitionSemantics
+   >>> from claasp_next.ciphers.block_ciphers.present import PRESENT_SBOX
+   >>> semantics = SBoxTransitionSemantics(PRESENT_SBOX)
+   >>> transition = semantics.xor_differential(0x1, 0x3)
+   >>> (transition.numerator, transition.denominator, transition.weight)
+   (4, 16, 2.0)
+   >>> semantics.check(transition)
+   True
+
+Linear transitions retain their correlation sign as well as their absolute
+weight. Impossible transitions have zero numerator and infinite weight.

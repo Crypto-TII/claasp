@@ -251,6 +251,15 @@ Exit criterion: a reviewed reference set reproduces the corresponding CLAASP
 v4 and publication results on pinned solver versions; every reported trail is
 independently checked against component transition semantics.
 
+This milestone is delivered through reviewable checkpoints:
+
+1. M10.3a defines backend-independent patterns, exact transition weights,
+   trails, and independently checked S-box DDT/LAT semantics.
+2. M10.3b adds SPN propagation/search and sourced PRESENT fixtures.
+3. M10.3c adds ARX propagation/search and sourced Speck fixtures.
+4. M10.3d ports the selected truncated and impossible models and completes
+   the cross-backend regression inventory.
+
 #### M10.4: SMT backend
 
 - Lower the shared cipher and trail semantics to SMT and add open-source
@@ -445,6 +454,8 @@ each synchronization.
 | Analysis contracts and constraints (M10.1) | Achieved | Simple facade, graph-level constraints, projection, reproducible results |
 | SAT cipher/key recovery (M10.2) | Achieved | Bit/word lowering, packed projections, inversion, enumeration, blocking, MiniSat Speck recovery |
 | Differential/linear analysis (M10.3) | Next | Reproduce sourced legacy/publication trails, weights, and bounds |
+| Shared trail semantics (M10.3a) | Achieved | Exact typed patterns, transitions, trails, PRESENT DDT/LAT checker |
+| SPN trail search (M10.3b) | Next | Add solver lowering and sourced PRESENT regression fixtures |
 | SMT, MILP, and CP (M10.4–M10.6) | Planned | Shared semantics with independent external lowerings |
 | Statistical analysis (M10.7) | Planned | Avalanche and related legacy behavior |
 | Serialization, diagrams, transforms, compilers (M10.8) | Planned | Inventory-driven tooling migration |

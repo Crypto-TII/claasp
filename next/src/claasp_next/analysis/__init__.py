@@ -9,6 +9,16 @@ from claasp_next.analysis.constraints import (
 )
 from claasp_next.analysis.facade import Analysis, AnalysisResult
 from claasp_next.analysis.problem import AnalysisProblem, MinimizeWeight
+from claasp_next.analysis.trails import (
+    BitPattern,
+    SBoxTransitionSemantics,
+    Trail,
+    TrailKind,
+    TrailStep,
+    Transition,
+    XorDifference,
+    XorMask,
+)
 
 __all__ = [
     "Analysis",
@@ -20,4 +30,12 @@ __all__ = [
     "MinimizeWeight",
     "Nonzero",
     "NotEqual",
+    "BitPattern",
+    "SBoxTransitionSemantics",
+    "Trail",
+    "TrailKind",
+    "TrailStep",
+    "Transition",
+    "XorDifference",
+    "XorMask",
 ]
