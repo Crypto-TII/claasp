@@ -854,7 +854,7 @@ class Rotate(Component):
 
             sage: from claasp.ciphers.single_component_ciphers.rotate_cipher import RotateCipher
             sage: from claasp.cipher_modules.models.smt.smt_models.smt_xor_quasidifferential_model import SmtXorQuasidifferentialModel
-            sage: cipher = RotateCipher(bit_size=2, parameter=1)
+            sage: cipher = RotateCipher(bit_size=2, rotation_amount=1)
             sage: rotate_component = cipher.component_from_id('rot_0_0')
             sage: smt = SmtXorQuasidifferentialModel(cipher)
             sage: variables, constraints = rotate_component.smt_xor_quasidifferential_propagation_constraints(smt)

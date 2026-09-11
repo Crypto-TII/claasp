@@ -962,7 +962,7 @@ class Shift(Component):
 
             sage: from claasp.ciphers.single_component_ciphers.shift_cipher import ShiftCipher
             sage: from claasp.cipher_modules.models.smt.smt_models.smt_xor_quasidifferential_model import SmtXorQuasidifferentialModel
-            sage: cipher = ShiftCipher(bit_size=2, parameter=1)
+            sage: cipher = ShiftCipher(bit_size=2, shift_amount=1)
             sage: shift_component = cipher.component_from_id('shift_0_0')
             sage: smt = SmtXorQuasidifferentialModel(cipher)
             sage: variables, constraints = shift_component.smt_xor_quasidifferential_propagation_constraints(smt)

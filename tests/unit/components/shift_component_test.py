@@ -220,7 +220,7 @@ def test_milp_wordwise_deterministic_truncated_xor_differential_constraints():
     assert str(constraints[-1]).endswith('== 0')
 
 def test_smt_xor_quasidifferential_propagation_constraints():
-    cipher = ShiftCipher(bit_size=2, parameter=1)
+    cipher = ShiftCipher(bit_size=2, shift_amount=1)
     model = SmtXorQuasidifferentialModel(cipher)
     shift_component = cipher.component_from(0, 0)
     variables, constraints = shift_component.smt_xor_quasidifferential_propagation_constraints(model)

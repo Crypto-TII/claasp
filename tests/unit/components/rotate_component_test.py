@@ -45,7 +45,7 @@ def test_cp_xor_differential_first_step_constraints():
 
 
 def test_smt_xor_quasidifferential_propagation_constraints():
-    cipher = RotateCipher(bit_size=2, parameter=1)
+    cipher = RotateCipher(bit_size=2, rotation_amount=1)
     model = SmtXorQuasidifferentialModel(cipher)
     rotate_component = cipher.component_from(0, 0)
     variables, constraints = rotate_component.smt_xor_quasidifferential_propagation_constraints(model)
