@@ -380,13 +380,12 @@ path is correct and stable.
 Unless this plan is explicitly revised, “next milestone” means the first
 unfinished item in this order:
 
-1. M10.1 shared analysis contracts and the simple constraint API.
-2. M9.2 CLAASP-wide, AES-first documentation restructuring, using the new
+1. M9.2 CLAASP-wide, AES-first documentation restructuring, using the new
    authoring and analysis APIs in its introductory workflows.
-3. M10.2 SAT cipher/key recovery.
-4. M10.3 differential and linear trail semantics and reference results.
-5. M10.4–M10.8 backend, statistical, and tooling migration.
-6. M11 integration and release.
+2. M10.2 SAT cipher/key recovery.
+3. M10.3 differential and linear trail semantics and reference results.
+4. M10.4–M10.8 backend, statistical, and tooling migration.
+5. M11 integration and release.
 
 The migration inventory is a maintained artifact, not a one-time search. It
 must cover cipher construction/evaluation tests and the legacy SAT, CMS, SMT,
@@ -420,6 +419,7 @@ each synchronization.
 - [x] AES/PRESENT/Speck legacy regression inventory and semantic parity.
 - [x] Concise component authoring, automatic IDs, indexing, and shared utilities.
 - [x] Friendly packed-integer evaluation with direct cipher methods and explicit traces.
+- [x] Graph-level analysis constraints, projections, results, and key-recovery facade.
 
 ## Milestone tracker
 
@@ -439,11 +439,11 @@ each synchronization.
 | Traditional cipher reference implementations | Initial slice achieved | Published vectors for Speck64/128, AES-128, and PRESENT-80 |
 | Legacy cipher regression parity (M9) | Achieved | Living matrix; AES-128/192/256, PRESENT-80/128, Speck32/64 and Speck64/96 |
 | Cipher-authoring usability (M9.1) | Achieved | Whole-port coercion, indexing, automatic IDs, reusable primitives, concise ciphers |
-| CLAASP-wide documentation (M9.2) | Planned after M10.1 | AES-first introduction, simple analysis, and separate v5/AO section |
+| CLAASP-wide documentation (M9.2) | Next | AES-first introduction, simple analysis, and separate v5/AO section |
 | Advanced polynomial lowering | Achieved | Direct/binary-chain policies, witnesses, and statistics |
 | Boolean CNF and DIMACS analysis layer | Achieved | Dependency-free IR, PRESENT witness validation, and exporter |
 | MiniSat execution adapter | Achieved | SAT/UNSAT results, named assumptions, timeouts, and dedicated CI |
-| Analysis contracts and constraints (M10.1) | Next | Simple facade, graph-level constraints, projection, reproducible results |
+| Analysis contracts and constraints (M10.1) | Achieved | Simple facade, graph-level constraints, projection, reproducible results |
 | SAT cipher/key recovery (M10.2) | Planned | Complete required bit lowering and port legacy SAT cipher tests |
 | Differential/linear analysis (M10.3) | Planned | Reproduce sourced legacy/publication trails, weights, and bounds |
 | SMT, MILP, and CP (M10.4–M10.6) | Planned | Shared semantics with independent external lowerings |

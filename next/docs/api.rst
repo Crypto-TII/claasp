@@ -40,6 +40,12 @@ Evaluation
 .. automodule:: claasp_next.evaluators
    :members:
 
+Analysis
+--------
+
+.. automodule:: claasp_next.analysis
+   :members:
+
 Primitives
 ----------
 

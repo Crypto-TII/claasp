@@ -149,6 +149,13 @@ class Cipher:
         }
         return ScalarEvaluator().evaluate(self, decoded)
 
+    def analyze(self):
+        """Return the high-level analysis facade for this cipher."""
+
+        from claasp_next.analysis import Analysis
+
+        return Analysis(self)
+
     def _bind_inputs(self, args: tuple[object, ...], kwargs: Mapping[str, object]) -> Mapping[str, object]:
         if kwargs and args:
             raise TypeError("use positional arguments, keyword arguments, or one mapping; do not mix them")
