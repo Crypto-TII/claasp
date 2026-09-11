@@ -42,6 +42,15 @@ class Port:
 
         return Selection(self, tuple(range(self.value_type.unit_count)))
 
+    def __getitem__(self, positions: int | slice | tuple[int, ...]) -> "Selection":
+        """Select units with ordinary indexing syntax."""
+
+        if isinstance(positions, tuple):
+            return self.select(*positions)
+        if isinstance(positions, slice):
+            return self.select(*range(self.value_type.unit_count)[positions])
+        return self.select(positions)
+
 
 @dataclass(frozen=True, slots=True)
 class Selection:
@@ -73,3 +82,26 @@ class Selection:
         """Type produced by this flattened logical-unit selection."""
 
         return ValueType(self.source.value_type.domain, (len(self.positions),))
+
+    def __getitem__(self, positions: int | slice | tuple[int, ...]) -> "Selection":
+        """Select positions relative to this selection."""
+
+        requested = positions if isinstance(positions, tuple) else (positions,)
+        if len(requested) == 1 and isinstance(requested[0], slice):
+            selected = self.positions[requested[0]]
+        else:
+            selected = tuple(self.positions[position] for position in requested)
+        return Selection(self.source, tuple(selected))
+
+
+PortLike = Port | Selection
+
+
+def as_selection(value: PortLike) -> Selection:
+    """Normalize a whole port or an existing selection."""
+
+    if isinstance(value, Port):
+        return value.select_all()
+    if isinstance(value, Selection):
+        return value
+    raise TypeError("component input must be a Port or Selection")

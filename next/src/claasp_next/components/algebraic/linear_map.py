@@ -4,7 +4,7 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 
 from claasp_next.core.component import Component
-from claasp_next.core.port import Selection
+from claasp_next.core.port import PortLike, as_selection
 from claasp_next.core.value_type import ValueType
 
 
@@ -16,12 +16,11 @@ class LinearMap(Component):
 
     def __init__(
         self,
-        component_id: str,
-        component_input: Selection,
+        component_input: PortLike,
         matrix: Iterable[Iterable[int]],
+        component_id: str | None = None,
     ) -> None:
-        if not isinstance(component_input, Selection):
-            raise TypeError("linear-map input must be a Selection")
+        component_input = as_selection(component_input)
         frozen_matrix = tuple(tuple(row) for row in matrix)
         if not frozen_matrix:
             raise ValueError("matrix must contain at least one row")

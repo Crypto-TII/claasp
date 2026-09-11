@@ -1,9 +1,11 @@
 """Validated typed cipher graph."""
 
 from collections.abc import Mapping
+from copy import copy
+import re
 
 from claasp_next.core.component import Component
-from claasp_next.core.port import Port, Selection
+from claasp_next.core.port import Port, PortLike, Selection, as_selection
 from claasp_next.core.round import Round
 from claasp_next.core.value_type import ValueType
 
@@ -82,10 +84,15 @@ class Cipher:
             raise TypeError("component must be a Component")
         if not self._rounds:
             raise ValueError("add a round before adding components")
+        target_round = self._rounds[-1] if cipher_round is None else cipher_round
+        if component.component_id is None:
+            kind = re.sub(r"(?<!^)(?=[A-Z])", "_", type(component).__name__).lower()
+            generated_id = f"{kind}_{target_round.number}_{len(target_round.components)}"
+            component = copy(component)
+            object.__setattr__(component, "component_id", generated_id)
         if component.component_id in self._ports:
             raise ValueError(f"graph source {component.component_id!r} already exists")
 
-        target_round = self._rounds[-1] if cipher_round is None else cipher_round
         if not any(target_round is existing_round for existing_round in self._rounds):
             raise ValueError("target round does not belong to this cipher")
         if target_round is not self._rounds[-1]:
@@ -105,11 +112,10 @@ class Cipher:
         self._ports[component.component_id] = component.output
         return component.output
 
-    def set_output(self, output: Selection) -> None:
+    def set_output(self, output: PortLike) -> None:
         """Declare the ordered logical units returned by this cipher."""
 
-        if not isinstance(output, Selection):
-            raise TypeError("output must be a Selection")
+        output = as_selection(output)
         try:
             actual_port = self._ports[output.source.owner_id]
         except KeyError as error:

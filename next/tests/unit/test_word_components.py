@@ -9,13 +9,13 @@ def test_word_operations_wrap_and_rotate():
     cipher = Cipher("word_operations", {"left": value_type, "right": value_type})
     cipher.add_round()
     added = cipher.add_component(ModularAdd(
-        "add", (cipher.input("left").select_all(), cipher.input("right").select_all())
+        (cipher.input("left"), cipher.input("right")), component_id="add"
     ))
-    rotated = cipher.add_component(Rotate("rotate", added.select_all(), 3, "left"))
+    rotated = cipher.add_component(Rotate(added, 3, "left", component_id="rotate"))
     output = cipher.add_component(Xor(
-        "xor", (rotated.select_all(), cipher.input("right").select_all())
+        (rotated, cipher.input("right")), component_id="xor"
     ))
-    cipher.set_output(output.select_all())
+    cipher.set_output(output)
 
     assert ScalarEvaluator().evaluate(cipher, {"left": (250,), "right": (10,)}).output == (42,)
 

@@ -9,11 +9,11 @@ def test_prime_field_algebraic_components():
     vector_type = ValueType(field, (2,))
     cipher = Cipher("field_algebra", {"left": vector_type, "right": vector_type})
     cipher.add_round()
-    addition = Add("add_0_0", (cipher.input("left").select_all(), cipher.input("right").select_all()))
+    addition = Add((cipher.input("left"), cipher.input("right")), component_id="add_0_0")
     addition_output = cipher.add_component(addition)
-    product = Multiply("multiply_0_1", (addition_output.select_all(), cipher.input("right").select_all()))
+    product = Multiply((addition_output, cipher.input("right")), component_id="multiply_0_1")
     product_output = cipher.add_component(product)
-    power = Power("power_0_2", product_output.select_all(), 3)
+    power = Power(product_output, 3, component_id="power_0_2")
     cipher.add_component(power)
 
     result = ScalarEvaluator().evaluate(cipher, {"left": (15, 3), "right": (5, 4)})
@@ -29,9 +29,9 @@ def test_aes_field_multiplication_and_linear_map():
     cipher = Cipher("aes_field", {"state": vector_type})
     cipher.add_round()
     linear_map = LinearMap(
-        "linear_map_0_0",
-        cipher.input("state").select_all(),
+        cipher.input("state"),
         ((2, 3), (1, 1)),
+        component_id="linear_map_0_0",
     )
     cipher.add_component(linear_map)
 
@@ -47,4 +47,4 @@ def test_algebraic_components_reject_different_value_types():
     cipher = Cipher("mixed", {"left": prime, "right": other_prime})
 
     with pytest.raises(ValueError, match="identical value types"):
-        Add("bad", (cipher.input("left").select_all(), cipher.input("right").select_all()))
+        Add((cipher.input("left"), cipher.input("right")), component_id="bad")

@@ -75,14 +75,13 @@ class PoseidonPermutation(Cipher):
         for round_number, constants_for_round in enumerate(constants):
             self.add_round()
             constant = Constant(
-                f"constant_{round_number}_0",
                 state_type,
                 constants_for_round,
+                component_id=f"constant_{round_number}_0",
             )
             constant_output = self.add_component(constant)
             addition = Add(
-                f"add_{round_number}_1",
-                (state.select_all(), constant_output.select_all()),
+                (state, constant_output), component_id=f"add_{round_number}_1"
             )
             state = self.add_component(addition)
 
@@ -93,13 +92,13 @@ class PoseidonPermutation(Cipher):
             state = self._add_sbox_layer(state, exponent, round_number, is_full_round)
 
             linear_map = LinearMap(
-                f"linear_map_{round_number}_4",
-                state.select_all(),
+                state,
                 matrix,
+                component_id=f"linear_map_{round_number}_4",
             )
             state = self.add_component(linear_map)
 
-        self.set_output(state.select_all())
+        self.set_output(state)
 
     @staticmethod
     def _validate_round_counts(full_rounds: int, partial_rounds: int) -> None:
@@ -119,15 +118,15 @@ class PoseidonPermutation(Cipher):
         is_full_round: bool,
     ) -> Port:
         if is_full_round:
-            power = Power(f"power_{round_number}_2", state.select_all(), exponent)
+            power = Power(state, exponent, component_id=f"power_{round_number}_2")
             return self.add_component(power)
 
-        first = Power(f"power_{round_number}_2", state.select(0), exponent)
+        first = Power(state[0], exponent, component_id=f"power_{round_number}_2")
         first_output = self.add_component(first)
         if state.value_type.unit_count == 1:
             return first_output
         concatenate = Concatenate(
-            f"concatenate_{round_number}_3",
-            (first_output.select_all(), state.select(*range(1, state.value_type.unit_count))),
+            (first_output, state[1:]),
+            component_id=f"concatenate_{round_number}_3",
         )
         return self.add_component(concatenate)

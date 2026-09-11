@@ -56,30 +56,29 @@ class PresentBlockCipher(Cipher):
         for round_number in range(1, number_of_rounds + 1):
             self.add_round()
             state = self.add_component(Add(
-                f"add_round_key_{round_number}",
-                (state.select_all(), key.select(*range(64))),
+                (state, key[:64]), component_id=f"add_round_key_{round_number}"
             ))
             substituted_nibbles = []
             for nibble in range(16):
                 start = 4 * nibble
                 substituted = self.add_component(BitVectorSBox(
-                    f"sbox_{round_number}_{nibble}",
-                    state.select(*range(start, start + 4)),
+                    state[start:start + 4],
                     PRESENT_SBOX,
+                    component_id=f"sbox_{round_number}_{nibble}",
                 ))
-                substituted_nibbles.append(substituted.select_all())
+                substituted_nibbles.append(substituted)
             substituted_state = self.add_component(Concatenate(
-                f"sbox_layer_{round_number}", substituted_nibbles
+                substituted_nibbles, component_id=f"sbox_layer_{round_number}"
             ))
             state = self.add_component(Permutation(
-                f"p_layer_{round_number}", substituted_state.select_all(), P_LAYER_MAPPING
+                substituted_state, P_LAYER_MAPPING, component_id=f"p_layer_{round_number}"
             ))
             key = self._update_key(key, round_number, key_type, counter_type, key_bit_size)
 
         state = self.add_component(Add(
-            "final_add_round_key", (state.select_all(), key.select(*range(64)))
+            (state, key[:64]), component_id="final_add_round_key"
         ))
-        self.set_output(state.select_all())
+        self.set_output(state)
 
     def _update_key(
         self,
@@ -93,43 +92,43 @@ class PresentBlockCipher(Cipher):
             (position + 61) % key_bit_size for position in range(key_bit_size)
         )
         rotated = self.add_component(Permutation(
-            f"key_rotate_{round_number}", key.select_all(), rotation_mapping
+            key, rotation_mapping, component_id=f"key_rotate_{round_number}"
         ))
         high_nibble = self.add_component(BitVectorSBox(
-            f"key_sbox_{round_number}", rotated.select(0, 1, 2, 3), PRESENT_SBOX
+            rotated[0:4], PRESENT_SBOX, component_id=f"key_sbox_{round_number}"
         ))
-        prefix = [high_nibble.select_all()]
+        prefix = [high_nibble]
         remaining_start = 4
         if key_bit_size == 128:
             second_nibble = self.add_component(BitVectorSBox(
-                f"key_sbox_second_{round_number}",
-                rotated.select(4, 5, 6, 7),
+                rotated[4:8],
                 PRESENT_SBOX,
+                component_id=f"key_sbox_second_{round_number}",
             ))
-            prefix.append(second_nibble.select_all())
+            prefix.append(second_nibble)
             remaining_start = 8
         substituted = self.add_component(Concatenate(
-            f"key_substituted_{round_number}",
-            (*prefix, rotated.select(*range(remaining_start, key_bit_size))),
+            (*prefix, rotated[remaining_start:key_bit_size]),
+            component_id=f"key_substituted_{round_number}",
         ))
         counter_bits = tuple(
             (round_number >> position) & 1 for position in range(4, -1, -1)
         )
         counter = self.add_component(Constant(
-            f"key_counter_{round_number}", counter_type, counter_bits
+            counter_type, counter_bits, component_id=f"key_counter_{round_number}"
         ))
         counter_start = 60 if key_bit_size == 80 else 61
         counter_xor = self.add_component(Add(
-            f"key_counter_xor_{round_number}",
-            (substituted.select(*range(counter_start, counter_start + 5)), counter.select_all()),
+            (substituted[counter_start:counter_start + 5], counter),
+            component_id=f"key_counter_xor_{round_number}",
         ))
         return self.add_component(Concatenate(
-            f"round_key_state_{round_number + 1}",
             (
-                substituted.select(*range(counter_start)),
-                counter_xor.select_all(),
-                substituted.select(*range(counter_start + 5, key_bit_size)),
+                substituted[:counter_start],
+                counter_xor,
+                substituted[counter_start + 5:key_bit_size],
             ),
+            component_id=f"round_key_state_{round_number + 1}",
         ))
 
 

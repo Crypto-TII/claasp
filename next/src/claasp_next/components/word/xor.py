@@ -9,11 +9,11 @@ from claasp_next.core import Component, Selection
 class Xor(Component):
     """XOR word vectors component-wise."""
 
-    def __init__(self, component_id: str, component_inputs: Iterable[Selection]) -> None:
+    def __init__(self, component_inputs: Iterable[Selection], component_id: str | None = None) -> None:
         inputs = tuple(component_inputs)
         if len(inputs) < 2:
             raise ValueError("word XOR requires at least two inputs")
-        output_type = require_word_inputs(inputs, "word XOR")
+        inputs, output_type = require_word_inputs(inputs, "word XOR")
         object.__setattr__(self, "component_id", component_id)
         object.__setattr__(self, "inputs", inputs)
         object.__setattr__(self, "output_type", output_type)

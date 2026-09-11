@@ -34,14 +34,13 @@ class MiMCPermutation(Cipher):
         state = self.input("state")
         for round_number, round_constant in enumerate(constants):
             self.add_round()
-            constant = Constant(f"constant_{round_number}_0", scalar_type, (round_constant,))
-            constant_output = self.add_component(constant)
-            addition = Add(
-                f"add_{round_number}_1",
-                (state.select_all(), constant_output.select_all()),
+            constant = Constant(
+                scalar_type, (round_constant,), component_id=f"constant_{round_number}_0"
             )
+            constant_output = self.add_component(constant)
+            addition = Add((state, constant_output), component_id=f"add_{round_number}_1")
             addition_output = self.add_component(addition)
-            power = Power(f"power_{round_number}_2", addition_output.select_all(), exponent)
+            power = Power(addition_output, exponent, component_id=f"power_{round_number}_2")
             state = self.add_component(power)
 
-        self.set_output(state.select_all())
+        self.set_output(state)

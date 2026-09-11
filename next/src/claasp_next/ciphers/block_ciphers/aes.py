@@ -3,64 +3,32 @@
 from claasp_next.components import Add, Concatenate, Constant, LinearMap, Permutation, SBox
 from claasp_next.core import Cipher, Port, Selection, ValueType
 from claasp_next.domains import BinaryExtensionField
+from claasp_next.utils import binary_field_power, repeat_block_diagonal, rotate_left
 
 
-def _gf_multiply(left: int, right: int) -> int:
-    result = 0
-    for _ in range(8):
-        if right & 1:
-            result ^= left
-        carry = left & 0x80
-        left = (left << 1) & 0xFF
-        if carry:
-            left ^= 0x1B
-        right >>= 1
-    return result
-
-
-def _gf_power(value: int, exponent: int) -> int:
-    result = 1
-    while exponent:
-        if exponent & 1:
-            result = _gf_multiply(result, value)
-        value = _gf_multiply(value, value)
-        exponent >>= 1
-    return result
-
-
-def _rotate_byte(value: int, amount: int) -> int:
-    return ((value << amount) | (value >> (8 - amount))) & 0xFF
+AES_FIELD = BinaryExtensionField(8, 0x11B)
 
 
 AES_SBOX = tuple(
     inverse
-    ^ _rotate_byte(inverse, 1)
-    ^ _rotate_byte(inverse, 2)
-    ^ _rotate_byte(inverse, 3)
-    ^ _rotate_byte(inverse, 4)
+    ^ rotate_left(inverse, 1, 8)
+    ^ rotate_left(inverse, 2, 8)
+    ^ rotate_left(inverse, 3, 8)
+    ^ rotate_left(inverse, 4, 8)
     ^ 0x63
-    for inverse in (_gf_power(value, 254) if value else 0 for value in range(256))
+    for inverse in (binary_field_power(AES_FIELD, value, 254) if value else 0 for value in range(256))
 )
 
 
-def _mix_columns_matrix() -> tuple[tuple[int, ...], ...]:
-    column = (
+MIX_COLUMNS_MATRIX = repeat_block_diagonal(
+    (
         (2, 3, 1, 1),
         (1, 2, 3, 1),
         (1, 1, 2, 3),
         (3, 1, 1, 2),
-    )
-    rows = []
-    for output_index in range(16):
-        output_column, output_row = divmod(output_index, 4)
-        row = [0] * 16
-        for input_row, coefficient in enumerate(column[output_row]):
-            row[4 * output_column + input_row] = coefficient
-        rows.append(tuple(row))
-    return tuple(rows)
-
-
-MIX_COLUMNS_MATRIX = _mix_columns_matrix()
+    ),
+    4,
+)
 SHIFT_ROWS_MAPPING = tuple(4 * ((column + row) % 4) + row for column in range(4) for row in range(4))
 ROUND_CONSTANTS = (1, 2, 4, 8, 16, 32, 64, 128, 27, 54)
 PARAMETERS_CONFIGURATION_LIST = (
@@ -100,7 +68,7 @@ class AESBlockCipher(Cipher):
                 f"AES-{key_bit_size} requires between 1 and {standard_rounds} rounds"
             )
         self.Nr = rounds
-        byte = BinaryExtensionField(8, 0x11B)
+        byte = AES_FIELD
         state_type = ValueType(byte, (16,))
         word_type = ValueType(byte, (4,))
         key_type = ValueType(byte, (key_bit_size // 8,))
@@ -108,11 +76,11 @@ class AESBlockCipher(Cipher):
 
         self.add_round()
         state = self.add_component(Add(
-            "initial_add_round_key",
-            (self.input("plaintext").select_all(), self.input("key").select(*range(16))),
+            (self.input("plaintext"), self.input("key")[:16]),
+            component_id="initial_add_round_key",
         ))
         expanded_words: list[Port | Selection] = [
-            self.input("key").select(*range(4 * word, 4 * word + 4))
+            self.input("key")[4 * word:4 * word + 4]
             for word in range(self.Nk)
         ]
 
@@ -120,22 +88,21 @@ class AESBlockCipher(Cipher):
             self.add_round()
             self._expand_words(expanded_words, 4 * (round_number + 1), word_type)
             round_key = self.add_component(Concatenate(
-                f"round_key_{round_number}",
                 tuple(self._selection(word) for word in expanded_words[4 * round_number:4 * round_number + 4]),
+                component_id=f"round_key_{round_number}",
             ))
             state = self.add_component(SBox(
-                f"sub_bytes_{round_number}", state.select_all(), AES_SBOX
+                state, AES_SBOX, component_id=f"sub_bytes_{round_number}"
             ))
             state = self.add_component(Permutation(
-                f"shift_rows_{round_number}", state.select_all(), SHIFT_ROWS_MAPPING
+                state, SHIFT_ROWS_MAPPING, component_id=f"shift_rows_{round_number}"
             ))
             if round_number != standard_rounds:
                 state = self.add_component(LinearMap(
-                    f"mix_columns_{round_number}", state.select_all(), MIX_COLUMNS_MATRIX
+                    state, MIX_COLUMNS_MATRIX, component_id=f"mix_columns_{round_number}"
                 ))
             state = self.add_component(Add(
-                f"add_round_key_{round_number}",
-                (state.select_all(), round_key.select_all()),
+                (state, round_key), component_id=f"add_round_key_{round_number}"
             ))
 
         self.set_output(state.select_all())
@@ -162,25 +129,25 @@ class AESBlockCipher(Cipher):
                     temporary.positions[0],
                 )
                 substituted = self.add_component(SBox(
-                    f"key_sub_word_{expansion_index}", rotated, AES_SBOX
+                    rotated, AES_SBOX, component_id=f"key_sub_word_{expansion_index}"
                 ))
                 constant = self.add_component(Constant(
-                    f"key_round_constant_{expansion_index}",
                     word_type,
                     (ROUND_CONSTANTS[expansion_index - 1], 0, 0, 0),
+                    component_id=f"key_round_constant_{expansion_index}",
                 ))
                 temporary = self.add_component(Add(
-                    f"key_add_constant_{expansion_index}",
-                    (substituted.select_all(), constant.select_all()),
-                )).select_all()
+                    (substituted, constant),
+                    component_id=f"key_add_constant_{expansion_index}",
+                ))
             elif self.Nk == 8 and word_index % self.Nk == 4:
                 substituted = self.add_component(SBox(
-                    f"key_sub_word_{word_index}", temporary, AES_SBOX
+                    temporary, AES_SBOX, component_id=f"key_sub_word_{word_index}"
                 ))
-                temporary = substituted.select_all()
+                temporary = substituted
             word = self.add_component(Add(
-                f"key_word_{word_index}",
                 (self._selection(words[word_index - self.Nk]), temporary),
+                component_id=f"key_word_{word_index}",
             ))
             words.append(word)
 

@@ -13,7 +13,9 @@ class Constant(Component):
 
     values: tuple[int, ...]
 
-    def __init__(self, component_id: str, output_type: ValueType, values: Iterable[int]) -> None:
+    def __init__(
+        self, output_type: ValueType, values: Iterable[int], component_id: str | None = None
+    ) -> None:
         frozen_values = tuple(values)
         object.__setattr__(self, "component_id", component_id)
         object.__setattr__(self, "inputs", ())

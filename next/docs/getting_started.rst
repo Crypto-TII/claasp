@@ -74,12 +74,10 @@ encoding occupies 15 bits:
    >>> cipher = Cipher("toy", {"state": state_type})
    >>> cipher.add_round().number
    0
-   >>> operation = Permutation(
-   ...     "permutation_0_0",
-   ...     cipher.input("state").select_all(),
-   ...     (2, 0, 1),
-   ... )
+   >>> operation = Permutation(cipher.input("state"), (2, 0, 1))
    >>> output = cipher.add_component(operation)
-   >>> cipher.set_output(output.select_all())
+   >>> output.owner_id
+   'permutation_0_0'
+   >>> cipher.set_output(output)
    >>> ScalarEvaluator().evaluate(cipher, {"state": (3, 5, 8)}).output
    (8, 3, 5)

@@ -15,7 +15,7 @@ def test_same_permutation_operates_on_different_domains(domain, values):
     value_type = ValueType(domain, (3,))
     cipher = Cipher("permutation", {"state": value_type})
     cipher.add_round()
-    permutation = Permutation("permutation_0_0", cipher.input("state").select_all(), (2, 0, 1))
+    permutation = Permutation(cipher.input("state"), (2, 0, 1), component_id="permutation_0_0")
     cipher.add_component(permutation)
 
     result = ScalarEvaluator().evaluate(cipher, {"state": values})
@@ -29,11 +29,11 @@ def test_selection_identity_and_concatenation_use_logical_units():
     state_type = ValueType(field, (4,))
     cipher = Cipher("selection", {"state": state_type})
     cipher.add_round()
-    high = Identity("identity_0_0", cipher.input("state").select(3, 2))
-    low = Identity("identity_0_1", cipher.input("state").select(1, 0))
+    high = Identity(cipher.input("state")[3, 2], component_id="identity_0_0")
+    low = Identity(cipher.input("state")[1, 0], component_id="identity_0_1")
     high_port = cipher.add_component(high)
     low_port = cipher.add_component(low)
-    joined = Concatenate("concatenate_0_2", (high_port.select_all(), low_port.select_all()))
+    joined = Concatenate((high_port, low_port), component_id="concatenate_0_2")
     cipher.add_component(joined)
 
     result = ScalarEvaluator().evaluate(cipher, {"state": (10, 20, 30, 40)})
@@ -45,7 +45,7 @@ def test_constant_has_no_graph_inputs_and_is_domain_checked():
     field = PrimeField(17)
     cipher = Cipher("constant", {"state": ValueType(field, (1,))})
     cipher.add_round()
-    constant = Constant("constant_0_0", ValueType(field, (3,)), (1, 2, 16))
+    constant = Constant(ValueType(field, (3,)), (1, 2, 16), component_id="constant_0_0")
     cipher.add_component(constant)
 
     result = ScalarEvaluator().evaluate(cipher, {"state": (0,)})
@@ -53,7 +53,7 @@ def test_constant_has_no_graph_inputs_and_is_domain_checked():
     assert result.value_of("constant_0_0") == (1, 2, 16)
 
     with pytest.raises(ValueError, match="canonical element"):
-        Constant("bad", ValueType(field, (1,)), (17,))
+        Constant(ValueType(field, (1,)), (17,), component_id="bad")
 
 
 def test_scalar_evaluator_validates_cipher_inputs():

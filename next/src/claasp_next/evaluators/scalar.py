@@ -151,19 +151,9 @@ class ScalarEvaluator:
         if isinstance(domain, PrimeField):
             return (left * right) % domain.modulus
         if isinstance(domain, BinaryExtensionField):
-            result = 0
-            multiplicand = left
-            multiplier = right
-            reduction = domain.modulus ^ (1 << domain.degree)
-            for _ in range(domain.degree):
-                if multiplier & 1:
-                    result ^= multiplicand
-                multiplier >>= 1
-                carry = multiplicand & (1 << (domain.degree - 1))
-                multiplicand = (multiplicand << 1) & ((1 << domain.degree) - 1)
-                if carry:
-                    multiplicand ^= reduction
-            return result
+            from claasp_next.utils import binary_field_multiply
+
+            return binary_field_multiply(domain, left, right)
         raise NotImplementedError(f"multiplication is not implemented for {type(domain).__name__}")
 
     @classmethod

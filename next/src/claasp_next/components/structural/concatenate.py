@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from collections.abc import Iterable
 
 from claasp_next.core.component import Component
-from claasp_next.core.port import Selection
+from claasp_next.core.port import PortLike, Selection, as_selection
 from claasp_next.core.value_type import ValueType
 
 
@@ -12,8 +12,8 @@ from claasp_next.core.value_type import ValueType
 class Concatenate(Component):
     """Concatenate homogeneous selections in input order."""
 
-    def __init__(self, component_id: str, component_inputs: Iterable[Selection]) -> None:
-        frozen_inputs = tuple(component_inputs)
+    def __init__(self, component_inputs: Iterable[PortLike], component_id: str | None = None) -> None:
+        frozen_inputs = tuple(as_selection(item) for item in component_inputs)
         if not frozen_inputs:
             raise ValueError("concatenation requires at least one input")
         if any(not isinstance(item, Selection) for item in frozen_inputs):

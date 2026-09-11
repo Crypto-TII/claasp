@@ -15,10 +15,10 @@ from claasp_next.evaluators import ScalarEvaluator
 def _xor_cipher(operand_count=2):
     cipher = Cipher("xor", {name: ValueType(Bit(), (1,)) for name in "abc"[:operand_count]})
     cipher.add_round()
-    output = cipher.add_component(Add("sum", tuple(
-        cipher.input(name).select_all() for name in "abc"[:operand_count]
-    )))
-    cipher.set_output(output.select_all())
+    output = cipher.add_component(Add(
+        tuple(cipher.input(name) for name in "abc"[:operand_count]), component_id="sum"
+    ))
+    cipher.set_output(output)
     return cipher
 
 
@@ -64,9 +64,9 @@ def test_unsupported_bit_component_is_rejected_explicitly():
 
     cipher = Cipher("and", {"x": ValueType(Bit(), (1,)), "y": ValueType(Bit(), (1,))})
     cipher.add_round()
-    cipher.add_component(Multiply("product", (
-        cipher.input("x").select_all(), cipher.input("y").select_all()
-    )))
+    cipher.add_component(Multiply(
+        (cipher.input("x"), cipher.input("y")), component_id="product"
+    ))
     with pytest.raises(NotImplementedError, match="Multiply"):
         BooleanCNFModel(cipher).cnf_formula()
 

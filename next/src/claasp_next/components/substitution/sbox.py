@@ -3,7 +3,7 @@
 from collections.abc import Iterable
 from dataclasses import dataclass
 
-from claasp_next.core import Component, Selection
+from claasp_next.core import Component, PortLike, as_selection
 from claasp_next.domains import BinaryExtensionField, Bit, Word
 
 
@@ -20,12 +20,11 @@ class SBox(Component):
 
     def __init__(
         self,
-        component_id: str,
-        component_input: Selection,
+        component_input: PortLike,
         table: Iterable[int],
+        component_id: str | None = None,
     ) -> None:
-        if not isinstance(component_input, Selection):
-            raise TypeError("S-box input must be a Selection")
+        component_input = as_selection(component_input)
         domain = component_input.value_type.domain
         if not isinstance(domain, (Bit, Word, BinaryExtensionField)):
             raise ValueError("S-box requires a densely encoded finite domain")

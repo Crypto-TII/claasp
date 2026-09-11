@@ -28,6 +28,12 @@ Components
 .. automodule:: claasp_next.components
    :members:
 
+Authoring utilities
+-------------------
+
+.. automodule:: claasp_next.utils
+   :members:
+
 Evaluation
 ----------
 

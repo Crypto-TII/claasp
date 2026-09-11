@@ -3,7 +3,7 @@
 from collections.abc import Iterable
 from dataclasses import dataclass
 
-from claasp_next.core import Component, Selection, ValueType
+from claasp_next.core import Component, PortLike, ValueType, as_selection
 from claasp_next.domains import Bit
 
 
@@ -13,9 +13,13 @@ class BitVectorSBox(Component):
 
     table: tuple[int, ...]
 
-    def __init__(self, component_id: str, component_input: Selection, table: Iterable[int]) -> None:
-        if not isinstance(component_input, Selection):
-            raise TypeError("bit-vector S-box input must be a Selection")
+    def __init__(
+        self,
+        component_input: PortLike,
+        table: Iterable[int],
+        component_id: str | None = None,
+    ) -> None:
+        component_input = as_selection(component_input)
         if not isinstance(component_input.value_type.domain, Bit):
             raise ValueError("bit-vector S-box requires the Bit domain")
         width = component_input.value_type.unit_count

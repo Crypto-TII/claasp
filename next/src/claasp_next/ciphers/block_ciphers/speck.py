@@ -83,10 +83,10 @@ class SpeckBlockCipher(Cipher):
         )
         plaintext = self.input("plaintext")
         key = self.input("key")
-        x: Port | Selection = plaintext.select(0)
-        y: Port | Selection = plaintext.select(1)
-        schedule = [key.select(position) for position in range(key_word_count - 2, -1, -1)]
-        round_key: Port | Selection = key.select(key_word_count - 1)
+        x: Port | Selection = plaintext[0]
+        y: Port | Selection = plaintext[1]
+        schedule = [key[position] for position in range(key_word_count - 2, -1, -1)]
+        round_key: Port | Selection = key[key_word_count - 1]
 
         for round_number in range(rounds):
             self.add_round()
@@ -94,7 +94,7 @@ class SpeckBlockCipher(Cipher):
             if round_number + 1 < rounds:
                 schedule_index = round_number % len(schedule)
                 counter = self.add_component(Constant(
-                    f"key_constant_{round_number}", word_type, (round_number,)
+                    word_type, (round_number,), component_id=f"key_constant_{round_number}"
                 ))
                 schedule[schedule_index], round_key = self._round_function(
                     schedule[schedule_index],
@@ -106,9 +106,9 @@ class SpeckBlockCipher(Cipher):
                 )
 
         output = self.add_component(Concatenate(
-            "cipher_output", (self._selection(x), self._selection(y))
+            (x, y), component_id="cipher_output"
         ))
-        self.set_output(output.select_all())
+        self.set_output(output)
 
     @staticmethod
     def _selection(value: Port | Selection) -> Selection:
@@ -124,18 +124,18 @@ class SpeckBlockCipher(Cipher):
         beta: int,
     ) -> tuple[Port, Port]:
         rotated_x = self.add_component(Rotate(
-            f"{prefix}_rotate_right", self._selection(x), alpha, "right"
+            x, alpha, "right", component_id=f"{prefix}_rotate_right"
         ))
         added_x = self.add_component(ModularAdd(
-            f"{prefix}_modular_add", (rotated_x.select_all(), self._selection(y))
+            (rotated_x, y), component_id=f"{prefix}_modular_add"
         ))
         new_x = self.add_component(Xor(
-            f"{prefix}_xor_key", (added_x.select_all(), self._selection(key))
+            (added_x, key), component_id=f"{prefix}_xor_key"
         ))
         rotated_y = self.add_component(Rotate(
-            f"{prefix}_rotate_left", self._selection(y), beta, "left"
+            y, beta, "left", component_id=f"{prefix}_rotate_left"
         ))
         new_y = self.add_component(Xor(
-            f"{prefix}_xor_xy", (rotated_y.select_all(), new_x.select_all())
+            (rotated_y, new_x), component_id=f"{prefix}_xor_xy"
         ))
         return new_x, new_y

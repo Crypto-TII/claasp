@@ -15,15 +15,16 @@ class Component:
     methods.
     """
 
-    component_id: str
+    component_id: str | None
     inputs: tuple[Selection, ...]
     output_type: ValueType
 
     def __post_init__(self) -> None:
-        if not isinstance(self.component_id, str):
-            raise TypeError("component_id must be a string")
-        if not self.component_id:
-            raise ValueError("component_id must not be empty")
+        if self.component_id is not None:
+            if not isinstance(self.component_id, str):
+                raise TypeError("component_id must be a string or None")
+            if not self.component_id:
+                raise ValueError("component_id must not be empty")
         if not isinstance(self.inputs, tuple):
             raise TypeError("inputs must be a tuple")
         if any(not isinstance(component_input, Selection) for component_input in self.inputs):
@@ -33,4 +34,6 @@ class Component:
 
     @property
     def output(self) -> Port:
+        if self.component_id is None:
+            raise ValueError("component has no identifier until it is added to a cipher")
         return Port(self.component_id, self.output_type)

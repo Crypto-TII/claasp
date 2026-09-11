@@ -3,7 +3,7 @@
 from collections.abc import Iterable
 from dataclasses import dataclass
 
-from claasp_next.components.algebraic._validation import require_homogeneous_inputs
+from claasp_next.components.algebraic._validation import normalize_inputs, require_homogeneous_inputs
 from claasp_next.core.component import Component
 from claasp_next.core.port import Selection
 
@@ -12,8 +12,8 @@ from claasp_next.core.port import Selection
 class Multiply(Component):
     """Multiply two or more homogeneous vectors component-wise."""
 
-    def __init__(self, component_id: str, component_inputs: Iterable[Selection]) -> None:
-        frozen_inputs = tuple(component_inputs)
+    def __init__(self, component_inputs: Iterable[Selection], component_id: str | None = None) -> None:
+        frozen_inputs = normalize_inputs(tuple(component_inputs))
         if len(frozen_inputs) < 2:
             raise ValueError("multiplication requires at least two inputs")
         output_type = require_homogeneous_inputs(frozen_inputs, "multiplication")

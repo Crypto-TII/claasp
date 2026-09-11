@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 
 from claasp_next.core.component import Component
-from claasp_next.core.port import Selection
+from claasp_next.core.port import PortLike, as_selection
 
 
 @dataclass(frozen=True, slots=True, init=False)
@@ -12,9 +12,8 @@ class Power(Component):
 
     exponent: int
 
-    def __init__(self, component_id: str, component_input: Selection, exponent: int) -> None:
-        if not isinstance(component_input, Selection):
-            raise TypeError("power input must be a Selection")
+    def __init__(self, component_input: PortLike, exponent: int, component_id: str | None = None) -> None:
+        component_input = as_selection(component_input)
         if not isinstance(exponent, int) or isinstance(exponent, bool):
             raise TypeError("exponent must be an integer")
         if exponent <= 0:

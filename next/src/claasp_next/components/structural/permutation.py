@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from collections.abc import Iterable
 
 from claasp_next.core.component import Component
-from claasp_next.core.port import Selection
+from claasp_next.core.port import PortLike, as_selection
 
 
 @dataclass(frozen=True, slots=True, init=False)
@@ -15,10 +15,11 @@ class Permutation(Component):
 
     def __init__(
         self,
-        component_id: str,
-        component_input: Selection,
+        component_input: PortLike,
         mapping: Iterable[int],
+        component_id: str | None = None,
     ) -> None:
+        component_input = as_selection(component_input)
         frozen_mapping = tuple(mapping)
         object.__setattr__(self, "component_id", component_id)
         object.__setattr__(self, "inputs", (component_input,))
