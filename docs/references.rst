@@ -85,6 +85,12 @@
         commit 446347f21b209f3921c65ece70027c366cbe1693 :
         https://github.com/ascon/ascon-c/tree/446347f21b209f3921c65ece70027c366cbe1693
 
+.. [AumassonBernstein2012]
+        Aumasson, J.-P., Bernstein, D. J. : *SipHash: a fast short-input PRF* :
+        INDOCRYPT 2012, Lecture Notes in Computer Science, vol. 7668, pp.
+        489-508, Springer (2012) :
+        https://cr.yp.to/siphash/siphash-20120918.pdf
+
 .. _claasp-ref-B:
 
 .. only:: html
@@ -346,7 +352,13 @@
         CHAM* : Implementation repository (2025) :
         https://github.com/dampers/SAECHAM-implementations
 
-.. [DMR2019] 
+.. [DEY2023]
+        Dey, S., Garai, H. K., Maitra, S. : *Cryptanalysis of Reduced Round
+        ChaCha -- New Attack & Deeper Analysis* : IACR Transactions on
+        Symmetric Cryptology, 2023(1), 89-110 :
+        https://eprint.iacr.org/2023/134
+
+.. [DMR2019]
         Daemen, J., Massolino, P. M. C., and Rotella, Y.
         *The Subterranean 2.0 cipher suite.*
         Submission to the NIST Lightweight Cryptography Standardization process,
@@ -631,6 +643,12 @@
         Sun S., Gerault D., Lafourcade P., Yang Q., Todo Y., Qiao K., Hu L. :
         *Analysis of AES, SKINNY, and others with constraint programming* : In
         IACR transactions on symmetric cryptology 2017 (1), 281--306
+
+.. [SasTod17]
+        Sasaki, Y., Todo, Y. : *New Algorithm for Modeling S-box in MILP Based
+        Differential and Division Trail Search* : Codes, Cryptology and
+        Information Security (C2SI 2017), Lecture Notes in Computer Science,
+        vol. 10194, pp. 150-165, Springer (2017)
 
 .. [SGWW2020]
         Sun L., Gerault D., Wang W., Wang M. : *On the usage of deterministic
