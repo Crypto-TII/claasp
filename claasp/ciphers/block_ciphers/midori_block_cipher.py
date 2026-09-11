@@ -21,7 +21,7 @@ from claasp.name_mappings import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
 from claasp.utils.integer_functions import wordlist_to_int
 from claasp.utils.utils import extract_inputs
 
-permutation = [0, 10, 5, 15, 14, 4, 11, 1, 9, 3, 12, 6, 7, 13, 2, 8]
+permutation = [0, 7, 14, 9, 5, 2, 11, 12, 15, 8, 1, 6, 10, 13, 4, 3]
 PARAMETERS_CONFIGURATION_LIST = [
     {"block_bit_size": 64, "key_bit_size": 128, "number_of_rounds": 16},
     {"block_bit_size": 128, "key_bit_size": 128, "number_of_rounds": 20},
@@ -120,7 +120,10 @@ def midori_encrypt(plaintext, key):
                 S[i] = wordlist_to_int(S_output_permutation, 1)
 
     def shuffle_cell(S):
-        S[:] = [S[i] for i in permutation]
+        new_S = [0] * len(S)
+        for src, dst in enumerate(permutation):
+            new_S[dst] = S[src]
+        S[:] = new_S
 
     def mix_columns(S):
         for i in range(4):

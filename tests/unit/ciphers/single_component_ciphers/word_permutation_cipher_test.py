@@ -12,7 +12,7 @@ def test_word_permutation_cipher_smoke():
 def test_word_permutation_cipher_default_description_rotates_words():
     cipher = WordPermutationCipher(word_size=2, number_of_words=4)
 
-    assert cipher.evaluate([0b00_01_10_11]) == 0b01_10_11_00
+    assert cipher.evaluate([0b00_01_10_11]) == 0b11_00_01_10
 
 
 def test_word_permutation_cipher_sat_xor_differential_trail_search_matches_evaluate():

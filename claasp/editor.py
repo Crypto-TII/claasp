@@ -1549,7 +1549,9 @@ def add_word_permutation_component(
     - ``input_id_links`` -- **list**; the list of input_id links
     - ``input_bit_positions`` -- **list**; the list of input_bits corresponding to the input_id links
     - ``output_bit_size`` -- **integer**; the output bits of the component
-    - ``permutation_description`` -- **list**; the description of the permutation (word_based)
+    - ``permutation_description`` -- **list**; permutation mapping from source word position to
+      destination word position: ``permutation_description[i]`` is the destination word index for
+      source word ``i``
     - ``word_size`` -- **integer**; define the size of each word
 
     EXAMPLES::

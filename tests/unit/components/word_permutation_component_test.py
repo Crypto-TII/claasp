@@ -10,10 +10,10 @@ def test_constructor_builds_word_permutation_description():
 
     assert word_permutation_component.id == "permutation_0_0"
     assert word_permutation_component.type == "permutation"
-    # permutation_description=[1, 2, 3, 0] uses the destination-takes-from-source convention
-    # (output[i] = input[permutation_description[i]]); Permutation stores the inverted
-    # source-to-destination description, i.e. [3, 0, 1, 2], together with the word size.
-    assert word_permutation_component.description == [[3, 0, 1, 2], 2]
+    # permutation_description=[1, 2, 3, 0] gives the destination word position for each source
+    # word: source word i moves to destination word permutation_description[i]. Permutation
+    # stores this description unchanged, together with the word size.
+    assert word_permutation_component.description == [[1, 2, 3, 0], 2]
 
 
 def test_cp_constraints():
@@ -21,8 +21,8 @@ def test_cp_constraints():
     declarations, constraints = word_permutation_component.cp_constraints()
 
     assert declarations == []
-    assert constraints[0] == "constraint permutation_0_0[0] = plaintext[2];"
-    assert constraints[-1] == "constraint permutation_0_0[7] = plaintext[1];"
+    assert constraints[0] == "constraint permutation_0_0[0] = plaintext[6];"
+    assert constraints[-1] == "constraint permutation_0_0[7] = plaintext[5];"
 
 
 def test_sat_constraints():
@@ -31,8 +31,8 @@ def test_sat_constraints():
 
     assert output_bit_ids[0] == "permutation_0_0_0"
     assert output_bit_ids[-1] == "permutation_0_0_7"
-    assert constraints[0] == "permutation_0_0_0 -plaintext_2"
-    assert constraints[-1] == "plaintext_1 -permutation_0_0_7"
+    assert constraints[0] == "permutation_0_0_0 -plaintext_6"
+    assert constraints[-1] == "plaintext_5 -permutation_0_0_7"
 
 
 def test_smt_constraints():
@@ -41,8 +41,8 @@ def test_smt_constraints():
 
     assert output_bit_ids[0] == "permutation_0_0_0"
     assert output_bit_ids[-1] == "permutation_0_0_7"
-    assert constraints[0] == "(assert (= permutation_0_0_0 plaintext_2))"
-    assert constraints[-1] == "(assert (= permutation_0_0_7 plaintext_1))"
+    assert constraints[0] == "(assert (= permutation_0_0_0 plaintext_6))"
+    assert constraints[-1] == "(assert (= permutation_0_0_7 plaintext_5))"
 
 
 def test_algebraic_polynomials_word_size_greater_than_one():
@@ -57,8 +57,9 @@ def test_algebraic_polynomials_word_size_greater_than_one():
     ring_r = algebraic.ring()
     x = [ring_r(f"{component.id}_x{i}") for i in range(component.input_bit_size)]
     y = [ring_r(f"{component.id}_y{i}") for i in range(component.output_bit_size)]
-    # output[i] = input[permutation_description[i]] word-wise, expanded bit-wise via word_size=2.
-    expected_input_bit_of_output = [2, 3, 4, 5, 6, 7, 0, 1]
+    # permutation_description[i] gives the destination word for source word i; expanded
+    # bit-wise via word_size=2, output[i] = input[expected_input_bit_of_output[i]].
+    expected_input_bit_of_output = [6, 7, 0, 1, 2, 3, 4, 5]
     expected = [y[i] + x[expected_input_bit_of_output[i]] for i in range(component.output_bit_size)]
     assert polynomials == expected
 
