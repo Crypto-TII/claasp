@@ -22,7 +22,7 @@ ciphers. Resolved items stay listed so later refactors do not regress them.
 
 | Friction | Required outcome | Owner |
 | --- | --- | --- |
-| Batch evaluation still exposes backend-oriented input layout | Add a friendly cipher-level batch API while retaining explicit optimized backends | M9.2 documentation/API pass |
+| Batch evaluation still exposes backend-oriented input layout | Add a friendly cipher-level batch API while retaining explicit optimized backends | Follow-up before M11 |
 | Cipher and parameter discovery requires knowing class/module names | Add a searchable catalogue with configurations and short examples | M9.2 |
 | There is no uniform decryption/inversion capability | Specify which ciphers expose decryption and which analyses invert constraints | M10.1/M10.2 |
 | Analysis currently exposes CNF/model terminology | Add graph-level constraints, projections, and a concise analysis facade | M10.1 |

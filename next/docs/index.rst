@@ -1,33 +1,42 @@
-CLAASP 5
-========
+CLAASP documentation
+====================
 
-CLAASP is a library for describing, evaluating, and analyzing symmetric
-cryptographic primitives. Version 5 introduces typed logical units so that a
-cipher graph can operate natively on bits, binary extension fields, or prime
-fields.
+CLAASP is a Python workbench for implementing, evaluating, and analyzing
+symmetric cryptographic primitives. Cipher descriptions stay close to their
+pseudocode and can be reused by evaluators and cryptanalytic backends.
 
-The next-generation implementation is intentionally independent of SageMath.
-Computer-algebra and solver integrations will be optional backends.
+Start with a standard AES evaluation, then follow the task-oriented guides to
+implement or analyze a primitive. SageMath is not required; computer-algebra
+systems and solvers are optional backends.
 
 .. toctree::
    :maxdepth: 2
-   :caption: User guide
+   :caption: Start here
 
    getting_started
-   concepts
-   parameters
-   batch_evaluation
-   traditional_ciphers
    cipher_authoring
    analysis
+   traditional_ciphers
+   batch_evaluation
+
+.. toctree::
+   :maxdepth: 2
+   :caption: CLAASP 5 and AO ciphers
+
+   whats_new_v5
+   concepts
+   parameters
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Advanced modeling
+
    polynomial_models
    boolean_models
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Reference and development
+
    development
    api
-
-Development status
-------------------
-
-The temporary distribution and import names are ``claasp-next`` and
-``claasp_next``. They will become ``claasp`` when the v5 implementation
-replaces the legacy package.

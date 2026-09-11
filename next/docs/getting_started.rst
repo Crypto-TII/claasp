@@ -4,78 +4,61 @@ Getting started
 Installation
 ------------
 
-Install the development package from the ``next`` directory:
+Install the development package from the repository's ``next`` directory:
 
 .. code-block:: console
 
    python -m pip install -e .
 
-No SageMath or solver package is required for construction and scalar
-evaluation.
+No SageMath or solver is needed to construct and evaluate ciphers.
 
-Evaluating MiMC
----------------
+Evaluate AES
+------------
 
-The following toy MiMC instance operates directly over :math:`GF(17)`:
-
-.. doctest::
-
-   >>> from claasp_next.ciphers import MiMCPermutation
-   >>> mimc = MiMCPermutation(
-   ...     modulus=17,
-   ...     exponent=3,
-   ...     round_constants=(1, 2, 4),
-   ... )
-   >>> mimc.evaluate(5)
-   5
-   >>> len(mimc.rounds)
-   3
-
-The parameters above are deliberately small teaching parameters and must not
-be used cryptographically.
-
-Evaluating a batch
-------------------
-
-The reference batch evaluator accepts one sequence of samples per cipher
-input. It shares scalar semantics and therefore supports arbitrary-size prime
-field elements without a machine-word restriction:
+Inputs and outputs of traditional ciphers are ordinary packed integers. The
+cipher knows its block, key, unit sizes, and byte ordering.
 
 .. doctest::
 
-   >>> from claasp_next.evaluators import BatchEvaluator
-   >>> batch = BatchEvaluator().evaluate(
-   ...     mimc,
-   ...     {"state": ((0,), (5,), (16,))},
-   ... )
-   >>> batch.outputs
-   ((7,), (5,), (11,))
+   >>> from claasp_next.ciphers import AESBlockCipher
+   >>> aes = AESBlockCipher()
+   >>> plaintext = 0x00112233445566778899AABBCCDDEEFF
+   >>> key = 0x000102030405060708090A0B0C0D0E0F
+   >>> ciphertext = aes.evaluate(plaintext, key)
+   >>> f"{ciphertext:032x}"
+   '69c4e0d86a7b0430d8cdb78070b4c55a'
 
-This implementation is the correctness reference. Future vectorized or native
-evaluators must produce identical results.
-
-Building a typed graph
-----------------------
-
-A port contains three logical field elements even though its canonical binary
-encoding occupies 15 bits:
+Keyword and mapping forms are equivalent when explicit names are clearer:
 
 .. doctest::
 
-   >>> from claasp_next import Cipher, PrimeField, ValueType
-   >>> from claasp_next.components import Permutation
-   >>> state_type = ValueType(PrimeField(17), (3,))
-   >>> state_type.unit_count
-   3
-   >>> state_type.encoded_bit_size
-   15
-   >>> cipher = Cipher("toy", {"state": state_type})
-   >>> cipher.add_round().number
-   0
-   >>> operation = Permutation(cipher.input("state"), (2, 0, 1))
-   >>> output = cipher.add_component(operation)
-   >>> output.owner_id
-   'permutation_0_0'
-   >>> cipher.set_output(output)
-   >>> cipher.evaluate((3, 5, 8))
-   (8, 3, 5)
+   >>> aes.evaluate(plaintext=plaintext, key=key) == ciphertext
+   True
+   >>> aes.evaluate({"plaintext": plaintext, "key": key}) == ciphertext
+   True
+
+Inspect an execution
+--------------------
+
+Ordinary evaluation returns only the result. Ask for a trace when debugging a
+cipher or inspecting round values:
+
+.. doctest::
+
+   >>> one_round = AESBlockCipher(number_of_rounds=1)
+   >>> trace = one_round.evaluate_with_trace(plaintext, key)
+   >>> bytes(trace.value_of("sub_bytes_1")).hex()
+   '63cab7040953d051cd60e0e7ba70e18c'
+   >>> len(one_round.components) > 0
+   True
+
+Next steps
+----------
+
+- :doc:`cipher_authoring` shows concise components, indexing, automatic
+  identifiers, and reusable mathematics.
+- :doc:`analysis` introduces constraints, projections, key recovery, and
+  optional solver backends.
+- :doc:`traditional_ciphers` covers AES, PRESENT, and Speck variants.
+- :doc:`whats_new_v5` explains typed units and native support for
+  arithmetization-oriented primitives.
