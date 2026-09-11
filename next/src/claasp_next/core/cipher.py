@@ -1,6 +1,6 @@
 """Validated typed cipher graph."""
 
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from copy import copy
 import re
 
@@ -123,3 +123,77 @@ class Cipher:
         if output.source != actual_port:
             raise ValueError("output source does not match its graph port type")
         self._output = output
+
+    def evaluate(self, *args: object, **kwargs: object) -> int | tuple[int, ...] | None:
+        """Evaluate with convenient boundary encoding and return the cipher output.
+
+        Inputs may be supplied as one mapping, as keyword arguments, or in the
+        cipher's declared input order. Bit, byte/extension-field, and word
+        vectors accept packed integers and produce a packed integer output.
+        """
+
+        result = self.evaluate_with_trace(*args, **kwargs)
+        if result.output is None or self.output is None:
+            return None
+        return self._encode_boundary(result.output, self.output.value_type)
+
+    def evaluate_with_trace(self, *args: object, **kwargs: object):
+        """Evaluate like :meth:`evaluate` and retain all intermediate values."""
+
+        from claasp_next.evaluators import ScalarEvaluator
+
+        supplied = self._bind_inputs(args, kwargs)
+        decoded = {
+            name: self._decode_boundary(value, self._input_ports[name].value_type)
+            for name, value in supplied.items()
+        }
+        return ScalarEvaluator().evaluate(self, decoded)
+
+    def _bind_inputs(self, args: tuple[object, ...], kwargs: Mapping[str, object]) -> Mapping[str, object]:
+        if kwargs and args:
+            raise TypeError("use positional arguments, keyword arguments, or one mapping; do not mix them")
+        if kwargs:
+            supplied = dict(kwargs)
+        elif len(args) == 1 and isinstance(args[0], Mapping):
+            supplied = dict(args[0])
+        else:
+            if len(args) != len(self._input_ports):
+                raise TypeError(f"expected {len(self._input_ports)} positional inputs, got {len(args)}")
+            supplied = dict(zip(self._input_ports, args))
+        expected = set(self._input_ports)
+        if set(supplied) != expected:
+            missing = sorted(expected - set(supplied))
+            unexpected = sorted(set(supplied) - expected)
+            raise ValueError(f"cipher inputs do not match: missing={missing}, unexpected={unexpected}")
+        return supplied
+
+    @staticmethod
+    def _decode_boundary(value: object, value_type: ValueType) -> tuple[int, ...]:
+        from claasp_next.domains import Bit, PrimeField
+        from claasp_next.encoding import bits_from_int, units_from_int
+
+        if isinstance(value, int) and not isinstance(value, bool):
+            if isinstance(value_type.domain, Bit):
+                return bits_from_int(value, value_type.unit_count)
+            if isinstance(value_type.domain, PrimeField):
+                if value_type.unit_count != 1:
+                    raise TypeError("prime-field vectors require a tuple of field elements")
+                return (value,)
+            width = value_type.domain.encoded_bit_size
+            if width is not None:
+                return units_from_int(value, width, value_type.unit_count)
+        if isinstance(value, Sequence) and not isinstance(value, str):
+            return tuple(value)
+        raise TypeError("cipher inputs must be packed integers or sequences of logical units")
+
+    @staticmethod
+    def _encode_boundary(value: tuple[int, ...], value_type: ValueType) -> int | tuple[int, ...]:
+        from claasp_next.domains import Bit, PrimeField
+        from claasp_next.encoding import int_from_bits, int_from_units
+
+        if isinstance(value_type.domain, PrimeField):
+            return value[0] if value_type.unit_count == 1 else value
+        if isinstance(value_type.domain, Bit):
+            return int_from_bits(value)
+        width = value_type.domain.encoded_bit_size
+        return value if width is None else int_from_units(value, width)

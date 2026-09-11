@@ -46,13 +46,12 @@ class AESBlockCipher(Cipher):
 
     EXAMPLES::
 
-        >>> from claasp_next.evaluators import ScalarEvaluator
+        >>> from claasp_next.ciphers import AESBlockCipher
         >>> cipher = AESBlockCipher()
-        >>> plaintext = tuple(bytes.fromhex("00112233445566778899aabbccddeeff"))
-        >>> key = tuple(bytes.fromhex("000102030405060708090a0b0c0d0e0f"))
-        >>> result = ScalarEvaluator().evaluate(cipher, {"plaintext": plaintext, "key": key})
-        >>> bytes(result.output).hex()
-        '69c4e0d86a7b0430d8cdb78070b4c55a'
+        >>> plaintext = 0x00112233445566778899AABBCCDDEEFF
+        >>> key = 0x000102030405060708090A0B0C0D0E0F
+        >>> hex(cipher.evaluate(plaintext, key))
+        '0x69c4e0d86a7b0430d8cdb78070b4c55a'
     """
 
     def __init__(self, key_bit_size: int = 128, number_of_rounds: int | None = None) -> None:
@@ -105,7 +104,7 @@ class AESBlockCipher(Cipher):
                 (state, round_key), component_id=f"add_round_key_{round_number}"
             ))
 
-        self.set_output(state.select_all())
+        self.set_output(state)
 
     @staticmethod
     def _selection(value: Port | Selection) -> Selection:

@@ -23,7 +23,6 @@ class PoseidonPermutation(Cipher):
     EXAMPLES::
 
         >>> from claasp_next.ciphers import PoseidonPermutation
-        >>> from claasp_next.evaluators import ScalarEvaluator
         >>> cipher = PoseidonPermutation(
         ...     modulus=17,
         ...     exponent=3,
@@ -32,7 +31,7 @@ class PoseidonPermutation(Cipher):
         ...     round_constants=((1, 2), (3, 4), (5, 6)),
         ...     linear_layer=((1, 1), (1, 2)),
         ... )
-        >>> ScalarEvaluator().evaluate(cipher, {"state": (0, 1)}).output
+        >>> cipher.evaluate((0, 1))
         (4, 15)
 
     These are teaching parameters, not a secure parameter set.

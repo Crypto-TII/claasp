@@ -20,6 +20,12 @@ operations, but ordinary cipher code should not need them.
 Generic mathematical helpers belong in public utility modules and are reused
 by evaluators and cipher definitions.
 
+Cipher objects provide the ordinary evaluation boundary. Traditional bit,
+byte-field, and word vectors accept and return packed integers; callers may
+use positional, keyword, or mapping inputs. Prime-field vectors remain tuples
+of mathematical elements. `evaluate_with_trace` is the explicit route to raw
+logical-unit values and intermediate components.
+
 ## Consequences
 
 - Common cipher code follows pseudocode more closely.

@@ -26,14 +26,12 @@ class SpeckBlockCipher(Cipher):
 
     EXAMPLES::
 
-        >>> from claasp_next.evaluators import ScalarEvaluator
+        >>> from claasp_next.ciphers import SpeckBlockCipher
         >>> cipher = SpeckBlockCipher(block_bit_size=64, key_bit_size=128)
-        >>> result = ScalarEvaluator().evaluate(cipher, {
-        ...     "plaintext": (0x3b726574, 0x7475432d),
-        ...     "key": (0x1b1a1918, 0x13121110, 0x0b0a0908, 0x03020100),
-        ... })
-        >>> tuple(hex(word) for word in result.output)
-        ('0x8c6fa548', '0x454e028b')
+        >>> plaintext = 0x3B7265747475432D
+        >>> key = 0x1B1A1918131211100B0A090803020100
+        >>> hex(cipher.evaluate(plaintext, key))
+        '0x8c6fa548454e028b'
     """
 
     def __init__(

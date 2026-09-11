@@ -17,16 +17,12 @@ reference implementation.
 
 .. doctest::
 
-   >>> from claasp_next.evaluators import ScalarEvaluator
    >>> from claasp_next.parameters import poseidon_bn254_width3
    >>> parameters = poseidon_bn254_width3()
    >>> parameters.width, parameters.full_rounds, parameters.partial_rounds
    (3, 8, 57)
-   >>> result = ScalarEvaluator().evaluate(
-   ...     parameters.permutation(),
-   ...     {"state": parameters.reference_input},
-   ... )
-   >>> hex(result.output[parameters.reference_output_position])
+   >>> result = parameters.permutation().evaluate(parameters.reference_input)
+   >>> hex(result[parameters.reference_output_position])
    '0xfca49b798923ab0239de1c9e7a4a9a2210312b6a2f616d18b5a87f9b628ae29'
 
 The catalogue describes the permutation state. It does not add sponge

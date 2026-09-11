@@ -54,3 +54,36 @@ def test_reusable_finite_field_integer_and_matrix_helpers():
         (0, 0, 1, 2),
         (0, 0, 3, 4),
     )
+
+
+def test_cipher_evaluate_accepts_packed_positional_keyword_and_mapping_inputs():
+    from claasp_next.ciphers import AESBlockCipher
+
+    cipher = AESBlockCipher(number_of_rounds=1)
+    plaintext = 0x00112233445566778899AABBCCDDEEFF
+    key = 0x000102030405060708090A0B0C0D0E0F
+    positional = cipher.evaluate(plaintext, key)
+    assert cipher.evaluate(plaintext=plaintext, key=key) == positional
+    assert cipher.evaluate({"plaintext": plaintext, "key": key}) == positional
+    trace = cipher.evaluate_with_trace(plaintext, key)
+    assert trace.value_of("sub_bytes_1")
+    assert positional == int.from_bytes(bytes(trace.output))
+
+
+def test_prime_field_scalar_is_natural_but_vectors_remain_explicit():
+    from claasp_next.ciphers import MiMCPermutation, PoseidonPermutation
+
+    assert MiMCPermutation(17, 3, (1, 2, 4)).evaluate(5) == 5
+    poseidon = PoseidonPermutation(17, 3, 2, 0, ((1, 2), (3, 4)), ((1, 1), (1, 2)))
+    with pytest.raises(TypeError, match="vectors require a tuple"):
+        poseidon.evaluate(1)
+
+
+def test_packed_boundary_rejects_truncation_and_argument_ambiguity():
+    from claasp_next.ciphers import AESBlockCipher
+
+    cipher = AESBlockCipher(number_of_rounds=1)
+    with pytest.raises(ValueError, match="fit in 128 bits"):
+        cipher.evaluate(1 << 128, 0)
+    with pytest.raises(TypeError, match="do not mix"):
+        cipher.evaluate(0, key=0)

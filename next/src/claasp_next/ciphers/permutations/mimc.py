@@ -13,12 +13,12 @@ class MiMCPermutation(Cipher):
     EXAMPLES::
 
         >>> from claasp_next.ciphers import MiMCPermutation
-        >>> from claasp_next.evaluators import ScalarEvaluator
+        >>> from claasp_next.ciphers import MiMCPermutation
         >>> cipher = MiMCPermutation(17, 3, (1, 2, 4))
         >>> len(cipher.rounds)
         3
-        >>> ScalarEvaluator().evaluate(cipher, {"state": (5,)}).output
-        (5,)
+        >>> cipher.evaluate(5)
+        5
 
     These are teaching parameters, not a secure parameter set.
     """

@@ -419,6 +419,7 @@ each synchronization.
 - [x] Optional MiniSat execution with named assumptions and parsed assignments.
 - [x] AES/PRESENT/Speck legacy regression inventory and semantic parity.
 - [x] Concise component authoring, automatic IDs, indexing, and shared utilities.
+- [x] Friendly packed-integer evaluation with direct cipher methods and explicit traces.
 
 ## Milestone tracker
 

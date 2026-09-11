@@ -27,13 +27,11 @@ and key inputs follow the word order in the designers' implementation guide.
 .. doctest::
 
    >>> from claasp_next.ciphers import SpeckBlockCipher
-   >>> from claasp_next.evaluators import ScalarEvaluator
-   >>> result = ScalarEvaluator().evaluate(SpeckBlockCipher(64, 128), {
-   ...     "plaintext": (0x3b726574, 0x7475432d),
-   ...     "key": (0x1b1a1918, 0x13121110, 0x0b0a0908, 0x03020100),
-   ... })
-   >>> tuple(f"{word:08x}" for word in result.output)
-   ('8c6fa548', '454e028b')
+   >>> speck = SpeckBlockCipher(64, 128)
+   >>> plaintext = 0x3B7265747475432D
+   >>> key = 0x1B1A1918131211100B0A090803020100
+   >>> f"{speck.evaluate(plaintext, key):016x}"
+   '8c6fa548454e028b'
 
 The construction includes the key schedule in the graph. Reduced-round
 instances are available through ``number_of_rounds`` for analysis and retain
@@ -50,13 +48,10 @@ elements of :math:`GF(2^8)` in the polynomial basis defined by
 
 .. doctest::
 
-   >>> from claasp_next.ciphers import AES128BlockCipher
-   >>> plaintext = tuple(bytes.fromhex("00112233445566778899aabbccddeeff"))
-   >>> key = tuple(bytes.fromhex("000102030405060708090a0b0c0d0e0f"))
-   >>> result = ScalarEvaluator().evaluate(
-   ...     AES128BlockCipher(), {"plaintext": plaintext, "key": key}
-   ... )
-   >>> bytes(result.output).hex()
+   >>> from claasp_next.ciphers import AESBlockCipher
+   >>> plaintext = 0x00112233445566778899AABBCCDDEEFF
+   >>> key = 0x000102030405060708090A0B0C0D0E0F
+   >>> f"{AESBlockCipher().evaluate(plaintext, key):032x}"
    '69c4e0d86a7b0430d8cdb78070b4c55a'
 
 The graph includes the AES-128 key expansion. SubBytes uses a reusable typed
@@ -74,16 +69,11 @@ separate ``Bit`` units, unlike AES's lookup over one byte-field unit.
 
 .. doctest::
 
-   >>> from claasp_next import bits_from_int, int_from_bits
    >>> from claasp_next.ciphers import Present80BlockCipher
-   >>> result = ScalarEvaluator().evaluate(Present80BlockCipher(), {
-   ...     "plaintext": bits_from_int(0, 64),
-   ...     "key": bits_from_int(0, 80),
-   ... })
-   >>> f"{int_from_bits(result.output):016x}"
+   >>> f"{Present80BlockCipher().evaluate(plaintext=0, key=0):016x}"
    '5579c1387b228445'
 
-Cipher boundaries use MSB-first bit tuples. ``bits_from_int`` and
-``int_from_bits`` make that convention explicit and reject values that would
-otherwise be truncated. The graph contains all 31 substitution-permutation
-rounds, the 80-bit key schedule, and final whitening.
+The friendly boundary API converts packed integers to the graph's canonical
+MSB-first units and rejects values that would be truncated. The graph contains
+all 31 substitution-permutation rounds, the 80-bit key schedule, and final
+whitening.

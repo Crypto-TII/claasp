@@ -40,3 +40,38 @@ def int_from_bits(bits: tuple[int, ...]) -> int:
             raise ValueError("bits must contain only integer zeroes and ones")
         value = (value << 1) | bit
     return value
+
+
+def units_from_int(value: int, unit_width: int, count: int) -> tuple[int, ...]:
+    """Split an integer into ``count`` MSB-first fixed-width units."""
+
+    if not isinstance(unit_width, int) or isinstance(unit_width, bool) or unit_width <= 0:
+        raise ValueError("unit_width must be a positive integer")
+    if not isinstance(count, int) or isinstance(count, bool) or count <= 0:
+        raise ValueError("count must be a positive integer")
+    width = unit_width * count
+    if not isinstance(value, int) or isinstance(value, bool):
+        raise TypeError("value must be an integer")
+    if not 0 <= value < 1 << width:
+        raise ValueError(f"value must fit in {width} bits")
+    mask = (1 << unit_width) - 1
+    return tuple(
+        (value >> (unit_width * (count - position - 1))) & mask
+        for position in range(count)
+    )
+
+
+def int_from_units(units: tuple[int, ...], unit_width: int) -> int:
+    """Join non-empty MSB-first fixed-width units into one integer."""
+
+    if not isinstance(units, tuple) or not units:
+        raise ValueError("units must be a non-empty tuple")
+    if not isinstance(unit_width, int) or isinstance(unit_width, bool) or unit_width <= 0:
+        raise ValueError("unit_width must be a positive integer")
+    limit = 1 << unit_width
+    value = 0
+    for unit in units:
+        if not isinstance(unit, int) or isinstance(unit, bool) or not 0 <= unit < limit:
+            raise ValueError(f"units must contain integers in range(2^{unit_width})")
+        value = (value << unit_width) | unit
+    return value

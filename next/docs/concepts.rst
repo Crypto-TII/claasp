@@ -37,7 +37,7 @@ shape.
 
    >>> from claasp_next import Port, ValueType
    >>> state = Port("state", ValueType(PrimeField(257), (4,)))
-   >>> selected = state.select(3, 1)
+   >>> selected = state[3, 1]
    >>> selected.positions
    (3, 1)
    >>> selected.value_type.unit_count

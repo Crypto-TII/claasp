@@ -9,7 +9,7 @@ from claasp_next.evaluators import (
     ScalarEvaluator,
     TransposedBatchEvaluator,
 )
-from claasp_next.encoding import bits_from_int, int_from_bits
+from claasp_next.encoding import bits_from_int, int_from_bits, int_from_units, units_from_int
 
 __all__ = [
     "BinaryExtensionField",
@@ -29,4 +29,6 @@ __all__ = [
     "Word",
     "bits_from_int",
     "int_from_bits",
+    "int_from_units",
+    "units_from_int",
 ]

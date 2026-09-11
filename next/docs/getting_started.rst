@@ -21,15 +21,13 @@ The following toy MiMC instance operates directly over :math:`GF(17)`:
 .. doctest::
 
    >>> from claasp_next.ciphers import MiMCPermutation
-   >>> from claasp_next.evaluators import ScalarEvaluator
    >>> mimc = MiMCPermutation(
    ...     modulus=17,
    ...     exponent=3,
    ...     round_constants=(1, 2, 4),
    ... )
-   >>> result = ScalarEvaluator().evaluate(mimc, {"state": (5,)})
-   >>> result.output
-   (5,)
+   >>> mimc.evaluate(5)
+   5
    >>> len(mimc.rounds)
    3
 
@@ -79,5 +77,5 @@ encoding occupies 15 bits:
    >>> output.owner_id
    'permutation_0_0'
    >>> cipher.set_output(output)
-   >>> ScalarEvaluator().evaluate(cipher, {"state": (3, 5, 8)}).output
+   >>> cipher.evaluate((3, 5, 8))
    (8, 3, 5)

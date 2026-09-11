@@ -27,14 +27,9 @@ class PresentBlockCipher(Cipher):
 
     EXAMPLES::
 
-        >>> from claasp_next import bits_from_int, int_from_bits
-        >>> from claasp_next.evaluators import ScalarEvaluator
+        >>> from claasp_next.ciphers import PresentBlockCipher
         >>> cipher = PresentBlockCipher()
-        >>> result = ScalarEvaluator().evaluate(cipher, {
-        ...     "plaintext": bits_from_int(0, 64),
-        ...     "key": bits_from_int(0, 80),
-        ... })
-        >>> hex(int_from_bits(result.output))
+        >>> hex(cipher.evaluate(plaintext=0, key=0))
         '0x5579c1387b228445'
     """
 
