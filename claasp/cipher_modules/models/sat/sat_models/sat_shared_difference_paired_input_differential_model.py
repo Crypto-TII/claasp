@@ -61,7 +61,7 @@ class SharedDifferencePairedInputDifferentialModel(SatModel):
             sage: from claasp.cipher_modules.models.sat.sat_models.sat_shared_difference_paired_input_differential_model import SharedDifferencePairedInputDifferentialModel
             sage: speck = SpeckBlockCipher(number_of_rounds=5)
             sage: model = SharedDifferencePairedInputDifferentialModel(speck)
-        r"""
+        """
         cipher1 = cipher
         cipher2 = deepcopy(cipher)
         add_prefix_id_to_components(cipher1, "cipher1")
@@ -72,7 +72,7 @@ class SharedDifferencePairedInputDifferentialModel(SatModel):
         self.duplicate_round_cipher = cipher1
         super().__init__(self.duplicate_round_cipher)
 
-    def build_shared_difference_paired_input_differential_model(self, weight=-1, fixed_variables=[]):
+    def build_shared_difference_paired_input_differential_model(self, weight=None, fixed_variables=[]):
         r"""
         Build the SAT model for searching high-order XOR differential distinguishers involving paired inputs
         and shared difference. The distinguisher follows the mathematical form:
@@ -83,7 +83,7 @@ class SharedDifferencePairedInputDifferentialModel(SatModel):
 
         INPUT:
 
-        - ``weight`` -- **integer** (default: `-1`); fixes the trail weight if set to a non-negative integer.
+        - ``weight`` -- **integer** (default: `None`); bounds the trail weight if set to a non-negative integer.
         - ``fixed_variables`` -- **list** (default: `[]`); variables to fix, in standard format.
 
         .. SEEALSO::
