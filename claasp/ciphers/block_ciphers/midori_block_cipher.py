@@ -244,11 +244,11 @@ class MidoriBlockCipher(Cipher):
         self.add_round()
 
         if self.block_bit_size == 64:
-            WK_id = self.add_xor_component([key_id], [list(range(key_bit_size))], 64).id
+            wk_id = self.add_xor_component([key_id], [list(range(key_bit_size))], 64).id
         else:
-            WK_id = key_id
+            wk_id = key_id
 
-        data = self.key_add(data, WK_id)
+        data = self.key_add(data, wk_id)
 
         for round_number in range(n - 1):
             round_key_id = self.round_key(key_id, round_number)
@@ -264,7 +264,7 @@ class MidoriBlockCipher(Cipher):
             self.add_round()
 
         data = self.sub_cell(data)
-        data = self.key_add(data, WK_id)
+        data = self.key_add(data, wk_id)
 
         self.add_round_output_component(data[0], data[1], self.block_bit_size)
 
