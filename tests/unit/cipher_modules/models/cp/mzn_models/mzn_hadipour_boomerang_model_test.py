@@ -13,15 +13,17 @@ from claasp.ciphers.permutations.chaskeypi_permutation import ChaskeyPiPermutati
 def test_build_boomerang_model_chacha():
     # cipher = ChachaPermutation(number_of_rounds=7)
     # cipher = SpeckBlockCipher(number_of_rounds=10)
-    cipher = LeaBlockCipher(number_of_rounds=12)
     # cipher = SpeckBlockCipher(block_bit_size=48, key_bit_size=72, number_of_rounds=12)
+    # cipher = LeaBlockCipher(number_of_rounds=16)
+    # cipher = SimonBlockCipher(number_of_rounds=13)
     # cipher = SimonBlockCipher(block_bit_size=48, key_bit_size=72, number_of_rounds=16)
-    # cipher = KatanBlockCipher(number_of_rounds=5)
-    # cipher = ChaskeyPiPermutation(number_of_rounds=5, word_size=16)
+    # cipher = KatanBlockCipher(number_of_rounds=86)
+    cipher = KatanBlockCipher(block_bit_size=48, number_of_rounds=83)
+    # cipher = ChaskeyPiPermutation(number_of_rounds=7, word_size=16)
 
-    top_part_number_of_rounds = 5
-    middle_part_number_of_rounds = 1
-    bottom_part_number_of_rounds = 6
+    top_part_number_of_rounds = 40
+    middle_part_number_of_rounds = 3
+    bottom_part_number_of_rounds = 40
 
     component_dict = {
         "top_part_number_of_rounds": top_part_number_of_rounds,
