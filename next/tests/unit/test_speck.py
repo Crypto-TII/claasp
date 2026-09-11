@@ -9,20 +9,22 @@ CIPHERTEXT = (0x8C6FA548, 0x454E028B)
 
 def test_speck64_128_matches_designers_known_answer_vector():
     result = ScalarEvaluator().evaluate(
-        SpeckBlockCipher(), {"plaintext": PLAINTEXT, "key": KEY}
+        SpeckBlockCipher(block_bit_size=64, key_bit_size=128),
+        {"plaintext": PLAINTEXT, "key": KEY},
     )
     assert result.output == CIPHERTEXT
 
 
 def test_speck_reduced_round_matches_first_published_intermediate_state():
     result = ScalarEvaluator().evaluate(
-        SpeckBlockCipher(number_of_rounds=1), {"plaintext": PLAINTEXT, "key": KEY}
+        SpeckBlockCipher(block_bit_size=64, key_bit_size=128, number_of_rounds=1),
+        {"plaintext": PLAINTEXT, "key": KEY},
     )
     assert result.output == (0xEBB2B492, 0x4818ADF9)
 
 
 def test_speck_batch_backends_match_scalar_reference():
-    cipher = SpeckBlockCipher(number_of_rounds=3)
+    cipher = SpeckBlockCipher(block_bit_size=64, key_bit_size=128, number_of_rounds=3)
     inputs = {"plaintext": (PLAINTEXT, (0, 0)), "key": (KEY, KEY)}
     expected = tuple(
         ScalarEvaluator().evaluate(cipher, {

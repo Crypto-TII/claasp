@@ -28,7 +28,7 @@ and key inputs follow the word order in the designers' implementation guide.
 
    >>> from claasp_next.ciphers import SpeckBlockCipher
    >>> from claasp_next.evaluators import ScalarEvaluator
-   >>> result = ScalarEvaluator().evaluate(SpeckBlockCipher(), {
+   >>> result = ScalarEvaluator().evaluate(SpeckBlockCipher(64, 128), {
    ...     "plaintext": (0x3b726574, 0x7475432d),
    ...     "key": (0x1b1a1918, 0x13121110, 0x0b0a0908, 0x03020100),
    ... })
