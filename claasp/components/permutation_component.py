@@ -560,14 +560,14 @@ class Permutation(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
+            sage: from claasp.ciphers.single_component_ciphers.permutation_cipher import PermutationCipher
             sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_number_of_active_sboxes_model import MznXorDifferentialNumberOfActiveSboxesModel
-            sage: cipher = PresentBlockCipher(number_of_rounds=1)
+            sage: cipher = PermutationCipher(bit_size=4, permutation_description=[1, 3, 2, 0])
             sage: cp = MznXorDifferentialNumberOfActiveSboxesModel(cipher)
             sage: cp.initialise_model()
-            sage: perm = cipher.component_from_id('permutation_0_17')
+            sage: perm = cipher.component_from_id('permutation_0_0')
             sage: declarations, constraints = perm.cp_xor_differential_propagation_first_step_constraints(cp)
-            sage: len(constraints) == cipher.block_bit_size // cp.word_size
+            sage: len(constraints) == cipher.output_bit_size // cp.word_size
             True
         """
         output_id = self.id
