@@ -14,6 +14,7 @@ from claasp_next.analysis import (
 )
 from claasp_next.analysis.boolean import lower_boolean_problem
 from claasp_next.components import Add
+from claasp_next.boolean.solvers import SatResult, SatStatus
 
 
 def _xor_cipher():
@@ -29,6 +30,13 @@ def _satisfying_assignments(formula):
         assignment = dict(zip(formula.variables, values))
         if formula.is_satisfied(assignment):
             yield assignment
+
+
+class _ExhaustiveSolver:
+    def solve(self, formula):
+        assignment = next(_satisfying_assignments(formula), None)
+        status = SatStatus.SATISFIABLE if assignment is not None else SatStatus.UNSATISFIABLE
+        return SatResult(status, assignment, 0.0, "", "")
 
 
 def test_fixed_values_and_graph_level_projection_need_no_solver_names():
@@ -77,3 +85,31 @@ def test_fixed_value_rejects_wrong_sequence_length():
     problem = AnalysisProblem(cipher, (FixedValue(cipher.input("left"), (0, 1)),))
     with pytest.raises(ValueError, match="length"):
         lower_boolean_problem(problem)
+
+
+def test_solution_enumeration_blocks_projected_values_and_honors_limit():
+    cipher = _xor_cipher()
+    problem = AnalysisProblem(
+        cipher,
+        (FixedValue(cipher.output, 0),),
+        {"key": cipher.input("key")},
+    )
+    results = cipher.analyze().enumerate_solutions(
+        problem, limit=5, solver=_ExhaustiveSolver()
+    )
+    assert {result.value("key") for result in results} == {0, 1}
+    assert len(results) == 2
+
+
+def test_solution_enumeration_requires_a_positive_limit_and_projection():
+    cipher = _xor_cipher()
+    with pytest.raises(ValueError, match="positive"):
+        cipher.analyze().enumerate_solutions(
+            AnalysisProblem(cipher, projections={"key": cipher.input("key")}),
+            limit=0,
+            solver=_ExhaustiveSolver(),
+        )
+    with pytest.raises(ValueError, match="projection"):
+        cipher.analyze().enumerate_solutions(
+            AnalysisProblem(cipher), limit=1, solver=_ExhaustiveSolver()
+        )

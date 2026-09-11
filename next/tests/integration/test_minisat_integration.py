@@ -5,7 +5,7 @@ import pytest
 from claasp_next import Bit, Cipher, ValueType
 from claasp_next.boolean import BooleanCNFModel
 from claasp_next.boolean.solvers import MinisatSolver, SatStatus
-from claasp_next.ciphers import Present80BlockCipher
+from claasp_next.ciphers import Present80BlockCipher, SpeckBlockCipher
 from claasp_next.components import Add
 
 
@@ -48,3 +48,20 @@ def test_high_level_analysis_recovers_an_unknown_input():
     assert result.backend == "MinisatSolver"
     assert result.statistics == {"variables": 3, "clauses": 6}
     assert len(result.reproducibility["formula_sha256"]) == 64
+
+
+def test_word_level_sat_recovers_a_reduced_speck_key():
+    cipher = SpeckBlockCipher(number_of_rounds=1)
+    plaintext = 0x6574694C
+    expected = cipher.evaluate(plaintext, 0x1918111009080100)
+
+    result = cipher.analyze().recover_input(
+        "key",
+        known_inputs={"plaintext": plaintext},
+        output=expected,
+        solver=MinisatSolver(timeout_seconds=30),
+    )
+
+    assert result.is_satisfiable
+    assert cipher.evaluate(plaintext, result.value("key")) == expected
+    assert result.statistics["variables"] > 64

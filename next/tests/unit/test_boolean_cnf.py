@@ -5,7 +5,7 @@ import pytest
 from claasp_next import bits_from_int
 from claasp_next.boolean import BooleanCNFModel, CNFFormula
 from claasp_next.boolean.exporters import DimacsExporter
-from claasp_next.ciphers import MiMCPermutation, Present80BlockCipher
+from claasp_next.ciphers import MiMCPermutation, Present80BlockCipher, SpeckBlockCipher
 from claasp_next.components import Add
 from claasp_next.core import Cipher, ValueType
 from claasp_next.domains import Bit
@@ -54,8 +54,23 @@ def test_present_scalar_execution_produces_satisfying_cnf_witness():
     assert not formula.is_satisfied(wrong)
 
 
-def test_non_bit_graph_is_rejected_explicitly():
-    with pytest.raises(ValueError, match="requires the Bit domain"):
+def test_word_arx_execution_produces_satisfying_cnf_witness():
+    cipher = SpeckBlockCipher(number_of_rounds=1)
+    inputs = {
+        "plaintext": (0x6574, 0x694C),
+        "key": (0x1918, 0x1110, 0x0908, 0x0100),
+    }
+    evaluation = ScalarEvaluator().evaluate(cipher, inputs)
+    model = BooleanCNFModel(cipher)
+    formula = model.cnf_formula()
+
+    assert formula.is_satisfied(model.witness(evaluation))
+    assert "plaintext_0_0" in formula.variables
+    assert "plaintext_1_15" in formula.variables
+
+
+def test_non_boolean_encodable_graph_is_rejected_explicitly():
+    with pytest.raises(ValueError, match="requires the Bit or Word domain"):
         BooleanCNFModel(MiMCPermutation(17, 3, (1,))).cnf_formula()
 
 

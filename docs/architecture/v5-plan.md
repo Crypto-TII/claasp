@@ -443,8 +443,8 @@ each synchronization.
 | Boolean CNF and DIMACS analysis layer | Achieved | Dependency-free IR, PRESENT witness validation, and exporter |
 | MiniSat execution adapter | Achieved | SAT/UNSAT results, named assumptions, timeouts, and dedicated CI |
 | Analysis contracts and constraints (M10.1) | Achieved | Simple facade, graph-level constraints, projection, reproducible results |
-| SAT cipher/key recovery (M10.2) | Next | Complete required bit lowering and port legacy SAT cipher tests |
-| Differential/linear analysis (M10.3) | Planned | Reproduce sourced legacy/publication trails, weights, and bounds |
+| SAT cipher/key recovery (M10.2) | Achieved | Bit/word lowering, packed projections, inversion, enumeration, blocking, MiniSat Speck recovery |
+| Differential/linear analysis (M10.3) | Next | Reproduce sourced legacy/publication trails, weights, and bounds |
 | SMT, MILP, and CP (M10.4–M10.6) | Planned | Shared semantics with independent external lowerings |
 | Statistical analysis (M10.7) | Planned | Avalanche and related legacy behavior |
 | Serialization, diagrams, transforms, compilers (M10.8) | Planned | Inventory-driven tooling migration |

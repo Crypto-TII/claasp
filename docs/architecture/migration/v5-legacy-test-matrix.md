@@ -25,12 +25,28 @@ format relies on them.
 Legacy paths above are under `tests/unit/ciphers/block_ciphers/`; v5 paths are
 under `next/tests/unit/`.
 
+## SAT cipher evaluation and recovery
+
+| Legacy test | Semantic assertions and provenance | Disposition | v5 coverage |
+| --- | --- | --- | --- |
+| `sat/sat_models/sat_cipher_model_test.py::test_find_missing_bits` | MiniSat completes fully fixed Speck32/64 inputs to the official 22-round ciphertext `0xa86842f2`; legacy CLAASP regression backed by the Speck designers' vector | Ported semantically | Scalar/CNF witness parity covers the full graph; `test_word_level_sat_recovers_a_reduced_speck_key` exercises actual MiniSat inversion and independently re-evaluates the recovered key |
+| `sat/cms_models/cms_cipher_model_test.py::test_find_missing_bits` | Same Speck result through CryptoMiniSat's XOR-aware model | Superseded for cipher semantics | Solver-independent CNF plus the MiniSat adapter reproduces the semantic requirement; a future CryptoMiniSat adapter may preserve native XOR performance without changing the graph API |
+| `sat/sat_model_test.py::test_solve` | Unconstrained TEA/Simon models are satisfiable and expose internal assignments | Deferred | TEA and Simon have not yet been migrated to the v5 typed graph |
+| `sat/sat_model_test.py::test_solver_names` | Runtime catalogue of bundled and external solver metadata | Superseded | Explicit lightweight adapters replace Sage's solver registry; backend and executable are recorded in every `AnalysisResult` |
+| `sat/sat_model_test.py::test_fix_variables_value_constraints` (cipher-model portions) | Equal/not-equal constraints, including graph-to-graph values, and contradictory constraints becoming UNSAT | Ported | `test_analysis_constraints.py` exhaustively verifies graph-level `FixedValue`, `Equal`, and `NotEqual`; backend variable names are deliberately hidden |
+| Legacy repeated-solution helpers | Enumerate models while excluding earlier assignments | Ported | `test_solution_enumeration_blocks_projected_values_and_honors_limit` verifies projection-based blocking, exhaustion, and limits |
+
+The v5 recovery integration pins the external CI package version for MiniSat
+and validates a returned key by evaluating the cipher, rather than trusting
+SAT status alone. The reduced-round key is a feasibility witness, not a claim
+of uniqueness or an optimum.
+
 ## Analysis and tooling inventory
 
 These discovered suites receive row-level entries when their M10 increment
 starts:
 
-- SAT and CryptoMiniSat cipher, differential, linear, truncated, impossible,
+- SAT and CryptoMiniSat differential, linear, truncated, impossible,
   differential-linear, and paired-input models under
   `tests/unit/cipher_modules/models/sat/` and `tests/benchmark/`.
 - SMT cipher, XOR-differential, and XOR-linear models under

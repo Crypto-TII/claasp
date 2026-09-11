@@ -7,6 +7,8 @@ from hashlib import sha256
 from claasp_next.analysis.boolean import lower_boolean_problem
 from claasp_next.analysis.constraints import FixedValue
 from claasp_next.analysis.problem import AnalysisProblem
+from claasp_next.boolean.cnf import CNFFormula
+from claasp_next.boolean.encoding import decode_unit, selection_variable_names
 from claasp_next.boolean.solvers import MinisatSolver, SatResult, SatStatus
 from claasp_next.core import Cipher, Selection
 
@@ -52,6 +54,57 @@ class Analysis:
         if not hasattr(selected_solver, "solve"):
             raise TypeError("solver must provide a solve(formula) method")
         solved = selected_solver.solve(formula)
+        return self._result(problem, formula, selected_solver, solved)
+
+    def enumerate_solutions(
+        self,
+        problem: AnalysisProblem,
+        *,
+        limit: int,
+        solver: object | None = None,
+    ) -> tuple[AnalysisResult, ...]:
+        """Return up to ``limit`` distinct projected solutions.
+
+        Each subsequent solve receives a blocking clause over the requested
+        graph-level projections. At least one projection is therefore required.
+        """
+
+        if problem.cipher is not self.cipher:
+            raise ValueError("analysis problem belongs to a different cipher")
+        if not isinstance(limit, int) or isinstance(limit, bool) or limit <= 0:
+            raise ValueError("solution limit must be a positive integer")
+        if not problem.projections:
+            raise ValueError("solution enumeration requires at least one projection")
+        formula = lower_boolean_problem(problem)
+        selected_solver = MinisatSolver() if solver is None else solver
+        if not hasattr(selected_solver, "solve"):
+            raise TypeError("solver must provide a solve(formula) method")
+        results = []
+        projected_names = tuple(
+            name
+            for selection in problem.projections.values()
+            for group in selection_variable_names(selection)
+            for name in group
+        )
+        while len(results) < limit:
+            solved = selected_solver.solve(formula)
+            result = self._result(problem, formula, selected_solver, solved)
+            if not result.is_satisfiable:
+                break
+            results.append(result)
+            indices = {name: index for index, name in enumerate(formula.variables, 1)}
+            blocking = tuple(
+                -indices[name] if solved.assignment[name] else indices[name]
+                for name in projected_names
+            )
+            formula = CNFFormula(
+                formula.variables,
+                formula.clauses + (blocking,),
+                formula.provenance + ("solution_block",),
+            )
+        return tuple(results)
+
+    def _result(self, problem, formula, selected_solver, solved):
         projected = {}
         if solved.is_satisfiable:
             for name, selection in problem.projections.items():
@@ -107,6 +160,6 @@ class Analysis:
     @staticmethod
     def _project(selection: Selection, assignment: Mapping[str, int]) -> tuple[int, ...]:
         return tuple(
-            assignment[f"{selection.source.owner_id}_{position}"]
-            for position in selection.positions
+            decode_unit(names, assignment)
+            for names in selection_variable_names(selection)
         )

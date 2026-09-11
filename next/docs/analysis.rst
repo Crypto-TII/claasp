@@ -47,3 +47,31 @@ backend-neutral constraints. ``MinimizeWeight`` records an objective, while a
 backend that cannot optimize rejects it explicitly. Results retain status,
 runtime, backend name, model statistics, projections, and the raw solver
 result for reproducibility.
+
+Word-oriented recovery
+----------------------
+
+The same API lowers word-native ARX operations to Boolean constraints. Inputs
+and projections remain ordinary packed integers; users do not manually split
+words into solver bits. For example, MiniSat can recover a key consistent with
+a one-round Speck32/64 plaintext/ciphertext pair:
+
+.. code-block:: python
+
+   from claasp_next.ciphers import SpeckBlockCipher
+
+   cipher = SpeckBlockCipher(number_of_rounds=1)
+   plaintext = 0x6574694C
+   ciphertext = cipher.evaluate(plaintext, 0x1918111009080100)
+   result = cipher.analyze().recover_input(
+       "key",
+       known_inputs={"plaintext": plaintext},
+       output=ciphertext,
+   )
+   assert result.is_satisfiable
+   assert cipher.evaluate(plaintext, result.value("key")) == ciphertext
+
+A reduced-round pair may admit several keys. Build an ``AnalysisProblem`` with
+the desired key projection and call ``enumerate_solutions(problem, limit=N)``
+to request distinct projected solutions. The facade adds blocking clauses and
+stops either at ``N`` or when the model becomes unsatisfiable.
