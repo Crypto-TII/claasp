@@ -1549,7 +1549,9 @@ def add_word_permutation_component(
     - ``input_id_links`` -- **list**; the list of input_id links
     - ``input_bit_positions`` -- **list**; the list of input_bits corresponding to the input_id links
     - ``output_bit_size`` -- **integer**; the output bits of the component
-    - ``permutation_description`` -- **list**; the description of the permutation (word_based)
+    - ``permutation_description`` -- **list**; permutation mapping from source word position to
+      destination word position: ``permutation_description[i]`` is the destination word index for
+      source word ``i``
     - ``word_size`` -- **integer**; define the size of each word
 
     EXAMPLES::
@@ -1568,13 +1570,13 @@ def add_word_permutation_component(
         cipher_number_of_rounds = 1
         <BLANKLINE>
             # round = 0 - round component = 0
-            id = mix_column_0_0
-            type = mix_column
+            id = permutation_0_0
+            type = permutation
             input_bit_size = 4
             input_id_link = ['input']
             input_bit_positions = [[0, 1, 2, 3]]
             output_bit_size = 4
-            description = [[[0, 1], [1, 0]], 0, 2]
+            description = [[1, 0], 2]
         cipher_reference_code = None
     """
     if cipher.current_round_number is None:
