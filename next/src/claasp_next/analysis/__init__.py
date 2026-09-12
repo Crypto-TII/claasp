@@ -21,6 +21,12 @@ from claasp_next.analysis.trails import (
     XorDifference,
     XorMask,
 )
+from claasp_next.analysis.truncated import (
+    TruncatedBit,
+    TruncatedXorDifference,
+    propagate_two_word_speck_round,
+    truncated_modular_add,
+)
 
 __all__ = [
     "Analysis",
@@ -42,4 +48,8 @@ __all__ = [
     "Transition",
     "XorDifference",
     "XorMask",
+    "TruncatedBit",
+    "TruncatedXorDifference",
+    "propagate_two_word_speck_round",
+    "truncated_modular_add",
 ]

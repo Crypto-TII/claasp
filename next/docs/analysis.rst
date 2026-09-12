@@ -135,3 +135,28 @@ reproduces the preserved two-round Speck32/64 optimum:
 
 The regression checker independently recomputes both modular-add
 probabilities and the rotations/XOR wiring through both Speck rounds.
+
+Truncated and impossible differences
+------------------------------------
+
+Deterministic truncated differences use the explicit symbols ``0``, ``1``,
+and ``?``. Modular addition propagates them with a sound paired-carry
+reachability computation:
+
+.. doctest::
+
+   >>> from claasp_next.analysis import TruncatedXorDifference, truncated_modular_add
+   >>> left = TruncatedXorDifference.parse("1000")
+   >>> zero = TruncatedXorDifference.parse("0000")
+   >>> str(truncated_modular_add(left, zero))
+   '1000'
+
+For exact S-box differences, impossibility can be queried directly through
+the graph facade:
+
+.. doctest::
+
+   >>> from claasp_next.ciphers import PresentBlockCipher
+   >>> cipher = PresentBlockCipher(number_of_rounds=1)
+   >>> cipher.analyze().is_xor_differential_transition_possible("sbox_1_0", 1, 1)
+   False

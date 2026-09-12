@@ -168,6 +168,24 @@ class Analysis:
 
         return find_two_round_spn_xor_differential(self.cipher)
 
+    def is_xor_differential_transition_possible(
+        self, component_id: str, input_difference: int, output_difference: int
+    ) -> bool:
+        """Check an S-box transition directly from the typed graph."""
+
+        from claasp_next.analysis.trails import SBoxTransitionSemantics
+        from claasp_next.components import BitVectorSBox
+
+        component = next(
+            (item for item in self.cipher.components if item.component_id == component_id),
+            None,
+        )
+        if not isinstance(component, BitVectorSBox):
+            raise NotImplementedError("transition feasibility currently supports bit-vector S-boxes")
+        return SBoxTransitionSemantics(component.table).xor_differential(
+            input_difference, output_difference
+        ).is_possible
+
     @staticmethod
     def _project(selection: Selection, assignment: Mapping[str, int]) -> tuple[int, ...]:
         return tuple(
