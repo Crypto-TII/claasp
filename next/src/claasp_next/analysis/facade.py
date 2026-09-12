@@ -157,6 +157,13 @@ class Analysis:
         )
         return self.solve(problem, solver)
 
+    def find_lowest_weight_xor_differential_trail(self):
+        """Find the lowest-weight trail supported by the reviewed graph slice."""
+
+        from claasp_next.analysis.spn import find_two_round_spn_xor_differential
+
+        return find_two_round_spn_xor_differential(self.cipher)
+
     @staticmethod
     def _project(selection: Selection, assignment: Mapping[str, int]) -> tuple[int, ...]:
         return tuple(

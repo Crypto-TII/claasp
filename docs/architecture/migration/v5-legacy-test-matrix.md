@@ -48,6 +48,7 @@ of uniqueness or an optimum.
 | SAT/SMT `*_xor_differential_model_test.py` Speck32/64 five-round optimum | Minimum XOR-differential weight 9, repeated across legacy SAT and SMT backends | Scheduled for M10.3c | M10.3a first defines backend-neutral exact transition and trail weights; the eventual solver witness must be independently checked |
 | SAT/SMT `*_xor_linear_model_test.py` reduced Speck fixtures | Four-round optimum weight 3 and three-round feasible weight 7 | Scheduled for M10.3c | Same shared semantics and independent-check requirement |
 | S-box differential/linear component behavior used throughout legacy trail models | DDT probability and signed LAT correlation derived exhaustively from the lookup table | Ported in M10.3a | `test_trail_semantics.py` checks exact PRESENT transitions, impossible transitions, signs, weights, and trail aggregation |
+| `milp/milp_models/milp_xor_differential_model_test.py::test_find_lowest_weight_xor_differential_trail` PRESENT case | Two-round PRESENT minimum XOR-differential weight 4; legacy CLAASP regression | Ported in M10.3b | `test_spn_trail_search.py` reproduces weight 4, meets an explicit lower bound, and independently checks every S-box transition and permutation boundary |
 
 ## Analysis and tooling inventory
 

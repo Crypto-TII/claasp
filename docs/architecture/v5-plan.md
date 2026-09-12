@@ -455,7 +455,8 @@ each synchronization.
 | SAT cipher/key recovery (M10.2) | Achieved | Bit/word lowering, packed projections, inversion, enumeration, blocking, MiniSat Speck recovery |
 | Differential/linear analysis (M10.3) | Next | Reproduce sourced legacy/publication trails, weights, and bounds |
 | Shared trail semantics (M10.3a) | Achieved | Exact typed patterns, transitions, trails, PRESENT DDT/LAT checker |
-| SPN trail search (M10.3b) | Next | Add solver lowering and sourced PRESENT regression fixtures |
+| SPN trail search (M10.3b) | Achieved | Exact PRESENT-2 optimum, graph-derived semantics, independent trail/wiring checker |
+| ARX trail search (M10.3c) | Next | Add modular-add propagation and sourced Speck regression fixtures |
 | SMT, MILP, and CP (M10.4–M10.6) | Planned | Shared semantics with independent external lowerings |
 | Statistical analysis (M10.7) | Planned | Avalanche and related legacy behavior |
 | Serialization, diagrams, transforms, compilers (M10.8) | Planned | Inventory-driven tooling migration |

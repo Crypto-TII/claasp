@@ -96,3 +96,22 @@ solver-independent checker. For the published PRESENT S-box, for example:
 
 Linear transitions retain their correlation sign as well as their absolute
 weight. Impossible transitions have zero numerator and infinite weight.
+
+SPN trail search
+----------------
+
+The first reviewed graph-level search slice reproduces the legacy two-round
+PRESENT XOR-differential optimum. The result distinguishes a proven optimum
+from a mere feasible trail and records its provenance:
+
+.. doctest::
+
+   >>> from claasp_next.ciphers import PresentBlockCipher
+   >>> cipher = PresentBlockCipher(number_of_rounds=2)
+   >>> result = cipher.analyze().find_lowest_weight_xor_differential_trail()
+   >>> (result.trail.total_weight, result.lower_bound, result.is_optimal)
+   (4.0, 4.0, True)
+
+The search reads the S-box and permutation semantics from the typed graph.
+Every returned transition and the wiring between both substitution layers are
+recomputed by an independent checker in the regression suite.

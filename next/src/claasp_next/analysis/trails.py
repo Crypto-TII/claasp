@@ -119,6 +119,19 @@ class Trail:
         return sum(step.transition.weight for step in self.steps)
 
 
+@dataclass(frozen=True, slots=True)
+class TrailSearchResult:
+    """A trail together with its optimization claim and provenance."""
+
+    trail: Trail
+    lower_bound: float
+    provenance: str
+
+    @property
+    def is_optimal(self) -> bool:
+        return self.trail.total_weight == self.lower_bound
+
+
 class SBoxTransitionSemantics:
     """Compute and independently check exact S-box DDT and LAT entries."""
 
