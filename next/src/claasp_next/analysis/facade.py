@@ -189,6 +189,10 @@ class Analysis:
     def find_lowest_weight_xor_linear_trail(self):
         """Find the lowest-weight linear trail supported by the reviewed slice."""
 
+        if self.cipher.family_name == "speck":
+            from claasp_next.analysis.arx import find_four_round_speck_xor_linear
+
+            return find_four_round_speck_xor_linear(self.cipher)
         from claasp_next.analysis.spn import find_three_round_spn_xor_linear
 
         return find_three_round_spn_xor_linear(self.cipher)

@@ -457,13 +457,14 @@ each synchronization.
 | MiniSat execution adapter | Achieved | SAT/UNSAT results, named assumptions, timeouts, and dedicated CI |
 | Analysis contracts and constraints (M10.1) | Achieved | Simple facade, graph-level constraints, projection, reproducible results |
 | SAT cipher/key recovery (M10.2) | Achieved | Bit/word lowering, packed projections, inversion, enumeration, blocking, MiniSat Speck recovery |
-| Differential/linear analysis (M10.3) | Next | Reproduce sourced legacy/publication trails, weights, and bounds |
+| Differential/linear analysis (M10.3) | Achieved | SPN/ARX differential and linear references, truncated/impossible slice, independent checkers |
 | Shared trail semantics (M10.3a) | Achieved | Exact typed patterns, transitions, trails, PRESENT DDT/LAT checker |
 | SPN trail search (M10.3b) | Achieved | Exact PRESENT-2 optimum, graph-derived semantics, independent trail/wiring checker |
 | ARX trail search (M10.3c) | Achieved | Exact carry-pair semantics, Speck32/64-2 weight-1 optimum, independent checker |
 | Truncated/impossible trails (M10.3d) | Achieved | Speck truncated fixture and exhaustive PRESENT S-box impossibility check |
 | SPN XOR-linear trail search (M10.3e) | Achieved | PRESENT-3 weight-4 fixture, signed LAT entries, independent checker |
-| ARX XOR-linear trail search (M10.3f) | Next | Add modular-add linear correlations and Speck optimum fixture |
+| ARX XOR-linear trail search (M10.3f) | Achieved | Exact Walsh carry semantics and restored Speck32/64-4 weight-3 characteristic |
+| SMT backend (M10.4) | Next | Add solver-independent SMT IR, exporter, and open-source execution adapter |
 | SMT, MILP, and CP (M10.4–M10.6) | Planned | Shared semantics with independent external lowerings |
 | Statistical analysis (M10.7) | Planned | Avalanche and related legacy behavior |
 | Serialization, diagrams, transforms, compilers (M10.8) | Planned | Inventory-driven tooling migration |

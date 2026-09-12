@@ -300,3 +300,50 @@ class ModularAddTransitionSemantics:
         return transition == self.xor_differential(
             left, right, transition.output_pattern.value
         )
+
+
+class ModularAddLinearSemantics:
+    """Exact Walsh correlations for masks of two-input modular addition."""
+
+    def __init__(self, width: int) -> None:
+        if not isinstance(width, int) or isinstance(width, bool) or width <= 0:
+            raise ValueError("modular-add width must be a positive integer")
+        self.width = width
+        self.mask = (1 << width) - 1
+
+    def xor_linear(self, left_mask: int, right_mask: int, output_mask: int) -> Transition:
+        """Compute an exact correlation with a two-state carry automaton."""
+
+        for value in (left_mask, right_mask, output_mask):
+            if not isinstance(value, int) or isinstance(value, bool) or not 0 <= value <= self.mask:
+                raise ValueError(f"masks must be integers in range({self.mask + 1})")
+        carries = {0: 1}
+        for bit in range(self.width):
+            next_carries = defaultdict(int)
+            for carry, walsh in carries.items():
+                for left in (0, 1):
+                    for right in (0, 1):
+                        total = left + right + carry
+                        parity = (
+                            (((left_mask >> bit) & 1) & left)
+                            ^ (((right_mask >> bit) & 1) & right)
+                            ^ (((output_mask >> bit) & 1) & (total & 1))
+                        )
+                        next_carries[total >> 1] += -walsh if parity else walsh
+            carries = {carry: value for carry, value in next_carries.items() if value}
+        walsh = sum(carries.values())
+        return Transition(
+            TrailKind.XOR_LINEAR,
+            XorMask((left_mask << self.width) | right_mask, 2 * self.width),
+            XorMask(output_mask, self.width),
+            abs(walsh),
+            1 << (2 * self.width),
+            -1 if walsh < 0 else 1,
+        )
+
+    def check(self, transition: Transition) -> bool:
+        """Recompute a modular-add linear transition independently."""
+
+        left = transition.input_pattern.value >> self.width
+        right = transition.input_pattern.value & self.mask
+        return transition == self.xor_linear(left, right, transition.output_pattern.value)

@@ -12,6 +12,7 @@ from claasp_next.analysis.problem import AnalysisProblem, MinimizeWeight
 from claasp_next.analysis.trails import (
     BitPattern,
     ModularAddTransitionSemantics,
+    ModularAddLinearSemantics,
     SBoxTransitionSemantics,
     Trail,
     TrailKind,
@@ -40,6 +41,7 @@ __all__ = [
     "NotEqual",
     "BitPattern",
     "ModularAddTransitionSemantics",
+    "ModularAddLinearSemantics",
     "SBoxTransitionSemantics",
     "Trail",
     "TrailKind",

@@ -1,5 +1,5 @@
-from claasp_next.analysis import ModularAddTransitionSemantics
-from claasp_next.analysis.arx import check_speck_trail
+from claasp_next.analysis import ModularAddLinearSemantics, ModularAddTransitionSemantics
+from claasp_next.analysis.arx import check_speck_linear_trail, check_speck_trail
 from claasp_next.ciphers import SpeckBlockCipher
 
 
@@ -27,3 +27,26 @@ def test_two_round_speck_reproduces_legacy_optimum_and_checks_wiring():
     assert result.is_optimal
     assert result.trail.input_pattern.value == 0x00400000
     assert check_speck_trail(cipher, result.trail)
+
+
+def test_modular_add_linear_correlation_retains_exact_sign():
+    transition = ModularAddLinearSemantics(16).xor_linear(0x0800, 0x0800, 0x0C00)
+
+    assert (transition.numerator, transition.denominator, transition.weight) == (
+        1 << 31,
+        1 << 32,
+        1.0,
+    )
+    assert transition.sign == -1
+
+
+def test_four_round_speck_reproduces_legacy_linear_optimum():
+    cipher = SpeckBlockCipher(number_of_rounds=4)
+
+    result = cipher.analyze().find_lowest_weight_xor_linear_trail()
+
+    assert result.trail.total_weight == 3.0
+    assert result.is_optimal
+    assert result.trail.input_pattern.value == 0x40B010C1
+    assert result.trail.output_pattern.value == 0x2C102010
+    assert check_speck_linear_trail(cipher, result.trail)

@@ -176,3 +176,16 @@ weight-4 fixture:
    (4.0, True)
    >>> any(step.transition.sign == -1 for step in result.trail.steps)
    True
+
+ARX linear masks use an exact signed carry automaton as well. The restored
+four-round Speck32/64 reference characteristic is exposed by the identical
+facade call:
+
+.. doctest::
+
+   >>> from claasp_next.ciphers import SpeckBlockCipher
+   >>> result = SpeckBlockCipher(number_of_rounds=4).analyze().find_lowest_weight_xor_linear_trail()
+   >>> (result.trail.total_weight, result.is_optimal)
+   (3.0, True)
+   >>> (hex(result.trail.input_pattern.value), hex(result.trail.output_pattern.value))
+   ('0x40b010c1', '0x2c102010')
