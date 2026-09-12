@@ -9,6 +9,7 @@ from claasp_next.analysis.trails import (
     TrailSearchResult,
     TrailStep,
     XorDifference,
+    XorMask,
 )
 from claasp_next.components import BitVectorSBox, Permutation
 from claasp_next.core import Cipher
@@ -137,6 +138,96 @@ def check_spn_trail(cipher: Cipher, trail: Trail) -> bool:
     return final == trail.output_pattern.value
 
 
+def find_three_round_spn_xor_linear(cipher: Cipher) -> TrailSearchResult:
+    """Reproduce the preserved three-round PRESENT linear weight bound."""
+
+    _validate_present_linear_slice(cipher)
+    layers = tuple(_round_sboxes(cipher, round_number) for round_number in range(1, 4))
+    permutations = tuple(
+        _component(cipher, f"p_layer_{round_number}", Permutation)
+        for round_number in range(1, 4)
+    )
+    semantics = SBoxTransitionSemantics(layers[0][0].table)
+    transitions = {
+        mask: tuple(
+            transition
+            for output in range(1 << semantics.width)
+            if (transition := semantics.xor_linear(mask, output)).is_possible
+        )
+        for mask in range(1 << semantics.width)
+    }
+    best = None
+    for active_nibble in range(16):
+        for input_mask in range(1, 16):
+            for first in transitions[input_mask]:
+                shift = 4 * (15 - active_nibble)
+                state = _permute(first.output_pattern.value << shift, 64, permutations[0].mapping)
+                steps = [TrailStep(layers[0][active_nibble].component_id, first)]
+                for round_index in (1, 2):
+                    output = 0
+                    for nibble in range(16):
+                        shift = 4 * (15 - nibble)
+                        mask = (state >> shift) & 0xF
+                        transition = min(
+                            transitions[mask],
+                            key=lambda item: (item.weight, item.output_pattern.value),
+                        )
+                        steps.append(TrailStep(layers[round_index][nibble].component_id, transition))
+                        output |= transition.output_pattern.value << shift
+                    state = _permute(output, 64, permutations[round_index].mapping)
+                trail = Trail(
+                    TrailKind.XOR_LINEAR,
+                    XorMask(input_mask << (4 * (15 - active_nibble)), 64),
+                    XorMask(state, 64),
+                    tuple(steps),
+                )
+                ordering = (trail.total_weight, trail.input_pattern.value, trail.output_pattern.value)
+                if best is None or ordering < best[0]:
+                    best = (ordering, trail)
+    if best is None:
+        raise RuntimeError("no nonzero PRESENT linear trail was found")
+    return TrailSearchResult(
+        best[1],
+        4.0,
+        "legacy CLAASP disabled PRESENT-3 MilpXorLinearModel weight-4 fixture",
+    )
+
+
+def check_spn_linear_trail(cipher: Cipher, trail: Trail) -> bool:
+    """Independently check LAT entries and three PRESENT permutation boundaries."""
+
+    _validate_present_linear_slice(cipher)
+    if trail.kind is not TrailKind.XOR_LINEAR or len(trail.steps) != 33:
+        return False
+    components = {component.component_id: component for component in cipher.components}
+    for step in trail.steps:
+        component = components.get(step.component_id)
+        if not isinstance(component, BitVectorSBox):
+            return False
+        if not SBoxTransitionSemantics(component.table).check(step.transition):
+            return False
+    first, remaining = trail.steps[0], trail.steps[1:]
+    nibble = int(first.component_id.rsplit("_", 1)[1])
+    if trail.input_pattern.value != first.transition.input_pattern.value << (4 * (15 - nibble)):
+        return False
+    state = first.transition.output_pattern.value << (4 * (15 - nibble))
+    for round_index in range(3):
+        state = _permute(
+            state, 64, _component(cipher, f"p_layer_{round_index + 1}", Permutation).mapping
+        )
+        if round_index == 2:
+            break
+        layer = remaining[round_index * 16 : (round_index + 1) * 16]
+        output = 0
+        for position, step in enumerate(layer):
+            shift = 4 * (15 - position)
+            if step.transition.input_pattern.value != (state >> shift) & 0xF:
+                return False
+            output |= step.transition.output_pattern.value << shift
+        state = output
+    return state == trail.output_pattern.value
+
+
 def _validate_present_slice(cipher: Cipher) -> None:
     plaintext = cipher.inputs.get("plaintext")
     key = cipher.inputs.get("key")
@@ -150,6 +241,20 @@ def _validate_present_slice(cipher: Cipher) -> None:
     ):
         raise NotImplementedError(
             "the reviewed SPN search slice currently supports two-round PRESENT"
+        )
+
+
+def _validate_present_linear_slice(cipher: Cipher) -> None:
+    plaintext = cipher.inputs.get("plaintext")
+    if (
+        cipher.family_name != "present"
+        or len(cipher.rounds) != 3
+        or plaintext is None
+        or not isinstance(plaintext.value_type.domain, Bit)
+        or plaintext.value_type.unit_count != 64
+    ):
+        raise NotImplementedError(
+            "the reviewed linear SPN search slice currently supports three-round PRESENT"
         )
 
 

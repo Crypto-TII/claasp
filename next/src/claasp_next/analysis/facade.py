@@ -186,6 +186,13 @@ class Analysis:
             input_difference, output_difference
         ).is_possible
 
+    def find_lowest_weight_xor_linear_trail(self):
+        """Find the lowest-weight linear trail supported by the reviewed slice."""
+
+        from claasp_next.analysis.spn import find_three_round_spn_xor_linear
+
+        return find_three_round_spn_xor_linear(self.cipher)
+
     @staticmethod
     def _project(selection: Selection, assignment: Mapping[str, int]) -> tuple[int, ...]:
         return tuple(

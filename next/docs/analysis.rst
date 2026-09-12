@@ -160,3 +160,19 @@ the graph facade:
    >>> cipher = PresentBlockCipher(number_of_rounds=1)
    >>> cipher.analyze().is_xor_differential_transition_possible("sbox_1_0", 1, 1)
    False
+
+Linear trail search
+-------------------
+
+Linear search uses the same graph facade and retains each LAT correlation
+sign. The initial SPN slice restores the preserved three-round PRESENT
+weight-4 fixture:
+
+.. doctest::
+
+   >>> from claasp_next.ciphers import PresentBlockCipher
+   >>> result = PresentBlockCipher(number_of_rounds=3).analyze().find_lowest_weight_xor_linear_trail()
+   >>> (result.trail.total_weight, result.is_optimal)
+   (4.0, True)
+   >>> any(step.transition.sign == -1 for step in result.trail.steps)
+   True

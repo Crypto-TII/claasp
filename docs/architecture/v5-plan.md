@@ -261,6 +261,8 @@ This milestone is delivered through reviewable checkpoints:
    the cross-backend regression inventory.
 5. M10.3e adds representative XOR-linear graph search and independently
    checked legacy fixtures before M10.3 as a whole is closed.
+6. M10.3f adds ARX XOR-linear search and closes the representative reference
+   set for M10.3.
 
 #### M10.4: SMT backend
 
@@ -460,7 +462,8 @@ each synchronization.
 | SPN trail search (M10.3b) | Achieved | Exact PRESENT-2 optimum, graph-derived semantics, independent trail/wiring checker |
 | ARX trail search (M10.3c) | Achieved | Exact carry-pair semantics, Speck32/64-2 weight-1 optimum, independent checker |
 | Truncated/impossible trails (M10.3d) | Achieved | Speck truncated fixture and exhaustive PRESENT S-box impossibility check |
-| XOR-linear trail search (M10.3e) | Next | Add representative graph search and legacy optimum fixtures |
+| SPN XOR-linear trail search (M10.3e) | Achieved | PRESENT-3 weight-4 fixture, signed LAT entries, independent checker |
+| ARX XOR-linear trail search (M10.3f) | Next | Add modular-add linear correlations and Speck optimum fixture |
 | SMT, MILP, and CP (M10.4–M10.6) | Planned | Shared semantics with independent external lowerings |
 | Statistical analysis (M10.7) | Planned | Avalanche and related legacy behavior |
 | Serialization, diagrams, transforms, compilers (M10.8) | Planned | Inventory-driven tooling migration |
