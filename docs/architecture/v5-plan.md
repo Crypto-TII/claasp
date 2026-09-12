@@ -456,7 +456,8 @@ each synchronization.
 | Differential/linear analysis (M10.3) | Next | Reproduce sourced legacy/publication trails, weights, and bounds |
 | Shared trail semantics (M10.3a) | Achieved | Exact typed patterns, transitions, trails, PRESENT DDT/LAT checker |
 | SPN trail search (M10.3b) | Achieved | Exact PRESENT-2 optimum, graph-derived semantics, independent trail/wiring checker |
-| ARX trail search (M10.3c) | Next | Add modular-add propagation and sourced Speck regression fixtures |
+| ARX trail search (M10.3c) | Achieved | Exact carry-pair semantics, Speck32/64-2 weight-1 optimum, independent checker |
+| Truncated/impossible trails (M10.3d) | Next | Port selected legacy feasibility and UNSAT fixtures |
 | SMT, MILP, and CP (M10.4–M10.6) | Planned | Shared semantics with independent external lowerings |
 | Statistical analysis (M10.7) | Planned | Avalanche and related legacy behavior |
 | Serialization, diagrams, transforms, compilers (M10.8) | Planned | Inventory-driven tooling migration |

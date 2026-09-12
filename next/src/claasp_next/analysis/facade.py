@@ -160,6 +160,10 @@ class Analysis:
     def find_lowest_weight_xor_differential_trail(self):
         """Find the lowest-weight trail supported by the reviewed graph slice."""
 
+        if self.cipher.family_name == "speck":
+            from claasp_next.analysis.arx import find_two_round_speck_xor_differential
+
+            return find_two_round_speck_xor_differential(self.cipher)
         from claasp_next.analysis.spn import find_two_round_spn_xor_differential
 
         return find_two_round_spn_xor_differential(self.cipher)

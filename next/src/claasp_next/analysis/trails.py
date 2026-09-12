@@ -3,6 +3,7 @@
 from dataclasses import dataclass
 from enum import Enum
 from math import inf, log2
+from collections import defaultdict
 
 
 class TrailKind(str, Enum):
@@ -199,3 +200,103 @@ class SBoxTransitionSemantics:
     def _validate_pattern(self, value: int) -> None:
         if not isinstance(value, int) or isinstance(value, bool) or not 0 <= value < len(self.table):
             raise ValueError(f"pattern must be an integer in range({len(self.table)})")
+
+
+class ModularAddTransitionSemantics:
+    """Exact XOR-differential semantics for two-input modular addition."""
+
+    def __init__(self, width: int) -> None:
+        if not isinstance(width, int) or isinstance(width, bool) or width <= 0:
+            raise ValueError("modular-add width must be a positive integer")
+        self.width = width
+        self.mask = (1 << width) - 1
+
+    def xor_differential(
+        self, left_difference: int, right_difference: int, output_difference: int
+    ) -> Transition:
+        """Count a transition using a four-state paired-carry automaton."""
+
+        for value in (left_difference, right_difference, output_difference):
+            if not isinstance(value, int) or isinstance(value, bool) or not 0 <= value <= self.mask:
+                raise ValueError(f"differences must be integers in range({self.mask + 1})")
+        carries = {(0, 0): 1}
+        for bit in range(self.width):
+            next_carries = defaultdict(int)
+            expected = (output_difference >> bit) & 1
+            left_delta = (left_difference >> bit) & 1
+            right_delta = (right_difference >> bit) & 1
+            for (carry, paired_carry), count in carries.items():
+                for left in (0, 1):
+                    for right in (0, 1):
+                        total = left + right + carry
+                        paired_total = (
+                            (left ^ left_delta) + (right ^ right_delta) + paired_carry
+                        )
+                        if ((total ^ paired_total) & 1) == expected:
+                            next_carries[(total >> 1, paired_total >> 1)] += count
+            carries = next_carries
+        return Transition(
+            TrailKind.XOR_DIFFERENTIAL,
+            XorDifference((left_difference << self.width) | right_difference, 2 * self.width),
+            XorDifference(output_difference, self.width),
+            sum(carries.values()),
+            1 << (2 * self.width),
+        )
+
+    def possible_transitions(
+        self, left_difference: int, right_difference: int
+    ) -> tuple[Transition, ...]:
+        """Enumerate possible outputs, highest probability first."""
+
+        for value in (left_difference, right_difference):
+            if not isinstance(value, int) or isinstance(value, bool) or not 0 <= value <= self.mask:
+                raise ValueError(f"differences must be integers in range({self.mask + 1})")
+        states = {(0, 0, 0): 1}
+        for bit in range(self.width):
+            next_states = defaultdict(int)
+            left_delta = (left_difference >> bit) & 1
+            right_delta = (right_difference >> bit) & 1
+            for (carry, paired_carry, output), count in states.items():
+                for left in (0, 1):
+                    for right in (0, 1):
+                        total = left + right + carry
+                        paired_total = (
+                            (left ^ left_delta) + (right ^ right_delta) + paired_carry
+                        )
+                        difference = (total ^ paired_total) & 1
+                        next_states[(
+                            total >> 1,
+                            paired_total >> 1,
+                            output | (difference << bit),
+                        )] += count
+            states = next_states
+        counts = defaultdict(int)
+        for (_, _, output), count in states.items():
+            counts[output] += count
+        return tuple(
+            sorted(
+                (
+                    Transition(
+                        TrailKind.XOR_DIFFERENTIAL,
+                        XorDifference(
+                            (left_difference << self.width) | right_difference,
+                            2 * self.width,
+                        ),
+                        XorDifference(output, self.width),
+                        count,
+                        1 << (2 * self.width),
+                    )
+                    for output, count in counts.items()
+                ),
+                key=lambda transition: (-transition.numerator, transition.output_pattern.value),
+            )
+        )
+
+    def check(self, transition: Transition) -> bool:
+        """Recompute a modular-add transition independently."""
+
+        left = transition.input_pattern.value >> self.width
+        right = transition.input_pattern.value & self.mask
+        return transition == self.xor_differential(
+            left, right, transition.output_pattern.value
+        )

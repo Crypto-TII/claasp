@@ -115,3 +115,23 @@ from a mere feasible trail and records its provenance:
 The search reads the S-box and permutation semantics from the typed graph.
 Every returned transition and the wiring between both substitution layers are
 recomputed by an independent checker in the regression suite.
+
+ARX trail search
+----------------
+
+Modular-add transitions are counted exactly with a paired-carry automaton;
+they are not approximated by random sampling. The graph-facing API also
+reproduces the preserved two-round Speck32/64 optimum:
+
+.. doctest::
+
+   >>> from claasp_next.ciphers import SpeckBlockCipher
+   >>> cipher = SpeckBlockCipher(number_of_rounds=2)
+   >>> result = cipher.analyze().find_lowest_weight_xor_differential_trail()
+   >>> (result.trail.total_weight, result.is_optimal)
+   (1.0, True)
+   >>> hex(result.trail.input_pattern.value)
+   '0x400000'
+
+The regression checker independently recomputes both modular-add
+probabilities and the rotations/XOR wiring through both Speck rounds.

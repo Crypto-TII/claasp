@@ -18,5 +18,5 @@ def test_two_round_present_reproduces_legacy_optimum_and_checks_every_step():
 
 
 def test_spn_search_rejects_unreviewed_graphs_explicitly():
-    with pytest.raises(NotImplementedError, match="two-round PRESENT"):
-        SpeckBlockCipher(number_of_rounds=2).analyze().find_lowest_weight_xor_differential_trail()
+    with pytest.raises(NotImplementedError, match="two-round Speck32/64"):
+        SpeckBlockCipher(number_of_rounds=3).analyze().find_lowest_weight_xor_differential_trail()
