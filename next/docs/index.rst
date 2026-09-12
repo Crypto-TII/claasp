@@ -33,6 +33,7 @@ systems and solvers are optional backends.
 
    polynomial_models
    boolean_models
+   smt_models
 
 .. toctree::
    :maxdepth: 2

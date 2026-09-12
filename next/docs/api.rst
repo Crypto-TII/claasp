@@ -75,3 +75,12 @@ Boolean models
 
 .. automodule:: claasp_next.boolean.solvers
    :members:
+
+SMT models
+----------
+
+.. automodule:: claasp_next.smt
+   :members:
+
+.. automodule:: claasp_next.smt.solvers
+   :members:

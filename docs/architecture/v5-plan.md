@@ -271,6 +271,11 @@ This milestone is delivered through reviewable checkpoints:
 - Reproduce the applicable legacy SMT regression set and compare results with
   SAT on shared instances.
 
+This milestone is delivered in two checkpoints: M10.4a provides the portable
+SMT representation, SMT-LIB exporter, Z3 adapter, and cipher/recovery parity;
+M10.4b lowers the shared differential and linear trail semantics and restores
+the selected legacy Z3 trail fixtures.
+
 #### M10.5: MILP backend
 
 - Lower the shared trail semantics to a solver-independent linear model.
@@ -464,7 +469,8 @@ each synchronization.
 | Truncated/impossible trails (M10.3d) | Achieved | Speck truncated fixture and exhaustive PRESENT S-box impossibility check |
 | SPN XOR-linear trail search (M10.3e) | Achieved | PRESENT-3 weight-4 fixture, signed LAT entries, independent checker |
 | ARX XOR-linear trail search (M10.3f) | Achieved | Exact Walsh carry semantics and restored Speck32/64-4 weight-3 characteristic |
-| SMT backend (M10.4) | Next | Add solver-independent SMT IR, exporter, and open-source execution adapter |
+| SMT cipher backend (M10.4a) | Achieved | Portable IR/SMT-LIB, optional Z3 adapter, full Speck legacy fixture |
+| SMT trail backend (M10.4b) | Next | Lower shared differential/linear semantics and reproduce Z3 trail fixtures |
 | SMT, MILP, and CP (M10.4–M10.6) | Planned | Shared semantics with independent external lowerings |
 | Statistical analysis (M10.7) | Planned | Avalanche and related legacy behavior |
 | Serialization, diagrams, transforms, compilers (M10.8) | Planned | Inventory-driven tooling migration |
