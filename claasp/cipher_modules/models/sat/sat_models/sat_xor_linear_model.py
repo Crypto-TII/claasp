@@ -79,14 +79,19 @@ class SatXorLinearModel(SatModel):
 
         return constraints
 
-    def build_xor_linear_trail_model(self, weight=-1, fixed_variables=[]):
+    def build_xor_linear_trail_model(self, weight=None, fixed_variables=[]):
         """
-        Build the linear model.
+        Build the model for the search of XOR LINEAR trails.
 
         INPUT:
 
-        - ``weight`` -- **integer** (default: `-1`)
-        - ``fixed_variables`` -- **list** (default: `[]`)
+        - ``weight`` -- **integer** (default: `None`); a specific weight. If set to a non-negative integer, bounds
+          the XOR linear trail weight
+        - ``fixed_variables`` -- **list** (default: `[]`); the variables to be fixed in standard format
+
+        .. SEEALSO::
+
+            :py:meth:`~cipher_modules.models.utils.set_fixed_variables`
 
         EXAMPLES::
 
@@ -130,7 +135,7 @@ class SatXorLinearModel(SatModel):
         constraints = SatXorLinearModel.branch_xor_linear_constraints(self.bit_bindings)
         self._model_constraints.extend(constraints)
 
-        if weight != -1:
+        if weight is not None:
             variables, constraints = self.weight_xor_linear_constraints(weight)
             self._variables_list.extend(variables)
             self._model_constraints.extend(constraints)
@@ -140,8 +145,9 @@ class SatXorLinearModel(SatModel):
     ):
         """
         Return a list of solutions containing all the XOR linear trails having weight equal to ``fixed_weight``.
+
         By default, the search removes the key schedule, if any.
-        By default, the weight corresponds to the negative base-2 logarithm of the correlation of the trail
+        By default, the weight corresponds to the negative base-2 logarithm of the correlation of the trail.
 
         INPUT:
 
@@ -210,8 +216,8 @@ class SatXorLinearModel(SatModel):
     ):
         """
         Return a list of solutions.
-        By default, the search removes the key schedule, if any.
 
+        By default, the search removes the key schedule, if any.
         The list contains all the XOR linear trails having the weight lying in the interval
         ``[min_weight, max_weight]``.
 
@@ -260,7 +266,8 @@ class SatXorLinearModel(SatModel):
 
     def find_lowest_weight_xor_linear_trail(self, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT, options=None):
         """
-        Return the solution representing a XOR LINEAR trail with the lowest possible weight.
+        Return the solution representing a XOR linear trail with the lowest possible weight.
+
         By default, the search removes the key schedule, if any.
         By default, the weight corresponds to the negative base-2 logarithm of the correlation of the trail.
 
@@ -322,70 +329,30 @@ class SatXorLinearModel(SatModel):
 
         return solution
 
-    def find_one_xor_linear_trail(self, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT, options=None):
+    def find_one_xor_linear_trail(
+        self, fixed_values=[], lower_bound=None, upper_bound=None, solver_name=solvers.SOLVER_DEFAULT, options=None
+    ):
         """
         Return the solution representing a XOR linear trail.
-        By default, the search removes the key schedule, if any.
-        By default, the weight corresponds to the negative base-2 logarithm of the correlation of the trail.
 
-        The solution probability is almost always lower than the one of a random guess of the longest input.
+        By default, the search removes the key schedule, if any, and the weight corresponds to the negative
+        base-2 logarithm of the correlation of the trail. The solution probability is almost always lower than
+        the one of a random guess of the longest input.
+
+        The weight of the trail found lies in ``[lower_bound, upper_bound]``. When ``lower_bound`` is `None`, no
+        lower bound is enforced. When ``upper_bound`` is `None`, it defaults to the minimum of the cipher input
+        sizes. With the parallel counter the weight is always fixed to exactly ``upper_bound``, so a ``lower_bound``,
+        when given, must then be equal to ``upper_bound``.
 
         INPUT:
 
         - ``fixed_values`` -- **list** (default: `[]`); they can be created using ``set_fixed_variables`` method
+        - ``lower_bound`` -- **integer** (default: `None`); the lower bound for the weight. If `None`, no lower
+          bound is enforced
+        - ``upper_bound`` -- **integer** (default: `None`); the upper bound for the weight. If `None`, it defaults
+          to the minimum of the cipher input sizes
         - ``solver_name`` -- **string** (default: `CRYPTOMINISAT_EXT`); the name of the solver
-
-        .. SEEALSO::
-
-            :ref:`sat-solvers`
-
-        EXAMPLES::
-
-            sage: from claasp.cipher_modules.models.sat.sat_models.sat_xor_linear_model import SatXorLinearModel
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: speck = SpeckBlockCipher(number_of_rounds=4)
-            sage: sat = SatXorLinearModel(speck)
-            sage: sat.find_one_xor_linear_trail() # random
-            {'cipher_id': 'speck_p32_k64_o32_r4',
-             'model_type': 'xor_linear',
-             'solver_name': 'cryptominisat',
-             'solving_time_seconds': 0.01,
-             'memory_megabytes': 7.2,
-             ...
-             'status': 'SATISFIABLE',
-             'building_time_seconds': 0.010079622268676758}
-
-            # including the key schedule in the model
-            sage: from claasp.cipher_modules.models.sat.sat_models.sat_xor_linear_model import SatXorLinearModel
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.models.utils import set_fixed_variables
-            sage: speck = SpeckBlockCipher(number_of_rounds=4)
-            sage: sat = SatXorLinearModel(speck)
-            sage: key = set_fixed_variables('key', 'not_equal', list(range(64)), [0] * 64)
-            sage: sat.find_one_xor_linear_trail(fixed_values=[key]) # random
-        """
-        start_building_time = time.time()
-        self.build_xor_linear_trail_model(fixed_variables=fixed_values)
-        end_building_time = time.time()
-        solution = self.solve(XOR_LINEAR, solver_name=solver_name, options=options)
-        solution["building_time_seconds"] = end_building_time - start_building_time
-        solution["test_name"] = "find_one_xor_linear_trail"
-
-        return solution
-
-    def find_one_xor_linear_trail_with_fixed_weight(
-        self, fixed_weight, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT, options=None
-    ):
-        """
-        Return the solution representing a XOR linear trail whose weight is ``fixed_weight``.
-        By default, the search removes the key schedule, if any.
-        By default, the weight corresponds to the negative base-2 logarithm of the correlation of the trail.
-
-        INPUT:
-
-        - ``fixed_weight`` -- **integer**; the weight to be fixed
-        - ``fixed_values`` -- **list** (default: `[]`); can be created using ``set_fixed_variables`` method
-        - ``solver_name`` -- **string** (default: `CRYPTOMINISAT_EXT`); the name of the solver
+        - ``options`` -- **list[str]** (default: `None`); list for solver options when it is external
 
         .. SEEALSO::
 
@@ -397,7 +364,7 @@ class SatXorLinearModel(SatModel):
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: speck = SpeckBlockCipher(number_of_rounds=3)
             sage: sat = SatXorLinearModel(speck)
-            sage: trail = sat.find_one_xor_linear_trail_with_fixed_weight(7)
+            sage: trail = sat.find_one_xor_linear_trail(lower_bound=7, upper_bound=7)
             sage: trail['total_weight']
             7.0
 
@@ -408,25 +375,32 @@ class SatXorLinearModel(SatModel):
             sage: speck = SpeckBlockCipher(block_bit_size=8, key_bit_size=16, number_of_rounds=4)
             sage: sat = SatXorLinearModel(speck)
             sage: key = set_fixed_variables('key', 'not_equal', list(range(16)), [0] * 16)
-            sage: trail = sat.find_one_xor_linear_trail_with_fixed_weight(3, fixed_values=[key])
+            sage: trail = sat.find_one_xor_linear_trail(fixed_values=[key], lower_bound=3, upper_bound=3)
             sage: trail['total_weight']
             3.0
         """
+        if upper_bound is None:
+            upper_bound = min(self._cipher.inputs_bit_size)
+        if lower_bound is not None and lower_bound > upper_bound:
+            raise ValueError("lower_bound must be <= upper_bound")
+        if self._counter == self._parallel_counter and lower_bound is not None and lower_bound != upper_bound:
+            raise ValueError("No search allowed using different bounds and parallel counter.")
+
         start_building_time = time.time()
-        self.build_xor_linear_trail_model(weight=fixed_weight, fixed_variables=fixed_values)
-        if self._counter == self._sequential_counter:
-            self._sequential_counter_greater_or_equal(fixed_weight, "dummy_hw_1")
+        self.build_xor_linear_trail_model(weight=upper_bound, fixed_variables=fixed_values)
+        if lower_bound is not None and self._counter == self._sequential_counter:
+            self._sequential_counter_greater_or_equal(lower_bound, "dummy_hw_1")
         end_building_time = time.time()
         solution = self.solve(XOR_LINEAR, solver_name=solver_name, options=options)
         solution["building_time_seconds"] = end_building_time - start_building_time
-        solution["test_name"] = "find_one_xor_linear_trail_with_fixed_weight"
+        solution["test_name"] = "find_one_xor_linear_trail"
 
         return solution
 
     @staticmethod
     def fix_variables_value_xor_linear_constraints(fixed_variables=[]):
         """
-        Return lists variables and clauses for fixing variables in XOR LINEAR model.
+        Return lists of variables and clauses for fixing variables in XOR LINEAR model.
 
         .. SEEALSO::
 
