@@ -34,7 +34,7 @@ maximum degree two.
 
 .. doctest::
 
-   >>> from claasp_next.evaluators import ScalarEvaluator
+   >>> from claasp_next.representations.execution import ScalarEvaluator
    >>> from claasp_next.polynomial import PowerLoweringPolicy
    >>> power_cipher = MiMCPermutation(17, 5, (1,))
    >>> direct = PrimeFieldPolynomialModel(power_cipher).polynomial_system()

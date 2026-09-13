@@ -8,6 +8,7 @@ from claasp_next.annotations import (
 from claasp_next.ciphers import PresentBlockCipher
 from claasp_next.interpretations import CONCRETE, LEAKAGE, Interpretation
 from claasp_next.representations import Artifact, Representation
+from claasp_next.representations.execution import ScalarExecutionDriver
 
 
 def test_graph_annotations_are_typed_validated_and_immutable():
@@ -50,3 +51,16 @@ def test_interpretations_are_extensible_and_artifacts_name_representations():
     assert artifact.representation.name == "smtlib2"
     assert artifact.provenance == ("my_attack", "unit-test")
     assert AttackTarget.KEY_RECOVERY.value == "key_recovery"
+
+
+def test_direct_execution_returns_a_concrete_graph_trace():
+    cipher = PresentBlockCipher(number_of_rounds=1)
+    result = ScalarExecutionDriver().evaluate(
+        cipher,
+        {"plaintext": (0,) * 64, "key": (0,) * 80},
+    )
+
+    assert isinstance(result.trace, ExecutionTrace)
+    assert result.trace.annotation.cipher is cipher
+    assert result.trace.value_of("plaintext") == (0,) * 64
+    assert result.trace.annotation.interpretation is CONCRETE

@@ -553,7 +553,8 @@ each synchronization.
 | Weighted ARX MILP trails (M10.5c) | Achieved | Exact parity/support relation; GLPK validates four Speck32/64-4 transitions, weights, and signs |
 | Representation architecture (M10.5d) | In progress | M10.5d1 terminology/contracts, then execution, constraint, interpretation, and diagram migrations |
 | Interpretation/annotation contracts (M10.5d1) | Achieved | Extensible interpretations, immutable graph annotations, distinct trace types, representation artifacts, drivers, attack targets |
-| Execution representation migration (M10.5d2) | Next | Direct scalar/batch drivers behind stable cipher convenience methods |
+| Execution representation migration (M10.5d2) | Achieved | Scalar/batch modules moved under representations; canonical driver names; concrete ExecutionTrace results |
+| Constraint representation migration (M10.5d3) | Next | Group CNF/SMT/MILP/polynomial formats and separate external drivers |
 | SMT, MILP, and CP (M10.4–M10.6) | In progress | SMT achieved; MILP and CP retain shared semantics and independent-check requirements |
 | Statistical analysis (M10.7) | Planned | Avalanche and related legacy behavior |
 | Serialization, diagrams, transforms, compilers (M10.8) | Planned | Inventory-driven tooling migration |

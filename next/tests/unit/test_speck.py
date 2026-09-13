@@ -1,5 +1,5 @@
 from claasp_next.ciphers import SpeckBlockCipher
-from claasp_next.evaluators import BatchEvaluator, ScalarEvaluator, TransposedBatchEvaluator
+from claasp_next.representations.execution import BatchEvaluator, ScalarEvaluator, TransposedBatchEvaluator
 
 
 PLAINTEXT = (0x3B726574, 0x7475432D)

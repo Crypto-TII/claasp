@@ -140,14 +140,14 @@ class Cipher:
     def evaluate_with_trace(self, *args: object, **kwargs: object):
         """Evaluate like :meth:`evaluate` and retain all intermediate values."""
 
-        from claasp_next.evaluators import ScalarEvaluator
+        from claasp_next.representations.execution import ScalarExecutionDriver
 
         supplied = self._bind_inputs(args, kwargs)
         decoded = {
             name: self._decode_boundary(value, self._input_ports[name].value_type)
             for name, value in supplied.items()
         }
-        return ScalarEvaluator().evaluate(self, decoded)
+        return ScalarExecutionDriver().evaluate(self, decoded)
 
     def analyze(self):
         """Return the high-level analysis facade for this cipher."""

@@ -64,3 +64,27 @@ Drivers consume representations. The common protocols intentionally support
 both ``execute(artifact)`` and solver-oriented ``solve(representation)``;
 direct interpreters do not acquire artificial exporter stages merely to make
 all directories look identical.
+
+Direct execution
+----------------
+
+Concrete scalar and batch execution live under the execution representation,
+with explicit Python drivers. The scalar result contains the same immutable
+annotation used by ``ExecutionTrace``:
+
+.. doctest::
+
+   >>> from claasp_next.ciphers import AESBlockCipher
+   >>> from claasp_next.representations.execution import ScalarExecutionDriver
+   >>> cipher = AESBlockCipher(number_of_rounds=1)
+   >>> result = ScalarExecutionDriver().evaluate(cipher, {
+   ...     "plaintext": tuple(bytes(16)), "key": tuple(bytes(16))
+   ... })
+   >>> result.trace.annotation.interpretation.name
+   'concrete'
+   >>> len(result.trace.annotation.entries) == len(cipher.inputs) + len(cipher.components) + 1
+   True
+
+Normal users continue to write ``cipher.evaluate(plaintext, key)``. The
+explicit driver is primarily an extension point and a way to request the
+complete execution trace.

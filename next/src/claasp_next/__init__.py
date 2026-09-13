@@ -2,12 +2,15 @@
 
 from claasp_next.core import Cipher, Component, Port, Round, Selection, ValueType
 from claasp_next.domains import BinaryExtensionField, Bit, PrimeField, Word
-from claasp_next.evaluators import (
+from claasp_next.representations.execution import (
     BatchEvaluationResult,
     BatchEvaluator,
+    BatchExecutionDriver,
     EvaluationResult,
     ScalarEvaluator,
+    ScalarExecutionDriver,
     TransposedBatchEvaluator,
+    TransposedBatchExecutionDriver,
 )
 from claasp_next.encoding import bits_from_int, int_from_bits, int_from_units, units_from_int
 
@@ -16,6 +19,7 @@ __all__ = [
     "Bit",
     "BatchEvaluationResult",
     "BatchEvaluator",
+    "BatchExecutionDriver",
     "Cipher",
     "Component",
     "EvaluationResult",
@@ -23,8 +27,10 @@ __all__ = [
     "PrimeField",
     "Round",
     "ScalarEvaluator",
+    "ScalarExecutionDriver",
     "Selection",
     "TransposedBatchEvaluator",
+    "TransposedBatchExecutionDriver",
     "ValueType",
     "Word",
     "bits_from_int",

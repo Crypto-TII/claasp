@@ -1,14 +1,16 @@
-"""Pure-Python reference evaluator."""
+"""Direct scalar representation and Python execution driver."""
 
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 
+from claasp_next.annotations import ExecutionTrace, GraphAnnotation
 from claasp_next.components.algebraic import Add, LinearMap, Multiply, Power
 from claasp_next.components.structural import Concatenate, Constant, Identity, Permutation
 from claasp_next.components.substitution import BitVectorSBox, SBox
 from claasp_next.components.word import ModularAdd, Rotate, Xor
 from claasp_next.core.cipher import Cipher
 from claasp_next.core.component import Component
+from claasp_next.interpretations import CONCRETE
 
 RuntimeValue = tuple[int, ...]
 Handler = Callable[[Component, tuple[RuntimeValue, ...]], RuntimeValue]
@@ -20,6 +22,7 @@ class EvaluationResult:
 
     values: Mapping[str, RuntimeValue]
     output: RuntimeValue | None
+    trace: ExecutionTrace
 
     def value_of(self, source_id: str) -> RuntimeValue:
         try:
@@ -28,7 +31,7 @@ class EvaluationResult:
             raise KeyError(f"evaluation source {source_id!r} does not exist") from error
 
 
-class ScalarEvaluator:
+class ScalarExecutionDriver:
     """Correctness-first evaluator using ordinary Python scalar values.
 
     EXAMPLES::
@@ -107,7 +110,10 @@ class ScalarEvaluator:
                 values[cipher.output.source.owner_id][position]
                 for position in cipher.output.positions
             )
-        return EvaluationResult(dict(values), output)
+        annotation = GraphAnnotation.from_values(
+            cipher, CONCRETE, values, output=output
+        )
+        return EvaluationResult(dict(values), output, ExecutionTrace(annotation))
 
     @staticmethod
     def _validate_value(source_id: str, value: RuntimeValue, size: int, domain: object) -> None:
@@ -241,3 +247,7 @@ class ScalarEvaluator:
         substituted = component.table[value]
         width = component.output_type.unit_count
         return tuple((substituted >> position) & 1 for position in range(width - 1, -1, -1))
+
+
+# Transitional spelling for code written during the early v5 milestones.
+ScalarEvaluator = ScalarExecutionDriver

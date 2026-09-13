@@ -55,7 +55,7 @@ Authoring utilities
 Evaluation
 ----------
 
-.. automodule:: claasp_next.evaluators
+.. automodule:: claasp_next.representations.execution
    :members:
 
 Analysis

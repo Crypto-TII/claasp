@@ -2,7 +2,7 @@ import pytest
 
 from claasp_next import bits_from_int, int_from_bits
 from claasp_next.ciphers import Present80BlockCipher
-from claasp_next.evaluators import BatchEvaluator, ScalarEvaluator, TransposedBatchEvaluator
+from claasp_next.representations.execution import BatchEvaluator, ScalarEvaluator, TransposedBatchEvaluator
 
 
 @pytest.mark.parametrize(

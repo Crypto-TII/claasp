@@ -9,7 +9,7 @@ from claasp_next.ciphers import MiMCPermutation, Present80BlockCipher, SpeckBloc
 from claasp_next.components import Add
 from claasp_next.core import Cipher, ValueType
 from claasp_next.domains import Bit
-from claasp_next.evaluators import ScalarEvaluator
+from claasp_next.representations.execution import ScalarEvaluator
 
 
 def _xor_cipher(operand_count=2):

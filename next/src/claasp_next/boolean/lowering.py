@@ -17,7 +17,7 @@ from claasp_next.components import (
 )
 from claasp_next.core import Cipher
 from claasp_next.domains import Bit, Word
-from claasp_next.evaluators import EvaluationResult
+from claasp_next.representations.execution import EvaluationResult
 
 
 class BooleanCNFModel:

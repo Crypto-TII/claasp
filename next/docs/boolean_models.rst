@@ -15,7 +15,7 @@ linear and nonlinear layers:
    >>> from claasp_next import bits_from_int
    >>> from claasp_next.boolean import BooleanCNFModel
    >>> from claasp_next.ciphers import Present80BlockCipher
-   >>> from claasp_next.evaluators import ScalarEvaluator
+   >>> from claasp_next.representations.execution import ScalarEvaluator
    >>> cipher = Present80BlockCipher(number_of_rounds=1)
    >>> model = BooleanCNFModel(cipher)
    >>> formula = model.cnf_formula()

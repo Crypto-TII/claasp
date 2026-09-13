@@ -6,7 +6,7 @@ from claasp_next import bits_from_int, int_from_bits
 from claasp_next.ciphers import AESBlockCipher, PresentBlockCipher, SpeckBlockCipher
 from claasp_next.components import Add, Rotate
 from claasp_next.domains import BinaryExtensionField, Bit, Word
-from claasp_next.evaluators import BatchEvaluator, ScalarEvaluator
+from claasp_next.representations.execution import BatchEvaluator, ScalarEvaluator
 
 
 PRESENT_SBOX = (12, 5, 6, 11, 9, 0, 10, 13, 3, 14, 15, 8, 4, 7, 1, 2)

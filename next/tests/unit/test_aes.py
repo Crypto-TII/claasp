@@ -1,6 +1,6 @@
 from claasp_next.ciphers import AES128BlockCipher
 from claasp_next.domains import BinaryExtensionField
-from claasp_next.evaluators import BatchEvaluator, ScalarEvaluator, TransposedBatchEvaluator
+from claasp_next.representations.execution import BatchEvaluator, ScalarEvaluator, TransposedBatchEvaluator
 
 
 PLAINTEXT = tuple(bytes.fromhex("00112233445566778899aabbccddeeff"))

@@ -1,4 +1,4 @@
-"""Correctness-first batch evaluation."""
+"""Direct batch representations and Python execution drivers."""
 
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
@@ -8,7 +8,7 @@ from claasp_next.components.algebraic import Add, LinearMap, Multiply, Power
 from claasp_next.components.structural import Concatenate, Constant, Identity, Permutation
 from claasp_next.components.substitution import BitVectorSBox, SBox
 from claasp_next.components.word import ModularAdd, Rotate, Xor
-from claasp_next.evaluators.scalar import EvaluationResult, RuntimeValue, ScalarEvaluator
+from claasp_next.representations.execution.scalar import EvaluationResult, RuntimeValue, ScalarExecutionDriver
 
 
 @dataclass(frozen=True, slots=True)
@@ -24,7 +24,7 @@ class BatchEvaluationResult:
         EXAMPLES::
 
             >>> from claasp_next.ciphers import MiMCPermutation
-            >>> from claasp_next.evaluators import BatchEvaluator
+            >>> from claasp_next.representations.execution import BatchEvaluator
             >>> cipher = MiMCPermutation(17, 3, (1, 2, 4))
             >>> BatchEvaluator().evaluate(cipher, {"state": ((5,), (7,))}).outputs
             ((5,), (0,))
@@ -38,7 +38,7 @@ class BatchEvaluationResult:
         return tuple(item.value_of(source_id) for item in self.items)
 
 
-class BatchEvaluator:
+class BatchExecutionDriver:
     """Evaluate multiple inputs with exactly the scalar backend semantics.
 
     This evaluator establishes the public batch contract and is the reference
@@ -53,8 +53,8 @@ class BatchEvaluator:
         ((1,), (8,), (10,))
     """
 
-    def __init__(self, scalar_evaluator: ScalarEvaluator | None = None) -> None:
-        self._scalar_evaluator = scalar_evaluator or ScalarEvaluator()
+    def __init__(self, scalar_evaluator: ScalarExecutionDriver | None = None) -> None:
+        self._scalar_evaluator = scalar_evaluator or ScalarExecutionDriver()
 
     def evaluate(
         self,
@@ -83,7 +83,7 @@ class BatchEvaluator:
         return BatchEvaluationResult(tuple(results))
 
 
-class TransposedBatchEvaluator(BatchEvaluator):
+class TransposedBatchExecutionDriver(BatchExecutionDriver):
     """Evaluate a batch in one graph traversal using dependency-free tuples.
 
     The backend keeps arbitrary-size field elements as Python integers, so it
@@ -154,7 +154,11 @@ class TransposedBatchEvaluator(BatchEvaluator):
                     lane_values[cipher.output.source.owner_id][position]
                     for position in cipher.output.positions
                 )
-            results.append(EvaluationResult(lane_values, output))
+            from claasp_next.annotations import ExecutionTrace, GraphAnnotation
+            from claasp_next.interpretations import CONCRETE
+
+            annotation = GraphAnnotation.from_values(cipher, CONCRETE, lane_values, output=output)
+            results.append(EvaluationResult(lane_values, output, ExecutionTrace(annotation)))
         return BatchEvaluationResult(tuple(results))
 
     def _evaluate_component(self, component, inputs, batch_size):
@@ -185,3 +189,8 @@ class TransposedBatchEvaluator(BatchEvaluator):
             tuple(handler(component, tuple(operand[lane] for operand in inputs)))
             for lane in range(batch_size)
         )
+
+
+# Transitional spellings for code written during the early v5 milestones.
+BatchEvaluator = BatchExecutionDriver
+TransposedBatchEvaluator = TransposedBatchExecutionDriver

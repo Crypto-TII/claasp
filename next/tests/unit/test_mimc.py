@@ -1,5 +1,5 @@
 from claasp_next.ciphers import MiMCPermutation
-from claasp_next.evaluators import ScalarEvaluator
+from claasp_next.representations.execution import ScalarEvaluator
 
 
 def test_toy_mimc_matches_direct_computation():

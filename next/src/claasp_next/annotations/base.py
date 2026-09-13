@@ -50,9 +50,9 @@ class GraphAnnotation:
         if not isinstance(interpretation, Interpretation):
             raise TypeError("interpretation must be an Interpretation")
         frozen = tuple(entries)
-        identifiers = tuple(entry.source_id for entry in frozen)
+        identifiers = tuple((entry.role, entry.source_id) for entry in frozen)
         if len(set(identifiers)) != len(identifiers):
-            raise ValueError("each graph source may be annotated only once")
+            raise ValueError("each graph source and role may be annotated only once")
         inputs = set(cipher.inputs)
         components = {component.component_id for component in cipher.components}
         for entry in frozen:

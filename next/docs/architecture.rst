@@ -90,7 +90,7 @@ propagation problem.
 Correctness boundaries
 ----------------------
 
-The scalar evaluator is the executable reference. Solver results are
+The scalar execution driver is the executable reference. Solver results are
 projected back to logical values and independently checked where practical.
 Trail results additionally carry transition semantics that can be validated
 without trusting the backend which found them.

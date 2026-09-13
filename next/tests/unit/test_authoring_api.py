@@ -2,7 +2,7 @@ import pytest
 
 from claasp_next import Cipher, PrimeField, ValueType
 from claasp_next.components import Add, Permutation
-from claasp_next.evaluators import ScalarEvaluator
+from claasp_next.representations.execution import ScalarEvaluator
 from claasp_next.utils import (
     binary_field_multiply,
     binary_field_power,

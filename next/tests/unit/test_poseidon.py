@@ -1,7 +1,7 @@
 import pytest
 
 from claasp_next.ciphers import PoseidonPermutation
-from claasp_next.evaluators import ScalarEvaluator
+from claasp_next.representations.execution import ScalarEvaluator
 
 
 def _direct_poseidon(state, modulus, exponent, full_rounds, partial_rounds, constants, matrix):

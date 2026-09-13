@@ -1,4 +1,4 @@
-from claasp_next.evaluators import ScalarEvaluator
+from claasp_next.representations.execution import ScalarEvaluator
 from claasp_next.parameters import poseidon_bn254_width3
 
 

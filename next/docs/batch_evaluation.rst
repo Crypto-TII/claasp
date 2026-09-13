@@ -8,7 +8,7 @@ Python integers.
 
 .. doctest::
 
-   >>> from claasp_next.evaluators import BatchEvaluator, TransposedBatchEvaluator
+   >>> from claasp_next.representations.execution import BatchEvaluator, TransposedBatchEvaluator
    >>> from claasp_next.parameters import poseidon_bn254_width3
    >>> cipher = poseidon_bn254_width3().permutation()
    >>> inputs = {"state": ((0, 1, 2), (3, 4, 5))}
