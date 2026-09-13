@@ -1,8 +1,8 @@
-"""Lower typed Boolean-encodable graphs to SMT."""
+"""Lower typed Boolean-encodable graphs to the SMT representation."""
 
 from claasp_next.representations.constraints.sat import BooleanCNFModel
 from claasp_next.core import Cipher
-from claasp_next.smt.formula import SMTFormula
+from claasp_next.representations.constraints.smt.formula import SMTFormula
 
 
 class BooleanSMTModel:

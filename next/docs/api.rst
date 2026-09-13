@@ -97,10 +97,7 @@ Boolean models
 SMT models
 ----------
 
-.. automodule:: claasp_next.smt
-   :members:
-
-.. automodule:: claasp_next.smt.solvers
+.. automodule:: claasp_next.representations.constraints.smt
    :members:
 
 MILP models

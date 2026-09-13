@@ -107,3 +107,9 @@ representation package, while MiniSat is an external solver driver:
 The representation can therefore be constructed and inspected on ordinary
 CPython even when MiniSat is not installed. ``claasp_next.drivers.solvers``
 contains optional process drivers and their decoded results.
+
+SMT follows the same boundary: ``representations.constraints.smt`` owns the
+portable formula, trail lowering, transition lowering, and SMT-LIB exporter;
+``drivers.solvers.Z3Solver`` executes that representation. A solver driver may
+accept more than one compatible representation, but it does not define their
+cryptanalytic interpretation.

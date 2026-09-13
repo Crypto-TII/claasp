@@ -5,14 +5,14 @@ import pytest
 from claasp_next.drivers.solvers import SatStatus
 from claasp_next.analysis import AnalysisProblem, FixedValue
 from claasp_next.ciphers import PresentBlockCipher, SpeckBlockCipher
-from claasp_next.smt.solvers import Z3Solver
-from claasp_next.smt import (
+from claasp_next.drivers.solvers import Z3Solver
+from claasp_next.representations.constraints.smt import (
     PresentDifferentialSMTModel,
     PresentLinearSMTModel,
     ModularAddLinearSMTModel,
     SBoxTransitionSMTModel,
 )
-from claasp_next.smt.trails import check_present_linear_smt_trail, check_present_smt_trail
+from claasp_next.representations.constraints.smt.trails import check_present_linear_smt_trail, check_present_smt_trail
 from claasp_next.analysis import TrailKind
 from claasp_next.ciphers.block_ciphers.present import PRESENT_SBOX
 

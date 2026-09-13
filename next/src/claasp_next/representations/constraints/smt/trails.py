@@ -1,4 +1,4 @@
-"""Weighted full-trail SMT models."""
+"""Weighted full-trail SMT representation lowering."""
 
 from claasp_next.analysis import (
     SBoxTransitionSemantics,
@@ -10,7 +10,7 @@ from claasp_next.analysis import (
 )
 from claasp_next.components import BitVectorSBox, Permutation
 from claasp_next.core import Cipher
-from claasp_next.smt.formula import SMTFormula
+from claasp_next.representations.constraints.smt.formula import SMTFormula
 
 
 class PresentDifferentialSMTModel:

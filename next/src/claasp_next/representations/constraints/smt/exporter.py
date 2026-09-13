@@ -1,6 +1,6 @@
-"""SMT-LIB 2 exporter."""
+"""SMT-LIB 2 representation exporter."""
 
-from claasp_next.smt.formula import SMTFormula
+from claasp_next.representations.constraints.smt.formula import SMTFormula
 
 
 class SMTLibExporter:

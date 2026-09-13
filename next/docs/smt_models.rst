@@ -8,8 +8,8 @@ exported as SMT-LIB 2:
 .. doctest::
 
    >>> from claasp_next.ciphers import SpeckBlockCipher
-   >>> from claasp_next.smt import BooleanSMTModel
-   >>> from claasp_next.smt.exporter import SMTLibExporter
+   >>> from claasp_next.representations.constraints.smt import BooleanSMTModel
+   >>> from claasp_next.representations.constraints.smt.exporter import SMTLibExporter
    >>> cipher = SpeckBlockCipher(number_of_rounds=1)
    >>> formula = BooleanSMTModel(cipher).smt_formula()
    >>> formula.assertion_count > 400
@@ -25,7 +25,7 @@ through the same graph-level recovery API as MiniSat:
 
 .. code-block:: python
 
-   from claasp_next.smt.solvers import Z3Solver
+   from claasp_next.drivers.solvers import Z3Solver
 
    plaintext = 0x6574694C
    ciphertext = cipher.evaluate(plaintext, 0x1918111009080100)
@@ -52,7 +52,7 @@ is possible:
 
    >>> from claasp_next.analysis import TrailKind
    >>> from claasp_next.ciphers.block_ciphers.present import PRESENT_SBOX
-   >>> from claasp_next.smt import SBoxTransitionSMTModel
+   >>> from claasp_next.representations.constraints.smt import SBoxTransitionSMTModel
    >>> relation = SBoxTransitionSMTModel(PRESENT_SBOX, TrailKind.XOR_DIFFERENTIAL)
    >>> possible = relation.smt_formula(input_pattern=1, output_pattern=3)
    >>> impossible = relation.smt_formula(input_pattern=1, output_pattern=1)
@@ -74,7 +74,7 @@ the sum of unary transition weights with a sequential counter:
 .. doctest::
 
    >>> from claasp_next.ciphers import PresentBlockCipher
-   >>> from claasp_next.smt import PresentDifferentialSMTModel
+   >>> from claasp_next.representations.constraints.smt import PresentDifferentialSMTModel
    >>> model = PresentDifferentialSMTModel(PresentBlockCipher(number_of_rounds=2), 4)
    >>> formula = model.smt_formula()
    >>> (len(formula.variables) < 700, formula.assertion_count < 30000)
@@ -90,7 +90,7 @@ trail retains the independently recomputed correlation sign of every S-box:
 
 .. doctest::
 
-   >>> from claasp_next.smt import PresentLinearSMTModel
+   >>> from claasp_next.representations.constraints.smt import PresentLinearSMTModel
    >>> linear = PresentLinearSMTModel(PresentBlockCipher(number_of_rounds=3), 4)
    >>> linear_formula = linear.smt_formula()
    >>> (len(linear_formula.variables) < 1000, linear_formula.assertion_count < 40000)
@@ -109,7 +109,7 @@ the shared Walsh semantics remains the independent oracle:
 
 .. doctest::
 
-   >>> from claasp_next.smt import ModularAddLinearSMTModel
+   >>> from claasp_next.representations.constraints.smt import ModularAddLinearSMTModel
    >>> addition = ModularAddLinearSMTModel(16)
    >>> formula = addition.smt_formula(
    ...     left_mask=0x6081, right_mask=0x40c1, output_mask=0x4081

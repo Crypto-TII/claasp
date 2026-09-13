@@ -1,4 +1,4 @@
-"""Command-line Z3 adapter for Boolean SMT formulas."""
+"""Command-line Z3 driver for Boolean SMT formulas."""
 
 from pathlib import Path
 import re
@@ -9,8 +9,8 @@ from time import monotonic
 
 from claasp_next.representations.constraints.sat import CNFFormula
 from claasp_next.drivers.solvers import SatResult, SatStatus
-from claasp_next.smt.exporter import SMTLibExporter
-from claasp_next.smt.formula import SMTFormula
+from claasp_next.representations.constraints.smt.exporter import SMTLibExporter
+from claasp_next.representations.constraints.smt.formula import SMTFormula
 
 
 class Z3Solver:

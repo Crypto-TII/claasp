@@ -1,7 +1,7 @@
 """SMT lowering of shared component transition semantics."""
 
 from claasp_next.analysis import ModularAddLinearSemantics, SBoxTransitionSemantics, TrailKind
-from claasp_next.smt.formula import SMTFormula
+from claasp_next.representations.constraints.smt.formula import SMTFormula
 
 
 class SBoxTransitionSMTModel:

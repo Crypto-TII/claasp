@@ -7,7 +7,7 @@ from claasp_next.milp.model import (
     ConstraintSense, LinearConstraint, LinearExpression, LinearVariable,
     MILPModel, ObjectiveSense, VariableKind,
 )
-from claasp_next.smt.trails import check_present_smt_trail
+from claasp_next.representations.constraints.smt.trails import check_present_smt_trail
 
 
 class PresentDifferentialMILPModel:

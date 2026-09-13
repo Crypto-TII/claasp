@@ -558,7 +558,8 @@ each synchronization.
 | Execution representation migration (M10.5d2) | Achieved | Scalar/batch modules moved under representations; canonical driver names; concrete ExecutionTrace results |
 | Constraint representation migration (M10.5d3) | Next | Group CNF/SMT/MILP/polynomial formats and separate external drivers |
 | SAT representation/driver split (M10.5d3a) | Achieved | CNF, lowering, and DIMACS under representations; MiniSat under drivers |
-| SMT representation/driver split (M10.5d3b) | Next | Move SMT IR/export/lowering and Z3 driver without changing results |
+| SMT representation/driver split (M10.5d3b) | Achieved | SMT IR/export/lowering under representations; Z3 under shared solver drivers |
+| MILP representation/driver split (M10.5d3c) | Next | Move linear IR/export/lowering and GLPK driver without changing results |
 | SMT, MILP, and CP (M10.4–M10.6) | In progress | SMT achieved; MILP and CP retain shared semantics and independent-check requirements |
 | Statistical analysis (M10.7) | Planned | Avalanche and related legacy behavior |
 | Serialization, diagrams, transforms, compilers (M10.8) | Planned | Inventory-driven tooling migration |
