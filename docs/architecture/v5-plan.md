@@ -637,10 +637,10 @@ each synchronization.
 | Advanced CP analyses (M10.6d) | In progress | Complete inventory; exact ARX optimization, generalized truncated, impossible, composed, and continuous checkpoints follow |
 | Advanced CP suite inventory (M10.6d1) | Achieved | Every legacy MiniZinc model classified; scientific fixtures, superseded structural tests, dependencies, and migration order recorded |
 | Exact CP ARX differential optimization (M10.6d2) | Achieved | Chuffed proves Speck32/64-5 weight 8 UNSAT and weight 9 SAT in the CLAASP image; the five-transition witness is independently recounted and checked |
-| Generalized CP truncated propagation (M10.6d3) | In progress | Local probabilistic-truncated semantics achieved; multi-round Speck and wordwise checkpoints follow |
+| Generalized CP truncated propagation (M10.6d3) | In progress | Local and composed Speck probabilistic-truncated semantics achieved; wordwise checkpoint follows |
 | Probabilistic-truncated modular-add CP semantics (M10.6d3a) | Achieved | Typed partial transition, independent counter/cost checker, and Docker/Chuffed reproduction of legacy scaled costs 309 and 700 |
-| Probabilistic-truncated Speck CP composition (M10.6d3b) | Next | Preserve two-/three-round Speck boundary patterns and weights 1.0/0.0 |
-| Wordwise truncated CP semantics (M10.6d3c) | Planned | Replace declaration-count tests with explicit activity/value semantics and result-bearing SPN fixtures |
+| Probabilistic-truncated Speck CP composition (M10.6d3b) | Achieved | Docker/Chuffed preserves the exact two-/three-round output patterns and weights 1.0/0.0; all additions and wiring are independently checked |
+| Wordwise truncated CP semantics (M10.6d3c) | Next | Replace declaration-count tests with explicit activity/value semantics and result-bearing SPN fixtures |
 | Multi-round CP impossible search (M10.6d4) | Planned | Composed forward/backward propagation and selected legacy UNSAT fixtures |
 | CP composed attacks (M10.6d5) | Planned | Explicit boomerang and differential-linear semantic contracts and fixtures |
 | CP continuous models (M10.6d6) | Planned | Numerically qualified heuristic models kept distinct from exact proof results |

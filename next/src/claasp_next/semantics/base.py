@@ -29,5 +29,9 @@ DETERMINISTIC_TRUNCATED_XOR = SemanticType(
     "deterministic_truncated_xor",
     "Three-valued deterministic XOR differences",
 )
+PROBABILISTIC_TRUNCATED_XOR = SemanticType(
+    "probabilistic_truncated_xor",
+    "Partial XOR differences with probability weights",
+)
 SYMBOLIC = SemanticType("symbolic", "Abstract symbolic values")
 LEAKAGE = SemanticType("leakage", "Simulated side-channel observations")

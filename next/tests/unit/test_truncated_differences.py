@@ -1,5 +1,6 @@
 from claasp_next.semantics.cryptanalysis import (
     ProbabilisticTruncatedModularAddTransition,
+    ProbabilisticTruncatedTrail,
     TruncatedXorDifference,
     check_probabilistic_truncated_modular_add,
     propagate_two_word_speck_round,
@@ -53,3 +54,14 @@ def test_probabilistic_truncated_transition_rejects_an_invalid_carry_boundary():
 
     assert transition.weight == 0
     assert not check_probabilistic_truncated_modular_add(transition)
+
+
+def test_probabilistic_truncated_trail_sums_exact_scaled_costs():
+    zero = TruncatedXorDifference.parse("0000")
+    transition = ProbabilisticTruncatedModularAddTransition(
+        zero, zero, zero, zero, (41, 19, 0, 0),
+    )
+    trail = ProbabilisticTruncatedTrail(zero, zero, (transition, transition))
+
+    assert trail.scaled_weight == 120
+    assert trail.weight == 1.2

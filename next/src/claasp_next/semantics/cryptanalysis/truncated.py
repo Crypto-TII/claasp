@@ -100,6 +100,23 @@ class ProbabilisticTruncatedModularAddTransition:
         return self.scaled_weight / 100
 
 
+@dataclass(frozen=True, slots=True)
+class ProbabilisticTruncatedTrail:
+    """A composed partial-difference trail with probability-bearing steps."""
+
+    input_pattern: TruncatedXorDifference
+    output_pattern: TruncatedXorDifference
+    transitions: tuple[ProbabilisticTruncatedModularAddTransition, ...]
+
+    @property
+    def scaled_weight(self) -> int:
+        return sum(transition.scaled_weight for transition in self.transitions)
+
+    @property
+    def weight(self) -> float:
+        return self.scaled_weight / 100
+
+
 def check_probabilistic_truncated_modular_add(
     transition: ProbabilisticTruncatedModularAddTransition,
 ) -> bool:

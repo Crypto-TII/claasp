@@ -152,8 +152,16 @@ in the public API.
 Docker/Chuffed integration tests preserve the two result-bearing local legacy
 fixtures with scaled costs 309 and 700. Returned carries and costs are checked
 again by ``check_probabilistic_truncated_modular_add`` rather than trusted from the
-solver. Multi-round Speck composition and wordwise propagation are separate
-follow-up checkpoints.
+solver.
+
+``SpeckProbabilisticTruncatedCPModel`` composes that strategy using rotations
+and XOR wiring read from the typed graph. Its Docker/Chuffed regressions retain
+the exact legacy two-round output
+``???????????????1???????????????1`` at weight 1.0 and three-round output
+``???????????????0???????????????1`` at weight 0.0. The portable
+``ProbabilisticTruncatedTrail`` retains every transition, while decoding checks
+each addition and graph boundary independently. Wordwise propagation remains
+the next separate checkpoint.
 
 .. automodule:: claasp_next.representations.constraints.cp
    :members:

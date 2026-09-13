@@ -5,7 +5,8 @@ from claasp_next.domains import Word
 from claasp_next.semantics import XOR_DIFFERENTIAL, XOR_LINEAR
 from claasp_next.semantics.cryptanalysis import (
     ModularAddTransitionSemantics, PropagationProblem,
-    ProbabilisticTruncatedModularAddTransition, Trail, TrailKind, TrailStep,
+    ProbabilisticTruncatedModularAddTransition, ProbabilisticTruncatedTrail,
+    Trail, TrailKind, TrailStep,
     TruncatedXorDifference, XorDifference, XorMask,
     check_probabilistic_truncated_modular_add, propagate_two_word_speck_round,
 )
@@ -428,6 +429,123 @@ class ProbabilisticTruncatedModularAddCPModel:
         return transition
 
 
+class SpeckProbabilisticTruncatedCPModel:
+    """Compose counter-based probabilistic truncated semantics over Speck."""
+
+    def __init__(
+        self,
+        problem: PropagationProblem,
+        input_pattern: TruncatedXorDifference,
+        output_pattern: TruncatedXorDifference,
+    ) -> None:
+        from claasp_next.semantics import PROBABILISTIC_TRUNCATED_XOR
+
+        if problem.semantics != PROBABILISTIC_TRUNCATED_XOR:
+            raise ValueError("Speck model requires probabilistic-truncated XOR semantics")
+        plaintext = problem.cipher.inputs.get("plaintext")
+        if (
+            problem.cipher.family_name != "speck" or plaintext is None
+            or not isinstance(plaintext.value_type.domain, Word)
+            or plaintext.value_type.domain.width != 16
+        ):
+            raise NotImplementedError("the reviewed slice supports Speck32/64")
+        if len(input_pattern.bits) != 32 or len(output_pattern.bits) != 32:
+            raise ValueError("Speck32 patterns must contain 32 bits")
+        self.problem = problem
+        self.cipher = problem.cipher
+        self.input_pattern = input_pattern
+        self.output_pattern = output_pattern
+        self.width = 16
+
+    def cp_model(self) -> MiniZincModel:
+        """Compile fixed boundaries and minimize the composed scaled weight."""
+
+        rounds = len(self.cipher.rounds)
+        declarations = [_PROBABILISTIC_TRUNCATED_MODADD_PREDICATE]
+        constraints = []
+        for boundary in range(rounds + 1):
+            declarations.extend((
+                f"array[0..15] of var 0..2: x_{boundary};",
+                f"array[0..15] of var 0..2: y_{boundary};",
+            ))
+        probabilities = []
+        for round_number in range(rounds):
+            declarations.extend((
+                f"array[0..15] of var 0..2: carry_{round_number};",
+                f"array[0..15] of var {{0,4,9,19,41,100}}: costs_{round_number};",
+                f"var int: probability_{round_number};",
+            ))
+            probabilities.append(f"probability_{round_number}")
+            alpha = _component(
+                self.cipher, f"round_{round_number}_rotate_right", Rotate
+            ).amount
+            beta = _component(
+                self.cipher, f"round_{round_number}_rotate_left", Rotate
+            ).amount
+            constraints.extend((
+                "constraint counter_based_probabilistic_truncated_modadd("
+                f"{_array_rotation(f'x_{round_number}', -alpha, self.width)}, "
+                f"y_{round_number}, x_{round_number + 1}, carry_{round_number}, "
+                f"costs_{round_number}, probability_{round_number});",
+                f"constraint costs_{round_number}[15] = 0;",
+            ))
+            for index in range(self.width):
+                source = (index + beta) % self.width
+                constraints.append(
+                    f"constraint y_{round_number + 1}[{index}] = "
+                    f"truncated_xor2(y_{round_number}[{source}], "
+                    f"x_{round_number + 1}[{index}]);"
+                )
+        constraints.extend((
+            _fixed_array("x_0", TruncatedXorDifference(self.input_pattern.bits[:16])),
+            _fixed_array("y_0", TruncatedXorDifference(self.input_pattern.bits[16:])),
+            _fixed_array(f"x_{rounds}", TruncatedXorDifference(self.output_pattern.bits[:16])),
+            _fixed_array(f"y_{rounds}", TruncatedXorDifference(self.output_pattern.bits[16:])),
+        ))
+        declarations.append("var int: scaled_weight;")
+        constraints.append(f"constraint scaled_weight = sum([{', '.join(probabilities)}]);")
+        return MiniZincModel(
+            tuple(declarations), tuple(constraints), solve="solve minimize scaled_weight;",
+            provenance=self.problem.provenance,
+        )
+
+    def decode_trail(self, assignment) -> ProbabilisticTruncatedTrail:
+        """Decode all additions and independently check transitions and wiring."""
+
+        transitions = []
+        left = TruncatedXorDifference(self.input_pattern.bits[:16])
+        right = TruncatedXorDifference(self.input_pattern.bits[16:])
+        for round_number in range(len(self.cipher.rounds)):
+            alpha = _component(
+                self.cipher, f"round_{round_number}_rotate_right", Rotate
+            ).amount
+            beta = _component(
+                self.cipher, f"round_{round_number}_rotate_left", Rotate
+            ).amount
+            output = _decode_truncated(assignment[f"x_{round_number + 1}"])
+            transition = ProbabilisticTruncatedModularAddTransition(
+                left.rotate_right(alpha), right, output,
+                _decode_truncated(assignment[f"carry_{round_number}"]),
+                tuple(int(value) for value in assignment[f"costs_{round_number}"]),
+            )
+            if not check_probabilistic_truncated_modular_add(transition):
+                raise ValueError("invalid probabilistic truncated addition")
+            next_right = right.rotate_left(beta).xor(output)
+            if next_right != _decode_truncated(assignment[f"y_{round_number + 1}"]):
+                raise ValueError("invalid probabilistic truncated Speck wiring")
+            transitions.append(transition)
+            left, right = output, next_right
+        trail = ProbabilisticTruncatedTrail(
+            self.input_pattern, TruncatedXorDifference(left.bits + right.bits),
+            tuple(transitions),
+        )
+        if trail.output_pattern != self.output_pattern:
+            raise ValueError("decoded trail does not meet its output boundary")
+        if trail.scaled_weight != int(assignment["scaled_weight"]):
+            raise ValueError("inconsistent composed scaled weight")
+        return trail
+
+
 class SBoxDifferenceCPModel:
     """Exact local feasibility model for possible and impossible differences."""
 
@@ -575,6 +693,9 @@ predicate modular_addition_xor_difference(
 
 
 _PROBABILISTIC_TRUNCATED_MODADD_PREDICATE = r"""
+function var 0..2: truncated_xor2(var 0..2: a, var 0..2: b) =
+    if a < 2 /\ b < 2 then (a + b) mod 2 else 2 endif;
+
 function array[int] of var 0..2: truncated_xor3(
     array[int] of var 0..2: a,
     array[int] of var 0..2: b,

@@ -9,6 +9,7 @@ from claasp_next.components import BitVectorSBox, ModularAdd
 from claasp_next.graph import Cipher, Component
 from claasp_next.semantics.base import (
     DETERMINISTIC_TRUNCATED_XOR,
+    PROBABILISTIC_TRUNCATED_XOR,
     SemanticType,
     XOR_DIFFERENTIAL,
     XOR_LINEAR,
@@ -119,10 +120,11 @@ class PropagationProblem:
             raise TypeError("cipher must be a Cipher")
         if semantics not in (
             XOR_DIFFERENTIAL, XOR_LINEAR, DETERMINISTIC_TRUNCATED_XOR,
+            PROBABILISTIC_TRUNCATED_XOR,
         ):
             raise ValueError(
                 "propagation problems support XOR differential, linear, or "
-                "deterministic-truncated semantic types"
+                "deterministic- or probabilistic-truncated semantic types"
             )
         if not isinstance(objective, PropagationObjective):
             raise TypeError("objective must be a PropagationObjective")

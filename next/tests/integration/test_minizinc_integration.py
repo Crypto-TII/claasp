@@ -9,6 +9,7 @@ from claasp_next.ciphers import SpeckBlockCipher
 from claasp_next.representations.constraints.cp import MiniZincModel
 from claasp_next.semantics import (
     DETERMINISTIC_TRUNCATED_XOR,
+    PROBABILISTIC_TRUNCATED_XOR,
     XOR_DIFFERENTIAL,
     XOR_LINEAR,
 )
@@ -19,6 +20,7 @@ from claasp_next.representations.constraints.cp import (
     SBoxDifferenceCPModel,
     ProbabilisticTruncatedModularAddCPModel,
     SpeckDifferentialCPModel,
+    SpeckProbabilisticTruncatedCPModel,
     SpeckTruncatedCPModel,
 )
 from claasp_next.semantics.cryptanalysis import (
@@ -256,3 +258,42 @@ def test_minizinc_preserves_legacy_probabilistic_truncated_modadd_costs(
     assert solved.status is CPStatus.SATISFIED
     assert transition.scaled_weight == expected_cost
     assert check_probabilistic_truncated_modular_add(transition)
+
+
+@pytest.mark.parametrize(
+    "rounds,input_pattern,output_pattern,expected_weight",
+    (
+        (
+            2,
+            "00000000011111001110000000000000",
+            "???????????????1???????????????1",
+            1.0,
+        ),
+        (
+            3,
+            "00000000011000000000000000000000",
+            "???????????????0???????????????1",
+            0.0,
+        ),
+    ),
+)
+def test_minizinc_preserves_legacy_speck_probabilistic_truncated_trails(
+    rounds, input_pattern, output_pattern, expected_weight
+):
+    cipher = SpeckBlockCipher(number_of_rounds=rounds)
+    model = SpeckProbabilisticTruncatedCPModel(
+        PropagationProblem(
+            cipher, PROBABILISTIC_TRUNCATED_XOR,
+            provenance=("legacy semi-deterministic Speck fixture",),
+        ),
+        TruncatedXorDifference.parse(input_pattern),
+        TruncatedXorDifference.parse(output_pattern),
+    )
+
+    solved = MiniZincSolver(solver=_test_solver(), timeout_seconds=60).solve(model.cp_model())
+    trail = model.decode_trail(solved.assignment)
+
+    assert solved.status is CPStatus.SATISFIED
+    assert str(trail.output_pattern) == output_pattern
+    assert trail.weight == expected_weight
+    assert len(trail.transitions) == rounds
