@@ -249,7 +249,15 @@ BitString* bitstring_from_binary_string(char *bits, uint16_t bit_size) {
 BitString* bitstring_from_hex_string(char *hex_digits, uint16_t bit_size) {
     BitString *result = zero_bitstring(bit_size);
     uint16_t hex_length = strlen(hex_digits), j = byte_size(bit_size) - 1;;
-    char app[2];
+    /* NUL-terminated: strtoul() requires a C string, and an un-terminated
+     * app[2] is undefined behaviour -- it reads past the buffer looking for
+     * a terminator, occasionally picking up an adjacent stack byte that
+     * happens to look like another hex digit and silently parsing a wrong,
+     * too-large value. Only manifests statistically on very large inputs
+     * (many loop iterations, each a small chance of the coincidence), which
+     * is why it stayed latent until wide-input inputs were exercised. */
+    char app[3];
+    app[2] = '\0';
 
     for (int i = hex_length - 1; i >= 3; i -= 2) {
         app[0] = hex_digits[i - 1];
