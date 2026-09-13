@@ -13,6 +13,13 @@ constraints, trail semantics, backend representations, exporters, solver
 adapters, and result projection are separate layers. New work should extend
 the narrowest applicable layer.
 
+The architectural vocabulary is ``Interpretation -> Representation -> Driver
+-> Result``. A new cryptanalytic idea normally begins as an interpretation or
+shared propagation relation. Encoding it directly inside an SMT- or
+MILP-specific package is appropriate only when it is genuinely specific to
+that representation. An alternative external solver for an existing format
+is a driver, not a new interpretation.
+
 Examples include:
 
 * adding a new graph-level constraint without exposing encoded variable names;

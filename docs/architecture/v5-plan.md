@@ -84,6 +84,12 @@ arithmetization-oriented extensions in a dedicated v5 section.
    doctests.
 10. Documentation builds are warning-free and are tested independently of
     Sage.
+11. CLAASP describes processing as ``Interpretation -> Representation ->
+    Driver -> Result``. ``Target`` is reserved for the cryptanalytic target of
+    an attack and is not used for compiler output formats.
+12. Concrete traces, cryptanalytic trails, side-channel traces, and diagram
+    annotations share graph-annotation infrastructure while retaining
+    distinct semantic types.
 
 ## Delivery milestones
 
@@ -323,6 +329,37 @@ selected Speck regressions before the backend milestone closes.
   boomerang, and differential-linear results according to the migration
   inventory.
 
+#### M10.5d: Representation architecture realignment
+
+Complete this cross-cutting milestone before starting the CP backend, so CP
+does not reproduce the temporary package organization.
+
+1. **M10.5d1 — terminology and contracts.** Define interpretation,
+   annotation, representation, artifact, driver, result, and attack-target
+   concepts. Add immutable graph annotations plus distinct execution-trace,
+   cryptanalytic-trail, and side-channel-trace types.
+2. **M10.5d2 — execution representations.** Move scalar and batch execution
+   behind the representation/driver structure. Keep ``cipher.evaluate(...)``
+   and ``cipher.evaluate_batch(...)`` as the ordinary user API; direct
+   interpreters need not pretend to have exporters.
+3. **M10.5d3 — constraint representations.** Group Boolean/CNF, SMT, MILP,
+   CP, and polynomial forms under ``representations``. Separate representation
+   construction and export from MiniSat, Z3, GLPK, and algebra-system drivers.
+4. **M10.5d4 — interpretation-driven trails.** Move differential, linear,
+   differential-linear, division-property, avalanche, symbolic, and leakage
+   semantics outside solver-specific packages. Solver representations lower a
+   shared propagation problem and must not define its cryptanalytic meaning.
+5. **M10.5d5 — diagram representation.** Define a backend-neutral annotated
+   diagram IR, then migrate ASCII art and add TikZ serialization. External
+   LaTeX execution is a driver producing PDF; PNG/SVG rendering remains an
+   independently testable representation or driver step.
+
+Exit criterion: public workflows remain concise; internal examples can name
+their interpretation, representation, driver, and result independently; the
+same graph annotation can be consumed by at least execution, trail checking,
+and diagram rendering; and no use of ``target`` ambiguously means both an
+attack goal and an output format.
+
 #### M10.7: Statistical analysis
 
 - Migrate avalanche and other non-solver analyses behind the same concise
@@ -514,6 +551,8 @@ each synchronization.
 | Portable MILP foundation (M10.5a) | Achieved | Immutable linear IR, LP exporter, GLPK adapter, independent witness/objective checks, dedicated CI |
 | Weighted SPN MILP trails (M10.5b) | Achieved | Complete DDT selectors over PRESENT-2; GLPK weight-4 optimum and independent 32-transition checker |
 | Weighted ARX MILP trails (M10.5c) | Achieved | Exact parity/support relation; GLPK validates four Speck32/64-4 transitions, weights, and signs |
+| Representation architecture (M10.5d) | In progress | M10.5d1 terminology/contracts, then execution, constraint, interpretation, and diagram migrations |
+| Interpretation/annotation contracts (M10.5d1) | Next | Typed graph annotations and distinct trace/trail concepts with executable documentation |
 | SMT, MILP, and CP (M10.4–M10.6) | In progress | SMT achieved; MILP and CP retain shared semantics and independent-check requirements |
 | Statistical analysis (M10.7) | Planned | Avalanche and related legacy behavior |
 | Serialization, diagrams, transforms, compilers (M10.8) | Planned | Inventory-driven tooling migration |
