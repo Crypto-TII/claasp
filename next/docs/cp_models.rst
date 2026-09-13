@@ -109,6 +109,14 @@ optimization is the first implementation checkpoint, followed by generalized
 truncated domains, multi-round impossible search, composed attacks, and
 continuous heuristics.
 
+Composed attacks use backend-neutral result contracts before they acquire a CP
+lowering. ``BoomerangTrail`` joins two XOR-differential trails through an
+explicit four-difference ``BoomerangSwitchBoundary``. A
+``DifferentialLinearTrail`` keeps its differential prefix,
+probabilistic-truncated connector, and linear suffix separate and reports the
+legacy exact objective rather than the cheaper search approximation. Solver
+status and statistical corroboration therefore remain distinct evidence.
+
 The distinction between exact and heuristic results is intentional. Exact
 models must provide a solver witness plus an independent semantic checker; an
 optimality claim also needs an unsatisfiable lower bound. Continuous models
