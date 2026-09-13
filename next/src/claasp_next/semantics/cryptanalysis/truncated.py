@@ -127,6 +127,33 @@ class TruncatedXorDifference:
 
 
 @dataclass(frozen=True, slots=True)
+class ImpossiblePropagationBoundary:
+    """Forward and backward partial differences meeting at one graph boundary."""
+
+    forward: TruncatedXorDifference
+    backward: TruncatedXorDifference
+
+    def __post_init__(self) -> None:
+        if len(self.forward.bits) != len(self.backward.bits):
+            raise ValueError("impossible boundary patterns must have equal widths")
+
+    @property
+    def contradictory_positions(self) -> tuple[int, ...]:
+        """Positions fixed to opposite Boolean differences."""
+
+        return tuple(
+            index for index, (forward, backward) in enumerate(
+                zip(self.forward.bits, self.backward.bits)
+            )
+            if TruncatedBit.UNKNOWN not in (forward, backward) and forward is not backward
+        )
+
+    @property
+    def is_impossible(self) -> bool:
+        return bool(self.contradictory_positions)
+
+
+@dataclass(frozen=True, slots=True)
 class ProbabilisticTruncatedModularAddTransition:
     """One probability-bearing partial propagation through modular addition.
 
@@ -252,6 +279,37 @@ def truncated_modular_add(
     return TruncatedXorDifference(tuple(reversed(lsb_output)))
 
 
+def truncated_modular_subtract(
+    minuend: TruncatedXorDifference, subtrahend: TruncatedXorDifference
+) -> TruncatedXorDifference:
+    """Soundly propagate XOR differences through modular subtraction."""
+
+    if len(minuend.bits) != len(subtrahend.bits):
+        raise ValueError("modular-subtract operands must have equal width")
+    borrows = {(0, 0)}
+    lsb_output = []
+    for left_bit, right_bit in zip(reversed(minuend.bits), reversed(subtrahend.bits)):
+        outputs = set()
+        next_borrows = set()
+        left_deltas = (0, 1) if left_bit is TruncatedBit.UNKNOWN else (int(left_bit.value),)
+        right_deltas = (0, 1) if right_bit is TruncatedBit.UNKNOWN else (int(right_bit.value),)
+        for borrow, paired_borrow in borrows:
+            for left_delta in left_deltas:
+                for right_delta in right_deltas:
+                    for left_value in (0, 1):
+                        for right_value in (0, 1):
+                            total = left_value - right_value - borrow
+                            paired = (left_value ^ left_delta) - (right_value ^ right_delta) - paired_borrow
+                            outputs.add((total ^ paired) & 1)
+                            next_borrows.add((int(total < 0), int(paired < 0)))
+        lsb_output.append(
+            TruncatedBit.UNKNOWN if len(outputs) != 1
+            else TruncatedBit.ONE if 1 in outputs else TruncatedBit.ZERO
+        )
+        borrows = next_borrows
+    return TruncatedXorDifference(tuple(reversed(lsb_output)))
+
+
 def propagate_two_word_speck_round(
     cipher: Cipher, difference: TruncatedXorDifference
 ) -> TruncatedXorDifference:
@@ -270,6 +328,28 @@ def propagate_two_word_speck_round(
     new_left = truncated_modular_add(left.rotate_right(alpha), right)
     new_right = right.rotate_left(beta).xor(new_left)
     return TruncatedXorDifference(new_left.bits + new_right.bits)
+
+
+def propagate_two_word_speck_inverse_round(
+    cipher: Cipher, difference: TruncatedXorDifference, round_number: int = 0,
+) -> TruncatedXorDifference:
+    """Soundly propagate a zero-key difference through one inverse Speck round."""
+
+    plaintext = cipher.inputs.get("plaintext")
+    if cipher.family_name != "speck" or plaintext is None:
+        raise ValueError("cipher must be Speck")
+    width = plaintext.value_type.domain.width
+    if len(difference.bits) != 2 * width:
+        raise ValueError("difference width must match the Speck block")
+    if not 0 <= round_number < len(cipher.rounds):
+        raise ValueError("round_number is outside the cipher")
+    alpha = _rotation(cipher, f"round_{round_number}_rotate_right").amount
+    beta = _rotation(cipher, f"round_{round_number}_rotate_left").amount
+    new_left = TruncatedXorDifference(difference.bits[:width])
+    new_right = TruncatedXorDifference(difference.bits[width:])
+    old_right = new_right.xor(new_left).rotate_right(beta)
+    old_left = truncated_modular_subtract(new_left, old_right).rotate_left(alpha)
+    return TruncatedXorDifference(old_left.bits + old_right.bits)
 
 
 def propagate_single_active_aes_byte(

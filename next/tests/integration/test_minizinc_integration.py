@@ -16,6 +16,7 @@ from claasp_next.semantics import (
 from claasp_next.semantics.cryptanalysis import PropagationProblem
 from claasp_next.representations.constraints.cp import (
     PresentDifferentialCPModel,
+    ImpossibleBoundaryCPModel,
     PresentLinearCPModel,
     SBoxDifferenceCPModel,
     ProbabilisticTruncatedModularAddCPModel,
@@ -26,6 +27,7 @@ from claasp_next.representations.constraints.cp import (
 )
 from claasp_next.semantics.cryptanalysis import (
     TruncatedXorDifference, check_probabilistic_truncated_modular_add,
+    ImpossiblePropagationBoundary,
     WordwiseDifferenceKind, WordwiseXorDifference,
     propagate_single_active_aes_byte,
 )
@@ -327,3 +329,27 @@ def test_minizinc_projects_wordwise_aes_single_byte_diffusion_fixture():
     assert solved.status is CPStatus.SATISFIED
     assert tuple(word.kind for word in decoded[:4]) == (WordwiseDifferenceKind.NONZERO,) * 4
     assert all(word.kind is WordwiseDifferenceKind.ZERO for word in decoded[4:])
+
+
+def test_minizinc_proves_and_decodes_an_impossible_middle_boundary():
+    model = ImpossibleBoundaryCPModel(ImpossiblePropagationBoundary(
+        TruncatedXorDifference.parse("01??0"),
+        TruncatedXorDifference.parse("00?11"),
+    ))
+
+    solved = MiniZincSolver(solver=_test_solver()).solve(model.cp_model())
+    boundary = model.decode_boundary(solved.assignment)
+
+    assert solved.status is CPStatus.SATISFIED
+    assert boundary.contradictory_positions == (1, 4)
+
+
+def test_minizinc_rejects_a_compatible_middle_boundary():
+    model = ImpossibleBoundaryCPModel(ImpossiblePropagationBoundary(
+        TruncatedXorDifference.parse("01??0"),
+        TruncatedXorDifference.parse("?1?00"),
+    ))
+
+    solved = MiniZincSolver(solver=_test_solver()).solve(model.cp_model())
+
+    assert solved.status is CPStatus.UNSATISFIABLE

@@ -1,11 +1,13 @@
 from claasp_next.semantics.cryptanalysis import (
     ProbabilisticTruncatedModularAddTransition,
     ProbabilisticTruncatedTrail,
+    ImpossiblePropagationBoundary,
     WordwiseDifferenceKind,
     WordwiseXorDifference,
     TruncatedXorDifference,
     check_probabilistic_truncated_modular_add,
     propagate_single_active_aes_byte,
+    propagate_two_word_speck_inverse_round,
     propagate_two_word_speck_round,
     truncated_modular_add,
 )
@@ -87,3 +89,20 @@ def test_wordwise_aes_single_byte_diffuses_to_one_column():
 
     assert tuple(word.kind for word in output[:4]) == (WordwiseDifferenceKind.NONZERO,) * 4
     assert all(word.kind is WordwiseDifferenceKind.ZERO for word in output[4:])
+
+
+def test_inverse_speck_truncated_propagation_preserves_zero_difference():
+    cipher = SpeckBlockCipher(number_of_rounds=2)
+    zero = TruncatedXorDifference.parse("0" * 32)
+
+    assert propagate_two_word_speck_inverse_round(cipher, zero, 1) == zero
+
+
+def test_impossible_boundary_reports_only_fixed_contradictions():
+    boundary = ImpossiblePropagationBoundary(
+        TruncatedXorDifference.parse("01??0"),
+        TruncatedXorDifference.parse("00?11"),
+    )
+
+    assert boundary.contradictory_positions == (1, 4)
+    assert boundary.is_impossible

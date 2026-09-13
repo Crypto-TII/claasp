@@ -217,6 +217,30 @@ checkpoint introduces a typed forward/backward contradiction boundary and
 independent checker; hybrid models will use component semantic overrides
 rather than a separate solver-class hierarchy.
 
+``ImpossiblePropagationBoundary`` holds the two partial patterns and reports
+only positions fixed to opposite Boolean differences; unknown values never
+create a false contradiction. ``ImpossibleBoundaryCPModel`` proves that such a
+position exists and decodes the solver assignment through the same typed
+boundary, which is checked independently.
+
+.. doctest::
+
+   >>> from claasp_next.semantics.cryptanalysis import ImpossiblePropagationBoundary, TruncatedXorDifference
+   >>> boundary = ImpossiblePropagationBoundary(
+   ...     TruncatedXorDifference.parse("01??0"),
+   ...     TruncatedXorDifference.parse("00?11"),
+   ... )
+   >>> boundary.contradictory_positions
+   (1, 4)
+   >>> boundary.is_impossible
+   True
+
+Backward ARX propagation uses ``truncated_modular_subtract`` and
+``propagate_two_word_speck_inverse_round``. Both enumerate paired borrow states
+in pure Python, independently of the MiniZinc boundary encoding. The next
+checkpoint composes these pieces to reproduce the seven-round Speck UNSAT
+fixture.
+
 .. automodule:: claasp_next.representations.constraints.cp
    :members:
 

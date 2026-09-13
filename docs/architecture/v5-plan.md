@@ -653,10 +653,10 @@ each synchronization.
 | Wordwise truncated CP semantics (M10.6d3c) | Achieved | Typed activity/value state plus graph-derived AES SubBytes/ShiftRows/MixColumns singleton propagation and CP projection |
 | Wordwise activity/value domain (M10.6d3c1) | Achieved | Zero, known, nonzero, and unrestricted word differences use typed Python/native MiniZinc enums, with no legacy activity integers or value sentinels |
 | Wordwise SPN composition (M10.6d3c2) | Achieved | A zero-key singleton byte difference becomes four guaranteed nonzero bytes in the graph-selected AES column; Docker verifies the typed CP projection |
-| Multi-round CP impossible search (M10.6d4) | Planned | Composed forward/backward propagation and selected legacy UNSAT fixtures |
+| Multi-round CP impossible search (M10.6d4) | In progress | Shared contradiction boundary and inverse Speck propagation achieved; composed Speck/Simon fixtures follow |
 | Impossible-suite fixture audit (M10.6d4a) | Achieved | Selected Speck-7 UNSAT and fixed Simon-11 boundary/intermediate patterns; recorded typed-Simon dependency and rejected generated-line counts |
-| Shared impossible boundary (M10.6d4b) | Next | Typed forward/backward contradiction, inverse propagation, and independent boundary checker |
-| Speck multi-round impossible CP (M10.6d4c) | Planned | Reproduce the legacy seven-round UNSAT search with zero key difference |
+| Shared impossible boundary (M10.6d4b) | Achieved | Typed forward/backward patterns expose exact contradictory positions; sound inverse Speck subtraction/round propagation and Docker SAT/UNSAT boundary proofs are independently checked |
+| Speck multi-round impossible CP (M10.6d4c) | Next | Reproduce the legacy seven-round UNSAT search with zero key difference |
 | Simon fixed impossible fixture (M10.6d4d) | Blocked by planned prerequisite | Migrate typed Simon32/64, then preserve the exact 11-round input/output and middle-round patterns |
 | CP composed attacks (M10.6d5) | Planned | Explicit boomerang and differential-linear semantic contracts and fixtures |
 | CP continuous models (M10.6d6) | Planned | Numerically qualified heuristic models kept distinct from exact proof results |

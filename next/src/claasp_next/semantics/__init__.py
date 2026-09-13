@@ -11,9 +11,11 @@ from claasp_next.semantics.cryptanalysis import (
     Transition, XorDifference, XorMask, ComponentSemanticsBinding,
     ComponentSemanticsRegistry, PropagationObjective, PropagationProblem,
     TransitionProvider, default_component_semantics,
-    TruncatedBit, TruncatedXorDifference, propagate_two_word_speck_round,
+    ImpossiblePropagationBoundary, TruncatedBit, TruncatedXorDifference,
+    propagate_two_word_speck_inverse_round, propagate_two_word_speck_round,
     ProbabilisticTruncatedModularAddTransition, ProbabilisticTruncatedTrail,
     check_probabilistic_truncated_modular_add, truncated_modular_add,
+    truncated_modular_subtract,
     propagate_single_active_aes_byte,
     WordwiseDifferenceKind, WordwiseXorDifference,
 )
@@ -29,8 +31,10 @@ __all__ = [
     "PropagationObjective", "PropagationProblem", "TransitionProvider",
     "default_component_semantics",
     "TruncatedBit", "TruncatedXorDifference", "propagate_two_word_speck_round",
+    "propagate_two_word_speck_inverse_round", "ImpossiblePropagationBoundary",
     "ProbabilisticTruncatedModularAddTransition", "ProbabilisticTruncatedTrail",
     "check_probabilistic_truncated_modular_add", "truncated_modular_add",
+    "truncated_modular_subtract",
     "propagate_single_active_aes_byte",
     "WordwiseDifferenceKind", "WordwiseXorDifference",
 ]

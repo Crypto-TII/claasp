@@ -4,7 +4,7 @@ from claasp_next.components import BitVectorSBox, Permutation, Rotate
 from claasp_next.domains import Word
 from claasp_next.semantics import XOR_DIFFERENTIAL, XOR_LINEAR
 from claasp_next.semantics.cryptanalysis import (
-    ModularAddTransitionSemantics, PropagationProblem,
+    ImpossiblePropagationBoundary, ModularAddTransitionSemantics, PropagationProblem,
     ProbabilisticTruncatedModularAddTransition, ProbabilisticTruncatedTrail,
     Trail, TrailKind, TrailStep,
     TruncatedXorDifference, XorDifference, XorMask,
@@ -598,6 +598,59 @@ class WordwiseDifferenceCPModel:
         if result != self.words:
             raise ValueError("MiniZinc changed a fixed wordwise boundary")
         return result
+
+
+class ImpossibleBoundaryCPModel:
+    """Prove that forward and backward partial patterns contradict."""
+
+    def __init__(self, boundary: ImpossiblePropagationBoundary) -> None:
+        if not isinstance(boundary, ImpossiblePropagationBoundary):
+            raise TypeError("boundary must be an ImpossiblePropagationBoundary")
+        self.boundary = boundary
+
+    def cp_model(self) -> MiniZincModel:
+        """Compile an existential fixed-bit contradiction at the boundary."""
+
+        width = len(self.boundary.forward.bits)
+        declarations = (
+            f"array[0..{width - 1}] of var 0..2: forward;",
+            f"array[0..{width - 1}] of var 0..2: backward;",
+            f"array[0..{width - 1}] of var bool: contradiction;",
+        )
+        constraints = [
+            _fixed_array("forward", self.boundary.forward),
+            _fixed_array("backward", self.boundary.backward),
+        ]
+        constraints.extend(
+            rf"constraint contradiction[{index}] = "
+            rf"(forward[{index}] < 2 /\ backward[{index}] < 2 /\ "
+            rf"forward[{index}] != backward[{index}]);"
+            for index in range(width)
+        )
+        constraints.append(
+            f"constraint exists(i in 0..{width - 1})(contradiction[i]);"
+        )
+        return MiniZincModel(
+            declarations, tuple(constraints),
+            provenance=("forward/backward impossible propagation boundary",),
+        )
+
+    def decode_boundary(self, assignment) -> ImpossiblePropagationBoundary:
+        """Decode and independently confirm the contradiction positions."""
+
+        decoded = ImpossiblePropagationBoundary(
+            _decode_truncated(assignment["forward"]),
+            _decode_truncated(assignment["backward"]),
+        )
+        solver_positions = tuple(
+            index for index, value in enumerate(assignment["contradiction"])
+            if bool(value)
+        )
+        if decoded != self.boundary or solver_positions != decoded.contradictory_positions:
+            raise ValueError("MiniZinc returned an invalid impossible boundary")
+        if not decoded.is_impossible:
+            raise ValueError("decoded boundary is compatible")
+        return decoded
 
 
 class SBoxDifferenceCPModel:

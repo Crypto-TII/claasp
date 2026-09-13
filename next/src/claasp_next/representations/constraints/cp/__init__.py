@@ -4,7 +4,8 @@ from claasp_next.representations.constraints.cp.model import MiniZincModel
 from claasp_next.representations.constraints.cp.lowering import BooleanMiniZincLowerer
 
 __all__ = [
-    "BooleanMiniZincLowerer", "MiniZincModel", "PresentDifferentialCPModel",
+    "BooleanMiniZincLowerer", "ImpossibleBoundaryCPModel", "MiniZincModel",
+    "PresentDifferentialCPModel",
     "PresentLinearCPModel", "SBoxDifferenceCPModel",
     "ProbabilisticTruncatedModularAddCPModel", "SpeckDifferentialCPModel",
     "SpeckProbabilisticTruncatedCPModel", "SpeckTruncatedCPModel",
@@ -28,7 +29,8 @@ def __getattr__(name: str):
 
         return SpeckDifferentialCPModel
     if name in {
-        "SBoxDifferenceCPModel", "ProbabilisticTruncatedModularAddCPModel",
+        "ImpossibleBoundaryCPModel", "SBoxDifferenceCPModel",
+        "ProbabilisticTruncatedModularAddCPModel",
         "SpeckProbabilisticTruncatedCPModel", "SpeckTruncatedCPModel",
         "WordwiseDifferenceCPModel",
     }:
