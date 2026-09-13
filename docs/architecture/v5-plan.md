@@ -644,7 +644,7 @@ each synchronization.
 | Probabilistic-truncated modular-add CP semantics (M10.6d3a) | Achieved | Typed partial transition, independent counter/cost checker, and Docker/Chuffed reproduction of legacy scaled costs 309 and 700 |
 | Probabilistic-truncated Speck CP composition (M10.6d3b) | Achieved | Docker/Chuffed preserves the exact two-/three-round output patterns and weights 1.0/0.0; all additions and wiring are independently checked |
 | Wordwise truncated CP semantics (M10.6d3c) | Achieved | Typed activity/value state plus graph-derived AES SubBytes/ShiftRows/MixColumns singleton propagation and CP projection |
-| Wordwise activity/value domain (M10.6d3c1) | Achieved | Zero, known, nonzero, and unrestricted word differences have explicit invariants, sound XOR/bijection operations, and Docker-tested CP projection |
+| Wordwise activity/value domain (M10.6d3c1) | Achieved | Zero, known, nonzero, and unrestricted word differences use typed Python/native MiniZinc enums, with no legacy activity integers or value sentinels |
 | Wordwise SPN composition (M10.6d3c2) | Achieved | A zero-key singleton byte difference becomes four guaranteed nonzero bytes in the graph-selected AES column; Docker verifies the typed CP projection |
 | Multi-round CP impossible search (M10.6d4) | Planned | Composed forward/backward propagation and selected legacy UNSAT fixtures |
 | CP composed attacks (M10.6d5) | Planned | Explicit boomerang and differential-linear semantic contracts and fixtures |

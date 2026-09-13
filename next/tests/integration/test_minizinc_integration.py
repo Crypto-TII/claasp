@@ -302,7 +302,7 @@ def test_minizinc_preserves_legacy_speck_probabilistic_truncated_trails(
     assert len(trail.transitions) == rounds
 
 
-def test_minizinc_projects_legacy_wordwise_states_to_typed_values():
+def test_minizinc_projects_native_wordwise_states_to_typed_values():
     words = (
         WordwiseXorDifference(8, WordwiseDifferenceKind.ZERO),
         WordwiseXorDifference.known(8, 0x53),

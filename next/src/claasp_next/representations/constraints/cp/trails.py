@@ -548,7 +548,7 @@ class SpeckProbabilisticTruncatedCPModel:
 
 
 class WordwiseDifferenceCPModel:
-    """Expose typed word-activity/value invariants as a native CP model."""
+    """Expose typed word states as a native MiniZinc enum."""
 
     def __init__(self, words: tuple[WordwiseXorDifference, ...]) -> None:
         if not words or any(not isinstance(word, WordwiseXorDifference) for word in words):
@@ -559,36 +559,36 @@ class WordwiseDifferenceCPModel:
         self.width = words[0].width
 
     def cp_model(self) -> MiniZincModel:
-        """Encode the four semantic states without public sentinel values."""
+        """Encode semantic states directly, with no legacy integer sentinels."""
 
         last = len(self.words) - 1
         maximum = (1 << self.width) - 1
         declarations = (
-            f"array[0..{last}] of var 0..3: activity;",
-            f"array[0..{last}] of var -2..{maximum}: value;",
+            "enum WordDifferenceState = {ZERO, KNOWN, NONZERO, UNKNOWN};",
+            f"array[0..{last}] of var WordDifferenceState: state;",
+            f"array[0..{last}] of var 0..{maximum}: value;",
         )
         constraints = []
         for index, word in enumerate(self.words):
-            constraints.append(f"constraint activity[{index}] = {word.kind.value};")
-            constraints.append(
-                f"constraint if activity[{index}] = 0 then value[{index}] = 0 "
-                f"elseif activity[{index}] = 1 then value[{index}] > 0 "
-                f"elseif activity[{index}] = 2 then value[{index}] = -1 "
-                f"else value[{index}] = -2 endif;"
-            )
+            constraints.append(f"constraint state[{index}] = {word.kind.name};")
             if word.kind is WordwiseDifferenceKind.KNOWN:
                 constraints.append(f"constraint value[{index}] = {word.value};")
+            else:
+                # Canonical don't-care value keeps solver output deterministic;
+                # meaning is carried exclusively by the enum state.
+                constraints.append(f"constraint value[{index}] = 0;")
         return MiniZincModel(
             declarations, tuple(constraints),
-            provenance=("legacy wordwise activity/value state encoding",),
+            provenance=("typed wordwise XOR-difference states",),
         )
 
     def decode(self, assignment) -> tuple[WordwiseXorDifference, ...]:
-        """Project solver sentinels back to typed values and verify the boundary."""
+        """Project enum states back to typed values and verify the boundary."""
 
         decoded = []
-        for activity, value in zip(assignment["activity"], assignment["value"]):
-            kind = WordwiseDifferenceKind(int(activity))
+        for state, value in zip(assignment["state"], assignment["value"]):
+            encoded_state = state.get("e") if isinstance(state, dict) else str(state)
+            kind = WordwiseDifferenceKind[encoded_state]
             decoded.append(
                 WordwiseXorDifference.known(self.width, int(value))
                 if kind is WordwiseDifferenceKind.KNOWN

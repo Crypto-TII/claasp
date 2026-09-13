@@ -180,8 +180,9 @@ only for ``KNOWN`` and must be nonzero and fit the word width.
    >>> difference.xor(difference).kind is WordwiseDifferenceKind.ZERO
    True
 
-``WordwiseDifferenceCPModel`` keeps the old MiniZinc encoding internal and
-projects solver values back to these types. The old test asserting exactly
+``WordwiseDifferenceCPModel`` uses a native MiniZinc enum with the same four
+names and projects solver values back to these types. It has no activity
+integers or negative value sentinels. The old test asserting exactly
 1,359 generated lines is superseded by semantic-invariant and Docker roundtrip
 tests. The enabled legacy suite contains no fixed wordwise trail, so it is not
 misrepresented as containing one.
