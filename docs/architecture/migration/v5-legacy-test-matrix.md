@@ -66,6 +66,12 @@ of uniqueness or an optimum.
 | Cross-backend three-round PRESENT linear optimum | Preserved legacy MILP fixture records weight 4; shared signed LAT semantics must agree across encodings | Ported to SMT in M10.4b3a | Real Z3 proves UNSAT at bound 3 and SAT at bound 4; the extracted 48-transition trail retains signs and is independently checked across all layers |
 | SAT/CMS/MILP four-round Speck32/64 linear optimum | Legacy optimum weight 3, masks `0x40b010c1 -> 0x2c102010`, and four modular-add transitions | Ported to SMT in M10.4b3b | Real Z3 validates the exact modular-add relation for all four restored transitions, weights `2+0+0+1`, and signs `+,+,+,-`; shared Walsh semantics independently checks each result. The reference was regenerated with legacy MiniSat 2.2.1 |
 
+## MILP models
+
+| Legacy test | Semantic assertions and provenance | Disposition | v5 coverage |
+| --- | --- | --- | --- |
+| `milp_xor_differential_model_test.py` two-round PRESENT optimum | Complete cipher minimum XOR-differential weight 4 | Ported to portable MILP in M10.5b | The exact DDT selector model covers all 32 graph S-boxes and permutation wiring; GLPK proves optimum 4 and the shared checker validates every decoded transition and boundary |
+
 ## Analysis and tooling inventory
 
 These discovered suites receive row-level entries when their M10 increment

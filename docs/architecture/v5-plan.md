@@ -512,7 +512,8 @@ each synchronization.
 | SMT weighted ARX linear trails (M10.4b3b) | Achieved | Exact modular-add correlation relation; Z3 validates all four weight/sign transitions of the Speck32/64-4 reference |
 | MILP trail backend (M10.5) | Next | Solver-independent linear IR, open-source adapter, and selected legacy regressions |
 | Portable MILP foundation (M10.5a) | Achieved | Immutable linear IR, LP exporter, GLPK adapter, independent witness/objective checks, dedicated CI |
-| Weighted SPN MILP trails (M10.5b) | Next | Lower shared S-box semantics and prove the selected PRESENT optimum |
+| Weighted SPN MILP trails (M10.5b) | Achieved | Complete DDT selectors over PRESENT-2; GLPK weight-4 optimum and independent 32-transition checker |
+| Weighted ARX MILP trails (M10.5c) | Next | Add modular-add relations and restore selected Speck regressions |
 | SMT, MILP, and CP (M10.4–M10.6) | In progress | SMT achieved; MILP and CP retain shared semantics and independent-check requirements |
 | Statistical analysis (M10.7) | Planned | Avalanche and related legacy behavior |
 | Serialization, diagrams, transforms, compilers (M10.8) | Planned | Inventory-driven tooling migration |

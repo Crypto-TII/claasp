@@ -194,4 +194,4 @@ jobs:
         run: python -m pip install -e '.[dev]'
 
       - name: Execute GLPK integration
-        run: python -m pytest -m external tests/integration/test_glpk_integration.py -q
+        run: python -m pytest -m external tests/integration/test_glpk_integration.py tests/integration/test_glpk_trails.py -q

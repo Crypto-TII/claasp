@@ -10,8 +10,10 @@ from claasp_next.milp.model import (
     ObjectiveSense,
     VariableKind,
 )
+from claasp_next.milp.trails import PresentDifferentialMILPModel, check_present_milp_trail
 
 __all__ = [
     "ConstraintSense", "LinearConstraint", "LinearExpression", "LinearVariable",
-    "LPExporter", "MILPModel", "ObjectiveSense", "VariableKind",
+    "LPExporter", "MILPModel", "ObjectiveSense", "PresentDifferentialMILPModel",
+    "VariableKind", "check_present_milp_trail",
 ]

@@ -33,8 +33,12 @@ class GLPKSolver:
         with TemporaryDirectory(prefix="claasp-next-glpk-") as directory:
             problem_path = Path(directory) / "problem.lp"
             result_path = Path(directory) / "result.sol"
+            mapping_path = Path(directory) / "problem.glp"
             problem_path.write_text(LPExporter().export(model), encoding="ascii")
-            command = [executable, "--lp", str(problem_path), "--write", str(result_path)]
+            command = [
+                executable, "--lp", str(problem_path), "--write", str(result_path),
+                "--wglp", str(mapping_path),
+            ]
             if self.timeout_seconds is not None:
                 command.extend(("--tmlim", str(max(1, int(self.timeout_seconds)))))
             start = monotonic()
@@ -48,7 +52,8 @@ class GLPKSolver:
                     f"{completed.stderr.strip() or completed.stdout.strip()}"
                 )
             status, assignment, objective = self._parse_solution(
-                result_path.read_text(encoding="ascii"), model
+                result_path.read_text(encoding="ascii"), model,
+                self._parse_column_names(mapping_path.read_text(encoding="ascii")),
             )
         if assignment is not None:
             if not model.is_feasible(assignment):
@@ -59,7 +64,7 @@ class GLPKSolver:
         return MILPResult(status, assignment, objective, elapsed, completed.stdout, completed.stderr)
 
     @staticmethod
-    def _parse_solution(text: str, model: MILPModel):
+    def _parse_solution(text: str, model: MILPModel, column_names: dict[int, str]):
         status_code = None
         objective = None
         values: dict[int, float] = {}
@@ -82,9 +87,20 @@ class GLPKSolver:
         statuses = {"o": MILPStatus.OPTIMAL, "f": MILPStatus.FEASIBLE}
         if status_code not in statuses:
             raise RuntimeError(f"unrecognized GLPK solution status {status_code!r}")
-        if set(values) != set(range(1, len(model.variables) + 1)):
+        if set(values) != set(column_names):
             raise RuntimeError("GLPK returned an incomplete assignment")
-        assignment = {
-            variable.name: values[index] for index, variable in enumerate(model.variables, 1)
-        }
+        assignment = {column_names[index]: value for index, value in values.items()}
+        if set(assignment) != {variable.name for variable in model.variables}:
+            raise RuntimeError("GLPK column map disagrees with model variables")
         return statuses[status_code], assignment, objective
+
+    @staticmethod
+    def _parse_column_names(text: str) -> dict[int, str]:
+        names = {}
+        for line in text.splitlines():
+            fields = line.split()
+            if len(fields) == 4 and fields[:2] == ["n", "j"]:
+                names[int(fields[2])] = fields[3]
+        if not names:
+            raise RuntimeError("GLPK did not emit a column-name map")
+        return names

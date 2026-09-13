@@ -42,3 +42,24 @@ The first optional adapter invokes the open-source ``glpsol`` command:
 Every returned assignment is checked against the portable model and its
 objective is recomputed. Cipher trail lowering is layered on top of this
 representation in the next M10.5 checkpoint.
+
+Weighted PRESENT trails
+-----------------------
+
+The first cipher lowering composes every feasible DDT transition of all 32
+S-box instances in two-round PRESENT. It connects both layers through the
+graph's permutation, requires a nonzero input difference, and minimizes the
+sum of exact transition weights:
+
+.. doctest::
+
+   >>> from claasp_next.ciphers import PresentBlockCipher
+   >>> from claasp_next.milp import PresentDifferentialMILPModel
+   >>> lowering = PresentDifferentialMILPModel(PresentBlockCipher(number_of_rounds=2))
+   >>> trail_model = lowering.milp_model()
+   >>> len(trail_model.constraints)
+   289
+
+The dedicated GLPK integration obtains the established optimum weight 4,
+decodes all 32 transitions, and checks every DDT entry and permutation
+boundary independently of the linear constraints.
