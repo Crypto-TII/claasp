@@ -3,8 +3,8 @@ import shutil
 import pytest
 
 from claasp_next import Bit, Cipher, ValueType
-from claasp_next.boolean import BooleanCNFModel
-from claasp_next.boolean.solvers import MinisatSolver, SatStatus
+from claasp_next.representations.constraints.sat import BooleanCNFModel
+from claasp_next.drivers.solvers import MinisatSolver, SatStatus
 from claasp_next.ciphers import Present80BlockCipher, SpeckBlockCipher
 from claasp_next.components import Add
 

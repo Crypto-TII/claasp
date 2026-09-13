@@ -7,9 +7,9 @@ from hashlib import sha256
 from claasp_next.analysis.boolean import lower_boolean_problem
 from claasp_next.analysis.constraints import FixedValue
 from claasp_next.analysis.problem import AnalysisProblem
-from claasp_next.boolean.cnf import CNFFormula
-from claasp_next.boolean.encoding import decode_unit, selection_variable_names
-from claasp_next.boolean.solvers import MinisatSolver, SatResult, SatStatus
+from claasp_next.representations.constraints.sat.cnf import CNFFormula
+from claasp_next.representations.constraints.sat.encoding import decode_unit, selection_variable_names
+from claasp_next.drivers.solvers import MinisatSolver, SatResult, SatStatus
 from claasp_next.core import Cipher, Selection
 
 

@@ -345,6 +345,8 @@ does not reproduce the temporary package organization.
 3. **M10.5d3 — constraint representations.** Group Boolean/CNF, SMT, MILP,
    CP, and polynomial forms under ``representations``. Separate representation
    construction and export from MiniSat, Z3, GLPK, and algebra-system drivers.
+   Deliver this as M10.5d3a (SAT/MiniSat), M10.5d3b (SMT/Z3), M10.5d3c
+   (MILP/GLPK), and M10.5d3d (polynomial/algebra-system drivers).
 4. **M10.5d4 — interpretation-driven trails.** Move differential, linear,
    differential-linear, division-property, avalanche, symbolic, and leakage
    semantics outside solver-specific packages. Solver representations lower a
@@ -555,6 +557,8 @@ each synchronization.
 | Interpretation/annotation contracts (M10.5d1) | Achieved | Extensible interpretations, immutable graph annotations, distinct trace types, representation artifacts, drivers, attack targets |
 | Execution representation migration (M10.5d2) | Achieved | Scalar/batch modules moved under representations; canonical driver names; concrete ExecutionTrace results |
 | Constraint representation migration (M10.5d3) | Next | Group CNF/SMT/MILP/polynomial formats and separate external drivers |
+| SAT representation/driver split (M10.5d3a) | Achieved | CNF, lowering, and DIMACS under representations; MiniSat under drivers |
+| SMT representation/driver split (M10.5d3b) | Next | Move SMT IR/export/lowering and Z3 driver without changing results |
 | SMT, MILP, and CP (M10.4–M10.6) | In progress | SMT achieved; MILP and CP retain shared semantics and independent-check requirements |
 | Statistical analysis (M10.7) | Planned | Avalanche and related legacy behavior |
 | Serialization, diagrams, transforms, compilers (M10.8) | Planned | Inventory-driven tooling migration |

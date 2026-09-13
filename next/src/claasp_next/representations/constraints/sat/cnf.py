@@ -1,4 +1,4 @@
-"""A small, solver-independent conjunctive-normal-form intermediate representation."""
+"""A small, solver-independent conjunctive-normal-form representation."""
 
 from collections.abc import Mapping
 from dataclasses import dataclass

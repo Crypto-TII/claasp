@@ -1,10 +1,10 @@
-"""DIMACS CNF serialization."""
+"""DIMACS serialization of the Boolean CNF representation."""
 
-from claasp_next.boolean.cnf import CNFFormula
+from claasp_next.representations.constraints.sat.cnf import CNFFormula
 
 
 class DimacsExporter:
-    """Serialize :class:`~claasp_next.boolean.CNFFormula` for SAT solvers."""
+    """Serialize :class:`~claasp_next.representations.constraints.sat.CNFFormula` for SAT solvers."""
 
     def export(self, formula: CNFFormula, *, include_variable_map: bool = True) -> str:
         """Return deterministic DIMACS text, optionally with name comments."""

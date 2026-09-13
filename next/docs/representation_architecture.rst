@@ -88,3 +88,22 @@ annotation used by ``ExecutionTrace``:
 Normal users continue to write ``cipher.evaluate(plaintext, key)``. The
 explicit driver is primarily an extension point and a way to request the
 complete execution trace.
+
+Constraint representations
+--------------------------
+
+Constraint formats are grouped under ``representations.constraints``. For
+example, CNF construction, lowering, and DIMACS export live in the SAT
+representation package, while MiniSat is an external solver driver:
+
+.. doctest::
+
+   >>> from claasp_next.representations.constraints.sat import CNFFormula
+   >>> from claasp_next.representations.constraints.sat.exporters import DimacsExporter
+   >>> formula = CNFFormula(("x",), ((1,),), ("example",))
+   >>> DimacsExporter().export(formula).startswith("c 1 x\np cnf 1 1")
+   True
+
+The representation can therefore be constructed and inspected on ordinary
+CPython even when MiniSat is not installed. ``claasp_next.drivers.solvers``
+contains optional process drivers and their decoded results.

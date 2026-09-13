@@ -1,4 +1,4 @@
-"""Stable binary names and values for Boolean backend boundaries."""
+"""Stable binary names and values for Boolean representation boundaries."""
 
 from collections.abc import Mapping
 

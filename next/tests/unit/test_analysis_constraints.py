@@ -14,7 +14,7 @@ from claasp_next.analysis import (
 )
 from claasp_next.analysis.boolean import lower_boolean_problem
 from claasp_next.components import Add
-from claasp_next.boolean.solvers import SatResult, SatStatus
+from claasp_next.drivers.solvers import SatResult, SatStatus
 
 
 def _xor_cipher():

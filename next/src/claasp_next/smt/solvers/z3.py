@@ -7,8 +7,8 @@ import subprocess
 from tempfile import TemporaryDirectory
 from time import monotonic
 
-from claasp_next.boolean import CNFFormula
-from claasp_next.boolean.solvers import SatResult, SatStatus
+from claasp_next.representations.constraints.sat import CNFFormula
+from claasp_next.drivers.solvers import SatResult, SatStatus
 from claasp_next.smt.exporter import SMTLibExporter
 from claasp_next.smt.formula import SMTFormula
 

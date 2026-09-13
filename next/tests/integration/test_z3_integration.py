@@ -2,7 +2,7 @@ import shutil
 
 import pytest
 
-from claasp_next.boolean.solvers import SatStatus
+from claasp_next.drivers.solvers import SatStatus
 from claasp_next.analysis import AnalysisProblem, FixedValue
 from claasp_next.ciphers import PresentBlockCipher, SpeckBlockCipher
 from claasp_next.smt.solvers import Z3Solver

@@ -2,7 +2,7 @@ import pytest
 
 from claasp_next import Bit, Cipher, ValueType
 from claasp_next.components import Add
-from claasp_next.boolean.solvers import SatStatus
+from claasp_next.drivers.solvers import SatStatus
 from claasp_next.smt import BooleanSMTModel, SMTFormula
 from claasp_next.smt.exporter import SMTLibExporter
 from claasp_next.smt.solvers import Z3Solver

@@ -1,7 +1,7 @@
 import pytest
 
-from claasp_next.boolean import CNFFormula
-from claasp_next.boolean.solvers import MinisatSolver, SatStatus
+from claasp_next.representations.constraints.sat import CNFFormula
+from claasp_next.drivers.solvers import MinisatSolver, SatStatus
 
 
 def test_minisat_result_parser_maps_dimacs_literals_to_names():
@@ -37,7 +37,7 @@ def test_minisat_validates_executable_timeout_and_assumptions():
 
 
 def test_sat_result_convenience_property():
-    from claasp_next.boolean.solvers import SatResult
+    from claasp_next.drivers.solvers import SatResult
 
     result = SatResult(SatStatus.SATISFIABLE, {"x": 1}, 0.01, "", "")
     assert result.is_satisfiable

@@ -1,4 +1,4 @@
-"""Backend-neutral SAT result types."""
+"""Backend-neutral constraint-solver result types."""
 
 from collections.abc import Mapping
 from dataclasses import dataclass

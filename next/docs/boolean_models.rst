@@ -13,7 +13,7 @@ linear and nonlinear layers:
 .. doctest::
 
    >>> from claasp_next import bits_from_int
-   >>> from claasp_next.boolean import BooleanCNFModel
+   >>> from claasp_next.representations.constraints.sat import BooleanCNFModel
    >>> from claasp_next.ciphers import Present80BlockCipher
    >>> from claasp_next.representations.execution import ScalarEvaluator
    >>> cipher = Present80BlockCipher(number_of_rounds=1)
@@ -42,7 +42,7 @@ wires.
 
 .. doctest::
 
-   >>> from claasp_next.boolean.exporters import DimacsExporter
+   >>> from claasp_next.representations.constraints.sat.exporters import DimacsExporter
    >>> dimacs = DimacsExporter().export(formula)
    >>> [line for line in dimacs.splitlines() if line.startswith("p ")]
    ['p cnf 718 2361']
@@ -63,7 +63,7 @@ for fixing plaintext, key, or ciphertext bits.
 
 .. doctest::
 
-   >>> from claasp_next.boolean.solvers import MinisatSolver
+   >>> from claasp_next.drivers.solvers import MinisatSolver
    >>> solver = MinisatSolver(timeout_seconds=30)
    >>> solver.executable
    'minisat'

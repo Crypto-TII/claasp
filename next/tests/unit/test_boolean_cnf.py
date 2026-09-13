@@ -3,8 +3,8 @@ from itertools import product
 import pytest
 
 from claasp_next import bits_from_int
-from claasp_next.boolean import BooleanCNFModel, CNFFormula
-from claasp_next.boolean.exporters import DimacsExporter
+from claasp_next.representations.constraints.sat import BooleanCNFModel, CNFFormula
+from claasp_next.representations.constraints.sat.exporters import DimacsExporter
 from claasp_next.ciphers import MiMCPermutation, Present80BlockCipher, SpeckBlockCipher
 from claasp_next.components import Add
 from claasp_next.core import Cipher, ValueType

@@ -1,9 +1,9 @@
-"""Lower typed bit graphs to Boolean CNF."""
+"""Lower typed bit graphs to the Boolean CNF representation."""
 
 from collections.abc import Mapping
 
-from claasp_next.boolean.cnf import CNFFormula
-from claasp_next.boolean.encoding import encode_unit, unit_variable_names
+from claasp_next.representations.constraints.sat.cnf import CNFFormula
+from claasp_next.representations.constraints.sat.encoding import encode_unit, unit_variable_names
 from claasp_next.components import (
     Add,
     BitVectorSBox,

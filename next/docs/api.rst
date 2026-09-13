@@ -85,13 +85,13 @@ Polynomial models
 Boolean models
 --------------
 
-.. automodule:: claasp_next.boolean
+.. automodule:: claasp_next.representations.constraints.sat
    :members:
 
-.. automodule:: claasp_next.boolean.exporters
+.. automodule:: claasp_next.representations.constraints.sat.exporters
    :members:
 
-.. automodule:: claasp_next.boolean.solvers
+.. automodule:: claasp_next.drivers.solvers
    :members:
 
 SMT models

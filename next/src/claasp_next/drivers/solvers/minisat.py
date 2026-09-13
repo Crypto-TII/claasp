@@ -1,4 +1,4 @@
-"""Command-line MiniSat adapter."""
+"""Command-line MiniSat driver."""
 
 from collections.abc import Mapping
 from pathlib import Path
@@ -7,9 +7,9 @@ import subprocess
 from tempfile import TemporaryDirectory
 from time import monotonic
 
-from claasp_next.boolean.cnf import CNFFormula
-from claasp_next.boolean.exporters import DimacsExporter
-from claasp_next.boolean.solvers.base import SatResult, SatStatus
+from claasp_next.representations.constraints.sat.cnf import CNFFormula
+from claasp_next.representations.constraints.sat.exporters import DimacsExporter
+from claasp_next.drivers.solvers.base import SatResult, SatStatus
 
 
 class MinisatSolver:

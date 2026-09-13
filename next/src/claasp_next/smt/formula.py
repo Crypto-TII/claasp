@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 
-from claasp_next.boolean import CNFFormula
+from claasp_next.representations.constraints.sat import CNFFormula
 
 
 @dataclass(frozen=True, slots=True)
