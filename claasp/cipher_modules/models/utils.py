@@ -441,7 +441,7 @@ def to_bias_for_correlation_measure(cipher, solution):
     solution_with_bias = deepcopy(solution)
     solution_with_bias["measure"] = "bias"
     solution_with_bias["total_weight"] += 1
-    for component in cipher.get_all_components():
+    for component in cipher.all_components():
         suffix_list = component.suffixes
         for suffix in suffix_list:
             if solution_with_bias["components_values"][component.id + suffix]["weight"]:
@@ -454,7 +454,7 @@ def to_bias_for_probability_measure(cipher, solution):
     solution_with_bias = deepcopy(solution)
     solution_with_bias["measure"] = "bias"
     solution_with_bias["total_weight"] = round(-math.log(2 ** (-solution_with_bias["total_weight"]) - 1 / 2.0, 2), 1)
-    for component in cipher.get_all_components():
+    for component in cipher.all_components():
         suffix_list = component.suffixes
         for suffix in suffix_list:
             if solution_with_bias["components_values"][component.id + suffix]["weight"]:
@@ -513,7 +513,7 @@ def to_probability_for_correlation_measure(cipher, solution):
     solution_with_proba["total_weight"] = round(
         -math.log((2 ** (-solution_with_proba["total_weight"]) + 1) / 2.0, 2), 3
     )
-    for component in cipher.get_all_components():
+    for component in cipher.all_components():
         suffix_list = component.suffixes
         for suffix in suffix_list:
             if solution_with_proba["components_values"][component.id + suffix]["weight"]:
@@ -531,7 +531,7 @@ def to_probability_for_bias_measure(cipher, solution):
     solution_with_proba = deepcopy(solution)
     solution_with_proba["measure"] = "probability"
     solution_with_proba["total_weight"] = round(-math.log(2 ** (-solution_with_proba["total_weight"]) + 1 / 2.0, 2), 3)
-    for component in cipher.get_all_components():
+    for component in cipher.all_components():
         suffix_list = component.suffixes
         for suffix in suffix_list:
             if solution_with_proba["components_values"][component.id + suffix]["weight"]:
@@ -591,7 +591,7 @@ def to_correlation_for_bias_measure(cipher, solution):
     solution_with_correlation = deepcopy(solution)
     solution_with_correlation["measure"] = "correlation"
     solution_with_correlation["total_weight"] -= 1
-    for component in cipher.get_all_components():
+    for component in cipher.all_components():
         suffix_list = component.suffixes
         for suffix in suffix_list:
             if solution_with_correlation["components_values"][component.id + suffix]["weight"]:
@@ -606,7 +606,7 @@ def to_correlation_for_probability_measure(cipher, solution):
     solution_with_correlation["total_weight"] = round(
         -math.log(2 * 2 ** (-solution_with_correlation["total_weight"]) - 1, 2), 1
     )
-    for component in cipher.get_all_components():
+    for component in cipher.all_components():
         suffix_list = component.suffixes
         for suffix in suffix_list:
             if solution_with_correlation["components_values"][component.id + suffix]["weight"]:
@@ -645,7 +645,7 @@ def find_sign_for_one_xor_linear_trail(cipher, solution):
     """
     constants = {}
     sign = +1
-    for component in cipher.get_all_components():
+    for component in cipher.all_components():
         output_id_link = component.id
         if "sbox" in component.type:
             input_int = int(solution["components_values"][f"{output_id_link}_i"]["value"], 16)
@@ -732,9 +732,9 @@ def get_bit_bindings(cipher, format_func=(lambda x: x)):
     """
     arcs = {}
     intermediate_output_arcs = {
-        component.id: {} for component in cipher.get_all_components() if INTERMEDIATE_OUTPUT in component.type
+        component.id: {} for component in cipher.all_components() if INTERMEDIATE_OUTPUT in component.type
     }
-    for component in cipher.get_all_components():
+    for component in cipher.all_components():
         if component.type == CONSTANT:
             continue
         input_bit_size = component.input_bit_size

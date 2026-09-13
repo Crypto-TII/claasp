@@ -199,7 +199,7 @@ class MilpXorLinearModel(MilpModel):
         constraints = self.fix_variables_value_xor_linear_constraints(fixed_variables)
         self._model_constraints = constraints
 
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             component_types = [
                 CONSTANT,
                 INTERMEDIATE_OUTPUT,
@@ -827,7 +827,7 @@ class MilpXorLinearModel(MilpModel):
             }
             _filter_fixed_variables(fixed_values, fixed_variable, input)
             fixed_variables.append(fixed_variable)
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             output_bit_size = component.output_bit_size
             fixed_variable = {
                 "component_id": component.id,
@@ -894,7 +894,7 @@ class MilpXorLinearModel(MilpModel):
 
     def _get_component_values(self, objective_variables, components_variables):
         components_values = {}
-        list_component_ids = self._cipher.inputs + self._cipher.get_all_components_ids()
+        list_component_ids = self._cipher.inputs + self._cipher.all_components_ids()
         for component_id in list_component_ids:
             dict_tmp = self._get_component_value_weight(component_id, objective_variables, components_variables)
             if component_id in self._cipher.inputs:

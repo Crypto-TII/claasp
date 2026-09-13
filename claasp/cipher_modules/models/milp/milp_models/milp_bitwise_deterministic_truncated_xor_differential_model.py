@@ -98,7 +98,7 @@ class MilpBitwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
         x = self._binary_variable
         p = self._integer_variable
 
-        components = self._cipher.get_all_components()
+        components = self._cipher.all_components()
         last_component = components[-1]
 
         self.build_bitwise_deterministic_truncated_xor_differential_trail_model(fixed_variables)
@@ -152,7 +152,7 @@ class MilpBitwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
         )
         self._model_constraints = constraints
 
-        component_list = component_list or self._cipher.get_all_components()
+        component_list = component_list or self._cipher.all_components()
         for component in component_list:
             component_types = (
                 CIPHER_OUTPUT,
@@ -400,7 +400,7 @@ class MilpBitwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
 
     def _get_component_values(self, objective_variables, components_variables):
         components_values = {}
-        list_component_ids = self._cipher.inputs + self._cipher.get_all_components_ids()
+        list_component_ids = self._cipher.inputs + self._cipher.all_components_ids()
         for component_id in list_component_ids:
             dict_tmp = self._get_component_value_weight(component_id, components_variables)
             components_values[component_id] = dict_tmp

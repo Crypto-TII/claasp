@@ -173,7 +173,7 @@ class SatProbabilisticXorTruncatedDifferentialModel(SatXorDifferentialModel, Sat
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: speck = SpeckBlockCipher(number_of_rounds=4)
             sage: component_model_types = []
-            sage: for component in speck.get_all_components():
+            sage: for component in speck.all_components():
             ....:     component_model_type = {
             ....:         "component_id": component.id,
             ....:         "component_object": component,
@@ -254,7 +254,7 @@ class SatProbabilisticXorTruncatedDifferentialModel(SatXorDifferentialModel, Sat
         components_solutions = self._get_cipher_inputs_components_solutions(out_suffix, variable2value)
         total_weight = 0
         total_weight_truncated = 0
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             if component.id in [d["component_id"] for d in self.regular_components]:
                 hex_value = self._get_component_hex_value(component, "", variable2value)
                 weight = self.calculate_component_weight(component, "", variable2value)

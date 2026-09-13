@@ -273,9 +273,9 @@ class SatDifferentialLinearModel(SatModel):
             sage: middle_part_components = []
             sage: bottom_part_components = []
             sage: for round_number in range(2, 3):
-            ....:     middle_part_components += [component.id for component in speck.get_components_in_round(round_number)]
+            ....:     middle_part_components += [component.id for component in speck.components_in_round(round_number)]
             sage: for round_number in range(3, 6):
-            ....:     bottom_part_components += [component.id for component in speck.get_components_in_round(round_number)]
+            ....:     bottom_part_components += [component.id for component in speck.components_in_round(round_number)]
             sage: component_model_list = {
             ....:     'middle_part_components': middle_part_components,
             ....:     'bottom_part_components': bottom_part_components
@@ -370,7 +370,7 @@ class SatDifferentialLinearModel(SatModel):
         total_weight_diff = 0
         total_weight_lin = 0
 
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             if component.id in [d["component_id"] for d in self.regular_components]:
                 hex_value = self._get_component_hex_value(component, "", variable2value)
                 weight = self.calculate_component_weight(component, "", variable2value)
@@ -434,9 +434,9 @@ class SatDifferentialLinearModel(SatModel):
             sage: middle_part_components = []
             sage: bottom_part_components = []
             sage: for round_number in range(2, 3):
-            ....:     middle_part_components.append(speck.get_components_in_round(round_number))
+            ....:     middle_part_components.append(speck.components_in_round(round_number))
             sage: for round_number in range(3, 6):
-            ....:     bottom_part_components.append(speck.get_components_in_round(round_number))
+            ....:     bottom_part_components.append(speck.components_in_round(round_number))
             sage: middle_part_components = list(itertools.chain(*middle_part_components))
             sage: bottom_part_components = list(itertools.chain(*bottom_part_components))
             sage: middle_part_components = [component.id for component in middle_part_components]

@@ -160,7 +160,7 @@ class MznXorDifferentialModel(MznModel):
         operation_types = ("AND", "MODADD", "MODSUB", "NOT", "OR", "ROTATE", "SHIFT", "XOR")
         self._model_constraints = constraints
 
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             operation = component.description[0]
             if component.type not in component_types or (
                 WORD_OPERATION == component.type and operation not in operation_types
@@ -206,7 +206,7 @@ class MznXorDifferentialModel(MznModel):
         new_constraint = "output["
         for element in cipher_inputs:
             new_constraint = new_constraint + f'"{element} = "++ show({element}) ++ "\\n" ++'
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             if SBOX in component.type:
                 new_constraint = (
                     new_constraint + f'"{component.id} = "++ show({component.id})++ "\\n" ++ '
@@ -654,7 +654,7 @@ class MznXorDifferentialModel(MznModel):
         prob_count = 0
         valid_probabilities = {0}
         and_already_added = []
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             if CONSTANT not in component.type:
                 output_id_link = component.id
                 self._cp_xor_differential_constraints.append(

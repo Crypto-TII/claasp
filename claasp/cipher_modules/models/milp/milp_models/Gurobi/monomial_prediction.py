@@ -987,7 +987,7 @@ class MilpMonomialPredictionModel:
         self._model.update()
 
     def get_cipher_output_component_id(self):
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             if component.type == "cipher_output":
                 return component.id
 

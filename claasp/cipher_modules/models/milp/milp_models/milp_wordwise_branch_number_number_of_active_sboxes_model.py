@@ -90,7 +90,7 @@ class MilpWordwiseBranchNumberNumberOfActiveSboxesModel(MilpModel):
         self._word_size = self._compute_word_size()
 
     def _compute_word_size(self):
-        word_sizes = {component.input_bit_size for component in self._cipher.get_all_components() if component.type == SBOX}
+        word_sizes = {component.input_bit_size for component in self._cipher.all_components() if component.type == SBOX}
         if len(word_sizes) != 1:
             raise ValueError("cipher must have exactly one, uniform S-box input size to determine the word size")
         return word_sizes.pop()
@@ -201,7 +201,7 @@ class MilpWordwiseBranchNumberNumberOfActiveSboxesModel(MilpModel):
             sage: ublock = UblockSingleLinearLayerBlockCipher(number_of_rounds=1, use_mix_column=False)
             sage: milp = MilpWordwiseBranchNumberNumberOfActiveSboxesModel(ublock)
             sage: milp.init_model_in_sage_milp_class()
-            sage: linear_layer = [c for c in ublock.get_all_components() if c.type == 'linear_layer'][0]
+            sage: linear_layer = [c for c in ublock.all_components() if c.type == 'linear_layer'][0]
             sage: shutil.which("minizinc") is None or milp._word_branch_number(linear_layer) == 8
             True
 
@@ -209,7 +209,7 @@ class MilpWordwiseBranchNumberNumberOfActiveSboxesModel(MilpModel):
             sage: aes = AESBlockCipher(number_of_rounds=2)
             sage: milp_aes = MilpWordwiseBranchNumberNumberOfActiveSboxesModel(aes)
             sage: milp_aes.init_model_in_sage_milp_class()
-            sage: mix_column = [c for c in aes.get_all_components() if c.type == 'mix_column'][0]
+            sage: mix_column = [c for c in aes.all_components() if c.type == 'mix_column'][0]
             sage: shutil.which("minizinc") is None or milp_aes._word_branch_number(mix_column) == 5
             True
         """
@@ -280,7 +280,7 @@ class MilpWordwiseBranchNumberNumberOfActiveSboxesModel(MilpModel):
             self._add_fixed_variable_constraint(fixed_variable)
 
         sbox_active_terms = []
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             for constraint in component.milp_wordwise_branch_number_number_of_active_sboxes_constraints(self):
                 mip.add_constraint(constraint)
             if component.type == SBOX:

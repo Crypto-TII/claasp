@@ -54,12 +54,12 @@ class MznWordwiseDeterministicTruncatedXorDifferentialModel(MznDeterministicTrun
         new_constraint = "output["
         for element in cipher_inputs:
             new_constraint = f'{new_constraint}"{element}_active = "++ show({element}_active) ++ "\\n" ++'
-        for component_id in cipher.get_all_components_ids():
+        for component_id in cipher.all_components_ids():
             new_constraint = (
                 new_constraint + f'"{component_id} = "++ show({component_id}_active)++ "\\n" ++ "0" ++ "\\n" ++'
             )
             if "cipher_output" in component_id and minimize:
-                cp_constraints.append(f"solve maximize count({self._cipher.get_all_components_ids()[-1]}_active, 0);")
+                cp_constraints.append(f"solve maximize count({self._cipher.all_components_ids()[-1]}_active, 0);")
         new_constraint = new_constraint[:-2] + "];"
         if cp_constraints == []:
             cp_constraints.append(SOLVE_SATISFY)
@@ -109,7 +109,7 @@ class MznWordwiseDeterministicTruncatedXorDifferentialModel(MznDeterministicTrun
                     f"{input_}_active[{i}] == 2 then {input_}_value[{i}] =-1 else "
                     f"{input_}_value[{i}] =-2 endif;"
                 )
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             if CONSTANT not in component.type:
                 output_id_link = component.id
                 output_size = int(component.output_bit_size)

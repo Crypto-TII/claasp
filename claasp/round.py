@@ -41,14 +41,14 @@ class Round:
             if component.is_id_equal_to(component_id):
                 return component
 
-    def get_components_ids(self):
+    def components_ids(self):
         return [component.id for component in self._components]
 
     def get_number_of_components(self):
         # List goes from position 0 to len() - 1
         return self.number_of_components - 1
 
-    def get_round_from_component_id(self, component_id):
+    def round_from_component_id(self, component_id):
         for component in self._components:
             if component.is_id_equal_to(component_id):
                 return self._id

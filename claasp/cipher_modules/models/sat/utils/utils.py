@@ -878,7 +878,7 @@ def run_yices(solver_specs, options, dimacs_input, input_file_name):
 def _generate_component_model_types(speck_cipher):
     """Generates the component model types for a given Speck cipher."""
     component_model_types = []
-    for component in speck_cipher.get_all_components():
+    for component in speck_cipher.all_components():
         component_model_types.append(
             {
                 "component_id": component.id,

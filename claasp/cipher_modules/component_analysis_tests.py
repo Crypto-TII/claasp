@@ -112,7 +112,7 @@ class CipherComponentsAnalysis:
 
         """
         tmp_cipher_operations = {}
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             self._collect_component_operations(component, tmp_cipher_operations)
 
         for operation in list(tmp_cipher_operations.keys()):
