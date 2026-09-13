@@ -391,6 +391,11 @@ and its legacy fixed evaluation vectors), and M10.6d4d2 (the fixed Simon-32/64
 eleven-round intermediate patterns). Hybrid-impossible encodings become component semantic
 overrides rather than a parallel model hierarchy.
 
+M10.6d5 proceeds as M10.6d5a (fixture and evidence audit), M10.6d5b (typed
+boomerang composition and the selected Speck switch fixture), and M10.6d5c
+(typed differential-linear composition and the fixed Speck weight-14 fixture).
+Solver proofs and seeded statistical corroboration are reported separately.
+
 #### M10.5d: Representation architecture realignment
 
 Complete this cross-cutting milestone before starting the CP backend, so CP
@@ -660,7 +665,10 @@ each synchronization.
 | Simon fixed impossible fixture (M10.6d4d) | Achieved | Typed Simon plus the exact legacy 11-round external and middle-boundary patterns |
 | Typed Simon prerequisite (M10.6d4d1) | Achieved | Typed word graph, reusable BitwiseAnd, all standard configurations, scalar/two batch evaluators, and four fixed legacy vectors |
 | Simon-11 impossible CP fixture (M10.6d4d2) | Achieved | Six forward/five inverse rounds reproduce both fixed middle patterns and their bit-23 contradiction in Docker/Chuffed and independent Python semantics |
-| CP composed attacks (M10.6d5) | Next | Explicit boomerang and differential-linear semantic contracts and fixtures |
+| CP composed attacks (M10.6d5) | In progress | Fixture/evidence audit achieved; typed boomerang and differential-linear composition follow |
+| Composed-attack fixture audit (M10.6d5a) | Achieved | Selected Speck boomerang and weight-14 differential-linear evidence; separated exact solver claims from sampled experiments and recorded typed-cipher dependencies |
+| Typed boomerang composition (M10.6d5b) | Next | Two differential trails, explicit four-difference switch boundary, composed objective, and selected Speck32/64 fixture |
+| Typed differential-linear composition (M10.6d5c) | Planned | Differential prefix, selectable connector, linear suffix, exact objective, and fixed Speck32/64 weight-14 patterns |
 | CP continuous models (M10.6d6) | Planned | Numerically qualified heuristic models kept distinct from exact proof results |
 | Statistical analysis (M10.7) | Planned | Avalanche and related legacy behavior |
 | Serialization, diagrams, transforms, compilers (M10.8) | Planned | Inventory-driven tooling migration |
