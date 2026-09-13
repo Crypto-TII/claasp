@@ -329,6 +329,23 @@ selected Speck regressions before the backend milestone closes.
   boomerang, and differential-linear results according to the migration
   inventory.
 
+Deliver this broad migration through reviewable checkpoints:
+
+1. **M10.6a — portable CP foundation.** Add an immutable MiniZinc
+   representation, deterministic source serialization, a dependency-free CLI
+   driver, portable results, documentation, and dedicated external CI.
+2. **M10.6b — cipher lowering and recovery.** Lower the typed component subset
+   needed by a selected reference cipher, project logical values, and restore
+   the legacy fixed-input cipher result plus a key-recovery workflow verified
+   independently by scalar evaluation.
+3. **M10.6c — shared trail lowering.** Consume ``PropagationProblem`` for
+   differential, linear, deterministic truncated, and impossible models;
+   restore selected optimum, feasibility, and UNSAT fixtures with independent
+   semantic checking.
+4. **M10.6d — advanced CP analyses.** Inventory and migrate or explicitly
+   supersede ARX-optimized, wordwise/semi-deterministic, boomerang,
+   differential-linear, and continuous legacy models.
+
 #### M10.5d: Representation architecture realignment
 
 Complete this cross-cutting milestone before starting the CP backend, so CP
@@ -570,5 +587,10 @@ each synchronization.
 | Shared propagation consumers (M10.5d4c) | Achieved | PRESENT SMT/MILP composition accepts one PropagationProblem and queries identical per-component overrides |
 | Diagram representation (M10.5d5) | In progress | Annotated IR, TikZ/PDF, and temporary warned structural listing achieved; actual routed ASCII art remains |
 | SMT, MILP, and CP (M10.4–M10.6) | In progress | SMT and MILP achieved; CP is next and retains shared semantics and independent-check requirements |
+| CP backend (M10.6) | In progress | M10.6a portable MiniZinc foundation implemented; cipher and trail lowering follow |
+| Portable CP foundation (M10.6a) | Achieved | Immutable MiniZinc IR, deterministic export, CLI driver, portable JSON results, external SAT/UNSAT tests |
+| CP cipher lowering and recovery (M10.6b) | Next | Typed component lowering, named projections, legacy cipher fixture, independently verified recovery |
+| Shared CP trail lowering (M10.6c) | Planned | PropagationProblem consumer for differential, linear, truncated, and impossible semantics |
+| Advanced CP analyses (M10.6d) | Planned | ARX optimization, wordwise/semi-deterministic, boomerang, differential-linear, continuous inventory |
 | Statistical analysis (M10.7) | Planned | Avalanche and related legacy behavior |
 | Serialization, diagrams, transforms, compilers (M10.8) | Planned | Inventory-driven tooling migration |

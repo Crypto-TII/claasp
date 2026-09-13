@@ -102,3 +102,12 @@ unfinished historical ASCII-art branch separately.
 Each cryptanalytic row must say whether its expected result is an optimum,
 feasibility witness, or bound; record publication or legacy origin and solver
 version; and name the independent semantic checker used by v5.
+
+## CP models
+
+| Legacy test | Semantic assertions and provenance | Disposition | v5 coverage |
+| --- | --- | --- | --- |
+| `mzn_model_test.py::test_assemble_model_orders_variables_constraints_outputs` | MiniZinc language sections are emitted in deterministic valid order | Superseded in M10.6a | Immutable `MiniZincModel.source()` covers includes, declarations, constraints, solve item, and outputs without mutable model internals |
+| Legacy MiniZinc wrapper solve/status parsing | A real CP solver returns named values and distinguishes satisfiable from unsatisfiable models | Ported in M10.6a | Dedicated CLI integration uses JSON output, validates SAT projection and UNSAT status, and requires no MiniZinc Python package |
+| `mzn_cipher_model_test.py::test_find_missing_bits` | Full Speck32/64 fixed plaintext/key yields designers' ciphertext `0xa86842f2` | Scheduled for M10.6b | CP cipher lowering will reuse the existing scalar/SAT/SMT reference fixture and independently evaluate the projected result |
+| Differential, linear, truncated, impossible, boomerang, and differential-linear CP suites | Legacy feasibility, optimum, and bound fixtures across ordinary and ARX-optimized models | Scheduled for M10.6c–d | Row-level classification occurs as each shared-semantic lowering begins |

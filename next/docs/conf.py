@@ -40,6 +40,7 @@ if guide == "user":
         "polynomial_models.rst",
         "smt_models.rst",
         "milp_models.rst",
+        "cp_models.rst",
     ])
 else:
     exclude_patterns.extend([
