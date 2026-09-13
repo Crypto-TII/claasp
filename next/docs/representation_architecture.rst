@@ -113,3 +113,7 @@ portable formula, trail lowering, transition lowering, and SMT-LIB exporter;
 ``drivers.solvers.Z3Solver`` executes that representation. A solver driver may
 accept more than one compatible representation, but it does not define their
 cryptanalytic interpretation.
+
+MILP follows this boundary as well. Its immutable linear model, LP exporter,
+and trail lowerings live in ``representations.constraints.milp``; GLPK process
+execution and portable MILP result decoding live in ``drivers.solvers``.

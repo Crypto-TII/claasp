@@ -559,7 +559,8 @@ each synchronization.
 | Constraint representation migration (M10.5d3) | Next | Group CNF/SMT/MILP/polynomial formats and separate external drivers |
 | SAT representation/driver split (M10.5d3a) | Achieved | CNF, lowering, and DIMACS under representations; MiniSat under drivers |
 | SMT representation/driver split (M10.5d3b) | Achieved | SMT IR/export/lowering under representations; Z3 under shared solver drivers |
-| MILP representation/driver split (M10.5d3c) | Next | Move linear IR/export/lowering and GLPK driver without changing results |
+| MILP representation/driver split (M10.5d3c) | Achieved | Linear IR/export/trail lowering under representations; GLPK and result decoding under drivers |
+| Polynomial representation/driver split (M10.5d3d) | Next | Move polynomial IR/export/lowering and distinguish algebra-system execution drivers |
 | SMT, MILP, and CP (M10.4–M10.6) | In progress | SMT achieved; MILP and CP retain shared semantics and independent-check requirements |
 | Statistical analysis (M10.7) | Planned | Avalanche and related legacy behavior |
 | Serialization, diagrams, transforms, compilers (M10.8) | Planned | Inventory-driven tooling migration |

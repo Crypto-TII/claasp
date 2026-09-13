@@ -3,7 +3,7 @@
 from claasp_next.analysis import SBoxTransitionSemantics, Trail, TrailKind, TrailStep, XorDifference
 from claasp_next.components import BitVectorSBox, Permutation
 from claasp_next.core import Cipher
-from claasp_next.milp.model import (
+from claasp_next.representations.constraints.milp.model import (
     ConstraintSense, LinearConstraint, LinearExpression, LinearVariable,
     MILPModel, ObjectiveSense, VariableKind,
 )

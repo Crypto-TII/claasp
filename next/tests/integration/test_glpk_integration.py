@@ -1,10 +1,10 @@
 import pytest
 
-from claasp_next.milp import (
+from claasp_next.representations.constraints.milp import (
     ConstraintSense, LinearConstraint, LinearExpression, LinearVariable,
     MILPModel, ObjectiveSense, VariableKind,
 )
-from claasp_next.milp.solvers import GLPKSolver, MILPStatus
+from claasp_next.drivers.solvers import GLPKSolver, MILPStatus
 
 
 pytestmark = pytest.mark.external

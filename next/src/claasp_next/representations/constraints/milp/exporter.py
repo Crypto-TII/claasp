@@ -1,6 +1,6 @@
-"""Deterministic CPLEX-LP export for portable MILP models."""
+"""Deterministic CPLEX-LP export for portable MILP representations."""
 
-from claasp_next.milp.model import MILPModel, VariableKind
+from claasp_next.representations.constraints.milp.model import MILPModel, VariableKind
 
 
 def _number(value: float) -> str:

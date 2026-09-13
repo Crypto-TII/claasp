@@ -1,4 +1,4 @@
-"""Backend-neutral MILP result types."""
+"""Backend-neutral MILP driver result types."""
 
 from collections.abc import Mapping
 from dataclasses import dataclass

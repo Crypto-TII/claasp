@@ -1,5 +1,5 @@
 from claasp_next.ciphers import PresentBlockCipher
-from claasp_next.milp import PresentDifferentialMILPModel
+from claasp_next.representations.constraints.milp import PresentDifferentialMILPModel
 
 
 def test_present_milp_lowering_uses_complete_exact_transition_selectors():

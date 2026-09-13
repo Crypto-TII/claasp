@@ -1,7 +1,7 @@
 import pytest
 
-from claasp_next.milp import ModularAddLinearMILPModel
-from claasp_next.milp.solvers import GLPKSolver, MILPStatus
+from claasp_next.representations.constraints.milp import ModularAddLinearMILPModel
+from claasp_next.drivers.solvers import GLPKSolver, MILPStatus
 
 
 pytestmark = pytest.mark.external

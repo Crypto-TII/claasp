@@ -1,4 +1,4 @@
-"""Command-line adapter for the open-source GLPK optimizer."""
+"""Command-line driver for the open-source GLPK optimizer."""
 
 from pathlib import Path
 import shutil
@@ -6,9 +6,9 @@ import subprocess
 from tempfile import TemporaryDirectory
 from time import monotonic
 
-from claasp_next.milp.exporter import LPExporter
-from claasp_next.milp.model import MILPModel
-from claasp_next.milp.solvers.base import MILPResult, MILPStatus
+from claasp_next.representations.constraints.milp.exporter import LPExporter
+from claasp_next.representations.constraints.milp.model import MILPModel
+from claasp_next.drivers.solvers.milp_results import MILPResult, MILPStatus
 
 
 class GLPKSolver:

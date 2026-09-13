@@ -7,7 +7,7 @@ are explicit immutable values:
 
 .. doctest::
 
-   >>> from claasp_next.milp import *
+   >>> from claasp_next.representations.constraints.milp import *
    >>> variables = tuple(LinearVariable(name, VariableKind.BINARY) for name in ("x", "y"))
    >>> model = MILPModel(
    ...     variables,
@@ -33,7 +33,7 @@ The first optional adapter invokes the open-source ``glpsol`` command:
 
 .. code-block:: python
 
-   from claasp_next.milp.solvers import GLPKSolver, MILPStatus
+   from claasp_next.drivers.solvers import GLPKSolver, MILPStatus
 
    result = GLPKSolver().solve(model)
    assert result.status is MILPStatus.OPTIMAL
@@ -54,7 +54,7 @@ sum of exact transition weights:
 .. doctest::
 
    >>> from claasp_next.ciphers import PresentBlockCipher
-   >>> from claasp_next.milp import PresentDifferentialMILPModel
+   >>> from claasp_next.representations.constraints.milp import PresentDifferentialMILPModel
    >>> lowering = PresentDifferentialMILPModel(PresentBlockCipher(number_of_rounds=2))
    >>> trail_model = lowering.milp_model()
    >>> len(trail_model.constraints)
@@ -73,7 +73,7 @@ masks and unary correlation weight:
 
 .. doctest::
 
-   >>> from claasp_next.milp import ModularAddLinearMILPModel
+   >>> from claasp_next.representations.constraints.milp import ModularAddLinearMILPModel
    >>> addition = ModularAddLinearMILPModel(16)
    >>> arx_model = addition.milp_model(left_mask=0x6081, right_mask=0x40c1, output_mask=0x4081)
    >>> (len(arx_model.variables), len(arx_model.constraints))

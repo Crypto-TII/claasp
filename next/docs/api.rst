@@ -103,8 +103,5 @@ SMT models
 MILP models
 -----------
 
-.. automodule:: claasp_next.milp
-   :members:
-
-.. automodule:: claasp_next.milp.solvers
+.. automodule:: claasp_next.representations.constraints.milp
    :members:

@@ -1,4 +1,4 @@
-from claasp_next.milp import ModularAddLinearMILPModel, VariableKind
+from claasp_next.representations.constraints.milp import ModularAddLinearMILPModel, VariableKind
 
 
 def test_modular_add_linear_milp_has_explicit_domains_and_fixed_masks():

@@ -1,8 +1,8 @@
 import pytest
 
 from claasp_next.ciphers import PresentBlockCipher
-from claasp_next.milp import PresentDifferentialMILPModel, check_present_milp_trail
-from claasp_next.milp.solvers import GLPKSolver, MILPStatus
+from claasp_next.representations.constraints.milp import PresentDifferentialMILPModel, check_present_milp_trail
+from claasp_next.drivers.solvers import GLPKSolver, MILPStatus
 
 
 pytestmark = pytest.mark.external

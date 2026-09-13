@@ -1,4 +1,4 @@
-"""Solver-independent mixed-integer linear models."""
+"""Solver-independent mixed-integer linear representations."""
 
 from collections.abc import Mapping
 from dataclasses import dataclass

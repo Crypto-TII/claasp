@@ -1,6 +1,6 @@
 import pytest
 
-from claasp_next.milp import (
+from claasp_next.representations.constraints.milp import (
     ConstraintSense, LinearConstraint, LinearExpression, LinearVariable,
     LPExporter, MILPModel, ObjectiveSense, VariableKind,
 )
