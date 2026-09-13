@@ -56,7 +56,7 @@ class MznCipherModel(MznModel):
             sage: cp.build_cipher_model(fixed_variables)
         """
         self.initialise_model()
-        self.sbox_mant = []
+        self.sbox_cache = []
         variables = []
         self._variables_declarations = self.input_declarations()
         constraints = self.fix_variables_value_constraints(fixed_variables)
@@ -83,7 +83,7 @@ class MznCipherModel(MznModel):
                 if component.type != SBOX:
                     variables, constraints = component.cp_constraints()
                 else:
-                    variables, constraints = component.cp_constraints(self.sbox_mant)
+                    variables, constraints = component.cp_constraints(self.sbox_cache)
 
             self._model_constraints.extend(constraints)
             self._variables_declarations.extend(variables)
@@ -144,7 +144,7 @@ class MznCipherModel(MznModel):
               ...
              'array[0..31] of var 0..1: cipher_output_3_12;']
         """
-        self.sbox_mant = []
+        self.sbox_cache = []
         cp_declarations = [
             f"array[0..{bit_size - 1}] of var 0..1: {input_};"
             for input_, bit_size in zip(self._cipher.inputs, self._cipher.inputs_bit_size)

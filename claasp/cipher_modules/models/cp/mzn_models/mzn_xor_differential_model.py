@@ -131,7 +131,7 @@ class MznXorDifferentialModel(MznModel):
         """
         self.initialise_model()
         self.c = 0
-        self.sbox_mant = []
+        self.sbox_cache = []
         self.input_sbox = []
         self.component_and_probability = {}
         self.table_of_solutions_length = 0
@@ -650,7 +650,7 @@ class MznXorDifferentialModel(MznModel):
             f"array[0..{bit_size - 1}] of var 0..1: {input_};"
             for input_, bit_size in zip(self._cipher.inputs, self._cipher.inputs_bit_size)
         ]
-        self.sbox_mant = []
+        self.sbox_cache = []
         prob_count = 0
         valid_probabilities = {0}
         and_already_added = []
@@ -690,8 +690,8 @@ class MznXorDifferentialModel(MznModel):
         description = component.description
         sbox = SBox(description)
         sbox_already_in = False
-        for mant in self.sbox_mant:
-            if description == mant[0]:
+        for cache_entry in self.sbox_cache:
+            if description == cache_entry[0]:
                 sbox_already_in = True
         if not sbox_already_in:
             sbox_ddt = sbox.difference_distribution_table()
@@ -701,4 +701,4 @@ class MznXorDifferentialModel(MznModel):
                 valid_probabilities.update(
                     {round(100 * math.log2(2**input_size / occurrence)) for occurrence in set_of_occurrences}
                 )
-            self.sbox_mant.append((description, output_id_link))
+            self.sbox_cache.append((description, output_id_link))
