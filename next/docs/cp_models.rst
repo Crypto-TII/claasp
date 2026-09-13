@@ -183,9 +183,27 @@ only for ``KNOWN`` and must be nonzero and fit the word width.
 ``WordwiseDifferenceCPModel`` keeps the old MiniZinc encoding internal and
 projects solver values back to these types. The old test asserting exactly
 1,359 generated lines is superseded by semantic-invariant and Docker roundtrip
-tests. The enabled legacy suite contains no fixed wordwise trail; AES component
-composition will therefore use a newly sourced fixture labelled as v5 evidence,
-not misrepresent it as a preserved CLAASP result.
+tests. The enabled legacy suite contains no fixed wordwise trail, so it is not
+misrepresented as containing one.
+
+The new, explicitly labelled v5 fixture starts with one nonzero plaintext-byte
+difference and zero key difference. ``propagate_single_active_aes_byte`` reads
+ShiftRows and MixColumns directly from the typed AES graph. Bijective SubBytes
+preserves nonzero activity; ShiftRows selects the affected column; and the one
+nonzero summand in each of its four MixColumns rows guarantees four nonzero
+output bytes without assuming that unknown terms cannot cancel.
+
+.. doctest::
+
+   >>> from claasp_next.ciphers import AESBlockCipher
+   >>> from claasp_next.semantics.cryptanalysis import propagate_single_active_aes_byte
+   >>> output = propagate_single_active_aes_byte(AESBlockCipher(number_of_rounds=1), 0)
+   >>> [word.kind.name for word in output]
+   ['NONZERO', 'NONZERO', 'NONZERO', 'NONZERO', 'ZERO', 'ZERO', 'ZERO', 'ZERO', 'ZERO', 'ZERO', 'ZERO', 'ZERO', 'ZERO', 'ZERO', 'ZERO', 'ZERO']
+
+Docker then projects this fixed semantic result through
+``WordwiseDifferenceCPModel`` and checks that the solver cannot change any
+typed boundary value.
 
 .. automodule:: claasp_next.representations.constraints.cp
    :members:

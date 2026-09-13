@@ -5,7 +5,7 @@ import pytest
 
 from claasp_next.drivers.solvers import CPStatus, MiniZincSolver
 from claasp_next.analysis import AnalysisProblem, FixedValue
-from claasp_next.ciphers import SpeckBlockCipher
+from claasp_next.ciphers import AESBlockCipher, SpeckBlockCipher
 from claasp_next.representations.constraints.cp import MiniZincModel
 from claasp_next.semantics import (
     DETERMINISTIC_TRUNCATED_XOR,
@@ -27,6 +27,7 @@ from claasp_next.representations.constraints.cp import (
 from claasp_next.semantics.cryptanalysis import (
     TruncatedXorDifference, check_probabilistic_truncated_modular_add,
     WordwiseDifferenceKind, WordwiseXorDifference,
+    propagate_single_active_aes_byte,
 )
 from claasp_next.representations.constraints.smt.trails import (
     check_present_linear_smt_trail,
@@ -314,3 +315,15 @@ def test_minizinc_projects_legacy_wordwise_states_to_typed_values():
 
     assert solved.status is CPStatus.SATISFIED
     assert model.decode(solved.assignment) == words
+
+
+def test_minizinc_projects_wordwise_aes_single_byte_diffusion_fixture():
+    words = propagate_single_active_aes_byte(AESBlockCipher(number_of_rounds=1), 0)
+    model = WordwiseDifferenceCPModel(words)
+
+    solved = MiniZincSolver(solver=_test_solver()).solve(model.cp_model())
+    decoded = model.decode(solved.assignment)
+
+    assert solved.status is CPStatus.SATISFIED
+    assert tuple(word.kind for word in decoded[:4]) == (WordwiseDifferenceKind.NONZERO,) * 4
+    assert all(word.kind is WordwiseDifferenceKind.ZERO for word in decoded[4:])

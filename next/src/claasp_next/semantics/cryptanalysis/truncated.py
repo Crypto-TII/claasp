@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 from enum import Enum
 
-from claasp_next.components import Rotate
+from claasp_next.components import LinearMap, Permutation, Rotate
 from claasp_next.graph import Cipher
 
 
@@ -272,8 +272,51 @@ def propagate_two_word_speck_round(
     return TruncatedXorDifference(new_left.bits + new_right.bits)
 
 
+def propagate_single_active_aes_byte(
+    cipher: Cipher, byte_index: int,
+) -> tuple[WordwiseXorDifference, ...]:
+    """Propagate one nonzero plaintext-byte difference through AES round one.
+
+    The key difference is zero. This reviewed wordwise slice uses only facts
+    guaranteed by bijectivity and by one nonzero summand in each affected
+    MixColumns output; it makes no cancellation assumption.
+    """
+
+    if cipher.family_name != "aes" or len(cipher.rounds) < 2:
+        raise ValueError("cipher must contain at least one AES round")
+    if not isinstance(byte_index, int) or isinstance(byte_index, bool) or not 0 <= byte_index < 16:
+        raise ValueError("byte_index must be in range(16)")
+    shifted = _named_component(cipher, "shift_rows_1", Permutation)
+    mixed = _named_component(cipher, "mix_columns_1", LinearMap)
+    sbox_activity = [WordwiseXorDifference(8, WordwiseDifferenceKind.ZERO) for _ in range(16)]
+    sbox_activity[byte_index] = WordwiseXorDifference(8, WordwiseDifferenceKind.NONZERO)
+    shifted_activity = [sbox_activity[source] for source in shifted.mapping]
+    active_sources = [
+        index for index, word in enumerate(shifted_activity)
+        if word.kind is WordwiseDifferenceKind.NONZERO
+    ]
+    if len(active_sources) != 1:
+        raise RuntimeError("single-byte propagation lost its unique active source")
+    source = active_sources[0]
+    return tuple(
+        WordwiseXorDifference(
+            8,
+            WordwiseDifferenceKind.NONZERO
+            if row[source] != 0 else WordwiseDifferenceKind.ZERO,
+        )
+        for row in mixed.matrix
+    )
+
+
 def _rotation(cipher: Cipher, component_id: str) -> Rotate:
     component = next((item for item in cipher.components if item.component_id == component_id), None)
     if not isinstance(component, Rotate):
         raise ValueError(f"cipher is missing rotation {component_id!r}")
+    return component
+
+
+def _named_component(cipher: Cipher, component_id: str, expected_type):
+    component = next((item for item in cipher.components if item.component_id == component_id), None)
+    if not isinstance(component, expected_type):
+        raise ValueError(f"cipher is missing {component_id!r}")
     return component

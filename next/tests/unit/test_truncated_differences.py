@@ -5,10 +5,11 @@ from claasp_next.semantics.cryptanalysis import (
     WordwiseXorDifference,
     TruncatedXorDifference,
     check_probabilistic_truncated_modular_add,
+    propagate_single_active_aes_byte,
     propagate_two_word_speck_round,
     truncated_modular_add,
 )
-from claasp_next.ciphers import PresentBlockCipher, SpeckBlockCipher
+from claasp_next.ciphers import AESBlockCipher, PresentBlockCipher, SpeckBlockCipher
 
 
 def test_truncated_modular_add_preserves_only_universal_output_bits():
@@ -79,3 +80,10 @@ def test_wordwise_difference_preserves_values_and_sound_activity():
         8, WordwiseDifferenceKind.NONZERO
     )
     assert WordwiseXorDifference(8, WordwiseDifferenceKind.UNKNOWN).through_bijection().kind is WordwiseDifferenceKind.UNKNOWN
+
+
+def test_wordwise_aes_single_byte_diffuses_to_one_column():
+    output = propagate_single_active_aes_byte(AESBlockCipher(number_of_rounds=1), 0)
+
+    assert tuple(word.kind for word in output[:4]) == (WordwiseDifferenceKind.NONZERO,) * 4
+    assert all(word.kind is WordwiseDifferenceKind.ZERO for word in output[4:])

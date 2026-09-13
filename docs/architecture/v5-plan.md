@@ -640,12 +640,12 @@ each synchronization.
 | Advanced CP analyses (M10.6d) | In progress | Complete inventory; exact ARX optimization, generalized truncated, impossible, composed, and continuous checkpoints follow |
 | Advanced CP suite inventory (M10.6d1) | Achieved | Every legacy MiniZinc model classified; scientific fixtures, superseded structural tests, dependencies, and migration order recorded |
 | Exact CP ARX differential optimization (M10.6d2) | Achieved | Chuffed proves Speck32/64-5 weight 8 UNSAT and weight 9 SAT in the CLAASP image; the five-transition witness is independently recounted and checked |
-| Generalized CP truncated propagation (M10.6d3) | In progress | Local and composed Speck probabilistic-truncated semantics achieved; wordwise checkpoint follows |
+| Generalized CP truncated propagation (M10.6d3) | Achieved | Probabilistic-truncated Speck fixtures and typed wordwise AES propagation are independently checked and projected through CP |
 | Probabilistic-truncated modular-add CP semantics (M10.6d3a) | Achieved | Typed partial transition, independent counter/cost checker, and Docker/Chuffed reproduction of legacy scaled costs 309 and 700 |
 | Probabilistic-truncated Speck CP composition (M10.6d3b) | Achieved | Docker/Chuffed preserves the exact two-/three-round output patterns and weights 1.0/0.0; all additions and wiring are independently checked |
-| Wordwise truncated CP semantics (M10.6d3c) | In progress | Typed activity/value state achieved; component composition and a sourced SPN fixture follow |
+| Wordwise truncated CP semantics (M10.6d3c) | Achieved | Typed activity/value state plus graph-derived AES SubBytes/ShiftRows/MixColumns singleton propagation and CP projection |
 | Wordwise activity/value domain (M10.6d3c1) | Achieved | Zero, known, nonzero, and unrestricted word differences have explicit invariants, sound XOR/bijection operations, and Docker-tested CP projection |
-| Wordwise SPN composition (M10.6d3c2) | Next | Compose S-box, permutation, XOR, and linear-map rules over AES and add a clearly labelled v5 semantic fixture |
+| Wordwise SPN composition (M10.6d3c2) | Achieved | A zero-key singleton byte difference becomes four guaranteed nonzero bytes in the graph-selected AES column; Docker verifies the typed CP projection |
 | Multi-round CP impossible search (M10.6d4) | Planned | Composed forward/backward propagation and selected legacy UNSAT fixtures |
 | CP composed attacks (M10.6d5) | Planned | Explicit boomerang and differential-linear semantic contracts and fixtures |
 | CP continuous models (M10.6d6) | Planned | Numerically qualified heuristic models kept distinct from exact proof results |
