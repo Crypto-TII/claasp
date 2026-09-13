@@ -64,6 +64,84 @@ class TruncatedXorDifference:
         return type(self)(tuple(output))
 
 
+@dataclass(frozen=True, slots=True)
+class SemiDeterministicModularAddTransition:
+    """One probability-bearing partial propagation through modular addition.
+
+    ``costs`` use the legacy CLAASP fixed-point scale: 100 units represent a
+    probability weight of one bit.
+    """
+
+    left: TruncatedXorDifference
+    right: TruncatedXorDifference
+    output: TruncatedXorDifference
+    carry_difference: TruncatedXorDifference
+    costs: tuple[int, ...]
+
+    def __post_init__(self) -> None:
+        width = len(self.left.bits)
+        if any(len(pattern.bits) != width for pattern in (
+            self.right, self.output, self.carry_difference,
+        )) or len(self.costs) != width:
+            raise ValueError("semi-deterministic transition values must have equal widths")
+        if any(cost not in {0, 4, 9, 19, 41, 100} for cost in self.costs):
+            raise ValueError("invalid semi-deterministic fixed-point cost")
+
+    @property
+    def scaled_weight(self) -> int:
+        """Return the integral legacy fixed-point probability cost."""
+
+        return sum(self.costs)
+
+    @property
+    def weight(self) -> float:
+        """Return the probability weight in bits."""
+
+        return self.scaled_weight / 100
+
+
+def check_semideterministic_modular_add(
+    transition: SemiDeterministicModularAddTransition,
+) -> bool:
+    """Check the legacy counter-based relation independently of MiniZinc."""
+
+    if not isinstance(transition, SemiDeterministicModularAddTransition):
+        raise TypeError("transition must be a SemiDeterministicModularAddTransition")
+    a = tuple(bit.encoded for bit in transition.left.bits)
+    b = tuple(bit.encoded for bit in transition.right.bits)
+    c = tuple(bit.encoded for bit in transition.output.bits)
+    carry = tuple(bit.encoded for bit in transition.carry_difference.bits)
+    costs = transition.costs
+    width = len(a)
+    if carry[-1] != 0 or costs[-1] != 0:
+        return False
+    for index in range(width):
+        expected = 2 if 2 in (a[index], b[index], carry[index]) else (
+            a[index] + b[index] + carry[index]
+        ) % 2
+        if c[index] != expected:
+            return False
+    run_length = [0] * width
+    for index in range(width - 2, -1, -1):
+        if a[index + 1] + b[index + 1] == 0 and carry[index + 1] == 2:
+            run_length[index] = run_length[index + 1] + 1
+    discounted = {1: 41, 2: 19, 3: 9, 4: 4}
+    for index in range(width - 1):
+        if (a[index + 1], b[index + 1], c[index + 1]) == (0, 0, 0):
+            allowed = {(0, 0)}
+        elif (a[index + 1], b[index + 1], c[index + 1]) == (1, 1, 1):
+            allowed = {(1, 0)}
+        else:
+            allowed = {(2, 0)}
+            if run_length[index] == 0:
+                allowed.update(((0, 100), (1, 100)))
+            else:
+                allowed.add((0, discounted.get(run_length[index], 0)))
+        if (carry[index], costs[index]) not in allowed:
+            return False
+    return True
+
+
 def truncated_modular_add(
     left: TruncatedXorDifference, right: TruncatedXorDifference
 ) -> TruncatedXorDifference:

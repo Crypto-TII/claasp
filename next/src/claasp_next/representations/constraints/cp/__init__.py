@@ -5,7 +5,8 @@ from claasp_next.representations.constraints.cp.lowering import BooleanMiniZincL
 
 __all__ = [
     "BooleanMiniZincLowerer", "MiniZincModel", "PresentDifferentialCPModel",
-    "PresentLinearCPModel", "SBoxDifferenceCPModel", "SpeckDifferentialCPModel",
+    "PresentLinearCPModel", "SBoxDifferenceCPModel",
+    "SemiDeterministicModularAddCPModel", "SpeckDifferentialCPModel",
     "SpeckTruncatedCPModel",
 ]
 
@@ -25,7 +26,10 @@ def __getattr__(name: str):
         from claasp_next.representations.constraints.cp.trails import SpeckDifferentialCPModel
 
         return SpeckDifferentialCPModel
-    if name in {"SBoxDifferenceCPModel", "SpeckTruncatedCPModel"}:
+    if name in {
+        "SBoxDifferenceCPModel", "SemiDeterministicModularAddCPModel",
+        "SpeckTruncatedCPModel",
+    }:
         from claasp_next.representations.constraints.cp import trails
 
         return getattr(trails, name)

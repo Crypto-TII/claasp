@@ -126,6 +126,35 @@ weight 9 satisfiable for five rounds, reproducing the legacy optimized-CP
 result. The decoded five additions are then recounted with independent
 paired-carry semantics; no solver-reported probability is trusted.
 
+Semi-deterministic truncated addition
+-------------------------------------
+
+``SemiDeterministicModularAddCPModel`` represents the legacy counter-based
+partial-difference relation without hiding its fixed-point convention. A cost
+of 100 represents one bit of probability weight; ``scaled_weight`` retains the
+exact integral solver value and ``weight`` exposes the corresponding value in
+bits. Unknown bits are members of ``TruncatedXorDifference``, not magic values
+in the public API.
+
+.. doctest::
+
+   >>> from claasp_next.semantics.cryptanalysis import TruncatedXorDifference
+   >>> from claasp_next.representations.constraints.cp import SemiDeterministicModularAddCPModel
+   >>> partial = TruncatedXorDifference.parse("000?")
+   >>> model = SemiDeterministicModularAddCPModel(
+   ...     TruncatedXorDifference.parse("0000"),
+   ...     TruncatedXorDifference.parse("0001"),
+   ...     partial,
+   ... )
+   >>> "counter_based_modadd_semideterministic" in model.cp_model().source()
+   True
+
+Docker/Chuffed integration tests preserve the two result-bearing local legacy
+fixtures with scaled costs 309 and 700. Returned carries and costs are checked
+again by ``check_semideterministic_modular_add`` rather than trusted from the
+solver. Multi-round Speck composition and wordwise propagation are separate
+follow-up checkpoints.
+
 .. automodule:: claasp_next.representations.constraints.cp
    :members:
 

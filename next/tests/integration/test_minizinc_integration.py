@@ -17,10 +17,13 @@ from claasp_next.representations.constraints.cp import (
     PresentDifferentialCPModel,
     PresentLinearCPModel,
     SBoxDifferenceCPModel,
+    SemiDeterministicModularAddCPModel,
     SpeckDifferentialCPModel,
     SpeckTruncatedCPModel,
 )
-from claasp_next.semantics.cryptanalysis import TruncatedXorDifference
+from claasp_next.semantics.cryptanalysis import (
+    TruncatedXorDifference, check_semideterministic_modular_add,
+)
 from claasp_next.representations.constraints.smt.trails import (
     check_present_linear_smt_trail,
     check_present_smt_trail,
@@ -216,3 +219,40 @@ def test_minizinc_proves_legacy_speck_five_round_differential_optimum():
     assert solved.status is CPStatus.SATISFIED
     assert trail.total_weight == 9
     assert len(trail.steps) == 5
+
+
+@pytest.mark.parametrize(
+    "left,right,output,carry,expected_cost",
+    (
+        (
+            "00000000000000000000000000000000",
+            "00000000?1000000?????10000001110",
+            "000??????1000????????10000000010",
+            "000??????0000????????00000001100",
+            309,
+        ),
+        (
+            "0000000100000000",
+            "1000000000000010",
+            "?111111100000010",
+            None,
+            700,
+        ),
+    ),
+)
+def test_minizinc_preserves_legacy_semideterministic_modadd_costs(
+    left, right, output, carry, expected_cost
+):
+    model = SemiDeterministicModularAddCPModel(
+        TruncatedXorDifference.parse(left),
+        TruncatedXorDifference.parse(right),
+        TruncatedXorDifference.parse(output),
+        None if carry is None else TruncatedXorDifference.parse(carry),
+    )
+
+    solved = MiniZincSolver(solver=_test_solver()).solve(model.cp_model())
+    transition = model.decode_transition(solved.assignment)
+
+    assert solved.status is CPStatus.SATISFIED
+    assert transition.scaled_weight == expected_cost
+    assert check_semideterministic_modular_add(transition)

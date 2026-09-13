@@ -1,5 +1,7 @@
 from claasp_next.semantics.cryptanalysis import (
+    SemiDeterministicModularAddTransition,
     TruncatedXorDifference,
+    check_semideterministic_modular_add,
     propagate_two_word_speck_round,
     truncated_modular_add,
 )
@@ -38,3 +40,16 @@ def test_graph_level_impossible_sbox_transition_is_exhaustively_refuted():
     assert cipher.analyze().is_xor_differential_transition_possible(
         "sbox_1_0", 0x1, 0x3
     )
+
+
+def test_semideterministic_transition_rejects_an_invalid_carry_boundary():
+    transition = SemiDeterministicModularAddTransition(
+        TruncatedXorDifference.parse("0000"),
+        TruncatedXorDifference.parse("0000"),
+        TruncatedXorDifference.parse("000?"),
+        TruncatedXorDifference.parse("000?"),
+        (0, 0, 0, 0),
+    )
+
+    assert transition.weight == 0
+    assert not check_semideterministic_modular_add(transition)

@@ -4,9 +4,10 @@ from claasp_next.components import BitVectorSBox, Permutation, Rotate
 from claasp_next.domains import Word
 from claasp_next.semantics import XOR_DIFFERENTIAL, XOR_LINEAR
 from claasp_next.semantics.cryptanalysis import (
-    ModularAddTransitionSemantics, PropagationProblem, Trail, TrailKind, TrailStep,
-    XorDifference, XorMask,
-    TruncatedXorDifference, propagate_two_word_speck_round,
+    ModularAddTransitionSemantics, PropagationProblem,
+    SemiDeterministicModularAddTransition, Trail, TrailKind, TrailStep,
+    TruncatedXorDifference, XorDifference, XorMask,
+    check_semideterministic_modular_add, propagate_two_word_speck_round,
 )
 from claasp_next.semantics import DETERMINISTIC_TRUNCATED_XOR
 from claasp_next.representations.constraints.cp.model import MiniZincModel
@@ -357,6 +358,76 @@ class SpeckTruncatedCPModel:
         return pattern
 
 
+class SemiDeterministicModularAddCPModel:
+    """Native CP representation of one counter-based partial addition."""
+
+    def __init__(
+        self,
+        left: TruncatedXorDifference,
+        right: TruncatedXorDifference,
+        output: TruncatedXorDifference,
+        carry_difference: TruncatedXorDifference | None = None,
+    ) -> None:
+        if not all(isinstance(item, TruncatedXorDifference) for item in (left, right, output)):
+            raise TypeError("left, right, and output must be truncated differences")
+        width = len(left.bits)
+        if len(right.bits) != width or len(output.bits) != width:
+            raise ValueError("semi-deterministic operands must have equal widths")
+        if carry_difference is not None and len(carry_difference.bits) != width:
+            raise ValueError("carry difference must have the operand width")
+        self.left = left
+        self.right = right
+        self.output = output
+        self.carry_difference = carry_difference
+        self.width = width
+
+    def cp_model(self) -> MiniZincModel:
+        """Fix the boundary patterns and minimize the legacy scaled cost."""
+
+        last = self.width - 1
+        declarations = (
+            _SEMIDETERMINISTIC_MODADD_PREDICATE,
+            f"array[0..{last}] of var 0..2: left;",
+            f"array[0..{last}] of var 0..2: right;",
+            f"array[0..{last}] of var 0..2: output_difference;",
+            f"array[0..{last}] of var 0..2: carry_difference;",
+            f"array[0..{last}] of var {{0,4,9,19,41,100}}: costs;",
+            "var int: scaled_weight;",
+        )
+        constraints = [
+            _fixed_array("left", self.left),
+            _fixed_array("right", self.right),
+            _fixed_array("output_difference", self.output),
+        ]
+        if self.carry_difference is not None:
+            constraints.append(_fixed_array("carry_difference", self.carry_difference))
+        constraints.extend((
+            "constraint counter_based_modadd_semideterministic(left, right, "
+            "output_difference, carry_difference, costs, scaled_weight);",
+            "constraint costs[" + str(last) + "] = 0;",
+        ))
+        return MiniZincModel(
+            declarations, tuple(constraints), solve="solve minimize scaled_weight;",
+            provenance=("legacy counter_based_modadd_semideterministic fixture",),
+        )
+
+    def decode_transition(self, assignment) -> SemiDeterministicModularAddTransition:
+        """Project and independently check the optimized partial transition."""
+
+        transition = SemiDeterministicModularAddTransition(
+            self.left,
+            self.right,
+            self.output,
+            _decode_truncated(assignment["carry_difference"]),
+            tuple(int(value) for value in assignment["costs"]),
+        )
+        if transition.scaled_weight != int(assignment["scaled_weight"]):
+            raise ValueError("MiniZinc returned an inconsistent scaled weight")
+        if not check_semideterministic_modular_add(transition):
+            raise ValueError("MiniZinc returned an invalid semi-deterministic transition")
+        return transition
+
+
 class SBoxDifferenceCPModel:
     """Exact local feasibility model for possible and impossible differences."""
 
@@ -467,6 +538,16 @@ def _rotate_right_integer(value, amount, width):
     return ((value >> amount) | (value << (width - amount))) & mask
 
 
+def _fixed_array(name, pattern):
+    values = ",".join(str(bit.encoded) for bit in pattern.bits)
+    return f"constraint {name} = array1d(0..{len(pattern.bits) - 1}, [{values}]);"
+
+
+def _decode_truncated(values):
+    symbols = {0: "0", 1: "1", 2: "?"}
+    return TruncatedXorDifference.parse("".join(symbols[int(value)] for value in values))
+
+
 _MODADD_DIFFERENTIAL_PREDICATE = r"""
 predicate modular_addition_xor_difference(
     array[int] of var bool: a,
@@ -490,4 +571,50 @@ predicate modular_addition_xor_difference(
         (not a[j+1] \/ not b[j+1] \/ not c[j+1] \/ not weight[j])
     ) /\
     ((a[length(a)-1] != b[length(a)-1]) = c[length(a)-1]);
+""".strip()
+
+
+_SEMIDETERMINISTIC_MODADD_PREDICATE = r"""
+function array[int] of var 0..2: truncated_xor3(
+    array[int] of var 0..2: a,
+    array[int] of var 0..2: b,
+    array[int] of var 0..2: carry
+) = array1d(index_set(a), [
+    if a[j] < 2 /\ b[j] < 2 /\ carry[j] < 2
+    then (a[j] + b[j] + carry[j]) mod 2 else 2 endif
+    | j in index_set(a)
+]);
+
+predicate counter_based_modadd_semideterministic(
+    array[int] of var 0..2: a,
+    array[int] of var 0..2: b,
+    array[int] of var 0..2: c,
+    array[int] of var 0..2: carry,
+    array[int] of var {0,4,9,19,41,100}: costs,
+    var int: probability
+) = let {
+    int: n = length(a),
+    array[0..n-1] of var 0..n: run_length
+} in
+    c = truncated_xor3(a, b, carry) /\
+    carry[n-1] = 0 /\ run_length[n-1] = 0 /\
+    forall(i in 0..n-2)(
+        run_length[i] = if a[i+1] + b[i+1] = 0 /\ carry[i+1] = 2
+                        then run_length[i+1] + 1 else 0 endif
+    ) /\
+    forall(i in 0..n-2)(
+        if a[i+1] = 0 /\ b[i+1] = 0 /\ c[i+1] = 0 then
+            carry[i] = 0 /\ costs[i] = 0
+        elseif a[i+1] = 1 /\ b[i+1] = 1 /\ c[i+1] = 1 then
+            carry[i] = 1 /\ costs[i] = 0
+        else
+            (carry[i] = 2 /\ costs[i] = 0) \/
+            (run_length[i] = 0 /\ costs[i] = 100 /\ (carry[i] = 0 \/ carry[i] = 1)) \/
+            (run_length[i] = 1 /\ costs[i] = 41 /\ carry[i] = 0) \/
+            (run_length[i] = 2 /\ costs[i] = 19 /\ carry[i] = 0) \/
+            (run_length[i] = 3 /\ costs[i] = 9 /\ carry[i] = 0) \/
+            (run_length[i] = 4 /\ costs[i] = 4 /\ carry[i] = 0) \/
+            (run_length[i] > 4 /\ costs[i] = 0 /\ carry[i] = 0)
+        endif
+    ) /\ probability = sum(costs);
 """.strip()
