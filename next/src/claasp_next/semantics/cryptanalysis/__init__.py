@@ -10,8 +10,8 @@ from claasp_next.semantics.cryptanalysis.problem import (
     PropagationProblem, TransitionProvider, default_component_semantics,
 )
 from claasp_next.semantics.cryptanalysis.truncated import (
-    SemiDeterministicModularAddTransition, TruncatedBit, TruncatedXorDifference,
-    check_semideterministic_modular_add, propagate_two_word_speck_round,
+    ProbabilisticTruncatedModularAddTransition, TruncatedBit, TruncatedXorDifference,
+    check_probabilistic_truncated_modular_add, propagate_two_word_speck_round,
     truncated_modular_add,
 )
 
@@ -23,6 +23,6 @@ __all__ = [
     "PropagationObjective", "PropagationProblem", "TransitionProvider",
     "default_component_semantics",
     "TruncatedBit", "TruncatedXorDifference", "propagate_two_word_speck_round",
-    "truncated_modular_add", "SemiDeterministicModularAddTransition",
-    "check_semideterministic_modular_add",
+    "truncated_modular_add", "ProbabilisticTruncatedModularAddTransition",
+    "check_probabilistic_truncated_modular_add",
 ]

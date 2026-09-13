@@ -17,12 +17,12 @@ from claasp_next.representations.constraints.cp import (
     PresentDifferentialCPModel,
     PresentLinearCPModel,
     SBoxDifferenceCPModel,
-    SemiDeterministicModularAddCPModel,
+    ProbabilisticTruncatedModularAddCPModel,
     SpeckDifferentialCPModel,
     SpeckTruncatedCPModel,
 )
 from claasp_next.semantics.cryptanalysis import (
-    TruncatedXorDifference, check_semideterministic_modular_add,
+    TruncatedXorDifference, check_probabilistic_truncated_modular_add,
 )
 from claasp_next.representations.constraints.smt.trails import (
     check_present_linear_smt_trail,
@@ -240,10 +240,10 @@ def test_minizinc_proves_legacy_speck_five_round_differential_optimum():
         ),
     ),
 )
-def test_minizinc_preserves_legacy_semideterministic_modadd_costs(
+def test_minizinc_preserves_legacy_probabilistic_truncated_modadd_costs(
     left, right, output, carry, expected_cost
 ):
-    model = SemiDeterministicModularAddCPModel(
+    model = ProbabilisticTruncatedModularAddCPModel(
         TruncatedXorDifference.parse(left),
         TruncatedXorDifference.parse(right),
         TruncatedXorDifference.parse(output),
@@ -255,4 +255,4 @@ def test_minizinc_preserves_legacy_semideterministic_modadd_costs(
 
     assert solved.status is CPStatus.SATISFIED
     assert transition.scaled_weight == expected_cost
-    assert check_semideterministic_modular_add(transition)
+    assert check_probabilistic_truncated_modular_add(transition)

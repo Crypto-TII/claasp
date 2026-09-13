@@ -5,9 +5,9 @@ from claasp_next.domains import Word
 from claasp_next.semantics import XOR_DIFFERENTIAL, XOR_LINEAR
 from claasp_next.semantics.cryptanalysis import (
     ModularAddTransitionSemantics, PropagationProblem,
-    SemiDeterministicModularAddTransition, Trail, TrailKind, TrailStep,
+    ProbabilisticTruncatedModularAddTransition, Trail, TrailKind, TrailStep,
     TruncatedXorDifference, XorDifference, XorMask,
-    check_semideterministic_modular_add, propagate_two_word_speck_round,
+    check_probabilistic_truncated_modular_add, propagate_two_word_speck_round,
 )
 from claasp_next.semantics import DETERMINISTIC_TRUNCATED_XOR
 from claasp_next.representations.constraints.cp.model import MiniZincModel
@@ -358,7 +358,7 @@ class SpeckTruncatedCPModel:
         return pattern
 
 
-class SemiDeterministicModularAddCPModel:
+class ProbabilisticTruncatedModularAddCPModel:
     """Native CP representation of one counter-based partial addition."""
 
     def __init__(
@@ -372,7 +372,7 @@ class SemiDeterministicModularAddCPModel:
             raise TypeError("left, right, and output must be truncated differences")
         width = len(left.bits)
         if len(right.bits) != width or len(output.bits) != width:
-            raise ValueError("semi-deterministic operands must have equal widths")
+            raise ValueError("probabilistic truncated operands must have equal widths")
         if carry_difference is not None and len(carry_difference.bits) != width:
             raise ValueError("carry difference must have the operand width")
         self.left = left
@@ -386,7 +386,7 @@ class SemiDeterministicModularAddCPModel:
 
         last = self.width - 1
         declarations = (
-            _SEMIDETERMINISTIC_MODADD_PREDICATE,
+            _PROBABILISTIC_TRUNCATED_MODADD_PREDICATE,
             f"array[0..{last}] of var 0..2: left;",
             f"array[0..{last}] of var 0..2: right;",
             f"array[0..{last}] of var 0..2: output_difference;",
@@ -402,7 +402,7 @@ class SemiDeterministicModularAddCPModel:
         if self.carry_difference is not None:
             constraints.append(_fixed_array("carry_difference", self.carry_difference))
         constraints.extend((
-            "constraint counter_based_modadd_semideterministic(left, right, "
+            "constraint counter_based_probabilistic_truncated_modadd(left, right, "
             "output_difference, carry_difference, costs, scaled_weight);",
             "constraint costs[" + str(last) + "] = 0;",
         ))
@@ -411,10 +411,10 @@ class SemiDeterministicModularAddCPModel:
             provenance=("legacy counter_based_modadd_semideterministic fixture",),
         )
 
-    def decode_transition(self, assignment) -> SemiDeterministicModularAddTransition:
+    def decode_transition(self, assignment) -> ProbabilisticTruncatedModularAddTransition:
         """Project and independently check the optimized partial transition."""
 
-        transition = SemiDeterministicModularAddTransition(
+        transition = ProbabilisticTruncatedModularAddTransition(
             self.left,
             self.right,
             self.output,
@@ -423,8 +423,8 @@ class SemiDeterministicModularAddCPModel:
         )
         if transition.scaled_weight != int(assignment["scaled_weight"]):
             raise ValueError("MiniZinc returned an inconsistent scaled weight")
-        if not check_semideterministic_modular_add(transition):
-            raise ValueError("MiniZinc returned an invalid semi-deterministic transition")
+        if not check_probabilistic_truncated_modular_add(transition):
+            raise ValueError("MiniZinc returned an invalid probabilistic truncated transition")
         return transition
 
 
@@ -574,7 +574,7 @@ predicate modular_addition_xor_difference(
 """.strip()
 
 
-_SEMIDETERMINISTIC_MODADD_PREDICATE = r"""
+_PROBABILISTIC_TRUNCATED_MODADD_PREDICATE = r"""
 function array[int] of var 0..2: truncated_xor3(
     array[int] of var 0..2: a,
     array[int] of var 0..2: b,
@@ -585,7 +585,7 @@ function array[int] of var 0..2: truncated_xor3(
     | j in index_set(a)
 ]);
 
-predicate counter_based_modadd_semideterministic(
+predicate counter_based_probabilistic_truncated_modadd(
     array[int] of var 0..2: a,
     array[int] of var 0..2: b,
     array[int] of var 0..2: c,

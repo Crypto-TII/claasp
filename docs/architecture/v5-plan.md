@@ -343,7 +343,7 @@ Deliver this broad migration through reviewable checkpoints:
    restore selected optimum, feasibility, and UNSAT fixtures with independent
    semantic checking.
 4. **M10.6d — advanced CP analyses.** Inventory and migrate or explicitly
-   supersede ARX-optimized, wordwise/semi-deterministic, boomerang,
+   supersede ARX-optimized, wordwise/probabilistic-truncated, boomerang,
    differential-linear, and continuous legacy models.
 
 M10.6d is deliberately split by cryptanalytic semantics rather than by legacy
@@ -358,7 +358,7 @@ class hierarchy:
    legacy Speck32/64 five-round optimum of weight 9 with an independently
    checked witness.
 3. **M10.6d3 — generalized truncated propagation.** Add wordwise and
-   semi-deterministic domains without encoding ``unknown`` as an accidental
+   probabilistic-truncated domains without encoding ``unknown`` as an accidental
    solver convention; preserve the selected Speck output-pattern fixtures.
 4. **M10.6d4 — multi-round impossible search.** Compose forward and backward
    propagation and preserve selected legacy impossible-differential UNSAT
@@ -375,7 +375,7 @@ M10.6c2 (linear propagation), and M10.6c3 (deterministic-truncated and
 impossible propagation). Each checkpoint must consume ``PropagationProblem``
 and independently validate solver witnesses or UNSAT bounds.
 
-M10.6d3 proceeds as M10.6d3a (typed semi-deterministic modular-add semantics
+M10.6d3 proceeds as M10.6d3a (typed probabilistic-truncated modular-add semantics
 and fixed-cost fixtures), M10.6d3b (multi-round Speck composition and fixed
 boundary-pattern results), and M10.6d3c (an explicit wordwise activity/value
 domain and result-bearing SPN fixtures). Legacy declaration counts are not
@@ -637,9 +637,9 @@ each synchronization.
 | Advanced CP analyses (M10.6d) | In progress | Complete inventory; exact ARX optimization, generalized truncated, impossible, composed, and continuous checkpoints follow |
 | Advanced CP suite inventory (M10.6d1) | Achieved | Every legacy MiniZinc model classified; scientific fixtures, superseded structural tests, dependencies, and migration order recorded |
 | Exact CP ARX differential optimization (M10.6d2) | Achieved | Chuffed proves Speck32/64-5 weight 8 UNSAT and weight 9 SAT in the CLAASP image; the five-transition witness is independently recounted and checked |
-| Generalized CP truncated propagation (M10.6d3) | In progress | Local semi-deterministic semantics achieved; multi-round Speck and wordwise checkpoints follow |
-| Semi-deterministic modular-add CP semantics (M10.6d3a) | Achieved | Typed partial transition, independent counter/cost checker, and Docker/Chuffed reproduction of legacy scaled costs 309 and 700 |
-| Semi-deterministic Speck CP composition (M10.6d3b) | Next | Preserve two-/three-round Speck boundary patterns and weights 1.0/0.0 |
+| Generalized CP truncated propagation (M10.6d3) | In progress | Local probabilistic-truncated semantics achieved; multi-round Speck and wordwise checkpoints follow |
+| Probabilistic-truncated modular-add CP semantics (M10.6d3a) | Achieved | Typed partial transition, independent counter/cost checker, and Docker/Chuffed reproduction of legacy scaled costs 309 and 700 |
+| Probabilistic-truncated Speck CP composition (M10.6d3b) | Next | Preserve two-/three-round Speck boundary patterns and weights 1.0/0.0 |
 | Wordwise truncated CP semantics (M10.6d3c) | Planned | Replace declaration-count tests with explicit activity/value semantics and result-bearing SPN fixtures |
 | Multi-round CP impossible search (M10.6d4) | Planned | Composed forward/backward propagation and selected legacy UNSAT fixtures |
 | CP composed attacks (M10.6d5) | Planned | Explicit boomerang and differential-linear semantic contracts and fixtures |

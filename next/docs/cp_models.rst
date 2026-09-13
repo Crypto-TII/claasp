@@ -96,7 +96,7 @@ transition ``1 -> 1`` impossible and ``1 -> 3`` feasible; the latter's weight
 is independently obtained from the exhaustive DDT semantics.
 
 These are the reviewed M10.6c slices. Multi-round bidirectional impossible
-search and the legacy wordwise, semi-deterministic, and ARX-specialized models
+search and the legacy wordwise, probabilistic-truncated, and ARX-specialized models
 remain explicitly in M10.6d.
 
 Advanced-suite migration
@@ -126,10 +126,10 @@ weight 9 satisfiable for five rounds, reproducing the legacy optimized-CP
 result. The decoded five additions are then recounted with independent
 paired-carry semantics; no solver-reported probability is trusted.
 
-Semi-deterministic truncated addition
--------------------------------------
+Probabilistic truncated addition
+--------------------------------
 
-``SemiDeterministicModularAddCPModel`` represents the legacy counter-based
+``ProbabilisticTruncatedModularAddCPModel`` represents the legacy counter-based
 partial-difference relation without hiding its fixed-point convention. A cost
 of 100 represents one bit of probability weight; ``scaled_weight`` retains the
 exact integral solver value and ``weight`` exposes the corresponding value in
@@ -139,19 +139,19 @@ in the public API.
 .. doctest::
 
    >>> from claasp_next.semantics.cryptanalysis import TruncatedXorDifference
-   >>> from claasp_next.representations.constraints.cp import SemiDeterministicModularAddCPModel
+   >>> from claasp_next.representations.constraints.cp import ProbabilisticTruncatedModularAddCPModel
    >>> partial = TruncatedXorDifference.parse("000?")
-   >>> model = SemiDeterministicModularAddCPModel(
+   >>> model = ProbabilisticTruncatedModularAddCPModel(
    ...     TruncatedXorDifference.parse("0000"),
    ...     TruncatedXorDifference.parse("0001"),
    ...     partial,
    ... )
-   >>> "counter_based_modadd_semideterministic" in model.cp_model().source()
+   >>> "counter_based_probabilistic_truncated_modadd" in model.cp_model().source()
    True
 
 Docker/Chuffed integration tests preserve the two result-bearing local legacy
 fixtures with scaled costs 309 and 700. Returned carries and costs are checked
-again by ``check_semideterministic_modular_add`` rather than trusted from the
+again by ``check_probabilistic_truncated_modular_add`` rather than trusted from the
 solver. Multi-round Speck composition and wordwise propagation are separate
 follow-up checkpoints.
 

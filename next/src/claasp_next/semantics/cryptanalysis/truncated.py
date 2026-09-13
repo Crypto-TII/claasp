@@ -65,7 +65,7 @@ class TruncatedXorDifference:
 
 
 @dataclass(frozen=True, slots=True)
-class SemiDeterministicModularAddTransition:
+class ProbabilisticTruncatedModularAddTransition:
     """One probability-bearing partial propagation through modular addition.
 
     ``costs`` use the legacy CLAASP fixed-point scale: 100 units represent a
@@ -83,9 +83,9 @@ class SemiDeterministicModularAddTransition:
         if any(len(pattern.bits) != width for pattern in (
             self.right, self.output, self.carry_difference,
         )) or len(self.costs) != width:
-            raise ValueError("semi-deterministic transition values must have equal widths")
+            raise ValueError("probabilistic truncated transition values must have equal widths")
         if any(cost not in {0, 4, 9, 19, 41, 100} for cost in self.costs):
-            raise ValueError("invalid semi-deterministic fixed-point cost")
+            raise ValueError("invalid probabilistic truncated fixed-point cost")
 
     @property
     def scaled_weight(self) -> int:
@@ -100,13 +100,13 @@ class SemiDeterministicModularAddTransition:
         return self.scaled_weight / 100
 
 
-def check_semideterministic_modular_add(
-    transition: SemiDeterministicModularAddTransition,
+def check_probabilistic_truncated_modular_add(
+    transition: ProbabilisticTruncatedModularAddTransition,
 ) -> bool:
     """Check the legacy counter-based relation independently of MiniZinc."""
 
-    if not isinstance(transition, SemiDeterministicModularAddTransition):
-        raise TypeError("transition must be a SemiDeterministicModularAddTransition")
+    if not isinstance(transition, ProbabilisticTruncatedModularAddTransition):
+        raise TypeError("transition must be a ProbabilisticTruncatedModularAddTransition")
     a = tuple(bit.encoded for bit in transition.left.bits)
     b = tuple(bit.encoded for bit in transition.right.bits)
     c = tuple(bit.encoded for bit in transition.output.bits)
