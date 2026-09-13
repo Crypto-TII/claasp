@@ -2,6 +2,7 @@ import os
 
 from claasp.cipher_modules.code_generator import (
     TII_C_LIB_PATH,
+    _needs_recompile,
     delete_generated_evaluate_c_shared_library,
     evaluate_c_name,
     generate_bit_based_vectorized_python_code_string,
@@ -23,6 +24,55 @@ def test_generate_bit_based_vectorized_python_code_string():
     string_python_code = generate_bit_based_vectorized_python_code_string(speck)
 
     assert string_python_code.split("\n")[0] == 'from claasp.cipher_modules.generic_functions_vectorized_bit import *'
+
+
+def test_needs_recompile_missing_object_file(tmp_path):
+    # object_path doesn't exist at all -> must (re)compile.
+    source_path = tmp_path / "source.c"
+    source_path.write_text("source")
+    object_path = tmp_path / "missing.o"
+
+    assert not object_path.exists()
+    assert _needs_recompile(str(object_path), str(source_path)) is True
+
+
+def test_needs_recompile_stale_object_file(tmp_path):
+    # object_path exists but is OLDER than source_path -> stale, must recompile.
+    object_path = tmp_path / "stale.o"
+    source_path = tmp_path / "source.c"
+    object_path.write_text("object")
+    source_path.write_text("source")
+
+    older = 1_000_000
+    newer = 2_000_000
+    os.utime(str(object_path), (older, older))
+    os.utime(str(source_path), (newer, newer))
+
+    assert _needs_recompile(str(object_path), str(source_path)) is True
+
+
+def test_needs_recompile_fresh_object_file(tmp_path):
+    # object_path exists and is NEWER than (or equal to) source_path -> cached
+    # compile is still valid, no need to recompile. This is the real-world
+    # "already compiled this run" scenario that _needs_recompile exists to detect.
+    object_path = tmp_path / "fresh.o"
+    source_path = tmp_path / "source.c"
+    source_path.write_text("source")
+    object_path.write_text("object")
+
+    older = 1_000_000
+    newer = 2_000_000
+    os.utime(str(source_path), (older, older))
+    os.utime(str(object_path), (newer, newer))
+
+    assert _needs_recompile(str(object_path), str(source_path)) is False
+
+    # Equal mtimes: not older-than-source, so still considered fresh/cached.
+    same = 3_000_000
+    os.utime(str(object_path), (same, same))
+    os.utime(str(source_path), (same, same))
+
+    assert _needs_recompile(str(object_path), str(source_path)) is False
 
 
 def test_generic_c_functions_o_name():
@@ -63,6 +113,69 @@ def test_get_padding_component_bit_based_c_code():
 
     code_verbose = "".join(get_padding_component_bit_based_c_code(component, verbosity=True))
     assert "// print_values" in code_verbose                  # verbosity=True -> print_values called
+
+
+def test_generate_evaluate_c_code_shared_library_bit_based_skips_recompile_when_cache_is_fresh():
+    # Regression coverage for the `if _needs_recompile(...):` call site in the
+    # bit-based branch of generate_evaluate_c_code_shared_library: every existing
+    # test either starts from a fresh generic .o (never yet created -> the True,
+    # "must (re)compile" outcome) or deletes it afterwards via
+    # delete_generated_evaluate_c_shared_library, so the False, "cache is still
+    # valid, don't recompile" outcome was never exercised at this call site. This
+    # builds a genuinely fresh/cached generic .o and confirms a second call reuses
+    # it (no recompilation) instead of contriving this through a full
+    # evaluate_using_c() pipeline.
+    fancy = FancyBlockCipher(number_of_rounds=2)
+    assert fancy.is_power_of_2_word_based() is False
+
+    generic_o = TII_C_LIB_PATH + generic_c_functions_o_name(fancy)
+    generic_source = TII_C_LIB_PATH + "generic_bit_based_c_functions.c"
+    try:
+        # First call: generic .o does not exist yet -> True branch, creates it.
+        generate_evaluate_c_code_shared_library(fancy, intermediate_output=False, verbosity=False)
+        assert os.path.exists(generic_o)
+
+        # Force the cached object file to be unambiguously newer than its source,
+        # regardless of real wall-clock/filesystem mtime resolution.
+        source_mtime = os.path.getmtime(generic_source)
+        fresh_mtime = source_mtime + 1000
+        os.utime(generic_o, (fresh_mtime, fresh_mtime))
+        recorded_mtime = os.path.getmtime(generic_o)
+
+        # Second call: generic .o already exists and is fresher than its source ->
+        # False branch, must NOT recompile (mtime must stay exactly as we set it).
+        generate_evaluate_c_code_shared_library(fancy, intermediate_output=False, verbosity=False)
+
+        assert os.path.getmtime(generic_o) == recorded_mtime
+    finally:
+        delete_generated_evaluate_c_shared_library(fancy)
+
+
+def test_generate_evaluate_c_code_shared_library_word_based_skips_recompile_when_cache_is_fresh():
+    # Same regression as the bit-based version above, but for the word-based
+    # branch's `if _needs_recompile(...):` call site.
+    xtea = XTeaBlockCipher(number_of_rounds=2)
+    assert xtea.is_power_of_2_word_based()
+
+    generic_o = TII_C_LIB_PATH + generic_c_functions_o_name(xtea)
+    generic_source = TII_C_LIB_PATH + "generic_word_based_c_functions.c"
+    try:
+        # First call: generic .o does not exist yet -> True branch, creates it.
+        generate_evaluate_c_code_shared_library(xtea, intermediate_output=False, verbosity=False)
+        assert os.path.exists(generic_o)
+
+        source_mtime = os.path.getmtime(generic_source)
+        fresh_mtime = source_mtime + 1000
+        os.utime(generic_o, (fresh_mtime, fresh_mtime))
+        recorded_mtime = os.path.getmtime(generic_o)
+
+        # Second call: generic .o already exists and is fresher than its source ->
+        # False branch, must NOT recompile (mtime must stay exactly as we set it).
+        generate_evaluate_c_code_shared_library(xtea, intermediate_output=False, verbosity=False)
+
+        assert os.path.getmtime(generic_o) == recorded_mtime
+    finally:
+        delete_generated_evaluate_c_shared_library(xtea)
 
 
 def test_generate_evaluate_c_code_shared_library_word_based():
