@@ -1205,8 +1205,6 @@ class LinearLayer(Component):
         # inversion over GF(2)), but seeded directly with the
         # qdt_ naming convention instead of the "_i"/"_o" one.
 
-        input_bit_ids = self._generate_input_ids()
-
         qdt_input_bit_ids = model._qdt_input_bit_ids(self)
         qdt_output_bit_ids = [f"qdt_{bit_id}" for bit_id in output_bit_ids]
 

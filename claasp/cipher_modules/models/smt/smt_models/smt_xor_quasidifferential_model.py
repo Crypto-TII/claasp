@@ -1849,7 +1849,7 @@ class SmtXorQuasidifferentialModel(SmtModel):
         """
 
         if field == "mask":
-            return self._read_component_input_mask(component, components_solutions)
+            return self._read_component_input_mask(component)
 
         result = 0
 
@@ -1869,7 +1869,6 @@ class SmtXorQuasidifferentialModel(SmtModel):
     def _read_component_input_mask(
         self,
         component,
-        components_solutions,
     ):
         """
         Reconstruct a component's input MASK from the solver's variable
@@ -1887,7 +1886,7 @@ class SmtXorQuasidifferentialModel(SmtModel):
             sage: cipher = XorCipher(word_bit_size=2, number_of_inputs=2)
             sage: smt = SmtXorQuasidifferentialModel(cipher)
             sage: smt._variable2value = {'qdt_plaintext_0': 1, 'qdt_plaintext_1': 0, 'qdt_key_0': 0, 'qdt_key_1': 1}
-            sage: smt._read_component_input_mask(cipher.component_from_id('xor_0_0'), {})
+            sage: smt._read_component_input_mask(cipher.component_from_id('xor_0_0'))
             9
         """
 
