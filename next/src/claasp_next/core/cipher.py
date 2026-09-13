@@ -167,10 +167,12 @@ class Cipher:
         return DiagramCompiler().compile(self, annotation)
 
     def draw(self, format: str = "ascii", annotation=None):
-        """Render this cipher as ASCII, TikZ, or PDF.
+        """Render this cipher as an ASCII listing, TikZ, or PDF.
 
-        PDF rendering requires the optional ``pdflatex`` command. The ASCII
-        and TikZ representations have no third-party dependencies.
+        The ASCII renderer is a work in progress and emits a warning because
+        it currently produces a structural listing rather than routed ASCII
+        art. PDF rendering requires the optional ``pdflatex`` command. ASCII
+        and TikZ generation have no third-party dependencies.
         """
 
         from claasp_next.representations.diagrams import ASCIIArtSerializer, TikZSerializer

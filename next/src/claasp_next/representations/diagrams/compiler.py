@@ -19,7 +19,7 @@ class DiagramCompiler:
         cipher: Cipher,
         annotation: GraphAnnotation | ExecutionTrace | SideChannelTrace | None = None,
     ) -> CipherDiagram:
-        """Return a representation suitable for ASCII, TikZ, or future renderers."""
+        """Return a representation suitable for diagram serializers."""
 
         if not isinstance(cipher, Cipher):
             raise TypeError("cipher must be a Cipher")

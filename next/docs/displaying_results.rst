@@ -7,9 +7,15 @@ model statistics, reproducibility metadata, and the raw backend result.
 Cipher diagrams
 ---------------
 
-Every cipher can produce a readable structural diagram without an optional
-dependency. The ASCII form shows rounds, components, and the logical units
-selected by each dependency.
+.. warning::
+
+   Routed ASCII-art cipher diagrams are a **work in progress**. The current
+   ASCII output is a temporary structural listing of rounds, components, and
+   logical-unit dependencies. Calling ``cipher.draw("ascii")`` emits
+   ``ASCIIArtWorkInProgressWarning`` so applications do not mistake this
+   listing for the intended diagram renderer.
+
+The temporary output remains available without an optional dependency:
 
 .. doctest::
 

@@ -4,7 +4,16 @@ Diagram representations and renderers
 A cipher diagram is a representation of the typed graph, not a property of a
 solver. ``DiagramCompiler`` preserves component IDs, logical-unit selections,
 input ordering, rounds, and optional graph annotations in ``CipherDiagram``.
-ASCII and TikZ serializers are independent views over that immutable IR.
+The temporary ASCII listing and TikZ serializer are independent views over
+that immutable IR.
+
+.. warning::
+
+   ``ASCIIArtSerializer`` is a work in progress. It currently emits a
+   line-oriented structural listing and an ``ASCIIArtWorkInProgressWarning``;
+   box layout and connector routing remain to be integrated from the dedicated
+   ASCII-art compiler work. The diagram IR and TikZ serializer are not marked
+   experimental by this limitation.
 
 This separation lets the same concrete execution trace, cryptanalytic trail,
 or side-channel annotation be displayed without teaching a renderer its

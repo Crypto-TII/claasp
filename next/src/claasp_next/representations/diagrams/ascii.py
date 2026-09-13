@@ -1,17 +1,36 @@
-"""Readable deterministic ASCII serialization of cipher diagrams."""
+"""Work-in-progress textual serialization of cipher diagrams."""
+
+import warnings
 
 from claasp_next.representations.diagrams.formatting import format_annotation, format_positions
 from claasp_next.representations.diagrams.model import CipherDiagram
 
 
+class ASCIIArtWorkInProgressWarning(UserWarning):
+    """Warn that routed ASCII-art diagrams are not implemented yet."""
+
+
 class ASCIIArtSerializer:
-    """Render a diagram without terminal-width or Unicode assumptions."""
+    """Render a temporary line-oriented listing, not routed ASCII art.
+
+    .. warning::
+
+       This serializer is a work in progress. Its output is useful for
+       inspecting the diagram IR, but it does not yet draw an actual cipher
+       diagram with boxes and routed connectors.
+    """
 
     def serialize(self, diagram: CipherDiagram) -> str:
-        """Return a stable line-oriented view of graph rounds and dependencies."""
+        """Return the temporary graph listing and emit a WIP warning."""
 
         if not isinstance(diagram, CipherDiagram):
             raise TypeError("diagram must be a CipherDiagram")
+        warnings.warn(
+            "ASCII cipher diagrams are a work in progress; the current output "
+            "is a structural listing, not routed ASCII art",
+            ASCIIArtWorkInProgressWarning,
+            stacklevel=2,
+        )
         lines = [f"cipher {diagram.cipher_name}", "inputs"]
         for node in diagram.nodes:
             if node.kind == "input":
