@@ -63,6 +63,7 @@ Analysis
 
 .. automodule:: claasp_next.analysis
    :members:
+   :exclude-members: BitPattern,ModularAddLinearSemantics,ModularAddTransitionSemantics,SBoxTransitionSemantics,Trail,TrailKind,TrailSearchResult,TrailStep,Transition,XorDifference,XorMask
 
 Primitives
 ----------

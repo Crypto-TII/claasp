@@ -1,6 +1,6 @@
 """Reviewed ARX differential trail search."""
 
-from claasp_next.analysis.trails import (
+from claasp_next.interpretations.cryptanalysis import (
     ModularAddTransitionSemantics,
     ModularAddLinearSemantics,
     Trail,

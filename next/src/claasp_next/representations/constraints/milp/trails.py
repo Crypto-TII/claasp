@@ -1,6 +1,6 @@
 """Exact weighted trail lowering to the portable MILP representation."""
 
-from claasp_next.analysis import SBoxTransitionSemantics, Trail, TrailKind, TrailStep, XorDifference
+from claasp_next.interpretations.cryptanalysis import SBoxTransitionSemantics, Trail, TrailKind, TrailStep, XorDifference
 from claasp_next.components import BitVectorSBox, Permutation
 from claasp_next.core import Cipher
 from claasp_next.representations.constraints.milp.model import (

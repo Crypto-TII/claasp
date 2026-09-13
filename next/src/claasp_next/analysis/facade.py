@@ -173,7 +173,7 @@ class Analysis:
     ) -> bool:
         """Check an S-box transition directly from the typed graph."""
 
-        from claasp_next.analysis.trails import SBoxTransitionSemantics
+        from claasp_next.interpretations.cryptanalysis import SBoxTransitionSemantics
         from claasp_next.components import BitVectorSBox
 
         component = next(

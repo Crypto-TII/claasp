@@ -1,6 +1,6 @@
 """MILP lowerings for exact component trail relations."""
 
-from claasp_next.analysis import ModularAddLinearSemantics
+from claasp_next.interpretations.cryptanalysis import ModularAddLinearSemantics
 from claasp_next.representations.constraints.milp.model import (
     ConstraintSense, LinearConstraint, LinearExpression, LinearVariable,
     MILPModel, ObjectiveSense, VariableKind,

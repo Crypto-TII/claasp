@@ -351,6 +351,9 @@ does not reproduce the temporary package organization.
    differential-linear, division-property, avalanche, symbolic, and leakage
    semantics outside solver-specific packages. Solver representations lower a
    shared propagation problem and must not define its cryptanalytic meaning.
+   Deliver M10.5d4a as the canonical semantic-type extraction, M10.5d4b as a
+   backend-neutral propagation problem/registry, and M10.5d4c as migration of
+   SMT and MILP composition to that shared problem.
 5. **M10.5d5 — diagram representation.** Define a backend-neutral annotated
    diagram IR, then migrate ASCII art and add TikZ serialization. External
    LaTeX execution is a driver producing PDF; PNG/SVG rendering remains an
@@ -561,7 +564,9 @@ each synchronization.
 | SMT representation/driver split (M10.5d3b) | Achieved | SMT IR/export/lowering under representations; Z3 under shared solver drivers |
 | MILP representation/driver split (M10.5d3c) | Achieved | Linear IR/export/trail lowering under representations; GLPK and result decoding under drivers |
 | Polynomial representation/driver split (M10.5d3d) | Achieved | Polynomial IR/export/lowering under representations; reusable Singular/msolve execution drivers |
-| Interpretation-driven trail migration (M10.5d4) | Next | Move trail meaning and propagation problems out of analysis/solver-specific composition |
+| Interpretation-driven trail migration (M10.5d4) | In progress | Canonical semantics achieved; shared propagation problem and representation consumers remain |
+| Canonical cryptanalytic interpretations (M10.5d4a) | Achieved | Trail types and exact S-box/modular-add semantics moved from analysis to interpretations; common graph annotations |
+| Shared propagation problem (M10.5d4b) | Next | Component-semantics registry, graph scope, objective, bounds, and provenance independent of solver format |
 | SMT, MILP, and CP (M10.4–M10.6) | In progress | SMT achieved; MILP and CP retain shared semantics and independent-check requirements |
 | Statistical analysis (M10.7) | Planned | Avalanche and related legacy behavior |
 | Serialization, diagrams, transforms, compilers (M10.8) | Planned | Inventory-driven tooling migration |

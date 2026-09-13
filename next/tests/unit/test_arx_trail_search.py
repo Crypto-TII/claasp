@@ -1,4 +1,4 @@
-from claasp_next.analysis import ModularAddLinearSemantics, ModularAddTransitionSemantics
+from claasp_next.interpretations.cryptanalysis import ModularAddLinearSemantics, ModularAddTransitionSemantics
 from claasp_next.analysis.arx import check_speck_linear_trail, check_speck_trail
 from claasp_next.ciphers import SpeckBlockCipher
 

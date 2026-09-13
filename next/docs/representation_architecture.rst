@@ -46,6 +46,22 @@ different semantic types. Shared annotations allow a later diagram renderer
 to consume any of them without pretending that a concrete execution is a
 differential characteristic.
 
+Cryptanalytic trail semantics live under ``interpretations.cryptanalysis``;
+they are not owned by SAT, SMT, or MILP. A checked trail can be attached to
+its cipher for use by generic consumers:
+
+.. doctest::
+
+   >>> from claasp_next.interpretations.cryptanalysis import Trail, TrailKind, TrailStep, XorDifference, SBoxTransitionSemantics
+   >>> from claasp_next.ciphers.block_ciphers.present import PRESENT_SBOX
+   >>> component = next(item for item in cipher.components if item.component_id == "sbox_1_0")
+   >>> transition = SBoxTransitionSemantics(PRESENT_SBOX).xor_differential(1, 3)
+   >>> trail = Trail(TrailKind.XOR_DIFFERENTIAL, XorDifference(1 << 60, 64), XorDifference(0, 64), (TrailStep(component.component_id, transition),))
+   >>> trail.interpretation.name
+   'xor_differential'
+   >>> trail.annotate(cipher).value_of(component.component_id) == transition
+   True
+
 Representations and artifacts
 -----------------------------
 

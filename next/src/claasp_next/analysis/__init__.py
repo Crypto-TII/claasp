@@ -9,7 +9,7 @@ from claasp_next.analysis.constraints import (
 )
 from claasp_next.analysis.facade import Analysis, AnalysisResult
 from claasp_next.analysis.problem import AnalysisProblem, MinimizeWeight
-from claasp_next.analysis.trails import (
+from claasp_next.interpretations.cryptanalysis import (
     BitPattern,
     ModularAddTransitionSemantics,
     ModularAddLinearSemantics,

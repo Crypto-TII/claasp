@@ -47,3 +47,12 @@ This is a product requirement, not merely a possible implementation detail.
 Until that review is complete, internal IR constructors should not be treated
 as a stable plug-in interface. The existing graph-level constraint API is the
 first supported portion of this direction.
+
+Canonical trail semantics
+-------------------------
+
+Exact patterns, transitions, weights, correlations, and trails are defined in
+``claasp_next.interpretations.cryptanalysis``. Constraint representations may
+encode these objects but must not redefine their mathematical meaning. The
+``claasp_next.analysis`` package re-exports common trail types as a concise
+user facade; representation code uses the canonical interpretation package.

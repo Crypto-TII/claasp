@@ -1,9 +1,11 @@
-"""Backend-independent differential and linear trail semantics."""
+"""Representation-independent differential and linear trail semantics."""
 
 from dataclasses import dataclass
 from enum import Enum
 from math import inf, log2
 from collections import defaultdict
+
+from claasp_next.interpretations.base import XOR_DIFFERENTIAL, XOR_LINEAR
 
 
 class TrailKind(str, Enum):
@@ -11,6 +13,12 @@ class TrailKind(str, Enum):
 
     XOR_DIFFERENTIAL = "xor_differential"
     XOR_LINEAR = "xor_linear"
+
+    @property
+    def interpretation(self):
+        """Return the explicit graph interpretation for this trail kind."""
+
+        return XOR_DIFFERENTIAL if self is TrailKind.XOR_DIFFERENTIAL else XOR_LINEAR
 
 
 @dataclass(frozen=True, slots=True)
@@ -118,6 +126,29 @@ class Trail:
     @property
     def total_weight(self) -> float:
         return sum(step.transition.weight for step in self.steps)
+
+    @property
+    def interpretation(self):
+        """The representation-independent meaning propagated by this trail."""
+
+        return self.kind.interpretation
+
+    def annotate(self, cipher, input_name: str = "plaintext"):
+        """Attach this trail to ``cipher`` using the common graph annotation.
+
+        The trail may contain only active components, so annotations are not
+        required to cover the complete graph.
+        """
+
+        from claasp_next.annotations import AnnotationEntry, AnnotationRole, GraphAnnotation
+
+        entries = [AnnotationEntry(input_name, AnnotationRole.INPUT, self.input_pattern)]
+        entries.extend(
+            AnnotationEntry(step.component_id, AnnotationRole.COMPONENT, step.transition)
+            for step in self.steps
+        )
+        entries.append(AnnotationEntry("cipher_output", AnnotationRole.OUTPUT, self.output_pattern))
+        return GraphAnnotation(cipher, self.interpretation, entries)
 
 
 @dataclass(frozen=True, slots=True)

@@ -1,6 +1,6 @@
 """Weighted full-trail SMT representation lowering."""
 
-from claasp_next.analysis import (
+from claasp_next.interpretations.cryptanalysis import (
     SBoxTransitionSemantics,
     Trail,
     TrailKind,

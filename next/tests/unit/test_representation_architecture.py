@@ -7,6 +7,10 @@ from claasp_next.annotations import (
 )
 from claasp_next.ciphers import PresentBlockCipher
 from claasp_next.interpretations import CONCRETE, LEAKAGE, Interpretation
+from claasp_next.interpretations.cryptanalysis import (
+    SBoxTransitionSemantics, Trail, TrailKind, TrailStep, XorDifference,
+)
+from claasp_next.ciphers.block_ciphers.present import PRESENT_SBOX
 from claasp_next.representations import Artifact, Representation
 from claasp_next.representations.execution import ScalarExecutionDriver
 
@@ -64,3 +68,19 @@ def test_direct_execution_returns_a_concrete_graph_trace():
     assert result.trace.annotation.cipher is cipher
     assert result.trace.value_of("plaintext") == (0,) * 64
     assert result.trace.annotation.interpretation is CONCRETE
+
+
+def test_cryptanalytic_trail_uses_the_same_annotation_foundation():
+    cipher = PresentBlockCipher(number_of_rounds=1)
+    component = next(item for item in cipher.components if item.component_id == "sbox_1_0")
+    transition = SBoxTransitionSemantics(PRESENT_SBOX).xor_differential(1, 3)
+    trail = Trail(
+        TrailKind.XOR_DIFFERENTIAL,
+        XorDifference(1 << 60, 64),
+        XorDifference(0, 64),
+        (TrailStep(component.component_id, transition),),
+    )
+
+    annotation = trail.annotate(cipher)
+    assert annotation.interpretation.name == "xor_differential"
+    assert annotation.value_of(component.component_id) == transition

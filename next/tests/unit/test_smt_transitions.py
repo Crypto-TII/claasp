@@ -1,6 +1,6 @@
 from itertools import product
 
-from claasp_next.analysis import TrailKind
+from claasp_next.interpretations.cryptanalysis import TrailKind
 from claasp_next.ciphers.block_ciphers.present import PRESENT_SBOX
 from claasp_next.representations.constraints.smt import ModularAddLinearSMTModel, SBoxTransitionSMTModel
 
