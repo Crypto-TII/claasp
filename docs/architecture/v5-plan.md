@@ -630,7 +630,7 @@ each synchronization.
 | Native CP truncated/impossible trails (M10.6c3) | Achieved | Truncated semantics moved into `semantics`; Speck paired-carry fixture projected through CP; exact PRESENT S-box possible/impossible proof |
 | Advanced CP analyses (M10.6d) | In progress | Complete inventory; exact ARX optimization, generalized truncated, impossible, composed, and continuous checkpoints follow |
 | Advanced CP suite inventory (M10.6d1) | Achieved | Every legacy MiniZinc model classified; scientific fixtures, superseded structural tests, dependencies, and migration order recorded |
-| Exact CP ARX differential optimization (M10.6d2) | Next | Prove and independently check the legacy Speck32/64 five-round weight-9 optimum |
+| Exact CP ARX differential optimization (M10.6d2) | In progress | Exact Speck32/64 composition and independent decoder implemented; weight-8 UNSAT/weight-9 SAT external regression awaits a CP-capable local/CI solver run |
 | Generalized CP truncated propagation (M10.6d3) | Planned | Wordwise and semi-deterministic domains with preserved Speck patterns |
 | Multi-round CP impossible search (M10.6d4) | Planned | Composed forward/backward propagation and selected legacy UNSAT fixtures |
 | CP composed attacks (M10.6d5) | Planned | Explicit boomerang and differential-linear semantic contracts and fixtures |

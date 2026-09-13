@@ -17,6 +17,7 @@ from claasp_next.representations.constraints.cp import (
     PresentDifferentialCPModel,
     PresentLinearCPModel,
     SBoxDifferenceCPModel,
+    SpeckDifferentialCPModel,
     SpeckTruncatedCPModel,
 )
 from claasp_next.semantics.cryptanalysis import TruncatedXorDifference
@@ -191,3 +192,24 @@ def test_minizinc_proves_impossible_and_possible_present_sbox_pairs():
     assert solved.status is CPStatus.SATISFIED
     assert transition.is_possible
     assert transition.weight == 2
+
+
+def test_minizinc_proves_legacy_speck_five_round_differential_optimum():
+    cipher = SpeckBlockCipher(number_of_rounds=5)
+    solver = MiniZincSolver(solver=_test_solver(), timeout_seconds=120)
+    below = SpeckDifferentialCPModel(PropagationProblem(
+        cipher, XOR_DIFFERENTIAL, maximum_weight=8,
+        provenance=("legacy Speck32/64-5 lower bound",),
+    ))
+    optimum = SpeckDifferentialCPModel(PropagationProblem(
+        cipher, XOR_DIFFERENTIAL, maximum_weight=9,
+        provenance=("legacy Speck32/64-5 optimum",),
+    ))
+
+    assert solver.solve(below.cp_model()).status is CPStatus.UNSATISFIABLE
+    solved = solver.solve(optimum.cp_model())
+    trail = optimum.decode_trail(solved.assignment)
+
+    assert solved.status is CPStatus.SATISFIED
+    assert trail.total_weight == 9
+    assert len(trail.steps) == 5

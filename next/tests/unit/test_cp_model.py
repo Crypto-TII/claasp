@@ -1,8 +1,13 @@
 import pytest
 
+from claasp_next.ciphers import SpeckBlockCipher
 from claasp_next.drivers.solvers.minizinc import CPStatus, _parse_output
-from claasp_next.representations.constraints.cp import BooleanMiniZincLowerer, MiniZincModel
+from claasp_next.representations.constraints.cp import (
+    BooleanMiniZincLowerer, MiniZincModel, SpeckDifferentialCPModel,
+)
 from claasp_next.representations.constraints.sat import CNFFormula
+from claasp_next.semantics import XOR_DIFFERENTIAL
+from claasp_next.semantics.cryptanalysis import PropagationProblem
 
 
 def test_minizinc_model_serializes_sections_in_language_order():
@@ -56,3 +61,16 @@ def test_boolean_lowering_preserves_cnf_names_signs_and_provenance():
     )
     assert model.provenance == formula.provenance
     assert model.name_mapping == (("v_left_0", "left_0"), ("v_right_0", "right_0"))
+
+
+def test_speck_differential_cp_lowering_has_exact_relation_and_bound():
+    cipher = SpeckBlockCipher(number_of_rounds=5)
+    lowered = SpeckDifferentialCPModel(PropagationProblem(
+        cipher, XOR_DIFFERENTIAL, maximum_weight=9,
+        provenance=("legacy Speck32/64-5 optimum",),
+    )).cp_model()
+
+    assert "predicate modular_addition_xor_difference" in lowered.declarations[0]
+    assert sum("modular_addition_xor_difference" in item for item in lowered.constraints) == 5
+    assert lowered.constraints[-1].endswith("<= 9;")
+    assert lowered.provenance == ("legacy Speck32/64-5 optimum",)

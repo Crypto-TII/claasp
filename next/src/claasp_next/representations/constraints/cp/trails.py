@@ -1,9 +1,11 @@
 """Native CP lowering of shared cryptanalytic trail semantics."""
 
-from claasp_next.components import BitVectorSBox, Permutation
+from claasp_next.components import BitVectorSBox, Permutation, Rotate
+from claasp_next.domains import Word
 from claasp_next.semantics import XOR_DIFFERENTIAL, XOR_LINEAR
 from claasp_next.semantics.cryptanalysis import (
-    PropagationProblem, Trail, TrailKind, TrailStep, XorDifference, XorMask,
+    ModularAddTransitionSemantics, PropagationProblem, Trail, TrailKind, TrailStep,
+    XorDifference, XorMask,
     TruncatedXorDifference, propagate_two_word_speck_round,
 )
 from claasp_next.semantics import DETERMINISTIC_TRUNCATED_XOR
@@ -204,6 +206,109 @@ class PresentLinearCPModel:
         return trail
 
 
+class SpeckDifferentialCPModel:
+    """Exact native CP model for Speck XOR-differential trails.
+
+    The reviewed slice is Speck32/64 with zero key difference. Decoded
+    transitions are recounted by independent paired-carry semantics.
+    """
+
+    def __init__(self, problem: PropagationProblem) -> None:
+        if not isinstance(problem, PropagationProblem):
+            raise TypeError("problem must be a PropagationProblem")
+        if problem.semantics != XOR_DIFFERENTIAL:
+            raise ValueError("Speck CP lowering requires XOR-differential semantics")
+        plaintext = problem.cipher.inputs.get("plaintext")
+        if (
+            problem.cipher.family_name != "speck"
+            or plaintext is None
+            or not isinstance(plaintext.value_type.domain, Word)
+            or plaintext.value_type.domain.width != 16
+        ):
+            raise NotImplementedError("the reviewed CP slice supports Speck32/64")
+        if problem.maximum_weight is None:
+            raise ValueError("Speck CP lowering requires maximum_weight")
+        self.problem = problem
+        self.cipher = problem.cipher
+        self.width = 16
+
+    def cp_model(self) -> MiniZincModel:
+        """Compile exact support, weight bits, and deterministic round wiring."""
+
+        rounds = len(self.cipher.rounds)
+        declarations = [_MODADD_DIFFERENTIAL_PREDICATE]
+        constraints = []
+        for boundary in range(rounds + 1):
+            declarations.extend((
+                f"array[0..15] of var bool: x_{boundary};",
+                f"array[0..15] of var bool: y_{boundary};",
+            ))
+        for round_number in range(rounds):
+            declarations.append(f"array[0..14] of var bool: weight_{round_number};")
+            alpha = _component(
+                self.cipher, f"round_{round_number}_rotate_right", Rotate
+            ).amount
+            beta = _component(
+                self.cipher, f"round_{round_number}_rotate_left", Rotate
+            ).amount
+            constraints.append(
+                "constraint modular_addition_xor_difference("
+                f"{_array_rotation(f'x_{round_number}', -alpha, self.width)}, "
+                f"y_{round_number}, x_{round_number + 1}, weight_{round_number});"
+            )
+            for index in range(self.width):
+                constraints.append(
+                    f"constraint y_{round_number + 1}[{index}] = "
+                    f"(y_{round_number}[{(index + beta) % self.width}] != "
+                    f"x_{round_number + 1}[{index}]);"
+                )
+        constraints.append("constraint exists(i in 0..15)(x_0[i] \/ y_0[i]);")
+        weight_terms = [
+            f"bool2int(weight_{round_number}[{bit}])"
+            for round_number in range(rounds)
+            for bit in range(self.width - 1)
+        ]
+        constraints.append(
+            f"constraint sum([{', '.join(weight_terms)}]) <= {self.problem.maximum_weight};"
+        )
+        return MiniZincModel(
+            tuple(declarations), tuple(constraints), provenance=self.problem.provenance
+        )
+
+    def decode_trail(self, assignment) -> Trail:
+        """Decode and independently validate a MiniZinc Speck trail."""
+
+        semantics = ModularAddTransitionSemantics(self.width)
+        steps = []
+        left = _boolean_word(assignment["x_0"])
+        right = _boolean_word(assignment["y_0"])
+        initial = (left << self.width) | right
+        for round_number in range(len(self.cipher.rounds)):
+            alpha = _component(
+                self.cipher, f"round_{round_number}_rotate_right", Rotate
+            ).amount
+            beta = _component(
+                self.cipher, f"round_{round_number}_rotate_left", Rotate
+            ).amount
+            output = _boolean_word(assignment[f"x_{round_number + 1}"])
+            transition = semantics.xor_differential(
+                _rotate_right_integer(left, alpha, self.width), right, output
+            )
+            if not transition.is_possible:
+                raise ValueError("MiniZinc returned an impossible modular-add transition")
+            next_right = _rotate_left_integer(right, beta, self.width) ^ output
+            if next_right != _boolean_word(assignment[f"y_{round_number + 1}"]):
+                raise ValueError("MiniZinc returned invalid Speck round wiring")
+            steps.append(TrailStep(f"round_{round_number}_modular_add", transition))
+            left, right = output, next_right
+        return Trail(
+            TrailKind.XOR_DIFFERENTIAL,
+            XorDifference(initial, 2 * self.width),
+            XorDifference((left << self.width) | right, 2 * self.width),
+            tuple(steps),
+        )
+
+
 class SpeckTruncatedCPModel:
     """Compile one fixed deterministic-truncated Speck round propagation."""
 
@@ -341,3 +446,48 @@ def _component(cipher, component_id, expected_type):
     if not isinstance(component, expected_type):
         raise ValueError(f"cipher is missing {component_id!r}")
     return component
+
+
+def _array_rotation(name, offset, width):
+    values = ",".join(f"{name}[{(index + offset) % width}]" for index in range(width))
+    return f"array1d(0..{width - 1}, [{values}])"
+
+
+def _boolean_word(bits):
+    return _integer(int(bit) for bit in bits)
+
+
+def _rotate_left_integer(value, amount, width):
+    mask = (1 << width) - 1
+    return ((value << amount) | (value >> (width - amount))) & mask
+
+
+def _rotate_right_integer(value, amount, width):
+    mask = (1 << width) - 1
+    return ((value >> amount) | (value << (width - amount))) & mask
+
+
+_MODADD_DIFFERENTIAL_PREDICATE = r"""
+predicate modular_addition_xor_difference(
+    array[int] of var bool: a,
+    array[int] of var bool: b,
+    array[int] of var bool: c,
+    array[int] of var bool: weight
+) =
+    forall(j in 0..length(a)-2)(
+        (a[j] \/ b[j] \/ not c[j] \/ a[j+1] \/ b[j+1] \/ c[j+1]) /\
+        (a[j] \/ not b[j] \/ c[j] \/ a[j+1] \/ b[j+1] \/ c[j+1]) /\
+        (not a[j] \/ b[j] \/ c[j] \/ a[j+1] \/ b[j+1] \/ c[j+1]) /\
+        (not a[j] \/ not b[j] \/ not c[j] \/ a[j+1] \/ b[j+1] \/ c[j+1]) /\
+        (a[j] \/ b[j] \/ c[j] \/ not a[j+1] \/ not b[j+1] \/ not c[j+1]) /\
+        (a[j] \/ not b[j] \/ not c[j] \/ not a[j+1] \/ not b[j+1] \/ not c[j+1]) /\
+        (not a[j] \/ b[j] \/ not c[j] \/ not a[j+1] \/ not b[j+1] \/ not c[j+1]) /\
+        (not a[j] \/ not b[j] \/ c[j] \/ not a[j+1] \/ not b[j+1] \/ not c[j+1]) /\
+        (not a[j+1] \/ c[j+1] \/ weight[j]) /\
+        (b[j+1] \/ not c[j+1] \/ weight[j]) /\
+        (a[j+1] \/ not b[j+1] \/ weight[j]) /\
+        (a[j+1] \/ b[j+1] \/ c[j+1] \/ not weight[j]) /\
+        (not a[j+1] \/ not b[j+1] \/ not c[j+1] \/ not weight[j])
+    ) /\
+    ((a[length(a)-1] != b[length(a)-1]) = c[length(a)-1]);
+""".strip()

@@ -115,6 +115,17 @@ optimality claim also needs an unsatisfiable lower bound. Continuous models
 must instead state numerical precision and tolerances and cannot certify an
 exact impossibility result on their own.
 
+Exact ARX differential optimization
+-----------------------------------
+
+``SpeckDifferentialCPModel`` composes the exact bit relation for modular-add
+XOR differences with rotations and XOR wiring read from the typed Speck graph.
+It currently supports the reviewed Speck32/64 slice with zero key difference.
+The external regression is specified to prove weight 8 unsatisfiable and
+weight 9 satisfiable for five rounds, reproducing the legacy optimized-CP
+result. The decoded five additions are then recounted with independent
+paired-carry semantics; no solver-reported probability is trusted.
+
 .. automodule:: claasp_next.representations.constraints.cp
    :members:
 
