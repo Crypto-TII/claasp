@@ -384,6 +384,13 @@ word abstraction and CP projection) and M10.6d3c2 (component composition and
 a newly sourced SPN semantic fixture, since the enabled legacy suite contains
 no fixed trail result).
 
+M10.6d4 proceeds as M10.6d4a (fixture/dependency audit), M10.6d4b (a shared
+forward/backward contradiction boundary and inverse graph propagation),
+M10.6d4c (the legacy seven-round Speck UNSAT result), and M10.6d4d (the fixed
+Simon-32/64 eleven-round intermediate patterns after Simon joins the typed
+cipher catalogue). Hybrid-impossible encodings become component semantic
+overrides rather than a parallel model hierarchy.
+
 #### M10.5d: Representation architecture realignment
 
 Complete this cross-cutting milestone before starting the CP backend, so CP
@@ -647,6 +654,10 @@ each synchronization.
 | Wordwise activity/value domain (M10.6d3c1) | Achieved | Zero, known, nonzero, and unrestricted word differences use typed Python/native MiniZinc enums, with no legacy activity integers or value sentinels |
 | Wordwise SPN composition (M10.6d3c2) | Achieved | A zero-key singleton byte difference becomes four guaranteed nonzero bytes in the graph-selected AES column; Docker verifies the typed CP projection |
 | Multi-round CP impossible search (M10.6d4) | Planned | Composed forward/backward propagation and selected legacy UNSAT fixtures |
+| Impossible-suite fixture audit (M10.6d4a) | Achieved | Selected Speck-7 UNSAT and fixed Simon-11 boundary/intermediate patterns; recorded typed-Simon dependency and rejected generated-line counts |
+| Shared impossible boundary (M10.6d4b) | Next | Typed forward/backward contradiction, inverse propagation, and independent boundary checker |
+| Speck multi-round impossible CP (M10.6d4c) | Planned | Reproduce the legacy seven-round UNSAT search with zero key difference |
+| Simon fixed impossible fixture (M10.6d4d) | Blocked by planned prerequisite | Migrate typed Simon32/64, then preserve the exact 11-round input/output and middle-round patterns |
 | CP composed attacks (M10.6d5) | Planned | Explicit boomerang and differential-linear semantic contracts and fixtures |
 | CP continuous models (M10.6d6) | Planned | Numerically qualified heuristic models kept distinct from exact proof results |
 | Statistical analysis (M10.7) | Planned | Avalanche and related legacy behavior |

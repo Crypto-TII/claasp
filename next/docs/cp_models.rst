@@ -206,6 +206,17 @@ Docker then projects this fixed semantic result through
 ``WordwiseDifferenceCPModel`` and checks that the solver cannot change any
 typed boundary value.
 
+Impossible-suite migration
+--------------------------
+
+The legacy result inventory retains the seven-round Speck UNSAT search and
+the exact Simon-32/64 eleven-round input, output, and two middle-boundary
+patterns. The latter requires a typed Simon cipher before its model can be
+migrated honestly. Generated declaration counts are excluded. The next
+checkpoint introduces a typed forward/backward contradiction boundary and
+independent checker; hybrid models will use component semantic overrides
+rather than a separate solver-class hierarchy.
+
 .. automodule:: claasp_next.representations.constraints.cp
    :members:
 
