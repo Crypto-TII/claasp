@@ -163,6 +163,30 @@ the exact legacy two-round output
 each addition and graph boundary independently. Wordwise propagation remains
 the next separate checkpoint.
 
+Wordwise truncated values
+-------------------------
+
+``WordwiseXorDifference`` replaces the legacy public pair of an ``active``
+integer and a sentinel ``value``. Its four meanings are explicit:
+``ZERO``, ``KNOWN``, ``NONZERO``, and ``UNKNOWN``. Concrete values are accepted
+only for ``KNOWN`` and must be nonzero and fit the word width.
+
+.. doctest::
+
+   >>> from claasp_next.semantics.cryptanalysis import WordwiseDifferenceKind, WordwiseXorDifference
+   >>> difference = WordwiseXorDifference.known(8, 0x53)
+   >>> difference.through_bijection()
+   WordwiseXorDifference(width=8, kind=<WordwiseDifferenceKind.NONZERO: 2>, value=None)
+   >>> difference.xor(difference).kind is WordwiseDifferenceKind.ZERO
+   True
+
+``WordwiseDifferenceCPModel`` keeps the old MiniZinc encoding internal and
+projects solver values back to these types. The old test asserting exactly
+1,359 generated lines is superseded by semantic-invariant and Docker roundtrip
+tests. The enabled legacy suite contains no fixed wordwise trail; AES component
+composition will therefore use a newly sourced fixture labelled as v5 evidence,
+not misrepresent it as a preserved CLAASP result.
+
 .. automodule:: claasp_next.representations.constraints.cp
    :members:
 

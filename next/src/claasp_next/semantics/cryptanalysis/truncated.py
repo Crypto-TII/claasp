@@ -21,6 +21,68 @@ class TruncatedBit(str, Enum):
         return 2 if self is TruncatedBit.UNKNOWN else int(self.value)
 
 
+class WordwiseDifferenceKind(int, Enum):
+    """Legacy word-activity meanings, separated from their CP encoding."""
+
+    ZERO = 0
+    KNOWN = 1
+    NONZERO = 2
+    UNKNOWN = 3
+
+
+@dataclass(frozen=True, slots=True)
+class WordwiseXorDifference:
+    """A zero, known, nonzero, or unrestricted XOR difference over one word."""
+
+    width: int
+    kind: WordwiseDifferenceKind
+    value: int | None = None
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.width, int) or isinstance(self.width, bool) or self.width <= 0:
+            raise ValueError("wordwise difference width must be positive")
+        if not isinstance(self.kind, WordwiseDifferenceKind):
+            raise TypeError("kind must be a WordwiseDifferenceKind")
+        if self.kind is WordwiseDifferenceKind.ZERO:
+            if self.value not in (None, 0):
+                raise ValueError("zero wordwise differences cannot carry a nonzero value")
+            object.__setattr__(self, "value", 0)
+        elif self.kind is WordwiseDifferenceKind.KNOWN:
+            if not isinstance(self.value, int) or isinstance(self.value, bool):
+                raise TypeError("known wordwise differences require an integer value")
+            if not 0 < self.value < (1 << self.width):
+                raise ValueError("known wordwise difference must be nonzero and fit its width")
+        elif self.value is not None:
+            raise ValueError("abstract wordwise differences cannot carry a concrete value")
+
+    @classmethod
+    def known(cls, width: int, value: int) -> "WordwiseXorDifference":
+        return cls(width, WordwiseDifferenceKind.KNOWN, value)
+
+    def xor(self, other: "WordwiseXorDifference") -> "WordwiseXorDifference":
+        """Return the strongest sound wordwise result of XOR."""
+
+        if not isinstance(other, WordwiseXorDifference) or self.width != other.width:
+            raise ValueError("wordwise XOR operands must have the same width")
+        if self.kind is WordwiseDifferenceKind.ZERO:
+            return other
+        if other.kind is WordwiseDifferenceKind.ZERO:
+            return self
+        if self.kind is other.kind is WordwiseDifferenceKind.KNOWN:
+            value = self.value ^ other.value
+            return type(self)(self.width, WordwiseDifferenceKind.ZERO) if value == 0 else type(self).known(self.width, value)
+        return type(self)(self.width, WordwiseDifferenceKind.UNKNOWN)
+
+    def through_bijection(self) -> "WordwiseXorDifference":
+        """Propagate activity through a bijection without claiming a value."""
+
+        if self.kind is WordwiseDifferenceKind.ZERO:
+            return self
+        if self.kind in (WordwiseDifferenceKind.KNOWN, WordwiseDifferenceKind.NONZERO):
+            return type(self)(self.width, WordwiseDifferenceKind.NONZERO)
+        return self
+
+
 @dataclass(frozen=True, slots=True)
 class TruncatedXorDifference:
     """An MSB-first deterministic truncated XOR difference."""

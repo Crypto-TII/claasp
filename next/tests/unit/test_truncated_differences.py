@@ -1,6 +1,8 @@
 from claasp_next.semantics.cryptanalysis import (
     ProbabilisticTruncatedModularAddTransition,
     ProbabilisticTruncatedTrail,
+    WordwiseDifferenceKind,
+    WordwiseXorDifference,
     TruncatedXorDifference,
     check_probabilistic_truncated_modular_add,
     propagate_two_word_speck_round,
@@ -65,3 +67,15 @@ def test_probabilistic_truncated_trail_sums_exact_scaled_costs():
 
     assert trail.scaled_weight == 120
     assert trail.weight == 1.2
+
+
+def test_wordwise_difference_preserves_values_and_sound_activity():
+    zero = WordwiseXorDifference(8, WordwiseDifferenceKind.ZERO)
+    known = WordwiseXorDifference.known(8, 0x53)
+
+    assert zero.xor(known) == known
+    assert known.xor(known).kind is WordwiseDifferenceKind.ZERO
+    assert known.through_bijection() == WordwiseXorDifference(
+        8, WordwiseDifferenceKind.NONZERO
+    )
+    assert WordwiseXorDifference(8, WordwiseDifferenceKind.UNKNOWN).through_bijection().kind is WordwiseDifferenceKind.UNKNOWN

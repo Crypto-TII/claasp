@@ -22,9 +22,11 @@ from claasp_next.representations.constraints.cp import (
     SpeckDifferentialCPModel,
     SpeckProbabilisticTruncatedCPModel,
     SpeckTruncatedCPModel,
+    WordwiseDifferenceCPModel,
 )
 from claasp_next.semantics.cryptanalysis import (
     TruncatedXorDifference, check_probabilistic_truncated_modular_add,
+    WordwiseDifferenceKind, WordwiseXorDifference,
 )
 from claasp_next.representations.constraints.smt.trails import (
     check_present_linear_smt_trail,
@@ -297,3 +299,18 @@ def test_minizinc_preserves_legacy_speck_probabilistic_truncated_trails(
     assert str(trail.output_pattern) == output_pattern
     assert trail.weight == expected_weight
     assert len(trail.transitions) == rounds
+
+
+def test_minizinc_projects_legacy_wordwise_states_to_typed_values():
+    words = (
+        WordwiseXorDifference(8, WordwiseDifferenceKind.ZERO),
+        WordwiseXorDifference.known(8, 0x53),
+        WordwiseXorDifference(8, WordwiseDifferenceKind.NONZERO),
+        WordwiseXorDifference(8, WordwiseDifferenceKind.UNKNOWN),
+    )
+    model = WordwiseDifferenceCPModel(words)
+
+    solved = MiniZincSolver(solver=_test_solver()).solve(model.cp_model())
+
+    assert solved.status is CPStatus.SATISFIED
+    assert model.decode(solved.assignment) == words

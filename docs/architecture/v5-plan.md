@@ -379,7 +379,10 @@ M10.6d3 proceeds as M10.6d3a (typed probabilistic-truncated modular-add semantic
 and fixed-cost fixtures), M10.6d3b (multi-round Speck composition and fixed
 boundary-pattern results), and M10.6d3c (an explicit wordwise activity/value
 domain and result-bearing SPN fixtures). Legacy declaration counts are not
-acceptance criteria.
+acceptance criteria. M10.6d3c is split into M10.6d3c1 (the four-state typed
+word abstraction and CP projection) and M10.6d3c2 (component composition and
+a newly sourced SPN semantic fixture, since the enabled legacy suite contains
+no fixed trail result).
 
 #### M10.5d: Representation architecture realignment
 
@@ -640,7 +643,9 @@ each synchronization.
 | Generalized CP truncated propagation (M10.6d3) | In progress | Local and composed Speck probabilistic-truncated semantics achieved; wordwise checkpoint follows |
 | Probabilistic-truncated modular-add CP semantics (M10.6d3a) | Achieved | Typed partial transition, independent counter/cost checker, and Docker/Chuffed reproduction of legacy scaled costs 309 and 700 |
 | Probabilistic-truncated Speck CP composition (M10.6d3b) | Achieved | Docker/Chuffed preserves the exact two-/three-round output patterns and weights 1.0/0.0; all additions and wiring are independently checked |
-| Wordwise truncated CP semantics (M10.6d3c) | Next | Replace declaration-count tests with explicit activity/value semantics and result-bearing SPN fixtures |
+| Wordwise truncated CP semantics (M10.6d3c) | In progress | Typed activity/value state achieved; component composition and a sourced SPN fixture follow |
+| Wordwise activity/value domain (M10.6d3c1) | Achieved | Zero, known, nonzero, and unrestricted word differences have explicit invariants, sound XOR/bijection operations, and Docker-tested CP projection |
+| Wordwise SPN composition (M10.6d3c2) | Next | Compose S-box, permutation, XOR, and linear-map rules over AES and add a clearly labelled v5 semantic fixture |
 | Multi-round CP impossible search (M10.6d4) | Planned | Composed forward/backward propagation and selected legacy UNSAT fixtures |
 | CP composed attacks (M10.6d5) | Planned | Explicit boomerang and differential-linear semantic contracts and fixtures |
 | CP continuous models (M10.6d6) | Planned | Numerically qualified heuristic models kept distinct from exact proof results |

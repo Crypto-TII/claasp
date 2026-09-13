@@ -9,6 +9,7 @@ from claasp_next.semantics.cryptanalysis import (
     Trail, TrailKind, TrailStep,
     TruncatedXorDifference, XorDifference, XorMask,
     check_probabilistic_truncated_modular_add, propagate_two_word_speck_round,
+    WordwiseDifferenceKind, WordwiseXorDifference,
 )
 from claasp_next.semantics import DETERMINISTIC_TRUNCATED_XOR
 from claasp_next.representations.constraints.cp.model import MiniZincModel
@@ -544,6 +545,59 @@ class SpeckProbabilisticTruncatedCPModel:
         if trail.scaled_weight != int(assignment["scaled_weight"]):
             raise ValueError("inconsistent composed scaled weight")
         return trail
+
+
+class WordwiseDifferenceCPModel:
+    """Expose typed word-activity/value invariants as a native CP model."""
+
+    def __init__(self, words: tuple[WordwiseXorDifference, ...]) -> None:
+        if not words or any(not isinstance(word, WordwiseXorDifference) for word in words):
+            raise ValueError("words must contain wordwise XOR differences")
+        if len({word.width for word in words}) != 1:
+            raise ValueError("wordwise CP values must have one common width")
+        self.words = words
+        self.width = words[0].width
+
+    def cp_model(self) -> MiniZincModel:
+        """Encode the four semantic states without public sentinel values."""
+
+        last = len(self.words) - 1
+        maximum = (1 << self.width) - 1
+        declarations = (
+            f"array[0..{last}] of var 0..3: activity;",
+            f"array[0..{last}] of var -2..{maximum}: value;",
+        )
+        constraints = []
+        for index, word in enumerate(self.words):
+            constraints.append(f"constraint activity[{index}] = {word.kind.value};")
+            constraints.append(
+                f"constraint if activity[{index}] = 0 then value[{index}] = 0 "
+                f"elseif activity[{index}] = 1 then value[{index}] > 0 "
+                f"elseif activity[{index}] = 2 then value[{index}] = -1 "
+                f"else value[{index}] = -2 endif;"
+            )
+            if word.kind is WordwiseDifferenceKind.KNOWN:
+                constraints.append(f"constraint value[{index}] = {word.value};")
+        return MiniZincModel(
+            declarations, tuple(constraints),
+            provenance=("legacy wordwise activity/value state encoding",),
+        )
+
+    def decode(self, assignment) -> tuple[WordwiseXorDifference, ...]:
+        """Project solver sentinels back to typed values and verify the boundary."""
+
+        decoded = []
+        for activity, value in zip(assignment["activity"], assignment["value"]):
+            kind = WordwiseDifferenceKind(int(activity))
+            decoded.append(
+                WordwiseXorDifference.known(self.width, int(value))
+                if kind is WordwiseDifferenceKind.KNOWN
+                else WordwiseXorDifference(self.width, kind)
+            )
+        result = tuple(decoded)
+        if result != self.words:
+            raise ValueError("MiniZinc changed a fixed wordwise boundary")
+        return result
 
 
 class SBoxDifferenceCPModel:

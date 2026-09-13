@@ -12,6 +12,7 @@ from claasp_next.semantics.cryptanalysis.problem import (
 from claasp_next.semantics.cryptanalysis.truncated import (
     ProbabilisticTruncatedModularAddTransition, ProbabilisticTruncatedTrail,
     TruncatedBit, TruncatedXorDifference,
+    WordwiseDifferenceKind, WordwiseXorDifference,
     check_probabilistic_truncated_modular_add, propagate_two_word_speck_round,
     truncated_modular_add,
 )
@@ -27,4 +28,5 @@ __all__ = [
     "truncated_modular_add", "ProbabilisticTruncatedModularAddTransition",
     "ProbabilisticTruncatedTrail",
     "check_probabilistic_truncated_modular_add",
+    "WordwiseDifferenceKind", "WordwiseXorDifference",
 ]
