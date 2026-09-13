@@ -262,7 +262,7 @@ class SpeckDifferentialCPModel:
                     f"(y_{round_number}[{(index + beta) % self.width}] != "
                     f"x_{round_number + 1}[{index}]);"
                 )
-        constraints.append("constraint exists(i in 0..15)(x_0[i] \/ y_0[i]);")
+        constraints.append(r"constraint exists(i in 0..15)(x_0[i] \/ y_0[i]);")
         weight_terms = [
             f"bool2int(weight_{round_number}[{bit}])"
             for round_number in range(rounds)

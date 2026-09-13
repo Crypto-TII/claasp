@@ -35,7 +35,10 @@ def _test_solver():
     listed = subprocess.run(
         ["minizinc", "--solvers"], text=True, capture_output=True, check=True
     ).stdout.lower()
-    return "gecode" if "gecode" in listed else "coin-bc"
+    for solver in ("chuffed", "gecode", "cp-sat", "coin-bc"):
+        if solver in listed:
+            return solver
+    raise AssertionError("the external test job must provide a MiniZinc solver")
 
 
 def test_minizinc_solves_and_projects_named_values():
