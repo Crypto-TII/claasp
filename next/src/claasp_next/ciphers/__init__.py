@@ -6,6 +6,7 @@ from claasp_next.ciphers.block_ciphers import (
     Present80BlockCipher,
     PresentBlockCipher,
     SpeckBlockCipher,
+    SimonBlockCipher,
 )
 from claasp_next.ciphers.permutations.mimc import MiMCPermutation
 from claasp_next.ciphers.permutations.poseidon import PoseidonPermutation
@@ -18,4 +19,5 @@ __all__ = [
     "Present80BlockCipher",
     "PresentBlockCipher",
     "SpeckBlockCipher",
+    "SimonBlockCipher",
 ]

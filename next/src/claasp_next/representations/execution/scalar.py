@@ -7,7 +7,7 @@ from claasp_next.annotations import ExecutionTrace, GraphAnnotation
 from claasp_next.components.algebraic import Add, LinearMap, Multiply, Power
 from claasp_next.components.structural import Concatenate, Constant, Identity, Permutation
 from claasp_next.components.substitution import BitVectorSBox, SBox
-from claasp_next.components.word import ModularAdd, Rotate, Xor
+from claasp_next.components.word import BitwiseAnd, ModularAdd, Rotate, Xor
 from claasp_next.graph.cipher import Cipher
 from claasp_next.graph.component import Component
 from claasp_next.semantics import CONCRETE
@@ -52,6 +52,7 @@ class ScalarExecutionDriver:
             Multiply: self._evaluate_multiply,
             Power: self._evaluate_power,
             LinearMap: self._evaluate_linear_map,
+            BitwiseAnd: self._evaluate_bitwise_and,
             ModularAdd: self._evaluate_modular_add,
             Rotate: self._evaluate_rotate,
             Xor: self._evaluate_xor,
@@ -220,6 +221,15 @@ class ScalarExecutionDriver:
         output = list(inputs[0])
         for operand in inputs[1:]:
             output = [left ^ right for left, right in zip(output, operand)]
+        return tuple(output)
+
+    @staticmethod
+    def _evaluate_bitwise_and(
+        component: BitwiseAnd, inputs: tuple[RuntimeValue, ...]
+    ) -> RuntimeValue:
+        output = list(inputs[0])
+        for operand in inputs[1:]:
+            output = [left & right for left, right in zip(output, operand)]
         return tuple(output)
 
     @staticmethod

@@ -386,9 +386,9 @@ no fixed trail result).
 
 M10.6d4 proceeds as M10.6d4a (fixture/dependency audit), M10.6d4b (a shared
 forward/backward contradiction boundary and inverse graph propagation),
-M10.6d4c (the legacy seven-round Speck UNSAT result), and M10.6d4d (the fixed
-Simon-32/64 eleven-round intermediate patterns after Simon joins the typed
-cipher catalogue). Hybrid-impossible encodings become component semantic
+M10.6d4c (the legacy seven-round Speck UNSAT result), M10.6d4d1 (typed Simon
+and its legacy fixed evaluation vectors), and M10.6d4d2 (the fixed Simon-32/64
+eleven-round intermediate patterns). Hybrid-impossible encodings become component semantic
 overrides rather than a parallel model hierarchy.
 
 #### M10.5d: Representation architecture realignment
@@ -657,7 +657,9 @@ each synchronization.
 | Impossible-suite fixture audit (M10.6d4a) | Achieved | Selected Speck-7 UNSAT and fixed Simon-11 boundary/intermediate patterns; recorded typed-Simon dependency and rejected generated-line counts |
 | Shared impossible boundary (M10.6d4b) | Achieved | Typed forward/backward patterns expose exact contradictory positions; sound inverse Speck subtraction/round propagation and Docker SAT/UNSAT boundary proofs are independently checked |
 | Speck multi-round impossible CP (M10.6d4c) | Achieved | Directional forward/inverse Speck dataflows preserve the legacy seven-round, split-after-three UNSAT result with zero key difference in Docker/Chuffed |
-| Simon fixed impossible fixture (M10.6d4d) | Next | Migrate typed Simon32/64, then preserve the exact 11-round input/output and middle-round patterns |
+| Simon fixed impossible fixture (M10.6d4d) | In progress | Typed Simon and legacy evaluation vectors achieved; exact 11-round impossible patterns follow |
+| Typed Simon prerequisite (M10.6d4d1) | Achieved | Typed word graph, reusable BitwiseAnd, all standard configurations, scalar/two batch evaluators, and four fixed legacy vectors |
+| Simon-11 impossible CP fixture (M10.6d4d2) | Next | Preserve the exact input/output and forward/backward middle-round patterns from legacy CLAASP |
 | CP composed attacks (M10.6d5) | Planned | Explicit boomerang and differential-linear semantic contracts and fixtures |
 | CP continuous models (M10.6d6) | Planned | Numerically qualified heuristic models kept distinct from exact proof results |
 | Statistical analysis (M10.7) | Planned | Avalanche and related legacy behavior |

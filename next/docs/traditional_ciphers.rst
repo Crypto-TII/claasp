@@ -37,6 +37,24 @@ The construction includes the key schedule in the graph. All standard
 block/key configurations are accepted. Reduced-round instances retain a
 prefix of the standard schedule.
 
+Simon32/64
+----------
+
+Simon uses the same typed word boundaries, adding a reusable component-wise
+``BitwiseAnd`` operation for its nonlinear round function. The key schedule is
+part of the graph, and packed integers remain the ordinary user interface.
+
+.. doctest::
+
+   >>> from claasp_next.ciphers import SimonBlockCipher
+   >>> simon = SimonBlockCipher()
+   >>> f"{simon.evaluate(0x65656877, 0x1918111009080100):08x}"
+   'c69be9bb'
+
+All ten standard block/key configurations are supported. The migrated tests
+retain the fixed Simon32/64, Simon48/72, Simon48/96, and Simon128/256 vectors
+from the legacy CLAASP suite.
+
 AES
 ---
 
