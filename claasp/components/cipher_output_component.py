@@ -760,13 +760,27 @@ class CipherOutput(Component):
         Xor.smt_xor_quasidifferential_propagation_constraints for
         that rule. This plain-identity version is only correct when
         there is no such fork on this wire.
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.single_component_ciphers.constant_cipher import ConstantCipher
+            sage: from claasp.cipher_modules.models.smt.smt_models.smt_xor_quasidifferential_model import SmtXorQuasidifferentialModel
+            sage: cipher = ConstantCipher(output_bit_size=3, value=2)
+            sage: output = cipher.component_from_id('cipher_output_0_1')
+            sage: variables, constraints = output.smt_xor_quasidifferential_propagation_constraints(SmtXorQuasidifferentialModel(cipher))
+            sage: constraints
+            ['(assert (= cipher_output_0_1_0 constant_0_0_0))',
+             '(assert (= cipher_output_0_1_1 constant_0_0_1))',
+             '(assert (= cipher_output_0_1_2 constant_0_0_2))',
+             '(assert (= qdt_cipher_output_0_1_0 qdt_constant_0_0_0))',
+             '(assert (= qdt_cipher_output_0_1_1 qdt_constant_0_0_1))',
+             '(assert (= qdt_cipher_output_0_1_2 qdt_constant_0_0_2))']
         """
 
         input_bit_ids = self._generate_input_ids()
         output_bit_ids = self._generate_output_ids()
 
-        qdt_input_bit_ids = [f"qdt_{bit_id}" for bit_id in input_bit_ids]
-
+        qdt_input_bit_ids = model._qdt_input_bit_ids(self)
         qdt_output_bit_ids = [f"qdt_{bit_id}" for bit_id in output_bit_ids]
 
         constraints = []

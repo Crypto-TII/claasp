@@ -2536,40 +2536,29 @@ class Sbox(Component):
 
         A transition is allowed if the corresponding QDT coefficient is
         non-zero.
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.single_component_ciphers.sbox_cipher import SboxCipher
+            sage: from claasp.cipher_modules.models.smt.smt_models.smt_xor_quasidifferential_model import SmtXorQuasidifferentialModel
+            sage: cipher = SboxCipher(bit_size=2, lookup_table=[0, 1, 3, 2])
+            sage: sbox = cipher.component_from_id('sbox_0_0')
+            sage: variables, constraints = sbox.smt_xor_quasidifferential_propagation_constraints(SmtXorQuasidifferentialModel(cipher))
+            sage: variables
+            ['sbox_0_0_0', 'sbox_0_0_1', 'qdt_sbox_0_0_0', 'qdt_sbox_0_0_1']
+            sage: len(constraints), constraints[0].startswith('(assert (or')
+            (1, True)
+
+        ``[0, 1, 3, 2]`` is linear, so every admissible transition has weight 0
+        and the S-box needs no weight indicator.
         """
 
         input_diff_bit_ids = self._generate_input_ids()
         output_diff_bit_ids = self._generate_output_ids()
 
-        input_qdt_bit_ids = []
-
-        for input_id, bit_positions in zip(
-            self.input_id_links,
-            self.input_bit_positions,
-        ):
-            input_qdt_bit_ids.extend([f"qdt_{input_id}_{position}" for position in bit_positions])
+        input_qdt_bit_ids = model._qdt_input_bit_ids(self)
 
         output_qdt_bit_ids = [f"qdt_{output_bit_id}" for output_bit_id in output_diff_bit_ids]
-
-        def fixed_value_literals(bit_ids, value):
-            """
-            Return SMT literals forcing bit_ids to represent value.
-
-            bit_ids[0] is considered the most significant bit.
-            """
-
-            size = len(bit_ids)
-            literals = []
-
-            for i, bit_id in enumerate(bit_ids):
-                bit = (value >> (size - 1 - i)) & 1
-
-                if bit == 1:
-                    literals.append(bit_id)
-                else:
-                    literals.append(utils.smt_not(bit_id))
-
-            return literals
 
         sbox_values = self.description
         cache_key = str(sbox_values)
@@ -2620,37 +2609,33 @@ class Sbox(Component):
 
             # Input XOR difference = a
             literals.extend(
-                fixed_value_literals(
+                model._value_literals(
                     input_diff_bit_ids,
                     transition["a"],
                 )
             )
 
-            # Input QDT mask = u
             literals.extend(
-                fixed_value_literals(
+                model._value_literals(
                     input_qdt_bit_ids,
                     transition["u"],
                 )
             )
 
-            # Output XOR difference = b
             literals.extend(
-                fixed_value_literals(
+                model._value_literals(
                     output_diff_bit_ids,
                     transition["b"],
                 )
             )
 
-            # Output QDT mask = v
             literals.extend(
-                fixed_value_literals(
+                model._value_literals(
                     output_qdt_bit_ids,
                     transition["v"],
                 )
             )
 
-            # Local weight = transition["weight"] (thermometer encoding)
             literals.extend(
                 model._qdt_weight_constraints(
                     weight_bit_ids,

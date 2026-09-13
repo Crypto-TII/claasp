@@ -383,8 +383,10 @@ def test_milp_wordwise_deterministic_truncated_constraints():
     assert len(constraints) == 12
 
 def test_smt_xor_quasidifferential_propagation_constraints():
-    permutation_component = make_permutation_component()
-    variables, constraints = permutation_component.smt_xor_quasidifferential_propagation_constraints(None)
+    cipher = PermutationCipher(bit_size=4, permutation_description=PERMUTATION)
+    model = SmtXorQuasidifferentialModel(cipher)
+    permutation_component = cipher.component_from_id("permutation_0_0")
+    variables, constraints = permutation_component.smt_xor_quasidifferential_propagation_constraints(model)
 
     assert variables == [
         "permutation_0_0_0",
@@ -397,15 +399,13 @@ def test_smt_xor_quasidifferential_propagation_constraints():
         "qdt_permutation_0_0_3",
     ]
 
-    # A permutation matrix is orthogonal, hence self-dual: masks follow
-    # exactly the same map as differences.
     assert constraints == [
-        "(assert (= permutation_0_0_0 input_3))",
-        "(assert (= permutation_0_0_1 input_0))",
-        "(assert (= permutation_0_0_2 input_2))",
-        "(assert (= permutation_0_0_3 input_1))",
-        "(assert (= qdt_permutation_0_0_0 qdt_input_3))",
-        "(assert (= qdt_permutation_0_0_1 qdt_input_0))",
-        "(assert (= qdt_permutation_0_0_2 qdt_input_2))",
-        "(assert (= qdt_permutation_0_0_3 qdt_input_1))",
+        "(assert (= permutation_0_0_0 plaintext_3))",
+        "(assert (= permutation_0_0_1 plaintext_0))",
+        "(assert (= permutation_0_0_2 plaintext_2))",
+        "(assert (= permutation_0_0_3 plaintext_1))",
+        "(assert (= qdt_permutation_0_0_0 qdt_plaintext_3))",
+        "(assert (= qdt_permutation_0_0_1 qdt_plaintext_0))",
+        "(assert (= qdt_permutation_0_0_2 qdt_plaintext_2))",
+        "(assert (= qdt_permutation_0_0_3 qdt_plaintext_1))",
     ]

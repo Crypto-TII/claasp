@@ -1179,6 +1179,21 @@ class LinearLayer(Component):
           reference to the upstream component's bit id, instead of
           the ``_i``/``_o`` suffix convention used by the ordinary
           linear model).
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.single_component_ciphers.linear_layer_cipher import LinearLayerCipher
+            sage: from claasp.cipher_modules.models.smt.smt_models.smt_xor_quasidifferential_model import SmtXorQuasidifferentialModel
+            sage: cipher = LinearLayerCipher(bit_size=2, description=[[1, 1], [0, 1]])
+            sage: linear_layer = cipher.component_from_id('linear_layer_0_0')
+            sage: variables, constraints = linear_layer.smt_xor_quasidifferential_propagation_constraints(SmtXorQuasidifferentialModel(cipher))
+            sage: constraints
+            ['(assert (= linear_layer_0_0_0 plaintext_0))',
+             '(assert (= linear_layer_0_0_1 (xor plaintext_0 plaintext_1)))',
+             '(assert (= qdt_plaintext_0 qdt_dummy_0_qdt_linear_layer_0_0_0))',
+             '(assert (= qdt_plaintext_1 qdt_dummy_1_qdt_linear_layer_0_0_0 qdt_dummy_1_qdt_linear_layer_0_0_1))',
+             '(assert (= qdt_linear_layer_0_0_0 (xor qdt_dummy_0_qdt_linear_layer_0_0_0 qdt_dummy_1_qdt_linear_layer_0_0_0)))',
+             '(assert (= qdt_linear_layer_0_0_1 qdt_dummy_1_qdt_linear_layer_0_0_1))']
         """
 
         output_bit_ids, diff_constraints = LinearLayer.smt_constraints(self)
@@ -1192,8 +1207,7 @@ class LinearLayer(Component):
 
         input_bit_ids = self._generate_input_ids()
 
-        qdt_input_bit_ids = [f"qdt_{bit_id}" for bit_id in input_bit_ids]
-
+        qdt_input_bit_ids = model._qdt_input_bit_ids(self)
         qdt_output_bit_ids = [f"qdt_{bit_id}" for bit_id in output_bit_ids]
 
         inverse_matrix = Matrix(FiniteField(2), self.description).inverse()

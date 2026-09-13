@@ -408,48 +408,29 @@ class Permutation(Component):
         this component's own ``smt_xor_linear_mask_propagation_constraints``,
         where ``output_mask[i] = input_mask[bit_perm[i]]`` -- the same
         ``bit_perm`` used for the ordinary difference).
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.single_component_ciphers.permutation_cipher import PermutationCipher
+            sage: from claasp.cipher_modules.models.smt.smt_models.smt_xor_quasidifferential_model import SmtXorQuasidifferentialModel
+            sage: cipher = PermutationCipher(bit_size=4, permutation_description=[3, 0, 2, 1])
+            sage: permutation = cipher.component_from_id('permutation_0_0')
+            sage: variables, constraints = permutation.smt_xor_quasidifferential_propagation_constraints(SmtXorQuasidifferentialModel(cipher))
+            sage: constraints
+            ['(assert (= permutation_0_0_0 plaintext_1))',
+             '(assert (= permutation_0_0_1 plaintext_3))',
+             '(assert (= permutation_0_0_2 plaintext_2))',
+             '(assert (= permutation_0_0_3 plaintext_0))',
+             '(assert (= qdt_permutation_0_0_0 qdt_plaintext_1))',
+             '(assert (= qdt_permutation_0_0_1 qdt_plaintext_3))',
+             '(assert (= qdt_permutation_0_0_2 qdt_plaintext_2))',
+             '(assert (= qdt_permutation_0_0_3 qdt_plaintext_0))']
         """
 
-        # Difference propagation: identical to the ordinary
-        # differential model for this component.
-
-        output_bit_ids, diff_constraints = self.smt_xor_differential_propagation_constraints(model)
-
-        # Mask propagation: same bit_perm mapping as the difference,
-        # applied to the qdt_-prefixed variable names.
-
-        input_bit_ids = self._generate_input_ids()
-
-        qdt_input_bit_ids = [f"qdt_{bit_id}" for bit_id in input_bit_ids]
-
-        qdt_output_bit_ids = [f"qdt_{bit_id}" for bit_id in output_bit_ids]
-
-        bit_perm = self._bit_perm()
-
-        qdt_input_bit_ids_permuted = [qdt_input_bit_ids[new_position] for new_position in bit_perm]
-
-        mask_constraints = []
-
-        for output_bit_id, input_bit_id_permuted in zip(
-            qdt_output_bit_ids,
-            qdt_input_bit_ids_permuted,
-        ):
-            equation = smt_utils.smt_equivalent(
-                [
-                    output_bit_id,
-                    input_bit_id_permuted,
-                ]
-            )
-
-            mask_constraints.append(smt_utils.smt_assert(equation))
-
-        variables = output_bit_ids + qdt_output_bit_ids
-
-        constraints = diff_constraints + mask_constraints
-
-        return (
-            variables,
-            constraints,
+        # Self-dual: the mask goes through the same bit permutation as
+        # the difference.
+        return model._bit_moving_propagation_constraints(
+            self, list(zip(range(self.output_bit_size), self._bit_perm()))
         )
 
     def cp_constraints(self):

@@ -54,4 +54,6 @@ def test_smt_xor_quasidifferential_propagation_constraints():
 
     assert len(constraints) == 128
     assert constraints[0] == '(assert (= cipher_output_0_33_0 xor_0_30_0))'
-    assert constraints[-1] == '(assert (= qdt_cipher_output_0_33_63 qdt_xor_0_30_63))'
+    assert constraints[-1] == (
+        '(assert (= qdt_cipher_output_0_33_63 qdt_xor_0_30_63_to_cipher_output_0_33))'
+    )

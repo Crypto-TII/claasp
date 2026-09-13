@@ -970,44 +970,18 @@ class Shift(Component):
             4
         """
 
-        output_bit_ids, diff_constraints = self.smt_xor_differential_propagation_constraints(model)
-
-        input_bit_ids = self._generate_input_ids()
-
-        qdt_input_bit_ids = [f"qdt_{bit_id}" for bit_id in input_bit_ids]
-        qdt_output_bit_ids = [f"qdt_{bit_id}" for bit_id in output_bit_ids]
-
+        # The transpose of a shift is the shift the other way, and the
+        # bits the shift discards carry a zero mask.
         shift_amount = self.description[1]
-        mask_constraints = []
+        inputs = list(range(self.input_bit_size))
+        outputs = list(range(self.output_bit_size))
 
         if shift_amount < 0:
             shift_amount = -shift_amount
-
-            for qdt_input_bit_id in qdt_input_bit_ids[:shift_amount]:
-                mask_constraints.append(smt_utils.smt_assert(smt_utils.smt_not(qdt_input_bit_id)))
-
-            for qdt_output_bit_id, qdt_input_bit_id in zip(
-                qdt_output_bit_ids[:-shift_amount],
-                qdt_input_bit_ids[shift_amount:],
-            ):
-                equation = smt_utils.smt_equivalent((qdt_output_bit_id, qdt_input_bit_id))
-                mask_constraints.append(smt_utils.smt_assert(equation))
-
+            mask_pairs = [(None, position) for position in inputs[:shift_amount]]
+            mask_pairs += list(zip(outputs[:-shift_amount], inputs[shift_amount:]))
         else:
-            for qdt_output_bit_id, qdt_input_bit_id in zip(
-                qdt_output_bit_ids[shift_amount:],
-                qdt_input_bit_ids[:-shift_amount],
-            ):
-                equation = smt_utils.smt_equivalent((qdt_output_bit_id, qdt_input_bit_id))
-                mask_constraints.append(smt_utils.smt_assert(equation))
+            mask_pairs = list(zip(outputs[shift_amount:], inputs[:-shift_amount]))
+            mask_pairs += [(None, position) for position in inputs[-shift_amount:]]
 
-            for qdt_input_bit_id in qdt_input_bit_ids[-shift_amount:]:
-                mask_constraints.append(smt_utils.smt_assert(smt_utils.smt_not(qdt_input_bit_id)))
-
-        variables = output_bit_ids + qdt_output_bit_ids
-        constraints = diff_constraints + mask_constraints
-
-        return (
-            variables,
-            constraints,
-        )
+        return model._bit_moving_propagation_constraints(self, mask_pairs)

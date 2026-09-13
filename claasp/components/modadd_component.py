@@ -34,50 +34,65 @@ def smt_quasidifferential_modadd(
     Return the SMT variables and constraints of Theorem 5.2 of Beyne &
     Rijmen for a two-operand modular addition, plus the classical
     Lipmaa-Moriai differential validity condition.
- 
+
     Shared by MODADD and MODSUB: modular subtraction reduces EXACTLY to
     modular addition with permuted roles (``z = x - y`` is equivalent to
     ``x = z + y``), so ModSub calls this with its own arguments swapped
     -- see ModSub.smt_xor_quasidifferential_propagation_constraints.
- 
+
     ``name_prefix`` distinguishes the auxiliary variables of the two
     operations (``modadd_`` / ``modsub_``), so that a cipher using both
     does not collide.
- 
+
     The ``M`` and ``M-transpose`` linear maps of Section 5.2 reduce,
     bit by bit in claasp's MSB-first ordering (index 0 = MSB), to:
- 
+
         M_pseudoinverse(t)[0] = false
         M_pseudoinverse(t)[q] = t[q] xor t[q-1]                for q = 1..n-1
- 
+
         M_transpose(t)[0] = false
         M_transpose(t)[q] = t[0] xor t[1] xor ... xor t[q-1]   for q = 1..n-1
                           (prefix XOR of all more-significant bits)
- 
+
     This was verified EXHAUSTIVELY against the QDT coefficient computed
     directly from Equation (4) of the paper, over all 3-bit
     (a,b,c,u,v,w) combinations: 6728 valid transitions, 0 false
     positives, 0 false negatives, 0 wrong weights.
+
+    EXAMPLES::
+
+        sage: from claasp.ciphers.single_component_ciphers.modadd_cipher import ModaddCipher
+        sage: from claasp.components.modadd_component import smt_quasidifferential_modadd
+        sage: cipher = ModaddCipher(word_bit_size=2, number_of_inputs=2, modulus=4)
+        sage: modadd = cipher.component_from_id('modadd_0_0')
+        sage: variables, constraints = smt_quasidifferential_modadd(
+        ....:     modadd, 'modadd_',
+        ....:     ['plaintext_0', 'plaintext_1'], ['key_0', 'key_1'], ['modadd_0_0_0', 'modadd_0_0_1'],
+        ....:     ['qdt_plaintext_0', 'qdt_plaintext_1'], ['qdt_key_0', 'qdt_key_1'], ['qdt_modadd_0_0_0', 'qdt_modadd_0_0_1'])
+        sage: len(variables), len(constraints)
+        (20, 23)
+        sage: constraints[0]
+        '(assert (= modadd_aprime_modadd_0_0_0 (xor key_0 modadd_0_0_0)))'
     """
- 
+
     word_size = component.output_bit_size
- 
+
     constraints = []
     variables = []
- 
+
     def new_named_formula(prefix, index, formula):
         variable_name = f"{prefix}_{component.id}_{index}"
         equation = smt_utils.smt_equivalent([variable_name, formula])
         constraints.append(smt_utils.smt_assert(equation))
         variables.append(variable_name)
         return variable_name
- 
+
     # a' = b xor c ; b' = a xor c ; c' = M+(a xor b xor c)
- 
+
     a_prime_ids = []
     b_prime_ids = []
     abc_xor_ids = []
- 
+
     for i in range(word_size):
         a_prime_ids.append(
             new_named_formula(f"{name_prefix}aprime", i, smt_utils.smt_xor([b_ids[i], c_ids[i]]))
@@ -92,24 +107,22 @@ def smt_quasidifferential_modadd(
                 smt_utils.smt_xor([a_ids[i], b_ids[i], c_ids[i]]),
             )
         )
- 
+
     c_prime_ids = ["false"] * word_size
- 
+
     for q in range(1, word_size):
         c_prime_ids[q] = new_named_formula(
             f"{name_prefix}cprime",
             q,
             smt_utils.smt_xor([abc_xor_ids[q], abc_xor_ids[q - 1]]),
         )
- 
-    # ------------------------------------------------------------
+
     # u' = u xor w ; v' = v xor w ; w' = M^T(u xor v xor w)
-    # ------------------------------------------------------------
- 
+
     u_prime_ids = []
     v_prime_ids = []
     uvw_xor_ids = []
- 
+
     for i in range(word_size):
         u_prime_ids.append(
             new_named_formula(f"{name_prefix}uprime", i, smt_utils.smt_xor([u_ids[i], w_ids[i]]))
@@ -124,10 +137,10 @@ def smt_quasidifferential_modadd(
                 smt_utils.smt_xor([u_ids[i], v_ids[i], w_ids[i]]),
             )
         )
- 
+
     w_prime_ids = ["false"] * word_size
     prefix_xor = "false"
- 
+
     for q in range(1, word_size):
         prefix_xor = new_named_formula(
             f"{name_prefix}wprime",
@@ -135,7 +148,7 @@ def smt_quasidifferential_modadd(
             smt_utils.smt_xor([prefix_xor, uvw_xor_ids[q - 1]]),
         )
         w_prime_ids[q] = prefix_xor
- 
+
     # DIFFERENTIAL VALIDITY (Lipmaa-Moriai).
     #
     # Theorem 5.2's own conditions constrain the MASK side assuming the
@@ -147,9 +160,9 @@ def smt_quasidifferential_modadd(
     # correlation is zero.
     #
     #   eq(a<<1, b<<1, c<<1) & (a xor b xor c xor (b<<1)) == 0
- 
+
     for i in range(word_size):
- 
+
         if i == word_size - 1:
             # LSB: eq is trivially true (all shifted-in bits are 0),
             # so the condition reduces to a xor b xor c == 0.
@@ -171,22 +184,22 @@ def smt_quasidifferential_modadd(
                     smt_utils.smt_implies(bits_equal, smt_utils.smt_not(must_vanish))
                 )
             )
- 
+
     # Validity + local weight, per bit.
- 
+
     weight_bit_ids = []
- 
+
     for i in range(word_size):
- 
+
         a_p, b_p, c_p = a_prime_ids[i], b_prime_ids[i], c_prime_ids[i]
         u_p, v_p, w_p = u_prime_ids[i], v_prime_ids[i], w_prime_ids[i]
- 
+
         validity_1 = smt_utils.smt_implies(
             smt_utils.smt_or([u_p, v_p]),
             smt_utils.smt_or([a_p, b_p, w_p]),
         )
         constraints.append(smt_utils.smt_assert(validity_1))
- 
+
         validity_2 = smt_utils.smt_equivalent(
             [
                 smt_utils.smt_xor(
@@ -199,10 +212,10 @@ def smt_quasidifferential_modadd(
             ]
         )
         constraints.append(smt_utils.smt_assert(validity_2))
- 
+
         weight_bit_id = f"hw_qdt_{component.id}_{i}"
         weight_bit_ids.append(weight_bit_id)
- 
+
         if i == 0:
             # Third condition of Theorem 5.2, on the most significant bit.
             top_bit_validity = smt_utils.smt_or(
@@ -217,7 +230,7 @@ def smt_quasidifferential_modadd(
                 ]
             )
             constraints.append(smt_utils.smt_assert(top_bit_validity))
- 
+
             # The most significant bit does NOT contribute to the weight:
             # in modular addition it generates no carry (the classical
             # Lipmaa-Moriai exclusion).
@@ -238,18 +251,13 @@ def smt_quasidifferential_modadd(
                     smt_utils.smt_or([a_p, b_p, w_p]),
                 ]
             )
- 
+
         constraints.append(smt_utils.smt_assert(weight_definition))
- 
-    # The declared variables must always be the ones the COMPONENT
-    # produces, not the ones occupying MODADD's "output" role: for
-    # MODSUB the permutation puts its inputs there, so reading c_ids /
-    # w_ids here would declare plaintext bits instead of modsub bits.
     output_bit_ids = component._generate_output_ids()
     qdt_output_bit_ids = [f"qdt_{bit_id}" for bit_id in output_bit_ids]
- 
+
     variables = output_bit_ids + qdt_output_bit_ids + variables + weight_bit_ids
- 
+
     return variables, constraints
 
 def cms_modadd(output_ids, input0_ids, input1_ids, carry_ids):
@@ -670,7 +678,7 @@ class ModAdd(Modular):
     ):
         """
         Return SMT constraints for MODADD quasidifferential propagation.
- 
+
         Implements Theorem 5.2 of Beyne & Rijmen (modular addition mod
         2^n) for the pairwise case only -- this is what Speck actually
         uses. ModAdd's n>2-operand chaining (sat_modadd_seq /
@@ -678,33 +686,45 @@ class ModAdd(Modular):
         so this raises NotImplementedError rather than guessing;
         build_xor_quasidifferential_trail_model catches that and skips
         the component with a clear message.
- 
+
         The constraints themselves live in the module-level function
         ``smt_quasidifferential_modadd``, shared with ModSub, which
         reduces to modular addition with permuted roles.
- 
+
         INPUT:
- 
+
         - ``model`` -- **model object**; a model instance
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.single_component_ciphers.modadd_cipher import ModaddCipher
+            sage: from claasp.cipher_modules.models.smt.smt_models.smt_xor_quasidifferential_model import SmtXorQuasidifferentialModel
+            sage: cipher = ModaddCipher(word_bit_size=2, number_of_inputs=2, modulus=4)
+            sage: modadd = cipher.component_from_id('modadd_0_0')
+            sage: variables, constraints = modadd.smt_xor_quasidifferential_propagation_constraints(SmtXorQuasidifferentialModel(cipher))
+            sage: len(variables), len(constraints)
+            (20, 23)
+            sage: variables[:4]
+            ['modadd_0_0_0', 'modadd_0_0_1', 'qdt_modadd_0_0_0', 'qdt_modadd_0_0_1']
         """
- 
+
         num_operands = self.description[1]
- 
+
         if num_operands != 2:
             raise NotImplementedError(
                 f"{self.id}: quasidifferential propagation for MODADD is "
                 f"only implemented for 2 operands (Theorem 5.2 of "
                 f"Beyne & Rijmen); got {num_operands}."
             )
- 
+
         word_size = self.output_bit_size
- 
+
         input_bit_ids = self._generate_input_ids()
         output_bit_ids = self._generate_output_ids()
- 
-        qdt_input_bit_ids = [f"qdt_{bit_id}" for bit_id in input_bit_ids]
+
+        qdt_input_bit_ids = model._qdt_input_bit_ids(self)
         qdt_output_bit_ids = [f"qdt_{bit_id}" for bit_id in output_bit_ids]
- 
+
         return smt_quasidifferential_modadd(
             self,
             "modadd_",

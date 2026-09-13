@@ -1513,8 +1513,7 @@ class Xor(Component):
             output_bit_ids = output_bit_ids_result
 
         # QDT input mask identifiers.
-        qdt_input_bit_ids = [f"qdt_{bit_id}" for bit_id in input_bit_ids]
-
+        qdt_input_bit_ids = model._qdt_input_bit_ids(self)
         # QDT output mask identifiers.
         qdt_output_bit_ids = [f"qdt_{bit_id}" for bit_id in output_bit_ids]
 

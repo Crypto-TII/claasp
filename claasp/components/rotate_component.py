@@ -867,38 +867,11 @@ class Rotate(Component):
              '(assert (= qdt_rot_0_0_1 qdt_plaintext_0))']
         """
 
-        output_bit_ids, diff_constraints = self.smt_xor_differential_propagation_constraints(model)
-
-        input_bit_ids = self._generate_input_ids()
-
-        qdt_input_bit_ids = [f"qdt_{bit_id}" for bit_id in input_bit_ids]
-
-        qdt_output_bit_ids = [f"qdt_{bit_id}" for bit_id in output_bit_ids]
-
+        # A rotation is a bit permutation, so the mask goes through the
+        # same rotation as the difference.
         rotation = self.description[1]
+        positions = list(range(self.input_bit_size))
 
-        qdt_input_bit_ids_rotated = qdt_input_bit_ids[-rotation:] + qdt_input_bit_ids[:-rotation]
-
-        mask_constraints = []
-
-        for output_bit_id, input_bit_id_rotated in zip(
-            qdt_output_bit_ids,
-            qdt_input_bit_ids_rotated,
-        ):
-            equation = smt_utils.smt_equivalent(
-                [
-                    output_bit_id,
-                    input_bit_id_rotated,
-                ]
-            )
-
-            mask_constraints.append(smt_utils.smt_assert(equation))
-
-        variables = output_bit_ids + qdt_output_bit_ids
-
-        constraints = diff_constraints + mask_constraints
-
-        return (
-            variables,
-            constraints,
+        return model._bit_moving_propagation_constraints(
+            self, list(zip(range(self.output_bit_size), positions[-rotation:] + positions[:-rotation]))
         )

@@ -792,6 +792,18 @@ class Constant(Component):
           any later sign/key-dependence analysis (cf.
           generic_with_constant_sign_linear_constraints in
           xor_component.py, and Section 4.4 of the paper).
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.single_component_ciphers.constant_cipher import ConstantCipher
+            sage: from claasp.cipher_modules.models.smt.smt_models.smt_xor_quasidifferential_model import SmtXorQuasidifferentialModel
+            sage: cipher = ConstantCipher(output_bit_size=3, value=2)
+            sage: constant = cipher.component_from_id('constant_0_0')
+            sage: variables, constraints = constant.smt_xor_quasidifferential_propagation_constraints(SmtXorQuasidifferentialModel(cipher))
+            sage: variables
+            ['constant_0_0_0', 'constant_0_0_1', 'constant_0_0_2', 'qdt_constant_0_0_0', 'qdt_constant_0_0_1', 'qdt_constant_0_0_2']
+            sage: constraints
+            ['(assert (not constant_0_0_0))', '(assert (not constant_0_0_1))', '(assert (not constant_0_0_2))']
         """
 
         output_bit_ids, diff_constraints = self.smt_xor_differential_propagation_constraints(model)

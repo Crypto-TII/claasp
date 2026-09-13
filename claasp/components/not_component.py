@@ -759,35 +759,8 @@ class Not(Component):
             4
         """
 
-        # ------------------------------------------------------------
-        # Difference: unchanged (the constant cancels in a difference).
-        # ------------------------------------------------------------
-
-        output_bit_ids, diff_constraints = self.smt_xor_differential_propagation_constraints(model)
-
-        # ------------------------------------------------------------
-        # Mask: also unchanged (Theorem 3.2 (4)); only the sign, handled
-        # in post-processing, distinguishes NOT from a plain identity.
-        # ------------------------------------------------------------
-
-        input_bit_ids = self._generate_input_ids()
-
-        qdt_input_bit_ids = [f"qdt_{bit_id}" for bit_id in input_bit_ids]
-        qdt_output_bit_ids = [f"qdt_{bit_id}" for bit_id in output_bit_ids]
-
-        mask_constraints = []
-
-        for qdt_output_bit_id, qdt_input_bit_id in zip(
-            qdt_output_bit_ids,
-            qdt_input_bit_ids,
-        ):
-            equation = smt_utils.smt_equivalent([qdt_output_bit_id, qdt_input_bit_id])
-            mask_constraints.append(smt_utils.smt_assert(equation))
-
-        variables = output_bit_ids + qdt_output_bit_ids
-        constraints = diff_constraints + mask_constraints
-
-        return (
-            variables,
-            constraints,
+        # Theorem 3.2 (4): a translation leaves differences and masks
+        # unchanged. Its sign factor is applied by compute_trail_sign.
+        return model._bit_moving_propagation_constraints(
+            self, [(position, position) for position in range(self.output_bit_size)]
         )
