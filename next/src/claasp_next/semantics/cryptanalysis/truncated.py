@@ -352,6 +352,50 @@ def propagate_two_word_speck_inverse_round(
     return TruncatedXorDifference(old_left.bits + old_right.bits)
 
 
+def propagate_two_word_simon_round(
+    difference: TruncatedXorDifference,
+) -> TruncatedXorDifference:
+    """Propagate a zero-key difference through one standard Simon round."""
+
+    if len(difference.bits) % 2:
+        raise ValueError("Simon differences must contain two equal-width words")
+    width = len(difference.bits) // 2
+    left = TruncatedXorDifference(difference.bits[:width])
+    right = TruncatedXorDifference(difference.bits[width:])
+    and_output = _truncated_and(left.rotate_left(1), left.rotate_left(8))
+    new_left = right.xor(and_output).xor(left.rotate_left(2))
+    return TruncatedXorDifference(new_left.bits + left.bits)
+
+
+def propagate_two_word_simon_inverse_round(
+    difference: TruncatedXorDifference,
+) -> TruncatedXorDifference:
+    """Propagate a zero-key difference through one inverse Simon round."""
+
+    if len(difference.bits) % 2:
+        raise ValueError("Simon differences must contain two equal-width words")
+    width = len(difference.bits) // 2
+    new_left = TruncatedXorDifference(difference.bits[:width])
+    old_left = TruncatedXorDifference(difference.bits[width:])
+    and_output = _truncated_and(old_left.rotate_left(1), old_left.rotate_left(8))
+    old_right = new_left.xor(and_output).xor(old_left.rotate_left(2))
+    return TruncatedXorDifference(old_left.bits + old_right.bits)
+
+
+def _truncated_and(
+    left: TruncatedXorDifference, right: TruncatedXorDifference,
+) -> TruncatedXorDifference:
+    """Apply the conservative legacy AND difference abstraction."""
+
+    if len(left.bits) != len(right.bits):
+        raise ValueError("truncated AND operands must have equal width")
+    return TruncatedXorDifference(tuple(
+        TruncatedBit.ZERO
+        if left_bit is right_bit is TruncatedBit.ZERO else TruncatedBit.UNKNOWN
+        for left_bit, right_bit in zip(left.bits, right.bits)
+    ))
+
+
 def propagate_single_active_aes_byte(
     cipher: Cipher, byte_index: int,
 ) -> tuple[WordwiseXorDifference, ...]:

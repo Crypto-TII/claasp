@@ -653,14 +653,14 @@ each synchronization.
 | Wordwise truncated CP semantics (M10.6d3c) | Achieved | Typed activity/value state plus graph-derived AES SubBytes/ShiftRows/MixColumns singleton propagation and CP projection |
 | Wordwise activity/value domain (M10.6d3c1) | Achieved | Zero, known, nonzero, and unrestricted word differences use typed Python/native MiniZinc enums, with no legacy activity integers or value sentinels |
 | Wordwise SPN composition (M10.6d3c2) | Achieved | A zero-key singleton byte difference becomes four guaranteed nonzero bytes in the graph-selected AES column; Docker verifies the typed CP projection |
-| Multi-round CP impossible search (M10.6d4) | In progress | Shared contradiction boundary and Speck-7 UNSAT achieved; fixed Simon fixture follows typed Simon migration |
+| Multi-round CP impossible search (M10.6d4) | Achieved | Shared boundaries, Speck-7 UNSAT, and the exact Simon-11 fixed middle patterns are independently checked |
 | Impossible-suite fixture audit (M10.6d4a) | Achieved | Selected Speck-7 UNSAT and fixed Simon-11 boundary/intermediate patterns; recorded typed-Simon dependency and rejected generated-line counts |
 | Shared impossible boundary (M10.6d4b) | Achieved | Typed forward/backward patterns expose exact contradictory positions; sound inverse Speck subtraction/round propagation and Docker SAT/UNSAT boundary proofs are independently checked |
 | Speck multi-round impossible CP (M10.6d4c) | Achieved | Directional forward/inverse Speck dataflows preserve the legacy seven-round, split-after-three UNSAT result with zero key difference in Docker/Chuffed |
-| Simon fixed impossible fixture (M10.6d4d) | In progress | Typed Simon and legacy evaluation vectors achieved; exact 11-round impossible patterns follow |
+| Simon fixed impossible fixture (M10.6d4d) | Achieved | Typed Simon plus the exact legacy 11-round external and middle-boundary patterns |
 | Typed Simon prerequisite (M10.6d4d1) | Achieved | Typed word graph, reusable BitwiseAnd, all standard configurations, scalar/two batch evaluators, and four fixed legacy vectors |
-| Simon-11 impossible CP fixture (M10.6d4d2) | Next | Preserve the exact input/output and forward/backward middle-round patterns from legacy CLAASP |
-| CP composed attacks (M10.6d5) | Planned | Explicit boomerang and differential-linear semantic contracts and fixtures |
+| Simon-11 impossible CP fixture (M10.6d4d2) | Achieved | Six forward/five inverse rounds reproduce both fixed middle patterns and their bit-23 contradiction in Docker/Chuffed and independent Python semantics |
+| CP composed attacks (M10.6d5) | Next | Explicit boomerang and differential-linear semantic contracts and fixtures |
 | CP continuous models (M10.6d6) | Planned | Numerically qualified heuristic models kept distinct from exact proof results |
 | Statistical analysis (M10.7) | Planned | Avalanche and related legacy behavior |
 | Serialization, diagrams, transforms, compilers (M10.8) | Planned | Inventory-driven tooling migration |

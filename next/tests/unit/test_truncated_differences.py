@@ -9,6 +9,8 @@ from claasp_next.semantics.cryptanalysis import (
     propagate_single_active_aes_byte,
     propagate_two_word_speck_inverse_round,
     propagate_two_word_speck_round,
+    propagate_two_word_simon_inverse_round,
+    propagate_two_word_simon_round,
     truncated_modular_add,
 )
 from claasp_next.ciphers import AESBlockCipher, PresentBlockCipher, SpeckBlockCipher
@@ -106,3 +108,17 @@ def test_impossible_boundary_reports_only_fixed_contradictions():
 
     assert boundary.contradictory_positions == (1, 4)
     assert boundary.is_impossible
+
+
+def test_simon_truncated_propagation_preserves_legacy_middle_patterns():
+    forward = TruncatedXorDifference.parse("0" * 31 + "1")
+    backward = TruncatedXorDifference.parse("000000?0?" + "0" * 23)
+
+    for _ in range(6):
+        forward = propagate_two_word_simon_round(forward)
+    for _ in range(5):
+        backward = propagate_two_word_simon_inverse_round(backward)
+
+    assert str(forward).replace("?", "2") == "22222222222222220222222122222202"
+    assert str(backward).replace("?", "2") == "22222222002222202222222022222222"
+    assert ImpossiblePropagationBoundary(forward, backward).contradictory_positions == (23,)

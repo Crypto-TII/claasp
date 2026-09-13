@@ -5,7 +5,7 @@ import pytest
 
 from claasp_next.drivers.solvers import CPStatus, MiniZincSolver
 from claasp_next.analysis import AnalysisProblem, FixedValue
-from claasp_next.ciphers import AESBlockCipher, SpeckBlockCipher
+from claasp_next.ciphers import AESBlockCipher, SimonBlockCipher, SpeckBlockCipher
 from claasp_next.representations.constraints.cp import MiniZincModel
 from claasp_next.semantics import (
     DETERMINISTIC_TRUNCATED_XOR,
@@ -22,6 +22,7 @@ from claasp_next.representations.constraints.cp import (
     ProbabilisticTruncatedModularAddCPModel,
     SpeckDifferentialCPModel,
     SpeckImpossibleCPModel,
+    SimonImpossibleCPModel,
     SpeckProbabilisticTruncatedCPModel,
     SpeckTruncatedCPModel,
     WordwiseDifferenceCPModel,
@@ -366,3 +367,20 @@ def test_minizinc_preserves_legacy_speck_seven_round_impossible_unsat():
         "legacy MznImpossibleXorDifferentialModel Speck32/64 fixture",
         "7 rounds, split after round 3, zero key difference",
     )
+
+
+def test_minizinc_preserves_legacy_simon_eleven_round_impossible_fixture():
+    model = SimonImpossibleCPModel(
+        SimonBlockCipher(number_of_rounds=11),
+        TruncatedXorDifference.parse("00000000000000000000000000000001"),
+        TruncatedXorDifference.parse("000000?0?00000000000000000000000"),
+        middle_round=6,
+    )
+
+    solved = MiniZincSolver(solver=_test_solver()).solve(model.cp_model())
+    boundary = model.decode_boundary(solved.assignment)
+
+    assert solved.status is CPStatus.SATISFIED
+    assert str(boundary.forward).replace("?", "2") == "22222222222222220222222122222202"
+    assert str(boundary.backward).replace("?", "2") == "22222222002222202222222022222222"
+    assert boundary.contradictory_positions == (23,)

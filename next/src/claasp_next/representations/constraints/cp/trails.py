@@ -9,6 +9,7 @@ from claasp_next.semantics.cryptanalysis import (
     Trail, TrailKind, TrailStep,
     TruncatedXorDifference, XorDifference, XorMask,
     check_probabilistic_truncated_modular_add, propagate_two_word_speck_round,
+    propagate_two_word_simon_inverse_round, propagate_two_word_simon_round,
     WordwiseDifferenceKind, WordwiseXorDifference,
 )
 from claasp_next.semantics import DETERMINISTIC_TRUNCATED_XOR
@@ -748,6 +749,79 @@ class SpeckImpossibleCPModel:
         )
 
 
+class SimonImpossibleCPModel:
+    """Compose the legacy fully-automatic Simon impossible fixture."""
+
+    def __init__(self, cipher, input_pattern, output_pattern, middle_round: int) -> None:
+        if cipher.family_name != "simon" or len(input_pattern.bits) != 32:
+            raise NotImplementedError("the reviewed impossible slice supports Simon32/64")
+        if len(output_pattern.bits) != 32:
+            raise ValueError("Simon32 output patterns must contain 32 bits")
+        if not 1 <= middle_round < len(cipher.rounds):
+            raise ValueError("middle_round must be inside the cipher")
+        self.cipher, self.input_pattern = cipher, input_pattern
+        self.output_pattern, self.middle_round = output_pattern, middle_round
+
+    def cp_model(self) -> MiniZincModel:
+        """Compile directional Simon propagation and a middle contradiction."""
+
+        rounds = len(self.cipher.rounds)
+        declarations, constraints = [_SIMON_TRUNCATED_FUNCTIONS], []
+        for prefix, boundaries in (("forward", range(self.middle_round + 1)),
+                                   ("backward", range(self.middle_round, rounds + 1))):
+            for boundary in boundaries:
+                declarations.extend((f"array[0..15] of var 0..2: {prefix}_x_{boundary};",
+                                     f"array[0..15] of var 0..2: {prefix}_y_{boundary};"))
+        for round_number in range(self.middle_round):
+            for index in range(16):
+                constraints.extend((
+                    f"constraint forward_x_{round_number + 1}[{index}] = truncated_xor2("
+                    f"truncated_xor2(forward_y_{round_number}[{index}], truncated_and2("
+                    f"forward_x_{round_number}[{(index + 1) % 16}], forward_x_{round_number}[{(index + 8) % 16}])), "
+                    f"forward_x_{round_number}[{(index + 2) % 16}]);",
+                    f"constraint forward_y_{round_number + 1}[{index}] = forward_x_{round_number}[{index}];",
+                ))
+        for round_number in reversed(range(self.middle_round, rounds)):
+            for index in range(16):
+                constraints.extend((
+                    f"constraint backward_x_{round_number}[{index}] = backward_y_{round_number + 1}[{index}];",
+                    f"constraint backward_y_{round_number}[{index}] = truncated_xor2("
+                    f"truncated_xor2(backward_x_{round_number + 1}[{index}], truncated_and2("
+                    f"backward_y_{round_number + 1}[{(index + 1) % 16}], backward_y_{round_number + 1}[{(index + 8) % 16}])), "
+                    f"backward_y_{round_number + 1}[{(index + 2) % 16}]);",
+                ))
+        constraints.extend((
+            _fixed_array("forward_x_0", TruncatedXorDifference(self.input_pattern.bits[:16])),
+            _fixed_array("forward_y_0", TruncatedXorDifference(self.input_pattern.bits[16:])),
+            _fixed_array(f"backward_x_{rounds}", TruncatedXorDifference(self.output_pattern.bits[:16])),
+            _fixed_array(f"backward_y_{rounds}", TruncatedXorDifference(self.output_pattern.bits[16:])),
+            "constraint exists(i in 0..15)(" +
+            rf"(forward_x_{self.middle_round}[i] + backward_x_{self.middle_round}[i] = 1) \/ " +
+            f"(forward_y_{self.middle_round}[i] + backward_y_{self.middle_round}[i] = 1));",
+        ))
+        return MiniZincModel(tuple(declarations), tuple(constraints), provenance=(
+            "legacy Simon32/64 11-round fully-automatic impossible fixture",))
+
+    def decode_boundary(self, assignment) -> ImpossiblePropagationBoundary:
+        """Decode both middle patterns and check them independently in Python."""
+
+        forward = self.input_pattern
+        for _ in range(self.middle_round):
+            forward = propagate_two_word_simon_round(forward)
+        backward = self.output_pattern
+        for _ in range(len(self.cipher.rounds) - self.middle_round):
+            backward = propagate_two_word_simon_inverse_round(backward)
+        decoded = ImpossiblePropagationBoundary(
+            TruncatedXorDifference(_decode_truncated(assignment[f"forward_x_{self.middle_round}"]).bits +
+                                   _decode_truncated(assignment[f"forward_y_{self.middle_round}"]).bits),
+            TruncatedXorDifference(_decode_truncated(assignment[f"backward_x_{self.middle_round}"]).bits +
+                                   _decode_truncated(assignment[f"backward_y_{self.middle_round}"]).bits),
+        )
+        if decoded != ImpossiblePropagationBoundary(forward, backward) or not decoded.is_impossible:
+            raise ValueError("MiniZinc returned an invalid Simon impossible boundary")
+        return decoded
+
+
 class SBoxDifferenceCPModel:
     """Exact local feasibility model for possible and impossible differences."""
 
@@ -924,6 +998,15 @@ predicate deterministic_truncated_modadd(
     (if a[pivot] < 2 /\ b[pivot] < 2
      then c[pivot] = (a[pivot] + b[pivot]) mod 2 else c[pivot] = 2 endif) /\
     (if pivot > 0 then a[pivot] + b[pivot] > 0 else true endif);
+""".strip()
+
+
+_SIMON_TRUNCATED_FUNCTIONS = r"""
+function var 0..2: truncated_xor2(var 0..2: a, var 0..2: b) =
+    if a < 2 /\ b < 2 then (a + b) mod 2 else 2 endif;
+
+function var 0..2: truncated_and2(var 0..2: a, var 0..2: b) =
+    if a = 0 /\ b = 0 then 0 else 2 endif;
 """.strip()
 
 

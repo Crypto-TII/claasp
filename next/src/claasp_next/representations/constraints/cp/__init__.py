@@ -8,7 +8,7 @@ __all__ = [
     "PresentDifferentialCPModel",
     "PresentLinearCPModel", "SBoxDifferenceCPModel",
     "ProbabilisticTruncatedModularAddCPModel", "SpeckDifferentialCPModel",
-    "SpeckImpossibleCPModel", "SpeckProbabilisticTruncatedCPModel", "SpeckTruncatedCPModel",
+    "SimonImpossibleCPModel", "SpeckImpossibleCPModel", "SpeckProbabilisticTruncatedCPModel", "SpeckTruncatedCPModel",
     "WordwiseDifferenceCPModel",
 ]
 
@@ -31,7 +31,7 @@ def __getattr__(name: str):
     if name in {
         "ImpossibleBoundaryCPModel", "SBoxDifferenceCPModel",
         "ProbabilisticTruncatedModularAddCPModel",
-        "SpeckImpossibleCPModel", "SpeckProbabilisticTruncatedCPModel", "SpeckTruncatedCPModel",
+        "SimonImpossibleCPModel", "SpeckImpossibleCPModel", "SpeckProbabilisticTruncatedCPModel", "SpeckTruncatedCPModel",
         "WordwiseDifferenceCPModel",
     }:
         from claasp_next.representations.constraints.cp import trails

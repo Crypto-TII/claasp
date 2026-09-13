@@ -247,6 +247,15 @@ deterministic-truncated middle boundary exists. The inverse dataflow is
 compiled explicitly because deterministic truncated propagation is not a
 reversible relation.
 
+``SimonImpossibleCPModel`` preserves the legacy fully-automatic Simon32/64
+fixture without relying on generated declaration counts. Starting from
+``00000000000000000000000000000001``, six forward rounds produce
+``22222222222222220222222122222202``; starting from the recorded inverse
+output ``00000020200000000000000000000000``, five inverse rounds produce
+``22222222002222202222222022222222``. Here ``2`` denotes unknown. The two
+middle patterns contradict at bit 23. MiniZinc reproduces both patterns, while
+the decoder recomputes them through independent Python semantics.
+
 .. automodule:: claasp_next.representations.constraints.cp
    :members:
 
