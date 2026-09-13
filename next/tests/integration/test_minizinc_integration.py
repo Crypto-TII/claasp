@@ -21,6 +21,7 @@ from claasp_next.representations.constraints.cp import (
     SBoxDifferenceCPModel,
     ProbabilisticTruncatedModularAddCPModel,
     SpeckDifferentialCPModel,
+    SpeckImpossibleCPModel,
     SpeckProbabilisticTruncatedCPModel,
     SpeckTruncatedCPModel,
     WordwiseDifferenceCPModel,
@@ -353,3 +354,15 @@ def test_minizinc_rejects_a_compatible_middle_boundary():
     solved = MiniZincSolver(solver=_test_solver()).solve(model.cp_model())
 
     assert solved.status is CPStatus.UNSATISFIABLE
+
+
+def test_minizinc_preserves_legacy_speck_seven_round_impossible_unsat():
+    model = SpeckImpossibleCPModel(SpeckBlockCipher(number_of_rounds=7), middle_round=3)
+
+    solved = MiniZincSolver(solver=_test_solver()).solve(model.cp_model())
+
+    assert solved.status is CPStatus.UNSATISFIABLE
+    assert model.cp_model().provenance == (
+        "legacy MznImpossibleXorDifferentialModel Speck32/64 fixture",
+        "7 rounds, split after round 3, zero key difference",
+    )

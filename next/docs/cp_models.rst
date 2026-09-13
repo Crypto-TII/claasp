@@ -237,9 +237,15 @@ boundary, which is checked independently.
 
 Backward ARX propagation uses ``truncated_modular_subtract`` and
 ``propagate_two_word_speck_inverse_round``. Both enumerate paired borrow states
-in pure Python, independently of the MiniZinc boundary encoding. The next
-checkpoint composes these pieces to reproduce the seven-round Speck UNSAT
-fixture.
+in pure Python, independently of the MiniZinc boundary encoding.
+
+``SpeckImpossibleCPModel`` composes the directional forward and inverse Speck
+dataflows around a selected middle round. Its Docker/Chuffed regression
+preserves the legacy Speck32/64 result: with seven rounds, a split after round
+three, zero key difference, and nonzero external differences, no contradictory
+deterministic-truncated middle boundary exists. The inverse dataflow is
+compiled explicitly because deterministic truncated propagation is not a
+reversible relation.
 
 .. automodule:: claasp_next.representations.constraints.cp
    :members:

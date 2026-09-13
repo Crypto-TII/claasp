@@ -653,6 +653,101 @@ class ImpossibleBoundaryCPModel:
         return decoded
 
 
+class SpeckImpossibleCPModel:
+    """Search a zero-key Speck impossible differential across a round split.
+
+    This preserves the legacy bitwise deterministic-truncated search: both
+    external differences are nonzero and the forward and backward segments
+    must contain opposite known bits at their shared boundary.
+    """
+
+    def __init__(self, cipher, middle_round: int) -> None:
+        plaintext = cipher.inputs.get("plaintext")
+        if (
+            cipher.family_name != "speck" or plaintext is None
+            or not isinstance(plaintext.value_type.domain, Word)
+            or plaintext.value_type.domain.width != 16
+        ):
+            raise NotImplementedError("the reviewed impossible slice supports Speck32/64")
+        if not 1 <= middle_round < len(cipher.rounds):
+            raise ValueError("middle_round must be inside the cipher")
+        self.cipher = cipher
+        self.middle_round = middle_round
+        self.width = 16
+
+    def cp_model(self) -> MiniZincModel:
+        """Compile independent forward/backward segments meeting in conflict."""
+
+        rounds = len(self.cipher.rounds)
+        declarations = [_DETERMINISTIC_TRUNCATED_MODADD_PREDICATE]
+        constraints = []
+        for prefix, boundaries in (
+            ("forward", range(self.middle_round + 1)),
+            ("backward", range(self.middle_round, rounds + 1)),
+        ):
+            for boundary in boundaries:
+                declarations.extend((
+                    f"array[0..15] of var 0..2: {prefix}_x_{boundary};",
+                    f"array[0..15] of var 0..2: {prefix}_y_{boundary};",
+                ))
+        for round_number in range(self.middle_round):
+            prefix = "forward"
+            alpha = _component(
+                self.cipher, f"round_{round_number}_rotate_right", Rotate
+            ).amount
+            beta = _component(
+                self.cipher, f"round_{round_number}_rotate_left", Rotate
+            ).amount
+            constraints.append(
+                "constraint deterministic_truncated_modadd("
+                f"{_array_rotation(f'{prefix}_x_{round_number}', -alpha, self.width)}, "
+                f"{prefix}_y_{round_number}, {prefix}_x_{round_number + 1});"
+            )
+            for index in range(self.width):
+                source = (index + beta) % self.width
+                constraints.append(
+                    f"constraint {prefix}_y_{round_number + 1}[{index}] = "
+                    f"truncated_xor2({prefix}_y_{round_number}[{source}], "
+                    f"{prefix}_x_{round_number + 1}[{index}]);"
+                )
+        for round_number in reversed(range(self.middle_round, rounds)):
+            alpha = _component(
+                self.cipher, f"round_{round_number}_rotate_right", Rotate
+            ).amount
+            beta = _component(
+                self.cipher, f"round_{round_number}_rotate_left", Rotate
+            ).amount
+            for index in range(self.width):
+                # old_y = ROR(new_y XOR new_x, beta)
+                source = (index - beta) % self.width
+                constraints.append(
+                    f"constraint backward_y_{round_number}[{index}] = "
+                    f"truncated_xor2(backward_y_{round_number + 1}[{source}], "
+                    f"backward_x_{round_number + 1}[{source}]);"
+                )
+            # old_x = ROL(new_x - old_y, alpha).  The legacy modular
+            # subtraction abstraction uses the same directional predicate.
+            constraints.append(
+                "constraint deterministic_truncated_modadd("
+                f"backward_x_{round_number + 1}, backward_y_{round_number}, "
+                f"{_array_rotation(f'backward_x_{round_number}', alpha, self.width)});"
+            )
+        constraints.extend((
+            r"constraint exists(i in 0..15)(forward_x_0[i] != 0 \/ forward_y_0[i] != 0);",
+            rf"constraint exists(i in 0..15)(backward_x_{rounds}[i] != 0 \/ backward_y_{rounds}[i] != 0);",
+            "constraint exists(i in 0..15)(" +
+            rf"(forward_x_{self.middle_round}[i] + backward_x_{self.middle_round}[i] = 1) \/ " +
+            f"(forward_y_{self.middle_round}[i] + backward_y_{self.middle_round}[i] = 1));",
+        ))
+        return MiniZincModel(
+            tuple(declarations), tuple(constraints),
+            provenance=(
+                "legacy MznImpossibleXorDifferentialModel Speck32/64 fixture",
+                "7 rounds, split after round 3, zero key difference",
+            ),
+        )
+
+
 class SBoxDifferenceCPModel:
     """Exact local feasibility model for possible and impossible differences."""
 
@@ -796,6 +891,39 @@ predicate modular_addition_xor_difference(
         (not a[j+1] \/ not b[j+1] \/ not c[j+1] \/ not weight[j])
     ) /\
     ((a[length(a)-1] != b[length(a)-1]) = c[length(a)-1]);
+""".strip()
+
+
+_DETERMINISTIC_TRUNCATED_MODADD_PREDICATE = r"""
+function var 0..2: truncated_xor2(var 0..2: a, var 0..2: b) =
+    if a < 2 /\ b < 2 then (a + b) mod 2 else 2 endif;
+
+function array[int] of var 0..2: truncated_left_shift(
+    array[int] of var 0..2: values, int: amount
+) = array1d(index_set(values), [
+    if j < length(values) - amount then values[j + amount] else 0 endif
+    | j in index_set(values)
+]);
+
+predicate deterministic_truncated_modadd(
+    array[int] of var 0..2: a,
+    array[int] of var 0..2: b,
+    array[int] of var 0..2: c
+) = let {
+    int: n = length(a),
+    array[0..n-1] of var 0..2: shifted_a = truncated_left_shift(a, 1),
+    array[0..n-1] of var 0..2: shifted_b = truncated_left_shift(b, 1),
+    array[0..n-1] of var 0..2: shifted_c = truncated_left_shift(c, 1),
+    var 0..n-1: pivot
+} in
+    forall(i in 0..n-1)(
+        if i < pivot then c[i] = 2
+        else shifted_a[i] = 0 /\ shifted_b[i] = 0 /\ shifted_c[i] = 0
+        endif
+    ) /\
+    (if a[pivot] < 2 /\ b[pivot] < 2
+     then c[pivot] = (a[pivot] + b[pivot]) mod 2 else c[pivot] = 2 endif) /\
+    (if pivot > 0 then a[pivot] + b[pivot] > 0 else true endif);
 """.strip()
 
 
