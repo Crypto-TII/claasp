@@ -1,6 +1,7 @@
 """Weighted full-trail SMT representation lowering."""
 
 from claasp_next.interpretations.cryptanalysis import (
+    PropagationProblem,
     SBoxTransitionSemantics,
     Trail,
     TrailKind,
@@ -8,6 +9,7 @@ from claasp_next.interpretations.cryptanalysis import (
     XorDifference,
     XorMask,
 )
+from claasp_next.interpretations import XOR_DIFFERENTIAL, XOR_LINEAR
 from claasp_next.components import BitVectorSBox, Permutation
 from claasp_next.core import Cipher
 from claasp_next.representations.constraints.smt.formula import SMTFormula
@@ -16,13 +18,26 @@ from claasp_next.representations.constraints.smt.formula import SMTFormula
 class PresentDifferentialSMTModel:
     """Exact two-round PRESENT XOR-differential model with a weight bound."""
 
-    def __init__(self, cipher: Cipher, maximum_weight: int) -> None:
+    def __init__(self, cipher: Cipher | PropagationProblem, maximum_weight: int | None = None) -> None:
+        problem = (
+            cipher
+            if isinstance(cipher, PropagationProblem)
+            else PropagationProblem(
+                cipher, XOR_DIFFERENTIAL, maximum_weight=maximum_weight,
+                provenance=("PRESENT-2 SMT convenience constructor",),
+            )
+        )
+        if problem.interpretation != XOR_DIFFERENTIAL:
+            raise ValueError("differential SMT lowering requires the XOR-differential interpretation")
+        if problem.maximum_weight is None:
+            raise ValueError("differential SMT lowering requires maximum_weight")
+        cipher = problem.cipher
         if cipher.family_name != "present" or len(cipher.rounds) != 2:
             raise NotImplementedError("weighted SMT trail model currently supports PRESENT-2")
-        if not isinstance(maximum_weight, int) or isinstance(maximum_weight, bool) or maximum_weight < 0:
-            raise ValueError("maximum_weight must be a nonnegative integer")
+        maximum_weight = problem.maximum_weight
         self.cipher = cipher
         self.maximum_weight = maximum_weight
+        self.problem = problem
         self._transition_records = ()
         self._input_names = ()
         self._second_output_names = ()
@@ -68,10 +83,10 @@ class PresentDifferentialSMTModel:
                 )
                 weight_names.extend(local_weights)
                 records.append((component.component_id, input_names, output_names))
-                semantics = SBoxTransitionSemantics(component.table)
+                semantics = self.problem.provider_for(component)
                 for source in range(16):
                     for target in range(16):
-                        transition = semantics.xor_differential(source, target)
+                        transition = semantics.transition((source,), target)
                         assignment = _bits(source, 4) + _bits(target, 4)
                         forbid = tuple(
                             -indices[name] if value else indices[name]
@@ -109,10 +124,10 @@ class PresentDifferentialSMTModel:
         steps = []
         for component_id, input_names, output_names in self._transition_records:
             component = components[component_id]
-            semantics = SBoxTransitionSemantics(component.table)
+            semantics = self.problem.provider_for(component)
             source = _integer(tuple(assignment[name] for name in input_names))
             target = _integer(tuple(assignment[name] for name in output_names))
-            steps.append(TrailStep(component_id, semantics.xor_differential(source, target)))
+            steps.append(TrailStep(component_id, semantics.transition((source,), target)))
         raw_output = _integer(tuple(assignment[name] for name in self._second_output_names))
         final_permutation = _component(self.cipher, "p_layer_2", Permutation)
         output = _permute(raw_output, final_permutation.mapping)
@@ -127,13 +142,26 @@ class PresentDifferentialSMTModel:
 class PresentLinearSMTModel:
     """Exact three-round PRESENT XOR-linear model with a weight bound."""
 
-    def __init__(self, cipher: Cipher, maximum_weight: int) -> None:
+    def __init__(self, cipher: Cipher | PropagationProblem, maximum_weight: int | None = None) -> None:
+        problem = (
+            cipher
+            if isinstance(cipher, PropagationProblem)
+            else PropagationProblem(
+                cipher, XOR_LINEAR, maximum_weight=maximum_weight,
+                provenance=("PRESENT-3 SMT convenience constructor",),
+            )
+        )
+        if problem.interpretation != XOR_LINEAR:
+            raise ValueError("linear SMT lowering requires the XOR-linear interpretation")
+        if problem.maximum_weight is None:
+            raise ValueError("linear SMT lowering requires maximum_weight")
+        cipher = problem.cipher
         if cipher.family_name != "present" or len(cipher.rounds) != 3:
             raise NotImplementedError("weighted linear SMT model currently supports PRESENT-3")
-        if not isinstance(maximum_weight, int) or isinstance(maximum_weight, bool) or maximum_weight < 0:
-            raise ValueError("maximum_weight must be a nonnegative integer")
+        maximum_weight = problem.maximum_weight
         self.cipher = cipher
         self.maximum_weight = maximum_weight
+        self.problem = problem
         self._transition_records = ()
         self._input_names = ()
         self._last_output_names = ()
@@ -175,10 +203,10 @@ class PresentLinearSMTModel:
                 )
                 weight_names.extend(local_weights)
                 records.append((component.component_id, local_input, local_output))
-                semantics = SBoxTransitionSemantics(component.table)
+                semantics = self.problem.provider_for(component)
                 for source in range(16):
                     for target in range(16):
-                        transition = semantics.xor_linear(source, target)
+                        transition = semantics.transition((source,), target)
                         assignment = _bits(source, 4) + _bits(target, 4)
                         forbid = tuple(
                             -indices[name] if value else indices[name]
@@ -213,10 +241,10 @@ class PresentLinearSMTModel:
         steps = []
         for component_id, input_names, output_names in self._transition_records:
             component = components[component_id]
-            semantics = SBoxTransitionSemantics(component.table)
+            semantics = self.problem.provider_for(component)
             source = _integer(tuple(assignment[name] for name in input_names))
             target = _integer(tuple(assignment[name] for name in output_names))
-            steps.append(TrailStep(component_id, semantics.xor_linear(source, target)))
+            steps.append(TrailStep(component_id, semantics.transition((source,), target)))
         raw_output = _integer(tuple(assignment[name] for name in self._last_output_names))
         final_output = _permute(
             raw_output, _component(self.cipher, "p_layer_3", Permutation).mapping

@@ -564,10 +564,11 @@ each synchronization.
 | SMT representation/driver split (M10.5d3b) | Achieved | SMT IR/export/lowering under representations; Z3 under shared solver drivers |
 | MILP representation/driver split (M10.5d3c) | Achieved | Linear IR/export/trail lowering under representations; GLPK and result decoding under drivers |
 | Polynomial representation/driver split (M10.5d3d) | Achieved | Polynomial IR/export/lowering under representations; reusable Singular/msolve execution drivers |
-| Interpretation-driven trail migration (M10.5d4) | In progress | Canonical semantics achieved; shared propagation problem and representation consumers remain |
+| Interpretation-driven trail migration (M10.5d4) | Achieved | Canonical semantics, shared propagation problems/overrides, and SMT/MILP consumers |
 | Canonical cryptanalytic interpretations (M10.5d4a) | Achieved | Trail types and exact S-box/modular-add semantics moved from analysis to interpretations; common graph annotations |
 | Shared propagation problem (M10.5d4b) | Achieved | Immutable semantic registry with per-component overrides; graph scope, objective, bounds, and provenance |
-| Shared propagation consumers (M10.5d4c) | Next | Make SMT/MILP trail composition consume PropagationProblem and eliminate cipher-specific semantic ownership |
+| Shared propagation consumers (M10.5d4c) | Achieved | PRESENT SMT/MILP composition accepts one PropagationProblem and queries identical per-component overrides |
+| Diagram representation (M10.5d5) | Next | Backend-neutral annotated diagram IR, ASCII/TikZ serializers, optional LaTeX driver |
 | SMT, MILP, and CP (M10.4–M10.6) | In progress | SMT achieved; MILP and CP retain shared semantics and independent-check requirements |
 | Statistical analysis (M10.7) | Planned | Avalanche and related legacy behavior |
 | Serialization, diagrams, transforms, compilers (M10.8) | Planned | Inventory-driven tooling migration |

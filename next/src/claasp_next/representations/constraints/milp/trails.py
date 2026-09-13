@@ -1,6 +1,10 @@
 """Exact weighted trail lowering to the portable MILP representation."""
 
-from claasp_next.interpretations.cryptanalysis import SBoxTransitionSemantics, Trail, TrailKind, TrailStep, XorDifference
+from claasp_next.interpretations import XOR_DIFFERENTIAL
+from claasp_next.interpretations.cryptanalysis import (
+    PropagationProblem, SBoxTransitionSemantics, Trail, TrailKind, TrailStep,
+    XorDifference,
+)
 from claasp_next.components import BitVectorSBox, Permutation
 from claasp_next.core import Cipher
 from claasp_next.representations.constraints.milp.model import (
@@ -13,10 +17,22 @@ from claasp_next.representations.constraints.smt.trails import check_present_smt
 class PresentDifferentialMILPModel:
     """Exact two-round PRESENT XOR-differential optimization model."""
 
-    def __init__(self, cipher: Cipher) -> None:
+    def __init__(self, cipher: Cipher | PropagationProblem) -> None:
+        problem = (
+            cipher
+            if isinstance(cipher, PropagationProblem)
+            else PropagationProblem(
+                cipher, XOR_DIFFERENTIAL,
+                provenance=("PRESENT-2 MILP convenience constructor",),
+            )
+        )
+        if problem.interpretation != XOR_DIFFERENTIAL:
+            raise ValueError("differential MILP lowering requires the XOR-differential interpretation")
+        cipher = problem.cipher
         if cipher.family_name != "present" or len(cipher.rounds) != 2:
             raise NotImplementedError("weighted MILP trail model currently supports PRESENT-2")
         self.cipher = cipher
+        self.problem = problem
         self._records = ()
         self._input_names = ()
         self._last_output_names = ()
@@ -45,11 +61,11 @@ class PresentDifferentialMILPModel:
                 start = 4 * nibble
                 local_input = inputs[start : start + 4]
                 local_output = outputs[start : start + 4]
-                semantics = SBoxTransitionSemantics(component.table)
+                semantics = self.problem.provider_for(component)
                 choices = []
                 for source in range(16):
                     for target in range(16):
-                        transition = semantics.xor_differential(source, target)
+                        transition = semantics.transition((source,), target)
                         if transition.is_possible:
                             selector = binary(
                                 f"round_{round_number}_sbox_{nibble}_choice_{source}_{target}"
@@ -86,10 +102,10 @@ class PresentDifferentialMILPModel:
         components = {component.component_id: component for component in self.cipher.components}
         steps = []
         for component_id, inputs, outputs in self._records:
-            semantics = SBoxTransitionSemantics(components[component_id].table)
+            semantics = self.problem.provider_for(components[component_id])
             source = _integer(round(assignment[name]) for name in inputs)
             target = _integer(round(assignment[name]) for name in outputs)
-            steps.append(TrailStep(component_id, semantics.xor_differential(source, target)))
+            steps.append(TrailStep(component_id, semantics.transition((source,), target)))
         raw_output = _integer(round(assignment[name]) for name in self._last_output_names)
         final = _permute(raw_output, _component(self.cipher, "p_layer_2", Permutation).mapping)
         return Trail(

@@ -100,6 +100,20 @@ Dedicated Z3 tests prove bound 3 unsatisfiable and extract the weight-4
 optimum at bound 4, followed by independent checking of all 48 transitions
 and three permutation boundaries.
 
+The cipher-first constructors above are conveniences. Representation-explicit
+code may supply a shared propagation problem instead:
+
+.. doctest::
+
+   >>> from claasp_next.interpretations import XOR_DIFFERENTIAL
+   >>> from claasp_next.interpretations.cryptanalysis import PropagationProblem
+   >>> problem = PropagationProblem(PresentBlockCipher(number_of_rounds=2), XOR_DIFFERENTIAL, maximum_weight=4)
+   >>> PresentDifferentialSMTModel(problem).problem is problem
+   True
+
+Component semantics, including per-component researcher overrides, are read
+from this problem rather than reconstructed by the SMT compiler.
+
 ARX linear transitions
 ----------------------
 

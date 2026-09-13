@@ -148,4 +148,6 @@ constraint representation. It carries graph scope, objective, optional weight
 bound, semantic registry, and provenance. Its immutable registry provides
 reviewed defaults for bit-vector S-boxes and modular addition and supports
 global or per-component replacement. Representation compilers consume this
-problem in the next migration checkpoint.
+problem directly. The PRESENT SMT and MILP compilers share registry-selected
+component semantics; their cipher-first constructors are convenience wrappers
+which create an equivalent propagation problem.

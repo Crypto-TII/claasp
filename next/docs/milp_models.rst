@@ -64,6 +64,19 @@ The dedicated GLPK integration obtains the established optimum weight 4,
 decodes all 32 transitions, and checks every DDT entry and permutation
 boundary independently of the linear constraints.
 
+The compiler also accepts the same shared ``PropagationProblem`` used by SMT:
+
+.. doctest::
+
+   >>> from claasp_next.interpretations import XOR_DIFFERENTIAL
+   >>> from claasp_next.interpretations.cryptanalysis import PropagationProblem
+   >>> shared = PropagationProblem(PresentBlockCipher(number_of_rounds=2), XOR_DIFFERENTIAL)
+   >>> PresentDifferentialMILPModel(shared).problem is shared
+   True
+
+Consequently a global or per-component semantic override is selected before
+the MILP representation is chosen.
+
 ARX linear transitions
 ----------------------
 
