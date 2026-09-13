@@ -63,3 +63,23 @@ The formula encodes the complete DDT support, not one hand-written fixture.
 Unit tests exhaustively compare all satisfying assignments with the shared
 transition semantics. The same model supports the LAT relation and projects a
 solver assignment back to an exact weight and correlation sign.
+
+Weighted full trails
+--------------------
+
+The first composed trail model connects 32 exact S-box relations through both
+PRESENT permutation layers, requires a nonzero input difference, and bounds
+the sum of unary transition weights with a sequential counter:
+
+.. doctest::
+
+   >>> from claasp_next.ciphers import PresentBlockCipher
+   >>> from claasp_next.smt import PresentDifferentialSMTModel
+   >>> model = PresentDifferentialSMTModel(PresentBlockCipher(number_of_rounds=2), 4)
+   >>> formula = model.smt_formula()
+   >>> (len(formula.variables) < 700, formula.assertion_count < 30000)
+   (True, True)
+
+The Z3 integration proves the model with weight at most 3 unsatisfiable, then
+extracts a weight-4 trail from the satisfiable bound. A separate checker
+recomputes all transition weights and both permutation boundaries.
