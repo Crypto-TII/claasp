@@ -346,6 +346,11 @@ Deliver this broad migration through reviewable checkpoints:
    supersede ARX-optimized, wordwise/semi-deterministic, boomerang,
    differential-linear, and continuous legacy models.
 
+M10.6c proceeds as M10.6c1 (native weighted SPN differential tables),
+M10.6c2 (linear propagation), and M10.6c3 (deterministic-truncated and
+impossible propagation). Each checkpoint must consume ``PropagationProblem``
+and independently validate solver witnesses or UNSAT bounds.
+
 #### M10.5d: Representation architecture realignment
 
 Complete this cross-cutting milestone before starting the CP backend, so CP
@@ -590,7 +595,10 @@ each synchronization.
 | CP backend (M10.6) | In progress | Portable foundation and cipher/recovery lowering achieved; shared trail lowering follows |
 | Portable CP foundation (M10.6a) | Achieved | Immutable MiniZinc IR, deterministic export, CLI driver, portable JSON results, external SAT/UNSAT tests |
 | CP cipher lowering and recovery (M10.6b) | Achieved | Exact CNF-to-CP lowering reuses typed component semantics; graph-name projections; reduced recovery and full Speck legacy fixture independently evaluated |
-| Shared CP trail lowering (M10.6c) | Next | PropagationProblem consumer for differential, linear, truncated, and impossible semantics |
+| Shared CP trail lowering (M10.6c) | In progress | Native weighted SPN differential slice achieved; linear, truncated, and impossible semantics follow |
+| Native CP SPN differential trails (M10.6c1) | Achieved | PropagationProblem-selected DDT tables, PRESENT-2 UNSAT-3/SAT-4 proof, decoded trail independently checked |
+| Native CP linear trails (M10.6c2) | Next | Shared signed-LAT semantics and selected legacy optimum/bound |
+| Native CP truncated/impossible trails (M10.6c3) | Planned | Shared deterministic-truncated propagation and impossible-pair regressions |
 | Advanced CP analyses (M10.6d) | Planned | ARX optimization, wordwise/semi-deterministic, boomerang, differential-linear, continuous inventory |
 | Statistical analysis (M10.7) | Planned | Avalanche and related legacy behavior |
 | Serialization, diagrams, transforms, compilers (M10.8) | Planned | Inventory-driven tooling migration |

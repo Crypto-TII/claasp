@@ -59,7 +59,20 @@ the ordinary analysis API works unchanged:
 A dedicated external test also reproduces the legacy full 22-round
 Speck32/64 fixed-input result ``0xa86842f2``. Both recovery and the legacy
 fixture are checked with scalar evaluation rather than trusting solver status.
-Later checkpoints consume shared propagation semantics for trails.
+
+Shared differential trails
+--------------------------
+
+``PresentDifferentialCPModel`` consumes a backend-neutral
+``PropagationProblem`` and emits native MiniZinc table constraints. The table
+rows come from the selected component semantic provider, so per-component
+research overrides are honored consistently with SMT and MILP.
+
+The reviewed PRESENT-2 regression proves weight bound 3 unsatisfiable and
+weight bound 4 satisfiable using a real MiniZinc solver. Its decoded 32-step
+trail is checked independently against every DDT transition and permutation
+boundary. Linear, deterministic-truncated, and impossible propagation remain
+the following M10.6c checkpoints.
 
 .. automodule:: claasp_next.representations.constraints.cp
    :members:

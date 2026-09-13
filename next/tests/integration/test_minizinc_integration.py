@@ -7,6 +7,11 @@ from claasp_next.drivers.solvers import CPStatus, MiniZincSolver
 from claasp_next.analysis import AnalysisProblem, FixedValue
 from claasp_next.ciphers import SpeckBlockCipher
 from claasp_next.representations.constraints.cp import MiniZincModel
+from claasp_next.interpretations import XOR_DIFFERENTIAL
+from claasp_next.interpretations.cryptanalysis import PropagationProblem
+from claasp_next.representations.constraints.cp import PresentDifferentialCPModel
+from claasp_next.representations.constraints.smt.trails import check_present_smt_trail
+from claasp_next.ciphers import PresentBlockCipher
 
 
 pytestmark = pytest.mark.external
@@ -84,3 +89,28 @@ def test_minizinc_reproduces_legacy_full_speck_missing_bits_result():
     assert result.is_satisfiable
     assert result.value("ciphertext") == 0xA86842F2
     assert cipher.evaluate(0x6574694C, 0x1918111009080100) == result.value("ciphertext")
+
+
+def test_minizinc_proves_present_two_round_differential_optimum():
+    cipher = PresentBlockCipher(number_of_rounds=2)
+    solver = MiniZincSolver(solver=_test_solver(), timeout_seconds=60)
+    below = PresentDifferentialCPModel(PropagationProblem(
+        cipher,
+        XOR_DIFFERENTIAL,
+        maximum_weight=3,
+        provenance=("PRESENT-2 legacy lower bound",),
+    ))
+    optimum = PresentDifferentialCPModel(PropagationProblem(
+        cipher,
+        XOR_DIFFERENTIAL,
+        maximum_weight=4,
+        provenance=("PRESENT-2 legacy optimum",),
+    ))
+
+    assert solver.solve(below.cp_model()).status is CPStatus.UNSATISFIABLE
+    solved = solver.solve(optimum.cp_model())
+    trail = optimum.decode_trail(solved.assignment)
+
+    assert solved.status is CPStatus.SATISFIED
+    assert trail.total_weight == 4
+    assert check_present_smt_trail(cipher, trail)

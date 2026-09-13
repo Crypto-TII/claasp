@@ -6,13 +6,14 @@ from claasp_next.interpretations.cryptanalysis import (
 )
 from claasp_next.representations.constraints.milp import PresentDifferentialMILPModel
 from claasp_next.representations.constraints.smt import PresentDifferentialSMTModel
+from claasp_next.representations.constraints.cp import PresentDifferentialCPModel
 
 
-def test_smt_and_milp_composition_consume_the_same_component_override():
+def test_smt_milp_and_cp_composition_consume_the_same_component_override():
     cipher = PresentBlockCipher(number_of_rounds=2)
     component = next(item for item in cipher.components if isinstance(item, BitVectorSBox))
     base = PropagationProblem(cipher, XOR_DIFFERENTIAL).registry
-    calls = {"smt": 0, "milp": 0}
+    calls = {"smt": 0, "milp": 0, "cp": 0}
 
     class CountingProvider:
         def __init__(self, provider, counter):
@@ -39,5 +40,6 @@ def test_smt_and_milp_composition_consume_the_same_component_override():
 
     PresentDifferentialSMTModel(problem_for("smt", 4)).smt_formula()
     PresentDifferentialMILPModel(problem_for("milp")).milp_model()
+    PresentDifferentialCPModel(problem_for("cp", 4)).cp_model()
 
-    assert calls == {"smt": 256, "milp": 256}
+    assert calls == {"smt": 256, "milp": 256, "cp": 256}
