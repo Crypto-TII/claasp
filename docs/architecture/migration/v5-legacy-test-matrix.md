@@ -71,6 +71,7 @@ of uniqueness or an optimum.
 | Legacy test | Semantic assertions and provenance | Disposition | v5 coverage |
 | --- | --- | --- | --- |
 | `milp_xor_differential_model_test.py` two-round PRESENT optimum | Complete cipher minimum XOR-differential weight 4 | Ported to portable MILP in M10.5b | The exact DDT selector model covers all 32 graph S-boxes and permutation wiring; GLPK proves optimum 4 and the shared checker validates every decoded transition and boundary |
+| `milp_xor_linear_model_test.py` four-round Speck32/64 optimum | Minimum weight 3 and exact modular-add mask transitions, shared with SAT/CMS | Component relation ported in M10.5c | GLPK validates all four restored transitions with the exact parity/support model; weights `2+0+0+1` and signs `+,+,+,-` are recomputed by shared Walsh semantics |
 
 ## Analysis and tooling inventory
 

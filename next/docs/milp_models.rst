@@ -63,3 +63,23 @@ sum of exact transition weights:
 The dedicated GLPK integration obtains the established optimum weight 4,
 decodes all 32 transitions, and checks every DDT entry and permutation
 boundary independently of the linear constraints.
+
+ARX linear transitions
+----------------------
+
+Modular addition has a separate exact linear-mask lowering. Integer parity
+variables express the XOR recurrence, while binary variables represent the
+masks and unary correlation weight:
+
+.. doctest::
+
+   >>> from claasp_next.milp import ModularAddLinearMILPModel
+   >>> addition = ModularAddLinearMILPModel(16)
+   >>> arx_model = addition.milp_model(left_mask=0x6081, right_mask=0x40c1, output_mask=0x4081)
+   >>> (len(arx_model.variables), len(arx_model.constraints))
+   (79, 124)
+
+GLPK integration restores the four modular-add transitions of the legacy
+four-round Speck32/64 weight-3 characteristic, including weights
+``2 + 0 + 0 + 1`` and signs ``+,+,+,-``. Decoding recomputes each correlation
+with the shared exact Walsh semantics.
