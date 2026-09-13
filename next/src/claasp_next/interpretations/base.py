@@ -25,5 +25,9 @@ class Interpretation:
 CONCRETE = Interpretation("concrete", "Concrete logical-unit values")
 XOR_DIFFERENTIAL = Interpretation("xor_differential", "XOR differences and probabilities")
 XOR_LINEAR = Interpretation("xor_linear", "XOR masks and signed correlations")
+DETERMINISTIC_TRUNCATED_XOR = Interpretation(
+    "deterministic_truncated_xor",
+    "Three-valued deterministic XOR differences",
+)
 SYMBOLIC = Interpretation("symbolic", "Abstract symbolic values")
 LEAKAGE = Interpretation("leakage", "Simulated side-channel observations")

@@ -592,13 +592,13 @@ each synchronization.
 | Shared propagation consumers (M10.5d4c) | Achieved | PRESENT SMT/MILP composition accepts one PropagationProblem and queries identical per-component overrides |
 | Diagram representation (M10.5d5) | In progress | Annotated IR, TikZ/PDF, and temporary warned structural listing achieved; actual routed ASCII art remains |
 | SMT, MILP, and CP (M10.4–M10.6) | In progress | SMT and MILP achieved; CP is next and retains shared semantics and independent-check requirements |
-| CP backend (M10.6) | In progress | Portable foundation and cipher/recovery lowering achieved; shared trail lowering follows |
+| CP backend (M10.6) | In progress | Portable foundation, cipher recovery, and reviewed shared trail slices achieved; advanced legacy CP analyses follow |
 | Portable CP foundation (M10.6a) | Achieved | Immutable MiniZinc IR, deterministic export, CLI driver, portable JSON results, external SAT/UNSAT tests |
 | CP cipher lowering and recovery (M10.6b) | Achieved | Exact CNF-to-CP lowering reuses typed component semantics; graph-name projections; reduced recovery and full Speck legacy fixture independently evaluated |
-| Shared CP trail lowering (M10.6c) | In progress | Native weighted SPN differential and signed-linear slices achieved; truncated and impossible semantics follow |
+| Shared CP trail lowering (M10.6c) | Achieved | Differential, signed-linear, deterministic-truncated, and local impossible fixtures use shared semantics and real MiniZinc tests |
 | Native CP SPN differential trails (M10.6c1) | Achieved | PropagationProblem-selected DDT tables, PRESENT-2 UNSAT-3/SAT-4 proof, decoded trail independently checked |
 | Native CP linear trails (M10.6c2) | Achieved | PropagationProblem-selected signed LAT tables, PRESENT-3 UNSAT-3/SAT-4 proof, decoded signs and wiring independently checked |
-| Native CP truncated/impossible trails (M10.6c3) | Next | Shared deterministic-truncated propagation and impossible-pair regressions |
-| Advanced CP analyses (M10.6d) | Planned | ARX optimization, wordwise/semi-deterministic, boomerang, differential-linear, continuous inventory |
+| Native CP truncated/impossible trails (M10.6c3) | Achieved | Truncated semantics moved into interpretations; Speck paired-carry fixture projected through CP; exact PRESENT S-box possible/impossible proof |
+| Advanced CP analyses (M10.6d) | Next | Multi-round impossible search, ARX optimization, wordwise/semi-deterministic, boomerang, differential-linear, continuous inventory |
 | Statistical analysis (M10.7) | Planned | Avalanche and related legacy behavior |
 | Serialization, diagrams, transforms, compilers (M10.8) | Planned | Inventory-driven tooling migration |

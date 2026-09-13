@@ -4,7 +4,9 @@ from claasp_next.components import BitVectorSBox, Permutation
 from claasp_next.interpretations import XOR_DIFFERENTIAL, XOR_LINEAR
 from claasp_next.interpretations.cryptanalysis import (
     PropagationProblem, Trail, TrailKind, TrailStep, XorDifference, XorMask,
+    TruncatedXorDifference, propagate_two_word_speck_round,
 )
+from claasp_next.interpretations import DETERMINISTIC_TRUNCATED_XOR
 from claasp_next.representations.constraints.cp.model import MiniZincModel
 from claasp_next.representations.constraints.smt.trails import (
     check_present_linear_smt_trail,
@@ -200,6 +202,109 @@ class PresentLinearCPModel:
         if not check_present_linear_smt_trail(self.cipher, trail):
             raise ValueError("MiniZinc returned an invalid linear trail")
         return trail
+
+
+class SpeckTruncatedCPModel:
+    """Compile one fixed deterministic-truncated Speck round propagation."""
+
+    def __init__(
+        self, problem: PropagationProblem, input_difference: TruncatedXorDifference
+    ) -> None:
+        if not isinstance(problem, PropagationProblem):
+            raise TypeError("problem must be a PropagationProblem")
+        if problem.interpretation != DETERMINISTIC_TRUNCATED_XOR:
+            raise ValueError("truncated CP lowering requires deterministic-truncated semantics")
+        if problem.cipher.family_name != "speck":
+            raise NotImplementedError("truncated CP lowering currently supports Speck")
+        if not isinstance(input_difference, TruncatedXorDifference):
+            raise TypeError("input_difference must be a TruncatedXorDifference")
+        self.problem = problem
+        self.input_difference = input_difference
+        self.expected_output = propagate_two_word_speck_round(problem.cipher, input_difference)
+
+    def cp_model(self) -> MiniZincModel:
+        """Represent the shared paired-carry result using three-valued CP units."""
+
+        declarations = []
+        constraints = []
+        for prefix, pattern in (
+            ("plaintext_truncated", self.input_difference),
+            ("round_0_output_truncated", self.expected_output),
+        ):
+            for index, bit in enumerate(pattern.bits):
+                name = f"{prefix}_{index}"
+                declarations.append(f"var 0..2: {name};")
+                constraints.append(f"constraint {name} = {bit.encoded};")
+        return MiniZincModel(
+            tuple(declarations), tuple(constraints), provenance=self.problem.provenance
+        )
+
+    def decode_output(self, assignment) -> TruncatedXorDifference:
+        """Decode and independently compare the solver's three-valued output."""
+
+        symbols = {0: "0", 1: "1", 2: "?"}
+        pattern = TruncatedXorDifference.parse("".join(
+            symbols[assignment[f"round_0_output_truncated_{index}"]]
+            for index in range(len(self.expected_output.bits))
+        ))
+        if pattern != self.expected_output:
+            raise ValueError("MiniZinc returned an invalid truncated propagation")
+        return pattern
+
+
+class SBoxDifferenceCPModel:
+    """Exact local feasibility model for possible and impossible differences."""
+
+    def __init__(
+        self,
+        problem: PropagationProblem,
+        component_id: str,
+        input_difference: int,
+        output_difference: int,
+    ) -> None:
+        if problem.interpretation != XOR_DIFFERENTIAL:
+            raise ValueError("impossible-pair CP lowering requires XOR-differential semantics")
+        component = next(
+            (item for item in problem.components if item.component_id == component_id), None
+        )
+        if not isinstance(component, BitVectorSBox):
+            raise ValueError("component_id must select a scoped bit-vector S-box")
+        width = component.output_type.unit_count
+        limit = 1 << width
+        if not 0 <= input_difference < limit or not 0 <= output_difference < limit:
+            raise ValueError("difference is outside the S-box width")
+        self.problem = problem
+        self.component = component
+        self.input_difference = input_difference
+        self.output_difference = output_difference
+
+    def cp_model(self) -> MiniZincModel:
+        """Return a table whose absence of a fixed pair proves impossibility."""
+
+        semantics = self.problem.provider_for(self.component)
+        width = self.component.output_type.unit_count
+        feasible = [
+            (source, target)
+            for source in range(1 << width)
+            for target in range(1 << width)
+            if semantics.transition((source,), target).is_possible
+        ]
+        values = ",".join(str(item) for row in feasible for item in row)
+        declarations = (
+            f"array[0..{len(feasible) - 1}, 1..2] of int: transitions = "
+            f"array2d(0..{len(feasible) - 1}, 1..2, [{values}]);",
+            f"var 0..{(1 << width) - 1}: input_difference;",
+            f"var 0..{(1 << width) - 1}: output_difference;",
+        )
+        constraints = (
+            "constraint table([input_difference,output_difference], transitions);",
+            f"constraint input_difference = {self.input_difference};",
+            f"constraint output_difference = {self.output_difference};",
+        )
+        return MiniZincModel(
+            declarations, constraints, includes=('include "table.mzn";',),
+            provenance=self.problem.provenance,
+        )
 
 
 def _bits(value, width):

@@ -1,4 +1,4 @@
-from claasp_next.analysis import (
+from claasp_next.interpretations.cryptanalysis import (
     TruncatedXorDifference,
     propagate_two_word_speck_round,
     truncated_modular_add,

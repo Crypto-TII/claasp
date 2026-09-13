@@ -1,7 +1,8 @@
 """Meanings that may be propagated through a cipher graph."""
 
 from claasp_next.interpretations.base import (
-    CONCRETE, LEAKAGE, SYMBOLIC, XOR_DIFFERENTIAL, XOR_LINEAR, Interpretation,
+    CONCRETE, DETERMINISTIC_TRUNCATED_XOR, LEAKAGE, SYMBOLIC,
+    XOR_DIFFERENTIAL, XOR_LINEAR, Interpretation,
 )
 from claasp_next.interpretations.cryptanalysis import (
     BitPattern, ModularAddLinearSemantics, ModularAddTransitionSemantics,
@@ -9,10 +10,12 @@ from claasp_next.interpretations.cryptanalysis import (
     Transition, XorDifference, XorMask, ComponentSemanticsBinding,
     ComponentSemanticsRegistry, PropagationObjective, PropagationProblem,
     TransitionProvider, default_component_semantics,
+    TruncatedBit, TruncatedXorDifference, propagate_two_word_speck_round,
+    truncated_modular_add,
 )
 
 __all__ = [
-    "CONCRETE", "Interpretation", "LEAKAGE", "SYMBOLIC",
+    "CONCRETE", "DETERMINISTIC_TRUNCATED_XOR", "Interpretation", "LEAKAGE", "SYMBOLIC",
     "XOR_DIFFERENTIAL", "XOR_LINEAR",
     "BitPattern", "ModularAddLinearSemantics", "ModularAddTransitionSemantics",
     "SBoxTransitionSemantics", "Trail", "TrailKind", "TrailSearchResult",
@@ -20,4 +23,6 @@ __all__ = [
     "ComponentSemanticsBinding", "ComponentSemanticsRegistry",
     "PropagationObjective", "PropagationProblem", "TransitionProvider",
     "default_component_semantics",
+    "TruncatedBit", "TruncatedXorDifference", "propagate_two_word_speck_round",
+    "truncated_modular_add",
 ]

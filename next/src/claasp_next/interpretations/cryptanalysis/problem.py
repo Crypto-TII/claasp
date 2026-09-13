@@ -7,7 +7,12 @@ from typing import Protocol, runtime_checkable
 
 from claasp_next.components import BitVectorSBox, ModularAdd
 from claasp_next.core import Cipher, Component
-from claasp_next.interpretations.base import Interpretation, XOR_DIFFERENTIAL, XOR_LINEAR
+from claasp_next.interpretations.base import (
+    DETERMINISTIC_TRUNCATED_XOR,
+    Interpretation,
+    XOR_DIFFERENTIAL,
+    XOR_LINEAR,
+)
 from claasp_next.interpretations.cryptanalysis.trails import (
     ModularAddLinearSemantics, ModularAddTransitionSemantics,
     SBoxTransitionSemantics, Transition,
@@ -112,8 +117,13 @@ class PropagationProblem:
     ) -> None:
         if not isinstance(cipher, Cipher):
             raise TypeError("cipher must be a Cipher")
-        if interpretation not in (XOR_DIFFERENTIAL, XOR_LINEAR):
-            raise ValueError("the initial propagation problem supports XOR differential or linear interpretations")
+        if interpretation not in (
+            XOR_DIFFERENTIAL, XOR_LINEAR, DETERMINISTIC_TRUNCATED_XOR,
+        ):
+            raise ValueError(
+                "propagation problems support XOR differential, linear, or "
+                "deterministic-truncated interpretations"
+            )
         if not isinstance(objective, PropagationObjective):
             raise TypeError("objective must be a PropagationObjective")
         if maximum_weight is not None and (

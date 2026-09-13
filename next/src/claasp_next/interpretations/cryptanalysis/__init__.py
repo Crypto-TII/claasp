@@ -9,6 +9,10 @@ from claasp_next.interpretations.cryptanalysis.problem import (
     ComponentSemanticsBinding, ComponentSemanticsRegistry, PropagationObjective,
     PropagationProblem, TransitionProvider, default_component_semantics,
 )
+from claasp_next.interpretations.cryptanalysis.truncated import (
+    TruncatedBit, TruncatedXorDifference, propagate_two_word_speck_round,
+    truncated_modular_add,
+)
 
 __all__ = [
     "BitPattern", "ModularAddLinearSemantics", "ModularAddTransitionSemantics",
@@ -17,4 +21,6 @@ __all__ = [
     "ComponentSemanticsBinding", "ComponentSemanticsRegistry",
     "PropagationObjective", "PropagationProblem", "TransitionProvider",
     "default_component_semantics",
+    "TruncatedBit", "TruncatedXorDifference", "propagate_two_word_speck_round",
+    "truncated_modular_add",
 ]

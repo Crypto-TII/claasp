@@ -7,12 +7,19 @@ from claasp_next.drivers.solvers import CPStatus, MiniZincSolver
 from claasp_next.analysis import AnalysisProblem, FixedValue
 from claasp_next.ciphers import SpeckBlockCipher
 from claasp_next.representations.constraints.cp import MiniZincModel
-from claasp_next.interpretations import XOR_DIFFERENTIAL, XOR_LINEAR
+from claasp_next.interpretations import (
+    DETERMINISTIC_TRUNCATED_XOR,
+    XOR_DIFFERENTIAL,
+    XOR_LINEAR,
+)
 from claasp_next.interpretations.cryptanalysis import PropagationProblem
 from claasp_next.representations.constraints.cp import (
     PresentDifferentialCPModel,
     PresentLinearCPModel,
+    SBoxDifferenceCPModel,
+    SpeckTruncatedCPModel,
 )
+from claasp_next.interpretations.cryptanalysis import TruncatedXorDifference
 from claasp_next.representations.constraints.smt.trails import (
     check_present_linear_smt_trail,
     check_present_smt_trail,
@@ -146,3 +153,41 @@ def test_minizinc_proves_present_three_round_linear_optimum_with_signs():
     assert trail.total_weight == 4
     assert all(step.transition.sign in (-1, 1) for step in trail.steps)
     assert check_present_linear_smt_trail(cipher, trail)
+
+
+def test_minizinc_reproduces_legacy_speck_truncated_round_fixture():
+    cipher = SpeckBlockCipher(number_of_rounds=2)
+    model = SpeckTruncatedCPModel(
+        PropagationProblem(
+            cipher,
+            DETERMINISTIC_TRUNCATED_XOR,
+            provenance=("legacy Speck deterministic-truncated fixture",),
+        ),
+        TruncatedXorDifference.parse("00000000011111001110000000000000"),
+    )
+
+    solved = MiniZincSolver(solver=_test_solver()).solve(model.cp_model())
+    output = model.decode_output(solved.assignment)
+
+    assert solved.status is CPStatus.SATISFIED
+    assert str(output) == "????100000000000????100000000011"
+
+
+def test_minizinc_proves_impossible_and_possible_present_sbox_pairs():
+    cipher = PresentBlockCipher(number_of_rounds=1)
+    problem = PropagationProblem(
+        cipher,
+        XOR_DIFFERENTIAL,
+        provenance=("exhaustive PRESENT S-box DDT",),
+    )
+    impossible = SBoxDifferenceCPModel(problem, "sbox_1_0", 1, 1)
+    possible = SBoxDifferenceCPModel(problem, "sbox_1_0", 1, 3)
+    solver = MiniZincSolver(solver=_test_solver())
+
+    assert solver.solve(impossible.cp_model()).status is CPStatus.UNSATISFIABLE
+    solved = solver.solve(possible.cp_model())
+    transition = problem.provider_for(possible.component).transition((1,), 3)
+
+    assert solved.status is CPStatus.SATISFIED
+    assert transition.is_possible
+    assert transition.weight == 2

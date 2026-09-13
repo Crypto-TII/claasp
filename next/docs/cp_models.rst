@@ -79,6 +79,26 @@ sign of each of its 48 correlations, and independently checks all transitions
 and graph boundaries. Deterministic-truncated and impossible propagation form
 the final M10.6c checkpoint.
 
+Truncated and impossible propagation
+------------------------------------
+
+Three-valued ``TruncatedXorDifference`` and paired-carry addition now belong
+to ``interpretations.cryptanalysis`` rather than the analysis facade. The
+initial ``SpeckTruncatedCPModel`` compiles a fixed input-pattern propagation
+to conventional CP values 0, 1, and 2 (unknown). Its external regression
+reproduces the legacy first-round result
+``????100000000000????100000000011`` and independently compares the decoded
+projection with shared paired-carry semantics.
+
+``SBoxDifferenceCPModel`` constructs an exact table from the semantic provider
+selected by ``PropagationProblem``. A real MiniZinc solver proves PRESENT
+transition ``1 -> 1`` impossible and ``1 -> 3`` feasible; the latter's weight
+is independently obtained from the exhaustive DDT semantics.
+
+These are the reviewed M10.6c slices. Multi-round bidirectional impossible
+search and the legacy wordwise, semi-deterministic, and ARX-specialized models
+remain explicitly in M10.6d.
+
 .. automodule:: claasp_next.representations.constraints.cp
    :members:
 
