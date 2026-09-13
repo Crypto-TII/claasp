@@ -12,6 +12,9 @@ from claasp.cipher_modules.code_generator import (
 )
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.ciphers.block_ciphers.xtea_block_cipher import XTeaBlockCipher
+from claasp.ciphers.single_component_ciphers.variable_rotate_cipher import VariableRotateCipher
+from claasp.ciphers.single_component_ciphers.variable_shift_cipher import VariableShiftCipher
+from claasp.ciphers.single_component_ciphers.xor_cipher import XorCipher
 from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
 
 
@@ -80,4 +83,70 @@ def test_generate_evaluate_c_code_shared_library_word_based():
             assert 'generic_word_based_c_functions.h' in generated_c.read()
     finally:
         delete_generated_evaluate_c_shared_library(xtea)
+
+
+def test_evaluate_using_c_select_bits_with_256_inputs():
+    # Regression test for generic_bit_based_c_functions.c's select_bits(): its first
+    # parameter n (the number of distinct input BitStrings wired into the component,
+    # i.e. len(component.input_id_links)) used to be a uint8_t. code_generator.py bakes
+    # n in as a plain C integer literal (component.select_bits() in claasp/component.py),
+    # so a component fed by 256+ distinct inputs got n truncated to 0 at the call site
+    # (256 % 256 == 0), silently corrupting the result. An XorCipher wired from 256
+    # separate 1-bit inputs into a single XOR component reproduces this exactly.
+    number_of_inputs = 256
+    xor_256 = XorCipher(word_bit_size=1, number_of_inputs=number_of_inputs)
+    # XorCipher's auto-generated id embeds one token per input, which is far too long
+    # for the filesystem once there are 256 of them (generated C files are named after
+    # it); give it a short id purely for file naming, which is otherwise independent of
+    # cipher evaluation.
+    xor_256.id = "xor_cipher_256_inputs_regression"
+    # Non-trivial, non-uniform input with an odd number of 1s (so the correct XOR of
+    # all 256 single-bit inputs is 1, not 0 -- a discriminative choice, since a broken
+    # select_bits() that silently drops all inputs would otherwise also yield 0).
+    inputs = [1 if i < 129 else 0 for i in range(number_of_inputs)]
+
+    expected = xor_256.evaluate(inputs)
+    actual = xor_256.evaluate_using_c(inputs)
+
+    assert actual == expected
+
+
+def test_evaluate_using_c_variable_shift_with_wide_input():
+    # Regression test for generic_bit_based_c_functions.c's SHIFT_BY_VARIABLE_AMOUNT():
+    # the byte index `i` used to extract the shift amount from the tail of the input
+    # BitString used to be a uint8_t, so it wrapped for inputs wider than 255 bytes
+    # (2040 bits), reading the wrong byte(s) and producing a silently wrong shift amount.
+    # Use an 8192-bit (1024-byte) input, comfortably over that threshold, matching the
+    # real scenario (a Blowfish key-dependent S-box prototype) that uncovered the bug.
+    # The variable amount itself is kept to 16 bits (2 bytes): that is all the generic C
+    # helper ever reads to determine the shift amount (see the `list[i] | list[i-1] << 8`
+    # tail extraction), so this keeps the C and pure-Python implementations comparable
+    # while still pushing the *total* input comfortably past the 255-byte/uint8_t range.
+    bit_size = 8176
+    amount_bit_size = 16
+    variable_shift = VariableShiftCipher(bit_size=bit_size, amount_bit_size=amount_bit_size, direction=1)
+
+    plaintext = int.from_bytes(bytes([i % 256 for i in range(bit_size // 8)]), byteorder="big")
+    shift_amount = 0xBEEF
+
+    expected = variable_shift.evaluate([plaintext, shift_amount])
+    actual = variable_shift.evaluate_using_c([plaintext, shift_amount])
+
+    assert actual == expected
+
+
+def test_evaluate_using_c_variable_rotate_with_wide_input():
+    # Same regression as test_evaluate_using_c_variable_shift_with_wide_input, but for
+    # ROTATE_BY_VARIABLE_AMOUNT(), which has the identical uint8_t byte-index bug.
+    bit_size = 8176
+    amount_bit_size = 16
+    variable_rotate = VariableRotateCipher(bit_size=bit_size, amount_bit_size=amount_bit_size, direction=1)
+
+    plaintext = int.from_bytes(bytes([i % 256 for i in range(bit_size // 8)]), byteorder="big")
+    rotation_amount = 0xBEEF
+
+    expected = variable_rotate.evaluate([plaintext, rotation_amount])
+    actual = variable_rotate.evaluate_using_c([plaintext, rotation_amount])
+
+    assert actual == expected
 
