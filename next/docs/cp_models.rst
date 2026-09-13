@@ -99,6 +99,22 @@ These are the reviewed M10.6c slices. Multi-round bidirectional impossible
 search and the legacy wordwise, semi-deterministic, and ARX-specialized models
 remain explicitly in M10.6d.
 
+Advanced-suite migration
+------------------------
+
+M10.6d is organized by cryptanalytic semantics rather than by the legacy class
+hierarchy. Its complete model-and-fixture inventory is maintained in
+``docs/architecture/cp-advanced-migration.md``. Exact ARX differential
+optimization is the first implementation checkpoint, followed by generalized
+truncated domains, multi-round impossible search, composed attacks, and
+continuous heuristics.
+
+The distinction between exact and heuristic results is intentional. Exact
+models must provide a solver witness plus an independent semantic checker; an
+optimality claim also needs an unsatisfiable lower bound. Continuous models
+must instead state numerical precision and tolerances and cannot certify an
+exact impossibility result on their own.
+
 .. automodule:: claasp_next.representations.constraints.cp
    :members:
 

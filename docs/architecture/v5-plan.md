@@ -346,6 +346,30 @@ Deliver this broad migration through reviewable checkpoints:
    supersede ARX-optimized, wordwise/semi-deterministic, boomerang,
    differential-linear, and continuous legacy models.
 
+M10.6d is deliberately split by cryptanalytic semantics rather than by legacy
+class hierarchy:
+
+1. **M10.6d1 — advanced-suite inventory.** Classify every legacy MiniZinc
+   model and result-bearing regression, select preserved scientific fixtures,
+   and document whether it is migrated, superseded by a shared representation,
+   or deferred with an explicit dependency.
+2. **M10.6d2 — exact ARX differential optimization.** Compile modular-add
+   XOR-differential support and probability weight composition, then prove the
+   legacy Speck32/64 five-round optimum of weight 9 with an independently
+   checked witness.
+3. **M10.6d3 — generalized truncated propagation.** Add wordwise and
+   semi-deterministic domains without encoding ``unknown`` as an accidental
+   solver convention; preserve the selected Speck output-pattern fixtures.
+4. **M10.6d4 — multi-round impossible search.** Compose forward and backward
+   propagation and preserve selected legacy impossible-differential UNSAT
+   results, including independent boundary checks.
+5. **M10.6d5 — composed attacks.** Give boomerang and differential-linear
+   models explicit shared semantic types, boundaries, objectives, and
+   independently checked result fixtures.
+6. **M10.6d6 — continuous models.** Separate floating-point heuristic models
+   from exact CP proofs, document numerical tolerances, and migrate their
+   result-bearing tests without presenting heuristic output as an exact proof.
+
 M10.6c proceeds as M10.6c1 (native weighted SPN differential tables),
 M10.6c2 (linear propagation), and M10.6c3 (deterministic-truncated and
 impossible propagation). Each checkpoint must consume ``PropagationProblem``
@@ -604,6 +628,12 @@ each synchronization.
 | Native CP SPN differential trails (M10.6c1) | Achieved | PropagationProblem-selected DDT tables, PRESENT-2 UNSAT-3/SAT-4 proof, decoded trail independently checked |
 | Native CP linear trails (M10.6c2) | Achieved | PropagationProblem-selected signed LAT tables, PRESENT-3 UNSAT-3/SAT-4 proof, decoded signs and wiring independently checked |
 | Native CP truncated/impossible trails (M10.6c3) | Achieved | Truncated semantics moved into `semantics`; Speck paired-carry fixture projected through CP; exact PRESENT S-box possible/impossible proof |
-| Advanced CP analyses (M10.6d) | Next | Multi-round impossible search, ARX optimization, wordwise/semi-deterministic, boomerang, differential-linear, continuous inventory |
+| Advanced CP analyses (M10.6d) | In progress | Complete inventory; exact ARX optimization, generalized truncated, impossible, composed, and continuous checkpoints follow |
+| Advanced CP suite inventory (M10.6d1) | Achieved | Every legacy MiniZinc model classified; scientific fixtures, superseded structural tests, dependencies, and migration order recorded |
+| Exact CP ARX differential optimization (M10.6d2) | Next | Prove and independently check the legacy Speck32/64 five-round weight-9 optimum |
+| Generalized CP truncated propagation (M10.6d3) | Planned | Wordwise and semi-deterministic domains with preserved Speck patterns |
+| Multi-round CP impossible search (M10.6d4) | Planned | Composed forward/backward propagation and selected legacy UNSAT fixtures |
+| CP composed attacks (M10.6d5) | Planned | Explicit boomerang and differential-linear semantic contracts and fixtures |
+| CP continuous models (M10.6d6) | Planned | Numerically qualified heuristic models kept distinct from exact proof results |
 | Statistical analysis (M10.7) | Planned | Avalanche and related legacy behavior |
 | Serialization, diagrams, transforms, compilers (M10.8) | Planned | Inventory-driven tooling migration |
