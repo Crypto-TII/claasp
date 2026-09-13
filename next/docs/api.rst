@@ -79,7 +79,10 @@ Parameter catalogues
 Polynomial models
 -----------------
 
-.. automodule:: claasp_next.polynomial
+.. automodule:: claasp_next.representations.constraints.polynomial
+   :members:
+
+.. automodule:: claasp_next.drivers.algebra
    :members:
 
 Boolean models

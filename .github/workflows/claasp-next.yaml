@@ -82,7 +82,7 @@ jobs:
         run: python -m pip install -e '.[dev]'
 
       - name: Execute Singular exporter integration
-        run: python -m pytest tests/unit/test_singular_exporter.py -q
+        run: python -m pytest tests/unit/test_singular_exporter.py tests/integration/test_algebra_drivers.py -q
 
   msolve-export:
     name: msolve exporter integration
@@ -110,7 +110,7 @@ jobs:
         run: python -m pip install -e '.[dev]'
 
       - name: Execute msolve exporter integration
-        run: python -m pytest tests/unit/test_msolve_exporter.py -q
+        run: python -m pytest tests/unit/test_msolve_exporter.py tests/integration/test_algebra_drivers.py -q
 
   minisat-execution:
     name: MiniSat execution integration

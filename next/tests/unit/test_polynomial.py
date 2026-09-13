@@ -2,7 +2,7 @@ import pytest
 
 from claasp_next import Bit, Cipher, PrimeField, ScalarEvaluator, ValueType
 from claasp_next.ciphers import MiMCPermutation, PoseidonPermutation
-from claasp_next.polynomial import (
+from claasp_next.representations.constraints.polynomial import (
     Monomial,
     Polynomial,
     PowerLoweringPolicy,

@@ -1,7 +1,7 @@
-"""msolve exporter for small prime-field polynomial systems."""
+"""msolve serialization for small prime-field polynomial systems."""
 
-from claasp_next.polynomial.expression import Monomial, Polynomial
-from claasp_next.polynomial.system import PolynomialSystem
+from claasp_next.representations.constraints.polynomial.expression import Monomial, Polynomial
+from claasp_next.representations.constraints.polynomial.system import PolynomialSystem
 
 
 class MsolveExporter:
@@ -14,7 +14,7 @@ class MsolveExporter:
     EXAMPLES::
 
         >>> from claasp_next.ciphers import MiMCPermutation
-        >>> from claasp_next.polynomial import PrimeFieldPolynomialModel
+        >>> from claasp_next.representations.constraints.polynomial import PrimeFieldPolynomialModel
         >>> system = PrimeFieldPolynomialModel(MiMCPermutation(17, 3, (1,))).polynomial_system()
         >>> text = MsolveExporter().export(system)
         >>> text.splitlines()[:2]

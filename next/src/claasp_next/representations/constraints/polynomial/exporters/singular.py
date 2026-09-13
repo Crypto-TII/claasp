@@ -1,7 +1,7 @@
-"""Singular exporter for prime-field polynomial systems."""
+"""Singular serialization for prime-field polynomial systems."""
 
-from claasp_next.polynomial.expression import Monomial, Polynomial
-from claasp_next.polynomial.system import PolynomialSystem
+from claasp_next.representations.constraints.polynomial.expression import Monomial, Polynomial
+from claasp_next.representations.constraints.polynomial.system import PolynomialSystem
 
 
 class SingularExporter:
@@ -14,8 +14,8 @@ class SingularExporter:
     EXAMPLES::
 
         >>> from claasp_next.ciphers import MiMCPermutation
-        >>> from claasp_next.polynomial import PrimeFieldPolynomialModel
-        >>> from claasp_next.polynomial.exporters import SingularExporter
+        >>> from claasp_next.representations.constraints.polynomial import PrimeFieldPolynomialModel
+        >>> from claasp_next.representations.constraints.polynomial.exporters import SingularExporter
         >>> system = PrimeFieldPolynomialModel(MiMCPermutation(17, 3, (1,))).polynomial_system()
         >>> program = SingularExporter().export(system)
         >>> program.splitlines()[0]

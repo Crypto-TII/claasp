@@ -4,8 +4,8 @@ import subprocess
 import pytest
 
 from claasp_next.ciphers import MiMCPermutation
-from claasp_next.polynomial import PowerLoweringPolicy, PrimeFieldPolynomialModel
-from claasp_next.polynomial.exporters import SingularExporter
+from claasp_next.representations.constraints.polynomial import PowerLoweringPolicy, PrimeFieldPolynomialModel
+from claasp_next.representations.constraints.polynomial.exporters import SingularExporter
 
 
 def test_singular_export_is_deterministic_and_preserves_variable_mapping():

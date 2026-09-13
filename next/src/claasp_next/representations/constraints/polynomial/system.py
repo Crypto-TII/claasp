@@ -1,9 +1,9 @@
-"""Polynomial systems with equation provenance."""
+"""Polynomial-system representations with equation provenance."""
 
 from dataclasses import dataclass
 
 from claasp_next.domains import PrimeField
-from claasp_next.polynomial.expression import Polynomial
+from claasp_next.representations.constraints.polynomial.expression import Polynomial
 
 
 @dataclass(frozen=True, slots=True)

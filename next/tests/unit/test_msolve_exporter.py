@@ -7,8 +7,8 @@ import pytest
 
 from claasp_next import PrimeField
 from claasp_next.ciphers import MiMCPermutation
-from claasp_next.polynomial import Polynomial, PolynomialSystem, PrimeFieldPolynomialModel
-from claasp_next.polynomial.exporters import MsolveExporter
+from claasp_next.representations.constraints.polynomial import Polynomial, PolynomialSystem, PrimeFieldPolynomialModel
+from claasp_next.representations.constraints.polynomial.exporters import MsolveExporter
 
 
 def test_msolve_export_is_deterministic_and_uses_ordered_variable_mapping():

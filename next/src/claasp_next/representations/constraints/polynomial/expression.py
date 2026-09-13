@@ -1,4 +1,4 @@
-"""Dependency-free sparse multivariate polynomials over prime fields."""
+"""Dependency-free sparse multivariate polynomial representations."""
 
 from collections.abc import Mapping
 from dataclasses import dataclass
@@ -68,7 +68,7 @@ class Polynomial:
     EXAMPLES::
 
         >>> from claasp_next import PrimeField
-        >>> from claasp_next.polynomial import Polynomial
+        >>> from claasp_next.representations.constraints.polynomial import Polynomial
         >>> field = PrimeField(17)
         >>> x = Polynomial.variable(field, "x")
         >>> polynomial = x**3 + 2 * x + 5

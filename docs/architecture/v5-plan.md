@@ -556,11 +556,12 @@ each synchronization.
 | Representation architecture (M10.5d) | In progress | M10.5d1 terminology/contracts, then execution, constraint, interpretation, and diagram migrations |
 | Interpretation/annotation contracts (M10.5d1) | Achieved | Extensible interpretations, immutable graph annotations, distinct trace types, representation artifacts, drivers, attack targets |
 | Execution representation migration (M10.5d2) | Achieved | Scalar/batch modules moved under representations; canonical driver names; concrete ExecutionTrace results |
-| Constraint representation migration (M10.5d3) | Next | Group CNF/SMT/MILP/polynomial formats and separate external drivers |
+| Constraint representation migration (M10.5d3) | Achieved | SAT, SMT, MILP, and polynomial formats grouped under representations; external processes under drivers |
 | SAT representation/driver split (M10.5d3a) | Achieved | CNF, lowering, and DIMACS under representations; MiniSat under drivers |
 | SMT representation/driver split (M10.5d3b) | Achieved | SMT IR/export/lowering under representations; Z3 under shared solver drivers |
 | MILP representation/driver split (M10.5d3c) | Achieved | Linear IR/export/trail lowering under representations; GLPK and result decoding under drivers |
-| Polynomial representation/driver split (M10.5d3d) | Next | Move polynomial IR/export/lowering and distinguish algebra-system execution drivers |
+| Polynomial representation/driver split (M10.5d3d) | Achieved | Polynomial IR/export/lowering under representations; reusable Singular/msolve execution drivers |
+| Interpretation-driven trail migration (M10.5d4) | Next | Move trail meaning and propagation problems out of analysis/solver-specific composition |
 | SMT, MILP, and CP (M10.4–M10.6) | In progress | SMT achieved; MILP and CP retain shared semantics and independent-check requirements |
 | Statistical analysis (M10.7) | Planned | Avalanche and related legacy behavior |
 | Serialization, diagrams, transforms, compilers (M10.8) | Planned | Inventory-driven tooling migration |

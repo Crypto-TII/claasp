@@ -117,3 +117,9 @@ cryptanalytic interpretation.
 MILP follows this boundary as well. Its immutable linear model, LP exporter,
 and trail lowerings live in ``representations.constraints.milp``; GLPK process
 execution and portable MILP result decoding live in ``drivers.solvers``.
+
+Sparse polynomial systems and their Singular/msolve serializers live in
+``representations.constraints.polynomial``. The optional executable processes
+are reusable ``SingularDriver`` and ``MsolveDriver`` objects under
+``drivers.algebra``; a serializer can therefore be tested without installing
+either computer algebra system.

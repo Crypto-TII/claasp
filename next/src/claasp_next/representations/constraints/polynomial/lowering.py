@@ -1,4 +1,4 @@
-"""Lower typed prime-field graphs to sparse polynomial systems."""
+"""Lower typed prime-field graphs to sparse polynomial representations."""
 
 from enum import Enum
 
@@ -6,8 +6,8 @@ from claasp_next.components.algebraic import Add, LinearMap, Multiply, Power
 from claasp_next.components.structural import Concatenate, Constant, Identity, Permutation
 from claasp_next.core import Cipher, Selection
 from claasp_next.domains import PrimeField
-from claasp_next.polynomial.expression import Polynomial
-from claasp_next.polynomial.system import PolynomialSystem
+from claasp_next.representations.constraints.polynomial.expression import Polynomial
+from claasp_next.representations.constraints.polynomial.system import PolynomialSystem
 
 
 class PowerLoweringPolicy(str, Enum):
@@ -23,7 +23,7 @@ class PrimeFieldPolynomialModel:
     EXAMPLES::
 
         >>> from claasp_next.ciphers import MiMCPermutation
-        >>> from claasp_next.polynomial import PrimeFieldPolynomialModel
+        >>> from claasp_next.representations.constraints.polynomial import PrimeFieldPolynomialModel
         >>> system = PrimeFieldPolynomialModel(MiMCPermutation(17, 3, (1,))).polynomial_system()
         >>> len(system.variables), len(system.equations), system.maximum_degree
         (4, 3, 3)
