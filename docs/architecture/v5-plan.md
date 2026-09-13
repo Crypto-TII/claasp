@@ -299,7 +299,8 @@ M10.4b lowers the shared differential and linear trail semantics and restores
 the selected legacy Z3 trail fixtures. M10.4b begins with component transition
 relations (M10.4b1), followed by weighted differential composition and UNSAT
 bounds (M10.4b2), then linear composition and the remaining legacy Z3
-fixtures (M10.4b3).
+fixtures (M10.4b3). The linear increment separates SPN composition (M10.4b3a)
+from the ARX/Speck legacy Z3 reference set (M10.4b3b).
 
 #### M10.5: MILP backend
 
@@ -501,7 +502,8 @@ each synchronization.
 | SMT trail backend (M10.4b) | Next | Lower shared differential/linear semantics and reproduce Z3 trail fixtures |
 | SMT component transitions (M10.4b1) | Achieved | Complete S-box DDT/LAT support relations, Z3 SAT/UNSAT, semantic projection |
 | SMT weighted differential trails (M10.4b2) | Achieved | PRESENT-2 composition, sequential weight bound, Z3 UNSAT-3/SAT-4 proof and checker |
-| SMT weighted linear trails (M10.4b3) | Next | Compose signed LAT/addition relations and restore selected legacy Z3 fixtures |
+| SMT weighted SPN linear trails (M10.4b3a) | Achieved | PRESENT-3 LAT composition, Z3 UNSAT-3/SAT-4 proof, signs and checker |
+| SMT weighted ARX linear trails (M10.4b3b) | Next | Encode modular-add correlations and restore selected Speck Z3 fixtures |
 | SMT, MILP, and CP (M10.4–M10.6) | Planned | Shared semantics with independent external lowerings |
 | Statistical analysis (M10.7) | Planned | Avalanche and related legacy behavior |
 | Serialization, diagrams, transforms, compilers (M10.8) | Planned | Inventory-driven tooling migration |

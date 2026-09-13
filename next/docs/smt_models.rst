@@ -83,3 +83,19 @@ the sum of unary transition weights with a sequential counter:
 The Z3 integration proves the model with weight at most 3 unsatisfiable, then
 extracts a weight-4 trail from the satisfiable bound. A separate checker
 recomputes all transition weights and both permutation boundaries.
+
+The corresponding three-round linear model composes complete LAT support,
+unary absolute-correlation weights, and all permutation wiring. Its decoded
+trail retains the independently recomputed correlation sign of every S-box:
+
+.. doctest::
+
+   >>> from claasp_next.smt import PresentLinearSMTModel
+   >>> linear = PresentLinearSMTModel(PresentBlockCipher(number_of_rounds=3), 4)
+   >>> linear_formula = linear.smt_formula()
+   >>> (len(linear_formula.variables) < 1000, linear_formula.assertion_count < 40000)
+   (True, True)
+
+Dedicated Z3 tests prove bound 3 unsatisfiable and extract the weight-4
+optimum at bound 4, followed by independent checking of all 48 transitions
+and three permutation boundaries.

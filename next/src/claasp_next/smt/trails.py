@@ -6,6 +6,7 @@ from claasp_next.analysis import (
     TrailKind,
     TrailStep,
     XorDifference,
+    XorMask,
 )
 from claasp_next.components import BitVectorSBox, Permutation
 from claasp_next.core import Cipher
@@ -123,6 +124,111 @@ class PresentDifferentialSMTModel:
         )
 
 
+class PresentLinearSMTModel:
+    """Exact three-round PRESENT XOR-linear model with a weight bound."""
+
+    def __init__(self, cipher: Cipher, maximum_weight: int) -> None:
+        if cipher.family_name != "present" or len(cipher.rounds) != 3:
+            raise NotImplementedError("weighted linear SMT model currently supports PRESENT-3")
+        if not isinstance(maximum_weight, int) or isinstance(maximum_weight, bool) or maximum_weight < 0:
+            raise ValueError("maximum_weight must be a nonnegative integer")
+        self.cipher = cipher
+        self.maximum_weight = maximum_weight
+        self._transition_records = ()
+        self._input_names = ()
+        self._last_output_names = ()
+
+    def smt_formula(self) -> SMTFormula:
+        """Lower three signed-LAT support layers and their weight bound."""
+
+        variables = []
+        indices = {}
+        clauses = []
+        provenance = []
+
+        def allocate(name):
+            if name not in indices:
+                variables.append(name)
+                indices[name] = len(variables)
+            return name
+
+        def add(items, label):
+            clauses.append(tuple(items))
+            provenance.append(label)
+
+        input_names = tuple(allocate(f"plaintext_mask_{bit}") for bit in range(64))
+        current_input = input_names
+        records = []
+        weight_names = []
+        last_output = ()
+        for round_number in range(1, 4):
+            output_names = tuple(
+                allocate(f"round_{round_number}_sbox_mask_{bit}") for bit in range(64)
+            )
+            for nibble, component in enumerate(_round_sboxes(self.cipher, round_number)):
+                start = 4 * nibble
+                local_input = current_input[start : start + 4]
+                local_output = output_names[start : start + 4]
+                local_weights = tuple(
+                    allocate(f"round_{round_number}_linear_{nibble}_weight_{bit}")
+                    for bit in range(2)
+                )
+                weight_names.extend(local_weights)
+                records.append((component.component_id, local_input, local_output))
+                semantics = SBoxTransitionSemantics(component.table)
+                for source in range(16):
+                    for target in range(16):
+                        transition = semantics.xor_linear(source, target)
+                        assignment = _bits(source, 4) + _bits(target, 4)
+                        forbid = tuple(
+                            -indices[name] if value else indices[name]
+                            for name, value in zip(local_input + local_output, assignment)
+                        )
+                        if not transition.is_possible:
+                            add(forbid, f"{component.component_id}_linear_support")
+                            continue
+                        weight = int(transition.weight)
+                        for bit, name in enumerate(local_weights):
+                            add(
+                                forbid
+                                + ((indices[name] if bit < weight else -indices[name]),),
+                                f"{component.component_id}_linear_weight",
+                            )
+            permutation = _component(self.cipher, f"p_layer_{round_number}", Permutation)
+            current_input = tuple(output_names[position] for position in permutation.mapping)
+            last_output = output_names
+        add(tuple(indices[name] for name in input_names), "nonzero_linear_input")
+        _at_most(weight_names, self.maximum_weight, allocate, indices, add)
+        self._transition_records = tuple(records)
+        self._input_names = input_names
+        self._last_output_names = last_output
+        return SMTFormula(tuple(variables), tuple(clauses), tuple(provenance))
+
+    def decode_trail(self, assignment: dict[str, int]) -> Trail:
+        """Project a model to shared transitions, including correlation signs."""
+
+        if not self._transition_records:
+            raise ValueError("build the SMT formula before decoding a trail")
+        components = {component.component_id: component for component in self.cipher.components}
+        steps = []
+        for component_id, input_names, output_names in self._transition_records:
+            component = components[component_id]
+            semantics = SBoxTransitionSemantics(component.table)
+            source = _integer(tuple(assignment[name] for name in input_names))
+            target = _integer(tuple(assignment[name] for name in output_names))
+            steps.append(TrailStep(component_id, semantics.xor_linear(source, target)))
+        raw_output = _integer(tuple(assignment[name] for name in self._last_output_names))
+        final_output = _permute(
+            raw_output, _component(self.cipher, "p_layer_3", Permutation).mapping
+        )
+        return Trail(
+            TrailKind.XOR_LINEAR,
+            XorMask(_integer(tuple(assignment[name] for name in self._input_names)), 64),
+            XorMask(final_output, 64),
+            tuple(steps),
+        )
+
+
 def check_present_smt_trail(cipher: Cipher, trail: Trail) -> bool:
     """Check every transition, both layers' wiring, and boundary patterns."""
 
@@ -148,6 +254,34 @@ def check_present_smt_trail(cipher: Cipher, trail: Trail) -> bool:
         second_output, _component(cipher, "p_layer_2", Permutation).mapping
     )
     return first_input == trail.input_pattern.value and expected_output == trail.output_pattern.value
+
+
+def check_present_linear_smt_trail(cipher: Cipher, trail: Trail) -> bool:
+    """Check 48 signed LAT entries and all three permutation boundaries."""
+
+    if trail.kind is not TrailKind.XOR_LINEAR or len(trail.steps) != 48:
+        return False
+    components = {component.component_id: component for component in cipher.components}
+    for step in trail.steps:
+        component = components.get(step.component_id)
+        if not isinstance(component, BitVectorSBox):
+            return False
+        if not SBoxTransitionSemantics(component.table).check(step.transition):
+            return False
+    state = _join_nibbles(step.transition.input_pattern.value for step in trail.steps[:16])
+    if state != trail.input_pattern.value:
+        return False
+    for round_index in range(3):
+        layer = trail.steps[16 * round_index : 16 * (round_index + 1)]
+        actual_input = _join_nibbles(step.transition.input_pattern.value for step in layer)
+        if actual_input != state:
+            return False
+        output = _join_nibbles(step.transition.output_pattern.value for step in layer)
+        state = _permute(
+            output,
+            _component(cipher, f"p_layer_{round_index + 1}", Permutation).mapping,
+        )
+    return state == trail.output_pattern.value
 
 
 def _at_most(names, bound, allocate, indices, add):

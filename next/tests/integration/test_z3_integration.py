@@ -6,8 +6,12 @@ from claasp_next.boolean.solvers import SatStatus
 from claasp_next.analysis import AnalysisProblem, FixedValue
 from claasp_next.ciphers import PresentBlockCipher, SpeckBlockCipher
 from claasp_next.smt.solvers import Z3Solver
-from claasp_next.smt import PresentDifferentialSMTModel, SBoxTransitionSMTModel
-from claasp_next.smt.trails import check_present_smt_trail
+from claasp_next.smt import (
+    PresentDifferentialSMTModel,
+    PresentLinearSMTModel,
+    SBoxTransitionSMTModel,
+)
+from claasp_next.smt.trails import check_present_linear_smt_trail, check_present_smt_trail
 from claasp_next.analysis import TrailKind
 from claasp_next.ciphers.block_ciphers.present import PRESENT_SBOX
 
@@ -75,3 +79,18 @@ def test_z3_proves_and_extracts_present_two_round_optimum():
     assert solved.status is SatStatus.SATISFIABLE
     assert trail.total_weight == 4.0
     assert check_present_smt_trail(cipher, trail)
+
+
+def test_z3_proves_and_extracts_present_three_round_linear_optimum():
+    cipher = PresentBlockCipher(number_of_rounds=3)
+    solver = Z3Solver(timeout_seconds=30)
+    below_optimum = PresentLinearSMTModel(cipher, maximum_weight=3)
+    optimum = PresentLinearSMTModel(cipher, maximum_weight=4)
+
+    assert solver.solve(below_optimum.smt_formula()).status is SatStatus.UNSATISFIABLE
+    solved = solver.solve(optimum.smt_formula())
+    trail = optimum.decode_trail(solved.assignment)
+
+    assert solved.status is SatStatus.SATISFIABLE
+    assert trail.total_weight == 4.0
+    assert check_present_linear_smt_trail(cipher, trail)
