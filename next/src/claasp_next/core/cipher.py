@@ -156,6 +156,37 @@ class Cipher:
 
         return Analysis(self)
 
+    def diagram(self, annotation=None):
+        """Compile this graph and an optional trace or trail to diagram IR."""
+
+        from claasp_next.annotations import GraphAnnotation
+        from claasp_next.representations.diagrams import DiagramCompiler
+
+        if annotation is not None and not isinstance(annotation, GraphAnnotation) and hasattr(annotation, "annotate"):
+            annotation = annotation.annotate(self)
+        return DiagramCompiler().compile(self, annotation)
+
+    def draw(self, format: str = "ascii", annotation=None):
+        """Render this cipher as ASCII, TikZ, or PDF.
+
+        PDF rendering requires the optional ``pdflatex`` command. The ASCII
+        and TikZ representations have no third-party dependencies.
+        """
+
+        from claasp_next.representations.diagrams import ASCIIArtSerializer, TikZSerializer
+
+        diagram = self.diagram(annotation)
+        if format == "ascii":
+            return ASCIIArtSerializer().serialize(diagram)
+        tikz = TikZSerializer().serialize(diagram)
+        if format == "tikz":
+            return tikz
+        if format == "pdf":
+            from claasp_next.drivers.renderers import LaTeXDriver
+
+            return LaTeXDriver().render(tikz).pdf
+        raise ValueError("diagram format must be 'ascii', 'tikz', or 'pdf'")
+
     def _bind_inputs(self, args: tuple[object, ...], kwargs: Mapping[str, object]) -> Mapping[str, object]:
         if kwargs and args:
             raise TypeError("use positional arguments, keyword arguments, or one mapping; do not mix them")

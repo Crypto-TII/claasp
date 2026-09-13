@@ -91,6 +91,13 @@ starts:
 - Graph, serialization, code generation, diagrams, transformations, and
   compilers, classified during M10.8.
 
+The first diagram slice is complete in M10.5d5: graph structure, rounds,
+logical-unit selections, and concrete annotations are covered through one
+backend-neutral IR with ASCII and TikZ serializers and an externally tested
+LaTeX driver. Exact legacy ASCII formatting is deliberately not frozen; the
+remaining M10.8 inventory must classify any semantic diagram fixtures and the
+unfinished historical ASCII-art branch separately.
+
 Each cryptanalytic row must say whether its expected result is an optimum,
 feasibility witness, or bound; record publication or legacy origin and solver
 version; and name the independent semantic checker used by v5.

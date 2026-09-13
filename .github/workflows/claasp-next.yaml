@@ -195,3 +195,31 @@ jobs:
 
       - name: Execute GLPK integration
         run: python -m pytest -m external tests/integration/test_glpk_integration.py tests/integration/test_glpk_trails.py tests/integration/test_glpk_arx_transitions.py -q
+
+  latex-rendering:
+    name: LaTeX diagram rendering
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: next
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install LaTeX and TikZ
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes texlive-latex-base texlive-pictures
+
+      - name: Install test dependencies
+        run: python -m pip install -e '.[dev]'
+
+      - name: Execute LaTeX rendering integration
+        run: python -m pytest -m external tests/integration/test_latex_diagram.py -q

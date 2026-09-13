@@ -4,6 +4,36 @@ Inspecting and displaying results
 Analysis results expose projected logical values, status, runtime, backend,
 model statistics, reproducibility metadata, and the raw backend result.
 
+Cipher diagrams
+---------------
+
+Every cipher can produce a readable structural diagram without an optional
+dependency. The ASCII form shows rounds, components, and the logical units
+selected by each dependency.
+
+.. doctest::
+
+   >>> from claasp_next.ciphers import AESBlockCipher
+   >>> cipher = AESBlockCipher(number_of_rounds=1)
+   >>> drawing = cipher.draw("ascii")
+   >>> drawing.startswith("cipher aes\ninputs\n")
+   True
+   >>> "round 0" in drawing and "output <-" in drawing
+   True
+
+Passing an execution trace displays intermediate values on the same graph.
+TikZ source is available with ``cipher.draw("tikz", trace)``; PDF output with
+``cipher.draw("pdf", trace)`` additionally requires the ``pdflatex`` command.
+
+.. doctest::
+
+   >>> trace = cipher.evaluate_with_trace(0, 0).trace
+   >>> "#" in cipher.draw("ascii", trace)
+   True
+
+Analysis reports
+----------------
+
 .. doctest::
 
    >>> from claasp_next import Bit, Cipher, ValueType

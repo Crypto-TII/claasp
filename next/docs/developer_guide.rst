@@ -12,6 +12,7 @@ renderers.
 
    architecture
    representation_architecture
+   diagram_representations
    concepts
    extending_analysis
    development
