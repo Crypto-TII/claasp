@@ -1,7 +1,7 @@
 from claasp_next.ciphers import PresentBlockCipher
 from claasp_next.components import BitVectorSBox
-from claasp_next.interpretations import XOR_DIFFERENTIAL
-from claasp_next.interpretations.cryptanalysis import (
+from claasp_next.semantics import XOR_DIFFERENTIAL
+from claasp_next.semantics.cryptanalysis import (
     ComponentSemanticsBinding, PropagationProblem,
 )
 from claasp_next.representations.constraints.milp import PresentDifferentialMILPModel

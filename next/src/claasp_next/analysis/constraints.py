@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 
-from claasp_next.core import PortLike, Selection, as_selection
+from claasp_next.graph import PortLike, Selection, as_selection
 
 
 @dataclass(frozen=True, slots=True, init=False)

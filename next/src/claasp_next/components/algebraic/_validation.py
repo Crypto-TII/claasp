@@ -1,7 +1,7 @@
 """Shared validation for homogeneous algebraic components."""
 
-from claasp_next.core.port import PortLike, Selection, as_selection
-from claasp_next.core.value_type import ValueType
+from claasp_next.graph.port import PortLike, Selection, as_selection
+from claasp_next.graph.value_type import ValueType
 
 
 def normalize_inputs(inputs: tuple[PortLike, ...]) -> tuple[Selection, ...]:

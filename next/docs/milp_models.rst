@@ -68,8 +68,8 @@ The compiler also accepts the same shared ``PropagationProblem`` used by SMT:
 
 .. doctest::
 
-   >>> from claasp_next.interpretations import XOR_DIFFERENTIAL
-   >>> from claasp_next.interpretations.cryptanalysis import PropagationProblem
+   >>> from claasp_next.semantics import XOR_DIFFERENTIAL
+   >>> from claasp_next.semantics.cryptanalysis import PropagationProblem
    >>> shared = PropagationProblem(PresentBlockCipher(number_of_rounds=2), XOR_DIFFERENTIAL)
    >>> PresentDifferentialMILPModel(shared).problem is shared
    True

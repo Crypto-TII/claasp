@@ -4,7 +4,7 @@ from enum import Enum
 
 from claasp_next.components.algebraic import Add, LinearMap, Multiply, Power
 from claasp_next.components.structural import Concatenate, Constant, Identity, Permutation
-from claasp_next.core import Cipher, Selection
+from claasp_next.graph import Cipher, Selection
 from claasp_next.domains import PrimeField
 from claasp_next.representations.constraints.polynomial.expression import Polynomial
 from claasp_next.representations.constraints.polynomial.system import PolynomialSystem

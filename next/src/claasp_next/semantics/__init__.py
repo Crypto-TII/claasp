@@ -1,10 +1,10 @@
 """Meanings that may be propagated through a cipher graph."""
 
-from claasp_next.interpretations.base import (
+from claasp_next.semantics.base import (
     CONCRETE, DETERMINISTIC_TRUNCATED_XOR, LEAKAGE, SYMBOLIC,
-    XOR_DIFFERENTIAL, XOR_LINEAR, Interpretation,
+    XOR_DIFFERENTIAL, XOR_LINEAR, SemanticType,
 )
-from claasp_next.interpretations.cryptanalysis import (
+from claasp_next.semantics.cryptanalysis import (
     BitPattern, ModularAddLinearSemantics, ModularAddTransitionSemantics,
     SBoxTransitionSemantics, Trail, TrailKind, TrailSearchResult, TrailStep,
     Transition, XorDifference, XorMask, ComponentSemanticsBinding,
@@ -15,7 +15,7 @@ from claasp_next.interpretations.cryptanalysis import (
 )
 
 __all__ = [
-    "CONCRETE", "DETERMINISTIC_TRUNCATED_XOR", "Interpretation", "LEAKAGE", "SYMBOLIC",
+    "CONCRETE", "DETERMINISTIC_TRUNCATED_XOR", "SemanticType", "LEAKAGE", "SYMBOLIC",
     "XOR_DIFFERENTIAL", "XOR_LINEAR",
     "BitPattern", "ModularAddLinearSemantics", "ModularAddTransitionSemantics",
     "SBoxTransitionSemantics", "Trail", "TrailKind", "TrailSearchResult",

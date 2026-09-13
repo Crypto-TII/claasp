@@ -1,12 +1,12 @@
 """Exact weighted trail lowering to the portable MILP representation."""
 
-from claasp_next.interpretations import XOR_DIFFERENTIAL
-from claasp_next.interpretations.cryptanalysis import (
+from claasp_next.semantics import XOR_DIFFERENTIAL
+from claasp_next.semantics.cryptanalysis import (
     PropagationProblem, SBoxTransitionSemantics, Trail, TrailKind, TrailStep,
     XorDifference,
 )
 from claasp_next.components import BitVectorSBox, Permutation
-from claasp_next.core import Cipher
+from claasp_next.graph import Cipher
 from claasp_next.representations.constraints.milp.model import (
     ConstraintSense, LinearConstraint, LinearExpression, LinearVariable,
     MILPModel, ObjectiveSense, VariableKind,
@@ -26,8 +26,8 @@ class PresentDifferentialMILPModel:
                 provenance=("PRESENT-2 MILP convenience constructor",),
             )
         )
-        if problem.interpretation != XOR_DIFFERENTIAL:
-            raise ValueError("differential MILP lowering requires the XOR-differential interpretation")
+        if problem.semantics != XOR_DIFFERENTIAL:
+            raise ValueError("differential MILP lowering requires the XOR-differential semantics")
         cipher = problem.cipher
         if cipher.family_name != "present" or len(cipher.rounds) != 2:
             raise NotImplementedError("weighted MILP trail model currently supports PRESENT-2")

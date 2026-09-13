@@ -1,6 +1,6 @@
 """Shared compact formatting for graph selections and annotation payloads."""
 
-from claasp_next.interpretations.cryptanalysis import BitPattern, Transition
+from claasp_next.semantics.cryptanalysis import BitPattern, Transition
 
 
 def format_positions(positions: tuple[int, ...]) -> str:

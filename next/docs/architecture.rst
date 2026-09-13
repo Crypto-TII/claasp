@@ -17,15 +17,29 @@ Components are immutable operation descriptions. They do not evaluate
 themselves and do not contain MiniSat-, Z3-, MILP-, or computer-algebra-system
 code. A ``Cipher`` validates their directed acyclic graph and round grouping.
 
+The corresponding source packages have deliberately concrete names:
+
+.. code-block:: text
+
+   graph/       Cipher, Component, Port, Round, and ValueType structure
+   domains/     Bit, Word, GF(2^w), and GF(p) scalar units
+   components/  Operations connecting graph values
+   ciphers/     Concrete cipher and permutation descriptions
+   semantics/   What flowing values mean and how transitions behave
+
+In particular, ``semantics`` defines concrete values, differences, masks,
+truncated states, symbolic values, and leakage observations. It does not
+contain SAT-, SMT-, MILP-, or CP-specific encodings.
+
 Processing vocabulary
 ---------------------
 
 CLAASP uses four terms for the processing pipeline:
 
-``Interpretation``
-   The meaning propagated through the graph: concrete values, XOR
-   differences, linear masks, symbolic expressions, division properties,
-   leakage values, or diagram annotations.
+``SemanticType``
+   What the values flowing through the graph mean: concrete values, XOR
+   differences, linear masks, truncated states, symbolic expressions,
+   division properties, or leakage observations.
 
 ``Representation``
    The form in which an interpreted graph or problem is expressed: direct
@@ -34,7 +48,7 @@ CLAASP uses four terms for the processing pipeline:
 
 ``Driver``
    A mechanism which processes a representation, such as MiniSat, Z3, GLPK,
-   GCC, or LaTeX. Direct Python interpretation is also a driver, but it does
+   GCC, or LaTeX. Direct Python execution is also a driver, but it does
    not need a serializer or external executable.
 
 ``Result``
@@ -55,7 +69,7 @@ Internally, CLAASP uses the following vocabulary:
 
 .. code-block:: text
 
-   typed cipher graph + interpretation
+   typed cipher graph + semantics
        -> lowering       intermediate representation
        -> optimization   equivalent, more suitable representation
        -> export         DIMACS / SMT-LIB / polynomial program
@@ -83,7 +97,7 @@ and a ``SideChannelTrace`` records leakage observations. A diagram may consume
 any of these annotations without confusing their meanings.
 
 Solver-specific representations do not define trail semantics. For example,
-XOR-differential interpretation determines component transitions and weights;
+XOR-differential semantics determines component transitions and weights;
 SAT, SMT, MILP, and CP representations independently encode that shared
 propagation problem.
 
@@ -95,5 +109,5 @@ projected back to logical values and independently checked where practical.
 Trail results additionally carry transition semantics that can be validated
 without trusting the backend which found them.
 
-The core stays Sage-independent. Optional solvers and algebra systems are
+The graph and semantic layers stay Sage-independent. Optional solvers and algebra systems are
 adapters outside the graph, so installing CLAASP does not require every tool.

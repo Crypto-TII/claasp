@@ -5,7 +5,7 @@ from enum import Enum
 from math import inf, log2
 from collections import defaultdict
 
-from claasp_next.interpretations.base import XOR_DIFFERENTIAL, XOR_LINEAR
+from claasp_next.semantics.base import XOR_DIFFERENTIAL, XOR_LINEAR
 
 
 class TrailKind(str, Enum):
@@ -15,8 +15,8 @@ class TrailKind(str, Enum):
     XOR_LINEAR = "xor_linear"
 
     @property
-    def interpretation(self):
-        """Return the explicit graph interpretation for this trail kind."""
+    def semantics(self):
+        """Return the explicit graph semantics for this trail kind."""
 
         return XOR_DIFFERENTIAL if self is TrailKind.XOR_DIFFERENTIAL else XOR_LINEAR
 
@@ -128,10 +128,10 @@ class Trail:
         return sum(step.transition.weight for step in self.steps)
 
     @property
-    def interpretation(self):
+    def semantics(self):
         """The representation-independent meaning propagated by this trail."""
 
-        return self.kind.interpretation
+        return self.kind.semantics
 
     def annotate(self, cipher, input_name: str = "plaintext"):
         """Attach this trail to ``cipher`` using the common graph annotation.
@@ -148,7 +148,7 @@ class Trail:
             for step in self.steps
         )
         entries.append(AnnotationEntry("cipher_output", AnnotationRole.OUTPUT, self.output_pattern))
-        return GraphAnnotation(cipher, self.interpretation, entries)
+        return GraphAnnotation(cipher, self.semantics, entries)
 
 
 @dataclass(frozen=True, slots=True)

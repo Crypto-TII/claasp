@@ -4,7 +4,7 @@ from claasp_next import Bit, Cipher, ValueType
 from claasp_next.components import Identity
 from claasp_next.ciphers import PresentBlockCipher
 from claasp_next.ciphers.block_ciphers.present import PRESENT_SBOX
-from claasp_next.interpretations.cryptanalysis import (
+from claasp_next.semantics.cryptanalysis import (
     SBoxTransitionSemantics,
     Trail,
     TrailKind,

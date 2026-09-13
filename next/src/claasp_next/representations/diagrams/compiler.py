@@ -3,7 +3,7 @@
 import re
 
 from claasp_next.annotations import AnnotationRole, ExecutionTrace, GraphAnnotation, SideChannelTrace
-from claasp_next.core import Cipher
+from claasp_next.graph import Cipher
 from claasp_next.representations.diagrams.model import (
     CipherDiagram, DiagramEdge, DiagramNode, DiagramRound,
 )

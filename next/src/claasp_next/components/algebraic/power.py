@@ -2,8 +2,8 @@
 
 from dataclasses import dataclass
 
-from claasp_next.core.component import Component
-from claasp_next.core.port import PortLike, as_selection
+from claasp_next.graph.component import Component
+from claasp_next.graph.port import PortLike, as_selection
 
 
 @dataclass(frozen=True, slots=True, init=False)

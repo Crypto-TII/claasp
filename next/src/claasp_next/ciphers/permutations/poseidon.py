@@ -4,7 +4,7 @@ from collections.abc import Iterable
 from math import gcd
 
 from claasp_next.components import Add, Concatenate, Constant, LinearMap, Power
-from claasp_next.core import Cipher, Port, ValueType
+from claasp_next.graph import Cipher, Port, ValueType
 from claasp_next.domains import PrimeField
 
 

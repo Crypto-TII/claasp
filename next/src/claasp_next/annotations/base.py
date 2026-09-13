@@ -4,8 +4,8 @@ from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from enum import Enum
 
-from claasp_next.core import Cipher
-from claasp_next.interpretations import Interpretation
+from claasp_next.graph import Cipher
+from claasp_next.semantics import SemanticType
 
 
 class AnnotationRole(str, Enum):
@@ -18,7 +18,7 @@ class AnnotationRole(str, Enum):
 
 @dataclass(frozen=True, slots=True)
 class AnnotationEntry:
-    """One named graph source and its interpretation-specific payload."""
+    """One named graph source and its semantics-specific payload."""
 
     source_id: str
     role: AnnotationRole
@@ -36,19 +36,19 @@ class GraphAnnotation:
     """An immutable, validated assignment of information to graph sources."""
 
     cipher: Cipher
-    interpretation: Interpretation
+    semantics: SemanticType
     entries: tuple[AnnotationEntry, ...]
 
     def __init__(
         self,
         cipher: Cipher,
-        interpretation: Interpretation,
+        semantics: SemanticType,
         entries: Iterable[AnnotationEntry],
     ) -> None:
         if not isinstance(cipher, Cipher):
             raise TypeError("cipher must be a Cipher")
-        if not isinstance(interpretation, Interpretation):
-            raise TypeError("interpretation must be an Interpretation")
+        if not isinstance(semantics, SemanticType):
+            raise TypeError("semantics must be a SemanticType")
         frozen = tuple(entries)
         identifiers = tuple((entry.role, entry.source_id) for entry in frozen)
         if len(set(identifiers)) != len(identifiers):
@@ -63,7 +63,7 @@ class GraphAnnotation:
             if entry.role is AnnotationRole.OUTPUT and entry.source_id != "cipher_output":
                 raise ValueError("the graph output annotation is named 'cipher_output'")
         object.__setattr__(self, "cipher", cipher)
-        object.__setattr__(self, "interpretation", interpretation)
+        object.__setattr__(self, "semantics", semantics)
         object.__setattr__(self, "entries", frozen)
 
     def value_of(self, source_id: str) -> object:
@@ -78,7 +78,7 @@ class GraphAnnotation:
     def from_values(
         cls,
         cipher: Cipher,
-        interpretation: Interpretation,
+        semantics: SemanticType,
         values: Mapping[str, object],
         *,
         output: object | None = None,
@@ -96,4 +96,4 @@ class GraphAnnotation:
         ]
         if output is not None:
             entries.append(AnnotationEntry("cipher_output", AnnotationRole.OUTPUT, output))
-        return cls(cipher, interpretation, entries)
+        return cls(cipher, semantics, entries)

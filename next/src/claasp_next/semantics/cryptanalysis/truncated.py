@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from enum import Enum
 
 from claasp_next.components import Rotate
-from claasp_next.core import Cipher
+from claasp_next.graph import Cipher
 
 
 class TruncatedBit(str, Enum):

@@ -4,10 +4,10 @@ from collections.abc import Mapping, Sequence
 from copy import copy
 import re
 
-from claasp_next.core.component import Component
-from claasp_next.core.port import Port, PortLike, Selection, as_selection
-from claasp_next.core.round import Round
-from claasp_next.core.value_type import ValueType
+from claasp_next.graph.component import Component
+from claasp_next.graph.port import Port, PortLike, Selection, as_selection
+from claasp_next.graph.round import Round
+from claasp_next.graph.value_type import ValueType
 
 
 class Cipher:

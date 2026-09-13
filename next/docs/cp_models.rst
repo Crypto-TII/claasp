@@ -83,7 +83,7 @@ Truncated and impossible propagation
 ------------------------------------
 
 Three-valued ``TruncatedXorDifference`` and paired-carry addition now belong
-to ``interpretations.cryptanalysis`` rather than the analysis facade. The
+to ``claasp_next.semantics.cryptanalysis`` rather than the analysis facade. The
 initial ``SpeckTruncatedCPModel`` compiles a fixed input-pattern propagation
 to conventional CP values 0, 1, and 2 (unknown). Its external regression
 reproduces the legacy first-round result

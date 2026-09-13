@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 
-from claasp_next.core.value_type import ValueType
+from claasp_next.graph.value_type import ValueType
 
 
 @dataclass(frozen=True, slots=True)

@@ -2,7 +2,7 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 
 from claasp_next.components.word._validation import require_word_inputs
-from claasp_next.core import Component, Selection
+from claasp_next.graph import Component, Selection
 
 
 @dataclass(frozen=True, slots=True, init=False)

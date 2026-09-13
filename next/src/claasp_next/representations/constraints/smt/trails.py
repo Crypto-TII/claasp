@@ -1,6 +1,6 @@
 """Weighted full-trail SMT representation lowering."""
 
-from claasp_next.interpretations.cryptanalysis import (
+from claasp_next.semantics.cryptanalysis import (
     PropagationProblem,
     SBoxTransitionSemantics,
     Trail,
@@ -9,9 +9,9 @@ from claasp_next.interpretations.cryptanalysis import (
     XorDifference,
     XorMask,
 )
-from claasp_next.interpretations import XOR_DIFFERENTIAL, XOR_LINEAR
+from claasp_next.semantics import XOR_DIFFERENTIAL, XOR_LINEAR
 from claasp_next.components import BitVectorSBox, Permutation
-from claasp_next.core import Cipher
+from claasp_next.graph import Cipher
 from claasp_next.representations.constraints.smt.formula import SMTFormula
 
 
@@ -27,8 +27,8 @@ class PresentDifferentialSMTModel:
                 provenance=("PRESENT-2 SMT convenience constructor",),
             )
         )
-        if problem.interpretation != XOR_DIFFERENTIAL:
-            raise ValueError("differential SMT lowering requires the XOR-differential interpretation")
+        if problem.semantics != XOR_DIFFERENTIAL:
+            raise ValueError("differential SMT lowering requires the XOR-differential semantics")
         if problem.maximum_weight is None:
             raise ValueError("differential SMT lowering requires maximum_weight")
         cipher = problem.cipher
@@ -151,8 +151,8 @@ class PresentLinearSMTModel:
                 provenance=("PRESENT-3 SMT convenience constructor",),
             )
         )
-        if problem.interpretation != XOR_LINEAR:
-            raise ValueError("linear SMT lowering requires the XOR-linear interpretation")
+        if problem.semantics != XOR_LINEAR:
+            raise ValueError("linear SMT lowering requires the XOR-linear semantics")
         if problem.maximum_weight is None:
             raise ValueError("linear SMT lowering requires maximum_weight")
         cipher = problem.cipher

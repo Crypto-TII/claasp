@@ -3,7 +3,7 @@
 from collections.abc import Iterable
 
 from claasp_next.components import Add, Constant, Power
-from claasp_next.core import Cipher, ValueType
+from claasp_next.graph import Cipher, ValueType
 from claasp_next.domains import PrimeField
 
 

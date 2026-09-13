@@ -7,19 +7,19 @@ from claasp_next.drivers.solvers import CPStatus, MiniZincSolver
 from claasp_next.analysis import AnalysisProblem, FixedValue
 from claasp_next.ciphers import SpeckBlockCipher
 from claasp_next.representations.constraints.cp import MiniZincModel
-from claasp_next.interpretations import (
+from claasp_next.semantics import (
     DETERMINISTIC_TRUNCATED_XOR,
     XOR_DIFFERENTIAL,
     XOR_LINEAR,
 )
-from claasp_next.interpretations.cryptanalysis import PropagationProblem
+from claasp_next.semantics.cryptanalysis import PropagationProblem
 from claasp_next.representations.constraints.cp import (
     PresentDifferentialCPModel,
     PresentLinearCPModel,
     SBoxDifferenceCPModel,
     SpeckTruncatedCPModel,
 )
-from claasp_next.interpretations.cryptanalysis import TruncatedXorDifference
+from claasp_next.semantics.cryptanalysis import TruncatedXorDifference
 from claasp_next.representations.constraints.smt.trails import (
     check_present_linear_smt_trail,
     check_present_smt_trail,

@@ -1,7 +1,7 @@
 """AES-128 over byte-sized binary-extension-field units."""
 
 from claasp_next.components import Add, Concatenate, Constant, LinearMap, Permutation, SBox
-from claasp_next.core import Cipher, Port, Selection, ValueType
+from claasp_next.graph import Cipher, Port, Selection, ValueType
 from claasp_next.domains import BinaryExtensionField
 from claasp_next.utils import binary_field_power, repeat_block_diagonal, rotate_left
 

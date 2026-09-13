@@ -105,8 +105,8 @@ code may supply a shared propagation problem instead:
 
 .. doctest::
 
-   >>> from claasp_next.interpretations import XOR_DIFFERENTIAL
-   >>> from claasp_next.interpretations.cryptanalysis import PropagationProblem
+   >>> from claasp_next.semantics import XOR_DIFFERENTIAL
+   >>> from claasp_next.semantics.cryptanalysis import PropagationProblem
    >>> problem = PropagationProblem(PresentBlockCipher(number_of_rounds=2), XOR_DIFFERENTIAL, maximum_weight=4)
    >>> PresentDifferentialSMTModel(problem).problem is problem
    True

@@ -10,7 +10,7 @@ from claasp_next.analysis.problem import AnalysisProblem
 from claasp_next.representations.constraints.sat.cnf import CNFFormula
 from claasp_next.representations.constraints.sat.encoding import decode_unit, selection_variable_names
 from claasp_next.drivers.solvers import MinisatSolver, SatResult, SatStatus
-from claasp_next.core import Cipher, Selection
+from claasp_next.graph import Cipher, Selection
 
 
 @dataclass(frozen=True, slots=True)
@@ -180,7 +180,7 @@ class Analysis:
     ) -> bool:
         """Check an S-box transition directly from the typed graph."""
 
-        from claasp_next.interpretations.cryptanalysis import SBoxTransitionSemantics
+        from claasp_next.semantics.cryptanalysis import SBoxTransitionSemantics
         from claasp_next.components import BitVectorSBox
 
         component = next(

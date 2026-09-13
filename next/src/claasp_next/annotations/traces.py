@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 
 from claasp_next.annotations.base import GraphAnnotation
-from claasp_next.interpretations import CONCRETE, LEAKAGE
+from claasp_next.semantics import CONCRETE, LEAKAGE
 
 
 @dataclass(frozen=True, slots=True)
@@ -13,8 +13,8 @@ class ExecutionTrace:
     annotation: GraphAnnotation
 
     def __post_init__(self) -> None:
-        if self.annotation.interpretation != CONCRETE:
-            raise ValueError("an execution trace requires the concrete interpretation")
+        if self.annotation.semantics != CONCRETE:
+            raise ValueError("an execution trace requires the concrete semantics")
 
     def value_of(self, source_id: str) -> object:
         """Return a concrete value from the underlying graph annotation."""
@@ -45,7 +45,7 @@ class SideChannelTrace:
     samples: tuple[LeakageSample, ...]
 
     def __post_init__(self) -> None:
-        if self.annotation.interpretation != LEAKAGE:
-            raise ValueError("a side-channel trace requires the leakage interpretation")
+        if self.annotation.semantics != LEAKAGE:
+            raise ValueError("a side-channel trace requires the leakage semantics")
         if tuple(sample.sample_index for sample in self.samples) != tuple(range(len(self.samples))):
             raise ValueError("side-channel sample indices must be contiguous and ordered")

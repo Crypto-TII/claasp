@@ -6,8 +6,8 @@ from claasp_next.annotations import (
     LeakageSample, SideChannelTrace,
 )
 from claasp_next.ciphers import PresentBlockCipher
-from claasp_next.interpretations import CONCRETE, LEAKAGE, Interpretation
-from claasp_next.interpretations.cryptanalysis import (
+from claasp_next.semantics import CONCRETE, LEAKAGE, SemanticType
+from claasp_next.semantics.cryptanalysis import (
     SBoxTransitionSemantics, Trail, TrailKind, TrailStep, XorDifference,
 )
 from claasp_next.ciphers.block_ciphers.present import PRESENT_SBOX
@@ -47,8 +47,8 @@ def test_annotations_reject_unknown_sources_and_semantic_type_confusion():
     assert SideChannelTrace(leakage, (LeakageSample("sbox_1_0", 0.5, 0),)).samples[0].value == 0.5
 
 
-def test_interpretations_are_extensible_and_artifacts_name_representations():
-    custom = Interpretation("my_attack", "Experimental propagation semantics")
+def test_semantic_types_are_extensible_and_artifacts_name_representations():
+    custom = SemanticType("my_attack", "Experimental propagation semantics")
     representation = Representation("smtlib2", "application/smtlib")
     artifact = Artifact(representation, "(check-sat)\n", (custom.name, "unit-test"))
 
@@ -67,7 +67,7 @@ def test_direct_execution_returns_a_concrete_graph_trace():
     assert isinstance(result.trace, ExecutionTrace)
     assert result.trace.annotation.cipher is cipher
     assert result.trace.value_of("plaintext") == (0,) * 64
-    assert result.trace.annotation.interpretation is CONCRETE
+    assert result.trace.annotation.semantics is CONCRETE
 
 
 def test_cryptanalytic_trail_uses_the_same_annotation_foundation():
@@ -82,5 +82,5 @@ def test_cryptanalytic_trail_uses_the_same_annotation_foundation():
     )
 
     annotation = trail.annotate(cipher)
-    assert annotation.interpretation.name == "xor_differential"
+    assert annotation.semantics.name == "xor_differential"
     assert annotation.value_of(component.component_id) == transition

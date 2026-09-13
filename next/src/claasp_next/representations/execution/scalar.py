@@ -8,9 +8,9 @@ from claasp_next.components.algebraic import Add, LinearMap, Multiply, Power
 from claasp_next.components.structural import Concatenate, Constant, Identity, Permutation
 from claasp_next.components.substitution import BitVectorSBox, SBox
 from claasp_next.components.word import ModularAdd, Rotate, Xor
-from claasp_next.core.cipher import Cipher
-from claasp_next.core.component import Component
-from claasp_next.interpretations import CONCRETE
+from claasp_next.graph.cipher import Cipher
+from claasp_next.graph.component import Component
+from claasp_next.semantics import CONCRETE
 
 RuntimeValue = tuple[int, ...]
 Handler = Callable[[Component, tuple[RuntimeValue, ...]], RuntimeValue]

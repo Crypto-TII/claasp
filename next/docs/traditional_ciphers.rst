@@ -40,7 +40,7 @@ prefix of the standard schedule.
 AES
 ---
 
-AES validates a different interpretation of an eight-bit unit. Its bytes are
+AES validates a different semantics of an eight-bit unit. Its bytes are
 elements of :math:`GF(2^8)` in the polynomial basis defined by
 :math:`x^8+x^4+x^3+x+1`, rather than unsigned ``Word(8)`` values.
 

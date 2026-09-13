@@ -2,8 +2,8 @@ import pytest
 
 from claasp_next.ciphers import PresentBlockCipher, SpeckBlockCipher
 from claasp_next.components import BitVectorSBox
-from claasp_next.interpretations import XOR_DIFFERENTIAL, XOR_LINEAR
-from claasp_next.interpretations.cryptanalysis import (
+from claasp_next.semantics import XOR_DIFFERENTIAL, XOR_LINEAR
+from claasp_next.semantics.cryptanalysis import (
     ComponentSemanticsBinding, PropagationProblem,
 )
 

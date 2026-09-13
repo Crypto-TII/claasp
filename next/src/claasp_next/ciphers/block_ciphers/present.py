@@ -1,7 +1,7 @@
 """Bit-oriented PRESENT block cipher."""
 
 from claasp_next.components import Add, BitVectorSBox, Concatenate, Constant, Permutation
-from claasp_next.core import Cipher, Port, ValueType
+from claasp_next.graph import Cipher, Port, ValueType
 from claasp_next.domains import Bit
 
 PRESENT_SBOX = (0xC, 0x5, 0x6, 0xB, 0x9, 0x0, 0xA, 0xD, 0x3, 0xE, 0xF, 0x8, 0x4, 0x7, 0x1, 0x2)

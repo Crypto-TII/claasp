@@ -2,7 +2,7 @@ from math import inf
 
 import pytest
 
-from claasp_next.interpretations.cryptanalysis import (
+from claasp_next.semantics.cryptanalysis import (
     SBoxTransitionSemantics,
     Trail,
     TrailKind,

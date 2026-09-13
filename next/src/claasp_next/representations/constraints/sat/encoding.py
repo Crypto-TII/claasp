@@ -2,7 +2,7 @@
 
 from collections.abc import Mapping
 
-from claasp_next.core import Selection, ValueType
+from claasp_next.graph import Selection, ValueType
 from claasp_next.domains import Bit, Word
 
 

@@ -69,7 +69,7 @@ arithmetization-oriented extensions in a dedicated v5 section.
 
 ## Architectural invariants
 
-1. `claasp_next.core` and `claasp_next.domains` depend only on Python's
+1. `claasp_next.graph` and `claasp_next.domains` depend only on Python's
    standard library.
 2. A domain describes mathematical semantics; a runtime representation does
    not define those semantics.
@@ -84,7 +84,7 @@ arithmetization-oriented extensions in a dedicated v5 section.
    doctests.
 10. Documentation builds are warning-free and are tested independently of
     Sage.
-11. CLAASP describes processing as ``Interpretation -> Representation ->
+11. CLAASP describes processing as ``SemanticType -> Representation ->
     Driver -> Result``. ``Target`` is reserved for the cryptanalytic target of
     an attack and is not used for compiler output formats.
 12. Concrete traces, cryptanalytic trails, side-channel traces, and diagram
@@ -356,7 +356,7 @@ and independently validate solver witnesses or UNSAT bounds.
 Complete this cross-cutting milestone before starting the CP backend, so CP
 does not reproduce the temporary package organization.
 
-1. **M10.5d1 — terminology and contracts.** Define interpretation,
+1. **M10.5d1 — terminology and contracts.** Define semantic type,
    annotation, representation, artifact, driver, result, and attack-target
    concepts. Add immutable graph annotations plus distinct execution-trace,
    cryptanalytic-trail, and side-channel-trace types.
@@ -369,7 +369,7 @@ does not reproduce the temporary package organization.
    construction and export from MiniSat, Z3, GLPK, and algebra-system drivers.
    Deliver this as M10.5d3a (SAT/MiniSat), M10.5d3b (SMT/Z3), M10.5d3c
    (MILP/GLPK), and M10.5d3d (polynomial/algebra-system drivers).
-4. **M10.5d4 — interpretation-driven trails.** Move differential, linear,
+4. **M10.5d4 — semantics-driven trails.** Move differential, linear,
    differential-linear, division-property, avalanche, symbolic, and leakage
    semantics outside solver-specific packages. Solver representations lower a
    shared propagation problem and must not define its cryptanalytic meaning.
@@ -380,9 +380,13 @@ does not reproduce the temporary package organization.
    diagram IR, then migrate ASCII art and add TikZ serialization. External
    LaTeX execution is a driver producing PDF; PNG/SVG rendering remains an
    independently testable representation or driver step.
+6. **M10.5d6 — package vocabulary refinement.** Rename ``core`` to ``graph``
+   and ``interpretations`` to ``semantics``. Use ``SemanticType`` and
+   ``.semantics`` in public contracts so the API says concretely what values
+   and abstract properties flow through a cipher graph.
 
 Exit criterion: public workflows remain concise; internal examples can name
-their interpretation, representation, driver, and result independently; the
+their semantics, representation, driver, and result independently; the
 same graph annotation can be consumed by at least execution, trail checking,
 and diagram rendering; and no use of ``target`` ambiguously means both an
 attack goal and an output format.
@@ -579,18 +583,19 @@ each synchronization.
 | Weighted SPN MILP trails (M10.5b) | Achieved | Complete DDT selectors over PRESENT-2; GLPK weight-4 optimum and independent 32-transition checker |
 | Weighted ARX MILP trails (M10.5c) | Achieved | Exact parity/support relation; GLPK validates four Speck32/64-4 transitions, weights, and signs |
 | Representation architecture (M10.5d) | In progress | Core layer separation achieved; routed ASCII-art serialization remains explicitly marked work in progress |
-| Interpretation/annotation contracts (M10.5d1) | Achieved | Extensible interpretations, immutable graph annotations, distinct trace types, representation artifacts, drivers, attack targets |
+| Semantic-type/annotation contracts (M10.5d1) | Achieved | Extensible semantic types, immutable graph annotations, distinct trace types, representation artifacts, drivers, attack targets |
 | Execution representation migration (M10.5d2) | Achieved | Scalar/batch modules moved under representations; canonical driver names; concrete ExecutionTrace results |
 | Constraint representation migration (M10.5d3) | Achieved | SAT, SMT, MILP, and polynomial formats grouped under representations; external processes under drivers |
 | SAT representation/driver split (M10.5d3a) | Achieved | CNF, lowering, and DIMACS under representations; MiniSat under drivers |
 | SMT representation/driver split (M10.5d3b) | Achieved | SMT IR/export/lowering under representations; Z3 under shared solver drivers |
 | MILP representation/driver split (M10.5d3c) | Achieved | Linear IR/export/trail lowering under representations; GLPK and result decoding under drivers |
 | Polynomial representation/driver split (M10.5d3d) | Achieved | Polynomial IR/export/lowering under representations; reusable Singular/msolve execution drivers |
-| Interpretation-driven trail migration (M10.5d4) | Achieved | Canonical semantics, shared propagation problems/overrides, and SMT/MILP consumers |
-| Canonical cryptanalytic interpretations (M10.5d4a) | Achieved | Trail types and exact S-box/modular-add semantics moved from analysis to interpretations; common graph annotations |
+| Semantics-driven trail migration (M10.5d4) | Achieved | Canonical semantics, shared propagation problems/overrides, and SMT/MILP consumers |
+| Canonical cryptanalytic semantics (M10.5d4a) | Achieved | Trail types and exact S-box/modular-add semantics moved from analysis to `semantics`; common graph annotations |
 | Shared propagation problem (M10.5d4b) | Achieved | Immutable semantic registry with per-component overrides; graph scope, objective, bounds, and provenance |
 | Shared propagation consumers (M10.5d4c) | Achieved | PRESENT SMT/MILP composition accepts one PropagationProblem and queries identical per-component overrides |
 | Diagram representation (M10.5d5) | In progress | Annotated IR, TikZ/PDF, and temporary warned structural listing achieved; actual routed ASCII art remains |
+| Graph/semantics vocabulary refactor (M10.5d6) | Achieved | `core` renamed to `graph`; `interpretations` renamed to `semantics`; public contracts use `SemanticType` and `.semantics`; no compatibility packages retained |
 | SMT, MILP, and CP (M10.4–M10.6) | In progress | SMT and MILP achieved; CP is next and retains shared semantics and independent-check requirements |
 | CP backend (M10.6) | In progress | Portable foundation, cipher recovery, and reviewed shared trail slices achieved; advanced legacy CP analyses follow |
 | Portable CP foundation (M10.6a) | Achieved | Immutable MiniZinc IR, deterministic export, CLI driver, portable JSON results, external SAT/UNSAT tests |
@@ -598,7 +603,7 @@ each synchronization.
 | Shared CP trail lowering (M10.6c) | Achieved | Differential, signed-linear, deterministic-truncated, and local impossible fixtures use shared semantics and real MiniZinc tests |
 | Native CP SPN differential trails (M10.6c1) | Achieved | PropagationProblem-selected DDT tables, PRESENT-2 UNSAT-3/SAT-4 proof, decoded trail independently checked |
 | Native CP linear trails (M10.6c2) | Achieved | PropagationProblem-selected signed LAT tables, PRESENT-3 UNSAT-3/SAT-4 proof, decoded signs and wiring independently checked |
-| Native CP truncated/impossible trails (M10.6c3) | Achieved | Truncated semantics moved into interpretations; Speck paired-carry fixture projected through CP; exact PRESENT S-box possible/impossible proof |
+| Native CP truncated/impossible trails (M10.6c3) | Achieved | Truncated semantics moved into `semantics`; Speck paired-carry fixture projected through CP; exact PRESENT S-box possible/impossible proof |
 | Advanced CP analyses (M10.6d) | Next | Multi-round impossible search, ARX optimization, wordwise/semi-deterministic, boomerang, differential-linear, continuous inventory |
 | Statistical analysis (M10.7) | Planned | Avalanche and related legacy behavior |
 | Serialization, diagrams, transforms, compilers (M10.8) | Planned | Inventory-driven tooling migration |

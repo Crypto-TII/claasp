@@ -1,7 +1,7 @@
 """Word-oriented Speck block cipher."""
 
 from claasp_next.components import Concatenate, Constant, ModularAdd, Rotate, Xor
-from claasp_next.core import Cipher, Port, Selection, ValueType
+from claasp_next.graph import Cipher, Port, Selection, ValueType
 from claasp_next.domains import Word
 
 PARAMETERS_CONFIGURATION_LIST = (

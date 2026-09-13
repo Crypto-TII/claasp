@@ -3,7 +3,7 @@
 from collections.abc import Iterable
 from dataclasses import dataclass
 
-from claasp_next.core import Component, PortLike, as_selection
+from claasp_next.graph import Component, PortLike, as_selection
 from claasp_next.domains import BinaryExtensionField, Bit, Word
 
 

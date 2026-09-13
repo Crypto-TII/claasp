@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from claasp_next.components.word._validation import require_word_inputs
-from claasp_next.core import Component, PortLike
+from claasp_next.graph import Component, PortLike
 
 
 @dataclass(frozen=True, slots=True, init=False)

@@ -3,7 +3,7 @@
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 
-from claasp_next.core import Cipher
+from claasp_next.graph import Cipher
 from claasp_next.components.algebraic import Add, LinearMap, Multiply, Power
 from claasp_next.components.structural import Concatenate, Constant, Identity, Permutation
 from claasp_next.components.substitution import BitVectorSBox, SBox
@@ -155,7 +155,7 @@ class TransposedBatchExecutionDriver(BatchExecutionDriver):
                     for position in cipher.output.positions
                 )
             from claasp_next.annotations import ExecutionTrace, GraphAnnotation
-            from claasp_next.interpretations import CONCRETE
+            from claasp_next.semantics import CONCRETE
 
             annotation = GraphAnnotation.from_values(cipher, CONCRETE, lane_values, output=output)
             results.append(EvaluationResult(lane_values, output, ExecutionTrace(annotation)))

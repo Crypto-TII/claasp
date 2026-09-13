@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass, field
 
-from claasp_next.core.component import Component
+from claasp_next.graph.component import Component
 
 
 @dataclass(slots=True)

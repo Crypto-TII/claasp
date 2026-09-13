@@ -3,8 +3,8 @@
 from dataclasses import dataclass
 from collections.abc import Iterable
 
-from claasp_next.core.component import Component
-from claasp_next.core.value_type import ValueType
+from claasp_next.graph.component import Component
+from claasp_next.graph.value_type import ValueType
 
 
 @dataclass(frozen=True, slots=True, init=False)

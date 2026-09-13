@@ -1,12 +1,12 @@
 """Native CP lowering of shared cryptanalytic trail semantics."""
 
 from claasp_next.components import BitVectorSBox, Permutation
-from claasp_next.interpretations import XOR_DIFFERENTIAL, XOR_LINEAR
-from claasp_next.interpretations.cryptanalysis import (
+from claasp_next.semantics import XOR_DIFFERENTIAL, XOR_LINEAR
+from claasp_next.semantics.cryptanalysis import (
     PropagationProblem, Trail, TrailKind, TrailStep, XorDifference, XorMask,
     TruncatedXorDifference, propagate_two_word_speck_round,
 )
-from claasp_next.interpretations import DETERMINISTIC_TRUNCATED_XOR
+from claasp_next.semantics import DETERMINISTIC_TRUNCATED_XOR
 from claasp_next.representations.constraints.cp.model import MiniZincModel
 from claasp_next.representations.constraints.smt.trails import (
     check_present_linear_smt_trail,
@@ -20,7 +20,7 @@ class PresentDifferentialCPModel:
     def __init__(self, problem: PropagationProblem) -> None:
         if not isinstance(problem, PropagationProblem):
             raise TypeError("problem must be a PropagationProblem")
-        if problem.interpretation != XOR_DIFFERENTIAL:
+        if problem.semantics != XOR_DIFFERENTIAL:
             raise ValueError("differential CP lowering requires XOR-differential semantics")
         if problem.maximum_weight is None:
             raise ValueError("differential CP lowering requires maximum_weight")
@@ -114,7 +114,7 @@ class PresentLinearCPModel:
     def __init__(self, problem: PropagationProblem) -> None:
         if not isinstance(problem, PropagationProblem):
             raise TypeError("problem must be a PropagationProblem")
-        if problem.interpretation != XOR_LINEAR:
+        if problem.semantics != XOR_LINEAR:
             raise ValueError("linear CP lowering requires XOR-linear semantics")
         if problem.maximum_weight is None:
             raise ValueError("linear CP lowering requires maximum_weight")
@@ -212,7 +212,7 @@ class SpeckTruncatedCPModel:
     ) -> None:
         if not isinstance(problem, PropagationProblem):
             raise TypeError("problem must be a PropagationProblem")
-        if problem.interpretation != DETERMINISTIC_TRUNCATED_XOR:
+        if problem.semantics != DETERMINISTIC_TRUNCATED_XOR:
             raise ValueError("truncated CP lowering requires deterministic-truncated semantics")
         if problem.cipher.family_name != "speck":
             raise NotImplementedError("truncated CP lowering currently supports Speck")
@@ -262,7 +262,7 @@ class SBoxDifferenceCPModel:
         input_difference: int,
         output_difference: int,
     ) -> None:
-        if problem.interpretation != XOR_DIFFERENTIAL:
+        if problem.semantics != XOR_DIFFERENTIAL:
             raise ValueError("impossible-pair CP lowering requires XOR-differential semantics")
         component = next(
             (item for item in problem.components if item.component_id == component_id), None

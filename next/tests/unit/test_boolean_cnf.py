@@ -7,7 +7,7 @@ from claasp_next.representations.constraints.sat import BooleanCNFModel, CNFForm
 from claasp_next.representations.constraints.sat.exporters import DimacsExporter
 from claasp_next.ciphers import MiMCPermutation, Present80BlockCipher, SpeckBlockCipher
 from claasp_next.components import Add
-from claasp_next.core import Cipher, ValueType
+from claasp_next.graph import Cipher, ValueType
 from claasp_next.domains import Bit
 from claasp_next.representations.execution import ScalarEvaluator
 

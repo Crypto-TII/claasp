@@ -1,15 +1,16 @@
-Interpretations, representations, and drivers
-==============================================
+Semantics, representations, and drivers
+=======================================
 
 CLAASP separates what graph values *mean* from how a problem is represented
 and which tool processes it:
 
 .. code-block:: text
 
-   Interpretation -> Representation -> Driver -> Result
+   SemanticType -> Representation -> Driver -> Result
 
-An interpretation may describe concrete values, XOR differences, linear
-masks, symbolic expressions, or simulated leakage. A representation may be
+The selected semantic type says what flows through the graph: concrete
+values, XOR differences, linear masks, truncated states, symbolic expressions,
+or simulated leakage. A representation may be
 CNF, SMT-LIB, MILP, source code, or a diagram. A driver may be a direct Python
 interpreter, solver, compiler, or renderer.
 
@@ -24,14 +25,14 @@ The word ``target`` is reserved for the goal of an attack:
 Graph annotations
 -----------------
 
-Different interpretations attach different information to the same graph.
+Different semantic types attach different information to the same graph.
 The common immutable container validates input and component identifiers:
 
 .. doctest::
 
    >>> from claasp_next.annotations import AnnotationEntry, AnnotationRole, ExecutionTrace, GraphAnnotation
    >>> from claasp_next.ciphers import PresentBlockCipher
-   >>> from claasp_next.interpretations import CONCRETE
+   >>> from claasp_next.semantics import CONCRETE
    >>> cipher = PresentBlockCipher(number_of_rounds=1)
    >>> annotation = GraphAnnotation(cipher, CONCRETE, (
    ...     AnnotationEntry("plaintext", AnnotationRole.INPUT, 0),
@@ -42,22 +43,22 @@ The common immutable container validates input and component identifiers:
    0
 
 ``ExecutionTrace``, cryptanalytic ``Trail``, and ``SideChannelTrace`` remain
-different semantic types. Shared annotations allow a later diagram renderer
+different result types. Shared annotations allow a later diagram renderer
 to consume any of them without pretending that a concrete execution is a
 differential characteristic.
 
-Cryptanalytic trail semantics live under ``interpretations.cryptanalysis``;
+Cryptanalytic trail semantics live under ``claasp_next.semantics.cryptanalysis``;
 they are not owned by SAT, SMT, or MILP. A checked trail can be attached to
 its cipher for use by generic consumers:
 
 .. doctest::
 
-   >>> from claasp_next.interpretations.cryptanalysis import Trail, TrailKind, TrailStep, XorDifference, SBoxTransitionSemantics
+   >>> from claasp_next.semantics.cryptanalysis import Trail, TrailKind, TrailStep, XorDifference, SBoxTransitionSemantics
    >>> from claasp_next.ciphers.block_ciphers.present import PRESENT_SBOX
    >>> component = next(item for item in cipher.components if item.component_id == "sbox_1_0")
    >>> transition = SBoxTransitionSemantics(PRESENT_SBOX).xor_differential(1, 3)
    >>> trail = Trail(TrailKind.XOR_DIFFERENTIAL, XorDifference(1 << 60, 64), XorDifference(0, 64), (TrailStep(component.component_id, transition),))
-   >>> trail.interpretation.name
+   >>> trail.semantics.name
    'xor_differential'
    >>> trail.annotate(cipher).value_of(component.component_id) == transition
    True
@@ -96,7 +97,7 @@ annotation used by ``ExecutionTrace``:
    >>> result = ScalarExecutionDriver().evaluate(cipher, {
    ...     "plaintext": tuple(bytes(16)), "key": tuple(bytes(16))
    ... })
-   >>> result.trace.annotation.interpretation.name
+   >>> result.trace.annotation.semantics.name
    'concrete'
    >>> len(result.trace.annotation.entries) == len(cipher.inputs) + len(cipher.components) + 1
    True
@@ -128,7 +129,7 @@ SMT follows the same boundary: ``representations.constraints.smt`` owns the
 portable formula, trail lowering, transition lowering, and SMT-LIB exporter;
 ``drivers.solvers.Z3Solver`` executes that representation. A solver driver may
 accept more than one compatible representation, but it does not define their
-cryptanalytic interpretation.
+cryptanalytic semantics.
 
 MILP follows this boundary as well. Its immutable linear model, LP exporter,
 and trail lowerings live in ``representations.constraints.milp``; GLPK process

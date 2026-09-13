@@ -15,7 +15,7 @@ from claasp_next.components import (
     Rotate,
     Xor,
 )
-from claasp_next.core import Cipher
+from claasp_next.graph import Cipher
 from claasp_next.domains import Bit, Word
 from claasp_next.representations.execution import EvaluationResult
 

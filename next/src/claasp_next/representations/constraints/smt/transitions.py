@@ -1,6 +1,6 @@
 """SMT lowering of shared component transition semantics."""
 
-from claasp_next.interpretations.cryptanalysis import ModularAddLinearSemantics, SBoxTransitionSemantics, TrailKind
+from claasp_next.semantics.cryptanalysis import ModularAddLinearSemantics, SBoxTransitionSemantics, TrailKind
 from claasp_next.representations.constraints.smt.formula import SMTFormula
 
 

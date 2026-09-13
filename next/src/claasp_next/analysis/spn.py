@@ -2,7 +2,7 @@
 
 from math import inf
 
-from claasp_next.interpretations.cryptanalysis import (
+from claasp_next.semantics.cryptanalysis import (
     SBoxTransitionSemantics,
     Trail,
     TrailKind,
@@ -12,7 +12,7 @@ from claasp_next.interpretations.cryptanalysis import (
     XorMask,
 )
 from claasp_next.components import BitVectorSBox, Permutation
-from claasp_next.core import Cipher
+from claasp_next.graph import Cipher
 from claasp_next.domains import Bit
 
 

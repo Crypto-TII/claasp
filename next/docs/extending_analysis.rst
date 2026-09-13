@@ -13,12 +13,12 @@ constraints, trail semantics, backend representations, exporters, solver
 adapters, and result projection are separate layers. New work should extend
 the narrowest applicable layer.
 
-The architectural vocabulary is ``Interpretation -> Representation -> Driver
--> Result``. A new cryptanalytic idea normally begins as an interpretation or
+The architectural vocabulary is ``SemanticType -> Representation -> Driver
+-> Result``. A new cryptanalytic idea normally begins as a semantic type or
 shared propagation relation. Encoding it directly inside an SMT- or
 MILP-specific package is appropriate only when it is genuinely specific to
 that representation. An alternative external solver for an existing format
-is a driver, not a new interpretation.
+is a driver, not a new semantic type.
 
 Examples include:
 
@@ -52,15 +52,15 @@ Canonical trail semantics
 -------------------------
 
 Exact patterns, transitions, weights, correlations, and trails are defined in
-``claasp_next.interpretations.cryptanalysis``. Constraint representations may
+``claasp_next.semantics.cryptanalysis``. Constraint representations may
 encode these objects but must not redefine their mathematical meaning. The
 ``claasp_next.analysis`` package re-exports common trail types as a concise
-user facade; representation code uses the canonical interpretation package.
+user facade; representation code uses the canonical semantics package.
 
 Propagation problems and component overrides
 --------------------------------------------
 
-``PropagationProblem`` selects a cipher, interpretation, component scope,
+``PropagationProblem`` selects a cipher, semantics, component scope,
 objective, optional weight bound, semantic registry, and provenance before a
 SAT, SMT, MILP, or CP representation is chosen:
 
@@ -68,8 +68,8 @@ SAT, SMT, MILP, or CP representation is chosen:
 
    >>> from claasp_next.ciphers import PresentBlockCipher
    >>> from claasp_next.components import BitVectorSBox
-   >>> from claasp_next.interpretations import XOR_DIFFERENTIAL
-   >>> from claasp_next.interpretations.cryptanalysis import PropagationProblem
+   >>> from claasp_next.semantics import XOR_DIFFERENTIAL
+   >>> from claasp_next.semantics.cryptanalysis import PropagationProblem
    >>> cipher = PresentBlockCipher(number_of_rounds=1)
    >>> sbox = next(item for item in cipher.components if isinstance(item, BitVectorSBox))
    >>> problem = PropagationProblem(cipher, XOR_DIFFERENTIAL, component_ids=(sbox.component_id,), maximum_weight=4, provenance=("experiment-1",))

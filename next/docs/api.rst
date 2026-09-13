@@ -10,16 +10,16 @@ Domains
 .. automodule:: claasp_next.domains
    :members:
 
-Core graph
-----------
+Cipher graph
+------------
 
-.. automodule:: claasp_next.core
+.. automodule:: claasp_next.graph
    :members:
 
-Interpretations and annotations
--------------------------------
+Semantics and annotations
+-------------------------
 
-.. automodule:: claasp_next.interpretations
+.. automodule:: claasp_next.semantics
    :members:
 
 .. automodule:: claasp_next.annotations
