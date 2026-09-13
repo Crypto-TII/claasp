@@ -46,7 +46,9 @@ class Z3Solver:
                 check=False,
             )
             elapsed = monotonic() - start
-        if completed.returncode != 0:
+        # Z3 reports an error for the trailing get-value command after UNSAT;
+        # the preceding status is nevertheless a valid completed solve.
+        if completed.returncode != 0 and not completed.stdout.startswith("unsat"):
             raise RuntimeError(f"Z3 failed: {completed.stderr.strip() or completed.stdout.strip()}")
         status, assignment = self._parse_output(completed.stdout, formula.variables)
         return SatResult(status, assignment, elapsed, completed.stdout, completed.stderr)

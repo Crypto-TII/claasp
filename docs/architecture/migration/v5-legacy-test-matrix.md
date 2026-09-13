@@ -61,6 +61,7 @@ of uniqueness or an optimum.
 | --- | --- | --- | --- |
 | `smt/smt_models/smt_cipher_model_test.py::test_find_missing_bits` | Z3 completes fixed official Speck32/64 plaintext/key to `0xa86842f2` | Ported in M10.4a | `test_z3_integration.py` solves the full 22-round typed graph through SMT-LIB and independently evaluates the ciphertext |
 | Legacy SMT solver syntax and internal variable strings | Exact generated assertions and backend identifier | Superseded | Stable graph-derived names, portable `SMTFormula`, deterministic SMT-LIB, and explicit `Z3Solver`; representation tests avoid freezing incidental legacy syntax |
+| SMT XOR-differential/linear S-box transition constraints | Feasible DDT/LAT entries are accepted; impossible entries make a fixed model UNSAT | Ported in M10.4b1 | Exhaustive unit comparison covers the entire PRESENT DDT and selected signed LAT projection; real Z3 proves `1 -> 3` SAT and `1 -> 1` UNSAT |
 
 ## Analysis and tooling inventory
 

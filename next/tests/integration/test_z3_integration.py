@@ -6,6 +6,9 @@ from claasp_next.boolean.solvers import SatStatus
 from claasp_next.analysis import AnalysisProblem, FixedValue
 from claasp_next.ciphers import SpeckBlockCipher
 from claasp_next.smt.solvers import Z3Solver
+from claasp_next.smt import SBoxTransitionSMTModel
+from claasp_next.analysis import TrailKind
+from claasp_next.ciphers.block_ciphers.present import PRESENT_SBOX
 
 
 pytestmark = pytest.mark.external
@@ -44,3 +47,15 @@ def test_z3_reproduces_legacy_full_speck_missing_bits_result():
     assert result.is_satisfiable
     assert result.value("ciphertext") == 0xA86842F2
     assert cipher.evaluate(0x6574694C, 0x1918111009080100) == result.value("ciphertext")
+
+
+def test_z3_proves_present_sbox_transition_feasibility_and_impossibility():
+    model = SBoxTransitionSMTModel(PRESENT_SBOX, TrailKind.XOR_DIFFERENTIAL)
+    solver = Z3Solver(timeout_seconds=10)
+
+    possible = solver.solve(model.smt_formula(input_pattern=1, output_pattern=3))
+    impossible = solver.solve(model.smt_formula(input_pattern=1, output_pattern=1))
+
+    assert possible.status is SatStatus.SATISFIABLE
+    assert model.decode_transition(possible.assignment).weight == 2.0
+    assert impossible.status is SatStatus.UNSATISFIABLE
