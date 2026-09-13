@@ -99,3 +99,27 @@ trail retains the independently recomputed correlation sign of every S-box:
 Dedicated Z3 tests prove bound 3 unsatisfiable and extract the weight-4
 optimum at bound 4, followed by independent checking of all 48 transitions
 and three permutation boundaries.
+
+ARX linear transitions
+----------------------
+
+Modular addition uses an exact word-level linear-mask relation.  The SMT
+encoding exposes the two input masks, output mask, and unary weight bits while
+the shared Walsh semantics remains the independent oracle:
+
+.. doctest::
+
+   >>> from claasp_next.smt import ModularAddLinearSMTModel
+   >>> addition = ModularAddLinearSMTModel(16)
+   >>> formula = addition.smt_formula(
+   ...     left_mask=0x6081, right_mask=0x40c1, output_mask=0x4081
+   ... )
+   >>> formula.assertion_count > 0
+   True
+
+The Z3 integration restores all four modular-add transitions of CLAASP's
+four-round Speck32/64 weight-3 linear characteristic.  It verifies transition
+weights ``2 + 0 + 0 + 1`` and correlation signs ``+,+,+,-`` with the exact
+Walsh checker after solving.  This fixture was regenerated with the legacy
+``SatXorLinearModel`` and MiniSat 2.2.1; it is not merely copied from solver
+output without semantic validation.

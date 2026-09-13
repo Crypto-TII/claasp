@@ -9,6 +9,7 @@ from claasp_next.smt.solvers import Z3Solver
 from claasp_next.smt import (
     PresentDifferentialSMTModel,
     PresentLinearSMTModel,
+    ModularAddLinearSMTModel,
     SBoxTransitionSMTModel,
 )
 from claasp_next.smt.trails import check_present_linear_smt_trail, check_present_smt_trail
@@ -94,3 +95,25 @@ def test_z3_proves_and_extracts_present_three_round_linear_optimum():
     assert solved.status is SatStatus.SATISFIABLE
     assert trail.total_weight == 4.0
     assert check_present_linear_smt_trail(cipher, trail)
+
+
+def test_z3_restores_speck_linear_modular_add_reference_transitions():
+    solver = Z3Solver(timeout_seconds=10)
+    model = ModularAddLinearSMTModel(16)
+    reference = (
+        (0x6081, 0x40C1, 0x4081),
+        (0x0001, 0x0001, 0x0001),
+        (0x0000, 0x0000, 0x0000),
+        (0x0800, 0x0800, 0x0C00),
+    )
+    transitions = []
+    for left, right, output in reference:
+        solved = solver.solve(model.smt_formula(
+            left_mask=left, right_mask=right, output_mask=output
+        ))
+        assert solved.status is SatStatus.SATISFIABLE
+        transitions.append(model.decode_transition(solved.assignment))
+
+    assert [transition.weight for transition in transitions] == [2.0, 0.0, 0.0, 1.0]
+    assert [transition.sign for transition in transitions] == [1, 1, 1, -1]
+    assert sum(transition.weight for transition in transitions) == 3.0

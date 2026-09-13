@@ -499,11 +499,12 @@ each synchronization.
 | SPN XOR-linear trail search (M10.3e) | Achieved | PRESENT-3 weight-4 fixture, signed LAT entries, independent checker |
 | ARX XOR-linear trail search (M10.3f) | Achieved | Exact Walsh carry semantics and restored Speck32/64-4 weight-3 characteristic |
 | SMT cipher backend (M10.4a) | Achieved | Portable IR/SMT-LIB, optional Z3 adapter, full Speck legacy fixture |
-| SMT trail backend (M10.4b) | Next | Lower shared differential/linear semantics and reproduce Z3 trail fixtures |
+| SMT trail backend (M10.4b) | Achieved | Exact S-box and modular-add relations, composed PRESENT optima, restored Speck reference transitions |
 | SMT component transitions (M10.4b1) | Achieved | Complete S-box DDT/LAT support relations, Z3 SAT/UNSAT, semantic projection |
 | SMT weighted differential trails (M10.4b2) | Achieved | PRESENT-2 composition, sequential weight bound, Z3 UNSAT-3/SAT-4 proof and checker |
 | SMT weighted SPN linear trails (M10.4b3a) | Achieved | PRESENT-3 LAT composition, Z3 UNSAT-3/SAT-4 proof, signs and checker |
-| SMT weighted ARX linear trails (M10.4b3b) | Next | Encode modular-add correlations and restore selected Speck Z3 fixtures |
-| SMT, MILP, and CP (M10.4–M10.6) | Planned | Shared semantics with independent external lowerings |
+| SMT weighted ARX linear trails (M10.4b3b) | Achieved | Exact modular-add correlation relation; Z3 validates all four weight/sign transitions of the Speck32/64-4 reference |
+| MILP trail backend (M10.5) | Next | Solver-independent linear IR, open-source adapter, and selected legacy regressions |
+| SMT, MILP, and CP (M10.4–M10.6) | In progress | SMT achieved; MILP and CP retain shared semantics and independent-check requirements |
 | Statistical analysis (M10.7) | Planned | Avalanche and related legacy behavior |
 | Serialization, diagrams, transforms, compilers (M10.8) | Planned | Inventory-driven tooling migration |

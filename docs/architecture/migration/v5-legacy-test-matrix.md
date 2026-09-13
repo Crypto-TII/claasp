@@ -64,6 +64,7 @@ of uniqueness or an optimum.
 | SMT XOR-differential/linear S-box transition constraints | Feasible DDT/LAT entries are accepted; impossible entries make a fixed model UNSAT | Ported in M10.4b1 | Exhaustive unit comparison covers the entire PRESENT DDT and selected signed LAT projection; real Z3 proves `1 -> 3` SAT and `1 -> 1` UNSAT |
 | Cross-backend two-round PRESENT differential optimum | Legacy MILP establishes minimum weight 4; shared trail semantics must agree across encodings | Ported to SMT in M10.4b2 | Real Z3 proves the complete weighted SMT model UNSAT at bound 3 and SAT at bound 4; the extracted 32-transition trail is independently checked |
 | Cross-backend three-round PRESENT linear optimum | Preserved legacy MILP fixture records weight 4; shared signed LAT semantics must agree across encodings | Ported to SMT in M10.4b3a | Real Z3 proves UNSAT at bound 3 and SAT at bound 4; the extracted 48-transition trail retains signs and is independently checked across all layers |
+| SAT/CMS/MILP four-round Speck32/64 linear optimum | Legacy optimum weight 3, masks `0x40b010c1 -> 0x2c102010`, and four modular-add transitions | Ported to SMT in M10.4b3b | Real Z3 validates the exact modular-add relation for all four restored transitions, weights `2+0+0+1`, and signs `+,+,+,-`; shared Walsh semantics independently checks each result. The reference was regenerated with legacy MiniSat 2.2.1 |
 
 ## Analysis and tooling inventory
 

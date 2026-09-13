@@ -2,7 +2,7 @@ from itertools import product
 
 from claasp_next.analysis import TrailKind
 from claasp_next.ciphers.block_ciphers.present import PRESENT_SBOX
-from claasp_next.smt import SBoxTransitionSMTModel
+from claasp_next.smt import ModularAddLinearSMTModel, SBoxTransitionSMTModel
 
 
 def _solutions(formula):
@@ -38,3 +38,33 @@ def test_linear_smt_relation_projects_exact_weight_and_sign():
 
     assert transition.weight == 1.0
     assert transition.sign == -1
+
+
+def test_modular_add_linear_smt_matches_every_four_bit_mask_triple():
+    model = ModularAddLinearSMTModel(4)
+    formula = model.smt_formula()
+    solutions = list(_solutions(formula))
+    decoded = {
+        (
+            transition.input_pattern.value,
+            transition.output_pattern.value,
+            transition.weight,
+            transition.sign,
+        )
+        for assignment in solutions
+        for transition in (model.decode_transition(assignment),)
+    }
+    expected = {
+        (
+            transition.input_pattern.value,
+            transition.output_pattern.value,
+            transition.weight,
+            transition.sign,
+        )
+        for left in range(16)
+        for right in range(16)
+        for output in range(16)
+        for transition in (model.semantics.xor_linear(left, right, output),)
+        if transition.is_possible
+    }
+    assert decoded == expected

@@ -1,6 +1,6 @@
 """SMT lowering of shared component transition semantics."""
 
-from claasp_next.analysis import SBoxTransitionSemantics, TrailKind
+from claasp_next.analysis import ModularAddLinearSemantics, SBoxTransitionSemantics, TrailKind
 from claasp_next.smt.formula import SMTFormula
 
 
@@ -69,6 +69,75 @@ class SBoxTransitionSMTModel:
         )
 
 
+class ModularAddLinearSMTModel:
+    """Boolean SMT relation for exact modular-add linear correlations."""
+
+    def __init__(self, width: int) -> None:
+        self.semantics = ModularAddLinearSemantics(width)
+        self.width = width
+
+    def smt_formula(
+        self,
+        *,
+        left_mask: int | None = None,
+        right_mask: int | None = None,
+        output_mask: int | None = None,
+    ) -> SMTFormula:
+        """Return the LWR carry relation with optional fixed masks."""
+
+        variables = (
+            tuple(f"left_{bit}" for bit in range(self.width))
+            + tuple(f"right_{bit}" for bit in range(self.width))
+            + tuple(f"output_{bit}" for bit in range(self.width))
+            + tuple(f"weight_{bit}" for bit in range(self.width))
+        )
+        indices = {name: index for index, name in enumerate(variables, 1)}
+        clauses = [(-indices["weight_0"],)]
+        provenance = ["linear_weight_msb"]
+        for bit in range(1, self.width):
+            names = (
+                f"weight_{bit}",
+                f"weight_{bit - 1}",
+                f"output_{bit - 1}",
+                f"left_{bit - 1}",
+                f"right_{bit - 1}",
+            )
+            _xor_equivalence(names, indices, clauses, provenance)
+        for bit in range(self.width):
+            for operand in ("left", "right"):
+                a = indices[f"output_{bit}"]
+                b = indices[f"{operand}_{bit}"]
+                weight = indices[f"weight_{bit}"]
+                clauses.extend(((-a, b, weight), (a, -b, weight)))
+                provenance.extend(("linear_support", "linear_support"))
+        for prefix, value, offset in (
+            ("left", left_mask, 0),
+            ("right", right_mask, self.width),
+            ("output", output_mask, 2 * self.width),
+        ):
+            if value is None:
+                continue
+            if not isinstance(value, int) or isinstance(value, bool) or not 0 <= value < 1 << self.width:
+                raise ValueError(f"{prefix}_mask must fit the modular-add width")
+            for bit, encoded in enumerate(_bits(value, self.width)):
+                variable = offset + bit + 1
+                clauses.append((variable if encoded else -variable,))
+                provenance.append(f"fixed_{prefix}")
+        return SMTFormula(variables, tuple(clauses), tuple(provenance))
+
+    def decode_transition(self, assignment: dict[str, int]):
+        """Project masks to the shared exact Walsh-correlation semantics."""
+
+        left = _integer(tuple(assignment[f"left_{bit}"] for bit in range(self.width)))
+        right = _integer(tuple(assignment[f"right_{bit}"] for bit in range(self.width)))
+        output = _integer(tuple(assignment[f"output_{bit}"] for bit in range(self.width)))
+        transition = self.semantics.xor_linear(left, right, output)
+        encoded_weight = sum(assignment[f"weight_{bit}"] for bit in range(self.width))
+        if not transition.is_possible or transition.weight != encoded_weight:
+            raise ValueError("SMT assignment disagrees with exact modular-add semantics")
+        return transition
+
+
 def _bits(value: int, width: int) -> tuple[int, ...]:
     return tuple((value >> (width - 1 - bit)) & 1 for bit in range(width))
 
@@ -78,3 +147,17 @@ def _integer(bits: tuple[int, ...]) -> int:
     for bit in bits:
         value = (value << 1) | bit
     return value
+
+
+def _xor_equivalence(names, indices, clauses, provenance):
+    # names[0] equals the XOR of the remaining variables. Forbid precisely the
+    # assignments with odd parity over all names.
+    for assignment in range(1 << len(names)):
+        values = tuple((assignment >> (len(names) - 1 - bit)) & 1 for bit in range(len(names)))
+        if sum(values) % 2 == 0:
+            continue
+        clauses.append(tuple(
+            -indices[name] if value else indices[name]
+            for name, value in zip(names, values)
+        ))
+        provenance.append("linear_weight_recurrence")
