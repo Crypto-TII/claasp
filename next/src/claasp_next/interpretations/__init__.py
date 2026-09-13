@@ -6,7 +6,9 @@ from claasp_next.interpretations.base import (
 from claasp_next.interpretations.cryptanalysis import (
     BitPattern, ModularAddLinearSemantics, ModularAddTransitionSemantics,
     SBoxTransitionSemantics, Trail, TrailKind, TrailSearchResult, TrailStep,
-    Transition, XorDifference, XorMask,
+    Transition, XorDifference, XorMask, ComponentSemanticsBinding,
+    ComponentSemanticsRegistry, PropagationObjective, PropagationProblem,
+    TransitionProvider, default_component_semantics,
 )
 
 __all__ = [
@@ -15,4 +17,7 @@ __all__ = [
     "BitPattern", "ModularAddLinearSemantics", "ModularAddTransitionSemantics",
     "SBoxTransitionSemantics", "Trail", "TrailKind", "TrailSearchResult",
     "TrailStep", "Transition", "XorDifference", "XorMask",
+    "ComponentSemanticsBinding", "ComponentSemanticsRegistry",
+    "PropagationObjective", "PropagationProblem", "TransitionProvider",
+    "default_component_semantics",
 ]

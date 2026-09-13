@@ -139,3 +139,13 @@ Sparse polynomial systems and their Singular/msolve serializers live in
 are reusable ``SingularDriver`` and ``MsolveDriver`` objects under
 ``drivers.algebra``; a serializer can therefore be tested without installing
 either computer algebra system.
+
+Shared propagation problems
+---------------------------
+
+``PropagationProblem`` fixes cryptanalytic meaning before choosing a
+constraint representation. It carries graph scope, objective, optional weight
+bound, semantic registry, and provenance. Its immutable registry provides
+reviewed defaults for bit-vector S-boxes and modular addition and supports
+global or per-component replacement. Representation compilers consume this
+problem in the next migration checkpoint.

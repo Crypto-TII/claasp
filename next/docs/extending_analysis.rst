@@ -56,3 +56,28 @@ Exact patterns, transitions, weights, correlations, and trails are defined in
 encode these objects but must not redefine their mathematical meaning. The
 ``claasp_next.analysis`` package re-exports common trail types as a concise
 user facade; representation code uses the canonical interpretation package.
+
+Propagation problems and component overrides
+--------------------------------------------
+
+``PropagationProblem`` selects a cipher, interpretation, component scope,
+objective, optional weight bound, semantic registry, and provenance before a
+SAT, SMT, MILP, or CP representation is chosen:
+
+.. doctest::
+
+   >>> from claasp_next.ciphers import PresentBlockCipher
+   >>> from claasp_next.components import BitVectorSBox
+   >>> from claasp_next.interpretations import XOR_DIFFERENTIAL
+   >>> from claasp_next.interpretations.cryptanalysis import PropagationProblem
+   >>> cipher = PresentBlockCipher(number_of_rounds=1)
+   >>> sbox = next(item for item in cipher.components if isinstance(item, BitVectorSBox))
+   >>> problem = PropagationProblem(cipher, XOR_DIFFERENTIAL, component_ids=(sbox.component_id,), maximum_weight=4, provenance=("experiment-1",))
+   >>> problem.provider_for(sbox).transition((1,), 3).weight
+   2.0
+
+The registry is immutable. ``registry.register(binding)`` returns a new
+registry, and a binding with ``component_id=...`` overrides a global binding
+only for that graph component. This is the first concrete researcher API for
+plugging a new component model into a full propagation problem without
+editing a solver representation.

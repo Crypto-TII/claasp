@@ -566,7 +566,8 @@ each synchronization.
 | Polynomial representation/driver split (M10.5d3d) | Achieved | Polynomial IR/export/lowering under representations; reusable Singular/msolve execution drivers |
 | Interpretation-driven trail migration (M10.5d4) | In progress | Canonical semantics achieved; shared propagation problem and representation consumers remain |
 | Canonical cryptanalytic interpretations (M10.5d4a) | Achieved | Trail types and exact S-box/modular-add semantics moved from analysis to interpretations; common graph annotations |
-| Shared propagation problem (M10.5d4b) | Next | Component-semantics registry, graph scope, objective, bounds, and provenance independent of solver format |
+| Shared propagation problem (M10.5d4b) | Achieved | Immutable semantic registry with per-component overrides; graph scope, objective, bounds, and provenance |
+| Shared propagation consumers (M10.5d4c) | Next | Make SMT/MILP trail composition consume PropagationProblem and eliminate cipher-specific semantic ownership |
 | SMT, MILP, and CP (M10.4–M10.6) | In progress | SMT achieved; MILP and CP retain shared semantics and independent-check requirements |
 | Statistical analysis (M10.7) | Planned | Avalanche and related legacy behavior |
 | Serialization, diagrams, transforms, compilers (M10.8) | Planned | Inventory-driven tooling migration |
