@@ -3,7 +3,10 @@
 from claasp_next.representations.constraints.cp.model import MiniZincModel
 from claasp_next.representations.constraints.cp.lowering import BooleanMiniZincLowerer
 
-__all__ = ["BooleanMiniZincLowerer", "MiniZincModel", "PresentDifferentialCPModel"]
+__all__ = [
+    "BooleanMiniZincLowerer", "MiniZincModel", "PresentDifferentialCPModel",
+    "PresentLinearCPModel",
+]
 
 
 def __getattr__(name: str):
@@ -13,4 +16,8 @@ def __getattr__(name: str):
         from claasp_next.representations.constraints.cp.trails import PresentDifferentialCPModel
 
         return PresentDifferentialCPModel
+    if name == "PresentLinearCPModel":
+        from claasp_next.representations.constraints.cp.trails import PresentLinearCPModel
+
+        return PresentLinearCPModel
     raise AttributeError(name)

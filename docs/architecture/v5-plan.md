@@ -595,10 +595,10 @@ each synchronization.
 | CP backend (M10.6) | In progress | Portable foundation and cipher/recovery lowering achieved; shared trail lowering follows |
 | Portable CP foundation (M10.6a) | Achieved | Immutable MiniZinc IR, deterministic export, CLI driver, portable JSON results, external SAT/UNSAT tests |
 | CP cipher lowering and recovery (M10.6b) | Achieved | Exact CNF-to-CP lowering reuses typed component semantics; graph-name projections; reduced recovery and full Speck legacy fixture independently evaluated |
-| Shared CP trail lowering (M10.6c) | In progress | Native weighted SPN differential slice achieved; linear, truncated, and impossible semantics follow |
+| Shared CP trail lowering (M10.6c) | In progress | Native weighted SPN differential and signed-linear slices achieved; truncated and impossible semantics follow |
 | Native CP SPN differential trails (M10.6c1) | Achieved | PropagationProblem-selected DDT tables, PRESENT-2 UNSAT-3/SAT-4 proof, decoded trail independently checked |
-| Native CP linear trails (M10.6c2) | Next | Shared signed-LAT semantics and selected legacy optimum/bound |
-| Native CP truncated/impossible trails (M10.6c3) | Planned | Shared deterministic-truncated propagation and impossible-pair regressions |
+| Native CP linear trails (M10.6c2) | Achieved | PropagationProblem-selected signed LAT tables, PRESENT-3 UNSAT-3/SAT-4 proof, decoded signs and wiring independently checked |
+| Native CP truncated/impossible trails (M10.6c3) | Next | Shared deterministic-truncated propagation and impossible-pair regressions |
 | Advanced CP analyses (M10.6d) | Planned | ARX optimization, wordwise/semi-deterministic, boomerang, differential-linear, continuous inventory |
 | Statistical analysis (M10.7) | Planned | Avalanche and related legacy behavior |
 | Serialization, diagrams, transforms, compilers (M10.8) | Planned | Inventory-driven tooling migration |

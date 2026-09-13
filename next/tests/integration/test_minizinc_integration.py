@@ -7,10 +7,16 @@ from claasp_next.drivers.solvers import CPStatus, MiniZincSolver
 from claasp_next.analysis import AnalysisProblem, FixedValue
 from claasp_next.ciphers import SpeckBlockCipher
 from claasp_next.representations.constraints.cp import MiniZincModel
-from claasp_next.interpretations import XOR_DIFFERENTIAL
+from claasp_next.interpretations import XOR_DIFFERENTIAL, XOR_LINEAR
 from claasp_next.interpretations.cryptanalysis import PropagationProblem
-from claasp_next.representations.constraints.cp import PresentDifferentialCPModel
-from claasp_next.representations.constraints.smt.trails import check_present_smt_trail
+from claasp_next.representations.constraints.cp import (
+    PresentDifferentialCPModel,
+    PresentLinearCPModel,
+)
+from claasp_next.representations.constraints.smt.trails import (
+    check_present_linear_smt_trail,
+    check_present_smt_trail,
+)
 from claasp_next.ciphers import PresentBlockCipher
 
 
@@ -114,3 +120,29 @@ def test_minizinc_proves_present_two_round_differential_optimum():
     assert solved.status is CPStatus.SATISFIED
     assert trail.total_weight == 4
     assert check_present_smt_trail(cipher, trail)
+
+
+def test_minizinc_proves_present_three_round_linear_optimum_with_signs():
+    cipher = PresentBlockCipher(number_of_rounds=3)
+    solver = MiniZincSolver(solver=_test_solver(), timeout_seconds=60)
+    below = PresentLinearCPModel(PropagationProblem(
+        cipher,
+        XOR_LINEAR,
+        maximum_weight=3,
+        provenance=("PRESENT-3 legacy linear lower bound",),
+    ))
+    optimum = PresentLinearCPModel(PropagationProblem(
+        cipher,
+        XOR_LINEAR,
+        maximum_weight=4,
+        provenance=("PRESENT-3 legacy linear optimum",),
+    ))
+
+    assert solver.solve(below.cp_model()).status is CPStatus.UNSATISFIABLE
+    solved = solver.solve(optimum.cp_model())
+    trail = optimum.decode_trail(solved.assignment)
+
+    assert solved.status is CPStatus.SATISFIED
+    assert trail.total_weight == 4
+    assert all(step.transition.sign in (-1, 1) for step in trail.steps)
+    assert check_present_linear_smt_trail(cipher, trail)

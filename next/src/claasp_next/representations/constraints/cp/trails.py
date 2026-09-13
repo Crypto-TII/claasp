@@ -1,12 +1,15 @@
 """Native CP lowering of shared cryptanalytic trail semantics."""
 
 from claasp_next.components import BitVectorSBox, Permutation
-from claasp_next.interpretations import XOR_DIFFERENTIAL
+from claasp_next.interpretations import XOR_DIFFERENTIAL, XOR_LINEAR
 from claasp_next.interpretations.cryptanalysis import (
-    PropagationProblem, Trail, TrailKind, TrailStep, XorDifference,
+    PropagationProblem, Trail, TrailKind, TrailStep, XorDifference, XorMask,
 )
 from claasp_next.representations.constraints.cp.model import MiniZincModel
-from claasp_next.representations.constraints.smt.trails import check_present_smt_trail
+from claasp_next.representations.constraints.smt.trails import (
+    check_present_linear_smt_trail,
+    check_present_smt_trail,
+)
 
 
 class PresentDifferentialCPModel:
@@ -100,6 +103,102 @@ class PresentDifferentialCPModel:
         )
         if not check_present_smt_trail(self.cipher, trail):
             raise ValueError("MiniZinc returned an invalid differential trail")
+        return trail
+
+
+class PresentLinearCPModel:
+    """Native table-constraint model for three-round PRESENT masks."""
+
+    def __init__(self, problem: PropagationProblem) -> None:
+        if not isinstance(problem, PropagationProblem):
+            raise TypeError("problem must be a PropagationProblem")
+        if problem.interpretation != XOR_LINEAR:
+            raise ValueError("linear CP lowering requires XOR-linear semantics")
+        if problem.maximum_weight is None:
+            raise ValueError("linear CP lowering requires maximum_weight")
+        if problem.cipher.family_name != "present" or len(problem.cipher.rounds) != 3:
+            raise NotImplementedError("linear CP lowering currently supports PRESENT-3")
+        self.problem = problem
+        self.cipher = problem.cipher
+        self._records = ()
+        self._input_names = ()
+        self._last_output_names = ()
+
+    def cp_model(self) -> MiniZincModel:
+        """Lower exact signed-LAT support and absolute weights to tables."""
+
+        declarations = []
+        constraints = []
+        input_names = tuple(f"plaintext_mask_{bit}" for bit in range(64))
+        for name in input_names:
+            declarations.append(f"var 0..1: {name};")
+        current_input = input_names
+        weight_names = []
+        records = []
+        last_output = ()
+        for round_number in range(1, 4):
+            output_names = tuple(f"round_{round_number}_sbox_mask_{bit}" for bit in range(64))
+            for name in output_names:
+                declarations.append(f"var 0..1: {name};")
+            for nibble, component in enumerate(_round_sboxes(self.cipher, round_number)):
+                start = 4 * nibble
+                local_input = current_input[start : start + 4]
+                local_output = output_names[start : start + 4]
+                weight_name = f"round_{round_number}_linear_{nibble}_weight"
+                weight_names.append(weight_name)
+                declarations.append(f"var 0..3: {weight_name};")
+                rows = []
+                semantics = self.problem.provider_for(component)
+                for source in range(16):
+                    for target in range(16):
+                        transition = semantics.transition((source,), target)
+                        if transition.is_possible:
+                            rows.append((*_bits(source, 4), *_bits(target, 4), int(transition.weight)))
+                table_name = f"round_{round_number}_linear_{nibble}_table"
+                flattened = ",".join(str(item) for row in rows for item in row)
+                declarations.append(
+                    f"array[0..{len(rows) - 1}, 1..9] of int: {table_name} = "
+                    f"array2d(0..{len(rows) - 1}, 1..9, [{flattened}]);"
+                )
+                variables = ",".join((*local_input, *local_output, weight_name))
+                constraints.append(f"constraint table([{variables}], {table_name});")
+                records.append((component.component_id, local_input, local_output))
+            permutation = _component(self.cipher, f"p_layer_{round_number}", Permutation)
+            current_input = tuple(output_names[position] for position in permutation.mapping)
+            last_output = output_names
+        constraints.append("constraint " + " + ".join(input_names) + " >= 1;")
+        constraints.append(
+            "constraint " + " + ".join(weight_names) + f" <= {self.problem.maximum_weight};"
+        )
+        self._records = tuple(records)
+        self._input_names = input_names
+        self._last_output_names = last_output
+        return MiniZincModel(
+            tuple(declarations), tuple(constraints),
+            includes=('include "table.mzn";',), provenance=self.problem.provenance,
+        )
+
+    def decode_trail(self, assignment) -> Trail:
+        """Recover signed transitions and reject a semantically invalid witness."""
+
+        if not self._records:
+            raise ValueError("build the CP model before decoding a trail")
+        components = {component.component_id: component for component in self.cipher.components}
+        steps = []
+        for component_id, inputs, outputs in self._records:
+            semantics = self.problem.provider_for(components[component_id])
+            source = _integer(assignment[name] for name in inputs)
+            target = _integer(assignment[name] for name in outputs)
+            steps.append(TrailStep(component_id, semantics.transition((source,), target)))
+        raw_output = _integer(assignment[name] for name in self._last_output_names)
+        final = _permute(raw_output, _component(self.cipher, "p_layer_3", Permutation).mapping)
+        trail = Trail(
+            TrailKind.XOR_LINEAR,
+            XorMask(_integer(assignment[name] for name in self._input_names), 64),
+            XorMask(final, 64), tuple(steps),
+        )
+        if not check_present_linear_smt_trail(self.cipher, trail):
+            raise ValueError("MiniZinc returned an invalid linear trail")
         return trail
 
 

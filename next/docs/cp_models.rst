@@ -68,11 +68,16 @@ Shared differential trails
 rows come from the selected component semantic provider, so per-component
 research overrides are honored consistently with SMT and MILP.
 
-The reviewed PRESENT-2 regression proves weight bound 3 unsatisfiable and
-weight bound 4 satisfiable using a real MiniZinc solver. Its decoded 32-step
-trail is checked independently against every DDT transition and permutation
-boundary. Linear, deterministic-truncated, and impossible propagation remain
-the following M10.6c checkpoints.
+The reviewed PRESENT-2 differential regression proves weight bound 3
+unsatisfiable and weight bound 4 satisfiable using a real MiniZinc solver. Its
+decoded 32-step trail is checked independently against every DDT transition
+and permutation boundary.
+
+``PresentLinearCPModel`` applies the same design to signed LAT semantics. The
+PRESENT-3 regression proves the legacy weight-4 optimum, reconstructs the
+sign of each of its 48 correlations, and independently checks all transitions
+and graph boundaries. Deterministic-truncated and impossible propagation form
+the final M10.6c checkpoint.
 
 .. automodule:: claasp_next.representations.constraints.cp
    :members:
