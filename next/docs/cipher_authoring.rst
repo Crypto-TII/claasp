@@ -29,7 +29,7 @@ so rebuilding the same graph produces the same names. Pass
 ``component_id="round_output"`` when a stable semantic name helps analysis or
 documentation. Duplicate explicit names are rejected.
 
-The :mod:`claasp_next.utils` module provides reusable finite-field arithmetic,
+The ``claasp_next.utils`` module provides reusable finite-field arithmetic,
 fixed-width rotation, and matrix-layout helpers. Cipher classes should contain
 their round and key-schedule logic, not private copies of generic mathematics.
 The AES implementation is the current full-size example.

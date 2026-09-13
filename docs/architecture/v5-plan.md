@@ -27,6 +27,8 @@ The public API must make these workflows straightforward:
    recovery, through a small and consistent API.
 4. Inspect, reproduce, export, and cite the exact model and solver result
    behind an analysis.
+5. Let researchers prototype new cryptanalysis techniques by composing and
+   transforming models instead of rewriting a complete backend.
 
 Usability is a release requirement, not post-release polish. In particular:
 
@@ -46,6 +48,11 @@ Usability is a release requirement, not post-release polish. In particular:
 - Common analyses require only the cipher, analysis parameters, and optional
   solver choice. Backend IRs and solver command details remain available to
   advanced users but are not required for the usual workflow.
+- Research APIs must support inspecting, adding, removing, and replacing
+  constraints; choosing alternative component encodings globally or for one
+  component; composing objectives and bounds; and preserving provenance
+  through model transformations. Their detailed stable design is a dedicated
+  future review, but current architecture must not prevent these workflows.
 
 Every usability feature must have a short executable example and at least one
 representative cipher written with the public API. AES is the primary
@@ -197,6 +204,21 @@ Exit criterion: a new user can reach a successful AES evaluation from the
 landing page, and can find a minimal cipher-authoring and analysis example
 without first reading domain, port, selection, or lowering terminology.
 
+### M9.3: Separate user and developer guides
+
+- Build two independent HTML documentation sites from tested shared sources.
+- Keep the User Guide task-oriented: cipher construction, evaluation,
+  input/output formats, result verification, analysis, and result display.
+- Keep backend IRs, lowering/compilation, architecture, extension points, and
+  contribution workflows in the Developer Guide.
+- Record the future migration of the legacy ``Report`` class and the stable
+  researcher extension API without presenting unfinished internals as public
+  contracts.
+
+Exit criterion: both sites build warning-free and run their own doctests; a
+user need not navigate backend internals, while a contributor can find the
+compilation pipeline and cryptanalysis extension requirements directly.
+
 ### M10: Analysis and tooling migration
 
 M10 is split into ordered, reviewable increments. A later backend may reuse
@@ -323,6 +345,7 @@ superseded, and every deferral is recorded with rationale and ownership.
 - Add user-oriented examples and API documentation with each public feature.
 - Write examples as executable doctests rather than unverified snippets.
 - Build HTML documentation automatically using a modern responsive theme.
+- Publish independently navigable User Guide and Developer Guide HTML sites.
 - Run both documentation doctests and Python-module doctests in CI.
 - Treat warnings and broken internal references as CI failures.
 - Add mathematical background and backend guides as the related features
@@ -437,6 +460,7 @@ each synchronization.
 - [x] Friendly packed-integer evaluation with direct cipher methods and explicit traces.
 - [x] Graph-level analysis constraints, projections, results, and key-recovery facade.
 - [x] CLAASP-wide, AES-first documentation with separate v5/AO and advanced sections.
+- [x] Independent User Guide and Developer Guide build roots.
 
 ## Milestone tracker
 
@@ -457,6 +481,7 @@ each synchronization.
 | Legacy cipher regression parity (M9) | Achieved | Living matrix; AES-128/192/256, PRESENT-80/128, Speck32/64 and Speck64/96 |
 | Cipher-authoring usability (M9.1) | Achieved | Whole-port coercion, indexing, automatic IDs, reusable primitives, concise ciphers |
 | CLAASP-wide documentation (M9.2) | Achieved | AES-first introduction, simple analysis, and separate v5/AO section |
+| User/developer documentation split (M9.3) | Achieved | Two warning-free sites; research extension and Report requirements recorded |
 | Advanced polynomial lowering | Achieved | Direct/binary-chain policies, witnesses, and statistics |
 | Boolean CNF and DIMACS analysis layer | Achieved | Dependency-free IR, PRESENT witness validation, and exporter |
 | MiniSat execution adapter | Achieved | SAT/UNSAT results, named assumptions, timeouts, and dedicated CI |

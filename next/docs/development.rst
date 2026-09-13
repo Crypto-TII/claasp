@@ -37,26 +37,27 @@ Run executable examples embedded in public Python APIs:
 
    PYTHONPATH=src pytest -q --doctest-modules src/claasp_next -c pyproject.toml
 
-Run the user-guide doctests:
+Run both documentation suites:
 
 .. code-block:: console
 
-   sphinx-build -W --keep-going -b doctest docs docs/_build/doctest
+   make -C docs doctest
 
 Building the documentation
 --------------------------
 
-Build the HTML site, treating documentation warnings as failures:
+Build both independent HTML sites, treating warnings as failures:
 
 .. code-block:: console
 
-   sphinx-build -W --keep-going -b html docs docs/_build/html
+   make -C docs html
 
 On macOS, open it with:
 
 .. code-block:: console
 
-   open docs/_build/html/index.html
+   open docs/_build/user/user_guide.html
+   open docs/_build/developer/developer_guide.html
 
 The ``docs`` optional dependency group installs Sphinx and the Furo theme:
 

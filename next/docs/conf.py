@@ -1,11 +1,16 @@
 """Sphinx configuration for the Sage-independent CLAASP documentation."""
 
 from pathlib import Path
+import os
 import sys
 
 sys.path.insert(0, str(Path(__file__).parents[1] / "src"))
 
-project = "CLAASP next"
+guide = os.environ.get("CLAASP_DOCS_GUIDE", "user")
+if guide not in {"user", "developer"}:
+    raise ValueError("CLAASP_DOCS_GUIDE must be 'user' or 'developer'")
+
+project = "CLAASP"
 author = "TII Cryptanalysis Team"
 copyright = "Technology Innovation Institute LLC"
 version = "5.0"
@@ -20,12 +25,32 @@ extensions = [
 ]
 
 templates_path = ["_templates"]
-exclude_patterns = ["_build"]
+master_doc = f"{guide}_guide"
+exclude_patterns = ["_build", "index.rst"]
+if guide == "user":
+    exclude_patterns.extend([
+        "developer_guide.rst",
+        "development.rst",
+        "architecture.rst",
+        "extending_analysis.rst",
+        "api.rst",
+        "boolean_models.rst",
+        "polynomial_models.rst",
+        "smt_models.rst",
+    ])
+else:
+    exclude_patterns.extend([
+        "user_guide.rst",
+        "getting_started.rst",
+        "traditional_ciphers.rst",
+        "batch_evaluation.rst",
+        "displaying_results.rst",
+    ])
 nitpicky = True
 show_warning_types = True
 
 html_theme = "furo"
-html_title = "CLAASP 5 documentation"
+html_title = f"CLAASP {guide.title()} Guide"
 html_static_path = ["_static"]
 html_theme_options = {
     "light_css_variables": {
