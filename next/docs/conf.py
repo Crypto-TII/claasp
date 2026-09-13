@@ -32,6 +32,7 @@ if guide == "user":
         "developer_guide.rst",
         "development.rst",
         "architecture.rst",
+        "representation_architecture.rst",
         "extending_analysis.rst",
         "api.rst",
         "boolean_models.rst",

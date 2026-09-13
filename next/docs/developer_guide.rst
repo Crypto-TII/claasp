@@ -11,6 +11,7 @@ renderers.
    :caption: Architecture
 
    architecture
+   representation_architecture
    concepts
    extending_analysis
    development

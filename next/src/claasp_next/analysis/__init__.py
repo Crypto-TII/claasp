@@ -28,9 +28,11 @@ from claasp_next.analysis.truncated import (
     propagate_two_word_speck_round,
     truncated_modular_add,
 )
+from claasp_next.analysis.targets import AttackTarget
 
 __all__ = [
     "Analysis",
+    "AttackTarget",
     "AnalysisProblem",
     "AnalysisResult",
     "Equal",

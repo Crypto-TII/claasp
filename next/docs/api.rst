@@ -16,6 +16,24 @@ Core graph
 .. automodule:: claasp_next.core
    :members:
 
+Interpretations and annotations
+-------------------------------
+
+.. automodule:: claasp_next.interpretations
+   :members:
+
+.. automodule:: claasp_next.annotations
+   :members:
+
+Representations and drivers
+---------------------------
+
+.. automodule:: claasp_next.representations
+   :members:
+
+.. automodule:: claasp_next.drivers
+   :members:
+
 Boundary encodings
 ------------------
 

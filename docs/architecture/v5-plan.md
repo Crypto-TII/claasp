@@ -552,7 +552,8 @@ each synchronization.
 | Weighted SPN MILP trails (M10.5b) | Achieved | Complete DDT selectors over PRESENT-2; GLPK weight-4 optimum and independent 32-transition checker |
 | Weighted ARX MILP trails (M10.5c) | Achieved | Exact parity/support relation; GLPK validates four Speck32/64-4 transitions, weights, and signs |
 | Representation architecture (M10.5d) | In progress | M10.5d1 terminology/contracts, then execution, constraint, interpretation, and diagram migrations |
-| Interpretation/annotation contracts (M10.5d1) | Next | Typed graph annotations and distinct trace/trail concepts with executable documentation |
+| Interpretation/annotation contracts (M10.5d1) | Achieved | Extensible interpretations, immutable graph annotations, distinct trace types, representation artifacts, drivers, attack targets |
+| Execution representation migration (M10.5d2) | Next | Direct scalar/batch drivers behind stable cipher convenience methods |
 | SMT, MILP, and CP (M10.4–M10.6) | In progress | SMT achieved; MILP and CP retain shared semantics and independent-check requirements |
 | Statistical analysis (M10.7) | Planned | Avalanche and related legacy behavior |
 | Serialization, diagrams, transforms, compilers (M10.8) | Planned | Inventory-driven tooling migration |
