@@ -22,6 +22,7 @@ renderers.
    polynomial_models
    boolean_models
    smt_models
+   milp_models
 
 .. toctree::
    :maxdepth: 2

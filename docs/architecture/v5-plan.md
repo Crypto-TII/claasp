@@ -310,6 +310,12 @@ from the ARX/Speck legacy Z3 reference set (M10.4b3b).
 - Reproduce applicable legacy MILP weights, feasibility bounds, and trail
   checks.
 
+M10.5 is delivered incrementally. M10.5a establishes the dependency-free
+linear IR, deterministic LP export, optional open-source GLPK adapter, and
+independent witness validation. M10.5b lowers exact weighted S-box trails and
+restores the selected PRESENT optimum. M10.5c adds ARX relations and the
+selected Speck regressions before the backend milestone closes.
+
 #### M10.6: CP backend
 
 - Add MiniZinc/CP lowering and execution outside the core graph.
@@ -505,6 +511,8 @@ each synchronization.
 | SMT weighted SPN linear trails (M10.4b3a) | Achieved | PRESENT-3 LAT composition, Z3 UNSAT-3/SAT-4 proof, signs and checker |
 | SMT weighted ARX linear trails (M10.4b3b) | Achieved | Exact modular-add correlation relation; Z3 validates all four weight/sign transitions of the Speck32/64-4 reference |
 | MILP trail backend (M10.5) | Next | Solver-independent linear IR, open-source adapter, and selected legacy regressions |
+| Portable MILP foundation (M10.5a) | Achieved | Immutable linear IR, LP exporter, GLPK adapter, independent witness/objective checks, dedicated CI |
+| Weighted SPN MILP trails (M10.5b) | Next | Lower shared S-box semantics and prove the selected PRESENT optimum |
 | SMT, MILP, and CP (M10.4–M10.6) | In progress | SMT achieved; MILP and CP retain shared semantics and independent-check requirements |
 | Statistical analysis (M10.7) | Planned | Avalanche and related legacy behavior |
 | Serialization, diagrams, transforms, compilers (M10.8) | Planned | Inventory-driven tooling migration |

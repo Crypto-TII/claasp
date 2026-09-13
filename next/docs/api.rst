@@ -84,3 +84,12 @@ SMT models
 
 .. automodule:: claasp_next.smt.solvers
    :members:
+
+MILP models
+-----------
+
+.. automodule:: claasp_next.milp
+   :members:
+
+.. automodule:: claasp_next.milp.solvers
+   :members:
