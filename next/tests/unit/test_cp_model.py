@@ -1,7 +1,8 @@
 import pytest
 
 from claasp_next.drivers.solvers.minizinc import CPStatus, _parse_output
-from claasp_next.representations.constraints.cp import MiniZincModel
+from claasp_next.representations.constraints.cp import BooleanMiniZincLowerer, MiniZincModel
+from claasp_next.representations.constraints.sat import CNFFormula
 
 
 def test_minizinc_model_serializes_sections_in_language_order():
@@ -37,3 +38,21 @@ def test_minizinc_model_and_driver_validate_public_boundaries():
         MiniZincModel((), (), "satisfy;")
     with pytest.raises(RuntimeError, match="invalid JSON"):
         _parse_output("not-json\n----------\n")
+
+
+def test_boolean_lowering_preserves_cnf_names_signs_and_provenance():
+    formula = CNFFormula(
+        ("left_0", "right_0"),
+        ((1, -2), (-1, 2)),
+        ("forward", "backward"),
+    )
+
+    model = BooleanMiniZincLowerer().lower(formula)
+
+    assert model.declarations == ("var bool: v_left_0;", "var bool: v_right_0;")
+    assert model.constraints == (
+        "constraint v_left_0 \\/ not v_right_0;",
+        "constraint not v_left_0 \\/ v_right_0;",
+    )
+    assert model.provenance == formula.provenance
+    assert model.name_mapping == (("v_left_0", "left_0"), ("v_right_0", "right_0"))

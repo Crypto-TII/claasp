@@ -23,7 +23,7 @@ class AnalysisResult:
     backend: str
     statistics: Mapping[str, int]
     reproducibility: Mapping[str, str]
-    solver_result: SatResult
+    solver_result: object
 
     @property
     def is_satisfiable(self) -> bool:
@@ -110,8 +110,15 @@ class Analysis:
             for name, selection in problem.projections.items():
                 units = self._project(selection, solved.assignment)
                 projected[name] = self.cipher._encode_boundary(units, selection.value_type)
+        if getattr(solved.status, "value", None) == "unknown":
+            raise RuntimeError("solver returned unknown; no analysis result can be projected")
+        status = (
+            SatStatus.SATISFIABLE
+            if solved.is_satisfiable
+            else SatStatus.UNSATISFIABLE
+        )
         return AnalysisResult(
-            solved.status,
+            status,
             projected,
             solved.runtime_seconds,
             type(selected_solver).__name__,

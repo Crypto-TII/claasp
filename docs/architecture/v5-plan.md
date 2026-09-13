@@ -587,10 +587,10 @@ each synchronization.
 | Shared propagation consumers (M10.5d4c) | Achieved | PRESENT SMT/MILP composition accepts one PropagationProblem and queries identical per-component overrides |
 | Diagram representation (M10.5d5) | In progress | Annotated IR, TikZ/PDF, and temporary warned structural listing achieved; actual routed ASCII art remains |
 | SMT, MILP, and CP (M10.4–M10.6) | In progress | SMT and MILP achieved; CP is next and retains shared semantics and independent-check requirements |
-| CP backend (M10.6) | In progress | M10.6a portable MiniZinc foundation implemented; cipher and trail lowering follow |
+| CP backend (M10.6) | In progress | Portable foundation and cipher/recovery lowering achieved; shared trail lowering follows |
 | Portable CP foundation (M10.6a) | Achieved | Immutable MiniZinc IR, deterministic export, CLI driver, portable JSON results, external SAT/UNSAT tests |
-| CP cipher lowering and recovery (M10.6b) | Next | Typed component lowering, named projections, legacy cipher fixture, independently verified recovery |
-| Shared CP trail lowering (M10.6c) | Planned | PropagationProblem consumer for differential, linear, truncated, and impossible semantics |
+| CP cipher lowering and recovery (M10.6b) | Achieved | Exact CNF-to-CP lowering reuses typed component semantics; graph-name projections; reduced recovery and full Speck legacy fixture independently evaluated |
+| Shared CP trail lowering (M10.6c) | Next | PropagationProblem consumer for differential, linear, truncated, and impossible semantics |
 | Advanced CP analyses (M10.6d) | Planned | ARX optimization, wordwise/semi-deterministic, boomerang, differential-linear, continuous inventory |
 | Statistical analysis (M10.7) | Planned | Avalanche and related legacy behavior |
 | Serialization, diagrams, transforms, compilers (M10.8) | Planned | Inventory-driven tooling migration |

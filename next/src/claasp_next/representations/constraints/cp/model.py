@@ -13,6 +13,7 @@ class MiniZincModel:
     includes: tuple[str, ...] = ()
     outputs: tuple[str, ...] = ()
     provenance: tuple[str, ...] = ()
+    name_mapping: tuple[tuple[str, str], ...] = ()
 
     def __post_init__(self) -> None:
         sections = (self.includes, self.declarations, self.constraints, self.outputs)
@@ -20,6 +21,10 @@ class MiniZincModel:
             raise TypeError("MiniZinc model sections must be tuples")
         if any(not isinstance(line, str) or not line.strip() for section in sections for line in section):
             raise ValueError("MiniZinc model lines must be nonempty strings")
+        if len({encoded for encoded, _ in self.name_mapping}) != len(self.name_mapping):
+            raise ValueError("encoded MiniZinc names must be unique")
+        if len({logical for _, logical in self.name_mapping}) != len(self.name_mapping):
+            raise ValueError("logical variable names must be unique")
         if not isinstance(self.solve, str) or not self.solve.strip().startswith("solve "):
             raise ValueError("solve must be a MiniZinc solve item")
 

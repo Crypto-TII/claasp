@@ -11,6 +11,7 @@ from tempfile import TemporaryDirectory
 from time import monotonic
 
 from claasp_next.representations.constraints.cp import MiniZincModel
+from claasp_next.representations.constraints.sat import CNFFormula
 
 
 class CPStatus(str, Enum):
@@ -38,6 +39,20 @@ class CPResult:
 
         return self.status is CPStatus.SATISFIED
 
+    @property
+    def is_satisfiable(self) -> bool:
+        """SAT-compatible spelling used by the common analysis facade."""
+
+        return self.is_satisfied
+
+    @property
+    def assignment(self) -> Mapping[str, int] | None:
+        """Expose Boolean solution values through the common solver contract."""
+
+        if self.values is None:
+            return None
+        return {name: int(value) if isinstance(value, bool) else value for name, value in self.values.items()}
+
 
 class MiniZincSolver:
     """Execute a ``MiniZincModel`` through the external MiniZinc CLI."""
@@ -58,11 +73,15 @@ class MiniZincSolver:
         self.executable = executable
         self.timeout_seconds = timeout_seconds
 
-    def solve(self, model: MiniZincModel) -> CPResult:
-        """Run MiniZinc and parse its standard JSON output mode."""
+    def solve(self, model: MiniZincModel | CNFFormula) -> CPResult:
+        """Run a MiniZinc or portable CNF representation."""
 
+        if isinstance(model, CNFFormula):
+            from claasp_next.representations.constraints.cp import BooleanMiniZincLowerer
+
+            model = BooleanMiniZincLowerer().lower(model)
         if not isinstance(model, MiniZincModel):
-            raise TypeError("model must be a MiniZincModel")
+            raise TypeError("model must be a MiniZincModel or CNFFormula")
         executable = shutil.which(self.executable)
         if executable is None:
             raise FileNotFoundError(f"MiniZinc executable {self.executable!r} was not found")
@@ -83,6 +102,9 @@ class MiniZincSolver:
                 "MiniZinc failed: " + (completed.stderr.strip() or completed.stdout.strip())
             )
         status, values = _parse_output(completed.stdout)
+        if values is not None and model.name_mapping:
+            logical_names = dict(model.name_mapping)
+            values = {logical_names.get(name, name): value for name, value in values.items()}
         return CPResult(status, values, elapsed, self.solver, completed.stdout, completed.stderr)
 
 
