@@ -467,12 +467,23 @@ def get_number_of_inputs(component):
     return number_of_inputs
 
 
+def _needs_recompile(object_path, source_path):
+    """Whether ``object_path`` is missing or older than ``source_path``.
+
+    A leftover generic ``.o`` from a previous (e.g. crashed, or PID-reused,
+    see ``process_tag``) process must not be silently reused once its source
+    ``.c`` file has changed since it was compiled -- that would link a stale
+    binary against fresh cipher-specific code.
+    """
+    return not os.path.exists(object_path) or os.path.getmtime(object_path) < os.path.getmtime(source_path)
+
+
 def generate_evaluate_c_code_shared_library(cipher, intermediate_output, verbosity):
     name = evaluate_c_name(cipher)
     generic_o = generic_c_functions_o_name(cipher)
     cipher_word_size = cipher.is_power_of_2_word_based()
     if cipher_word_size:
-        if not os.path.exists(TII_C_LIB_PATH + generic_o):
+        if _needs_recompile(TII_C_LIB_PATH + generic_o, TII_C_LIB_PATH + "generic_word_based_c_functions.c"):
             call(["gcc", "-w", "-c", TII_C_LIB_PATH + "generic_word_based_c_functions.c", "-o",
                   TII_C_LIB_PATH + generic_o, "-D", f"word_size={cipher_word_size}"])
 
@@ -490,7 +501,7 @@ def generate_evaluate_c_code_shared_library(cipher, intermediate_output, verbosi
               f"word_size={cipher_word_size}"])
 
     else:
-        if not os.path.exists(TII_C_LIB_PATH + generic_o):
+        if _needs_recompile(TII_C_LIB_PATH + generic_o, TII_C_LIB_PATH + "generic_bit_based_c_functions.c"):
             call(["gcc", "-w", "-c", TII_C_LIB_PATH + "generic_bit_based_c_functions.c",
                   "-o", TII_C_LIB_PATH + generic_o])
 

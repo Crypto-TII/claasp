@@ -23,8 +23,8 @@ void print_bitstring(BitString* b, uint8_t base);
 bool equals(BitString *b1, BitString *b2);
 void delete_bitstring(BitString *b);
 void delete_multiple_bitstrings(int n, ...);
-BitString* select_bits(uint8_t n, BitString* b[n], uint16_t* bit_positions[n], uint16_t component_output_size);
-BitString** select_bits_and_split(uint8_t n, BitString* b[n], uint16_t* bit_positions[n], uint8_t number_of_operands);
+BitString* select_bits(uint16_t n, BitString* b[n], uint16_t* bit_positions[n], uint16_t component_output_size);
+BitString** select_bits_and_split(uint16_t n, BitString* b[n], uint16_t* bit_positions[n], uint8_t number_of_operands);
 
 //Constructors
 BitString* zero_bitstring(uint16_t bit_size);
