@@ -814,12 +814,14 @@ class Sbox(Component):
 
         return cp_declarations, cp_constraints
 
-    def cp_deterministic_truncated_xor_differential_constraints(self, sbox_cache, inverse=False):
+    def cp_deterministic_truncated_xor_differential_constraints(self, sbox_cache=None, inverse=False):
         """
         Return lists of declarations and constraints for SBOX component for CP deterministic truncated xor differential.
 
         INPUT:
 
+        - ``sbox_cache`` -- **list** (default: `None`); cache of already processed S-boxes, used to avoid
+          redundant table declarations; when `None`, a fresh empty list is used
         - ``inverse`` -- **boolean** (default: `False`)
 
         EXAMPLES::
@@ -836,6 +838,8 @@ class Sbox(Component):
             [['0,0,0,0,0,0,0,0,1,2,1,1,0,1,0,2,1,0,0,1,1,2,0,1,1,0,0,2,0,1,1,0,1,2,1,0,1,1,0,2,1,1,1,1,1,1,0,0,0,0,2,2,2,2,0,2,0,2,2,0,0,2,2,2,2,2,2,0,0,2,0,2,2,0,2,2,2,2,2,2,0,2,2,2,2,2,2,2,2,2,0,2,1,2,2,1,2,0,1,2,1,2,2,2,1,2,2,2,0,1,2,2,2,2,2,1,0,2,1,2,2,1,2,2,2,2,2,1,1,2,0,2,1,0,2,2,2,2,1,2,0,2,2,1,1,2,2,2,2,2,1,2,1,2,2,0,1,1,2,2,2,2',
             'sbox_0_1']]
         """
+        if sbox_cache is None:
+            sbox_cache = []
         output_id_link = self.id
         if inverse:
             inv_output_id_link = f"inverse_{self.id}"
@@ -871,7 +875,29 @@ class Sbox(Component):
 
         return cp_declarations, cp_constraints, sbox_cache
 
-    def cp_deterministic_truncated_xor_differential_trail_constraints(self, sbox_cache, inverse=False):
+    def cp_deterministic_truncated_xor_differential_trail_constraints(self, sbox_cache=None, inverse=False):
+        """
+        Return lists of declarations and constraints for SBOX component for CP deterministic truncated xor
+        differential trail search.
+
+        Delegates to :meth:`cp_deterministic_truncated_xor_differential_constraints`.
+
+        INPUT:
+
+        - ``sbox_cache`` -- **list** (default: `None`); cache of already processed S-boxes, used to avoid
+          redundant table declarations; when `None`, a fresh empty list is used
+        - ``inverse`` -- **boolean** (default: `False`)
+
+        EXAMPLES::
+
+            sage: from claasp.components.sbox_component import Sbox
+            sage: sbox = [1, 2, 3, 4, 0, 7, 6, 5]
+            sage: sbox_component = Sbox(0, 1, ['xor_0_0'], [[0, 1, 2, 3]], 4, sbox)
+            sage: declarations, constraints, sbox_cache = sbox_component.cp_deterministic_truncated_xor_differential_trail_constraints()
+            sage: sbox_cache
+            [['0,0,0,0,0,0,0,0,1,2,1,1,0,1,0,2,1,0,0,1,1,2,0,1,1,0,0,2,0,1,1,0,1,2,1,0,1,1,0,2,1,1,1,1,1,1,0,0,0,0,2,2,2,2,0,2,0,2,2,0,0,2,2,2,2,2,2,0,0,2,0,2,2,0,2,2,2,2,2,2,0,2,2,2,2,2,2,2,2,2,0,2,1,2,2,1,2,0,1,2,1,2,2,2,1,2,2,2,0,1,2,2,2,2,2,1,0,2,1,2,2,1,2,2,2,2,2,1,1,2,0,2,1,0,2,2,2,2,1,2,0,2,2,1,1,2,2,2,2,2,1,2,1,2,2,0,1,1,2,2,2,2',
+            'sbox_0_1']]
+        """
         return self.cp_deterministic_truncated_xor_differential_constraints(sbox_cache, inverse)
 
     def cp_semi_deterministic_truncated_xor_differential_constraints(self, sbox_cache=None, inverse=False):

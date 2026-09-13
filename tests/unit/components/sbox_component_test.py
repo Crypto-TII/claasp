@@ -11,9 +11,23 @@ from claasp.cipher_modules.models.milp.milp_models.milp_xor_linear_model import 
 from claasp.cipher_modules.models.sat.sat_model import SatModel
 from claasp.cipher_modules.models.smt.smt_model import SmtModel
 from claasp.ciphers.single_component_ciphers.sbox_cipher import SboxCipher
-from claasp.components.sbox_component import Sbox
+from claasp.components.sbox_component import (
+    Sbox,
+    cp_update_ddt_valid_probabilities,
+    cp_update_lat_valid_probabilities,
+)
 
 PRESENT_SBOX = [12, 5, 6, 11, 9, 0, 10, 13, 3, 14, 15, 8, 4, 7, 1, 2]
+
+
+class _SpnDummyCipher:
+    def is_spn(self):
+        return True
+
+
+class _NonSpnDummyCipher:
+    def is_spn(self):
+        return False
 
 
 def test_algebraic_polynomials():
@@ -51,6 +65,119 @@ def test_cp_deterministic_truncated_xor_differential_constraints():
     sbox_component = Sbox(0, 1, ["xor_0_0"], [[0, 1, 2, 3]], 4, [1, 2, 3, 4, 0, 7, 6, 5])
     declarations, constraints, sbox_cache = sbox_component.cp_deterministic_truncated_xor_differential_constraints(
         sbox_cache=[]
+    )
+
+    assert declarations[0].startswith("array [1..27, 1..6] of int: table_sbox_0_1")
+    assert constraints == [
+        "constraint table([xor_0_0[0]]++[xor_0_0[1]]++[xor_0_0[2]]++[xor_0_0[3]]++[sbox_0_1[0]]++"
+        "[sbox_0_1[1]]++[sbox_0_1[2]]++[sbox_0_1[3]], table_sbox_0_1);"
+    ]
+    assert sbox_cache[0][1] == "sbox_0_1"
+
+
+def test_cp_update_ddt_valid_probabilities_spn_cipher():
+    component = Sbox(0, 0, ["xor_0_0"], [[0, 1, 2, 3]], 4, PRESENT_SBOX)
+    cp_declarations, table_items, valid_probabilities, sbox_cache = [], [], set(), []
+
+    cp_update_ddt_valid_probabilities(
+        _SpnDummyCipher(), component, 4, cp_declarations, table_items, valid_probabilities, sbox_cache
+    )
+
+    assert len(valid_probabilities) > 0
+    assert cp_declarations == [
+        "constraint (xor_0_0[0]+xor_0_0[1]+xor_0_0[2]+xor_0_0[3] > 0) = word_sbox_0_0[0];",
+        "array[0..0] of var 0..1: word_sbox_0_0;",
+    ]
+    assert table_items == ["[word_sbox_0_0[s] | s in 0..0]"]
+    assert sbox_cache == [(PRESENT_SBOX, "sbox_0_0")]
+
+
+def test_cp_update_ddt_valid_probabilities_non_spn_cipher_skips_word_declarations():
+    component = Sbox(0, 0, ["xor_0_0"], [[0, 1, 2, 3]], 4, PRESENT_SBOX)
+    cp_declarations, table_items, valid_probabilities, sbox_cache = [], [], set(), []
+
+    cp_update_ddt_valid_probabilities(
+        _NonSpnDummyCipher(), component, 4, cp_declarations, table_items, valid_probabilities, sbox_cache
+    )
+
+    assert len(valid_probabilities) > 0
+    assert cp_declarations == []
+    assert table_items == []
+    assert sbox_cache == [(PRESENT_SBOX, "sbox_0_0")]
+
+
+def test_cp_update_ddt_valid_probabilities_reuses_cache_for_duplicate_sbox():
+    first_component = Sbox(0, 0, ["xor_0_0"], [[0, 1, 2, 3]], 4, PRESENT_SBOX)
+    second_component = Sbox(0, 1, ["xor_0_0"], [[4, 5, 6, 7]], 4, PRESENT_SBOX)
+    sbox_cache = []
+
+    cp_update_ddt_valid_probabilities(_SpnDummyCipher(), first_component, 4, [], [], set(), sbox_cache)
+    assert len(sbox_cache) == 1
+
+    cp_declarations, table_items, valid_probabilities = [], [], set()
+    cp_update_ddt_valid_probabilities(
+        _SpnDummyCipher(), second_component, 4, cp_declarations, table_items, valid_probabilities, sbox_cache
+    )
+
+    # the S-box description was already cached, so no new cache entry is appended and no new
+    # probabilities are recomputed; only the SPN word-activity declarations are (re)generated
+    assert len(sbox_cache) == 1
+    assert valid_probabilities == set()
+    assert cp_declarations == [
+        "constraint (xor_0_0[4]+xor_0_0[5]+xor_0_0[6]+xor_0_0[7] > 0) = word_sbox_0_1[0];",
+        "array[0..0] of var 0..1: word_sbox_0_1;",
+    ]
+
+
+def test_cp_update_lat_valid_probabilities():
+    component = Sbox(0, 0, ["xor_0_0"], [[0, 1, 2, 3]], 4, PRESENT_SBOX)
+    valid_probabilities, sbox_cache = set(), []
+
+    cp_update_lat_valid_probabilities(component, valid_probabilities, sbox_cache)
+
+    assert len(valid_probabilities) > 0
+    assert sbox_cache == [(PRESENT_SBOX, "sbox_0_0")]
+
+
+def test_cp_update_lat_valid_probabilities_reuses_cache_for_duplicate_sbox():
+    first_component = Sbox(0, 0, ["xor_0_0"], [[0, 1, 2, 3]], 4, PRESENT_SBOX)
+    second_component = Sbox(0, 1, ["xor_0_0"], [[4, 5, 6, 7]], 4, PRESENT_SBOX)
+    valid_probabilities, sbox_cache = set(), []
+
+    cp_update_lat_valid_probabilities(first_component, valid_probabilities, sbox_cache)
+    assert len(sbox_cache) == 1
+
+    cp_update_lat_valid_probabilities(second_component, valid_probabilities, sbox_cache)
+
+    # the S-box description was already cached, so no new cache entry is appended
+    assert len(sbox_cache) == 1
+
+
+def test_cp_deterministic_truncated_xor_differential_constraints_default_sbox_cache():
+    sbox_component = Sbox(0, 1, ["xor_0_0"], [[0, 1, 2, 3]], 4, [1, 2, 3, 4, 0, 7, 6, 5])
+
+    declarations, constraints, sbox_cache = sbox_component.cp_deterministic_truncated_xor_differential_constraints()
+
+    assert declarations[0].startswith("array [1..27, 1..6] of int: table_sbox_0_1")
+    assert sbox_cache[0][1] == "sbox_0_1"
+
+
+def test_cp_deterministic_truncated_xor_differential_trail_constraints_default_sbox_cache():
+    sbox_component = Sbox(0, 1, ["xor_0_0"], [[0, 1, 2, 3]], 4, [1, 2, 3, 4, 0, 7, 6, 5])
+
+    declarations, constraints, sbox_cache = (
+        sbox_component.cp_deterministic_truncated_xor_differential_trail_constraints()
+    )
+
+    assert declarations[0].startswith("array [1..27, 1..6] of int: table_sbox_0_1")
+    assert sbox_cache[0][1] == "sbox_0_1"
+
+
+def test_cp_deterministic_truncated_xor_differential_trail_constraints_explicit_sbox_cache():
+    sbox_component = Sbox(0, 1, ["xor_0_0"], [[0, 1, 2, 3]], 4, [1, 2, 3, 4, 0, 7, 6, 5])
+
+    declarations, constraints, sbox_cache = (
+        sbox_component.cp_deterministic_truncated_xor_differential_trail_constraints(sbox_cache=[])
     )
 
     assert declarations[0].startswith("array [1..27, 1..6] of int: table_sbox_0_1")
