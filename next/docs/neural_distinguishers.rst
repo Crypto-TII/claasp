@@ -68,7 +68,7 @@ Round and component projections
 Legacy CLAASP could train a distinguisher not only on a primitive's final
 output but also on an intermediate round's state, a round key, or an
 arbitrary component -- matching component ids against substrings such as
-``round_output``, ``round_key_output``, and ``cipher_output`` in
+``round_output``, ``round_key_output``, and the final output id in
 ``claasp.cipher_modules.neural_network_tests``. The v5 replacements,
 ``component_output_dataset`` and ``xor_differential_component_dataset``,
 cover the same ground without a description-string match: they read the

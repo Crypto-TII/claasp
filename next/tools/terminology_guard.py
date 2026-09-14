@@ -66,6 +66,13 @@ _ALLOWED_PATTERN = re.compile(
     "|".join(re.escape(phrase) for phrase in sorted(ALLOWED_PHRASES, key=len, reverse=True)),
     re.IGNORECASE,
 )
+#: Legacy CLAASP 4 module/path citations such as ``claasp.cipher_modules...``
+#: or ``claasp/ciphers/stream_ciphers/trivium_stream_cipher.py``. Legacy paths
+#: and evidence are explicitly allowed to keep their real spelling (see
+#: "Primitive terminology and catalogue taxonomy" in v5-plan.md); the legacy
+#: top-level package is always spelled ``claasp`` followed immediately by a
+#: dot or slash, which never collides with the v5 package ``claasp_next``.
+_LEGACY_PATH_PATTERN = re.compile(r"\bclaasp[./][\w./]*")
 _CIPHER_PATTERN = re.compile("ciphers?", re.IGNORECASE)
 
 
@@ -84,7 +91,8 @@ class Violation:
 def _mask_allowed_phrases(text: str) -> str:
     """Replace every allowed phrase with same-length filler so it cannot match."""
 
-    return _ALLOWED_PATTERN.sub(lambda match: "#" * len(match.group(0)), text)
+    text = _ALLOWED_PATTERN.sub(lambda match: "#" * len(match.group(0)), text)
+    return _LEGACY_PATH_PATTERN.sub(lambda match: "#" * len(match.group(0)), text)
 
 
 def _iter_scanned_files(roots: tuple[str, ...]) -> list[Path]:

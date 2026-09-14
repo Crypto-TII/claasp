@@ -52,6 +52,11 @@ else:
     ])
 nitpicky = True
 show_warning_types = True
+# autodoc renders a Generic type parameter's bound TypeVar as a py:class
+# cross-reference, but a TypeVar is not itself a documented class.
+nitpick_ignore = [
+    ("py:class", "claasp_next.analysis.statistical_results.StatisticalReport"),
+]
 
 html_theme = "furo"
 html_title = f"CLAASP {guide.title()} Guide"

@@ -46,7 +46,7 @@ def _trace_bits(primitive: Primitive, source_id: str, value: tuple[int, ...]) ->
     ``source_id`` (for example one 16-bit word per Speck state half); each
     unit is expanded to its own canonical bit width and the results are
     concatenated in order, matching the flat encoding every other dataset in
-    this module uses for cipher inputs and outputs.
+    this module uses for primitive inputs and outputs.
     """
 
     scalar_width = primitive.port(source_id).value_type.domain.encoded_bit_size
@@ -254,13 +254,13 @@ def round_component_ids(primitive: Primitive, round_number: int) -> tuple[str, .
     A convenience selector for :func:`component_output_dataset` and
     :func:`xor_differential_component_dataset`.  Passing this tuple as their
     ``component_ids`` argument projects the primitive's full round state
-    (round output and, where the cipher interleaves it in the same round,
+    (round output and, where the primitive interleaves it in the same round,
     the round key), mirroring legacy's ``round_output``/``round_key_output``
     intermediate-output components (see
     ``claasp.cipher_modules.neural_network_tests``) without requiring the
     graph to declare an explicit concatenated intermediate-output component.
     Callers that need only the state or only the key schedule can filter the
-    returned ids (for example by a cipher's own component-id prefix
+    returned ids (for example by a primitive's own component-id prefix
     convention) before passing them on.
     """
 

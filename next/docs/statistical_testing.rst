@@ -118,7 +118,7 @@ instead of fabricating a failed scientific observation.
 The optional Dieharder adapter streams a dataset to an isolated temporary
 file and invokes the external program without a shell. It records the exact
 dataset hash, stable command arguments, tool version, runtime, and captured
-diagnostics in a :class:`~claasp_next.analysis.StatisticalTestRun`. For
+diagnostics in a ``StatisticalTestRun``. For
 example, ``DieharderDriver(timeout_seconds=10).run(stream, test=0)`` runs one
 bounded test when ``dieharder`` is installed. A dedicated CI job exercises
 the real executable; importing and parsing results never requires it.
