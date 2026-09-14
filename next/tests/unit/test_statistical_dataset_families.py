@@ -1,3 +1,5 @@
+from io import BytesIO
+
 import pytest
 
 from claasp_next.analysis.statistical_datasets import (
@@ -34,6 +36,39 @@ def test_cbc_dataset_chains_outputs_and_serializes_lazily(speck):
 
     assert tuple(item.value for item in records) == (0, 0, 0)
     assert tuple(dataset.iter_bytes()) == (b"\x00\x00\x00\x00",) * 3
+
+    stream = BytesIO()
+    assert dataset.write_binary(stream) == 12
+    assert stream.getvalue() == b"\x00" * 12
+
+    manifest = dataset.manifest()
+    assert manifest.primitive == "speck"
+    assert manifest.realization == "default"
+    assert manifest.record_count == 3
+    assert manifest.byte_count == 12
+    assert manifest.sha256 == "15ec7bf0b50732b49f8228e07d24365338f9e3ab994b00af08e5a3bffe55fd8b"
+    assert manifest.to_json().endswith("\n")
+    assert '"byte_order":"big"' in manifest.to_json()
+    assert '"bit_order":"msb_first"' in manifest.to_json()
+
+
+def test_manifest_binds_construction_and_realization_provenance():
+    from claasp_next.ciphers import AESBlockCipher
+
+    dataset = cbc_dataset(
+        AESBlockCipher(number_of_rounds=1, realization="algebraic"),
+        "plaintext",
+        1,
+        1,
+        fixed_inputs={"key": 0},
+    )
+    manifest = dataset.manifest()
+
+    assert manifest.primitive == "aes"
+    assert manifest.realization == "algebraic"
+    assert manifest.serialization == "raw_fixed_width_outputs_v1"
+    assert manifest.record_order == "sample_major_then_block"
+    assert manifest.fixed_inputs == (("key", 0),)
 
 
 def test_density_families_have_exact_weights_and_are_complements(speck):

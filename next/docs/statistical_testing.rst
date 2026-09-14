@@ -32,9 +32,8 @@ output bits in MSB-first order:
    (False, 'empirical_paired_evaluation')
 
 The probability matrix is empirical evidence, never a proof of the strict
-avalanche criterion. Later M10.12 checkpoints add streaming serialization,
-dataset hashes, the remaining legacy dataset families, and optional NIST STS
-and Dieharder drivers and parsers.
+avalanche criterion. Later M10.12 checkpoints add the remaining optional NIST
+STS and Dieharder drivers and parsers.
 
 Streaming dataset families
 --------------------------
@@ -65,3 +64,29 @@ Density datasets contain weight zero and one inputs plus a seeded ratio of
 weight-two inputs; high density uses their bitwise complements. The v5 seeded
 selection removes the legacy generator's nondeterministic subset behavior.
 Round-specific streams await the stable public trace-projection API.
+
+Serialization and identity
+--------------------------
+
+Statistical streams serialize as raw fixed-width output records in
+sample-major, then block-major order. Logical bits are MSB-first and bytes are
+big-endian. The manifest binds those conventions to construction parameters,
+the primitive realization, and the SHA-256 digest of the exact byte stream:
+
+.. doctest::
+
+   >>> stream = cbc_dataset(
+   ...     primitive, "plaintext", 1, 3, seed=7, fixed_inputs={"key": 0}
+   ... )
+   >>> manifest = stream.manifest()
+   >>> manifest.record_count, manifest.byte_count
+   (3, 12)
+   >>> manifest.sha256
+   '15ec7bf0b50732b49f8228e07d24365338f9e3ab994b00af08e5a3bffe55fd8b'
+   >>> manifest.bit_order, manifest.byte_order, manifest.record_order
+   ('msb_first', 'big', 'sample_major_then_block')
+
+``write_binary(file)`` writes incrementally and returns the byte count;
+``manifest.to_json()`` provides canonical compact JSON suitable for storing
+beside that file. Computing a digest re-evaluates the lazy dataset and never
+changes global random state.

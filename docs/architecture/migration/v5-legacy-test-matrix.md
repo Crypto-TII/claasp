@@ -130,6 +130,14 @@ Each cryptanalytic row must say whether its expected result is an optimum,
 feasibility witness, or bound; record publication or legacy origin and solver
 version; and name the independent semantic checker used by v5.
 
+M10.12b–c supersede the legacy eager NumPy dataset containers with lazy,
+re-iterable correlation, zero-IV CBC, low-density, and high-density streams.
+The v5 stream format is fixed-width raw output bytes with explicit MSB-first,
+big-endian, sample-major/block-major conventions; its stable JSON manifest
+records seed, construction parameters, primitive realization, and SHA-256.
+Legacy NIST STS/Dieharder parsing and executable integration remain scheduled
+for the next M10.12 checkpoint.
+
 ## CP models
 
 | Legacy test | Semantic assertions and provenance | Disposition | v5 coverage |

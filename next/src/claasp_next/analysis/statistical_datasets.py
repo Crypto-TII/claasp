@@ -9,9 +9,12 @@ from __future__ import annotations
 
 from collections.abc import Iterator, Mapping
 from dataclasses import dataclass
+from hashlib import sha256
 from itertools import combinations
+import json
 from math import ceil, comb
 from random import Random
+from typing import BinaryIO
 
 from claasp_next.analysis.datasets import packed_bit_width
 from claasp_next.graph import Cipher
@@ -27,6 +30,38 @@ class StatisticalRecord:
 
 
 @dataclass(frozen=True, slots=True)
+class StatisticalDatasetManifest:
+    """Portable identity and provenance for one serialized byte stream."""
+
+    schema_version: int
+    primitive: str
+    realization: str
+    kind: str
+    input_name: str
+    sample_count: int
+    block_count: int
+    record_count: int
+    output_bit_count: int
+    byte_count: int
+    seed: int
+    ratio: float
+    fixed_inputs: tuple[tuple[str, int], ...]
+    method: str
+    bit_order: str
+    byte_order: str
+    record_order: str
+    serialization: str
+    sha256: str
+
+    def to_json(self) -> str:
+        """Return deterministic UTF-8 JSON terminated by one newline."""
+
+        payload = {field: getattr(self, field) for field in self.__dataclass_fields__}
+        payload["fixed_inputs"] = dict(self.fixed_inputs)
+        return json.dumps(payload, sort_keys=True, separators=(",", ":")) + "\n"
+
+
+@dataclass(frozen=True, slots=True)
 class StatisticalDataset:
     """A lazy deterministic dataset backed by public primitive evaluation."""
 
@@ -39,6 +74,10 @@ class StatisticalDataset:
     ratio: float = 1.0
     fixed_inputs: tuple[tuple[str, int], ...] = ()
     method: str = "python_random_stream_v1"
+
+    @property
+    def record_count(self) -> int:
+        return self.sample_count * self.block_count
 
     @property
     def output_bit_count(self) -> int:
@@ -62,6 +101,52 @@ class StatisticalDataset:
         size = width // 8
         for record in self:
             yield record.value.to_bytes(size, "big")
+
+    def write_binary(self, stream: BinaryIO) -> int:
+        """Write raw fixed-width records to ``stream`` and return byte count."""
+
+        written = 0
+        for chunk in self.iter_bytes():
+            result = stream.write(chunk)
+            if result is not None and result != len(chunk):
+                raise OSError("statistical dataset stream accepted a partial record")
+            written += len(chunk)
+        return written
+
+    def digest(self) -> str:
+        """Return SHA-256 of the exact raw byte stream without materializing it."""
+
+        digest = sha256()
+        for chunk in self.iter_bytes():
+            digest.update(chunk)
+        return digest.hexdigest()
+
+    def manifest(self) -> StatisticalDatasetManifest:
+        """Describe the stream construction, encoding, provenance, and hash."""
+
+        realization = getattr(getattr(self.primitive, "realization", None), "name", "default")
+        byte_count = self.record_count * (self.output_bit_count // 8)
+        return StatisticalDatasetManifest(
+            schema_version=1,
+            primitive=self.primitive.family_name,
+            realization=realization,
+            kind=self.kind,
+            input_name=self.input_name,
+            sample_count=self.sample_count,
+            block_count=self.block_count,
+            record_count=self.record_count,
+            output_bit_count=self.output_bit_count,
+            byte_count=byte_count,
+            seed=self.seed,
+            ratio=self.ratio,
+            fixed_inputs=self.fixed_inputs,
+            method=self.method,
+            bit_order="msb_first",
+            byte_order="big",
+            record_order="sample_major_then_block",
+            serialization="raw_fixed_width_outputs_v1",
+            sha256=self.digest(),
+        )
 
     def iter_selected_inputs(self) -> Iterator[int]:
         """Yield the selected input sequence for a density dataset."""
@@ -228,5 +313,5 @@ def _dataset(primitive, kind, input_name, samples, blocks, seed, ratio, fixed_in
     if unexpected:
         raise ValueError(f"fixed_inputs contains selected or unknown inputs: {sorted(unexpected)}")
     return StatisticalDataset(
-        primitive, kind, input_name, samples, blocks, seed, ratio, tuple(fixed.items())
+        primitive, kind, input_name, samples, blocks, seed, ratio, tuple(sorted(fixed.items()))
     )
