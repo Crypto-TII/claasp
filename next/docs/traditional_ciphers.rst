@@ -76,6 +76,35 @@ a ``LinearMap`` over the byte field, and AddRoundKey is field addition.
 ``number_of_rounds`` constructs a prefix of the standard cipher; MixColumns
 is omitted only in standard round 10.
 
+AES is also the first primitive with interchangeable graph realizations. The
+default ``lookup`` realization exposes each SubBytes operation as an ``SBox``;
+the ``algebraic`` realization exposes field inversion and the binary affine
+map as separate reusable components. They have the same parameters and
+external input/output contract:
+
+.. doctest::
+
+   >>> lookup = AESBlockCipher(realization="lookup")
+   >>> algebraic = AESBlockCipher(realization="algebraic")
+   >>> lookup.evaluate(plaintext, key) == algebraic.evaluate(plaintext, key)
+   True
+   >>> [item.name for item in AESBlockCipher.available_realizations()]
+   ['lookup', 'algebraic']
+
+Users may request a realization explicitly. An analysis compiler can instead
+select deterministically from declared capabilities:
+
+.. doctest::
+
+   >>> AESBlockCipher.for_capabilities({"sbox_semantics"}).realization.name
+   'lookup'
+   >>> AESBlockCipher.for_capabilities({"algebraic_semantics"}).realization.name
+   'algebraic'
+
+Automatic selection is part of reproducibility: results must retain the
+chosen realization, and an unsupported requirement raises an error rather
+than silently changing the analysis.
+
 PRESENT
 -------
 

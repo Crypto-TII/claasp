@@ -152,3 +152,20 @@ global or per-component replacement. Representation compilers consume this
 problem directly. The PRESENT SMT and MILP compilers share registry-selected
 component semantics; their cipher-first constructors are convenience wrappers
 which create an equivalent propagation problem.
+
+Primitive realizations are separate from execution engines
+----------------------------------------------------------
+
+A realization is a typed graph for one mathematical primitive. It is not an
+execution engine: AES lookup and algebraic graphs are realizations, whereas
+Python, NumPy, C, and CUDA are potential engines that execute a compatible
+graph. ``RealizationDescriptor`` publishes capabilities and structural
+features so a task can select deterministically without inspecting component
+names.
+
+Explicit user selection always takes precedence. Task-directed selection must
+fail when no realization supplies every requested capability, and results
+retain the descriptor through their evaluated graph. Equivalent realizations
+share boundary semantics but may have unrelated internal component identities;
+trails and traces therefore pin their realization rather than attempting an
+implicit component-by-component translation.

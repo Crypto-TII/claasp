@@ -4,7 +4,7 @@ import pytest
 
 from claasp_next import bits_from_int, int_from_bits
 from claasp_next.ciphers import AESBlockCipher, PresentBlockCipher, SpeckBlockCipher
-from claasp_next.components import Add, Rotate
+from claasp_next.components import Add, BinaryAffineMap, Power, Rotate, SBox
 from claasp_next.domains import BinaryExtensionField, Bit, Word
 from claasp_next.representations.execution import BatchEvaluator, ScalarEvaluator
 
@@ -69,6 +69,51 @@ def test_aes_preserves_all_legacy_sp800_38a_vectors(key_size, key_hex, vectors):
             "plaintext": tuple(bytes.fromhex(plaintext_hex)), "key": key
         })
         assert bytes(result.output).hex() == ciphertext_hex
+
+
+@pytest.mark.parametrize(("key_size", "key_hex", "vectors"), AES_VECTORS)
+def test_aes_realizations_preserve_all_vectors_and_each_other(key_size, key_hex, vectors):
+    lookup = AESBlockCipher(key_size, realization="lookup")
+    algebraic = AESBlockCipher(key_size, realization="algebraic")
+    key = int(key_hex, 16)
+    for plaintext_hex, ciphertext_hex in vectors:
+        plaintext = int(plaintext_hex, 16)
+        expected = int(ciphertext_hex, 16)
+        assert lookup.evaluate(plaintext, key) == expected
+        assert algebraic.evaluate(plaintext, key) == expected
+    assert any(isinstance(component, SBox) for component in lookup.components)
+    assert not any(isinstance(component, Power) for component in lookup.components)
+    assert any(isinstance(component, Power) for component in algebraic.components)
+    assert any(isinstance(component, BinaryAffineMap) for component in algebraic.components)
+    assert not any(isinstance(component, SBox) for component in algebraic.components)
+
+
+def test_aes_capability_selection_is_explicit_and_deterministic():
+    assert AESBlockCipher.for_capabilities({"sbox_semantics"}).realization.name == "lookup"
+    assert AESBlockCipher.for_capabilities({"algebraic_semantics"}).realization.name == "algebraic"
+    with pytest.raises(ValueError, match="no AES realization"):
+        AESBlockCipher.for_capabilities({"cuda"})
+
+
+def test_aes_batch_realizations_are_equivalent_and_results_record_them():
+    plaintexts = tuple(tuple(bytes.fromhex(value)) for value in (
+        "00112233445566778899aabbccddeeff",
+        "6bc1bee22e409f96e93d7e117393172a",
+    ))
+    keys = (tuple(range(16)),) * 2
+    outputs = []
+    for name in ("lookup", "algebraic"):
+        result = BatchEvaluator().evaluate(
+            AESBlockCipher(realization=name), {"plaintext": plaintexts, "key": keys}
+        )
+        assert all(item.realization.name == name for item in result.items)
+        outputs.append(result.outputs)
+    assert outputs[0] == outputs[1]
+
+
+def test_aes_rejects_unknown_realization():
+    with pytest.raises(ValueError, match="realization must be one of"):
+        AESBlockCipher(realization="bitsliced")
 
 
 @pytest.mark.parametrize(("key_size", "rounds", "nk"), ((128, 10, 4), (192, 12, 6), (256, 14, 8)))

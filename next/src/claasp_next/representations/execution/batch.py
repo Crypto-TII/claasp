@@ -4,7 +4,7 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 
 from claasp_next.graph import Cipher
-from claasp_next.components.algebraic import Add, LinearMap, Multiply, Power
+from claasp_next.components.algebraic import Add, BinaryAffineMap, LinearMap, Multiply, Power
 from claasp_next.components.structural import Concatenate, Constant, Identity, Permutation
 from claasp_next.components.substitution import BitVectorSBox, SBox
 from claasp_next.components.word import BitwiseAnd, ModularAdd, Rotate, Xor
@@ -173,6 +173,7 @@ class TransposedBatchExecutionDriver(BatchExecutionDriver):
             Multiply: scalar._evaluate_multiply,
             Power: scalar._evaluate_power,
             LinearMap: scalar._evaluate_linear_map,
+            BinaryAffineMap: scalar._evaluate_binary_affine_map,
             BitwiseAnd: scalar._evaluate_bitwise_and,
             ModularAdd: scalar._evaluate_modular_add,
             Rotate: scalar._evaluate_rotate,

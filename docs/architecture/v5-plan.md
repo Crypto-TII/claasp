@@ -586,6 +586,27 @@ or any solver.
 - Record intentional exclusions explicitly; representative-family coverage is
   not completion of this milestone.
 
+##### M10.9e: Primitive realizations and task-directed selection
+
+- Treat a primitive as the mathematical fixed-length mapping and a
+  ``realization`` as one typed graph implementing it. Do not create separate
+  public primitive classes merely because one graph is lookup-based,
+  bitsliced, word-oriented, matrix-based, or a dedicated circuit.
+- Give every realization stable metadata describing capabilities, structural
+  features, maturity, and provenance. Users can select it explicitly; an
+  execution or analysis task can request capabilities and receive a
+  deterministic compatible realization.
+- Keep execution engines (Python, C, NumPy, CUDA) distinct from graph
+  realizations. Record both in produced evidence and reports.
+- Require identical external parameter and input/output contracts and preserve
+  official vectors for every realization. Add differential equivalence tests
+  across realizations and never assume their intermediate traces or trails
+  have a component-by-component correspondence.
+- Start with AES: retain the lookup-table S-box graph and add a genuine
+  algebraic graph consisting of inversion in ``GF(2^8)`` followed by the
+  binary affine transformation. Trail-oriented tasks can require S-box
+  semantics while algebraic tasks can require explicit algebraic semantics.
+
 #### M10.10: Primitive inversion and graph transformations
 
 - Define inverse semantics per component and build inversion as a typed graph
@@ -928,6 +949,8 @@ is absent). Update this table in the same commit that changes milestone state.
 | Fixed-length primitive classification (M10.9b) | Planned | Every legacy catalogue entry assigned to the six semantic categories, an orthogonal fixture folder, or an explicit out-of-scope disposition |
 | Complete reusable component catalogue (M10.9c) | Planned | All reusable legacy components migrated with parity evidence and pseudocode-level authoring helpers |
 | Complete primitive implementations/evidence (M10.9d) | Planned | Every in-scope fixed-length primitive and parameter family migrated under the new taxonomy with evaluation and cryptanalytic fixtures |
+| Primitive realizations/task selection (M10.9e) | In progress | Generic capability metadata and AES lookup/algebraic realizations implemented; result provenance and broader task-directed selection remain |
+| AES realization vertical slice (M10.9e1) | Achieved | Lookup S-box and field-inverse-plus-binary-affine graphs share one public class and all AES-128/192/256 fixed vectors; deterministic capability selection is documented and tested |
 | Primitive inversion and graph transformations (M10.10) | Planned | Typed inverse semantics, partial inversion, round trips, slicing, key-schedule removal, and editor transformations |
 | Component analysis (M10.11) | Planned | Structured S-box, linear-layer, Boolean, field, and word-operation properties with optional heavy algebra/plots |
 | Dataset/statistical testing (M10.12) | Planned | Reproducible streaming datasets, avalanche, NIST STS and Dieharder optional drivers and parsers |

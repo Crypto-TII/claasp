@@ -4,7 +4,7 @@ from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 
 from claasp_next.annotations import ExecutionTrace, GraphAnnotation
-from claasp_next.components.algebraic import Add, LinearMap, Multiply, Power
+from claasp_next.components.algebraic import Add, BinaryAffineMap, LinearMap, Multiply, Power
 from claasp_next.components.structural import Concatenate, Constant, Identity, Permutation
 from claasp_next.components.substitution import BitVectorSBox, SBox
 from claasp_next.components.word import BitwiseAnd, ModularAdd, Rotate, Xor
@@ -30,6 +30,12 @@ class EvaluationResult:
         except KeyError as error:
             raise KeyError(f"evaluation source {source_id!r} does not exist") from error
 
+    @property
+    def realization(self):
+        """Realization metadata retained by the evaluated graph, when declared."""
+
+        return getattr(self.trace.annotation.cipher, "realization", None)
+
 
 class ScalarExecutionDriver:
     """Correctness-first evaluator using ordinary Python scalar values.
@@ -52,6 +58,7 @@ class ScalarExecutionDriver:
             Multiply: self._evaluate_multiply,
             Power: self._evaluate_power,
             LinearMap: self._evaluate_linear_map,
+            BinaryAffineMap: self._evaluate_binary_affine_map,
             BitwiseAnd: self._evaluate_bitwise_and,
             ModularAdd: self._evaluate_modular_add,
             Rotate: self._evaluate_rotate,
@@ -246,6 +253,22 @@ class ScalarExecutionDriver:
     @staticmethod
     def _evaluate_sbox(component: SBox, inputs: tuple[RuntimeValue, ...]) -> RuntimeValue:
         return tuple(component.table[value] for value in inputs[0])
+
+    @staticmethod
+    def _evaluate_binary_affine_map(
+        component: BinaryAffineMap, inputs: tuple[RuntimeValue, ...]
+    ) -> RuntimeValue:
+        width = component.output_type.domain.degree
+        output = []
+        for value in inputs[0]:
+            transformed = component.offset
+            for row, coefficients in enumerate(component.matrix):
+                bit = 0
+                for column, coefficient in enumerate(coefficients):
+                    bit ^= coefficient & ((value >> (width - 1 - column)) & 1)
+                transformed ^= bit << (width - 1 - row)
+            output.append(transformed)
+        return tuple(output)
 
     @staticmethod
     def _evaluate_bit_vector_sbox(

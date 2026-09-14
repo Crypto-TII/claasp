@@ -1,7 +1,7 @@
 import pytest
 
 from claasp_next import BinaryExtensionField, Cipher, PrimeField, ScalarEvaluator, ValueType
-from claasp_next.components import Add, LinearMap, Multiply, Power
+from claasp_next.components import Add, BinaryAffineMap, LinearMap, Multiply, Power
 
 
 def test_prime_field_algebraic_components():
@@ -48,3 +48,17 @@ def test_algebraic_components_reject_different_value_types():
 
     with pytest.raises(ValueError, match="identical value types"):
         Add((cipher.input("left"), cipher.input("right")), component_id="bad")
+
+
+def test_binary_affine_map_composes_with_field_inverse_to_form_aes_sbox():
+    from claasp_next.ciphers.block_ciphers.aes import AES_AFFINE_MATRIX, AES_SBOX
+
+    field = BinaryExtensionField(8, 0x11B)
+    cipher = Cipher("aes_substitution", {"values": ValueType(field, (256,))})
+    cipher.add_round()
+    inverse = cipher.add_component(Power(cipher.input("values"), 254))
+    affine = cipher.add_component(BinaryAffineMap(inverse, AES_AFFINE_MATRIX, 0x63))
+    cipher.set_output(affine)
+
+    result = ScalarEvaluator().evaluate(cipher, {"values": tuple(range(256))})
+    assert result.output == AES_SBOX
