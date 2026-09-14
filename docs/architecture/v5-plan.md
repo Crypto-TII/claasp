@@ -439,23 +439,116 @@ same graph annotation can be consumed by at least execution, trail checking,
 and diagram rendering; and no use of ``target`` ambiguously means both an
 attack goal and an output format.
 
-#### M10.7: Statistical analysis
+#### M10.7: Complete legacy inventory and migration control
 
-- Migrate avalanche and other non-solver analyses behind the same concise
-  analysis entry point.
-- Preserve legacy deterministic fixtures, statistical definitions, output
-  schemas, and reproducible random seeding.
+- Generate a machine-readable record for every legacy Python module and every
+  legacy test module. Family-level prose is not sufficient coverage.
+- Record path, responsibility, public entry points, dependencies, tests,
+  fixed evidence, v5 destination, prerequisites, disposition, status, and
+  acceptance criterion for every entry.
+- Use the dispositions ``migrate``, ``supersede``, ``defer``, ``remove``, and
+  ``inapplicable``. Every non-migration disposition requires a rationale.
+- Make CI fail when a new legacy module or test appears without an inventory
+  entry, while allowing the legacy tree to remain available as an oracle.
+- Reconcile the inventory whenever ``develop`` is merged.
 
-#### M10.8: Remaining tooling
+Exit criterion: all legacy modules and tests are classified; aggregate counts
+match the filesystem; no release-scope entry has an unspecified destination.
 
-- Migrate versioned serialization, diagrams, graph transformations, code
-  generation, and compilers.
+#### M10.8: Remaining mathematical and solver models
+
+- Migrate or explicitly supersede every remaining SAT, CryptoMiniSat, SMT,
+  MILP, CP, algebraic, division-property, and specialized model.
+- Extract monomial prediction, ANF recovery, algebraic-degree bounds, cube and
+  superpoly problems, and monomial transitions from the paywalled Gurobi/Sage
+  implementation into backend-neutral semantics and results.
+- Provide an open-source baseline representation/driver for monomial and
+  division-property analysis. Gurobi remains optional and cannot be required
+  by the core package or baseline CI.
+- Preserve exact result fixtures and distinguish them from heuristic or
+  experimentally estimated claims.
+
+#### M10.9: Complete component and primitive catalogue
+
+- The default CLAASP 5.0 release scope is the entire current CLAASP component
+  and primitive catalogue. Removing or deferring an entry requires an explicit
+  reviewed decision; silence does not reduce scope.
+- Migrate generic structural, Boolean, word/ARX, finite-field, feedback,
+  permutation-specific, and conversion components before ciphers duplicate
+  their behavior privately.
+- Migrate all release-scope block ciphers, permutations, hash-function
+  building blocks, stream ciphers, MACs, toy/reference ciphers, and
+  single-component fixtures in dependency order.
+- Preserve all applicable official and legacy vectors, parameter variants,
+  reduced-round behavior, scalar/batch parity, and cryptanalytic fixtures.
+- Record intentional exclusions explicitly; representative-family coverage is
+  not completion of this milestone.
+
+#### M10.10: Cipher inversion and graph transformations
+
+- Define inverse semantics per component and build inversion as a typed graph
+  transformation independent of solver backends.
+- Support retained auxiliary inputs, partial knowledge, equivalent recovered
+  wires, and precise diagnostics when inversion stalls.
+- Preserve legacy inversion tests and verify forward/inverse round trips for
+  each supported component and representative complete ciphers.
+- Keep graph slicing, key-schedule removal, round reduction, and related
+  editor transformations in the same validated transformation layer.
+
+#### M10.11: Component analysis
+
+- Return structured properties for S-boxes, linear layers, MixColumns,
+  Boolean functions, and word operations through typed component semantics.
+- Cover differential uniformity, nonlinearity, algebraic degree, branch
+  numbers, operation grouping, and other applicable legacy properties.
+- Implement small exact calculations without Sage where practical; place
+  optional heavy algebra and plotting behind drivers consuming the same
+  structured results.
+
+#### M10.12: Dataset generation and statistical testing
+
+- Define reproducible, streaming dataset generators for avalanche,
+  correlation, CBC, random, low-density, and high-density experiments.
+- Specify bit/byte ordering, seeds, sample construction, serialization, hashes,
+  and provenance independently of NumPy and external statistical programs.
+- Migrate avalanche analysis plus NIST STS and Dieharder drivers/parsers,
+  preserving known-answer/parser fixtures and recording tool versions.
+- Keep NIST STS and Dieharder optional; dataset generation remains usable in a
+  minimal installation.
+
+#### M10.13: Neural distinguishers
+
+- Separate experiment and dataset specifications from machine-learning
+  framework adapters.
+- Migrate black-box and differential distinguishers, train/validation/test
+  splitting, round/component projections, seeds, and result metadata.
+- Keep TensorFlow/Keras or alternative frameworks optional and out of normal
+  imports. Baseline CI tests deterministic datasets/contracts; a dedicated ML
+  job runs bounded end-to-end experiments.
+- Treat accuracy as tolerance/threshold-based experimental evidence, not an
+  exact cross-platform fixture.
+
+#### M10.14: Reports and result presentation
+
+- Migrate the legacy ``Report`` capabilities onto typed analysis results.
+- Provide concise tables, trail/trace views, plots, exportable data, evidence
+  classification, citations, and reproducibility metadata.
+- Keep presentation independent of solver and ML backends.
+
+#### M10.15: Serialization, diagrams, and code generation
+
+- Migrate versioned serialization, diagrams, generated Python/C/CUDA where in
+  release scope, and remaining compiler/export workflows.
 - Keep human-facing diagrams and generated code independent of analysis
   backends and verify them with legacy semantic fixtures where applicable.
+- Complete routed ASCII art or retain its explicit work-in-progress status;
+  do not silently substitute a structural listing.
 
 Exit criterion for M10: the migration inventory contains no unclassified
-legacy analysis/tooling tests; all release-scope entries are migrated or
-superseded, and every deferral is recorded with rationale and ownership.
+legacy source or test module; all release-scope entries are migrated or
+superseded, and every deferral/removal is recorded with rationale and
+ownership. The complete catalogue, analyses, transformations, presentation,
+and tooling pass their documented parity and dependency-isolation tests.
 
 ### M11: Integration and release
 
@@ -523,11 +616,15 @@ Cryptanalytic fixtures require stronger provenance than evaluation alone:
 
 The maintained inventory is
 [`migration/v5-legacy-test-matrix.md`](migration/v5-legacy-test-matrix.md).
+That human-readable evidence matrix remains useful, but M10.7 introduces an
+authoritative machine-readable module manifest and a generated coverage
+summary. The manifest, rather than manually counted Markdown rows, determines
+whether the inventory is complete.
 
 The minimal CI job installs only `next/` and runs its tests in an environment
 without Sage.
 
-## Initial vertical slice
+## Historical initial vertical slice
 
 The first architectural proof is:
 
@@ -547,48 +644,53 @@ path is correct and stable.
 Unless this plan is explicitly revised, “next milestone” means the first
 unfinished item in this order:
 
-1. M10.2 SAT cipher/key recovery.
-2. M10.3 differential and linear trail semantics and reference results.
-3. M10.4–M10.8 backend, statistical, and tooling migration.
-4. M11 integration and release.
+1. Synchronize the three pending ``develop`` commits and classify their
+   effects without overwriting v5 work.
+2. M10.7: establish the complete module/test inventory and its CI coverage
+   gate. This planning-control checkpoint precedes further feature work even
+   though its number follows M10.6.
+3. Resume M10.6d5b3c, then finish differential-linear and continuous CP work
+   in M10.6d5c–M10.6d6.
+4. M10.8: migrate all remaining mathematical and solver models, including
+   monomial prediction and division-property analysis.
+5. M10.9: migrate the complete component and primitive catalogue.
+6. M10.10–M10.15: inversion/transformations, component analysis, datasets and
+   statistical tests, neural distinguishers, reports, and remaining tooling.
+7. M11 integration and release.
 
 The migration inventory is a maintained artifact, not a one-time search. It
-must cover cipher construction/evaluation tests and the legacy SAT, CMS, SMT,
-MILP, CP/MiniZinc, avalanche, graph, serialization, diagram, transformation,
-and compiler test families. New tests merged into `develop` are classified at
-each synchronization.
+must cover every legacy source and test module, including ciphers, components,
+SAT/CMS/SMT/MILP/CP/algebraic models, monomial prediction, division property,
+inversion, component analysis, avalanche, datasets, NIST/Dieharder, neural
+distinguishers, reports, graph utilities, serialization, diagrams,
+transformations, and compilers. New paths merged into ``develop`` are
+classified at each synchronization.
 
-## Current implementation status
+## Current focus
 
-- [x] Parallel Sage-free distribution and independent CI.
-- [x] Initial `Bit`, `PrimeField`, `BinaryExtensionField`, and `ValueType`.
-- [x] Typed ports, logical-unit selections, rounds, and acyclic graph checks.
-- [x] Domain-neutral constant, identity, concatenation, and permutation.
-- [x] Pure-Python scalar evaluator with explicit component dispatch.
-- [x] Addition, multiplication, power maps, and linear maps.
-- [x] Minimal MiMC vertical slice.
-- [x] Parameterized Poseidon full/partial-round vertical slice.
-- [x] Pinned BN254/width-3 Poseidon parameters and reference vector.
-- [x] Sage-free Sphinx site and doctest CI.
-- [x] Correctness-first batch evaluation contract.
-- [x] Dependency-free, one-graph-traversal batch evaluation and benchmark.
-- [x] Initial sparse prime-field polynomial representation and graph lowering.
-- [x] Singular polynomial exporter with executable integration test.
-- [x] msolve exporter with explicit characteristic limit and integration test.
-- [x] Direct and binary-chain power lowering with witnesses and statistics.
-- [x] Word domain, ARX components, and initial Speck64/128 known-answer validation.
-- [x] Byte-field S-box component and initial AES-128 known-answer validation.
-- [x] Bit-vector S-box component and initial PRESENT-80 known-answer validation.
-- [x] Solver-independent Boolean CNF lowering, witnesses, and DIMACS export.
-- [x] Optional MiniSat execution with named assumptions and parsed assignments.
-- [x] AES/PRESENT/Speck legacy regression inventory and semantic parity.
-- [x] Concise component authoring, automatic IDs, indexing, and shared utilities.
-- [x] Friendly packed-integer evaluation with direct cipher methods and explicit traces.
-- [x] Graph-level analysis constraints, projections, results, and key-recovery facade.
-- [x] CLAASP-wide, AES-first documentation with separate v5/AO and advanced sections.
-- [x] Independent User Guide and Developer Guide build roots.
+The milestone tracker below is the single source of implementation status; a
+second checklist is intentionally not maintained. At this revision:
+
+- The typed core, evaluation, initial AO primitives, representative traditional
+  ciphers, polynomial/Boolean foundations, usability, and documentation
+  checkpoints are achieved as recorded in the tracker.
+- M10.0–M10.5c are achieved at their recorded scope; the new M10.7 inventory
+  gate will expose any family-level omissions without retroactively weakening
+  those accepted vertical slices.
+- M10.5d remains open only for routed ASCII art.
+- M10.6a–M10.6d4 are achieved.
+- M10.6d5 is in progress; the next feature checkpoint is M10.6d5b3c.
+- M10.7 is the immediate control checkpoint: build the complete inventory and
+  classify pending ``develop`` changes before resuming feature migration.
+- M10.8–M10.15 and M11 remain planned.
 
 ## Milestone tracker
+
+Status meanings are: **Achieved** (acceptance criteria pass), **In progress**
+(implementation has committed partial checkpoints), **Next** (the immediate
+execution-order checkpoint), **Queued** (ready after the current checkpoint),
+**Planned** (specified but not started), and **Blocked** (a named prerequisite
+is absent). Update this table in the same commit that changes milestone state.
 
 | Area | Status | Commit or next action |
 | --- | --- | --- |
@@ -603,7 +705,7 @@ each synchronization.
 | Pinned Poseidon parameter catalogue | Achieved | Bundled BN254/width-3 data and vector |
 | Dependency-free transposed batch backend | Achieved | Differential tests and benchmark harness |
 | msolve polynomial exporter | Achieved | Native format, validation, and optional integration test |
-| Traditional cipher reference implementations | Initial slice achieved | Published vectors for Speck64/128, AES-128, and PRESENT-80 |
+| Traditional cipher reference implementations | Representative slice achieved | AES-128/192/256, PRESENT-80/128, multiple Speck variants, and all standard Simon configurations; complete catalogue is M10.9 |
 | Legacy cipher regression parity (M9) | Achieved | Living matrix; AES-128/192/256, PRESENT-80/128, Speck32/64 and Speck64/96 |
 | Cipher-authoring usability (M9.1) | Achieved | Whole-port coercion, indexing, automatic IDs, reusable primitives, concise ciphers |
 | CLAASP-wide documentation (M9.2) | Achieved | AES-first introduction, simple analysis, and separate v5/AO section |
@@ -644,7 +746,7 @@ each synchronization.
 | Shared propagation consumers (M10.5d4c) | Achieved | PRESENT SMT/MILP composition accepts one PropagationProblem and queries identical per-component overrides |
 | Diagram representation (M10.5d5) | In progress | Annotated IR, TikZ/PDF, and temporary warned structural listing achieved; actual routed ASCII art remains |
 | Graph/semantics vocabulary refactor (M10.5d6) | Achieved | `core` renamed to `graph`; `interpretations` renamed to `semantics`; public contracts use `SemanticType` and `.semantics`; no compatibility packages retained |
-| SMT, MILP, and CP (M10.4–M10.6) | In progress | SMT and MILP achieved; CP is next and retains shared semantics and independent-check requirements |
+| SMT, MILP, and CP (M10.4–M10.6) | In progress | SMT and MILP achieved; CP foundation/trails/impossible analyses achieved, with composed and continuous CP analyses remaining |
 | CP backend (M10.6) | In progress | Portable foundation, cipher recovery, and reviewed shared trail slices achieved; advanced legacy CP analyses follow |
 | Portable CP foundation (M10.6a) | Achieved | Immutable MiniZinc IR, deterministic export, CLI driver, portable JSON results, external SAT/UNSAT tests |
 | CP cipher lowering and recovery (M10.6b) | Achieved | Exact CNF-to-CP lowering reuses typed component semantics; graph-name projections; reduced recovery and full Speck legacy fixture independently evaluated |
@@ -652,7 +754,7 @@ each synchronization.
 | Native CP SPN differential trails (M10.6c1) | Achieved | PropagationProblem-selected DDT tables, PRESENT-2 UNSAT-3/SAT-4 proof, decoded trail independently checked |
 | Native CP linear trails (M10.6c2) | Achieved | PropagationProblem-selected signed LAT tables, PRESENT-3 UNSAT-3/SAT-4 proof, decoded signs and wiring independently checked |
 | Native CP truncated/impossible trails (M10.6c3) | Achieved | Truncated semantics moved into `semantics`; Speck paired-carry fixture projected through CP; exact PRESENT S-box possible/impossible proof |
-| Advanced CP analyses (M10.6d) | In progress | Complete inventory; exact ARX optimization, generalized truncated, impossible, composed, and continuous checkpoints follow |
+| Advanced CP analyses (M10.6d) | In progress | ARX optimization, generalized truncated, and impossible checkpoints achieved; composed attacks and continuous heuristics remain |
 | Advanced CP suite inventory (M10.6d1) | Achieved | Every legacy MiniZinc model classified; scientific fixtures, superseded structural tests, dependencies, and migration order recorded |
 | Exact CP ARX differential optimization (M10.6d2) | Achieved | Chuffed proves Speck32/64-5 weight 8 UNSAT and weight 9 SAT in the CLAASP image; the five-transition witness is independently recounted and checked |
 | Generalized CP truncated propagation (M10.6d3) | Achieved | Probabilistic-truncated Speck fixtures and typed wordwise AES propagation are independently checked and projected through CP |
@@ -674,8 +776,15 @@ each synchronization.
 | Exact bijective BCT semantics (M10.6d5b2) | Achieved | Exhaustive inverse-table definition, typed count/weight, PRESENT fixed possible/impossible entries, native CP table, and independent decoder |
 | Modular-add boomerang oracle (M10.6d5b3a) | Achieved | Exact four-difference quartet equations and exhaustive counts for widths through 8 provide an independent oracle for scalable encodings |
 | Exact modular-add switch automaton (M10.6d5b3b) | Achieved | Sixteen carry/borrow states match every exhaustive 3-bit entry and scale to exact 16-bit Speck counts |
-| Restricted Speck ARX boomerang composition (M10.6d5b3c) | Next | Compare the legacy one-half onlyLargeSwitch restriction with exact automaton results, lower it explicitly as an approximation, and preserve its empirical fixture |
+| Restricted Speck ARX boomerang composition (M10.6d5b3c) | Queued | Resume after M10.7 baseline; compare the legacy one-half onlyLargeSwitch restriction with exact automaton results and preserve its empirical fixture |
 | Typed differential-linear composition (M10.6d5c) | Planned | Differential prefix, selectable connector, linear suffix, exact objective, and fixed Speck32/64 weight-14 patterns |
 | CP continuous models (M10.6d6) | Planned | Numerically qualified heuristic models kept distinct from exact proof results |
-| Statistical analysis (M10.7) | Planned | Avalanche and related legacy behavior |
-| Serialization, diagrams, transforms, compilers (M10.8) | Planned | Inventory-driven tooling migration |
+| Complete legacy inventory (M10.7) | Next | Machine-readable entry for every legacy source/test module, filesystem count gate, and classification of pending develop changes |
+| Remaining mathematical/solver models (M10.8) | Planned | Complete model coverage, including monomial prediction, division property, algebraic analyses, and an open-source baseline |
+| Complete component/primitive catalogue (M10.9) | Planned | All legacy components and ciphers/permutations/hashes/streams/MACs migrated or explicitly dispositioned with parity evidence |
+| Cipher inversion and graph transformations (M10.10) | Planned | Typed inverse semantics, partial inversion, round trips, slicing, key-schedule removal, and editor transformations |
+| Component analysis (M10.11) | Planned | Structured S-box, linear-layer, Boolean, field, and word-operation properties with optional heavy algebra/plots |
+| Dataset/statistical testing (M10.12) | Planned | Reproducible streaming datasets, avalanche, NIST STS and Dieharder optional drivers and parsers |
+| Neural distinguishers (M10.13) | Planned | Framework-independent black-box/differential experiment contracts plus optional ML drivers |
+| Reports and presentation (M10.14) | Planned | Typed Report replacement, tables, plots, exports, citations, evidence and reproducibility metadata |
+| Serialization, diagrams, code generation (M10.15) | Planned | Versioned formats, routed diagrams, language generators, and remaining compiler workflows |

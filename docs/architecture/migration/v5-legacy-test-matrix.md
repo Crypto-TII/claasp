@@ -88,8 +88,27 @@ starts:
 - CP/MiniZinc cipher, ARX-optimized, trail, truncated, impossible, boomerang,
   and differential-linear models under `tests/unit/cipher_modules/models/cp/`.
 - Avalanche behavior in `tests/unit/cipher_modules/avalanche_tests_test.py`.
+- Cipher inversion in `claasp/cipher_modules/inverse_cipher.py` and its direct
+  and cipher-level round-trip regressions.
+- Component analysis in `claasp/cipher_modules/component_analysis_tests.py`,
+  including Sage-backed S-box, Boolean-polynomial, matrix, branch-number, and
+  plotting behavior.
+- Dataset generators plus NIST STS and Dieharder wrappers/parsers under
+  `claasp/cipher_modules/statistical_tests/`, including bundled parser/KAT
+  fixtures and benchmark coverage.
+- Black-box and differential neural distinguishers in
+  `claasp/cipher_modules/neural_network_tests.py`; TensorFlow/Keras behavior is
+  optional experimental evidence, while dataset/label contracts belong in
+  baseline coverage.
+- Gurobi monomial prediction in
+  `claasp/cipher_modules/models/milp/milp_models/Gurobi/monomial_prediction.py`,
+  including ANF, degree-bound, cube/superpoly, parity, and S-box monomial
+  transition capabilities. The semantics require an open-source baseline;
+  licensed Gurobi remains optional.
+- Reports and result presentation, including the legacy `Report` entry points
+  and their serialization/plotting dependencies.
 - Graph, serialization, code generation, diagrams, transformations, and
-  compilers, classified during M10.8.
+  compilers, classified during M10.10 and M10.14–M10.15.
 
 The first diagram slice is available in M10.5d5: graph structure, rounds,
 logical-unit selections, and concrete annotations are covered through one
