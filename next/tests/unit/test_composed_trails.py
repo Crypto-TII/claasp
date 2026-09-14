@@ -11,6 +11,7 @@ from claasp_next.semantics.cryptanalysis import (
     ModularAddBoomerangAutomaton,
 )
 from claasp_next.ciphers import PresentBlockCipher
+from claasp_next.analysis import run_speck32_boomerang_experiment
 
 
 def _trail(kind, source, target, width=4):
@@ -100,3 +101,25 @@ def test_modular_add_automaton_scales_to_speck_words():
 
     assert entry.count == 1 << 31
     assert entry.weight == 1
+
+
+def test_legacy_restricted_speck_switch_is_checked_by_exact_automaton():
+    # Fixed by reproducing the legacy MiniZinc/Chuffed model. The old
+    # onlyLargeSwitch predicate accepted this entry but did not assign a
+    # switch weight; v5 counts all exact quartets independently.
+    entry = ModularAddBoomerangAutomaton(16).connectivity(
+        0x0100, 0x840A, 0x0040, 0x0010
+    )
+
+    assert entry.count == 2_818_572_288
+    assert isclose(entry.weight, 0.6076825772212398)
+
+
+def test_legacy_speck_boomerang_empirical_fixture_is_seeded_and_fixed():
+    result = run_speck32_boomerang_experiment(
+        0x28000010, 0x8000840A, rounds=8, samples=1 << 16, seed=0xC1AA5
+    )
+
+    assert result.successes == 11
+    assert result.rate == 11 / (1 << 16)
+    assert result.rate > 0.0001

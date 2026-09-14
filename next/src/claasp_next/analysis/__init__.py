@@ -29,6 +29,10 @@ from claasp_next.analysis.truncated import (
     truncated_modular_add,
 )
 from claasp_next.analysis.targets import AttackTarget
+from claasp_next.analysis.boomerang import (
+    BoomerangExperimentResult,
+    run_speck32_boomerang_experiment,
+)
 
 __all__ = [
     "Analysis",
@@ -56,4 +60,6 @@ __all__ = [
     "TruncatedXorDifference",
     "propagate_two_word_speck_round",
     "truncated_modular_add",
+    "BoomerangExperimentResult",
+    "run_speck32_boomerang_experiment",
 ]

@@ -68,3 +68,22 @@ must not be reported as the exact result. Monte Carlo distinguishers and
 correlation measurements remain seeded, sample-counted experiments; they do
 not establish SAT, UNSAT, or optimality. An optimum additionally needs an
 UNSAT lower-bound run.
+
+### Restricted Speck ARX switch audit
+
+The legacy ``onlyLargeSwitch_BCT_enum`` predicate is a search heuristic, not
+the exact modular-add boomerang relation. In particular, its generated
+``halfSize`` values are not connected to the ``isHalf`` budget, and the legacy
+objective sums only the upper/lower differential weights. Reproducing the
+enabled Speck32/64-8 test in the CLAASP image yielded a weight-8 witness with
+input difference ``0x28000010``, output difference ``0x8000840a``, and switch
+arguments ``(0x0100, 0x840a, 0x0040, 0x0010)``.
+
+The independent v5 carry/borrow automaton counts exactly 2,818,572,288
+quartets for that 16-bit switch, or weight approximately
+``0.6076825772212398``. Consequently, 8 is retained as the legacy heuristic
+objective, not reported as the exact composed weight. A dependency-free,
+seeded 65,536-sample reproduction records 11 successes (rate
+``0.0001678466796875``), preserving the old ``> 0.0001`` empirical observation
+with explicit seed and sample metadata. Neither the observation nor the
+restricted predicate establishes optimality.

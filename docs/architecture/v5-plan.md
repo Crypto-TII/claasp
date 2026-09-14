@@ -749,7 +749,7 @@ second checklist is intentionally not maintained. At this revision:
   those accepted vertical slices.
 - M10.5d remains open only for routed ASCII art.
 - M10.6a–M10.6d4 are achieved.
-- M10.6d5 is in progress; the next feature checkpoint is M10.6d5b3c.
+- M10.6d5 is in progress; the next feature checkpoint is M10.6d5c.
 - M10.7 is achieved: the exhaustive inventory and filesystem gate include the
   reconciled ``develop`` changes.
 - M10.8–M10.15 and M11 remain planned.
@@ -846,8 +846,8 @@ is absent). Update this table in the same commit that changes milestone state.
 | Exact bijective BCT semantics (M10.6d5b2) | Achieved | Exhaustive inverse-table definition, typed count/weight, PRESENT fixed possible/impossible entries, native CP table, and independent decoder |
 | Modular-add boomerang oracle (M10.6d5b3a) | Achieved | Exact four-difference quartet equations and exhaustive counts for widths through 8 provide an independent oracle for scalable encodings |
 | Exact modular-add switch automaton (M10.6d5b3b) | Achieved | Sixteen carry/borrow states match every exhaustive 3-bit entry and scale to exact 16-bit Speck counts |
-| Restricted Speck ARX boomerang composition (M10.6d5b3c) | Next | Compare the legacy one-half onlyLargeSwitch restriction with exact automaton results and preserve its empirical fixture |
-| Typed differential-linear composition (M10.6d5c) | Planned | Differential prefix, selectable connector, linear suffix, exact objective, and fixed Speck32/64 weight-14 patterns |
+| Restricted Speck ARX boomerang composition (M10.6d5b3c) | Achieved | Legacy weight-8 witness pinned; heuristic omission documented; exact switch count/weight independently computed; seeded 65,536-sample experiment preserves 11 successes and the legacy rate threshold |
+| Typed differential-linear composition (M10.6d5c) | Next | Differential prefix, selectable connector, linear suffix, exact objective, and fixed Speck32/64 weight-14 patterns |
 | CP continuous models (M10.6d6) | Planned | Numerically qualified heuristic models kept distinct from exact proof results |
 | Complete legacy inventory (M10.7) | Achieved | Deterministic standard-library inventory covers 323 source and 258 test modules; AST metadata, primitive taxonomy fields, fixed-evidence locators, and an exact filesystem/CI gate; three pending `develop` commits reconciled |
 | Remaining mathematical/solver models (M10.8) | Planned | Complete model coverage, including monomial prediction, division property, algebraic analyses, and an open-source baseline |
