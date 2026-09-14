@@ -178,5 +178,7 @@ claim inferred from an incomplete solver solution pool:
    (True, 'exact_sparse_anf')
    >>> evidence.cube_degrees[0]
    1
+   >>> [term.variables for term in evidence.cube_coefficients[0].monomials]
+   [('k49',)]
    >>> evidence.require_complete() is evidence
    True

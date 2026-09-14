@@ -4,6 +4,7 @@ from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 
 from claasp_next.graph import Cipher
+from claasp_next.representations.constraints.polynomial import BooleanPolynomial
 from claasp_next.representations.execution import BooleanSymbolicEvaluator
 
 
@@ -19,6 +20,7 @@ class BooleanAlgebraicEvidence:
     output_degrees: tuple[int, ...]
     cube: tuple[str, ...] | None
     cube_degrees: tuple[int, ...] | None
+    cube_coefficients: tuple[BooleanPolynomial, ...] | None
     balanced_output_bits: tuple[int, ...] | None
     complete: bool
     method: str
@@ -51,7 +53,7 @@ def analyze_boolean_algebra(
         if fixed_variables:
             raise ValueError("fixed_variables require a cube")
         return BooleanAlgebraicEvidence(
-            output_degrees, None, None, None, True, "exact_sparse_anf"
+            output_degrees, None, None, None, None, True, "exact_sparse_anf"
         )
 
     selected = tuple(cube)
@@ -67,6 +69,7 @@ def analyze_boolean_algebra(
         output_degrees=output_degrees,
         cube=selected,
         cube_degrees=cube_degrees,
+        cube_coefficients=coefficients,
         balanced_output_bits=tuple(
             index for index, degree in enumerate(cube_degrees) if degree == -1
         ),

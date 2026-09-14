@@ -526,6 +526,9 @@ four-round Simon degree, fixed-public-input cube parity, and balanced-bit
 evidence through a proof-qualified public result. M10.8c3 will add scalable
 degree/parity methods and preserve the remaining Trivium and partial-ANF
 fixtures; these bounds must remain distinct from exact expanded ANF degrees.
+M10.8c3a first exposes exact partial ANFs as proof-carrying public evidence and
+preserves the complete Simon-3 polynomial before scalable bound encodings are
+introduced.
 
 #### M10.9: Complete component and primitive catalogue
 
@@ -876,7 +879,9 @@ is absent). Update this table in the same commit that changes milestone state.
 | ANF/degree/cube/superpoly evidence (M10.8c) | In progress | Exact reduced-graph ANF/degree/superpoly slice achieved; scalable parity and balanced-bit fixtures follow |
 | Exact symbolic Boolean graph evaluation (M10.8c1) | Achieved | Typed Word rotations/XOR/AND/addition recover Simon-1 ANF terms, Simon-2 degree vector and `k49` superpoly; symbolic evaluation matches a concrete vector |
 | Exact parity and balanced-bit evidence (M10.8c2) | Achieved | Exact Simon-4 expansion preserves the legacy degree vector and fixed-public-input cube-degree array; proof-qualified results identify balanced bits and reject incomplete proof claims |
-| Scalable algebraic bounds and parity (M10.8c3) | Next | Restore partial-ANF bounds, Trivium parity-degree and larger cube-feasibility fixtures without relabeling bounds or incomplete searches as exact ANFs |
+| Scalable algebraic bounds and parity (M10.8c3) | In progress | Restore partial-ANF bounds, Trivium parity-degree and larger cube-feasibility fixtures without relabeling bounds or incomplete searches as exact ANFs |
+| Exact partial-ANF evidence (M10.8c3a) | Achieved | Public cube coefficients retain exact Boolean polynomials; Simon-3 preserves all 14 legacy partial-ANF monomials |
+| Scalable degree/parity encoding (M10.8c3b) | Next | Port backend-neutral upper-bound and parity semantics, with explicit soundness/completeness and open-solver execution |
 | Remaining model inventory closure (M10.8d) | Planned | Resolve every outstanding solver/algebraic entry and keep optimized proprietary drivers optional |
 | Primitive terminology/public API (M10.9a) | Planned | `Primitive`/`primitives`, official class names, schemas, documentation, and terminology guard |
 | Fixed-length primitive classification (M10.9b) | Planned | Every legacy catalogue entry assigned to the six semantic categories, an orthogonal fixture folder, or an explicit out-of-scope disposition |

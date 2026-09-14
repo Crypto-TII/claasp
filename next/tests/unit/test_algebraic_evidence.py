@@ -6,6 +6,7 @@ import pytest
 
 from claasp_next.analysis import analyze_boolean_algebra
 from claasp_next.ciphers import SimonBlockCipher
+from claasp_next.representations.constraints.polynomial import BooleanMonomial
 
 
 @pytest.fixture(scope="module")
@@ -42,3 +43,19 @@ def test_fixed_variables_require_a_cube():
         analyze_boolean_algebra(
             SimonBlockCipher(number_of_rounds=1), fixed_variables={"p0": 0}
         )
+
+
+def test_exact_simon_partial_anf_preserves_legacy_fixture():
+    evidence = analyze_boolean_algebra(
+        SimonBlockCipher(number_of_rounds=3), cube=("p1", "p2")
+    )
+    assert set(evidence.cube_coefficients[0].monomials) == {
+        BooleanMonomial(tuple(sorted(term)))
+        for term in (
+            ("p3", "p10", "p11"), ("p3", "p10"), ("p4", "p10"),
+            ("p5", "p10"), ("p10", "p11", "p18"),
+            ("p10", "p11", "k50"), ("p10", "p18"), ("p10", "p19"),
+            ("p10", "k33"), ("p10", "k50"), ("p10", "k51"),
+            ("p10",), ("p25",), ("k57",),
+        )
+    }
