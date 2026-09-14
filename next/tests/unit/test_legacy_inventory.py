@@ -73,3 +73,15 @@ def test_m10_8d_boolean_constraint_entries_are_resolved():
     assert tests["disposition"] == "migrate"
     assert tests["status"] == "migrated-in-m10.8d"
     assert tests["prerequisites"] == []
+
+
+def test_m10_8d_algebraic_inventory_has_no_unspecified_destinations():
+    payload = json.loads(INVENTORY.read_text(encoding="utf-8"))
+    records = [
+        record for record in payload["records"]
+        if "/models/algebraic/" in record["path"]
+    ]
+
+    assert records
+    assert all("destination finalized" not in record["v5_destination"] for record in records)
+    assert all(record["status"] != "planned-or-partially-migrated" for record in records)

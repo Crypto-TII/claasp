@@ -713,53 +713,49 @@
       "v5_destination": "inapplicable: package marker reviewed with its containing module"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Typed polynomial lowering and exact Boolean symbolic evaluation retain equation provenance and independently validate graph evaluations.",
       "dependencies": [
         "cysignals",
         "sage"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
       "path": "claasp/cipher_modules/models/algebraic/algebraic_model.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "AlgebraicModel"
       ],
-      "rationale": null,
+      "rationale": "v5 separates typed graph lowering, polynomial representations, and algebra drivers; legacy variable strings and a timeout-as-security boolean are not compatibility APIs.",
       "responsibility": "algebraic model",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/representations/constraints/polynomial"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "The dependency-free BooleanPolynomial type enforces square-free GF(2) arithmetic without a Sage ring type check.",
       "dependencies": [
         "sage"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
       "path": "claasp/cipher_modules/models/algebraic/boolean_polynomial_ring.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "is_boolean_polynomial_ring"
       ],
-      "rationale": null,
+      "rationale": "The legacy entry point only identifies Sage's BooleanPolynomialRing type.",
       "responsibility": "boolean polynomial ring",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/representations/constraints/polynomial/boolean.py"
     },
     {
       "acceptance_criterion": "Dependency-free Boolean polynomial constraints preserve equality and exact modular addition/subtraction semantics, with explicit bit ordering.",
@@ -10486,11 +10482,11 @@
       "v5_destination": "next/tests (mapped to the owning migrated behavior)"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Exact Boolean and prime-field graph evaluations satisfy their polynomial semantics; equation provenance and structural statistics are tested without Sage.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -10504,9 +10500,7 @@
       },
       "kind": "test",
       "path": "tests/unit/cipher_modules/models/algebraic/algebraic_model_test.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "test_connection_polynomials",
         "test_nvars",
@@ -10515,9 +10509,9 @@
         "test_ring",
         "test_var_names"
       ],
-      "rationale": null,
+      "rationale": "FancyBlockCipher-specific variable names and equation counts describe the removed legacy representation, while its timeout-based security claim is not valid evidence.",
       "responsibility": "algebraic model test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [
         "test_connection_polynomials",
         "test_nvars",
@@ -10526,7 +10520,7 @@
         "test_ring",
         "test_var_names"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_boolean_symbolic_evaluation.py; next/tests/unit/test_polynomial.py"
     },
     {
       "acceptance_criterion": "Exhaustive dependency-free tests preserve vector equality and explicit/eliminated ripple addition and subtraction over complete small domains.",

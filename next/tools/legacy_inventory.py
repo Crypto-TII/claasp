@@ -31,6 +31,31 @@ CATEGORY_BY_DIRECTORY = {
 }
 
 MIGRATION_OVERRIDES = {
+    "claasp/cipher_modules/models/algebraic/algebraic_model.py": {
+        "v5_destination": "next/src/claasp_next/representations/constraints/polynomial",
+        "prerequisites": [],
+        "disposition": "supersede",
+        "status": "superseded-in-m10.8d",
+        "acceptance_criterion": (
+            "Typed polynomial lowering and exact Boolean symbolic evaluation retain equation "
+            "provenance and independently validate graph evaluations."
+        ),
+        "rationale": (
+            "v5 separates typed graph lowering, polynomial representations, and algebra drivers; "
+            "legacy variable strings and a timeout-as-security boolean are not compatibility APIs."
+        ),
+    },
+    "claasp/cipher_modules/models/algebraic/boolean_polynomial_ring.py": {
+        "v5_destination": "next/src/claasp_next/representations/constraints/polynomial/boolean.py",
+        "prerequisites": [],
+        "disposition": "supersede",
+        "status": "superseded-in-m10.8d",
+        "acceptance_criterion": (
+            "The dependency-free BooleanPolynomial type enforces square-free GF(2) arithmetic "
+            "without a Sage ring type check."
+        ),
+        "rationale": "The legacy entry point only identifies Sage's BooleanPolynomialRing type.",
+    },
     "claasp/cipher_modules/models/algebraic/constraints.py": {
         "v5_destination": "next/src/claasp_next/representations/constraints/polynomial/boolean.py",
         "prerequisites": [],
@@ -55,6 +80,23 @@ MIGRATION_OVERRIDES = {
             "ripple addition and subtraction over complete small domains."
         ),
         "rationale": None,
+    },
+    "tests/unit/cipher_modules/models/algebraic/algebraic_model_test.py": {
+        "v5_destination": (
+            "next/tests/unit/test_boolean_symbolic_evaluation.py; "
+            "next/tests/unit/test_polynomial.py"
+        ),
+        "prerequisites": [],
+        "disposition": "supersede",
+        "status": "superseded-in-m10.8d",
+        "acceptance_criterion": (
+            "Exact Boolean and prime-field graph evaluations satisfy their polynomial semantics; "
+            "equation provenance and structural statistics are tested without Sage."
+        ),
+        "rationale": (
+            "FancyBlockCipher-specific variable names and equation counts describe the removed "
+            "legacy representation, while its timeout-based security claim is not valid evidence."
+        ),
     },
 }
 
