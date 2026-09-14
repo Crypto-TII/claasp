@@ -7,9 +7,13 @@ from claasp_next.representations.execution.batch import (
 from claasp_next.representations.execution.scalar import (
     EvaluationResult, ScalarEvaluator, ScalarExecutionDriver,
 )
+from claasp_next.representations.execution.symbolic_boolean import (
+    BooleanSymbolicEvaluator, BooleanSymbolicResult,
+)
 
 __all__ = [
     "BatchEvaluationResult", "BatchEvaluator", "BatchExecutionDriver", "EvaluationResult",
     "ScalarEvaluator", "ScalarExecutionDriver", "TransposedBatchEvaluator",
     "TransposedBatchExecutionDriver",
+    "BooleanSymbolicEvaluator", "BooleanSymbolicResult",
 ]

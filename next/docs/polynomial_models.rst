@@ -137,3 +137,27 @@ graphs and constructs canonical predecessor trails.
 portable MILP representation. The GLPK integration test solves a complete
 two-round graph and then validates all 32 S-box transitions and both p-layers
 using the representation-independent checker.
+
+Recovering an ANF from a typed graph
+------------------------------------
+
+``BooleanSymbolicEvaluator`` propagates sparse Boolean polynomials through
+supported Bit/Word components. It is an exact evaluator, not a monomial-trail
+over-approximation. For example, it recovers the legacy one-round Simon term
+and key-variable conventions directly from the graph:
+
+.. doctest::
+
+   >>> from claasp_next.ciphers import SimonBlockCipher
+   >>> from claasp_next.representations.execution import BooleanSymbolicEvaluator
+   >>> result = BooleanSymbolicEvaluator().evaluate(SimonBlockCipher(number_of_rounds=1))
+   >>> [term.variables for term in result.output_anfs[0].monomials]
+   [('k48',), ('p1', 'p8'), ('p16',), ('p2',)]
+   >>> result.output_anfs[0].degree
+   2
+
+The same polynomial type supports symbolic cube coefficients and partial
+Boolean substitution. Tests preserve the legacy two-round Simon degree vector
+and the ``(p0,p9)`` cube superpoly ``k49``. Polynomial size can grow
+exponentially, so this exact path is a reference implementation for reduced
+graphs; scalable degree and parity searches continue to use monomial models.

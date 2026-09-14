@@ -116,6 +116,20 @@ class BooleanPolynomial:
             if selected <= set(monomial.variables)
         )
 
+    def substitute(self, values: Mapping[str, int]) -> "BooleanPolynomial":
+        """Partially substitute Boolean constants while retaining other variables."""
+
+        if any(value not in (0, 1) for value in values.values()):
+            raise ValueError("Boolean substitutions must contain only zero or one")
+        terms = []
+        for monomial in self.monomials:
+            if any(values.get(variable) == 0 for variable in monomial.variables):
+                continue
+            terms.append(BooleanMonomial.from_variables(
+                variable for variable in monomial.variables if variable not in values
+            ))
+        return BooleanPolynomial(terms)
+
 
 def anf_from_truth_table(values: Sequence[int], variable_names: Sequence[str] | None = None) -> BooleanPolynomial:
     """Compute an exact ANF by the in-place Möbius transform."""
