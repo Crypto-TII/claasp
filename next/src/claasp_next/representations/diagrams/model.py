@@ -1,4 +1,4 @@
-"""Backend-neutral diagram representation for annotated cipher graphs."""
+"""Backend-neutral diagram representation for annotated primitive graphs."""
 
 from dataclasses import dataclass
 
@@ -47,17 +47,17 @@ class DiagramRound:
 
 
 @dataclass(frozen=True, slots=True)
-class CipherDiagram:
+class PrimitiveDiagram:
     """Validated nodes, selection edges, and round groups."""
 
-    cipher_name: str
+    primitive_name: str
     nodes: tuple[DiagramNode, ...]
     edges: tuple[DiagramEdge, ...]
     rounds: tuple[DiagramRound, ...]
 
     def __post_init__(self) -> None:
         identifiers = tuple(node.node_id for node in self.nodes)
-        if not self.cipher_name or len(set(identifiers)) != len(identifiers):
+        if not self.primitive_name or len(set(identifiers)) != len(identifiers):
             raise ValueError("diagram name must be nonempty and node IDs unique")
         known = set(identifiers)
         if any(edge.source_id not in known or edge.destination_id not in known for edge in self.edges):

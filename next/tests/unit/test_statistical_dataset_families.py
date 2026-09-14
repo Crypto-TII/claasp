@@ -8,12 +8,12 @@ from claasp_next.analysis.statistical_datasets import (
     high_density_dataset,
     low_density_dataset,
 )
-from claasp_next.ciphers import SpeckBlockCipher
+from claasp_next.primitives import Speck
 
 
 @pytest.fixture
 def speck():
-    return SpeckBlockCipher(number_of_rounds=1)
+    return Speck(number_of_rounds=1)
 
 
 def test_correlation_dataset_is_lazy_reiterable_and_has_fixed_evidence(speck):
@@ -53,10 +53,10 @@ def test_cbc_dataset_chains_outputs_and_serializes_lazily(speck):
 
 
 def test_manifest_binds_construction_and_realization_provenance():
-    from claasp_next.ciphers import AESBlockCipher
+    from claasp_next.primitives import AES
 
     dataset = cbc_dataset(
-        AESBlockCipher(number_of_rounds=1, realization="algebraic"),
+        AES(number_of_rounds=1, realization="algebraic"),
         "plaintext",
         1,
         1,

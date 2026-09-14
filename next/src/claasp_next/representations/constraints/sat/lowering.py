@@ -15,7 +15,7 @@ from claasp_next.components import (
     Rotate,
     Xor,
 )
-from claasp_next.graph import Cipher
+from claasp_next.graph import Primitive
 from claasp_next.domains import Bit, Word
 from claasp_next.representations.execution import EvaluationResult
 
@@ -29,10 +29,10 @@ class BooleanCNFModel:
     SAT-solver dependency.
     """
 
-    def __init__(self, cipher: Cipher) -> None:
-        if not isinstance(cipher, Cipher):
-            raise TypeError("cipher must be a Cipher")
-        self.cipher = cipher
+    def __init__(self, primitive: Primitive) -> None:
+        if not isinstance(primitive, Primitive):
+            raise TypeError("primitive must be a Primitive")
+        self.primitive = primitive
         self._auxiliary_definitions: tuple[tuple[str, tuple[str, ...]], ...] = ()
         self._formula: CNFFormula | None = None
 
@@ -45,7 +45,7 @@ class BooleanCNFModel:
 
         if self._formula is not None:
             return self._formula
-        sources = list(self.cipher.inputs.values()) + [component.output for component in self.cipher.components]
+        sources = list(self.primitive.inputs.values()) + [component.output for component in self.primitive.components]
         for port in sources:
             if not isinstance(port.value_type.domain, (Bit, Word)):
                 raise ValueError(
@@ -103,7 +103,7 @@ class BooleanCNFModel:
             add_clause((a, -y), label)
             add_clause((b, -y), label)
 
-        for component in self.cipher.components:
+        for component in self.primitive.components:
             label = component.component_id
             outputs = [
                 unit_variable_names(label, component.output_type, i)
@@ -250,7 +250,7 @@ class BooleanCNFModel:
         return {name: assignment[name] for name in formula.variables}
 
     def _port_type(self, owner_id: str):
-        for port in list(self.cipher.inputs.values()) + [item.output for item in self.cipher.components]:
+        for port in list(self.primitive.inputs.values()) + [item.output for item in self.primitive.components]:
             if port.owner_id == owner_id:
                 return port.value_type
         raise KeyError(owner_id)

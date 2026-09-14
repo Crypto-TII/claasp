@@ -9,11 +9,11 @@ from claasp_next.analysis.neural import (
     black_box_dataset,
     xor_differential_dataset,
 )
-from claasp_next.ciphers import SpeckBlockCipher
+from claasp_next.primitives import Speck
 
 
 def test_black_box_dataset_is_seeded_binary_and_preserves_legacy_shape():
-    primitive = SpeckBlockCipher(number_of_rounds=1)
+    primitive = Speck(number_of_rounds=1)
     first = black_box_dataset(primitive, "plaintext", samples=12, seed=41)
     second = black_box_dataset(primitive, "plaintext", samples=12, seed=41)
 
@@ -26,7 +26,7 @@ def test_black_box_dataset_is_seeded_binary_and_preserves_legacy_shape():
 
 
 def test_differential_dataset_is_seeded_and_has_two_outputs():
-    primitive = SpeckBlockCipher(number_of_rounds=1)
+    primitive = Speck(number_of_rounds=1)
     differences = {"plaintext": 0x0040_0000, "key": 0}
     dataset = xor_differential_dataset(primitive, differences, samples=16, seed=7)
 
@@ -40,7 +40,7 @@ def test_differential_dataset_is_seeded_and_has_two_outputs():
 
 
 def test_dataset_generation_validates_contract_boundaries():
-    primitive = SpeckBlockCipher(number_of_rounds=1)
+    primitive = Speck(number_of_rounds=1)
     with pytest.raises(ValueError, match="unknown primitive input"):
         black_box_dataset(primitive, "message", samples=2)
     with pytest.raises(ValueError, match="every primitive input"):

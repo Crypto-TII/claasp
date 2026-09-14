@@ -2,14 +2,14 @@
 
 from claasp_next.components import Concatenate, ModularAdd, Rotate, Xor
 from claasp_next.domains import Word
-from claasp_next.graph import Cipher, Port, Selection, ValueType
+from claasp_next.graph import Primitive, Port, Selection, ValueType
 
 
 _COLUMNS = ((0, 4, 8, 12), (5, 9, 13, 1), (10, 14, 2, 6), (15, 3, 7, 11))
 _ROWS = ((0, 1, 2, 3), (5, 6, 7, 4), (10, 11, 8, 9), (15, 12, 13, 14))
 
 
-class Salsa(Cipher):
+class Salsa(Primitive):
     """Build the word-oriented Salsa permutation.
 
     One round applies four complete quarter rounds. Column and row rounds
@@ -20,7 +20,7 @@ class Salsa(Cipher):
     CLAASP vectors.
 
     Examples:
-        >>> from claasp_next.ciphers.permutations.salsa import Salsa
+        >>> from claasp_next.primitives.permutations.salsa import Salsa
         >>> state = 1 << (15 * 32)
         >>> hex(Salsa(number_of_rounds=2).evaluate(state))
         '0x8186a22d0040a2848247921006929051080000900240220000004000008000000001020020400000080081040000000020500000a00000400008180a612a8020'

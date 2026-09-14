@@ -1,9 +1,9 @@
-"""Work-in-progress textual serialization of cipher diagrams."""
+"""Work-in-progress textual serialization of primitive diagrams."""
 
 import warnings
 
 from claasp_next.representations.diagrams.formatting import format_annotation, format_positions
-from claasp_next.representations.diagrams.model import CipherDiagram
+from claasp_next.representations.diagrams.model import PrimitiveDiagram
 
 
 class ASCIIArtWorkInProgressWarning(UserWarning):
@@ -16,22 +16,22 @@ class ASCIIArtSerializer:
     .. warning::
 
        This serializer is a work in progress. Its output is useful for
-       inspecting the diagram IR, but it does not yet draw an actual cipher
+       inspecting the diagram IR, but it does not yet draw an actual primitive
        diagram with boxes and routed connectors.
     """
 
-    def serialize(self, diagram: CipherDiagram) -> str:
+    def serialize(self, diagram: PrimitiveDiagram) -> str:
         """Return the temporary graph listing and emit a WIP warning."""
 
-        if not isinstance(diagram, CipherDiagram):
-            raise TypeError("diagram must be a CipherDiagram")
+        if not isinstance(diagram, PrimitiveDiagram):
+            raise TypeError("diagram must be a PrimitiveDiagram")
         warnings.warn(
-            "ASCII cipher diagrams are a work in progress; the current output "
+            "ASCII primitive diagrams are a work in progress; the current output "
             "is a structural listing, not routed ASCII art",
             ASCIIArtWorkInProgressWarning,
             stacklevel=2,
         )
-        lines = [f"cipher {diagram.cipher_name}", "inputs"]
+        lines = [f"primitive {diagram.primitive_name}", "inputs"]
         for node in diagram.nodes:
             if node.kind == "input":
                 lines.append(f"  {node.node_id}{_annotation(node.annotation)}")
@@ -49,9 +49,9 @@ class ASCIIArtSerializer:
                 lines.append(
                     f"  {node.node_id}: {node.label} <- {sources}{_annotation(node.annotation)}"
                 )
-        if "__cipher_output__" in incoming:
-            edge = incoming["__cipher_output__"][0]
-            node = diagram.node("__cipher_output__")
+        if "__primitive_output__" in incoming:
+            edge = incoming["__primitive_output__"][0]
+            node = diagram.node("__primitive_output__")
             lines.append(
                 f"output <- {edge.source_id}[{format_positions(edge.positions)}]"
                 f"{_annotation(node.annotation)}"

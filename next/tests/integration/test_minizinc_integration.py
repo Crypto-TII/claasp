@@ -5,7 +5,7 @@ import pytest
 
 from claasp_next.drivers.solvers import CPStatus, MiniZincSolver
 from claasp_next.analysis import AnalysisProblem, FixedValue
-from claasp_next.ciphers import AESBlockCipher, SimonBlockCipher, SpeckBlockCipher
+from claasp_next.primitives import AES, Simon, Speck
 from claasp_next.representations.constraints.cp import MiniZincModel
 from claasp_next.semantics import (
     DETERMINISTIC_TRUNCATED_XOR,
@@ -38,7 +38,7 @@ from claasp_next.representations.constraints.smt.trails import (
     check_present_linear_smt_trail,
     check_present_smt_trail,
 )
-from claasp_next.ciphers import PresentBlockCipher
+from claasp_next.primitives import Present
 
 
 pytestmark = pytest.mark.external
@@ -89,11 +89,11 @@ def test_minizinc_reports_unsatisfiable_models():
 
 
 def test_minizinc_recovers_and_independently_verifies_reduced_speck_key():
-    cipher = SpeckBlockCipher(number_of_rounds=1)
+    primitive = Speck(number_of_rounds=1)
     plaintext = 0x6574694C
-    ciphertext = cipher.evaluate(plaintext, 0x1918111009080100)
+    ciphertext = primitive.evaluate(plaintext, 0x1918111009080100)
 
-    result = cipher.analyze().recover_input(
+    result = primitive.analyze().recover_input(
         "key",
         known_inputs={"plaintext": plaintext},
         output=ciphertext,
@@ -101,41 +101,41 @@ def test_minizinc_recovers_and_independently_verifies_reduced_speck_key():
     )
 
     assert result.is_satisfiable
-    assert cipher.evaluate(plaintext, result.value("key")) == ciphertext
+    assert primitive.evaluate(plaintext, result.value("key")) == ciphertext
 
 
 def test_minizinc_reproduces_legacy_full_speck_missing_bits_result():
-    cipher = SpeckBlockCipher(number_of_rounds=22)
+    primitive = Speck(number_of_rounds=22)
     problem = AnalysisProblem(
-        cipher,
+        primitive,
         (
-            FixedValue(cipher.input("plaintext"), 0x6574694C),
-            FixedValue(cipher.input("key"), 0x1918111009080100),
+            FixedValue(primitive.input("plaintext"), 0x6574694C),
+            FixedValue(primitive.input("key"), 0x1918111009080100),
         ),
-        {"ciphertext": cipher.output},
+        {"ciphertext": primitive.output},
     )
 
-    result = cipher.analyze().solve(
+    result = primitive.analyze().solve(
         problem,
         MiniZincSolver(solver=_test_solver(), timeout_seconds=60),
     )
 
     assert result.is_satisfiable
     assert result.value("ciphertext") == 0xA86842F2
-    assert cipher.evaluate(0x6574694C, 0x1918111009080100) == result.value("ciphertext")
+    assert primitive.evaluate(0x6574694C, 0x1918111009080100) == result.value("ciphertext")
 
 
 def test_minizinc_proves_present_two_round_differential_optimum():
-    cipher = PresentBlockCipher(number_of_rounds=2)
+    primitive = Present(number_of_rounds=2)
     solver = MiniZincSolver(solver=_test_solver(), timeout_seconds=60)
     below = PresentDifferentialCPModel(PropagationProblem(
-        cipher,
+        primitive,
         XOR_DIFFERENTIAL,
         maximum_weight=3,
         provenance=("PRESENT-2 legacy lower bound",),
     ))
     optimum = PresentDifferentialCPModel(PropagationProblem(
-        cipher,
+        primitive,
         XOR_DIFFERENTIAL,
         maximum_weight=4,
         provenance=("PRESENT-2 legacy optimum",),
@@ -147,20 +147,20 @@ def test_minizinc_proves_present_two_round_differential_optimum():
 
     assert solved.status is CPStatus.SATISFIED
     assert trail.total_weight == 4
-    assert check_present_smt_trail(cipher, trail)
+    assert check_present_smt_trail(primitive, trail)
 
 
 def test_minizinc_proves_present_three_round_linear_optimum_with_signs():
-    cipher = PresentBlockCipher(number_of_rounds=3)
+    primitive = Present(number_of_rounds=3)
     solver = MiniZincSolver(solver=_test_solver(), timeout_seconds=60)
     below = PresentLinearCPModel(PropagationProblem(
-        cipher,
+        primitive,
         XOR_LINEAR,
         maximum_weight=3,
         provenance=("PRESENT-3 legacy linear lower bound",),
     ))
     optimum = PresentLinearCPModel(PropagationProblem(
-        cipher,
+        primitive,
         XOR_LINEAR,
         maximum_weight=4,
         provenance=("PRESENT-3 legacy linear optimum",),
@@ -173,14 +173,14 @@ def test_minizinc_proves_present_three_round_linear_optimum_with_signs():
     assert solved.status is CPStatus.SATISFIED
     assert trail.total_weight == 4
     assert all(step.transition.sign in (-1, 1) for step in trail.steps)
-    assert check_present_linear_smt_trail(cipher, trail)
+    assert check_present_linear_smt_trail(primitive, trail)
 
 
 def test_minizinc_reproduces_legacy_speck_truncated_round_fixture():
-    cipher = SpeckBlockCipher(number_of_rounds=2)
+    primitive = Speck(number_of_rounds=2)
     model = SpeckTruncatedCPModel(
         PropagationProblem(
-            cipher,
+            primitive,
             DETERMINISTIC_TRUNCATED_XOR,
             provenance=("legacy Speck deterministic-truncated fixture",),
         ),
@@ -195,9 +195,9 @@ def test_minizinc_reproduces_legacy_speck_truncated_round_fixture():
 
 
 def test_minizinc_proves_impossible_and_possible_present_sbox_pairs():
-    cipher = PresentBlockCipher(number_of_rounds=1)
+    primitive = Present(number_of_rounds=1)
     problem = PropagationProblem(
-        cipher,
+        primitive,
         XOR_DIFFERENTIAL,
         provenance=("exhaustive PRESENT S-box DDT",),
     )
@@ -215,8 +215,8 @@ def test_minizinc_proves_impossible_and_possible_present_sbox_pairs():
 
 
 def test_minizinc_preserves_exact_present_boomerang_connectivity_entries():
-    cipher = PresentBlockCipher(number_of_rounds=1)
-    component = next(item for item in cipher.components if item.component_id == "sbox_1_0")
+    primitive = Present(number_of_rounds=1)
+    component = next(item for item in primitive.components if item.component_id == "sbox_1_0")
     solver = MiniZincSolver(solver=_test_solver())
 
     impossible = SBoxBoomerangCPModel(component, 1, 1)
@@ -231,14 +231,14 @@ def test_minizinc_preserves_exact_present_boomerang_connectivity_entries():
 
 
 def test_minizinc_proves_legacy_speck_five_round_differential_optimum():
-    cipher = SpeckBlockCipher(number_of_rounds=5)
+    primitive = Speck(number_of_rounds=5)
     solver = MiniZincSolver(solver=_test_solver(require_chuffed=True), timeout_seconds=30)
     below = SpeckDifferentialCPModel(PropagationProblem(
-        cipher, XOR_DIFFERENTIAL, maximum_weight=8,
+        primitive, XOR_DIFFERENTIAL, maximum_weight=8,
         provenance=("legacy Speck32/64-5 lower bound",),
     ))
     optimum = SpeckDifferentialCPModel(PropagationProblem(
-        cipher, XOR_DIFFERENTIAL, maximum_weight=9,
+        primitive, XOR_DIFFERENTIAL, maximum_weight=9,
         provenance=("legacy Speck32/64-5 optimum",),
     ))
 
@@ -308,10 +308,10 @@ def test_minizinc_preserves_legacy_probabilistic_truncated_modadd_costs(
 def test_minizinc_preserves_legacy_speck_probabilistic_truncated_trails(
     rounds, input_pattern, output_pattern, expected_weight
 ):
-    cipher = SpeckBlockCipher(number_of_rounds=rounds)
+    primitive = Speck(number_of_rounds=rounds)
     model = SpeckProbabilisticTruncatedCPModel(
         PropagationProblem(
-            cipher, PROBABILISTIC_TRUNCATED_XOR,
+            primitive, PROBABILISTIC_TRUNCATED_XOR,
             provenance=("legacy semi-deterministic Speck fixture",),
         ),
         TruncatedXorDifference.parse(input_pattern),
@@ -343,7 +343,7 @@ def test_minizinc_projects_native_wordwise_states_to_typed_values():
 
 
 def test_minizinc_projects_wordwise_aes_single_byte_diffusion_fixture():
-    words = propagate_single_active_aes_byte(AESBlockCipher(number_of_rounds=1), 0)
+    words = propagate_single_active_aes_byte(AES(number_of_rounds=1), 0)
     model = WordwiseDifferenceCPModel(words)
 
     solved = MiniZincSolver(solver=_test_solver()).solve(model.cp_model())
@@ -379,7 +379,7 @@ def test_minizinc_rejects_a_compatible_middle_boundary():
 
 
 def test_minizinc_preserves_legacy_speck_seven_round_impossible_unsat():
-    model = SpeckImpossibleCPModel(SpeckBlockCipher(number_of_rounds=7), middle_round=3)
+    model = SpeckImpossibleCPModel(Speck(number_of_rounds=7), middle_round=3)
 
     solved = MiniZincSolver(
         solver=_test_solver(require_chuffed=True), timeout_seconds=30
@@ -394,7 +394,7 @@ def test_minizinc_preserves_legacy_speck_seven_round_impossible_unsat():
 
 def test_minizinc_preserves_legacy_simon_eleven_round_impossible_fixture():
     model = SimonImpossibleCPModel(
-        SimonBlockCipher(number_of_rounds=11),
+        Simon(number_of_rounds=11),
         TruncatedXorDifference.parse("00000000000000000000000000000001"),
         TruncatedXorDifference.parse("000000?0?00000000000000000000000"),
         middle_round=6,

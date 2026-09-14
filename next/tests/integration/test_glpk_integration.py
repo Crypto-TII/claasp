@@ -4,7 +4,7 @@ from claasp_next.representations.constraints.milp import (
     BooleanMonomialGraphMILPModel, ConstraintSense, LinearConstraint, LinearExpression, LinearVariable,
     MILPModel, ObjectiveSense, VariableKind,
 )
-from claasp_next.ciphers import SimonBlockCipher
+from claasp_next.primitives import Simon
 from claasp_next.drivers.solvers import GLPKSolver, MILPStatus
 
 
@@ -41,7 +41,7 @@ def test_glpk_reports_an_infeasible_model_without_a_witness():
 @pytest.mark.parametrize("rounds, expected", ((1, 2), (2, 3), (4, 8)))
 def test_glpk_recovers_exact_reduced_simon_degree_fixtures(rounds, expected):
     model = BooleanMonomialGraphMILPModel(
-        SimonBlockCipher(number_of_rounds=rounds), 0, "plaintext"
+        Simon(number_of_rounds=rounds), 0, "plaintext"
     ).milp_model()
     result = GLPKSolver().solve(model)
     assert result.status is MILPStatus.OPTIMAL
@@ -51,7 +51,7 @@ def test_glpk_recovers_exact_reduced_simon_degree_fixtures(rounds, expected):
 
 def test_glpk_preserves_legacy_simon_thirteen_cube_degree():
     model = BooleanMonomialGraphMILPModel(
-        SimonBlockCipher(number_of_rounds=13), 16, "plaintext", range(1, 32)
+        Simon(number_of_rounds=13), 16, "plaintext", range(1, 32)
     ).milp_model()
     result = GLPKSolver(timeout_seconds=30).solve(model)
     assert result.status is MILPStatus.OPTIMAL

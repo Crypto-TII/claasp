@@ -10,7 +10,7 @@ from claasp_next.analysis.problem import AnalysisProblem
 from claasp_next.representations.constraints.sat.cnf import CNFFormula
 from claasp_next.representations.constraints.sat.encoding import decode_unit, selection_variable_names
 from claasp_next.drivers.solvers import MinisatSolver, SatResult, SatStatus
-from claasp_next.graph import Cipher, Selection
+from claasp_next.graph import Primitive, Selection
 
 
 @dataclass(frozen=True, slots=True)
@@ -39,16 +39,16 @@ class AnalysisResult:
 
 
 class Analysis:
-    """Create and solve analyses for one cipher graph."""
+    """Create and solve analyses for one primitive graph."""
 
-    def __init__(self, cipher: Cipher) -> None:
-        self.cipher = cipher
+    def __init__(self, primitive: Primitive) -> None:
+        self.primitive = primitive
 
     def solve(self, problem: AnalysisProblem, solver: object | None = None) -> AnalysisResult:
         """Solve a backend-neutral problem through a SAT adapter."""
 
-        if problem.cipher is not self.cipher:
-            raise ValueError("analysis problem belongs to a different cipher")
+        if problem.primitive is not self.primitive:
+            raise ValueError("analysis problem belongs to a different primitive")
         formula = lower_boolean_problem(problem)
         selected_solver = MinisatSolver() if solver is None else solver
         if not hasattr(selected_solver, "solve"):
@@ -69,8 +69,8 @@ class Analysis:
         graph-level projections. At least one projection is therefore required.
         """
 
-        if problem.cipher is not self.cipher:
-            raise ValueError("analysis problem belongs to a different cipher")
+        if problem.primitive is not self.primitive:
+            raise ValueError("analysis problem belongs to a different primitive")
         if not isinstance(limit, int) or isinstance(limit, bool) or limit <= 0:
             raise ValueError("solution limit must be a positive integer")
         if not problem.projections:
@@ -109,7 +109,7 @@ class Analysis:
         if solved.is_satisfiable:
             for name, selection in problem.projections.items():
                 units = self._project(selection, solved.assignment)
-                projected[name] = self.cipher._encode_boundary(units, selection.value_type)
+                projected[name] = self.primitive._encode_boundary(units, selection.value_type)
         if getattr(solved.status, "value", None) == "unknown":
             raise RuntimeError("solver returned unknown; no analysis result can be projected")
         status = (
@@ -124,7 +124,7 @@ class Analysis:
             type(selected_solver).__name__,
             {"variables": formula.variable_count, "clauses": formula.clause_count},
             {
-                "cipher": self.cipher.family_name,
+                "primitive": self.primitive.family_name,
                 "backend": type(selected_solver).__name__,
                 "executable": str(getattr(selected_solver, "executable", "embedded")),
                 "formula_sha256": sha256(repr((formula.variables, formula.clauses)).encode()).hexdigest(),
@@ -140,40 +140,40 @@ class Analysis:
         output: object,
         solver: object | None = None,
     ) -> AnalysisResult:
-        """Recover one unknown input from known inputs and cipher output."""
+        """Recover one unknown input from known inputs and primitive output."""
 
-        if input_name not in self.cipher.inputs:
-            raise ValueError(f"unknown cipher input {input_name!r}")
+        if input_name not in self.primitive.inputs:
+            raise ValueError(f"unknown primitive input {input_name!r}")
         if input_name in known_inputs:
             raise ValueError("the recovered input must not also be fixed")
-        expected_known = set(self.cipher.inputs) - {input_name}
+        expected_known = set(self.primitive.inputs) - {input_name}
         if set(known_inputs) != expected_known:
             raise ValueError(
                 f"known_inputs must contain exactly {sorted(expected_known)!r}"
             )
-        if self.cipher.output is None:
-            raise ValueError("cipher has no declared output")
+        if self.primitive.output is None:
+            raise ValueError("primitive has no declared output")
         constraints = [
-            FixedValue(self.cipher.input(name), value) for name, value in known_inputs.items()
+            FixedValue(self.primitive.input(name), value) for name, value in known_inputs.items()
         ]
-        constraints.append(FixedValue(self.cipher.output, output))
+        constraints.append(FixedValue(self.primitive.output, output))
         problem = AnalysisProblem(
-            self.cipher,
+            self.primitive,
             constraints,
-            {input_name: self.cipher.input(input_name)},
+            {input_name: self.primitive.input(input_name)},
         )
         return self.solve(problem, solver)
 
     def find_lowest_weight_xor_differential_trail(self):
         """Find the lowest-weight trail supported by the reviewed graph slice."""
 
-        if self.cipher.family_name == "speck":
+        if self.primitive.family_name == "speck":
             from claasp_next.analysis.arx import find_two_round_speck_xor_differential
 
-            return find_two_round_speck_xor_differential(self.cipher)
+            return find_two_round_speck_xor_differential(self.primitive)
         from claasp_next.analysis.spn import find_two_round_spn_xor_differential
 
-        return find_two_round_spn_xor_differential(self.cipher)
+        return find_two_round_spn_xor_differential(self.primitive)
 
     def avalanche(
         self, input_name: str, number_of_samples: int, *, seed: int = 0,
@@ -184,7 +184,7 @@ class Analysis:
         from claasp_next.analysis.avalanche import avalanche_probabilities
 
         return avalanche_probabilities(
-            self.cipher, input_name, number_of_samples,
+            self.primitive, input_name, number_of_samples,
             seed=seed, fixed_inputs=fixed_inputs,
         )
 
@@ -197,7 +197,7 @@ class Analysis:
         from claasp_next.components import BitVectorSBox
 
         component = next(
-            (item for item in self.cipher.components if item.component_id == component_id),
+            (item for item in self.primitive.components if item.component_id == component_id),
             None,
         )
         if not isinstance(component, BitVectorSBox):
@@ -209,13 +209,13 @@ class Analysis:
     def find_lowest_weight_xor_linear_trail(self):
         """Find the lowest-weight linear trail supported by the reviewed slice."""
 
-        if self.cipher.family_name == "speck":
+        if self.primitive.family_name == "speck":
             from claasp_next.analysis.arx import find_four_round_speck_xor_linear
 
-            return find_four_round_speck_xor_linear(self.cipher)
+            return find_four_round_speck_xor_linear(self.primitive)
         from claasp_next.analysis.spn import find_three_round_spn_xor_linear
 
-        return find_three_round_spn_xor_linear(self.cipher)
+        return find_three_round_spn_xor_linear(self.primitive)
 
     @staticmethod
     def _project(selection: Selection, assignment: Mapping[str, int]) -> tuple[int, ...]:

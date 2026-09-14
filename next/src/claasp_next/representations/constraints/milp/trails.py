@@ -6,7 +6,7 @@ from claasp_next.semantics.cryptanalysis import (
     XorDifference,
 )
 from claasp_next.components import BitVectorSBox, Permutation
-from claasp_next.graph import Cipher
+from claasp_next.graph import Primitive
 from claasp_next.representations.constraints.milp.model import (
     ConstraintSense, LinearConstraint, LinearExpression, LinearVariable,
     MILPModel, ObjectiveSense, VariableKind,
@@ -17,21 +17,21 @@ from claasp_next.representations.constraints.smt.trails import check_present_smt
 class PresentDifferentialMILPModel:
     """Exact two-round PRESENT XOR-differential optimization model."""
 
-    def __init__(self, cipher: Cipher | PropagationProblem) -> None:
+    def __init__(self, primitive: Primitive | PropagationProblem) -> None:
         problem = (
-            cipher
-            if isinstance(cipher, PropagationProblem)
+            primitive
+            if isinstance(primitive, PropagationProblem)
             else PropagationProblem(
-                cipher, XOR_DIFFERENTIAL,
+                primitive, XOR_DIFFERENTIAL,
                 provenance=("PRESENT-2 MILP convenience constructor",),
             )
         )
         if problem.semantics != XOR_DIFFERENTIAL:
             raise ValueError("differential MILP lowering requires the XOR-differential semantics")
-        cipher = problem.cipher
-        if cipher.family_name != "present" or len(cipher.rounds) != 2:
+        primitive = problem.primitive
+        if primitive.family_name != "present" or len(primitive.rounds) != 2:
             raise NotImplementedError("weighted MILP trail model currently supports PRESENT-2")
-        self.cipher = cipher
+        self.primitive = primitive
         self.problem = problem
         self._records = ()
         self._input_names = ()
@@ -51,13 +51,13 @@ class PresentDifferentialMILPModel:
         plaintext = tuple(binary(f"plaintext_{bit}") for bit in range(64))
         first_output = tuple(binary(f"round_1_sbox_output_{bit}") for bit in range(64))
         second_output = tuple(binary(f"round_2_sbox_output_{bit}") for bit in range(64))
-        permutation = _component(self.cipher, "p_layer_1", Permutation)
+        permutation = _component(self.primitive, "p_layer_1", Permutation)
         second_input = tuple(first_output[position] for position in permutation.mapping)
         records = []
         for round_number, (inputs, outputs) in enumerate(
             ((plaintext, first_output), (second_input, second_output)), start=1
         ):
-            for nibble, component in enumerate(_round_sboxes(self.cipher, round_number)):
+            for nibble, component in enumerate(_round_sboxes(self.primitive, round_number)):
                 start = 4 * nibble
                 local_input = inputs[start : start + 4]
                 local_output = outputs[start : start + 4]
@@ -99,7 +99,7 @@ class PresentDifferentialMILPModel:
 
         if not self._records:
             raise ValueError("build the MILP model before decoding a trail")
-        components = {component.component_id: component for component in self.cipher.components}
+        components = {component.component_id: component for component in self.primitive.components}
         steps = []
         for component_id, inputs, outputs in self._records:
             semantics = self.problem.provider_for(components[component_id])
@@ -107,7 +107,7 @@ class PresentDifferentialMILPModel:
             target = _integer(round(assignment[name]) for name in outputs)
             steps.append(TrailStep(component_id, semantics.transition((source,), target)))
         raw_output = _integer(round(assignment[name]) for name in self._last_output_names)
-        final = _permute(raw_output, _component(self.cipher, "p_layer_2", Permutation).mapping)
+        final = _permute(raw_output, _component(self.primitive, "p_layer_2", Permutation).mapping)
         return Trail(
             TrailKind.XOR_DIFFERENTIAL,
             XorDifference(_integer(round(assignment[name]) for name in self._input_names), 64),
@@ -116,10 +116,10 @@ class PresentDifferentialMILPModel:
         )
 
 
-def check_present_milp_trail(cipher: Cipher, trail: Trail) -> bool:
+def check_present_milp_trail(primitive: Primitive, trail: Trail) -> bool:
     """Independently check a decoded trail using shared semantics and wiring."""
 
-    return check_present_smt_trail(cipher, trail)
+    return check_present_smt_trail(primitive, trail)
 
 
 def _equal(terms, rhs):
@@ -142,16 +142,16 @@ def _permute(value, mapping):
     return _integer(bits[position] for position in mapping)
 
 
-def _round_sboxes(cipher, round_number):
+def _round_sboxes(primitive, round_number):
     prefix = f"sbox_{round_number}_"
-    result = tuple(component for component in cipher.components if isinstance(component, BitVectorSBox) and component.component_id.startswith(prefix))
+    result = tuple(component for component in primitive.components if isinstance(component, BitVectorSBox) and component.component_id.startswith(prefix))
     if len(result) != 16:
         raise ValueError(f"PRESENT round {round_number} must contain 16 state S-boxes")
     return result
 
 
-def _component(cipher, component_id, expected_type):
-    component = next((item for item in cipher.components if item.component_id == component_id), None)
+def _component(primitive, component_id, expected_type):
+    component = next((item for item in primitive.components if item.component_id == component_id), None)
     if not isinstance(component, expected_type):
-        raise ValueError(f"cipher is missing {component_id!r}")
+        raise ValueError(f"primitive is missing {component_id!r}")
     return component

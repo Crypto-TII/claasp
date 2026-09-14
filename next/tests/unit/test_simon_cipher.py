@@ -1,6 +1,6 @@
 import pytest
 
-from claasp_next.ciphers import SimonBlockCipher
+from claasp_next.primitives import Simon
 from claasp_next.representations.execution import BatchEvaluator, TransposedBatchEvaluator
 
 
@@ -13,9 +13,9 @@ from claasp_next.representations.execution import BatchEvaluator, TransposedBatc
      0x8D2B5579AFC8A3A03BF72A87EFE7B868),
 ))
 def test_simon_preserves_legacy_and_official_vectors(block_size, key_size, plaintext, key, ciphertext):
-    cipher = SimonBlockCipher(block_size, key_size)
+    primitive = Simon(block_size, key_size)
 
-    assert cipher.evaluate(plaintext, key) == ciphertext
+    assert primitive.evaluate(plaintext, key) == ciphertext
     width = block_size // 2
     mask = (1 << width) - 1
     inputs = {
@@ -25,12 +25,12 @@ def test_simon_preserves_legacy_and_official_vectors(block_size, key_size, plain
         ),),
     }
     expected = (((ciphertext >> width) & mask, ciphertext & mask),)
-    assert BatchEvaluator().evaluate(cipher, inputs).outputs == expected
-    assert TransposedBatchEvaluator().evaluate(cipher, inputs).outputs == expected
+    assert BatchEvaluator().evaluate(primitive, inputs).outputs == expected
+    assert TransposedBatchEvaluator().evaluate(primitive, inputs).outputs == expected
 
 
 def test_simon_rejects_invalid_parameters():
     with pytest.raises(ValueError, match="unsupported"):
-        SimonBlockCipher(32, 128)
+        Simon(32, 128)
     with pytest.raises(ValueError, match="between 1 and 32"):
-        SimonBlockCipher(number_of_rounds=33)
+        Simon(number_of_rounds=33)

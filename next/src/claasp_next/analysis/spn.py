@@ -1,4 +1,4 @@
-"""Exact small-round SPN trail search over typed cipher graphs."""
+"""Exact small-round SPN trail search over typed primitive graphs."""
 
 from math import inf
 
@@ -12,11 +12,11 @@ from claasp_next.semantics.cryptanalysis import (
     XorMask,
 )
 from claasp_next.components import BitVectorSBox, Permutation
-from claasp_next.graph import Cipher
+from claasp_next.graph import Primitive
 from claasp_next.domains import Bit
 
 
-def find_two_round_spn_xor_differential(cipher: Cipher) -> TrailSearchResult:
+def find_two_round_spn_xor_differential(primitive: Primitive) -> TrailSearchResult:
     """Find an exact nonzero two-round XOR-differential SPN trail.
 
     The current reviewed slice accepts the two-round PRESENT graph. It derives
@@ -25,13 +25,13 @@ def find_two_round_spn_xor_differential(cipher: Cipher) -> TrailSearchResult:
     nonzero-transition lower bound for both substitution layers.
     """
 
-    _validate_present_slice(cipher)
-    first_sboxes = _round_sboxes(cipher, 1)
-    second_sboxes = _round_sboxes(cipher, 2)
-    first_permutation = _component(cipher, "p_layer_1", Permutation)
-    second_permutation = _component(cipher, "p_layer_2", Permutation)
+    _validate_present_slice(primitive)
+    first_sboxes = _round_sboxes(primitive, 1)
+    second_sboxes = _round_sboxes(primitive, 2)
+    first_permutation = _component(primitive, "p_layer_1", Permutation)
+    second_permutation = _component(primitive, "p_layer_2", Permutation)
     semantics = SBoxTransitionSemantics(first_sboxes[0].table)
-    width = cipher.input("plaintext").value_type.unit_count
+    width = primitive.input("plaintext").value_type.unit_count
     nibble_count = width // semantics.width
     transitions = {
         difference: tuple(
@@ -104,10 +104,10 @@ def find_two_round_spn_xor_differential(cipher: Cipher) -> TrailSearchResult:
     )
 
 
-def check_spn_trail(cipher: Cipher, trail: Trail) -> bool:
+def check_spn_trail(primitive: Primitive, trail: Trail) -> bool:
     """Independently recompute transitions and SPN wiring in ``trail``."""
 
-    components = {component.component_id: component for component in cipher.components}
+    components = {component.component_id: component for component in primitive.components}
     for step in trail.steps:
         component = components.get(step.component_id)
         if not isinstance(component, BitVectorSBox):
@@ -122,7 +122,7 @@ def check_spn_trail(cipher: Cipher, trail: Trail) -> bool:
     if trail.input_pattern.value != first.transition.input_pattern.value << shift:
         return False
     first_output = first.transition.output_pattern.value << shift
-    first_permutation = _component(cipher, "p_layer_1", Permutation)
+    first_permutation = _component(primitive, "p_layer_1", Permutation)
     second_input = _permute(first_output, 64, first_permutation.mapping)
     second_output = 0
     for position, step in enumerate(second):
@@ -133,18 +133,18 @@ def check_spn_trail(cipher: Cipher, trail: Trail) -> bool:
     final = _permute(
         second_output,
         64,
-        _component(cipher, "p_layer_2", Permutation).mapping,
+        _component(primitive, "p_layer_2", Permutation).mapping,
     )
     return final == trail.output_pattern.value
 
 
-def find_three_round_spn_xor_linear(cipher: Cipher) -> TrailSearchResult:
+def find_three_round_spn_xor_linear(primitive: Primitive) -> TrailSearchResult:
     """Reproduce the preserved three-round PRESENT linear weight bound."""
 
-    _validate_present_linear_slice(cipher)
-    layers = tuple(_round_sboxes(cipher, round_number) for round_number in range(1, 4))
+    _validate_present_linear_slice(primitive)
+    layers = tuple(_round_sboxes(primitive, round_number) for round_number in range(1, 4))
     permutations = tuple(
-        _component(cipher, f"p_layer_{round_number}", Permutation)
+        _component(primitive, f"p_layer_{round_number}", Permutation)
         for round_number in range(1, 4)
     )
     semantics = SBoxTransitionSemantics(layers[0][0].table)
@@ -193,13 +193,13 @@ def find_three_round_spn_xor_linear(cipher: Cipher) -> TrailSearchResult:
     )
 
 
-def check_spn_linear_trail(cipher: Cipher, trail: Trail) -> bool:
+def check_spn_linear_trail(primitive: Primitive, trail: Trail) -> bool:
     """Independently check LAT entries and three PRESENT permutation boundaries."""
 
-    _validate_present_linear_slice(cipher)
+    _validate_present_linear_slice(primitive)
     if trail.kind is not TrailKind.XOR_LINEAR or len(trail.steps) != 33:
         return False
-    components = {component.component_id: component for component in cipher.components}
+    components = {component.component_id: component for component in primitive.components}
     for step in trail.steps:
         component = components.get(step.component_id)
         if not isinstance(component, BitVectorSBox):
@@ -213,7 +213,7 @@ def check_spn_linear_trail(cipher: Cipher, trail: Trail) -> bool:
     state = first.transition.output_pattern.value << (4 * (15 - nibble))
     for round_index in range(3):
         state = _permute(
-            state, 64, _component(cipher, f"p_layer_{round_index + 1}", Permutation).mapping
+            state, 64, _component(primitive, f"p_layer_{round_index + 1}", Permutation).mapping
         )
         if round_index == 2:
             break
@@ -228,12 +228,12 @@ def check_spn_linear_trail(cipher: Cipher, trail: Trail) -> bool:
     return state == trail.output_pattern.value
 
 
-def _validate_present_slice(cipher: Cipher) -> None:
-    plaintext = cipher.inputs.get("plaintext")
-    key = cipher.inputs.get("key")
+def _validate_present_slice(primitive: Primitive) -> None:
+    plaintext = primitive.inputs.get("plaintext")
+    key = primitive.inputs.get("key")
     if (
-        cipher.family_name != "present"
-        or len(cipher.rounds) != 2
+        primitive.family_name != "present"
+        or len(primitive.rounds) != 2
         or plaintext is None
         or key is None
         or not isinstance(plaintext.value_type.domain, Bit)
@@ -244,11 +244,11 @@ def _validate_present_slice(cipher: Cipher) -> None:
         )
 
 
-def _validate_present_linear_slice(cipher: Cipher) -> None:
-    plaintext = cipher.inputs.get("plaintext")
+def _validate_present_linear_slice(primitive: Primitive) -> None:
+    plaintext = primitive.inputs.get("plaintext")
     if (
-        cipher.family_name != "present"
-        or len(cipher.rounds) != 3
+        primitive.family_name != "present"
+        or len(primitive.rounds) != 3
         or plaintext is None
         or not isinstance(plaintext.value_type.domain, Bit)
         or plaintext.value_type.unit_count != 64
@@ -258,11 +258,11 @@ def _validate_present_linear_slice(cipher: Cipher) -> None:
         )
 
 
-def _round_sboxes(cipher: Cipher, round_number: int) -> tuple[BitVectorSBox, ...]:
+def _round_sboxes(primitive: Primitive, round_number: int) -> tuple[BitVectorSBox, ...]:
     prefix = f"sbox_{round_number}_"
     result = tuple(
         component
-        for component in cipher.components
+        for component in primitive.components
         if isinstance(component, BitVectorSBox) and component.component_id.startswith(prefix)
     )
     if len(result) != 16:
@@ -270,12 +270,12 @@ def _round_sboxes(cipher: Cipher, round_number: int) -> tuple[BitVectorSBox, ...
     return result
 
 
-def _component(cipher: Cipher, component_id: str, expected_type):
+def _component(primitive: Primitive, component_id: str, expected_type):
     component = next(
-        (item for item in cipher.components if item.component_id == component_id), None
+        (item for item in primitive.components if item.component_id == component_id), None
     )
     if not isinstance(component, expected_type):
-        raise ValueError(f"cipher is missing {component_id!r} {expected_type.__name__}")
+        raise ValueError(f"primitive is missing {component_id!r} {expected_type.__name__}")
     return component
 
 

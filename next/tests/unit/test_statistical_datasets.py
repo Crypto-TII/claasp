@@ -3,11 +3,11 @@ from random import getstate
 import pytest
 
 from claasp_next.analysis.datasets import generate_avalanche_dataset, generate_random_dataset
-from claasp_next.ciphers import SpeckBlockCipher
+from claasp_next.primitives import Speck
 
 
 def test_random_dataset_is_reproducible_and_preserves_global_rng():
-    primitive = SpeckBlockCipher(number_of_rounds=1)
+    primitive = Speck(number_of_rounds=1)
     state = getstate()
     first = generate_random_dataset(primitive, 3, seed=17)
     second = generate_random_dataset(primitive, 3, seed=17)
@@ -23,7 +23,7 @@ def test_random_dataset_is_reproducible_and_preserves_global_rng():
 
 
 def test_random_dataset_can_fix_an_input_and_validates_arguments():
-    primitive = SpeckBlockCipher(number_of_rounds=1)
+    primitive = Speck(number_of_rounds=1)
     dataset = generate_random_dataset(primitive, 2, seed=4, fixed_inputs={"key": 0})
     assert [sample.input("key") for sample in dataset.samples] == [0, 0]
 
@@ -34,7 +34,7 @@ def test_random_dataset_can_fix_an_input_and_validates_arguments():
 
 
 def test_avalanche_dataset_records_every_msb_first_input_flip():
-    primitive = SpeckBlockCipher(number_of_rounds=1)
+    primitive = Speck(number_of_rounds=1)
     dataset = generate_avalanche_dataset(
         primitive, "plaintext", 2, seed=9, fixed_inputs={"key": 0}
     )

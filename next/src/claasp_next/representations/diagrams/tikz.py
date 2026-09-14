@@ -1,19 +1,19 @@
-"""Standalone TikZ serialization of cipher diagram representations."""
+"""Standalone TikZ serialization of primitive diagram representations."""
 
 import re
 
 from claasp_next.representations.diagrams.formatting import format_annotation, format_positions
-from claasp_next.representations.diagrams.model import CipherDiagram
+from claasp_next.representations.diagrams.model import PrimitiveDiagram
 
 
 class TikZSerializer:
     """Render a diagram as a compilable LaTeX document."""
 
-    def serialize(self, diagram: CipherDiagram) -> str:
+    def serialize(self, diagram: PrimitiveDiagram) -> str:
         """Return deterministic TikZ with no external Python dependencies."""
 
-        if not isinstance(diagram, CipherDiagram):
-            raise TypeError("diagram must be a CipherDiagram")
+        if not isinstance(diagram, PrimitiveDiagram):
+            raise TypeError("diagram must be a PrimitiveDiagram")
         coordinates = _coordinates(diagram)
         names = {node.node_id: f"n{index}" for index, node in enumerate(diagram.nodes)}
         lines = [
@@ -41,7 +41,7 @@ class TikZSerializer:
         return "\n".join(lines)
 
 
-def _coordinates(diagram: CipherDiagram):
+def _coordinates(diagram: PrimitiveDiagram):
     coordinates = {}
     inputs = [node for node in diagram.nodes if node.kind == "input"]
     for index, node in enumerate(inputs):

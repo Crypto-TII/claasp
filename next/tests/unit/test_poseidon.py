@@ -1,6 +1,6 @@
 import pytest
 
-from claasp_next.ciphers import PoseidonPermutation
+from claasp_next.primitives import Poseidon
 from claasp_next.representations.execution import ScalarEvaluator
 
 
@@ -29,7 +29,7 @@ def test_toy_poseidon_matches_direct_round_function():
     constants = ((1, 2, 3), (4, 5, 6), (7, 8, 9))
     matrix = ((2, 1, 1), (1, 2, 1), (1, 1, 2))
     state = (3, 5, 8)
-    cipher = PoseidonPermutation(
+    primitive = Poseidon(
         modulus,
         exponent,
         full_rounds,
@@ -38,7 +38,7 @@ def test_toy_poseidon_matches_direct_round_function():
         matrix,
     )
 
-    result = ScalarEvaluator().evaluate(cipher, {"state": state})
+    result = ScalarEvaluator().evaluate(primitive, {"state": state})
 
     assert result.output == _direct_poseidon(
         state,
@@ -49,23 +49,23 @@ def test_toy_poseidon_matches_direct_round_function():
         constants,
         matrix,
     )
-    assert len(cipher.rounds) == 3
-    assert [len(cipher_round.components) for cipher_round in cipher.rounds] == [4, 5, 4]
+    assert len(primitive.rounds) == 3
+    assert [len(primitive_round.components) for primitive_round in primitive.rounds] == [4, 5, 4]
 
 
 def test_poseidon_validates_structural_parameters():
     with pytest.raises(ValueError, match="positive even"):
-        PoseidonPermutation(17, 3, 3, 1, ((0,),) * 4, ((1,),))
+        Poseidon(17, 3, 3, 1, ((0,),) * 4, ((1,),))
 
     with pytest.raises(ValueError, match="coprime"):
-        PoseidonPermutation(17, 2, 2, 0, ((0,),) * 2, ((1,),))
+        Poseidon(17, 2, 2, 0, ((0,),) * 2, ((1,),))
 
     with pytest.raises(ValueError, match="square matrix"):
-        PoseidonPermutation(17, 3, 2, 0, ((0, 0),) * 2, ((1, 0),))
+        Poseidon(17, 3, 2, 0, ((0, 0),) * 2, ((1, 0),))
 
 
 def test_poseidon_width_one_partial_round_needs_no_concatenation():
-    cipher = PoseidonPermutation(
+    primitive = Poseidon(
         modulus=17,
         exponent=3,
         full_rounds=2,
@@ -74,7 +74,7 @@ def test_poseidon_width_one_partial_round_needs_no_concatenation():
         linear_layer=((1,),),
     )
 
-    result = ScalarEvaluator().evaluate(cipher, {"state": (4,)})
+    result = ScalarEvaluator().evaluate(primitive, {"state": (4,)})
 
     assert result.output is not None
-    assert all(not component.component_id.startswith("concatenate") for component in cipher.components)
+    assert all(not component.component_id.startswith("concatenate") for component in primitive.components)

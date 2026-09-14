@@ -1,11 +1,11 @@
 """Tests for scalable, explicitly inexact Boolean degree propagation."""
 
-from claasp_next.ciphers import SimonBlockCipher
+from claasp_next.primitives import Simon
 from claasp_next.representations.execution import BooleanDegreeEvaluator, BooleanSymbolicEvaluator
 
 
 def test_degree_propagation_is_a_sound_bound_on_exact_simon_degrees():
-    primitive = SimonBlockCipher(number_of_rounds=4)
+    primitive = Simon(number_of_rounds=4)
     bound = BooleanDegreeEvaluator().evaluate(primitive, "plaintext")
     exact = BooleanSymbolicEvaluator().evaluate(primitive)
 
@@ -18,13 +18,13 @@ def test_degree_propagation_is_a_sound_bound_on_exact_simon_degrees():
 
 def test_degree_propagation_scales_to_simon_thirteen():
     result = BooleanDegreeEvaluator().evaluate(
-        SimonBlockCipher(number_of_rounds=13), "plaintext"
+        Simon(number_of_rounds=13), "plaintext"
     )
     assert result.output_bounds == (32,) * 32
 
 
 def test_degree_propagation_rejects_unknown_variable_input():
-    primitive = SimonBlockCipher(number_of_rounds=1)
+    primitive = Simon(number_of_rounds=1)
     try:
         BooleanDegreeEvaluator().evaluate(primitive, "iv")
     except ValueError as error:

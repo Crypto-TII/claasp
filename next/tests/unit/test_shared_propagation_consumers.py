@@ -1,4 +1,4 @@
-from claasp_next.ciphers import PresentBlockCipher
+from claasp_next.primitives import Present
 from claasp_next.components import BitVectorSBox
 from claasp_next.semantics import XOR_DIFFERENTIAL
 from claasp_next.semantics.cryptanalysis import (
@@ -10,9 +10,9 @@ from claasp_next.representations.constraints.cp import PresentDifferentialCPMode
 
 
 def test_smt_milp_and_cp_composition_consume_the_same_component_override():
-    cipher = PresentBlockCipher(number_of_rounds=2)
-    component = next(item for item in cipher.components if isinstance(item, BitVectorSBox))
-    base = PropagationProblem(cipher, XOR_DIFFERENTIAL).registry
+    primitive = Present(number_of_rounds=2)
+    component = next(item for item in primitive.components if isinstance(item, BitVectorSBox))
+    base = PropagationProblem(primitive, XOR_DIFFERENTIAL).registry
     calls = {"smt": 0, "milp": 0, "cp": 0}
 
     class CountingProvider:
@@ -34,7 +34,7 @@ def test_smt_milp_and_cp_composition_consume_the_same_component_override():
             component_id=component.component_id,
         ))
         return PropagationProblem(
-            cipher, XOR_DIFFERENTIAL, registry=registry,
+            primitive, XOR_DIFFERENTIAL, registry=registry,
             maximum_weight=maximum_weight,
         )
 

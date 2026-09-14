@@ -1,4 +1,4 @@
-"""Validated typed cipher graph."""
+"""Validated typed primitive graph."""
 
 from collections.abc import Mapping, Sequence
 from copy import copy
@@ -10,7 +10,7 @@ from claasp_next.graph.round import Round
 from claasp_next.graph.value_type import ValueType
 
 
-class Cipher:
+class Primitive:
     """A round-oriented directed acyclic graph of typed components."""
 
     def __init__(self, family_name: str, inputs: Mapping[str, ValueType]) -> None:
@@ -21,7 +21,7 @@ class Cipher:
         if not isinstance(inputs, Mapping):
             raise TypeError("inputs must be a mapping from names to ValueType objects")
         if not inputs:
-            raise ValueError("a cipher must declare at least one input")
+            raise ValueError("a primitive must declare at least one input")
 
         ports: dict[str, Port] = {}
         for name, value_type in inputs.items():
@@ -64,7 +64,7 @@ class Cipher:
         try:
             return self._input_ports[name]
         except KeyError as error:
-            raise KeyError(f"cipher input {name!r} does not exist") from error
+            raise KeyError(f"primitive input {name!r} does not exist") from error
 
     def port(self, owner_id: str) -> Port:
         try:
@@ -73,18 +73,18 @@ class Cipher:
             raise KeyError(f"graph source {owner_id!r} does not exist") from error
 
     def add_round(self) -> Round:
-        cipher_round = Round(len(self._rounds))
-        self._rounds.append(cipher_round)
-        return cipher_round
+        primitive_round = Round(len(self._rounds))
+        self._rounds.append(primitive_round)
+        return primitive_round
 
-    def add_component(self, component: Component, *, cipher_round: Round | None = None) -> Port:
+    def add_component(self, component: Component, *, primitive_round: Round | None = None) -> Port:
         """Validate and append a component, returning its output port."""
 
         if not isinstance(component, Component):
             raise TypeError("component must be a Component")
         if not self._rounds:
             raise ValueError("add a round before adding components")
-        target_round = self._rounds[-1] if cipher_round is None else cipher_round
+        target_round = self._rounds[-1] if primitive_round is None else primitive_round
         if component.component_id is None:
             kind = re.sub(r"(?<!^)(?=[A-Z])", "_", type(component).__name__).lower()
             generated_id = f"{kind}_{target_round.number}_{len(target_round.components)}"
@@ -94,7 +94,7 @@ class Cipher:
             raise ValueError(f"graph source {component.component_id!r} already exists")
 
         if not any(target_round is existing_round for existing_round in self._rounds):
-            raise ValueError("target round does not belong to this cipher")
+            raise ValueError("target round does not belong to this primitive")
         if target_round is not self._rounds[-1]:
             raise ValueError("components may only be appended to the current round")
 
@@ -113,7 +113,7 @@ class Cipher:
         return component.output
 
     def set_output(self, output: PortLike) -> None:
-        """Declare the ordered logical units returned by this cipher."""
+        """Declare the ordered logical units returned by this primitive."""
 
         output = as_selection(output)
         try:
@@ -125,10 +125,10 @@ class Cipher:
         self._output = output
 
     def evaluate(self, *args: object, **kwargs: object) -> int | tuple[int, ...] | None:
-        """Evaluate with convenient boundary encoding and return the cipher output.
+        """Evaluate with convenient boundary encoding and return the primitive output.
 
         Inputs may be supplied as one mapping, as keyword arguments, or in the
-        cipher's declared input order. Bit, byte/extension-field, and word
+        primitive's declared input order. Bit, byte/extension-field, and word
         vectors accept packed integers and produce a packed integer output.
         """
 
@@ -150,7 +150,7 @@ class Cipher:
         return ScalarExecutionDriver().evaluate(self, decoded)
 
     def analyze(self):
-        """Return the high-level analysis facade for this cipher."""
+        """Return the high-level analysis facade for this primitive."""
 
         from claasp_next.analysis import Analysis
 
@@ -167,7 +167,7 @@ class Cipher:
         return DiagramCompiler().compile(self, annotation)
 
     def draw(self, format: str = "ascii", annotation=None):
-        """Render this cipher as an ASCII listing, TikZ, or PDF.
+        """Render this primitive as an ASCII listing, TikZ, or PDF.
 
         The ASCII renderer is a work in progress and emits a warning because
         it currently produces a structural listing rather than routed ASCII
@@ -204,7 +204,7 @@ class Cipher:
         if set(supplied) != expected:
             missing = sorted(expected - set(supplied))
             unexpected = sorted(set(supplied) - expected)
-            raise ValueError(f"cipher inputs do not match: missing={missing}, unexpected={unexpected}")
+            raise ValueError(f"primitive inputs do not match: missing={missing}, unexpected={unexpected}")
         return supplied
 
     @staticmethod
@@ -224,7 +224,7 @@ class Cipher:
                 return units_from_int(value, width, value_type.unit_count)
         if isinstance(value, Sequence) and not isinstance(value, str):
             return tuple(value)
-        raise TypeError("cipher inputs must be packed integers or sequences of logical units")
+        raise TypeError("primitive inputs must be packed integers or sequences of logical units")
 
     @staticmethod
     def _encode_boundary(value: tuple[int, ...], value_type: ValueType) -> int | tuple[int, ...]:

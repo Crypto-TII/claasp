@@ -8,7 +8,7 @@ from claasp_next.components.algebraic import Add, BinaryAffineMap, LinearMap, Mu
 from claasp_next.components.structural import Concatenate, Constant, Identity, Permutation
 from claasp_next.components.substitution import BitVectorSBox, SBox
 from claasp_next.components.word import BitwiseAnd, ModularAdd, Rotate, Xor
-from claasp_next.graph.cipher import Cipher
+from claasp_next.graph.primitive import Primitive
 from claasp_next.graph.component import Component
 from claasp_next.semantics import CONCRETE
 
@@ -18,7 +18,7 @@ Handler = Callable[[Component, tuple[RuntimeValue, ...]], RuntimeValue]
 
 @dataclass(frozen=True, slots=True)
 class EvaluationResult:
-    """Values produced for cipher inputs and component outputs."""
+    """Values produced for primitive inputs and component outputs."""
 
     values: Mapping[str, RuntimeValue]
     output: RuntimeValue | None
@@ -34,7 +34,7 @@ class EvaluationResult:
     def realization(self):
         """Realization metadata retained by the evaluated graph, when declared."""
 
-        return getattr(self.trace.annotation.cipher, "realization", None)
+        return getattr(self.trace.annotation.primitive, "realization", None)
 
 
 class ScalarExecutionDriver:
@@ -42,9 +42,9 @@ class ScalarExecutionDriver:
 
     EXAMPLES::
 
-        >>> from claasp_next.ciphers import MiMCPermutation
-        >>> cipher = MiMCPermutation(17, 3, (1, 2, 4))
-        >>> ScalarEvaluator().evaluate(cipher, {"state": (5,)}).output
+        >>> from claasp_next.primitives import MiMC
+        >>> primitive = MiMC(17, 3, (1, 2, 4))
+        >>> ScalarEvaluator().evaluate(primitive, {"state": (5,)}).output
         (5,)
     """
 
@@ -76,23 +76,23 @@ class ScalarExecutionDriver:
             raise TypeError("handler must be callable")
         self._handlers[component_type] = handler
 
-    def evaluate(self, cipher: Cipher, inputs: Mapping[str, Sequence[int]]) -> EvaluationResult:
-        if not isinstance(cipher, Cipher):
-            raise TypeError("cipher must be a Cipher")
-        expected_names = set(cipher.inputs)
+    def evaluate(self, primitive: Primitive, inputs: Mapping[str, Sequence[int]]) -> EvaluationResult:
+        if not isinstance(primitive, Primitive):
+            raise TypeError("primitive must be a Primitive")
+        expected_names = set(primitive.inputs)
         actual_names = set(inputs)
         if actual_names != expected_names:
             missing = sorted(expected_names - actual_names)
             unexpected = sorted(actual_names - expected_names)
-            raise ValueError(f"cipher inputs do not match: missing={missing}, unexpected={unexpected}")
+            raise ValueError(f"primitive inputs do not match: missing={missing}, unexpected={unexpected}")
 
         values: dict[str, RuntimeValue] = {}
-        for name, port in cipher.inputs.items():
+        for name, port in primitive.inputs.items():
             value = tuple(inputs[name])
             self._validate_value(name, value, port.value_type.unit_count, port.value_type.domain)
             values[name] = value
 
-        for component in cipher.components:
+        for component in primitive.components:
             selected_inputs = tuple(
                 tuple(values[item.source.owner_id][position] for position in item.positions)
                 for item in component.inputs
@@ -113,13 +113,13 @@ class ScalarExecutionDriver:
             values[component.component_id] = output
 
         output = None
-        if cipher.output is not None:
+        if primitive.output is not None:
             output = tuple(
-                values[cipher.output.source.owner_id][position]
-                for position in cipher.output.positions
+                values[primitive.output.source.owner_id][position]
+                for position in primitive.output.positions
             )
         annotation = GraphAnnotation.from_values(
-            cipher, CONCRETE, values, output=output
+            primitive, CONCRETE, values, output=output
         )
         return EvaluationResult(dict(values), output, ExecutionTrace(annotation))
 

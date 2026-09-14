@@ -13,9 +13,9 @@ class MsolveExporter:
 
     EXAMPLES::
 
-        >>> from claasp_next.ciphers import MiMCPermutation
+        >>> from claasp_next.primitives import MiMC
         >>> from claasp_next.representations.constraints.polynomial import PrimeFieldPolynomialModel
-        >>> system = PrimeFieldPolynomialModel(MiMCPermutation(17, 3, (1,))).polynomial_system()
+        >>> system = PrimeFieldPolynomialModel(MiMC(17, 3, (1,))).polynomial_system()
         >>> text = MsolveExporter().export(system)
         >>> text.splitlines()[:2]
         ['x0,x1,x2,x3', '17']

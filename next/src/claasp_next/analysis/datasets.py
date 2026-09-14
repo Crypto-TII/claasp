@@ -6,7 +6,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from random import Random
 
-from claasp_next.graph import Cipher
+from claasp_next.graph import Primitive
 
 
 @dataclass(frozen=True, slots=True)
@@ -58,7 +58,7 @@ class AvalancheDataset:
     method: str = "paired_evaluation_msb_first_v1"
 
 
-def packed_bit_width(primitive: Cipher, input_name: str | None = None) -> int:
+def packed_bit_width(primitive: Primitive, input_name: str | None = None) -> int:
     """Return an encoded boundary width, rejecting non-binary encodings."""
 
     value_type = primitive.output.value_type if input_name is None and primitive.output else None
@@ -76,7 +76,7 @@ def packed_bit_width(primitive: Cipher, input_name: str | None = None) -> int:
 
 
 def generate_random_dataset(
-    primitive: Cipher,
+    primitive: Primitive,
     number_of_samples: int,
     *,
     seed: int = 0,
@@ -116,7 +116,7 @@ def generate_random_dataset(
 
 
 def generate_avalanche_dataset(
-    primitive: Cipher,
+    primitive: Primitive,
     input_name: str,
     number_of_samples: int,
     *,

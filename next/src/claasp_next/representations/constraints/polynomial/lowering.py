@@ -4,7 +4,7 @@ from enum import Enum
 
 from claasp_next.components.algebraic import Add, LinearMap, Multiply, Power
 from claasp_next.components.structural import Concatenate, Constant, Identity, Permutation
-from claasp_next.graph import Cipher, Selection
+from claasp_next.graph import Primitive, Selection
 from claasp_next.domains import PrimeField
 from claasp_next.representations.constraints.polynomial.expression import Polynomial
 from claasp_next.representations.constraints.polynomial.system import PolynomialSystem
@@ -22,9 +22,9 @@ class PrimeFieldPolynomialModel:
 
     EXAMPLES::
 
-        >>> from claasp_next.ciphers import MiMCPermutation
+        >>> from claasp_next.primitives import MiMC
         >>> from claasp_next.representations.constraints.polynomial import PrimeFieldPolynomialModel
-        >>> system = PrimeFieldPolynomialModel(MiMCPermutation(17, 3, (1,))).polynomial_system()
+        >>> system = PrimeFieldPolynomialModel(MiMC(17, 3, (1,))).polynomial_system()
         >>> len(system.variables), len(system.equations), system.maximum_degree
         (4, 3, 3)
         >>> system.provenance
@@ -35,16 +35,16 @@ class PrimeFieldPolynomialModel:
 
     def __init__(
         self,
-        cipher: Cipher,
+        primitive: Primitive,
         power_lowering: PowerLoweringPolicy | str = PowerLoweringPolicy.DIRECT,
     ) -> None:
-        if not isinstance(cipher, Cipher):
-            raise TypeError("cipher must be a Cipher")
-        domains = {port.value_type.domain for port in cipher.inputs.values()}
-        domains.update(component.output_type.domain for component in cipher.components)
+        if not isinstance(primitive, Primitive):
+            raise TypeError("primitive must be a Primitive")
+        domains = {port.value_type.domain for port in primitive.inputs.values()}
+        domains.update(component.output_type.domain for component in primitive.components)
         if len(domains) != 1 or not isinstance(next(iter(domains)), PrimeField):
             raise ValueError("PrimeFieldPolynomialModel requires one homogeneous prime field")
-        self._cipher = cipher
+        self._primitive = primitive
         self._field = next(iter(domains))
         try:
             self._power_lowering = PowerLoweringPolicy(power_lowering)
@@ -67,9 +67,9 @@ class PrimeFieldPolynomialModel:
 
     def polynomial_system(self) -> PolynomialSystem:
         variables = []
-        for name, port in self._cipher.inputs.items():
+        for name, port in self._primitive.inputs.items():
             variables.extend(self.variable_name(name, position) for position in range(port.value_type.unit_count))
-        for component in self._cipher.components:
+        for component in self._primitive.components:
             variables.extend(
                 self.variable_name(component.component_id, position)
                 for position in range(component.output_type.unit_count)
@@ -80,7 +80,7 @@ class PrimeFieldPolynomialModel:
         self._auxiliary_powers = {}
         equations = []
         provenance = []
-        for component in self._cipher.components:
+        for component in self._primitive.components:
             lowered, lowered_provenance = self._lower_component(component)
             equations.extend(lowered)
             provenance.extend(lowered_provenance)

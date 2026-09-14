@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 from claasp_next.components import BitwiseAnd, Concatenate, Constant, ModularAdd, Rotate, Xor
 from claasp_next.domains import Bit, Word
-from claasp_next.graph import Cipher
+from claasp_next.graph import Primitive
 
 
 @dataclass(frozen=True, slots=True)
@@ -30,7 +30,7 @@ class BooleanDegreeResult:
 class BooleanDegreeEvaluator:
     """Propagate degree bounds without constructing Boolean polynomials."""
 
-    def evaluate(self, primitive: Cipher, variable_input: str) -> BooleanDegreeResult:
+    def evaluate(self, primitive: Primitive, variable_input: str) -> BooleanDegreeResult:
         if variable_input not in primitive.inputs:
             raise ValueError(f"unknown variable input: {variable_input}")
         capacity = primitive.inputs[variable_input].value_type.encoded_bit_size

@@ -14,7 +14,7 @@ def lower_boolean_problem(problem: AnalysisProblem) -> CNFFormula:
 
     if problem.objective is not None:
         raise NotImplementedError("Boolean optimization requires an optimization-capable adapter")
-    formula = BooleanCNFModel(problem.cipher).cnf_formula()
+    formula = BooleanCNFModel(problem.primitive).cnf_formula()
     variables = list(formula.variables)
     indices = {name: index for index, name in enumerate(variables, 1)}
     clauses = list(formula.clauses)
@@ -27,7 +27,7 @@ def lower_boolean_problem(problem: AnalysisProblem) -> CNFFormula:
                 for names in selection_variable_names(selection)
             )
         except KeyError as error:
-            raise ValueError("constraint target does not belong to the analyzed cipher") from error
+            raise ValueError("constraint target does not belong to the analyzed primitive") from error
 
     def literals(selection):
         return tuple(item for group in groups(selection) for item in group)
@@ -39,7 +39,7 @@ def lower_boolean_problem(problem: AnalysisProblem) -> CNFFormula:
     for number, constraint in enumerate(problem.constraints):
         label = f"constraint_{number}_{type(constraint).__name__.lower()}"
         if isinstance(constraint, FixedValue):
-            values = problem.cipher._decode_boundary(constraint.value, constraint.target.value_type)
+            values = problem.primitive._decode_boundary(constraint.value, constraint.target.value_type)
             if len(values) != constraint.target.value_type.unit_count:
                 raise ValueError("fixed value length must match its constraint target")
             for value in values:

@@ -1,15 +1,15 @@
-"""Immutable annotations attached to typed cipher graph sources."""
+"""Immutable annotations attached to typed primitive graph sources."""
 
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from enum import Enum
 
-from claasp_next.graph import Cipher
+from claasp_next.graph import Primitive
 from claasp_next.semantics import SemanticType
 
 
 class AnnotationRole(str, Enum):
-    """Role of an annotated source in the cipher graph."""
+    """Role of an annotated source in the primitive graph."""
 
     INPUT = "input"
     COMPONENT = "component"
@@ -35,34 +35,34 @@ class AnnotationEntry:
 class GraphAnnotation:
     """An immutable, validated assignment of information to graph sources."""
 
-    cipher: Cipher
+    primitive: Primitive
     semantics: SemanticType
     entries: tuple[AnnotationEntry, ...]
 
     def __init__(
         self,
-        cipher: Cipher,
+        primitive: Primitive,
         semantics: SemanticType,
         entries: Iterable[AnnotationEntry],
     ) -> None:
-        if not isinstance(cipher, Cipher):
-            raise TypeError("cipher must be a Cipher")
+        if not isinstance(primitive, Primitive):
+            raise TypeError("primitive must be a Primitive")
         if not isinstance(semantics, SemanticType):
             raise TypeError("semantics must be a SemanticType")
         frozen = tuple(entries)
         identifiers = tuple((entry.role, entry.source_id) for entry in frozen)
         if len(set(identifiers)) != len(identifiers):
             raise ValueError("each graph source and role may be annotated only once")
-        inputs = set(cipher.inputs)
-        components = {component.component_id for component in cipher.components}
+        inputs = set(primitive.inputs)
+        components = {component.component_id for component in primitive.components}
         for entry in frozen:
             if entry.role is AnnotationRole.INPUT and entry.source_id not in inputs:
-                raise ValueError(f"unknown cipher input {entry.source_id!r}")
+                raise ValueError(f"unknown primitive input {entry.source_id!r}")
             if entry.role is AnnotationRole.COMPONENT and entry.source_id not in components:
-                raise ValueError(f"unknown cipher component {entry.source_id!r}")
-            if entry.role is AnnotationRole.OUTPUT and entry.source_id != "cipher_output":
-                raise ValueError("the graph output annotation is named 'cipher_output'")
-        object.__setattr__(self, "cipher", cipher)
+                raise ValueError(f"unknown primitive component {entry.source_id!r}")
+            if entry.role is AnnotationRole.OUTPUT and entry.source_id != "primitive_output":
+                raise ValueError("the graph output annotation is named 'primitive_output'")
+        object.__setattr__(self, "primitive", primitive)
         object.__setattr__(self, "semantics", semantics)
         object.__setattr__(self, "entries", frozen)
 
@@ -77,7 +77,7 @@ class GraphAnnotation:
     @classmethod
     def from_values(
         cls,
-        cipher: Cipher,
+        primitive: Primitive,
         semantics: SemanticType,
         values: Mapping[str, object],
         *,
@@ -85,7 +85,7 @@ class GraphAnnotation:
     ) -> "GraphAnnotation":
         """Build entries from familiar source-ID mappings."""
 
-        input_names = set(cipher.inputs)
+        input_names = set(primitive.inputs)
         entries = [
             AnnotationEntry(
                 source_id,
@@ -95,5 +95,5 @@ class GraphAnnotation:
             for source_id, value in values.items()
         ]
         if output is not None:
-            entries.append(AnnotationEntry("cipher_output", AnnotationRole.OUTPUT, output))
-        return cls(cipher, semantics, entries)
+            entries.append(AnnotationEntry("primitive_output", AnnotationRole.OUTPUT, output))
+        return cls(primitive, semantics, entries)

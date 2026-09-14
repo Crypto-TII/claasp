@@ -1,4 +1,4 @@
-from claasp_next.ciphers import AES128BlockCipher
+from claasp_next.primitives import AES128
 from claasp_next.domains import BinaryExtensionField
 from claasp_next.representations.execution import BatchEvaluator, ScalarEvaluator, TransposedBatchEvaluator
 
@@ -9,17 +9,17 @@ CIPHERTEXT = tuple(bytes.fromhex("69c4e0d86a7b0430d8cdb78070b4c55a"))
 
 
 def test_aes128_matches_fips_197_known_answer_vector_and_uses_field_bytes():
-    cipher = AES128BlockCipher()
-    result = ScalarEvaluator().evaluate(cipher, {"plaintext": PLAINTEXT, "key": KEY})
+    primitive = AES128()
+    result = ScalarEvaluator().evaluate(primitive, {"plaintext": PLAINTEXT, "key": KEY})
 
     assert result.output == CIPHERTEXT
-    assert cipher.input("plaintext").value_type.domain == BinaryExtensionField(8, 0x11B)
-    assert cipher.input("plaintext").value_type.unit_count == 16
+    assert primitive.input("plaintext").value_type.domain == BinaryExtensionField(8, 0x11B)
+    assert primitive.input("plaintext").value_type.unit_count == 16
 
 
 def test_aes128_matches_fips_first_round_intermediate_values():
     result = ScalarEvaluator().evaluate(
-        AES128BlockCipher(number_of_rounds=1), {"plaintext": PLAINTEXT, "key": KEY}
+        AES128(number_of_rounds=1), {"plaintext": PLAINTEXT, "key": KEY}
     )
 
     assert bytes(result.value_of("initial_add_round_key")).hex() == "00102030405060708090a0b0c0d0e0f0"
@@ -31,18 +31,18 @@ def test_aes128_matches_fips_first_round_intermediate_values():
 
 
 def test_aes128_batch_backends_match_scalar_reference():
-    cipher = AES128BlockCipher(number_of_rounds=2)
+    primitive = AES128(number_of_rounds=2)
     inputs = {
         "plaintext": (PLAINTEXT, (0,) * 16),
         "key": (KEY, tuple(reversed(KEY))),
     }
     expected = tuple(
         ScalarEvaluator().evaluate(
-            cipher,
+            primitive,
             {"plaintext": inputs["plaintext"][lane], "key": inputs["key"][lane]},
         ).output
         for lane in range(2)
     )
 
-    assert BatchEvaluator().evaluate(cipher, inputs).outputs == expected
-    assert TransposedBatchEvaluator().evaluate(cipher, inputs).outputs == expected
+    assert BatchEvaluator().evaluate(primitive, inputs).outputs == expected
+    assert TransposedBatchEvaluator().evaluate(primitive, inputs).outputs == expected

@@ -10,7 +10,7 @@ from claasp_next.semantics.cryptanalysis import (
     ModularAddBoomerangSemantics,
     ModularAddBoomerangAutomaton,
 )
-from claasp_next.ciphers import PresentBlockCipher
+from claasp_next.primitives import Present
 from claasp_next.analysis import (
     check_speck32_differential_linear_fixture,
     run_speck32_boomerang_experiment,
@@ -53,8 +53,8 @@ def test_differential_linear_composition_uses_exact_legacy_formula():
 
 
 def test_present_boomerang_connectivity_is_counted_exhaustively():
-    cipher = PresentBlockCipher(number_of_rounds=1)
-    component = next(item for item in cipher.components if item.component_id == "sbox_1_0")
+    primitive = Present(number_of_rounds=1)
+    component = next(item for item in primitive.components if item.component_id == "sbox_1_0")
     semantics = SBoxBoomerangSemantics(component.table)
 
     possible = semantics.connectivity(1, 2)

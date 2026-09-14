@@ -6,13 +6,13 @@ from pathlib import Path
 import pytest
 
 from claasp_next import PrimeField
-from claasp_next.ciphers import MiMCPermutation
+from claasp_next.primitives import MiMC
 from claasp_next.representations.constraints.polynomial import Polynomial, PolynomialSystem, PrimeFieldPolynomialModel
 from claasp_next.representations.constraints.polynomial.exporters import MsolveExporter
 
 
 def test_msolve_export_is_deterministic_and_uses_ordered_variable_mapping():
-    system = PrimeFieldPolynomialModel(MiMCPermutation(17, 3, (1,))).polynomial_system()
+    system = PrimeFieldPolynomialModel(MiMC(17, 3, (1,))).polynomial_system()
     exporter = MsolveExporter()
 
     first = exporter.export(system)

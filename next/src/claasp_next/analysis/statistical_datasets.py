@@ -17,7 +17,7 @@ from random import Random
 from typing import BinaryIO
 
 from claasp_next.analysis.datasets import packed_bit_width
-from claasp_next.graph import Cipher
+from claasp_next.graph import Primitive
 
 
 @dataclass(frozen=True, slots=True)
@@ -65,7 +65,7 @@ class StatisticalDatasetManifest:
 class StatisticalDataset:
     """A lazy deterministic dataset backed by public primitive evaluation."""
 
-    primitive: Cipher
+    primitive: Primitive
     kind: str
     input_name: str
     sample_count: int
@@ -222,7 +222,7 @@ class StatisticalDataset:
 
 
 def correlation_dataset(
-    primitive: Cipher,
+    primitive: Primitive,
     input_name: str,
     number_of_samples: int,
     blocks_per_sample: int,
@@ -242,7 +242,7 @@ def correlation_dataset(
 
 
 def cbc_dataset(
-    primitive: Cipher,
+    primitive: Primitive,
     input_name: str,
     number_of_samples: int,
     blocks_per_sample: int,
@@ -261,7 +261,7 @@ def cbc_dataset(
 
 
 def low_density_dataset(
-    primitive: Cipher,
+    primitive: Primitive,
     input_name: str,
     number_of_samples: int,
     *,
@@ -277,7 +277,7 @@ def low_density_dataset(
 
 
 def high_density_dataset(
-    primitive: Cipher,
+    primitive: Primitive,
     input_name: str,
     number_of_samples: int,
     *,

@@ -1,4 +1,4 @@
-"""Typed component and cipher ports."""
+"""Typed component and primitive ports."""
 
 from dataclasses import dataclass
 
@@ -7,7 +7,7 @@ from claasp_next.graph.value_type import ValueType
 
 @dataclass(frozen=True, slots=True)
 class Port:
-    """A named source of a typed value in a cipher graph.
+    """A named source of a typed value in a primitive graph.
 
     Positions refer to logical units rather than encoded bits.
 

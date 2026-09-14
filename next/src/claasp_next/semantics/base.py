@@ -1,4 +1,4 @@
-"""Semantic types applied to typed cipher graphs."""
+"""Semantic types applied to typed primitive graphs."""
 
 from dataclasses import dataclass
 

@@ -6,7 +6,7 @@ from enum import Enum
 from typing import Protocol, runtime_checkable
 
 from claasp_next.components import BitVectorSBox, ModularAdd
-from claasp_next.graph import Cipher, Component
+from claasp_next.graph import Primitive, Component
 from claasp_next.semantics.base import (
     DETERMINISTIC_TRUNCATED_XOR,
     PROBABILISTIC_TRUNCATED_XOR,
@@ -95,9 +95,9 @@ class ComponentSemanticsRegistry:
 
 @dataclass(frozen=True, slots=True, init=False)
 class PropagationProblem:
-    """A cipher semantics, graph scope, objective, bound, and provenance."""
+    """A primitive semantics, graph scope, objective, bound, and provenance."""
 
-    cipher: Cipher
+    primitive: Primitive
     semantics: SemanticType
     component_ids: tuple[str, ...]
     objective: PropagationObjective
@@ -107,7 +107,7 @@ class PropagationProblem:
 
     def __init__(
         self,
-        cipher: Cipher,
+        primitive: Primitive,
         semantics: SemanticType,
         *,
         component_ids: Iterable[str] | None = None,
@@ -116,8 +116,8 @@ class PropagationProblem:
         registry: ComponentSemanticsRegistry | None = None,
         provenance: Iterable[str] = (),
     ) -> None:
-        if not isinstance(cipher, Cipher):
-            raise TypeError("cipher must be a Cipher")
+        if not isinstance(primitive, Primitive):
+            raise TypeError("primitive must be a Primitive")
         if semantics not in (
             XOR_DIFFERENTIAL, XOR_LINEAR, DETERMINISTIC_TRUNCATED_XOR,
             PROBABILISTIC_TRUNCATED_XOR,
@@ -133,11 +133,11 @@ class PropagationProblem:
         ):
             raise ValueError("maximum_weight must be a nonnegative integer or None")
         identifiers = tuple(
-            component.component_id for component in cipher.components
+            component.component_id for component in primitive.components
         ) if component_ids is None else tuple(component_ids)
         if len(set(identifiers)) != len(identifiers):
             raise ValueError("propagation component IDs must be unique")
-        known = {component.component_id for component in cipher.components}
+        known = {component.component_id for component in primitive.components}
         if unknown := set(identifiers) - known:
             raise ValueError(f"unknown propagation components: {sorted(unknown)!r}")
         selected_registry = registry or default_component_semantics()
@@ -146,7 +146,7 @@ class PropagationProblem:
         frozen_provenance = tuple(provenance)
         if any(not item for item in frozen_provenance):
             raise ValueError("provenance entries must not be empty")
-        object.__setattr__(self, "cipher", cipher)
+        object.__setattr__(self, "primitive", primitive)
         object.__setattr__(self, "semantics", semantics)
         object.__setattr__(self, "component_ids", identifiers)
         object.__setattr__(self, "objective", objective)
@@ -156,10 +156,10 @@ class PropagationProblem:
 
     @property
     def components(self) -> tuple[Component, ...]:
-        """Return scoped graph components in cipher order."""
+        """Return scoped graph components in primitive order."""
 
         selected = set(self.component_ids)
-        return tuple(component for component in self.cipher.components if component.component_id in selected)
+        return tuple(component for component in self.primitive.components if component.component_id in selected)
 
     def provider_for(self, component: Component) -> TransitionProvider:
         """Resolve this problem's selected semantics for ``component``."""

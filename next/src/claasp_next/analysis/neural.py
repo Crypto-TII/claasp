@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from random import Random
 from typing import Protocol
 
-from claasp_next.graph import Cipher
+from claasp_next.graph import Primitive
 
 
 def _positive_integer(name: str, value: int) -> None:
@@ -21,14 +21,14 @@ def _bits(value: int, width: int) -> tuple[int, ...]:
     return tuple((value >> shift) & 1 for shift in range(width - 1, -1, -1))
 
 
-def _widths(primitive: Cipher) -> dict[str, int]:
+def _widths(primitive: Primitive) -> dict[str, int]:
     widths = {name: port.value_type.encoded_bit_size for name, port in primitive.inputs.items()}
     if any(width is None for width in widths.values()):
         raise ValueError("neural datasets require canonically bit-encoded inputs")
     return {name: int(width) for name, width in widths.items()}
 
 
-def _output_width(primitive: Cipher) -> int:
+def _output_width(primitive: Primitive) -> int:
     if primitive.output is None:
         raise ValueError("the primitive must declare an output")
     width = primitive.output.value_type.encoded_bit_size
@@ -116,7 +116,7 @@ class NeuralTrainingDriver(Protocol):
 
 
 def black_box_dataset(
-    primitive: Cipher,
+    primitive: Primitive,
     varied_input: str,
     *,
     samples: int,
@@ -155,7 +155,7 @@ def black_box_dataset(
 
 
 def xor_differential_dataset(
-    primitive: Cipher,
+    primitive: Primitive,
     input_differences: Mapping[str, int],
     *,
     samples: int,

@@ -1,11 +1,11 @@
-from claasp_next.ciphers import PresentBlockCipher
+from claasp_next.primitives import Present
 from claasp_next.representations.constraints.smt import PresentDifferentialSMTModel, PresentLinearSMTModel
 
 
 def test_present_weighted_smt_formula_is_deterministic_and_scalable():
-    cipher = PresentBlockCipher(number_of_rounds=2)
-    first = PresentDifferentialSMTModel(cipher, maximum_weight=4).smt_formula()
-    second = PresentDifferentialSMTModel(cipher, maximum_weight=4).smt_formula()
+    primitive = Present(number_of_rounds=2)
+    first = PresentDifferentialSMTModel(primitive, maximum_weight=4).smt_formula()
+    second = PresentDifferentialSMTModel(primitive, maximum_weight=4).smt_formula()
 
     assert first == second
     assert len(first.variables) < 700
@@ -15,8 +15,8 @@ def test_present_weighted_smt_formula_is_deterministic_and_scalable():
 
 
 def test_present_linear_smt_formula_is_deterministic_and_bounded():
-    cipher = PresentBlockCipher(number_of_rounds=3)
-    formula = PresentLinearSMTModel(cipher, maximum_weight=4).smt_formula()
+    primitive = Present(number_of_rounds=3)
+    formula = PresentLinearSMTModel(primitive, maximum_weight=4).smt_formula()
 
     assert len(formula.variables) < 1000
     assert formula.assertion_count < 40000

@@ -1,6 +1,6 @@
 """Generic local component monomial semantics."""
 
-from claasp_next.ciphers import PresentBlockCipher
+from claasp_next.primitives import Present
 from claasp_next.semantics.cryptanalysis import ComponentMonomialSemantics
 
 
@@ -9,7 +9,7 @@ def _component(primitive, component_id):
 
 
 def test_sbox_and_permutation_semantics_are_selected_from_typed_components():
-    primitive = PresentBlockCipher(number_of_rounds=1)
+    primitive = Present(number_of_rounds=1)
     sbox = _component(primitive, "sbox_1_0")
     permutation = _component(primitive, "p_layer_1")
 
@@ -20,7 +20,7 @@ def test_sbox_and_permutation_semantics_are_selected_from_typed_components():
 
 
 def test_boolean_addition_partitions_selected_output_variables_between_inputs():
-    primitive = PresentBlockCipher(number_of_rounds=1)
+    primitive = Present(number_of_rounds=1)
     addition = _component(primitive, "add_round_key_1")
 
     assert ComponentMonomialSemantics.is_possible(addition, (0b1001, 0b0110), 0b1111)
@@ -29,7 +29,7 @@ def test_boolean_addition_partitions_selected_output_variables_between_inputs():
 
 
 def test_concatenation_and_constants_have_exact_structural_semantics():
-    primitive = PresentBlockCipher(number_of_rounds=1)
+    primitive = Present(number_of_rounds=1)
     concatenation = _component(primitive, "sbox_layer_1")
     counter = _component(primitive, "key_counter_1")
 

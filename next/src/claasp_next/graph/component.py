@@ -8,7 +8,7 @@ from claasp_next.graph.value_type import ValueType
 
 @dataclass(frozen=True, slots=True)
 class Component:
-    """An immutable typed operation in a cipher graph.
+    """An immutable typed operation in a primitive graph.
 
     Concrete component families will add their semantic parameters and
     validation. This base class deliberately contains no evaluator or solver
@@ -35,5 +35,5 @@ class Component:
     @property
     def output(self) -> Port:
         if self.component_id is None:
-            raise ValueError("component has no identifier until it is added to a cipher")
+            raise ValueError("component has no identifier until it is added to a primitive")
         return Port(self.component_id, self.output_type)

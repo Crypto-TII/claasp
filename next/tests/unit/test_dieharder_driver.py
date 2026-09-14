@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 
 from claasp_next.analysis import cbc_dataset
-from claasp_next.ciphers import SpeckBlockCipher
+from claasp_next.primitives import Speck
 from claasp_next.drivers.statistical import DieharderDriver
 
 
@@ -26,7 +26,7 @@ def _fake_dieharder(tmp_path: Path) -> Path:
 
 def test_driver_uses_raw_generator_and_records_reproducibility(tmp_path):
     dataset = cbc_dataset(
-        SpeckBlockCipher(number_of_rounds=1),
+        Speck(number_of_rounds=1),
         "plaintext",
         1,
         3,
@@ -46,7 +46,7 @@ def test_driver_uses_raw_generator_and_records_reproducibility(tmp_path):
 
 def test_driver_validates_options_and_external_failures(tmp_path):
     dataset = cbc_dataset(
-        SpeckBlockCipher(number_of_rounds=1), "plaintext", 1, 1, fixed_inputs={"key": 0}
+        Speck(number_of_rounds=1), "plaintext", 1, 1, fixed_inputs={"key": 0}
     )
     with pytest.raises(ValueError, match="non-negative"):
         DieharderDriver(str(_fake_dieharder(tmp_path))).run(dataset, test=-1)

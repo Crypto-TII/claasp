@@ -11,7 +11,7 @@ from claasp_next.semantics.cryptanalysis import (
     XorDifference,
     XorMask,
 )
-from claasp_next.ciphers.block_ciphers.present import PRESENT_SBOX
+from claasp_next.primitives.block_ciphers.present import PRESENT_SBOX
 
 
 def test_present_sbox_exact_differential_transition_and_impossibility():

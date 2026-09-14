@@ -3,21 +3,21 @@
 from collections.abc import Iterable
 
 from claasp_next.components import Add, Constant, Power
-from claasp_next.graph import Cipher, ValueType
+from claasp_next.graph import Primitive, ValueType
 from claasp_next.domains import PrimeField
 
 
-class MiMCPermutation(Cipher):
+class MiMC(Primitive):
     """Iterate ``x <- (x + c_i)^exponent`` over ``GF(modulus)``.
 
     EXAMPLES::
 
-        >>> from claasp_next.ciphers import MiMCPermutation
-        >>> from claasp_next.ciphers import MiMCPermutation
-        >>> cipher = MiMCPermutation(17, 3, (1, 2, 4))
-        >>> len(cipher.rounds)
+        >>> from claasp_next.primitives import MiMC
+        >>> from claasp_next.primitives import MiMC
+        >>> primitive = MiMC(17, 3, (1, 2, 4))
+        >>> len(primitive.rounds)
         3
-        >>> cipher.evaluate(5)
+        >>> primitive.evaluate(5)
         5
 
     These are teaching parameters, not a secure parameter set.

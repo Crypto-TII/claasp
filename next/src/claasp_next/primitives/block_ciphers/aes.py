@@ -3,7 +3,7 @@
 from claasp_next.components import (
     Add, BinaryAffineMap, Concatenate, Constant, LinearMap, Permutation, Power, SBox,
 )
-from claasp_next.graph import Cipher, Port, RealizationDescriptor, Selection, ValueType
+from claasp_next.graph import Primitive, Port, RealizationDescriptor, Selection, ValueType
 from claasp_next.domains import BinaryExtensionField
 from claasp_next.utils import binary_field_power, repeat_block_diagonal, rotate_left
 
@@ -56,7 +56,7 @@ PARAMETERS_CONFIGURATION_LIST = (
 )
 
 
-class AESBlockCipher(Cipher):
+class AES(Primitive):
     """Construct AES-128, AES-192, or AES-256 over ``GF(2^8)`` bytes.
 
     Plaintext, key, and output are 16-byte tuples in the order used by FIPS
@@ -64,11 +64,11 @@ class AESBlockCipher(Cipher):
 
     EXAMPLES::
 
-        >>> from claasp_next.ciphers import AESBlockCipher
-        >>> cipher = AESBlockCipher()
+        >>> from claasp_next.primitives import AES
+        >>> primitive = AES()
         >>> plaintext = 0x00112233445566778899AABBCCDDEEFF
         >>> key = 0x000102030405060708090A0B0C0D0E0F
-        >>> hex(cipher.evaluate(plaintext, key))
+        >>> hex(primitive.evaluate(plaintext, key))
         '0x69c4e0d86a7b0430d8cdb78070b4c55a'
     """
 
@@ -200,7 +200,7 @@ class AESBlockCipher(Cipher):
         return cls.REALIZATIONS
 
     @classmethod
-    def for_capabilities(cls, requirements, **parameters) -> "AESBlockCipher":
+    def for_capabilities(cls, requirements, **parameters) -> "AES":
         """Select the first deterministic realization satisfying requirements."""
 
         requested = frozenset(requirements)
@@ -210,7 +210,7 @@ class AESBlockCipher(Cipher):
         raise ValueError(f"no AES realization supports {tuple(sorted(requested))}")
 
 
-class AES128BlockCipher(AESBlockCipher):
+class AES128(AES):
     """Convenience constructor for AES-128."""
 
     def __init__(self, number_of_rounds: int = 10) -> None:

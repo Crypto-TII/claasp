@@ -1,7 +1,7 @@
-"""Word-oriented Speck block cipher."""
+"""Word-oriented Speck block primitive."""
 
 from claasp_next.components import Concatenate, Constant, ModularAdd, Rotate, Xor
-from claasp_next.graph import Cipher, Port, Selection, ValueType
+from claasp_next.graph import Primitive, Port, Selection, ValueType
 from claasp_next.domains import Word
 
 PARAMETERS_CONFIGURATION_LIST = (
@@ -18,7 +18,7 @@ PARAMETERS_CONFIGURATION_LIST = (
 )
 
 
-class SpeckBlockCipher(Cipher):
+class Speck(Primitive):
     """Construct a standard Speck variant as a graph over word units.
 
     Inputs use the word ordering from the designers' implementation guide:
@@ -26,11 +26,11 @@ class SpeckBlockCipher(Cipher):
 
     EXAMPLES::
 
-        >>> from claasp_next.ciphers import SpeckBlockCipher
-        >>> cipher = SpeckBlockCipher(block_bit_size=64, key_bit_size=128)
+        >>> from claasp_next.primitives import Speck
+        >>> primitive = Speck(block_bit_size=64, key_bit_size=128)
         >>> plaintext = 0x3B7265747475432D
         >>> key = 0x1B1A1918131211100B0A090803020100
-        >>> hex(cipher.evaluate(plaintext, key))
+        >>> hex(primitive.evaluate(plaintext, key))
         '0x8c6fa548454e028b'
     """
 
@@ -104,7 +104,7 @@ class SpeckBlockCipher(Cipher):
                 )
 
         output = self.add_component(Concatenate(
-            (x, y), component_id="cipher_output"
+            (x, y), component_id="primitive_output"
         ))
         self.set_output(output)
 

@@ -13,7 +13,7 @@ from claasp_next.semantics.cryptanalysis import (
     propagate_two_word_simon_round,
     truncated_modular_add,
 )
-from claasp_next.ciphers import AESBlockCipher, PresentBlockCipher, SpeckBlockCipher
+from claasp_next.primitives import AES, Present, Speck
 
 
 def test_truncated_modular_add_preserves_only_universal_output_bits():
@@ -29,23 +29,23 @@ def test_truncated_modular_add_preserves_only_universal_output_bits():
 
 
 def test_speck_truncated_round_reproduces_legacy_sat_fixture():
-    cipher = SpeckBlockCipher(number_of_rounds=2)
+    primitive = Speck(number_of_rounds=2)
     input_difference = TruncatedXorDifference.parse(
         "00000000011111001110000000000000"
     )
 
-    output = propagate_two_word_speck_round(cipher, input_difference)
+    output = propagate_two_word_speck_round(primitive, input_difference)
 
     assert str(output) == "????100000000000????100000000011"
 
 
 def test_graph_level_impossible_sbox_transition_is_exhaustively_refuted():
-    cipher = PresentBlockCipher(number_of_rounds=1)
+    primitive = Present(number_of_rounds=1)
 
-    assert not cipher.analyze().is_xor_differential_transition_possible(
+    assert not primitive.analyze().is_xor_differential_transition_possible(
         "sbox_1_0", 0x1, 0x1
     )
-    assert cipher.analyze().is_xor_differential_transition_possible(
+    assert primitive.analyze().is_xor_differential_transition_possible(
         "sbox_1_0", 0x1, 0x3
     )
 
@@ -87,17 +87,17 @@ def test_wordwise_difference_preserves_values_and_sound_activity():
 
 
 def test_wordwise_aes_single_byte_diffuses_to_one_column():
-    output = propagate_single_active_aes_byte(AESBlockCipher(number_of_rounds=1), 0)
+    output = propagate_single_active_aes_byte(AES(number_of_rounds=1), 0)
 
     assert tuple(word.kind for word in output[:4]) == (WordwiseDifferenceKind.NONZERO,) * 4
     assert all(word.kind is WordwiseDifferenceKind.ZERO for word in output[4:])
 
 
 def test_inverse_speck_truncated_propagation_preserves_zero_difference():
-    cipher = SpeckBlockCipher(number_of_rounds=2)
+    primitive = Speck(number_of_rounds=2)
     zero = TruncatedXorDifference.parse("0" * 32)
 
-    assert propagate_two_word_speck_inverse_round(cipher, zero, 1) == zero
+    assert propagate_two_word_speck_inverse_round(primitive, zero, 1) == zero
 
 
 def test_impossible_boundary_reports_only_fixed_contradictions():

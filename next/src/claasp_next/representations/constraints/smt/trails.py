@@ -11,19 +11,19 @@ from claasp_next.semantics.cryptanalysis import (
 )
 from claasp_next.semantics import XOR_DIFFERENTIAL, XOR_LINEAR
 from claasp_next.components import BitVectorSBox, Permutation
-from claasp_next.graph import Cipher
+from claasp_next.graph import Primitive
 from claasp_next.representations.constraints.smt.formula import SMTFormula
 
 
 class PresentDifferentialSMTModel:
     """Exact two-round PRESENT XOR-differential model with a weight bound."""
 
-    def __init__(self, cipher: Cipher | PropagationProblem, maximum_weight: int | None = None) -> None:
+    def __init__(self, primitive: Primitive | PropagationProblem, maximum_weight: int | None = None) -> None:
         problem = (
-            cipher
-            if isinstance(cipher, PropagationProblem)
+            primitive
+            if isinstance(primitive, PropagationProblem)
             else PropagationProblem(
-                cipher, XOR_DIFFERENTIAL, maximum_weight=maximum_weight,
+                primitive, XOR_DIFFERENTIAL, maximum_weight=maximum_weight,
                 provenance=("PRESENT-2 SMT convenience constructor",),
             )
         )
@@ -31,11 +31,11 @@ class PresentDifferentialSMTModel:
             raise ValueError("differential SMT lowering requires the XOR-differential semantics")
         if problem.maximum_weight is None:
             raise ValueError("differential SMT lowering requires maximum_weight")
-        cipher = problem.cipher
-        if cipher.family_name != "present" or len(cipher.rounds) != 2:
+        primitive = problem.primitive
+        if primitive.family_name != "present" or len(primitive.rounds) != 2:
             raise NotImplementedError("weighted SMT trail model currently supports PRESENT-2")
         maximum_weight = problem.maximum_weight
-        self.cipher = cipher
+        self.primitive = primitive
         self.maximum_weight = maximum_weight
         self.problem = problem
         self._transition_records = ()
@@ -63,9 +63,9 @@ class PresentDifferentialSMTModel:
         plaintext = tuple(allocate(f"plaintext_{bit}") for bit in range(64))
         first_output = tuple(allocate(f"round_1_sbox_output_{bit}") for bit in range(64))
         second_output = tuple(allocate(f"round_2_sbox_output_{bit}") for bit in range(64))
-        first_sboxes = _round_sboxes(self.cipher, 1)
-        second_sboxes = _round_sboxes(self.cipher, 2)
-        permutation = _component(self.cipher, "p_layer_1", Permutation)
+        first_sboxes = _round_sboxes(self.primitive, 1)
+        second_sboxes = _round_sboxes(self.primitive, 2)
+        permutation = _component(self.primitive, "p_layer_1", Permutation)
         second_input = tuple(first_output[position] for position in permutation.mapping)
         weight_names = []
         records = []
@@ -120,7 +120,7 @@ class PresentDifferentialSMTModel:
 
         if not self._transition_records:
             raise ValueError("build the SMT formula before decoding a trail")
-        components = {component.component_id: component for component in self.cipher.components}
+        components = {component.component_id: component for component in self.primitive.components}
         steps = []
         for component_id, input_names, output_names in self._transition_records:
             component = components[component_id]
@@ -129,7 +129,7 @@ class PresentDifferentialSMTModel:
             target = _integer(tuple(assignment[name] for name in output_names))
             steps.append(TrailStep(component_id, semantics.transition((source,), target)))
         raw_output = _integer(tuple(assignment[name] for name in self._second_output_names))
-        final_permutation = _component(self.cipher, "p_layer_2", Permutation)
+        final_permutation = _component(self.primitive, "p_layer_2", Permutation)
         output = _permute(raw_output, final_permutation.mapping)
         return Trail(
             TrailKind.XOR_DIFFERENTIAL,
@@ -142,12 +142,12 @@ class PresentDifferentialSMTModel:
 class PresentLinearSMTModel:
     """Exact three-round PRESENT XOR-linear model with a weight bound."""
 
-    def __init__(self, cipher: Cipher | PropagationProblem, maximum_weight: int | None = None) -> None:
+    def __init__(self, primitive: Primitive | PropagationProblem, maximum_weight: int | None = None) -> None:
         problem = (
-            cipher
-            if isinstance(cipher, PropagationProblem)
+            primitive
+            if isinstance(primitive, PropagationProblem)
             else PropagationProblem(
-                cipher, XOR_LINEAR, maximum_weight=maximum_weight,
+                primitive, XOR_LINEAR, maximum_weight=maximum_weight,
                 provenance=("PRESENT-3 SMT convenience constructor",),
             )
         )
@@ -155,11 +155,11 @@ class PresentLinearSMTModel:
             raise ValueError("linear SMT lowering requires the XOR-linear semantics")
         if problem.maximum_weight is None:
             raise ValueError("linear SMT lowering requires maximum_weight")
-        cipher = problem.cipher
-        if cipher.family_name != "present" or len(cipher.rounds) != 3:
+        primitive = problem.primitive
+        if primitive.family_name != "present" or len(primitive.rounds) != 3:
             raise NotImplementedError("weighted linear SMT model currently supports PRESENT-3")
         maximum_weight = problem.maximum_weight
-        self.cipher = cipher
+        self.primitive = primitive
         self.maximum_weight = maximum_weight
         self.problem = problem
         self._transition_records = ()
@@ -193,7 +193,7 @@ class PresentLinearSMTModel:
             output_names = tuple(
                 allocate(f"round_{round_number}_sbox_mask_{bit}") for bit in range(64)
             )
-            for nibble, component in enumerate(_round_sboxes(self.cipher, round_number)):
+            for nibble, component in enumerate(_round_sboxes(self.primitive, round_number)):
                 start = 4 * nibble
                 local_input = current_input[start : start + 4]
                 local_output = output_names[start : start + 4]
@@ -222,7 +222,7 @@ class PresentLinearSMTModel:
                                 + ((indices[name] if bit < weight else -indices[name]),),
                                 f"{component.component_id}_linear_weight",
                             )
-            permutation = _component(self.cipher, f"p_layer_{round_number}", Permutation)
+            permutation = _component(self.primitive, f"p_layer_{round_number}", Permutation)
             current_input = tuple(output_names[position] for position in permutation.mapping)
             last_output = output_names
         add(tuple(indices[name] for name in input_names), "nonzero_linear_input")
@@ -237,7 +237,7 @@ class PresentLinearSMTModel:
 
         if not self._transition_records:
             raise ValueError("build the SMT formula before decoding a trail")
-        components = {component.component_id: component for component in self.cipher.components}
+        components = {component.component_id: component for component in self.primitive.components}
         steps = []
         for component_id, input_names, output_names in self._transition_records:
             component = components[component_id]
@@ -247,7 +247,7 @@ class PresentLinearSMTModel:
             steps.append(TrailStep(component_id, semantics.transition((source,), target)))
         raw_output = _integer(tuple(assignment[name] for name in self._last_output_names))
         final_output = _permute(
-            raw_output, _component(self.cipher, "p_layer_3", Permutation).mapping
+            raw_output, _component(self.primitive, "p_layer_3", Permutation).mapping
         )
         return Trail(
             TrailKind.XOR_LINEAR,
@@ -257,12 +257,12 @@ class PresentLinearSMTModel:
         )
 
 
-def check_present_smt_trail(cipher: Cipher, trail: Trail) -> bool:
+def check_present_smt_trail(primitive: Primitive, trail: Trail) -> bool:
     """Check every transition, both layers' wiring, and boundary patterns."""
 
     if trail.kind is not TrailKind.XOR_DIFFERENTIAL or len(trail.steps) != 32:
         return False
-    components = {component.component_id: component for component in cipher.components}
+    components = {component.component_id: component for component in primitive.components}
     for step in trail.steps:
         component = components.get(step.component_id)
         if not isinstance(component, BitVectorSBox):
@@ -271,7 +271,7 @@ def check_present_smt_trail(cipher: Cipher, trail: Trail) -> bool:
             return False
     first_output = _join_nibbles(step.transition.output_pattern.value for step in trail.steps[:16])
     expected_second = _permute(
-        first_output, _component(cipher, "p_layer_1", Permutation).mapping
+        first_output, _component(primitive, "p_layer_1", Permutation).mapping
     )
     actual_second = _join_nibbles(step.transition.input_pattern.value for step in trail.steps[16:])
     if expected_second != actual_second:
@@ -279,17 +279,17 @@ def check_present_smt_trail(cipher: Cipher, trail: Trail) -> bool:
     first_input = _join_nibbles(step.transition.input_pattern.value for step in trail.steps[:16])
     second_output = _join_nibbles(step.transition.output_pattern.value for step in trail.steps[16:])
     expected_output = _permute(
-        second_output, _component(cipher, "p_layer_2", Permutation).mapping
+        second_output, _component(primitive, "p_layer_2", Permutation).mapping
     )
     return first_input == trail.input_pattern.value and expected_output == trail.output_pattern.value
 
 
-def check_present_linear_smt_trail(cipher: Cipher, trail: Trail) -> bool:
+def check_present_linear_smt_trail(primitive: Primitive, trail: Trail) -> bool:
     """Check 48 signed LAT entries and all three permutation boundaries."""
 
     if trail.kind is not TrailKind.XOR_LINEAR or len(trail.steps) != 48:
         return False
-    components = {component.component_id: component for component in cipher.components}
+    components = {component.component_id: component for component in primitive.components}
     for step in trail.steps:
         component = components.get(step.component_id)
         if not isinstance(component, BitVectorSBox):
@@ -307,7 +307,7 @@ def check_present_linear_smt_trail(cipher: Cipher, trail: Trail) -> bool:
         output = _join_nibbles(step.transition.output_pattern.value for step in layer)
         state = _permute(
             output,
-            _component(cipher, f"p_layer_{round_index + 1}", Permutation).mapping,
+            _component(primitive, f"p_layer_{round_index + 1}", Permutation).mapping,
         )
     return state == trail.output_pattern.value
 
@@ -338,11 +338,11 @@ def _at_most(names, bound, allocate, indices, add):
         previous = current
 
 
-def _round_sboxes(cipher, round_number):
+def _round_sboxes(primitive, round_number):
     prefix = f"sbox_{round_number}_"
     result = tuple(
         component
-        for component in cipher.components
+        for component in primitive.components
         if isinstance(component, BitVectorSBox) and component.component_id.startswith(prefix)
     )
     if len(result) != 16:
@@ -350,10 +350,10 @@ def _round_sboxes(cipher, round_number):
     return result
 
 
-def _component(cipher, component_id, expected_type):
-    component = next((item for item in cipher.components if item.component_id == component_id), None)
+def _component(primitive, component_id, expected_type):
+    component = next((item for item in primitive.components if item.component_id == component_id), None)
     if not isinstance(component, expected_type):
-        raise ValueError(f"cipher is missing {component_id!r}")
+        raise ValueError(f"primitive is missing {component_id!r}")
     return component
 
 

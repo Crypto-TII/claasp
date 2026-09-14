@@ -1,7 +1,7 @@
 """Whole-graph monomial-transition composition tests."""
 
 from claasp_next.analysis import PresentMonomialSemantics, PresentRoundMonomialSemantics
-from claasp_next.ciphers import PresentBlockCipher
+from claasp_next.primitives import Present
 
 
 def _permuted_mask(mapping, before_permutation):
@@ -13,7 +13,7 @@ def _permuted_mask(mapping, before_permutation):
 
 
 def test_present_round_composes_sbox_monomials_and_graph_permutation():
-    primitive = PresentBlockCipher(number_of_rounds=1)
+    primitive = Present(number_of_rounds=1)
     semantics = PresentRoundMonomialSemantics(primitive)
     local_output = 1
     local_input = min(semantics.tables[0][local_output])
@@ -32,7 +32,7 @@ def test_present_round_composes_sbox_monomials_and_graph_permutation():
 
 
 def test_present_round_rejects_an_impossible_local_transition():
-    primitive = PresentBlockCipher(number_of_rounds=1)
+    primitive = Present(number_of_rounds=1)
     semantics = PresentRoundMonomialSemantics(primitive)
     local_output = 1
     impossible = next(mask for mask in range(16) if mask not in semantics.tables[0][local_output])
@@ -42,7 +42,7 @@ def test_present_round_rejects_an_impossible_local_transition():
 
 
 def test_present_multi_round_predecessor_is_independently_checked():
-    primitive = PresentBlockCipher(number_of_rounds=3)
+    primitive = Present(number_of_rounds=3)
     semantics = PresentMonomialSemantics(primitive)
 
     trail = semantics.predecessor_trail(1)

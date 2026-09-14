@@ -1,4 +1,4 @@
-from claasp_next.ciphers import SpeckBlockCipher
+from claasp_next.primitives import Speck
 from claasp_next.representations.execution import BatchEvaluator, ScalarEvaluator, TransposedBatchEvaluator
 
 
@@ -9,7 +9,7 @@ CIPHERTEXT = (0x8C6FA548, 0x454E028B)
 
 def test_speck64_128_matches_designers_known_answer_vector():
     result = ScalarEvaluator().evaluate(
-        SpeckBlockCipher(block_bit_size=64, key_bit_size=128),
+        Speck(block_bit_size=64, key_bit_size=128),
         {"plaintext": PLAINTEXT, "key": KEY},
     )
     assert result.output == CIPHERTEXT
@@ -17,20 +17,20 @@ def test_speck64_128_matches_designers_known_answer_vector():
 
 def test_speck_reduced_round_matches_first_published_intermediate_state():
     result = ScalarEvaluator().evaluate(
-        SpeckBlockCipher(block_bit_size=64, key_bit_size=128, number_of_rounds=1),
+        Speck(block_bit_size=64, key_bit_size=128, number_of_rounds=1),
         {"plaintext": PLAINTEXT, "key": KEY},
     )
     assert result.output == (0xEBB2B492, 0x4818ADF9)
 
 
 def test_speck_batch_backends_match_scalar_reference():
-    cipher = SpeckBlockCipher(block_bit_size=64, key_bit_size=128, number_of_rounds=3)
+    primitive = Speck(block_bit_size=64, key_bit_size=128, number_of_rounds=3)
     inputs = {"plaintext": (PLAINTEXT, (0, 0)), "key": (KEY, KEY)}
     expected = tuple(
-        ScalarEvaluator().evaluate(cipher, {
+        ScalarEvaluator().evaluate(primitive, {
             "plaintext": inputs["plaintext"][lane], "key": inputs["key"][lane]
         }).output
         for lane in range(2)
     )
-    assert BatchEvaluator().evaluate(cipher, inputs).outputs == expected
-    assert TransposedBatchEvaluator().evaluate(cipher, inputs).outputs == expected
+    assert BatchEvaluator().evaluate(primitive, inputs).outputs == expected
+    assert TransposedBatchEvaluator().evaluate(primitive, inputs).outputs == expected
