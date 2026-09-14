@@ -1,4 +1,8 @@
+import pytest
+
+from claasp.cipher_modules.component_analysis_tests import CipherComponentsAnalysis, branch_number
 from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
+from claasp.name_mappings import MIX_COLUMN
 
 
 def test_aes_block_cipher():
@@ -110,3 +114,45 @@ def test_aes_2_2_block_cipher():
     ciphertext = 0x1f
     assert aes.evaluate([key, plaintext]) == ciphertext
     assert aes.evaluate_vectorized([key, plaintext], evaluate_api=True) == ciphertext
+
+
+# Computationally pinned MDS / word-wise differential branch number of every MixColumn matrix
+# used by ToyAESBlockCipher, keyed by (word_size, state_size). These values were verified with
+# Sage (GF(2^word_size), modulus taken from ToyAESBlockCipher.irreducible_polynomial) and are not
+# assumed: every square submatrix (all minors) of each matrix was checked for singularity, and the
+# branch number was computed by brute force over all nonzero word-wise input differences.
+#
+# (word_size=2, state_size=4) is the sole non-MDS entry. This is not a bug to "fix" by picking
+# different matrix constants: GF(2^2) = GF(4) is provably too small to admit ANY 4x4 MDS matrix
+# (see the ToyAESBlockCipher class docstring for the underlying coding-theory argument and the
+# exhaustive/random search that corroborates it), so branch number 3 (instead of the optimal 5)
+# is an inherent limitation of this toy parametrization.
+AES_MATRIX_MDS_STATUS = {
+    (2, 2): (True, 3),
+    (3, 2): (True, 3),
+    (4, 2): (True, 3),
+    (8, 2): (True, 3),
+    (2, 3): (True, 4),
+    (3, 3): (True, 4),
+    (4, 3): (True, 4),
+    (8, 3): (True, 4),
+    (2, 4): (False, 3),
+    (3, 4): (True, 5),
+    (4, 4): (True, 5),
+    (8, 4): (True, 5),
+}
+
+
+@pytest.mark.parametrize("word_size, state_size", list(AES_MATRIX_MDS_STATUS.keys()))
+def test_aes_matrix_mds_status(word_size, state_size):
+    expected_is_mds, expected_branch_number = AES_MATRIX_MDS_STATUS[(word_size, state_size)]
+
+    aes = ToyAESBlockCipher(number_of_rounds=3, word_size=word_size, state_size=state_size)
+    mix_column_component = next(c for c in aes.get_all_components() if c.type == MIX_COLUMN)
+
+    assert CipherComponentsAnalysis(aes)._is_mds(mix_column_component) == expected_is_mds
+    assert branch_number(mix_column_component, "differential", "word") == expected_branch_number
+    # Branch number can never exceed the theoretical optimum n+1 for an n x n diffusion matrix,
+    # and MDS is exactly equivalent to achieving that optimum.
+    assert expected_branch_number <= state_size + 1
+    assert expected_is_mds == (expected_branch_number == state_size + 1)

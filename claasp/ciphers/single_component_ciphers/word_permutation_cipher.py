@@ -16,7 +16,9 @@ class WordPermutationCipher(SingleComponentCipher):
 
     - ``word_size`` -- **integer** (default: `4`); bit size of each word
     - ``number_of_words`` -- **integer** (default: `4`); number of words
-    - ``permutation_description`` -- **list** (default: `None`); word permutation; defaults to a cyclic left shift
+    - ``permutation_description`` -- **list** (default: `None`); permutation mapping from source word
+      position to destination word position: ``permutation_description[i]`` is the destination word
+      index for source word ``i``. Defaults to ``[1, 2, 3, 0]``, a cyclic right shift of the words.
 
     EXAMPLES::
 

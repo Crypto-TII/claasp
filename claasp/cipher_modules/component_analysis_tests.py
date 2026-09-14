@@ -479,7 +479,7 @@ class CipherComponentsAnalysis:
             sage: from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
             sage: from claasp.cipher_modules.component_analysis_tests import CipherComponentsAnalysis
             sage: midori = MidoriBlockCipher()
-            sage: mix_column_component = midori.component_from_id('mix_column_0_20')
+            sage: mix_column_component = midori.component_from_id('mix_column_0_21')
             sage: CipherComponentsAnalysis(midori)._is_mds(mix_column_component)
             False
 
@@ -1099,10 +1099,10 @@ def get_inverse_matrix_in_integer_representation(component):
         sage: from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
         sage: from claasp.cipher_modules.component_analysis_tests import get_inverse_matrix_in_integer_representation
         sage: midori = MidoriBlockCipher(number_of_rounds=3)
-        sage: mix_column_component = midori.component_from_id('mix_column_0_20')
+        sage: mix_column_component = midori.component_from_id('mix_column_0_21')
         sage: m = get_inverse_matrix_in_integer_representation(mix_column_component)
         sage: m.dimensions()
-        (16, 16)
+        (4, 4)
 
     """
     if component.type != MIX_COLUMN:
@@ -1140,7 +1140,7 @@ def has_maximal_branch_number(component):
         sage: from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
         sage: from claasp.cipher_modules.component_analysis_tests import has_maximal_branch_number
         sage: midori = MidoriBlockCipher()
-        sage: mix_column_component = midori.component_from_id('mix_column_0_20')
+        sage: mix_column_component = midori.component_from_id('mix_column_0_21')
         sage: has_maximal_branch_number(mix_column_component)
         False
 
@@ -1949,7 +1949,7 @@ def instantiate_matrix_over_correct_field(matrix, polynomial_as_int, word_size, 
         sage: from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
         sage: from claasp.cipher_modules.component_analysis_tests import instantiate_matrix_over_correct_field
         sage: midori = MidoriBlockCipher(number_of_rounds=2)
-        sage: mix_column_component = midori.component_from_id('mix_column_0_20')
+        sage: mix_column_component = midori.component_from_id('mix_column_0_22')
         sage: description = mix_column_component.description
         sage: mc_matrix, _ = instantiate_matrix_over_correct_field(description[0], int(description[1]), int(description[2]),
         ....: mix_column_component.input_bit_size, mix_column_component.output_bit_size)

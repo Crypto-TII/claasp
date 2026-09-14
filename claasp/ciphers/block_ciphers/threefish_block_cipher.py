@@ -31,7 +31,7 @@ ROUND_CONSTANTS = [
     [[0x3A, 0x16], [0x19, 0x1D, 0x27, 0x2B], [0x1F, 0x2C, 0x2F, 0x2E, 0x13, 0x2A, 0x2C, 0x19]],
     [[0x20, 0x20], [0x08, 0x23, 0x38, 0x16], [0x09, 0x30, 0x23, 0x34, 0x17, 0x1F, 0x25, 0x14]],
 ]
-PERMUTATIONS = [[0, 3, 2, 1], [2, 1, 4, 7, 6, 5, 0, 3], [0, 9, 2, 13, 6, 11, 4, 15, 10, 7, 12, 3, 14, 5, 8, 1]]
+PERMUTATIONS = [[0, 3, 2, 1], [6, 1, 0, 7, 2, 5, 4, 3], [0, 15, 2, 11, 6, 13, 4, 9, 14, 1, 8, 5, 10, 3, 12, 7]]
 PARAMETERS_CONFIGURATION_LIST = [
     {"block_bit_size": 256, "key_bit_size": 256, "tweak_bit_size": 128, "number_of_rounds": 72},
     {"block_bit_size": 512, "key_bit_size": 512, "tweak_bit_size": 128, "number_of_rounds": 72},
@@ -64,7 +64,10 @@ def threefish_encrypt(plaintext, key, tweak):
     def word_permutation(pt):
         n = int(log(len(pt), 2)) - 2
 
-        pt[:] = [pt[p] for p in permutations[n]]
+        new_pt = [0] * len(pt)
+        for src, dst in enumerate(permutations[n]):
+            new_pt[dst] = pt[src]
+        pt[:] = new_pt
 
     def subkey_schedule(k, t, d):
         s = d // 4
