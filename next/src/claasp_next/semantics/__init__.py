@@ -23,6 +23,8 @@ from claasp_next.semantics.cryptanalysis import (
     DifferentialLinearTrail, SBoxBoomerangSemantics,
     ModularAddBoomerangConnectivity, ModularAddBoomerangSemantics,
     ModularAddBoomerangAutomaton,
+    ContinuousHeuristicResult, continuous_modular_add, continuous_rotate_left,
+    continuous_rotate_right, continuous_speck32, continuous_xor,
 )
 
 __all__ = [
@@ -47,4 +49,7 @@ __all__ = [
     "DifferentialLinearTrail", "SBoxBoomerangSemantics",
     "ModularAddBoomerangConnectivity", "ModularAddBoomerangSemantics",
     "ModularAddBoomerangAutomaton",
+    "ContinuousHeuristicResult", "continuous_modular_add",
+    "continuous_rotate_left", "continuous_rotate_right", "continuous_speck32",
+    "continuous_xor",
 ]

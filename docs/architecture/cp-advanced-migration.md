@@ -38,6 +38,14 @@ tolerance, and reproducibility envelope. They may report candidates or bounds,
 but must not share an exact-proof status type unless a separate exact checker
 establishes the claim.
 
+The migrated continuous ARX semantics evaluates XOR, rotation, majority, and
+modular-add propagation with dependency-free binary64 arithmetic. It preserves
+the legacy one- and two-round Speck32 vectors and the fixed-mask correlation
+``0.7454814092873888`` within the recorded ``1e-4`` solver tolerance. Results
+use ``ContinuousHeuristicResult`` with ``claim_kind="heuristic"`` and expose
+neither satisfiability nor optimality properties; the legacy piecewise-linear
+SCIP search objective is therefore not confused with an exact proof.
+
 ## Dependency order
 
 Exact ARX composition comes first because its modular-add semantics already

@@ -718,15 +718,13 @@ path is correct and stable.
 Unless this plan is explicitly revised, “next milestone” means the first
 unfinished item in this order:
 
-1. Resume M10.6d5b3c, then finish differential-linear and continuous CP work
-   in M10.6d5c–M10.6d6.
-2. M10.8: migrate all remaining mathematical and solver models, including
+1. M10.8: migrate all remaining mathematical and solver models, including
    monomial prediction and division-property analysis.
-3. M10.9a–M10.9d: establish primitive terminology and taxonomy, then migrate
+2. M10.9a–M10.9d: establish primitive terminology and taxonomy, then migrate
    the complete reusable component and fixed-length primitive catalogues.
-4. M10.10–M10.15: inversion/transformations, component analysis, datasets and
+3. M10.10–M10.15: inversion/transformations, component analysis, datasets and
    statistical tests, neural distinguishers, reports, and remaining tooling.
-5. M11 integration and release.
+4. M11 integration and release.
 
 The migration inventory is a maintained artifact, not a one-time search. It
 must cover every legacy source and test module, including ciphers, components,
@@ -749,10 +747,10 @@ second checklist is intentionally not maintained. At this revision:
   those accepted vertical slices.
 - M10.5d remains open only for routed ASCII art.
 - M10.6a–M10.6d4 are achieved.
-- M10.6d5 is achieved; the next feature checkpoint is M10.6d6.
+- M10.6, including its advanced exact and heuristic analyses, is achieved.
 - M10.7 is achieved: the exhaustive inventory and filesystem gate include the
   reconciled ``develop`` changes.
-- M10.8–M10.15 and M11 remain planned.
+- M10.8 is next; M10.9–M10.15 and M11 remain planned.
 
 ## Milestone tracker
 
@@ -816,15 +814,15 @@ is absent). Update this table in the same commit that changes milestone state.
 | Shared propagation consumers (M10.5d4c) | Achieved | PRESENT SMT/MILP composition accepts one PropagationProblem and queries identical per-component overrides |
 | Diagram representation (M10.5d5) | In progress | Annotated IR, TikZ/PDF, and temporary warned structural listing achieved; actual routed ASCII art remains |
 | Graph/semantics vocabulary refactor (M10.5d6) | Achieved | `core` renamed to `graph`; `interpretations` renamed to `semantics`; public contracts use `SemanticType` and `.semantics`; no compatibility packages retained |
-| SMT, MILP, and CP (M10.4–M10.6) | In progress | SMT and MILP achieved; CP foundation/trails/impossible analyses achieved, with composed and continuous CP analyses remaining |
-| CP backend (M10.6) | In progress | Portable foundation, cipher recovery, and reviewed shared trail slices achieved; advanced legacy CP analyses follow |
+| SMT, MILP, and CP (M10.4–M10.6) | Achieved | Portable shared semantics and open-source drivers preserve selected exact, truncated, impossible, composed, and explicitly heuristic continuous evidence |
+| CP backend (M10.6) | Achieved | Portable foundation, recovery, shared trails, advanced ARX/truncated/impossible/composed analyses, and qualified continuous heuristics |
 | Portable CP foundation (M10.6a) | Achieved | Immutable MiniZinc IR, deterministic export, CLI driver, portable JSON results, external SAT/UNSAT tests |
 | CP cipher lowering and recovery (M10.6b) | Achieved | Exact CNF-to-CP lowering reuses typed component semantics; graph-name projections; reduced recovery and full Speck legacy fixture independently evaluated |
 | Shared CP trail lowering (M10.6c) | Achieved | Differential, signed-linear, deterministic-truncated, and local impossible fixtures use shared semantics and real MiniZinc tests |
 | Native CP SPN differential trails (M10.6c1) | Achieved | PropagationProblem-selected DDT tables, PRESENT-2 UNSAT-3/SAT-4 proof, decoded trail independently checked |
 | Native CP linear trails (M10.6c2) | Achieved | PropagationProblem-selected signed LAT tables, PRESENT-3 UNSAT-3/SAT-4 proof, decoded signs and wiring independently checked |
 | Native CP truncated/impossible trails (M10.6c3) | Achieved | Truncated semantics moved into `semantics`; Speck paired-carry fixture projected through CP; exact PRESENT S-box possible/impossible proof |
-| Advanced CP analyses (M10.6d) | In progress | ARX optimization, generalized truncated, and impossible checkpoints achieved; composed attacks and continuous heuristics remain |
+| Advanced CP analyses (M10.6d) | Achieved | ARX optimization, generalized truncated, impossible and composed attacks, plus separately typed continuous heuristics |
 | Advanced CP suite inventory (M10.6d1) | Achieved | Every legacy MiniZinc model classified; scientific fixtures, superseded structural tests, dependencies, and migration order recorded |
 | Exact CP ARX differential optimization (M10.6d2) | Achieved | Chuffed proves Speck32/64-5 weight 8 UNSAT and weight 9 SAT in the CLAASP image; the five-transition witness is independently recounted and checked |
 | Generalized CP truncated propagation (M10.6d3) | Achieved | Probabilistic-truncated Speck fixtures and typed wordwise AES propagation are independently checked and projected through CP |
@@ -848,9 +846,9 @@ is absent). Update this table in the same commit that changes milestone state.
 | Exact modular-add switch automaton (M10.6d5b3b) | Achieved | Sixteen carry/borrow states match every exhaustive 3-bit entry and scale to exact 16-bit Speck counts |
 | Restricted Speck ARX boomerang composition (M10.6d5b3c) | Achieved | Legacy weight-8 witness pinned; heuristic omission documented; exact switch count/weight independently computed; seeded 65,536-sample experiment preserves 11 successes and the legacy rate threshold |
 | Typed differential-linear composition (M10.6d5c) | Achieved | Fixed Speck32/64-6 patterns decompose into p=1, r=7, q=3; legacy search weight 14 and exact composed weight 14.994353436858859 are separately retained and independently checked |
-| CP continuous models (M10.6d6) | Next | Numerically qualified heuristic models kept distinct from exact proof results |
+| CP continuous models (M10.6d6) | Achieved | Dependency-free continuous XOR/rotation/addition and one-/two-round Speck fixtures; fixed-mask correlation, binary64 precision, tolerance, and heuristic-only claim type preserved |
 | Complete legacy inventory (M10.7) | Achieved | Deterministic standard-library inventory covers 323 source and 258 test modules; AST metadata, primitive taxonomy fields, fixed-evidence locators, and an exact filesystem/CI gate; three pending `develop` commits reconciled |
-| Remaining mathematical/solver models (M10.8) | Planned | Complete model coverage, including monomial prediction, division property, algebraic analyses, and an open-source baseline |
+| Remaining mathematical/solver models (M10.8) | Next | Complete model coverage, including monomial prediction, division property, algebraic analyses, and an open-source baseline |
 | Primitive terminology/public API (M10.9a) | Planned | `Primitive`/`primitives`, official class names, schemas, documentation, and terminology guard |
 | Fixed-length primitive classification (M10.9b) | Planned | Every legacy catalogue entry assigned to the six semantic categories, an orthogonal fixture folder, or an explicit out-of-scope disposition |
 | Complete reusable component catalogue (M10.9c) | Planned | All reusable legacy components migrated with parity evidence and pseudocode-level authoring helpers |
