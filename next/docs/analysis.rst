@@ -1,30 +1,30 @@
-Analyzing a cipher
-==================
+Analyzing a primitive
+======================
 
-Analysis constraints refer to cipher inputs, outputs, components, and indexed
+Analysis constraints refer to primitive inputs, outputs, components, and indexed
 logical units—not DIMACS or backend variable names. Problems and projected
 results therefore remain meaningful when the solver changes.
 
 .. doctest::
 
-   >>> from claasp_next import Bit, Cipher, ValueType
+   >>> from claasp_next import Bit, Primitive, ValueType
    >>> from claasp_next.analysis import AnalysisProblem, FixedValue
    >>> from claasp_next.components import Add
-   >>> cipher = Cipher("xor", {
+   >>> primitive = Primitive("xor", {
    ...     "plaintext": ValueType(Bit(), (1,)),
    ...     "key": ValueType(Bit(), (1,)),
    ... })
-   >>> cipher.add_round()
+   >>> primitive.add_round()
    Round(number=0)
-   >>> output = cipher.add_component(Add((cipher.input("plaintext"), cipher.input("key"))))
-   >>> cipher.set_output(output)
+   >>> output = primitive.add_component(Add((primitive.input("plaintext"), primitive.input("key"))))
+   >>> primitive.set_output(output)
    >>> problem = AnalysisProblem(
-   ...     cipher,
+   ...     primitive,
    ...     constraints=(
-   ...         FixedValue(cipher.input("plaintext"), 1),
-   ...         FixedValue(cipher.output, 0),
+   ...         FixedValue(primitive.input("plaintext"), 1),
+   ...         FixedValue(primitive.output, 0),
    ...     ),
-   ...     projections={"key": cipher.input("key")},
+   ...     projections={"key": primitive.input("key")},
    ... )
    >>> [type(item).__name__ for item in problem.constraints]
    ['FixedValue', 'FixedValue']
@@ -34,7 +34,7 @@ workflow is deliberately shorter:
 
 .. code-block:: python
 
-   result = cipher.analyze().recover_input(
+   result = primitive.analyze().recover_input(
        "key",
        known_inputs={"plaintext": 1},
        output=0,
@@ -58,18 +58,18 @@ a one-round Speck32/64 plaintext/ciphertext pair:
 
 .. code-block:: python
 
-   from claasp_next.ciphers import SpeckBlockCipher
+   from claasp_next.primitives import Speck
 
-   cipher = SpeckBlockCipher(number_of_rounds=1)
+   primitive = Speck(number_of_rounds=1)
    plaintext = 0x6574694C
-   ciphertext = cipher.evaluate(plaintext, 0x1918111009080100)
-   result = cipher.analyze().recover_input(
+   ciphertext = primitive.evaluate(plaintext, 0x1918111009080100)
+   result = primitive.analyze().recover_input(
        "key",
        known_inputs={"plaintext": plaintext},
        output=ciphertext,
    )
    assert result.is_satisfiable
-   assert cipher.evaluate(plaintext, result.value("key")) == ciphertext
+   assert primitive.evaluate(plaintext, result.value("key")) == ciphertext
 
 A reduced-round pair may admit several keys. Build an ``AnalysisProblem`` with
 the desired key projection and call ``enumerate_solutions(problem, limit=N)``
@@ -86,7 +86,7 @@ solver-independent checker. For the published PRESENT S-box, for example:
 .. doctest::
 
    >>> from claasp_next.analysis import SBoxTransitionSemantics
-   >>> from claasp_next.ciphers.block_ciphers.present import PRESENT_SBOX
+   >>> from claasp_next.primitives.block_ciphers.present import PRESENT_SBOX
    >>> semantics = SBoxTransitionSemantics(PRESENT_SBOX)
    >>> transition = semantics.xor_differential(0x1, 0x3)
    >>> (transition.numerator, transition.denominator, transition.weight)
@@ -106,9 +106,9 @@ from a mere feasible trail and records its provenance:
 
 .. doctest::
 
-   >>> from claasp_next.ciphers import PresentBlockCipher
-   >>> cipher = PresentBlockCipher(number_of_rounds=2)
-   >>> result = cipher.analyze().find_lowest_weight_xor_differential_trail()
+   >>> from claasp_next.primitives import Present
+   >>> primitive = Present(number_of_rounds=2)
+   >>> result = primitive.analyze().find_lowest_weight_xor_differential_trail()
    >>> (result.trail.total_weight, result.lower_bound, result.is_optimal)
    (4.0, 4.0, True)
 
@@ -125,9 +125,9 @@ reproduces the preserved two-round Speck32/64 optimum:
 
 .. doctest::
 
-   >>> from claasp_next.ciphers import SpeckBlockCipher
-   >>> cipher = SpeckBlockCipher(number_of_rounds=2)
-   >>> result = cipher.analyze().find_lowest_weight_xor_differential_trail()
+   >>> from claasp_next.primitives import Speck
+   >>> primitive = Speck(number_of_rounds=2)
+   >>> result = primitive.analyze().find_lowest_weight_xor_differential_trail()
    >>> (result.trail.total_weight, result.is_optimal)
    (1.0, True)
    >>> hex(result.trail.input_pattern.value)
@@ -156,9 +156,9 @@ the graph facade:
 
 .. doctest::
 
-   >>> from claasp_next.ciphers import PresentBlockCipher
-   >>> cipher = PresentBlockCipher(number_of_rounds=1)
-   >>> cipher.analyze().is_xor_differential_transition_possible("sbox_1_0", 1, 1)
+   >>> from claasp_next.primitives import Present
+   >>> primitive = Present(number_of_rounds=1)
+   >>> primitive.analyze().is_xor_differential_transition_possible("sbox_1_0", 1, 1)
    False
 
 Linear trail search
@@ -170,8 +170,8 @@ weight-4 fixture:
 
 .. doctest::
 
-   >>> from claasp_next.ciphers import PresentBlockCipher
-   >>> result = PresentBlockCipher(number_of_rounds=3).analyze().find_lowest_weight_xor_linear_trail()
+   >>> from claasp_next.primitives import Present
+   >>> result = Present(number_of_rounds=3).analyze().find_lowest_weight_xor_linear_trail()
    >>> (result.trail.total_weight, result.is_optimal)
    (4.0, True)
    >>> any(step.transition.sign == -1 for step in result.trail.steps)
@@ -183,8 +183,8 @@ facade call:
 
 .. doctest::
 
-   >>> from claasp_next.ciphers import SpeckBlockCipher
-   >>> result = SpeckBlockCipher(number_of_rounds=4).analyze().find_lowest_weight_xor_linear_trail()
+   >>> from claasp_next.primitives import Speck
+   >>> result = Speck(number_of_rounds=4).analyze().find_lowest_weight_xor_linear_trail()
    >>> (result.trail.total_weight, result.is_optimal)
    (3.0, True)
    >>> (hex(result.trail.input_pattern.value), hex(result.trail.output_pattern.value))

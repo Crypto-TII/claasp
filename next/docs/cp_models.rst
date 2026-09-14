@@ -32,29 +32,29 @@ MiniZinc and Gecode installed:
    assert result.is_satisfied
    assert result.values["x"] == 2
 
-Cipher solving and key recovery
--------------------------------
+Primitive solving and key recovery
+-----------------------------------
 
 The CP representation can lower the portable Boolean formula already produced
-from supported typed cipher components. MiniZinc-safe encoded identifiers are
+from supported typed primitive components. MiniZinc-safe encoded identifiers are
 kept internal and results are mapped back to stable graph names. Consequently
 the ordinary analysis API works unchanged:
 
 .. code-block:: python
 
-   from claasp_next.ciphers import SpeckBlockCipher
+   from claasp_next.primitives import Speck
    from claasp_next.drivers.solvers import MiniZincSolver
 
-   cipher = SpeckBlockCipher(number_of_rounds=1)
+   primitive = Speck(number_of_rounds=1)
    plaintext = 0x6574694C
-   ciphertext = cipher.evaluate(plaintext, 0x1918111009080100)
-   result = cipher.analyze().recover_input(
+   ciphertext = primitive.evaluate(plaintext, 0x1918111009080100)
+   result = primitive.analyze().recover_input(
        "key",
        known_inputs={"plaintext": plaintext},
        output=ciphertext,
        solver=MiniZincSolver(),
    )
-   assert cipher.evaluate(plaintext, result.value("key")) == ciphertext
+   assert primitive.evaluate(plaintext, result.value("key")) == ciphertext
 
 A dedicated external test also reproduces the legacy full 22-round
 Speck32/64 fixed-input result ``0xa86842f2``. Both recovery and the legacy
@@ -124,10 +124,10 @@ its decoder recomputes the selected entry independently.
 
 .. doctest::
 
-   >>> from claasp_next.ciphers import PresentBlockCipher
+   >>> from claasp_next.primitives import Present
    >>> from claasp_next.semantics.cryptanalysis import SBoxBoomerangSemantics
-   >>> cipher = PresentBlockCipher(number_of_rounds=1)
-   >>> sbox = next(item for item in cipher.components if item.component_id == "sbox_1_0")
+   >>> primitive = Present(number_of_rounds=1)
+   >>> sbox = next(item for item in primitive.components if item.component_id == "sbox_1_0")
    >>> bct = SBoxBoomerangSemantics(sbox.table)
    >>> bct.connectivity(1, 1).is_possible
    False
@@ -250,9 +250,9 @@ output bytes without assuming that unknown terms cannot cancel.
 
 .. doctest::
 
-   >>> from claasp_next.ciphers import AESBlockCipher
+   >>> from claasp_next.primitives import AES
    >>> from claasp_next.semantics.cryptanalysis import propagate_single_active_aes_byte
-   >>> output = propagate_single_active_aes_byte(AESBlockCipher(number_of_rounds=1), 0)
+   >>> output = propagate_single_active_aes_byte(AES(number_of_rounds=1), 0)
    >>> [word.kind.name for word in output]
    ['NONZERO', 'NONZERO', 'NONZERO', 'NONZERO', 'ZERO', 'ZERO', 'ZERO', 'ZERO', 'ZERO', 'ZERO', 'ZERO', 'ZERO', 'ZERO', 'ZERO', 'ZERO', 'ZERO']
 
@@ -265,7 +265,7 @@ Impossible-suite migration
 
 The legacy result inventory retains the seven-round Speck UNSAT search and
 the exact Simon-32/64 eleven-round input, output, and two middle-boundary
-patterns. The latter requires a typed Simon cipher before its model can be
+patterns. The latter requires a typed Simon primitive before its model can be
 migrated honestly. Generated declaration counts are excluded. The next
 checkpoint introduces a typed forward/backward contradiction boundary and
 independent checker; hybrid models will use component semantic overrides

@@ -33,7 +33,7 @@ renderers.
    :maxdepth: 2
    :caption: Reference
 
-   cipher_authoring
+   primitive_authoring
    analysis
    whats_new_v5
    parameters

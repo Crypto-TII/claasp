@@ -4,14 +4,14 @@ Inspecting and displaying results
 Analysis results expose projected logical values, status, runtime, backend,
 model statistics, reproducibility metadata, and the raw backend result.
 
-Cipher diagrams
----------------
+Primitive diagrams
+-------------------
 
 .. warning::
 
-   Routed ASCII-art cipher diagrams are a **work in progress**. The current
+   Routed ASCII-art primitive diagrams are a **work in progress**. The current
    ASCII output is a temporary structural listing of rounds, components, and
-   logical-unit dependencies. Calling ``cipher.draw("ascii")`` emits
+   logical-unit dependencies. Calling ``primitive.draw("ascii")`` emits
    ``ASCIIArtWorkInProgressWarning`` so applications do not mistake this
    listing for the intended diagram renderer.
 
@@ -19,23 +19,23 @@ The temporary output remains available without an optional dependency:
 
 .. doctest::
 
-   >>> from claasp_next.ciphers import AESBlockCipher
-   >>> cipher = AESBlockCipher(number_of_rounds=1)
-   >>> drawing = cipher.draw("ascii")
-   >>> drawing.startswith("cipher aes\ninputs\n")
+   >>> from claasp_next.primitives import AES
+   >>> primitive = AES(number_of_rounds=1)
+   >>> drawing = primitive.draw("ascii")
+   >>> drawing.startswith("primitive aes\ninputs\n")
    True
    >>> "round 0" in drawing and "output <-" in drawing
    True
 
 Passing an execution trace displays intermediate values on the same graph.
-TikZ source is available with ``cipher.draw("tikz", trace)``; PDF output with
-``cipher.draw("pdf", trace)`` additionally requires the ``pdflatex`` command.
+TikZ source is available with ``primitive.draw("tikz", trace)``; PDF output with
+``primitive.draw("pdf", trace)`` additionally requires the ``pdflatex`` command.
 
 .. doctest::
 
-   >>> trace = cipher.evaluate_with_trace(0, 0).trace
-   >>> print(cipher.draw("ascii", trace))
-   cipher aes
+   >>> trace = primitive.evaluate_with_trace(0, 0).trace
+   >>> print(primitive.draw("ascii", trace))
+   primitive aes
    inputs
      plaintext  # 16 units
      key  # 16 units
@@ -62,12 +62,12 @@ Analysis reports
 
 .. doctest::
 
-   >>> from claasp_next import Bit, Cipher, ValueType
+   >>> from claasp_next import Bit, Primitive, ValueType
    >>> from claasp_next.analysis import AnalysisResult
    >>> [field for field in AnalysisResult.__dataclass_fields__ if field != "solver_result"]
    ['status', 'values', 'runtime_seconds', 'backend', 'statistics', 'reproducibility']
 
-Values use the same packed-integer conventions as cipher evaluation, so they
+Values use the same packed-integer conventions as primitive evaluation, so they
 can be displayed with ordinary formatting such as ``hex(result.value("key"))``.
 
 The legacy CLAASP ``Report`` class has not yet been migrated. A future

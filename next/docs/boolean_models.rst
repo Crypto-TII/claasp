@@ -1,7 +1,7 @@
 Boolean CNF models
 ==================
 
-Bit-oriented cipher graphs can be lowered to a solver-independent conjunctive
+Bit-oriented primitive graphs can be lowered to a solver-independent conjunctive
 normal form without installing SageMath or a SAT solver. The initial lowering
 supports constants, identity, permutation, concatenation, bitwise addition
 (XOR), and bit-vector S-boxes. Unsupported domains and components fail
@@ -14,14 +14,14 @@ linear and nonlinear layers:
 
    >>> from claasp_next import bits_from_int
    >>> from claasp_next.representations.constraints.sat import BooleanCNFModel
-   >>> from claasp_next.ciphers import Present80BlockCipher
+   >>> from claasp_next.primitives import Present80
    >>> from claasp_next.representations.execution import ScalarEvaluator
-   >>> cipher = Present80BlockCipher(number_of_rounds=1)
-   >>> model = BooleanCNFModel(cipher)
+   >>> primitive = Present80(number_of_rounds=1)
+   >>> model = BooleanCNFModel(primitive)
    >>> formula = model.cnf_formula()
    >>> formula.variable_count > 500, formula.clause_count > 1000
    (True, True)
-   >>> evaluation = ScalarEvaluator().evaluate(cipher, {
+   >>> evaluation = ScalarEvaluator().evaluate(primitive, {
    ...     "plaintext": bits_from_int(0, 64),
    ...     "key": bits_from_int(0, 80),
    ... })
@@ -50,7 +50,7 @@ wires.
    'c 1 plaintext_0'
 
 Any command-line or Python SAT engine that accepts DIMACS can consume this
-text. Solver adapters live outside the typed cipher graph and can be added
+text. Solver adapters live outside the typed primitive graph and can be added
 incrementally; the Boolean IR itself has no third-party dependency.
 
 Solving with MiniSat

@@ -1,7 +1,7 @@
 Internal architecture
 =====================
 
-CLAASP separates the meaning of a cipher from the mechanisms used to execute
+CLAASP separates the meaning of a primitive from the mechanisms used to execute
 or analyze it.
 
 The typed graph
@@ -15,16 +15,16 @@ bit.
 
 Components are immutable operation descriptions. They do not evaluate
 themselves and do not contain MiniSat-, Z3-, MILP-, or computer-algebra-system
-code. A ``Cipher`` validates their directed acyclic graph and round grouping.
+code. A ``Primitive`` validates their directed acyclic graph and round grouping.
 
 The corresponding source packages have deliberately concrete names:
 
 .. code-block:: text
 
-   graph/       Cipher, Component, Port, Round, and ValueType structure
+   graph/       Primitive, Component, Port, Round, and ValueType structure
    domains/     Bit, Word, GF(2^w), and GF(p) scalar units
    components/  Operations connecting graph values
-   ciphers/     Concrete cipher and permutation descriptions
+   primitives/  Concrete block-cipher and permutation descriptions
    semantics/   What flowing values mean and how transitions behave
 
 In particular, ``semantics`` defines concrete values, differences, masks,
@@ -69,7 +69,7 @@ Internally, CLAASP uses the following vocabulary:
 
 .. code-block:: text
 
-   typed cipher graph + semantics
+   typed primitive graph + semantics
        -> lowering       intermediate representation
        -> optimization   equivalent, more suitable representation
        -> export         DIMACS / SMT-LIB / polynomial program
@@ -83,14 +83,14 @@ representation. Exporting only serializes an already lowered model.
 For example, a word-level ``ModularAdd`` remains a single component in a
 Speck graph. Boolean lowering expands it into sum and carry constraints; SMT
 export writes the resulting assertions as SMT-LIB. Users normally invoke the
-complete pipeline through ``cipher.analyze()`` and do not call these stages.
+complete pipeline through ``primitive.analyze()`` and do not call these stages.
 
 Annotations, traces, and trails
 -------------------------------
 
 Concrete execution, cryptanalytic propagation, simulated leakage, and
 visualization all attach information to ports and components of the same
-cipher graph. They therefore share an immutable graph-annotation foundation.
+primitive graph. They therefore share an immutable graph-annotation foundation.
 Their public semantic types remain distinct: an ``ExecutionTrace`` records
 concrete values, a cryptanalytic ``Trail`` records transitions and weights,
 and a ``SideChannelTrace`` records leakage observations. A diagram may consume

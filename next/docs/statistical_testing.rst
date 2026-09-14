@@ -9,8 +9,8 @@ convention as normal primitive evaluation.
 .. doctest::
 
    >>> from claasp_next.analysis import generate_random_dataset
-   >>> from claasp_next.ciphers import SpeckBlockCipher
-   >>> primitive = SpeckBlockCipher(number_of_rounds=1)
+   >>> from claasp_next.primitives import Speck
+   >>> primitive = Speck(number_of_rounds=1)
    >>> data = generate_random_dataset(primitive, 3, seed=17, fixed_inputs={"key": 0})
    >>> data.seed, len(data.samples), [sample.input("key") for sample in data.samples]
    (17, 3, [0, 0, 0])

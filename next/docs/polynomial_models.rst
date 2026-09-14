@@ -1,16 +1,16 @@
 Polynomial models
 =================
 
-CLAASP lowers a typed cipher graph to a solver-independent sparse polynomial
+CLAASP lowers a typed primitive graph to a solver-independent sparse polynomial
 system before exporting it to a computer algebra backend. The initial model
 supports homogeneous prime-field graphs.
 
 .. doctest::
 
-   >>> from claasp_next.ciphers import MiMCPermutation
+   >>> from claasp_next.primitives import MiMC
    >>> from claasp_next.representations.constraints.polynomial import PrimeFieldPolynomialModel
-   >>> cipher = MiMCPermutation(17, 3, (1, 2))
-   >>> system = PrimeFieldPolynomialModel(cipher).polynomial_system()
+   >>> primitive = MiMC(17, 3, (1, 2))
+   >>> system = PrimeFieldPolynomialModel(primitive).polynomial_system()
    >>> len(system.variables)
    7
    >>> len(system.equations)
@@ -36,17 +36,17 @@ maximum degree two.
 
    >>> from claasp_next.representations.execution import ScalarEvaluator
    >>> from claasp_next.representations.constraints.polynomial import PowerLoweringPolicy
-   >>> power_cipher = MiMCPermutation(17, 5, (1,))
-   >>> direct = PrimeFieldPolynomialModel(power_cipher).polynomial_system()
+   >>> power_primitive = MiMC(17, 5, (1,))
+   >>> direct = PrimeFieldPolynomialModel(power_primitive).polynomial_system()
    >>> chain_model = PrimeFieldPolynomialModel(
-   ...     power_cipher, PowerLoweringPolicy.BINARY_CHAIN
+   ...     power_primitive, PowerLoweringPolicy.BINARY_CHAIN
    ... )
    >>> chained = chain_model.polynomial_system()
    >>> direct.maximum_degree, chained.maximum_degree
    (5, 2)
    >>> chained.statistics.degree_histogram
    ((1, 2), (2, 3))
-   >>> evaluation = ScalarEvaluator().evaluate(power_cipher, {"state": (3,)})
+   >>> evaluation = ScalarEvaluator().evaluate(power_primitive, {"state": (3,)})
    >>> chained.evaluate(chain_model.witness(evaluation))
    (0, 0, 0, 0, 0)
 
@@ -148,9 +148,9 @@ and key-variable conventions directly from the graph:
 
 .. doctest::
 
-   >>> from claasp_next.ciphers import SimonBlockCipher
+   >>> from claasp_next.primitives import Simon
    >>> from claasp_next.representations.execution import BooleanSymbolicEvaluator
-   >>> result = BooleanSymbolicEvaluator().evaluate(SimonBlockCipher(number_of_rounds=1))
+   >>> result = BooleanSymbolicEvaluator().evaluate(Simon(number_of_rounds=1))
    >>> [term.variables for term in result.output_anfs[0].monomials]
    [('k48',), ('p1', 'p8'), ('p16',), ('p2',)]
    >>> result.output_anfs[0].degree
@@ -169,7 +169,7 @@ claim inferred from an incomplete solver solution pool:
 .. doctest::
 
    >>> from claasp_next.analysis import analyze_boolean_algebra
-   >>> primitive = SimonBlockCipher(number_of_rounds=2)
+   >>> primitive = Simon(number_of_rounds=2)
    >>> fixed = {f"p{i}": 0 for i in range(32) if i not in (0, 9)}
    >>> evidence = analyze_boolean_algebra(
    ...     primitive, cube=("p0", "p9"), fixed_variables=fixed
@@ -193,7 +193,7 @@ exact legacy fixture above is 8.
 
    >>> from claasp_next.representations.execution import BooleanDegreeEvaluator
    >>> bound = BooleanDegreeEvaluator().evaluate(
-   ...     SimonBlockCipher(number_of_rounds=4), "plaintext"
+   ...     Simon(number_of_rounds=4), "plaintext"
    ... )
    >>> bound.output_bounds[:2], bound.sound, bound.complete
    ((16, 16), True, False)
@@ -206,7 +206,7 @@ exponential only in the cube dimension:
 
    >>> from claasp_next.analysis import evaluate_cube_sum
    >>> checked = evaluate_cube_sum(
-   ...     SimonBlockCipher(number_of_rounds=2),
+   ...     Simon(number_of_rounds=2),
    ...     {"plaintext": 0, "key": 1 << 14},
    ...     variable_input="plaintext", cube_positions=(0, 9), output_bit=0,
    ... )
@@ -225,7 +225,7 @@ degree in a named input or a selected cube of its bit positions.
 
    >>> from claasp_next.representations.constraints.milp import BooleanMonomialGraphMILPModel
    >>> model = BooleanMonomialGraphMILPModel(
-   ...     SimonBlockCipher(number_of_rounds=2), 0, "plaintext"
+   ...     Simon(number_of_rounds=2), 0, "plaintext"
    ... ).milp_model()
    >>> model.objective_sense.value, len(model.objective.terms)
    ('maximize', 32)

@@ -24,7 +24,7 @@ Examples include:
 
 * adding a new graph-level constraint without exposing encoded variable names;
 * registering an alternative S-box transition encoding;
-* adding or replacing constraints for one component in a full cipher model;
+* adding or replacing constraints for one component in a full primitive model;
 * transforming a lowered model before export;
 * implementing another solver adapter for an existing representation; and
 * attaching an independent checker or renderer to a result.
@@ -60,19 +60,19 @@ user facade; representation code uses the canonical semantics package.
 Propagation problems and component overrides
 --------------------------------------------
 
-``PropagationProblem`` selects a cipher, semantics, component scope,
+``PropagationProblem`` selects a primitive, semantics, component scope,
 objective, optional weight bound, semantic registry, and provenance before a
 SAT, SMT, MILP, or CP representation is chosen:
 
 .. doctest::
 
-   >>> from claasp_next.ciphers import PresentBlockCipher
+   >>> from claasp_next.primitives import Present
    >>> from claasp_next.components import BitVectorSBox
    >>> from claasp_next.semantics import XOR_DIFFERENTIAL
    >>> from claasp_next.semantics.cryptanalysis import PropagationProblem
-   >>> cipher = PresentBlockCipher(number_of_rounds=1)
-   >>> sbox = next(item for item in cipher.components if isinstance(item, BitVectorSBox))
-   >>> problem = PropagationProblem(cipher, XOR_DIFFERENTIAL, component_ids=(sbox.component_id,), maximum_weight=4, provenance=("experiment-1",))
+   >>> primitive = Present(number_of_rounds=1)
+   >>> sbox = next(item for item in primitive.components if isinstance(item, BitVectorSBox))
+   >>> problem = PropagationProblem(primitive, XOR_DIFFERENTIAL, component_ids=(sbox.component_id,), maximum_weight=4, provenance=("experiment-1",))
    >>> problem.provider_for(sbox).transition((1,), 3).weight
    2.0
 

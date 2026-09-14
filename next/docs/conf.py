@@ -46,7 +46,7 @@ else:
     exclude_patterns.extend([
         "user_guide.rst",
         "getting_started.rst",
-        "traditional_ciphers.rst",
+        "traditional_primitives.rst",
         "batch_evaluation.rst",
         "displaying_results.rst",
     ])

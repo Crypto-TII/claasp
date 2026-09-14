@@ -54,7 +54,7 @@ than being silently decomposed into bits.
 Parameter responsibility
 ------------------------
 
-Cipher classes validate the structural consistency of supplied parameters.
+Primitive classes validate the structural consistency of supplied parameters.
 They do not imply that arbitrary constants, matrices, or round counts are
 cryptographically secure. Verified parameter catalogues and their provenance
 are separate from the generic construction classes.

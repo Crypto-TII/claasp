@@ -13,8 +13,8 @@ using MSB-first bits:
 .. doctest::
 
    >>> from claasp_next.analysis import black_box_dataset
-   >>> from claasp_next.ciphers import SpeckBlockCipher
-   >>> primitive = SpeckBlockCipher(number_of_rounds=1)
+   >>> from claasp_next.primitives import Speck
+   >>> primitive = Speck(number_of_rounds=1)
    >>> data = black_box_dataset(primitive, "plaintext", samples=4, seed=41)
    >>> data.kind, data.sample_count, data.feature_width
    ('black_box', 4, 64)
