@@ -100,6 +100,105 @@ MIGRATION_OVERRIDES = {
     },
 }
 
+_SMT_SOURCE_DESTINATIONS = {
+    "claasp/cipher_modules/models/smt/smt_model.py": (
+        "next/src/claasp_next/representations/constraints/smt/formula.py"
+    ),
+    "claasp/cipher_modules/models/smt/smt_models/smt_cipher_model.py": (
+        "next/src/claasp_next/representations/constraints/smt/lowering.py"
+    ),
+    "claasp/cipher_modules/models/smt/smt_models/smt_deterministic_truncated_xor_differential_model.py": (
+        "next/src/claasp_next/semantics/cryptanalysis/truncated.py"
+    ),
+    "claasp/cipher_modules/models/smt/smt_models/smt_xor_differential_model.py": (
+        "next/src/claasp_next/representations/constraints/smt/trails.py"
+    ),
+    "claasp/cipher_modules/models/smt/smt_models/smt_xor_linear_model.py": (
+        "next/src/claasp_next/representations/constraints/smt/trails.py"
+    ),
+    "claasp/cipher_modules/models/smt/solvers.py": (
+        "next/src/claasp_next/drivers/solvers/z3.py"
+    ),
+    "claasp/cipher_modules/models/smt/utils/constants.py": (
+        "next/src/claasp_next/drivers/solvers/z3.py"
+    ),
+    "claasp/cipher_modules/models/smt/utils/utils.py": (
+        "next/src/claasp_next/representations/constraints/smt"
+    ),
+}
+for _path, _destination in _SMT_SOURCE_DESTINATIONS.items():
+    MIGRATION_OVERRIDES[_path] = {
+        "v5_destination": _destination,
+        "prerequisites": [],
+        "disposition": "supersede",
+        "status": "superseded-in-m10.8d",
+        "acceptance_criterion": (
+            "Backend-neutral SMT representations consume shared semantics, preserve provenance, "
+            "and execute through the explicit Z3 driver."
+        ),
+        "rationale": (
+            "v5 replaces backend-shaped model classes, syntax helpers, and solver registries "
+            "with shared semantic problems, immutable representations, and separate drivers."
+        ),
+    }
+
+MIGRATION_OVERRIDES.update({
+    "tests/unit/cipher_modules/models/smt/smt_model_test.py": {
+        "v5_destination": (
+            "next/tests/unit/test_smt.py; next/tests/unit/test_analysis_constraints.py"
+        ),
+        "prerequisites": [],
+        "disposition": "supersede",
+        "status": "superseded-in-m10.8d",
+        "acceptance_criterion": (
+            "Portable SMT serialization and shared fixed-value constraints are deterministic; "
+            "solver identity is explicit driver provenance."
+        ),
+        "rationale": (
+            "Legacy solver catalogues and exact backend assertion strings are not v5 contracts."
+        ),
+    },
+    "tests/unit/cipher_modules/models/smt/smt_models/smt_cipher_model_test.py": {
+        "v5_destination": "next/tests/integration/test_z3_integration.py",
+        "prerequisites": [],
+        "disposition": "migrate",
+        "status": "migrated-in-m10.4a",
+        "acceptance_criterion": (
+            "Z3 recovers the full Speck32/64 designers' ciphertext and graph evaluation "
+            "independently verifies the assignment."
+        ),
+        "rationale": None,
+    },
+    "tests/unit/cipher_modules/models/smt/smt_models/smt_xor_differential_model_test.py": {
+        "v5_destination": "next/tests/integration/test_speck_trail_enumeration.py",
+        "prerequisites": ["M10.8d bounded Speck trail enumeration"],
+        "disposition": "defer",
+        "status": "partially-migrated-in-m10.6d2",
+        "acceptance_criterion": (
+            "Retain the proven Speck32/64-5 optimum weight 9 and independently reproduce the "
+            "legacy count of 28 trails with weights 9 through 10."
+        ),
+        "rationale": (
+            "The optimum and an independently checked witness are ported through shared CP "
+            "semantics; bounded all-trail enumeration remains to be implemented once for all drivers."
+        ),
+    },
+    "tests/unit/cipher_modules/models/smt/smt_models/smt_xor_linear_model_test.py": {
+        "v5_destination": "next/tests/integration/test_speck_trail_enumeration.py",
+        "prerequisites": ["M10.8d bounded Speck trail enumeration"],
+        "disposition": "defer",
+        "status": "partially-migrated-in-m10.3f",
+        "acceptance_criterion": (
+            "Preserve the Speck32/64-4 optimum weight 3, reduced three-round weights 1 and 7, "
+            "and the eight Speck8/16 trails of weight at most 2."
+        ),
+        "rationale": (
+            "The four-round optimum has exact shared semantics and independent checking; the "
+            "remaining reduced fixtures require the common bounded-enumeration API."
+        ),
+    },
+})
+
 
 def python_paths() -> list[Path]:
     return sorted(path for root in LEGACY_ROOTS for path in root.rglob("*.py"))

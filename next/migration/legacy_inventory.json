@@ -2811,31 +2811,29 @@
       "v5_destination": "inapplicable: package marker reviewed with its containing module"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Backend-neutral SMT representations consume shared semantics, preserve provenance, and execute through the explicit Z3 driver.",
       "dependencies": [
         "claasp",
         "math",
         "re",
         "subprocess"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
       "path": "claasp/cipher_modules/models/smt/smt_model.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "SmtModel"
       ],
-      "rationale": null,
+      "rationale": "v5 replaces backend-shaped model classes, syntax helpers, and solver registries with shared semantic problems, immutable representations, and separate drivers.",
       "responsibility": "SMT model of Cipher.",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/representations/constraints/smt/formula.py"
     },
     {
       "acceptance_criterion": "Containing package is represented by its non-marker entries.",
@@ -2858,123 +2856,113 @@
       "v5_destination": "inapplicable: package marker reviewed with its containing module"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Backend-neutral SMT representations consume shared semantics, preserve provenance, and execute through the explicit Z3 driver.",
       "dependencies": [
         "claasp",
         "time"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
       "path": "claasp/cipher_modules/models/smt/smt_models/smt_cipher_model.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "SmtCipherModel"
       ],
-      "rationale": null,
+      "rationale": "v5 replaces backend-shaped model classes, syntax helpers, and solver registries with shared semantic problems, immutable representations, and separate drivers.",
       "responsibility": "smt cipher model",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/representations/constraints/smt/lowering.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Backend-neutral SMT representations consume shared semantics, preserve provenance, and execute through the explicit Z3 driver.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
       "path": "claasp/cipher_modules/models/smt/smt_models/smt_deterministic_truncated_xor_differential_model.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "SmtDeterministicTruncatedXorDifferentialModel"
       ],
-      "rationale": null,
+      "rationale": "v5 replaces backend-shaped model classes, syntax helpers, and solver registries with shared semantic problems, immutable representations, and separate drivers.",
       "responsibility": "smt deterministic truncated xor differential model",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/semantics/cryptanalysis/truncated.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Backend-neutral SMT representations consume shared semantics, preserve provenance, and execute through the explicit Z3 driver.",
       "dependencies": [
         "claasp",
         "time"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
       "path": "claasp/cipher_modules/models/smt/smt_models/smt_xor_differential_model.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "SmtXorDifferentialModel"
       ],
-      "rationale": null,
+      "rationale": "v5 replaces backend-shaped model classes, syntax helpers, and solver registries with shared semantic problems, immutable representations, and separate drivers.",
       "responsibility": "smt xor differential model",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/representations/constraints/smt/trails.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Backend-neutral SMT representations consume shared semantics, preserve provenance, and execute through the explicit Z3 driver.",
       "dependencies": [
         "claasp",
         "time"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
       "path": "claasp/cipher_modules/models/smt/smt_models/smt_xor_linear_model.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "SmtXorLinearModel"
       ],
-      "rationale": null,
+      "rationale": "v5 replaces backend-shaped model classes, syntax helpers, and solver registries with shared semantic problems, immutable representations, and separate drivers.",
       "responsibility": "smt xor linear model",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/representations/constraints/smt/trails.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Backend-neutral SMT representations consume shared semantics, preserve provenance, and execute through the explicit Z3 driver.",
       "dependencies": [],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
       "path": "claasp/cipher_modules/models/smt/solvers.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [],
-      "rationale": null,
+      "rationale": "v5 replaces backend-shaped model classes, syntax helpers, and solver registries with shared semantic problems, immutable representations, and separate drivers.",
       "responsibility": "SMT solvers",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/drivers/solvers/z3.py"
     },
     {
       "acceptance_criterion": "Containing package is represented by its non-marker entries.",
@@ -2997,38 +2985,34 @@
       "v5_destination": "inapplicable: package marker reviewed with its containing module"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Backend-neutral SMT representations consume shared semantics, preserve provenance, and execute through the explicit Z3 driver.",
       "dependencies": [],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
       "path": "claasp/cipher_modules/models/smt/utils/constants.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [],
-      "rationale": null,
+      "rationale": "v5 replaces backend-shaped model classes, syntax helpers, and solver registries with shared semantic problems, immutable representations, and separate drivers.",
       "responsibility": "constants",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/drivers/solvers/z3.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Backend-neutral SMT representations consume shared semantics, preserve provenance, and execute through the explicit Z3 driver.",
       "dependencies": [],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
       "path": "claasp/cipher_modules/models/smt/utils/utils.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "smt_and",
         "smt_assert",
@@ -3043,11 +3027,11 @@
         "smt_lipmaa",
         "get_component_hex_value"
       ],
-      "rationale": null,
+      "rationale": "v5 replaces backend-shaped model classes, syntax helpers, and solver registries with shared semantic problems, immutable representations, and separate drivers.",
       "responsibility": "utils",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/representations/constraints/smt"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -12765,12 +12749,12 @@
       "v5_destination": "next/tests (mapped to the owning migrated behavior)"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Portable SMT serialization and shared fixed-value constraints are deterministic; solver identity is explicit driver provenance.",
       "dependencies": [
         "claasp",
         "pytest"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -12781,26 +12765,24 @@
       },
       "kind": "test",
       "path": "tests/unit/cipher_modules/models/smt/smt_model_test.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "test_solver_names",
         "test_fix_variables_value_constraints",
         "test_model_constraints"
       ],
-      "rationale": null,
+      "rationale": "Legacy solver catalogues and exact backend assertion strings are not v5 contracts.",
       "responsibility": "smt model test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [
         "test_fix_variables_value_constraints",
         "test_model_constraints",
         "test_solver_names"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_smt.py; next/tests/unit/test_analysis_constraints.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Z3 recovers the full Speck32/64 designers' ciphertext and graph evaluation independently verifies the assignment.",
       "dependencies": [
         "claasp"
       ],
@@ -12813,26 +12795,24 @@
       },
       "kind": "test",
       "path": "tests/unit/cipher_modules/models/smt/smt_models/smt_cipher_model_test.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "test_find_missing_bits"
       ],
       "rationale": null,
       "responsibility": "smt cipher model test",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.4a",
       "tests": [
         "test_find_missing_bits"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/integration/test_z3_integration.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Retain the proven Speck32/64-5 optimum weight 9 and independently reproduce the legacy count of 28 trails with weights 9 through 10.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "defer",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -12845,7 +12825,7 @@
       "kind": "test",
       "path": "tests/unit/cipher_modules/models/smt/smt_models/smt_xor_differential_model_test.py",
       "prerequisites": [
-        "owning migration milestone"
+        "M10.8d bounded Speck trail enumeration"
       ],
       "public_entry_points": [
         "test_find_all_xor_differential_trails_with_weight_at_most",
@@ -12853,23 +12833,23 @@
         "test_find_one_xor_differential_trail",
         "test_find_one_xor_differential_trail_with_fixed_weight"
       ],
-      "rationale": null,
+      "rationale": "The optimum and an independently checked witness are ported through shared CP semantics; bounded all-trail enumeration remains to be implemented once for all drivers.",
       "responsibility": "smt xor differential model test",
-      "status": "planned-or-partially-migrated",
+      "status": "partially-migrated-in-m10.6d2",
       "tests": [
         "test_find_all_xor_differential_trails_with_weight_at_most",
         "test_find_lowest_weight_xor_differential_trail",
         "test_find_one_xor_differential_trail",
         "test_find_one_xor_differential_trail_with_fixed_weight"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/integration/test_speck_trail_enumeration.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Preserve the Speck32/64-4 optimum weight 3, reduced three-round weights 1 and 7, and the eight Speck8/16 trails of weight at most 2.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "defer",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -12883,7 +12863,7 @@
       "kind": "test",
       "path": "tests/unit/cipher_modules/models/smt/smt_models/smt_xor_linear_model_test.py",
       "prerequisites": [
-        "owning migration milestone"
+        "M10.8d bounded Speck trail enumeration"
       ],
       "public_entry_points": [
         "test_find_all_xor_linear_trails_with_weight_at_most",
@@ -12892,9 +12872,9 @@
         "test_find_one_xor_linear_trail_with_fixed_weight",
         "test_fix_variables_value_xor_linear_constraints"
       ],
-      "rationale": null,
+      "rationale": "The four-round optimum has exact shared semantics and independent checking; the remaining reduced fixtures require the common bounded-enumeration API.",
       "responsibility": "smt xor linear model test",
-      "status": "planned-or-partially-migrated",
+      "status": "partially-migrated-in-m10.3f",
       "tests": [
         "test_find_all_xor_linear_trails_with_weight_at_most",
         "test_find_lowest_weight_xor_linear_trail",
@@ -12902,7 +12882,7 @@
         "test_find_one_xor_linear_trail_with_fixed_weight",
         "test_fix_variables_value_xor_linear_constraints"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/integration/test_speck_trail_enumeration.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",

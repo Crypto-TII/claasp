@@ -85,3 +85,17 @@ def test_m10_8d_algebraic_inventory_has_no_unspecified_destinations():
     assert records
     assert all("destination finalized" not in record["v5_destination"] for record in records)
     assert all(record["status"] != "planned-or-partially-migrated" for record in records)
+
+
+def test_m10_8d_smt_inventory_names_only_the_two_remaining_fixture_groups():
+    payload = json.loads(INVENTORY.read_text(encoding="utf-8"))
+    records = [record for record in payload["records"] if "/models/smt/" in record["path"]]
+
+    assert records
+    assert all("destination finalized" not in record["v5_destination"] for record in records)
+    assert all(record["status"] != "planned-or-partially-migrated" for record in records)
+    deferred = {record["path"] for record in records if record["disposition"] == "defer"}
+    assert deferred == {
+        "tests/unit/cipher_modules/models/smt/smt_models/smt_xor_differential_model_test.py",
+        "tests/unit/cipher_modules/models/smt/smt_models/smt_xor_linear_model_test.py",
+    }
