@@ -863,10 +863,10 @@ is absent). Update this table in the same commit that changes milestone state.
 | Complete legacy inventory (M10.7) | Achieved | Deterministic standard-library inventory covers 323 source and 258 test modules; AST metadata, primitive taxonomy fields, fixed-evidence locators, and an exact filesystem/CI gate; three pending `develop` commits reconciled |
 | Remaining mathematical/solver models (M10.8) | In progress | M10.8a component semantics/baseline achieved; whole-graph composition, fixed algebraic fixtures, and remaining inventory closure follow |
 | Boolean ANF/component monomial baseline (M10.8a) | Achieved | Sage-free Möbius ANF, symbolic cube coefficients, exact S-box transition tables, portable one-hot MILP, real GLPK SAT/UNSAT coverage, and user/developer doctests |
-| Whole-graph division-property composition (M10.8b) | In progress | Graph-derived PRESENT vertical slice achieved; generic components, multi-round composition, and solver lowering follow |
+| Whole-graph division-property composition (M10.8b) | In progress | Graph-derived PRESENT slice and generic component semantics achieved; multi-round composition and solver lowering follow |
 | PRESENT round monomial composition (M10.8b1) | Achieved | Sixteen exact S-box relations compose through the typed p-layer; possible witness and impossible pair are independently checked |
-| Generic monomial graph semantics (M10.8b2) | Next | Add structural and Boolean component propagation selected from graph semantics rather than primitive-specific code |
-| Multi-round monomial solver composition (M10.8b3) | Planned | Compose complete primitive regions and lower fixed boundary queries to portable open-source solver representations |
+| Generic monomial graph semantics (M10.8b2) | Achieved | Typed S-box, Boolean addition/XOR, identity, concatenation, permutation, and constant relations share one independently checked dispatcher |
+| Multi-round monomial solver composition (M10.8b3) | Next | Compose complete primitive regions and lower fixed boundary queries to portable open-source solver representations |
 | ANF/degree/cube/superpoly evidence (M10.8c) | Planned | Restore exact legacy values, including parity and balanced-bit claims, with explicit completeness status |
 | Remaining model inventory closure (M10.8d) | Planned | Resolve every outstanding solver/algebraic entry and keep optimized proprietary drivers optional |
 | Primitive terminology/public API (M10.9a) | Planned | `Primitive`/`primitives`, official class names, schemas, documentation, and terminology guard |

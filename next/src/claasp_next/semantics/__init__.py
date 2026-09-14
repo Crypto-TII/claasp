@@ -25,6 +25,7 @@ from claasp_next.semantics.cryptanalysis import (
     ModularAddBoomerangAutomaton,
     ContinuousHeuristicResult, continuous_modular_add, continuous_rotate_left,
     continuous_rotate_right, continuous_speck32, continuous_xor,
+    ComponentMonomialSemantics,
 )
 
 __all__ = [
@@ -52,4 +53,5 @@ __all__ = [
     "ContinuousHeuristicResult", "continuous_modular_add",
     "continuous_rotate_left", "continuous_rotate_right", "continuous_speck32",
     "continuous_xor",
+    "ComponentMonomialSemantics",
 ]

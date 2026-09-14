@@ -123,3 +123,10 @@ Gurobi may later consume the same representation as an optional accelerator.
 This initial baseline is intended for small component tables. Whole-primitive
 division-property composition and scalable encodings are subsequent M10.8
 checkpoints.
+
+Graph composition asks ``ComponentMonomialSemantics`` for the local relation
+of each typed component. The initial exact providers cover bit-vector S-boxes,
+XOR/addition over bits, identity, concatenation, permutation, and constants.
+This keeps division-property meaning outside primitive-specific exporters and
+allows the same relation to be checked independently after a solver returns a
+witness.

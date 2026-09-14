@@ -4,6 +4,7 @@ from dataclasses import dataclass
 
 from claasp_next.components import BitVectorSBox, Permutation
 from claasp_next.representations.constraints.polynomial import monomial_transition_table
+from claasp_next.semantics.cryptanalysis.monomial import ComponentMonomialSemantics
 
 
 @dataclass(frozen=True, slots=True)
@@ -67,12 +68,18 @@ class PresentRoundMonomialSemantics:
             shift = 4 * (15 - index)
             local_input = (input_mask >> shift) & 0xF
             local_output = (before_permutation >> shift) & 0xF
-            if local_input not in table[local_output]:
+            if not ComponentMonomialSemantics.is_possible(
+                self.sboxes[index], (local_input,), local_output
+            ):
                 return None
             steps.append(MonomialTrailStep(
                 self.sboxes[index].component_id, local_input, local_output
             ))
         steps.append(MonomialTrailStep("p_layer_1", before_permutation, output_mask))
+        if not ComponentMonomialSemantics.is_possible(
+            self.permutation, (before_permutation,), output_mask
+        ):
+            raise RuntimeError("typed permutation mapping produced an inconsistent monomial boundary")
         return MonomialTrail(
             input_mask, output_mask, 64, tuple(steps), "plaintext",
             "typed PRESENT round; exact component 3SDP-woU transitions",
