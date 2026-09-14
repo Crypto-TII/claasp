@@ -8,6 +8,7 @@ from claasp_next.ciphers.block_ciphers import (
     SpeckBlockCipher,
     SimonBlockCipher,
 )
+from claasp_next.ciphers.block_functions import Trivium
 from claasp_next.ciphers.permutations.mimc import MiMCPermutation
 from claasp_next.ciphers.permutations.poseidon import PoseidonPermutation
 from claasp_next.ciphers.permutations.chacha import ChaCha
@@ -24,4 +25,5 @@ __all__ = [
     "SpeckBlockCipher",
     "SimonBlockCipher",
     "Salsa",
+    "Trivium",
 ]

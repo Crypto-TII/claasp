@@ -161,3 +161,39 @@ of the legacy implementation's internal half-round counter.
 The retained sparse and dense legacy vectors and batch evaluation all use the
 same typed modular-addition, rotation, XOR, and concatenation components as
 other ARX primitives.
+
+Trivium
+-------
+
+Trivium is published as a stream cipher, and a stream cipher is a stateful
+variable-length construction rather than a CLAASP primitive. ``Trivium`` is
+therefore the fixed-length function that its initialization and keystream
+generation define: an 80-bit key and an 80-bit IV produce the first
+``keystream_bit_size`` keystream bits after a chosen number of initialization
+clocks. The key is the secret input, the IV is the public fixed-length data
+input, and the output width is unrelated to the input width, so the primitive
+is a keyed function rather than a keyed permutation.
+
+Both parameters are free, so the same class covers the standard 1152-clock
+instance and the small reduced instances used for algebraic evidence.
+Boundary bit order follows the published eSTREAM vectors, where the bits of
+each byte are numbered from its least significant bit.
+
+.. doctest::
+
+   >>> from claasp_next.ciphers import Trivium
+   >>> from claasp_next.ciphers.block_functions.trivium import (
+   ...     estream_bytes_to_bit_sequence)
+   >>> key = estream_bytes_to_bit_sequence(0x80000000000000000000, 10)
+   >>> keystream = Trivium(keystream_bit_size=32).evaluate(key=key, iv=0)
+   >>> f"{estream_bytes_to_bit_sequence(keystream, 4):08x}"
+   '38eb86ff'
+
+Setting ``keystream_bit_size=0`` returns the complete 288-bit state instead,
+which is the natural boundary for state-recovery and division-property work.
+The graph is built only from the reusable ``Constant``, ``Xor``,
+``BitwiseAnd``, and ``Concatenate`` components; the three shift registers are
+graph wiring rather than a private feedback implementation. Tests retain five
+published eSTREAM 80/80 vectors, the legacy CLAASP all-zero 256-bit keystream,
+scalar/batch parity, and reduced instances checked against an independently
+written transcription of the specification pseudocode.
