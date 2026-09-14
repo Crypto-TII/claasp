@@ -42,6 +42,7 @@ from claasp_next.analysis.monomial import (
     MonomialTrail, MonomialTrailStep, MultiRoundMonomialTrail,
     PresentMonomialSemantics, PresentRoundMonomialSemantics,
 )
+from claasp_next.analysis.algebraic import BooleanAlgebraicEvidence, analyze_boolean_algebra
 
 __all__ = [
     "Analysis",
@@ -79,4 +80,6 @@ __all__ = [
     "PresentRoundMonomialSemantics",
     "MultiRoundMonomialTrail",
     "PresentMonomialSemantics",
+    "BooleanAlgebraicEvidence",
+    "analyze_boolean_algebra",
 ]

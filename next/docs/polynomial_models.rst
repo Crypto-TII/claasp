@@ -161,3 +161,22 @@ Boolean substitution. Tests preserve the legacy two-round Simon degree vector
 and the ``(p0,p9)`` cube superpoly ``k49``. Polynomial size can grow
 exponentially, so this exact path is a reference implementation for reduced
 graphs; scalable degree and parity searches continue to use monomial models.
+
+The user-facing algebraic analysis records whether a result is complete. A
+zero cube coefficient is then an exact balanced-bit statement, rather than a
+claim inferred from an incomplete solver solution pool:
+
+.. doctest::
+
+   >>> from claasp_next.analysis import analyze_boolean_algebra
+   >>> primitive = SimonBlockCipher(number_of_rounds=2)
+   >>> fixed = {f"p{i}": 0 for i in range(32) if i not in (0, 9)}
+   >>> evidence = analyze_boolean_algebra(
+   ...     primitive, cube=("p0", "p9"), fixed_variables=fixed
+   ... )
+   >>> evidence.complete, evidence.method
+   (True, 'exact_sparse_anf')
+   >>> evidence.cube_degrees[0]
+   1
+   >>> evidence.require_complete() is evidence
+   True
