@@ -54,6 +54,10 @@ from claasp_next.analysis.datasets import (
     generate_avalanche_dataset, generate_random_dataset,
 )
 from claasp_next.analysis.avalanche import AvalancheResult, avalanche_probabilities
+from claasp_next.analysis.neural_experiments import (
+    DatasetPartition, NeuralRun, NeuralRunProvenance, dataset_digest,
+    deterministic_partition,
+)
 
 __all__ = [
     "Analysis",
@@ -111,4 +115,9 @@ __all__ = [
     "avalanche_probabilities",
     "generate_avalanche_dataset",
     "generate_random_dataset",
+    "DatasetPartition",
+    "NeuralRun",
+    "NeuralRunProvenance",
+    "dataset_digest",
+    "deterministic_partition",
 ]

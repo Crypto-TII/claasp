@@ -959,5 +959,6 @@ is absent). Update this table in the same commit that changes milestone state.
 | Reproducible avalanche foundation (M10.12a) | Achieved | Immutable MSB-first paired bit-flip datasets, local seeded RNG, simple `primitive.analyze().avalanche(...)` API, fixed Speck evidence, and explicitly empirical result metadata |
 | Neural distinguishers (M10.13) | In progress | Framework-independent seeded black-box/differential datasets and experiment/result/driver contracts achieved; optional bounded ML drivers and trace projections remain |
 | Neural experiment foundation (M10.13a) | Achieved | Pure-Python deterministic MSB-first datasets preserve legacy real/random and XOR-related label semantics; immutable training contracts import no ML framework |
+| Neural split and provenance contracts (M10.13b) | Achieved | Deterministic optional stratification, explicit disjoint sample partitions, stable dataset SHA-256 identities, and realization/driver/version/seed/options provenance reject stale or incomplete runs |
 | Reports and presentation (M10.14) | Planned | Typed Report replacement, tables, plots, exports, citations, evidence and reproducibility metadata |
 | Serialization, diagrams, code generation (M10.15) | Planned | Versioned formats, routed diagrams, language generators, and remaining compiler workflows |

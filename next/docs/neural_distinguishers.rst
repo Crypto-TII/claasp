@@ -38,3 +38,26 @@ size. An optional framework adapter implements ``NeuralTrainingDriver`` and
 returns ``NeuralExperimentResult``. Framework imports, tensor conversion,
 devices, training, and checkpoints belong to that driver rather than the core
 contracts.
+
+Dataset partitions and run provenance
+-------------------------------------
+
+Splits are explicit sample-index contracts rather than framework-owned hidden
+state. They may be label-stratified and are reproducible from their own seed:
+
+.. doctest::
+
+   >>> from claasp_next.analysis import deterministic_partition, dataset_digest
+   >>> partition = deterministic_partition(
+   ...     data, validation_fraction=0.25, testing_fraction=0.25,
+   ...     seed=19, stratified=False,
+   ... )
+   >>> partition.training, partition.validation, partition.testing
+   ((0, 2), (1,), (3,))
+   >>> len(dataset_digest(data))
+   64
+
+``NeuralRunProvenance`` binds a run to the exact dataset digest, primitive
+realization, dataset and partition seeds, driver version, and canonical scalar
+options. ``NeuralRun.validate_for`` rejects stale datasets and partitions that
+do not cover every sample exactly once.
