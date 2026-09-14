@@ -143,8 +143,14 @@ Dieharder parser preserves its legacy row schema and aggregates, but no legacy
 test asserted a scientific Dieharder result and no output fixture was
 committed; its synthetic parser fixture is therefore new structural evidence.
 Empty Dieharder output now raises an error instead of fabricating an
-``unavailable`` failure. Optional executable integration remains scheduled for
+``unavailable`` failure. NIST STS executable integration remains scheduled for
 the next M10.12 checkpoint; plotting/report generation belongs to M10.14.
+M10.12e1 ports the exact legacy Dieharder ``-g 201 -f INPUT -a`` and selected
+``-d TEST`` invocation semantics through an isolated, shell-free driver. Its
+result adds the stream SHA-256, tool version, stable command, runtime, and
+captured diagnostics. A bounded dedicated CI job checks a real executable;
+because the legacy tests contained no assertions or committed output, this is
+adapter compatibility rather than preservation of a fixed p-value claim.
 
 ## CP models
 

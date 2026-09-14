@@ -65,7 +65,7 @@ from claasp_next.analysis.statistical_datasets import (
 )
 from claasp_next.analysis.statistical_results import (
     DieharderObservation, DieharderReport, NISTFinalReport, NISTSummaryRow,
-    StatisticalAssessment,
+    StatisticalAssessment, StatisticalTestRun,
 )
 
 __all__ = [
@@ -141,4 +141,5 @@ __all__ = [
     "NISTFinalReport",
     "NISTSummaryRow",
     "StatisticalAssessment",
+    "StatisticalTestRun",
 ]

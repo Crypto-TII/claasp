@@ -113,5 +113,13 @@ The NIST summary parser retains all ten uniformity bins, duplicate subtests,
 undefined ``----`` p-values, unavailable ``------`` proportions, and starred
 failures. The baseline regression parses all 188 rows in each of the five
 committed reference-suite reports. Empty or malformed reports raise an error
-instead of fabricating a failed scientific observation. Optional process
-drivers are the next M10.12 checkpoint.
+instead of fabricating a failed scientific observation.
+
+The optional Dieharder adapter streams a dataset to an isolated temporary
+file and invokes the external program without a shell. It records the exact
+dataset hash, stable command arguments, tool version, runtime, and captured
+diagnostics in a :class:`~claasp_next.analysis.StatisticalTestRun`. For
+example, ``DieharderDriver(timeout_seconds=10).run(stream, test=0)`` runs one
+bounded test when ``dieharder`` is installed. A dedicated CI job exercises
+the real executable; importing and parsing results never requires it. The
+NIST STS process driver is the remaining M10.12 adapter checkpoint.

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
+from typing import Generic, TypeVar
 
 
 class StatisticalAssessment(str, Enum):
@@ -75,3 +76,19 @@ class NISTFinalReport:
 
     rows: tuple[NISTSummaryRow, ...]
 
+
+StatisticalReport = TypeVar("StatisticalReport")
+
+
+@dataclass(frozen=True, slots=True)
+class StatisticalTestRun(Generic[StatisticalReport]):
+    """One reproducible execution of an optional statistical program."""
+
+    suite: str
+    suite_version: str
+    dataset_sha256: str
+    command: tuple[str, ...]
+    runtime_seconds: float
+    report: StatisticalReport
+    stdout: str
+    stderr: str
