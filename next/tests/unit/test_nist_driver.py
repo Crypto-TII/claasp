@@ -19,6 +19,11 @@ REPORT_BODY = (
     "  0   0   2   0   2   3   1   0   2   0  0.213309     10/10      Frequency\n"
 )
 
+# Starting a temporary shell executable can occasionally exceed two seconds
+# under macOS endpoint-security scanning. This remains below the routine
+# integration-test budget and does not change the expected fast success path.
+FAKE_EXECUTABLE_TIMEOUT_SECONDS = 10
+
 
 def _report_path(working_dir: Path) -> Path:
     return working_dir / _REPORT_RELATIVE_PATH
@@ -66,7 +71,10 @@ def test_driver_reads_fixed_report_path_despite_inverted_exit_code(tmp_path):
     executable = _fake_assess(tmp_path, body=REPORT_BODY, exit_code=1)
     working_dir = tmp_path / "working"
 
-    run = NistStsDriver(str(executable), working_dir=str(working_dir), timeout_seconds=2).run(
+    run = NistStsDriver(
+        str(executable), working_dir=str(working_dir),
+        timeout_seconds=FAKE_EXECUTABLE_TIMEOUT_SECONDS,
+    ).run(
         dataset, number_of_bit_streams=1
     )
 
@@ -96,13 +104,19 @@ def test_driver_computes_stream_length_from_dataset_bit_count(tmp_path):
     working_dir = tmp_path / "working"
     expected_total_bits = dataset.manifest().byte_count * 8
 
-    run = NistStsDriver(str(executable), working_dir=str(working_dir), timeout_seconds=2).run(
+    run = NistStsDriver(
+        str(executable), working_dir=str(working_dir),
+        timeout_seconds=FAKE_EXECUTABLE_TIMEOUT_SECONDS,
+    ).run(
         dataset, number_of_bit_streams=1
     )
 
     assert run.command[2] == str(expected_total_bits)
 
-    run_split = NistStsDriver(str(executable), working_dir=str(working_dir), timeout_seconds=2).run(
+    run_split = NistStsDriver(
+        str(executable), working_dir=str(working_dir),
+        timeout_seconds=FAKE_EXECUTABLE_TIMEOUT_SECONDS,
+    ).run(
         dataset, number_of_bit_streams=2
     )
 
@@ -115,7 +129,10 @@ def test_driver_raises_when_report_is_never_produced(tmp_path):
     working_dir = tmp_path / "working"
 
     with pytest.raises(RuntimeError, match="did not produce a report"):
-        NistStsDriver(str(executable), working_dir=str(working_dir), timeout_seconds=2).run(dataset)
+        NistStsDriver(
+            str(executable), working_dir=str(working_dir),
+            timeout_seconds=FAKE_EXECUTABLE_TIMEOUT_SECONDS,
+        ).run(dataset)
 
 
 def test_driver_refuses_a_stale_report_left_by_a_previous_run(tmp_path):
@@ -130,14 +147,20 @@ def test_driver_refuses_a_stale_report_left_by_a_previous_run(tmp_path):
     executable = _fake_assess(tmp_path, body=None, exit_code=0)
 
     with pytest.raises(RuntimeError, match="did not refresh its report"):
-        NistStsDriver(str(executable), working_dir=str(working_dir), timeout_seconds=2).run(dataset)
+        NistStsDriver(
+            str(executable), working_dir=str(working_dir),
+            timeout_seconds=FAKE_EXECUTABLE_TIMEOUT_SECONDS,
+        ).run(dataset)
 
 
 def test_driver_validates_options_and_missing_executable(tmp_path):
     dataset = _dataset()
     executable = _fake_assess(tmp_path, body=REPORT_BODY, exit_code=1)
     working_dir = tmp_path / "working"
-    driver = NistStsDriver(str(executable), working_dir=str(working_dir), timeout_seconds=2)
+    driver = NistStsDriver(
+        str(executable), working_dir=str(working_dir),
+        timeout_seconds=FAKE_EXECUTABLE_TIMEOUT_SECONDS,
+    )
 
     with pytest.raises(ValueError, match="number_of_bit_streams"):
         driver.run(dataset, number_of_bit_streams=0)
@@ -163,6 +186,9 @@ def test_version_falls_back_to_unknown_without_an_sts_version_hint(tmp_path):
     )
     unversioned.chmod(0o755)
 
-    run = NistStsDriver(str(unversioned), working_dir=str(working_dir), timeout_seconds=2).run(dataset)
+    run = NistStsDriver(
+        str(unversioned), working_dir=str(working_dir),
+        timeout_seconds=FAKE_EXECUTABLE_TIMEOUT_SECONDS,
+    ).run(dataset)
 
     assert run.suite_version == "unknown"
