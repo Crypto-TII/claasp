@@ -212,3 +212,25 @@ exponential only in the cube dimension:
    ... )
    >>> checked.parity, checked.evaluations, checked.complete
    (1, 4, True)
+
+Scalable monomial reachability
+------------------------------
+
+``BooleanMonomialGraphMILPModel`` compiles the Boolean Word graph to a
+portable optimization model. It models fan-out as COPY and composes XOR,
+AND, rotation, concatenation, and constants. The objective maximizes the
+degree in a named input or a selected cube of its bit positions.
+
+.. doctest::
+
+   >>> from claasp_next.representations.constraints.milp import BooleanMonomialGraphMILPModel
+   >>> model = BooleanMonomialGraphMILPModel(
+   ...     SimonBlockCipher(number_of_rounds=2), 0, "plaintext"
+   ... ).milp_model()
+   >>> model.objective_sense.value, len(model.objective.terms)
+   ('maximize', 32)
+
+GLPK integration tests recover degrees 2, 3, and 8 for reduced Simon and the
+legacy 13-round, 31-variable cube bound 30. Optimal monomial reachability is a
+sound degree upper bound; parity cancellation is the following checkpoint and
+is required before calling such a bound an exact ANF degree.

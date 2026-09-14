@@ -890,7 +890,8 @@ is absent). Update this table in the same commit that changes milestone state.
 | Exact cube-sum verification (M10.8c3a2) | Achieved | Dependency-free exhaustive cube evaluation independently verifies the legacy Simon-2 `k49` superpoly at deterministic key assignments |
 | Scalable degree/parity encoding (M10.8c3b) | In progress | Port backend-neutral upper-bound and parity semantics, with explicit soundness/completeness and open-solver execution |
 | Structural degree-bound baseline (M10.8c3b1) | Achieved | Bit/Word XOR, AND, rotation, constants, concatenation and modular addition propagate sound bounded degrees; Simon-4 documents exact 8 versus loose bound 16 and never claims completeness |
-| Monomial reachability and parity solver (M10.8c3b2) | Next | Recover tight Simon and Trivium fixtures using backend-neutral encodings and an open solver |
+| Whole-graph monomial reachability solver (M10.8c3b2) | Achieved | Portable COPY/XOR/AND/rotation/concatenation/constant MILP plus GLPK recovers Simon reduced degrees 2/3/8 and the legacy Simon-13 31-variable cube bound 30 |
+| Complete monomial-path parity solver (M10.8c3b3) | Next | Count complete optimal path families modulo two, reject incomplete enumeration, and preserve Simon/Trivium parity fixtures |
 | Remaining model inventory closure (M10.8d) | Planned | Resolve every outstanding solver/algebraic entry and keep optimized proprietary drivers optional |
 | Primitive terminology/public API (M10.9a) | Planned | `Primitive`/`primitives`, official class names, schemas, documentation, and terminology guard |
 | Fixed-length primitive classification (M10.9b) | Planned | Every legacy catalogue entry assigned to the six semantic categories, an orthogonal fixture folder, or an explicit out-of-scope disposition |

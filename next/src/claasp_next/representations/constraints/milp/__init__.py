@@ -13,7 +13,8 @@ from claasp_next.representations.constraints.milp.model import (
 from claasp_next.representations.constraints.milp.trails import PresentDifferentialMILPModel, check_present_milp_trail
 from claasp_next.representations.constraints.milp.transitions import ModularAddLinearMILPModel
 from claasp_next.representations.constraints.milp.monomial import (
-    MonomialTransitionMILPModel, PresentMonomialTrailMILPModel,
+    BooleanMonomialGraphMILPModel, MonomialTransitionMILPModel,
+    PresentMonomialTrailMILPModel,
 )
 
 __all__ = [
@@ -21,4 +22,5 @@ __all__ = [
     "LPExporter", "MILPModel", "ModularAddLinearMILPModel", "ObjectiveSense", "PresentDifferentialMILPModel",
     "VariableKind", "check_present_milp_trail", "MonomialTransitionMILPModel",
     "PresentMonomialTrailMILPModel",
+    "BooleanMonomialGraphMILPModel",
 ]
