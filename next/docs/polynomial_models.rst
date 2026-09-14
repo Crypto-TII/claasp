@@ -242,3 +242,49 @@ claim. On two-round Simon it enumerates five degree-three paths, all with odd
 parity, matching the five highest-plaintext-degree monomials in the exact ANF.
 Native solution-pool drivers may accelerate the same contract later, but must
 provide an equivalent completeness guarantee.
+
+Reduced Trivium evidence
+------------------------
+
+The same machinery applies unchanged to the fixed-length ``Trivium`` keystream
+function, whose reduced instances are parameterized by initialization clocks
+instead of rounds. After 200 clocks the first keystream bit still has a small
+exact ANF, so the cube coefficient of the single IV variable ``i53`` is an
+exact superpoly rather than a bound:
+
+.. doctest::
+
+   >>> from claasp_next.analysis import analyze_boolean_algebra
+   >>> from claasp_next.ciphers import Trivium
+   >>> trivium = Trivium(number_of_initialization_clocks=200, keystream_bit_size=1)
+   >>> evidence = analyze_boolean_algebra(
+   ...     trivium, cube=("i53",),
+   ...     fixed_variables={f"i{index}": 0 for index in range(80) if index != 53},
+   ... )
+   >>> evidence.cube_degrees[0], evidence.complete
+   (2, True)
+   >>> sorted(term.variables for term in evidence.cube_coefficients[0].monomials)
+   [('k39',), ('k40', 'k41'), ('k66',)]
+
+The independent cube-sum verifier confirms the same superpoly by concrete
+evaluation, here at a key that activates only the quadratic term:
+
+.. doctest::
+
+   >>> from claasp_next.analysis import evaluate_cube_sum
+   >>> key = (1 << (79 - 40)) | (1 << (79 - 41))
+   >>> checked = evaluate_cube_sum(
+   ...     trivium, {"key": key, "iv": 0},
+   ...     variable_input="iv", cube_positions=(53,), output_bit=0,
+   ... )
+   >>> checked.parity, checked.evaluations, checked.complete
+   (1, 2, True)
+
+The exact IV degree of that keystream bit is 3, while the structural
+propagation bound is 4. GLPK integration tests enumerate the optimal
+monomial-reachability paths to UNSAT and recover exactly the four degree-three
+IV monomials of the exact ANF, for 160 and 200 initialization clocks. Legacy
+CLAASP stated comparable Trivium expectations, but every test in its Gurobi
+monomial-prediction suite is skipped for want of a license and has therefore
+never been executed; the v5 fixtures are newly derived and independently
+checked rather than copied.

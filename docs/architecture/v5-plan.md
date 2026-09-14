@@ -534,7 +534,14 @@ for the tighter legacy monomial predictor. M10.8c3b2 ports that tighter
 backend-neutral reachability/parity model and its open-solver execution.
 M10.8c3a2 adds an independent exact cube-sum verifier so recovered
 coefficients can be tested against concrete primitive evaluation without Sage
-or any solver.
+or any solver. M10.8c3c extracts the fixed-length Trivium keystream function
+from the legacy stream-cipher construction as a ``block_function`` and derives
+its ANF, superpoly, degree-bound and parity evidence anew. The legacy Gurobi
+Trivium expectations are confirmed by that independent derivation rather than
+transcribed, because every test in that suite is license-skipped and has never
+executed. uBlock, Gaston and the divide-and-conquer composition method remain
+deferred with recorded rationale until their typed primitives and middle-round
+composition exist.
 
 #### M10.9: Complete component and primitive catalogue
 
@@ -942,14 +949,14 @@ is absent). Update this table in the same commit that changes milestone state.
 | ANF/degree/cube/superpoly evidence (M10.8c) | In progress | Exact reduced-graph ANF/degree/superpoly slice achieved; scalable parity and balanced-bit fixtures follow |
 | Exact symbolic Boolean graph evaluation (M10.8c1) | Achieved | Typed Word rotations/XOR/AND/addition recover Simon-1 ANF terms, Simon-2 degree vector and `k49` superpoly; symbolic evaluation matches a concrete vector |
 | Exact parity and balanced-bit evidence (M10.8c2) | Achieved | Exact Simon-4 expansion preserves the legacy degree vector and fixed-public-input cube-degree array; proof-qualified results identify balanced bits and reject incomplete proof claims |
-| Scalable algebraic bounds and parity (M10.8c3) | In progress | Restore partial-ANF bounds, Trivium parity-degree and larger cube-feasibility fixtures without relabeling bounds or incomplete searches as exact ANFs |
+| Scalable algebraic bounds and parity (M10.8c3) | In progress | Partial-ANF bounds and the Trivium parity-degree evidence are restored without relabeling bounds or incomplete searches as exact ANFs; the larger uBlock/Gaston cube-feasibility fixtures stay blocked on their typed primitives |
 | Exact partial-ANF evidence (M10.8c3a) | Achieved | Public cube coefficients retain exact Boolean polynomials; Simon-3 preserves all 14 legacy partial-ANF monomials |
 | Exact cube-sum verification (M10.8c3a2) | Achieved | Dependency-free exhaustive cube evaluation independently verifies the legacy Simon-2 `k49` superpoly at deterministic key assignments |
 | Scalable degree/parity encoding (M10.8c3b) | In progress | Port backend-neutral upper-bound and parity semantics, with explicit soundness/completeness and open-solver execution |
 | Structural degree-bound baseline (M10.8c3b1) | Achieved | Bit/Word XOR, AND, rotation, constants, concatenation and modular addition propagate sound bounded degrees; Simon-4 documents exact 8 versus loose bound 16 and never claims completeness |
 | Whole-graph monomial reachability solver (M10.8c3b2) | Achieved | Portable COPY/XOR/AND/rotation/concatenation/constant MILP plus GLPK recovers Simon reduced degrees 2/3/8 and the legacy Simon-13 31-variable cube bound 30 |
 | Complete monomial-path parity solver (M10.8c3b3) | Achieved | Portable no-good enumeration reaches terminal UNSAT, matches all five exact Simon-2 degree-three ANF monomials, and rejects path-limited results as incomplete |
-| Remaining scalable algebraic fixtures (M10.8c3c) | Next | Extract the fixed-length Trivium transformation and migrate its degree/parity/superpoly evidence, then address uBlock, Gaston and divide-and-conquer fixtures as their typed primitives arrive |
+| Remaining scalable algebraic fixtures (M10.8c3c) | Achieved | Typed Trivium `block_function` with free clock/keystream parameters, five published eSTREAM vectors, exact 13-clock ANF and 200-clock `i53` superpoly `k39 + k40*k41 + k66`, and complete GLPK parity recovering the exact 160-/200-clock IV monomials; uBlock, Gaston and divide-and-conquer are deferred with recorded rationale |
 | Remaining model inventory closure (M10.8d) | Planned | Resolve every outstanding solver/algebraic entry and keep optimized proprietary drivers optional |
 | Primitive terminology/public API (M10.9a) | Planned | `Primitive`/`primitives`, official class names, schemas, documentation, and terminology guard |
 | Fixed-length primitive classification (M10.9b) | Planned | Every legacy catalogue entry assigned to the six semantic categories, an orthogonal fixture folder, or an explicit out-of-scope disposition |
