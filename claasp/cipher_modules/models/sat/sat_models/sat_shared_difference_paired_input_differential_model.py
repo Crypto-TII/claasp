@@ -72,7 +72,7 @@ class SharedDifferencePairedInputDifferentialModel(SatModel):
         self.duplicate_round_cipher = cipher1
         super().__init__(self.duplicate_round_cipher)
 
-    def build_shared_difference_paired_input_differential_model(self, weight=None, fixed_variables=[]):
+    def build_shared_difference_paired_input_differential_model(self, weight=-1, fixed_variables=[]):
         r"""
         Build the SAT model for searching high-order XOR differential distinguishers involving paired inputs
         and shared difference. The distinguisher follows the mathematical form:
@@ -83,7 +83,7 @@ class SharedDifferencePairedInputDifferentialModel(SatModel):
 
         INPUT:
 
-        - ``weight`` -- **integer** (default: `None`); bounds the trail weight if set to a non-negative integer.
+        - ``weight`` -- **integer** (default: `-1`); bounds the trail weight if set to a non-negative integer.
         - ``fixed_variables`` -- **list** (default: `[]`); variables to fix, in standard format.
 
         .. SEEALSO::

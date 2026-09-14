@@ -54,13 +54,13 @@ class SatXorDifferentialModel(SatModel):
         self._window_size_weight_pr_vars = -1
         super().__init__(cipher, counter, compact)
 
-    def build_xor_differential_trail_model(self, weight=None, fixed_variables=[]):
+    def build_xor_differential_trail_model(self, weight=-1, fixed_variables=[]):
         """
         Build the model for the search of XOR DIFFERENTIAL trails.
 
         INPUT:
 
-        - ``weight`` -- **integer** (default: `None`); a specific weight. If set to a non-negative integer, bounds
+        - ``weight`` -- **integer** (default: `-1`); a specific weight. If set to a non-negative integer, bounds
           the XOR trail weight
         - ``fixed_variables`` -- **list** (default: `[]`); the variables to be fixed in standard format
 
@@ -106,7 +106,7 @@ class SatXorDifferentialModel(SatModel):
             self._variables_list.extend(variables)
             self._model_constraints.extend(constraints)
 
-        if weight is not None:
+        if weight != -1:
             variables, constraints = self.weight_constraints(weight)
             self._variables_list.extend(variables)
             self._model_constraints.extend(constraints)
@@ -155,7 +155,7 @@ class SatXorDifferentialModel(SatModel):
             self._model_constraints.extend(all_ones_constraints)
 
     def build_xor_differential_trail_and_checker_model_at_intermediate_output_level(
-        self, weight=None, fixed_variables=[]
+        self, weight=-1, fixed_variables=[]
     ):
         """
         Build the XOR differential trail model together with a checker model for the intermediate output level.
@@ -165,7 +165,7 @@ class SatXorDifferentialModel(SatModel):
 
         INPUT:
 
-        - ``weight`` -- **integer** (default: `None`); a specific weight. If set to a non-negative integer, bounds
+        - ``weight`` -- **integer** (default: `-1`); a specific weight. If set to a non-negative integer, bounds
           the XOR trail weight
         - ``fixed_variables`` -- **list** (default: `[]`); the variables to be fixed in standard format
 
@@ -219,6 +219,7 @@ class SatXorDifferentialModel(SatModel):
     ):
         """
         Return a list of solutions containing all the XOR differential trails having the ``fixed_weight`` weight.
+
         By default, the search is set in the single-key setting.
 
         INPUT:
@@ -286,9 +287,9 @@ class SatXorDifferentialModel(SatModel):
     ):
         """
         Return a list of solutions.
-        By default, the search is set in the single-key setting.
 
-        The list contain all the XOR differential trails having the weight lying in the interval
+        By default, the search is set in the single-key setting.
+        The list contains all the XOR differential trails having the weight lying in the interval
         ``[min_weight, max_weight]``.
 
         INPUT:
@@ -514,6 +515,7 @@ class SatXorDifferentialModel(SatModel):
     ):
         """
         Return the solution representing a trail with the lowest weight.
+
         By default, the search is set in the single-key setting.
 
         .. NOTE::
