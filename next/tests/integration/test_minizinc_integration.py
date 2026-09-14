@@ -44,10 +44,14 @@ from claasp_next.ciphers import PresentBlockCipher
 pytestmark = pytest.mark.external
 
 
-def _test_solver():
+def _test_solver(*, require_chuffed=False):
     listed = subprocess.run(
         ["minizinc", "--solvers"], text=True, capture_output=True, check=True
     ).stdout.lower()
+    if require_chuffed:
+        if "chuffed" not in listed:
+            pytest.skip("this performance-sensitive regression requires Chuffed")
+        return "chuffed"
     for solver in ("chuffed", "gecode", "cp-sat", "coin-bc"):
         if solver in listed:
             return solver
@@ -228,7 +232,7 @@ def test_minizinc_preserves_exact_present_boomerang_connectivity_entries():
 
 def test_minizinc_proves_legacy_speck_five_round_differential_optimum():
     cipher = SpeckBlockCipher(number_of_rounds=5)
-    solver = MiniZincSolver(solver=_test_solver(), timeout_seconds=120)
+    solver = MiniZincSolver(solver=_test_solver(require_chuffed=True), timeout_seconds=30)
     below = SpeckDifferentialCPModel(PropagationProblem(
         cipher, XOR_DIFFERENTIAL, maximum_weight=8,
         provenance=("legacy Speck32/64-5 lower bound",),
@@ -377,7 +381,9 @@ def test_minizinc_rejects_a_compatible_middle_boundary():
 def test_minizinc_preserves_legacy_speck_seven_round_impossible_unsat():
     model = SpeckImpossibleCPModel(SpeckBlockCipher(number_of_rounds=7), middle_round=3)
 
-    solved = MiniZincSolver(solver=_test_solver()).solve(model.cp_model())
+    solved = MiniZincSolver(
+        solver=_test_solver(require_chuffed=True), timeout_seconds=30
+    ).solve(model.cp_model())
 
     assert solved.status is CPStatus.UNSATISFIABLE
     assert model.cp_model().provenance == (

@@ -726,6 +726,36 @@ whether the inventory is complete.
 The minimal CI job installs only `next/` and runs its tests in an environment
 without Sage.
 
+### Test performance and execution policy
+
+Fast feedback is a correctness feature. The routine dependency-free suite
+should remain measurable in seconds even when the catalogue grows: ordinary
+unit tests should normally finish below one second each, and an individual
+routine integration test should normally finish below ten seconds. A test
+that exceeds ten seconds must be profiled, reduced, or explicitly justified
+as a release/nightly regression; two-minute routine tests are not acceptable.
+Reduced-round and reduced-width fixtures should establish semantics during
+normal CI, while the smallest fixture retaining a published result belongs in
+the solver-specific regression job.
+
+Test execution follows four levels:
+
+1. Run focused local tests while implementing a change.
+2. Before each milestone commit, run the complete dependency-free suite and
+   the affected external integration group.
+3. At milestone-group checkpoints, run all tests in the canonical CLAASP
+   Docker image, using the pinned solver intended by each regression.
+4. Before release, run dependency-free, external, documentation, differential,
+   and explicitly justified long-running jobs and archive their versions and
+   results.
+
+Local absence of a required optimized solver is reported as a skip, never by
+silently selecting a fallback that turns a seconds-long regression into a
+multi-minute timeout. In particular, the Speck32/64-5 CP optimum requires
+Chuffed and has a 30-second guard. Reports must state passes, skips,
+deselections, timeouts, environment, and solver; “all tests passed” is reserved
+for a complete canonical run.
+
 ## Historical initial vertical slice
 
 The first architectural proof is:
