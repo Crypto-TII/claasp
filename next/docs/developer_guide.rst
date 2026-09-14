@@ -16,6 +16,7 @@ renderers.
    concepts
    extending_analysis
    neural_distinguishers
+   statistical_testing
    development
 
 .. toctree::

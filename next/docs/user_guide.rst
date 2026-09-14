@@ -25,6 +25,7 @@ analysis guides for your own work.
    batch_evaluation
    analysis
    displaying_results
+   statistical_testing
    neural_distinguishers
 
 .. toctree::

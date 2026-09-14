@@ -954,7 +954,8 @@ is absent). Update this table in the same commit that changes milestone state.
 | AES realization vertical slice (M10.9e1) | Achieved | Lookup S-box and field-inverse-plus-binary-affine graphs share one public class and all AES-128/192/256 fixed vectors; deterministic capability selection is documented and tested |
 | Primitive inversion and graph transformations (M10.10) | Planned | Typed inverse semantics, partial inversion, round trips, slicing, key-schedule removal, and editor transformations |
 | Component analysis (M10.11) | Planned | Structured S-box, linear-layer, Boolean, field, and word-operation properties with optional heavy algebra/plots |
-| Dataset/statistical testing (M10.12) | Planned | Reproducible streaming datasets, avalanche, NIST STS and Dieharder optional drivers and parsers |
+| Dataset/statistical testing (M10.12) | In progress | Seeded dependency-free evaluation/avalanche datasets and empirical SAC summaries achieved; streaming formats/hashes, remaining families, NIST STS and Dieharder drivers remain |
+| Reproducible avalanche foundation (M10.12a) | Achieved | Immutable MSB-first paired bit-flip datasets, local seeded RNG, simple `primitive.analyze().avalanche(...)` API, fixed Speck evidence, and explicitly empirical result metadata |
 | Neural distinguishers (M10.13) | In progress | Framework-independent seeded black-box/differential datasets and experiment/result/driver contracts achieved; optional bounded ML drivers and trace projections remain |
 | Neural experiment foundation (M10.13a) | Achieved | Pure-Python deterministic MSB-first datasets preserve legacy real/random and XOR-related label semantics; immutable training contracts import no ML framework |
 | Reports and presentation (M10.14) | Planned | Typed Report replacement, tables, plots, exports, citations, evidence and reproducibility metadata |

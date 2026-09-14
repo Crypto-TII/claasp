@@ -49,6 +49,11 @@ from claasp_next.analysis.neural import (
     NeuralDataset, NeuralExperiment, NeuralExperimentResult, NeuralTrainingDriver,
     black_box_dataset, xor_differential_dataset,
 )
+from claasp_next.analysis.datasets import (
+    AvalancheDataset, AvalancheSample, EvaluationDataset, EvaluationSample,
+    generate_avalanche_dataset, generate_random_dataset,
+)
+from claasp_next.analysis.avalanche import AvalancheResult, avalanche_probabilities
 
 __all__ = [
     "Analysis",
@@ -98,4 +103,12 @@ __all__ = [
     "NeuralTrainingDriver",
     "black_box_dataset",
     "xor_differential_dataset",
+    "AvalancheDataset",
+    "AvalancheResult",
+    "AvalancheSample",
+    "EvaluationDataset",
+    "EvaluationSample",
+    "avalanche_probabilities",
+    "generate_avalanche_dataset",
+    "generate_random_dataset",
 ]

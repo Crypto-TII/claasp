@@ -175,6 +175,19 @@ class Analysis:
 
         return find_two_round_spn_xor_differential(self.cipher)
 
+    def avalanche(
+        self, input_name: str, number_of_samples: int, *, seed: int = 0,
+        fixed_inputs=None,
+    ):
+        """Estimate the strict-avalanche matrix through the public evaluator."""
+
+        from claasp_next.analysis.avalanche import avalanche_probabilities
+
+        return avalanche_probabilities(
+            self.cipher, input_name, number_of_samples,
+            seed=seed, fixed_inputs=fixed_inputs,
+        )
+
     def is_xor_differential_transition_possible(
         self, component_id: str, input_difference: int, output_difference: int
     ) -> bool:
