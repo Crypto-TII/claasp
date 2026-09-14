@@ -25,6 +25,7 @@ analysis guides for your own work.
    batch_evaluation
    analysis
    displaying_results
+   neural_distinguishers
 
 .. toctree::
    :maxdepth: 2

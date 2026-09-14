@@ -45,6 +45,10 @@ from claasp_next.analysis.monomial import (
 )
 from claasp_next.analysis.algebraic import BooleanAlgebraicEvidence, analyze_boolean_algebra
 from claasp_next.analysis.cube import CubeSumResult, evaluate_cube_sum
+from claasp_next.analysis.neural import (
+    NeuralDataset, NeuralExperiment, NeuralExperimentResult, NeuralTrainingDriver,
+    black_box_dataset, xor_differential_dataset,
+)
 
 __all__ = [
     "Analysis",
@@ -88,4 +92,10 @@ __all__ = [
     "analyze_boolean_algebra",
     "CubeSumResult",
     "evaluate_cube_sum",
+    "NeuralDataset",
+    "NeuralExperiment",
+    "NeuralExperimentResult",
+    "NeuralTrainingDriver",
+    "black_box_dataset",
+    "xor_differential_dataset",
 ]

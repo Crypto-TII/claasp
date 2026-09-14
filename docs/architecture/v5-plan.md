@@ -955,6 +955,7 @@ is absent). Update this table in the same commit that changes milestone state.
 | Primitive inversion and graph transformations (M10.10) | Planned | Typed inverse semantics, partial inversion, round trips, slicing, key-schedule removal, and editor transformations |
 | Component analysis (M10.11) | Planned | Structured S-box, linear-layer, Boolean, field, and word-operation properties with optional heavy algebra/plots |
 | Dataset/statistical testing (M10.12) | Planned | Reproducible streaming datasets, avalanche, NIST STS and Dieharder optional drivers and parsers |
-| Neural distinguishers (M10.13) | Planned | Framework-independent black-box/differential experiment contracts plus optional ML drivers |
+| Neural distinguishers (M10.13) | In progress | Framework-independent seeded black-box/differential datasets and experiment/result/driver contracts achieved; optional bounded ML drivers and trace projections remain |
+| Neural experiment foundation (M10.13a) | Achieved | Pure-Python deterministic MSB-first datasets preserve legacy real/random and XOR-related label semantics; immutable training contracts import no ML framework |
 | Reports and presentation (M10.14) | Planned | Typed Report replacement, tables, plots, exports, citations, evidence and reproducibility metadata |
 | Serialization, diagrams, code generation (M10.15) | Planned | Versioned formats, routed diagrams, language generators, and remaining compiler workflows |

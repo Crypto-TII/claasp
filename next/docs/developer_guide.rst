@@ -15,6 +15,7 @@ renderers.
    diagram_representations
    concepts
    extending_analysis
+   neural_distinguishers
    development
 
 .. toctree::
