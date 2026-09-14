@@ -72,9 +72,9 @@ def generate_all_incompatibility_constraints_for_fully_automatic_model(
     backward_key_flow = [f"{id}{MILP_BACKWARD_SUFFIX}" for id in key_flow]
 
     if include_all_components:
-        backward_components = set(model._backward_cipher.all_components()) - set(
+        backward_components = set(model._backward_cipher.all_components()) - {
             model._backward_cipher.component_from_id(key_flow_id) for key_flow_id in backward_key_flow
-        )
+        }
 
     for backward_component in backward_components:
         incompatibility_constraints, inconsistent_vars = generate_incompatiblity_constraints_for_component(

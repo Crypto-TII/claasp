@@ -296,8 +296,6 @@ class MznImpossibleXorDifferentialModel(MznDeterministicTruncatedXorDifferential
         if fully_automatic:
             initial_round = 1
             final_round = number_of_rounds
-            forward_components = self._cipher.all_components()
-            backward_components = self.inverse_cipher.all_components()
         else:
             forward_components = []
             for r in range(initial_round - 1, middle_round):
