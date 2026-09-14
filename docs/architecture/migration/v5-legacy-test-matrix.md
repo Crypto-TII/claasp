@@ -152,6 +152,30 @@ captured diagnostics. A bounded dedicated CI job checks a real executable;
 because the legacy tests contained no assertions or committed output, this is
 adapter compatibility rather than preservation of a fixed p-value claim.
 
+M10.13 supersedes ``claasp/cipher_modules/neural_network_tests.py``'s
+``round_output``/``round_key_output``/arbitrary-``component_ids`` projection
+behavior -- which matched substrings of each legacy component's
+free-text `description` -- with a typed equivalent: `component_output_dataset`
+and `xor_differential_component_dataset` read the requested value directly
+out of the primitive's `ExecutionTrace` (`Cipher.evaluate_with_trace`), and
+`round_component_ids` selects every component id CLAASP added within one
+round so passing it as `component_ids` reproduces the legacy round/round-key
+projection without requiring the graph to declare an explicit concatenated
+intermediate-output component. Dataset/label contracts (which component or
+round is projected, and the resulting feature/label shape) are dependency-free
+baseline coverage; no legacy test asserted a specific trained accuracy for
+these projections, so only shape and value equality against direct trace
+inspection are preserved, not a numeric fixture. The optional ML driver
+disposition mirrors Dieharder's: legacy trained with TensorFlow/Keras
+(`docker/Dockerfile` pins `tensorflow==2.13.0`); v5 instead ships
+`claasp_next.drivers.neural.SklearnMLPDriver`, a `scikit-learn`-backed
+`NeuralTrainingDriver` chosen over TensorFlow/Keras to keep the optional `ml`
+extra and its dedicated `neural-ml-execution` CI job light and fast. Nothing
+in `claasp_next` imports scikit-learn (or any ML framework) outside that
+driver's `train` method, and no test asserts an exact accuracy value -- only
+a documented threshold on a small, real reduced-round Speck32/64 differential
+distinguisher, per M10.13's tolerance/threshold-based evidence requirement.
+
 ## CP models
 
 | Legacy test | Semantic assertions and provenance | Disposition | v5 coverage |

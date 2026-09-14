@@ -281,3 +281,26 @@ jobs:
         run: |
           command -v dieharder
           python -m pytest -m external tests/integration/test_dieharder_integration.py -q
+
+  neural-ml-execution:
+    name: Neural distinguisher ML execution
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: next
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install test dependencies with the optional ML extra
+        run: python -m pip install -e '.[dev,ml]'
+
+      - name: Execute neural distinguisher ML integration
+        run: python -m pytest -m external tests/integration/test_neural_driver_integration.py -q

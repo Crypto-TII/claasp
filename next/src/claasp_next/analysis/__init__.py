@@ -47,7 +47,8 @@ from claasp_next.analysis.algebraic import BooleanAlgebraicEvidence, analyze_boo
 from claasp_next.analysis.cube import CubeSumResult, evaluate_cube_sum
 from claasp_next.analysis.neural import (
     NeuralDataset, NeuralExperiment, NeuralExperimentResult, NeuralTrainingDriver,
-    black_box_dataset, xor_differential_dataset,
+    black_box_dataset, component_output_dataset, round_component_ids,
+    xor_differential_dataset, xor_differential_component_dataset,
 )
 from claasp_next.analysis.datasets import (
     AvalancheDataset, AvalancheSample, EvaluationDataset, EvaluationSample,
@@ -115,7 +116,10 @@ __all__ = [
     "NeuralExperimentResult",
     "NeuralTrainingDriver",
     "black_box_dataset",
+    "component_output_dataset",
+    "round_component_ids",
     "xor_differential_dataset",
+    "xor_differential_component_dataset",
     "AvalancheDataset",
     "AvalancheResult",
     "AvalancheSample",
