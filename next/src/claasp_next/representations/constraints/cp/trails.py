@@ -11,6 +11,7 @@ from claasp_next.semantics.cryptanalysis import (
     check_probabilistic_truncated_modular_add, propagate_two_word_speck_round,
     propagate_two_word_simon_inverse_round, propagate_two_word_simon_round,
     WordwiseDifferenceKind, WordwiseXorDifference,
+    SBoxBoomerangSemantics,
 )
 from claasp_next.semantics import DETERMINISTIC_TRUNCATED_XOR
 from claasp_next.representations.constraints.cp.model import MiniZincModel
@@ -875,6 +876,61 @@ class SBoxDifferenceCPModel:
             declarations, constraints, includes=('include "table.mzn";',),
             provenance=self.problem.provenance,
         )
+
+
+class SBoxBoomerangCPModel:
+    """Exact BCT table lowering for one bijective bit-vector S-box."""
+
+    def __init__(self, component: BitVectorSBox, input_difference=None, output_difference=None) -> None:
+        if not isinstance(component, BitVectorSBox):
+            raise TypeError("component must be a BitVectorSBox")
+        semantics = SBoxBoomerangSemantics(component.table)
+        for name, value in (("input_difference", input_difference), ("output_difference", output_difference)):
+            if value is not None and (not isinstance(value, int) or not 0 <= value < len(component.table)):
+                raise ValueError(f"{name} must fit the S-box width")
+        self.component = component
+        self.semantics = semantics
+        self.input_difference = input_difference
+        self.output_difference = output_difference
+
+    def cp_model(self) -> MiniZincModel:
+        """Lower every nonzero BCT entry with its exact quartet count."""
+
+        rows = []
+        for source in range(len(self.component.table)):
+            for target in range(len(self.component.table)):
+                entry = self.semantics.connectivity(source, target)
+                if entry.is_possible:
+                    rows.append((source, target, entry.count))
+        flattened = ",".join(str(value) for row in rows for value in row)
+        limit = len(self.component.table) - 1
+        declarations = (
+            f"array[0..{len(rows) - 1}, 1..3] of int: bct = "
+            f"array2d(0..{len(rows) - 1}, 1..3, [{flattened}]);",
+            f"var 0..{limit}: input_difference;",
+            f"var 0..{limit}: output_difference;",
+            f"var 1..{len(self.component.table)}: quartet_count;",
+        )
+        constraints = ["constraint table([input_difference, output_difference, quartet_count], bct);"]
+        if self.input_difference is not None:
+            constraints.append(f"constraint input_difference = {self.input_difference};")
+        if self.output_difference is not None:
+            constraints.append(f"constraint output_difference = {self.output_difference};")
+        return MiniZincModel(
+            declarations, tuple(constraints), includes=('include "table.mzn";',),
+            solve="solve maximize quartet_count;",
+            provenance=(f"exact exhaustive BCT for {self.component.component_id}",),
+        )
+
+    def decode(self, assignment):
+        """Decode and independently recompute the selected BCT entry."""
+
+        entry = self.semantics.connectivity(
+            int(assignment["input_difference"]), int(assignment["output_difference"])
+        )
+        if entry.count != int(assignment["quartet_count"]):
+            raise ValueError("MiniZinc returned an invalid BCT count")
+        return entry
 
 
 def _bits(value, width):

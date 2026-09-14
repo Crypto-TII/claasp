@@ -19,6 +19,7 @@ from claasp_next.representations.constraints.cp import (
     ImpossibleBoundaryCPModel,
     PresentLinearCPModel,
     SBoxDifferenceCPModel,
+    SBoxBoomerangCPModel,
     ProbabilisticTruncatedModularAddCPModel,
     SpeckDifferentialCPModel,
     SpeckImpossibleCPModel,
@@ -207,6 +208,22 @@ def test_minizinc_proves_impossible_and_possible_present_sbox_pairs():
     assert solved.status is CPStatus.SATISFIED
     assert transition.is_possible
     assert transition.weight == 2
+
+
+def test_minizinc_preserves_exact_present_boomerang_connectivity_entries():
+    cipher = PresentBlockCipher(number_of_rounds=1)
+    component = next(item for item in cipher.components if item.component_id == "sbox_1_0")
+    solver = MiniZincSolver(solver=_test_solver())
+
+    impossible = SBoxBoomerangCPModel(component, 1, 1)
+    possible = SBoxBoomerangCPModel(component, 1, 2)
+
+    assert solver.solve(impossible.cp_model()).status is CPStatus.UNSATISFIABLE
+    solved = solver.solve(possible.cp_model())
+    entry = possible.decode(solved.assignment)
+    assert solved.status is CPStatus.SATISFIED
+    assert entry.count == 4
+    assert entry.weight == 2
 
 
 def test_minizinc_proves_legacy_speck_five_round_differential_optimum():

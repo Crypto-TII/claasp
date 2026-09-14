@@ -8,6 +8,61 @@ from claasp_next.semantics.cryptanalysis.truncated import ProbabilisticTruncated
 
 
 @dataclass(frozen=True, slots=True)
+class BoomerangConnectivity:
+    """One exact BCT entry for a bijective finite lookup table."""
+
+    input_difference: XorDifference
+    output_difference: XorDifference
+    count: int
+
+    def __post_init__(self) -> None:
+        if self.input_difference.width != self.output_difference.width:
+            raise ValueError("BCT differences must have equal widths")
+        size = 1 << self.input_difference.width
+        if not isinstance(self.count, int) or isinstance(self.count, bool) or not 0 <= self.count <= size:
+            raise ValueError("BCT count must lie between zero and the table size")
+
+    @property
+    def is_possible(self) -> bool:
+        return self.count > 0
+
+    @property
+    def weight(self) -> float:
+        return float("inf") if not self.count else -log2(self.count / (1 << self.input_difference.width))
+
+
+class SBoxBoomerangSemantics:
+    """Exhaustive boomerang-connectivity semantics for a bijective S-box."""
+
+    def __init__(self, table) -> None:
+        self.table = tuple(table)
+        size = len(self.table)
+        if size < 2 or size & (size - 1) or sorted(self.table) != list(range(size)):
+            raise ValueError("boomerang connectivity requires a bijective power-of-two table")
+        self.width = size.bit_length() - 1
+        inverse = [0] * size
+        for source, target in enumerate(self.table):
+            inverse[target] = source
+        self.inverse = tuple(inverse)
+
+    def connectivity(self, input_difference: int, output_difference: int) -> BoomerangConnectivity:
+        """Return the exact BCT count by exhaustive evaluation."""
+
+        size = len(self.table)
+        if not 0 <= input_difference < size or not 0 <= output_difference < size:
+            raise ValueError("BCT differences must fit the S-box width")
+        count = sum(
+            (self.inverse[self.table[source] ^ output_difference] ^
+             self.inverse[self.table[source ^ input_difference] ^ output_difference]) == input_difference
+            for source in range(size)
+        )
+        return BoomerangConnectivity(
+            XorDifference(input_difference, self.width),
+            XorDifference(output_difference, self.width), count,
+        )
+
+
+@dataclass(frozen=True, slots=True)
 class BoomerangSwitchBoundary:
     """Four XOR differences related by one boomerang switch."""
 

@@ -7,6 +7,7 @@ __all__ = [
     "BooleanMiniZincLowerer", "ImpossibleBoundaryCPModel", "MiniZincModel",
     "PresentDifferentialCPModel",
     "PresentLinearCPModel", "SBoxDifferenceCPModel",
+    "SBoxBoomerangCPModel",
     "ProbabilisticTruncatedModularAddCPModel", "SpeckDifferentialCPModel",
     "SimonImpossibleCPModel", "SpeckImpossibleCPModel", "SpeckProbabilisticTruncatedCPModel", "SpeckTruncatedCPModel",
     "WordwiseDifferenceCPModel",
@@ -29,7 +30,7 @@ def __getattr__(name: str):
 
         return SpeckDifferentialCPModel
     if name in {
-        "ImpossibleBoundaryCPModel", "SBoxDifferenceCPModel",
+        "ImpossibleBoundaryCPModel", "SBoxDifferenceCPModel", "SBoxBoomerangCPModel",
         "ProbabilisticTruncatedModularAddCPModel",
         "SimonImpossibleCPModel", "SpeckImpossibleCPModel", "SpeckProbabilisticTruncatedCPModel", "SpeckTruncatedCPModel",
         "WordwiseDifferenceCPModel",

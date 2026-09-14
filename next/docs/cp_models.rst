@@ -117,6 +117,29 @@ probabilistic-truncated connector, and linear suffix separate and reports the
 legacy exact objective rather than the cheaper search approximation. Solver
 status and statistical corroboration therefore remain distinct evidence.
 
+Exact bijective switches use ``SBoxBoomerangSemantics``, which evaluates the
+standard boomerang connectivity table definition exhaustively.
+``SBoxBoomerangCPModel`` lowers all nonzero entries and their quartet counts;
+its decoder recomputes the selected entry independently.
+
+.. doctest::
+
+   >>> from claasp_next.ciphers import PresentBlockCipher
+   >>> from claasp_next.semantics.cryptanalysis import SBoxBoomerangSemantics
+   >>> cipher = PresentBlockCipher(number_of_rounds=1)
+   >>> sbox = next(item for item in cipher.components if item.component_id == "sbox_1_0")
+   >>> bct = SBoxBoomerangSemantics(sbox.table)
+   >>> bct.connectivity(1, 1).is_possible
+   False
+   >>> bct.connectivity(1, 2).count
+   4
+   >>> bct.connectivity(1, 2).weight
+   2.0
+
+The legacy Speck modular-add ``onlyLargeSwitch`` predicate is a separate
+ARX-specific approximation, not a standard bijective S-box BCT. It remains the
+next submilestone and must expose its approximation contract explicitly.
+
 The distinction between exact and heuristic results is intentional. Exact
 models must provide a solver witness plus an independent semantic checker; an
 optimality claim also needs an unsatisfiable lower bound. Continuous models

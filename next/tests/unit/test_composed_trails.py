@@ -6,7 +6,9 @@ from claasp_next.semantics.cryptanalysis import (
     BoomerangSwitchBoundary, BoomerangTrail, DifferentialLinearTrail,
     ProbabilisticTruncatedTrail, Trail, TrailKind, TruncatedXorDifference,
     XorDifference, XorMask,
+    SBoxBoomerangSemantics,
 )
+from claasp_next.ciphers import PresentBlockCipher
 
 
 def _trail(kind, source, target, width=4):
@@ -41,3 +43,22 @@ def test_differential_linear_composition_uses_exact_legacy_formula():
     with pytest.raises(TypeError, match="prefix"):
         DifferentialLinearTrail(_trail(TrailKind.XOR_LINEAR, 1, 2), connector,
                                 _trail(TrailKind.XOR_LINEAR, 4, 8))
+
+
+def test_present_boomerang_connectivity_is_counted_exhaustively():
+    cipher = PresentBlockCipher(number_of_rounds=1)
+    component = next(item for item in cipher.components if item.component_id == "sbox_1_0")
+    semantics = SBoxBoomerangSemantics(component.table)
+
+    possible = semantics.connectivity(1, 2)
+    impossible = semantics.connectivity(1, 1)
+
+    assert possible.count == 4
+    assert possible.weight == 2
+    assert impossible.count == 0
+    assert not impossible.is_possible
+
+
+def test_boomerang_connectivity_rejects_non_bijections():
+    with pytest.raises(ValueError, match="bijective"):
+        SBoxBoomerangSemantics((0, 0, 1, 2))

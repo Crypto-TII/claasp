@@ -19,7 +19,8 @@ from claasp_next.semantics.cryptanalysis import (
     truncated_modular_subtract,
     propagate_single_active_aes_byte,
     WordwiseDifferenceKind, WordwiseXorDifference,
-    BoomerangSwitchBoundary, BoomerangTrail, DifferentialLinearTrail,
+    BoomerangConnectivity, BoomerangSwitchBoundary, BoomerangTrail,
+    DifferentialLinearTrail, SBoxBoomerangSemantics,
 )
 
 __all__ = [
@@ -40,5 +41,6 @@ __all__ = [
     "truncated_modular_subtract",
     "propagate_single_active_aes_byte",
     "WordwiseDifferenceKind", "WordwiseXorDifference",
-    "BoomerangSwitchBoundary", "BoomerangTrail", "DifferentialLinearTrail",
+    "BoomerangConnectivity", "BoomerangSwitchBoundary", "BoomerangTrail",
+    "DifferentialLinearTrail", "SBoxBoomerangSemantics",
 ]
