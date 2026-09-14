@@ -143,14 +143,24 @@ Dieharder parser preserves its legacy row schema and aggregates, but no legacy
 test asserted a scientific Dieharder result and no output fixture was
 committed; its synthetic parser fixture is therefore new structural evidence.
 Empty Dieharder output now raises an error instead of fabricating an
-``unavailable`` failure. NIST STS executable integration remains scheduled for
-the next M10.12 checkpoint; plotting/report generation belongs to M10.14.
+``unavailable`` failure; plotting/report generation belongs to M10.14.
 M10.12e1 ports the exact legacy Dieharder ``-g 201 -f INPUT -a`` and selected
 ``-d TEST`` invocation semantics through an isolated, shell-free driver. Its
 result adds the stream SHA-256, tool version, stable command, runtime, and
 captured diagnostics. A bounded dedicated CI job checks a real executable;
 because the legacy tests contained no assertions or committed output, this is
 adapter compatibility rather than preservation of a fixed p-value claim.
+NIST STS process integration is now delivered as well: unlike Dieharder,
+the patched, non-interactive ``assess`` build under ``required_dependencies/``
+never prints its report to stdout, so ``NistStsDriver`` locates and reads the
+fixed ``experiments/AlgorithmTesting/finalAnalysisReport.txt`` report file it
+(re)writes under its compile-time-constant working directory immediately
+after each run, serializes invocations against that shared path with an
+in-process lock plus a best-effort cross-process file lock, and requires the
+report's modification time to have advanced rather than trusting ``assess``'s
+own inverted exit-code convention. A dedicated CI job builds the patched tool
+from source exactly as ``docker/Dockerfile`` does and exercises one bounded
+smoke run through the real executable.
 
 ## CP models
 

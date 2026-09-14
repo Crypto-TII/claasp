@@ -281,3 +281,46 @@ jobs:
         run: |
           command -v dieharder
           python -m pytest -m external tests/integration/test_dieharder_integration.py -q
+
+  nist-sts-execution:
+    name: NIST STS execution integration
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: next
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # No package provides this project's patched, non-interactive NIST STS
+      # build (the real "assess" prompts interactively and prints its report
+      # to a file, not stdout). Build it exactly as docker/Dockerfile does:
+      # fetch the official sts-2_1_2.zip, apply the three patched files under
+      # required_dependencies/, then compile and install to the WORKING_DIR
+      # compiled into utilities.h so the driver's default working_dir matches.
+      - name: Build NIST STS from source
+        run: |
+          curl -O -s https://csrc.nist.gov/CSRC/media/Projects/Random-Bit-Generation/documents/sts-2_1_2.zip
+          unzip -q sts-2_1_2.zip
+          cp ../required_dependencies/assess.c sts-2.1.2/sts-2.1.2/src/
+          cp ../required_dependencies/utilities.c sts-2.1.2/sts-2.1.2/src/
+          cp ../required_dependencies/utilities.h sts-2.1.2/sts-2.1.2/include/
+          make -C sts-2.1.2/sts-2.1.2
+          sudo mv sts-2.1.2/sts-2.1.2 /usr/local/bin/
+          sudo ln -s /usr/local/bin/sts-2.1.2/assess /usr/local/bin/niststs
+          rm sts-2_1_2.zip
+
+      - name: Install test dependencies
+        run: python -m pip install -e '.[dev]'
+
+      - name: Execute NIST STS integration
+        run: |
+          command -v niststs
+          python -m pytest -m external tests/integration/test_nist_integration.py -q
