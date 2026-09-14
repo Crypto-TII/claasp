@@ -197,3 +197,18 @@ exact legacy fixture above is 8.
    ... )
    >>> bound.output_bounds[:2], bound.sound, bound.complete
    ((16, 16), True, False)
+
+Symbolic coefficients can be checked independently by evaluating all points
+of a manageable cube. This verifier scales with primitive size and is
+exponential only in the cube dimension:
+
+.. doctest::
+
+   >>> from claasp_next.analysis import evaluate_cube_sum
+   >>> checked = evaluate_cube_sum(
+   ...     SimonBlockCipher(number_of_rounds=2),
+   ...     {"plaintext": 0, "key": 1 << 14},
+   ...     variable_input="plaintext", cube_positions=(0, 9), output_bit=0,
+   ... )
+   >>> checked.parity, checked.evaluations, checked.complete
+   (1, 4, True)

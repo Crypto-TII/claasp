@@ -43,6 +43,7 @@ from claasp_next.analysis.monomial import (
     PresentMonomialSemantics, PresentRoundMonomialSemantics,
 )
 from claasp_next.analysis.algebraic import BooleanAlgebraicEvidence, analyze_boolean_algebra
+from claasp_next.analysis.cube import CubeSumResult, evaluate_cube_sum
 
 __all__ = [
     "Analysis",
@@ -82,4 +83,6 @@ __all__ = [
     "PresentMonomialSemantics",
     "BooleanAlgebraicEvidence",
     "analyze_boolean_algebra",
+    "CubeSumResult",
+    "evaluate_cube_sum",
 ]

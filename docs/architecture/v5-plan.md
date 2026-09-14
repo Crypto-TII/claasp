@@ -532,6 +532,9 @@ introduced. M10.8c3b1 supplies a fast structural degree bound with explicit
 ``sound=True``/``complete=False`` metadata; it is a baseline, not a replacement
 for the tighter legacy monomial predictor. M10.8c3b2 ports that tighter
 backend-neutral reachability/parity model and its open-solver execution.
+M10.8c3a2 adds an independent exact cube-sum verifier so recovered
+coefficients can be tested against concrete primitive evaluation without Sage
+or any solver.
 
 #### M10.9: Complete component and primitive catalogue
 
@@ -884,6 +887,7 @@ is absent). Update this table in the same commit that changes milestone state.
 | Exact parity and balanced-bit evidence (M10.8c2) | Achieved | Exact Simon-4 expansion preserves the legacy degree vector and fixed-public-input cube-degree array; proof-qualified results identify balanced bits and reject incomplete proof claims |
 | Scalable algebraic bounds and parity (M10.8c3) | In progress | Restore partial-ANF bounds, Trivium parity-degree and larger cube-feasibility fixtures without relabeling bounds or incomplete searches as exact ANFs |
 | Exact partial-ANF evidence (M10.8c3a) | Achieved | Public cube coefficients retain exact Boolean polynomials; Simon-3 preserves all 14 legacy partial-ANF monomials |
+| Exact cube-sum verification (M10.8c3a2) | Achieved | Dependency-free exhaustive cube evaluation independently verifies the legacy Simon-2 `k49` superpoly at deterministic key assignments |
 | Scalable degree/parity encoding (M10.8c3b) | In progress | Port backend-neutral upper-bound and parity semantics, with explicit soundness/completeness and open-solver execution |
 | Structural degree-bound baseline (M10.8c3b1) | Achieved | Bit/Word XOR, AND, rotation, constants, concatenation and modular addition propagate sound bounded degrees; Simon-4 documents exact 8 versus loose bound 16 and never claims completeness |
 | Monomial reachability and parity solver (M10.8c3b2) | Next | Recover tight Simon and Trivium fixtures using backend-neutral encodings and an open solver |
