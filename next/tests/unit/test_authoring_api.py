@@ -67,7 +67,7 @@ def test_cipher_evaluate_accepts_packed_positional_keyword_and_mapping_inputs():
     assert cipher.evaluate({"plaintext": plaintext, "key": key}) == positional
     trace = cipher.evaluate_with_trace(plaintext, key)
     assert trace.value_of("sub_bytes_1")
-    assert positional == int.from_bytes(bytes(trace.output))
+    assert positional == int.from_bytes(bytes(trace.output), "big")
 
 
 def test_prime_field_scalar_is_natural_but_vectors_remain_explicit():

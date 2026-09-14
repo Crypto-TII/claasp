@@ -777,6 +777,12 @@ Chuffed and has a 30-second guard. Reports must state passes, skips,
 deselections, timeouts, environment, and solver; “all tests passed” is reserved
 for a complete canonical run.
 
+The legacy ``tiicrc/claasp-base`` image is currently only a solver
+compatibility environment for v5: it is amd64-only, provides Python 3.10
+instead of the required Python 3.11+, and does not contain msolve. A dedicated
+multi-architecture v5 image must pin supported Python and all baseline
+external tools before it becomes the canonical release environment.
+
 ## Historical initial vertical slice
 
 The first architectural proof is:
@@ -963,3 +969,4 @@ is absent). Update this table in the same commit that changes milestone state.
 | Neural split and provenance contracts (M10.13b) | Achieved | Deterministic optional stratification, explicit disjoint sample partitions, stable dataset SHA-256 identities, and realization/driver/version/seed/options provenance reject stale or incomplete runs |
 | Reports and presentation (M10.14) | Planned | Typed Report replacement, tables, plots, exports, citations, evidence and reproducibility metadata |
 | Serialization, diagrams, code generation (M10.15) | Planned | Versioned formats, routed diagrams, language generators, and remaining compiler workflows |
+| Canonical v5 Docker/CI environment | Next | Replace the amd64 Python-3.10 legacy image with a multi-architecture Python-3.11+ image containing Chuffed, GLPK, Z3, MiniSat, Singular, msolve and LaTeX |
