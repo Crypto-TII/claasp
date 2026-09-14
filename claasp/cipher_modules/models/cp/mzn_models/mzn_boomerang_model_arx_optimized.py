@@ -69,7 +69,7 @@ class MznBoomerangModelARXOptimized(MznXorDifferentialModelARXOptimized):
     @staticmethod
     def remove_component(new_cipher, component):
         component_to_remove = new_cipher.component_from_id(component.id)
-        round_number = new_cipher.get_round_from_component_id(component.id)
+        round_number = new_cipher.round_from_component_id(component.id)
         new_cipher.remove_round_component(round_number, component_to_remove)
 
     @staticmethod

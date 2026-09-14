@@ -94,7 +94,7 @@ class SatXorDifferentialModel(SatModel):
         )
         operation_types = ("AND", "MODADD", "MODSUB", "NOT", "OR", "ROTATE", "SHIFT", "XOR")
 
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             operation = component.description[0]
             if component.type not in component_types or (
                 WORD_OPERATION == component.type and operation not in operation_types
@@ -201,7 +201,7 @@ class SatXorDifferentialModel(SatModel):
             value_to_avoid = int(solution["components_values"][input_]["value"], base=16)
             minus = ["-" * (value_to_avoid >> i & 1) for i in reversed(range(bit_len))]
             literals.extend([f"{minus[i]}{input_}_{i}" for i in range(bit_len)])
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             bit_len = component.output_bit_size
             if component.type == SBOX or (
                 component.type == WORD_OPERATION
@@ -374,7 +374,7 @@ class SatXorDifferentialModel(SatModel):
         if len(bits) != expected_size:
             raise ValueError("Ciphertext size mismatch")
         ciphertext_fix = set_fixed_variables(
-            component_id= self._cipher.get_all_components_ids()[-1],
+            component_id= self._cipher.all_components_ids()[-1],
             constraint_type="equal",
             bit_positions=range(len(bits)),
             bit_values= bits,
@@ -668,7 +668,7 @@ class SatXorDifferentialModel(SatModel):
         out_suffix = ""
         components_solutions = self._get_cipher_inputs_components_solutions(out_suffix, variable2value)
         total_weight = 0
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             hex_value = self._get_component_hex_value(component, out_suffix, variable2value)
             weight = self.calculate_component_weight(component, out_suffix, variable2value)
             component_solution = set_component_solution(hex_value, weight)

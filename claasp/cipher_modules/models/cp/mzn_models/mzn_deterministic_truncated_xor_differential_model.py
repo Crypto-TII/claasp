@@ -109,7 +109,7 @@ class MznDeterministicTruncatedXorDifferentialModel(MznModel):
         constraints = self.fix_variables_value_constraints(fixed_variables)
         deterministic_truncated_xor_differential = constraints
 
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             if check_if_implemented_component(component):
                 variables, constraints = self.propagate_deterministically(component, wordwise)
                 self._variables_declarations.extend(variables)
@@ -155,10 +155,10 @@ class MznDeterministicTruncatedXorDifferentialModel(MznModel):
         new_constraint = "output["
         for element in cipher_inputs:
             new_constraint = f'{new_constraint}"{element} = "++ show({element}) ++ "\\n" ++'
-        for component_id in cipher.get_all_components_ids():
+        for component_id in cipher.all_components_ids():
             new_constraint = new_constraint + f'"{component_id} = "++ show({component_id})++ "\\n" ++ "0" ++ "\\n" ++'
             if "cipher_output" in component_id and minimize:
-                cp_constraints.append(f"solve maximize count({self._cipher.get_all_components_ids()[-1]}, 0);")
+                cp_constraints.append(f"solve maximize count({self._cipher.all_components_ids()[-1]}, 0);")
         new_constraint = new_constraint[:-2] + "];"
         if cp_constraints == []:
             cp_constraints.append(SOLVE_SATISFY)
@@ -409,7 +409,7 @@ class MznDeterministicTruncatedXorDifferentialModel(MznModel):
             for input_, bit_size in zip(self._cipher.inputs, self._cipher.inputs_bit_size)
         ]
         cipher = self._cipher
-        for component in cipher.get_all_components():
+        for component in cipher.all_components():
             output_id_link = component.id
             output_size = int(component.output_bit_size)
             if CIPHER_OUTPUT in component.type:

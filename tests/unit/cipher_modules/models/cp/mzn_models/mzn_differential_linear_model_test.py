@@ -25,11 +25,11 @@ def _split_components(cipher, top_rounds_end, middle_rounds_end):
     bottom_part_components = []
 
     for round_number in range(top_rounds_end):
-        top_part_components.append(cipher.get_components_in_round(round_number))
+        top_part_components.append(cipher.components_in_round(round_number))
     for round_number in range(top_rounds_end, middle_rounds_end):
-        middle_part_components.append(cipher.get_components_in_round(round_number))
+        middle_part_components.append(cipher.components_in_round(round_number))
     for round_number in range(middle_rounds_end, cipher.number_of_rounds):
-        bottom_part_components.append(cipher.get_components_in_round(round_number))
+        bottom_part_components.append(cipher.components_in_round(round_number))
 
     middle_part_components = list(itertools.chain(*middle_part_components))
     bottom_part_components = list(itertools.chain(*bottom_part_components))
@@ -138,9 +138,9 @@ def test_differential_linear_trail_with_fixed_weight_6_rounds_speck_cp():
     middle_part_components = []
     bottom_part_components = []
     for round_number in range(2, 3):
-        middle_part_components.append(speck.get_components_in_round(round_number))
+        middle_part_components.append(speck.components_in_round(round_number))
     for round_number in range(3, 6):
-        bottom_part_components.append(speck.get_components_in_round(round_number))
+        bottom_part_components.append(speck.components_in_round(round_number))
 
     middle_part_components = list(itertools.chain(*middle_part_components))
     bottom_part_components = list(itertools.chain(*bottom_part_components))
@@ -279,16 +279,16 @@ def test_differential_linear_trail_6_rounds_ballet_cp_case():
     middle_part_components = []
     bottom_part_components = []
     for round_number in range(2, 3):
-        middle_part_components.append(ballet.get_components_in_round(round_number))
+        middle_part_components.append(ballet.components_in_round(round_number))
     for round_number in range(3, 6):
-        bottom_part_components.append(ballet.get_components_in_round(round_number))
+        bottom_part_components.append(ballet.components_in_round(round_number))
 
     middle_part_components = list(itertools.chain(*middle_part_components))
     bottom_part_components = list(itertools.chain(*bottom_part_components))
 
     middle_part_components = [component.id for component in middle_part_components]
     bottom_part_components = [component.id for component in bottom_part_components]
-    cipher_output_component_id = ballet.get_all_components_ids()[-1]
+    cipher_output_component_id = ballet.all_components_ids()[-1]
 
     component_model_list = {
         "middle_part_components": middle_part_components,
@@ -370,9 +370,9 @@ def test_differential_linear_trail_6_rounds_speck_cp_case_2():
     middle_part_components = []
     bottom_part_components = []
     for round_number in range(2, 3):
-        middle_part_components.append(speck.get_components_in_round(round_number))
+        middle_part_components.append(speck.components_in_round(round_number))
     for round_number in range(3, 6):
-        bottom_part_components.append(speck.get_components_in_round(round_number))
+        bottom_part_components.append(speck.components_in_round(round_number))
 
     middle_part_components = list(itertools.chain(*middle_part_components))
     bottom_part_components = list(itertools.chain(*bottom_part_components))
@@ -599,11 +599,11 @@ def test_differential_linear_trail_with_fixed_weight_8_rounds_chacha_one_case():
     middle_part_components = []
     bottom_part_components = []
     for round_number in range(2):
-        top_part_components.append(chacha.get_components_in_round(round_number))
+        top_part_components.append(chacha.components_in_round(round_number))
     for round_number in range(2, 4):
-        middle_part_components.append(chacha.get_components_in_round(round_number))
+        middle_part_components.append(chacha.components_in_round(round_number))
     for round_number in range(4, 8):
-        bottom_part_components.append(chacha.get_components_in_round(round_number))
+        bottom_part_components.append(chacha.components_in_round(round_number))
 
     middle_part_components = list(itertools.chain(*middle_part_components))
     bottom_part_components = list(itertools.chain(*bottom_part_components))
@@ -737,15 +737,15 @@ def test_optimal_semi_deterministic_differential_linear_trail_siphash():
 
     top_part_components = []
     for round_number in top_rounds:
-        top_part_components += siphash.get_components_in_round(round_number)
+        top_part_components += siphash.components_in_round(round_number)
 
     middle_part_components = []
     for round_number in middle_rounds:
-        middle_part_components += siphash.get_components_in_round(round_number)
+        middle_part_components += siphash.components_in_round(round_number)
 
     bottom_part_components = []
     for round_number in bottom_rounds:
-        bottom_part_components += siphash.get_components_in_round(round_number)
+        bottom_part_components += siphash.components_in_round(round_number)
 
     top_part_component_ids = [component.id for component in top_part_components]
     middle_part_component_ids = [component.id for component in middle_part_components]
@@ -788,7 +788,7 @@ def test_optimal_semi_deterministic_differential_linear_trail_siphash():
         bit_values=(0,) * message_size
     )
 
-    cipher_output_component_id = next(c.id for c in siphash.get_all_components() if c.id.startswith("cipher_output_"))
+    cipher_output_component_id = next(c.id for c in siphash.all_components() if c.id.startswith("cipher_output_"))
     output_mask = set_fixed_variables(
         component_id=cipher_output_component_id,
         constraint_type="not_equal",

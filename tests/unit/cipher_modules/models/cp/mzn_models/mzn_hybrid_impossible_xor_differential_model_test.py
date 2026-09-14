@@ -29,7 +29,7 @@ def test_find_all_impossible_xor_differential_trails():
         component_id=INPUT_PLAINTEXT, constraint_type="equal", bit_positions=range(64), bit_values=(0,) * 64
     )
     ciphertext = set_fixed_variables(
-        component_id="inverse_" + lblock.get_all_components_ids()[-1],
+        component_id="inverse_" + lblock.all_components_ids()[-1],
         constraint_type="equal",
         bit_positions=range(64),
         bit_values=(0,) * 64,
@@ -57,7 +57,7 @@ def test_find_all_improbable_xor_differential_trails():
         component_id=INPUT_PLAINTEXT, constraint_type="equal", bit_positions=range(64), bit_values=(0,) * 64
     )
     ciphertext = set_fixed_variables(
-        component_id="inverse_" + lblock.get_all_components_ids()[-1],
+        component_id="inverse_" + lblock.all_components_ids()[-1],
         constraint_type="equal",
         bit_positions=range(64),
         bit_values=(0,) * 64,
@@ -88,7 +88,7 @@ def test_find_one_impossible_xor_differential_trail():
         component_id=INPUT_PLAINTEXT, constraint_type="equal", bit_positions=range(64), bit_values=(0,) * 64
     )
     ciphertext = set_fixed_variables(
-        component_id="inverse_" + lblock.get_all_components_ids()[-1],
+        component_id="inverse_" + lblock.all_components_ids()[-1],
         constraint_type="equal",
         bit_positions=range(64),
         bit_values=(0,) * 64,
@@ -126,7 +126,7 @@ def test_find_one_improbable_xor_differential_trail():
         component_id=INPUT_PLAINTEXT, constraint_type="equal", bit_positions=range(64), bit_values=(0,) * 64
     )
     ciphertext = set_fixed_variables(
-        component_id="inverse_" + lblock.get_all_components_ids()[-1],
+        component_id="inverse_" + lblock.all_components_ids()[-1],
         constraint_type="equal",
         bit_positions=range(64),
         bit_values=(0,) * 64,

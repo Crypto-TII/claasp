@@ -153,7 +153,7 @@ class MznXorLinearModel(MznModel):
         constraints = self.fix_variables_value_xor_linear_constraints(fixed_variables)
         self._model_constraints = constraints
 
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             component_types = [
                 CONSTANT,
                 INTERMEDIATE_OUTPUT,
@@ -217,7 +217,7 @@ class MznXorLinearModel(MznModel):
         new_constraint = "output["
         for i, element in enumerate(cipher_inputs):
             new_constraint += f'"{element} = "++ show({element}_o) ++ "\\n" ++'
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             if SBOX in component.type:
                 new_constraint += (
                     f'"{component.id}_i = "++ show({component.id}_i)++ "\\n" ++ '
@@ -685,7 +685,7 @@ class MznXorLinearModel(MznModel):
         prob_count = 0
         xor_count = 0
         valid_probabilities = {0}
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             if SBOX in component.type:
                 prob_count = prob_count + 1
                 self.update_sbox_lat_valid_probabilities(component, valid_probabilities)

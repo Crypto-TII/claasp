@@ -104,7 +104,7 @@ class CmsSatCipherModel(SatCipherModel):
         self._model_constraints = constraints
         self._variables_list = []
 
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             operation = component.description[0]
             if component.type not in component_types or (
                 WORD_OPERATION == component.type and operation not in operation_types

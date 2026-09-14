@@ -157,7 +157,7 @@ def test_find_one_xor_differential_trail_with_fixed_weight_and_with_exactly_thre
         [window_size for _ in range(9)], number_of_full_windows=number_of_full_windows
     )
     result = sat.find_one_xor_differential_trail_with_fixed_weight(30, solver_name=CADICAL_EXT)
-    speck_components = speck.get_all_components()
+    speck_components = speck.all_components()
     modadd_objects = list(filter(lambda obj: isinstance(obj, ModAdd), speck_components))
 
     carry_list = compute_modadd_xor(modadd_objects, result["components_values"])
@@ -188,7 +188,7 @@ def test_find_one_xor_differential_trail_with_fixed_weight_and_with_exactly_one_
     )
     sat.build_xor_differential_trail_model(34, fixed_variables=[plaintext, key])
     result = sat._solve_with_external_sat_solver(XOR_DIFFERENTIAL, PARKISSAT_EXT, ["-c=6"])
-    speck_components = speck.get_all_components()
+    speck_components = speck.all_components()
     modadd_objects = list(filter(lambda obj: isinstance(obj, ModAdd), speck_components))
     carry_list = compute_modadd_xor(modadd_objects, result["components_values"])
     computed_number_of_full_windows = count_sequences_of_ones(carry_list, window_size)
@@ -228,7 +228,7 @@ def test_find_one_xor_differential_trail_with_fixed_weight_with_at_least_one_ful
 
 def test_find_one_xor_differential_trail_with_fixed_weight_and_window_heuristic_per_component():
     speck = SpeckBlockCipher(number_of_rounds=3)
-    filtered_objects = [obj.id for obj in speck.get_all_components() if obj.description[0] == "MODADD"]
+    filtered_objects = [obj.id for obj in speck.all_components() if obj.description[0] == "MODADD"]
     dict_of_window_heuristic_per_component = {}
     for component_id in filtered_objects:
         dict_of_window_heuristic_per_component[component_id] = 0

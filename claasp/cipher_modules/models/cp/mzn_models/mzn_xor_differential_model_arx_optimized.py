@@ -180,7 +180,7 @@ class MznXorDifferentialModelARXOptimized(MznModel):
         operation_types = ["MODADD", "MODSUB", "ROTATE", "SHIFT", "SHIFT_BY_VARIABLE_AMOUNT", "XOR"]
         self._model_constraints = constraints
 
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             operation = component.description[0]
             if component.type not in component_types or (
                 WORD_OPERATION == component.type and operation not in operation_types
@@ -576,7 +576,7 @@ class MznXorDifferentialModelARXOptimized(MznModel):
     def get_probability_vars_from_permutation(self):
         cipher_copy = deepcopy(self.cipher)
         cipher_permutation = cipher_copy.remove_key_schedule()
-        permutation_components = cipher_permutation.get_all_components()
+        permutation_components = cipher_permutation.all_components()
         probability_vars_from_permutation = []
         for permutation_component in permutation_components:
             if permutation_component.id.startswith(("modadd", "modsub")):
@@ -588,13 +588,13 @@ class MznXorDifferentialModelARXOptimized(MznModel):
     def get_probability_vars_from_key_schedule(self):
         # TODO:: Refactor together with method get_key_schedule_component_ids from inverse_cipher.
         all_components_ids = []
-        cipher_components = self.cipher.get_all_components()
+        cipher_components = self.cipher.all_components()
         for cipher_component in cipher_components:
             all_components_ids.append(cipher_component.id)
 
         cipher_copy = deepcopy(self.cipher)
         cipher_permutation = cipher_copy.remove_key_schedule()
-        permutation_components = cipher_permutation.get_all_components()
+        permutation_components = cipher_permutation.all_components()
         permutation_component_ids = []
 
         for permutation_component in permutation_components:

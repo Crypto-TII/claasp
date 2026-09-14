@@ -98,7 +98,7 @@ class MznModel:
         self._model_constraints = []
         self.c = 0
         if self._cipher.is_two_step_trail_search_friendly():
-            for component in self._cipher.get_all_components():
+            for component in self._cipher.all_components():
                 if SBOX in component.type:
                     self.word_size = int(component.output_bit_size)
                     break
@@ -212,8 +212,8 @@ class MznModel:
             self.probability_vars.append(probability_var)
             self.component_probability_var[component.id] = probability_var
 
-            if hasattr(self._cipher, "get_round_from_component_id"):
-                round_index = self._cipher.get_round_from_component_id(component.id)
+            if hasattr(self._cipher, "round_from_component_id"):
+                round_index = self._cipher.round_from_component_id(component.id)
 
                 if round_index < len(self.probability_modadd_vars_per_round):
                     self.probability_modadd_vars_per_round[round_index].append(probability_var)
@@ -364,7 +364,7 @@ class MznModel:
             {3, 4}
         """
         set_of_sboxes_values = set()
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             if SBOX in component.type:
                 set_of_sboxes_values.add(tuple(component.description))
                 input_size = component.input_bit_size
@@ -710,7 +710,7 @@ class MznModel:
                 components_values, memory, time, total_weight = self.parse_solver_information(
                     output_to_parse, truncated, solve_external
                 )
-            all_components = [*self._cipher.inputs, *self._cipher.get_all_components_ids()]
+            all_components = [*self._cipher.inputs, *self._cipher.all_components_ids()]
             for component_id in all_components:
                 solution_number = 1
                 for j, string in enumerate(output_to_parse):

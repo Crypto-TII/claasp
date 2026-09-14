@@ -143,7 +143,7 @@ class CmsSatXorLinearModel(SatXorLinearModel):
         )
         operation_types = ("AND", "MODADD", "NOT", "ROTATE", "SHIFT", "XOR", "OR", "MODSUB")
 
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             operation = component.description[0]
             if component.type in component_types and (component.type != WORD_OPERATION or operation in operation_types):
                 variables, constraints = component.cms_xor_linear_mask_propagation_constraints(self)

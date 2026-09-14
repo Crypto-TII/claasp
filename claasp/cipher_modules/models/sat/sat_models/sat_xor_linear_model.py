@@ -117,7 +117,7 @@ class SatXorLinearModel(SatModel):
         )
         operation_types = ("AND", "MODADD", "NOT", "ROTATE", "SHIFT", "XOR", "OR", "MODSUB")
 
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             operation = component.description[0]
             if component.type in component_types and (component.type != WORD_OPERATION or operation in operation_types):
                 variables, constraints = component.sat_xor_linear_mask_propagation_constraints(self)
@@ -486,7 +486,7 @@ class SatXorLinearModel(SatModel):
         in_suffix = constants.INPUT_BIT_ID_SUFFIX
         components_solutions = self._get_cipher_inputs_components_solutions(out_suffix, variable2value)
         total_weight = 0
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             hex_solution = self._get_component_hex_value(component, out_suffix, variable2value)
             weight = self.calculate_component_weight(component, out_suffix, variable2value)
             component_solution = set_component_solution(hex_solution, weight)
