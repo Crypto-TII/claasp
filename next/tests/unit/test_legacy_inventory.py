@@ -57,3 +57,19 @@ def test_every_primitive_record_has_naming_and_taxonomy_metadata():
         assert metadata["official_name"]
         assert metadata["proposed_module"].startswith("claasp_next.primitives.")
         assert metadata["proposed_class"]
+
+
+def test_m10_8d_boolean_constraint_entries_are_resolved():
+    payload = json.loads(INVENTORY.read_text(encoding="utf-8"))
+    records = {record["path"]: record for record in payload["records"]}
+
+    source = records["claasp/cipher_modules/models/algebraic/constraints.py"]
+    assert source["disposition"] == "supersede"
+    assert source["status"] == "superseded-in-m10.8d"
+    assert source["prerequisites"] == []
+    assert source["v5_destination"].endswith("/polynomial/boolean.py")
+
+    tests = records["tests/unit/cipher_modules/models/algebraic/constraints_test.py"]
+    assert tests["disposition"] == "migrate"
+    assert tests["status"] == "migrated-in-m10.8d"
+    assert tests["prerequisites"] == []

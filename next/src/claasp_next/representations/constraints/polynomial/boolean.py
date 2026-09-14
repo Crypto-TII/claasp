@@ -195,3 +195,114 @@ def monomial_transition_table(table: Sequence[int]) -> dict[int, frozenset[int]]
             for monomial in product.monomials
         )
     return result
+
+
+def equality_polynomials(
+    left: Sequence[BooleanPolynomial],
+    right: Sequence[BooleanPolynomial],
+) -> tuple[BooleanPolynomial, ...]:
+    """Return equations enforcing equality of two Boolean vectors.
+
+    Each returned polynomial is interpreted as equal to zero.
+
+    EXAMPLES::
+
+        >>> x = tuple(BooleanPolynomial.variable(f"x{i}") for i in range(2))
+        >>> y = tuple(BooleanPolynomial.variable(f"y{i}") for i in range(2))
+        >>> equations = equality_polynomials(x, y)
+        >>> tuple(equation.evaluate({"x0": 1, "x1": 0, "y0": 1, "y1": 0}) for equation in equations)
+        (0, 0)
+    """
+
+    left = _boolean_vector("left", left)
+    right = _boolean_vector("right", right)
+    if len(left) != len(right):
+        raise ValueError("left and right must have equal lengths")
+    return tuple(x + y for x, y in zip(left, right))
+
+
+def modular_addition_polynomials(
+    left: Sequence[BooleanPolynomial],
+    right: Sequence[BooleanPolynomial],
+    output: Sequence[BooleanPolynomial],
+    carries: Sequence[BooleanPolynomial] | None = None,
+) -> tuple[BooleanPolynomial, ...]:
+    """Return exact equations for binary modular addition.
+
+    Vectors are ordered least-significant bit first, matching the recurrence
+    for a ripple carry.  Supplying ``carries`` exposes the carry variables;
+    omitting it substitutes their exact ANFs into the output equations.
+
+    EXAMPLES::
+
+        >>> x = tuple(BooleanPolynomial.variable(f"x{i}") for i in range(3))
+        >>> y = tuple(BooleanPolynomial.variable(f"y{i}") for i in range(3))
+        >>> z = tuple(BooleanPolynomial.variable(f"z{i}") for i in range(3))
+        >>> equations = modular_addition_polynomials(x, y, z)
+        >>> values = {"x0": 1, "x1": 1, "x2": 0, "y0": 1, "y1": 0, "y2": 1,
+        ...           "z0": 0, "z1": 0, "z2": 0}
+        >>> tuple(equation.evaluate(values) for equation in equations)
+        (0, 0, 0)
+    """
+
+    return _modular_binary_polynomials(left, right, output, carries, subtract=False)
+
+
+def modular_subtraction_polynomials(
+    left: Sequence[BooleanPolynomial],
+    right: Sequence[BooleanPolynomial],
+    output: Sequence[BooleanPolynomial],
+    borrows: Sequence[BooleanPolynomial] | None = None,
+) -> tuple[BooleanPolynomial, ...]:
+    """Return exact equations for ``left - right`` modulo ``2**width``.
+
+    Vectors and optional borrow variables are least-significant bit first.
+    As with addition, omitting ``borrows`` eliminates them by substitution.
+    """
+
+    return _modular_binary_polynomials(left, right, output, borrows, subtract=True)
+
+
+def _modular_binary_polynomials(left, right, output, auxiliaries, *, subtract):
+    left = _boolean_vector("left", left)
+    right = _boolean_vector("right", right)
+    output = _boolean_vector("output", output)
+    if not left:
+        raise ValueError("Boolean vectors must be nonempty")
+    if len(left) != len(right) or len(left) != len(output):
+        raise ValueError("left, right, and output must have equal lengths")
+
+    if auxiliaries is None:
+        carry = BooleanPolynomial.zero()
+        equations = []
+        for x, y, z in zip(left, right, output):
+            equations.append(x + y + z + carry)
+            carry = _next_auxiliary(x, y, carry, subtract=subtract)
+        return tuple(equations)
+
+    auxiliaries = _boolean_vector("carries" if not subtract else "borrows", auxiliaries)
+    if len(auxiliaries) != len(left):
+        name = "carries" if not subtract else "borrows"
+        raise ValueError(f"{name} must have the same length as the operands")
+    equations = [auxiliaries[0]]
+    for index, (x, y, z, carry) in enumerate(zip(left, right, output, auxiliaries)):
+        equations.append(x + y + z + carry)
+        if index + 1 < len(auxiliaries):
+            equations.append(
+                _next_auxiliary(x, y, carry, subtract=subtract) + auxiliaries[index + 1]
+            )
+    return tuple(equations)
+
+
+def _next_auxiliary(x, y, carry, *, subtract):
+    result = x * y + x * carry + y * carry
+    if subtract:
+        result += y + carry
+    return result
+
+
+def _boolean_vector(name, values):
+    values = tuple(values)
+    if any(not isinstance(value, BooleanPolynomial) for value in values):
+        raise TypeError(f"{name} must contain BooleanPolynomial objects")
+    return values

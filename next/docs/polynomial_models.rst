@@ -107,6 +107,33 @@ Boolean ANFs use a separate square-free representation: coefficients are in
 Sage-free baseline for exact truth-table ANFs, symbolic cube coefficients, and
 component monomial-transition tables.
 
+The same representation provides exact equality and ripple-arithmetic
+constraints. Bit vectors are explicitly least-significant bit first; optional
+carry or borrow variables expose the quadratic recurrence, while omitting
+them substitutes the exact ANF into each output equation.
+
+.. doctest::
+
+   >>> from claasp_next.representations.constraints.polynomial import (
+   ...     BooleanPolynomial, modular_addition_polynomials,
+   ... )
+   >>> x = tuple(BooleanPolynomial.variable(f"x{i}") for i in range(3))
+   >>> y = tuple(BooleanPolynomial.variable(f"y{i}") for i in range(3))
+   >>> z = tuple(BooleanPolynomial.variable(f"z{i}") for i in range(3))
+   >>> equations = modular_addition_polynomials(x, y, z)
+   >>> assignment = {
+   ...     "x0": 1, "x1": 1, "x2": 0,
+   ...     "y0": 1, "y1": 0, "y2": 1,
+   ...     "z0": 0, "z1": 0, "z2": 0,
+   ... }
+   >>> tuple(equation.evaluate(assignment) for equation in equations)
+   (0, 0, 0)
+
+``equality_polynomials`` and ``modular_subtraction_polynomials`` follow the
+same zero-equation convention. These helpers supersede the corresponding
+Sage-only legacy constraint builders without introducing a computer-algebra
+dependency into the core package.
+
 .. doctest::
 
    >>> from claasp_next.representations.constraints.polynomial import vectorial_anf, monomial_transition_table
@@ -240,7 +267,7 @@ until the optimal region is UNSAT. Only that exhaustive termination sets
 ``complete=True``; a path limit or solver interruption cannot support a parity
 claim. On two-round Simon it enumerates five degree-three paths, all with odd
 parity, matching the five highest-plaintext-degree monomials in the exact ANF.
-Native solution-pool drivers may accelerate the same contract later, but must
+Optional optimized solution-pool drivers may accelerate the same contract, but must
 provide an equivalent completeness guarantee.
 
 Reduced Trivium evidence

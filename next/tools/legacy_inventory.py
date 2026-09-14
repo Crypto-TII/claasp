@@ -30,6 +30,34 @@ CATEGORY_BY_DIRECTORY = {
     "toys": "toy_primitives",
 }
 
+MIGRATION_OVERRIDES = {
+    "claasp/cipher_modules/models/algebraic/constraints.py": {
+        "v5_destination": "next/src/claasp_next/representations/constraints/polynomial/boolean.py",
+        "prerequisites": [],
+        "disposition": "supersede",
+        "status": "superseded-in-m10.8d",
+        "acceptance_criterion": (
+            "Dependency-free Boolean polynomial constraints preserve equality and exact modular "
+            "addition/subtraction semantics, with explicit bit ordering."
+        ),
+        "rationale": (
+            "The Sage polynomial-ring helpers are replaced by the square-free v5 Boolean "
+            "polynomial representation."
+        ),
+    },
+    "tests/unit/cipher_modules/models/algebraic/constraints_test.py": {
+        "v5_destination": "next/tests/unit/test_boolean_polynomial_constraints.py",
+        "prerequisites": [],
+        "disposition": "migrate",
+        "status": "migrated-in-m10.8d",
+        "acceptance_criterion": (
+            "Exhaustive dependency-free tests preserve vector equality and explicit/eliminated "
+            "ripple addition and subtraction over complete small domains."
+        ),
+        "rationale": None,
+    },
+}
+
 
 def python_paths() -> list[Path]:
     return sorted(path for root in LEGACY_ROOTS for path in root.rglob("*.py"))
@@ -157,6 +185,7 @@ def record(path: Path) -> dict[str, Any]:
     }
     if catalogue:
         item["primitive"] = catalogue
+    item.update(MIGRATION_OVERRIDES.get(relative.as_posix(), {}))
     return item
 
 

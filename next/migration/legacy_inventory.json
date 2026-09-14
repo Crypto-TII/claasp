@@ -762,31 +762,29 @@
       "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Dependency-free Boolean polynomial constraints preserve equality and exact modular addition/subtraction semantics, with explicit bit ordering.",
       "dependencies": [
         "operator"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
       "path": "claasp/cipher_modules/models/algebraic/constraints.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "mod_binary_operation_polynomials",
         "mod_addition_polynomials",
         "mod_subtraction_polynomials",
         "equality_polynomials"
       ],
-      "rationale": null,
+      "rationale": "The Sage polynomial-ring helpers are replaced by the square-free v5 Boolean polynomial representation.",
       "responsibility": "constraints",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/representations/constraints/polynomial/boolean.py"
     },
     {
       "acceptance_criterion": "Containing package is represented by its non-marker entries.",
@@ -10531,7 +10529,7 @@
       "v5_destination": "next/tests (mapped to the owning migrated behavior)"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Exhaustive dependency-free tests preserve vector equality and explicit/eliminated ripple addition and subtraction over complete small domains.",
       "dependencies": [
         "claasp",
         "pytest",
@@ -10548,9 +10546,7 @@
       },
       "kind": "test",
       "path": "tests/unit/cipher_modules/models/algebraic/constraints_test.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "test_equality_polynomials",
         "test_mod_addition_polynomials",
@@ -10558,13 +10554,13 @@
       ],
       "rationale": null,
       "responsibility": "constraints test",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.8d",
       "tests": [
         "test_equality_polynomials",
         "test_mod_addition_polynomials",
         "test_mod_subtraction_polynomials"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_boolean_polynomial_constraints.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
