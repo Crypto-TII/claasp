@@ -11,6 +11,7 @@ from claasp_next.ciphers.block_ciphers import (
 from claasp_next.ciphers.permutations.mimc import MiMCPermutation
 from claasp_next.ciphers.permutations.poseidon import PoseidonPermutation
 from claasp_next.ciphers.permutations.chacha import ChaCha
+from claasp_next.ciphers.permutations.salsa import Salsa
 
 __all__ = [
     "AES128BlockCipher",
@@ -22,4 +23,5 @@ __all__ = [
     "PresentBlockCipher",
     "SpeckBlockCipher",
     "SimonBlockCipher",
+    "Salsa",
 ]

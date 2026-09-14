@@ -143,3 +143,21 @@ XOR, rotation, and concatenation. The migrated tests retain the full
 ChaCha20 permutation vector, two reduced toy vectors, and scalar/batch parity.
 The legacy API counted alternating half-rounds; v5 intentionally uses the
 standard round convention.
+
+Salsa
+-----
+
+``Salsa`` is likewise the fixed-length unkeyed word permutation. Column and
+row rounds alternate, and the public count uses standard full rounds instead
+of the legacy implementation's internal half-round counter.
+
+.. doctest::
+
+   >>> from claasp_next.ciphers import Salsa
+   >>> output = Salsa(number_of_rounds=2).evaluate(1 << (15 * 32))
+   >>> f"{output:0128x}"[:32]
+   '8186a22d0040a2848247921006929051'
+
+The retained sparse and dense legacy vectors and batch evaluation all use the
+same typed modular-addition, rotation, XOR, and concatenation components as
+other ARX primitives.
