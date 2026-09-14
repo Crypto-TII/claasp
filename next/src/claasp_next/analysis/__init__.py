@@ -58,6 +58,10 @@ from claasp_next.analysis.neural_experiments import (
     DatasetPartition, NeuralRun, NeuralRunProvenance, dataset_digest,
     deterministic_partition,
 )
+from claasp_next.analysis.statistical_datasets import (
+    StatisticalDataset, StatisticalRecord, cbc_dataset, correlation_dataset,
+    high_density_dataset, low_density_dataset,
+)
 
 __all__ = [
     "Analysis",
@@ -120,4 +124,10 @@ __all__ = [
     "NeuralRunProvenance",
     "dataset_digest",
     "deterministic_partition",
+    "StatisticalDataset",
+    "StatisticalRecord",
+    "cbc_dataset",
+    "correlation_dataset",
+    "high_density_dataset",
+    "low_density_dataset",
 ]
