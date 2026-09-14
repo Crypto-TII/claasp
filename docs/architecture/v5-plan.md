@@ -718,20 +718,15 @@ path is correct and stable.
 Unless this plan is explicitly revised, “next milestone” means the first
 unfinished item in this order:
 
-1. Synchronize the three pending ``develop`` commits and classify their
-   effects without overwriting v5 work.
-2. M10.7: establish the complete module/test inventory and its CI coverage
-   gate. This planning-control checkpoint precedes further feature work even
-   though its number follows M10.6.
-3. Resume M10.6d5b3c, then finish differential-linear and continuous CP work
+1. Resume M10.6d5b3c, then finish differential-linear and continuous CP work
    in M10.6d5c–M10.6d6.
-4. M10.8: migrate all remaining mathematical and solver models, including
+2. M10.8: migrate all remaining mathematical and solver models, including
    monomial prediction and division-property analysis.
-5. M10.9a–M10.9d: establish primitive terminology and taxonomy, then migrate
+3. M10.9a–M10.9d: establish primitive terminology and taxonomy, then migrate
    the complete reusable component and fixed-length primitive catalogues.
-6. M10.10–M10.15: inversion/transformations, component analysis, datasets and
+4. M10.10–M10.15: inversion/transformations, component analysis, datasets and
    statistical tests, neural distinguishers, reports, and remaining tooling.
-7. M11 integration and release.
+5. M11 integration and release.
 
 The migration inventory is a maintained artifact, not a one-time search. It
 must cover every legacy source and test module, including ciphers, components,
@@ -747,16 +742,16 @@ The milestone tracker below is the single source of implementation status; a
 second checklist is intentionally not maintained. At this revision:
 
 - The typed core, evaluation, initial AO primitives, representative traditional
-  ciphers, polynomial/Boolean foundations, usability, and documentation
+  primitives, polynomial/Boolean foundations, usability, and documentation
   checkpoints are achieved as recorded in the tracker.
-- M10.0–M10.5c are achieved at their recorded scope; the new M10.7 inventory
-  gate will expose any family-level omissions without retroactively weakening
+- M10.0–M10.5c are achieved at their recorded scope; the M10.7 inventory gate
+  exposes future family-level omissions without retroactively weakening
   those accepted vertical slices.
 - M10.5d remains open only for routed ASCII art.
 - M10.6a–M10.6d4 are achieved.
 - M10.6d5 is in progress; the next feature checkpoint is M10.6d5b3c.
-- M10.7 is the immediate control checkpoint: build the complete inventory and
-  classify pending ``develop`` changes before resuming feature migration.
+- M10.7 is achieved: the exhaustive inventory and filesystem gate include the
+  reconciled ``develop`` changes.
 - M10.8–M10.15 and M11 remain planned.
 
 ## Milestone tracker
@@ -851,10 +846,10 @@ is absent). Update this table in the same commit that changes milestone state.
 | Exact bijective BCT semantics (M10.6d5b2) | Achieved | Exhaustive inverse-table definition, typed count/weight, PRESENT fixed possible/impossible entries, native CP table, and independent decoder |
 | Modular-add boomerang oracle (M10.6d5b3a) | Achieved | Exact four-difference quartet equations and exhaustive counts for widths through 8 provide an independent oracle for scalable encodings |
 | Exact modular-add switch automaton (M10.6d5b3b) | Achieved | Sixteen carry/borrow states match every exhaustive 3-bit entry and scale to exact 16-bit Speck counts |
-| Restricted Speck ARX boomerang composition (M10.6d5b3c) | Queued | Resume after M10.7 baseline; compare the legacy one-half onlyLargeSwitch restriction with exact automaton results and preserve its empirical fixture |
+| Restricted Speck ARX boomerang composition (M10.6d5b3c) | Next | Compare the legacy one-half onlyLargeSwitch restriction with exact automaton results and preserve its empirical fixture |
 | Typed differential-linear composition (M10.6d5c) | Planned | Differential prefix, selectable connector, linear suffix, exact objective, and fixed Speck32/64 weight-14 patterns |
 | CP continuous models (M10.6d6) | Planned | Numerically qualified heuristic models kept distinct from exact proof results |
-| Complete legacy inventory (M10.7) | Next | Machine-readable entry for every legacy source/test module, filesystem count gate, and classification of pending develop changes |
+| Complete legacy inventory (M10.7) | Achieved | Deterministic standard-library inventory covers 323 source and 258 test modules; AST metadata, primitive taxonomy fields, fixed-evidence locators, and an exact filesystem/CI gate; three pending `develop` commits reconciled |
 | Remaining mathematical/solver models (M10.8) | Planned | Complete model coverage, including monomial prediction, division property, algebraic analyses, and an open-source baseline |
 | Primitive terminology/public API (M10.9a) | Planned | `Primitive`/`primitives`, official class names, schemas, documentation, and terminology guard |
 | Fixed-length primitive classification (M10.9b) | Planned | Every legacy catalogue entry assigned to the six semantic categories, an orthogonal fixture folder, or an explicit out-of-scope disposition |
