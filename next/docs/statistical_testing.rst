@@ -121,5 +121,24 @@ dataset hash, stable command arguments, tool version, runtime, and captured
 diagnostics in a :class:`~claasp_next.analysis.StatisticalTestRun`. For
 example, ``DieharderDriver(timeout_seconds=10).run(stream, test=0)`` runs one
 bounded test when ``dieharder`` is installed. A dedicated CI job exercises
-the real executable; importing and parsing results never requires it. The
-NIST STS process driver is the remaining M10.12 adapter checkpoint.
+the real executable; importing and parsing results never requires it.
+
+The optional NIST STS adapter has a different execution contract than
+Dieharder's: the patched, non-interactive ``assess`` build this project
+compiles from ``required_dependencies/`` (applied on top of the official
+``sts-2_1_2.zip`` release, mirroring ``docker/Dockerfile``) never prints its
+report to stdout. It ``chdir``s into a compile-time constant working
+directory and always (re)writes the very same fixed report file,
+``<working_dir>/experiments/AlgorithmTesting/finalAnalysisReport.txt``, for
+every run. ``NistStsDriver`` locates and reads that fixed path immediately
+after each run instead of trusting stdout, serializes invocations against
+the same working directory with an in-process lock plus a best-effort
+cross-process file lock, and refuses to parse a report whose modification
+time did not advance -- guarding against silently returning a stale report
+from a previous run. It also does not treat ``assess``'s own exit code as a
+success signal, since the tool's convention is inverted (a fully successful
+run returns ``1``; a bad-usage invocation returns ``0``). For example,
+``NistStsDriver(timeout_seconds=10).run(stream, number_of_bit_streams=1)``
+runs one bounded pass over every NIST STS test when ``niststs`` is
+installed. A dedicated CI job builds the patched tool from source and
+exercises it; importing and parsing results never requires it.
