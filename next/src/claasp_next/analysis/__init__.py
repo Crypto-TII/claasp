@@ -33,6 +33,11 @@ from claasp_next.analysis.boomerang import (
     BoomerangExperimentResult,
     run_speck32_boomerang_experiment,
 )
+from claasp_next.analysis.composed import (
+    DifferentialLinearFixture,
+    check_speck32_differential_linear_fixture,
+    speck32_differential_linear_legacy_fixture,
+)
 
 __all__ = [
     "Analysis",
@@ -62,4 +67,7 @@ __all__ = [
     "truncated_modular_add",
     "BoomerangExperimentResult",
     "run_speck32_boomerang_experiment",
+    "DifferentialLinearFixture",
+    "check_speck32_differential_linear_fixture",
+    "speck32_differential_linear_legacy_fixture",
 ]

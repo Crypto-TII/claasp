@@ -87,3 +87,15 @@ seeded 65,536-sample reproduction records 11 successes (rate
 ``0.0001678466796875``), preserving the old ``> 0.0001`` empirical observation
 with explicit seed and sample metadata. Neither the observation nor the
 restricted predicate establishes optimality.
+
+### Speck differential-linear fixture audit
+
+The fixed six-round Speck32/64 witness decomposes into differential weight
+``p=1``, probabilistic-truncated connector cost ``r=7``, and linear weight
+``q=3``. The legacy test's value 14 is therefore the MiniZinc search objective
+``p+r+2q``. Applying the exact composed expression
+``p+log2(2^(r+1)-1)+2q`` gives approximately
+``14.994353436858859``. Version 5 retains both named values and never reports
+14 as the exact correlation weight. All differential and linear modular-add
+transitions are recomputed using the shared automata; the connector is the
+existing independently checked cost-700 MiniZinc fixture.

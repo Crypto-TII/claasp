@@ -11,7 +11,11 @@ from claasp_next.semantics.cryptanalysis import (
     ModularAddBoomerangAutomaton,
 )
 from claasp_next.ciphers import PresentBlockCipher
-from claasp_next.analysis import run_speck32_boomerang_experiment
+from claasp_next.analysis import (
+    check_speck32_differential_linear_fixture,
+    run_speck32_boomerang_experiment,
+    speck32_differential_linear_legacy_fixture,
+)
 
 
 def _trail(kind, source, target, width=4):
@@ -123,3 +127,14 @@ def test_legacy_speck_boomerang_empirical_fixture_is_seeded_and_fixed():
     assert result.successes == 11
     assert result.rate == 11 / (1 << 16)
     assert result.rate > 0.0001
+
+
+def test_fixed_speck_differential_linear_fixture_separates_search_and_exact_weights():
+    fixture = speck32_differential_linear_legacy_fixture()
+
+    assert check_speck32_differential_linear_fixture(fixture)
+    assert fixture.trail.differential.total_weight == 1
+    assert fixture.trail.connector.weight == 7
+    assert fixture.trail.linear.total_weight == 3
+    assert fixture.legacy_search_weight == 14
+    assert isclose(fixture.exact_weight, 14.994353436858859)
