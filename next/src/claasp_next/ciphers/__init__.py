@@ -10,10 +10,12 @@ from claasp_next.ciphers.block_ciphers import (
 )
 from claasp_next.ciphers.permutations.mimc import MiMCPermutation
 from claasp_next.ciphers.permutations.poseidon import PoseidonPermutation
+from claasp_next.ciphers.permutations.chacha import ChaCha
 
 __all__ = [
     "AES128BlockCipher",
     "AESBlockCipher",
+    "ChaCha",
     "MiMCPermutation",
     "PoseidonPermutation",
     "Present80BlockCipher",

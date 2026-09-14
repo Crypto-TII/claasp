@@ -122,3 +122,24 @@ Both 80- and 128-bit key schedules are supported. The friendly boundary API conv
 MSB-first units and rejects values that would be truncated. The graph contains
 all 31 substitution-permutation rounds, the 80-bit key schedule, and final
 whitening.
+
+ChaCha
+------
+
+``ChaCha`` represents the fixed-length unkeyed permutation, not the
+variable-length stream-cipher mode. Its round parameter follows the standard
+terminology: one round applies four quarter rounds, alternating columns and
+diagonals.
+
+.. doctest::
+
+   >>> from claasp_next.ciphers import ChaCha
+   >>> toy = ChaCha(number_of_rounds=1, word_size=8, rotations=(4, 3, 2, 1))
+   >>> f"{toy.evaluate(1 << 120):032x}"
+   '81000000ad0000005600000046000000'
+
+The implementation is a typed word graph built only from modular addition,
+XOR, rotation, and concatenation. The migrated tests retain the full
+ChaCha20 permutation vector, two reduced toy vectors, and scalar/batch parity.
+The legacy API counted alternating half-rounds; v5 intentionally uses the
+standard round convention.

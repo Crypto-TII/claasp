@@ -1,6 +1,7 @@
 """Unkeyed permutation descriptions."""
 
+from claasp_next.ciphers.permutations.chacha import ChaCha
 from claasp_next.ciphers.permutations.mimc import MiMCPermutation
 from claasp_next.ciphers.permutations.poseidon import PoseidonPermutation
 
-__all__ = ["MiMCPermutation", "PoseidonPermutation"]
+__all__ = ["ChaCha", "MiMCPermutation", "PoseidonPermutation"]
