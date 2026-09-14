@@ -837,7 +837,8 @@ second checklist is intentionally not maintained. At this revision:
 - M10.0–M10.5c are achieved at their recorded scope; the M10.7 inventory gate
   exposes future family-level omissions without retroactively weakening
   those accepted vertical slices.
-- M10.5d remains open only for routed ASCII art.
+- M10.5d5 routed dependency-free ASCII art is achieved; M10.5d remains open
+  only for parent closeout.
 - M10.6a–M10.6d4 are achieved.
 - M10.6, including its advanced exact and heuristic analyses, is achieved.
 - M10.7 is achieved: the exhaustive inventory and filesystem gate include the
@@ -904,7 +905,7 @@ is absent). Update this table in the same commit that changes milestone state.
 | Canonical cryptanalytic semantics (M10.5d4a) | Achieved | Trail types and exact S-box/modular-add semantics moved from analysis to `semantics`; common graph annotations |
 | Shared propagation problem (M10.5d4b) | Achieved | Immutable semantic registry with per-component overrides; graph scope, objective, bounds, and provenance |
 | Shared propagation consumers (M10.5d4c) | Achieved | PRESENT SMT/MILP composition accepts one PropagationProblem and queries identical per-component overrides |
-| Diagram representation (M10.5d5) | In progress | Annotated IR, TikZ/PDF, and temporary warned structural listing achieved; actual routed ASCII art remains |
+| Diagram representation (M10.5d5) | Achieved | One annotated IR feeds deterministic routed box-and-connector ASCII art, TikZ, and optional LaTeX/PDF rendering while retaining input order and logical selections |
 | Graph/semantics vocabulary refactor (M10.5d6) | Achieved | `core` renamed to `graph`; `interpretations` renamed to `semantics`; public contracts use `SemanticType` and `.semantics`; no compatibility packages retained |
 | SMT, MILP, and CP (M10.4–M10.6) | Achieved | Portable shared semantics and open-source drivers preserve selected exact, truncated, impossible, composed, and explicitly heuristic continuous evidence |
 | CP backend (M10.6) | Achieved | Portable foundation, recovery, shared trails, advanced ARX/truncated/impossible/composed analyses, and qualified continuous heuristics |

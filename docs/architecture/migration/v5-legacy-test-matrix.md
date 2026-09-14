@@ -141,13 +141,13 @@ starts:
 - Graph, serialization, code generation, diagrams, transformations, and
   compilers, classified during M10.10 and M10.14–M10.15.
 
-The first diagram slice is available in M10.5d5: graph structure, rounds,
+The diagram milestone is complete in M10.5d5: graph structure, rounds,
 logical-unit selections, and concrete annotations are covered through one
-backend-neutral IR with TikZ serialization and an externally tested LaTeX
-driver. The current ASCII serializer is explicitly warned as a work-in-progress
-structural listing, not an ASCII-art drawing. The remaining M10.8 inventory
-must classify semantic diagram fixtures and integrate or supersede the
-unfinished historical ASCII-art branch separately.
+backend-neutral IR with routed box-and-connector ASCII art, TikZ serialization,
+and an externally tested LaTeX driver. ASCII routes retain input order, source
+IDs, and selected positions; the same execution or cryptanalytic annotation is
+rendered without backend-specific adaptation. The remaining M10.8 inventory
+classifies historical semantic diagram fixtures independently of this renderer.
 
 Each cryptanalytic row must say whether its expected result is an optimum,
 feasibility witness, or bound; record publication or legacy origin and solver

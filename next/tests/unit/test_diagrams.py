@@ -13,7 +13,6 @@ from claasp_next.semantics.cryptanalysis import (
 )
 from claasp_next.representations.diagrams import (
     ASCIIArtSerializer,
-    ASCIIArtWorkInProgressWarning,
     PrimitiveDiagram,
     DiagramCompiler,
     TikZSerializer,
@@ -48,10 +47,10 @@ def test_ascii_and_tikz_are_independent_views_of_the_same_ir():
     primitive = _toy_primitive()
     diagram = primitive.diagram()
 
-    with pytest.warns(ASCIIArtWorkInProgressWarning, match="structural listing"):
-        ascii_art = ASCIIArtSerializer().serialize(diagram)
-    assert "round 0\n  identity_0_0: Identity <- state[3,1,2,0]" in ascii_art
-    assert "output <- identity_1_0[0:4]" in ascii_art
+    ascii_art = ASCIIArtSerializer().serialize(diagram)
+    assert "[0] state[3,1,2,0] --> +--------------+" in ascii_art
+    assert "| identity_0_0 |" in ascii_art
+    assert "[0] identity_1_0[0:4] --> +--------+" in ascii_art
 
     tikz = TikZSerializer().serialize(diagram)
     assert tikz.startswith("\\documentclass{article}\n\\usepackage{tikz}")
@@ -65,8 +64,7 @@ def test_execution_trace_can_annotate_every_diagram_layer():
 
     diagram = primitive.diagram(trace)
     assert all(node.annotation is not None for node in diagram.nodes)
-    with pytest.warns(ASCIIArtWorkInProgressWarning):
-        ascii_art = primitive.draw("ascii", trace)
+    ascii_art = primitive.draw("ascii", trace)
     assert "# (0x1,0x0,0x1,0x0)" in ascii_art
     assert "component,annotated" in primitive.draw("tikz", trace)
 
@@ -85,9 +83,20 @@ def test_cryptanalytic_trail_is_accepted_without_renderer_specific_adaptation():
     diagram = primitive.diagram(trail)
 
     assert diagram.node(component.component_id).annotation == transition
-    with pytest.warns(ASCIIArtWorkInProgressWarning):
-        ascii_art = primitive.draw("ascii", trail)
+    ascii_art = primitive.draw("ascii", trail)
     assert "0x1->0x3 w=2" in ascii_art
+
+
+def test_ascii_routes_multiple_inputs_in_declared_order():
+    primitive = Present(number_of_rounds=1)
+    component = next(item for item in primitive.components if item.component_id == "add_round_key_1")
+
+    ascii_art = primitive.draw("ascii")
+    first = f"[0] {component.inputs[0].source.owner_id}"
+    second = f"[1] {component.inputs[1].source.owner_id}"
+
+    assert ascii_art.index(first) < ascii_art.index(second)
+    assert "--+--> +" in ascii_art
 
 
 def test_public_drawing_api_rejects_unknown_formats():

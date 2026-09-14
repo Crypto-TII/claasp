@@ -1,64 +1,67 @@
-"""Work-in-progress textual serialization of primitive diagrams."""
-
-import warnings
+"""Dependency-free routed ASCII serialization of primitive diagrams."""
 
 from claasp_next.representations.diagrams.formatting import format_annotation, format_positions
-from claasp_next.representations.diagrams.model import PrimitiveDiagram
-
-
-class ASCIIArtWorkInProgressWarning(UserWarning):
-    """Warn that routed ASCII-art diagrams are not implemented yet."""
+from claasp_next.representations.diagrams.model import DiagramNode, PrimitiveDiagram
 
 
 class ASCIIArtSerializer:
-    """Render a temporary line-oriented listing, not routed ASCII art.
-
-    .. warning::
-
-       This serializer is a work in progress. Its output is useful for
-       inspecting the diagram IR, but it does not yet draw an actual primitive
-       diagram with boxes and routed connectors.
-    """
+    """Render diagram nodes as boxes with deterministic dependency routes."""
 
     def serialize(self, diagram: PrimitiveDiagram) -> str:
-        """Return the temporary graph listing and emit a WIP warning."""
+        """Return stable box-and-connector ASCII art for the diagram IR."""
 
         if not isinstance(diagram, PrimitiveDiagram):
             raise TypeError("diagram must be a PrimitiveDiagram")
-        warnings.warn(
-            "ASCII primitive diagrams are a work in progress; the current output "
-            "is a structural listing, not routed ASCII art",
-            ASCIIArtWorkInProgressWarning,
-            stacklevel=2,
-        )
         lines = [f"primitive {diagram.primitive_name}", "inputs"]
         for node in diagram.nodes:
             if node.kind == "input":
-                lines.append(f"  {node.node_id}{_annotation(node.annotation)}")
+                lines.extend(_indent(_box(node), 2))
+
         incoming = {}
         for edge in diagram.edges:
             incoming.setdefault(edge.destination_id, []).append(edge)
         for group in diagram.rounds:
             lines.append(f"round {group.number}")
             for node_id in group.node_ids:
-                node = diagram.node(node_id)
-                sources = ", ".join(
-                    f"{edge.source_id}[{format_positions(edge.positions)}]"
-                    for edge in sorted(incoming.get(node_id, ()), key=lambda item: item.input_index)
+                edges = sorted(incoming.get(node_id, ()), key=lambda item: item.input_index)
+                routes = tuple(
+                    f"[{edge.input_index}] {edge.source_id}[{format_positions(edge.positions)}]"
+                    for edge in edges
                 )
-                lines.append(
-                    f"  {node.node_id}: {node.label} <- {sources}{_annotation(node.annotation)}"
-                )
+                lines.extend(_routed_box(routes, _box(diagram.node(node_id))))
+
         if "__primitive_output__" in incoming:
             edge = incoming["__primitive_output__"][0]
-            node = diagram.node("__primitive_output__")
-            lines.append(
-                f"output <- {edge.source_id}[{format_positions(edge.positions)}]"
-                f"{_annotation(node.annotation)}"
-            )
+            route = f"[{edge.input_index}] {edge.source_id}[{format_positions(edge.positions)}]"
+            lines.append("output")
+            lines.extend(_routed_box((route,), _box(diagram.node("__primitive_output__"))))
         return "\n".join(lines) + "\n"
 
 
-def _annotation(value: object | None) -> str:
-    label = format_annotation(value)
-    return "" if label is None else f"  # {label}"
+def _box(node: DiagramNode) -> tuple[str, ...]:
+    contents = [node.label if node.kind in {"input", "output"} else node.node_id]
+    if node.kind not in {"input", "output"} and node.label != node.node_id:
+        contents.append(node.label)
+    annotation = format_annotation(node.annotation)
+    if annotation is not None:
+        contents.append(f"# {annotation}")
+    width = max(len(content) for content in contents)
+    border = "+-" + "-" * width + "-+"
+    return (border, *(f"| {content:<{width}} |" for content in contents), border)
+
+
+def _routed_box(routes: tuple[str, ...], box: tuple[str, ...]) -> tuple[str, ...]:
+    if not routes:
+        return _indent(box, 2)
+    width = max(len(route) for route in routes)
+    lines = [f"  {route:<{width}} --+" for route in routes[:-1]]
+    connector = "-->" if len(routes) == 1 else "--+-->"
+    prefix = f"  {routes[-1]:<{width}} {connector} "
+    lines.append(prefix + box[0])
+    lines.extend(" " * len(prefix) + line for line in box[1:])
+    return tuple(lines)
+
+
+def _indent(lines: tuple[str, ...], amount: int) -> tuple[str, ...]:
+    prefix = " " * amount
+    return tuple(prefix + line for line in lines)

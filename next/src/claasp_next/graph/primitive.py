@@ -167,12 +167,10 @@ class Primitive:
         return DiagramCompiler().compile(self, annotation)
 
     def draw(self, format: str = "ascii", annotation=None):
-        """Render this primitive as an ASCII listing, TikZ, or PDF.
+        """Render this primitive as routed ASCII art, TikZ, or PDF.
 
-        The ASCII renderer is a work in progress and emits a warning because
-        it currently produces a structural listing rather than routed ASCII
-        art. PDF rendering requires the optional ``pdflatex`` command. ASCII
-        and TikZ generation have no third-party dependencies.
+        PDF rendering requires the optional ``pdflatex`` command. ASCII and
+        TikZ generation have no third-party dependencies.
         """
 
         from claasp_next.representations.diagrams import ASCIIArtSerializer, TikZSerializer

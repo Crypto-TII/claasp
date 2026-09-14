@@ -4,16 +4,11 @@ Diagram representations and renderers
 A primitive diagram is a representation of the typed graph, not a property of a
 solver. ``DiagramCompiler`` preserves component IDs, logical-unit selections,
 input ordering, rounds, and optional graph annotations in ``PrimitiveDiagram``.
-The temporary ASCII listing and TikZ serializer are independent views over
-that immutable IR.
-
-.. warning::
-
-   ``ASCIIArtSerializer`` is a work in progress. It currently emits a
-   line-oriented structural listing and an ``ASCIIArtWorkInProgressWarning``;
-   box layout and connector routing remain to be integrated from the dedicated
-   ASCII-art compiler work. The diagram IR and TikZ serializer are not marked
-   experimental by this limitation.
+The routed ASCII-art and TikZ serializers are independent views over that
+immutable IR. ASCII nodes are boxes; every incoming edge is labeled with its
+declared input index, source ID, and selected logical positions. Multiple
+inputs join through a deterministic branch before the destination box, so the
+text remains useful in terminals and stable in regression tests.
 
 This separation lets the same concrete execution trace, cryptanalytic trail,
 or side-channel annotation be displayed without teaching a renderer its
@@ -44,7 +39,7 @@ The convenient ``Primitive.diagram()`` method accepts a ``GraphAnnotation``, an
    >>> all(node.annotation is not None for node in annotated.nodes)
    True
    >>> text = primitive.draw("ascii", trace)
-   >>> "round 0" in text and "#" in text
+   >>> "round 0" in text and "--+-->" in text and "#" in text
    True
    >>> latex = primitive.draw("tikz", trace)
    >>> latex.startswith(r"\documentclass{article}")
