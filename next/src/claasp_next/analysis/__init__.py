@@ -63,6 +63,10 @@ from claasp_next.analysis.statistical_datasets import (
     cbc_dataset, correlation_dataset,
     high_density_dataset, low_density_dataset,
 )
+from claasp_next.analysis.statistical_results import (
+    DieharderObservation, DieharderReport, NISTFinalReport, NISTSummaryRow,
+    StatisticalAssessment,
+)
 
 __all__ = [
     "Analysis",
@@ -132,4 +136,9 @@ __all__ = [
     "correlation_dataset",
     "high_density_dataset",
     "low_density_dataset",
+    "DieharderObservation",
+    "DieharderReport",
+    "NISTFinalReport",
+    "NISTSummaryRow",
+    "StatisticalAssessment",
 ]

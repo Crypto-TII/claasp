@@ -135,8 +135,16 @@ re-iterable correlation, zero-IV CBC, low-density, and high-density streams.
 The v5 stream format is fixed-width raw output bytes with explicit MSB-first,
 big-endian, sample-major/block-major conventions; its stable JSON manifest
 records seed, construction parameters, primitive realization, and SHA-256.
-Legacy NIST STS/Dieharder parsing and executable integration remain scheduled
-for the next M10.12 checkpoint.
+M10.12d ports the dependency-free report boundary. The NIST summary parser is
+regressed against every one of the 188 rows in all five committed
+``finalAnalysisReport.txt`` reference artifacts, retaining repeated subtests,
+histogram bins, undefined values, proportions, and failure markers. The
+Dieharder parser preserves its legacy row schema and aggregates, but no legacy
+test asserted a scientific Dieharder result and no output fixture was
+committed; its synthetic parser fixture is therefore new structural evidence.
+Empty Dieharder output now raises an error instead of fabricating an
+``unavailable`` failure. Optional executable integration remains scheduled for
+the next M10.12 checkpoint; plotting/report generation belongs to M10.14.
 
 ## CP models
 
