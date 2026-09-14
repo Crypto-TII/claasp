@@ -6,6 +6,13 @@ new representation; “deferred” names the milestone that must resolve it.
 Internal identifiers are not compatibility requirements unless an external
 format relies on them.
 
+Legacy paths and class names in this document are evidence locators, not v5
+taxonomy decisions. The M10.7 machine-readable inventory records each
+catalogue entry's official name, fixed-length category, proposed v5
+module/class names, and any higher-level hash, MAC, or stream construction from
+which its primitive is extracted. M10.9a–M10.9d then enforce those decisions;
+the current ``Cipher`` and ``ciphers`` names are transitional.
+
 ## Reference ciphers
 
 | Legacy test | Semantic assertions and provenance | Disposition | v5 coverage |

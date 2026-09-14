@@ -13,15 +13,52 @@ The new implementation is developed as the independently installable
 `claasp` package.  Tests and migration tools may import both packages for
 differential comparison.
 
+### Primitive terminology and catalogue taxonomy
+
+CLAASP means **Cryptographic Library for Automated Analysis of Symmetric
+Primitives**. Version 5 therefore uses **primitive**, not **cipher**, as its
+generic public term. The current ``Cipher`` graph class, ``ciphers`` package,
+and related user-facing names are transitional implementation names and must
+become ``Primitive``, ``primitives``, and corresponding primitive-oriented API
+names in M10.9a. Historical CLAASP 4 paths and evidence may retain their real
+legacy spelling. No compatibility alias is required for the unreleased v5 API.
+
+All CLAASP primitives are fixed-length maps and are classified by mathematical
+interface rather than by the variable-length construction that uses them:
+
+- ``permutations``: unkeyed bijective fixed-length maps;
+- ``functions``: unkeyed fixed-length maps not required to be bijective;
+- ``block_ciphers``: keyed permutations;
+- ``block_functions``: keyed fixed-length functions not required to be
+  permutations;
+- ``tweakable_block_ciphers``: tweak-parameterized keyed permutations;
+- ``tweakable_block_functions``: tweak-parameterized keyed fixed-length
+  functions not required to be permutations.
+
+``single_component_primitives`` and ``toy_primitives`` remain useful
+orthogonal catalogue folders. ``hash_functions``, ``macs``, and
+``stream_ciphers`` are not primitive categories in v5: they denote
+variable-length or stateful modes/constructions. When current CLAASP contains
+one, the inventory must identify and migrate its underlying fixed-length
+primitive into one of the six categories above, or explicitly classify the
+high-level construction as outside the primitive catalogue.
+
+Primitive modules and classes use the official primitive name without a
+redundant category suffix: for example ``AES``, not ``AESBlockCipher``. A
+suffix is allowed only when no independent official name exists and is needed
+to distinguish an underlying primitive extracted from a higher-level mode or
+construction. Naming decisions are recorded in the catalogue inventory to
+avoid ad hoc exceptions and collisions.
+
 ## Product goals
 
-CLAASP is first a usable workbench for cipher designers and cryptanalysts.
+CLAASP is first a usable workbench for primitive designers and cryptanalysts.
 The typed architecture is an implementation technique, not terminology that
 users should have to understand before completing common tasks.
 
 The public API must make these workflows straightforward:
 
-1. Describe a cipher at approximately the level of its published pseudocode.
+1. Describe a primitive at approximately the level of its published pseudocode.
 2. Evaluate one vector or a batch without learning graph internals.
 3. Run standard analyses, including avalanche tests, trail search, and key
    recovery, through a small and consistent API.
@@ -409,8 +446,8 @@ does not reproduce the temporary package organization.
    concepts. Add immutable graph annotations plus distinct execution-trace,
    cryptanalytic-trail, and side-channel-trace types.
 2. **M10.5d2 — execution representations.** Move scalar and batch execution
-   behind the representation/driver structure. Keep ``cipher.evaluate(...)``
-   and ``cipher.evaluate_batch(...)`` as the ordinary user API; direct
+   behind the representation/driver structure. Keep ``primitive.evaluate(...)``
+   and ``primitive.evaluate_batch(...)`` as the ordinary user API; direct
    interpreters need not pretend to have exporters.
 3. **M10.5d3 — constraint representations.** Group Boolean/CNF, SMT, MILP,
    CP, and polynomial forms under ``representations``. Separate representation
@@ -445,7 +482,10 @@ attack goal and an output format.
   legacy test module. Family-level prose is not sufficient coverage.
 - Record path, responsibility, public entry points, dependencies, tests,
   fixed evidence, v5 destination, prerequisites, disposition, status, and
-  acceptance criterion for every entry.
+  acceptance criterion for every entry. Primitive entries additionally record
+  their official name, one of the six v5 categories, proposed module/class
+  names, and any higher-level construction from which the fixed-length
+  primitive is extracted.
 - Use the dispositions ``migrate``, ``supersede``, ``defer``, ``remove``, and
   ``inapplicable``. Every non-migration disposition requires a rationale.
 - Make CI fail when a new legacy module or test appears without an inventory
@@ -470,28 +510,62 @@ match the filesystem; no release-scope entry has an unspecified destination.
 
 #### M10.9: Complete component and primitive catalogue
 
-- The default CLAASP 5.0 release scope is the entire current CLAASP component
-  and primitive catalogue. Removing or deferring an entry requires an explicit
-  reviewed decision; silence does not reduce scope.
+##### M10.9a: Primitive terminology and public API
+
+- Rename the generic graph abstraction from ``Cipher`` to ``Primitive`` and
+  the public catalogue package from ``ciphers`` to ``primitives``.
+- Replace generic user/developer vocabulary such as cipher graph, cipher
+  input, and cipher evaluation with primitive graph, primitive input, and
+  primitive evaluation. Retain “cipher” only where it is the mathematically
+  correct category or part of an official name.
+- Rename modules and classes to official primitive names, for example ``AES``
+  rather than ``AESBlockCipher``. Document and inventory every necessary
+  exception; do not retain aliases for the unreleased transitional v5 names.
+- Update imports, annotations, serialization schemas, examples, doctests, and
+  both guides atomically, with a repository check preventing new generic uses
+  of the transitional terminology in public v5 code.
+
+##### M10.9b: Fixed-length primitive classification
+
+- Classify every legacy catalogue entry as ``permutations``, ``functions``,
+  ``block_ciphers``, ``block_functions``, ``tweakable_block_ciphers``,
+  ``tweakable_block_functions``, ``single_component_primitives``,
+  ``toy_primitives``, or explicitly outside scope.
+- Remove ``hash_functions``, ``macs``, and ``stream_ciphers`` as catalogue
+  categories. Identify and migrate their underlying fixed-length primitives
+  when present; do not mislabel the variable-length/stateful construction as a
+  CLAASP primitive.
+- Validate category invariants, including bijectivity obligations and the
+  roles of key and tweak inputs, in catalogue metadata and tests.
+
+##### M10.9c: Complete reusable component catalogue
+
 - Migrate generic structural, Boolean, word/ARX, finite-field, feedback,
-  permutation-specific, and conversion components before ciphers duplicate
+  permutation-specific, and conversion components before primitives duplicate
   their behavior privately.
-- Migrate all release-scope block ciphers, permutations, hash-function
-  building blocks, stream ciphers, MACs, toy/reference ciphers, and
-  single-component fixtures in dependency order.
+- Move reusable helper algorithms out of individual primitive implementations
+  and keep the authoring API close to published pseudocode.
+
+##### M10.9d: Complete primitive implementations and evidence
+
+- The default CLAASP 5.0 scope is every fixed-length primitive represented by
+  the current catalogue. Removing or deferring an entry requires an explicit
+  reviewed inventory decision; silence does not reduce scope.
+- Migrate entries in component/dependency order into the v5 taxonomy, including
+  all parameter families, toy primitives, and single-component fixtures.
 - Preserve all applicable official and legacy vectors, parameter variants,
   reduced-round behavior, scalar/batch parity, and cryptanalytic fixtures.
 - Record intentional exclusions explicitly; representative-family coverage is
   not completion of this milestone.
 
-#### M10.10: Cipher inversion and graph transformations
+#### M10.10: Primitive inversion and graph transformations
 
 - Define inverse semantics per component and build inversion as a typed graph
   transformation independent of solver backends.
 - Support retained auxiliary inputs, partial knowledge, equivalent recovered
   wires, and precise diagnostics when inversion stalls.
 - Preserve legacy inversion tests and verify forward/inverse round trips for
-  each supported component and representative complete ciphers.
+  each supported component and representative complete primitives.
 - Keep graph slicing, key-schedule removal, round reduction, and related
   editor transformations in the same validated transformation layer.
 
@@ -653,7 +727,8 @@ unfinished item in this order:
    in M10.6d5c–M10.6d6.
 4. M10.8: migrate all remaining mathematical and solver models, including
    monomial prediction and division-property analysis.
-5. M10.9: migrate the complete component and primitive catalogue.
+5. M10.9a–M10.9d: establish primitive terminology and taxonomy, then migrate
+   the complete reusable component and fixed-length primitive catalogues.
 6. M10.10–M10.15: inversion/transformations, component analysis, datasets and
    statistical tests, neural distinguishers, reports, and remaining tooling.
 7. M11 integration and release.
@@ -705,7 +780,7 @@ is absent). Update this table in the same commit that changes milestone state.
 | Pinned Poseidon parameter catalogue | Achieved | Bundled BN254/width-3 data and vector |
 | Dependency-free transposed batch backend | Achieved | Differential tests and benchmark harness |
 | msolve polynomial exporter | Achieved | Native format, validation, and optional integration test |
-| Traditional cipher reference implementations | Representative slice achieved | AES-128/192/256, PRESENT-80/128, multiple Speck variants, and all standard Simon configurations; complete catalogue is M10.9 |
+| Traditional primitive reference implementations | Representative slice achieved | AES-128/192/256, PRESENT-80/128, multiple Speck variants, and all standard Simon configurations; names/packages remain transitional until M10.9a and the complete catalogue follows in M10.9d |
 | Legacy cipher regression parity (M9) | Achieved | Living matrix; AES-128/192/256, PRESENT-80/128, Speck32/64 and Speck64/96 |
 | Cipher-authoring usability (M9.1) | Achieved | Whole-port coercion, indexing, automatic IDs, reusable primitives, concise ciphers |
 | CLAASP-wide documentation (M9.2) | Achieved | AES-first introduction, simple analysis, and separate v5/AO section |
@@ -781,8 +856,11 @@ is absent). Update this table in the same commit that changes milestone state.
 | CP continuous models (M10.6d6) | Planned | Numerically qualified heuristic models kept distinct from exact proof results |
 | Complete legacy inventory (M10.7) | Next | Machine-readable entry for every legacy source/test module, filesystem count gate, and classification of pending develop changes |
 | Remaining mathematical/solver models (M10.8) | Planned | Complete model coverage, including monomial prediction, division property, algebraic analyses, and an open-source baseline |
-| Complete component/primitive catalogue (M10.9) | Planned | All legacy components and ciphers/permutations/hashes/streams/MACs migrated or explicitly dispositioned with parity evidence |
-| Cipher inversion and graph transformations (M10.10) | Planned | Typed inverse semantics, partial inversion, round trips, slicing, key-schedule removal, and editor transformations |
+| Primitive terminology/public API (M10.9a) | Planned | `Primitive`/`primitives`, official class names, schemas, documentation, and terminology guard |
+| Fixed-length primitive classification (M10.9b) | Planned | Every legacy catalogue entry assigned to the six semantic categories, an orthogonal fixture folder, or an explicit out-of-scope disposition |
+| Complete reusable component catalogue (M10.9c) | Planned | All reusable legacy components migrated with parity evidence and pseudocode-level authoring helpers |
+| Complete primitive implementations/evidence (M10.9d) | Planned | Every in-scope fixed-length primitive and parameter family migrated under the new taxonomy with evaluation and cryptanalytic fixtures |
+| Primitive inversion and graph transformations (M10.10) | Planned | Typed inverse semantics, partial inversion, round trips, slicing, key-schedule removal, and editor transformations |
 | Component analysis (M10.11) | Planned | Structured S-box, linear-layer, Boolean, field, and word-operation properties with optional heavy algebra/plots |
 | Dataset/statistical testing (M10.12) | Planned | Reproducible streaming datasets, avalanche, NIST STS and Dieharder optional drivers and parsers |
 | Neural distinguishers (M10.13) | Planned | Framework-independent black-box/differential experiment contracts plus optional ML drivers |
