@@ -61,3 +61,70 @@ state. They may be label-stratified and are reproducible from their own seed:
 realization, dataset and partition seeds, driver version, and canonical scalar
 options. ``NeuralRun.validate_for`` rejects stale datasets and partitions that
 do not cover every sample exactly once.
+
+Round and component projections
+--------------------------------
+
+Legacy CLAASP could train a distinguisher not only on a primitive's final
+output but also on an intermediate round's state, a round key, or an
+arbitrary component -- matching component ids against substrings such as
+``round_output``, ``round_key_output``, and ``cipher_output`` in
+``claasp.cipher_modules.neural_network_tests``. The v5 replacements,
+``component_output_dataset`` and ``xor_differential_component_dataset``,
+cover the same ground without a description-string match: they read the
+requested component's value directly out of the primitive's typed
+``ExecutionTrace`` (see ``claasp_next.annotations``), produced by
+``Cipher.evaluate_with_trace``. ``round_component_ids`` selects every
+component CLAASP added while building one round, so passing it as
+``component_ids`` projects that round's full state -- covering the legacy
+``round_output``/``round_key_output`` cases -- while a single id targets one
+exact wire:
+
+.. doctest::
+
+   >>> from claasp_next.analysis import component_output_dataset, round_component_ids
+   >>> reduced = SpeckBlockCipher(number_of_rounds=2)
+   >>> round_component_ids(reduced, 0)
+   ('round_0_rotate_right', 'round_0_modular_add', 'round_0_xor_key', 'round_0_rotate_left', 'round_0_xor_xy', 'key_constant_0', 'key_0_rotate_right', 'key_0_modular_add', 'key_0_xor_key', 'key_0_rotate_left', 'key_0_xor_xy')
+   >>> projected = component_output_dataset(
+   ...     reduced, "plaintext", "round_0_xor_xy", samples=4, seed=5
+   ... )
+   >>> projected.kind, projected.sample_count, projected.feature_width
+   ('black_box', 4, 48)
+   >>> projected.feature_names[-1]
+   'round_0_xor_xy[15]'
+
+``xor_differential_component_dataset`` projects the same way for related
+input pairs, replacing ``xor_differential_dataset``'s final-output pair with
+one from a chosen component. Both functions validate every id against the
+primitive's graph up front and raise ``KeyError`` for an id that is not one
+of its inputs or components.
+
+Optional ML training drivers
+-----------------------------
+
+``NeuralTrainingDriver`` implementations live under
+``claasp_next.drivers.neural`` and are never imported by
+``claasp_next``'s core. The bundled ``SklearnMLPDriver`` trains a small
+``sklearn.neural_network.MLPClassifier``. scikit-learn was chosen over
+legacy's TensorFlow/Keras (``docker/Dockerfile`` pins ``tensorflow==2.13.0``)
+specifically to keep the optional ``ml`` extra (``pip install
+'claasp-next[ml]'``) light and fast in CI; nothing prevents an equivalent
+TensorFlow, Keras, or PyTorch driver behind the same protocol. The
+scikit-learn import happens inside ``train``, so constructing a
+``SklearnMLPDriver`` never requires the extra -- only calling ``train`` does::
+
+   from claasp_next.drivers.neural import SklearnMLPDriver
+
+   dataset = xor_differential_dataset(
+       reduced, {"plaintext": 0x00400000, "key": 0}, samples=3000, seed=11
+   )
+   experiment = NeuralExperiment("mlp", epochs=15, batch_size=64, seed=2)
+   result = SklearnMLPDriver(hidden_layer_sizes=(32, 32)).train(dataset, experiment)
+   result.validation_accuracy[-1]  # tolerance-based evidence, e.g. > 0.8
+
+``result.validation_accuracy`` is tolerance/threshold-based experimental
+evidence, never an exact cross-platform fixture: the dedicated
+``neural-ml-execution`` CI job trains this same reduced-round Speck32/64
+differential distinguisher and only asserts that the final accuracy clears a
+documented threshold, not a specific value.

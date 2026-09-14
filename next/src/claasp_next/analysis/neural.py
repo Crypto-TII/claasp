@@ -4,11 +4,12 @@ This module deliberately generates ordinary Python data.  NumPy tensors and
 framework-specific models belong in optional drivers, not in CLAASP's core.
 """
 
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from random import Random
 from typing import Protocol
 
+from claasp_next.encoding import bits_from_int
 from claasp_next.graph import Cipher
 
 
@@ -19,6 +20,52 @@ def _positive_integer(name: str, value: int) -> None:
 
 def _bits(value: int, width: int) -> tuple[int, ...]:
     return tuple((value >> shift) & 1 for shift in range(width - 1, -1, -1))
+
+
+def _component_ids(component_ids: str | Sequence[str]) -> tuple[str, ...]:
+    ids = (component_ids,) if isinstance(component_ids, str) else tuple(component_ids)
+    if not ids:
+        raise ValueError("component_ids must not be empty")
+    return ids
+
+
+def _projection_width(primitive: Cipher, component_ids: tuple[str, ...]) -> int:
+    total = 0
+    for component_id in component_ids:
+        width = primitive.port(component_id).value_type.encoded_bit_size
+        if width is None:
+            raise ValueError(f"{component_id!r} is not canonically bit-encoded")
+        total += width
+    return total
+
+
+def _trace_bits(primitive: Cipher, source_id: str, value: tuple[int, ...]) -> tuple[int, ...]:
+    """Flatten one execution-trace value into canonical MSB-first bits.
+
+    ``value`` holds one integer per logical unit in the domain declared for
+    ``source_id`` (for example one 16-bit word per Speck state half); each
+    unit is expanded to its own canonical bit width and the results are
+    concatenated in order, matching the flat encoding every other dataset in
+    this module uses for cipher inputs and outputs.
+    """
+
+    scalar_width = primitive.port(source_id).value_type.domain.encoded_bit_size
+    if scalar_width is None:
+        raise ValueError(f"{source_id!r} is not canonically bit-encoded")
+    bits: list[int] = []
+    for unit in value:
+        bits.extend(bits_from_int(unit, scalar_width))
+    return tuple(bits)
+
+
+def _projection_bits(
+    primitive: Cipher, component_ids: tuple[str, ...], trace
+) -> tuple[int, ...]:
+    return tuple(
+        bit
+        for component_id in component_ids
+        for bit in _trace_bits(primitive, component_id, trace.value_of(component_id))
+    )
 
 
 def _widths(primitive: Cipher) -> dict[str, int]:
@@ -197,5 +244,136 @@ def xor_differential_dataset(
     names = tuple(
         [f"output_0[{index}]" for index in range(output_width)]
         + [f"output_1[{index}]" for index in range(output_width)]
+    )
+    return NeuralDataset(tuple(rows), tuple(labels), "xor_differential", seed, names)
+
+
+def round_component_ids(primitive: Cipher, round_number: int) -> tuple[str, ...]:
+    """Return every component id CLAASP added within one round of ``primitive``.
+
+    A convenience selector for :func:`component_output_dataset` and
+    :func:`xor_differential_component_dataset`.  Passing this tuple as their
+    ``component_ids`` argument projects the primitive's full round state
+    (round output and, where the cipher interleaves it in the same round,
+    the round key), mirroring legacy's ``round_output``/``round_key_output``
+    intermediate-output components (see
+    ``claasp.cipher_modules.neural_network_tests``) without requiring the
+    graph to declare an explicit concatenated intermediate-output component.
+    Callers that need only the state or only the key schedule can filter the
+    returned ids (for example by a cipher's own component-id prefix
+    convention) before passing them on.
+    """
+
+    rounds = primitive.rounds
+    if not isinstance(round_number, int) or isinstance(round_number, bool):
+        raise TypeError("round_number must be an integer")
+    if not 0 <= round_number < len(rounds):
+        raise ValueError(f"round_number must be in range({len(rounds)})")
+    return tuple(component.component_id for component in rounds[round_number].components)
+
+
+def component_output_dataset(
+    primitive: Cipher,
+    varied_input: str,
+    component_ids: str | Sequence[str],
+    *,
+    samples: int,
+    seed: int = 0,
+) -> NeuralDataset:
+    """Generate a black-box dataset labeled by an intermediate trace value.
+
+    Generalizes :func:`black_box_dataset` to any value captured by the
+    primitive's :class:`~claasp_next.annotations.ExecutionTrace` instead of
+    only its final ``evaluate()`` output -- covering legacy's ability to
+    target a specific round's state (``round_output``), a round key
+    (``round_key_output``), or an arbitrary component id (see
+    ``claasp.cipher_modules.neural_network_tests._update_component_output_ids``).
+    Pass one component id to target a single component, or a sequence --
+    such as :func:`round_component_ids` -- to concatenate several into one
+    composite projection, the way legacy round/round-key intermediate
+    outputs can span more than one wire.
+
+    Label one uses the primitive's real projected value; label zero
+    substitutes independently random bits of the same width, preserving the
+    legacy black-box construction described in :func:`black_box_dataset`.
+    """
+
+    _positive_integer("samples", samples)
+    widths = _widths(primitive)
+    if varied_input not in widths:
+        raise ValueError(f"unknown primitive input {varied_input!r}")
+    ids = _component_ids(component_ids)
+    target_width = _projection_width(primitive, ids)
+    random = Random(seed)
+    fixed = {name: random.getrandbits(width) for name, width in widths.items()}
+    rows: list[tuple[int, ...]] = []
+    labels: list[int] = []
+    for _ in range(samples):
+        label = random.getrandbits(1)
+        varied_value = random.getrandbits(widths[varied_input])
+        inputs = dict(fixed)
+        inputs[varied_input] = varied_value
+        if label:
+            projection = _projection_bits(
+                primitive, ids, primitive.evaluate_with_trace(inputs).trace
+            )
+        else:
+            projection = tuple(random.getrandbits(1) for _ in range(target_width))
+        rows.append(_bits(varied_value, widths[varied_input]) + projection)
+        labels.append(label)
+    target_name = "+".join(ids)
+    names = tuple(
+        [f"{varied_input}[{index}]" for index in range(widths[varied_input])]
+        + [f"{target_name}[{index}]" for index in range(target_width)]
+    )
+    return NeuralDataset(tuple(rows), tuple(labels), "black_box", seed, names)
+
+
+def xor_differential_component_dataset(
+    primitive: Cipher,
+    input_differences: Mapping[str, int],
+    component_ids: str | Sequence[str],
+    *,
+    samples: int,
+    seed: int = 0,
+) -> NeuralDataset:
+    """Generate XOR-differential pairs from an intermediate trace value.
+
+    Generalizes :func:`xor_differential_dataset` the same way
+    :func:`component_output_dataset` generalizes :func:`black_box_dataset`:
+    the paired values come from a specific round's state, a round key, or an
+    arbitrary component id captured by the typed execution trace, instead of
+    only the primitive's final output.
+    """
+
+    _positive_integer("samples", samples)
+    widths = _widths(primitive)
+    if set(input_differences) != set(widths):
+        raise ValueError("input_differences must define every primitive input exactly once")
+    for name, difference in input_differences.items():
+        if not isinstance(difference, int) or isinstance(difference, bool):
+            raise TypeError(f"difference for {name!r} must be an integer")
+        if not 0 <= difference < (1 << widths[name]):
+            raise ValueError(f"difference for {name!r} does not fit its input width")
+    ids = _component_ids(component_ids)
+    target_width = _projection_width(primitive, ids)
+    random = Random(seed)
+    rows: list[tuple[int, ...]] = []
+    labels: list[int] = []
+    for _ in range(samples):
+        label = random.getrandbits(1)
+        first = {name: random.getrandbits(width) for name, width in widths.items()}
+        if label:
+            second = {name: value ^ input_differences[name] for name, value in first.items()}
+        else:
+            second = {name: random.getrandbits(width) for name, width in widths.items()}
+        first_bits = _projection_bits(primitive, ids, primitive.evaluate_with_trace(first).trace)
+        second_bits = _projection_bits(primitive, ids, primitive.evaluate_with_trace(second).trace)
+        rows.append(first_bits + second_bits)
+        labels.append(label)
+    target_name = "+".join(ids)
+    names = tuple(
+        [f"{target_name}_0[{index}]" for index in range(target_width)]
+        + [f"{target_name}_1[{index}]" for index in range(target_width)]
     )
     return NeuralDataset(tuple(rows), tuple(labels), "xor_differential", seed, names)
