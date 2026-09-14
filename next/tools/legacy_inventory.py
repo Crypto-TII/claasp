@@ -170,18 +170,15 @@ MIGRATION_OVERRIDES.update({
         "rationale": None,
     },
     "tests/unit/cipher_modules/models/smt/smt_models/smt_xor_differential_model_test.py": {
-        "v5_destination": "next/tests/integration/test_speck_trail_enumeration.py",
-        "prerequisites": ["M10.8d bounded Speck trail enumeration"],
-        "disposition": "defer",
-        "status": "partially-migrated-in-m10.6d2",
+        "v5_destination": "next/tests/integration/test_minizinc_integration.py",
+        "prerequisites": [],
+        "disposition": "migrate",
+        "status": "migrated-in-m10.8d",
         "acceptance_criterion": (
             "Retain the proven Speck32/64-5 optimum weight 9 and independently reproduce the "
             "legacy count of 28 trails with weights 9 through 10."
         ),
-        "rationale": (
-            "The optimum and an independently checked witness are ported through shared CP "
-            "semantics; bounded all-trail enumeration remains to be implemented once for all drivers."
-        ),
+        "rationale": None,
     },
     "tests/unit/cipher_modules/models/smt/smt_models/smt_xor_linear_model_test.py": {
         "v5_destination": "next/tests/integration/test_speck_trail_enumeration.py",

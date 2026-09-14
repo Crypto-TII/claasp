@@ -58,6 +58,22 @@ def _test_solver(*, require_chuffed=False):
     raise AssertionError("the external test job must provide a MiniZinc solver")
 
 
+def test_minizinc_all_solution_contract_requires_complete_exhaustion():
+    solver = MiniZincSolver(solver=_test_solver(require_chuffed=True), timeout_seconds=10)
+    model = MiniZincModel(
+        ("var bool: left;", "var bool: right;"),
+        ("constraint left != right;",),
+    )
+
+    result = solver.solve_all(model).require_complete()
+
+    assert result.status is CPStatus.SATISFIED
+    assert result.termination == "exhausted"
+    assert {
+        (solution["left"], solution["right"]) for solution in result.solutions
+    } == {(False, True), (True, False)}
+
+
 def test_minizinc_solves_and_projects_named_values():
     assert shutil.which("minizinc") is not None, "the external test job must install MiniZinc"
     model = MiniZincModel(
@@ -249,6 +265,23 @@ def test_minizinc_proves_legacy_speck_five_round_differential_optimum():
     assert solved.status is CPStatus.SATISFIED
     assert trail.total_weight == 9
     assert len(trail.steps) == 5
+
+
+def test_minizinc_preserves_legacy_speck_five_round_bounded_trail_count():
+    primitive = Speck(number_of_rounds=5)
+    solver = MiniZincSolver(solver=_test_solver(require_chuffed=True), timeout_seconds=45)
+    representation = SpeckDifferentialCPModel(PropagationProblem(
+        primitive, XOR_DIFFERENTIAL, maximum_weight=10,
+        provenance=("legacy SMT Speck32/64-5 bounded enumeration",),
+    ))
+
+    result = solver.solve_all(representation.cp_model()).require_complete()
+    trails = tuple(representation.decode_trail(solution) for solution in result.solutions)
+
+    assert result.status is CPStatus.SATISFIED
+    assert len(trails) == 28
+    assert {trail.total_weight for trail in trails} == {9.0, 10.0}
+    assert len({(trail.input_pattern.value, trail.output_pattern.value) for trail in trails}) == 28
 
 
 @pytest.mark.parametrize(

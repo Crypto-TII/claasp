@@ -3,10 +3,12 @@
 from claasp_next.drivers.solvers.base import SatResult, SatStatus
 from claasp_next.drivers.solvers.minisat import MinisatSolver
 from claasp_next.drivers.solvers.milp_results import MILPResult, MILPStatus
-from claasp_next.drivers.solvers.minizinc import CPResult, CPStatus, MiniZincSolver
+from claasp_next.drivers.solvers.minizinc import (
+    CPEnumerationResult, CPResult, CPStatus, MiniZincSolver,
+)
 
 __all__ = [
-    "CPResult", "CPStatus", "GLPKSolver", "MILPResult", "MILPStatus",
+    "CPEnumerationResult", "CPResult", "CPStatus", "GLPKSolver", "MILPResult", "MILPStatus",
     "MiniZincSolver", "MinisatSolver", "SatResult", "SatStatus", "Z3Solver",
 ]
 

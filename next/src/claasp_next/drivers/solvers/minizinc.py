@@ -54,6 +54,27 @@ class CPResult:
         return {name: int(value) if isinstance(value, bool) else value for name, value in self.values.items()}
 
 
+@dataclass(frozen=True, slots=True)
+class CPEnumerationResult:
+    """A sequence of MiniZinc solutions with explicit exhaustion status."""
+
+    status: CPStatus
+    solutions: tuple[Mapping[str, object], ...]
+    complete: bool
+    termination: str
+    runtime_seconds: float
+    solver: str
+    stdout: str
+    stderr: str
+
+    def require_complete(self) -> "CPEnumerationResult":
+        """Return the result only when the solver exhausted the search."""
+
+        if not self.complete:
+            raise RuntimeError("MiniZinc solution enumeration is incomplete")
+        return self
+
+
 class MiniZincSolver:
     """Execute a ``MiniZincModel`` through the external MiniZinc CLI."""
 
@@ -107,6 +128,49 @@ class MiniZincSolver:
             values = {logical_names.get(name, name): value for name, value in values.items()}
         return CPResult(status, values, elapsed, self.solver, completed.stdout, completed.stderr)
 
+    def solve_all(self, model: MiniZincModel | CNFFormula) -> CPEnumerationResult:
+        """Enumerate every solution and retain explicit exhaustion status."""
+
+        if isinstance(model, CNFFormula):
+            from claasp_next.representations.constraints.cp import BooleanMiniZincLowerer
+
+            model = BooleanMiniZincLowerer().lower(model)
+        if not isinstance(model, MiniZincModel):
+            raise TypeError("model must be a MiniZincModel or CNFFormula")
+        executable = shutil.which(self.executable)
+        if executable is None:
+            raise FileNotFoundError(f"MiniZinc executable {self.executable!r} was not found")
+        with TemporaryDirectory(prefix="claasp-next-minizinc-") as directory:
+            path = Path(directory) / "problem.mzn"
+            path.write_text(model.source(), encoding="utf-8")
+            start = monotonic()
+            completed = subprocess.run(
+                [
+                    executable, "--solver", self.solver, "--output-mode", "json",
+                    "--all-solutions", str(path),
+                ],
+                text=True,
+                capture_output=True,
+                timeout=self.timeout_seconds,
+                check=False,
+            )
+            elapsed = monotonic() - start
+        if completed.returncode != 0:
+            raise RuntimeError(
+                "MiniZinc failed: " + (completed.stderr.strip() or completed.stdout.strip())
+            )
+        status, solutions, complete, termination = _parse_all_output(completed.stdout)
+        if model.name_mapping:
+            logical_names = dict(model.name_mapping)
+            solutions = tuple(
+                {logical_names.get(name, name): value for name, value in solution.items()}
+                for solution in solutions
+            )
+        return CPEnumerationResult(
+            status, solutions, complete, termination, elapsed,
+            self.solver, completed.stdout, completed.stderr,
+        )
+
 
 def _parse_output(output: str) -> tuple[CPStatus, Mapping[str, object] | None]:
     if "=====UNSATISFIABLE=====" in output:
@@ -123,3 +187,36 @@ def _parse_output(output: str) -> tuple[CPStatus, Mapping[str, object] | None]:
     if not isinstance(values, dict):
         raise RuntimeError("MiniZinc JSON solution must be an object")
     return CPStatus.SATISFIED, values
+
+
+def _parse_all_output(
+    output: str,
+) -> tuple[CPStatus, tuple[Mapping[str, object], ...], bool, str]:
+    """Parse MiniZinc's JSON all-solutions stream and proof marker."""
+
+    complete = "==========" in output or "=====UNSATISFIABLE=====" in output
+    unknown = "=====UNKNOWN=====" in output
+    payload = output
+    for marker in ("==========", "=====UNSATISFIABLE=====", "=====UNKNOWN====="):
+        payload = payload.replace(marker, "")
+    solutions = []
+    for block in payload.split("----------"):
+        block = block.strip()
+        if not block:
+            continue
+        try:
+            solution = json.loads(block)
+        except json.JSONDecodeError as error:
+            raise RuntimeError("MiniZinc returned invalid JSON solution stream") from error
+        if not isinstance(solution, dict):
+            raise RuntimeError("MiniZinc JSON solution must be an object")
+        solutions.append(solution)
+    if unknown:
+        return CPStatus.UNKNOWN, tuple(solutions), False, "unknown"
+    if solutions:
+        return CPStatus.SATISFIED, tuple(solutions), complete, (
+            "exhausted" if complete else "missing_terminal_marker"
+        )
+    if "=====UNSATISFIABLE=====" in output:
+        return CPStatus.UNSATISFIABLE, (), True, "exhausted_unsat"
+    raise RuntimeError("MiniZinc returned no status or solution")

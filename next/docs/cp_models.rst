@@ -32,6 +32,14 @@ MiniZinc and Gecode installed:
    assert result.is_satisfied
    assert result.values["x"] == 2
 
+``MiniZincSolver.solve_all`` requests every satisfying assignment. Its result
+sets ``complete=True`` only after MiniZinc emits an exhaustive terminal marker;
+an unknown or interrupted run cannot support an exact solution count.
+``require_complete()`` enforces that proof boundary. Full enumeration is an
+explicit solver capability: the dedicated bounded regression uses Chuffed,
+while a backend that returns one assignment without an exhaustion marker is
+reported as incomplete.
+
 Primitive solving and key recovery
 -----------------------------------
 

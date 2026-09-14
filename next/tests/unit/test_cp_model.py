@@ -1,7 +1,9 @@
 import pytest
 
 from claasp_next.primitives import Speck
-from claasp_next.drivers.solvers.minizinc import CPStatus, _parse_output
+from claasp_next.drivers.solvers.minizinc import (
+    CPEnumerationResult, CPStatus, _parse_all_output, _parse_output,
+)
 from claasp_next.representations.constraints.cp import (
     BooleanMiniZincLowerer, MiniZincModel, SpeckDifferentialCPModel,
 )
@@ -36,6 +38,29 @@ def test_minizinc_json_and_terminal_statuses_are_backend_neutral():
     )
     assert _parse_output("=====UNSATISFIABLE=====\n") == (CPStatus.UNSATISFIABLE, None)
     assert _parse_output("=====UNKNOWN=====\n") == (CPStatus.UNKNOWN, None)
+
+
+def test_minizinc_all_solution_parser_requires_exhaustion_for_proof():
+    complete = _parse_all_output(
+        '{"x": false}\n----------\n{"x": true}\n----------\n==========\n'
+    )
+    partial = _parse_all_output('{"x": false}\n----------\n=====UNKNOWN=====\n')
+
+    assert complete == (
+        CPStatus.SATISFIED, ({"x": False}, {"x": True}), True, "exhausted"
+    )
+    assert partial == (CPStatus.UNKNOWN, ({"x": False},), False, "unknown")
+    result = CPEnumerationResult(
+        partial[0], partial[1], partial[2], partial[3], 0.1, "test", "", ""
+    )
+    with pytest.raises(RuntimeError, match="incomplete"):
+        result.require_complete()
+
+
+def test_minizinc_all_solution_parser_preserves_completed_unsat():
+    assert _parse_all_output("=====UNSATISFIABLE=====\n") == (
+        CPStatus.UNSATISFIABLE, (), True, "exhausted_unsat"
+    )
 
 
 def test_minizinc_model_and_driver_validate_public_boundaries():
