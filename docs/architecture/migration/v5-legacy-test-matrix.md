@@ -79,6 +79,7 @@ of uniqueness or an optimum.
 | --- | --- | --- | --- |
 | `milp_xor_differential_model_test.py` two-round PRESENT optimum | Complete cipher minimum XOR-differential weight 4 | Ported to portable MILP in M10.5b | The exact DDT selector model covers all 32 graph S-boxes and permutation wiring; GLPK proves optimum 4 and the shared checker validates every decoded transition and boundary |
 | `milp_xor_linear_model_test.py` four-round Speck32/64 optimum | Minimum weight 3 and exact modular-add mask transitions, shared with SAT/CMS | Component relation ported in M10.5c | GLPK validates all four restored transitions with the exact parity/support model; weights `2+0+0+1` and signs `+,+,+,-` are recomputed by shared Walsh semantics |
+| Gurobi `monomial_prediction_test.py` S-box ANF/transition behavior | Exact output ANFs and 3SDP-woU monomial transitions derived from lookup tables; legacy suite is skipped behind Sage/Gurobi | Portable component baseline in M10.8a | Dependency-free Möbius ANFs reproduce every PRESENT S-box value; symbolic cube coefficients preserve GF(2) parity; exact transition tables compile to portable MILP and real GLPK accepts/rejects fixed possible/impossible pairs |
 
 ## Analysis and tooling inventory
 

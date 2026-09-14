@@ -98,3 +98,28 @@ that limit explicitly; consequently it is intended for reduced small-field
 experiments and cannot directly consume the bundled BN254 Poseidon system.
 Variables are renamed ``x0``, ``x1``, and so on in the exact order returned by
 ``system.variables``.
+
+Boolean ANFs and monomial prediction
+------------------------------------
+
+Boolean ANFs use a separate square-free representation: coefficients are in
+:math:`GF(2)` and multiplication applies :math:`x^2=x`. This provides a
+Sage-free baseline for exact truth-table ANFs, symbolic cube coefficients, and
+component monomial-transition tables.
+
+.. doctest::
+
+   >>> from claasp_next.representations.constraints.polynomial import vectorial_anf, monomial_transition_table
+   >>> present_sbox = (12, 5, 6, 11, 9, 0, 10, 13, 3, 14, 15, 8, 4, 7, 1, 2)
+   >>> anfs = vectorial_anf(present_sbox, ("x0", "x1", "x2", "x3"))
+   >>> [polynomial.degree for polynomial in anfs]
+   [3, 3, 3, 2]
+   >>> sorted(monomial_transition_table(present_sbox)[1])
+   [1, 4, 6, 8]
+
+The exact table can be compiled to a portable one-hot MILP representation
+with ``MonomialTransitionMILPModel``. GLPK is the open-source reference driver;
+Gurobi may later consume the same representation as an optional accelerator.
+This initial baseline is intended for small component tables. Whole-primitive
+division-property composition and scalable encodings are subsequent M10.8
+checkpoints.

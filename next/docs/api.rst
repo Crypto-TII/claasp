@@ -83,6 +83,9 @@ Polynomial models
 .. automodule:: claasp_next.representations.constraints.polynomial
    :members:
 
+.. automodule:: claasp_next.representations.constraints.milp.monomial
+   :members:
+
 .. automodule:: claasp_next.drivers.algebra
    :members:
 
