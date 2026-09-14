@@ -182,3 +182,18 @@ claim inferred from an incomplete solver solution pool:
    [('k49',)]
    >>> evidence.require_complete() is evidence
    True
+
+For larger graphs, ``BooleanDegreeEvaluator`` propagates inexpensive sound
+upper bounds without expanding ANFs. Its result is intentionally marked
+incomplete: cancellation and exact monomial reachability can make the true
+degree smaller. For example, the structural Simon-4 bound is 16 although the
+exact legacy fixture above is 8.
+
+.. doctest::
+
+   >>> from claasp_next.representations.execution import BooleanDegreeEvaluator
+   >>> bound = BooleanDegreeEvaluator().evaluate(
+   ...     SimonBlockCipher(number_of_rounds=4), "plaintext"
+   ... )
+   >>> bound.output_bounds[:2], bound.sound, bound.complete
+   ((16, 16), True, False)

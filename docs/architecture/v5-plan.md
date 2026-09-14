@@ -528,7 +528,10 @@ degree/parity methods and preserve the remaining Trivium and partial-ANF
 fixtures; these bounds must remain distinct from exact expanded ANF degrees.
 M10.8c3a first exposes exact partial ANFs as proof-carrying public evidence and
 preserves the complete Simon-3 polynomial before scalable bound encodings are
-introduced.
+introduced. M10.8c3b1 supplies a fast structural degree bound with explicit
+``sound=True``/``complete=False`` metadata; it is a baseline, not a replacement
+for the tighter legacy monomial predictor. M10.8c3b2 ports that tighter
+backend-neutral reachability/parity model and its open-solver execution.
 
 #### M10.9: Complete component and primitive catalogue
 
@@ -881,7 +884,9 @@ is absent). Update this table in the same commit that changes milestone state.
 | Exact parity and balanced-bit evidence (M10.8c2) | Achieved | Exact Simon-4 expansion preserves the legacy degree vector and fixed-public-input cube-degree array; proof-qualified results identify balanced bits and reject incomplete proof claims |
 | Scalable algebraic bounds and parity (M10.8c3) | In progress | Restore partial-ANF bounds, Trivium parity-degree and larger cube-feasibility fixtures without relabeling bounds or incomplete searches as exact ANFs |
 | Exact partial-ANF evidence (M10.8c3a) | Achieved | Public cube coefficients retain exact Boolean polynomials; Simon-3 preserves all 14 legacy partial-ANF monomials |
-| Scalable degree/parity encoding (M10.8c3b) | Next | Port backend-neutral upper-bound and parity semantics, with explicit soundness/completeness and open-solver execution |
+| Scalable degree/parity encoding (M10.8c3b) | In progress | Port backend-neutral upper-bound and parity semantics, with explicit soundness/completeness and open-solver execution |
+| Structural degree-bound baseline (M10.8c3b1) | Achieved | Bit/Word XOR, AND, rotation, constants, concatenation and modular addition propagate sound bounded degrees; Simon-4 documents exact 8 versus loose bound 16 and never claims completeness |
+| Monomial reachability and parity solver (M10.8c3b2) | Next | Recover tight Simon and Trivium fixtures using backend-neutral encodings and an open solver |
 | Remaining model inventory closure (M10.8d) | Planned | Resolve every outstanding solver/algebraic entry and keep optimized proprietary drivers optional |
 | Primitive terminology/public API (M10.9a) | Planned | `Primitive`/`primitives`, official class names, schemas, documentation, and terminology guard |
 | Fixed-length primitive classification (M10.9b) | Planned | Every legacy catalogue entry assigned to the six semantic categories, an orthogonal fixture folder, or an explicit out-of-scope disposition |
