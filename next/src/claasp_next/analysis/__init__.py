@@ -39,7 +39,8 @@ from claasp_next.analysis.composed import (
     speck32_differential_linear_legacy_fixture,
 )
 from claasp_next.analysis.monomial import (
-    MonomialTrail, MonomialTrailStep, PresentRoundMonomialSemantics,
+    MonomialTrail, MonomialTrailStep, MultiRoundMonomialTrail,
+    PresentMonomialSemantics, PresentRoundMonomialSemantics,
 )
 
 __all__ = [
@@ -76,4 +77,6 @@ __all__ = [
     "MonomialTrail",
     "MonomialTrailStep",
     "PresentRoundMonomialSemantics",
+    "MultiRoundMonomialTrail",
+    "PresentMonomialSemantics",
 ]

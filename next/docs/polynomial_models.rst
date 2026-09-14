@@ -130,3 +130,10 @@ XOR/addition over bits, identity, concatenation, permutation, and constants.
 This keeps division-property meaning outside primitive-specific exporters and
 allows the same relation to be checked independently after a solver returns a
 witness.
+
+``PresentMonomialSemantics`` composes these relations across reduced PRESENT
+graphs and constructs canonical predecessor trails.
+``PresentMonomialTrailMILPModel`` lowers a fixed input/output query to the
+portable MILP representation. The GLPK integration test solves a complete
+two-round graph and then validates all 32 S-box transitions and both p-layers
+using the representation-independent checker.

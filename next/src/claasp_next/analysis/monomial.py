@@ -102,3 +102,91 @@ class PresentRoundMonomialSemantics:
         for bit in input_bits:
             result = (result << 1) | bit
         return result
+
+
+@dataclass(frozen=True, slots=True)
+class MultiRoundMonomialTrail:
+    """Ordered round witnesses for a complete fixed-boundary query."""
+
+    input_mask: int
+    output_mask: int
+    rounds: tuple[MonomialTrail, ...]
+    provenance: str
+
+
+class PresentMonomialSemantics:
+    """Deterministically construct and check multi-round PRESENT predecessors."""
+
+    def __init__(self, primitive) -> None:
+        if primitive.family_name != "present":
+            raise ValueError("primitive must be a typed PRESENT graph")
+        self.primitive = primitive
+        self.round_count = len(primitive.rounds)
+        self.sbox_table = monomial_transition_table(
+            next(component for component in primitive.components
+                 if component.component_id == "sbox_1_0").table
+        )
+        self.permutations = tuple(
+            next(component for component in primitive.components
+                 if component.component_id == f"p_layer_{round_number}")
+            for round_number in range(1, self.round_count + 1)
+        )
+
+    def predecessor_trail(self, output_mask: int) -> MultiRoundMonomialTrail:
+        """Choose a canonical exact predecessor for a requested output monomial."""
+
+        if not isinstance(output_mask, int) or isinstance(output_mask, bool) or not 0 <= output_mask < 1 << 64:
+            raise ValueError("output_mask must be a 64-bit exponent vector")
+        following = output_mask
+        reversed_rounds = []
+        for round_number in range(self.round_count, 0, -1):
+            permutation = self.permutations[round_number - 1]
+            before_permutation = ComponentMonomialSemantics._permutation_input(permutation, following)
+            predecessor = 0
+            steps = []
+            for nibble in range(16):
+                shift = 4 * (15 - nibble)
+                local_output = (before_permutation >> shift) & 0xF
+                local_input = min(self.sbox_table[local_output])
+                predecessor |= local_input << shift
+                steps.append(MonomialTrailStep(
+                    f"sbox_{round_number}_{nibble}", local_input, local_output
+                ))
+            steps.append(MonomialTrailStep(f"p_layer_{round_number}", before_permutation, following))
+            reversed_rounds.append(MonomialTrail(
+                predecessor, following, 64, tuple(steps), "plaintext",
+                f"typed PRESENT round {round_number}",
+            ))
+            following = predecessor
+        rounds = tuple(reversed(reversed_rounds))
+        return MultiRoundMonomialTrail(
+            following, output_mask, rounds,
+            "canonical exact 3SDP-woU predecessor through typed PRESENT graph",
+        )
+
+    def check(self, trail: MultiRoundMonomialTrail) -> bool:
+        """Check every local transition and inter-round boundary independently."""
+
+        if not isinstance(trail, MultiRoundMonomialTrail) or len(trail.rounds) != self.round_count:
+            return False
+        boundary = trail.input_mask
+        for index, round_trail in enumerate(trail.rounds, 1):
+            if round_trail.input_mask != boundary or len(round_trail.steps) != 17:
+                return False
+            before = 0
+            for nibble, step in enumerate(round_trail.steps[:-1]):
+                if step.component_id != f"sbox_{index}_{nibble}":
+                    return False
+                component = next(item for item in self.primitive.components if item.component_id == step.component_id)
+                if not ComponentMonomialSemantics.is_possible(
+                    component, (step.input_mask,), step.output_mask
+                ):
+                    return False
+                before = (before << 4) | step.output_mask
+            permutation = self.permutations[index - 1]
+            if not ComponentMonomialSemantics.is_possible(
+                permutation, (before,), round_trail.output_mask
+            ):
+                return False
+            boundary = round_trail.output_mask
+        return boundary == trail.output_mask

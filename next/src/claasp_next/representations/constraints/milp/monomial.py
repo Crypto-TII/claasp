@@ -82,3 +82,129 @@ class MonomialTransitionMILPModel:
         if not self.milp_model().is_feasible(assignment):
             raise RuntimeError("internal monomial-transition witness is inconsistent")
         return assignment
+
+
+class PresentMonomialTrailMILPModel:
+    """Compose exact local monomial transitions over reduced PRESENT rounds."""
+
+    def __init__(self, primitive, input_mask: int, output_mask: int) -> None:
+        from claasp_next.components import BitVectorSBox, Permutation
+
+        if primitive.family_name != "present":
+            raise ValueError("primitive must be a typed PRESENT graph")
+        for name, mask in (("input_mask", input_mask), ("output_mask", output_mask)):
+            if not isinstance(mask, int) or isinstance(mask, bool) or not 0 <= mask < 1 << 64:
+                raise ValueError(f"{name} must be a 64-bit exponent vector")
+        self.primitive = primitive
+        self.input_mask = input_mask
+        self.output_mask = output_mask
+        self.round_count = len(primitive.rounds)
+        first_sbox = next(
+            component for component in primitive.components
+            if isinstance(component, BitVectorSBox) and component.component_id == "sbox_1_0"
+        )
+        table = monomial_transition_table(first_sbox.table)
+        self.local_transitions = tuple(
+            (input_value, output_value)
+            for output_value, input_values in table.items()
+            for input_value in sorted(input_values)
+        )
+        self.permutations = tuple(
+            next(component for component in primitive.components
+                 if isinstance(component, Permutation)
+                 and component.component_id == f"p_layer_{round_number}")
+            for round_number in range(1, self.round_count + 1)
+        )
+
+    def milp_model(self) -> MILPModel:
+        """Return the complete fixed-boundary portable MILP query."""
+
+        variables = []
+        constraints = []
+        for boundary in range(self.round_count + 1):
+            variables.extend(LinearVariable(f"state_{boundary}_{bit}", VariableKind.BINARY)
+                             for bit in range(64))
+        for round_index in range(self.round_count):
+            variables.extend(LinearVariable(f"sub_{round_index}_{bit}", VariableKind.BINARY)
+                             for bit in range(64))
+            for nibble in range(16):
+                selectors = tuple(
+                    f"select_{round_index}_{nibble}_{index}"
+                    for index in range(len(self.local_transitions))
+                )
+                variables.extend(LinearVariable(name, VariableKind.BINARY) for name in selectors)
+                constraints.append(LinearConstraint(
+                    LinearExpression.from_terms({name: 1 for name in selectors}),
+                    ConstraintSense.EQUAL, 1, f"one_{round_index}_{nibble}",
+                ))
+                for local_bit in range(4):
+                    position = 4 * nibble + local_bit
+                    input_terms = {f"state_{round_index}_{position}": 1}
+                    output_terms = {f"sub_{round_index}_{position}": 1}
+                    for index, (input_value, output_value) in enumerate(self.local_transitions):
+                        shift = 3 - local_bit
+                        if (input_value >> shift) & 1:
+                            input_terms[selectors[index]] = -1
+                        if (output_value >> shift) & 1:
+                            output_terms[selectors[index]] = -1
+                    constraints.extend((
+                        LinearConstraint(LinearExpression.from_terms(input_terms), ConstraintSense.EQUAL, 0),
+                        LinearConstraint(LinearExpression.from_terms(output_terms), ConstraintSense.EQUAL, 0),
+                    ))
+            for output_position, input_position in enumerate(self.permutations[round_index].mapping):
+                constraints.append(LinearConstraint(
+                    LinearExpression.from_terms({
+                        f"state_{round_index + 1}_{output_position}": 1,
+                        f"sub_{round_index}_{input_position}": -1,
+                    }), ConstraintSense.EQUAL, 0, f"permute_{round_index}_{output_position}",
+                ))
+        for bit in range(64):
+            shift = 63 - bit
+            constraints.extend((
+                LinearConstraint(
+                    LinearExpression.from_terms({f"state_0_{bit}": 1}), ConstraintSense.EQUAL,
+                    (self.input_mask >> shift) & 1, f"fix_input_{bit}",
+                ),
+                LinearConstraint(
+                    LinearExpression.from_terms({f"state_{self.round_count}_{bit}": 1}),
+                    ConstraintSense.EQUAL, (self.output_mask >> shift) & 1, f"fix_output_{bit}",
+                ),
+            ))
+        return MILPModel(tuple(variables), tuple(constraints))
+
+    def decode_trail(self, assignment):
+        """Decode a solver witness and validate it with independent semantics."""
+
+        from claasp_next.analysis.monomial import (
+            MonomialTrail, MonomialTrailStep, MultiRoundMonomialTrail,
+            PresentMonomialSemantics,
+        )
+
+        def mask(prefix):
+            value = 0
+            for bit in range(64):
+                value = (value << 1) | int(round(assignment[f"{prefix}_{bit}"]))
+            return value
+
+        rounds = []
+        for round_index in range(self.round_count):
+            source = mask(f"state_{round_index}")
+            substituted = mask(f"sub_{round_index}")
+            target = mask(f"state_{round_index + 1}")
+            steps = tuple(
+                MonomialTrailStep(
+                    f"sbox_{round_index + 1}_{nibble}",
+                    (source >> (4 * (15 - nibble))) & 0xF,
+                    (substituted >> (4 * (15 - nibble))) & 0xF,
+                ) for nibble in range(16)
+            ) + (MonomialTrailStep(f"p_layer_{round_index + 1}", substituted, target),)
+            rounds.append(MonomialTrail(
+                source, target, 64, steps, "plaintext", f"typed PRESENT round {round_index + 1}"
+            ))
+        trail = MultiRoundMonomialTrail(
+            self.input_mask, self.output_mask, tuple(rounds),
+            "portable MILP monomial witness through typed PRESENT graph",
+        )
+        if not PresentMonomialSemantics(self.primitive).check(trail):
+            raise ValueError("solver returned an invalid PRESENT monomial trail")
+        return trail
