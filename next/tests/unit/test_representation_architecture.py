@@ -5,43 +5,43 @@ from claasp_next.annotations import (
     AnnotationEntry, AnnotationRole, ExecutionTrace, GraphAnnotation,
     LeakageSample, SideChannelTrace,
 )
-from claasp_next.ciphers import PresentBlockCipher
+from claasp_next.primitives import Present
 from claasp_next.semantics import CONCRETE, LEAKAGE, SemanticType
 from claasp_next.semantics.cryptanalysis import (
     SBoxTransitionSemantics, Trail, TrailKind, TrailStep, XorDifference,
 )
-from claasp_next.ciphers.block_ciphers.present import PRESENT_SBOX
+from claasp_next.primitives.block_ciphers.present import PRESENT_SBOX
 from claasp_next.representations import Artifact, Representation
 from claasp_next.representations.execution import ScalarExecutionDriver
 
 
 def test_graph_annotations_are_typed_validated_and_immutable():
-    cipher = PresentBlockCipher(number_of_rounds=1)
+    primitive = Present(number_of_rounds=1)
     annotation = GraphAnnotation(
-        cipher,
+        primitive,
         CONCRETE,
         (
             AnnotationEntry("plaintext", AnnotationRole.INPUT, 0),
-            AnnotationEntry(cipher.components[0].component_id, AnnotationRole.COMPONENT, 1),
-            AnnotationEntry("cipher_output", AnnotationRole.OUTPUT, 2),
+            AnnotationEntry(primitive.components[0].component_id, AnnotationRole.COMPONENT, 1),
+            AnnotationEntry("primitive_output", AnnotationRole.OUTPUT, 2),
         ),
     )
     trace = ExecutionTrace(annotation)
 
     assert trace.value_of("plaintext") == 0
-    assert trace.value_of("cipher_output") == 2
+    assert trace.value_of("primitive_output") == 2
     with pytest.raises(AttributeError):
         trace.annotation = annotation
 
 
 def test_annotations_reject_unknown_sources_and_semantic_type_confusion():
-    cipher = PresentBlockCipher(number_of_rounds=1)
-    with pytest.raises(ValueError, match="unknown cipher component"):
+    primitive = Present(number_of_rounds=1)
+    with pytest.raises(ValueError, match="unknown primitive component"):
         GraphAnnotation(
-            cipher, CONCRETE,
+            primitive, CONCRETE,
             (AnnotationEntry("not_in_graph", AnnotationRole.COMPONENT, 0),),
         )
-    leakage = GraphAnnotation(cipher, LEAKAGE, ())
+    leakage = GraphAnnotation(primitive, LEAKAGE, ())
     with pytest.raises(ValueError, match="concrete"):
         ExecutionTrace(leakage)
     assert SideChannelTrace(leakage, (LeakageSample("sbox_1_0", 0.5, 0),)).samples[0].value == 0.5
@@ -58,21 +58,21 @@ def test_semantic_types_are_extensible_and_artifacts_name_representations():
 
 
 def test_direct_execution_returns_a_concrete_graph_trace():
-    cipher = PresentBlockCipher(number_of_rounds=1)
+    primitive = Present(number_of_rounds=1)
     result = ScalarExecutionDriver().evaluate(
-        cipher,
+        primitive,
         {"plaintext": (0,) * 64, "key": (0,) * 80},
     )
 
     assert isinstance(result.trace, ExecutionTrace)
-    assert result.trace.annotation.cipher is cipher
+    assert result.trace.annotation.primitive is primitive
     assert result.trace.value_of("plaintext") == (0,) * 64
     assert result.trace.annotation.semantics is CONCRETE
 
 
 def test_cryptanalytic_trail_uses_the_same_annotation_foundation():
-    cipher = PresentBlockCipher(number_of_rounds=1)
-    component = next(item for item in cipher.components if item.component_id == "sbox_1_0")
+    primitive = Present(number_of_rounds=1)
+    component = next(item for item in primitive.components if item.component_id == "sbox_1_0")
     transition = SBoxTransitionSemantics(PRESENT_SBOX).xor_differential(1, 3)
     trail = Trail(
         TrailKind.XOR_DIFFERENTIAL,
@@ -81,6 +81,6 @@ def test_cryptanalytic_trail_uses_the_same_annotation_foundation():
         (TrailStep(component.component_id, transition),),
     )
 
-    annotation = trail.annotate(cipher)
+    annotation = trail.annotate(primitive)
     assert annotation.semantics.name == "xor_differential"
     assert annotation.value_of(component.component_id) == transition

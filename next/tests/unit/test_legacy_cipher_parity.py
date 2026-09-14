@@ -3,7 +3,7 @@
 import pytest
 
 from claasp_next import bits_from_int, int_from_bits
-from claasp_next.ciphers import AESBlockCipher, PresentBlockCipher, SpeckBlockCipher
+from claasp_next.primitives import AES, Present, Speck
 from claasp_next.components import Add, BinaryAffineMap, Power, Rotate, SBox
 from claasp_next.domains import BinaryExtensionField, Bit, Word
 from claasp_next.representations.execution import BatchEvaluator, ScalarEvaluator
@@ -61,11 +61,11 @@ AES_VECTORS = (
 
 @pytest.mark.parametrize(("key_size", "key_hex", "vectors"), AES_VECTORS)
 def test_aes_preserves_all_legacy_sp800_38a_vectors(key_size, key_hex, vectors):
-    cipher = AESBlockCipher(key_size)
+    primitive = AES(key_size)
     evaluator = ScalarEvaluator()
     key = tuple(bytes.fromhex(key_hex))
     for plaintext_hex, ciphertext_hex in vectors:
-        result = evaluator.evaluate(cipher, {
+        result = evaluator.evaluate(primitive, {
             "plaintext": tuple(bytes.fromhex(plaintext_hex)), "key": key
         })
         assert bytes(result.output).hex() == ciphertext_hex
@@ -73,8 +73,8 @@ def test_aes_preserves_all_legacy_sp800_38a_vectors(key_size, key_hex, vectors):
 
 @pytest.mark.parametrize(("key_size", "key_hex", "vectors"), AES_VECTORS)
 def test_aes_realizations_preserve_all_vectors_and_each_other(key_size, key_hex, vectors):
-    lookup = AESBlockCipher(key_size, realization="lookup")
-    algebraic = AESBlockCipher(key_size, realization="algebraic")
+    lookup = AES(key_size, realization="lookup")
+    algebraic = AES(key_size, realization="algebraic")
     key = int(key_hex, 16)
     for plaintext_hex, ciphertext_hex in vectors:
         plaintext = int(plaintext_hex, 16)
@@ -89,10 +89,10 @@ def test_aes_realizations_preserve_all_vectors_and_each_other(key_size, key_hex,
 
 
 def test_aes_capability_selection_is_explicit_and_deterministic():
-    assert AESBlockCipher.for_capabilities({"sbox_semantics"}).realization.name == "lookup"
-    assert AESBlockCipher.for_capabilities({"algebraic_semantics"}).realization.name == "algebraic"
+    assert AES.for_capabilities({"sbox_semantics"}).realization.name == "lookup"
+    assert AES.for_capabilities({"algebraic_semantics"}).realization.name == "algebraic"
     with pytest.raises(ValueError, match="no AES realization"):
-        AESBlockCipher.for_capabilities({"cuda"})
+        AES.for_capabilities({"cuda"})
 
 
 def test_aes_batch_realizations_are_equivalent_and_results_record_them():
@@ -104,7 +104,7 @@ def test_aes_batch_realizations_are_equivalent_and_results_record_them():
     outputs = []
     for name in ("lookup", "algebraic"):
         result = BatchEvaluator().evaluate(
-            AESBlockCipher(realization=name), {"plaintext": plaintexts, "key": keys}
+            AES(realization=name), {"plaintext": plaintexts, "key": keys}
         )
         assert all(item.realization.name == name for item in result.items)
         outputs.append(result.outputs)
@@ -113,30 +113,30 @@ def test_aes_batch_realizations_are_equivalent_and_results_record_them():
 
 def test_aes_rejects_unknown_realization():
     with pytest.raises(ValueError, match="realization must be one of"):
-        AESBlockCipher(realization="bitsliced")
+        AES(realization="bitsliced")
 
 
 @pytest.mark.parametrize(("key_size", "rounds", "nk"), ((128, 10, 4), (192, 12, 6), (256, 14, 8)))
 def test_aes_preserves_legacy_configuration_semantics(key_size, rounds, nk):
-    cipher = AESBlockCipher(key_size)
-    assert cipher.family_name == "aes"
+    primitive = AES(key_size)
+    assert primitive.family_name == "aes"
     # The v5 graph represents initial AddRoundKey as an explicit round zero.
-    assert len(cipher.rounds) == rounds + 1
-    assert cipher.Nk == nk
-    assert cipher.Nr == rounds
-    assert cipher.input("key").value_type.encoded_bit_size == key_size
-    assert cipher.output.value_type.encoded_bit_size == 128
-    assert cipher.input("plaintext").value_type.domain == BinaryExtensionField(8, 0x11B)
-    assert isinstance(cipher.components[0], Add)
+    assert len(primitive.rounds) == rounds + 1
+    assert primitive.Nk == nk
+    assert primitive.Nr == rounds
+    assert primitive.input("key").value_type.encoded_bit_size == key_size
+    assert primitive.output.value_type.encoded_bit_size == 128
+    assert primitive.input("plaintext").value_type.domain == BinaryExtensionField(8, 0x11B)
+    assert isinstance(primitive.components[0], Add)
 
 
 def test_aes_rejects_legacy_invalid_key_size():
     with pytest.raises(ValueError, match="128, 192, or 256"):
-        AESBlockCipher(512)
+        AES(512)
 
 
 def test_aes_retains_the_three_legacy_parameter_configurations():
-    from claasp_next.ciphers.block_ciphers.aes import PARAMETERS_CONFIGURATION_LIST
+    from claasp_next.primitives.block_ciphers.aes import PARAMETERS_CONFIGURATION_LIST
 
     assert PARAMETERS_CONFIGURATION_LIST == (
         {"key_bit_size": 128, "number_of_rounds": 10},
@@ -150,23 +150,23 @@ def test_aes_retains_the_three_legacy_parameter_configurations():
     (128, 0x42C20FD3B586879E, 0x687DED3B3C85B3F35B1009863E2A8CBF, 0x82F5B82CB02CD1B6),
 ))
 def test_present_preserves_legacy_variants_and_exact_vectors(key_size, plaintext, key, ciphertext):
-    cipher = PresentBlockCipher(key_size)
+    primitive = Present(key_size)
     inputs = {"plaintext": bits_from_int(plaintext, 64), "key": bits_from_int(key, key_size)}
-    scalar = ScalarEvaluator().evaluate(cipher, inputs)
-    batch = BatchEvaluator().evaluate(cipher, {name: (value,) for name, value in inputs.items()})
+    scalar = ScalarEvaluator().evaluate(primitive, inputs)
+    batch = BatchEvaluator().evaluate(primitive, {name: (value,) for name, value in inputs.items()})
     assert int_from_bits(scalar.output) == ciphertext
     assert batch.outputs == (scalar.output,)
-    assert cipher.family_name == "present"
-    assert len(cipher.rounds) == 31
-    assert cipher.input("key").value_type.domain == Bit()
-    assert cipher.input("key").value_type.encoded_bit_size == key_size
-    assert isinstance(cipher.rounds[0].components[0], Add)
+    assert primitive.family_name == "present"
+    assert len(primitive.rounds) == 31
+    assert primitive.input("key").value_type.domain == Bit()
+    assert primitive.input("key").value_type.encoded_bit_size == key_size
+    assert isinstance(primitive.rounds[0].components[0], Add)
 
 
 def test_present_preserves_reduced_round_configuration():
-    cipher = PresentBlockCipher(number_of_rounds=4)
-    assert len(cipher.rounds) == 4
-    assert cipher.rounds[3].components[0].component_id == "add_round_key_4"
+    primitive = Present(number_of_rounds=4)
+    assert len(primitive.rounds) == 4
+    assert primitive.rounds[3].components[0].component_id == "add_round_key_4"
 
 
 @pytest.mark.parametrize(("key_size", "plaintext", "key", "rounds"), (
@@ -176,7 +176,7 @@ def test_present_preserves_reduced_round_configuration():
     (128, 0xFEDCBA9876543210, 0xFFEEDDCCBBAA99887766554433221100, 7),
 ))
 def test_present_matches_independent_reference_transcription(key_size, plaintext, key, rounds):
-    result = ScalarEvaluator().evaluate(PresentBlockCipher(key_size, rounds), {
+    result = ScalarEvaluator().evaluate(Present(key_size, rounds), {
         "plaintext": bits_from_int(plaintext, 64),
         "key": bits_from_int(key, key_size),
     })
@@ -200,21 +200,21 @@ def test_speck_preserves_legacy_variants_and_exact_vectors(
             for position in range(key_word_count)
         ),
     }
-    cipher = SpeckBlockCipher(block_size, key_size)
-    scalar = ScalarEvaluator().evaluate(cipher, inputs)
-    batch = BatchEvaluator().evaluate(cipher, {name: (value,) for name, value in inputs.items()})
+    primitive = Speck(block_size, key_size)
+    scalar = ScalarEvaluator().evaluate(primitive, inputs)
+    batch = BatchEvaluator().evaluate(primitive, {name: (value,) for name, value in inputs.items()})
     assert (scalar.output[0] << word_size) | scalar.output[1] == ciphertext
     assert batch.outputs == (scalar.output,)
-    assert cipher.family_name == "speck"
-    assert cipher.input("plaintext").value_type.domain == Word(word_size)
-    assert cipher.input("key").value_type.encoded_bit_size == key_size
-    assert cipher.output.value_type.encoded_bit_size == block_size
-    assert isinstance(cipher.rounds[0].components[0], Rotate)
+    assert primitive.family_name == "speck"
+    assert primitive.input("plaintext").value_type.domain == Word(word_size)
+    assert primitive.input("key").value_type.encoded_bit_size == key_size
+    assert primitive.output.value_type.encoded_bit_size == block_size
+    assert isinstance(primitive.rounds[0].components[0], Rotate)
 
 
 def test_speck_preserves_legacy_defaults_and_reduced_rounds():
-    default = SpeckBlockCipher()
-    reduced = SpeckBlockCipher(number_of_rounds=4)
+    default = Speck()
+    reduced = Speck(number_of_rounds=4)
     assert len(default.rounds) == 22
     assert default.input("plaintext").value_type.encoded_bit_size == 32
     assert default.input("key").value_type.encoded_bit_size == 64

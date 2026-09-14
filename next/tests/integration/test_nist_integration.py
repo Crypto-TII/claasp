@@ -3,7 +3,7 @@ import shutil
 import pytest
 
 from claasp_next.analysis import correlation_dataset
-from claasp_next.ciphers import SpeckBlockCipher
+from claasp_next.primitives import Speck
 from claasp_next.drivers.statistical import NistStsDriver
 
 
@@ -20,7 +20,7 @@ def test_niststs_driver_executes_one_bounded_smoke_run():
     # without asserting anything about the (statistically meaningless)
     # pass/fail outcome itself.
     dataset = correlation_dataset(
-        SpeckBlockCipher(number_of_rounds=1),
+        Speck(number_of_rounds=1),
         "plaintext",
         4,
         8,

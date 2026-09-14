@@ -3,7 +3,7 @@
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 
-from claasp_next.graph import Cipher
+from claasp_next.graph import Primitive
 
 
 @dataclass(frozen=True, slots=True)
@@ -17,7 +17,7 @@ class CubeSumResult:
 
 
 def evaluate_cube_sum(
-    primitive: Cipher,
+    primitive: Primitive,
     inputs: Mapping[str, int],
     *,
     variable_input: str,

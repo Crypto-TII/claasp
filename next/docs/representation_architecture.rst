@@ -31,12 +31,12 @@ The common immutable container validates input and component identifiers:
 .. doctest::
 
    >>> from claasp_next.annotations import AnnotationEntry, AnnotationRole, ExecutionTrace, GraphAnnotation
-   >>> from claasp_next.ciphers import PresentBlockCipher
+   >>> from claasp_next.primitives import Present
    >>> from claasp_next.semantics import CONCRETE
-   >>> cipher = PresentBlockCipher(number_of_rounds=1)
-   >>> annotation = GraphAnnotation(cipher, CONCRETE, (
+   >>> primitive = Present(number_of_rounds=1)
+   >>> annotation = GraphAnnotation(primitive, CONCRETE, (
    ...     AnnotationEntry("plaintext", AnnotationRole.INPUT, 0),
-   ...     AnnotationEntry(cipher.components[0].component_id, AnnotationRole.COMPONENT, 1),
+   ...     AnnotationEntry(primitive.components[0].component_id, AnnotationRole.COMPONENT, 1),
    ... ))
    >>> trace = ExecutionTrace(annotation)
    >>> trace.value_of("plaintext")
@@ -49,18 +49,18 @@ differential characteristic.
 
 Cryptanalytic trail semantics live under ``claasp_next.semantics.cryptanalysis``;
 they are not owned by SAT, SMT, or MILP. A checked trail can be attached to
-its cipher for use by generic consumers:
+its primitive for use by generic consumers:
 
 .. doctest::
 
    >>> from claasp_next.semantics.cryptanalysis import Trail, TrailKind, TrailStep, XorDifference, SBoxTransitionSemantics
-   >>> from claasp_next.ciphers.block_ciphers.present import PRESENT_SBOX
-   >>> component = next(item for item in cipher.components if item.component_id == "sbox_1_0")
+   >>> from claasp_next.primitives.block_ciphers.present import PRESENT_SBOX
+   >>> component = next(item for item in primitive.components if item.component_id == "sbox_1_0")
    >>> transition = SBoxTransitionSemantics(PRESENT_SBOX).xor_differential(1, 3)
    >>> trail = Trail(TrailKind.XOR_DIFFERENTIAL, XorDifference(1 << 60, 64), XorDifference(0, 64), (TrailStep(component.component_id, transition),))
    >>> trail.semantics.name
    'xor_differential'
-   >>> trail.annotate(cipher).value_of(component.component_id) == transition
+   >>> trail.annotate(primitive).value_of(component.component_id) == transition
    True
 
 Representations and artifacts
@@ -91,18 +91,18 @@ annotation used by ``ExecutionTrace``:
 
 .. doctest::
 
-   >>> from claasp_next.ciphers import AESBlockCipher
+   >>> from claasp_next.primitives import AES
    >>> from claasp_next.representations.execution import ScalarExecutionDriver
-   >>> cipher = AESBlockCipher(number_of_rounds=1)
-   >>> result = ScalarExecutionDriver().evaluate(cipher, {
+   >>> primitive = AES(number_of_rounds=1)
+   >>> result = ScalarExecutionDriver().evaluate(primitive, {
    ...     "plaintext": tuple(bytes(16)), "key": tuple(bytes(16))
    ... })
    >>> result.trace.annotation.semantics.name
    'concrete'
-   >>> len(result.trace.annotation.entries) == len(cipher.inputs) + len(cipher.components) + 1
+   >>> len(result.trace.annotation.entries) == len(primitive.inputs) + len(primitive.components) + 1
    True
 
-Normal users continue to write ``cipher.evaluate(plaintext, key)``. The
+Normal users continue to write ``primitive.evaluate(plaintext, key)``. The
 explicit driver is primarily an extension point and a way to request the
 complete execution trace.
 
@@ -150,7 +150,7 @@ bound, semantic registry, and provenance. Its immutable registry provides
 reviewed defaults for bit-vector S-boxes and modular addition and supports
 global or per-component replacement. Representation compilers consume this
 problem directly. The PRESENT SMT and MILP compilers share registry-selected
-component semantics; their cipher-first constructors are convenience wrappers
+component semantics; their primitive-first constructors are convenience wrappers
 which create an equivalent propagation problem.
 
 Primitive realizations are separate from execution engines

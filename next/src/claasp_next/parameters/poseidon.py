@@ -5,7 +5,7 @@ from functools import lru_cache
 from importlib.resources import files
 import json
 
-from claasp_next.ciphers.permutations.poseidon import PoseidonPermutation
+from claasp_next.primitives.permutations.poseidon import Poseidon
 
 
 @dataclass(frozen=True, slots=True)
@@ -43,10 +43,10 @@ class PoseidonParameterSet:
     reference_output_position: int
     reference_output: int
 
-    def permutation(self) -> PoseidonPermutation:
+    def permutation(self) -> Poseidon:
         """Construct a typed permutation graph from this parameter set."""
 
-        return PoseidonPermutation(
+        return Poseidon(
             modulus=self.modulus,
             exponent=self.exponent,
             full_rounds=self.full_rounds,

@@ -1,6 +1,6 @@
 import pytest
 
-from claasp_next.ciphers import PresentBlockCipher, SpeckBlockCipher
+from claasp_next.primitives import Present, Speck
 from claasp_next.components import BitVectorSBox
 from claasp_next.semantics import XOR_DIFFERENTIAL, XOR_LINEAR
 from claasp_next.semantics.cryptanalysis import (
@@ -9,10 +9,10 @@ from claasp_next.semantics.cryptanalysis import (
 
 
 def test_default_registry_resolves_exact_graph_derived_sbox_semantics():
-    cipher = PresentBlockCipher(number_of_rounds=1)
-    component = next(item for item in cipher.components if isinstance(item, BitVectorSBox))
+    primitive = Present(number_of_rounds=1)
+    component = next(item for item in primitive.components if isinstance(item, BitVectorSBox))
     problem = PropagationProblem(
-        cipher, XOR_DIFFERENTIAL, component_ids=(component.component_id,),
+        primitive, XOR_DIFFERENTIAL, component_ids=(component.component_id,),
         maximum_weight=4, provenance=("unit-test",),
     )
 
@@ -23,9 +23,9 @@ def test_default_registry_resolves_exact_graph_derived_sbox_semantics():
 
 
 def test_default_registry_resolves_modular_add_linear_semantics():
-    cipher = SpeckBlockCipher(number_of_rounds=1)
-    component = next(item for item in cipher.components if "modular_add" in item.component_id)
-    problem = PropagationProblem(cipher, XOR_LINEAR, component_ids=(component.component_id,))
+    primitive = Speck(number_of_rounds=1)
+    component = next(item for item in primitive.components if "modular_add" in item.component_id)
+    problem = PropagationProblem(primitive, XOR_LINEAR, component_ids=(component.component_id,))
 
     transition = problem.provider_for(component).transition((0x0800, 0x0800), 0x0C00)
     assert transition.weight == 1
@@ -33,9 +33,9 @@ def test_default_registry_resolves_modular_add_linear_semantics():
 
 
 def test_per_component_binding_overrides_global_semantics_immutably():
-    cipher = PresentBlockCipher(number_of_rounds=1)
-    components = tuple(item for item in cipher.components if isinstance(item, BitVectorSBox))
-    base = PropagationProblem(cipher, XOR_DIFFERENTIAL).registry
+    primitive = Present(number_of_rounds=1)
+    components = tuple(item for item in primitive.components if isinstance(item, BitVectorSBox))
+    base = PropagationProblem(primitive, XOR_DIFFERENTIAL).registry
 
     class ImpossibleProvider:
         def transition(self, input_patterns, output_pattern):
@@ -45,7 +45,7 @@ def test_per_component_binding_overrides_global_semantics_immutably():
         XOR_DIFFERENTIAL, BitVectorSBox, lambda component: ImpossibleProvider(),
         component_id=components[0].component_id,
     ))
-    problem = PropagationProblem(cipher, XOR_DIFFERENTIAL, registry=overridden)
+    problem = PropagationProblem(primitive, XOR_DIFFERENTIAL, registry=overridden)
 
     assert not problem.provider_for(components[0]).transition((1,), 3).is_possible
     assert problem.provider_for(components[1]).transition((1,), 3).is_possible
@@ -53,9 +53,9 @@ def test_per_component_binding_overrides_global_semantics_immutably():
 
 
 def test_propagation_problem_rejects_unknown_scope_and_out_of_scope_access():
-    cipher = PresentBlockCipher(number_of_rounds=1)
+    primitive = Present(number_of_rounds=1)
     with pytest.raises(ValueError, match="unknown propagation"):
-        PropagationProblem(cipher, XOR_DIFFERENTIAL, component_ids=("missing",))
-    problem = PropagationProblem(cipher, XOR_DIFFERENTIAL, component_ids=())
+        PropagationProblem(primitive, XOR_DIFFERENTIAL, component_ids=("missing",))
+    problem = PropagationProblem(primitive, XOR_DIFFERENTIAL, component_ids=())
     with pytest.raises(ValueError, match="outside"):
-        problem.provider_for(cipher.components[0])
+        problem.provider_for(primitive.components[0])

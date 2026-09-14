@@ -2,14 +2,14 @@
 
 from claasp_next.components import Concatenate, ModularAdd, Rotate, Xor
 from claasp_next.domains import Word
-from claasp_next.graph import Cipher, Port, Selection, ValueType
+from claasp_next.graph import Primitive, Port, Selection, ValueType
 
 
 _COLUMNS = ((0, 4, 8, 12), (1, 5, 9, 13), (2, 6, 10, 14), (3, 7, 11, 15))
 _DIAGONALS = ((0, 5, 10, 15), (1, 6, 11, 12), (2, 7, 8, 13), (3, 4, 9, 14))
 
 
-class ChaCha(Cipher):
+class ChaCha(Primitive):
     """Build the word-oriented ChaCha permutation.
 
     ``number_of_rounds`` uses the standard ChaCha convention: one round
@@ -21,7 +21,7 @@ class ChaCha(Cipher):
     retained vectors.
 
     Examples:
-        >>> from claasp_next.ciphers.permutations.chacha import ChaCha
+        >>> from claasp_next.primitives.permutations.chacha import ChaCha
         >>> state = int("617078653320646e79622d326b206574"
         ...             "03020100070605040b0a09080f0e0d0c"
         ...             "13121110171615141b1a19181f1e1d1c"

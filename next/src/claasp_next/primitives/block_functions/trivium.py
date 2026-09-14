@@ -35,7 +35,7 @@ state, key unit ``m`` is loaded at ``s(80 - m)`` and IV unit ``m`` at
 
 from claasp_next.components import BitwiseAnd, Concatenate, Constant, Xor
 from claasp_next.domains import Word
-from claasp_next.graph import Cipher, Port, Selection, ValueType
+from claasp_next.graph import Port, Primitive, Selection, ValueType
 
 KEY_BIT_SIZE = 80
 IV_BIT_SIZE = 80
@@ -65,7 +65,7 @@ def estream_bytes_to_bit_sequence(value: int, byte_length: int) -> int:
     keystreams alike.
 
     Examples:
-        >>> from claasp_next.ciphers.block_functions.trivium import (
+        >>> from claasp_next.primitives.block_functions.trivium import (
         ...     estream_bytes_to_bit_sequence)
         >>> hex(estream_bytes_to_bit_sequence(0x8000, 2))
         '0x100'
@@ -87,7 +87,7 @@ def estream_bytes_to_bit_sequence(value: int, byte_length: int) -> int:
     return result
 
 
-class Trivium(Cipher):
+class Trivium(Primitive):
     """Build the fixed-length Trivium keystream function as a typed bit graph.
 
     ``number_of_initialization_clocks`` is the number of state updates applied
@@ -99,8 +99,8 @@ class Trivium(Cipher):
     evidence.
 
     Examples:
-        >>> from claasp_next.ciphers import Trivium
-        >>> from claasp_next.ciphers.block_functions.trivium import (
+        >>> from claasp_next.primitives import Trivium
+        >>> from claasp_next.primitives.block_functions.trivium import (
         ...     estream_bytes_to_bit_sequence)
         >>> trivium = Trivium(keystream_bit_size=32)
         >>> key = estream_bytes_to_bit_sequence(0x80000000000000000000, 10)

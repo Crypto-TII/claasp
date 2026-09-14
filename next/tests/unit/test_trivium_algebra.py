@@ -13,7 +13,7 @@ from random import Random
 import pytest
 
 from claasp_next.analysis import analyze_boolean_algebra, evaluate_cube_sum
-from claasp_next.ciphers import Trivium
+from claasp_next.primitives import Trivium
 from claasp_next.representations.execution import (
     BooleanDegreeEvaluator, BooleanSymbolicEvaluator,
 )

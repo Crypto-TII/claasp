@@ -1,4 +1,4 @@
-"""Meanings that may be propagated through a cipher graph."""
+"""Meanings that may be propagated through a primitive graph."""
 
 from claasp_next.semantics.base import (
     CONCRETE, DETERMINISTIC_TRUNCATED_XOR, LEAKAGE,

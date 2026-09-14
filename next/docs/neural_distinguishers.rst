@@ -13,8 +13,8 @@ using MSB-first bits:
 .. doctest::
 
    >>> from claasp_next.analysis import black_box_dataset
-   >>> from claasp_next.ciphers import SpeckBlockCipher
-   >>> primitive = SpeckBlockCipher(number_of_rounds=1)
+   >>> from claasp_next.primitives import Speck
+   >>> primitive = Speck(number_of_rounds=1)
    >>> data = black_box_dataset(primitive, "plaintext", samples=4, seed=41)
    >>> data.kind, data.sample_count, data.feature_width
    ('black_box', 4, 64)
@@ -74,7 +74,7 @@ arbitrary component -- matching component ids against substrings such as
 cover the same ground without a description-string match: they read the
 requested component's value directly out of the primitive's typed
 ``ExecutionTrace`` (see ``claasp_next.annotations``), produced by
-``Cipher.evaluate_with_trace``. ``round_component_ids`` selects every
+``Primitive.evaluate_with_trace``. ``round_component_ids`` selects every
 component CLAASP added while building one round, so passing it as
 ``component_ids`` projects that round's full state -- covering the legacy
 ``round_output``/``round_key_output`` cases -- while a single id targets one
@@ -83,7 +83,7 @@ exact wire:
 .. doctest::
 
    >>> from claasp_next.analysis import component_output_dataset, round_component_ids
-   >>> reduced = SpeckBlockCipher(number_of_rounds=2)
+   >>> reduced = Speck(number_of_rounds=2)
    >>> round_component_ids(reduced, 0)
    ('round_0_rotate_right', 'round_0_modular_add', 'round_0_xor_key', 'round_0_rotate_left', 'round_0_xor_xy', 'key_constant_0', 'key_0_rotate_right', 'key_0_modular_add', 'key_0_xor_key', 'key_0_rotate_left', 'key_0_xor_xy')
    >>> projected = component_output_dataset(

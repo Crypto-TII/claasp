@@ -4,7 +4,7 @@ from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 
 from claasp_next.analysis.constraints import Equal, FixedValue, HammingWeight, Nonzero, NotEqual
-from claasp_next.graph import Cipher, PortLike, Selection, as_selection
+from claasp_next.graph import Primitive, PortLike, Selection, as_selection
 
 
 @dataclass(frozen=True, slots=True, init=False)
@@ -19,22 +19,22 @@ class MinimizeWeight:
 
 @dataclass(frozen=True, slots=True)
 class AnalysisProblem:
-    """A cipher, graph-level constraints, projections, and optional objective."""
+    """A primitive, graph-level constraints, projections, and optional objective."""
 
-    cipher: Cipher
+    primitive: Primitive
     constraints: tuple[object, ...]
     projections: Mapping[str, Selection]
     objective: MinimizeWeight | None = None
 
     def __init__(
         self,
-        cipher: Cipher,
+        primitive: Primitive,
         constraints: Iterable[object] = (),
         projections: Mapping[str, PortLike] | None = None,
         objective: MinimizeWeight | None = None,
     ) -> None:
-        if not isinstance(cipher, Cipher):
-            raise TypeError("cipher must be a Cipher")
+        if not isinstance(primitive, Primitive):
+            raise TypeError("primitive must be a Primitive")
         frozen_constraints = tuple(constraints)
         constraint_types = (FixedValue, Equal, NotEqual, Nonzero, HammingWeight)
         if any(not isinstance(item, constraint_types) for item in frozen_constraints):
@@ -46,7 +46,7 @@ class AnalysisProblem:
             raise ValueError("projection names must be non-empty strings")
         if objective is not None and not isinstance(objective, MinimizeWeight):
             raise TypeError("objective must be MinimizeWeight or None")
-        object.__setattr__(self, "cipher", cipher)
+        object.__setattr__(self, "primitive", primitive)
         object.__setattr__(self, "constraints", frozen_constraints)
         object.__setattr__(self, "projections", frozen_projections)
         object.__setattr__(self, "objective", objective)

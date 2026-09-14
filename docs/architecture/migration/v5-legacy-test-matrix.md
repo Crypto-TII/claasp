@@ -10,8 +10,13 @@ Legacy paths and class names in this document are evidence locators, not v5
 taxonomy decisions. The M10.7 machine-readable inventory records each
 catalogue entry's official name, fixed-length category, proposed v5
 module/class names, and any higher-level hash, MAC, or stream construction from
-which its primitive is extracted. M10.9a–M10.9d then enforce those decisions;
-the current ``Cipher`` and ``ciphers`` names are transitional.
+which its primitive is extracted. M10.9a landed the generic graph abstraction
+and catalogue package rename (``Cipher``/``ciphers`` to ``Primitive``/
+``primitives``, plus official catalogue class names such as ``AES`` and
+``Speck``); M10.9b–M10.9d apply the remaining taxonomy decisions on top of
+that renamed v5 API. Legacy CLAASP 4 paths and class names below (for example
+`claasp.cipher_modules...` or `SpeckBlockCipher`) remain correct as historical
+citations into the legacy oracle and are not part of the v5 API surface.
 
 ## Reference ciphers
 

@@ -2,7 +2,7 @@ CLAASP documentation
 ====================
 
 CLAASP is a Python workbench for implementing, evaluating, and analyzing
-symmetric cryptographic primitives. Cipher descriptions stay close to their
+symmetric cryptographic primitives. Primitive descriptions stay close to their
 pseudocode and can be reused by evaluators and cryptanalytic backends.
 
 Start with a standard AES evaluation, then follow the task-oriented guides to
@@ -14,14 +14,14 @@ systems and solvers are optional backends.
    :caption: Start here
 
    getting_started
-   cipher_authoring
+   primitive_authoring
    analysis
-   traditional_ciphers
+   traditional_primitives
    batch_evaluation
 
 .. toctree::
    :maxdepth: 2
-   :caption: CLAASP 5 and AO ciphers
+   :caption: CLAASP 5 and AO primitives
 
    whats_new_v5
    concepts

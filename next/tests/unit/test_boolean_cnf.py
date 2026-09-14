@@ -5,25 +5,25 @@ import pytest
 from claasp_next import bits_from_int
 from claasp_next.representations.constraints.sat import BooleanCNFModel, CNFFormula
 from claasp_next.representations.constraints.sat.exporters import DimacsExporter
-from claasp_next.ciphers import MiMCPermutation, Present80BlockCipher, SpeckBlockCipher
+from claasp_next.primitives import MiMC, Present80, Speck
 from claasp_next.components import Add
-from claasp_next.graph import Cipher, ValueType
+from claasp_next.graph import Primitive, ValueType
 from claasp_next.domains import Bit
 from claasp_next.representations.execution import ScalarEvaluator
 
 
-def _xor_cipher(operand_count=2):
-    cipher = Cipher("xor", {name: ValueType(Bit(), (1,)) for name in "abc"[:operand_count]})
-    cipher.add_round()
-    output = cipher.add_component(Add(
-        tuple(cipher.input(name) for name in "abc"[:operand_count]), component_id="sum"
+def _xor_primitive(operand_count=2):
+    primitive = Primitive("xor", {name: ValueType(Bit(), (1,)) for name in "abc"[:operand_count]})
+    primitive.add_round()
+    output = primitive.add_component(Add(
+        tuple(primitive.input(name) for name in "abc"[:operand_count]), component_id="sum"
     ))
-    cipher.set_output(output)
-    return cipher
+    primitive.set_output(output)
+    return primitive
 
 
 def test_xor_cnf_has_exact_truth_table():
-    formula = BooleanCNFModel(_xor_cipher()).cnf_formula()
+    formula = BooleanCNFModel(_xor_primitive()).cnf_formula()
     assert formula.variable_count == 3
     assert formula.clause_count == 4
     for left, right, output in product((0, 1), repeat=3):
@@ -32,19 +32,19 @@ def test_xor_cnf_has_exact_truth_table():
 
 
 def test_multi_operand_xor_witness_includes_auxiliaries():
-    cipher = _xor_cipher(3)
-    model = BooleanCNFModel(cipher)
-    result = ScalarEvaluator().evaluate(cipher, {"a": (1,), "b": (1,), "c": (1,)})
+    primitive = _xor_primitive(3)
+    model = BooleanCNFModel(primitive)
+    result = ScalarEvaluator().evaluate(primitive, {"a": (1,), "b": (1,), "c": (1,)})
     witness = model.witness(result)
     assert witness["__aux_sum_0_1"] == 0
     assert model.cnf_formula().is_satisfied(witness)
 
 
 def test_present_scalar_execution_produces_satisfying_cnf_witness():
-    cipher = Present80BlockCipher(number_of_rounds=1)
+    primitive = Present80(number_of_rounds=1)
     inputs = {"plaintext": bits_from_int(0x0123456789ABCDEF, 64), "key": bits_from_int(0, 80)}
-    result = ScalarEvaluator().evaluate(cipher, inputs)
-    model = BooleanCNFModel(cipher)
+    result = ScalarEvaluator().evaluate(primitive, inputs)
+    model = BooleanCNFModel(primitive)
     formula = model.cnf_formula()
     witness = model.witness(result)
     assert formula.is_satisfied(witness)
@@ -55,13 +55,13 @@ def test_present_scalar_execution_produces_satisfying_cnf_witness():
 
 
 def test_word_arx_execution_produces_satisfying_cnf_witness():
-    cipher = SpeckBlockCipher(number_of_rounds=1)
+    primitive = Speck(number_of_rounds=1)
     inputs = {
         "plaintext": (0x6574, 0x694C),
         "key": (0x1918, 0x1110, 0x0908, 0x0100),
     }
-    evaluation = ScalarEvaluator().evaluate(cipher, inputs)
-    model = BooleanCNFModel(cipher)
+    evaluation = ScalarEvaluator().evaluate(primitive, inputs)
+    model = BooleanCNFModel(primitive)
     formula = model.cnf_formula()
 
     assert formula.is_satisfied(model.witness(evaluation))
@@ -71,19 +71,19 @@ def test_word_arx_execution_produces_satisfying_cnf_witness():
 
 def test_non_boolean_encodable_graph_is_rejected_explicitly():
     with pytest.raises(ValueError, match="requires the Bit or Word domain"):
-        BooleanCNFModel(MiMCPermutation(17, 3, (1,))).cnf_formula()
+        BooleanCNFModel(MiMC(17, 3, (1,))).cnf_formula()
 
 
 def test_unsupported_bit_component_is_rejected_explicitly():
     from claasp_next.components import Multiply
 
-    cipher = Cipher("and", {"x": ValueType(Bit(), (1,)), "y": ValueType(Bit(), (1,))})
-    cipher.add_round()
-    cipher.add_component(Multiply(
-        (cipher.input("x"), cipher.input("y")), component_id="product"
+    primitive = Primitive("and", {"x": ValueType(Bit(), (1,)), "y": ValueType(Bit(), (1,))})
+    primitive.add_round()
+    primitive.add_component(Multiply(
+        (primitive.input("x"), primitive.input("y")), component_id="product"
     ))
     with pytest.raises(NotImplementedError, match="Multiply"):
-        BooleanCNFModel(cipher).cnf_formula()
+        BooleanCNFModel(primitive).cnf_formula()
 
 
 def test_dimacs_export_is_deterministic_and_preserves_variable_map():

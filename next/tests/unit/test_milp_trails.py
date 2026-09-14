@@ -1,9 +1,9 @@
-from claasp_next.ciphers import PresentBlockCipher
+from claasp_next.primitives import Present
 from claasp_next.representations.constraints.milp import PresentDifferentialMILPModel
 
 
 def test_present_milp_lowering_uses_complete_exact_transition_selectors():
-    lowering = PresentDifferentialMILPModel(PresentBlockCipher(number_of_rounds=2))
+    lowering = PresentDifferentialMILPModel(Present(number_of_rounds=2))
     model = lowering.milp_model()
 
     selectors = [variable for variable in model.variables if "_choice_" in variable.name]

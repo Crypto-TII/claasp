@@ -3,8 +3,8 @@ What is new in CLAASP 5
 
 CLAASP 5 generalizes the graph's logical unit. A wire may carry bits,
 fixed-width words, binary-extension-field elements, or prime-field elements.
-This supports traditional and arithmetization-oriented ciphers without forcing
-both into an implicit bit representation.
+This supports traditional and arithmetization-oriented primitives without
+forcing both into an implicit bit representation.
 
 The implementation is independent of SageMath. Scalar and batch evaluation,
 graph construction, Boolean and polynomial intermediate representations, and
@@ -16,8 +16,8 @@ Native field example
 
 .. doctest::
 
-   >>> from claasp_next.ciphers import MiMCPermutation
-   >>> MiMCPermutation(17, 3, (1, 2, 4)).evaluate(5)
+   >>> from claasp_next.primitives import MiMC
+   >>> MiMC(17, 3, (1, 2, 4)).evaluate(5)
    5
 
 Poseidon retains a vector of field elements rather than packing it into an
@@ -25,8 +25,8 @@ artificial integer:
 
 .. doctest::
 
-   >>> from claasp_next.ciphers import PoseidonPermutation
-   >>> poseidon = PoseidonPermutation(
+   >>> from claasp_next.primitives import Poseidon
+   >>> poseidon = Poseidon(
    ...     17, 3, 2, 1,
    ...     ((1, 2), (3, 4), (5, 6)),
    ...     ((1, 1), (1, 2)),
@@ -39,7 +39,7 @@ Architecture and migration status
 
 The temporary distribution and import names are ``claasp-next`` and
 ``claasp_next``. They become ``claasp`` only when v5 replaces the legacy
-package. Cipher descriptions, evaluation, mathematical models, exporters, and
+package. Primitive descriptions, evaluation, mathematical models, exporters, and
 solver processes remain separate layers.
 
 See :doc:`concepts` for typed-unit details and :doc:`parameters` for verified

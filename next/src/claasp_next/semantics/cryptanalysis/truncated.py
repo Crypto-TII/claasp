@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from enum import Enum
 
 from claasp_next.components import LinearMap, Permutation, Rotate
-from claasp_next.graph import Cipher
+from claasp_next.graph import Primitive
 
 
 class TruncatedBit(str, Enum):
@@ -311,18 +311,18 @@ def truncated_modular_subtract(
 
 
 def propagate_two_word_speck_round(
-    cipher: Cipher, difference: TruncatedXorDifference
+    primitive: Primitive, difference: TruncatedXorDifference
 ) -> TruncatedXorDifference:
     """Propagate a zero-key-difference pattern through Speck's first round."""
 
-    plaintext = cipher.inputs.get("plaintext")
-    if cipher.family_name != "speck" or plaintext is None:
-        raise ValueError("cipher must be Speck")
+    plaintext = primitive.inputs.get("plaintext")
+    if primitive.family_name != "speck" or plaintext is None:
+        raise ValueError("primitive must be Speck")
     width = plaintext.value_type.domain.width
     if len(difference.bits) != 2 * width:
         raise ValueError("difference width must match the Speck block")
-    alpha = _rotation(cipher, "round_0_rotate_right").amount
-    beta = _rotation(cipher, "round_0_rotate_left").amount
+    alpha = _rotation(primitive, "round_0_rotate_right").amount
+    beta = _rotation(primitive, "round_0_rotate_left").amount
     left = TruncatedXorDifference(difference.bits[:width])
     right = TruncatedXorDifference(difference.bits[width:])
     new_left = truncated_modular_add(left.rotate_right(alpha), right)
@@ -331,20 +331,20 @@ def propagate_two_word_speck_round(
 
 
 def propagate_two_word_speck_inverse_round(
-    cipher: Cipher, difference: TruncatedXorDifference, round_number: int = 0,
+    primitive: Primitive, difference: TruncatedXorDifference, round_number: int = 0,
 ) -> TruncatedXorDifference:
     """Soundly propagate a zero-key difference through one inverse Speck round."""
 
-    plaintext = cipher.inputs.get("plaintext")
-    if cipher.family_name != "speck" or plaintext is None:
-        raise ValueError("cipher must be Speck")
+    plaintext = primitive.inputs.get("plaintext")
+    if primitive.family_name != "speck" or plaintext is None:
+        raise ValueError("primitive must be Speck")
     width = plaintext.value_type.domain.width
     if len(difference.bits) != 2 * width:
         raise ValueError("difference width must match the Speck block")
-    if not 0 <= round_number < len(cipher.rounds):
-        raise ValueError("round_number is outside the cipher")
-    alpha = _rotation(cipher, f"round_{round_number}_rotate_right").amount
-    beta = _rotation(cipher, f"round_{round_number}_rotate_left").amount
+    if not 0 <= round_number < len(primitive.rounds):
+        raise ValueError("round_number is outside the primitive")
+    alpha = _rotation(primitive, f"round_{round_number}_rotate_right").amount
+    beta = _rotation(primitive, f"round_{round_number}_rotate_left").amount
     new_left = TruncatedXorDifference(difference.bits[:width])
     new_right = TruncatedXorDifference(difference.bits[width:])
     old_right = new_right.xor(new_left).rotate_right(beta)
@@ -397,7 +397,7 @@ def _truncated_and(
 
 
 def propagate_single_active_aes_byte(
-    cipher: Cipher, byte_index: int,
+    primitive: Primitive, byte_index: int,
 ) -> tuple[WordwiseXorDifference, ...]:
     """Propagate one nonzero plaintext-byte difference through AES round one.
 
@@ -406,12 +406,12 @@ def propagate_single_active_aes_byte(
     MixColumns output; it makes no cancellation assumption.
     """
 
-    if cipher.family_name != "aes" or len(cipher.rounds) < 2:
-        raise ValueError("cipher must contain at least one AES round")
+    if primitive.family_name != "aes" or len(primitive.rounds) < 2:
+        raise ValueError("primitive must contain at least one AES round")
     if not isinstance(byte_index, int) or isinstance(byte_index, bool) or not 0 <= byte_index < 16:
         raise ValueError("byte_index must be in range(16)")
-    shifted = _named_component(cipher, "shift_rows_1", Permutation)
-    mixed = _named_component(cipher, "mix_columns_1", LinearMap)
+    shifted = _named_component(primitive, "shift_rows_1", Permutation)
+    mixed = _named_component(primitive, "mix_columns_1", LinearMap)
     sbox_activity = [WordwiseXorDifference(8, WordwiseDifferenceKind.ZERO) for _ in range(16)]
     sbox_activity[byte_index] = WordwiseXorDifference(8, WordwiseDifferenceKind.NONZERO)
     shifted_activity = [sbox_activity[source] for source in shifted.mapping]
@@ -432,15 +432,15 @@ def propagate_single_active_aes_byte(
     )
 
 
-def _rotation(cipher: Cipher, component_id: str) -> Rotate:
-    component = next((item for item in cipher.components if item.component_id == component_id), None)
+def _rotation(primitive: Primitive, component_id: str) -> Rotate:
+    component = next((item for item in primitive.components if item.component_id == component_id), None)
     if not isinstance(component, Rotate):
-        raise ValueError(f"cipher is missing rotation {component_id!r}")
+        raise ValueError(f"primitive is missing rotation {component_id!r}")
     return component
 
 
-def _named_component(cipher: Cipher, component_id: str, expected_type):
-    component = next((item for item in cipher.components if item.component_id == component_id), None)
+def _named_component(primitive: Primitive, component_id: str, expected_type):
+    component = next((item for item in primitive.components if item.component_id == component_id), None)
     if not isinstance(component, expected_type):
-        raise ValueError(f"cipher is missing {component_id!r}")
+        raise ValueError(f"primitive is missing {component_id!r}")
     return component

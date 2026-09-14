@@ -3,7 +3,7 @@
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 
-from claasp_next.graph import Cipher
+from claasp_next.graph import Primitive
 from claasp_next.components.algebraic import Add, BinaryAffineMap, LinearMap, Multiply, Power
 from claasp_next.components.structural import Concatenate, Constant, Identity, Permutation
 from claasp_next.components.substitution import BitVectorSBox, SBox
@@ -19,14 +19,14 @@ class BatchEvaluationResult:
 
     @property
     def outputs(self) -> tuple[RuntimeValue | None, ...]:
-        """Return declared cipher outputs in batch order.
+        """Return declared primitive outputs in batch order.
 
         EXAMPLES::
 
-            >>> from claasp_next.ciphers import MiMCPermutation
+            >>> from claasp_next.primitives import MiMC
             >>> from claasp_next.representations.execution import BatchEvaluator
-            >>> cipher = MiMCPermutation(17, 3, (1, 2, 4))
-            >>> BatchEvaluator().evaluate(cipher, {"state": ((5,), (7,))}).outputs
+            >>> primitive = MiMC(17, 3, (1, 2, 4))
+            >>> BatchEvaluator().evaluate(primitive, {"state": ((5,), (7,))}).outputs
             ((5,), (0,))
         """
 
@@ -47,9 +47,9 @@ class BatchExecutionDriver:
 
     EXAMPLES::
 
-        >>> from claasp_next.ciphers import MiMCPermutation
-        >>> cipher = MiMCPermutation(17, 3, (1,))
-        >>> BatchEvaluator().evaluate(cipher, {"state": ((0,), (1,), (2,))}).outputs
+        >>> from claasp_next.primitives import MiMC
+        >>> primitive = MiMC(17, 3, (1,))
+        >>> BatchEvaluator().evaluate(primitive, {"state": ((0,), (1,), (2,))}).outputs
         ((1,), (8,), (10,))
     """
 
@@ -58,28 +58,28 @@ class BatchExecutionDriver:
 
     def evaluate(
         self,
-        cipher: Cipher,
+        primitive: Primitive,
         inputs: Mapping[str, Sequence[Sequence[int]]],
     ) -> BatchEvaluationResult:
-        if not isinstance(cipher, Cipher):
-            raise TypeError("cipher must be a Cipher")
+        if not isinstance(primitive, Primitive):
+            raise TypeError("primitive must be a Primitive")
 
-        expected_names = set(cipher.inputs)
+        expected_names = set(primitive.inputs)
         actual_names = set(inputs)
         if actual_names != expected_names:
             missing = sorted(expected_names - actual_names)
             unexpected = sorted(actual_names - expected_names)
-            raise ValueError(f"cipher inputs do not match: missing={missing}, unexpected={unexpected}")
+            raise ValueError(f"primitive inputs do not match: missing={missing}, unexpected={unexpected}")
 
         batch_sizes = {len(values) for values in inputs.values()}
         if len(batch_sizes) > 1:
-            raise ValueError("every cipher input must contain the same number of batch items")
+            raise ValueError("every primitive input must contain the same number of batch items")
         batch_size = batch_sizes.pop() if batch_sizes else 0
 
         results = []
         for item_index in range(batch_size):
-            item_inputs = {name: inputs[name][item_index] for name in cipher.inputs}
-            results.append(self._scalar_evaluator.evaluate(cipher, item_inputs))
+            item_inputs = {name: inputs[name][item_index] for name in primitive.inputs}
+            results.append(self._scalar_evaluator.evaluate(primitive, item_inputs))
         return BatchEvaluationResult(tuple(results))
 
 
@@ -92,34 +92,34 @@ class TransposedBatchExecutionDriver(BatchExecutionDriver):
 
     EXAMPLES::
 
-        >>> from claasp_next.ciphers import MiMCPermutation
-        >>> cipher = MiMCPermutation(17, 3, (1,))
+        >>> from claasp_next.primitives import MiMC
+        >>> primitive = MiMC(17, 3, (1,))
         >>> TransposedBatchEvaluator().evaluate(
-        ...     cipher, {"state": ((0,), (1,), (2,))}
+        ...     primitive, {"state": ((0,), (1,), (2,))}
         ... ).outputs
         ((1,), (8,), (10,))
     """
 
     def evaluate(
         self,
-        cipher: Cipher,
+        primitive: Primitive,
         inputs: Mapping[str, Sequence[Sequence[int]]],
     ) -> BatchEvaluationResult:
-        if not isinstance(cipher, Cipher):
-            raise TypeError("cipher must be a Cipher")
-        expected_names = set(cipher.inputs)
+        if not isinstance(primitive, Primitive):
+            raise TypeError("primitive must be a Primitive")
+        expected_names = set(primitive.inputs)
         actual_names = set(inputs)
         if actual_names != expected_names:
             missing = sorted(expected_names - actual_names)
             unexpected = sorted(actual_names - expected_names)
-            raise ValueError(f"cipher inputs do not match: missing={missing}, unexpected={unexpected}")
+            raise ValueError(f"primitive inputs do not match: missing={missing}, unexpected={unexpected}")
         batch_sizes = {len(values) for values in inputs.values()}
         if len(batch_sizes) > 1:
-            raise ValueError("every cipher input must contain the same number of batch items")
+            raise ValueError("every primitive input must contain the same number of batch items")
         batch_size = batch_sizes.pop() if batch_sizes else 0
 
         values: dict[str, tuple[RuntimeValue, ...]] = {}
-        for name, port in cipher.inputs.items():
+        for name, port in primitive.inputs.items():
             batch = tuple(tuple(item) for item in inputs[name])
             for item in batch:
                 self._scalar_evaluator._validate_value(
@@ -127,7 +127,7 @@ class TransposedBatchExecutionDriver(BatchExecutionDriver):
                 )
             values[name] = batch
 
-        for component in cipher.components:
+        for component in primitive.components:
             selected = tuple(
                 tuple(
                     tuple(values[item.source.owner_id][lane][position] for position in item.positions)
@@ -149,15 +149,15 @@ class TransposedBatchExecutionDriver(BatchExecutionDriver):
         for lane in range(batch_size):
             lane_values = {source_id: batch[lane] for source_id, batch in values.items()}
             output = None
-            if cipher.output is not None:
+            if primitive.output is not None:
                 output = tuple(
-                    lane_values[cipher.output.source.owner_id][position]
-                    for position in cipher.output.positions
+                    lane_values[primitive.output.source.owner_id][position]
+                    for position in primitive.output.positions
                 )
             from claasp_next.annotations import ExecutionTrace, GraphAnnotation
             from claasp_next.semantics import CONCRETE
 
-            annotation = GraphAnnotation.from_values(cipher, CONCRETE, lane_values, output=output)
+            annotation = GraphAnnotation.from_values(primitive, CONCRETE, lane_values, output=output)
             results.append(EvaluationResult(lane_values, output, ExecutionTrace(annotation)))
         return BatchEvaluationResult(tuple(results))
 

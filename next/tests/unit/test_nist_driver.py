@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 
 from claasp_next.analysis import cbc_dataset
-from claasp_next.ciphers import SpeckBlockCipher
+from claasp_next.primitives import Speck
 from claasp_next.drivers.statistical import NistStsDriver
 from claasp_next.drivers.statistical.nist import _REPORT_RELATIVE_PATH
 
@@ -57,7 +57,7 @@ def _fake_assess(tmp_path: Path, *, body: str | None, exit_code: int = 1) -> Pat
 
 def _dataset():
     return cbc_dataset(
-        SpeckBlockCipher(number_of_rounds=1), "plaintext", 1, 3, fixed_inputs={"key": 0}
+        Speck(number_of_rounds=1), "plaintext", 1, 3, fixed_inputs={"key": 0}
     )
 
 

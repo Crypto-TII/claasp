@@ -4,11 +4,11 @@ from collections.abc import Iterable
 from math import gcd
 
 from claasp_next.components import Add, Concatenate, Constant, LinearMap, Power
-from claasp_next.graph import Cipher, Port, ValueType
+from claasp_next.graph import Primitive, Port, ValueType
 from claasp_next.domains import PrimeField
 
 
-class PoseidonPermutation(Cipher):
+class Poseidon(Primitive):
     """A parameterized Poseidon-style HADES permutation.
 
     Each round adds a state-width vector of constants, applies the power map
@@ -22,8 +22,8 @@ class PoseidonPermutation(Cipher):
 
     EXAMPLES::
 
-        >>> from claasp_next.ciphers import PoseidonPermutation
-        >>> cipher = PoseidonPermutation(
+        >>> from claasp_next.primitives import Poseidon
+        >>> primitive = Poseidon(
         ...     modulus=17,
         ...     exponent=3,
         ...     full_rounds=2,
@@ -31,7 +31,7 @@ class PoseidonPermutation(Cipher):
         ...     round_constants=((1, 2), (3, 4), (5, 6)),
         ...     linear_layer=((1, 1), (1, 2)),
         ... )
-        >>> cipher.evaluate((0, 1))
+        >>> primitive.evaluate((0, 1))
         (4, 15)
 
     These are teaching parameters, not a secure parameter set.

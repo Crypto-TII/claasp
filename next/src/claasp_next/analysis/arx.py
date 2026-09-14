@@ -11,17 +11,17 @@ from claasp_next.semantics.cryptanalysis import (
     XorMask,
 )
 from claasp_next.components import Rotate
-from claasp_next.graph import Cipher
+from claasp_next.graph import Primitive
 from claasp_next.domains import Word
 
 
-def find_two_round_speck_xor_differential(cipher: Cipher) -> TrailSearchResult:
+def find_two_round_speck_xor_differential(primitive: Primitive) -> TrailSearchResult:
     """Reproduce the exact legacy Speck32/64 two-round optimum."""
 
-    width = _validate_speck_slice(cipher)
+    width = _validate_speck_slice(primitive)
     semantics = ModularAddTransitionSemantics(width)
-    alpha = _component(cipher, "round_0_rotate_right", Rotate).amount
-    beta = _component(cipher, "round_0_rotate_left", Rotate).amount
+    alpha = _component(primitive, "round_0_rotate_right", Rotate).amount
+    beta = _component(primitive, "round_0_rotate_left", Rotate).amount
     legacy_lower_bound = 1.0
 
     best = None
@@ -64,17 +64,17 @@ def find_two_round_speck_xor_differential(cipher: Cipher) -> TrailSearchResult:
     return TrailSearchResult(best, legacy_lower_bound, "legacy CLAASP Speck32/64-2 bound")
 
 
-def check_speck_trail(cipher: Cipher, trail: Trail) -> bool:
+def check_speck_trail(primitive: Primitive, trail: Trail) -> bool:
     """Independently check both additions and deterministic ARX wiring."""
 
-    width = _validate_speck_slice(cipher)
+    width = _validate_speck_slice(primitive)
     if trail.kind is not TrailKind.XOR_DIFFERENTIAL or len(trail.steps) != 2:
         return False
     semantics = ModularAddTransitionSemantics(width)
     if any(not semantics.check(step.transition) for step in trail.steps):
         return False
-    alpha = _component(cipher, "round_0_rotate_right", Rotate).amount
-    beta = _component(cipher, "round_0_rotate_left", Rotate).amount
+    alpha = _component(primitive, "round_0_rotate_right", Rotate).amount
+    beta = _component(primitive, "round_0_rotate_left", Rotate).amount
     mask = (1 << width) - 1
     left, right = trail.input_pattern.value >> width, trail.input_pattern.value & mask
     first, second = (step.transition for step in trail.steps)
@@ -91,10 +91,10 @@ def check_speck_trail(cipher: Cipher, trail: Trail) -> bool:
     return trail.output_pattern.value == (final_left << width) | final_right
 
 
-def find_four_round_speck_xor_linear(cipher: Cipher) -> TrailSearchResult:
+def find_four_round_speck_xor_linear(primitive: Primitive) -> TrailSearchResult:
     """Restore and verify the legacy four-round Speck linear optimum."""
 
-    width = _validate_speck_linear_slice(cipher)
+    width = _validate_speck_linear_slice(primitive)
     semantics = ModularAddLinearSemantics(width)
     boundary_masks = (
         (0x40B0, 0x10C1),
@@ -107,8 +107,8 @@ def find_four_round_speck_xor_linear(cipher: Cipher) -> TrailSearchResult:
     for round_number, ((left, right), (next_left, next_right)) in enumerate(
         zip(boundary_masks, boundary_masks[1:])
     ):
-        alpha = _component(cipher, f"round_{round_number}_rotate_right", Rotate).amount
-        beta = _component(cipher, f"round_{round_number}_rotate_left", Rotate).amount
+        alpha = _component(primitive, f"round_{round_number}_rotate_right", Rotate).amount
+        beta = _component(primitive, f"round_{round_number}_rotate_left", Rotate).amount
         add_left = _rotate_right(left, alpha, width)
         add_right = right ^ _rotate_right(next_right, beta, width)
         add_output = next_left ^ next_right
@@ -129,10 +129,10 @@ def find_four_round_speck_xor_linear(cipher: Cipher) -> TrailSearchResult:
     )
 
 
-def check_speck_linear_trail(cipher: Cipher, trail: Trail) -> bool:
+def check_speck_linear_trail(primitive: Primitive, trail: Trail) -> bool:
     """Independently check modular-add correlations and backward mask wiring."""
 
-    width = _validate_speck_linear_slice(cipher)
+    width = _validate_speck_linear_slice(primitive)
     if trail.kind is not TrailKind.XOR_LINEAR or len(trail.steps) != 4:
         return False
     semantics = ModularAddLinearSemantics(width)
@@ -142,8 +142,8 @@ def check_speck_linear_trail(cipher: Cipher, trail: Trail) -> bool:
     left = trail.input_pattern.value >> width
     right = trail.input_pattern.value & mask
     for round_number, step in enumerate(trail.steps):
-        alpha = _component(cipher, f"round_{round_number}_rotate_right", Rotate).amount
-        beta = _component(cipher, f"round_{round_number}_rotate_left", Rotate).amount
+        alpha = _component(primitive, f"round_{round_number}_rotate_right", Rotate).amount
+        beta = _component(primitive, f"round_{round_number}_rotate_left", Rotate).amount
         add_left = step.transition.input_pattern.value >> width
         add_right = step.transition.input_pattern.value & mask
         add_output = step.transition.output_pattern.value
@@ -157,11 +157,11 @@ def check_speck_linear_trail(cipher: Cipher, trail: Trail) -> bool:
     return trail.output_pattern.value == (left << width) | right
 
 
-def _validate_speck_slice(cipher: Cipher) -> int:
-    plaintext = cipher.inputs.get("plaintext")
+def _validate_speck_slice(primitive: Primitive) -> int:
+    plaintext = primitive.inputs.get("plaintext")
     if (
-        cipher.family_name != "speck"
-        or len(cipher.rounds) != 2
+        primitive.family_name != "speck"
+        or len(primitive.rounds) != 2
         or plaintext is None
         or not isinstance(plaintext.value_type.domain, Word)
         or plaintext.value_type.domain.width != 16
@@ -172,11 +172,11 @@ def _validate_speck_slice(cipher: Cipher) -> int:
     return 16
 
 
-def _validate_speck_linear_slice(cipher: Cipher) -> int:
-    plaintext = cipher.inputs.get("plaintext")
+def _validate_speck_linear_slice(primitive: Primitive) -> int:
+    plaintext = primitive.inputs.get("plaintext")
     if (
-        cipher.family_name != "speck"
-        or len(cipher.rounds) != 4
+        primitive.family_name != "speck"
+        or len(primitive.rounds) != 4
         or plaintext is None
         or not isinstance(plaintext.value_type.domain, Word)
         or plaintext.value_type.domain.width != 16
@@ -187,10 +187,10 @@ def _validate_speck_linear_slice(cipher: Cipher) -> int:
     return 16
 
 
-def _component(cipher: Cipher, component_id: str, expected_type):
-    component = next((item for item in cipher.components if item.component_id == component_id), None)
+def _component(primitive: Primitive, component_id: str, expected_type):
+    component = next((item for item in primitive.components if item.component_id == component_id), None)
     if not isinstance(component, expected_type):
-        raise ValueError(f"cipher is missing {component_id!r} {expected_type.__name__}")
+        raise ValueError(f"primitive is missing {component_id!r} {expected_type.__name__}")
     return component
 
 

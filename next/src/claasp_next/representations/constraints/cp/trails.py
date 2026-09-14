@@ -31,10 +31,10 @@ class PresentDifferentialCPModel:
             raise ValueError("differential CP lowering requires XOR-differential semantics")
         if problem.maximum_weight is None:
             raise ValueError("differential CP lowering requires maximum_weight")
-        if problem.cipher.family_name != "present" or len(problem.cipher.rounds) != 2:
+        if problem.primitive.family_name != "present" or len(problem.primitive.rounds) != 2:
             raise NotImplementedError("differential CP lowering currently supports PRESENT-2")
         self.problem = problem
-        self.cipher = problem.cipher
+        self.primitive = problem.primitive
         self._records = ()
         self._input_names = ()
         self._last_output_names = ()
@@ -49,14 +49,14 @@ class PresentDifferentialCPModel:
         second_output = tuple(f"round_2_sbox_output_{bit}" for bit in range(64))
         for name in (*plaintext, *first_output, *second_output):
             declarations.append(f"var 0..1: {name};")
-        permutation = _component(self.cipher, "p_layer_1", Permutation)
+        permutation = _component(self.primitive, "p_layer_1", Permutation)
         second_input = tuple(first_output[position] for position in permutation.mapping)
         weight_names = []
         records = []
         for round_number, (inputs, outputs) in enumerate(
             ((plaintext, first_output), (second_input, second_output)), start=1
         ):
-            for nibble, component in enumerate(_round_sboxes(self.cipher, round_number)):
+            for nibble, component in enumerate(_round_sboxes(self.primitive, round_number)):
                 start = 4 * nibble
                 local_input = inputs[start : start + 4]
                 local_output = outputs[start : start + 4]
@@ -96,7 +96,7 @@ class PresentDifferentialCPModel:
 
         if not self._records:
             raise ValueError("build the CP model before decoding a trail")
-        components = {component.component_id: component for component in self.cipher.components}
+        components = {component.component_id: component for component in self.primitive.components}
         steps = []
         for component_id, inputs, outputs in self._records:
             semantics = self.problem.provider_for(components[component_id])
@@ -104,13 +104,13 @@ class PresentDifferentialCPModel:
             target = _integer(assignment[name] for name in outputs)
             steps.append(TrailStep(component_id, semantics.transition((source,), target)))
         raw_output = _integer(assignment[name] for name in self._last_output_names)
-        final = _permute(raw_output, _component(self.cipher, "p_layer_2", Permutation).mapping)
+        final = _permute(raw_output, _component(self.primitive, "p_layer_2", Permutation).mapping)
         trail = Trail(
             TrailKind.XOR_DIFFERENTIAL,
             XorDifference(_integer(assignment[name] for name in self._input_names), 64),
             XorDifference(final, 64), tuple(steps),
         )
-        if not check_present_smt_trail(self.cipher, trail):
+        if not check_present_smt_trail(self.primitive, trail):
             raise ValueError("MiniZinc returned an invalid differential trail")
         return trail
 
@@ -125,10 +125,10 @@ class PresentLinearCPModel:
             raise ValueError("linear CP lowering requires XOR-linear semantics")
         if problem.maximum_weight is None:
             raise ValueError("linear CP lowering requires maximum_weight")
-        if problem.cipher.family_name != "present" or len(problem.cipher.rounds) != 3:
+        if problem.primitive.family_name != "present" or len(problem.primitive.rounds) != 3:
             raise NotImplementedError("linear CP lowering currently supports PRESENT-3")
         self.problem = problem
-        self.cipher = problem.cipher
+        self.primitive = problem.primitive
         self._records = ()
         self._input_names = ()
         self._last_output_names = ()
@@ -149,7 +149,7 @@ class PresentLinearCPModel:
             output_names = tuple(f"round_{round_number}_sbox_mask_{bit}" for bit in range(64))
             for name in output_names:
                 declarations.append(f"var 0..1: {name};")
-            for nibble, component in enumerate(_round_sboxes(self.cipher, round_number)):
+            for nibble, component in enumerate(_round_sboxes(self.primitive, round_number)):
                 start = 4 * nibble
                 local_input = current_input[start : start + 4]
                 local_output = output_names[start : start + 4]
@@ -172,7 +172,7 @@ class PresentLinearCPModel:
                 variables = ",".join((*local_input, *local_output, weight_name))
                 constraints.append(f"constraint table([{variables}], {table_name});")
                 records.append((component.component_id, local_input, local_output))
-            permutation = _component(self.cipher, f"p_layer_{round_number}", Permutation)
+            permutation = _component(self.primitive, f"p_layer_{round_number}", Permutation)
             current_input = tuple(output_names[position] for position in permutation.mapping)
             last_output = output_names
         constraints.append("constraint " + " + ".join(input_names) + " >= 1;")
@@ -192,7 +192,7 @@ class PresentLinearCPModel:
 
         if not self._records:
             raise ValueError("build the CP model before decoding a trail")
-        components = {component.component_id: component for component in self.cipher.components}
+        components = {component.component_id: component for component in self.primitive.components}
         steps = []
         for component_id, inputs, outputs in self._records:
             semantics = self.problem.provider_for(components[component_id])
@@ -200,13 +200,13 @@ class PresentLinearCPModel:
             target = _integer(assignment[name] for name in outputs)
             steps.append(TrailStep(component_id, semantics.transition((source,), target)))
         raw_output = _integer(assignment[name] for name in self._last_output_names)
-        final = _permute(raw_output, _component(self.cipher, "p_layer_3", Permutation).mapping)
+        final = _permute(raw_output, _component(self.primitive, "p_layer_3", Permutation).mapping)
         trail = Trail(
             TrailKind.XOR_LINEAR,
             XorMask(_integer(assignment[name] for name in self._input_names), 64),
             XorMask(final, 64), tuple(steps),
         )
-        if not check_present_linear_smt_trail(self.cipher, trail):
+        if not check_present_linear_smt_trail(self.primitive, trail):
             raise ValueError("MiniZinc returned an invalid linear trail")
         return trail
 
@@ -223,9 +223,9 @@ class SpeckDifferentialCPModel:
             raise TypeError("problem must be a PropagationProblem")
         if problem.semantics != XOR_DIFFERENTIAL:
             raise ValueError("Speck CP lowering requires XOR-differential semantics")
-        plaintext = problem.cipher.inputs.get("plaintext")
+        plaintext = problem.primitive.inputs.get("plaintext")
         if (
-            problem.cipher.family_name != "speck"
+            problem.primitive.family_name != "speck"
             or plaintext is None
             or not isinstance(plaintext.value_type.domain, Word)
             or plaintext.value_type.domain.width != 16
@@ -234,13 +234,13 @@ class SpeckDifferentialCPModel:
         if problem.maximum_weight is None:
             raise ValueError("Speck CP lowering requires maximum_weight")
         self.problem = problem
-        self.cipher = problem.cipher
+        self.primitive = problem.primitive
         self.width = 16
 
     def cp_model(self) -> MiniZincModel:
         """Compile exact support, weight bits, and deterministic round wiring."""
 
-        rounds = len(self.cipher.rounds)
+        rounds = len(self.primitive.rounds)
         declarations = [_MODADD_DIFFERENTIAL_PREDICATE]
         constraints = []
         for boundary in range(rounds + 1):
@@ -251,10 +251,10 @@ class SpeckDifferentialCPModel:
         for round_number in range(rounds):
             declarations.append(f"array[0..14] of var bool: weight_{round_number};")
             alpha = _component(
-                self.cipher, f"round_{round_number}_rotate_right", Rotate
+                self.primitive, f"round_{round_number}_rotate_right", Rotate
             ).amount
             beta = _component(
-                self.cipher, f"round_{round_number}_rotate_left", Rotate
+                self.primitive, f"round_{round_number}_rotate_left", Rotate
             ).amount
             constraints.append(
                 "constraint modular_addition_xor_difference("
@@ -288,12 +288,12 @@ class SpeckDifferentialCPModel:
         left = _boolean_word(assignment["x_0"])
         right = _boolean_word(assignment["y_0"])
         initial = (left << self.width) | right
-        for round_number in range(len(self.cipher.rounds)):
+        for round_number in range(len(self.primitive.rounds)):
             alpha = _component(
-                self.cipher, f"round_{round_number}_rotate_right", Rotate
+                self.primitive, f"round_{round_number}_rotate_right", Rotate
             ).amount
             beta = _component(
-                self.cipher, f"round_{round_number}_rotate_left", Rotate
+                self.primitive, f"round_{round_number}_rotate_left", Rotate
             ).amount
             output = _boolean_word(assignment[f"x_{round_number + 1}"])
             transition = semantics.xor_differential(
@@ -324,13 +324,13 @@ class SpeckTruncatedCPModel:
             raise TypeError("problem must be a PropagationProblem")
         if problem.semantics != DETERMINISTIC_TRUNCATED_XOR:
             raise ValueError("truncated CP lowering requires deterministic-truncated semantics")
-        if problem.cipher.family_name != "speck":
+        if problem.primitive.family_name != "speck":
             raise NotImplementedError("truncated CP lowering currently supports Speck")
         if not isinstance(input_difference, TruncatedXorDifference):
             raise TypeError("input_difference must be a TruncatedXorDifference")
         self.problem = problem
         self.input_difference = input_difference
-        self.expected_output = propagate_two_word_speck_round(problem.cipher, input_difference)
+        self.expected_output = propagate_two_word_speck_round(problem.primitive, input_difference)
 
     def cp_model(self) -> MiniZincModel:
         """Represent the shared paired-carry result using three-valued CP units."""
@@ -445,9 +445,9 @@ class SpeckProbabilisticTruncatedCPModel:
 
         if problem.semantics != PROBABILISTIC_TRUNCATED_XOR:
             raise ValueError("Speck model requires probabilistic-truncated XOR semantics")
-        plaintext = problem.cipher.inputs.get("plaintext")
+        plaintext = problem.primitive.inputs.get("plaintext")
         if (
-            problem.cipher.family_name != "speck" or plaintext is None
+            problem.primitive.family_name != "speck" or plaintext is None
             or not isinstance(plaintext.value_type.domain, Word)
             or plaintext.value_type.domain.width != 16
         ):
@@ -455,7 +455,7 @@ class SpeckProbabilisticTruncatedCPModel:
         if len(input_pattern.bits) != 32 or len(output_pattern.bits) != 32:
             raise ValueError("Speck32 patterns must contain 32 bits")
         self.problem = problem
-        self.cipher = problem.cipher
+        self.primitive = problem.primitive
         self.input_pattern = input_pattern
         self.output_pattern = output_pattern
         self.width = 16
@@ -463,7 +463,7 @@ class SpeckProbabilisticTruncatedCPModel:
     def cp_model(self) -> MiniZincModel:
         """Compile fixed boundaries and minimize the composed scaled weight."""
 
-        rounds = len(self.cipher.rounds)
+        rounds = len(self.primitive.rounds)
         declarations = [_PROBABILISTIC_TRUNCATED_MODADD_PREDICATE]
         constraints = []
         for boundary in range(rounds + 1):
@@ -480,10 +480,10 @@ class SpeckProbabilisticTruncatedCPModel:
             ))
             probabilities.append(f"probability_{round_number}")
             alpha = _component(
-                self.cipher, f"round_{round_number}_rotate_right", Rotate
+                self.primitive, f"round_{round_number}_rotate_right", Rotate
             ).amount
             beta = _component(
-                self.cipher, f"round_{round_number}_rotate_left", Rotate
+                self.primitive, f"round_{round_number}_rotate_left", Rotate
             ).amount
             constraints.extend((
                 "constraint counter_based_probabilistic_truncated_modadd("
@@ -518,12 +518,12 @@ class SpeckProbabilisticTruncatedCPModel:
         transitions = []
         left = TruncatedXorDifference(self.input_pattern.bits[:16])
         right = TruncatedXorDifference(self.input_pattern.bits[16:])
-        for round_number in range(len(self.cipher.rounds)):
+        for round_number in range(len(self.primitive.rounds)):
             alpha = _component(
-                self.cipher, f"round_{round_number}_rotate_right", Rotate
+                self.primitive, f"round_{round_number}_rotate_right", Rotate
             ).amount
             beta = _component(
-                self.cipher, f"round_{round_number}_rotate_left", Rotate
+                self.primitive, f"round_{round_number}_rotate_left", Rotate
             ).amount
             output = _decode_truncated(assignment[f"x_{round_number + 1}"])
             transition = ProbabilisticTruncatedModularAddTransition(
@@ -663,24 +663,24 @@ class SpeckImpossibleCPModel:
     must contain opposite known bits at their shared boundary.
     """
 
-    def __init__(self, cipher, middle_round: int) -> None:
-        plaintext = cipher.inputs.get("plaintext")
+    def __init__(self, primitive, middle_round: int) -> None:
+        plaintext = primitive.inputs.get("plaintext")
         if (
-            cipher.family_name != "speck" or plaintext is None
+            primitive.family_name != "speck" or plaintext is None
             or not isinstance(plaintext.value_type.domain, Word)
             or plaintext.value_type.domain.width != 16
         ):
             raise NotImplementedError("the reviewed impossible slice supports Speck32/64")
-        if not 1 <= middle_round < len(cipher.rounds):
-            raise ValueError("middle_round must be inside the cipher")
-        self.cipher = cipher
+        if not 1 <= middle_round < len(primitive.rounds):
+            raise ValueError("middle_round must be inside the primitive")
+        self.primitive = primitive
         self.middle_round = middle_round
         self.width = 16
 
     def cp_model(self) -> MiniZincModel:
         """Compile independent forward/backward segments meeting in conflict."""
 
-        rounds = len(self.cipher.rounds)
+        rounds = len(self.primitive.rounds)
         declarations = [_DETERMINISTIC_TRUNCATED_MODADD_PREDICATE]
         constraints = []
         for prefix, boundaries in (
@@ -695,10 +695,10 @@ class SpeckImpossibleCPModel:
         for round_number in range(self.middle_round):
             prefix = "forward"
             alpha = _component(
-                self.cipher, f"round_{round_number}_rotate_right", Rotate
+                self.primitive, f"round_{round_number}_rotate_right", Rotate
             ).amount
             beta = _component(
-                self.cipher, f"round_{round_number}_rotate_left", Rotate
+                self.primitive, f"round_{round_number}_rotate_left", Rotate
             ).amount
             constraints.append(
                 "constraint deterministic_truncated_modadd("
@@ -714,10 +714,10 @@ class SpeckImpossibleCPModel:
                 )
         for round_number in reversed(range(self.middle_round, rounds)):
             alpha = _component(
-                self.cipher, f"round_{round_number}_rotate_right", Rotate
+                self.primitive, f"round_{round_number}_rotate_right", Rotate
             ).amount
             beta = _component(
-                self.cipher, f"round_{round_number}_rotate_left", Rotate
+                self.primitive, f"round_{round_number}_rotate_left", Rotate
             ).amount
             for index in range(self.width):
                 # old_y = ROR(new_y XOR new_x, beta)
@@ -753,20 +753,20 @@ class SpeckImpossibleCPModel:
 class SimonImpossibleCPModel:
     """Compose the legacy fully-automatic Simon impossible fixture."""
 
-    def __init__(self, cipher, input_pattern, output_pattern, middle_round: int) -> None:
-        if cipher.family_name != "simon" or len(input_pattern.bits) != 32:
+    def __init__(self, primitive, input_pattern, output_pattern, middle_round: int) -> None:
+        if primitive.family_name != "simon" or len(input_pattern.bits) != 32:
             raise NotImplementedError("the reviewed impossible slice supports Simon32/64")
         if len(output_pattern.bits) != 32:
             raise ValueError("Simon32 output patterns must contain 32 bits")
-        if not 1 <= middle_round < len(cipher.rounds):
-            raise ValueError("middle_round must be inside the cipher")
-        self.cipher, self.input_pattern = cipher, input_pattern
+        if not 1 <= middle_round < len(primitive.rounds):
+            raise ValueError("middle_round must be inside the primitive")
+        self.primitive, self.input_pattern = primitive, input_pattern
         self.output_pattern, self.middle_round = output_pattern, middle_round
 
     def cp_model(self) -> MiniZincModel:
         """Compile directional Simon propagation and a middle contradiction."""
 
-        rounds = len(self.cipher.rounds)
+        rounds = len(self.primitive.rounds)
         declarations, constraints = [_SIMON_TRUNCATED_FUNCTIONS], []
         for prefix, boundaries in (("forward", range(self.middle_round + 1)),
                                    ("backward", range(self.middle_round, rounds + 1))):
@@ -810,7 +810,7 @@ class SimonImpossibleCPModel:
         for _ in range(self.middle_round):
             forward = propagate_two_word_simon_round(forward)
         backward = self.output_pattern
-        for _ in range(len(self.cipher.rounds) - self.middle_round):
+        for _ in range(len(self.primitive.rounds) - self.middle_round):
             backward = propagate_two_word_simon_inverse_round(backward)
         decoded = ImpossiblePropagationBoundary(
             TruncatedXorDifference(_decode_truncated(assignment[f"forward_x_{self.middle_round}"]).bits +
@@ -949,10 +949,10 @@ def _permute(value, mapping):
     return _integer(bits[position] for position in mapping)
 
 
-def _round_sboxes(cipher, round_number):
+def _round_sboxes(primitive, round_number):
     prefix = f"sbox_{round_number}_"
     result = tuple(
-        component for component in cipher.components
+        component for component in primitive.components
         if isinstance(component, BitVectorSBox) and component.component_id.startswith(prefix)
     )
     if len(result) != 16:
@@ -960,12 +960,12 @@ def _round_sboxes(cipher, round_number):
     return result
 
 
-def _component(cipher, component_id, expected_type):
+def _component(primitive, component_id, expected_type):
     component = next(
-        (item for item in cipher.components if item.component_id == component_id), None
+        (item for item in primitive.components if item.component_id == component_id), None
     )
     if not isinstance(component, expected_type):
-        raise ValueError(f"cipher is missing {component_id!r}")
+        raise ValueError(f"primitive is missing {component_id!r}")
     return component
 
 

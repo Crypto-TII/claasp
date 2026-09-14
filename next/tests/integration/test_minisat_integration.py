@@ -2,10 +2,10 @@ import shutil
 
 import pytest
 
-from claasp_next import Bit, Cipher, ValueType
+from claasp_next import Bit, Primitive, ValueType
 from claasp_next.representations.constraints.sat import BooleanCNFModel
 from claasp_next.drivers.solvers import MinisatSolver, SatStatus
-from claasp_next.ciphers import Present80BlockCipher, SpeckBlockCipher
+from claasp_next.primitives import Present80, Speck
 from claasp_next.components import Add
 
 
@@ -14,8 +14,8 @@ pytestmark = pytest.mark.external
 
 def test_minisat_solves_and_refutes_named_present_constraints():
     assert shutil.which("minisat") is not None, "the external test job must install MiniSat"
-    cipher = Present80BlockCipher(number_of_rounds=1)
-    formula = BooleanCNFModel(cipher).cnf_formula()
+    primitive = Present80(number_of_rounds=1)
+    formula = BooleanCNFModel(primitive).cnf_formula()
     fixed_inputs = {
         **{f"plaintext_{position}": 0 for position in range(64)},
         **{f"key_{position}": 0 for position in range(80)},
@@ -32,12 +32,12 @@ def test_minisat_solves_and_refutes_named_present_constraints():
 
 
 def test_high_level_analysis_recovers_an_unknown_input():
-    cipher = Cipher("xor", {"plaintext": ValueType(Bit(), (1,)), "key": ValueType(Bit(), (1,))})
-    cipher.add_round()
-    output = cipher.add_component(Add((cipher.input("plaintext"), cipher.input("key"))))
-    cipher.set_output(output)
+    primitive = Primitive("xor", {"plaintext": ValueType(Bit(), (1,)), "key": ValueType(Bit(), (1,))})
+    primitive.add_round()
+    output = primitive.add_component(Add((primitive.input("plaintext"), primitive.input("key"))))
+    primitive.set_output(output)
 
-    result = cipher.analyze().recover_input(
+    result = primitive.analyze().recover_input(
         "key",
         known_inputs={"plaintext": 1},
         output=0,
@@ -51,11 +51,11 @@ def test_high_level_analysis_recovers_an_unknown_input():
 
 
 def test_word_level_sat_recovers_a_reduced_speck_key():
-    cipher = SpeckBlockCipher(number_of_rounds=1)
+    primitive = Speck(number_of_rounds=1)
     plaintext = 0x6574694C
-    expected = cipher.evaluate(plaintext, 0x1918111009080100)
+    expected = primitive.evaluate(plaintext, 0x1918111009080100)
 
-    result = cipher.analyze().recover_input(
+    result = primitive.analyze().recover_input(
         "key",
         known_inputs={"plaintext": plaintext},
         output=expected,
@@ -63,5 +63,5 @@ def test_word_level_sat_recovers_a_reduced_speck_key():
     )
 
     assert result.is_satisfiable
-    assert cipher.evaluate(plaintext, result.value("key")) == expected
+    assert primitive.evaluate(plaintext, result.value("key")) == expected
     assert result.statistics["variables"] > 64

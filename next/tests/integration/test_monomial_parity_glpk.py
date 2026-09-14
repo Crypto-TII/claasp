@@ -3,7 +3,7 @@
 import pytest
 
 from claasp_next.analysis import enumerate_optimal_monomial_parity
-from claasp_next.ciphers import SimonBlockCipher
+from claasp_next.primitives import Simon
 from claasp_next.drivers.solvers import GLPKSolver
 from claasp_next.representations.constraints.milp import BooleanMonomialGraphMILPModel
 
@@ -13,7 +13,7 @@ pytestmark = pytest.mark.external
 
 def test_glpk_complete_parity_matches_exact_two_round_simon_anf():
     compilation = BooleanMonomialGraphMILPModel(
-        SimonBlockCipher(number_of_rounds=2), 0, "plaintext"
+        Simon(number_of_rounds=2), 0, "plaintext"
     )
     result = enumerate_optimal_monomial_parity(compilation, GLPKSolver())
     assert result.degree == 3
@@ -27,7 +27,7 @@ def test_glpk_complete_parity_matches_exact_two_round_simon_anf():
 
 def test_path_limit_cannot_be_mistaken_for_complete_parity():
     compilation = BooleanMonomialGraphMILPModel(
-        SimonBlockCipher(number_of_rounds=2), 0, "plaintext"
+        Simon(number_of_rounds=2), 0, "plaintext"
     )
     result = enumerate_optimal_monomial_parity(
         compilation, GLPKSolver(), max_paths=1

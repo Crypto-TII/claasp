@@ -1,5 +1,5 @@
-Traditional ciphers
-===================
+Traditional primitives
+========================
 
 Words as logical units
 ----------------------
@@ -26,8 +26,8 @@ boundaries hide the internal word ordering from ordinary evaluation calls.
 
 .. doctest::
 
-   >>> from claasp_next.ciphers import SpeckBlockCipher
-   >>> speck = SpeckBlockCipher(64, 128)
+   >>> from claasp_next.primitives import Speck
+   >>> speck = Speck(64, 128)
    >>> plaintext = 0x3B7265747475432D
    >>> key = 0x1B1A1918131211100B0A090803020100
    >>> f"{speck.evaluate(plaintext, key):016x}"
@@ -46,8 +46,8 @@ part of the graph, and packed integers remain the ordinary user interface.
 
 .. doctest::
 
-   >>> from claasp_next.ciphers import SimonBlockCipher
-   >>> simon = SimonBlockCipher()
+   >>> from claasp_next.primitives import Simon
+   >>> simon = Simon()
    >>> f"{simon.evaluate(0x65656877, 0x1918111009080100):08x}"
    'c69be9bb'
 
@@ -64,16 +64,16 @@ elements of :math:`GF(2^8)` in the polynomial basis defined by
 
 .. doctest::
 
-   >>> from claasp_next.ciphers import AESBlockCipher
+   >>> from claasp_next.primitives import AES
    >>> plaintext = 0x00112233445566778899AABBCCDDEEFF
    >>> key = 0x000102030405060708090A0B0C0D0E0F
-   >>> f"{AESBlockCipher().evaluate(plaintext, key):032x}"
+   >>> f"{AES().evaluate(plaintext, key):032x}"
    '69c4e0d86a7b0430d8cdb78070b4c55a'
 
 The graph supports AES-128, AES-192, and AES-256 key expansion. SubBytes uses a reusable typed
 ``SBox`` lookup, ShiftRows is a domain-neutral ``Permutation``, MixColumns is
 a ``LinearMap`` over the byte field, and AddRoundKey is field addition.
-``number_of_rounds`` constructs a prefix of the standard cipher; MixColumns
+``number_of_rounds`` constructs a prefix of the standard primitive; MixColumns
 is omitted only in standard round 10.
 
 AES is also the first primitive with interchangeable graph realizations. The
@@ -84,11 +84,11 @@ external input/output contract:
 
 .. doctest::
 
-   >>> lookup = AESBlockCipher(realization="lookup")
-   >>> algebraic = AESBlockCipher(realization="algebraic")
+   >>> lookup = AES(realization="lookup")
+   >>> algebraic = AES(realization="algebraic")
    >>> lookup.evaluate(plaintext, key) == algebraic.evaluate(plaintext, key)
    True
-   >>> [item.name for item in AESBlockCipher.available_realizations()]
+   >>> [item.name for item in AES.available_realizations()]
    ['lookup', 'algebraic']
 
 Users may request a realization explicitly. An analysis compiler can instead
@@ -96,9 +96,9 @@ select deterministically from declared capabilities:
 
 .. doctest::
 
-   >>> AESBlockCipher.for_capabilities({"sbox_semantics"}).realization.name
+   >>> AES.for_capabilities({"sbox_semantics"}).realization.name
    'lookup'
-   >>> AESBlockCipher.for_capabilities({"algebraic_semantics"}).realization.name
+   >>> AES.for_capabilities({"algebraic_semantics"}).realization.name
    'algebraic'
 
 Automatic selection is part of reproducibility: results must retain the
@@ -114,8 +114,8 @@ separate ``Bit`` units, unlike AES's lookup over one byte-field unit.
 
 .. doctest::
 
-   >>> from claasp_next.ciphers import Present80BlockCipher
-   >>> f"{Present80BlockCipher().evaluate(plaintext=0, key=0):016x}"
+   >>> from claasp_next.primitives import Present80
+   >>> f"{Present80().evaluate(plaintext=0, key=0):016x}"
    '5579c1387b228445'
 
 Both 80- and 128-bit key schedules are supported. The friendly boundary API converts packed integers to the graph's canonical
@@ -133,7 +133,7 @@ diagonals.
 
 .. doctest::
 
-   >>> from claasp_next.ciphers import ChaCha
+   >>> from claasp_next.primitives import ChaCha
    >>> toy = ChaCha(number_of_rounds=1, word_size=8, rotations=(4, 3, 2, 1))
    >>> f"{toy.evaluate(1 << 120):032x}"
    '81000000ad0000005600000046000000'
@@ -153,7 +153,7 @@ of the legacy implementation's internal half-round counter.
 
 .. doctest::
 
-   >>> from claasp_next.ciphers import Salsa
+   >>> from claasp_next.primitives import Salsa
    >>> output = Salsa(number_of_rounds=2).evaluate(1 << (15 * 32))
    >>> f"{output:0128x}"[:32]
    '8186a22d0040a2848247921006929051'
@@ -181,8 +181,8 @@ each byte are numbered from its least significant bit.
 
 .. doctest::
 
-   >>> from claasp_next.ciphers import Trivium
-   >>> from claasp_next.ciphers.block_functions.trivium import (
+   >>> from claasp_next.primitives import Trivium
+   >>> from claasp_next.primitives.block_functions.trivium import (
    ...     estream_bytes_to_bit_sequence)
    >>> key = estream_bytes_to_bit_sequence(0x80000000000000000000, 10)
    >>> keystream = Trivium(keystream_bit_size=32).evaluate(key=key, iv=0)

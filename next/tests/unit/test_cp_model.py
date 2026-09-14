@@ -1,6 +1,6 @@
 import pytest
 
-from claasp_next.ciphers import SpeckBlockCipher
+from claasp_next.primitives import Speck
 from claasp_next.drivers.solvers.minizinc import CPStatus, _parse_output
 from claasp_next.representations.constraints.cp import (
     BooleanMiniZincLowerer, MiniZincModel, SpeckDifferentialCPModel,
@@ -64,9 +64,9 @@ def test_boolean_lowering_preserves_cnf_names_signs_and_provenance():
 
 
 def test_speck_differential_cp_lowering_has_exact_relation_and_bound():
-    cipher = SpeckBlockCipher(number_of_rounds=5)
+    primitive = Speck(number_of_rounds=5)
     lowered = SpeckDifferentialCPModel(PropagationProblem(
-        cipher, XOR_DIFFERENTIAL, maximum_weight=9,
+        primitive, XOR_DIFFERENTIAL, maximum_weight=9,
         provenance=("legacy Speck32/64-5 optimum",),
     )).cp_model()
 

@@ -1,13 +1,13 @@
 """Real GLPK composition of multi-round monomial trails."""
 
 from claasp_next.analysis import PresentMonomialSemantics
-from claasp_next.ciphers import PresentBlockCipher
+from claasp_next.primitives import Present
 from claasp_next.drivers.solvers import GLPKSolver, MILPStatus
 from claasp_next.representations.constraints.milp import PresentMonomialTrailMILPModel
 
 
 def test_glpk_recovers_and_independently_checks_two_round_present_monomial_trail():
-    primitive = PresentBlockCipher(number_of_rounds=2)
+    primitive = Present(number_of_rounds=2)
     expected = PresentMonomialSemantics(primitive).predecessor_trail(1)
     representation = PresentMonomialTrailMILPModel(
         primitive, expected.input_mask, expected.output_mask

@@ -1,4 +1,4 @@
-"""Round containers for typed cipher graphs."""
+"""Round containers for typed primitive graphs."""
 
 from dataclasses import dataclass, field
 

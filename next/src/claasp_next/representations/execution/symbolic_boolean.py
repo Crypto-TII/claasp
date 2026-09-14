@@ -5,7 +5,7 @@ from dataclasses import dataclass
 
 from claasp_next.components import BitwiseAnd, Concatenate, Constant, ModularAdd, Rotate, Xor
 from claasp_next.domains import Bit, Word
-from claasp_next.graph import Cipher
+from claasp_next.graph import Primitive
 from claasp_next.representations.constraints.polynomial import BooleanPolynomial
 
 
@@ -27,10 +27,10 @@ class BooleanSymbolicEvaluator:
     plaintext, ``k`` for key) and use MSB-first flattened bit positions.
     """
 
-    def evaluate(self, primitive: Cipher) -> BooleanSymbolicResult:
+    def evaluate(self, primitive: Primitive) -> BooleanSymbolicResult:
         """Return exact output ANFs for a supported Bit/Word primitive graph."""
 
-        if not isinstance(primitive, Cipher):
+        if not isinstance(primitive, Primitive):
             raise TypeError("primitive must be a typed graph")
         values = {}
         for name, port in primitive.inputs.items():

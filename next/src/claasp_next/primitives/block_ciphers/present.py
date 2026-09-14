@@ -1,7 +1,7 @@
-"""Bit-oriented PRESENT block cipher."""
+"""Bit-oriented PRESENT block primitive."""
 
 from claasp_next.components import Add, BitVectorSBox, Concatenate, Constant, Permutation
-from claasp_next.graph import Cipher, Port, ValueType
+from claasp_next.graph import Primitive, Port, ValueType
 from claasp_next.domains import Bit
 
 PRESENT_SBOX = (0xC, 0x5, 0x6, 0xB, 0x9, 0x0, 0xA, 0xD, 0x3, 0xE, 0xF, 0x8, 0x4, 0x7, 0x1, 0x2)
@@ -18,7 +18,7 @@ def _p_layer_mapping() -> tuple[int, ...]:
 
 
 P_LAYER_MAPPING = _p_layer_mapping()
-class PresentBlockCipher(Cipher):
+class Present(Primitive):
     """Construct PRESENT with a 64-bit block and an 80- or 128-bit key.
 
     Inputs and output are MSB-first bit tuples. Use
@@ -27,9 +27,9 @@ class PresentBlockCipher(Cipher):
 
     EXAMPLES::
 
-        >>> from claasp_next.ciphers import PresentBlockCipher
-        >>> cipher = PresentBlockCipher()
-        >>> hex(cipher.evaluate(plaintext=0, key=0))
+        >>> from claasp_next.primitives import Present
+        >>> primitive = Present()
+        >>> hex(primitive.evaluate(plaintext=0, key=0))
         '0x5579c1387b228445'
     """
 
@@ -127,7 +127,7 @@ class PresentBlockCipher(Cipher):
         ))
 
 
-class Present80BlockCipher(PresentBlockCipher):
+class Present80(Present):
     """Convenience constructor for the PRESENT-80 variant."""
 
     def __init__(self, number_of_rounds: int = 31) -> None:

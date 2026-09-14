@@ -1,12 +1,12 @@
 """Exact graph ANF recovery without Sage or Gurobi."""
 
-from claasp_next.ciphers import SimonBlockCipher
+from claasp_next.primitives import Simon
 from claasp_next.representations.constraints.polynomial import BooleanMonomial
 from claasp_next.representations.execution import BooleanSymbolicEvaluator
 
 
 def test_one_round_simon_anf_preserves_legacy_fixed_monomials():
-    result = BooleanSymbolicEvaluator().evaluate(SimonBlockCipher(number_of_rounds=1))
+    result = BooleanSymbolicEvaluator().evaluate(Simon(number_of_rounds=1))
     first_output = result.output_anfs[0]
     terms = set(first_output.monomials)
 
@@ -18,7 +18,7 @@ def test_one_round_simon_anf_preserves_legacy_fixed_monomials():
 
 
 def test_symbolic_simon_anf_evaluates_like_the_typed_primitive():
-    primitive = SimonBlockCipher(number_of_rounds=1)
+    primitive = Simon(number_of_rounds=1)
     result = BooleanSymbolicEvaluator().evaluate(primitive)
     plaintext = 0x12345678
     key = 0x1918111009080100
@@ -33,7 +33,7 @@ def test_symbolic_simon_anf_evaluates_like_the_typed_primitive():
 
 
 def test_two_round_simon_degrees_and_superpoly_preserve_legacy_results():
-    result = BooleanSymbolicEvaluator().evaluate(SimonBlockCipher(number_of_rounds=2))
+    result = BooleanSymbolicEvaluator().evaluate(Simon(number_of_rounds=2))
 
     assert [polynomial.degree for polynomial in result.output_anfs] == [3] * 16 + [2] * 16
     partial = result.output_anfs[0].cube_coefficient(("p0", "p9"))

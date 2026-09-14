@@ -10,8 +10,8 @@ Domains
 .. automodule:: claasp_next.domains
    :members:
 
-Cipher graph
-------------
+Primitive graph
+----------------
 
 .. automodule:: claasp_next.graph
    :members:
@@ -68,7 +68,7 @@ Analysis
 Primitives
 ----------
 
-.. automodule:: claasp_next.ciphers
+.. automodule:: claasp_next.primitives
    :members:
 
 Parameter catalogues

@@ -10,8 +10,8 @@ cannot establish on its own.
 
 import pytest
 
-from claasp_next.ciphers import Trivium
-from claasp_next.ciphers.block_functions.trivium import estream_bytes_to_bit_sequence
+from claasp_next.primitives import Trivium
+from claasp_next.primitives.block_functions.trivium import estream_bytes_to_bit_sequence
 from claasp_next.components import BitwiseAnd, Concatenate, Constant, Xor
 from claasp_next.encoding import units_from_int
 from claasp_next.representations.execution import BatchEvaluator

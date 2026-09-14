@@ -3,7 +3,7 @@ import shutil
 import pytest
 
 from claasp_next.analysis import correlation_dataset
-from claasp_next.ciphers import SpeckBlockCipher
+from claasp_next.primitives import Speck
 from claasp_next.drivers.statistical import DieharderDriver
 
 
@@ -13,7 +13,7 @@ pytestmark = pytest.mark.external
 @pytest.mark.skipif(shutil.which("dieharder") is None, reason="Dieharder is not installed")
 def test_dieharder_driver_executes_one_bounded_test():
     dataset = correlation_dataset(
-        SpeckBlockCipher(number_of_rounds=1),
+        Speck(number_of_rounds=1),
         "plaintext",
         1,
         1024,

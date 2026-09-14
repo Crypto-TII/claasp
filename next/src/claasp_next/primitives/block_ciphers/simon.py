@@ -1,8 +1,8 @@
-"""Word-oriented Simon block cipher."""
+"""Word-oriented Simon block primitive."""
 
 from claasp_next.components import BitwiseAnd, Concatenate, Constant, Rotate, Xor
 from claasp_next.domains import Word
-from claasp_next.graph import Cipher, Port, Selection, ValueType
+from claasp_next.graph import Primitive, Port, Selection, ValueType
 
 PARAMETERS_CONFIGURATION_LIST = (
     (32, 64, 32), (48, 72, 36), (48, 96, 36), (64, 96, 42),
@@ -15,14 +15,14 @@ _Z_INDEX = {16: {4: 0}, 24: {3: 0, 4: 1}, 32: {3: 2, 4: 3},
             48: {2: 2, 3: 3}, 64: {2: 2, 3: 3, 4: 4}}
 
 
-class SimonBlockCipher(Cipher):
+class Simon(Primitive):
     """Construct a standard Simon variant over typed word components.
 
     EXAMPLES::
 
-        >>> from claasp_next.ciphers import SimonBlockCipher
-        >>> cipher = SimonBlockCipher()
-        >>> hex(cipher.evaluate(0x65656877, 0x1918111009080100))
+        >>> from claasp_next.primitives import Simon
+        >>> primitive = Simon()
+        >>> hex(primitive.evaluate(0x65656877, 0x1918111009080100))
         '0xc69be9bb'
     """
 
@@ -64,7 +64,7 @@ class SimonBlockCipher(Cipher):
                     component_id=f"round_key_{round_number}",
                 )))
             left, right = self._round(left, right, round_keys[round_number], round_number)
-        self.set_output(self.add_component(Concatenate((left, right), component_id="cipher_output")))
+        self.set_output(self.add_component(Concatenate((left, right), component_id="primitive_output")))
 
     def _round(self, left, right, round_key, round_number):
         rotate_1 = self.add_component(Rotate(left, 1, "left"))

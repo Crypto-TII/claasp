@@ -3,7 +3,7 @@ import importlib.util
 import pytest
 
 from claasp_next.analysis.neural import NeuralExperiment, xor_differential_dataset
-from claasp_next.ciphers import SpeckBlockCipher
+from claasp_next.primitives import Speck
 from claasp_next.drivers.neural import SklearnMLPDriver
 
 
@@ -27,7 +27,7 @@ def test_sklearn_driver_trains_a_bounded_reduced_round_differential_distinguishe
     dataset (that lives in the fast unit-level driver test instead).
     """
 
-    primitive = SpeckBlockCipher(number_of_rounds=2)
+    primitive = Speck(number_of_rounds=2)
     dataset = xor_differential_dataset(
         primitive, {"plaintext": 0x0040_0000, "key": 0}, samples=3000, seed=11
     )

@@ -133,8 +133,8 @@ class Trail:
 
         return self.kind.semantics
 
-    def annotate(self, cipher, input_name: str = "plaintext"):
-        """Attach this trail to ``cipher`` using the common graph annotation.
+    def annotate(self, primitive, input_name: str = "plaintext"):
+        """Attach this trail to ``primitive`` using the common graph annotation.
 
         The trail may contain only active components, so annotations are not
         required to cover the complete graph.
@@ -147,8 +147,8 @@ class Trail:
             AnnotationEntry(step.component_id, AnnotationRole.COMPONENT, step.transition)
             for step in self.steps
         )
-        entries.append(AnnotationEntry("cipher_output", AnnotationRole.OUTPUT, self.output_pattern))
-        return GraphAnnotation(cipher, self.semantics, entries)
+        entries.append(AnnotationEntry("primitive_output", AnnotationRole.OUTPUT, self.output_pattern))
+        return GraphAnnotation(primitive, self.semantics, entries)
 
 
 @dataclass(frozen=True, slots=True)

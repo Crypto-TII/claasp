@@ -6,7 +6,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 
 from claasp_next.analysis.datasets import generate_avalanche_dataset
-from claasp_next.graph import Cipher
+from claasp_next.graph import Primitive
 
 
 @dataclass(frozen=True, slots=True)
@@ -48,7 +48,7 @@ class AvalancheResult:
 
 
 def avalanche_probabilities(
-    primitive: Cipher,
+    primitive: Primitive,
     input_name: str,
     number_of_samples: int,
     *,
@@ -59,7 +59,7 @@ def avalanche_probabilities(
 
     For each sampled input, the function evaluates a baseline and then flips
     each bit of ``input_name`` independently.  Randomness is reproducible and
-    the underlying task uses only :meth:`Cipher.evaluate`.
+    the underlying task uses only :meth:`~claasp_next.graph.Primitive.evaluate`.
     """
 
     dataset = generate_avalanche_dataset(

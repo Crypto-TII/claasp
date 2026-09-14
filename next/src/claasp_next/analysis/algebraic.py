@@ -3,7 +3,7 @@
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 
-from claasp_next.graph import Cipher
+from claasp_next.graph import Primitive
 from claasp_next.representations.constraints.polynomial import BooleanPolynomial
 from claasp_next.representations.execution import BooleanSymbolicEvaluator
 
@@ -34,7 +34,7 @@ class BooleanAlgebraicEvidence:
 
 
 def analyze_boolean_algebra(
-    primitive: Cipher,
+    primitive: Primitive,
     *,
     cube: Iterable[str] | None = None,
     fixed_variables: Mapping[str, int] | None = None,

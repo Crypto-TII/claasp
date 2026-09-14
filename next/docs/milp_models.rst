@@ -40,22 +40,22 @@ The first optional adapter invokes the open-source ``glpsol`` command:
    assert result.objective_value == 4
 
 Every returned assignment is checked against the portable model and its
-objective is recomputed. Cipher trail lowering is layered on top of this
+objective is recomputed. Primitive trail lowering is layered on top of this
 representation in the next M10.5 checkpoint.
 
 Weighted PRESENT trails
 -----------------------
 
-The first cipher lowering composes every feasible DDT transition of all 32
+The first primitive lowering composes every feasible DDT transition of all 32
 S-box instances in two-round PRESENT. It connects both layers through the
 graph's permutation, requires a nonzero input difference, and minimizes the
 sum of exact transition weights:
 
 .. doctest::
 
-   >>> from claasp_next.ciphers import PresentBlockCipher
+   >>> from claasp_next.primitives import Present
    >>> from claasp_next.representations.constraints.milp import PresentDifferentialMILPModel
-   >>> lowering = PresentDifferentialMILPModel(PresentBlockCipher(number_of_rounds=2))
+   >>> lowering = PresentDifferentialMILPModel(Present(number_of_rounds=2))
    >>> trail_model = lowering.milp_model()
    >>> len(trail_model.constraints)
    289
@@ -70,7 +70,7 @@ The compiler also accepts the same shared ``PropagationProblem`` used by SMT:
 
    >>> from claasp_next.semantics import XOR_DIFFERENTIAL
    >>> from claasp_next.semantics.cryptanalysis import PropagationProblem
-   >>> shared = PropagationProblem(PresentBlockCipher(number_of_rounds=2), XOR_DIFFERENTIAL)
+   >>> shared = PropagationProblem(Present(number_of_rounds=2), XOR_DIFFERENTIAL)
    >>> PresentDifferentialMILPModel(shared).problem is shared
    True
 

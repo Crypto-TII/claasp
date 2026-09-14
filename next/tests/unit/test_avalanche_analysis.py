@@ -1,11 +1,11 @@
 import pytest
 
 from claasp_next.analysis.avalanche import avalanche_probabilities
-from claasp_next.ciphers import SpeckBlockCipher
+from claasp_next.primitives import Speck
 
 
 def test_one_round_speck_avalanche_fixture_is_reproducible():
-    primitive = SpeckBlockCipher(number_of_rounds=1)
+    primitive = Speck(number_of_rounds=1)
     result = avalanche_probabilities(
         primitive, "plaintext", 4, seed=9, fixed_inputs={"key": 0}
     )
@@ -23,7 +23,7 @@ def test_one_round_speck_avalanche_fixture_is_reproducible():
 
 
 def test_avalanche_summary_and_input_validation():
-    primitive = SpeckBlockCipher(number_of_rounds=1)
+    primitive = Speck(number_of_rounds=1)
     result = avalanche_probabilities(primitive, "plaintext", 2, seed=0)
 
     assert result.mean_changed_output_bits[0] == sum(result.probabilities[0])
@@ -33,7 +33,7 @@ def test_avalanche_summary_and_input_validation():
 
 
 def test_primitive_analysis_facade_exposes_avalanche():
-    result = SpeckBlockCipher(number_of_rounds=1).analyze().avalanche(
+    result = Speck(number_of_rounds=1).analyze().avalanche(
         "plaintext", 2, seed=9, fixed_inputs={"key": 0}
     )
     assert result.sample_count == 2

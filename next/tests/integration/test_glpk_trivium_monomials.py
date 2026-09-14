@@ -9,7 +9,7 @@ enumeration terminated in UNSAT.
 import pytest
 
 from claasp_next.analysis import enumerate_optimal_monomial_parity
-from claasp_next.ciphers import Trivium
+from claasp_next.primitives import Trivium
 from claasp_next.drivers.solvers import GLPKSolver, MILPStatus
 from claasp_next.representations.constraints.milp import BooleanMonomialGraphMILPModel
 from claasp_next.representations.execution import BooleanSymbolicEvaluator

@@ -10,7 +10,7 @@ from random import Random
 from typing import Protocol
 
 from claasp_next.encoding import bits_from_int
-from claasp_next.graph import Cipher
+from claasp_next.graph import Primitive
 
 
 def _positive_integer(name: str, value: int) -> None:
@@ -29,7 +29,7 @@ def _component_ids(component_ids: str | Sequence[str]) -> tuple[str, ...]:
     return ids
 
 
-def _projection_width(primitive: Cipher, component_ids: tuple[str, ...]) -> int:
+def _projection_width(primitive: Primitive, component_ids: tuple[str, ...]) -> int:
     total = 0
     for component_id in component_ids:
         width = primitive.port(component_id).value_type.encoded_bit_size
@@ -39,7 +39,7 @@ def _projection_width(primitive: Cipher, component_ids: tuple[str, ...]) -> int:
     return total
 
 
-def _trace_bits(primitive: Cipher, source_id: str, value: tuple[int, ...]) -> tuple[int, ...]:
+def _trace_bits(primitive: Primitive, source_id: str, value: tuple[int, ...]) -> tuple[int, ...]:
     """Flatten one execution-trace value into canonical MSB-first bits.
 
     ``value`` holds one integer per logical unit in the domain declared for
@@ -59,7 +59,7 @@ def _trace_bits(primitive: Cipher, source_id: str, value: tuple[int, ...]) -> tu
 
 
 def _projection_bits(
-    primitive: Cipher, component_ids: tuple[str, ...], trace
+    primitive: Primitive, component_ids: tuple[str, ...], trace
 ) -> tuple[int, ...]:
     return tuple(
         bit
@@ -68,14 +68,14 @@ def _projection_bits(
     )
 
 
-def _widths(primitive: Cipher) -> dict[str, int]:
+def _widths(primitive: Primitive) -> dict[str, int]:
     widths = {name: port.value_type.encoded_bit_size for name, port in primitive.inputs.items()}
     if any(width is None for width in widths.values()):
         raise ValueError("neural datasets require canonically bit-encoded inputs")
     return {name: int(width) for name, width in widths.items()}
 
 
-def _output_width(primitive: Cipher) -> int:
+def _output_width(primitive: Primitive) -> int:
     if primitive.output is None:
         raise ValueError("the primitive must declare an output")
     width = primitive.output.value_type.encoded_bit_size
@@ -163,7 +163,7 @@ class NeuralTrainingDriver(Protocol):
 
 
 def black_box_dataset(
-    primitive: Cipher,
+    primitive: Primitive,
     varied_input: str,
     *,
     samples: int,
@@ -202,7 +202,7 @@ def black_box_dataset(
 
 
 def xor_differential_dataset(
-    primitive: Cipher,
+    primitive: Primitive,
     input_differences: Mapping[str, int],
     *,
     samples: int,
@@ -248,7 +248,7 @@ def xor_differential_dataset(
     return NeuralDataset(tuple(rows), tuple(labels), "xor_differential", seed, names)
 
 
-def round_component_ids(primitive: Cipher, round_number: int) -> tuple[str, ...]:
+def round_component_ids(primitive: Primitive, round_number: int) -> tuple[str, ...]:
     """Return every component id CLAASP added within one round of ``primitive``.
 
     A convenience selector for :func:`component_output_dataset` and
@@ -273,7 +273,7 @@ def round_component_ids(primitive: Cipher, round_number: int) -> tuple[str, ...]
 
 
 def component_output_dataset(
-    primitive: Cipher,
+    primitive: Primitive,
     varied_input: str,
     component_ids: str | Sequence[str],
     *,
@@ -330,7 +330,7 @@ def component_output_dataset(
 
 
 def xor_differential_component_dataset(
-    primitive: Cipher,
+    primitive: Primitive,
     input_differences: Mapping[str, int],
     component_ids: str | Sequence[str],
     *,

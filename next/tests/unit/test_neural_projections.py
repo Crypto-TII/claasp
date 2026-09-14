@@ -7,12 +7,12 @@ from claasp_next.analysis.neural import (
     round_component_ids,
     xor_differential_component_dataset,
 )
-from claasp_next.ciphers import SpeckBlockCipher
+from claasp_next.primitives import Speck
 from claasp_next.encoding import bits_from_int, int_from_bits
 
 
-def test_round_component_ids_matches_the_cipher_graph_round_structure():
-    primitive = SpeckBlockCipher(number_of_rounds=2)
+def test_round_component_ids_matches_the_primitive_graph_round_structure():
+    primitive = Speck(number_of_rounds=2)
 
     round_0 = round_component_ids(primitive, 0)
     round_1 = round_component_ids(primitive, 1)
@@ -23,8 +23,8 @@ def test_round_component_ids_matches_the_cipher_graph_round_structure():
     # round function, matching legacy's round_output/round_key_output split.
     assert "round_0_xor_xy" in round_0
     assert "key_0_xor_xy" in round_0
-    # The final round carries the cipher output component too.
-    assert "cipher_output" in round_1
+    # The final round carries the primitive output component too.
+    assert "primitive_output" in round_1
 
     with pytest.raises(ValueError, match="range"):
         round_component_ids(primitive, 2)
@@ -42,7 +42,7 @@ def test_component_output_dataset_matches_direct_trace_inspection_of_round_state
     match.
     """
 
-    primitive = SpeckBlockCipher(number_of_rounds=2)
+    primitive = Speck(number_of_rounds=2)
     component_id = "round_0_xor_xy"
     seed = 5
     samples = 16
@@ -85,8 +85,8 @@ def test_component_output_dataset_matches_direct_trace_inspection_of_round_state
 
 
 def test_component_output_dataset_supports_concatenated_round_projection():
-    primitive = SpeckBlockCipher(number_of_rounds=2)
-    ids = round_component_ids(primitive, 1)  # ("round_1_...", ..., "cipher_output")
+    primitive = Speck(number_of_rounds=2)
+    ids = round_component_ids(primitive, 1)  # ("round_1_...", ..., "primitive_output")
     dataset = component_output_dataset(primitive, "key", ids, samples=6, seed=2)
 
     expected_width = sum(
@@ -99,7 +99,7 @@ def test_component_output_dataset_supports_concatenated_round_projection():
 
 
 def test_xor_differential_component_dataset_matches_direct_trace_inspection():
-    primitive = SpeckBlockCipher(number_of_rounds=2)
+    primitive = Speck(number_of_rounds=2)
     component_id = "key_0_xor_xy"  # the round-key projection for round 0
     differences = {"plaintext": 0x0040_0000, "key": 0}
     seed = 11
@@ -144,7 +144,7 @@ def test_xor_differential_component_dataset_matches_direct_trace_inspection():
 
 
 def test_component_output_dataset_validates_component_ids():
-    primitive = SpeckBlockCipher(number_of_rounds=1)
+    primitive = Speck(number_of_rounds=1)
 
     with pytest.raises(ValueError, match="must not be empty"):
         component_output_dataset(primitive, "plaintext", (), samples=2)
