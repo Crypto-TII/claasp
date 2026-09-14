@@ -13,6 +13,7 @@ from claasp_next.semantics.cryptanalysis.composed import (
     BoomerangConnectivity, BoomerangSwitchBoundary, BoomerangTrail,
     DifferentialLinearTrail, SBoxBoomerangSemantics,
     ModularAddBoomerangConnectivity, ModularAddBoomerangSemantics,
+    ModularAddBoomerangAutomaton,
 )
 from claasp_next.semantics.cryptanalysis.truncated import (
     ImpossiblePropagationBoundary, ProbabilisticTruncatedModularAddTransition,
@@ -45,4 +46,5 @@ __all__ = [
     "BoomerangConnectivity", "BoomerangSwitchBoundary", "BoomerangTrail",
     "DifferentialLinearTrail", "SBoxBoomerangSemantics",
     "ModularAddBoomerangConnectivity", "ModularAddBoomerangSemantics",
+    "ModularAddBoomerangAutomaton",
 ]

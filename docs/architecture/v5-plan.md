@@ -393,8 +393,9 @@ overrides rather than a parallel model hierarchy.
 
 M10.6d5 proceeds as M10.6d5a (fixture and evidence audit), M10.6d5b1 (shared
 composition contracts), M10.6d5b2 (exact bijective BCT semantics), M10.6d5b3a
-(an exhaustive modular-add quartet oracle), M10.6d5b3b (the scalable Speck ARX
-switch and selected empirical fixture), and M10.6d5c
+(an exhaustive modular-add quartet oracle), M10.6d5b3b (an exact scalable
+carry/borrow automaton), M10.6d5b3c (the legacy restricted Speck ARX switch and
+selected empirical fixture), and M10.6d5c
 (typed differential-linear composition and the fixed Speck weight-14 fixture).
 Solver proofs and seeded statistical corroboration are reported separately.
 
@@ -672,7 +673,8 @@ each synchronization.
 | Shared composed-attack contracts (M10.6d5b1) | Achieved | Typed two-trail boomerang switch and differential/connector/linear results enforce boundary kinds and explicit objective formulas independently of CP |
 | Exact bijective BCT semantics (M10.6d5b2) | Achieved | Exhaustive inverse-table definition, typed count/weight, PRESENT fixed possible/impossible entries, native CP table, and independent decoder |
 | Modular-add boomerang oracle (M10.6d5b3a) | Achieved | Exact four-difference quartet equations and exhaustive counts for widths through 8 provide an independent oracle for scalable encodings |
-| Speck ARX boomerang composition (M10.6d5b3b) | Next | Validate and lower the scalable onlyLargeSwitch relation against the oracle, then preserve the Speck32/64 empirical fixture without presenting it as an exact BCT proof |
+| Exact modular-add switch automaton (M10.6d5b3b) | Achieved | Sixteen carry/borrow states match every exhaustive 3-bit entry and scale to exact 16-bit Speck counts |
+| Restricted Speck ARX boomerang composition (M10.6d5b3c) | Next | Compare the legacy one-half onlyLargeSwitch restriction with exact automaton results, lower it explicitly as an approximation, and preserve its empirical fixture |
 | Typed differential-linear composition (M10.6d5c) | Planned | Differential prefix, selectable connector, linear suffix, exact objective, and fixed Speck32/64 weight-14 patterns |
 | CP continuous models (M10.6d6) | Planned | Numerically qualified heuristic models kept distinct from exact proof results |
 | Statistical analysis (M10.7) | Planned | Avalanche and related legacy behavior |

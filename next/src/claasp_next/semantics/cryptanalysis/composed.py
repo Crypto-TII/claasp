@@ -127,6 +127,53 @@ class ModularAddBoomerangSemantics:
         )
 
 
+class ModularAddBoomerangAutomaton:
+    """Exact scalable modular-add switch using carry/borrow states."""
+
+    def __init__(self, width: int) -> None:
+        if not isinstance(width, int) or isinstance(width, bool) or not 1 <= width <= 64:
+            raise ValueError("the modular-add switch automaton supports widths 1 through 64")
+        self.width = width
+
+    def connectivity(self, delta_left, delta_right, nabla_output, nabla_right):
+        """Count quartets with a sixteen-state least-significant-bit automaton."""
+
+        size = 1 << self.width
+        values = (delta_left, delta_right, nabla_output, nabla_right)
+        if any(not isinstance(value, int) or isinstance(value, bool) or not 0 <= value < size for value in values):
+            raise ValueError("switch differences must fit the word width")
+        states = {(0, 0, 0, 0): 1}
+        for bit in range(self.width):
+            da = (delta_left >> bit) & 1
+            dr = (delta_right >> bit) & 1
+            no = (nabla_output >> bit) & 1
+            nr = (nabla_right >> bit) & 1
+            following = {}
+            for (carry, paired_carry, borrow, paired_borrow), paths in states.items():
+                for left_bit in (0, 1):
+                    for right_bit in (0, 1):
+                        top = left_bit + right_bit + carry
+                        paired_top = (left_bit ^ da) + (right_bit ^ dr) + paired_carry
+                        lower_total = ((top & 1) ^ no) - (right_bit ^ nr) - borrow
+                        paired_lower_total = (
+                            ((paired_top & 1) ^ no) - ((right_bit ^ dr) ^ nr) - paired_borrow
+                        )
+                        if ((lower_total & 1) ^ (paired_lower_total & 1)) != da:
+                            continue
+                        state = (
+                            top >> 1, paired_top >> 1,
+                            int(lower_total < 0), int(paired_lower_total < 0),
+                        )
+                        following[state] = following.get(state, 0) + paths
+            states = following
+        count = sum(states.values())
+        difference = lambda value: XorDifference(value, self.width)
+        return ModularAddBoomerangConnectivity(
+            difference(delta_left), difference(delta_right),
+            difference(nabla_output), difference(nabla_right), count,
+        )
+
+
 @dataclass(frozen=True, slots=True)
 class BoomerangSwitchBoundary:
     """Four XOR differences related by one boomerang switch."""

@@ -156,6 +156,13 @@ scalable bit automaton, not the 16-bit Speck lowering itself.
    >>> switch.connectivity(3, 5, 7, 9).is_possible
    False
 
+``ModularAddBoomerangAutomaton`` evaluates the same equations with only sixteen
+carry/borrow states per bit. Its tests compare every four-difference entry for
+three-bit addition against exhaustive enumeration, then exercise the same
+algorithm at Speck's 16-bit word size. This automaton is exact; it is distinct
+from the legacy ``onlyLargeSwitch`` restriction, whose one-half-switch bound
+may deliberately discard exact quartets.
+
 The distinction between exact and heuristic results is intentional. Exact
 models must provide a solver witness plus an independent semantic checker; an
 optimality claim also needs an unsatisfiable lower bound. Continuous models

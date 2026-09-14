@@ -22,6 +22,7 @@ from claasp_next.semantics.cryptanalysis import (
     BoomerangConnectivity, BoomerangSwitchBoundary, BoomerangTrail,
     DifferentialLinearTrail, SBoxBoomerangSemantics,
     ModularAddBoomerangConnectivity, ModularAddBoomerangSemantics,
+    ModularAddBoomerangAutomaton,
 )
 
 __all__ = [
@@ -45,4 +46,5 @@ __all__ = [
     "BoomerangConnectivity", "BoomerangSwitchBoundary", "BoomerangTrail",
     "DifferentialLinearTrail", "SBoxBoomerangSemantics",
     "ModularAddBoomerangConnectivity", "ModularAddBoomerangSemantics",
+    "ModularAddBoomerangAutomaton",
 ]

@@ -8,6 +8,7 @@ from claasp_next.semantics.cryptanalysis import (
     XorDifference, XorMask,
     SBoxBoomerangSemantics,
     ModularAddBoomerangSemantics,
+    ModularAddBoomerangAutomaton,
 )
 from claasp_next.ciphers import PresentBlockCipher
 
@@ -80,3 +81,22 @@ def test_modular_add_boomerang_oracle_counts_full_quartets():
 def test_modular_add_boomerang_oracle_rejects_unreviewable_widths():
     with pytest.raises(ValueError, match="widths 1 through 8"):
         ModularAddBoomerangSemantics(16)
+
+
+def test_modular_add_automaton_matches_every_three_bit_exhaustive_entry():
+    exhaustive = ModularAddBoomerangSemantics(3)
+    automaton = ModularAddBoomerangAutomaton(3)
+
+    for delta_left in range(8):
+        for delta_right in range(8):
+            for nabla_output in range(8):
+                for nabla_right in range(8):
+                    values = (delta_left, delta_right, nabla_output, nabla_right)
+                    assert automaton.connectivity(*values).count == exhaustive.connectivity(*values).count
+
+
+def test_modular_add_automaton_scales_to_speck_words():
+    entry = ModularAddBoomerangAutomaton(16).connectivity(1, 0, 1, 0)
+
+    assert entry.count == 1 << 31
+    assert entry.weight == 1
