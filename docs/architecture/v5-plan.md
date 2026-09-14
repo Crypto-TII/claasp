@@ -837,8 +837,7 @@ second checklist is intentionally not maintained. At this revision:
 - M10.0–M10.5c are achieved at their recorded scope; the M10.7 inventory gate
   exposes future family-level omissions without retroactively weakening
   those accepted vertical slices.
-- M10.5d5 routed dependency-free ASCII art is achieved; M10.5d remains open
-  only for parent closeout.
+- M10.5d is achieved, including routed dependency-free ASCII art.
 - M10.6a–M10.6d4 are achieved.
 - M10.6, including its advanced exact and heuristic analyses, is achieved.
 - M10.7 is achieved: the exhaustive inventory and filesystem gate include the
@@ -893,7 +892,7 @@ is absent). Update this table in the same commit that changes milestone state.
 | Portable MILP foundation (M10.5a) | Achieved | Immutable linear IR, LP exporter, GLPK adapter, independent witness/objective checks, dedicated CI |
 | Weighted SPN MILP trails (M10.5b) | Achieved | Complete DDT selectors over PRESENT-2; GLPK weight-4 optimum and independent 32-transition checker |
 | Weighted ARX MILP trails (M10.5c) | Achieved | Exact parity/support relation; GLPK validates four Speck32/64-4 transitions, weights, and signs |
-| Representation architecture (M10.5d) | In progress | Core layer separation achieved; routed ASCII-art serialization remains explicitly marked work in progress |
+| Representation architecture (M10.5d) | Achieved | Graph construction, shared semantics, immutable annotated diagram IR, deterministic routed ASCII, TikZ, and optional PDF remain separated from execution engines |
 | Semantic-type/annotation contracts (M10.5d1) | Achieved | Extensible semantic types, immutable graph annotations, distinct trace types, representation artifacts, drivers, attack targets |
 | Execution representation migration (M10.5d2) | Achieved | Scalar/batch modules moved under representations; canonical driver names; concrete ExecutionTrace results |
 | Constraint representation migration (M10.5d3) | Achieved | SAT, SMT, MILP, and polynomial formats grouped under representations; external processes under drivers |
