@@ -234,3 +234,11 @@ GLPK integration tests recover degrees 2, 3, and 8 for reduced Simon and the
 legacy 13-round, 31-variable cube bound 30. Optimal monomial reachability is a
 sound degree upper bound; parity cancellation is the following checkpoint and
 is required before calling such a bound an exact ANF degree.
+
+The open parity baseline repeatedly adds a no-good constraint and resolves
+until the optimal region is UNSAT. Only that exhaustive termination sets
+``complete=True``; a path limit or solver interruption cannot support a parity
+claim. On two-round Simon it enumerates five degree-three paths, all with odd
+parity, matching the five highest-plaintext-degree monomials in the exact ANF.
+Native solution-pool drivers may accelerate the same contract later, but must
+provide an equivalent completeness guarantee.

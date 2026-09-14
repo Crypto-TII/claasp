@@ -2,6 +2,10 @@
 
 from dataclasses import dataclass
 
+from claasp_next.representations.constraints.milp import (
+    ConstraintSense, LinearConstraint, LinearExpression, MILPModel,
+)
+
 from claasp_next.components import BitVectorSBox, Permutation
 from claasp_next.representations.constraints.polynomial import monomial_transition_table
 from claasp_next.semantics.cryptanalysis.monomial import ComponentMonomialSemantics
@@ -190,3 +194,81 @@ class PresentMonomialSemantics:
                 return False
             boundary = round_trail.output_mask
         return boundary == trail.output_mask
+
+
+@dataclass(frozen=True, slots=True)
+class MonomialParityResult:
+    """Parity of completely enumerated optimal monomial paths."""
+
+    degree: int | None
+    odd_input_monomials: tuple[int, ...]
+    enumerated_paths: int
+    complete: bool
+    termination: str
+
+    def require_complete(self) -> "MonomialParityResult":
+        if not self.complete:
+            raise RuntimeError("monomial-path enumeration is incomplete")
+        return self
+
+
+def enumerate_optimal_monomial_parity(compilation, solver, max_paths=10000):
+    """Enumerate optimal paths until UNSAT and aggregate input masks mod two.
+
+    ``compilation`` is a ``BooleanMonomialGraphMILPModel``. Re-solving with
+    portable no-good constraints is slower than a native solution pool but
+    makes completeness independent of proprietary solver behavior.
+    """
+
+    from claasp_next.drivers.solvers import MILPStatus
+
+    if not isinstance(max_paths, int) or isinstance(max_paths, bool) or max_paths <= 0:
+        raise ValueError("max_paths must be a positive integer")
+    base = compilation.milp_model()
+    optimum = solver.solve(base)
+    if optimum.status is not MILPStatus.OPTIMAL:
+        return MonomialParityResult(None, (), 0, False, optimum.status.value)
+    degree = int(round(optimum.objective_value))
+    fixed_objective = LinearConstraint(
+        base.objective, ConstraintSense.EQUAL, degree, "fix_optimal_degree"
+    )
+    constraints = list(base.constraints) + [fixed_objective]
+    parity = {}
+    paths = 0
+    binary_names = tuple(variable.name for variable in base.variables)
+    while paths < max_paths:
+        query = MILPModel(
+            base.variables, tuple(constraints), base.objective, base.objective_sense
+        )
+        result = solver.solve(query)
+        if result.status is MILPStatus.INFEASIBLE:
+            return MonomialParityResult(
+                degree, tuple(sorted(mask for mask, odd in parity.items() if odd)),
+                paths, True, "exhausted_unsat",
+            )
+        if result.status is not MILPStatus.OPTIMAL or result.assignment is None:
+            return MonomialParityResult(
+                degree, tuple(sorted(mask for mask, odd in parity.items() if odd)),
+                paths, False, result.status.value,
+            )
+        assignment = result.assignment
+        mask = 0
+        width = compilation._width(
+            compilation.primitive.inputs[compilation.variable_input].value_type
+        )
+        for bit in range(width):
+            mask = (mask << 1) | int(round(
+                assignment[compilation._wire(compilation.variable_input, bit)]
+            ))
+        parity[mask] = not parity.get(mask, False)
+        paths += 1
+        ones = {name for name in binary_names if round(assignment[name]) == 1}
+        terms = {name: (-1 if name in ones else 1) for name in binary_names}
+        constraints.append(LinearConstraint(
+            LinearExpression.from_terms(terms), ConstraintSense.GREATER_EQUAL,
+            1 - len(ones), f"exclude_path_{paths}",
+        ))
+    return MonomialParityResult(
+        degree, tuple(sorted(mask for mask, odd in parity.items() if odd)),
+        paths, False, "path_limit",
+    )

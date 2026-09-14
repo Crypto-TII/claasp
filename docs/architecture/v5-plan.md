@@ -891,7 +891,8 @@ is absent). Update this table in the same commit that changes milestone state.
 | Scalable degree/parity encoding (M10.8c3b) | In progress | Port backend-neutral upper-bound and parity semantics, with explicit soundness/completeness and open-solver execution |
 | Structural degree-bound baseline (M10.8c3b1) | Achieved | Bit/Word XOR, AND, rotation, constants, concatenation and modular addition propagate sound bounded degrees; Simon-4 documents exact 8 versus loose bound 16 and never claims completeness |
 | Whole-graph monomial reachability solver (M10.8c3b2) | Achieved | Portable COPY/XOR/AND/rotation/concatenation/constant MILP plus GLPK recovers Simon reduced degrees 2/3/8 and the legacy Simon-13 31-variable cube bound 30 |
-| Complete monomial-path parity solver (M10.8c3b3) | Next | Count complete optimal path families modulo two, reject incomplete enumeration, and preserve Simon/Trivium parity fixtures |
+| Complete monomial-path parity solver (M10.8c3b3) | Achieved | Portable no-good enumeration reaches terminal UNSAT, matches all five exact Simon-2 degree-three ANF monomials, and rejects path-limited results as incomplete |
+| Remaining scalable algebraic fixtures (M10.8c3c) | Next | Extract the fixed-length Trivium transformation and migrate its degree/parity/superpoly evidence, then address uBlock, Gaston and divide-and-conquer fixtures as their typed primitives arrive |
 | Remaining model inventory closure (M10.8d) | Planned | Resolve every outstanding solver/algebraic entry and keep optimized proprietary drivers optional |
 | Primitive terminology/public API (M10.9a) | Planned | `Primitive`/`primitives`, official class names, schemas, documentation, and terminology guard |
 | Fixed-length primitive classification (M10.9b) | Planned | Every legacy catalogue entry assigned to the six semantic categories, an orthogonal fixture folder, or an explicit out-of-scope disposition |

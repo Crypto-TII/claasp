@@ -40,7 +40,8 @@ from claasp_next.analysis.composed import (
 )
 from claasp_next.analysis.monomial import (
     MonomialTrail, MonomialTrailStep, MultiRoundMonomialTrail,
-    PresentMonomialSemantics, PresentRoundMonomialSemantics,
+    MonomialParityResult, PresentMonomialSemantics, PresentRoundMonomialSemantics,
+    enumerate_optimal_monomial_parity,
 )
 from claasp_next.analysis.algebraic import BooleanAlgebraicEvidence, analyze_boolean_algebra
 from claasp_next.analysis.cube import CubeSumResult, evaluate_cube_sum
@@ -81,6 +82,8 @@ __all__ = [
     "PresentRoundMonomialSemantics",
     "MultiRoundMonomialTrail",
     "PresentMonomialSemantics",
+    "MonomialParityResult",
+    "enumerate_optimal_monomial_parity",
     "BooleanAlgebraicEvidence",
     "analyze_boolean_algebra",
     "CubeSumResult",
