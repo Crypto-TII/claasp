@@ -12,6 +12,7 @@ from claasp_next.semantics.cryptanalysis.problem import (
 from claasp_next.semantics.cryptanalysis.composed import (
     BoomerangConnectivity, BoomerangSwitchBoundary, BoomerangTrail,
     DifferentialLinearTrail, SBoxBoomerangSemantics,
+    ModularAddBoomerangConnectivity, ModularAddBoomerangSemantics,
 )
 from claasp_next.semantics.cryptanalysis.truncated import (
     ImpossiblePropagationBoundary, ProbabilisticTruncatedModularAddTransition,
@@ -43,4 +44,5 @@ __all__ = [
     "WordwiseDifferenceKind", "WordwiseXorDifference",
     "BoomerangConnectivity", "BoomerangSwitchBoundary", "BoomerangTrail",
     "DifferentialLinearTrail", "SBoxBoomerangSemantics",
+    "ModularAddBoomerangConnectivity", "ModularAddBoomerangSemantics",
 ]

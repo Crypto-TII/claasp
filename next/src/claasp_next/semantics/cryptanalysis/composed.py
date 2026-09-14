@@ -63,6 +63,71 @@ class SBoxBoomerangSemantics:
 
 
 @dataclass(frozen=True, slots=True)
+class ModularAddBoomerangConnectivity:
+    """Exact quartet count for four differences around modular addition."""
+
+    delta_left: XorDifference
+    delta_right: XorDifference
+    nabla_output: XorDifference
+    nabla_right: XorDifference
+    count: int
+
+    def __post_init__(self) -> None:
+        differences = (self.delta_left, self.delta_right, self.nabla_output, self.nabla_right)
+        if len({item.width for item in differences}) != 1:
+            raise ValueError("modular-add switch differences must have one width")
+        maximum = 1 << (2 * self.delta_left.width)
+        if not isinstance(self.count, int) or isinstance(self.count, bool) or not 0 <= self.count <= maximum:
+            raise ValueError("quartet count is outside the modular-add input space")
+
+    @property
+    def is_possible(self) -> bool:
+        return self.count > 0
+
+    @property
+    def weight(self) -> float:
+        size = 1 << (2 * self.delta_left.width)
+        return float("inf") if not self.count else -log2(self.count / size)
+
+
+class ModularAddBoomerangSemantics:
+    """Exact boomerang-switch oracle for small modular-add word sizes.
+
+    The exhaustive implementation is deliberately limited to eight-bit words.
+    It serves as an independent oracle for optimized bit-automaton lowerings.
+    """
+
+    def __init__(self, width: int) -> None:
+        if not isinstance(width, int) or isinstance(width, bool) or not 1 <= width <= 8:
+            raise ValueError("the exhaustive modular-add oracle supports widths 1 through 8")
+        self.width = width
+
+    def connectivity(self, delta_left, delta_right, nabla_output, nabla_right):
+        """Count quartets satisfying the modular-add switch equations."""
+
+        size, mask = 1 << self.width, (1 << self.width) - 1
+        values = (delta_left, delta_right, nabla_output, nabla_right)
+        if any(not isinstance(value, int) or isinstance(value, bool) or not 0 <= value < size for value in values):
+            raise ValueError("switch differences must fit the word width")
+        count = 0
+        for left in range(size):
+            for right in range(size):
+                output = (left + right) & mask
+                paired_output = ((left ^ delta_left) + (right ^ delta_right)) & mask
+                lower_right = right ^ nabla_right
+                lower_paired_right = (right ^ delta_right) ^ nabla_right
+                lower_left = ((output ^ nabla_output) - lower_right) & mask
+                lower_paired_left = ((paired_output ^ nabla_output) - lower_paired_right) & mask
+                if lower_left ^ lower_paired_left == delta_left:
+                    count += 1
+        difference = lambda value: XorDifference(value, self.width)
+        return ModularAddBoomerangConnectivity(
+            difference(delta_left), difference(delta_right),
+            difference(nabla_output), difference(nabla_right), count,
+        )
+
+
+@dataclass(frozen=True, slots=True)
 class BoomerangSwitchBoundary:
     """Four XOR differences related by one boomerang switch."""
 

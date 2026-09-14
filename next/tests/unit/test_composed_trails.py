@@ -7,6 +7,7 @@ from claasp_next.semantics.cryptanalysis import (
     ProbabilisticTruncatedTrail, Trail, TrailKind, TruncatedXorDifference,
     XorDifference, XorMask,
     SBoxBoomerangSemantics,
+    ModularAddBoomerangSemantics,
 )
 from claasp_next.ciphers import PresentBlockCipher
 
@@ -62,3 +63,20 @@ def test_present_boomerang_connectivity_is_counted_exhaustively():
 def test_boomerang_connectivity_rejects_non_bijections():
     with pytest.raises(ValueError, match="bijective"):
         SBoxBoomerangSemantics((0, 0, 1, 2))
+
+
+def test_modular_add_boomerang_oracle_counts_full_quartets():
+    semantics = ModularAddBoomerangSemantics(4)
+
+    certain = semantics.connectivity(0, 0, 0, 0)
+    half = semantics.connectivity(1, 0, 1, 0)
+    impossible = semantics.connectivity(3, 5, 7, 9)
+
+    assert (certain.count, certain.weight) == (256, 0)
+    assert (half.count, half.weight) == (128, 1)
+    assert not impossible.is_possible
+
+
+def test_modular_add_boomerang_oracle_rejects_unreviewable_widths():
+    with pytest.raises(ValueError, match="widths 1 through 8"):
+        ModularAddBoomerangSemantics(16)

@@ -21,6 +21,7 @@ from claasp_next.semantics.cryptanalysis import (
     WordwiseDifferenceKind, WordwiseXorDifference,
     BoomerangConnectivity, BoomerangSwitchBoundary, BoomerangTrail,
     DifferentialLinearTrail, SBoxBoomerangSemantics,
+    ModularAddBoomerangConnectivity, ModularAddBoomerangSemantics,
 )
 
 __all__ = [
@@ -43,4 +44,5 @@ __all__ = [
     "WordwiseDifferenceKind", "WordwiseXorDifference",
     "BoomerangConnectivity", "BoomerangSwitchBoundary", "BoomerangTrail",
     "DifferentialLinearTrail", "SBoxBoomerangSemantics",
+    "ModularAddBoomerangConnectivity", "ModularAddBoomerangSemantics",
 ]

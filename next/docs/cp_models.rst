@@ -140,6 +140,22 @@ The legacy Speck modular-add ``onlyLargeSwitch`` predicate is a separate
 ARX-specific approximation, not a standard bijective S-box BCT. It remains the
 next submilestone and must expose its approximation contract explicitly.
 
+``ModularAddBoomerangSemantics`` defines that switch using quartet equations
+and exhaustively counts all pairs of input words. It is intentionally limited
+to widths up to eight: this is an independent correctness oracle for testing a
+scalable bit automaton, not the 16-bit Speck lowering itself.
+
+.. doctest::
+
+   >>> from claasp_next.semantics.cryptanalysis import ModularAddBoomerangSemantics
+   >>> switch = ModularAddBoomerangSemantics(4)
+   >>> switch.connectivity(1, 0, 1, 0).count
+   128
+   >>> switch.connectivity(1, 0, 1, 0).weight
+   1.0
+   >>> switch.connectivity(3, 5, 7, 9).is_possible
+   False
+
 The distinction between exact and heuristic results is intentional. Exact
 models must provide a solver witness plus an independent semantic checker; an
 optimality claim also needs an unsatisfiable lower bound. Continuous models
