@@ -133,9 +133,10 @@ def _cached_present_trail():
             set_fixed_variables(component_id='plaintext', constraint_type='equal', bit_positions=list(range(64)),
                                 bit_values=[0] * 64)
         ]
-        return sat_model.find_one_xor_differential_trail_with_fixed_weight(
-            fixed_weight=16,
+        return sat_model.find_one_xor_differential_trail(
             fixed_values=related_key_setting,
+            lower_bound=16,
+            upper_bound=16,
             solver_name='KISSAT_EXT')
 
     return _get_cached_result('present_r2_sat_fixed_weight_16', _generate)
@@ -301,8 +302,8 @@ def test_save_as_json():
         set_fixed_variables(component_id='plaintext', constraint_type='equal', bit_positions=list(range(64)),
                             bit_values=[0] * 64)
     ]
-    trail = sat.find_one_xor_differential_trail_with_fixed_weight(fixed_weight=16, fixed_values=related_key_setting,
-                                                                  solver_name='KISSAT_EXT')
+    trail = sat.find_one_xor_differential_trail(fixed_values=related_key_setting, lower_bound=16, upper_bound=16,
+                                                solver_name='KISSAT_EXT')
     trail_report = Report(trail)
     trail_report.show()
 
