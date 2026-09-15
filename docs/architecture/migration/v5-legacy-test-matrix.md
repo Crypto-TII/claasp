@@ -120,6 +120,9 @@ complete component catalogue is claimed by this architectural replacement.
 | CP AND DDT/LAT helper tests | DDT counts `[4, 0, 2, 2, 2, 2, 2, 2]` and half-Walsh `[2, 1, 0, 1, 0, 1, 0, -1]` | Ported in M10.8d | Generic `BitwiseAndSemantics` matches complete independent two-bit truth-table counts; whole-word signed composition and registry bindings use the same exact provider |
 | `cp/mzn_model_test.py` fixed scientific assertions | All 94 AES branch-bound activity rows; Midori weight-nine active counts `{3,4}`; Speck-3 differential `02110A04` → `80008000` weight 6 and linear `03805224` → `40A000C1` weight 5 | Ported in M10.8d | Every table entry matches the parsed fixed legacy assertion. Exact rational DDT products retain table-level count feasibility, distinct from graph-level trails; Chuffed/Z3 witnesses independently retain both fixed boundaries and weights. Mutable solver dictionaries, command registries, time-stat fallbacks and declaration names are superseded by typed model parts and executable drivers |
 
+| `cp/mzn_models/mzn_xor_differential_model_test.py` | Toy Speck-2 counts 6 exact weight one / 7 through one; toy Speck-4 weight-one UNSAT; identity lookup zero-weight feasibility / positive-weight UNSAT | Ported in M10.8d | Whole-word forward composition and the simple analysis facade enumerate checked characteristics through terminal Z3 UNSAT; fixed key difference zero includes the key schedule without assigning it a cost |
+| `sat_xor_differential_model_test.py::test_compute_xor_differential_weight` Speck case | Fixed Speck32/64-9 boundaries `8054A900` → `00400542`: 27 trails in weights 30–39, aggregate weight 29.47 | Ported in M10.8d | Complete generic word-graph enumeration independently recounts every component probability. Exact rational cluster sums are explicitly bounded model probabilities, not empirical or unrestricted differential claims; the uBlock case remains open |
+
 M10.8d graph-composition checkpoint (2026-09-16): Darwin arm64, Python
 3.11.12 dependency-free suite: **394 passed, 0 skipped, 65 external
 deselected** in 17.19 s. User/developer doctests: **185/389 passed**, no
@@ -132,6 +135,13 @@ regression takes 23.29 s and remains a dedicated external check, not routine
 integration. An earlier combined run timed out this check at 45 s; isolated
 and repeated combined checks passed without changing its timeout or oracle.
 The compatibility container is not the final canonical v5 image.
+
+M10.8d differential checkpoint (2026-09-16): host Python 3.11.12:
+**411 passed, 0 skipped, 73 external deselected**, 20.24 s; guide doctests
+**185 user / 393 developer passed**, no warnings. Affected Z3 group in the
+same emulated amd64 compatibility container, Python 3.10.12 / Z3 4.8.12:
+**8 passed, 0 skipped, 0 deselected**, 26.38 s. Fixed Speck-9 cluster
+enumeration takes 25.11 s and belongs only to dedicated external CI.
 
 ## MILP models
 

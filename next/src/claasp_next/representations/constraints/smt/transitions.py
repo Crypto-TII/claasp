@@ -1,6 +1,6 @@
 """SMT lowering of shared component transition semantics."""
 
-from claasp_next.semantics.cryptanalysis import ModularAddLinearSemantics, SBoxTransitionSemantics, TrailKind
+from claasp_next.semantics.cryptanalysis import ModularAddLinearSemantics, ModularAddTransitionSemantics, SBoxTransitionSemantics, TrailKind
 from claasp_next.representations.constraints.smt.formula import SMTFormula
 
 
@@ -67,6 +67,56 @@ class SBoxTransitionSMTModel:
             if self.kind is TrailKind.XOR_DIFFERENTIAL
             else self.semantics.xor_linear(source, target)
         )
+
+
+class ModularAddDifferentialSMTModel:
+    """Exact paired-carry support and unary XOR-differential weights."""
+
+    def __init__(self, width):
+        self.semantics = ModularAddTransitionSemantics(width)
+        self.width = width
+
+    def smt_formula(self):
+        from itertools import product
+
+        variables = tuple(f"{prefix}_{bit}" for prefix in ("left", "right", "output")
+                          for bit in range(self.width)) + tuple(
+                              f"weight_{bit}" for bit in range(self.width - 1))
+        indices = {name: index for index, name in enumerate(variables, 1)}
+        clauses, provenance = [], []
+
+        def forbid(names, bits, label):
+            clauses.append(tuple(-indices[name] if value else indices[name]
+                                 for name, value in zip(names, bits)))
+            provenance.append(label)
+
+        last = tuple(f"{prefix}_{self.width - 1}" for prefix in ("left", "right", "output"))
+        for bits in product((0, 1), repeat=3):
+            if bits[0] ^ bits[1] ^ bits[2]:
+                forbid(last, bits, "differential_lsb_parity")
+        for bit in range(self.width - 1):
+            upper = tuple(f"{prefix}_{bit}" for prefix in ("left", "right", "output"))
+            lower = tuple(f"{prefix}_{bit + 1}" for prefix in ("left", "right", "output"))
+            for bits in product((0, 1), repeat=6):
+                if bits[3] == bits[4] == bits[5] and (bits[0] ^ bits[1] ^ bits[2]) != bits[4]:
+                    forbid(upper + lower, bits, "differential_carry_support")
+            for bits in product((0, 1), repeat=4):
+                if bits[3] != int(not (bits[0] == bits[1] == bits[2])):
+                    forbid(lower + (f"weight_{bit}",), bits, "differential_weight")
+        return SMTFormula(variables, tuple(clauses), tuple(provenance))
+
+    def decode_transition(self, assignment):
+        from claasp_next.representations.constraints.sat import CNFFormula
+        formula = self.smt_formula()
+        if not CNFFormula(formula.variables, formula.assertions, formula.provenance).is_satisfied(assignment):
+            raise ValueError("invalid modular-add differential witness")
+        values = [_integer(tuple(assignment[f"{prefix}_{bit}"] for bit in range(self.width)))
+                  for prefix in ("left", "right", "output")]
+        transition = self.semantics.xor_differential(*values)
+        if not transition.is_possible or transition.weight != sum(
+                assignment[f"weight_{bit}"] for bit in range(self.width - 1)):
+            raise ValueError("modular-add differential weight disagrees with exact semantics")
+        return transition
 
 
 class ModularAddLinearSMTModel:

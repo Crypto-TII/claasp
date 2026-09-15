@@ -206,3 +206,12 @@ are not a sum over trails or a whole-primitive linear-hull claim.
    'toy_speck'
    >>> hex(toy.evaluate(0x53, 0x1234))
    '0xe2'
+
+Word-graph differential enumeration is available through
+``primitive.analyze().enumerate_xor_differential_trails(maximum_weight,
+solver=...)``. The default fixes key difference zero; choose
+``nonzero_input="key"`` for related-key propagation. Supply ``fixed_weight``
+instead of a maximum for an exact-weight search. Always call
+``require_complete()`` before using an exhaustive count. Component-product
+probabilities and bounded cluster sums are not experimental whole-primitive
+probabilities.

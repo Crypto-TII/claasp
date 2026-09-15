@@ -166,7 +166,7 @@ jobs:
         run: python -m pip install -e '.[dev]'
 
       - name: Execute Z3 integration
-        run: python -m pytest -m external tests/integration/test_z3_integration.py tests/integration/test_speck_trail_enumeration.py -q
+        run: python -m pytest -m external tests/integration/test_z3_integration.py tests/integration/test_speck_trail_enumeration.py tests/integration/test_word_differential.py -q
 
   glpk-execution:
     name: GLPK execution integration

@@ -31,6 +31,22 @@ CATEGORY_BY_DIRECTORY = {
 }
 
 MIGRATION_OVERRIDES = {
+    "tests/unit/cipher_modules/models/cp/mzn_models/mzn_xor_differential_model_test.py": {
+        "v5_destination": "next/tests/integration/test_word_differential.py; next/tests/integration/test_minizinc_integration.py; next/tests/unit/test_bitwise_transition_semantics.py",
+        "prerequisites": [],
+        "disposition": "supersede",
+        "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Toy Speck-2 exact weight-one count 6 and bounded count 7; toy Speck-4 weight-one UNSAT; identity lookup zero-weight feasibility and positive-weight UNSAT; Speck-5 optimum/fixed weight 9; exact AND DDT are independently preserved.",
+        "rationale": "CLI solver drivers and typed independently checked characteristics replace Python MiniZinc API versus external-command duplicates, dictionary model/status tags and arbitrary intermediate component-value formatting. Identity lookup behavior is represented directly by typed Identity; fixed round-key differences are explicit.",
+    },
+    "tests/unit/cipher_modules/models/cp/mzn_models/mzn_xor_linear_model_test.py": {
+        "v5_destination": "next/tests/integration/test_speck_trail_enumeration.py; next/tests/unit/test_bitwise_transition_semantics.py; next/tests/unit/test_word_linear_smt.py",
+        "prerequisites": [],
+        "disposition": "supersede",
+        "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Complete toy single-key enumeration retains 12 exact-weight-one and 13 bounded characteristics. Standard Speck-4 optimum and feasible weight 3 and the complete AND LAT are independently checked.",
+        "rationale": "Explicit masks, typed results and terminal UNSAT replace legacy fixed-bit string formatters, scaled probability-array declarations, solve-with-API statistics dictionaries, and a hard-coded MiniZinc search annotation. No arbitrary witness or FancyBlockCipher declaration count is a public v5 contract.",
+    },
     "tests/unit/cipher_modules/models/cp/mzn_model_test.py": {
         "v5_destination": "next/tests/unit/test_sbox_activity.py; next/tests/integration/test_minizinc_integration.py; next/tests/integration/test_speck_trail_enumeration.py",
         "prerequisites": [],

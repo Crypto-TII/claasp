@@ -206,6 +206,26 @@ class Analysis:
             input_difference, output_difference
         ).is_possible
 
+    def enumerate_xor_differential_trails(self, maximum_weight=None, *, fixed_weight=None,
+                                         solver=None, nonzero_input="plaintext",
+                                         fixed_input_differences=None, output_difference=None,
+                                         limit=1000):
+        """Enumerate component-product characteristics with checked differences.
+
+        The default is single-key (key difference zero). Select a nonzero
+        key input to include related-key propagation instead.
+        """
+        from claasp_next.drivers.solvers import Z3Solver
+        from claasp_next.representations.constraints.smt import WordDifferentialSMTModel
+        if fixed_input_differences is None:
+            fixed_input_differences = {"key": 0} if "key" in self.primitive.inputs and nonzero_input != "key" else {}
+        model = WordDifferentialSMTModel(
+            self.primitive, maximum_weight=maximum_weight, fixed_weight=fixed_weight,
+            nonzero_input=nonzero_input, fixed_input_differences=fixed_input_differences,
+            output_difference=output_difference,
+        )
+        return model.enumerate_trails(Z3Solver() if solver is None else solver, limit=limit)
+
     def enumerate_xor_linear_trails(self, maximum_weight, *, solver=None,
                                    nonzero_input="plaintext", fixed_input_masks=None,
                                    fixed_inputs=None, limit=1000):

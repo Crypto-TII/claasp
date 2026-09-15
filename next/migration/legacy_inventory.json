@@ -11113,11 +11113,11 @@
       "v5_destination": "next/tests (mapped to the owning migrated behavior)"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Toy Speck-2 exact weight-one count 6 and bounded count 7; toy Speck-4 weight-one UNSAT; identity lookup zero-weight feasibility and positive-weight UNSAT; Speck-5 optimum/fixed weight 9; exact AND DDT are independently preserved.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -11133,9 +11133,7 @@
       },
       "kind": "test",
       "path": "tests/unit/cipher_modules/models/cp/mzn_models/mzn_xor_differential_model_test.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "test_and_xor_differential_probability_ddt",
         "test_find_all_xor_differential_trails_with_fixed_weight",
@@ -11146,9 +11144,9 @@
         "test_find_one_xor_differential_trail",
         "test_find_one_xor_differential_trail_with_fixed_weight"
       ],
-      "rationale": null,
+      "rationale": "CLI solver drivers and typed independently checked characteristics replace Python MiniZinc API versus external-command duplicates, dictionary model/status tags and arbitrary intermediate component-value formatting. Identity lookup behavior is represented directly by typed Identity; fixed round-key differences are explicit.",
       "responsibility": "mzn xor differential model test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [
         "test_and_xor_differential_probability_ddt",
         "test_find_all_xor_differential_trails_with_fixed_weight",
@@ -11159,7 +11157,7 @@
         "test_find_one_xor_differential_trail_with_fixed_weight",
         "test_solving_unsatisfiability"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/integration/test_word_differential.py; next/tests/integration/test_minizinc_integration.py; next/tests/unit/test_bitwise_transition_semantics.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -11245,11 +11243,11 @@
       "v5_destination": "next/tests (mapped to the owning migrated behavior)"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Complete toy single-key enumeration retains 12 exact-weight-one and 13 bounded characteristics. Standard Speck-4 optimum and feasible weight 3 and the complete AND LAT are independently checked.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -11267,9 +11265,7 @@
       },
       "kind": "test",
       "path": "tests/unit/cipher_modules/models/cp/mzn_models/mzn_xor_linear_model_test.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "test_and_xor_linear_probability_lat",
         "test_final_xor_linear_constraints",
@@ -11282,9 +11278,9 @@
         "test_fix_variables_value_xor_linear_constraints",
         "test_input_xor_linear_constraints"
       ],
-      "rationale": null,
+      "rationale": "Explicit masks, typed results and terminal UNSAT replace legacy fixed-bit string formatters, scaled probability-array declarations, solve-with-API statistics dictionaries, and a hard-coded MiniZinc search annotation. No arbitrary witness or FancyBlockCipher declaration count is a public v5 contract.",
       "responsibility": "mzn xor linear model test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [
         "test_and_xor_linear_probability_lat",
         "test_final_xor_linear_constraints",
@@ -11297,7 +11293,7 @@
         "test_fix_variables_value_xor_linear_constraints",
         "test_input_xor_linear_constraints"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/integration/test_speck_trail_enumeration.py; next/tests/unit/test_bitwise_transition_semantics.py; next/tests/unit/test_word_linear_smt.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",

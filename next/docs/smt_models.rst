@@ -55,6 +55,47 @@ weight-five witness:
 
 The decoder independently checks both masks and the exact weight.
 
+Whole-word differential composition
+-----------------------------------
+
+``WordDifferentialSMTModel`` connects forward differences through XOR,
+rotation, identity, concatenation, constants, AND, and modular addition.
+Fanout shares the producer difference; unlike linear masks, consumer
+differences are not XORed back into a producer mask. The complete key
+schedule is included, enabling explicit related-key searches.
+
+.. doctest::
+
+   >>> from claasp_next.primitives import ToySpeck
+   >>> from claasp_next.representations.constraints.smt import WordDifferentialSMTModel
+   >>> differential = WordDifferentialSMTModel(ToySpeck(2), fixed_weight=1,
+   ...     nonzero_input="plaintext", fixed_input_differences={"key": 0})
+   >>> "fixed_difference" in differential.smt_formula().provenance
+   True
+
+For simple enumeration, use the analysis facade:
+
+.. code-block:: python
+
+   result = ToySpeck(2).analyze().enumerate_xor_differential_trails(
+       1, solver=Z3Solver(timeout_seconds=10), limit=10,
+   ).require_complete()
+   assert len(result.trails) == 7  # six weight-one, one weight-zero
+
+The default sets key difference zero. Selecting ``nonzero_input="key"``
+instead searches related-key characteristics. Addition support and declared
+weights are independently recounted through paired carry semantics, tested
+against exhaustive small integer truth tables. Enumeration blocks semantic
+assignments and claims completion only after terminal UNSAT. Limits and
+unknown solver outcomes are incomplete results.
+
+``result.cluster_probability()`` sums exact rational component products only
+for a complete common-boundary cluster. It is a bounded characteristic-model
+sum, not a measured concrete-primitive probability or an unrestricted
+differential. The dedicated fixed nine-round Speck regression retains all 27
+legacy trails at weights 30 through 39 and cluster weight 29.47; it is excluded
+from the routine dependency-free suite.
+
 Transition relations
 --------------------
 
