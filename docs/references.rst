@@ -609,6 +609,12 @@
         International Colloquium on Coding Theory and Applications. pp.
         106–113.  Springer (1988)
 
+.. [Sch1994]
+        Schneier B. : *Description of a New Variable-Length Key, 64-Bit Block
+        Cipher (Blowfish)* : Fast Software Encryption, Cambridge Security
+        Workshop Proceedings, Springer-Verlag, 1994, pp. 191-204 :
+        https://www.schneier.com/academic/archives/1994/09/description_of_a_new.html
+
 .. [SGLYTQH2017]
         Sun S., Gerault D., Lafourcade P., Yang Q., Todo Y., Qiao K., Hu L. :
         *Analysis of AES, SKINNY, and others with constraint programming* : In
