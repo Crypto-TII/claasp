@@ -69,6 +69,22 @@ of uniqueness or an optimum.
 | Disabled PRESENT case in `milp_xor_linear_model_test.py::test_find_lowest_weight_xor_linear_trail` | Three-round PRESENT input mask `0x0d00000000000000` was preserved with expected weight 4 but disabled in legacy | Restored semantically in M10.3e | `test_spn_trail_search.py` finds a weight-4 characteristic, retains LAT signs, and independently checks every transition and permutation boundary; it does not depend on the disabled input-mask hint |
 | SAT/CMS/MILP `*_xor_linear_model_test.py::test_find_lowest_weight_xor_linear_trail` Speck case | Four-round Speck32/64 minimum weight 3, repeated across legacy backends | Ported in M10.3f | `test_arx_trail_search.py` restores masks `0x40b010c1 -> 0x2c102010`, exact per-addition weights `2+0+0+1`, signed correlations, and independent backward wiring checks; the fixture was regenerated with legacy `SatXorLinearModel` and MiniSat 2.2.1 |
 
+## SAT base-model remaining scope
+
+`sat/sat_model_test.py::test_build_xor_differential_sat_model_from_dictionary`
+fixes Speck32/64-3 input difference `0x00400000`, output difference
+`0x8000840A`, zero key difference, and weight 3. M10.8d ports this through
+explicit `SpeckDifferentialCPModel` boundaries and a bounded Chuffed test;
+decoding independently recounts every addition and verifies all round wiring.
+This is feasible evidence, not an optimum claim. The same module's
+differential boundary equality/inequality SAT/UNSAT and heterogeneous
+exact/truncated component scenarios are still missing and explicitly deferred
+within M10.8d. Shared Boolean comparison alone does not cover those scenarios.
+
+`python tools/legacy_inventory.py --check-model-closure` is a completion gate,
+distinct from the inventory filesystem gate. It remains nonzero while model
+entries are unreviewed or deferred; M10.8d must not close on partial fixtures.
+
 ## CryptoMiniSat model subclasses
 
 All four non-marker CMS source modules and all four test modules are explicitly

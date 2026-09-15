@@ -99,3 +99,23 @@ def test_speck_differential_cp_lowering_has_exact_relation_and_bound():
     assert sum("modular_addition_xor_difference" in item for item in lowered.constraints) == 5
     assert lowered.constraints[-1].endswith("<= 9;")
     assert lowered.provenance == ("legacy Speck32/64-5 optimum",)
+
+
+def test_speck_fixed_differential_boundaries_are_msb_first():
+    model = SpeckDifferentialCPModel(PropagationProblem(
+        Speck(number_of_rounds=3), XOR_DIFFERENTIAL, maximum_weight=3,
+    ), input_difference=0x00400000, output_difference=0x8000840A)
+    constraints = model.cp_model().constraints
+    assert "constraint x_0[9] = true;" in constraints
+    assert "constraint y_0[9] = false;" in constraints
+    assert "constraint x_3[0] = true;" in constraints
+    assert "constraint y_3[12] = true;" in constraints
+    assert "constraint y_3[15] = false;" in constraints
+
+
+@pytest.mark.parametrize("value", [-1, 1 << 32, True, 1.5])
+def test_speck_fixed_differential_boundaries_reject_invalid_values(value):
+    with pytest.raises(ValueError):
+        SpeckDifferentialCPModel(PropagationProblem(
+            Speck(number_of_rounds=3), XOR_DIFFERENTIAL, maximum_weight=3,
+        ), input_difference=value)

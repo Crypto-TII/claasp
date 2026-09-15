@@ -43,6 +43,22 @@ Run both documentation suites:
 
    make -C docs doctest
 
+Model migration closure
+-----------------------
+
+The exhaustive inventory's filesystem check is not a migration-completion
+claim. From ``next/``, inspect remaining mathematical/solver model work with:
+
+.. code-block:: console
+
+   python tools/legacy_inventory.py --model-status
+   python tools/legacy_inventory.py --check-model-closure
+
+The first command reports reviewed replacements, unresolved families, and
+explicit deferrals without rewriting files. The second exits nonzero while
+unreviewed destinations or deferred model requirements remain. Use it before
+closing M10.8; a complete inventory alone does not justify that milestone.
+
 Building the documentation
 --------------------------
 

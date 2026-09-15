@@ -267,6 +267,21 @@ def test_minizinc_proves_legacy_speck_five_round_differential_optimum():
     assert len(trail.steps) == 5
 
 
+def test_minizinc_preserves_legacy_fixed_speck_three_round_differential():
+    """sat_model_test.py dictionary-based differential fixture, zero key difference."""
+    primitive = Speck(number_of_rounds=3)
+    model = SpeckDifferentialCPModel(PropagationProblem(
+        primitive, XOR_DIFFERENTIAL, maximum_weight=3,
+        provenance=("legacy sat_model_test.py fixed Speck-3 witness",),
+    ), input_difference=0x00400000, output_difference=0x8000840A)
+    solved = MiniZincSolver(solver=_test_solver(require_chuffed=True), timeout_seconds=10).solve(model.cp_model())
+    assert solved.status is CPStatus.SATISFIED
+    trail = model.decode_trail(solved.assignment)
+    assert trail.input_pattern.value == 0x00400000
+    assert trail.output_pattern.value == 0x8000840A
+    assert trail.total_weight == 3
+
+
 def test_minizinc_preserves_legacy_speck_five_round_bounded_trail_count():
     primitive = Speck(number_of_rounds=5)
     solver = MiniZincSolver(solver=_test_solver(require_chuffed=True), timeout_seconds=45)

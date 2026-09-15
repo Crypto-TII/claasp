@@ -218,7 +218,7 @@ class SpeckDifferentialCPModel:
     transitions are recounted by independent paired-carry semantics.
     """
 
-    def __init__(self, problem: PropagationProblem) -> None:
+    def __init__(self, problem: PropagationProblem, *, input_difference=None, output_difference=None) -> None:
         if not isinstance(problem, PropagationProblem):
             raise TypeError("problem must be a PropagationProblem")
         if problem.semantics != XOR_DIFFERENTIAL:
@@ -236,6 +236,11 @@ class SpeckDifferentialCPModel:
         self.problem = problem
         self.primitive = problem.primitive
         self.width = 16
+        for value in (input_difference, output_difference):
+            if value is not None:
+                XorDifference(value, 32)
+        self.input_difference = input_difference
+        self.output_difference = output_difference
 
     def cp_model(self) -> MiniZincModel:
         """Compile exact support, weight bits, and deterministic round wiring."""
@@ -268,6 +273,13 @@ class SpeckDifferentialCPModel:
                     f"x_{round_number + 1}[{index}]);"
                 )
         constraints.append(r"constraint exists(i in 0..15)(x_0[i] \/ y_0[i]);")
+        for boundary, value in ((0, self.input_difference), (rounds, self.output_difference)):
+            if value is None:
+                continue
+            for bit in range(32):
+                name = "x" if bit < 16 else "y"
+                encoded = "true" if value & (1 << (31 - bit)) else "false"
+                constraints.append(f"constraint {name}_{boundary}[{bit % 16}] = {encoded};")
         weight_terms = [
             f"bool2int(weight_{round_number}[{bit}])"
             for round_number in range(rounds)
@@ -306,12 +318,17 @@ class SpeckDifferentialCPModel:
                 raise ValueError("MiniZinc returned invalid Speck round wiring")
             steps.append(TrailStep(f"round_{round_number}_modular_add", transition))
             left, right = output, next_right
-        return Trail(
+        trail = Trail(
             TrailKind.XOR_DIFFERENTIAL,
             XorDifference(initial, 2 * self.width),
             XorDifference((left << self.width) | right, 2 * self.width),
             tuple(steps),
         )
+        if (not initial or trail.total_weight > self.problem.maximum_weight
+                or (self.input_difference is not None and initial != self.input_difference)
+                or (self.output_difference is not None and trail.output_pattern.value != self.output_difference)):
+            raise ValueError("MiniZinc assignment violates requested Speck boundaries or weight")
+        return trail
 
 
 class SpeckTruncatedCPModel:

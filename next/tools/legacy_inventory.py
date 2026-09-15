@@ -205,6 +205,14 @@ _CMS_REPLACEMENTS = {
     "cms_xor_differential_model": "next/src/claasp_next/representations/constraints/cp/trails.py",
     "cms_bitwise_deterministic_truncated_xor_differential_model": "next/src/claasp_next/semantics/cryptanalysis/truncated.py",
 }
+MIGRATION_OVERRIDES["tests/unit/cipher_modules/models/sat/sat_model_test.py"] = {
+    "v5_destination": "next/tests/integration/test_minizinc_integration.py",
+    "prerequisites": ["M10.8d mixed exact/truncated composition", "M10.8d differential boundary equality/inequality"],
+    "disposition": "defer",
+    "status": "partially-migrated-in-m10.8d",
+    "acceptance_criterion": "Retain the zero-key Speck-3 0x00400000 -> 0x8000840A weight-3 witness, equality/inequality SAT/UNSAT boundary scenarios, and exact/truncated mixed-component feasibility; replace incidental names and mutable counter strings with shared invariants.",
+    "rationale": "The fixed weight-3 witness is ported through explicit CP boundaries and independent carry recounting. Generic Boolean equality/inequality exists, but applying it to differential boundaries and heterogeneous exact/truncated component composition is still missing; whole-module closure is not claimed.",
+}
 for _module, _destination in _CMS_REPLACEMENTS.items():
     MIGRATION_OVERRIDES[f"claasp/cipher_modules/models/sat/cms_models/{_module}.py"] = {
         "v5_destination": _destination,
@@ -382,10 +390,37 @@ def serialized_inventory() -> str:
     return json.dumps(build_inventory(), indent=2, sort_keys=True) + "\n"
 
 
+def model_closure_status(payload: dict[str, Any]) -> dict[str, Any]:
+    """Report unresolved M10.8 model entries without treating deferrals as done."""
+    records = [item for item in payload["records"] if "/models/" in item["path"]]
+    unresolved = [item for item in records
+                  if item["status"] == "planned-or-partially-migrated"
+                  or item["disposition"] == "defer"
+                  or "destination finalized" in item["v5_destination"]]
+    families = {}
+    for item in unresolved:
+        family = item["path"].split("/models/", 1)[1].split("/", 1)[0]
+        families[family] = families.get(family, 0) + 1
+    return {
+        "total": len(records),
+        "resolved": len(records) - len(unresolved),
+        "unresolved": [item["path"] for item in unresolved],
+        "deferred": [item["path"] for item in unresolved if item["disposition"] == "defer"],
+        "remaining_by_family": dict(sorted(families.items())),
+        "complete": not unresolved,
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--check", action="store_true", help="fail if the checked-in inventory is stale")
+    parser.add_argument("--model-status", action="store_true", help="report remaining M10.8 model work without rewriting the inventory")
+    parser.add_argument("--check-model-closure", action="store_true", help="fail until all M10.8 model entries are resolved, including deferrals")
     args = parser.parse_args()
+    if args.model_status or args.check_model_closure:
+        status = model_closure_status(build_inventory())
+        print(json.dumps({key: value for key, value in status.items() if key != "unresolved"}, indent=2))
+        return int(args.check_model_closure and not status["complete"])
     expected = serialized_inventory()
     if args.check:
         if not OUTPUT.exists() or OUTPUT.read_text(encoding="utf-8") != expected:

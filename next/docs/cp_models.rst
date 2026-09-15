@@ -6,6 +6,28 @@ small immutable representation that owns MiniZinc language items; external
 process execution belongs to ``MiniZincSolver`` under ``drivers``. Neither the
 core graph nor the representation imports the MiniZinc Python package.
 
+Fixed Speck differential boundaries
+-----------------------------------
+
+Optional packed, MSB-first input/output differences constrain the native
+Speck32/64 data-path model; round-key differences are zero. Decoding recounts
+every transition and checks the requested boundaries and weight bound.
+
+.. doctest::
+
+   >>> from claasp_next.primitives import Speck
+   >>> from claasp_next.semantics import XOR_DIFFERENTIAL
+   >>> from claasp_next.semantics.cryptanalysis import PropagationProblem
+   >>> from claasp_next.representations.constraints.cp import SpeckDifferentialCPModel
+   >>> problem = PropagationProblem(Speck(number_of_rounds=3), XOR_DIFFERENTIAL, maximum_weight=3)
+   >>> fixed = SpeckDifferentialCPModel(problem, input_difference=0x00400000, output_difference=0x8000840A)
+   >>> "constraint x_3[0] = true;" in fixed.cp_model().constraints
+   True
+
+The bounded Chuffed regression preserves the legacy SAT dictionary-model
+fixture's exact input/output differences and feasible weight three. It does
+not claim an optimum or heterogeneous exact/truncated composition.
+
 .. doctest::
 
    >>> from claasp_next.representations.constraints.cp import MiniZincModel

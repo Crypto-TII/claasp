@@ -12216,12 +12216,12 @@
       "v5_destination": "next/tests/integration/test_speck_trail_enumeration.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Retain the zero-key Speck-3 0x00400000 -> 0x8000840A weight-3 witness, equality/inequality SAT/UNSAT boundary scenarios, and exact/truncated mixed-component feasibility; replace incidental names and mutable counter strings with shared invariants.",
       "dependencies": [
         "claasp",
         "pytest"
       ],
-      "disposition": "migrate",
+      "disposition": "defer",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -12238,7 +12238,8 @@
       "kind": "test",
       "path": "tests/unit/cipher_modules/models/sat/sat_model_test.py",
       "prerequisites": [
-        "owning migration milestone"
+        "M10.8d mixed exact/truncated composition",
+        "M10.8d differential boundary equality/inequality"
       ],
       "public_entry_points": [
         "test_solve",
@@ -12250,9 +12251,9 @@
         "test_weight_constraints",
         "test_parallel_counter_branch"
       ],
-      "rationale": null,
+      "rationale": "The fixed weight-3 witness is ported through explicit CP boundaries and independent carry recounting. Generic Boolean equality/inequality exists, but applying it to differential boundaries and heterogeneous exact/truncated component composition is still missing; whole-module closure is not claimed.",
       "responsibility": "sat model test",
-      "status": "planned-or-partially-migrated",
+      "status": "partially-migrated-in-m10.8d",
       "tests": [
         "test_build_generic_sat_model_from_dictionary",
         "test_build_xor_differential_sat_model_from_dictionary",
@@ -12263,7 +12264,7 @@
         "test_solver_names",
         "test_weight_constraints"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/integration/test_minizinc_integration.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",

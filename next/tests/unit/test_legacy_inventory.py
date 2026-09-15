@@ -115,3 +115,17 @@ def test_m10_8d_cms_inventory_has_explicit_evidence_and_existing_destinations():
     assert all(record["status"] in {"migrated-in-m10.8d", "superseded-in-m10.8d"} for record in records)
     assert all((ROOT / record["v5_destination"]).exists() for record in records)
     assert sum(record["disposition"] == "migrate" for record in records) == 2
+
+
+def test_model_closure_does_not_treat_inventory_completeness_as_migration_completion():
+    payload = json.loads(INVENTORY.read_text(encoding="utf-8"))
+    status = _module().model_closure_status(payload)
+    assert not status["complete"]
+    assert status["total"] == status["resolved"] + len(status["unresolved"])
+    assert set(status["deferred"]) <= set(status["unresolved"])
+    assert status["remaining_by_family"]["milp"] > 0
+    assert status["remaining_by_family"]["cp"] > 0
+    assert status["remaining_by_family"]["sat"] > 0
+    unresolved_records = [item for item in payload["records"] if item["path"] in status["unresolved"]]
+    assert not _module().model_closure_status({"records": unresolved_records})["complete"]
+    assert _module().model_closure_status({"records": []})["complete"]
