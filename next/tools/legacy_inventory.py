@@ -199,6 +199,39 @@ MIGRATION_OVERRIDES.update({
 })
 
 
+_CMS_REPLACEMENTS = {
+    "cms_cipher_model": "next/src/claasp_next/representations/constraints/sat/lowering.py",
+    "cms_xor_linear_model": "next/src/claasp_next/representations/constraints/smt/speck.py",
+    "cms_xor_differential_model": "next/src/claasp_next/representations/constraints/cp/trails.py",
+    "cms_bitwise_deterministic_truncated_xor_differential_model": "next/src/claasp_next/semantics/cryptanalysis/truncated.py",
+}
+for _module, _destination in _CMS_REPLACEMENTS.items():
+    MIGRATION_OVERRIDES[f"claasp/cipher_modules/models/sat/cms_models/{_module}.py"] = {
+        "v5_destination": _destination,
+        "prerequisites": [],
+        "disposition": "supersede",
+        "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Shared graph semantics and explicit solver drivers replace CMS-specific model subclasses; fixed CMS test evidence is separately retained.",
+        "rationale": "Native XOR strings are an encoding optimization, not a distinct cryptanalytic meaning. No CryptoMiniSat execution or full catalogue coverage is claimed by this replacement; reusable missing component semantics remain owned by M10.9c.",
+    }
+
+_CMS_TEST_REPLACEMENTS = {
+    "cms_cipher_model_test": ("migrate", "next/tests/integration/test_z3_integration.py", "Preserve the complete Speck32/64-22 vector 0x6574694C, 0x1918111009080100 -> 0xA86842F2 with real solving and independent evaluation."),
+    "cms_xor_linear_model_test": ("migrate", "next/tests/integration/test_speck_trail_enumeration.py", "Prove Speck32/64-4 bound 2 UNSAT and bound 3 SAT; independently recount all correlations and wiring."),
+    "cms_xor_differential_model_test": ("supersede", "next/tests/unit/test_cms_inventory_parity.py", "Supported full Speck32/64 differential construction is nonempty; changing the weight bound retains exact round relations and changes the explicit bound."),
+    "cms_deterministic_truncated_xor_differential_model_test": ("supersede", "next/tests/unit/test_truncated_differences.py", "Typed deterministic-truncated modular-add semantics and Speck propagation replace an assertion-free construction smoke test."),
+}
+for _module, (_disposition, _destination, _criterion) in _CMS_TEST_REPLACEMENTS.items():
+    MIGRATION_OVERRIDES[f"tests/unit/cipher_modules/models/sat/cms_models/{_module}.py"] = {
+        "v5_destination": _destination,
+        "prerequisites": [],
+        "disposition": _disposition,
+        "status": "migrated-in-m10.8d" if _disposition == "migrate" else "superseded-in-m10.8d",
+        "acceptance_criterion": _criterion,
+        "rationale": None if _disposition == "migrate" else "Mutable CMS constraint counts and construction-only smoke tests are replaced by explicit immutable representation and shared-semantic invariants.",
+    }
+
+
 def python_paths() -> list[Path]:
     return sorted(path for root in LEGACY_ROOTS for path in root.rglob("*.py"))
 

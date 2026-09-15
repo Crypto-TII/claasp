@@ -164,3 +164,9 @@ optimum: weight zero is UNSAT and weight one is SAT. It also preserves the
 legacy feasible weight seven without calling it an optimum. The nonstandard
 Speck8/16 eight-trail fixture is separate: it requires a toy primitive and
 nonzero key-mask propagation, which this zero-key-mask model does not claim.
+
+The same graph-wired model preserves the CMS suite's four-round Speck32/64
+optimum of three: Z3 proves bound two UNSAT and bound three SAT. This is a
+proof of the shared data-path characteristic model, not a claim to execute
+CryptoMiniSat or reproduce a whole-primitive linear hull. Native XOR clauses
+are an optional encoding optimization; they do not define separate semantics.

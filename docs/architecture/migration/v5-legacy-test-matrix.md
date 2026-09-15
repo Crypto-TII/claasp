@@ -69,6 +69,20 @@ of uniqueness or an optimum.
 | Disabled PRESENT case in `milp_xor_linear_model_test.py::test_find_lowest_weight_xor_linear_trail` | Three-round PRESENT input mask `0x0d00000000000000` was preserved with expected weight 4 but disabled in legacy | Restored semantically in M10.3e | `test_spn_trail_search.py` finds a weight-4 characteristic, retains LAT signs, and independently checks every transition and permutation boundary; it does not depend on the disabled input-mask hint |
 | SAT/CMS/MILP `*_xor_linear_model_test.py::test_find_lowest_weight_xor_linear_trail` Speck case | Four-round Speck32/64 minimum weight 3, repeated across legacy backends | Ported in M10.3f | `test_arx_trail_search.py` restores masks `0x40b010c1 -> 0x2c102010`, exact per-addition weights `2+0+0+1`, signed correlations, and independent backward wiring checks; the fixture was regenerated with legacy `SatXorLinearModel` and MiniSat 2.2.1 |
 
+## CryptoMiniSat model subclasses
+
+All four non-marker CMS source modules and all four test modules are explicitly
+classified in the machine inventory. Backend-specific subclasses are superseded
+by shared representations and separate drivers; no CryptoMiniSat execution or
+complete component catalogue is claimed by this architectural replacement.
+
+| Legacy test under `sat/cms_models/` | Preserved assertion | Disposition | v5 evidence |
+| --- | --- | --- | --- |
+| `cms_cipher_model_test.py` | Full Speck32/64-22 plaintext/key completes to `0xA86842F2` | Ported in M10.8d | Existing `test_z3_integration.py` solves the complete graph and checks concrete evaluation |
+| `cms_xor_linear_model_test.py` | Speck32/64-4 optimum weight 3 | Ported in M10.8d | `test_speck_trail_enumeration.py` proves bound 2 UNSAT and bound 3 SAT, independently recounting correlations and mask wiring |
+| `cms_xor_differential_model_test.py` | Supported dispatch produces constraints and variables; weight configuration affects construction | Superseded in M10.8d | `test_cms_inventory_parity.py` checks all 22 addition relations are present, immutable declarations/wiring are preserved, and the requested bound is explicit rather than requiring more mutable strings |
+| `cms_deterministic_truncated_xor_differential_model_test.py` | Construction smoke test with no assertion | Superseded in M10.8d | `test_truncated_differences.py` checks sound modular-add output bits and fixed Speck truncated propagation; the legacy CMS class itself delegates to ordinary SAT and warns it has no CMS advantage |
+
 ## SMT models
 
 | Legacy test | Semantic assertions and provenance | Disposition | v5 coverage |

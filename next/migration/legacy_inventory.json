@@ -2185,100 +2185,92 @@
       "v5_destination": "inapplicable: package marker reviewed with its containing module"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Shared graph semantics and explicit solver drivers replace CMS-specific model subclasses; fixed CMS test evidence is separately retained.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
       "path": "claasp/cipher_modules/models/sat/cms_models/cms_bitwise_deterministic_truncated_xor_differential_model.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "CmsSatDeterministicTruncatedXorDifferentialModel"
       ],
-      "rationale": null,
+      "rationale": "Native XOR strings are an encoding optimization, not a distinct cryptanalytic meaning. No CryptoMiniSat execution or full catalogue coverage is claimed by this replacement; reusable missing component semantics remain owned by M10.9c.",
       "responsibility": "CryptoMiniSat model of Cipher.",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/semantics/cryptanalysis/truncated.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Shared graph semantics and explicit solver drivers replace CMS-specific model subclasses; fixed CMS test evidence is separately retained.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
       "path": "claasp/cipher_modules/models/sat/cms_models/cms_cipher_model.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "CmsSatCipherModel"
       ],
-      "rationale": null,
+      "rationale": "Native XOR strings are an encoding optimization, not a distinct cryptanalytic meaning. No CryptoMiniSat execution or full catalogue coverage is claimed by this replacement; reusable missing component semantics remain owned by M10.9c.",
       "responsibility": "CryptoMiniSat model of Cipher.",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/representations/constraints/sat/lowering.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Shared graph semantics and explicit solver drivers replace CMS-specific model subclasses; fixed CMS test evidence is separately retained.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
       "path": "claasp/cipher_modules/models/sat/cms_models/cms_xor_differential_model.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "CmsSatXorDifferentialModel"
       ],
-      "rationale": null,
+      "rationale": "Native XOR strings are an encoding optimization, not a distinct cryptanalytic meaning. No CryptoMiniSat execution or full catalogue coverage is claimed by this replacement; reusable missing component semantics remain owned by M10.9c.",
       "responsibility": "CryptoMiniSat model of Cipher.",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/representations/constraints/cp/trails.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Shared graph semantics and explicit solver drivers replace CMS-specific model subclasses; fixed CMS test evidence is separately retained.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
       "path": "claasp/cipher_modules/models/sat/cms_models/cms_xor_linear_model.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "CmsSatXorLinearModel"
       ],
-      "rationale": null,
+      "rationale": "Native XOR strings are an encoding optimization, not a distinct cryptanalytic meaning. No CryptoMiniSat execution or full catalogue coverage is claimed by this replacement; reusable missing component semantics remain owned by M10.9c.",
       "responsibility": "CryptoMiniSat model of Cipher.",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/representations/constraints/smt/speck.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -12117,7 +12109,7 @@
       "v5_destination": "next/tests (mapped to the owning migrated behavior)"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Preserve the complete Speck32/64-22 vector 0x6574694C, 0x1918111009080100 -> 0xA86842F2 with real solving and independent evaluation.",
       "dependencies": [
         "claasp"
       ],
@@ -12130,26 +12122,24 @@
       },
       "kind": "test",
       "path": "tests/unit/cipher_modules/models/sat/cms_models/cms_cipher_model_test.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "test_find_missing_bits"
       ],
       "rationale": null,
       "responsibility": "cms cipher model test",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.8d",
       "tests": [
         "test_find_missing_bits"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/integration/test_z3_integration.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Typed deterministic-truncated modular-add semantics and Speck propagation replace an assertion-free construction smoke test.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -12158,26 +12148,24 @@
       },
       "kind": "test",
       "path": "tests/unit/cipher_modules/models/sat/cms_models/cms_deterministic_truncated_xor_differential_model_test.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "test_build_bitwise_deterministic_truncated_xor_differential_trail_model"
       ],
-      "rationale": null,
+      "rationale": "Mutable CMS constraint counts and construction-only smoke tests are replaced by explicit immutable representation and shared-semantic invariants.",
       "responsibility": "cms deterministic truncated xor differential model test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [
         "test_build_bitwise_deterministic_truncated_xor_differential_trail_model"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_truncated_differences.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Supported full Speck32/64 differential construction is nonempty; changing the weight bound retains exact round relations and changes the explicit bound.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -12187,24 +12175,22 @@
       },
       "kind": "test",
       "path": "tests/unit/cipher_modules/models/sat/cms_models/cms_xor_differential_model_test.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "test_build_xor_differential_trail_model",
         "test_build_xor_differential_trail_model_with_weight_adds_constraints"
       ],
-      "rationale": null,
+      "rationale": "Mutable CMS constraint counts and construction-only smoke tests are replaced by explicit immutable representation and shared-semantic invariants.",
       "responsibility": "cms xor differential model test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [
         "test_build_xor_differential_trail_model",
         "test_build_xor_differential_trail_model_with_weight_adds_constraints"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_cms_inventory_parity.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Prove Speck32/64-4 bound 2 UNSAT and bound 3 SAT; independently recount all correlations and wiring.",
       "dependencies": [
         "claasp"
       ],
@@ -12217,19 +12203,17 @@
       },
       "kind": "test",
       "path": "tests/unit/cipher_modules/models/sat/cms_models/cms_xor_linear_model_test.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "test_find_lowest_weight_xor_linear_trail"
       ],
       "rationale": null,
       "responsibility": "cms xor linear model test",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.8d",
       "tests": [
         "test_find_lowest_weight_xor_linear_trail"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/integration/test_speck_trail_enumeration.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",

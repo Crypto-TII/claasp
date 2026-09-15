@@ -104,3 +104,14 @@ def test_m10_8d_smt_inventory_names_only_the_remaining_linear_fixture_group():
         "M10.9b toy primitive classification", "M10.9d toy Speck8/16",
         "M10.8d nonzero key-mask composition",
     ]
+
+
+def test_m10_8d_cms_inventory_has_explicit_evidence_and_existing_destinations():
+    payload = json.loads(INVENTORY.read_text(encoding="utf-8"))
+    records = [record for record in payload["records"]
+               if "/cms_models/" in record["path"] and not record["path"].endswith("/__init__.py")]
+    assert len(records) == 8
+    assert all(record["prerequisites"] == [] for record in records)
+    assert all(record["status"] in {"migrated-in-m10.8d", "superseded-in-m10.8d"} for record in records)
+    assert all((ROOT / record["v5_destination"]).exists() for record in records)
+    assert sum(record["disposition"] == "migrate" for record in records) == 2
