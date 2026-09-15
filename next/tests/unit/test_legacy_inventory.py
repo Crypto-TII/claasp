@@ -98,3 +98,9 @@ def test_m10_8d_smt_inventory_names_only_the_remaining_linear_fixture_group():
     assert deferred == {
         "tests/unit/cipher_modules/models/smt/smt_models/smt_xor_linear_model_test.py",
     }
+    remaining = next(record for record in records if record["path"] in deferred)
+    assert remaining["status"] == "partially-migrated-in-m10.8d"
+    assert remaining["prerequisites"] == [
+        "M10.9b toy primitive classification", "M10.9d toy Speck8/16",
+        "M10.8d nonzero key-mask composition",
+    ]

@@ -137,3 +137,30 @@ weights ``2 + 0 + 0 + 1`` and correlation signs ``+,+,+,-`` with the exact
 Walsh checker after solving.  This fixture was regenerated with the legacy
 ``SatXorLinearModel`` and MiniSat 2.2.1; it is not merely copied from solver
 output without semantic validation.
+
+Speck data-path composition
+---------------------------
+
+``SpeckLinearSMTModel`` wires each round's exact addition relation through
+the graph's rotations and XOR mask rules. It assumes zero round-key masks,
+requires a nonzero plaintext mask, and accepts either an upper weight bound
+or an exact weight (not both). Execution remains a separate ``Z3Solver``
+operation; decoding independently recounts all correlations and wiring.
+
+.. doctest::
+
+   >>> from claasp_next.primitives import Speck
+   >>> from claasp_next.representations.constraints.smt import SpeckLinearSMTModel
+   >>> model = SpeckLinearSMTModel(Speck(number_of_rounds=3), maximum_weight=1)
+   >>> formula = model.smt_formula()
+   >>> "nonzero_linear_input" in formula.provenance
+   True
+   >>> exact = SpeckLinearSMTModel(Speck(number_of_rounds=3), fixed_weight=7)
+   >>> "weight_complement" in exact.smt_formula().provenance
+   True
+
+The bounded Z3 regression preserves the legacy three-round Speck32/64
+optimum: weight zero is UNSAT and weight one is SAT. It also preserves the
+legacy feasible weight seven without calling it an optimum. The nonstandard
+Speck8/16 eight-trail fixture is separate: it requires a toy primitive and
+nonzero key-mask propagation, which this zero-key-mask model does not claim.

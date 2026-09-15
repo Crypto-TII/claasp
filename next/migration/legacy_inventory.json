@@ -12861,7 +12861,9 @@
       "kind": "test",
       "path": "tests/unit/cipher_modules/models/smt/smt_models/smt_xor_linear_model_test.py",
       "prerequisites": [
-        "M10.8d bounded Speck trail enumeration"
+        "M10.9b toy primitive classification",
+        "M10.9d toy Speck8/16",
+        "M10.8d nonzero key-mask composition"
       ],
       "public_entry_points": [
         "test_find_all_xor_linear_trails_with_weight_at_most",
@@ -12870,9 +12872,9 @@
         "test_find_one_xor_linear_trail_with_fixed_weight",
         "test_fix_variables_value_xor_linear_constraints"
       ],
-      "rationale": "The four-round optimum has exact shared semantics and independent checking; the remaining reduced fixtures require the common bounded-enumeration API.",
+      "rationale": "The four-round optimum has exact shared semantics and independent checking; the three-round optimum 1 and feasible weight 7 are restored by graph-wired Z3 models. Only the Speck8/16 count remains: its nonstandard toy graph and nonzero key-mask propagation are prerequisites beyond the existing zero-key data-path model.",
       "responsibility": "smt xor linear model test",
-      "status": "partially-migrated-in-m10.3f",
+      "status": "partially-migrated-in-m10.8d",
       "tests": [
         "test_find_all_xor_linear_trails_with_weight_at_most",
         "test_find_lowest_weight_xor_linear_trail",

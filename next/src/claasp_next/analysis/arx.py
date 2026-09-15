@@ -132,8 +132,16 @@ def find_four_round_speck_xor_linear(primitive: Primitive) -> TrailSearchResult:
 def check_speck_linear_trail(primitive: Primitive, trail: Trail) -> bool:
     """Independently check modular-add correlations and backward mask wiring."""
 
-    width = _validate_speck_linear_slice(primitive)
-    if trail.kind is not TrailKind.XOR_LINEAR or len(trail.steps) != 4:
+    plaintext = primitive.inputs.get("plaintext")
+    if (primitive.family_name != "speck" or plaintext is None
+            or not isinstance(plaintext.value_type.domain, Word)):
+        return False
+    width = plaintext.value_type.domain.width
+    if trail.kind is not TrailKind.XOR_LINEAR or len(trail.steps) != len(primitive.rounds):
+        return False
+    if trail.input_pattern.width != 2 * width or trail.output_pattern.width != 2 * width:
+        return False
+    if any(step.component_id != f"round_{r}_modular_add" for r, step in enumerate(trail.steps)):
         return False
     semantics = ModularAddLinearSemantics(width)
     if any(not semantics.check(step.transition) for step in trail.steps):

@@ -182,16 +182,18 @@ MIGRATION_OVERRIDES.update({
     },
     "tests/unit/cipher_modules/models/smt/smt_models/smt_xor_linear_model_test.py": {
         "v5_destination": "next/tests/integration/test_speck_trail_enumeration.py",
-        "prerequisites": ["M10.8d bounded Speck trail enumeration"],
+        "prerequisites": ["M10.9b toy primitive classification", "M10.9d toy Speck8/16", "M10.8d nonzero key-mask composition"],
         "disposition": "defer",
-        "status": "partially-migrated-in-m10.3f",
+        "status": "partially-migrated-in-m10.8d",
         "acceptance_criterion": (
             "Preserve the Speck32/64-4 optimum weight 3, reduced three-round weights 1 and 7, "
             "and the eight Speck8/16 trails of weight at most 2."
         ),
         "rationale": (
             "The four-round optimum has exact shared semantics and independent checking; the "
-            "remaining reduced fixtures require the common bounded-enumeration API."
+            "three-round optimum 1 and feasible weight 7 are restored by graph-wired Z3 models. "
+            "Only the Speck8/16 count remains: its nonstandard toy graph and nonzero key-mask "
+            "propagation are prerequisites beyond the existing zero-key data-path model."
         ),
     },
 })
