@@ -5,7 +5,8 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Protocol, runtime_checkable
 
-from claasp_next.components import BitVectorSBox, ModularAdd
+from claasp_next.components import BitVectorSBox, BitwiseAnd, ModularAdd
+from claasp_next.semantics.cryptanalysis.bitwise import BitwiseAndSemantics
 from claasp_next.graph import Primitive, Component
 from claasp_next.semantics.base import (
     DETERMINISTIC_TRUNCATED_XOR,
@@ -206,6 +207,17 @@ class _ModularAddProvider:
         return operation(*input_patterns, output_pattern)
 
 
+class _BitwiseAndProvider(_ModularAddProvider):
+    def __init__(self, component, semantics):
+        self.semantic_type = semantics
+        self.transition_semantics = BitwiseAndSemantics(component.output_type.domain.width)
+
+    def transition(self, input_patterns, output_pattern):
+        if len(input_patterns) != 2:
+            raise ValueError("AND semantics requires two input patterns")
+        return super().transition(input_patterns, output_pattern)
+
+
 def default_component_semantics() -> ComponentSemanticsRegistry:
     """Return reviewed exact bindings for currently supported components."""
 
@@ -218,5 +230,9 @@ def default_component_semantics() -> ComponentSemanticsRegistry:
         registry = registry.register(ComponentSemanticsBinding(
             semantics, ModularAdd,
             lambda component, meaning=semantics: _ModularAddProvider(component, meaning),
+        ))
+        registry = registry.register(ComponentSemanticsBinding(
+            semantics, BitwiseAnd,
+            lambda component, meaning=semantics: _BitwiseAndProvider(component, meaning),
         ))
     return registry

@@ -20,6 +20,18 @@ from claasp_next.primitives.block_ciphers.present import PRESENT_SBOX
 pytestmark = pytest.mark.external
 
 
+def test_z3_incremental_queries_reject_mutation_and_close_process():
+    from claasp_next.representations.constraints.smt import SMTFormula
+    formula = SMTFormula(("state",), ((1,),), ("fixed",))
+    with Z3Solver(timeout_seconds=10).incremental(formula) as session:
+        assert session.solve(formula).status is SatStatus.SATISFIABLE
+        contradictory = SMTFormula(("state",), ((1,), (-1,)), ("fixed", "contradictory"))
+        assert session.solve(contradictory).status is SatStatus.UNSATISFIABLE
+        with pytest.raises(ValueError, match="append assertions"):
+            session.solve(formula)
+    assert session.process.poll() is not None
+
+
 def test_z3_recovers_and_independently_verifies_reduced_speck_key():
     assert shutil.which("z3") is not None, "the external test job must install Z3"
     primitive = Speck(number_of_rounds=1)

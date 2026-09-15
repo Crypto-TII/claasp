@@ -28,6 +28,32 @@ The bounded Chuffed regression preserves the legacy SAT dictionary-model
 fixture's exact input/output differences and feasible weight three. It does
 not claim an optimum or heterogeneous exact/truncated composition.
 
+``boundary_relation="equal"`` or ``"not_equal"`` constrains the complete
+input/output difference vectors. Independent decoding also enforces that
+relation. The legacy three-round comparison scenarios are SAT for either
+relation and UNSAT when equal fixed boundaries are required to differ.
+
+Typed exact/truncated composition
+---------------------------------
+
+``SpeckHybridDifferentialProblem`` replaces mutable per-component method-name
+dictionaries with an explicit phase boundary. A separate CP solver searches
+the exact prefix; solver-independent paired-carry semantics derive a sound
+truncated suffix. The result keeps those meanings distinct: suffix unknowns
+are not exact witnesses and no combined probability or optimum is claimed.
+
+.. doctest::
+
+   >>> from claasp_next.analysis import SpeckHybridDifferentialProblem
+   >>> hybrid = SpeckHybridDifferentialProblem(Speck(number_of_rounds=3), exact_rounds=2, input_difference=0x00400000)
+   >>> hybrid.prefix_model.round_count
+   2
+   >>> "x_3" in hybrid.prefix_model.cp_model().source()
+   False
+
+The legacy mixed Speck SAT-feasibility fixture is preserved by a real Chuffed
+prefix solve and independent transition, wiring, and abstraction checks.
+
 .. doctest::
 
    >>> from claasp_next.representations.constraints.cp import MiniZincModel
@@ -339,6 +365,27 @@ output ``00000020200000000000000000000000``, five inverse rounds produce
 ``22222222002222202222222022222222``. Here ``2`` denotes unknown. The two
 middle patterns contradict at bit 23. MiniZinc reproduces both patterns, while
 the decoder recomputes them through independent Python semantics.
+
+Table-level activity conditions
+-------------------------------
+
+Dependency-free helpers preserve the legacy CP activity results without Sage
+or a solver:
+
+.. doctest::
+
+   >>> from claasp_next.semantics.cryptanalysis import branch_number_activity_table, possible_active_sbox_counts
+   >>> len(branch_number_activity_table(4, 4, 5))
+   94
+   >>> midori_sb0 = (12, 10, 13, 3, 14, 11, 15, 7, 8, 9, 1, 5, 0, 2, 4, 6)
+   >>> sorted(possible_active_sbox_counts([midori_sb0], 9))
+   [3, 4]
+
+A branch number must be supplied as a proven bound; retained rows need not
+have concrete witnesses for a general matrix. Active S-box counts use exact
+rational DDT probabilities and ignore graph wiring: these are necessary
+table-level conditions, not whole-primitive trail claims. Probability-one
+active transitions require an explicit finite ``maximum_active`` bound.
 
 .. automodule:: claasp_next.representations.constraints.cp
    :members:

@@ -311,9 +311,9 @@ def truncated_modular_subtract(
 
 
 def propagate_two_word_speck_round(
-    primitive: Primitive, difference: TruncatedXorDifference
+    primitive: Primitive, difference: TruncatedXorDifference, round_number: int = 0,
 ) -> TruncatedXorDifference:
-    """Propagate a zero-key-difference pattern through Speck's first round."""
+    """Propagate a zero-key-difference pattern through a selected Speck round."""
 
     plaintext = primitive.inputs.get("plaintext")
     if primitive.family_name != "speck" or plaintext is None:
@@ -321,8 +321,11 @@ def propagate_two_word_speck_round(
     width = plaintext.value_type.domain.width
     if len(difference.bits) != 2 * width:
         raise ValueError("difference width must match the Speck block")
-    alpha = _rotation(primitive, "round_0_rotate_right").amount
-    beta = _rotation(primitive, "round_0_rotate_left").amount
+    if (not isinstance(round_number, int) or isinstance(round_number, bool)
+            or not 0 <= round_number < len(primitive.rounds)):
+        raise ValueError("round_number is outside the primitive")
+    alpha = _rotation(primitive, f"round_{round_number}_rotate_right").amount
+    beta = _rotation(primitive, f"round_{round_number}_rotate_left").amount
     left = TruncatedXorDifference(difference.bits[:width])
     right = TruncatedXorDifference(difference.bits[width:])
     new_left = truncated_modular_add(left.rotate_right(alpha), right)

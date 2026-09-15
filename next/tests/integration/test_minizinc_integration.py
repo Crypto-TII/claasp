@@ -267,19 +267,59 @@ def test_minizinc_proves_legacy_speck_five_round_differential_optimum():
     assert len(trail.steps) == 5
 
 
-def test_minizinc_preserves_legacy_fixed_speck_three_round_differential():
+@pytest.mark.parametrize("input_difference,output_difference,weight", [
+    (0x00400000, 0x8000840A, 3),
+    (0x02110A04, 0x80008000, 6),
+])
+def test_minizinc_preserves_legacy_fixed_speck_three_round_differential(
+    input_difference, output_difference, weight,
+):
     """sat_model_test.py dictionary-based differential fixture, zero key difference."""
     primitive = Speck(number_of_rounds=3)
     model = SpeckDifferentialCPModel(PropagationProblem(
-        primitive, XOR_DIFFERENTIAL, maximum_weight=3,
+        primitive, XOR_DIFFERENTIAL, maximum_weight=weight,
         provenance=("legacy sat_model_test.py fixed Speck-3 witness",),
-    ), input_difference=0x00400000, output_difference=0x8000840A)
+    ), input_difference=input_difference, output_difference=output_difference)
     solved = MiniZincSolver(solver=_test_solver(require_chuffed=True), timeout_seconds=10).solve(model.cp_model())
     assert solved.status is CPStatus.SATISFIED
     trail = model.decode_trail(solved.assignment)
-    assert trail.input_pattern.value == 0x00400000
-    assert trail.output_pattern.value == 0x8000840A
-    assert trail.total_weight == 3
+    assert trail.input_pattern.value == input_difference
+    assert trail.output_pattern.value == output_difference
+    assert trail.total_weight == weight
+
+
+def test_minizinc_preserves_differential_boundary_comparison_sat_unsat():
+    """sat_model_test.py::test_fix_variables_value_constraints differential cases."""
+    primitive = Speck(number_of_rounds=3)
+    problem = PropagationProblem(primitive, XOR_DIFFERENTIAL, maximum_weight=45)
+    solver = MiniZincSolver(solver=_test_solver(require_chuffed=True), timeout_seconds=10)
+    for relation in ("equal", "not_equal"):
+        model = SpeckDifferentialCPModel(problem, boundary_relation=relation)
+        result = solver.solve(model.cp_model())
+        assert result.status is CPStatus.SATISFIED
+        trail = model.decode_trail(result.assignment)
+        assert (trail.input_pattern.value == trail.output_pattern.value) == (relation == "equal")
+    contradictory = SpeckDifferentialCPModel(
+        problem, input_difference=1, output_difference=1, boundary_relation="not_equal",
+    )
+    assert solver.solve(contradictory.cp_model()).status is CPStatus.UNSATISFIABLE
+
+
+def test_minizinc_preserves_legacy_mixed_exact_truncated_speck_feasibility():
+    """sat_model_test.py::test_build_generic_sat_model_from_dictionary.
+
+    Typed phase composition supersedes per-component method-name strings:
+    first two data rounds exact, last data round deterministic truncated.
+    """
+    from claasp_next.analysis import SpeckHybridDifferentialProblem
+    problem = SpeckHybridDifferentialProblem(
+        Speck(number_of_rounds=3), exact_rounds=2, input_difference=0x00400000,
+    )
+    result = problem.solve(MiniZincSolver(solver=_test_solver(require_chuffed=True), timeout_seconds=10))
+    assert result is not None
+    assert problem.check(result)
+    assert result.exact_prefix.input_pattern.value == 0x00400000
+    assert len(result.truncated_boundaries) == 2
 
 
 def test_minizinc_preserves_legacy_speck_five_round_bounded_trail_count():

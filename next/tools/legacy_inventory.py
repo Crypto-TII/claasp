@@ -31,6 +31,14 @@ CATEGORY_BY_DIRECTORY = {
 }
 
 MIGRATION_OVERRIDES = {
+    "tests/unit/cipher_modules/models/cp/mzn_model_test.py": {
+        "v5_destination": "next/tests/unit/test_sbox_activity.py; next/tests/integration/test_minizinc_integration.py; next/tests/integration/test_speck_trail_enumeration.py",
+        "prerequisites": [],
+        "disposition": "supersede",
+        "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Every fixed AES branch-table row, Midori active-count {3,4}, Speck-3 differential boundaries at weight 6, linear boundaries at weight 5, and boundary comparison SAT/UNSAT are independently preserved.",
+        "rationale": "Typed immutable model parts, explicit phase composition and executable drivers replace mutable method-name dictionaries, legacy solver registries, declaration names and time-stat fallbacks. Unknown components fail explicitly rather than silently yielding a nonempty partial model. Intermediate output is not proof-complete evidence. Branch-bound rows remain an abstraction, not concrete MixColumns witnesses.",
+    },
     "claasp/cipher_modules/models/algebraic/algebraic_model.py": {
         "v5_destination": "next/src/claasp_next/representations/constraints/polynomial",
         "prerequisites": [],
@@ -182,19 +190,14 @@ MIGRATION_OVERRIDES.update({
     },
     "tests/unit/cipher_modules/models/smt/smt_models/smt_xor_linear_model_test.py": {
         "v5_destination": "next/tests/integration/test_speck_trail_enumeration.py",
-        "prerequisites": ["M10.9b toy primitive classification", "M10.9d toy Speck8/16", "M10.8d nonzero key-mask composition"],
-        "disposition": "defer",
-        "status": "partially-migrated-in-m10.8d",
+        "prerequisites": [],
+        "disposition": "migrate",
+        "status": "migrated-in-m10.8d",
         "acceptance_criterion": (
             "Preserve the Speck32/64-4 optimum weight 3, reduced three-round weights 1 and 7, "
             "and the eight Speck8/16 trails of weight at most 2."
         ),
-        "rationale": (
-            "The four-round optimum has exact shared semantics and independent checking; the "
-            "three-round optimum 1 and feasible weight 7 are restored by graph-wired Z3 models. "
-            "Only the Speck8/16 count remains: its nonstandard toy graph and nonzero key-mask "
-            "propagation are prerequisites beyond the existing zero-key data-path model."
-        ),
+        "rationale": None,
     },
 })
 
@@ -207,11 +210,11 @@ _CMS_REPLACEMENTS = {
 }
 MIGRATION_OVERRIDES["tests/unit/cipher_modules/models/sat/sat_model_test.py"] = {
     "v5_destination": "next/tests/integration/test_minizinc_integration.py",
-    "prerequisites": ["M10.8d mixed exact/truncated composition", "M10.8d differential boundary equality/inequality"],
-    "disposition": "defer",
-    "status": "partially-migrated-in-m10.8d",
+    "prerequisites": [],
+    "disposition": "supersede",
+    "status": "superseded-in-m10.8d",
     "acceptance_criterion": "Retain the zero-key Speck-3 0x00400000 -> 0x8000840A weight-3 witness, equality/inequality SAT/UNSAT boundary scenarios, and exact/truncated mixed-component feasibility; replace incidental names and mutable counter strings with shared invariants.",
-    "rationale": "The fixed weight-3 witness is ported through explicit CP boundaries and independent carry recounting. Generic Boolean equality/inequality exists, but applying it to differential boundaries and heterogeneous exact/truncated component composition is still missing; whole-module closure is not claimed.",
+    "rationale": "The fixed weight-3 witness and complete differential boundary equality/inequality SAT/UNSAT scenarios are ported through native CP constraints and independent decoding. Typed exact-prefix/truncated-suffix composition replaces the mixed Speck method-name dictionary and independently checks feasibility. Unconstrained TEA/Simon assignment names, counter internals, and mutable solver registries are representation smoke tests, not fixed scientific values; existing typed Boolean/Word witness and real-solver tests replace them while catalogue parity stays owned by M10.9d.",
 }
 for _module, _destination in _CMS_REPLACEMENTS.items():
     MIGRATION_OVERRIDES[f"claasp/cipher_modules/models/sat/cms_models/{_module}.py"] = {

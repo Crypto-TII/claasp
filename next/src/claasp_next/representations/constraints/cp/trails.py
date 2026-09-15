@@ -218,7 +218,8 @@ class SpeckDifferentialCPModel:
     transitions are recounted by independent paired-carry semantics.
     """
 
-    def __init__(self, problem: PropagationProblem, *, input_difference=None, output_difference=None) -> None:
+    def __init__(self, problem: PropagationProblem, *, input_difference=None,
+                 output_difference=None, boundary_relation=None, round_count=None) -> None:
         if not isinstance(problem, PropagationProblem):
             raise TypeError("problem must be a PropagationProblem")
         if problem.semantics != XOR_DIFFERENTIAL:
@@ -241,11 +242,18 @@ class SpeckDifferentialCPModel:
                 XorDifference(value, 32)
         self.input_difference = input_difference
         self.output_difference = output_difference
+        if boundary_relation not in (None, "equal", "not_equal"):
+            raise ValueError("boundary_relation must be equal or not_equal")
+        self.boundary_relation = boundary_relation
+        self.round_count = len(self.primitive.rounds) if round_count is None else round_count
+        if (not isinstance(self.round_count, int) or isinstance(self.round_count, bool)
+                or not 1 <= self.round_count <= len(self.primitive.rounds)):
+            raise ValueError("round_count must select a nonempty Speck prefix")
 
     def cp_model(self) -> MiniZincModel:
         """Compile exact support, weight bits, and deterministic round wiring."""
 
-        rounds = len(self.primitive.rounds)
+        rounds = self.round_count
         declarations = [_MODADD_DIFFERENTIAL_PREDICATE]
         constraints = []
         for boundary in range(rounds + 1):
@@ -280,6 +288,11 @@ class SpeckDifferentialCPModel:
                 name = "x" if bit < 16 else "y"
                 encoded = "true" if value & (1 << (31 - bit)) else "false"
                 constraints.append(f"constraint {name}_{boundary}[{bit % 16}] = {encoded};")
+        if self.boundary_relation == "equal":
+            for name in ("x", "y"):
+                constraints.append(f"constraint forall(i in 0..15)({name}_0[i] = {name}_{rounds}[i]);")
+        elif self.boundary_relation == "not_equal":
+            constraints.append(f"constraint exists(i in 0..15)(x_0[i] != x_{rounds}[i] \\/ y_0[i] != y_{rounds}[i]);")
         weight_terms = [
             f"bool2int(weight_{round_number}[{bit}])"
             for round_number in range(rounds)
@@ -300,7 +313,7 @@ class SpeckDifferentialCPModel:
         left = _boolean_word(assignment["x_0"])
         right = _boolean_word(assignment["y_0"])
         initial = (left << self.width) | right
-        for round_number in range(len(self.primitive.rounds)):
+        for round_number in range(self.round_count):
             alpha = _component(
                 self.primitive, f"round_{round_number}_rotate_right", Rotate
             ).amount
@@ -328,6 +341,10 @@ class SpeckDifferentialCPModel:
                 or (self.input_difference is not None and initial != self.input_difference)
                 or (self.output_difference is not None and trail.output_pattern.value != self.output_difference)):
             raise ValueError("MiniZinc assignment violates requested Speck boundaries or weight")
+        equal = initial == trail.output_pattern.value
+        if ((self.boundary_relation == "equal" and not equal)
+                or (self.boundary_relation == "not_equal" and equal)):
+            raise ValueError("MiniZinc assignment violates requested boundary relation")
         return trail
 
 

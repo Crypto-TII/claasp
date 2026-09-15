@@ -13,6 +13,7 @@ from claasp_next.primitives.permutations.mimc import MiMC
 from claasp_next.primitives.permutations.poseidon import Poseidon
 from claasp_next.primitives.permutations.chacha import ChaCha
 from claasp_next.primitives.permutations.salsa import Salsa
+from claasp_next.primitives.toy_primitives import ToySpeck
 
 __all__ = [
     "AES128",
@@ -26,4 +27,5 @@ __all__ = [
     "Simon",
     "Salsa",
     "Trivium",
+    "ToySpeck",
 ]

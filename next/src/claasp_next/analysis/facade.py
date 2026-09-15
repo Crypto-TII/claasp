@@ -206,6 +206,24 @@ class Analysis:
             input_difference, output_difference
         ).is_possible
 
+    def enumerate_xor_linear_trails(self, maximum_weight, *, solver=None,
+                                   nonzero_input="plaintext", fixed_input_masks=None,
+                                   fixed_inputs=None, limit=1000):
+        """Enumerate checked Word-graph characteristics, not whole-primitive hulls.
+
+        By default, a keyed graph fixes key value zero (single-key analysis).
+        Requesting ``nonzero_input="key"`` instead includes key-schedule masks.
+        Solver execution is optional and separate from graph realization.
+        """
+        from claasp_next.drivers.solvers import Z3Solver
+        from claasp_next.representations.constraints.smt import WordLinearSMTModel
+        if fixed_inputs is None and fixed_input_masks is None:
+            fixed_inputs = {"key": 0} if "key" in self.primitive.inputs and nonzero_input != "key" else {}
+        model = WordLinearSMTModel(self.primitive, maximum_weight=maximum_weight,
+                                   nonzero_input=nonzero_input, fixed_input_masks=fixed_input_masks,
+                                   fixed_inputs=fixed_inputs)
+        return model.enumerate_trails(Z3Solver() if solver is None else solver, limit=limit)
+
     def find_lowest_weight_xor_linear_trail(self):
         """Find the lowest-weight linear trail supported by the reviewed slice."""
 

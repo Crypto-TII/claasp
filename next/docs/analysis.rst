@@ -189,3 +189,20 @@ facade call:
    (3.0, True)
    >>> (hex(result.trail.input_pattern.value), hex(result.trail.output_pattern.value))
    ('0x40b010c1', '0x2c102010')
+
+Word-graph characteristics can also be enumerated with
+``primitive.analyze().enumerate_xor_linear_trails(maximum_weight, solver=solver)``.
+The default fixes the key value to zero and folds its dependent subgraph;
+``nonzero_input="key"`` includes key-schedule masks instead. Results retain graph/realization identities, solver
+version, signed component correlations, and proof-completeness metadata.
+``require_complete()`` rejects a caller-limited enumeration. Characteristics
+are not a sum over trails or a whole-primitive linear-hull claim.
+
+.. doctest::
+
+   >>> from claasp_next.primitives import ToySpeck
+   >>> toy = ToySpeck()
+   >>> toy.family_name
+   'toy_speck'
+   >>> hex(toy.evaluate(0x53, 0x1234))
+   '0xe2'

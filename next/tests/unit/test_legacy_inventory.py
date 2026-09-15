@@ -87,7 +87,7 @@ def test_m10_8d_algebraic_inventory_has_no_unspecified_destinations():
     assert all(record["status"] != "planned-or-partially-migrated" for record in records)
 
 
-def test_m10_8d_smt_inventory_names_only_the_remaining_linear_fixture_group():
+def test_m10_8d_smt_inventory_is_resolved_with_complete_linear_evidence():
     payload = json.loads(INVENTORY.read_text(encoding="utf-8"))
     records = [record for record in payload["records"] if "/models/smt/" in record["path"]]
 
@@ -95,15 +95,10 @@ def test_m10_8d_smt_inventory_names_only_the_remaining_linear_fixture_group():
     assert all("destination finalized" not in record["v5_destination"] for record in records)
     assert all(record["status"] != "planned-or-partially-migrated" for record in records)
     deferred = {record["path"] for record in records if record["disposition"] == "defer"}
-    assert deferred == {
-        "tests/unit/cipher_modules/models/smt/smt_models/smt_xor_linear_model_test.py",
-    }
-    remaining = next(record for record in records if record["path"] in deferred)
-    assert remaining["status"] == "partially-migrated-in-m10.8d"
-    assert remaining["prerequisites"] == [
-        "M10.9b toy primitive classification", "M10.9d toy Speck8/16",
-        "M10.8d nonzero key-mask composition",
-    ]
+    assert deferred == set()
+    linear = next(record for record in records if record["path"].endswith("smt_xor_linear_model_test.py"))
+    assert linear["status"] == "migrated-in-m10.8d"
+    assert linear["prerequisites"] == []
 
 
 def test_m10_8d_cms_inventory_has_explicit_evidence_and_existing_destinations():
@@ -126,6 +121,7 @@ def test_model_closure_does_not_treat_inventory_completeness_as_migration_comple
     assert status["remaining_by_family"]["milp"] > 0
     assert status["remaining_by_family"]["cp"] > 0
     assert status["remaining_by_family"]["sat"] > 0
+    assert status["deferred"] == []
     unresolved_records = [item for item in payload["records"] if item["path"] in status["unresolved"]]
     assert not _module().model_closure_status({"records": unresolved_records})["complete"]
     assert _module().model_closure_status({"records": []})["complete"]

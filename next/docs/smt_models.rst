@@ -41,6 +41,20 @@ Z3 is optional and remains outside the core package. Dedicated integration
 tests solve the complete 22-round Speck32/64 legacy ``find_missing_bits``
 fixture and independently confirm the returned ciphertext by evaluation.
 
+Fixed Speck data-path masks are explicit constructor arguments, separate
+from execution inputs. The external regression preserves the legacy CP
+weight-five witness:
+
+.. doctest::
+
+   >>> from claasp_next.representations.constraints.smt import SpeckLinearSMTModel
+   >>> fixed = SpeckLinearSMTModel(Speck(number_of_rounds=3), fixed_weight=5,
+   ...     input_mask=0x03805224, output_mask=0x40A000C1)
+   >>> fixed.input_mask == 0x03805224 and fixed.output_mask == 0x40A000C1
+   True
+
+The decoder independently checks both masks and the exact weight.
+
 Transition relations
 --------------------
 
@@ -162,11 +176,69 @@ operation; decoding independently recounts all correlations and wiring.
 The bounded Z3 regression preserves the legacy three-round Speck32/64
 optimum: weight zero is UNSAT and weight one is SAT. It also preserves the
 legacy feasible weight seven without calling it an optimum. The nonstandard
-Speck8/16 eight-trail fixture is separate: it requires a toy primitive and
-nonzero key-mask propagation, which this zero-key-mask model does not claim.
+Speck8/16 fixture is handled separately by ``ToySpeck`` and whole-graph
+``WordLinearSMTModel``, including nonzero key masks.
 
 The same graph-wired model preserves the CMS suite's four-round Speck32/64
 optimum of three: Z3 proves bound two UNSAT and bound three SAT. This is a
 proof of the shared data-path characteristic model, not a claim to execute
 CryptoMiniSat or reproduce a whole-primitive linear hull. Native XOR clauses
 are an optional encoding optimization; they do not define separate semantics.
+
+Whole-word linear composition and enumeration
+---------------------------------------------
+
+``WordLinearSMTModel`` composes two-input modular addition, bitwise AND, XOR, rotation,
+identity, concatenation, and constants over arbitrary typed Word graphs.
+Input selections retain logical-unit order; fanout XORs consumer masks back
+to each producer, including the key schedule. Constants contribute a sign,
+not weight. Unsupported operations fail explicitly.
+
+.. doctest::
+
+   >>> from claasp_next.primitives import ToySpeck
+   >>> from claasp_next.representations.constraints.smt import WordLinearSMTModel
+   >>> toy = ToySpeck()
+   >>> toy.family_name
+   'toy_speck'
+   >>> model = WordLinearSMTModel(toy, maximum_weight=2, nonzero_input="key")
+   >>> "nonzero_external_mask" in model.smt_formula().provenance
+   True
+
+With a separate ``Z3Solver``, ``model.enumerate_trails(solver)`` returns
+typed characteristics and proof-completeness metadata. Blocking excludes
+semantic masks rather than auxiliary counter multiplicity; terminal UNSAT
+is required by ``require_complete()``. A caller-imposed trail limit cannot
+be reported as exhaustive. Each result is independently checked using integer
+mask pullbacks, graph fanout, constant signs, and exact Walsh correlations.
+
+The legacy Speck8/16 four-round nonzero-key fixtures contain exactly eight
+characteristics at weights at most two and 73 at weights at most three.
+Both counts are retained. These are component characteristics, not a sum over
+trails or a whole-primitive linear hull. ``ToySpeck`` is an explicitly toy,
+four-bit-word keyed bijection with legacy rotations 8 modulo 4 and 3; official
+``Speck`` continues to reject these nonstandard block/key sizes.
+
+Concrete fixed inputs and zero masks are distinct: ``fixed_inputs={"key": 0}``
+folds exactly the subgraph depending only on that concrete key, retaining its
+constant signs without charging key-schedule correlations. By contrast,
+``fixed_input_masks={"key": 0}`` leaves key-schedule variables in the model
+and imposes an external mask constraint. The simple facade defaults to the
+former for single-key analysis. The CP legacy toy's three-round fixed-key
+fixtures retain exactly 12 weight-one and 13 weight-at-most-one results.
+
+Z3 enumeration uses one isolated incremental process, appending only no-good
+clauses. The driver rejects changed declarations/assertion prefixes, enforces
+per-query timeouts, checks complete named assignments, and always closes the
+process. Other drivers may still use ordinary independent solves.
+
+The AND provider retains the legacy one-bit DDT counts
+``[4, 0, 2, 2, 2, 2, 2, 2]`` and half-Walsh LAT
+``[2, 1, 0, 1, 0, 1, 0, -1]``, and factors independent word bits exactly:
+
+.. doctest::
+
+   >>> from claasp_next.semantics.cryptanalysis import BitwiseAndSemantics
+   >>> entry = BitwiseAndSemantics(1).xor_linear(1, 1, 1)
+   >>> (entry.numerator, entry.denominator, entry.sign, entry.weight)
+   (2, 4, -1, 1.0)

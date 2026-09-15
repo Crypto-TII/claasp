@@ -1,5 +1,12 @@
 """Backend-independent analysis problems, constraints, and results."""
 
+
+def __getattr__(name):
+    if name in {"SpeckHybridDifferentialProblem", "HybridDifferentialResult"}:
+        from claasp_next.analysis import hybrid
+        return getattr(hybrid, name)
+    raise AttributeError(name)
+
 from claasp_next.analysis.constraints import (
     Equal,
     FixedValue,
@@ -70,6 +77,8 @@ from claasp_next.analysis.statistical_results import (
 )
 
 __all__ = [
+    "HybridDifferentialResult",
+    "SpeckHybridDifferentialProblem",
     "Analysis",
     "AttackTarget",
     "AnalysisProblem",

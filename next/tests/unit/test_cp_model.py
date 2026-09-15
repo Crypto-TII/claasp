@@ -113,6 +113,16 @@ def test_speck_fixed_differential_boundaries_are_msb_first():
     assert "constraint y_3[15] = false;" in constraints
 
 
+def test_speck_differential_boundary_relation_is_explicit_and_validated():
+    problem = PropagationProblem(Speck(number_of_rounds=3), XOR_DIFFERENTIAL, maximum_weight=45)
+    equal = SpeckDifferentialCPModel(problem, boundary_relation="equal").cp_model()
+    unequal = SpeckDifferentialCPModel(problem, boundary_relation="not_equal").cp_model()
+    assert "constraint forall(i in 0..15)(x_0[i] = x_3[i]);" in equal.constraints
+    assert unequal.constraints[-2].startswith("constraint exists(i in 0..15)(x_0[i] != x_3[i]")
+    with pytest.raises(ValueError, match="boundary_relation"):
+        SpeckDifferentialCPModel(problem, boundary_relation="invalid")
+
+
 @pytest.mark.parametrize("value", [-1, 1 << 32, True, 1.5])
 def test_speck_fixed_differential_boundaries_reject_invalid_values(value):
     with pytest.raises(ValueError):

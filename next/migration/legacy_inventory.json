@@ -10533,14 +10533,14 @@
       "v5_destination": "next/tests/unit/test_boolean_polynomial_constraints.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Every fixed AES branch-table row, Midori active-count {3,4}, Speck-3 differential boundaries at weight 6, linear boundaries at weight 5, and boundary comparison SAT/UNSAT are independently preserved.",
       "dependencies": [
         "claasp",
         "minizinc",
         "pytest",
         "types"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -10565,9 +10565,7 @@
       },
       "kind": "test",
       "path": "tests/unit/cipher_modules/models/cp/mzn_model_test.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "test_assemble_model_orders_variables_constraints_outputs",
         "test_minizinc_model_parts_lines_concatenates_in_order",
@@ -10587,9 +10585,9 @@
         "test_mzn_model_rejects_invalid_solver_type",
         "test_build_generic_cp_model_with_fixed_variables_non_arx"
       ],
-      "rationale": null,
+      "rationale": "Typed immutable model parts, explicit phase composition and executable drivers replace mutable method-name dictionaries, legacy solver registries, declaration names and time-stat fallbacks. Unknown components fail explicitly rather than silently yielding a nonempty partial model. Intermediate output is not proof-complete evidence. Branch-bound rows remain an abstraction, not concrete MixColumns witnesses.",
       "responsibility": "mzn model test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [
         "test_assemble_model_orders_variables_constraints_outputs",
         "test_build_generic_cp_model_from_dictionary_xor_differential",
@@ -10609,7 +10607,7 @@
         "test_parse_solver_output_time_stat_fallbacks",
         "test_solver_names"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_sbox_activity.py; next/tests/integration/test_minizinc_integration.py; next/tests/integration/test_speck_trail_enumeration.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -12221,7 +12219,7 @@
         "claasp",
         "pytest"
       ],
-      "disposition": "defer",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -12237,10 +12235,7 @@
       },
       "kind": "test",
       "path": "tests/unit/cipher_modules/models/sat/sat_model_test.py",
-      "prerequisites": [
-        "M10.8d mixed exact/truncated composition",
-        "M10.8d differential boundary equality/inequality"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "test_solve",
         "test_solver_names",
@@ -12251,9 +12246,9 @@
         "test_weight_constraints",
         "test_parallel_counter_branch"
       ],
-      "rationale": "The fixed weight-3 witness is ported through explicit CP boundaries and independent carry recounting. Generic Boolean equality/inequality exists, but applying it to differential boundaries and heterogeneous exact/truncated component composition is still missing; whole-module closure is not claimed.",
+      "rationale": "The fixed weight-3 witness and complete differential boundary equality/inequality SAT/UNSAT scenarios are ported through native CP constraints and independent decoding. Typed exact-prefix/truncated-suffix composition replaces the mixed Speck method-name dictionary and independently checks feasibility. Unconstrained TEA/Simon assignment names, counter internals, and mutable solver registries are representation smoke tests, not fixed scientific values; existing typed Boolean/Word witness and real-solver tests replace them while catalogue parity stays owned by M10.9d.",
       "responsibility": "sat model test",
-      "status": "partially-migrated-in-m10.8d",
+      "status": "superseded-in-m10.8d",
       "tests": [
         "test_build_generic_sat_model_from_dictionary",
         "test_build_xor_differential_sat_model_from_dictionary",
@@ -12832,7 +12827,7 @@
       "dependencies": [
         "claasp"
       ],
-      "disposition": "defer",
+      "disposition": "migrate",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -12845,11 +12840,7 @@
       },
       "kind": "test",
       "path": "tests/unit/cipher_modules/models/smt/smt_models/smt_xor_linear_model_test.py",
-      "prerequisites": [
-        "M10.9b toy primitive classification",
-        "M10.9d toy Speck8/16",
-        "M10.8d nonzero key-mask composition"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "test_find_all_xor_linear_trails_with_weight_at_most",
         "test_find_lowest_weight_xor_linear_trail",
@@ -12857,9 +12848,9 @@
         "test_find_one_xor_linear_trail_with_fixed_weight",
         "test_fix_variables_value_xor_linear_constraints"
       ],
-      "rationale": "The four-round optimum has exact shared semantics and independent checking; the three-round optimum 1 and feasible weight 7 are restored by graph-wired Z3 models. Only the Speck8/16 count remains: its nonstandard toy graph and nonzero key-mask propagation are prerequisites beyond the existing zero-key data-path model.",
+      "rationale": null,
       "responsibility": "smt xor linear model test",
-      "status": "partially-migrated-in-m10.8d",
+      "status": "migrated-in-m10.8d",
       "tests": [
         "test_find_all_xor_linear_trails_with_weight_at_most",
         "test_find_lowest_weight_xor_linear_trail",

@@ -60,7 +60,7 @@ of uniqueness or an optimum.
 | Legacy test | Semantic assertions and provenance | Disposition | v5 coverage |
 | --- | --- | --- | --- |
 | SAT/SMT `*_xor_differential_model_test.py` Speck32/64 five-round optimum | Minimum XOR-differential weight 9, repeated across legacy SAT and SMT backends | Ported in M10.6d2 and completed in M10.8d | Chuffed proves bound 8 UNSAT and bound 9 SAT through shared CP semantics; the five-addition witness is independently recounted. Exhaustive bounded enumeration terminates normally and preserves the SMT suite's exact count of 28 distinct trails with weights 9 through 10 |
-| SAT/SMT `*_xor_linear_model_test.py` reduced Speck fixtures | Four-round optimum weight 3, three-round optimum weight 1 and feasible weight 7, plus eight Speck8/16 trails with weight at most 2 | Partially ported in M10.3f and M10.8d | The four-round optimum and exact masks are independently checked. Graph-wired Z3 composition preserves three-round optimum 1 and feasible weight 7. Only toy Speck8/16 nonzero-key-mask enumeration remains prerequisite-gated rather than treating backend-specific result dictionaries as evidence |
+| SAT/SMT `*_xor_linear_model_test.py` reduced Speck fixtures | Four-round optimum weight 3, three-round optimum weight 1 and feasible weight 7; exactly eight/73 Speck8/16 nonzero-key trails through weights 2/3 | Ported in M10.3f and M10.8d | Standard-size weights retain independent correlations and wiring checks; generic word-linear composition includes the toy key schedule and exhausts both exact counts without counting auxiliary assignments |
 | S-box differential/linear component behavior used throughout legacy trail models | DDT probability and signed LAT correlation derived exhaustively from the lookup table | Ported in M10.3a | `test_trail_semantics.py` checks exact PRESENT transitions, impossible transitions, signs, weights, and trail aggregation |
 | `milp/milp_models/milp_xor_differential_model_test.py::test_find_lowest_weight_xor_differential_trail` PRESENT case | Two-round PRESENT minimum XOR-differential weight 4; legacy CLAASP regression | Ported in M10.3b | `test_spn_trail_search.py` reproduces weight 4, meets an explicit lower bound, and independently checks every S-box transition and permutation boundary |
 | Same legacy MILP test, Speck32/64 case | Two-round Speck minimum XOR-differential weight 1, both with and without the legacy window heuristic | Ported in M10.3c | `test_arx_trail_search.py` reproduces the weight-1 optimum from input difference `0x00400000`; exact carry-pair counting and a separate ARX wiring checker validate the witness |
@@ -76,10 +76,13 @@ fixes Speck32/64-3 input difference `0x00400000`, output difference
 `0x8000840A`, zero key difference, and weight 3. M10.8d ports this through
 explicit `SpeckDifferentialCPModel` boundaries and a bounded Chuffed test;
 decoding independently recounts every addition and verifies all round wiring.
-This is feasible evidence, not an optimum claim. The same module's
-differential boundary equality/inequality SAT/UNSAT and heterogeneous
-exact/truncated component scenarios are still missing and explicitly deferred
-within M10.8d. Shared Boolean comparison alone does not cover those scenarios.
+This is feasible evidence, not an optimum claim. The same module's complete
+differential boundary equality/inequality SAT and contradictory fixed-boundary
+UNSAT scenarios are now reproduced by native CP constraints and independent
+decoding. Typed ``SpeckHybridDifferentialProblem`` preserves the mixed fixture's
+feasibility with an exact two-round prefix and a sound final truncated round;
+the checked result deliberately separates exact and abstract boundaries and
+does not invent a combined weight or full-primitive optimum.
 
 `python tools/legacy_inventory.py --check-model-closure` is a completion gate,
 distinct from the inventory filesystem gate. It remains nonzero while model
@@ -111,7 +114,24 @@ complete component catalogue is claimed by this architectural replacement.
 | SAT/CMS/MILP four-round Speck32/64 linear optimum | Legacy optimum weight 3, masks `0x40b010c1 -> 0x2c102010`, and four modular-add transitions | Ported to SMT in M10.4b3b | Real Z3 validates the exact modular-add relation for all four restored transitions, weights `2+0+0+1`, and signs `+,+,+,-`; shared Walsh semantics independently checks each result. The reference was regenerated with legacy MiniSat 2.2.1 |
 | `smt_model_test.py` generated assertion strings and solver catalogue | Backend-shaped fixed-value syntax, unsupported base-method exception, and runtime solver metadata | Superseded in M10.8d | Shared `FixedValue` constraints, immutable `SMTFormula`/SMT-LIB serialization, and explicit `Z3Solver` provenance replace mutable model internals and global registries |
 | `smt_xor_differential_model_test.py::test_find_all_xor_differential_trails_with_weight_at_most` | Exactly 28 Speck32/64-5 trails at weights 9 through 10 | Ported in M10.8d | `MiniZincSolver.solve_all` accepts the count as complete only after Chuffed's exhaustive terminal marker; all 28 assignments decode through independent paired-carry semantics and have distinct input/output boundaries |
-| Reduced fixtures in `smt_xor_linear_model_test.py` | Speck32/64-3 optimum 1 and fixed-weight 7; eight Speck8/16-4 trails at weight at most 2 | Partially ported in M10.8d | Graph-wired `SpeckLinearSMTModel` and Z3 prove three-round weight 0 UNSAT / weight 1 SAT and retain feasible weight 7; decoding independently recounts correlations and wiring. The eight-trail case alone requires M10.9b toy classification, M10.9d nonstandard Speck8/16, and M10.8d nonzero key-mask composition, not just bounded enumeration |
+| Reduced fixtures in `smt_xor_linear_model_test.py` | Speck32/64-3 optimum 1 and fixed-weight 7; eight Speck8/16-4 trails at weight at most 2 | Ported in M10.8d | Graph-wired Z3 retains the standard-size fixtures; `ToySpeck` and generic `WordLinearSMTModel` compose the key schedule and nonzero key mask, reaching terminal UNSAT after exactly eight distinct characteristics. Integer pullbacks, fanout, constant signs, and Walsh counts independently check all results; solver-shaped dictionaries and a particular arbitrary feasible witness's first-component weight are not public contracts |
+| `sat_xor_linear_model_test.py::test_find_all_xor_linear_trails_with_weight_at_most` | Exactly 73 Speck8/16-4 nonzero-key characteristics at weights at most 3 | Ported in M10.8d | The same whole-word graph model exhausts exactly 73 independently checked semantic assignments, excluding auxiliary-counter multiplicity |
+| `cp/mzn_models/mzn_xor_linear_model_test.py` toy enumeration cases | Speck8/16-3: exactly 12 weight-one and 13 weight-at-most-one single-key characteristics | Ported in M10.8d | Concrete fixed-key subgraph folding and incremental Z3 exhaust both counts; fixed values are not confused with zero external masks |
+| CP AND DDT/LAT helper tests | DDT counts `[4, 0, 2, 2, 2, 2, 2, 2]` and half-Walsh `[2, 1, 0, 1, 0, 1, 0, -1]` | Ported in M10.8d | Generic `BitwiseAndSemantics` matches complete independent two-bit truth-table counts; whole-word signed composition and registry bindings use the same exact provider |
+| `cp/mzn_model_test.py` fixed scientific assertions | All 94 AES branch-bound activity rows; Midori weight-nine active counts `{3,4}`; Speck-3 differential `02110A04` → `80008000` weight 6 and linear `03805224` → `40A000C1` weight 5 | Ported in M10.8d | Every table entry matches the parsed fixed legacy assertion. Exact rational DDT products retain table-level count feasibility, distinct from graph-level trails; Chuffed/Z3 witnesses independently retain both fixed boundaries and weights. Mutable solver dictionaries, command registries, time-stat fallbacks and declaration names are superseded by typed model parts and executable drivers |
+
+M10.8d graph-composition checkpoint (2026-09-16): Darwin arm64, Python
+3.11.12 dependency-free suite: **394 passed, 0 skipped, 65 external
+deselected** in 17.19 s. User/developer doctests: **185/389 passed**, no
+warnings. Compatibility container `tiicrc/claasp-base`, emulated amd64,
+Python 3.10.12: **391 passed, 3 skipped, 65 external deselected** in 16.48 s;
+skips: msolve unavailable (1), scikit-learn unavailable (2). Combined affected
+external groups: **41 passed, 0 skipped, 0 deselected** in 45.35 s, using
+MiniZinc 2.9.4 / Chuffed 0.13.2 and Z3 4.8.12. The 28-trail exhaustive
+regression takes 23.29 s and remains a dedicated external check, not routine
+integration. An earlier combined run timed out this check at 45 s; isolated
+and repeated combined checks passed without changing its timeout or oracle.
+The compatibility container is not the final canonical v5 image.
 
 ## MILP models
 

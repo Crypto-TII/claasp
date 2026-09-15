@@ -1,5 +1,10 @@
 """Cryptanalytic propagation meanings, transitions, and trails."""
 
+from claasp_next.semantics.cryptanalysis.bitwise import BitwiseAndSemantics
+from claasp_next.semantics.cryptanalysis.activity import (
+    branch_number_activity_table, possible_active_sbox_counts,
+)
+
 from claasp_next.semantics.cryptanalysis.trails import (
     BitPattern, ModularAddLinearSemantics, ModularAddTransitionSemantics,
     SBoxTransitionSemantics, Trail, TrailKind, TrailSearchResult, TrailStep,
@@ -33,6 +38,8 @@ from claasp_next.semantics.cryptanalysis.truncated import (
 )
 
 __all__ = [
+    "BitwiseAndSemantics",
+    "branch_number_activity_table", "possible_active_sbox_counts",
     "BitPattern", "ModularAddLinearSemantics", "ModularAddTransitionSemantics",
     "SBoxTransitionSemantics", "Trail", "TrailKind", "TrailSearchResult",
     "TrailStep", "Transition", "XorDifference", "XorMask",

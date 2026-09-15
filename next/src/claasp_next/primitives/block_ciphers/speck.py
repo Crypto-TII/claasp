@@ -70,10 +70,13 @@ class Speck(Primitive):
             if not isinstance(amount, int) or isinstance(amount, bool) or not 0 <= amount < word_size:
                 raise ValueError(f"{name} must be an integer in range({word_size})")
         key_word_count = key_bit_size // word_size
+        self._build_word_graph(word_size, key_word_count, rounds, alpha, beta)
 
+    def _build_word_graph(self, word_size, key_word_count, rounds, alpha, beta, family_name="speck"):
+        """Shared pseudocode construction for standard and explicitly toy graphs."""
         word_type = ValueType(Word(word_size), (1,))
         super().__init__(
-            "speck",
+            family_name,
             {
                 "plaintext": ValueType(Word(word_size), (2,)),
                 "key": ValueType(Word(word_size), (key_word_count,)),
