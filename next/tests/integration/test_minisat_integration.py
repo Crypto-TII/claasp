@@ -5,7 +5,7 @@ import pytest
 from claasp_next import Bit, Primitive, ValueType
 from claasp_next.representations.constraints.sat import BooleanCNFModel
 from claasp_next.drivers.solvers import MinisatSolver, SatStatus
-from claasp_next.primitives import Present80, Speck
+from claasp_next.primitives import Present80, Simon, Speck
 from claasp_next.components import Add
 
 
@@ -65,3 +65,16 @@ def test_word_level_sat_recovers_a_reduced_speck_key():
     assert result.is_satisfiable
     assert primitive.evaluate(plaintext, result.value("key")) == expected
     assert result.statistics["variables"] > 64
+
+
+def test_and_word_graph_recovers_a_simon_plaintext():
+    primitive = Simon(number_of_rounds=3)
+    plaintext, key = 0x65656877, 0x1918111009080100
+    ciphertext = primitive.evaluate(plaintext, key)
+    result = primitive.analyze().recover_input(
+        "plaintext", known_inputs={"key": key}, output=ciphertext,
+        solver=MinisatSolver(timeout_seconds=10),
+    )
+    assert result.is_satisfiable
+    assert result.value("plaintext") == plaintext
+    assert primitive.evaluate(result.value("plaintext"), key) == ciphertext

@@ -11,6 +11,7 @@ class MILPStatus(str, Enum):
     OPTIMAL = "optimal"
     FEASIBLE = "feasible"
     INFEASIBLE = "infeasible"
+    UNKNOWN = "unknown"
 
 
 @dataclass(frozen=True, slots=True)

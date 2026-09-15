@@ -4,7 +4,8 @@ Boolean CNF models
 Bit-oriented primitive graphs can be lowered to a solver-independent conjunctive
 normal form without installing SageMath or a SAT solver. The initial lowering
 supports constants, identity, permutation, concatenation, bitwise addition
-(XOR), and bit-vector S-boxes. Unsupported domains and components fail
+(XOR), and bit-vector S-boxes. Word graphs additionally support XOR, AND,
+rotation and exact modular addition. Unsupported domains and components fail
 explicitly instead of silently changing their semantics.
 
 The following reduced PRESENT model is large enough to exercise both its

@@ -143,6 +143,19 @@ same emulated amd64 compatibility container, Python 3.10.12 / Z3 4.8.12:
 **8 passed, 0 skipped, 0 deselected**, 26.38 s. Fixed Speck-9 cluster
 enumeration takes 25.11 s and belongs only to dedicated external CI.
 
+M10.8d execution/helper checkpoint (2026-09-16): full host Python 3.11.12
+suite: **424 passed, 0 skipped, 75 external deselected**, 18.85 s. Guides:
+**185 user / 400 developer doctests passed**, no warnings. Combined emulated
+amd64 compatibility Docker check, Python 3.10.12: **421 passed, 3 skipped,
+75 external deselected**, 17.12 s; skips remain msolve unavailable (1) and
+scikit-learn unavailable (2). Affected MiniSat 2.2.1, GLPK 5.0 and Z3 4.8.12
+groups: **28 passed, 0 skipped, 0 deselected**, 9.44 s. Exact binary-linear
+execution replaces the partial legacy MILP builder and reproduces full
+Speck-22 output `A86842F2`; undefined GLPK status is explicitly unknown, never
+an infeasibility proof. Solver-brand registries and formatting-only constants
+are explicitly superseded/removed, without claiming every legacy optimizer
+has a v5 adapter.
+
 ## MILP models
 
 | Legacy test | Semantic assertions and provenance | Disposition | v5 coverage |

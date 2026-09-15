@@ -31,6 +31,94 @@ CATEGORY_BY_DIRECTORY = {
 }
 
 MIGRATION_OVERRIDES = {
+    "claasp/cipher_modules/models/cp/mzn_models/mzn_cipher_model.py": {
+        "v5_destination": "next/src/claasp_next/analysis/boolean.py; next/src/claasp_next/representations/constraints/cp/lowering.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Typed analysis constraints compile graph execution and projections; MiniZinc independently reproduces the full Speck-22 fixed output A86842F2.",
+        "rationale": "The mutable legacy component-method factory, generated declarations and output directives are replaced by shared Boolean graph lowering and explicit projections. Unsupported components fail rather than printing and retaining stale constraints; per-component catalogue coverage is separately inventoried.",
+    },
+    "claasp/cipher_modules/models/cp/mzn_models/mzn_cipher_model_arx_optimized.py": {
+        "v5_destination": "next/src/claasp_next/representations/constraints/cp/lowering.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Complete Speck-22 execution is compiled and checked through the shared Boolean-to-CP representation.",
+        "rationale": "The legacy optimized builder accepts only ROTATE, SHIFT and XOR and silently omits MODADD; its smoke test establishes no nonlinear correctness. v5 uses complete execution lowering with explicit unsupported-component errors, not an incomplete model labelled optimized.",
+    },
+    "claasp/cipher_modules/models/sat/sat_models/sat_cipher_model.py": {
+        "v5_destination": "next/src/claasp_next/analysis/boolean.py; next/src/claasp_next/representations/constraints/sat/lowering.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Typed fixed/equal/unequal/nonzero constraints and graph projections retain execution witnesses, including full Speck-22 output A86842F2 and Simon AND recovery.",
+        "rationale": "Per-component method-name dictionaries, compact-graph mutation, solver registries and result-string parsing are replaced by immutable typed graph lowering and optional drivers. Shared exact/truncated phase composition is explicit, not hidden in a method-name factory.",
+    },
+    "claasp/cipher_modules/models/milp/milp_models/milp_cipher_model.py": {
+        "v5_destination": "next/src/claasp_next/representations/constraints/milp/boolean.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Every Boolean execution clause is translated exactly to a binary inequality; full Speck-22 scalar and GLPK witnesses reproduce A86842F2.",
+        "rationale": "The legacy builder omits nonlinear operations and even documents that execution cannot be represented with inequalities. Binary clause inequalities do represent them exactly; the incomplete Sage model and its incidental 9296-constraint count are not retained.",
+    },
+    "tests/unit/cipher_modules/models/cp/mzn_models/mzn_cipher_model_test.py": {
+        "v5_destination": "next/tests/integration/test_minizinc_integration.py",
+        "prerequisites": [], "disposition": "migrate", "status": "migrated-in-m10.8d",
+        "acceptance_criterion": "MiniZinc reproduces the fixed full Speck-22 output A86842F2 and independent scalar execution confirms it.", "rationale": None,
+    },
+    "tests/unit/cipher_modules/models/sat/sat_models/sat_cipher_model_test.py": {
+        "v5_destination": "next/tests/integration/test_z3_integration.py",
+        "prerequisites": [], "disposition": "migrate", "status": "migrated-in-m10.8d",
+        "acceptance_criterion": "Boolean CLI solving reproduces the fixed full Speck-22 output A86842F2 and independent scalar execution confirms it.", "rationale": None,
+    },
+    "tests/unit/cipher_modules/models/cp/mzn_models/mzn_cipher_model_arx_optimized_test.py": {
+        "v5_destination": "next/tests/integration/test_minizinc_integration.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Complete full-round execution is solved and independently validated rather than merely constructed.",
+        "rationale": "The assertion-free legacy construction smoke test accepts a builder that skips modular addition; a checked complete execution witness supersedes it.",
+    },
+    "tests/unit/cipher_modules/models/milp/milp_models/milp_cipher_model_test.py": {
+        "v5_destination": "next/tests/unit/test_boolean_graph_milp.py; next/tests/integration/test_glpk_integration.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Exact binary-linear clauses match complete truth tables and full Speck-22 graph witnesses, including modular additions omitted by the legacy builder.",
+        "rationale": "Legacy Sage variable names, first/last wiring inequalities and the count 9296 describe an incomplete encoding, not a fixed scientific result.",
+    },
+    "claasp/cipher_modules/models/cp/minizinc_utils/utils.py": {
+        "v5_destination": "next/src/claasp_next/representations/constraints/cp/model.py",
+        "prerequisites": [], "disposition": "remove", "status": "removed-in-m10.8d",
+        "acceptance_criterion": "Typed model declarations retain explicit identities; no variable groups are inferred by parsing declaration strings.",
+        "rationale": "The only helpers filter declaration strings and infer groups from legacy _y names. Typed graph ports and immutable MiniZinc model parts remove this formatting-dependent responsibility.",
+    },
+    "claasp/cipher_modules/models/sat/utils/constants.py": {
+        "v5_destination": "next/src/claasp_next/graph",
+        "prerequisites": [], "disposition": "remove", "status": "removed-in-m10.8d",
+        "acceptance_criterion": "Input/output port identities and logical selections are typed independently of solver variable suffixes.",
+        "rationale": "The file contains only _i and _o formatting constants, which are not v5 public model contracts.",
+    },
+    "claasp/cipher_modules/models/milp/utils/milp_name_mappings.py": {
+        "v5_destination": "next/src/claasp_next/semantics; next/src/claasp_next/representations/constraints/milp",
+        "prerequisites": [], "disposition": "remove", "status": "removed-in-m10.8d",
+        "acceptance_criterion": "Typed semantic descriptors, objectives and result types distinguish mathematical problems from MILP representations.",
+        "rationale": "Model dictionary tags, progress messages, decimal-weight precision and variable suffixes are removed; exact component probabilities and explicit objective descriptors own the scientific meaning.",
+    },
+    "claasp/cipher_modules/models/cp/solvers.py": {
+        "v5_destination": "next/src/claasp_next/drivers/solvers/minizinc.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Optional MiniZinc driver accepts an explicit solver id and executable without requiring a Python MiniZinc or Sage package.",
+        "rationale": "Hard-coded command dictionaries, internal/external API duplicates, and assumed installed solver brands are replaced by explicit driver configuration and executable discovery. Proprietary MiniZinc solver ids can be selected optionally, never required by baseline CI.",
+    },
+    "claasp/cipher_modules/models/milp/solvers.py": {
+        "v5_destination": "next/src/claasp_next/drivers/solvers/glpk.py; next/src/claasp_next/drivers/base.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "GLPK command driver provides a Sage-independent open MILP baseline; the portable representation and driver protocol do not depend on a proprietary optimizer.",
+        "rationale": "The Sage backend registry, cwd captured at import time and solver-brand output regex dictionaries are not migrated APIs. Third-party optimizers can implement the explicit driver protocol without entering the core dependency set; this does not claim a v5 adapter exists for every legacy solver brand.",
+    },
+    "claasp/cipher_modules/models/sat/solvers.py": {
+        "v5_destination": "next/src/claasp_next/drivers/solvers/minisat.py; next/src/claasp_next/drivers/base.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "MiniSat and CLI Z3 provide optional open Boolean solving with named assignments and independently verified witnesses.",
+        "rationale": "Sage internal solver lists and command-format dictionaries are replaced by explicit driver objects. No installation is inferred from a registry entry. Legacy brand aliases and exact timing/memory log labels are not compatibility contracts; mathematical fixture ownership stays with separate inventoried model tests.",
+    },
+    "tests/unit/cipher_modules/models/sat/utils/sat_model_utils_test.py": {
+        "v5_destination": "next/tests/unit/test_boolean_cnf.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Complete OR truth-table support and multi-operand XOR intermediate/output witnesses are independently checked.",
+        "rationale": "Specific literal-string ordering and intermediate names are replaced by deterministic numeric clauses, typed graph provenance and complete Boolean truth-table tests.",
+    },
     "tests/unit/cipher_modules/models/cp/mzn_models/mzn_xor_differential_model_test.py": {
         "v5_destination": "next/tests/integration/test_word_differential.py; next/tests/integration/test_minizinc_integration.py; next/tests/unit/test_bitwise_transition_semantics.py",
         "prerequisites": [],

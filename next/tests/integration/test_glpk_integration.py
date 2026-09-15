@@ -4,7 +4,8 @@ from claasp_next.representations.constraints.milp import (
     BooleanMonomialGraphMILPModel, ConstraintSense, LinearConstraint, LinearExpression, LinearVariable,
     MILPModel, ObjectiveSense, VariableKind,
 )
-from claasp_next.primitives import Simon
+from claasp_next.primitives import Simon, Speck
+from claasp_next.analysis import AnalysisProblem, FixedValue
 from claasp_next.drivers.solvers import GLPKSolver, MILPStatus
 
 
@@ -36,6 +37,18 @@ def test_glpk_reports_an_infeasible_model_without_a_witness():
     result = GLPKSolver().solve(model)
     assert result.status is MILPStatus.INFEASIBLE
     assert result.assignment is None
+
+
+def test_glpk_preserves_complete_speck_execution_not_legacy_partial_model():
+    primitive = Speck(number_of_rounds=22)
+    problem = AnalysisProblem(primitive, (
+        FixedValue(primitive.input("plaintext"), 0x6574694C),
+        FixedValue(primitive.input("key"), 0x1918111009080100),
+    ), {"ciphertext": primitive.output})
+    result = primitive.analyze().solve(problem, GLPKSolver(timeout_seconds=10))
+    assert result.is_satisfiable
+    assert result.value("ciphertext") == 0xA86842F2
+    assert primitive.evaluate(0x6574694C, 0x1918111009080100) == result.value("ciphertext")
 
 
 @pytest.mark.parametrize("rounds, expected", ((1, 2), (2, 3), (4, 8)))

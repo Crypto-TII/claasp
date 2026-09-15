@@ -7,6 +7,7 @@ from claasp_next.representations.constraints.sat.encoding import encode_unit, un
 from claasp_next.components import (
     Add,
     BitVectorSBox,
+    BitwiseAnd,
     Concatenate,
     Constant,
     Identity,
@@ -156,6 +157,10 @@ class BooleanCNFModel:
                                 auxiliary.append(("xor", (target, accumulator, operand)))
                             xor(target, accumulator, operand, label)
                             accumulator = target
+            elif isinstance(component, BitwiseAnd):
+                for position, output in enumerate(outputs):
+                    for bit, target in enumerate(output):
+                        and_(target, selected[0][position][bit], selected[1][position][bit], label)
             elif isinstance(component, Rotate):
                 width = component.output_type.domain.width
                 offset = component.amount if component.direction == "left" else -component.amount

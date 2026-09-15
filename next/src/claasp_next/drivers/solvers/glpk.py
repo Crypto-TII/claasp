@@ -9,6 +9,8 @@ from time import monotonic
 from claasp_next.representations.constraints.milp.exporter import LPExporter
 from claasp_next.representations.constraints.milp.model import MILPModel
 from claasp_next.drivers.solvers.milp_results import MILPResult, MILPStatus
+from claasp_next.representations.constraints.sat import CNFFormula
+from claasp_next.drivers.solvers.base import SatResult, SatStatus
 
 
 class GLPKSolver:
@@ -22,9 +24,19 @@ class GLPKSolver:
         self.executable = executable
         self.timeout_seconds = timeout_seconds
 
-    def solve(self, model: MILPModel) -> MILPResult:
+    def solve(self, model: MILPModel | CNFFormula) -> MILPResult | SatResult:
         """Optimize ``model`` and independently validate any returned witness."""
 
+        if isinstance(model, CNFFormula):
+            from claasp_next.representations.constraints.milp.boolean import cnf_to_milp
+            solved = self.solve(cnf_to_milp(model))
+            if solved.status is MILPStatus.UNKNOWN:
+                raise RuntimeError("GLPK returned unknown; Boolean infeasibility is not proved")
+            assignment = None if solved.assignment is None else {name: round(value) for name, value in solved.assignment.items()}
+            if assignment is not None and not model.is_satisfied(assignment):
+                raise RuntimeError("GLPK binary witness violates the original Boolean clauses")
+            return SatResult(SatStatus.SATISFIABLE if solved.is_feasible else SatStatus.UNSATISFIABLE,
+                             assignment, solved.runtime_seconds, solved.stdout, solved.stderr)
         if not isinstance(model, MILPModel):
             raise TypeError("model must be an MILPModel")
         executable = shutil.which(self.executable)
@@ -82,7 +94,9 @@ class GLPKSolver:
             elif fields[0] == "j":
                 # MIP: j column value. Basic LP: j column status primal dual.
                 values[int(fields[1])] = float(fields[2] if len(fields) == 3 else fields[3])
-        if status_code in {"i", "n", "u"}:
+        if status_code == "u":
+            return MILPStatus.UNKNOWN, None, None
+        if status_code in {"i", "n"}:
             return MILPStatus.INFEASIBLE, None, None
         statuses = {"o": MILPStatus.OPTIMAL, "f": MILPStatus.FEASIBLE}
         if status_code not in statuses:

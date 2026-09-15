@@ -887,27 +887,25 @@
       "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Typed model declarations retain explicit identities; no variable groups are inferred by parsing declaration strings.",
       "dependencies": [],
-      "disposition": "migrate",
+      "disposition": "remove",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
       "path": "claasp/cipher_modules/models/cp/minizinc_utils/utils.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "filter_out_strings_containing_substring",
         "group_strings_by_pattern"
       ],
-      "rationale": null,
+      "rationale": "The only helpers filter declaration strings and infer groups from legacy _y names. Typed graph ports and immutable MiniZinc model parts remove this formatting-dependent responsibility.",
       "responsibility": "utils",
-      "status": "planned-or-partially-migrated",
+      "status": "removed-in-m10.8d",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/representations/constraints/cp/model.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -990,52 +988,48 @@
       "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Typed analysis constraints compile graph execution and projections; MiniZinc independently reproduces the full Speck-22 fixed output A86842F2.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
       "path": "claasp/cipher_modules/models/cp/mzn_models/mzn_cipher_model.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "MznCipherModel"
       ],
-      "rationale": null,
+      "rationale": "The mutable legacy component-method factory, generated declarations and output directives are replaced by shared Boolean graph lowering and explicit projections. Unsupported components fail rather than printing and retaining stale constraints; per-component catalogue coverage is separately inventoried.",
       "responsibility": "mzn cipher model",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/analysis/boolean.py; next/src/claasp_next/representations/constraints/cp/lowering.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Complete Speck-22 execution is compiled and checked through the shared Boolean-to-CP representation.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
       "path": "claasp/cipher_modules/models/cp/mzn_models/mzn_cipher_model_arx_optimized.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "MznCipherModelARXOptimized"
       ],
-      "rationale": null,
+      "rationale": "The legacy optimized builder accepts only ROTATE, SHIFT and XOR and silently omits MODADD; its smoke test establishes no nonlinear correctness. v5 uses complete execution lowering with explicit unsupported-component errors, not an incomplete model labelled optimized.",
       "responsibility": "mzn cipher model arx optimized",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/representations/constraints/cp/lowering.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -1382,24 +1376,22 @@
       "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Optional MiniZinc driver accepts an explicit solver id and executable without requiring a Python MiniZinc or Sage package.",
       "dependencies": [],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
       "path": "claasp/cipher_modules/models/cp/solvers.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [],
-      "rationale": null,
+      "rationale": "Hard-coded command dictionaries, internal/external API duplicates, and assumed installed solver brands are replaced by explicit driver configuration and executable discovery. Proprietary MiniZinc solver ids can be selected optionally, never required by baseline CI.",
       "responsibility": "solvers",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/drivers/solvers/minizinc.py"
     },
     {
       "acceptance_criterion": "Containing package is represented by its non-marker entries.",
@@ -1579,28 +1571,26 @@
       "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Every Boolean execution clause is translated exactly to a binary inequality; full Speck-22 scalar and GLPK witnesses reproduce A86842F2.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
       "path": "claasp/cipher_modules/models/milp/milp_models/milp_cipher_model.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "MilpCipherModel"
       ],
-      "rationale": null,
+      "rationale": "The legacy builder omits nonlinear operations and even documents that execution cannot be represented with inequalities. Binary clause inequalities do represent them exactly; the incomplete Sage model and its incidental 9296-constraint count are not retained.",
       "responsibility": "milp cipher model",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/representations/constraints/milp/boolean.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -1761,26 +1751,24 @@
       "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "GLPK command driver provides a Sage-independent open MILP baseline; the portable representation and driver protocol do not depend on a proprietary optimizer.",
       "dependencies": [
         "os"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
       "path": "claasp/cipher_modules/models/milp/solvers.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [],
-      "rationale": null,
+      "rationale": "The Sage backend registry, cwd captured at import time and solver-brand output regex dictionaries are not migrated APIs. Third-party optimizers can implement the explicit driver protocol without entering the core dependency set; this does not claim a v5 adapter exists for every legacy solver brand.",
       "responsibility": "solvers",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/drivers/solvers/glpk.py; next/src/claasp_next/drivers/base.py"
     },
     {
       "acceptance_criterion": "Containing package is represented by its non-marker entries.",
@@ -2026,24 +2014,22 @@
       "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Typed semantic descriptors, objectives and result types distinguish mathematical problems from MILP representations.",
       "dependencies": [],
-      "disposition": "migrate",
+      "disposition": "remove",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
       "path": "claasp/cipher_modules/models/milp/utils/milp_name_mappings.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [],
-      "rationale": null,
+      "rationale": "Model dictionary tags, progress messages, decimal-weight precision and variable suffixes are removed; exact component probabilities and explicit objective descriptors own the scientific meaning.",
       "responsibility": "milp name mappings",
-      "status": "planned-or-partially-migrated",
+      "status": "removed-in-m10.8d",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/semantics; next/src/claasp_next/representations/constraints/milp"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -2373,29 +2359,27 @@
       "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Typed fixed/equal/unequal/nonzero constraints and graph projections retain execution witnesses, including full Speck-22 output A86842F2 and Simon AND recovery.",
       "dependencies": [
         "claasp",
         "time"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
       "path": "claasp/cipher_modules/models/sat/sat_models/sat_cipher_model.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "SatCipherModel"
       ],
-      "rationale": null,
+      "rationale": "Per-component method-name dictionaries, compact-graph mutation, solver registries and result-string parsing are replaced by immutable typed graph lowering and optional drivers. Shared exact/truncated phase composition is explicit, not hidden in a method-name factory.",
       "responsibility": "sat cipher model",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/analysis/boolean.py; next/src/claasp_next/representations/constraints/sat/lowering.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -2603,24 +2587,22 @@
       "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "MiniSat and CLI Z3 provide optional open Boolean solving with named assignments and independently verified witnesses.",
       "dependencies": [],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
       "path": "claasp/cipher_modules/models/sat/solvers.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [],
-      "rationale": null,
+      "rationale": "Sage internal solver lists and command-format dictionaries are replaced by explicit driver objects. No installation is inferred from a registry entry. Legacy brand aliases and exact timing/memory log labels are not compatibility contracts; mathematical fixture ownership stays with separate inventoried model tests.",
       "responsibility": "SAT solvers",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/drivers/solvers/minisat.py; next/src/claasp_next/drivers/base.py"
     },
     {
       "acceptance_criterion": "Containing package is represented by its non-marker entries.",
@@ -2643,24 +2625,22 @@
       "v5_destination": "inapplicable: package marker reviewed with its containing module"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Input/output port identities and logical selections are typed independently of solver variable suffixes.",
       "dependencies": [],
-      "disposition": "migrate",
+      "disposition": "remove",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
       "path": "claasp/cipher_modules/models/sat/utils/constants.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [],
-      "rationale": null,
+      "rationale": "The file contains only _i and _o formatting constants, which are not v5 public model contracts.",
       "responsibility": "constants",
-      "status": "planned-or-partially-migrated",
+      "status": "removed-in-m10.8d",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/graph"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -10651,11 +10631,11 @@
       "v5_destination": "next/tests (mapped to the owning migrated behavior)"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Complete full-round execution is solved and independently validated rather than merely constructed.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -10664,22 +10644,20 @@
       },
       "kind": "test",
       "path": "tests/unit/cipher_modules/models/cp/mzn_models/mzn_cipher_model_arx_optimized_test.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "test_build_cipher_model"
       ],
-      "rationale": null,
+      "rationale": "The assertion-free legacy construction smoke test accepts a builder that skips modular addition; a checked complete execution witness supersedes it.",
       "responsibility": "mzn cipher model arx optimized test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [
         "test_build_cipher_model"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/integration/test_minizinc_integration.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "MiniZinc reproduces the fixed full Speck-22 output A86842F2 and independent scalar execution confirms it.",
       "dependencies": [
         "claasp"
       ],
@@ -10692,19 +10670,17 @@
       },
       "kind": "test",
       "path": "tests/unit/cipher_modules/models/cp/mzn_models/mzn_cipher_model_test.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "test_find_missing_bits"
       ],
       "rationale": null,
       "responsibility": "mzn cipher model test",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.8d",
       "tests": [
         "test_find_missing_bits"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/integration/test_minizinc_integration.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -11546,11 +11522,11 @@
       "v5_destination": "next/tests (mapped to the owning migrated behavior)"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Exact binary-linear clauses match complete truth tables and full Speck-22 graph witnesses, including modular additions omitted by the legacy builder.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -11559,19 +11535,17 @@
       },
       "kind": "test",
       "path": "tests/unit/cipher_modules/models/milp/milp_models/milp_cipher_model_test.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "test_build_cipher_model"
       ],
-      "rationale": null,
+      "rationale": "Legacy Sage variable names, first/last wiring inequalities and the count 9296 describe an incomplete encoding, not a fixed scientific result.",
       "responsibility": "milp cipher model test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [
         "test_build_cipher_model"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_boolean_graph_milp.py; next/tests/integration/test_glpk_integration.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -12329,7 +12303,7 @@
       "v5_destination": "next/tests (mapped to the owning migrated behavior)"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Boolean CLI solving reproduces the fixed full Speck-22 output A86842F2 and independent scalar execution confirms it.",
       "dependencies": [
         "claasp"
       ],
@@ -12342,19 +12316,17 @@
       },
       "kind": "test",
       "path": "tests/unit/cipher_modules/models/sat/sat_models/sat_cipher_model_test.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "test_find_missing_bits"
       ],
       "rationale": null,
       "responsibility": "sat cipher model test",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.8d",
       "tests": [
         "test_find_missing_bits"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/integration/test_z3_integration.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -12694,11 +12666,11 @@
       "v5_destination": "next/tests (mapped to the owning migrated behavior)"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Complete OR truth-table support and multi-operand XOR intermediate/output witnesses are independently checked.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -12708,21 +12680,19 @@
       },
       "kind": "test",
       "path": "tests/unit/cipher_modules/models/sat/utils/sat_model_utils_test.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "test_cnf_or",
         "test_cnf_xor_seq"
       ],
-      "rationale": null,
+      "rationale": "Specific literal-string ordering and intermediate names are replaced by deterministic numeric clauses, typed graph provenance and complete Boolean truth-table tests.",
       "responsibility": "sat model utils test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [
         "test_cnf_or",
         "test_cnf_xor_seq"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_boolean_cnf.py"
     },
     {
       "acceptance_criterion": "Portable SMT serialization and shared fixed-value constraints are deterministic; solver identity is explicit driver provenance.",

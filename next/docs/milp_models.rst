@@ -77,6 +77,35 @@ The compiler also accepts the same shared ``PropagationProblem`` used by SMT:
 Consequently a global or per-component semantic override is selected before
 the MILP representation is chosen.
 
+Exact graph execution
+---------------------
+
+``BooleanGraphMILPModel`` translates complete Boolean execution clauses to
+binary inequalities. Negative literals are represented as ``1-x``, positive
+literals as ``x``, and every clause requires their sum to be at least one.
+This exactly represents nonlinear Boolean operations; it does not drop
+modular additions as the legacy partial execution builder did.
+
+.. doctest::
+
+   >>> from claasp_next.primitives import Speck
+   >>> from claasp_next.representations.constraints.milp import BooleanGraphMILPModel
+   >>> from claasp_next.representations.execution import ScalarEvaluator
+   >>> primitive = Speck(number_of_rounds=1)
+   >>> execution = BooleanGraphMILPModel(primitive)
+   >>> values = ScalarEvaluator().evaluate(primitive, {
+   ...     "plaintext": (0x6574, 0x694c), "key": (0x1918, 0x1110, 0x0908, 0x0100)})
+   >>> execution.milp_model().is_feasible(execution.witness(values))
+   True
+
+``GLPKSolver`` also accepts CNF at the shared analysis facade, so
+``primitive.analyze().recover_input(..., solver=GLPKSolver())`` needs no
+solver-specific model assembly. The dedicated integration test reproduces
+the full Speck-22 legacy output ``A86842F2``. Solver undefined outcomes are
+``MILPStatus.UNKNOWN``, never an infeasibility proof; Boolean projection
+rejects them explicitly. Solver registries and Sage backend aliases are not
+v5 API contracts. Other optimizers remain optional third-party drivers.
+
 ARX linear transitions
 ----------------------
 

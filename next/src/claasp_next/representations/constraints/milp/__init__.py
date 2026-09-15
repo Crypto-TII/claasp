@@ -1,6 +1,7 @@
 """Dependency-free mixed-integer linear constraint representations."""
 
 from claasp_next.representations.constraints.milp.exporter import LPExporter
+from claasp_next.representations.constraints.milp.boolean import BooleanGraphMILPModel, cnf_to_milp
 from claasp_next.representations.constraints.milp.model import (
     ConstraintSense,
     LinearConstraint,
@@ -23,4 +24,5 @@ __all__ = [
     "VariableKind", "check_present_milp_trail", "MonomialTransitionMILPModel",
     "PresentMonomialTrailMILPModel",
     "BooleanMonomialGraphMILPModel",
+    "BooleanGraphMILPModel", "cnf_to_milp",
 ]
