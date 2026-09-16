@@ -2,6 +2,7 @@
 
 from claasp_next.semantics.cryptanalysis.bitwise import BitwiseAndSemantics
 from claasp_next.semantics.cryptanalysis.activity import (
+    AESTwoRoundDifferentialEvidence, aes_two_round_differential_evidence,
     branch_number_activity_table, possible_active_sbox_counts,
 )
 
@@ -40,6 +41,7 @@ from claasp_next.semantics.cryptanalysis.truncated import (
 
 __all__ = [
     "BitwiseAndSemantics",
+    "AESTwoRoundDifferentialEvidence", "aes_two_round_differential_evidence",
     "branch_number_activity_table", "possible_active_sbox_counts",
     "BitPattern", "ModularAddLinearSemantics", "ModularAddTransitionSemantics",
     "SBoxTransitionSemantics", "Trail", "TrailKind", "TrailSearchResult",

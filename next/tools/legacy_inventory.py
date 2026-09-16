@@ -31,6 +31,30 @@ CATEGORY_BY_DIRECTORY = {
 }
 
 MIGRATION_OVERRIDES = {
+    "claasp/cipher_modules/models/cp/mzn_models/mzn_xor_differential_number_of_active_sboxes_model.py": {
+        "v5_destination": "next/src/claasp_next/semantics/cryptanalysis/activity.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "AES branch-number reasoning and exact DDT/MixColumns enumeration derive the minimum five active S-boxes and weight 30 without heuristic XOR augmentation.",
+        "rationale": "The first-step Boolean activity search and repeated synthesized XOR components are a search heuristic. v5 records the proven branch property and independently derives the exact result-bearing second-step evidence.",
+    },
+    "tests/unit/cipher_modules/models/cp/mzn_models/mzn_xor_differential_number_of_active_sboxes_model_test.py": {
+        "v5_destination": "next/tests/unit/test_sbox_activity.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Exact AES evidence derives the active-S-box lower bound; no mutable helper-list cardinality is exposed.",
+        "rationale": "The sole assertion, 188 synthesized XOR components, measures one repetition of an internal redundancy heuristic and carries no mathematical result.",
+    },
+    "claasp/cipher_modules/models/cp/mzn_models/mzn_xor_differential_trail_search_fixing_number_of_active_sboxes_model.py": {
+        "v5_destination": "next/src/claasp_next/semantics/cryptanalysis/activity.py; next/src/claasp_next/semantics/cryptanalysis/trails.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "The two-round reduced AES minimum 30, 255 exact trails per selected minimum activity pattern and feasible all-ff weight 224 are independently derived from DDT and MixColumns semantics.",
+        "rationale": "Two sequential solver models, retries, generated tables and warning behavior are an optimization strategy rather than a distinct graph realization. Exact semantic enumeration retains its fixed results without binding the public API to the heuristic.",
+    },
+    "tests/unit/cipher_modules/models/cp/mzn_models/mzn_xor_differential_trail_search_fixing_number_of_active_sboxes_model_test.py": {
+        "v5_destination": "next/tests/unit/test_sbox_activity.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Independent enumeration preserves minimum weight 30, count 255 for each of four minimum column patterns, and the all-ff weight-224 characteristic.",
+        "rationale": "Solver metadata, arbitrary witnesses, retry mocks and generated component names are removed. The three exact numeric scientific assertions are retained and strengthened by derivation over all four symmetric activity patterns.",
+    },
     "claasp/cipher_modules/models/cp/minizinc_utils/usefulfunctions.py": {
         "v5_destination": "next/src/claasp_next/representations/constraints/cp/trails.py",
         "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",

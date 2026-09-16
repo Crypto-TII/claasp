@@ -119,7 +119,7 @@ def test_model_closure_does_not_treat_inventory_completeness_as_migration_comple
     assert status["total"] == status["resolved"] + len(status["unresolved"])
     assert set(status["deferred"]) <= set(status["unresolved"])
     assert status["remaining_by_family"]["milp"] > 0
-    assert status["remaining_by_family"]["cp"] > 0
+    assert "cp" not in status["remaining_by_family"]
     assert status["remaining_by_family"]["sat"] > 0
     assert status["deferred"] == []
     unresolved_records = [item for item in payload["records"] if item["path"] in status["unresolved"]]

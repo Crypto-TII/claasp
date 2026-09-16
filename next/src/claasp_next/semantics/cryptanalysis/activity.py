@@ -1,8 +1,88 @@
 """Component-table activity feasibility, independent of primitive wiring."""
 
+from dataclasses import dataclass
 from fractions import Fraction
+from math import log2
 
 from .trails import SBoxTransitionSemantics
+
+
+@dataclass(frozen=True, slots=True)
+class AESTwoRoundDifferentialEvidence:
+    """Exact evidence behind the legacy two-step active-S-box search."""
+
+    minimum_weight: int
+    minimum_active_sboxes: int
+    trails_per_minimum_activity_pattern: tuple[int, ...]
+    full_activity_weight: int
+    full_activity_input: int
+    full_activity_output: int
+
+
+def aes_two_round_differential_evidence(table) -> AESTwoRoundDifferentialEvidence:
+    """Derive the reduced two-round AES fixtures without a two-step heuristic.
+
+    The first AES round includes MixColumns and the second is final-round style.
+    AES's branch number forces at least five active S-boxes.  For every minimum
+    three-to-two column activity pattern, exact DDT/MixColumns enumeration finds
+    255 weight-30 characteristics.  The all-``ff`` difference supplies the
+    preserved feasible weight-224 characteristic.
+    """
+
+    table = tuple(table)
+    if len(table) != 256 or sorted(table) != list(range(256)):
+        raise ValueError("AES evidence requires a bijective eight-bit lookup table")
+    ddt = [[0] * 256 for _ in range(256)]
+    for source in range(256):
+        for alpha in range(256):
+            ddt[alpha][table[source] ^ table[source ^ alpha]] += 1
+    maximum = max(max(row) for row in ddt[1:])
+    if maximum != 4:
+        raise ValueError("the supplied table does not have the AES differential bound")
+    input_choices = [sum(ddt[alpha][beta] == maximum for alpha in range(1, 256))
+                     for beta in range(256)]
+    output_choices = [sum(count == maximum for count in ddt[alpha]) for alpha in range(256)]
+
+    coefficients = (9, 11, 13, 14)
+    products = {coefficient: tuple(_gf256_multiply(value, coefficient) for value in range(256))
+                for coefficient in coefficients}
+    inverse = ((14, 11, 13, 9), (9, 14, 11, 13),
+               (13, 9, 14, 11), (11, 13, 9, 14))
+    pattern_counts = [0, 0, 0, 0]
+    for third in range(1, 256):
+        for fourth in range(1, 256):
+            column = tuple(products[row[2]][third] ^ products[row[3]][fourth]
+                           for row in inverse)
+            zero_positions = [index for index, value in enumerate(column) if value == 0]
+            if len(zero_positions) != 1:
+                continue
+            ways = output_choices[third] * output_choices[fourth]
+            for value in column:
+                if value:
+                    ways *= input_choices[value]
+            pattern_counts[zero_positions[0]] += ways
+
+    if ddt[0xFF][0xFF] != 2:
+        raise ValueError("the fixed full-activity AES transition is absent")
+    full_weight = int(32 * -log2(ddt[0xFF][0xFF] / 256))
+    return AESTwoRoundDifferentialEvidence(
+        minimum_weight=int(5 * -log2(maximum / 256)),
+        minimum_active_sboxes=5,
+        trails_per_minimum_activity_pattern=tuple(pattern_counts),
+        full_activity_weight=full_weight,
+        full_activity_input=(1 << 128) - 1,
+        full_activity_output=(1 << 128) - 1,
+    )
+
+
+def _gf256_multiply(left: int, right: int) -> int:
+    result = 0
+    for _ in range(8):
+        if right & 1:
+            result ^= left
+        left = ((left << 1) ^ (0x11B if left & 0x80 else 0)) & 0xFF
+        right >>= 1
+    return result
 
 
 def branch_number_activity_table(input_units, output_units, branch_number):

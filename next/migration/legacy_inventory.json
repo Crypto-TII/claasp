@@ -1265,33 +1265,31 @@
       "v5_destination": "next/src/claasp_next/representations/constraints/cp/trails.py; next/src/claasp_next/representations/constraints/smt/word_differential.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "AES branch-number reasoning and exact DDT/MixColumns enumeration derive the minimum five active S-boxes and weight 30 without heuristic XOR augmentation.",
       "dependencies": [
         "claasp",
         "copy"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
       "path": "claasp/cipher_modules/models/cp/mzn_models/mzn_xor_differential_number_of_active_sboxes_model.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "build_xor_truncated_table",
         "MznXorDifferentialNumberOfActiveSboxesModel"
       ],
-      "rationale": null,
+      "rationale": "The first-step Boolean activity search and repeated synthesized XOR components are a search heuristic. v5 records the proven branch property and independently derives the exact result-bearing second-step evidence.",
       "responsibility": "mzn xor differential number of active sboxes model",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/semantics/cryptanalysis/activity.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "The two-round reduced AES minimum 30, 255 exact trails per selected minimum activity pattern and feasible all-ff weight 224 are independently derived from DDT and MixColumns semantics.",
       "dependencies": [
         "claasp",
         "copy",
@@ -1299,24 +1297,22 @@
         "time",
         "warnings"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
       "path": "claasp/cipher_modules/models/cp/mzn_models/mzn_xor_differential_trail_search_fixing_number_of_active_sboxes_model.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "MznXorDifferentialFixingNumberOfActiveSboxesModel"
       ],
-      "rationale": null,
+      "rationale": "Two sequential solver models, retries, generated tables and warning behavior are an optimization strategy rather than a distinct graph realization. Exact semantic enumeration retains its fixed results without binding the public API to the heuristic.",
       "responsibility": "mzn xor differential trail search fixing number of active sboxes model",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/semantics/cryptanalysis/activity.py; next/src/claasp_next/semantics/cryptanalysis/trails.py"
     },
     {
       "acceptance_criterion": "Shared signed-correlation semantics support fixed/bounded/optimal/enumerated graph trails and preserve every fixed Speck result.",
@@ -11070,12 +11066,12 @@
       "v5_destination": "next/tests/integration/test_word_differential.py; next/tests/integration/test_minizinc_integration.py; next/tests/unit/test_bitwise_transition_semantics.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Exact AES evidence derives the active-S-box lower bound; no mutable helper-list cardinality is exposed.",
       "dependencies": [
         "claasp",
         "pytest"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -11084,28 +11080,26 @@
       },
       "kind": "test",
       "path": "tests/unit/cipher_modules/models/cp/mzn_models/mzn_xor_differential_number_of_active_sboxes_model_test.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "test_add_additional_xor_constraints"
       ],
-      "rationale": null,
+      "rationale": "The sole assertion, 188 synthesized XOR components, measures one repetition of an internal redundancy heuristic and carries no mathematical result.",
       "responsibility": "mzn xor differential number of active sboxes model test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [
         "test_add_additional_xor_constraints"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_sbox_activity.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Independent enumeration preserves minimum weight 30, count 255 for each of four minimum column patterns, and the all-ff weight-224 characteristic.",
       "dependencies": [
         "claasp",
         "pytest",
         "types"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -11122,9 +11116,7 @@
       },
       "kind": "test",
       "path": "tests/unit/cipher_modules/models/cp/mzn_models/mzn_xor_differential_trail_search_fixing_number_of_active_sboxes_model_test.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "test_find_all_xor_differential_trails_with_fixed_weight",
         "test_find_lowest_weight_xor_differential_trail",
@@ -11136,9 +11128,9 @@
         "test_solve_full_two_steps_warns_about_non_word_aligned_key_schedule_rotations",
         "test_solve_full_two_steps_does_not_warn_for_word_aligned_key_schedule"
       ],
-      "rationale": null,
+      "rationale": "Solver metadata, arbitrary witnesses, retry mocks and generated component names are removed. The three exact numeric scientific assertions are retained and strengthened by derivation over all four symmetric activity patterns.",
       "responsibility": "mzn xor differential trail search fixing number of active sboxes model test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [
         "test_find_all_xor_differential_trails_with_fixed_weight",
         "test_find_lowest_weight_xor_differential_trail",
@@ -11150,7 +11142,7 @@
         "test_solve_full_two_steps_warns_about_non_word_aligned_key_schedule_rotations",
         "test_solve_full_two_steps_xor_differential_model"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_sbox_activity.py"
     },
     {
       "acceptance_criterion": "Complete toy single-key enumeration retains 12 exact-weight-one and 13 bounded characteristics. Standard Speck-4 optimum and feasible weight 3 and the complete AND LAT are independently checked.",

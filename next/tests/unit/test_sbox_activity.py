@@ -3,8 +3,10 @@
 import pytest
 
 from claasp_next.semantics.cryptanalysis import (
+    aes_two_round_differential_evidence,
     branch_number_activity_table, possible_active_sbox_counts,
 )
+from claasp_next.primitives import AES
 
 
 def test_legacy_aes_mix_column_branch_table_matches_every_fixed_row():
@@ -36,6 +38,20 @@ def test_legacy_midori_weight_nine_active_sbox_counts():
     table = (12, 10, 13, 3, 14, 11, 15, 7, 8, 9, 1, 5, 0, 2, 4, 6)
     assert possible_active_sbox_counts([table], 9) == {3, 4}
     assert possible_active_sbox_counts([table], 0) == {0}
+
+
+def test_legacy_two_step_aes_differential_results_are_derived_exactly():
+    primitive = AES(number_of_rounds=1)
+    table = next(component.table for component in primitive.components
+                 if hasattr(component, "table") and len(component.table) == 256)
+
+    evidence = aes_two_round_differential_evidence(table)
+
+    assert evidence.minimum_active_sboxes == 5
+    assert evidence.minimum_weight == 30
+    assert evidence.trails_per_minimum_activity_pattern == (255, 255, 255, 255)
+    assert evidence.full_activity_weight == 224
+    assert evidence.full_activity_input == evidence.full_activity_output == (1 << 128) - 1
 
 
 def test_probability_one_active_transitions_need_an_explicit_bound():
