@@ -151,3 +151,29 @@ def test_model_closure_requires_every_entry_to_have_a_final_disposition():
     assert status["deferred"] == []
     assert status["remaining_by_family"] == {}
     assert _module().model_closure_status({"records": []})["complete"]
+
+
+def test_m10_9c_component_catalogue_audit_has_explicit_slice_ownership():
+    payload = json.loads(INVENTORY.read_text(encoding="utf-8"))
+    status = _module().component_catalogue_audit_status(payload)
+
+    assert status["total"] == 77
+    assert status["source"] == 44
+    assert status["test"] == 33
+    assert status["package_markers"] == 2
+    assert status["behavioral"] == 75
+    assert status["test_functions"] == 252
+    assert status["by_slice"] == {
+        "M10.9c2": 17,
+        "M10.9c3": 12,
+        "M10.9c4": 12,
+        "M10.9c5": 18,
+        "M10.9c6": 4,
+        "M10.9c7": 2,
+        "M10.9c8": 10,
+    }
+    assert status["missing"] == []
+    assert status["unexpected_owners"] == []
+    assert status["owner_errors"] == []
+    assert len(status["unresolved"]) == 75
+    assert not status["complete"]

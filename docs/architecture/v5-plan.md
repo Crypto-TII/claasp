@@ -582,6 +582,59 @@ permanently skipped tests.
 - Move reusable helper algorithms out of individual primitive implementations
   and keep the authoring API close to published pseudocode.
 
+The M10.9c1 audit covers 77 machine-inventory records: 44 source records and
+33 test records. Two sources are reviewed empty package markers; the remaining
+75 behavioral records comprise 29 legacy component implementations with 29
+matching test modules, the component base and its tests, and the DTO,
+input/round, name-mapping, integer/sequence, template, Sage-helper, and shared
+utility modules assigned to M10.9c. Their 252 discovered legacy test functions
+are evidence locators, not 252 promises to preserve generated solver strings.
+Each implementation slice must classify every owned assertion before changing
+the component: semantic values and independently checkable relations are
+preserved, while backend syntax, incidental identifiers, mutable counters, and
+code-generation details stay with their already achieved or separately owned
+representation/compiler milestones.
+
+Fifteen typed v5 component classes already exist across the algebraic,
+structural, substitution, and word families. They are accepted baselines from
+earlier milestones, not gaps to reimplement. M10.9c extends and consolidates
+that catalogue in this dependency order:
+
+1. **M10.9c1 — component catalogue audit.** Assign every owned machine record
+   to one slice, count all legacy component tests, identify the existing v5
+   baseline, and add a machine-checked audit summary. This is planning and
+   ownership closure only; it does not claim component parity.
+2. **M10.9c2 — authoring, state, conversion, and utility foundations.** Resolve
+   the legacy DTOs, component-state/base, input/round helpers, name mappings,
+   integer and sequence operations, general selection/layout helpers,
+   templates, and Sage scripts. Retain only typed, Sage-independent behavior
+   needed by later components; explicitly supersede or remove presentation,
+   dynamic-loading, and backend-shaped leftovers owned elsewhere.
+3. **M10.9c3 — structural and graph-boundary components.** Complete constants,
+   identity/concatenation parity, permutations, reverse and word permutation,
+   explicit selection/conversion operations, and typed intermediate/final
+   output boundaries on the M10.9c2 authoring foundation.
+4. **M10.9c4 — Boolean, logical, and substitution components.** Complete XOR,
+   AND, OR, NOT, multi-input logical behavior, and lookup substitution while
+   reusing shared exact semantics rather than component-local solver methods.
+5. **M10.9c5 — word and ARX components.** Complete fixed and variable shifts
+   and rotations, modular add/subtract/multiply, and IDEA multiplication after
+   the structural and Boolean contracts are stable.
+6. **M10.9c6 — finite-field and linear-layer components.** Complete generic
+   linear layers and MixColumn-style field matrices using the existing typed
+   domains, algebraic maps, and Sage-independent field helpers.
+7. **M10.9c7 — feedback-register components.** Add typed binary and word FSR
+   descriptions and evaluation after their Boolean, word, and field
+   dependencies are complete.
+8. **M10.9c8 — permutation-specific reusable components.** Add ShiftRows,
+   Sigma, and the Gaston, Keccak, and Xoodoo theta maps as reusable algorithms
+   composed from the earlier structural/word/linear catalogue where possible.
+9. **M10.9c9 — catalogue closure.** Centralize exports, authoring methods,
+   documentation/doctests, and the inventory closure gate; require all 75
+   behavioral records to have explicit migrated, superseded, removed, or
+   inapplicable dispositions and concrete evidence destinations before M10.9d
+   becomes next.
+
 ##### M10.9d: Complete primitive implementations and evidence
 
 - The default CLAASP 5.0 scope is every fixed-length primitive represented by
@@ -933,8 +986,10 @@ second checklist is intentionally not maintained. At this revision:
 - M10.6, including its advanced exact and heuristic analyses, is achieved.
 - M10.7 is achieved: the exhaustive inventory and filesystem gate include the
   reconciled ``develop`` changes.
-- M10.8, M10.9a, and M10.9b are achieved. M10.9c is the next catalogue
-  checkpoint, followed by complete primitive/evidence migration in M10.9d.
+- M10.8, M10.9a, and M10.9b are achieved. M10.9c is in progress: its complete
+  component/utility audit is achieved in M10.9c1 and the authoring/state/helper
+  foundation M10.9c2 is next. Complete primitive/evidence migration in M10.9d
+  follows the M10.9c closure gate.
 - M10.9e has an achieved AES vertical slice but still needs general result
   provenance and task-directed realization selection. M10.9f explicitly owns
   migration of the legacy catalogue/discovery API after the component and
@@ -1061,7 +1116,16 @@ is absent). Update this table in the same commit that changes milestone state.
 | Remaining model inventory closure (M10.8d) | Achieved | 149/149 model entries resolved with zero deferrals and a passing closure gate. Every executed fixed result is migrated or retained with an explicit exact/lower-bound/heuristic/empirical/legacy-regression claim kind; backend syntax, mutable registries, search-only heuristics and permanently skipped proprietary-only hypotheses are superseded or removed without being promoted to evidence. CP, SAT, CMS, SMT, MILP, algebraic and shared utility inventories are closed |
 | Primitive terminology/public API (M10.9a) | Achieved | Generic graph class `Cipher`→`Primitive` and catalogue package `ciphers`→`primitives`; official bare catalogue class names (`AES`/`AES128`, `Present`/`Present80`, `Speck`, `Simon`, `MiMC`, `Poseidon`, `ChaCha`, `Salsa`); `CipherDiagram`→`PrimitiveDiagram` and its `cipher_name`→`primitive_name` field; generic vocabulary (cipher graph/input/output/evaluation, `cipher_output` sentinel) replaced by primitive-oriented terms throughout source, tests, and both guides; dependency-free `tools/terminology_guard.py` wired into `pytest tests/unit` blocks new generic `cipher`/`ciphers` usage outside the real `block_cipher(s)`/`tweakable_block_cipher(s)` taxonomy and `ciphertext` |
 | Fixed-length primitive classification (M10.9b) | Achieved | All 149 legacy catalogue modules classified by fixed-length interface: 112 in the six semantic categories, 33 in orthogonal fixture folders, and four explicit non-primitive helpers. A dependency-free gate validates key/tweak roles, bijectivity obligations, official names, destinations, and removal of hash/MAC/stream as v5 categories |
-| Complete reusable component catalogue (M10.9c) | Next | Inventory reusable structural, Boolean, word/ARX, finite-field, feedback, permutation-specific, and conversion components; migrate them in dependency order with parity evidence and pseudocode-level authoring helpers |
+| Complete reusable component catalogue (M10.9c) | In progress | M10.9c1 audited and assigned the complete owned inventory; execute M10.9c2–M10.9c9 in dependency order |
+| Component catalogue audit (M10.9c1) | Achieved | 77 owned records (44 source, 33 test), two package markers, 75 behavioral records, 252 legacy test functions, and 15 existing typed component baselines are machine checked and assigned without claiming semantic parity |
+| Authoring/state/helper foundations (M10.9c2) | Next | Resolve 17 DTO, component-base, input/round, mapping, utility, template, and Sage-helper source/test records; establish typed conversion/selection helpers for later slices |
+| Structural and graph-boundary components (M10.9c3) | Planned | After M10.9c2, resolve 12 constant/output/permutation/reverse/word-permutation source/test records and complete explicit structural/conversion behavior |
+| Boolean/logical/substitution components (M10.9c4) | Planned | After M10.9c3, resolve 12 XOR/AND/OR/NOT/multi-input/S-box source/test records through shared exact semantics |
+| Word and ARX components (M10.9c5) | Planned | After M10.9c4, resolve 18 shift/rotate/modular/IDEA source/test records with independent arithmetic checks |
+| Finite-field and linear-layer components (M10.9c6) | Planned | After M10.9c5, resolve four linear-layer/MixColumn source/test records using typed Sage-independent domains and helpers |
+| Feedback-register components (M10.9c7) | Planned | After M10.9c6, resolve the FSR source/test pair for binary and word feedback semantics |
+| Permutation-specific reusable components (M10.9c8) | Planned | After M10.9c7, resolve ten ShiftRows/Sigma/Gaston/Keccak/Xoodoo theta source/test records by composition where possible |
+| Reusable component catalogue closure (M10.9c9) | Planned | After M10.9c8, centralize exports/docs/doctests and require concrete dispositions and evidence destinations for all 75 behavioral records |
 | Complete primitive implementations/evidence (M10.9d) | Planned | Every in-scope fixed-length primitive and parameter family migrated under the new taxonomy with evaluation and cryptanalytic fixtures |
 | ChaCha permutation evaluation slice (M10.9d1) | Achieved | Official `ChaCha` class, standard round convention, typed ARX graph, full ChaCha20 and two legacy toy vectors, and scalar/batch parity; cryptanalytic fixture migration remains separately tracked |
 | Salsa permutation evaluation slice (M10.9d2) | Achieved | Official `Salsa` class, standard full-round convention, typed ARX graph, both fixed legacy vectors, and scalar/batch parity; cryptanalytic fixtures remain separately tracked |

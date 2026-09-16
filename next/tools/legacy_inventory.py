@@ -48,6 +48,118 @@ OFFICIAL_NAME_OVERRIDES = {
     "claasp/ciphers/stream_ciphers/chacha_stream_cipher.py": "ChaChaKeystreamBlock",
 }
 
+M10_9C_PATHS_BY_SLICE = {
+    "M10.9c2": {
+        "claasp/DTOs/component_state.py",
+        "claasp/DTOs/power_of_2_word_based_dto.py",
+        "claasp/component.py",
+        "claasp/input.py",
+        "claasp/name_mappings.py",
+        "claasp/round.py",
+        "claasp/rounds.py",
+        "claasp/utils/integer.py",
+        "claasp/utils/integer_functions.py",
+        "claasp/utils/sage_scripts.py",
+        "claasp/utils/sequence_operations.py",
+        "claasp/utils/templates.py",
+        "claasp/utils/utils.py",
+        "tests/unit/component_test.py",
+        "tests/unit/utils/integer_test.py",
+        "tests/unit/utils/sequence_operations_test.py",
+        "tests/unit/utils/utils_test.py",
+    },
+    "M10.9c3": {
+        "claasp/components/cipher_output_component.py",
+        "claasp/components/constant_component.py",
+        "claasp/components/intermediate_output_component.py",
+        "claasp/components/permutation_component.py",
+        "claasp/components/reverse_component.py",
+        "claasp/components/word_permutation_component.py",
+        "tests/unit/components/cipher_output_component_test.py",
+        "tests/unit/components/constant_component_test.py",
+        "tests/unit/components/intermediate_output_component_test.py",
+        "tests/unit/components/permutation_component_test.py",
+        "tests/unit/components/reverse_component_test.py",
+        "tests/unit/components/word_permutation_component_test.py",
+    },
+    "M10.9c4": {
+        "claasp/components/and_component.py",
+        "claasp/components/multi_input_non_linear_logical_operator_component.py",
+        "claasp/components/not_component.py",
+        "claasp/components/or_component.py",
+        "claasp/components/sbox_component.py",
+        "claasp/components/xor_component.py",
+        "tests/unit/components/and_component_test.py",
+        "tests/unit/components/multi_input_non_linear_logical_operator_component_test.py",
+        "tests/unit/components/not_component_test.py",
+        "tests/unit/components/or_component_test.py",
+        "tests/unit/components/sbox_component_test.py",
+        "tests/unit/components/xor_component_test.py",
+    },
+    "M10.9c5": {
+        "claasp/components/idea_modmul_component.py",
+        "claasp/components/modadd_component.py",
+        "claasp/components/modmul_component.py",
+        "claasp/components/modsub_component.py",
+        "claasp/components/modular_component.py",
+        "claasp/components/rotate_component.py",
+        "claasp/components/shift_component.py",
+        "claasp/components/variable_rotate_component.py",
+        "claasp/components/variable_shift_component.py",
+        "tests/unit/components/idea_modmul_component_test.py",
+        "tests/unit/components/modadd_component_test.py",
+        "tests/unit/components/modmul_component_test.py",
+        "tests/unit/components/modsub_component_test.py",
+        "tests/unit/components/modular_component_test.py",
+        "tests/unit/components/rotate_component_test.py",
+        "tests/unit/components/shift_component_test.py",
+        "tests/unit/components/variable_rotate_component_test.py",
+        "tests/unit/components/variable_shift_component_test.py",
+    },
+    "M10.9c6": {
+        "claasp/components/linear_layer_component.py",
+        "claasp/components/mix_column_component.py",
+        "tests/unit/components/linear_layer_component_test.py",
+        "tests/unit/components/mix_column_component_test.py",
+    },
+    "M10.9c7": {
+        "claasp/components/fsr_component.py",
+        "tests/unit/components/fsr_component_test.py",
+    },
+    "M10.9c8": {
+        "claasp/components/shift_rows_component.py",
+        "claasp/components/sigma_component.py",
+        "claasp/components/theta_gaston_component.py",
+        "claasp/components/theta_keccak_component.py",
+        "claasp/components/theta_xoodoo_component.py",
+        "tests/unit/components/shift_rows_component_test.py",
+        "tests/unit/components/sigma_component_test.py",
+        "tests/unit/components/theta_gaston_component_test.py",
+        "tests/unit/components/theta_keccak_component_test.py",
+        "tests/unit/components/theta_xoodoo_component_test.py",
+    },
+}
+M10_9C_PACKAGE_MARKERS = {
+    "claasp/DTOs/__init__.py",
+    "claasp/components/__init__.py",
+}
+M10_9C_PREREQUISITE_BY_SLICE = {
+    "M10.9c2": "M10.9c1",
+    "M10.9c3": "M10.9c2",
+    "M10.9c4": "M10.9c3",
+    "M10.9c5": "M10.9c4",
+    "M10.9c6": "M10.9c5",
+    "M10.9c7": "M10.9c6",
+    "M10.9c8": "M10.9c7",
+}
+
+
+def _m10_9c_slice(path: str) -> str | None:
+    owners = [slice_name for slice_name, paths in M10_9C_PATHS_BY_SLICE.items() if path in paths]
+    if len(owners) > 1:
+        raise ValueError(f"M10.9c path has multiple owners: {path}: {owners}")
+    return owners[0] if owners else None
+
 MIGRATION_OVERRIDES = {
     "claasp/cipher_modules/models/milp/milp_models/Gurobi/monomial_prediction.py": {
         "v5_destination": "next/src/claasp_next/semantics/cryptanalysis/monomial.py; next/src/claasp_next/analysis/algebraic.py; next/src/claasp_next/representations/constraints/milp/monomial.py",
@@ -1084,6 +1196,10 @@ def record(path: Path) -> dict[str, Any]:
                 "acceptance_criterion": "The helper remains outside the primitive catalogue.",
                 "rationale": catalogue["outside_scope_reason"],
             })
+    m10_9c_slice = _m10_9c_slice(relative.as_posix())
+    if m10_9c_slice:
+        item["milestone_owner"] = m10_9c_slice
+        item["prerequisites"] = [M10_9C_PREREQUISITE_BY_SLICE[m10_9c_slice]]
     item.update(MIGRATION_OVERRIDES.get(relative.as_posix(), {}))
     return item
 
@@ -1126,6 +1242,51 @@ def model_closure_status(payload: dict[str, Any]) -> dict[str, Any]:
         "deferred": [item["path"] for item in unresolved if item["disposition"] == "defer"],
         "remaining_by_family": dict(sorted(families.items())),
         "complete": not unresolved,
+    }
+
+
+def component_catalogue_audit_status(payload: dict[str, Any]) -> dict[str, Any]:
+    """Summarize the explicit M10.9c ownership audit and remaining closure work."""
+    expected = set().union(*M10_9C_PATHS_BY_SLICE.values())
+    expected.update(M10_9C_PACKAGE_MARKERS)
+    records = {item["path"]: item for item in payload["records"] if item["path"] in expected}
+    missing = sorted(expected - records.keys())
+    unexpected_owners = sorted(
+        item["path"] for item in payload["records"]
+        if str(item.get("milestone_owner", "")).startswith("M10.9c")
+        and item["path"] not in expected
+    )
+    owner_errors = sorted(
+        path for path in expected - M10_9C_PACKAGE_MARKERS
+        if path in records and records[path].get("milestone_owner") != _m10_9c_slice(path)
+    )
+    by_slice = {
+        slice_name: sum(
+            path in records and records[path].get("milestone_owner") == slice_name
+            for path in paths
+        ) for slice_name, paths in M10_9C_PATHS_BY_SLICE.items()
+    }
+    behavioral = [records[path] for path in sorted(expected - M10_9C_PACKAGE_MARKERS) if path in records]
+    unresolved = [
+        item["path"] for item in behavioral
+        if item["status"] == "planned-or-partially-migrated"
+        or item["disposition"] == "defer"
+        or "destination finalized" in item["v5_destination"]
+        or item["v5_destination"].startswith("next/tests (")
+    ]
+    return {
+        "total": len(records),
+        "source": sum(item["kind"] == "source" for item in records.values()),
+        "test": sum(item["kind"] == "test" for item in records.values()),
+        "package_markers": sum(path in records for path in M10_9C_PACKAGE_MARKERS),
+        "behavioral": len(behavioral),
+        "test_functions": sum(len(item["tests"]) for item in behavioral),
+        "by_slice": by_slice,
+        "missing": missing,
+        "unexpected_owners": unexpected_owners,
+        "owner_errors": owner_errors,
+        "unresolved": unresolved,
+        "complete": not missing and not unexpected_owners and not owner_errors and not unresolved,
     }
 
 
