@@ -8,7 +8,7 @@ Usage::
 
     python tools/import_poseidon_reference.py \
         /path/to/poseidon-hash/poseidon/parameters.py \
-        src/claasp_next/parameters/data/poseidon_bn254_width3.json
+        src/claasp_next/primitives/permutations/poseidon/data/poseidon_bn254_width3.json
 """
 
 from __future__ import annotations

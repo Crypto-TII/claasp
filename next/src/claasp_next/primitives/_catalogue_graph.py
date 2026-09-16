@@ -175,7 +175,9 @@ def _feedback_register(primitive: Primitive, source, description, component_id: 
 
 
 def load_catalogue_spec(category: str, name: str, variant: str = "default") -> dict:
-    resource = files(f"claasp_next.primitives.{category}.data").joinpath(f"{name}.{variant}.json.gz")
+    resource = files(
+        f"claasp_next.primitives.{category}.{name}.data"
+    ).joinpath(f"{variant}.json.gz")
     with resource.open("rb") as stream:
         return json.loads(gzip.decompress(stream.read()))
 
@@ -183,8 +185,8 @@ def load_catalogue_spec(category: str, name: str, variant: str = "default") -> d
 def load_catalogue_variant(category: str, name: str, args, parameters: dict) -> dict:
     """Resolve an audited positional/keyword parameter set to its frozen graph."""
 
-    package = files(f"claasp_next.primitives.{category}.data")
-    with package.joinpath(f"{name}.index.json").open("r", encoding="utf-8") as stream:
+    package = files(f"claasp_next.primitives.{category}.{name}.data")
+    with package.joinpath("index.json").open("r", encoding="utf-8") as stream:
         index = json.load(stream)
     names = index["parameter_names"]
     if len(args) > len(names):

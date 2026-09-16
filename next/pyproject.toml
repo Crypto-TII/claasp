@@ -25,9 +25,4 @@ markers = ["external: requires an executable supplied by a dedicated integration
 where = ["src"]
 
 [tool.setuptools.package-data]
-"claasp_next.parameters.data" = ["*.json", "*.md"]
-"claasp_next.primitives.block_ciphers.data" = ["*.json", "*.json.gz"]
-"claasp_next.primitives.block_functions.data" = ["*.json", "*.json.gz"]
-"claasp_next.primitives.functions.data" = ["*.json", "*.json.gz"]
-"claasp_next.primitives.permutations.data" = ["*.json", "*.json.gz"]
-"claasp_next.primitives.tweakable_block_ciphers.data" = ["*.json", "*.json.gz"]
+"*" = ["data/*.json", "data/*.json.gz", "data/*.md"]

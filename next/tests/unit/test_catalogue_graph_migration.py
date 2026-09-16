@@ -33,8 +33,8 @@ def test_rectangular_sbox_evaluation_and_cnf_use_all_output_bits():
 def test_generated_parameter_indexes_are_nonempty_and_deterministic():
     primitive_root = Path(__file__).parents[2] / "src/claasp_next/primitives"
     paths = sorted(
-        tuple((primitive_root / "block_ciphers/data").glob("*.index.json"))
-        + tuple((primitive_root / "tweakable_block_ciphers/data").glob("*.index.json"))
+        tuple((primitive_root / "block_ciphers").glob("*/data/index.json"))
+        + tuple((primitive_root / "tweakable_block_ciphers").glob("*/data/index.json"))
     )
     assert len(paths) == 53
     for path in paths:

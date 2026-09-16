@@ -19,7 +19,9 @@ def test_every_m10_9d7_source_has_its_typed_public_class():
 
 
 def test_generated_permutation_parameter_indexes_are_deterministic():
-    indexes = sorted((ROOT / "src/claasp_next/primitives/permutations/data").glob("*.index.json"))
+    indexes = sorted(
+        (ROOT / "src/claasp_next/primitives/permutations").glob("*/data/index.json")
+    )
     assert len(indexes) == 22
     for path in indexes:
         variants = json.loads(path.read_text(encoding="utf-8"))["variants"]

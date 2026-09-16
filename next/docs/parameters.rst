@@ -2,9 +2,9 @@ Verified parameter catalogues
 =============================
 
 Generic permutation classes accept caller-supplied parameters and only claim
-structural correctness. The separate parameter catalogue bundles concrete
-sets with their source revision, license, schema version, and reference
-vectors.
+structural correctness. Each primitive package owns its concrete parameter
+sets, source revision, license, schema version, and reference vectors.
+``claasp_next.parameters`` is only a convenience re-export.
 
 BN254 width-3 Poseidon
 ----------------------
@@ -38,7 +38,7 @@ package. After checking out the pinned reference repository, run:
 
    python tools/import_poseidon_reference.py \
        /path/to/poseidon-hash/poseidon/parameters.py \
-       src/claasp_next/parameters/data/poseidon_bn254_width3.json
+       src/claasp_next/primitives/permutations/poseidon/data/poseidon_bn254_width3.json
 
 The importer parses only the three expected literal assignments through
 Python's :mod:`ast` module. It records the source commit and upstream symbol

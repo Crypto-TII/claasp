@@ -21,7 +21,9 @@ def test_every_m10_9d8_source_has_its_typed_public_class():
 def test_generated_function_parameter_indexes_are_deterministic():
     indexes = []
     for category in ("block_functions", "functions"):
-        indexes.extend((ROOT / f"src/claasp_next/primitives/{category}/data").glob("*.index.json"))
+        indexes.extend(
+            (ROOT / f"src/claasp_next/primitives/{category}").glob("*/data/index.json")
+        )
     # Trivium has a native typed implementation; the other families use
     # deterministic frozen catalogue specifications.
     assert len(indexes) == 14

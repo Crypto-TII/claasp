@@ -164,10 +164,11 @@ def export_milestone_slice(inventory_path: Path, slice_name: str) -> None:
     ]
     for record in records:
         proposed_module = record["primitive"]["proposed_module"]
-        destination_module = Path("next/src") / Path(proposed_module.replace(".", "/") + ".py")
+        destination_path = Path("next/src") / Path(proposed_module.replace(".", "/"))
+        destination_module = destination_path / "primitive.py"
         stem = proposed_module.rsplit(".", 1)[-1]
-        data_directory = destination_module.parent / "data"
-        index_path = data_directory / f"{stem}.index.json"
+        data_directory = destination_path / "data"
+        index_path = data_directory / "index.json"
         generated_and_complete = index_path.exists() and bool(
             json.loads(index_path.read_text(encoding="utf-8")).get("variants")
         )
@@ -225,7 +226,7 @@ def export_milestone_slice(inventory_path: Path, slice_name: str) -> None:
             key = json.dumps(configuration, sort_keys=True, separators=(",", ":"))
             export(
                 legacy_module, legacy_class_name,
-                data_directory / f"{stem}.{variant}.json.gz", configuration,
+                data_directory / f"{variant}.json.gz", configuration,
             )
             variants[key] = variant
         index_path.write_text(json.dumps({
@@ -245,6 +246,16 @@ def export_milestone_slice(inventory_path: Path, slice_name: str) -> None:
             f'        specification = load_catalogue_variant("{category}", "{stem}", args, parameters)\n'
             '        super().__init__(specification)\n\n\n'
             f'__all__ = ["{class_name}"]\n',
+            encoding="utf-8",
+        )
+        destination_path.joinpath("__init__.py").write_text(
+            f'"""Public {stem} primitive package."""\n\n'
+            f'from .primitive import {class_name}\n\n'
+            f'__all__ = ["{class_name}"]\n',
+            encoding="utf-8",
+        )
+        data_directory.joinpath("__init__.py").write_text(
+            f'"""Primitive-owned frozen graph data for {stem}."""\n',
             encoding="utf-8",
         )
 

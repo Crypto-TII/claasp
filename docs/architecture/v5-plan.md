@@ -738,6 +738,9 @@ accepted early vertical slices and remain subject to the final closure gate:
    parameters and data under its same-import-path package, keep only a thin
    convenience re-export at ``claasp_next.parameters``, and colocate any other
    primitive-specific generated constants, licenses, and reference vectors.
+   This slice is achieved: Poseidon owns its implementation, typed parameter
+   schema, BN254 catalogue, pinned vector, provenance, and license; all 89
+   generated graph catalogues live in same-import-path primitive packages.
 10. **M10.9d10 — catalogue closure.** Centralize public exports and executable
     user/developer documentation; require all 145 behavioral sources and their
     applicable fixed evidence to have concrete destinations and make the
@@ -1225,8 +1228,8 @@ is absent). Update this table in the same commit that changes milestone state.
 | Substitution/linear and tweakable block primitives (M10.9d6) | Achieved | All 55 source and 55 test records have concrete typed-graph destinations; 242 audited parameter variants construct, all 267 fixed observations captured by the 198 legacy tests pass, and all 55 defaults have scalar/batch parity; frozen compressed graph specifications require neither Sage nor the legacy package at runtime; host checkpoint: 835 passed, 78 external deselected |
 | Remaining permutations (M10.9d7) | Achieved | All 25 source and 25 test records have typed forward-graph destinations; 101 audited parameter variants construct, all 55 fixed observations captured by the 46 legacy tests pass, and all 25 families have scalar/batch parity; Keccak/Xoodoo invertible and Spongent FSR remain distinct realizations without claiming M10.10 graph inversion; host checkpoint: 899 passed, 78 external deselected |
 | Fixed-length functions/block functions (M10.9d8) | Achieved | All 15 source and 15 test records have typed graph destinations; 41 fixed observations captured by the 20 legacy tests pass, all 15 families have scalar/batch parity, and conditional/word FSR plus explicit-modulus addition semantics are independently checked; host checkpoint: 941 passed, 78 external deselected |
-| Primitive-owned parameters/data (M10.9d9) | Next | Colocate Poseidon and other primitive-specific parameters, generated constants, data, licenses, provenance, and vectors under their owning packages |
-| Complete primitive catalogue closure (M10.9d10) | Planned | Central exports/docs and the machine gate prove all 145 behavioral sources and applicable fixed evidence have concrete v5 destinations |
+| Primitive-owned parameters/data (M10.9d9) | Achieved | Poseidon owns its implementation, typed parameter schema, BN254 data, pinned vector, provenance, and MIT notice; `claasp_next.parameters` is a thin re-export, all 89 frozen graph catalogues are colocated under same-import-path primitive packages, and the built wheel contains every owned artifact; host checkpoint: 943 passed, 78 external deselected |
+| Complete primitive catalogue closure (M10.9d10) | Next | Central exports/docs and the machine gate prove all 145 behavioral sources and applicable fixed evidence have concrete v5 destinations |
 | Primitive realizations/task selection (M10.9e) | In progress | Generic capability metadata and AES lookup/algebraic realizations implemented; result provenance and broader task-directed selection remain |
 | AES realization vertical slice (M10.9e1) | Achieved | Lookup S-box and field-inverse-plus-binary-affine graphs share one public class and all AES-128/192/256 fixed vectors; deterministic capability selection is documented and tested |
 | Catalogue discovery/query API (M10.9f) | Planned | Replace `claasp/catalog.py` with typed discovery over v5 primitive/component/realization/parameter/driver metadata; preserve filters and structured exports without eager optional dependencies or legacy taxonomy leakage |

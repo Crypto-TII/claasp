@@ -20,8 +20,8 @@ def _identity_rounds(identity: str) -> int | None:
 
 def _load_candidates(module_name: str, class_name: str):
     category, stem = module_name.split(".primitives.", 1)[1].split(".", 1)
-    data = ROOT / "next/src/claasp_next/primitives" / category / "data"
-    index_path = data / f"{stem}.index.json"
+    data = ROOT / "next/src/claasp_next/primitives" / category / stem / "data"
+    index_path = data / "index.json"
     primitive_class = getattr(importlib.import_module(module_name), class_name)
     if not index_path.exists():
         return primitive_class, []
@@ -29,7 +29,7 @@ def _load_candidates(module_name: str, class_name: str):
     candidates = []
     for key, variant in index["variants"].items():
         parameters = json.loads(key)
-        spec = json.loads(gzip.decompress((data / f"{stem}.{variant}.json.gz").read_bytes()))
+        spec = json.loads(gzip.decompress((data / f"{variant}.json.gz").read_bytes()))
         candidates.append((parameters, spec))
     return primitive_class, candidates
 

@@ -1524,7 +1524,9 @@ def _destination(relative: Path, catalogue: dict[str, Any] | None) -> str:
     if catalogue:
         if catalogue["primitive_category"] == "outside_scope":
             return "inapplicable: " + catalogue["outside_scope_reason"]
-        return catalogue["proposed_module"].replace(".", "/") + ".py"
+        module_path = catalogue["proposed_module"].replace(".", "/")
+        package_marker = ROOT / "next/src" / module_path / "__init__.py"
+        return module_path + ("/__init__.py" if package_marker.exists() else ".py")
     if relative.parts[0] == "tests":
         return "next/tests (mapped to the owning migrated behavior)"
     if relative.name == "__init__.py":
@@ -1782,16 +1784,17 @@ def primitive_catalogue_audit_status(payload: dict[str, Any]) -> dict[str, Any]:
         item for item in sources
         if item["primitive"]["primitive_category"] == "outside_scope"
     ]
+    def destination_exists(module_name: str) -> bool:
+        path = ROOT / "next" / "src" / module_name.replace(".", "/")
+        return path.with_suffix(".py").exists() or (path / "__init__.py").exists()
+
     unresolved = [
         item["path"] for item in sources
         if item["primitive"]["primitive_category"] != "outside_scope"
         and (
             item["status"] == "planned-or-partially-migrated"
             or item["disposition"] == "defer"
-            or not (
-                ROOT / "next" / "src"
-                / (item["primitive"]["proposed_module"].replace(".", "/") + ".py")
-            ).exists()
+            or not destination_exists(item["primitive"]["proposed_module"])
         )
     ]
     return {
