@@ -7,5 +7,13 @@ from claasp_next.primitives.functions.md5 import MD5
 from claasp_next.primitives.functions.sha1 import SHA1
 from claasp_next.primitives.functions.sha2 import SHA2
 from claasp_next.primitives.functions.whirlpool import Whirlpool
+from claasp_next.primitives._catalogue_exports import CATEGORY_EXPORTS, load_export
 
-__all__ = ["Blake", "Blake2", "BluetoothE0", "MD5", "SHA1", "SHA2", "Whirlpool"]
+_PUBLIC = CATEGORY_EXPORTS["functions"]
+__all__ = sorted(_PUBLIC)
+
+
+def __getattr__(name: str):
+    value = load_export(name, _PUBLIC)
+    globals()[name] = value
+    return value

@@ -15,6 +15,7 @@ from claasp_next.primitives.permutations.poseidon import Poseidon
 from claasp_next.primitives.permutations.chacha import ChaCha
 from claasp_next.primitives.permutations.salsa import Salsa
 from claasp_next.primitives.toy_primitives import ToySpeck
+from claasp_next.primitives._catalogue_exports import ALL_EXPORTS, load_export
 
 __all__ = [
     "AES128",
@@ -31,3 +32,11 @@ __all__ = [
     "Trivium",
     "ToySpeck",
 ]
+
+__all__ = sorted(set(__all__) | set(ALL_EXPORTS))
+
+
+def __getattr__(name: str):
+    value = load_export(name)
+    globals()[name] = value
+    return value

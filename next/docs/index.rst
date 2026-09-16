@@ -17,6 +17,7 @@ systems and solvers are optional backends.
    primitive_authoring
    analysis
    traditional_primitives
+   primitive_catalogue
    batch_evaluation
 
 .. toctree::
@@ -40,4 +41,5 @@ systems and solvers are optional backends.
    :caption: Reference and development
 
    development
+   catalogue_architecture
    api

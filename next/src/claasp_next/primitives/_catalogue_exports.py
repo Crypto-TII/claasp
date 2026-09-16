@@ -1,0 +1,188 @@
+"""Generated public primitive catalogue exports.
+
+Regenerate with ``tools/generate_primitive_exports.py``.
+"""
+
+from importlib import import_module
+
+
+CATEGORY_EXPORTS = {
+    'block_ciphers': {
+        'AES': 'claasp_next.primitives.block_ciphers.aes',
+        'Aradi': 'claasp_next.primitives.block_ciphers.aradi',
+        'AradiSBox': 'claasp_next.primitives.block_ciphers.aradi_block_cipher_sbox',
+        'AradiSBoxCompactLinearMap': 'claasp_next.primitives.block_ciphers.aradi_block_cipher_sbox_and_compact_linear_map',
+        'BEA1': 'claasp_next.primitives.block_ciphers.bea1',
+        'Baksheesh': 'claasp_next.primitives.block_ciphers.baksheesh',
+        'Ballet': 'claasp_next.primitives.block_ciphers.ballet',
+        'CHAM': 'claasp_next.primitives.block_ciphers.cham',
+        'Cast': 'claasp_next.primitives.block_ciphers.cast',
+        'DES': 'claasp_next.primitives.block_ciphers.des',
+        'DESExactKeyLength': 'claasp_next.primitives.block_ciphers.des_exact_key_length',
+        'Gift': 'claasp_next.primitives.block_ciphers.gift',
+        'GiftSbox': 'claasp_next.primitives.block_ciphers.gift_sbox',
+        'Gost': 'claasp_next.primitives.block_ciphers.gost',
+        'HIGHT': 'claasp_next.primitives.block_ciphers.hight',
+        'IDEA': 'claasp_next.primitives.block_ciphers.idea',
+        'Kalyna': 'claasp_next.primitives.block_ciphers.kalyna',
+        'Kasumi': 'claasp_next.primitives.block_ciphers.kasumi',
+        'Katan': 'claasp_next.primitives.block_ciphers.katan',
+        'KatanFSR': 'claasp_next.primitives.block_ciphers.katan_fsr',
+        'Ktantan': 'claasp_next.primitives.block_ciphers.ktantan',
+        'KtantanFSR': 'claasp_next.primitives.block_ciphers.ktantan_fsr',
+        'LBlock': 'claasp_next.primitives.block_ciphers.lblock',
+        'LEA': 'claasp_next.primitives.block_ciphers.lea',
+        'Led': 'claasp_next.primitives.block_ciphers.led',
+        'LowMC': 'claasp_next.primitives.block_ciphers.lowmc',
+        'MSX': 'claasp_next.primitives.block_ciphers.msx',
+        'Midori': 'claasp_next.primitives.block_ciphers.midori',
+        'Piccolo': 'claasp_next.primitives.block_ciphers.piccolo',
+        'Present': 'claasp_next.primitives.block_ciphers.present',
+        'Prince': 'claasp_next.primitives.block_ciphers.prince',
+        'PrinceV2': 'claasp_next.primitives.block_ciphers.prince_v2',
+        'RC5': 'claasp_next.primitives.block_ciphers.rc5',
+        'Raiden': 'claasp_next.primitives.block_ciphers.raiden',
+        'Rectangle': 'claasp_next.primitives.block_ciphers.rectangle',
+        'Rijndael': 'claasp_next.primitives.block_ciphers.rijndael',
+        'SM4': 'claasp_next.primitives.block_ciphers.sm4',
+        'SPARX': 'claasp_next.primitives.block_ciphers.sparx',
+        'Saecham': 'claasp_next.primitives.block_ciphers.saecham',
+        'Serpent': 'claasp_next.primitives.block_ciphers.serpent',
+        'Simeck': 'claasp_next.primitives.block_ciphers.simeck',
+        'SimeckSbox': 'claasp_next.primitives.block_ciphers.simeck_sbox',
+        'Simon': 'claasp_next.primitives.block_ciphers.simon',
+        'SimonSbox': 'claasp_next.primitives.block_ciphers.simon_sbox',
+        'Skinny': 'claasp_next.primitives.block_ciphers.skinny',
+        'Skipjack': 'claasp_next.primitives.block_ciphers.skipjack',
+        'Speck': 'claasp_next.primitives.block_ciphers.speck',
+        'Speedy': 'claasp_next.primitives.block_ciphers.speedy',
+        'Splight': 'claasp_next.primitives.block_ciphers.splight',
+        'Subterranean': 'claasp_next.primitives.block_ciphers.subterranean',
+        'TEA': 'claasp_next.primitives.block_ciphers.tea',
+        'TinyJambu': 'claasp_next.primitives.block_ciphers.tinyjambu',
+        'TinyJambuFSRWordBased': 'claasp_next.primitives.block_ciphers.tinyjambu_fsr_32bits_word',
+        'TinyJambuWordBased': 'claasp_next.primitives.block_ciphers.tinyjambu_32bits_word',
+        'Twine': 'claasp_next.primitives.block_ciphers.twine',
+        'Twofish': 'claasp_next.primitives.block_ciphers.twofish',
+        'UKNIT': 'claasp_next.primitives.block_ciphers.uknit',
+        'Ublock': 'claasp_next.primitives.block_ciphers.ublock',
+        'UblockSingleLinearLayer': 'claasp_next.primitives.block_ciphers.ublock_single_linear_layer',
+        'Warp': 'claasp_next.primitives.block_ciphers.warp',
+        'XTEA': 'claasp_next.primitives.block_ciphers.xtea',
+    },
+    'block_functions': {
+        'A51': 'claasp_next.primitives.block_functions.a5_1',
+        'A52': 'claasp_next.primitives.block_functions.a5_2',
+        'Bivium': 'claasp_next.primitives.block_functions.bivium',
+        'ChaChaKeystreamBlock': 'claasp_next.primitives.block_functions.chacha',
+        'SiphashMAC': 'claasp_next.primitives.block_functions.siphash',
+        'Snow3G': 'claasp_next.primitives.block_functions.snow3g',
+        'Trivium': 'claasp_next.primitives.block_functions.trivium',
+        'Zuc': 'claasp_next.primitives.block_functions.zuc',
+    },
+    'functions': {
+        'Blake': 'claasp_next.primitives.functions.blake',
+        'Blake2': 'claasp_next.primitives.functions.blake2',
+        'BluetoothE0': 'claasp_next.primitives.functions.bluetooth_e0',
+        'MD5': 'claasp_next.primitives.functions.md5',
+        'SHA1': 'claasp_next.primitives.functions.sha1',
+        'SHA2': 'claasp_next.primitives.functions.sha2',
+        'Whirlpool': 'claasp_next.primitives.functions.whirlpool',
+    },
+    'permutations': {
+        'Ascon': 'claasp_next.primitives.permutations.ascon',
+        'AsconSboxSigma': 'claasp_next.primitives.permutations.ascon_sbox_sigma',
+        'AsconSboxSigmaNoMatrix': 'claasp_next.primitives.permutations.ascon_sbox_sigma_no_matrix',
+        'ChaCha': 'claasp_next.primitives.permutations.chacha',
+        'ChaskeyPi': 'claasp_next.primitives.permutations.chaskeypi',
+        'Forro': 'claasp_next.primitives.permutations.forro',
+        'Gaston': 'claasp_next.primitives.permutations.gaston',
+        'GastonSbox': 'claasp_next.primitives.permutations.gaston_sbox',
+        'GastonSboxTheta': 'claasp_next.primitives.permutations.gaston_sbox_theta',
+        'Gimli': 'claasp_next.primitives.permutations.gimli',
+        'GimliSbox': 'claasp_next.primitives.permutations.gimli_sbox',
+        'GrainCore': 'claasp_next.primitives.permutations.grain_core',
+        'Keccak': 'claasp_next.primitives.permutations.keccak',
+        'KeccakInvertible': 'claasp_next.primitives.permutations.keccak_invertible',
+        'KeccakSbox': 'claasp_next.primitives.permutations.keccak_sbox',
+        'Knot': 'claasp_next.primitives.permutations.knot',
+        'Norx': 'claasp_next.primitives.permutations.norx',
+        'Photon': 'claasp_next.primitives.permutations.photon',
+        'Salsa': 'claasp_next.primitives.permutations.salsa',
+        'Sparkle': 'claasp_next.primitives.permutations.sparkle',
+        'Speckey': 'claasp_next.primitives.permutations.speckey',
+        'SpongentPi': 'claasp_next.primitives.permutations.spongent_pi',
+        'SpongentPiFSR': 'claasp_next.primitives.permutations.spongent_pi_fsr',
+        'SpongentPiPrecomputation': 'claasp_next.primitives.permutations.spongent_pi_precomputation',
+        'Xoodoo': 'claasp_next.primitives.permutations.xoodoo',
+        'XoodooInvertible': 'claasp_next.primitives.permutations.xoodoo_invertible',
+        'XoodooSbox': 'claasp_next.primitives.permutations.xoodoo_sbox',
+    },
+    'single_component_primitives': {
+        'And': 'claasp_next.primitives.single_component_primitives.and',
+        'Constant': 'claasp_next.primitives.single_component_primitives.constant',
+        'Fsr': 'claasp_next.primitives.single_component_primitives.fsr',
+        'IdeaModmul': 'claasp_next.primitives.single_component_primitives.idea_modmul',
+        'Identity': 'claasp_next.primitives.single_component_primitives.identity',
+        'LinearLayer': 'claasp_next.primitives.single_component_primitives.linear_layer',
+        'MixColumn': 'claasp_next.primitives.single_component_primitives.mix_column',
+        'Modadd': 'claasp_next.primitives.single_component_primitives.modadd',
+        'Modmul': 'claasp_next.primitives.single_component_primitives.modmul',
+        'Modsub': 'claasp_next.primitives.single_component_primitives.modsub',
+        'Not': 'claasp_next.primitives.single_component_primitives.not',
+        'Or': 'claasp_next.primitives.single_component_primitives.or',
+        'Permutation': 'claasp_next.primitives.single_component_primitives.permutation',
+        'Reverse': 'claasp_next.primitives.single_component_primitives.reverse',
+        'Rotate': 'claasp_next.primitives.single_component_primitives.rotate',
+        'Sbox': 'claasp_next.primitives.single_component_primitives.sbox',
+        'Shift': 'claasp_next.primitives.single_component_primitives.shift',
+        'ShiftRows': 'claasp_next.primitives.single_component_primitives.shift_rows',
+        'Sigma': 'claasp_next.primitives.single_component_primitives.sigma',
+        'ThetaGaston': 'claasp_next.primitives.single_component_primitives.theta_gaston',
+        'ThetaKeccak': 'claasp_next.primitives.single_component_primitives.theta_keccak',
+        'ThetaXoodoo': 'claasp_next.primitives.single_component_primitives.theta_xoodoo',
+        'VariableRotate': 'claasp_next.primitives.single_component_primitives.variable_rotate',
+        'VariableShift': 'claasp_next.primitives.single_component_primitives.variable_shift',
+        'WordPermutation': 'claasp_next.primitives.single_component_primitives.word_permutation',
+        'Xor': 'claasp_next.primitives.single_component_primitives.xor',
+    },
+    'toy_primitives': {
+        'CipherFour': 'claasp_next.primitives.toy_primitives.cipherfour',
+        'Fancy': 'claasp_next.primitives.toy_primitives.fancy',
+        'Heys': 'claasp_next.primitives.toy_primitives.heys',
+        'ToyAES': 'claasp_next.primitives.toy_primitives.toyaes',
+        'ToyFeistel': 'claasp_next.primitives.toy_primitives.toyfeistel',
+        'ToySPN1': 'claasp_next.primitives.toy_primitives.toyspn1',
+        'ToySPN2': 'claasp_next.primitives.toy_primitives.toyspn2',
+    },
+    'tweakable_block_ciphers': {
+        'BipBip': 'claasp_next.primitives.tweakable_block_ciphers.bipbip',
+        'Blink': 'claasp_next.primitives.tweakable_block_ciphers.blink',
+        'Chilow': 'claasp_next.primitives.tweakable_block_ciphers.chilow',
+        'Mantis': 'claasp_next.primitives.tweakable_block_ciphers.mantis',
+        'QARMAv2': 'claasp_next.primitives.tweakable_block_ciphers.qarmav2',
+        'QARMAv2MixColumn': 'claasp_next.primitives.tweakable_block_ciphers.qarmav2_with_mixcolumn',
+        'SCARF': 'claasp_next.primitives.tweakable_block_ciphers.scarf',
+        'Threefish': 'claasp_next.primitives.tweakable_block_ciphers.threefish',
+        'Trax': 'claasp_next.primitives.tweakable_block_ciphers.trax',
+    },
+}
+
+ALL_EXPORTS = {
+    name: module
+    for exports in CATEGORY_EXPORTS.values()
+    for name, module in exports.items()
+}
+
+
+def load_export(name: str, exports=ALL_EXPORTS):
+    """Load one public primitive class without eagerly importing the catalogue."""
+
+    try:
+        module_name = exports[name]
+    except KeyError as error:
+        raise AttributeError(name) from error
+    return getattr(import_module(module_name), name)
+
+
+__all__ = ["ALL_EXPORTS", "CATEGORY_EXPORTS", "load_export"]

@@ -16,6 +16,7 @@ analysis guides for your own work.
    getting_started
    concepts
    traditional_primitives
+   primitive_catalogue
 
 .. toctree::
    :maxdepth: 2

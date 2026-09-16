@@ -42,6 +42,7 @@ if guide == "user":
         "smt_models.rst",
         "milp_models.rst",
         "cp_models.rst",
+        "catalogue_architecture.rst",
     ])
 else:
     exclude_patterns.extend([
@@ -51,6 +52,7 @@ else:
         "composite_blocks.rst",
         "batch_evaluation.rst",
         "displaying_results.rst",
+        "primitive_catalogue.rst",
     ])
 nitpicky = True
 show_warning_types = True

@@ -45,7 +45,15 @@ CATALOGUE_OUT_OF_SCOPE = {
 OFFICIAL_NAME_OVERRIDES = {
     "claasp/ciphers/block_ciphers/aradi_block_cipher_sbox.py": "AradiSBox",
     "claasp/ciphers/block_ciphers/aradi_block_cipher_sbox_and_compact_linear_map.py": "AradiSBoxCompactLinearMap",
+    "claasp/ciphers/block_ciphers/cham_block_cipher.py": "CHAM",
     "claasp/ciphers/block_ciphers/chilow_block_cipher.py": "Chilow",
+    "claasp/ciphers/block_ciphers/hight_block_cipher.py": "HIGHT",
+    "claasp/ciphers/block_ciphers/idea_block_cipher.py": "IDEA",
+    "claasp/ciphers/block_ciphers/lea_block_cipher.py": "LEA",
+    "claasp/ciphers/block_ciphers/sparx_block_cipher.py": "SPARX",
+    "claasp/ciphers/block_ciphers/tea_block_cipher.py": "TEA",
+    "claasp/ciphers/block_ciphers/xtea_block_cipher.py": "XTEA",
+    "claasp/ciphers/permutations/chacha_permutation.py": "ChaCha",
     "claasp/ciphers/permutations/subterranean_permutation.py": "Subterranean",
     "claasp/ciphers/stream_ciphers/chacha_stream_cipher.py": "ChaChaKeystreamBlock",
     "claasp/ciphers/stream_ciphers/bluetooth_stream_cipher_e0.py": "BluetoothE0",
@@ -1797,6 +1805,19 @@ def primitive_catalogue_audit_status(payload: dict[str, Any]) -> dict[str, Any]:
             or not destination_exists(item["primitive"]["proposed_module"])
         )
     ]
+    evidence_unresolved = [
+        item["path"] for item in tests
+        if item.get("milestone_owner") in M10_9D_COMPLETED_SLICES
+        and (
+            item["status"] != f"migrated-in-{item['milestone_owner'].lower()}"
+            or not item.get("v5_destination")
+            or any(
+                not (ROOT / destination.strip()).exists()
+                for destination in item.get("v5_destination", "").split(";")
+                if destination.strip()
+            )
+        )
+    ]
     return {
         "source": len(sources),
         "test": len(tests),
@@ -1806,8 +1827,9 @@ def primitive_catalogue_audit_status(payload: dict[str, Any]) -> dict[str, Any]:
         "by_slice": by_slice,
         "owner_errors": owner_errors,
         "unresolved": unresolved,
+        "evidence_unresolved": evidence_unresolved,
         "audit_complete": not owner_errors,
-        "closure_complete": not owner_errors and not unresolved,
+        "closure_complete": not owner_errors and not unresolved and not evidence_unresolved,
     }
 
 

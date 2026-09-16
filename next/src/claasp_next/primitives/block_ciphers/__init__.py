@@ -17,6 +17,7 @@ from claasp_next.primitives.block_ciphers.tea import TEA
 from claasp_next.primitives.block_ciphers.threefish import Threefish
 from claasp_next.primitives.block_ciphers.trax import TRAX
 from claasp_next.primitives.block_ciphers.xtea import XTEA
+from claasp_next.primitives._catalogue_exports import CATEGORY_EXPORTS, load_export
 
 __all__ = [
     "AES128",
@@ -40,3 +41,12 @@ __all__ = [
     "TRAX",
     "XTEA",
 ]
+
+_PUBLIC = CATEGORY_EXPORTS["block_ciphers"]
+__all__ = sorted(set(__all__) | set(_PUBLIC))
+
+
+def __getattr__(name: str):
+    value = load_export(name, _PUBLIC)
+    globals()[name] = value
+    return value

@@ -217,6 +217,7 @@ def test_m10_9d_primitive_catalogue_audit_assigns_every_source_and_test_once():
     assert status["audit_complete"]
     assert status["closure_complete"]
     assert status["unresolved"] == []
+    assert status["evidence_unresolved"] == []
     assert not any(
         record["path"] in status["unresolved"]
         for record in payload["records"]
