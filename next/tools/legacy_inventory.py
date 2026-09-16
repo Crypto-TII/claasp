@@ -31,6 +31,66 @@ CATEGORY_BY_DIRECTORY = {
 }
 
 MIGRATION_OVERRIDES = {
+    "claasp/cipher_modules/models/sat/sat_model.py": {
+        "v5_destination": "next/src/claasp_next/representations/constraints/sat/model.py; next/src/claasp_next/drivers/solvers/minisat.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Immutable CNF, typed constraints and explicit MiniSat/Z3 drivers cover construction, solving, status and named assignment decoding.",
+        "rationale": "Mutable variable-name clauses, solver registries, subprocess parsing and mixed semantic/search methods are split across v5 representations, drivers and analysis problems. Result-bearing subclasses are inventoried separately.",
+    },
+    "claasp/cipher_modules/models/sat/sat_models/sat_bitwise_deterministic_truncated_xor_differential_model.py": {
+        "v5_destination": "next/src/claasp_next/semantics/cryptanalysis/truncated.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Typed universal three-valued propagation preserves both fixed reduced-Speck output patterns.",
+        "rationale": "Two Boolean variables per ternary bit, generated clause ordering and a solver-specific minimization loop are representation details. The strongest sound output is computed directly and checked independently.",
+    },
+    "tests/unit/cipher_modules/models/sat/sat_models/sat_bitwise_deterministic_truncated_xor_differential_model_test.py": {
+        "v5_destination": "next/tests/unit/test_truncated_differences.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Speck fixed inputs preserve round-one output ????100000000000????100000000011 and round-three output ???????????????0????????????????.",
+        "rationale": "The 28,761-clause count, literal spelling/order and an unfixed SAT status are not v5 contracts; both fixed semantic results are retained directly.",
+    },
+    "claasp/cipher_modules/models/sat/sat_models/sat_bitwise_impossible_xor_differential_model.py": {
+        "v5_destination": "next/src/claasp_next/semantics/cryptanalysis/truncated.py; next/src/claasp_next/representations/constraints/cp/trails.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Typed directional propagation retains the exact Simon-11 fixed patterns and contradiction position, with executable solver confirmation.",
+        "rationale": "Forward/backward SAT variable suffixes and graph-copy mutation are replaced by explicit impossible boundaries. Component-local Ascon arbitrary witnesses are not stable public results.",
+    },
+    "tests/unit/cipher_modules/models/sat/sat_models/sat_bitwise_impossible_xor_differential_model_test.py": {
+        "v5_destination": "next/tests/unit/test_truncated_differences.py; next/tests/integration/test_minizinc_integration.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Simon input 000...001 and output 000000?0?... preserve both exact middle patterns and their bit-23 incompatibility.",
+        "rationale": "Generated clause counts and solver-selected Ascon intermediate values are arbitrary witnesses. The fully fixed Simon evidence is preserved and independently checked.",
+    },
+    "claasp/cipher_modules/models/sat/sat_models/sat_truncated_xor_differential_model.py": {
+        "v5_destination": "next/src/claasp_next/semantics/cryptanalysis/truncated.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Exact, deterministic and probabilistic truncated meanings use separate typed result classes and validation rules.",
+        "rationale": "The legacy base mixes encodings and result parsing through inheritance. v5 makes the claim kind explicit and shares no mutable SAT model state between them.",
+    },
+    "claasp/cipher_modules/models/sat/sat_models/sat_xor_differential_model.py": {
+        "v5_destination": "next/src/claasp_next/representations/constraints/sat; next/src/claasp_next/representations/constraints/smt/word_differential.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Generic graph differential composition retains fixed/bounded/optimal/complete enumeration and independently checked exact weights.",
+        "rationale": "CNF counter layouts, window-search clauses and solver parsing are not semantic APIs. Shared transition semantics and complete graph enumeration preserve the exact results across open backends.",
+    },
+    "tests/unit/cipher_modules/models/sat/sat_models/sat_xor_differential_model_test.py": {
+        "v5_destination": "next/tests/integration/test_word_differential.py; next/tests/integration/test_minizinc_integration.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Speck-5 optimum/count, fixed weights, Speck-9 27-trail aggregate 29.47 and all exact graph transitions are retained.",
+        "rationale": "Window constraints are optional search heuristics over otherwise exact trails; requested-weight existence does not make literal counter placement a contract. File-output formatting and arbitrary witnesses are removed. The separate uBlock aggregate remains owned by the typed-primitive prerequisite audit.",
+    },
+    "claasp/cipher_modules/models/sat/sat_models/sat_xor_linear_model.py": {
+        "v5_destination": "next/src/claasp_next/representations/constraints/sat; next/src/claasp_next/representations/constraints/smt/word_linear.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Signed Walsh semantics and graph composition preserve complete counts, optima, feasible weights and fixed masks.",
+        "rationale": "Branch literal naming, CNF ordering, sequential counters and solver dictionaries are replaced by typed masks, exact correlations and independent decoding.",
+    },
+    "tests/unit/cipher_modules/models/sat/sat_models/sat_xor_linear_model_test.py": {
+        "v5_destination": "next/tests/integration/test_speck_trail_enumeration.py; next/tests/unit/test_word_linear_smt.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Speck count 73, optimum 3, feasible weight 7, fixed masks and empirical-correlation bound are preserved.",
+        "rationale": "CNF literal order and generated fixed-value strings are representation details. Complete semantic assignments exclude auxiliary-counter multiplicity and retain signed correlations.",
+    },
     "claasp/cipher_modules/models/cp/mzn_models/mzn_xor_differential_number_of_active_sboxes_model.py": {
         "v5_destination": "next/src/claasp_next/semantics/cryptanalysis/activity.py",
         "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",

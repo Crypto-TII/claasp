@@ -39,6 +39,19 @@ def test_speck_truncated_round_reproduces_legacy_sat_fixture():
     assert str(output) == "????100000000000????100000000011"
 
 
+def test_speck_three_round_truncated_output_reproduces_legacy_sat_fixture():
+    primitive = Speck(number_of_rounds=3)
+    difference = TruncatedXorDifference.parse(
+        "00000000011000000000000000000000"
+    )
+    for round_number in range(3):
+        difference = propagate_two_word_speck_round(
+            primitive, difference, round_number
+        )
+
+    assert str(difference) == "???????????????0????????????????"
+
+
 def test_graph_level_impossible_sbox_transition_is_exhaustively_refuted():
     primitive = Present(number_of_rounds=1)
 

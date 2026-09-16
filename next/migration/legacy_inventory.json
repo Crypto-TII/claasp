@@ -2209,7 +2209,7 @@
       "v5_destination": "next/src/claasp_next/representations/constraints/smt/speck.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Immutable CNF, typed constraints and explicit MiniSat/Z3 drivers cover construction, solving, status and named assignment decoding.",
       "dependencies": [
         "claasp",
         "copy",
@@ -2219,24 +2219,22 @@
         "tracemalloc",
         "uuid"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
       "path": "claasp/cipher_modules/models/sat/sat_model.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "SatModel"
       ],
-      "rationale": null,
+      "rationale": "Mutable variable-name clauses, solver registries, subprocess parsing and mixed semantic/search methods are split across v5 representations, drivers and analysis problems. Result-bearing subclasses are inventoried separately.",
       "responsibility": "SAT model of Cipher.",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/representations/constraints/sat/model.py; next/src/claasp_next/drivers/solvers/minisat.py"
     },
     {
       "acceptance_criterion": "Containing package is represented by its non-marker entries.",
@@ -2259,54 +2257,50 @@
       "v5_destination": "inapplicable: package marker reviewed with its containing module"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Typed universal three-valued propagation preserves both fixed reduced-Speck output patterns.",
       "dependencies": [
         "claasp",
         "time"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
       "path": "claasp/cipher_modules/models/sat/sat_models/sat_bitwise_deterministic_truncated_xor_differential_model.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "SatBitwiseDeterministicTruncatedXorDifferentialModel"
       ],
-      "rationale": null,
+      "rationale": "Two Boolean variables per ternary bit, generated clause ordering and a solver-specific minimization loop are representation details. The strongest sound output is computed directly and checked independently.",
       "responsibility": "sat bitwise deterministic truncated xor differential model",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/semantics/cryptanalysis/truncated.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Typed directional propagation retains the exact Simon-11 fixed patterns and contradiction position, with executable solver confirmation.",
       "dependencies": [
         "claasp",
         "time"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
       "path": "claasp/cipher_modules/models/sat/sat_models/sat_bitwise_impossible_xor_differential_model.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "SatBitwiseImpossibleXorDifferentialModel"
       ],
-      "rationale": null,
+      "rationale": "Forward/backward SAT variable suffixes and graph-copy mutation are replaced by explicit impossible boundaries. Component-local Ascon arbitrary witnesses are not stable public results.",
       "responsibility": "sat bitwise impossible xor differential model",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/semantics/cryptanalysis/truncated.py; next/src/claasp_next/representations/constraints/cp/trails.py"
     },
     {
       "acceptance_criterion": "Typed fixed/equal/unequal/nonzero constraints and graph projections retain execution witnesses, including full Speck-22 output A86842F2 and Simon AND recovery.",
@@ -2461,80 +2455,74 @@
       "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Exact, deterministic and probabilistic truncated meanings use separate typed result classes and validation rules.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
       "path": "claasp/cipher_modules/models/sat/sat_models/sat_truncated_xor_differential_model.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "SatTruncatedXorDifferentialModel"
       ],
-      "rationale": null,
+      "rationale": "The legacy base mixes encodings and result parsing through inheritance. v5 makes the claim kind explicit and shares no mutable SAT model state between them.",
       "responsibility": "sat truncated xor differential model",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/semantics/cryptanalysis/truncated.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Generic graph differential composition retains fixed/bounded/optimal/complete enumeration and independently checked exact weights.",
       "dependencies": [
         "claasp",
         "copy",
         "math",
         "time"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
       "path": "claasp/cipher_modules/models/sat/sat_models/sat_xor_differential_model.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "SatXorDifferentialModel"
       ],
-      "rationale": null,
+      "rationale": "CNF counter layouts, window-search clauses and solver parsing are not semantic APIs. Shared transition semantics and complete graph enumeration preserve the exact results across open backends.",
       "responsibility": "sat xor differential model",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/representations/constraints/sat; next/src/claasp_next/representations/constraints/smt/word_differential.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Signed Walsh semantics and graph composition preserve complete counts, optima, feasible weights and fixed masks.",
       "dependencies": [
         "claasp",
         "time"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
       "path": "claasp/cipher_modules/models/sat/sat_models/sat_xor_linear_model.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "SatXorLinearModel"
       ],
-      "rationale": null,
+      "rationale": "Branch literal naming, CNF ordering, sequential counters and solver dictionaries are replaced by typed masks, exact correlations and independent decoding.",
       "responsibility": "sat xor linear model",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/representations/constraints/sat; next/src/claasp_next/representations/constraints/smt/word_linear.py"
     },
     {
       "acceptance_criterion": "MiniSat and CLI Z3 provide optional open Boolean solving with named assignments and independently verified witnesses.",
@@ -12150,11 +12138,11 @@
       "v5_destination": "next/tests/integration/test_minizinc_integration.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Speck fixed inputs preserve round-one output ????100000000000????100000000011 and round-three output ???????????????0????????????????.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -12165,30 +12153,28 @@
       },
       "kind": "test",
       "path": "tests/unit/cipher_modules/models/sat/sat_models/sat_bitwise_deterministic_truncated_xor_differential_model_test.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "test_build_bitwise_deterministic_truncated_xor_differential_trail_model",
         "test_find_one_bitwise_deterministic_truncated_xor_differential_trail",
         "test_find_lowest_varied_patterns_bitwise_deterministic_truncated_xor_differential_trail"
       ],
-      "rationale": null,
+      "rationale": "The 28,761-clause count, literal spelling/order and an unfixed SAT status are not v5 contracts; both fixed semantic results are retained directly.",
       "responsibility": "sat bitwise deterministic truncated xor differential model test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [
         "test_build_bitwise_deterministic_truncated_xor_differential_trail_model",
         "test_find_lowest_varied_patterns_bitwise_deterministic_truncated_xor_differential_trail",
         "test_find_one_bitwise_deterministic_truncated_xor_differential_trail"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_truncated_differences.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Simon input 000...001 and output 000000?0?... preserve both exact middle patterns and their bit-23 incompatibility.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -12200,25 +12186,23 @@
       },
       "kind": "test",
       "path": "tests/unit/cipher_modules/models/sat/sat_models/sat_bitwise_impossible_xor_differential_model_test.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "test_build_bitwise_deterministic_truncated_xor_differential_trail_model",
         "test_find_one_bitwise_impossible_xor_differential_trail_model",
         "test_find_one_bitwise_impossible_xor_differential_trail_with_chosen_incompatible_components",
         "test_find_one_bitwise_impossible_xor_differential_trail_with_fully_automatic_model"
       ],
-      "rationale": null,
+      "rationale": "Generated clause counts and solver-selected Ascon intermediate values are arbitrary witnesses. The fully fixed Simon evidence is preserved and independently checked.",
       "responsibility": "sat bitwise impossible xor differential model test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [
         "test_build_bitwise_deterministic_truncated_xor_differential_trail_model",
         "test_find_one_bitwise_impossible_xor_differential_trail_model",
         "test_find_one_bitwise_impossible_xor_differential_trail_with_chosen_incompatible_components",
         "test_find_one_bitwise_impossible_xor_differential_trail_with_fully_automatic_model"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_truncated_differences.py; next/tests/integration/test_minizinc_integration.py"
     },
     {
       "acceptance_criterion": "Boolean CLI solving reproduces the fixed full Speck-22 output A86842F2 and independent scalar execution confirms it.",
@@ -12466,13 +12450,13 @@
       "v5_destination": "next/tests (mapped to the owning migrated behavior)"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Speck-5 optimum/count, fixed weights, Speck-9 27-trail aggregate 29.47 and all exact graph transitions are retained.",
       "dependencies": [
         "claasp",
         "numpy",
         "os"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -12494,9 +12478,7 @@
       },
       "kind": "test",
       "path": "tests/unit/cipher_modules/models/sat/sat_models/sat_xor_differential_model_test.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "count_sequences_of_ones",
         "binary_list_to_int",
@@ -12518,9 +12500,9 @@
         "repeat_input_difference",
         "test_compute_xor_differential_weight"
       ],
-      "rationale": null,
+      "rationale": "Window constraints are optional search heuristics over otherwise exact trails; requested-weight existence does not make literal counter placement a contract. File-output formatting and arbitrary witnesses are removed. The separate uBlock aggregate remains owned by the typed-primitive prerequisite audit.",
       "responsibility": "sat xor differential model test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [
         "test_build_xor_differential_trail_model_fixed_weight_and_parkissat",
         "test_compute_xor_differential_weight",
@@ -12537,15 +12519,15 @@
         "test_find_one_xor_differential_trail_with_fixed_weight_with_at_least_one_full_2_window",
         "test_find_one_xor_differential_trail_with_fixed_weight_with_at_least_one_full_window_parallel"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/integration/test_word_differential.py; next/tests/integration/test_minizinc_integration.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Speck count 73, optimum 3, feasible weight 7, fixed masks and empirical-correlation bound are preserved.",
       "dependencies": [
         "claasp",
         "math"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -12559,9 +12541,7 @@
       },
       "kind": "test",
       "path": "tests/unit/cipher_modules/models/sat/sat_models/sat_xor_linear_model_test.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "test_branch_xor_linear_constraints",
         "test_find_all_xor_linear_trails_with_weight_at_most",
@@ -12570,9 +12550,9 @@
         "test_find_one_xor_linear_trail_with_fixed_weight",
         "test_fix_variables_value_xor_linear_constraints"
       ],
-      "rationale": null,
+      "rationale": "CNF literal order and generated fixed-value strings are representation details. Complete semantic assignments exclude auxiliary-counter multiplicity and retain signed correlations.",
       "responsibility": "sat xor linear model test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [
         "test_branch_xor_linear_constraints",
         "test_find_all_xor_linear_trails_with_weight_at_most",
@@ -12581,7 +12561,7 @@
         "test_find_one_xor_linear_trail_with_fixed_weight",
         "test_fix_variables_value_xor_linear_constraints"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/integration/test_speck_trail_enumeration.py; next/tests/unit/test_word_linear_smt.py"
     },
     {
       "acceptance_criterion": "Complete OR truth-table support and multi-operand XOR intermediate/output witnesses are independently checked.",
