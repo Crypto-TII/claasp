@@ -32,5 +32,5 @@ def test_find_one_xor_differential_trail():
 def test_find_one_xor_differential_trail_with_fixed_weight():
     speck = SpeckBlockCipher(number_of_rounds=3)
     smt = SmtXorDifferentialModel(speck)
-    result = smt.find_one_xor_differential_trail_with_fixed_weight(3)
+    result = smt.find_one_xor_differential_trail(lower_bound=3, upper_bound=3)
     assert result["total_weight"] == 3.0
