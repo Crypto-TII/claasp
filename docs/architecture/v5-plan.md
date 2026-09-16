@@ -659,9 +659,8 @@ map prevents top-level utility modules from falling between family milestones:
 - M10.15 owns evaluator/native/vectorized helper modules, the existing generic
   bit/word C sources and headers, C/CUDA/Python code generation, serialization,
   and remaining diagram/compiler utilities.
-- M11 owns reference-vector/test orchestration from ``tester.py`` and the final
-  audit that every legacy top-level module and test has a migrated,
-  superseded, removed, or explicitly out-of-scope disposition.
+- M11 owns reference-vector/test orchestration from ``tester.py``; M11a owns
+  the final bidirectional audit of every legacy and shipped v5 artifact.
 
 Analysis-specific top-level modules remain owned by their existing achieved or
 planned analysis milestones: algebraic/model evidence by M10.8, continuous
@@ -740,6 +739,38 @@ and tooling pass their documented parity and dependency-isolation tests.
 - Run combined, differential, and dependency-isolation tests.
 - Rename `claasp_next` to `claasp` only after its public API is accepted.
 - Stabilize in `develop`, publish prereleases, then release CLAASP 5.0.
+
+#### M11a: Final bidirectional migration audit
+
+- Produce one authoritative machine-readable matrix covering every legacy
+  source module, test module, native source/header, bundled data/template, and
+  other release-relevant artifact. Each row records its v5 destination or
+  destinations, disposition (migrated, superseded, removed, or explicitly
+  out of scope), rationale, owning milestone, evidence/tests, and any retained
+  historical path needed for provenance.
+- Audit the reverse direction as well: every shipped v5 module and material
+  data asset must identify its legacy predecessor(s), or state that it is a
+  new v5 artifact with its requirement, owner, and tests. This prevents new
+  modules, split replacements, and shared abstractions from being invisible in
+  a legacy-only checklist.
+- Generate a concise human-readable old-to-new/new-to-old summary from the
+  machine matrix. Record one-to-many splits, many-to-one consolidations,
+  renamed modules, newly introduced modules, and legacy modules or assets that
+  were deliberately unnecessary in v5.
+- Make the audit gate fail on an unclassified legacy or v5 artifact, a missing
+  destination, an undocumented removal, a stale path, an unowned new module,
+  or a release-scope row whose required evidence has not passed. Package
+  markers and generated files use explicit rules rather than silently
+  disappearing from the counts.
+- Re-run the audit after the final ``develop`` reconciliation and before the
+  ``claasp_next`` to ``claasp`` package rename. Regenerate and validate it once
+  more after the rename so published paths, documentation, and import examples
+  match the release tree.
+
+Exit criterion: both directions cover 100% of release-relevant artifacts;
+every removal and out-of-scope decision has reviewed rationale; all referenced
+destinations and evidence exist; and the generated summary matches the
+machine-readable matrix exactly.
 
 ### Documentation throughout all milestones
 
@@ -874,7 +905,9 @@ unfinished item in this order:
    tooling. M10.12 datasets/statistics and M10.13 neural distinguishers are
    already achieved.
 4. Build and validate the queued canonical v5 image before M11 integration
-   and release; it is not a prerequisite for continuing M10.9c/M10.9d locally.
+   and release; run the M11a bidirectional migration audit before and after the
+   final package rename. Image work is not a prerequisite for continuing
+   M10.9c/M10.9d locally.
 
 The migration inventory is a maintained artifact, not a one-time search. It
 must cover every legacy source and test module, including ciphers, components,
@@ -1050,3 +1083,4 @@ is absent). Update this table in the same commit that changes milestone state.
 | Serialization, diagrams, code generation (M10.15) | Planned | Versioned formats, routed diagrams, language generators, and remaining compiler workflows |
 | Canonical v5 Docker/CI environment | Queued | Before release, replace the amd64 Python-3.10 compatibility image with a multi-architecture Python-3.11+ image containing Chuffed, GLPK, Z3, MiniSat, Singular, msolve and LaTeX; do not block the current M10.9c/M10.9d migration workstream on image construction |
 | Integration and release (M11) | Planned | Reconcile the latest `develop`, run the complete release matrix in the canonical environment, accept the public API, rename `claasp_next` to `claasp`, publish prereleases, and release 5.0 |
+| Final bidirectional migration audit (M11a) | Planned | Machine matrix and generated human summary map every legacy artifact to v5 migrated/superseded/removed/out-of-scope ownership and every shipped v5 artifact back to legacy predecessors or an explicit new-v5 rationale; enforce 100% coverage before and after the package rename |
