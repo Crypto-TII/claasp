@@ -1577,6 +1577,14 @@ def component_catalogue_audit_status(payload: dict[str, Any]) -> dict[str, Any]:
         or "destination finalized" in item["v5_destination"]
         or item["v5_destination"].startswith("next/tests (")
     ]
+    destination_errors = []
+    for item in behavioral:
+        for destination in item["v5_destination"].split(";"):
+            destination = destination.strip()
+            if destination.startswith(("removed:", "inapplicable:")):
+                continue
+            if not destination.startswith("next/") or not (ROOT / destination).exists():
+                destination_errors.append(f"{item['path']}: {destination}")
     return {
         "total": len(records),
         "source": sum(item["kind"] == "source" for item in records.values()),
@@ -1588,8 +1596,10 @@ def component_catalogue_audit_status(payload: dict[str, Any]) -> dict[str, Any]:
         "missing": missing,
         "unexpected_owners": unexpected_owners,
         "owner_errors": owner_errors,
+        "destination_errors": destination_errors,
         "unresolved": unresolved,
-        "complete": not missing and not unexpected_owners and not owner_errors and not unresolved,
+        "complete": not missing and not unexpected_owners and not owner_errors
+        and not destination_errors and not unresolved,
     }
 
 
@@ -1652,6 +1662,8 @@ def main() -> int:
     parser.add_argument("--check-model-closure", action="store_true", help="fail until all M10.8 model entries are resolved, including deferrals")
     parser.add_argument("--catalogue-status", action="store_true", help="report M10.9b fixed-length catalogue classification")
     parser.add_argument("--check-catalogue-classification", action="store_true", help="fail until every catalogue entry satisfies M10.9b invariants")
+    parser.add_argument("--component-status", action="store_true", help="report M10.9c reusable component catalogue closure")
+    parser.add_argument("--check-component-closure", action="store_true", help="fail until every M10.9c component entry has a concrete final disposition")
     args = parser.parse_args()
     if args.model_status or args.check_model_closure:
         status = model_closure_status(build_inventory())
@@ -1661,6 +1673,10 @@ def main() -> int:
         status = catalogue_classification_status(build_inventory())
         print(json.dumps(status, indent=2))
         return int(args.check_catalogue_classification and not status["complete"])
+    if args.component_status or args.check_component_closure:
+        status = component_catalogue_audit_status(build_inventory())
+        print(json.dumps(status, indent=2))
+        return int(args.check_component_closure and not status["complete"])
     expected = serialized_inventory()
     if args.check:
         if not OUTPUT.exists() or OUTPUT.read_text(encoding="utf-8") != expected:

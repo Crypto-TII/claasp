@@ -3,6 +3,8 @@
 import importlib.util
 import json
 from pathlib import Path
+import subprocess
+import sys
 
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -175,5 +177,18 @@ def test_m10_9c_component_catalogue_audit_has_explicit_slice_ownership():
     assert status["missing"] == []
     assert status["unexpected_owners"] == []
     assert status["owner_errors"] == []
+    assert status["destination_errors"] == []
     assert status["unresolved"] == []
     assert status["complete"]
+
+
+def test_m10_9c_component_catalogue_cli_closure_gate_passes():
+    result = subprocess.run(
+        [sys.executable, str(SCRIPT), "--check-component-closure"],
+        cwd=ROOT / "next",
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert json.loads(result.stdout)["complete"]

@@ -45,6 +45,57 @@ not private copies of generic mathematics.
 These helpers validate widths and ordering explicitly and do not import Sage.
 The AES implementation is the current full-size example.
 
+Reusable component catalogue
+----------------------------
+
+``claasp_next.components`` is the central public catalogue. Components are
+immutable graph descriptions; evaluators and solver representations remain
+separate execution engines. The single authoring path is
+``Primitive.add_component``, which validates graph ownership and assigns a
+deterministic identifier when one is omitted.
+
+The catalogue includes structural operations, conversions, lookup
+substitution, Boolean logic, word/ARX arithmetic, algebraic and finite-field
+maps, feedback registers, and reusable permutation layers. Word operations
+make wraparound explicit: rotations wrap, shifts zero-fill, and modular
+arithmetic is distinct from ordinary field arithmetic.
+
+.. doctest::
+
+   >>> from claasp_next import Primitive, ValueType, Word
+   >>> from claasp_next.components import ModularSubtract, Shift
+   >>> words = ValueType(Word(8), (1,))
+   >>> arx = Primitive("word_example", {"left": words, "right": words})
+   >>> arx.add_round()
+   Round(number=0)
+   >>> difference = arx.add_component(ModularSubtract((arx.input("left"), arx.input("right"))))
+   >>> shifted = arx.add_component(Shift(difference, 1, "right"))
+   >>> arx.set_output(shifted)
+   >>> arx.evaluate(3, 5)
+   127
+
+Feedback is described by typed terms rather than nested unlabelled lists. A
+binary-extension-field domain similarly makes word-register multiplication
+unambiguous.
+
+.. doctest::
+
+   >>> from claasp_next import Bit
+   >>> from claasp_next.components import FeedbackRegister, FeedbackRegisterSpec, FeedbackTerm
+   >>> lfsr = Primitive("lfsr", {"state": ValueType(Bit(), (4,))})
+   >>> lfsr.add_round()
+   Round(number=0)
+   >>> spec = FeedbackRegisterSpec(4, (FeedbackTerm((0,)), FeedbackTerm((1,))))
+   >>> next_state = lfsr.add_component(FeedbackRegister(lfsr.input("state"), (spec,)))
+   >>> lfsr.set_output(next_state)
+   >>> lfsr.evaluate(0b1011)
+   7
+
+Permutation-specific helpers return ordinary generic components. For example,
+``shift_rows`` returns ``Permutation``, while ``sigma`` and the Gaston,
+Keccak, and Xoodoo theta helpers return ``LinearMap``. This keeps their graph
+semantics reusable by every execution or analysis backend.
+
 Conversions between bits and words are graph operations rather than implicit
 evaluator behavior. ``PackBits`` and ``UnpackBits`` use an explicit MSB-first
 convention, so the same graph has unambiguous scalar and batch semantics.
