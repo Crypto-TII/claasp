@@ -175,5 +175,5 @@ def test_m10_9c_component_catalogue_audit_has_explicit_slice_ownership():
     assert status["missing"] == []
     assert status["unexpected_owners"] == []
     assert status["owner_errors"] == []
-    assert len(status["unresolved"]) == 16
+    assert len(status["unresolved"]) == 12
     assert not status["complete"]

@@ -1245,6 +1245,30 @@ for _path, _destination in _M10_9C5_TEST_DESTINATIONS.items():
         "rationale": "Generated backend strings, temporary carry names, component identifiers, mutable sign dictionaries, and generated code fragments are representation or implementation details rather than arithmetic evidence.",
     }
 
+_M10_9C6_SOURCE_DESTINATIONS = {
+    "claasp/components/linear_layer_component.py": "next/src/claasp_next/components/algebraic/linear_map.py; next/src/claasp_next/domains",
+    "claasp/components/mix_column_component.py": "next/src/claasp_next/components/algebraic/linear_map.py; next/src/claasp_next/domains/binary_extension_field.py; next/src/claasp_next/utils/finite_fields.py",
+}
+for _path, _destination in _M10_9C6_SOURCE_DESTINATIONS.items():
+    MIGRATION_OVERRIDES[_path] = {
+        "v5_destination": _destination,
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.9c6",
+        "acceptance_criterion": "A row-major typed LinearMap evaluates binary and extension-field matrices without Sage and validates every coefficient against its domain.",
+        "rationale": "A separate MixColumn operation duplicates linear-map semantics once the field modulus and logical word size are carried by BinaryExtensionField; backend constraints and branch-number analysis belong to representations and analyses.",
+    }
+
+_M10_9C6_TEST_DESTINATIONS = {
+    "tests/unit/components/linear_layer_component_test.py": "next/tests/unit/test_linear_layer_components.py; next/tests/unit/test_algebraic_evaluation.py",
+    "tests/unit/components/mix_column_component_test.py": "next/tests/unit/test_linear_layer_components.py; next/tests/unit/test_aes.py",
+}
+for _path, _destination in _M10_9C6_TEST_DESTINATIONS.items():
+    MIGRATION_OVERRIDES[_path] = {
+        "v5_destination": _destination,
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.9c6",
+        "acceptance_criterion": "Complete binary and GF(2^4) checks, the published AES MixColumns column, typed validation, and scalar/batch parity preserve the mathematical transformation.",
+        "rationale": "Sage polynomial rendering, generated backend clauses, variable order, mutable component-analysis caches, and MiniZinc table construction are not reusable linear-layer semantics.",
+    }
+
 
 def python_paths() -> list[Path]:
     return sorted(path for root in LEGACY_ROOTS for path in root.rglob("*.py"))

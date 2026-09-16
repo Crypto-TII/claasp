@@ -9246,12 +9246,12 @@
       "v5_destination": "next/src/claasp_next/annotations/traces.py; next/src/claasp_next/components/structural/identity.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "A row-major typed LinearMap evaluates binary and extension-field matrices without Sage and validates every coefficient against its domain.",
       "dependencies": [
         "claasp",
         "sage"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
@@ -9259,28 +9259,26 @@
       "kind": "source",
       "milestone_owner": "M10.9c6",
       "path": "claasp/components/linear_layer_component.py",
-      "prerequisites": [
-        "M10.9c5"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "sat_generate_ids_for_linear_layer",
         "update_constraints_for_more_than_one_bit",
         "LinearLayer"
       ],
-      "rationale": null,
+      "rationale": "A separate MixColumn operation duplicates linear-map semantics once the field modulus and logical word size are carried by BinaryExtensionField; backend constraints and branch-number analysis belong to representations and analyses.",
       "responsibility": "linear layer component",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.9c6",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/components/algebraic/linear_map.py; next/src/claasp_next/domains"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "A row-major typed LinearMap evaluates binary and extension-field matrices without Sage and validates every coefficient against its domain.",
       "dependencies": [
         "claasp",
         "copy",
         "sage"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
@@ -9288,20 +9286,18 @@
       "kind": "source",
       "milestone_owner": "M10.9c6",
       "path": "claasp/components/mix_column_component.py",
-      "prerequisites": [
-        "M10.9c5"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "add_xor_components",
         "calculate_input_bit_positions",
         "cp_get_all_inputs",
         "MixColumn"
       ],
-      "rationale": null,
+      "rationale": "A separate MixColumn operation duplicates linear-map semantics once the field modulus and logical word size are carried by BinaryExtensionField; backend constraints and branch-number analysis belong to representations and analyses.",
       "responsibility": "mix column component",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.9c6",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/components/algebraic/linear_map.py; next/src/claasp_next/domains/binary_extension_field.py; next/src/claasp_next/utils/finite_fields.py"
     },
     {
       "acceptance_criterion": "Typed word operations match independently computed exhaustive small-width arithmetic and scalar/transposed-batch evaluation.",
@@ -18758,11 +18754,11 @@
       "v5_destination": "next/tests/unit/test_neural_projections.py; next/tests/unit/test_structural_evaluation.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Complete binary and GF(2^4) checks, the published AES MixColumns column, typed validation, and scalar/batch parity preserve the mathematical transformation.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -18786,9 +18782,7 @@
       "kind": "test",
       "milestone_owner": "M10.9c6",
       "path": "tests/unit/components/linear_layer_component_test.py",
-      "prerequisites": [
-        "M10.9c5"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "make_linear_layer_component",
         "make_linear_layer_cipher",
@@ -18808,9 +18802,9 @@
         "test_milp_bitwise_deterministic_truncated_xor_differential_binary_constraints",
         "test_milp_wordwise_deterministic_truncated_xor_differential_constraints"
       ],
-      "rationale": null,
+      "rationale": "Sage polynomial rendering, generated backend clauses, variable order, mutable component-analysis caches, and MiniZinc table construction are not reusable linear-layer semantics.",
       "responsibility": "linear layer component test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.9c6",
       "tests": [
         "test_cms_constraints",
         "test_cms_xor_linear_mask_propagation_constraints",
@@ -18828,14 +18822,14 @@
         "test_smt_constraints",
         "test_smt_xor_linear_mask_propagation_constraints"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_linear_layer_components.py; next/tests/unit/test_algebraic_evaluation.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Complete binary and GF(2^4) checks, the published AES MixColumns column, typed validation, and scalar/batch parity preserve the mathematical transformation.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -18860,9 +18854,7 @@
       "kind": "test",
       "milestone_owner": "M10.9c6",
       "path": "tests/unit/components/mix_column_component_test.py",
-      "prerequisites": [
-        "M10.9c5"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "make_mix_column_component",
         "make_mix_column_cipher",
@@ -18883,9 +18875,9 @@
         "test_smt_constraints",
         "test_smt_xor_linear_mask_propagation_constraints"
       ],
-      "rationale": null,
+      "rationale": "Sage polynomial rendering, generated backend clauses, variable order, mutable component-analysis caches, and MiniZinc table construction are not reusable linear-layer semantics.",
       "responsibility": "mix column component test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.9c6",
       "tests": [
         "test_algebraic_polynomials",
         "test_cms_constraints",
@@ -18904,7 +18896,7 @@
         "test_smt_constraints",
         "test_smt_xor_linear_mask_propagation_constraints"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_linear_layer_components.py; next/tests/unit/test_aes.py"
     },
     {
       "acceptance_criterion": "Exhaustive three-bit arithmetic, fixed word-motion values, boundary behavior, validation, and scalar/batch parity preserve applicable semantics.",
