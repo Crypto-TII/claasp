@@ -811,13 +811,16 @@ path is correct and stable.
 Unless this plan is explicitly revised, “next milestone” means the first
 unfinished item in this order:
 
-1. M10.8: migrate all remaining mathematical and solver models, including
-   monomial prediction and division-property analysis.
-2. M10.9a–M10.9d: establish primitive terminology and taxonomy, then migrate
-   the complete reusable component and fixed-length primitive catalogues.
-3. M10.10–M10.15: inversion/transformations, component analysis, datasets and
-   statistical tests, neural distinguishers, reports, and remaining tooling.
-4. M11 integration and release.
+1. M10.9c: migrate the complete reusable component catalogue in dependency
+   order, using the M10.9b classification and inventory gates.
+2. M10.9d: migrate every in-scope fixed-length primitive and its evidence;
+   complete the remaining general realization/provenance work in M10.9e.
+3. M10.10, M10.11, M10.14, and M10.15: inversion/transformations, component
+   analysis, reports, serialization, diagrams, code generation, and remaining
+   tooling. M10.12 datasets/statistics and M10.13 neural distinguishers are
+   already achieved.
+4. Build and validate the queued canonical v5 image before M11 integration
+   and release; it is not a prerequisite for continuing M10.9c/M10.9d locally.
 
 The migration inventory is a maintained artifact, not a one-time search. It
 must cover every legacy source and test module, including ciphers, components,
@@ -843,7 +846,15 @@ second checklist is intentionally not maintained. At this revision:
 - M10.6, including its advanced exact and heuristic analyses, is achieved.
 - M10.7 is achieved: the exhaustive inventory and filesystem gate include the
   reconciled ``develop`` changes.
-- M10.8 is next; M10.9–M10.15 and M11 remain planned.
+- M10.8, M10.9a, and M10.9b are achieved. M10.9c is the next catalogue
+  checkpoint, followed by complete primitive/evidence migration in M10.9d.
+- M10.9e has an achieved AES vertical slice but still needs general result
+  provenance and task-directed realization selection. M10.10, M10.11,
+  M10.14, and M10.15 remain planned; M10.12 and M10.13 are achieved.
+- The canonical multi-architecture Python 3.11+ Docker image remains required
+  before release, but is queued rather than the active migration workstream.
+  Until then, local Python 3.11 and the legacy compatibility image are reported
+  separately, including their skips and missing dependencies.
 
 ## Milestone tracker
 
@@ -866,7 +877,7 @@ is absent). Update this table in the same commit that changes milestone state.
 | Pinned Poseidon parameter catalogue | Achieved | Bundled BN254/width-3 data and vector |
 | Dependency-free transposed batch backend | Achieved | Differential tests and benchmark harness |
 | msolve polynomial exporter | Achieved | Native format, validation, and optional integration test |
-| Traditional primitive reference implementations | Representative slice achieved | AES-128/192/256, PRESENT-80/128, multiple Speck variants, and all standard Simon configurations; names/packages remain transitional until M10.9a and the complete catalogue follows in M10.9d |
+| Traditional primitive reference implementations | Representative slice achieved | AES-128/192/256, PRESENT-80/128, multiple Speck variants, and all standard Simon configurations use the final primitive terminology; the complete classified catalogue follows in M10.9d |
 | Legacy cipher regression parity (M9) | Achieved | Living matrix; AES-128/192/256, PRESENT-80/128, Speck32/64 and Speck64/96 |
 | Cipher-authoring usability (M9.1) | Achieved | Whole-port coercion, indexing, automatic IDs, reusable primitives, concise ciphers |
 | CLAASP-wide documentation (M9.2) | Achieved | AES-first introduction, simple analysis, and separate v5/AO section |
@@ -961,7 +972,7 @@ is absent). Update this table in the same commit that changes milestone state.
 | Remaining model inventory closure (M10.8d) | Achieved | 149/149 model entries resolved with zero deferrals and a passing closure gate. Every executed fixed result is migrated or retained with an explicit exact/lower-bound/heuristic/empirical/legacy-regression claim kind; backend syntax, mutable registries, search-only heuristics and permanently skipped proprietary-only hypotheses are superseded or removed without being promoted to evidence. CP, SAT, CMS, SMT, MILP, algebraic and shared utility inventories are closed |
 | Primitive terminology/public API (M10.9a) | Achieved | Generic graph class `Cipher`→`Primitive` and catalogue package `ciphers`→`primitives`; official bare catalogue class names (`AES`/`AES128`, `Present`/`Present80`, `Speck`, `Simon`, `MiMC`, `Poseidon`, `ChaCha`, `Salsa`); `CipherDiagram`→`PrimitiveDiagram` and its `cipher_name`→`primitive_name` field; generic vocabulary (cipher graph/input/output/evaluation, `cipher_output` sentinel) replaced by primitive-oriented terms throughout source, tests, and both guides; dependency-free `tools/terminology_guard.py` wired into `pytest tests/unit` blocks new generic `cipher`/`ciphers` usage outside the real `block_cipher(s)`/`tweakable_block_cipher(s)` taxonomy and `ciphertext` |
 | Fixed-length primitive classification (M10.9b) | Achieved | All 149 legacy catalogue modules classified by fixed-length interface: 112 in the six semantic categories, 33 in orthogonal fixture folders, and four explicit non-primitive helpers. A dependency-free gate validates key/tweak roles, bijectivity obligations, official names, destinations, and removal of hash/MAC/stream as v5 categories |
-| Complete reusable component catalogue (M10.9c) | Planned | All reusable legacy components migrated with parity evidence and pseudocode-level authoring helpers |
+| Complete reusable component catalogue (M10.9c) | Next | Inventory reusable structural, Boolean, word/ARX, finite-field, feedback, permutation-specific, and conversion components; migrate them in dependency order with parity evidence and pseudocode-level authoring helpers |
 | Complete primitive implementations/evidence (M10.9d) | Planned | Every in-scope fixed-length primitive and parameter family migrated under the new taxonomy with evaluation and cryptanalytic fixtures |
 | ChaCha permutation evaluation slice (M10.9d1) | Achieved | Official `ChaCha` class, standard round convention, typed ARX graph, full ChaCha20 and two legacy toy vectors, and scalar/batch parity; cryptanalytic fixture migration remains separately tracked |
 | Salsa permutation evaluation slice (M10.9d2) | Achieved | Official `Salsa` class, standard full-round convention, typed ARX graph, both fixed legacy vectors, and scalar/batch parity; cryptanalytic fixtures remain separately tracked |
@@ -980,4 +991,5 @@ is absent). Update this table in the same commit that changes milestone state.
 | Neural split and provenance contracts (M10.13b) | Achieved | Deterministic optional stratification, explicit disjoint sample partitions, stable dataset SHA-256 identities, and realization/driver/version/seed/options provenance reject stale or incomplete runs |
 | Reports and presentation (M10.14) | Planned | Typed Report replacement, tables, plots, exports, citations, evidence and reproducibility metadata |
 | Serialization, diagrams, code generation (M10.15) | Planned | Versioned formats, routed diagrams, language generators, and remaining compiler workflows |
-| Canonical v5 Docker/CI environment | Next | Replace the amd64 Python-3.10 legacy image with a multi-architecture Python-3.11+ image containing Chuffed, GLPK, Z3, MiniSat, Singular, msolve and LaTeX |
+| Canonical v5 Docker/CI environment | Queued | Before release, replace the amd64 Python-3.10 compatibility image with a multi-architecture Python-3.11+ image containing Chuffed, GLPK, Z3, MiniSat, Singular, msolve and LaTeX; do not block the current M10.9c/M10.9d migration workstream on image construction |
+| Integration and release (M11) | Planned | Reconcile the latest `develop`, run the complete release matrix in the canonical environment, accept the public API, rename `claasp_next` to `claasp`, publish prereleases, and release 5.0 |
