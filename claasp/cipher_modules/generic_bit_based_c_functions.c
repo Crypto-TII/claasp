@@ -54,7 +54,7 @@ uint128_t bitstring_to_uint(BitString *input) {
     return output_value;
 }
 
-BitString* select_bits(uint8_t n, BitString* b[n], uint16_t* bit_positions[n], uint16_t component_output_size) {
+BitString* select_bits(uint16_t n, BitString* b[n], uint16_t* bit_positions[n], uint16_t component_output_size) {
     uint16_t selected_bits = 0, bit_index = 0, operand_byte_size, number_of_operands, bit_offset;
 
     for (int i = 0; i < n; i++)
@@ -88,7 +88,7 @@ BitString* select_bits(uint8_t n, BitString* b[n], uint16_t* bit_positions[n], u
     return component_input;
 }
 
-/*BitString** select_bits_and_split(uint8_t n, BitString* b[n], uint16_t* bit_positions[n], uint8_t number_of_operands) {
+/*BitString** select_bits_and_split(uint16_t n, BitString* b[n], uint16_t* bit_positions[n], uint8_t number_of_operands) {
     uint16_t total_bit_size = 0, operand_bit_size, total_bit_index = 0, operand_index, operand_bit_index;
 
     for (int i = 0; i < n; i++)
@@ -249,7 +249,15 @@ BitString* bitstring_from_binary_string(char *bits, uint16_t bit_size) {
 BitString* bitstring_from_hex_string(char *hex_digits, uint16_t bit_size) {
     BitString *result = zero_bitstring(bit_size);
     uint16_t hex_length = strlen(hex_digits), j = byte_size(bit_size) - 1;;
-    char app[2];
+    /* NUL-terminated: strtoul() requires a C string, and an un-terminated
+     * app[2] is undefined behaviour -- it reads past the buffer looking for
+     * a terminator, occasionally picking up an adjacent stack byte that
+     * happens to look like another hex digit and silently parsing a wrong,
+     * too-large value. Only manifests statistically on very large inputs
+     * (many loop iterations, each a small chance of the coincidence), which
+     * is why it stayed latent until wide-input inputs were exercised. */
+    char app[3];
+    app[2] = '\0';
 
     for (int i = hex_length - 1; i >= 3; i -= 2) {
         app[0] = hex_digits[i - 1];
@@ -786,7 +794,7 @@ BitString* ROTATE(BitString *input, uint16_t output_bit_size, int rotation_amoun
 //VARIABLE_AMOUNT
 BitString* SHIFT_BY_VARIABLE_AMOUNT(BitString *input, uint16_t output_bit_size, int shift_direction) {
     uint16_t shift_amount = 0, output_byte_size = byte_size(output_bit_size);
-    uint8_t i = byte_size(input -> bit_size) - 1;
+    uint16_t i = byte_size(input -> bit_size) - 1;
 
     if (byte_size(input -> bit_size) - output_byte_size >= 2)
         shift_amount = (input -> list[i] | input -> list[i-1] << 8) % output_bit_size;
@@ -804,7 +812,7 @@ BitString* SHIFT_BY_VARIABLE_AMOUNT(BitString *input, uint16_t output_bit_size, 
 
 BitString* ROTATE_BY_VARIABLE_AMOUNT(BitString *input, uint16_t output_bit_size, int rotation_direction) {
     uint16_t rotation_amount = 0, output_byte_size = byte_size(output_bit_size);
-    uint8_t i = byte_size(input -> bit_size) - 1;
+    uint16_t i = byte_size(input -> bit_size) - 1;
 
     if (byte_size(input -> bit_size) - output_byte_size >= 2)
         rotation_amount = (input -> list[i] | input -> list[i-1] << 8) % output_bit_size;
