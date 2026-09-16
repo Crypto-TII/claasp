@@ -153,12 +153,59 @@ M10_9C_PREREQUISITE_BY_SLICE = {
     "M10.9c8": "M10.9c7",
 }
 
+M10_9D_WORD_BLOCK_STEMS = {
+    "aradi_block_cipher", "cham_block_cipher", "hight_block_cipher",
+    "idea_block_cipher", "lea_block_cipher", "raiden_block_cipher",
+    "rc5_block_cipher", "simeck_block_cipher", "simon_block_cipher",
+    "sparx_block_cipher", "speck_block_cipher", "tea_block_cipher",
+    "threefish_block_cipher", "trax_block_cipher", "xtea_block_cipher",
+}
+M10_9D_COMPLETION_SLICES = (
+    "M10.9d1", "M10.9d2", "M10.9d3", "M10.9d4", "M10.9d5",
+    "M10.9d6", "M10.9d7", "M10.9d8",
+)
+
 
 def _m10_9c_slice(path: str) -> str | None:
     owners = [slice_name for slice_name, paths in M10_9C_PATHS_BY_SLICE.items() if path in paths]
     if len(owners) > 1:
         raise ValueError(f"M10.9c path has multiple owners: {path}: {owners}")
     return owners[0] if owners else None
+
+
+def _m10_9d_source_slice(path: str, catalogue: dict[str, Any]) -> str:
+    """Assign every classified catalogue source to one dependency slice."""
+
+    if path == "claasp/ciphers/permutations/chacha_permutation.py":
+        return "M10.9d1"
+    if path == "claasp/ciphers/permutations/salsa_permutation.py":
+        return "M10.9d2"
+    category = catalogue["primitive_category"]
+    if category == "outside_scope":
+        return "M10.9d3"
+    if category in {"single_component_primitives", "toy_primitives"}:
+        return "M10.9d4"
+    if category in {"block_ciphers", "tweakable_block_ciphers"}:
+        return "M10.9d5" if Path(path).stem in M10_9D_WORD_BLOCK_STEMS else "M10.9d6"
+    if category == "permutations":
+        return "M10.9d7"
+    if category in {"functions", "block_functions"}:
+        return "M10.9d8"
+    raise ValueError(f"M10.9d catalogue category has no owner: {path}: {category}")
+
+
+def _m10_9d_test_slice(path: str) -> str | None:
+    if not path.startswith("tests/unit/ciphers/") or not path.endswith("_test.py"):
+        return None
+    stem = Path(path).stem.removesuffix("_test")
+    matches = sorted((ROOT / "claasp" / "ciphers").glob(f"**/{stem}.py"))
+    if len(matches) == 1:
+        source_path = matches[0].relative_to(ROOT).as_posix()
+        tree = _parse(matches[0])
+        catalogue = _catalogue_metadata(matches[0].relative_to(ROOT), _public_entries(tree), tree)
+        if catalogue:
+            return _m10_9d_source_slice(source_path, catalogue)
+    return "M10.9d3"
 
 MIGRATION_OVERRIDES = {
     "claasp/cipher_modules/models/milp/milp_models/Gurobi/monomial_prediction.py": {
@@ -1491,6 +1538,7 @@ def record(path: Path) -> dict[str, Any]:
     }
     if catalogue:
         item["primitive"] = catalogue
+        item["milestone_owner"] = _m10_9d_source_slice(relative.as_posix(), catalogue)
         if catalogue["primitive_category"] == "outside_scope":
             item.update({
                 "prerequisites": [],
@@ -1503,6 +1551,10 @@ def record(path: Path) -> dict[str, Any]:
     if m10_9c_slice:
         item["milestone_owner"] = m10_9c_slice
         item["prerequisites"] = [M10_9C_PREREQUISITE_BY_SLICE[m10_9c_slice]]
+    m10_9d_test_slice = _m10_9d_test_slice(relative.as_posix())
+    if m10_9d_test_slice:
+        item["milestone_owner"] = m10_9d_test_slice
+        item["prerequisites"] = ["M10.9c10"]
     item.update(MIGRATION_OVERRIDES.get(relative.as_posix(), {}))
     return item
 
@@ -1655,6 +1707,54 @@ def catalogue_classification_status(payload: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def primitive_catalogue_audit_status(payload: dict[str, Any]) -> dict[str, Any]:
+    """Summarize M10.9d source/test ownership without claiming migration parity."""
+
+    sources = [item for item in payload["records"] if "primitive" in item]
+    tests = [
+        item for item in payload["records"]
+        if item["path"].startswith("tests/unit/ciphers/")
+        and item["path"].endswith("_test.py")
+    ]
+    owned = sources + tests
+    owner_errors = sorted(
+        item["path"] for item in owned
+        if item.get("milestone_owner") not in M10_9D_COMPLETION_SLICES
+    )
+    by_slice = {
+        slice_name: sum(item.get("milestone_owner") == slice_name for item in owned)
+        for slice_name in M10_9D_COMPLETION_SLICES
+    }
+    outside_scope = [
+        item for item in sources
+        if item["primitive"]["primitive_category"] == "outside_scope"
+    ]
+    unresolved = [
+        item["path"] for item in sources
+        if item["primitive"]["primitive_category"] != "outside_scope"
+        and (
+            item["status"] == "planned-or-partially-migrated"
+            or item["disposition"] == "defer"
+            or not (
+                ROOT / "next" / "src"
+                / (item["primitive"]["proposed_module"].replace(".", "/") + ".py")
+            ).exists()
+        )
+    ]
+    return {
+        "source": len(sources),
+        "test": len(tests),
+        "behavioral_sources": len(sources) - len(outside_scope),
+        "outside_scope": len(outside_scope),
+        "test_functions": sum(len(item["tests"]) for item in tests),
+        "by_slice": by_slice,
+        "owner_errors": owner_errors,
+        "unresolved": unresolved,
+        "audit_complete": not owner_errors,
+        "closure_complete": not owner_errors and not unresolved,
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--check", action="store_true", help="fail if the checked-in inventory is stale")
@@ -1664,6 +1764,9 @@ def main() -> int:
     parser.add_argument("--check-catalogue-classification", action="store_true", help="fail until every catalogue entry satisfies M10.9b invariants")
     parser.add_argument("--component-status", action="store_true", help="report M10.9c reusable component catalogue closure")
     parser.add_argument("--check-component-closure", action="store_true", help="fail until every M10.9c component entry has a concrete final disposition")
+    parser.add_argument("--primitive-status", action="store_true", help="report M10.9d primitive catalogue ownership and closure")
+    parser.add_argument("--check-primitive-audit", action="store_true", help="fail until every M10.9d source and test has a slice owner")
+    parser.add_argument("--check-primitive-closure", action="store_true", help="fail until every in-scope M10.9d primitive has a concrete v5 destination")
     args = parser.parse_args()
     if args.model_status or args.check_model_closure:
         status = model_closure_status(build_inventory())
@@ -1677,6 +1780,12 @@ def main() -> int:
         status = component_catalogue_audit_status(build_inventory())
         print(json.dumps(status, indent=2))
         return int(args.check_component_closure and not status["complete"])
+    if args.primitive_status or args.check_primitive_audit or args.check_primitive_closure:
+        status = primitive_catalogue_audit_status(build_inventory())
+        print(json.dumps(status, indent=2))
+        if args.check_primitive_audit:
+            return int(not status["audit_complete"])
+        return int(args.check_primitive_closure and not status["closure_complete"])
     expected = serialized_inventory()
     if args.check:
         if not OUTPUT.exists() or OUTPUT.read_text(encoding="utf-8") != expected:

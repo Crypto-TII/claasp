@@ -683,6 +683,53 @@ that catalogue in this dependency order:
   convenience re-export and must not own primitive-specific data. Do not force
   package directories on small primitives that need only one module.
 
+The M10.9d3 audit covers all 149 classified catalogue source records and the
+143 primitive-specific legacy test modules containing 265 test functions.
+Four source records are the helpers already classified outside the primitive
+catalogue; the other 145 source records are behavioral migration obligations.
+Every record has one owner below. A legacy test name locates evidence but does
+not make component identifiers, generated strings, counters, or mutable graph
+state into v5 compatibility contracts.
+
+Complete M10.9d in this recorded dependency order. M10.9d1 and M10.9d2 were
+accepted early vertical slices and remain subject to the final closure gate:
+
+1. **M10.9d1 — ChaCha permutation evaluation.** Retain the official ChaCha
+   permutation, standard round convention, fixed vectors, and scalar/batch
+   parity. This slice is achieved.
+2. **M10.9d2 — Salsa permutation evaluation.** Retain the official Salsa
+   permutation, standard round convention, fixed vectors, and scalar/batch
+   parity. This slice is achieved.
+3. **M10.9d3 — primitive catalogue audit.** Machine-assign every classified
+   source and primitive test and retain the four reviewed outside-scope helper
+   decisions. The audit is planning and ownership closure, not semantic parity
+   for the 145 behavioral sources.
+4. **M10.9d4 — single-component and toy primitives.** Resolve 33 source and
+   31 test records after M10.9d3. Reuse the M10.9c component catalogue and
+   preserve fixture semantics without restoring backend methods on components.
+5. **M10.9d5 — word-oriented and ARX/Feistel block primitives.** Resolve the
+   15 source and 15 test records assigned by the machine inventory, preserving
+   official parameter families, reduced rounds, and fixed vectors.
+6. **M10.9d6 — substitution/linear and tweakable block primitives.** Resolve
+   the remaining 55 block/tweakable source and 55 test records, reusing typed
+   S-box, field, linear-layer, key-schedule, and composite-block foundations.
+7. **M10.9d7 — remaining permutations.** Resolve 25 source and 25 test records
+   after shared block operations are stable, including invertible interfaces
+   represented as forward primitive graphs without claiming the general graph
+   inversion work owned by M10.10.
+8. **M10.9d8 — fixed-length functions and block functions.** Resolve all 15
+   source and 15 test records extracted from legacy hash, MAC, and stream
+   construction folders. Preserve their fixed-length mappings and parent
+   provenance without reviving those folders as primitive categories.
+9. **M10.9d9 — primitive-owned parameters and supporting data.** Move Poseidon
+   parameters and data under its same-import-path package, keep only a thin
+   convenience re-export at ``claasp_next.parameters``, and colocate any other
+   primitive-specific generated constants, licenses, and reference vectors.
+10. **M10.9d10 — catalogue closure.** Centralize public exports and executable
+    user/developer documentation; require all 145 behavioral sources and their
+    applicable fixed evidence to have concrete destinations and make the
+    machine closure gate pass before returning to M10.9e.
+
 ##### M10.9e: Primitive realizations and task-directed selection
 
 - Treat a primitive as the mathematical fixed-length mapping and a
@@ -1156,9 +1203,17 @@ is absent). Update this table in the same commit that changes milestone state.
 | Reusable composite block catalogue (M10.9c10b) | Achieved | Generic 2^n-entry parallel S-box definitions support arbitrary counts, flat-bit SAT-ready lowering, and typed finite-domain units; ChaCha quarter rounds expose named and joined outputs and preserve the RFC 8439 vector; host 514 passed/78 external deselected |
 | Compositional AES and variants (M10.9c10c) | Achieved | Canonical AES is assembled from reusable key-schedule, substitution-layer, and round definitions while preserving AES-128/192/256 and lookup/algebraic vectors; `AESVariant` supports alternate S-boxes and omitted MixColumns under an `aes_variant` identity with immutable derivation metadata; host 516 passed/78 external deselected |
 | Composite documentation and closure (M10.9c10d) | Achieved | User examples build AES from blocks, replace its S-box, omit MixColumns, evaluate ChaCha quarter rounds, and generate parallel-S-box/quarter-round CNF; developer docs specify immutable hierarchy and flat lowering; host 516 passed/78 external deselected; API/user/developer doctests 39/243/480; warning-free user/developer HTML; Python-3.10 compatibility Docker 513 passed/3 skipped/78 deselected and external 76 passed/2 skipped/516 deselected |
-| Complete primitive implementations/evidence (M10.9d) | Next | Every in-scope fixed-length primitive and parameter family migrated under the new taxonomy with evaluation and cryptanalytic fixtures |
+| Complete primitive implementations/evidence (M10.9d) | In progress | All 149 classified source records and 143 primitive test modules are assigned to M10.9d1–M10.9d8; implement every in-scope primitive and parameter family, then close owned data and catalogue integration in M10.9d9–M10.9d10 |
 | ChaCha permutation evaluation slice (M10.9d1) | Achieved | Official `ChaCha` class, standard round convention, typed ARX graph, full ChaCha20 and two legacy toy vectors, and scalar/batch parity; cryptanalytic fixture migration remains separately tracked |
 | Salsa permutation evaluation slice (M10.9d2) | Achieved | Official `Salsa` class, standard full-round convention, typed ARX graph, both fixed legacy vectors, and scalar/batch parity; cryptanalytic fixtures remain separately tracked |
+| Primitive catalogue audit (M10.9d3) | Achieved | Machine inventory assigns 149 source and 143 primitive-test records (265 functions) exactly once across M10.9d1–M10.9d8: 145 behavioral sources and four reviewed outside-scope helpers; the audit gate passes while the separate closure gate exposes every unimplemented destination |
+| Single-component and toy primitives (M10.9d4) | Next | Resolve 33 source and 31 test records through the typed component catalogue and preserve applicable fixture behavior |
+| Word-oriented block primitives (M10.9d5) | Planned | Resolve 15 source and 15 test records covering assigned ARX/Feistel/word families and parameter variants |
+| Substitution/linear and tweakable block primitives (M10.9d6) | Planned | Resolve 55 source and 55 test records covering the remaining block and tweakable families |
+| Remaining permutations (M10.9d7) | Planned | Resolve 25 source and 25 test records after shared block-operation dependencies |
+| Fixed-length functions/block functions (M10.9d8) | Planned | Resolve 15 source and 15 test records extracted from legacy hash, MAC, and stream construction folders |
+| Primitive-owned parameters/data (M10.9d9) | Planned | Colocate Poseidon and other primitive-specific parameters, generated constants, data, licenses, provenance, and vectors under their owning packages |
+| Complete primitive catalogue closure (M10.9d10) | Planned | Central exports/docs and the machine gate prove all 145 behavioral sources and applicable fixed evidence have concrete v5 destinations |
 | Primitive realizations/task selection (M10.9e) | In progress | Generic capability metadata and AES lookup/algebraic realizations implemented; result provenance and broader task-directed selection remain |
 | AES realization vertical slice (M10.9e1) | Achieved | Lookup S-box and field-inverse-plus-binary-affine graphs share one public class and all AES-128/192/256 fixed vectors; deterministic capability selection is documented and tested |
 | Catalogue discovery/query API (M10.9f) | Planned | Replace `claasp/catalog.py` with typed discovery over v5 primitive/component/realization/parameter/driver metadata; preserve filters and structured exports without eager optional dependencies or legacy taxonomy leakage |

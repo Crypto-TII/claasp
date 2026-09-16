@@ -192,3 +192,42 @@ def test_m10_9c_component_catalogue_cli_closure_gate_passes():
     )
     assert result.returncode == 0, result.stdout + result.stderr
     assert json.loads(result.stdout)["complete"]
+
+
+def test_m10_9d_primitive_catalogue_audit_assigns_every_source_and_test_once():
+    payload = json.loads(INVENTORY.read_text(encoding="utf-8"))
+    status = _module().primitive_catalogue_audit_status(payload)
+
+    assert status["source"] == 149
+    assert status["test"] == 143
+    assert status["behavioral_sources"] == 145
+    assert status["outside_scope"] == 4
+    assert status["test_functions"] == 265
+    assert status["by_slice"] == {
+        "M10.9d1": 2,
+        "M10.9d2": 2,
+        "M10.9d3": 4,
+        "M10.9d4": 64,
+        "M10.9d5": 30,
+        "M10.9d6": 110,
+        "M10.9d7": 50,
+        "M10.9d8": 30,
+    }
+    assert status["owner_errors"] == []
+    assert status["audit_complete"]
+    assert not status["closure_complete"]
+    assert len(status["unresolved"]) == 145
+
+
+def test_m10_9d_primitive_catalogue_cli_audit_gate_passes():
+    result = subprocess.run(
+        [sys.executable, str(SCRIPT), "--check-primitive-audit"],
+        cwd=ROOT / "next",
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    status = json.loads(result.stdout)
+    assert status["audit_complete"]
+    assert not status["closure_complete"]
