@@ -1202,6 +1202,49 @@ for _path, _destination in _M10_9C4_TEST_DESTINATIONS.items():
         "rationale": "Backend variable names, serialized inequalities, mutable probability maps, generated code fragments, and exact constraint ordering are not component semantics and are covered only at their representation owners where applicable.",
     }
 
+_M10_9C5_SOURCE_DESTINATIONS = {
+    "claasp/components/idea_modmul_component.py": "next/src/claasp_next/components/word/idea_multiply.py",
+    "claasp/components/modadd_component.py": "next/src/claasp_next/components/word/modular_add.py",
+    "claasp/components/modmul_component.py": "next/src/claasp_next/components/word/modular_multiply.py",
+    "claasp/components/modsub_component.py": "next/src/claasp_next/components/word/modular_subtract.py",
+    "claasp/components/rotate_component.py": "next/src/claasp_next/components/word/rotate.py",
+    "claasp/components/shift_component.py": "next/src/claasp_next/components/word/shift.py",
+    "claasp/components/variable_rotate_component.py": "next/src/claasp_next/components/word/variable_rotate.py",
+    "claasp/components/variable_shift_component.py": "next/src/claasp_next/components/word/variable_shift.py",
+}
+for _path, _destination in _M10_9C5_SOURCE_DESTINATIONS.items():
+    MIGRATION_OVERRIDES[_path] = {
+        "v5_destination": _destination,
+        "prerequisites": [], "disposition": "migrate", "status": "migrated-in-m10.9c5",
+        "acceptance_criterion": "Typed word operations match independently computed exhaustive small-width arithmetic and scalar/transposed-batch evaluation.",
+        "rationale": None,
+    }
+MIGRATION_OVERRIDES["claasp/components/modular_component.py"] = {
+    "v5_destination": "next/src/claasp_next/components/word/modular_add.py; next/src/claasp_next/components/word/modular_subtract.py; next/src/claasp_next/components/word/modular_multiply.py",
+    "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.9c5",
+    "acceptance_criterion": "Explicit immutable operation classes replace string-selected modular behavior and inferred operand counts.",
+    "rationale": "The legacy superclass combines backend encodings for distinct arithmetic operations; typed component classes retain the arithmetic and shared validation without generated constraint syntax.",
+}
+
+_M10_9C5_TEST_DESTINATIONS = {
+    "tests/unit/components/idea_modmul_component_test.py": "next/tests/unit/test_word_arx_components.py",
+    "tests/unit/components/modadd_component_test.py": "next/tests/unit/test_word_arx_components.py; next/tests/unit/test_word_components.py; next/tests/unit/test_arx_trail_search.py",
+    "tests/unit/components/modmul_component_test.py": "next/tests/unit/test_word_arx_components.py",
+    "tests/unit/components/modsub_component_test.py": "next/tests/unit/test_word_arx_components.py",
+    "tests/unit/components/modular_component_test.py": "next/tests/unit/test_word_arx_components.py",
+    "tests/unit/components/rotate_component_test.py": "next/tests/unit/test_word_arx_components.py; next/tests/unit/test_word_components.py",
+    "tests/unit/components/shift_component_test.py": "next/tests/unit/test_word_arx_components.py",
+    "tests/unit/components/variable_rotate_component_test.py": "next/tests/unit/test_word_arx_components.py",
+    "tests/unit/components/variable_shift_component_test.py": "next/tests/unit/test_word_arx_components.py",
+}
+for _path, _destination in _M10_9C5_TEST_DESTINATIONS.items():
+    MIGRATION_OVERRIDES[_path] = {
+        "v5_destination": _destination,
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.9c5",
+        "acceptance_criterion": "Exhaustive three-bit arithmetic, fixed word-motion values, boundary behavior, validation, and scalar/batch parity preserve applicable semantics.",
+        "rationale": "Generated backend strings, temporary carry names, component identifiers, mutable sign dictionaries, and generated code fragments are representation or implementation details rather than arithmetic evidence.",
+    }
+
 
 def python_paths() -> list[Path]:
     return sorted(path for root in LEGACY_ROOTS for path in root.rglob("*.py"))

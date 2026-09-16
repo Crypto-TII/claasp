@@ -8,7 +8,10 @@ from claasp_next.components.algebraic import Add, BinaryAffineMap, LinearMap, Mu
 from claasp_next.components.conversion import PackBits, UnpackBits
 from claasp_next.components.structural import Concatenate, Constant, Identity, Permutation
 from claasp_next.components.substitution import BitVectorSBox, SBox
-from claasp_next.components.word import BitwiseAnd, BitwiseNot, BitwiseOr, ModularAdd, Rotate, Xor
+from claasp_next.components.word import (
+    BitwiseAnd, BitwiseNot, BitwiseOr, IDEAMultiply, ModularAdd, ModularMultiply,
+    ModularSubtract, Rotate, Shift, VariableRotate, VariableShift, Xor,
+)
 from claasp_next.graph.primitive import Primitive
 from claasp_next.graph.component import Component
 from claasp_next.semantics import CONCRETE
@@ -63,8 +66,14 @@ class ScalarExecutionDriver:
             BitwiseAnd: self._evaluate_bitwise_and,
             BitwiseNot: self._evaluate_bitwise_not,
             BitwiseOr: self._evaluate_bitwise_or,
+            IDEAMultiply: self._evaluate_idea_multiply,
             ModularAdd: self._evaluate_modular_add,
+            ModularMultiply: self._evaluate_modular_multiply,
+            ModularSubtract: self._evaluate_modular_subtract,
             Rotate: self._evaluate_rotate,
+            Shift: self._evaluate_shift,
+            VariableRotate: self._evaluate_variable_rotate,
+            VariableShift: self._evaluate_variable_shift,
             Xor: self._evaluate_xor,
             SBox: self._evaluate_sbox,
             BitVectorSBox: self._evaluate_bit_vector_sbox,
@@ -229,6 +238,39 @@ class ScalarExecutionDriver:
         return tuple(sum(values) & mask for values in zip(*inputs))
 
     @staticmethod
+    def _evaluate_modular_subtract(
+        component: ModularSubtract, inputs: tuple[RuntimeValue, ...]
+    ) -> RuntimeValue:
+        mask = (1 << component.output_type.domain.width) - 1
+        output = list(inputs[0])
+        for operand in inputs[1:]:
+            output = [(left - right) & mask for left, right in zip(output, operand)]
+        return tuple(output)
+
+    @staticmethod
+    def _evaluate_modular_multiply(
+        component: ModularMultiply, inputs: tuple[RuntimeValue, ...]
+    ) -> RuntimeValue:
+        output = list(inputs[0])
+        for operand in inputs[1:]:
+            output = [(left * right) % component.modulus for left, right in zip(output, operand)]
+        return tuple(output)
+
+    @staticmethod
+    def _evaluate_idea_multiply(
+        component: IDEAMultiply, inputs: tuple[RuntimeValue, ...]
+    ) -> RuntimeValue:
+        encoded_zero = 1 << component.output_type.domain.width
+        modulus = encoded_zero + 1
+        output = [encoded_zero if value == 0 else value for value in inputs[0]]
+        for operand in inputs[1:]:
+            output = [
+                (left * (encoded_zero if right == 0 else right)) % modulus
+                for left, right in zip(output, operand)
+            ]
+        return tuple(0 if value == encoded_zero else value for value in output)
+
+    @staticmethod
     def _evaluate_xor(component: Xor, inputs: tuple[RuntimeValue, ...]) -> RuntimeValue:
         output = list(inputs[0])
         for operand in inputs[1:]:
@@ -267,6 +309,42 @@ class ScalarExecutionDriver:
         mask = (1 << width) - 1
         if amount == 0:
             return inputs[0]
+        if component.direction == "left":
+            return tuple(((value << amount) | (value >> (width - amount))) & mask for value in inputs[0])
+        return tuple(((value >> amount) | (value << (width - amount))) & mask for value in inputs[0])
+
+    @staticmethod
+    def _shift_values(values: RuntimeValue, width: int, amount: int, direction: str) -> RuntimeValue:
+        if amount >= width:
+            return (0,) * len(values)
+        mask = (1 << width) - 1
+        if direction == "left":
+            return tuple((value << amount) & mask for value in values)
+        return tuple(value >> amount for value in values)
+
+    @classmethod
+    def _evaluate_shift(cls, component: Shift, inputs: tuple[RuntimeValue, ...]) -> RuntimeValue:
+        return cls._shift_values(
+            inputs[0], component.output_type.domain.width, component.amount, component.direction
+        )
+
+    @classmethod
+    def _evaluate_variable_shift(
+        cls, component: VariableShift, inputs: tuple[RuntimeValue, ...]
+    ) -> RuntimeValue:
+        return cls._shift_values(
+            inputs[0], component.output_type.domain.width, inputs[1][0], component.direction
+        )
+
+    @staticmethod
+    def _evaluate_variable_rotate(
+        component: VariableRotate, inputs: tuple[RuntimeValue, ...]
+    ) -> RuntimeValue:
+        width = component.output_type.domain.width
+        amount = inputs[1][0] % width
+        if amount == 0:
+            return inputs[0]
+        mask = (1 << width) - 1
         if component.direction == "left":
             return tuple(((value << amount) | (value >> (width - amount))) & mask for value in inputs[0])
         return tuple(((value >> amount) | (value << (width - amount))) & mask for value in inputs[0])

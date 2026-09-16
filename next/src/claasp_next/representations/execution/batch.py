@@ -8,7 +8,10 @@ from claasp_next.components.algebraic import Add, BinaryAffineMap, LinearMap, Mu
 from claasp_next.components.conversion import PackBits, UnpackBits
 from claasp_next.components.structural import Concatenate, Constant, Identity, Permutation
 from claasp_next.components.substitution import BitVectorSBox, SBox
-from claasp_next.components.word import BitwiseAnd, BitwiseNot, BitwiseOr, ModularAdd, Rotate, Xor
+from claasp_next.components.word import (
+    BitwiseAnd, BitwiseNot, BitwiseOr, IDEAMultiply, ModularAdd, ModularMultiply,
+    ModularSubtract, Rotate, Shift, VariableRotate, VariableShift, Xor,
+)
 from claasp_next.representations.execution.scalar import EvaluationResult, RuntimeValue, ScalarExecutionDriver
 
 
@@ -178,8 +181,14 @@ class TransposedBatchExecutionDriver(BatchExecutionDriver):
             BitwiseAnd: scalar._evaluate_bitwise_and,
             BitwiseNot: scalar._evaluate_bitwise_not,
             BitwiseOr: scalar._evaluate_bitwise_or,
+            IDEAMultiply: scalar._evaluate_idea_multiply,
             ModularAdd: scalar._evaluate_modular_add,
+            ModularMultiply: scalar._evaluate_modular_multiply,
+            ModularSubtract: scalar._evaluate_modular_subtract,
             Rotate: scalar._evaluate_rotate,
+            Shift: scalar._evaluate_shift,
+            VariableRotate: scalar._evaluate_variable_rotate,
+            VariableShift: scalar._evaluate_variable_shift,
             Xor: scalar._evaluate_xor,
             SBox: scalar._evaluate_sbox,
             BitVectorSBox: scalar._evaluate_bit_vector_sbox,

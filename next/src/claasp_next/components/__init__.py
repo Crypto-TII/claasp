@@ -4,7 +4,10 @@ from claasp_next.components.algebraic import Add, BinaryAffineMap, LinearMap, Mu
 from claasp_next.components.conversion import PackBits, UnpackBits
 from claasp_next.components.structural import Concatenate, Constant, Identity, Permutation
 from claasp_next.components.substitution import BitVectorSBox, SBox
-from claasp_next.components.word import BitwiseAnd, BitwiseNot, BitwiseOr, ModularAdd, Rotate, Xor
+from claasp_next.components.word import (
+    BitwiseAnd, BitwiseNot, BitwiseOr, IDEAMultiply, ModularAdd, ModularMultiply,
+    ModularSubtract, Rotate, Shift, VariableRotate, VariableShift, Xor,
+)
 
 __all__ = [
     "Add",
@@ -16,14 +19,20 @@ __all__ = [
     "Concatenate",
     "Constant",
     "Identity",
+    "IDEAMultiply",
     "LinearMap",
     "Multiply",
     "PackBits",
     "Permutation",
     "Power",
     "ModularAdd",
+    "ModularMultiply",
+    "ModularSubtract",
     "Rotate",
+    "Shift",
     "SBox",
     "UnpackBits",
+    "VariableRotate",
+    "VariableShift",
     "Xor",
 ]

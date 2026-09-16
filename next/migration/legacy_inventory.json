@@ -9199,7 +9199,7 @@
       "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Typed word operations match independently computed exhaustive small-width arithmetic and scalar/transposed-batch evaluation.",
       "dependencies": [
         "claasp"
       ],
@@ -9211,17 +9211,15 @@
       "kind": "source",
       "milestone_owner": "M10.9c5",
       "path": "claasp/components/idea_modmul_component.py",
-      "prerequisites": [
-        "M10.9c4"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "IdeaModmul"
       ],
       "rationale": null,
       "responsibility": "idea modmul component",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9c5",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/components/word/idea_multiply.py"
     },
     {
       "acceptance_criterion": "Domain-neutral structural evaluation, graph boundaries, and scalar/batch behavior preserve applicable values independently of backend strings.",
@@ -9306,7 +9304,7 @@
       "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Typed word operations match independently computed exhaustive small-width arithmetic and scalar/transposed-batch evaluation.",
       "dependencies": [
         "claasp"
       ],
@@ -9318,9 +9316,7 @@
       "kind": "source",
       "milestone_owner": "M10.9c5",
       "path": "claasp/components/modadd_component.py",
-      "prerequisites": [
-        "M10.9c4"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "cms_modadd",
         "cms_modadd_seq",
@@ -9334,12 +9330,12 @@
       ],
       "rationale": null,
       "responsibility": "modadd component",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9c5",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/components/word/modular_add.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Typed word operations match independently computed exhaustive small-width arithmetic and scalar/transposed-batch evaluation.",
       "dependencies": [
         "claasp"
       ],
@@ -9351,20 +9347,18 @@
       "kind": "source",
       "milestone_owner": "M10.9c5",
       "path": "claasp/components/modmul_component.py",
-      "prerequisites": [
-        "M10.9c4"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "ModMul"
       ],
       "rationale": null,
       "responsibility": "modmul component",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9c5",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/components/word/modular_multiply.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Typed word operations match independently computed exhaustive small-width arithmetic and scalar/transposed-batch evaluation.",
       "dependencies": [
         "claasp"
       ],
@@ -9376,9 +9370,7 @@
       "kind": "source",
       "milestone_owner": "M10.9c5",
       "path": "claasp/components/modsub_component.py",
-      "prerequisites": [
-        "M10.9c4"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "cp_twoterms",
         "sat_generate_ids_for_modsub",
@@ -9386,16 +9378,16 @@
       ],
       "rationale": null,
       "responsibility": "modsub component",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9c5",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/components/word/modular_subtract.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Explicit immutable operation classes replace string-selected modular behavior and inferred operand counts.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
@@ -9403,19 +9395,17 @@
       "kind": "source",
       "milestone_owner": "M10.9c5",
       "path": "claasp/components/modular_component.py",
-      "prerequisites": [
-        "M10.9c4"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "milp_n_window_heuristic",
         "generic_sign_linear_constraints",
         "Modular"
       ],
-      "rationale": null,
+      "rationale": "The legacy superclass combines backend encodings for distinct arithmetic operations; typed component classes retain the arithmetic and shared validation without generated constraint syntax.",
       "responsibility": "modular component",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.9c5",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/components/word/modular_add.py; next/src/claasp_next/components/word/modular_subtract.py; next/src/claasp_next/components/word/modular_multiply.py"
     },
     {
       "acceptance_criterion": "Explicit immutable AND and OR classes validate homogeneous operands and use shared evaluator/semantic dispatch.",
@@ -9533,7 +9523,7 @@
       "v5_destination": "next/src/claasp_next/components/structural/permutation.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Typed word operations match independently computed exhaustive small-width arithmetic and scalar/transposed-batch evaluation.",
       "dependencies": [
         "claasp"
       ],
@@ -9545,17 +9535,15 @@
       "kind": "source",
       "milestone_owner": "M10.9c5",
       "path": "claasp/components/rotate_component.py",
-      "prerequisites": [
-        "M10.9c4"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "Rotate"
       ],
       "rationale": null,
       "responsibility": "rotate component",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9c5",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/components/word/rotate.py"
     },
     {
       "acceptance_criterion": "Typed logical/substitution components have exhaustive small-domain or fixed lookup checks, scalar/batch parity, and shared semantics where cryptanalytic relations apply.",
@@ -9594,7 +9582,7 @@
       "v5_destination": "next/src/claasp_next/components/substitution; next/src/claasp_next/semantics/cryptanalysis/trails.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Typed word operations match independently computed exhaustive small-width arithmetic and scalar/transposed-batch evaluation.",
       "dependencies": [
         "claasp"
       ],
@@ -9606,17 +9594,15 @@
       "kind": "source",
       "milestone_owner": "M10.9c5",
       "path": "claasp/components/shift_component.py",
-      "prerequisites": [
-        "M10.9c4"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "Shift"
       ],
       "rationale": null,
       "responsibility": "shift component",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9c5",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/components/word/shift.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -9747,7 +9733,7 @@
       "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Typed word operations match independently computed exhaustive small-width arithmetic and scalar/transposed-batch evaluation.",
       "dependencies": [
         "claasp"
       ],
@@ -9759,20 +9745,18 @@
       "kind": "source",
       "milestone_owner": "M10.9c5",
       "path": "claasp/components/variable_rotate_component.py",
-      "prerequisites": [
-        "M10.9c4"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "VariableRotate"
       ],
       "rationale": null,
       "responsibility": "variable rotate component",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9c5",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/components/word/variable_rotate.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Typed word operations match independently computed exhaustive small-width arithmetic and scalar/transposed-batch evaluation.",
       "dependencies": [
         "claasp",
         "math"
@@ -9785,17 +9769,15 @@
       "kind": "source",
       "milestone_owner": "M10.9c5",
       "path": "claasp/components/variable_shift_component.py",
-      "prerequisites": [
-        "M10.9c4"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "VariableShift"
       ],
       "rationale": null,
       "responsibility": "variable shift component",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9c5",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/components/word/variable_shift.py"
     },
     {
       "acceptance_criterion": "Domain-neutral structural evaluation, graph boundaries, and scalar/batch behavior preserve applicable values independently of backend strings.",
@@ -18701,11 +18683,11 @@
       "v5_destination": "next/tests (mapped to the owning migrated behavior)"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Exhaustive three-bit arithmetic, fixed word-motion values, boundary behavior, validation, and scalar/batch parity preserve applicable semantics.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -18716,21 +18698,19 @@
       "kind": "test",
       "milestone_owner": "M10.9c5",
       "path": "tests/unit/components/idea_modmul_component_test.py",
-      "prerequisites": [
-        "M10.9c4"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "test_modmul_component_creation",
         "test_modmul_component_vectorized_code"
       ],
-      "rationale": null,
+      "rationale": "Generated backend strings, temporary carry names, component identifiers, mutable sign dictionaries, and generated code fragments are representation or implementation details rather than arithmetic evidence.",
       "responsibility": "idea modmul component test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.9c5",
       "tests": [
         "test_modmul_component_creation",
         "test_modmul_component_vectorized_code"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_word_arx_components.py"
     },
     {
       "acceptance_criterion": "Typed structural values, validation, graph boundaries, and trace projections preserve semantic assertions with independent scalar/batch checks.",
@@ -18927,11 +18907,11 @@
       "v5_destination": "next/tests (mapped to the owning migrated behavior)"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Exhaustive three-bit arithmetic, fixed word-motion values, boundary behavior, validation, and scalar/batch parity preserve applicable semantics.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -18943,30 +18923,28 @@
       "kind": "test",
       "milestone_owner": "M10.9c5",
       "path": "tests/unit/components/modadd_component_test.py",
-      "prerequisites": [
-        "M10.9c4"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "test_algebraic_polynomials",
         "test_milp_bitwise_deterministic_truncated_xor_differential_binary_constraints",
         "test_milp_bitwise_deterministic_truncated_xor_differential_constraints"
       ],
-      "rationale": null,
+      "rationale": "Generated backend strings, temporary carry names, component identifiers, mutable sign dictionaries, and generated code fragments are representation or implementation details rather than arithmetic evidence.",
       "responsibility": "modadd component test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.9c5",
       "tests": [
         "test_algebraic_polynomials",
         "test_milp_bitwise_deterministic_truncated_xor_differential_binary_constraints",
         "test_milp_bitwise_deterministic_truncated_xor_differential_constraints"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_word_arx_components.py; next/tests/unit/test_word_components.py; next/tests/unit/test_arx_trail_search.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Exhaustive three-bit arithmetic, fixed word-motion values, boundary behavior, validation, and scalar/batch parity preserve applicable semantics.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -18978,30 +18956,28 @@
       "kind": "test",
       "milestone_owner": "M10.9c5",
       "path": "tests/unit/components/modmul_component_test.py",
-      "prerequisites": [
-        "M10.9c4"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "test_modmul_component_creation",
         "test_sat_bitwise_deterministic_truncated_xor_differential_constraints",
         "test_milp_bitwise_deterministic_truncated_xor_differential_constraints"
       ],
-      "rationale": null,
+      "rationale": "Generated backend strings, temporary carry names, component identifiers, mutable sign dictionaries, and generated code fragments are representation or implementation details rather than arithmetic evidence.",
       "responsibility": "modmul component test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.9c5",
       "tests": [
         "test_milp_bitwise_deterministic_truncated_xor_differential_constraints",
         "test_modmul_component_creation",
         "test_sat_bitwise_deterministic_truncated_xor_differential_constraints"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_word_arx_components.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Exhaustive three-bit arithmetic, fixed word-motion values, boundary behavior, validation, and scalar/batch parity preserve applicable semantics.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -19016,9 +18992,7 @@
       "kind": "test",
       "milestone_owner": "M10.9c5",
       "path": "tests/unit/components/modsub_component_test.py",
-      "prerequisites": [
-        "M10.9c4"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "test_algebraic_polynomials",
         "test_cms_constraints",
@@ -19027,9 +19001,9 @@
         "test_sat_constraints",
         "test_smt_constraints"
       ],
-      "rationale": null,
+      "rationale": "Generated backend strings, temporary carry names, component identifiers, mutable sign dictionaries, and generated code fragments are representation or implementation details rather than arithmetic evidence.",
       "responsibility": "modsub component test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.9c5",
       "tests": [
         "test_algebraic_polynomials",
         "test_cms_constraints",
@@ -19038,14 +19012,14 @@
         "test_sat_constraints",
         "test_smt_constraints"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_word_arx_components.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Exhaustive three-bit arithmetic, fixed word-motion values, boundary behavior, validation, and scalar/batch parity preserve applicable semantics.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -19059,9 +19033,7 @@
       "kind": "test",
       "milestone_owner": "M10.9c5",
       "path": "tests/unit/components/modular_component_test.py",
-      "prerequisites": [
-        "M10.9c4"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "make_modular_component",
         "test_constructor_infers_operand_count_from_inputs",
@@ -19070,9 +19042,9 @@
         "test_cp_deterministic_truncated_constraints_build_chain_for_three_inputs",
         "test_generic_sign_linear_constraints_edge_patterns"
       ],
-      "rationale": null,
+      "rationale": "Generated backend strings, temporary carry names, component identifiers, mutable sign dictionaries, and generated code fragments are representation or implementation details rather than arithmetic evidence.",
       "responsibility": "modular component test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.9c5",
       "tests": [
         "test_cms_xor_differential_propagation_constraints_delegates_to_sat",
         "test_constructor_infers_operand_count_from_inputs",
@@ -19080,7 +19052,7 @@
         "test_cp_deterministic_truncated_constraints_build_chain_for_three_inputs",
         "test_generic_sign_linear_constraints_edge_patterns"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_word_arx_components.py"
     },
     {
       "acceptance_criterion": "Concrete truth tables, exact S-box DDT/LAT/undisturbed relations, symbolic ANFs, and typed validation preserve all applicable semantic results.",
@@ -19408,11 +19380,11 @@
       "v5_destination": "next/tests/unit/test_conversion_components.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Exhaustive three-bit arithmetic, fixed word-motion values, boundary behavior, validation, and scalar/batch parity preserve applicable semantics.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -19424,23 +19396,21 @@
       "kind": "test",
       "milestone_owner": "M10.9c5",
       "path": "tests/unit/components/rotate_component_test.py",
-      "prerequisites": [
-        "M10.9c4"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "test_algebraic_polynomials",
         "test_cp_inverse_constraints",
         "test_cp_xor_differential_first_step_constraints"
       ],
-      "rationale": null,
+      "rationale": "Generated backend strings, temporary carry names, component identifiers, mutable sign dictionaries, and generated code fragments are representation or implementation details rather than arithmetic evidence.",
       "responsibility": "rotate component test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.9c5",
       "tests": [
         "test_algebraic_polynomials",
         "test_cp_inverse_constraints",
         "test_cp_xor_differential_first_step_constraints"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_word_arx_components.py; next/tests/unit/test_word_components.py"
     },
     {
       "acceptance_criterion": "Concrete truth tables, exact S-box DDT/LAT/undisturbed relations, symbolic ANFs, and typed validation preserve all applicable semantic results.",
@@ -19536,11 +19506,11 @@
       "v5_destination": "next/tests/unit/test_sbox.py; next/tests/unit/test_bit_vector_sbox.py; next/tests/unit/test_trail_semantics.py; next/tests/unit/test_sbox_milp_relation.py; next/tests/unit/test_sbox_undisturbed.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Exhaustive three-bit arithmetic, fixed word-motion values, boundary behavior, validation, and scalar/batch parity preserve applicable semantics.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -19566,9 +19536,7 @@
       "kind": "test",
       "milestone_owner": "M10.9c5",
       "path": "tests/unit/components/shift_component_test.py",
-      "prerequisites": [
-        "M10.9c4"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "make_shift_component",
         "test_algebraic_polynomials",
@@ -19589,9 +19557,9 @@
         "test_milp_bitwise_deterministic_truncated_xor_differential_constraints",
         "test_milp_wordwise_deterministic_truncated_xor_differential_constraints"
       ],
-      "rationale": null,
+      "rationale": "Generated backend strings, temporary carry names, component identifiers, mutable sign dictionaries, and generated code fragments are representation or implementation details rather than arithmetic evidence.",
       "responsibility": "shift component test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.9c5",
       "tests": [
         "test_algebraic_polynomials",
         "test_cms_constraints",
@@ -19611,7 +19579,7 @@
         "test_smt_constraints",
         "test_smt_xor_linear_mask_propagation_constraints"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_word_arx_components.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -19792,11 +19760,11 @@
       "v5_destination": "next/tests (mapped to the owning migrated behavior)"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Exhaustive three-bit arithmetic, fixed word-motion values, boundary behavior, validation, and scalar/batch parity preserve applicable semantics.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -19808,31 +19776,29 @@
       "kind": "test",
       "milestone_owner": "M10.9c5",
       "path": "tests/unit/components/variable_rotate_component_test.py",
-      "prerequisites": [
-        "M10.9c4"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "make_variable_rotate_component",
         "test_constructor_sets_variable_rotate_identity",
         "test_get_word_based_c_code_direction",
         "test_get_word_operation_sign_updates_solution"
       ],
-      "rationale": null,
+      "rationale": "Generated backend strings, temporary carry names, component identifiers, mutable sign dictionaries, and generated code fragments are representation or implementation details rather than arithmetic evidence.",
       "responsibility": "variable rotate component test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.9c5",
       "tests": [
         "test_constructor_sets_variable_rotate_identity",
         "test_get_word_based_c_code_direction",
         "test_get_word_operation_sign_updates_solution"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_word_arx_components.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Exhaustive three-bit arithmetic, fixed word-motion values, boundary behavior, validation, and scalar/batch parity preserve applicable semantics.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -19845,25 +19811,23 @@
       "kind": "test",
       "milestone_owner": "M10.9c5",
       "path": "tests/unit/components/variable_shift_component_test.py",
-      "prerequisites": [
-        "M10.9c4"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "test_cms_constraints",
         "test_cp_constraints",
         "test_sat_constraints",
         "test_smt_constraints"
       ],
-      "rationale": null,
+      "rationale": "Generated backend strings, temporary carry names, component identifiers, mutable sign dictionaries, and generated code fragments are representation or implementation details rather than arithmetic evidence.",
       "responsibility": "variable shift component test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.9c5",
       "tests": [
         "test_cms_constraints",
         "test_cp_constraints",
         "test_sat_constraints",
         "test_smt_constraints"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_word_arx_components.py"
     },
     {
       "acceptance_criterion": "Typed structural values, validation, graph boundaries, and trace projections preserve semantic assertions with independent scalar/batch checks.",
