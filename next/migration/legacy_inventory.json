@@ -9173,7 +9173,7 @@
       "v5_destination": "next/src/claasp_next/components/structural/constant.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Immutable term/register descriptors evaluate binary, clock-controlled, multi-clock, and typed binary-field word feedback without Sage.",
       "dependencies": [
         "claasp",
         "sage"
@@ -9186,17 +9186,15 @@
       "kind": "source",
       "milestone_owner": "M10.9c7",
       "path": "claasp/components/fsr_component.py",
-      "prerequisites": [
-        "M10.9c6"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "Fsr"
       ],
       "rationale": null,
       "responsibility": "fsr component",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9c7",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/components/feedback/register.py"
     },
     {
       "acceptance_criterion": "Typed word operations match independently computed exhaustive small-width arithmetic and scalar/transposed-batch evaluation.",
@@ -18650,11 +18648,11 @@
       "v5_destination": "next/tests/unit/test_structural_evaluation.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Complete binary truth tables, conditional-clock behavior, field-word values, iterative clocks, validation, and scalar/batch parity preserve the tested feedback semantics.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -18664,19 +18662,17 @@
       "kind": "test",
       "milestone_owner": "M10.9c7",
       "path": "tests/unit/components/fsr_component_test.py",
-      "prerequisites": [
-        "M10.9c6"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "test_fsr_algebraic_polynomials"
       ],
-      "rationale": null,
+      "rationale": "Exact Sage polynomial variable names and rendering are incidental; exhaustive concrete truth maps independently establish the same binary and field-word transformations.",
       "responsibility": "fsr component test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.9c7",
       "tests": [
         "test_fsr_algebraic_polynomials"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_feedback_register.py"
     },
     {
       "acceptance_criterion": "Exhaustive three-bit arithmetic, fixed word-motion values, boundary behavior, validation, and scalar/batch parity preserve applicable semantics.",

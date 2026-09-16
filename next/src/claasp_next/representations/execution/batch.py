@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from claasp_next.graph import Primitive
 from claasp_next.components.algebraic import Add, BinaryAffineMap, LinearMap, Multiply, Power
 from claasp_next.components.conversion import PackBits, UnpackBits
+from claasp_next.components.feedback import FeedbackRegister
 from claasp_next.components.structural import Concatenate, Constant, Identity, Permutation
 from claasp_next.components.substitution import BitVectorSBox, SBox
 from claasp_next.components.word import (
@@ -194,6 +195,7 @@ class TransposedBatchExecutionDriver(BatchExecutionDriver):
             BitVectorSBox: scalar._evaluate_bit_vector_sbox,
             PackBits: scalar._evaluate_pack_bits,
             UnpackBits: scalar._evaluate_unpack_bits,
+            FeedbackRegister: scalar._evaluate_feedback_register,
         }
         try:
             handler = handlers[type(component)]

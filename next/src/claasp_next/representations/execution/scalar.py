@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from claasp_next.annotations import ExecutionTrace, GraphAnnotation
 from claasp_next.components.algebraic import Add, BinaryAffineMap, LinearMap, Multiply, Power
 from claasp_next.components.conversion import PackBits, UnpackBits
+from claasp_next.components.feedback import FeedbackRegister, FeedbackTerm
 from claasp_next.components.structural import Concatenate, Constant, Identity, Permutation
 from claasp_next.components.substitution import BitVectorSBox, SBox
 from claasp_next.components.word import (
@@ -79,6 +80,7 @@ class ScalarExecutionDriver:
             BitVectorSBox: self._evaluate_bit_vector_sbox,
             PackBits: self._evaluate_pack_bits,
             UnpackBits: self._evaluate_unpack_bits,
+            FeedbackRegister: self._evaluate_feedback_register,
         }
 
     def register(self, component_type: type[Component], handler: Handler) -> None:
@@ -348,6 +350,42 @@ class ScalarExecutionDriver:
         if component.direction == "left":
             return tuple(((value << amount) | (value >> (width - amount))) & mask for value in inputs[0])
         return tuple(((value >> amount) | (value << (width - amount))) & mask for value in inputs[0])
+
+    @classmethod
+    def _evaluate_feedback_term(cls, domain, term: FeedbackTerm, state: RuntimeValue) -> int:
+        value = term.coefficient
+        for position in term.positions:
+            value = cls._multiply_scalar(domain, value, state[position])
+        return value
+
+    @classmethod
+    def _evaluate_feedback_polynomial(cls, domain, terms, state: RuntimeValue) -> int:
+        value = 0
+        for term in terms:
+            value = cls._add_scalar(domain, value, cls._evaluate_feedback_term(domain, term, state))
+        return value
+
+    @classmethod
+    def _evaluate_feedback_register(
+        cls, component: FeedbackRegister, inputs: tuple[RuntimeValue, ...]
+    ) -> RuntimeValue:
+        domain = component.output_type.domain
+        state = inputs[0]
+        for _ in range(component.clocks):
+            previous = state
+            updated = list(previous)
+            start = 0
+            for register in component.registers:
+                stop = start + register.length
+                clock = 1 if register.clock is None else cls._evaluate_feedback_polynomial(
+                    domain, register.clock, previous
+                )
+                if clock:
+                    feedback = cls._evaluate_feedback_polynomial(domain, register.feedback, previous)
+                    updated[start:stop] = previous[start + 1:stop] + (feedback,)
+                start = stop
+            state = tuple(updated)
+        return state
 
     @staticmethod
     def _evaluate_sbox(component: SBox, inputs: tuple[RuntimeValue, ...]) -> RuntimeValue:

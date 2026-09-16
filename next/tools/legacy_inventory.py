@@ -1269,6 +1269,19 @@ for _path, _destination in _M10_9C6_TEST_DESTINATIONS.items():
         "rationale": "Sage polynomial rendering, generated backend clauses, variable order, mutable component-analysis caches, and MiniZinc table construction are not reusable linear-layer semantics.",
     }
 
+MIGRATION_OVERRIDES["claasp/components/fsr_component.py"] = {
+    "v5_destination": "next/src/claasp_next/components/feedback/register.py",
+    "prerequisites": [], "disposition": "migrate", "status": "migrated-in-m10.9c7",
+    "acceptance_criterion": "Immutable term/register descriptors evaluate binary, clock-controlled, multi-clock, and typed binary-field word feedback without Sage.",
+    "rationale": None,
+}
+MIGRATION_OVERRIDES["tests/unit/components/fsr_component_test.py"] = {
+    "v5_destination": "next/tests/unit/test_feedback_register.py",
+    "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.9c7",
+    "acceptance_criterion": "Complete binary truth tables, conditional-clock behavior, field-word values, iterative clocks, validation, and scalar/batch parity preserve the tested feedback semantics.",
+    "rationale": "Exact Sage polynomial variable names and rendering are incidental; exhaustive concrete truth maps independently establish the same binary and field-word transformations.",
+}
+
 
 def python_paths() -> list[Path]:
     return sorted(path for root in LEGACY_ROOTS for path in root.rglob("*.py"))

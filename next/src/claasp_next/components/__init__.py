@@ -2,6 +2,7 @@
 
 from claasp_next.components.algebraic import Add, BinaryAffineMap, LinearMap, Multiply, Power
 from claasp_next.components.conversion import PackBits, UnpackBits
+from claasp_next.components.feedback import FeedbackRegister, FeedbackRegisterSpec, FeedbackTerm
 from claasp_next.components.structural import Concatenate, Constant, Identity, Permutation
 from claasp_next.components.substitution import BitVectorSBox, SBox
 from claasp_next.components.word import (
@@ -18,6 +19,9 @@ __all__ = [
     "BinaryAffineMap",
     "Concatenate",
     "Constant",
+    "FeedbackRegister",
+    "FeedbackRegisterSpec",
+    "FeedbackTerm",
     "Identity",
     "IDEAMultiply",
     "LinearMap",
