@@ -31,6 +31,108 @@ CATEGORY_BY_DIRECTORY = {
 }
 
 MIGRATION_OVERRIDES = {
+    "claasp/cipher_modules/models/milp/milp_model.py": {
+        "v5_destination": "next/src/claasp_next/representations/constraints/milp; next/src/claasp_next/drivers/solvers/glpk.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Portable immutable linear models, typed constraints/objectives and explicit GLPK results replace Sage mixed-integer state and solver registries.",
+        "rationale": "Variable-name dictionaries, Sage backend selection, mutable constraint lists and result parsing are split across representation, analysis and driver layers. Scientific subclasses are inventoried separately.",
+    },
+    "tests/unit/cipher_modules/models/milp/milp_model_test.py": {
+        "v5_destination": "next/tests/unit/test_milp_representation.py; next/tests/integration/test_glpk_integration.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Typed equal/not-equal/nonzero constraints, deterministic LP export and real GLPK SAT/UNSAT/assignment decoding are covered.",
+        "rationale": "Sage variable names, list positions and installed solver-brand catalogues are not v5 contracts. Backend provenance and status are explicit driver results.",
+    },
+    "claasp/cipher_modules/models/milp/milp_models/milp_bitwise_deterministic_truncated_xor_differential_model.py": {
+        "v5_destination": "next/src/claasp_next/semantics/cryptanalysis/truncated.py; next/src/claasp_next/representations/constraints/milp/relations.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Typed strongest three-valued propagation preserves fixed Speck boundaries; exact finite relations provide a portable MILP baseline where solving is required.",
+        "rationale": "Integer sentinel encodings, Sage constraints and minimization of unknown indicators are representation choices. They do not define a different primitive graph or execution engine.",
+    },
+    "tests/unit/cipher_modules/models/milp/milp_models/milp_bitwise_deterministic_truncated_xor_differential_model_test.py": {
+        "v5_destination": "next/tests/unit/test_truncated_differences.py; next/tests/unit/test_finite_relation_milp.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Both fixed Speck outputs are retained and exact finite-relation MILP decoding is exhaustively checked.",
+        "rationale": "The 62,624 generated constraints, Sage variable indices and arbitrary minimum unknown count 14 are encoding/search artifacts, not fixed primitive evidence.",
+    },
+    "claasp/cipher_modules/models/milp/milp_models/milp_bitwise_impossible_xor_differential_model.py": {
+        "v5_destination": "next/src/claasp_next/semantics/cryptanalysis/truncated.py; next/src/claasp_next/representations/constraints/cp/trails.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Typed forward/backward propagation preserves the fixed Simon-11 middle patterns and contradiction with real solver confirmation.",
+        "rationale": "A second Sage encoding of the same impossible-boundary semantics adds no public capability. Generated constraint order and arbitrary Ascon witnesses are discarded.",
+    },
+    "tests/unit/cipher_modules/models/milp/milp_models/milp_bitwise_impossible_xor_differential_model_test.py": {
+        "v5_destination": "next/tests/unit/test_truncated_differences.py; next/tests/integration/test_minizinc_integration.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Simon input/output and both fixed middle patterns preserve their bit-23 incompatibility independently of backend.",
+        "rationale": "Internal/external duplicate tests, 2,400-line counts and solver-selected Ascon components do not add scientific evidence beyond the shared typed boundary.",
+    },
+    "claasp/cipher_modules/models/milp/milp_models/milp_wordwise_deterministic_truncated_xor_differential_model.py": {
+        "v5_destination": "next/src/claasp_next/semantics/cryptanalysis/truncated.py; next/src/claasp_next/representations/constraints/milp/relations.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Typed word activity/value domains and exact finite relations replace sentinel-coded Sage variables.",
+        "rationale": "The legacy model exposes encoding-specific integer pairs and mutable cache-derived inequalities. v5 retains the wordwise transfer semantics independently of backend.",
+    },
+    "tests/unit/cipher_modules/models/milp/milp_models/milp_wordwise_deterministic_truncated_xor_differential_model_test.py": {
+        "v5_destination": "next/tests/unit/test_truncated_differences.py; next/tests/unit/test_wordwise_relation_tables.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Every wordwise XOR/MDS row and typed AES singleton diffusion is checked exhaustively.",
+        "rationale": "The test's 19,768 constraints, first/last Sage expressions and arbitrary feasible/minimum-count statuses are not fixed cryptanalytic results.",
+    },
+    "claasp/cipher_modules/models/milp/milp_models/milp_xor_differential_model.py": {
+        "v5_destination": "next/src/claasp_next/representations/constraints/milp/trails.py; next/src/claasp_next/representations/constraints/smt/word_differential.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Exact differential relations support fixed/bounded/optimal/complete enumeration with independent graph and weight decoding.",
+        "rationale": "Sage probability variables and solver modes are replaced by portable MILP for S-box graphs and generic word-SMT composition for ARX graphs, sharing one semantic contract.",
+    },
+    "tests/unit/cipher_modules/models/milp/milp_models/milp_xor_differential_model_test.py": {
+        "v5_destination": "next/tests/integration/test_word_differential.py; next/tests/integration/test_glpk_integration.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Toy Speck counts 6/7, optima 1/4, and fixed feasible weights 5/15 are retained by generic independently checked graph models.",
+        "rationale": "Arbitrary first witnesses and solver metadata are removed; all exact numeric assertions are preserved by shared representations.",
+    },
+    "claasp/cipher_modules/models/milp/milp_models/milp_xor_differential_number_of_active_sboxes_model.py": {
+        "v5_destination": "next/src/claasp_next/semantics/cryptanalysis/activity.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Branch-number and exact DDT reasoning derive reduced AES active-S-box minima and distinguish necessary activity bounds from concrete trails.",
+        "rationale": "A Sage objective over activity flags is a coarse search abstraction. v5 exposes the bound as semantic evidence and never relabels it an exact differential probability.",
+    },
+    "tests/unit/cipher_modules/models/milp/milp_models/milp_xor_differential_number_of_active_sboxes_model_test.py": {
+        "v5_destination": "next/tests/unit/test_sbox_activity.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Reduced AES activity minima and the trivial one-active-S-box first-round bound are derived independently.",
+        "rationale": "Building time, Sage solver name and model tag are not scientific results. uBlock's one-round value follows directly from a required nonzero input and one bijective S-box layer; broader uBlock evidence is audited separately.",
+    },
+    "claasp/cipher_modules/models/milp/milp_models/milp_xor_linear_model.py": {
+        "v5_destination": "next/src/claasp_next/representations/constraints/milp/trails.py; next/src/claasp_next/representations/constraints/smt/word_linear.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Signed exact correlations support complete enumeration, optima and fixed weights through shared graph semantics.",
+        "rationale": "Sage variables, solver/license branches and probability-array conventions are replaced by portable representation/driver boundaries and exact Walsh decoders.",
+    },
+    "tests/unit/cipher_modules/models/milp/milp_models/milp_xor_linear_model_test.py": {
+        "v5_destination": "next/tests/integration/test_speck_trail_enumeration.py; next/tests/unit/test_word_linear_smt.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Toy counts 12/13, standard optimum 3 and feasible weights 1/7 retain exact signs and independent decoding.",
+        "rationale": "The 12,371-expression layout, fixed Sage indices and proprietary solver error branches are not v5 API contracts.",
+    },
+    "claasp/cipher_modules/models/milp/utils/milp_truncated_utils.py": {
+        "v5_destination": "next/src/claasp_next/semantics/cryptanalysis/truncated.py; next/src/claasp_next/representations/constraints/milp/relations.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Typed truncated domains and exact finite relations replace Sage inequality helper mutation.",
+        "rationale": "Variable-index allocation and in-place constraint assembly belong to the representation. The semantic transition tables are now immutable and exhaustively tested.",
+    },
+    "claasp/cipher_modules/models/milp/utils/mzn_predicates.py": {
+        "v5_destination": "next/src/claasp_next/representations/constraints/cp/trails.py",
+        "prerequisites": [], "disposition": "remove", "status": "removed-in-m10.8d",
+        "acceptance_criterion": "MiniZinc predicates live in the CP representation and are derived from shared semantic providers.",
+        "rationale": "A MiniZinc source template in the MILP package violates the v5 representation boundary and duplicates the reviewed CP lowering.",
+    },
+    "claasp/cipher_modules/models/milp/utils/utils.py": {
+        "v5_destination": "next/src/claasp_next/representations/constraints/milp; next/src/claasp_next/semantics/cryptanalysis",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Typed semantic registries, immutable linear expressions and exact decoders replace Sage variable/constraint helper dictionaries.",
+        "rationale": "Backend variable factories, decimal precision constants and component-method name maps are representation internals, not public semantic APIs.",
+    },
     "claasp/cipher_modules/models/sat/sat_models/sat_differential_linear_model.py": {
         "v5_destination": "next/src/claasp_next/semantics/cryptanalysis/composed.py; next/src/claasp_next/analysis/composed.py",
         "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",

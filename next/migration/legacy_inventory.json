@@ -1380,7 +1380,7 @@
       "v5_destination": "inapplicable: package marker reviewed with its containing module"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Portable immutable linear models, typed constraints/objectives and explicit GLPK results replace Sage mixed-integer state and solver registries.",
       "dependencies": [
         "claasp",
         "os",
@@ -1389,26 +1389,24 @@
         "time",
         "tracemalloc"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
       "path": "claasp/cipher_modules/models/milp/milp_model.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "get_independent_input_output_variables",
         "get_input_output_variables",
         "MilpModel"
       ],
-      "rationale": null,
+      "rationale": "Variable-name dictionaries, Sage backend selection, mutable constraint lists and result parsing are split across representation, analysis and driver layers. Scientific subclasses are inventoried separately.",
       "responsibility": "Handler for MILP constraints of Cipher.",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/representations/constraints/milp; next/src/claasp_next/drivers/solvers/glpk.py"
     },
     {
       "acceptance_criterion": "Containing package is represented by its non-marker entries.",
@@ -1485,54 +1483,50 @@
       "v5_destination": "inapplicable: package marker reviewed with its containing module"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Typed strongest three-valued propagation preserves fixed Speck boundaries; exact finite relations provide a portable MILP baseline where solving is required.",
       "dependencies": [
         "claasp",
         "time"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
       "path": "claasp/cipher_modules/models/milp/milp_models/milp_bitwise_deterministic_truncated_xor_differential_model.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "MilpBitwiseDeterministicTruncatedXorDifferentialModel"
       ],
-      "rationale": null,
+      "rationale": "Integer sentinel encodings, Sage constraints and minimization of unknown indicators are representation choices. They do not define a different primitive graph or execution engine.",
       "responsibility": "milp bitwise deterministic truncated xor differential model",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/semantics/cryptanalysis/truncated.py; next/src/claasp_next/representations/constraints/milp/relations.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Typed forward/backward propagation preserves the fixed Simon-11 middle patterns and contradiction with real solver confirmation.",
       "dependencies": [
         "claasp",
         "time"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
       "path": "claasp/cipher_modules/models/milp/milp_models/milp_bitwise_impossible_xor_differential_model.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "MilpBitwiseImpossibleXorDifferentialModel"
       ],
-      "rationale": null,
+      "rationale": "A second Sage encoding of the same impossible-boundary semantics adds no public capability. Generated constraint order and arbitrary Ascon witnesses are discarded.",
       "responsibility": "milp bitwise impossible xor differential model",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/semantics/cryptanalysis/truncated.py; next/src/claasp_next/representations/constraints/cp/trails.py"
     },
     {
       "acceptance_criterion": "Every Boolean execution clause is translated exactly to a binary inequality; full Speck-22 scalar and GLPK witnesses reproduce A86842F2.",
@@ -1583,30 +1577,28 @@
       "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Typed word activity/value domains and exact finite relations replace sentinel-coded Sage variables.",
       "dependencies": [
         "claasp",
         "numpy",
         "time"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
       "path": "claasp/cipher_modules/models/milp/milp_models/milp_wordwise_deterministic_truncated_xor_differential_model.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "MilpWordwiseDeterministicTruncatedXorDifferentialModel"
       ],
-      "rationale": null,
+      "rationale": "The legacy model exposes encoding-specific integer pairs and mutable cache-derived inequalities. v5 retains the wordwise transfer semantics independently of backend.",
       "responsibility": "milp wordwise deterministic truncated xor differential model",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/semantics/cryptanalysis/truncated.py; next/src/claasp_next/representations/constraints/milp/relations.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -1634,7 +1626,7 @@
       "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Exact differential relations support fixed/bounded/optimal/complete enumeration with independent graph and weight decoding.",
       "dependencies": [
         "bitstring",
         "claasp",
@@ -1642,52 +1634,48 @@
         "sys",
         "time"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
       "path": "claasp/cipher_modules/models/milp/milp_models/milp_xor_differential_model.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "MilpXorDifferentialModel"
       ],
-      "rationale": null,
+      "rationale": "Sage probability variables and solver modes are replaced by portable MILP for S-box graphs and generic word-SMT composition for ARX graphs, sharing one semantic contract.",
       "responsibility": "milp xor differential model",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/representations/constraints/milp/trails.py; next/src/claasp_next/representations/constraints/smt/word_differential.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Branch-number and exact DDT reasoning derive reduced AES active-S-box minima and distinguish necessary activity bounds from concrete trails.",
       "dependencies": [
         "claasp",
         "time"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
       "path": "claasp/cipher_modules/models/milp/milp_models/milp_xor_differential_number_of_active_sboxes_model.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "MilpXorDifferentialNumberOfActiveSboxesModel"
       ],
-      "rationale": null,
+      "rationale": "A Sage objective over activity flags is a coarse search abstraction. v5 exposes the bound as semantic evidence and never relabels it an exact differential probability.",
       "responsibility": "milp xor differential number of active sboxes model",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/semantics/cryptanalysis/activity.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Signed exact correlations support complete enumeration, optima and fixed weights through shared graph semantics.",
       "dependencies": [
         "bitstring",
         "claasp",
@@ -1695,24 +1683,22 @@
         "sys",
         "time"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
       "path": "claasp/cipher_modules/models/milp/milp_models/milp_xor_linear_model.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "MilpXorLinearModel"
       ],
-      "rationale": null,
+      "rationale": "Sage variables, solver/license branches and probability-array conventions are replaced by portable representation/driver boundaries and exact Walsh decoders.",
       "responsibility": "milp xor linear model",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/representations/constraints/milp/trails.py; next/src/claasp_next/representations/constraints/smt/word_linear.py"
     },
     {
       "acceptance_criterion": "GLPK command driver provides a Sage-independent open MILP baseline; the portable representation and driver protocol do not depend on a proprietary optimizer.",
@@ -1982,55 +1968,51 @@
       "v5_destination": "next/src/claasp_next/semantics; next/src/claasp_next/representations/constraints/milp"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Typed truncated domains and exact finite relations replace Sage inequality helper mutation.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
       "path": "claasp/cipher_modules/models/milp/utils/milp_truncated_utils.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "generate_incompatiblity_constraints_for_component",
         "generate_all_incompatibility_constraints_for_fully_automatic_model",
         "fix_variables_value_deterministic_truncated_xor_differential_constraints"
       ],
-      "rationale": null,
+      "rationale": "Variable-index allocation and in-place constraint assembly belong to the representation. The semantic transition tables are now immutable and exhaustively tested.",
       "responsibility": "milp truncated utils",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/semantics/cryptanalysis/truncated.py; next/src/claasp_next/representations/constraints/milp/relations.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "MiniZinc predicates live in the CP representation and are derived from shared semantic providers.",
       "dependencies": [],
-      "disposition": "migrate",
+      "disposition": "remove",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
       "path": "claasp/cipher_modules/models/milp/utils/mzn_predicates.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "get_word_operations"
       ],
-      "rationale": null,
+      "rationale": "A MiniZinc source template in the MILP package violates the v5 representation boundary and duplicates the reviewed CP lowering.",
       "responsibility": "mzn predicates",
-      "status": "planned-or-partially-migrated",
+      "status": "removed-in-m10.8d",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/representations/constraints/cp/trails.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Typed semantic registries, immutable linear expressions and exact decoders replace Sage variable/constraint helper dictionaries.",
       "dependencies": [
         "bitstring",
         "claasp",
@@ -2040,16 +2022,14 @@
         "sage",
         "subprocess"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
       "path": "claasp/cipher_modules/models/milp/utils/utils.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "generate_espresso_input",
         "generate_product_of_sum_from_espresso",
@@ -2074,11 +2054,11 @@
         "milp_xor_truncated",
         "milp_xor_truncated_wordwise"
       ],
-      "rationale": null,
+      "rationale": "Backend variable factories, decimal precision constants and component-method name maps are representation internals, not public semantic APIs.",
       "responsibility": "utils",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/representations/constraints/milp; next/src/claasp_next/semantics/cryptanalysis"
     },
     {
       "acceptance_criterion": "Containing package is represented by its non-marker entries.",
@@ -11170,12 +11150,12 @@
       "v5_destination": "next/tests/integration/test_speck_trail_enumeration.py; next/tests/unit/test_bitwise_transition_semantics.py; next/tests/unit/test_word_linear_smt.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Typed equal/not-equal/nonzero constraints, deterministic LP export and real GLPK SAT/UNSAT/assignment decoding are covered.",
       "dependencies": [
         "claasp",
         "pytest"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -11189,9 +11169,7 @@
       },
       "kind": "test",
       "path": "tests/unit/cipher_modules/models/milp/milp_model_test.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "test_solver_names",
         "test_get_independent_input_output_variables",
@@ -11200,9 +11178,9 @@
         "test_model_constraints",
         "test_solve"
       ],
-      "rationale": null,
+      "rationale": "Sage variable names, list positions and installed solver-brand catalogues are not v5 contracts. Backend provenance and status are explicit driver results.",
       "responsibility": "milp model test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [
         "test_fix_variables_value_constraints",
         "test_get_independent_input_output_variables",
@@ -11211,7 +11189,7 @@
         "test_solve",
         "test_solver_names"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_milp_representation.py; next/tests/integration/test_glpk_integration.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -11343,11 +11321,11 @@
       "v5_destination": "next/tests (mapped to the owning migrated behavior)"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Both fixed Speck outputs are retained and exact finite-relation MILP decoding is exhaustively checked.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -11358,30 +11336,28 @@
       },
       "kind": "test",
       "path": "tests/unit/cipher_modules/models/milp/milp_models/milp_bitwise_deterministic_truncated_xor_differential_model_test.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "test_build_bitwise_deterministic_truncated_xor_differential_trail_model",
         "test_find_one_bitwise_deterministic_truncated_xor_differential_trail",
         "test_find_lowest_varied_patterns_bitwise_deterministic_truncated_xor_differential_trail"
       ],
-      "rationale": null,
+      "rationale": "The 62,624 generated constraints, Sage variable indices and arbitrary minimum unknown count 14 are encoding/search artifacts, not fixed primitive evidence.",
       "responsibility": "milp bitwise deterministic truncated xor differential model test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [
         "test_build_bitwise_deterministic_truncated_xor_differential_trail_model",
         "test_find_lowest_varied_patterns_bitwise_deterministic_truncated_xor_differential_trail",
         "test_find_one_bitwise_deterministic_truncated_xor_differential_trail"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_truncated_differences.py; next/tests/unit/test_finite_relation_milp.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Simon input/output and both fixed middle patterns preserve their bit-23 incompatibility independently of backend.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -11395,9 +11371,7 @@
       },
       "kind": "test",
       "path": "tests/unit/cipher_modules/models/milp/milp_models/milp_bitwise_impossible_xor_differential_model_test.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "test_build_bitwise_impossible_xor_differential_trail_model",
         "test_find_one_bitwise_impossible_xor_differential_trail_model",
@@ -11406,9 +11380,9 @@
         "test_find_one_bitwise_impossible_xor_differential_trail_model_with_external_solver",
         "test_find_one_bitwise_impossible_xor_differential_trail_with_fully_automatic_model_with_external_solver"
       ],
-      "rationale": null,
+      "rationale": "Internal/external duplicate tests, 2,400-line counts and solver-selected Ascon components do not add scientific evidence beyond the shared typed boundary.",
       "responsibility": "milp bitwise impossible xor differential model test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [
         "test_build_bitwise_impossible_xor_differential_trail_model",
         "test_find_one_bitwise_impossible_xor_differential_trail_model",
@@ -11417,7 +11391,7 @@
         "test_find_one_bitwise_impossible_xor_differential_trail_with_fully_automatic_model",
         "test_find_one_bitwise_impossible_xor_differential_trail_with_fully_automatic_model_with_external_solver"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_truncated_differences.py; next/tests/integration/test_minizinc_integration.py"
     },
     {
       "acceptance_criterion": "Exact binary-linear clauses match complete truth tables and full Speck-22 graph witnesses, including modular additions omitted by the legacy builder.",
@@ -11510,11 +11484,11 @@
       "v5_destination": "next/tests (mapped to the owning migrated behavior)"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Every wordwise XOR/MDS row and typed AES singleton diffusion is checked exhaustively.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -11525,23 +11499,21 @@
       },
       "kind": "test",
       "path": "tests/unit/cipher_modules/models/milp/milp_models/milp_wordwise_deterministic_truncated_xor_differential_model_test.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "test_build_wordwise_deterministic_truncated_xor_differential_trail_model",
         "test_find_one_wordwise_deterministic_truncated_xor_differential_trail_model",
         "test_find_lowest_varied_patterns_wordwise_deterministic_truncated_xor_differential_trail_model"
       ],
-      "rationale": null,
+      "rationale": "The test's 19,768 constraints, first/last Sage expressions and arbitrary feasible/minimum-count statuses are not fixed cryptanalytic results.",
       "responsibility": "milp wordwise deterministic truncated xor differential model test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [
         "test_build_wordwise_deterministic_truncated_xor_differential_trail_model",
         "test_find_lowest_varied_patterns_wordwise_deterministic_truncated_xor_differential_trail_model",
         "test_find_one_wordwise_deterministic_truncated_xor_differential_trail_model"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_truncated_differences.py; next/tests/unit/test_wordwise_relation_tables.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -11587,11 +11559,11 @@
       "v5_destination": "next/tests (mapped to the owning migrated behavior)"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Toy Speck counts 6/7, optima 1/4, and fixed feasible weights 5/15 are retained by generic independently checked graph models.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -11605,9 +11577,7 @@
       },
       "kind": "test",
       "path": "tests/unit/cipher_modules/models/milp/milp_models/milp_xor_differential_model_test.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "test_find_all_xor_differential_trails_with_fixed_weight",
         "test_find_all_xor_differential_trails_with_weight_at_most",
@@ -11616,9 +11586,9 @@
         "test_find_one_xor_differential_trail_with_fixed_weight",
         "test_find_one_xor_differential_trail_with_weight_at_most"
       ],
-      "rationale": null,
+      "rationale": "Arbitrary first witnesses and solver metadata are removed; all exact numeric assertions are preserved by shared representations.",
       "responsibility": "milp xor differential model test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [
         "test_find_all_xor_differential_trails_with_fixed_weight",
         "test_find_all_xor_differential_trails_with_weight_at_most",
@@ -11627,14 +11597,14 @@
         "test_find_one_xor_differential_trail_with_fixed_weight",
         "test_find_one_xor_differential_trail_with_weight_at_most"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/integration/test_word_differential.py; next/tests/integration/test_glpk_integration.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Reduced AES activity minima and the trivial one-active-S-box first-round bound are derived independently.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -11645,31 +11615,29 @@
       },
       "kind": "test",
       "path": "tests/unit/cipher_modules/models/milp/milp_models/milp_xor_differential_number_of_active_sboxes_model_test.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "test_find_lowest_number_of_active_sboxes_toyaes_internal_solver",
         "test_find_lowest_number_of_active_sboxes_toyaes",
         "test_find_lowest_number_of_active_sboxes_ublock"
       ],
-      "rationale": null,
+      "rationale": "Building time, Sage solver name and model tag are not scientific results. uBlock's one-round value follows directly from a required nonzero input and one bijective S-box layer; broader uBlock evidence is audited separately.",
       "responsibility": "milp xor differential number of active sboxes model test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [
         "test_find_lowest_number_of_active_sboxes_toyaes",
         "test_find_lowest_number_of_active_sboxes_toyaes_internal_solver",
         "test_find_lowest_number_of_active_sboxes_ublock"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_sbox_activity.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Toy counts 12/13, standard optimum 3 and feasible weights 1/7 retain exact signs and independent decoding.",
       "dependencies": [
         "claasp",
         "pytest"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -11689,9 +11657,7 @@
       },
       "kind": "test",
       "path": "tests/unit/cipher_modules/models/milp/milp_models/milp_xor_linear_model_test.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "test_build_xor_linear_trail_model",
         "test_find_all_xor_linear_trails_with_fixed_weight",
@@ -11706,9 +11672,9 @@
         "test_find_one_xor_linear_trail_with_fixed_weight_with_unsupported_external_solver",
         "test_fix_variables_value_xor_linear_constraints"
       ],
-      "rationale": null,
+      "rationale": "The 12,371-expression layout, fixed Sage indices and proprietary solver error branches are not v5 API contracts.",
       "responsibility": "milp xor linear model test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [
         "test_build_xor_linear_trail_model",
         "test_find_all_xor_linear_trails_with_fixed_weight",
@@ -11723,7 +11689,7 @@
         "test_find_one_xor_linear_trail_with_weight_at_most",
         "test_fix_variables_value_xor_linear_constraints"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/integration/test_speck_trail_enumeration.py; next/tests/unit/test_word_linear_smt.py"
     },
     {
       "acceptance_criterion": "All 256 rows match the isolated dependency-free legacy generator, including its four fixed first/last row values.",
