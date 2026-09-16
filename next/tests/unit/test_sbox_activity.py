@@ -4,6 +4,7 @@ import pytest
 
 from claasp_next.semantics.cryptanalysis import (
     aes_two_round_differential_evidence,
+    legacy_wordwise_active_sbox_evidence,
     branch_number_activity_table, possible_active_sbox_counts,
 )
 from claasp_next.primitives import AES
@@ -52,6 +53,16 @@ def test_legacy_two_step_aes_differential_results_are_derived_exactly():
     assert evidence.trails_per_minimum_activity_pattern == (255, 255, 255, 255)
     assert evidence.full_activity_weight == 224
     assert evidence.full_activity_input == evidence.full_activity_output == (1 << 128) - 1
+
+
+def test_wordwise_active_sbox_evidence_keeps_lower_bounds_distinct_from_exact_values():
+    evidence = legacy_wordwise_active_sbox_evidence()
+
+    assert evidence.aes_exact == (1, 5, 9, 25)
+    assert evidence.ublock_decomposed_lower_bounds == (1, 6)
+    assert evidence.ublock_consolidated_lower_bounds == (1, 8, 9)
+    assert evidence.ublock_published_exact == (1, 8, 13)
+    assert evidence.claim_kind == "mixed-exact-and-lower-bound"
 
 
 def test_probability_one_active_transitions_need_an_explicit_bound():

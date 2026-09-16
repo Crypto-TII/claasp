@@ -110,6 +110,32 @@ class WordwiseXorDifference:
         return self
 
 
+@dataclass(frozen=True, slots=True)
+class WordwiseImpossibleFixture:
+    """Fixed abstract wordwise incompatibility witness from reduced AES."""
+
+    input_pattern: str = "1003000000000000"
+    key_pattern: str = "0000000000000000"
+    output_pattern: str = "1000000000000000"
+    forward_middle: str = "2222333300000000"
+    backward_middle: str = "2000000000000000"
+    claim_kind: str = "abstract-incompatibility-witness"
+
+    def __post_init__(self) -> None:
+        patterns = (self.input_pattern, self.key_pattern, self.output_pattern,
+                    self.forward_middle, self.backward_middle)
+        if any(len(pattern) != 16 or set(pattern) - set("0123") for pattern in patterns):
+            raise ValueError("wordwise fixture patterns must contain sixteen base-domain symbols")
+        if self.claim_kind != "abstract-incompatibility-witness":
+            raise ValueError("wordwise fixture cannot claim a concrete differential proof")
+
+
+def legacy_wordwise_impossible_fixture() -> WordwiseImpossibleFixture:
+    """Return the backend-independent fixed reduced-AES wordwise witness."""
+
+    return WordwiseImpossibleFixture()
+
+
 def propagate_dense_wordwise_activity(differences, output_units):
     """Legacy model-5 abstraction for a field-linear layer with nonzero coefficients.
 

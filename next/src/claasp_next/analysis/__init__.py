@@ -78,6 +78,9 @@ from claasp_next.analysis.statistical_results import (
     DieharderObservation, DieharderReport, NISTFinalReport, NISTSummaryRow,
     StatisticalAssessment, StatisticalTestRun,
 )
+from claasp_next.analysis.legacy_evidence import (
+    LegacyBoundedDifferentialCluster, ublock_three_round_legacy_cluster,
+)
 
 __all__ = [
     "HybridDifferentialResult",
@@ -161,4 +164,6 @@ __all__ = [
     "NISTSummaryRow",
     "StatisticalAssessment",
     "StatisticalTestRun",
+    "LegacyBoundedDifferentialCluster",
+    "ublock_three_round_legacy_cluster",
 ]

@@ -163,3 +163,47 @@ GLPK integration restores the four modular-add transitions of the legacy
 four-round Speck32/64 weight-3 characteristic, including weights
 ``2 + 0 + 0 + 1`` and signs ``+,+,+,-``. Decoding recomputes each correlation
 with the shared exact Walsh semantics.
+
+Qualified legacy evidence
+-------------------------
+
+Fixed legacy results retain an explicit claim kind when their original model
+cannot honestly be reproduced as an exact portable proof.  This keeps exact
+values separate from lower bounds, abstractions, sampled observations, and
+solver regressions:
+
+.. doctest::
+
+   >>> from claasp_next.semantics.cryptanalysis import legacy_wordwise_active_sbox_evidence
+   >>> activity = legacy_wordwise_active_sbox_evidence()
+   >>> activity.aes_exact
+   (1, 5, 9, 25)
+   >>> (activity.ublock_decomposed_lower_bounds, activity.ublock_published_exact)
+   ((1, 6), (1, 8, 13))
+
+The reduced-AES wordwise-impossible fixture likewise records an abstract
+incompatibility witness rather than claiming a concrete field-valued
+differential proof:
+
+.. doctest::
+
+   >>> from claasp_next.semantics.cryptanalysis import legacy_wordwise_impossible_fixture
+   >>> impossible = legacy_wordwise_impossible_fixture()
+   >>> (impossible.input_pattern, impossible.output_pattern)
+   ('1003000000000000', '1000000000000000')
+   >>> impossible.claim_kind
+   'abstract-incompatibility-witness'
+
+An executed uBlock solver regression is available with the same qualification
+until a typed uBlock catalogue primitive can independently reproduce it:
+
+.. doctest::
+
+   >>> from claasp_next.analysis import ublock_three_round_legacy_cluster
+   >>> cluster = ublock_three_round_legacy_cluster()
+   >>> (cluster.trail_count, cluster.aggregate_weight, cluster.claim_kind)
+   (8, 25.7146, 'legacy-solver-regression')
+
+Permanently license-skipped proprietary expectations are not evidence.  They
+remain in the migration matrix for provenance but are not promoted to v5
+oracle values.

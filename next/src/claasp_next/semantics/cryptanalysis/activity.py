@@ -19,6 +19,32 @@ class AESTwoRoundDifferentialEvidence:
     full_activity_output: int
 
 
+@dataclass(frozen=True, slots=True)
+class WordwiseActiveSBoxEvidence:
+    """Reviewed exact and lower-bound active-S-box sequences."""
+
+    aes_exact: tuple[int, ...] = (1, 5, 9, 25)
+    ublock_decomposed_lower_bounds: tuple[int, ...] = (1, 6)
+    ublock_consolidated_lower_bounds: tuple[int, ...] = (1, 8, 9)
+    ublock_published_exact: tuple[int, ...] = (1, 8, 13)
+    claim_kind: str = "mixed-exact-and-lower-bound"
+
+    def __post_init__(self) -> None:
+        if self.claim_kind != "mixed-exact-and-lower-bound":
+            raise ValueError("wordwise evidence must distinguish exact values from lower bounds")
+
+
+def legacy_wordwise_active_sbox_evidence() -> WordwiseActiveSBoxEvidence:
+    """Return fixed active-S-box evidence with its claim distinction intact.
+
+    AES values are the Rijndael wide-trail bound.  uBlock's decomposed and
+    consolidated values are deliberately retained as model lower bounds; the
+    published exact values are stored separately and never inferred from them.
+    """
+
+    return WordwiseActiveSBoxEvidence()
+
+
 def aes_two_round_differential_evidence(table) -> AESTwoRoundDifferentialEvidence:
     """Derive the reduced two-round AES fixtures without a two-step heuristic.
 

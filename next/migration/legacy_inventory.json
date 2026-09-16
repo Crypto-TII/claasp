@@ -1429,7 +1429,7 @@
       "v5_destination": "inapplicable: package marker reviewed with its containing module"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Dependency-free ANF/cube semantics, portable GLPK reachability/parity and proof-qualified results cover every executed legacy fixture without a proprietary solver.",
       "dependencies": [
         "claasp",
         "collections",
@@ -1442,25 +1442,23 @@
         "sys",
         "time"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
       "path": "claasp/cipher_modules/models/milp/milp_models/Gurobi/monomial_prediction.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "MilpMonomialPredictionModel",
         "check_correctness_of_partial_anf_or_superpoly"
       ],
-      "rationale": null,
+      "rationale": "The Sage/Gurobi monolith mixes exact symbolic algebra, structural bounds, incomplete solution pools and divide-and-conquer experiments. v5 separates these claims and rejects non-terminal enumeration as proof. Literal expectations from tests permanently skipped behind a Gurobi license are recorded as unverified claims, not promoted to oracle values.",
       "responsibility": "monomial prediction",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/semantics/cryptanalysis/monomial.py; next/src/claasp_next/analysis/algebraic.py; next/src/claasp_next/representations/constraints/milp/monomial.py"
     },
     {
       "acceptance_criterion": "Containing package is represented by its non-marker entries.",
@@ -1551,30 +1549,28 @@
       "v5_destination": "next/src/claasp_next/representations/constraints/milp/boolean.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "AES exact wide-trail values and uBlock decomposed/consolidated lower bounds are retained with explicit claim kinds distinct from published exact values.",
       "dependencies": [
         "claasp",
         "sage",
         "time"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
       "path": "claasp/cipher_modules/models/milp/milp_models/milp_wordwise_branch_number_number_of_active_sboxes_model.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "MilpWordwiseBranchNumberNumberOfActiveSboxesModel"
       ],
-      "rationale": null,
+      "rationale": "Sage branch-number MILP, MiniZinc matrix probes and cache timing are search machinery. The semantic evidence is the resulting bound plus its exact-versus-lower-bound qualification.",
       "responsibility": "milp wordwise branch number number of active sboxes model",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/semantics/cryptanalysis/activity.py"
     },
     {
       "acceptance_criterion": "Typed word activity/value domains and exact finite relations replace sentinel-coded Sage variables.",
@@ -1601,29 +1597,27 @@
       "v5_destination": "next/src/claasp_next/semantics/cryptanalysis/truncated.py; next/src/claasp_next/representations/constraints/milp/relations.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "The reduced-AES input/key/output and forward/backward wordwise boundary patterns are retained as a typed abstract incompatibility witness.",
       "dependencies": [
         "claasp",
         "time"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
       "path": "claasp/cipher_modules/models/milp/milp_models/milp_wordwise_impossible_xor_differential_model.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "MilpWordwiseImpossibleXorDifferentialModel"
       ],
-      "rationale": null,
+      "rationale": "Sage sentinel variables and graph-copy naming do not define a distinct mathematical model. The witness remains explicitly abstract and is not relabelled a concrete field-valued differential proof.",
       "responsibility": "milp wordwise impossible xor differential model",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/semantics/cryptanalysis/truncated.py"
     },
     {
       "acceptance_criterion": "Exact differential relations support fixed/bounded/optimal/complete enumeration with independent graph and weight decoding.",
@@ -2908,7 +2902,7 @@
       "v5_destination": "next/src/claasp_next/representations/constraints/smt"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Typed constraints/results, exact measure conversion and seeded empirical analysis replace a mixed NumPy/Sage/file/helper module.",
       "dependencies": [
         "claasp",
         "concurrent",
@@ -2919,16 +2913,14 @@
         "os",
         "re"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
       "path": "claasp/cipher_modules/models/utils.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "hex_to_bitlist",
         "add_arcs",
@@ -2968,11 +2960,11 @@
         "differential_truncated_checker_permutation_input_and_output_truncated",
         "truncated_differential_linear_checker_permutation"
       ],
-      "rationale": null,
+      "rationale": "The 1,600-line utility module conflates formatting, random sampling, graph execution, multiprocessing and cryptanalytic claim types. v5 separates these concerns; empirical results carry seeds/provenance and never become SAT or optimum evidence.",
       "responsibility": "utils",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/analysis; next/src/claasp_next/semantics/cryptanalysis; next/src/claasp_next/formatting.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -11192,13 +11184,13 @@
       "v5_destination": "next/tests/unit/test_milp_representation.py; next/tests/integration/test_glpk_integration.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "All previously executable Simon/PRESENT/Trivium results and newly verified 13-/200-clock Trivium claims have independent exact or terminal-solver evidence.",
       "dependencies": [
         "claasp",
         "pytest",
         "sage"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -11240,9 +11232,7 @@
       },
       "kind": "test",
       "path": "tests/unit/cipher_modules/models/milp/milp_models/Gurobi/monomial_prediction_test.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "test_find_anf_of_specific_output_bit",
         "test_find_upper_bound_degree_of_specific_output_bit",
@@ -11279,9 +11269,9 @@
         "test_solution_pool_validation_rejection",
         "test_sbox_milp_modeling_correctness"
       ],
-      "rationale": null,
+      "rationale": "uBlock/Gaston/divide-and-conquer and Trivium-508/590 methods are all decorated Requires Gurobi license and have never run in legacy CI; their literals are therefore unverified hypotheses, not applicable fixed results. They remain documented verbatim but are removed from the v5 proof baseline rather than falsely marked preserved or deferred.",
       "responsibility": "monomial prediction test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [
         "test_check_anf_correctness",
         "test_check_anf_correctness_simon_2",
@@ -11318,7 +11308,7 @@
         "test_sbox_milp_modeling_correctness",
         "test_solution_pool_validation_rejection"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_monomial_prediction.py; next/tests/unit/test_monomial_composition.py; next/tests/unit/test_algebraic_evidence.py; next/tests/unit/test_trivium_algebra.py; next/tests/integration/test_glpk_monomial_prediction.py; next/tests/integration/test_glpk_trivium_monomials.py"
     },
     {
       "acceptance_criterion": "Both fixed Speck outputs are retained and exact finite-relation MILP decoding is exhaustively checked.",
@@ -11420,14 +11410,14 @@
       "v5_destination": "next/tests/unit/test_boolean_graph_milp.py; next/tests/integration/test_glpk_integration.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "AES 1/5/9/25, uBlock decomposed 1/6 and consolidated 1/8/9 are preserved while published uBlock exact 1/8/13 stays separate.",
       "dependencies": [
         "claasp",
         "pytest",
         "time",
         "types"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -11447,9 +11437,7 @@
       },
       "kind": "test",
       "path": "tests/unit/cipher_modules/models/milp/milp_models/milp_wordwise_branch_number_number_of_active_sboxes_model_test.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "test_find_lowest_number_of_active_sboxes_toyaes",
         "test_find_lowest_number_of_active_sboxes_real_aes",
@@ -11464,9 +11452,9 @@
         "test_word_branch_number_is_cached",
         "test_build_model_delegates_wordwise_constraints_to_components"
       ],
-      "rationale": null,
+      "rationale": "A 15-second performance ceiling, cache call count, helper delegation and rejection messages are implementation tests. The v5 evidence object preserves every numeric result without misreporting loose bounds as exact trails.",
       "responsibility": "milp wordwise branch number number of active sboxes model test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [
         "test_build_model_delegates_wordwise_constraints_to_components",
         "test_find_lowest_number_of_active_sboxes_real_aes",
@@ -11481,7 +11469,7 @@
         "test_wordwise_helpers_reject_unaligned_or_unsupported_cases",
         "test_wordwise_permutation_helpers_reject_non_word_permutations"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_sbox_activity.py"
     },
     {
       "acceptance_criterion": "Every wordwise XOR/MDS row and typed AES singleton diffusion is checked exhaustively.",
@@ -11516,7 +11504,7 @@
       "v5_destination": "next/tests/unit/test_truncated_differences.py; next/tests/unit/test_wordwise_relation_tables.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "All five fixed patterns 1003..., zero key, 1000..., 22223333..., and 2000... are preserved exactly with an abstract-witness claim kind.",
       "dependencies": [
         "claasp"
       ],
@@ -11534,9 +11522,7 @@
       },
       "kind": "test",
       "path": "tests/unit/cipher_modules/models/milp/milp_models/milp_wordwise_impossible_xor_differential_model_test.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "test_build_wordwise_impossible_xor_differential_trail_model",
         "test_find_one_wordwise_impossible_xor_differential_trail_model",
@@ -11547,7 +11533,7 @@
       ],
       "rationale": null,
       "responsibility": "milp wordwise impossible xor differential model test",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.8d",
       "tests": [
         "test_build_wordwise_impossible_xor_differential_trail_model",
         "test_find_one_wordwise_impossible_xor_differential_trail_model",
@@ -11556,7 +11542,7 @@
         "test_find_one_wordwise_impossible_xor_differential_trail_with_fully_automatic_model",
         "test_find_one_wordwise_impossible_xor_differential_trail_with_fully_automatic_model_with_external_solver"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_truncated_differences.py"
     },
     {
       "acceptance_criterion": "Toy Speck counts 6/7, optima 1/4, and fixed feasible weights 5/15 are retained by generic independently checked graph models.",
@@ -11807,7 +11793,7 @@
       "v5_destination": "next/tests/unit/test_sbox_undisturbed.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Fixed result conversions, formatting, seeded Speck/ChaCha experiments, boomerang evidence and continuous correlations retain executable typed coverage.",
       "dependencies": [
         "claasp",
         "contextlib",
@@ -11819,7 +11805,7 @@
         "pytest",
         "sys"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -11857,9 +11843,7 @@
       },
       "kind": "test",
       "path": "tests/unit/cipher_modules/models/models_utils_test.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "DummyIdentityBlockCipher",
         "DummyComponent",
@@ -11895,9 +11879,9 @@
         "test_sample_truncated_difference_all_wildcard",
         "test_sequential_shared_difference_and_truncated_sk_checkers"
       ],
-      "rationale": null,
+      "rationale": "Shape-only worker assertions, temporary-file existence, broad unseeded Salsa ranges and duplicate sequential/parallel smoke tests are implementation checks rather than fixed scientific results. Exact vectors and deterministic empirical fixtures are owned by focused v5 modules.",
       "responsibility": "models utils test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [
         "test_boomerang_checker_for_block_cipher_single_key",
         "test_check_if_implemented_component_invalid_word_operation",
@@ -11930,7 +11914,7 @@
         "test_worker_functions_direct",
         "test_write_solution_to_file"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_constraints.py; next/tests/unit/test_results.py; next/tests/unit/test_composed_trails.py; next/tests/unit/test_continuous_heuristics.py; next/tests/unit/test_formatting.py"
     },
     {
       "acceptance_criterion": "Preserve the complete Speck32/64-22 vector 0x6574694C, 0x1918111009080100 -> 0xA86842F2 with real solving and independent evaluation.",

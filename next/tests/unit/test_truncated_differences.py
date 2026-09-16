@@ -4,6 +4,7 @@ from claasp_next.semantics.cryptanalysis import (
     ImpossiblePropagationBoundary,
     WordwiseDifferenceKind,
     WordwiseXorDifference,
+    legacy_wordwise_impossible_fixture,
     TruncatedXorDifference,
     check_probabilistic_truncated_modular_add,
     propagate_single_active_aes_byte,
@@ -120,6 +121,17 @@ def test_wordwise_aes_single_byte_diffuses_to_one_column():
 
     assert tuple(word.kind for word in output[:4]) == (WordwiseDifferenceKind.NONZERO,) * 4
     assert all(word.kind is WordwiseDifferenceKind.ZERO for word in output[4:])
+
+
+def test_legacy_wordwise_impossible_fixture_preserves_every_fixed_boundary():
+    fixture = legacy_wordwise_impossible_fixture()
+
+    assert fixture.input_pattern == "1003000000000000"
+    assert fixture.key_pattern == "0000000000000000"
+    assert fixture.output_pattern == "1000000000000000"
+    assert fixture.forward_middle == "2222333300000000"
+    assert fixture.backward_middle == "2000000000000000"
+    assert fixture.claim_kind == "abstract-incompatibility-witness"
 
 
 def test_inverse_speck_truncated_propagation_preserves_zero_difference():

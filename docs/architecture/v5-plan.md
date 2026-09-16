@@ -539,9 +539,10 @@ from the legacy stream-cipher construction as a ``block_function`` and derives
 its ANF, superpoly, degree-bound and parity evidence anew. The legacy Gurobi
 Trivium expectations are confirmed by that independent derivation rather than
 transcribed, because every test in that suite is license-skipped and has never
-executed. uBlock, Gaston and the divide-and-conquer composition method remain
-deferred with recorded rationale until their typed primitives and middle-round
-composition exist.
+executed. M10.8d subsequently closes the remaining Gurobi-only literals as
+unverified hypotheses rather than oracle values: they stay recorded in the
+matrix, but do not become v5 proof claims merely because they appeared in
+permanently skipped tests.
 
 #### M10.9: Complete component and primitive catalogue
 
@@ -940,7 +941,7 @@ is absent). Update this table in the same commit that changes milestone state.
 | Typed differential-linear composition (M10.6d5c) | Achieved | Fixed Speck32/64-6 patterns decompose into p=1, r=7, q=3; legacy search weight 14 and exact composed weight 14.994353436858859 are separately retained and independently checked |
 | CP continuous models (M10.6d6) | Achieved | Dependency-free continuous XOR/rotation/addition and one-/two-round Speck fixtures; fixed-mask correlation, binary64 precision, tolerance, and heuristic-only claim type preserved |
 | Complete legacy inventory (M10.7) | Achieved | Deterministic standard-library inventory covers 323 source and 258 test modules; AST metadata, primitive taxonomy fields, fixed-evidence locators, and an exact filesystem/CI gate; three pending `develop` commits reconciled |
-| Remaining mathematical/solver models (M10.8) | In progress | M10.8a component semantics/baseline achieved; whole-graph composition, fixed algebraic fixtures, and remaining inventory closure follow |
+| Remaining mathematical/solver models (M10.8) | Achieved | Component semantics, whole-graph monomial composition, fixed algebraic evidence, and the complete 149-entry CP/SAT/CMS/SMT/MILP/algebraic inventory are closed through M10.8a–M10.8d |
 | Boolean ANF/component monomial baseline (M10.8a) | Achieved | Sage-free Möbius ANF, symbolic cube coefficients, exact S-box transition tables, portable one-hot MILP, real GLPK SAT/UNSAT coverage, and user/developer doctests |
 | Whole-graph division-property composition (M10.8b) | Achieved | Graph-derived PRESENT and generic component semantics compose across multiple rounds, lower to portable MILP, execute in GLPK, and decode through an independent checker |
 | PRESENT round monomial composition (M10.8b1) | Achieved | Sixteen exact S-box relations compose through the typed p-layer; possible witness and impossible pair are independently checked |
@@ -956,8 +957,8 @@ is absent). Update this table in the same commit that changes milestone state.
 | Structural degree-bound baseline (M10.8c3b1) | Achieved | Bit/Word XOR, AND, rotation, constants, concatenation and modular addition propagate sound bounded degrees; Simon-4 documents exact 8 versus loose bound 16 and never claims completeness |
 | Whole-graph monomial reachability solver (M10.8c3b2) | Achieved | Portable COPY/XOR/AND/rotation/concatenation/constant MILP plus GLPK recovers Simon reduced degrees 2/3/8 and the legacy Simon-13 31-variable cube bound 30 |
 | Complete monomial-path parity solver (M10.8c3b3) | Achieved | Portable no-good enumeration reaches terminal UNSAT, matches all five exact Simon-2 degree-three ANF monomials, and rejects path-limited results as incomplete |
-| Remaining scalable algebraic fixtures (M10.8c3c) | Achieved | Typed Trivium `block_function` with free clock/keystream parameters, five published eSTREAM vectors, exact 13-clock ANF and 200-clock `i53` superpoly `k39 + k40*k41 + k66`, and complete GLPK parity recovering the exact 160-/200-clock IV monomials; uBlock, Gaston and divide-and-conquer are deferred with recorded rationale |
-| Remaining model inventory closure (M10.8d) | In progress | 141/149 model entries resolved. CP and SAT are closed; MILP base, exact differential/linear, bitwise/wordwise deterministic-truncated, active-S-box and helper layers now have explicit dispositions. Shared semantic results replace Sage indices, proprietary solver branches and generated inequality layouts. Remaining monomial-prediction, wordwise branch/impossible, and two shared utility/test entries follow; closure gate stays failing until all entries are resolved |
+| Remaining scalable algebraic fixtures (M10.8c3c) | Achieved | Typed Trivium `block_function` with free clock/keystream parameters, five published eSTREAM vectors, exact 13-clock ANF and 200-clock `i53` superpoly `k39 + k40*k41 + k66`, and complete GLPK parity recovering the exact 160-/200-clock IV monomials; remaining license-skipped literals receive final evidence classification in M10.8d |
+| Remaining model inventory closure (M10.8d) | Achieved | 149/149 model entries resolved with zero deferrals and a passing closure gate. Every executed fixed result is migrated or retained with an explicit exact/lower-bound/heuristic/empirical/legacy-regression claim kind; backend syntax, mutable registries, search-only heuristics and permanently skipped proprietary-only hypotheses are superseded or removed without being promoted to evidence. CP, SAT, CMS, SMT, MILP, algebraic and shared utility inventories are closed |
 | Primitive terminology/public API (M10.9a) | Achieved | Generic graph class `Cipher`→`Primitive` and catalogue package `ciphers`→`primitives`; official bare catalogue class names (`AES`/`AES128`, `Present`/`Present80`, `Speck`, `Simon`, `MiMC`, `Poseidon`, `ChaCha`, `Salsa`); `CipherDiagram`→`PrimitiveDiagram` and its `cipher_name`→`primitive_name` field; generic vocabulary (cipher graph/input/output/evaluation, `cipher_output` sentinel) replaced by primitive-oriented terms throughout source, tests, and both guides; dependency-free `tools/terminology_guard.py` wired into `pytest tests/unit` blocks new generic `cipher`/`ciphers` usage outside the real `block_cipher(s)`/`tweakable_block_cipher(s)` taxonomy and `ciphertext` |
 | Fixed-length primitive classification (M10.9b) | Planned | Every legacy catalogue entry assigned to the six semantic categories, an orthogonal fixture folder, or an explicit out-of-scope disposition |
 | Complete reusable component catalogue (M10.9c) | Planned | All reusable legacy components migrated with parity evidence and pseudocode-level authoring helpers |

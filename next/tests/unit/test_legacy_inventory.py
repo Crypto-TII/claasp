@@ -112,16 +112,13 @@ def test_m10_8d_cms_inventory_has_explicit_evidence_and_existing_destinations():
     assert sum(record["disposition"] == "migrate" for record in records) == 2
 
 
-def test_model_closure_does_not_treat_inventory_completeness_as_migration_completion():
+def test_model_closure_requires_every_entry_to_have_a_final_disposition():
     payload = json.loads(INVENTORY.read_text(encoding="utf-8"))
     status = _module().model_closure_status(payload)
-    assert not status["complete"]
+    assert status["complete"]
     assert status["total"] == status["resolved"] + len(status["unresolved"])
-    assert set(status["deferred"]) <= set(status["unresolved"])
-    assert status["remaining_by_family"]["milp"] > 0
-    assert "cp" not in status["remaining_by_family"]
-    assert "sat" not in status["remaining_by_family"]
+    assert status["total"] == status["resolved"] == 149
+    assert status["unresolved"] == []
     assert status["deferred"] == []
-    unresolved_records = [item for item in payload["records"] if item["path"] in status["unresolved"]]
-    assert not _module().model_closure_status({"records": unresolved_records})["complete"]
+    assert status["remaining_by_family"] == {}
     assert _module().model_closure_status({"records": []})["complete"]

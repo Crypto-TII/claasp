@@ -3,6 +3,7 @@
 from claasp_next.semantics.cryptanalysis.bitwise import BitwiseAndSemantics
 from claasp_next.semantics.cryptanalysis.activity import (
     AESTwoRoundDifferentialEvidence, aes_two_round_differential_evidence,
+    WordwiseActiveSBoxEvidence, legacy_wordwise_active_sbox_evidence,
     branch_number_activity_table, possible_active_sbox_counts,
 )
 
@@ -31,6 +32,7 @@ from claasp_next.semantics.cryptanalysis.truncated import (
     ProbabilisticTruncatedTrail,
     TruncatedBit, TruncatedXorDifference,
     WordwiseDifferenceKind, WordwiseXorDifference,
+    WordwiseImpossibleFixture, legacy_wordwise_impossible_fixture,
     check_probabilistic_truncated_modular_add,
     propagate_two_word_speck_inverse_round, propagate_two_word_speck_round,
     propagate_two_word_simon_inverse_round, propagate_two_word_simon_round,
@@ -42,6 +44,7 @@ from claasp_next.semantics.cryptanalysis.truncated import (
 __all__ = [
     "BitwiseAndSemantics",
     "AESTwoRoundDifferentialEvidence", "aes_two_round_differential_evidence",
+    "WordwiseActiveSBoxEvidence", "legacy_wordwise_active_sbox_evidence",
     "branch_number_activity_table", "possible_active_sbox_counts",
     "BitPattern", "ModularAddLinearSemantics", "ModularAddTransitionSemantics",
     "SBoxTransitionSemantics", "Trail", "TrailKind", "TrailSearchResult",
@@ -59,6 +62,7 @@ __all__ = [
     "propagate_single_active_aes_byte",
     "propagate_dense_wordwise_activity",
     "WordwiseDifferenceKind", "WordwiseXorDifference",
+    "WordwiseImpossibleFixture", "legacy_wordwise_impossible_fixture",
     "BoomerangConnectivity", "BoomerangSwitchBoundary", "BoomerangTrail",
     "DifferentialLinearTrail", "SBoxBoomerangSemantics",
     "ModularAddBoomerangConnectivity", "ModularAddBoomerangSemantics",

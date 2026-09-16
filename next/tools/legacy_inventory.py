@@ -31,6 +31,54 @@ CATEGORY_BY_DIRECTORY = {
 }
 
 MIGRATION_OVERRIDES = {
+    "claasp/cipher_modules/models/milp/milp_models/Gurobi/monomial_prediction.py": {
+        "v5_destination": "next/src/claasp_next/semantics/cryptanalysis/monomial.py; next/src/claasp_next/analysis/algebraic.py; next/src/claasp_next/representations/constraints/milp/monomial.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Dependency-free ANF/cube semantics, portable GLPK reachability/parity and proof-qualified results cover every executed legacy fixture without a proprietary solver.",
+        "rationale": "The Sage/Gurobi monolith mixes exact symbolic algebra, structural bounds, incomplete solution pools and divide-and-conquer experiments. v5 separates these claims and rejects non-terminal enumeration as proof. Literal expectations from tests permanently skipped behind a Gurobi license are recorded as unverified claims, not promoted to oracle values.",
+    },
+    "tests/unit/cipher_modules/models/milp/milp_models/Gurobi/monomial_prediction_test.py": {
+        "v5_destination": "next/tests/unit/test_monomial_prediction.py; next/tests/unit/test_monomial_composition.py; next/tests/unit/test_algebraic_evidence.py; next/tests/unit/test_trivium_algebra.py; next/tests/integration/test_glpk_monomial_prediction.py; next/tests/integration/test_glpk_trivium_monomials.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "All previously executable Simon/PRESENT/Trivium results and newly verified 13-/200-clock Trivium claims have independent exact or terminal-solver evidence.",
+        "rationale": "uBlock/Gaston/divide-and-conquer and Trivium-508/590 methods are all decorated Requires Gurobi license and have never run in legacy CI; their literals are therefore unverified hypotheses, not applicable fixed results. They remain documented verbatim but are removed from the v5 proof baseline rather than falsely marked preserved or deferred.",
+    },
+    "claasp/cipher_modules/models/milp/milp_models/milp_wordwise_branch_number_number_of_active_sboxes_model.py": {
+        "v5_destination": "next/src/claasp_next/semantics/cryptanalysis/activity.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "AES exact wide-trail values and uBlock decomposed/consolidated lower bounds are retained with explicit claim kinds distinct from published exact values.",
+        "rationale": "Sage branch-number MILP, MiniZinc matrix probes and cache timing are search machinery. The semantic evidence is the resulting bound plus its exact-versus-lower-bound qualification.",
+    },
+    "tests/unit/cipher_modules/models/milp/milp_models/milp_wordwise_branch_number_number_of_active_sboxes_model_test.py": {
+        "v5_destination": "next/tests/unit/test_sbox_activity.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "AES 1/5/9/25, uBlock decomposed 1/6 and consolidated 1/8/9 are preserved while published uBlock exact 1/8/13 stays separate.",
+        "rationale": "A 15-second performance ceiling, cache call count, helper delegation and rejection messages are implementation tests. The v5 evidence object preserves every numeric result without misreporting loose bounds as exact trails.",
+    },
+    "claasp/cipher_modules/models/milp/milp_models/milp_wordwise_impossible_xor_differential_model.py": {
+        "v5_destination": "next/src/claasp_next/semantics/cryptanalysis/truncated.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "The reduced-AES input/key/output and forward/backward wordwise boundary patterns are retained as a typed abstract incompatibility witness.",
+        "rationale": "Sage sentinel variables and graph-copy naming do not define a distinct mathematical model. The witness remains explicitly abstract and is not relabelled a concrete field-valued differential proof.",
+    },
+    "tests/unit/cipher_modules/models/milp/milp_models/milp_wordwise_impossible_xor_differential_model_test.py": {
+        "v5_destination": "next/tests/unit/test_truncated_differences.py",
+        "prerequisites": [], "disposition": "migrate", "status": "migrated-in-m10.8d",
+        "acceptance_criterion": "All five fixed patterns 1003..., zero key, 1000..., 22223333..., and 2000... are preserved exactly with an abstract-witness claim kind.",
+        "rationale": None,
+    },
+    "claasp/cipher_modules/models/utils.py": {
+        "v5_destination": "next/src/claasp_next/analysis; next/src/claasp_next/semantics/cryptanalysis; next/src/claasp_next/formatting.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Typed constraints/results, exact measure conversion and seeded empirical analysis replace a mixed NumPy/Sage/file/helper module.",
+        "rationale": "The 1,600-line utility module conflates formatting, random sampling, graph execution, multiprocessing and cryptanalytic claim types. v5 separates these concerns; empirical results carry seeds/provenance and never become SAT or optimum evidence.",
+    },
+    "tests/unit/cipher_modules/models/models_utils_test.py": {
+        "v5_destination": "next/tests/unit/test_constraints.py; next/tests/unit/test_results.py; next/tests/unit/test_composed_trails.py; next/tests/unit/test_continuous_heuristics.py; next/tests/unit/test_formatting.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Fixed result conversions, formatting, seeded Speck/ChaCha experiments, boomerang evidence and continuous correlations retain executable typed coverage.",
+        "rationale": "Shape-only worker assertions, temporary-file existence, broad unseeded Salsa ranges and duplicate sequential/parallel smoke tests are implementation checks rather than fixed scientific results. Exact vectors and deterministic empirical fixtures are owned by focused v5 modules.",
+    },
     "claasp/cipher_modules/models/milp/milp_model.py": {
         "v5_destination": "next/src/claasp_next/representations/constraints/milp; next/src/claasp_next/drivers/solvers/glpk.py",
         "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
