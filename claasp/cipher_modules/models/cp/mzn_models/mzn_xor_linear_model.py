@@ -446,6 +446,8 @@ class MznXorLinearModel(MznModel):
     def find_one_xor_linear_trail(
         self,
         fixed_values=[],
+        lower_bound=None,
+        upper_bound=None,
         solver_name=SOLVER_DEFAULT,
         num_of_processors=None,
         timelimit=None,
@@ -453,12 +455,22 @@ class MznXorLinearModel(MznModel):
         solve_external=False,
     ):
         """
-        Return the solution representing a linear trail with any weight of correlation.
+        Return the solution representing a XOR linear trail.
+
+        The weight of the trail found lies in ``[lower_bound, upper_bound]``. When ``lower_bound`` is `None`,
+        it defaults to `0` (the weight cannot be negative). When ``upper_bound`` is `None`, it defaults to
+        the minimum of the cipher input sizes. Unlike the SAT models, the two bounds are fully independent
+        here: a genuine range is supported, and there is no restriction requiring them to be equal.
+
         By default, the search removes the key schedule, if any.
 
         INPUT:
 
         - ``fixed_values`` -- **list** (default: `[]`); can be created using ``set_fixed_variables`` method
+        - ``lower_bound`` -- **integer** (default: `None`); the lower bound for the weight. If `None`, no
+          lower bound is enforced
+        - ``upper_bound`` -- **integer** (default: `None`); the upper bound for the weight. If `None`, it
+          defaults to the minimum of the cipher input sizes
         - ``solver_name`` -- **string** (default: `chuffed`); the name of the solver.
           See also :meth:`MznModel.solver_names`.
 
@@ -470,17 +482,32 @@ class MznXorLinearModel(MznModel):
             sage: cp = MznXorLinearModel(speck)
             sage: cp.find_one_xor_linear_trail() # random
 
+            sage: trail = cp.find_one_xor_linear_trail(lower_bound=3, upper_bound=3)
+            sage: trail['total_weight']
+            '3.0'
+
             # including the key schedule in the model
             sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_linear_model import MznXorLinearModel
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=4)
+            sage: speck = SpeckBlockCipher(block_bit_size=8, key_bit_size=16, number_of_rounds=4)
             sage: cp = MznXorLinearModel(speck)
             sage: from claasp.cipher_modules.models.utils import set_fixed_variables
-            sage: key = set_fixed_variables('key', 'not_equal', list(range(64)), [0] * 64)
-            sage: cp.find_one_xor_linear_trail(fixed_values=[key]) # random
+            sage: key = set_fixed_variables('key', 'not_equal', list(range(16)), [0] * 16)
+            sage: trail = cp.find_one_xor_linear_trail(fixed_values=[key], lower_bound=3, upper_bound=3)
+            sage: trail['total_weight']
+            '3.0'
         """
+        if upper_bound is None:
+            upper_bound = min(self._cipher.inputs_bit_size)
+        if lower_bound is not None and lower_bound > upper_bound:
+            raise ValueError("lower_bound must be <= upper_bound")
+
         start = tm.time()
         self.build_xor_linear_trail_model(0, fixed_values)
+        effective_lower_bound = lower_bound if lower_bound is not None else 0
+        self._model_constraints.append(
+            f"constraint weight >= {100 * effective_lower_bound} /\\ weight <= {100 * upper_bound};"
+        )
         end = tm.time()
         build_time = end - start
         if solve_with_API:
@@ -497,69 +524,6 @@ class MznXorLinearModel(MznModel):
             )
             solution["building_time_seconds"] = build_time
             solution["test_name"] = "find_one_xor_linear_trail"
-
-        return solution
-
-    def find_one_xor_linear_trail_with_fixed_weight(
-        self,
-        fixed_weight=-1,
-        fixed_values=[],
-        solver_name=SOLVER_DEFAULT,
-        num_of_processors=None,
-        timelimit=None,
-        solve_with_API=False,
-        solve_external=False,
-    ):
-        """
-        Return the solution representing a linear trail with the weight of correlation equal to ``fixed_weight``.
-        By default, the search removes the key schedule, if any.
-
-        INPUT:
-
-        - ``fixed_weight`` -- **integer**; the value to which the weight is fixed, if non-negative
-        - ``fixed_values`` -- **list** (default: `[]`); can be created using ``set_fixed_variables`` method
-        - ``solver_name`` -- **string** (default: `chuffed`); the name of the solver.
-          See also :meth:`MznModel.solver_names`.
-        EXAMPLES::
-
-            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_linear_model import MznXorLinearModel
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=4)
-            sage: cp = MznXorLinearModel(speck)
-            sage: trail = cp.find_one_xor_linear_trail_with_fixed_weight(3)
-            sage: trail['total_weight']
-            '3.0'
-
-            # including the key schedule in the model
-            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_linear_model import MznXorLinearModel
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: speck = SpeckBlockCipher(block_bit_size=8, key_bit_size=16, number_of_rounds=4)
-            sage: cp = MznXorLinearModel(speck)
-            sage: from claasp.cipher_modules.models.utils import set_fixed_variables
-            sage: key = set_fixed_variables('key', 'not_equal', list(range(16)), [0] * 16)
-            sage: trail = cp.find_one_xor_linear_trail_with_fixed_weight(3, fixed_values=[key])
-            sage: trail['total_weight']
-            '3.0'
-        """
-        start = tm.time()
-        self.build_xor_linear_trail_model(fixed_weight, fixed_values)
-        end = tm.time()
-        build_time = end - start
-        if solve_with_API:
-            # TODO: Add the logic of parse_output when using the solve_with_API parameter, since the asserts of the tests fail when active
-            solution = self.solve_for_ARX(
-                solver_name=solver_name, timeout_in_seconds_=timelimit, processes_=num_of_processors
-            )
-        else:
-            solution = self.solve(
-                "xor_linear_one_solution",
-                solver_name=solver_name,
-                timeout_in_seconds_=timelimit,
-                processes_=num_of_processors,
-                solve_external=solve_external,
-            )
-            solution["building_time_seconds"] = build_time
-            solution["test_name"] = "find_one_xor_linear_trail_with_fixed_weight"
 
         return solution
 
