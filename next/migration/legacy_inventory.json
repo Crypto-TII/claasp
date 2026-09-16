@@ -863,24 +863,22 @@
       "v5_destination": "next/src/claasp_next/semantics/cryptanalysis/continuous.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Exact modular-add differential relations and explicit weight bounds are emitted by typed CP representations and independently decoded.",
       "dependencies": [],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
       "path": "claasp/cipher_modules/models/cp/minizinc_utils/usefulfunctions.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [],
-      "rationale": null,
+      "rationale": "The embedded MiniZinc word-operation text, search annotations and fixed scale constants are representation internals. Typed model parts now derive the relation from shared semantics and keep exact versus scaled weights explicit.",
       "responsibility": "usefulfunctions",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/representations/constraints/cp/trails.py"
     },
     {
       "acceptance_criterion": "Typed model declarations retain explicit identities; no variable groups are inferred by parsing declaration strings.",
@@ -904,7 +902,7 @@
       "v5_destination": "next/src/claasp_next/representations/constraints/cp/model.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Immutable MiniZinc IR, explicit solver configuration and typed result/status decoding cover model assembly, fixed constraints, enumeration and weight bounds.",
       "dependencies": [
         "claasp",
         "copy",
@@ -917,25 +915,23 @@
         "subprocess",
         "time"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
       "path": "claasp/cipher_modules/models/cp/mzn_model.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "MiniZincModelParts",
         "MznModel"
       ],
-      "rationale": null,
+      "rationale": "Mutable declarations, generated variable-name parsing, subprocess command dictionaries and mixed model/driver state are replaced by the representation/driver boundary. Scientific helper tables and result fixtures are inventoried separately.",
       "responsibility": "mzn model",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/representations/constraints/cp/model.py; next/src/claasp_next/drivers/solvers/minizinc.py"
     },
     {
       "acceptance_criterion": "Containing package is represented by its non-marker entries.",
@@ -1026,53 +1022,49 @@
       "v5_destination": "next/src/claasp_next/representations/constraints/cp/lowering.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Three-valued deterministic propagation is typed, graph-derived and independently checked, including the fixed Speck round boundary.",
       "dependencies": [
         "claasp",
         "minizinc"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
       "path": "claasp/cipher_modules/models/cp/mzn_models/mzn_deterministic_truncated_xor_differential_model.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "MznDeterministicTruncatedXorDifferentialModel"
       ],
-      "rationale": null,
+      "rationale": "Generated declarations, model-line counts and arbitrary first witnesses are not public contracts. Shared truncated semantics and native CP projection replace component method-name dispatch.",
       "responsibility": "mzn deterministic truncated xor differential model",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/semantics/cryptanalysis/truncated.py; next/src/claasp_next/representations/constraints/cp/trails.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "The ARX subset uses the same checked deterministic truncated semantics without a distinct public graph model.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
       "path": "claasp/cipher_modules/models/cp/mzn_models/mzn_deterministic_truncated_xor_differential_model_arx_optimized.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "MznDeterministicTruncatedXorDifferentialModelARXOptimized"
       ],
-      "rationale": null,
+      "rationale": "The legacy test is assertion-free construction. A separate optimized class would conflate graph realization with execution/search strategy; v5 keeps the semantic problem shared and solver selection explicit.",
       "responsibility": "mzn deterministic truncated xor differential model arx optimized",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/semantics/cryptanalysis/truncated.py; next/src/claasp_next/representations/constraints/cp/trails.py"
     },
     {
       "acceptance_criterion": "Continuous propagation and fixed-mask correlation retain numeric provenance and tolerance while never claiming feasibility, optimality or exact probability.",
@@ -1101,34 +1093,32 @@
       "v5_destination": "next/src/claasp_next/semantics/cryptanalysis/continuous.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Typed differential/connector/linear composition preserves the fixed Speck p=1,r=7,q=3 fixture and seeded ChaCha differential-linear evidence with explicit claim kinds.",
       "dependencies": [
         "claasp",
         "math",
         "re",
         "time"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
       "path": "claasp/cipher_modules/models/cp/mzn_models/mzn_differential_linear_model.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "MznDifferentialLinearModel"
       ],
-      "rationale": null,
+      "rationale": "Mutable component partitions, mixed approximate/exact objectives and solver-shaped dictionaries are replaced by typed composition. Search weight, exact composed weight and sampled correlation are never conflated.",
       "responsibility": "mzn differential linear model",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/semantics/cryptanalysis/composed.py; next/src/claasp_next/analysis/composed.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Exact local incompatibility and typed multi-round forward/backward contradiction composition replace mixed sentinel domains.",
       "dependencies": [
         "ast",
         "claasp",
@@ -1137,53 +1127,49 @@
         "sage",
         "subprocess"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
       "path": "claasp/cipher_modules/models/cp/mzn_models/mzn_hybrid_impossible_xor_differential_model.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "MznHybridImpossibleXorDifferentialModel"
       ],
-      "rationale": null,
+      "rationale": "The legacy LBlock tests fix no input/output difference and assert counts of six placeholder-only solutions, solver metadata and arbitrary weights. They establish no reproducible cryptanalytic result beyond the shared incompatibility semantics.",
       "responsibility": "MZN Hybrid Impossible Xor Differential Model.",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/semantics/cryptanalysis/truncated.py; next/src/claasp_next/representations/constraints/cp/trails.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Typed forward/backward boundaries, Speck-7 UNSAT and the exact Simon-11 middle contradiction are independently preserved through CP.",
       "dependencies": [
         "claasp",
         "subprocess",
         "time"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
       "path": "claasp/cipher_modules/models/cp/mzn_models/mzn_impossible_xor_differential_model.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "MznImpossibleXorDifferentialModel"
       ],
-      "rationale": null,
+      "rationale": "Cipher graph mutation, inverse-name correspondence, generated-line cleanup and arbitrary low-complexity witnesses are replaced by explicit directional dataflows and contradiction positions.",
       "responsibility": "mzn impossible xor differential model",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/semantics/cryptanalysis/truncated.py; next/src/claasp_next/representations/constraints/cp/trails.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Probabilistic-truncated modular addition retains independently checked scaled costs 309/700 and multi-round Speck patterns/weights 1.0/0.0.",
       "dependencies": [
         "claasp",
         "minizinc"
@@ -1195,96 +1181,88 @@
       },
       "kind": "source",
       "path": "claasp/cipher_modules/models/cp/mzn_models/mzn_semi_deterministic_truncated_xor_differential_model.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "MznSemiDeterministicTruncatedXorDifferentialModel"
       ],
       "rationale": null,
       "responsibility": "mzn semi deterministic truncated xor differential model",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.8d",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/semantics/cryptanalysis/truncated.py; next/src/claasp_next/representations/constraints/cp/trails.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Typed zero/known/nonzero/unknown word domains propagate through graph-derived AES diffusion and native CP projection.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
       "path": "claasp/cipher_modules/models/cp/mzn_models/mzn_wordwise_deterministic_truncated_xor_differential_model.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "MznWordwiseDeterministicTruncatedXorDifferentialModel"
       ],
-      "rationale": null,
+      "rationale": "Activity integers, negative value sentinels and generated declaration counts are replaced by explicit typed domains. Exact and coarse abstractions are labelled separately.",
       "responsibility": "mzn wordwise deterministic truncated xor differential model",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/semantics/cryptanalysis/truncated.py; next/src/claasp_next/representations/constraints/cp/trails.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Shared exact differential semantics support fixed/bounded/optimal/enumerated trails with independently validated graph wiring.",
       "dependencies": [
         "claasp",
         "math",
         "sage",
         "time"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
       "path": "claasp/cipher_modules/models/cp/mzn_models/mzn_xor_differential_model.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "and_xor_differential_probability_ddt",
         "update_and_or_ddt_valid_probabilities",
         "MznXorDifferentialModel"
       ],
-      "rationale": null,
+      "rationale": "The legacy model duplicates search modes, parsing and component dispatch. v5 separates one semantic problem from CP/SMT representations and explicit solver drivers.",
       "responsibility": "mzn xor differential model",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/representations/constraints/cp/trails.py; next/src/claasp_next/representations/constraints/smt/word_differential.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Generic word-graph composition, explicit bounds/enumeration and independent transition decoding retain all fixed Speck optimum/count fixtures.",
       "dependencies": [
         "claasp",
         "copy",
         "minizinc"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
       "path": "claasp/cipher_modules/models/cp/mzn_models/mzn_xor_differential_model_arx_optimized.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "MznXorDifferentialModelARXOptimized"
       ],
-      "rationale": null,
+      "rationale": "Search annotations, mutable probability arrays and permutation/key-schedule variable-name partitions are optimizer details. Exact semantics are shared across CP and SMT rather than exposed as a separate graph realization.",
       "responsibility": "mzn xor differential model arx optimized",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/representations/constraints/cp/trails.py; next/src/claasp_next/representations/constraints/smt/word_differential.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -1341,31 +1319,29 @@
       "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Shared signed-correlation semantics support fixed/bounded/optimal/enumerated graph trails and preserve every fixed Speck result.",
       "dependencies": [
         "claasp",
         "math",
         "sage",
         "time"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
       "path": "claasp/cipher_modules/models/cp/mzn_models/mzn_xor_linear_model.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "MznXorLinearModel"
       ],
-      "rationale": null,
+      "rationale": "Generated declarations, probability arrays, mutable dispatch and result dictionaries are backend internals. v5 retains masks, exact Walsh counts/signs and complete enumeration independently of the solver encoding.",
       "responsibility": "mzn xor linear model",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/representations/constraints/cp/trails.py; next/src/claasp_next/representations/constraints/smt/word_linear.py"
     },
     {
       "acceptance_criterion": "Optional MiniZinc driver accepts an explicit solver id and executable without requiring a Python MiniZinc or Sage package.",
@@ -10659,11 +10635,11 @@
       "v5_destination": "next/tests/integration/test_minizinc_integration.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "The shared deterministic ARX semantics has executable fixed-vector coverage.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "remove",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -10672,26 +10648,24 @@
       },
       "kind": "test",
       "path": "tests/unit/cipher_modules/models/cp/mzn_models/mzn_deterministic_truncated_xor_differential_model_arx_optimized_test.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "test_build_deterministic_truncated_xor_differential_trail_model"
       ],
-      "rationale": null,
+      "rationale": "The legacy test calls a builder and contains no assertion.",
       "responsibility": "mzn deterministic truncated xor differential model arx optimized test",
-      "status": "planned-or-partially-migrated",
+      "status": "removed-in-m10.8d",
       "tests": [
         "test_build_deterministic_truncated_xor_differential_trail_model"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_truncated_differences.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "The fixed Speck deterministic boundary and real MiniZinc projection are independently preserved.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -10702,23 +10676,21 @@
       },
       "kind": "test",
       "path": "tests/unit/cipher_modules/models/cp/mzn_models/mzn_deterministic_truncated_xor_differential_model_test.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "test_build_deterministic_truncated_xor_differential_trail_model",
         "test_find_all_deterministic_truncated_xor_differential_trails",
         "test_find_one_deterministic_truncated_xor_differential_trail"
       ],
-      "rationale": null,
+      "rationale": "The count four is enumeration of unconstrained symmetric unknown patterns and the remaining checks are generated names, line counts, metadata and arbitrary witnesses. v5 tests the fixed mathematical boundary rather than serialization accidents.",
       "responsibility": "mzn deterministic truncated xor differential model test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [
         "test_build_deterministic_truncated_xor_differential_trail_model",
         "test_find_all_deterministic_truncated_xor_differential_trails",
         "test_find_one_deterministic_truncated_xor_differential_trail"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_truncated_differences.py; next/tests/integration/test_minizinc_integration.py"
     },
     {
       "acceptance_criterion": "All fixed component, one-/two-round and mask-correlation values are preserved with the stated tolerances and explicitly heuristic result type.",
@@ -10772,14 +10744,14 @@
       "v5_destination": "next/tests/unit/test_continuous_heuristics.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Speck's fixed weight-14 decomposition and all three fixed ChaCha input/mask empirical bounds are retained with deterministic samples.",
       "dependencies": [
         "claasp",
         "itertools",
         "math",
         "pytest"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -10798,9 +10770,7 @@
       },
       "kind": "test",
       "path": "tests/unit/cipher_modules/models/cp/mzn_models/mzn_differential_linear_model_test.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "test_get_truncated_xor_differential_components_in_border",
         "test_parse_linear_bit_id_handles_valid_and_invalid_formats",
@@ -10814,9 +10784,9 @@
         "test_diff_lin_chacha_permutation_cases",
         "test_optimal_semi_deterministic_differential_linear_trail_siphash"
       ],
-      "rationale": null,
+      "rationale": "Ballet/SipHash and golden-search cases assert only existence of an unfixed solver witness. Generated component names and arbitrary intermediate formatting are not contracts; all fixed boundaries, objective terms and empirical threshold fixtures are preserved.",
       "responsibility": "mzn differential linear model test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [
         "test_component_and_probability_values_example_prints",
         "test_diff_lin_chacha_permutation_cases",
@@ -10830,14 +10800,14 @@
         "test_optimal_semi_deterministic_differential_linear_trail_siphash",
         "test_parse_linear_bit_id_handles_valid_and_invalid_formats"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_composed_trails.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Possible and impossible middle boundaries receive real CP SAT/UNSAT checks and independent contradiction decoding.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -10850,9 +10820,7 @@
       },
       "kind": "test",
       "path": "tests/unit/cipher_modules/models/cp/mzn_models/mzn_hybrid_impossible_xor_differential_model_test.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "test_build_impossible_xor_differential_trail_model",
         "test_find_all_impossible_xor_differential_trails",
@@ -10860,9 +10828,9 @@
         "test_find_one_impossible_xor_differential_trail",
         "test_find_one_improbable_xor_differential_trail"
       ],
-      "rationale": null,
+      "rationale": "Six all-unknown LBlock outputs, generated declarations and a first arbitrary weight in {2,3} are not fixed scientific vectors. Exact typed boundary tests supersede them.",
       "responsibility": "mzn hybrid impossible xor differential model test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [
         "test_build_impossible_xor_differential_trail_model",
         "test_find_all_impossible_xor_differential_trails",
@@ -10870,14 +10838,14 @@
         "test_find_one_impossible_xor_differential_trail",
         "test_find_one_improbable_xor_differential_trail"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_truncated_differences.py; next/tests/integration/test_minizinc_integration.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "The seven-round Speck split is proven UNSAT and Simon-11 fixed external/middle patterns preserve the bit-23 contradiction.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -10894,9 +10862,7 @@
       },
       "kind": "test",
       "path": "tests/unit/cipher_modules/models/cp/mzn_models/mzn_impossible_xor_differential_model_test.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "test_build_impossible_xor_differential_trail_with_extensions_model",
         "test_build_impossible_xor_differential_trail_model",
@@ -10908,9 +10874,9 @@
         "test_find_one_impossible_xor_differential_trail_with_extensions",
         "test_find_one_impossible_xor_differential_cluster"
       ],
-      "rationale": null,
+      "rationale": "Generated counts, solver labels and unfixed arbitrary witnesses are not stable evidence. The fully automatic Simon literals and the result-bearing Speck infeasibility are retained with independent semantic checks.",
       "responsibility": "mzn impossible xor differential model test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [
         "test_build_impossible_xor_differential_trail_model",
         "test_build_impossible_xor_differential_trail_with_extensions_model",
@@ -10922,16 +10888,16 @@
         "test_find_one_impossible_xor_differential_trail_with_fully_automatic_model",
         "test_find_one_impossible_xor_differential_trail_with_initial_and_final_round"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_truncated_differences.py; next/tests/integration/test_minizinc_integration.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "All fixed modular-add costs and Speck output/weight fixtures are solved and independently checked.",
       "dependencies": [
         "claasp",
         "minizinc",
         "pytest"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -10949,9 +10915,7 @@
       },
       "kind": "test",
       "path": "tests/unit/cipher_modules/models/cp/mzn_models/mzn_semi_deterministic_truncated_xor_differential_model_test.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "test_build_semi_deterministic_truncated_xor_differential_trail_model",
         "test_find_one_semi_deterministic_truncated_xor_differential_trail_external",
@@ -10964,9 +10928,9 @@
         "test_find_lowest_semi_deterministic_truncated_xor_differential_trail_chacha",
         "test_find_lowest_four_round_semi_deterministic_truncated_xor_differential_trail_chacha_with_fixed_variables"
       ],
-      "rationale": null,
+      "rationale": "Unfixed one-solution/optimization metadata and Monte Carlo ChaCha smoke checks have no stable oracle. Fixed result-bearing CP fixtures are retained; empirical composed ChaCha evidence is owned by the separately seeded differential-linear audit.",
       "responsibility": "mzn semi deterministic truncated xor differential model test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [
         "test_build_semi_deterministic_truncated_xor_differential_trail_model",
         "test_counter_based_modadd_semideterministic_probability_700_sample",
@@ -10979,14 +10943,14 @@
         "test_modular_component_semideterministic_multiple_addends_constraints",
         "test_modular_component_semideterministic_probability_sample"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/integration/test_minizinc_integration.py; next/tests/unit/test_truncated_differences.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "A fixed one-byte AES input difference becomes four guaranteed nonzero column bytes and projects losslessly through MiniZinc.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -10995,26 +10959,24 @@
       },
       "kind": "test",
       "path": "tests/unit/cipher_modules/models/cp/mzn_models/mzn_wordwise_deterministic_truncated_xor_differential_model_test.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "test_find_one_wordwise_deterministic_truncated_xor_differential_trail"
       ],
-      "rationale": null,
+      "rationale": "The legacy test checks only mutable line counts and declarations. The v5 fixed diffusion fixture provides stronger semantic coverage without exposing sentinel encodings.",
       "responsibility": "mzn wordwise deterministic truncated xor differential model test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [
         "test_find_one_wordwise_deterministic_truncated_xor_differential_trail"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_truncated_differences.py; next/tests/integration/test_minizinc_integration.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Speck-5 optimum 9, short optimum 5, min-max 5 and fixed-weight/count evidence are independently solved and checked.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -11031,9 +10993,7 @@
       },
       "kind": "test",
       "path": "tests/unit/cipher_modules/models/cp/mzn_models/mzn_xor_differential_model_arx_optimized_test.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "generate_fixed_variables",
         "test_build_lowest_weight_xor_differential_trail_model",
@@ -11046,9 +11006,9 @@
         "test_get_probability_vars_from_permutation",
         "test_find_min_of_max_xor_differential_between_permutation_and_key_schedule"
       ],
-      "rationale": null,
+      "rationale": "Assertions on nSolutions>1, arbitrary weights>1 and internal probability-variable names are not scientific fixtures. Every exact numeric result is retained by generic graph models.",
       "responsibility": "mzn xor differential model arx optimized test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [
         "test_build_lowest_weight_xor_differential_trail_model",
         "test_build_lowest_xor_differential_trails_with_at_most_weight",
@@ -11060,7 +11020,7 @@
         "test_get_probability_vars_from_key_schedule",
         "test_get_probability_vars_from_permutation"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/integration/test_minizinc_integration.py; next/tests/integration/test_word_differential.py"
     },
     {
       "acceptance_criterion": "Toy Speck-2 exact weight-one count 6 and bounded count 7; toy Speck-4 weight-one UNSAT; identity lookup zero-weight feasibility and positive-weight UNSAT; Speck-5 optimum/fixed weight 9; exact AND DDT are independently preserved.",

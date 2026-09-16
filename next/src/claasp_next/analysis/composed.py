@@ -1,6 +1,7 @@
 """Independently checked fixtures for composed cryptanalysis."""
 
 from dataclasses import dataclass
+from random import Random
 
 from claasp_next.semantics.cryptanalysis import (
     DifferentialLinearTrail,
@@ -31,6 +32,106 @@ class DifferentialLinearFixture:
         """Return the composed correlation weight, including the exact connector term."""
 
         return self.trail.total_weight
+
+
+@dataclass(frozen=True, slots=True)
+class DifferentialLinearExperimentResult:
+    """Seeded empirical correlation, deliberately carrying no proof status."""
+
+    input_difference: int
+    output_mask: int
+    rounds: int
+    samples: int
+    even_parities: int
+    seed: int
+    provenance: str
+    claim_kind: str = "empirical"
+
+    def __post_init__(self) -> None:
+        if self.rounds <= 0 or self.samples <= 0:
+            raise ValueError("rounds and samples must be positive")
+        if not 0 <= self.even_parities <= self.samples:
+            raise ValueError("even parity count must lie within the sample count")
+        if self.claim_kind != "empirical":
+            raise ValueError("sampled correlations cannot claim proof status")
+
+    @property
+    def correlation(self) -> float:
+        """Return the observed signed correlation."""
+
+        return 2 * self.even_parities / self.samples - 1.0
+
+
+def run_chacha_differential_linear_experiment(
+    input_difference: int,
+    output_mask: int,
+    *,
+    rounds: int,
+    samples: int,
+    seed: int,
+) -> DifferentialLinearExperimentResult:
+    """Evaluate a fixed ChaCha differential-linear pair reproducibly.
+
+    ``rounds`` follows the official ChaCha convention used by the v5 public
+    primitive.  One official round equals two legacy ``ROUND_MODE_HALF``
+    rounds.  The dependency-free scalar loop intentionally owns empirical
+    evidence only; it neither proves feasibility nor validates a search
+    objective.
+    """
+
+    limit = 1 << 512
+    for name, value in (("input_difference", input_difference), ("output_mask", output_mask)):
+        if not isinstance(value, int) or isinstance(value, bool) or not 0 <= value < limit:
+            raise ValueError(f"{name} must be a 512-bit integer")
+    if not isinstance(rounds, int) or isinstance(rounds, bool) or rounds <= 0:
+        raise ValueError("rounds must be a positive integer")
+    if not isinstance(samples, int) or isinstance(samples, bool) or samples <= 0:
+        raise ValueError("samples must be a positive integer")
+    if not isinstance(seed, int) or isinstance(seed, bool):
+        raise TypeError("seed must be an integer")
+
+    generator = Random(seed)
+    even = 0
+    for _ in range(samples):
+        state = generator.getrandbits(512)
+        difference = _chacha_permute(state, rounds) ^ _chacha_permute(
+            state ^ input_difference, rounds
+        )
+        even += ((difference & output_mask).bit_count() & 1) == 0
+    return DifferentialLinearExperimentResult(
+        input_difference,
+        output_mask,
+        rounds,
+        samples,
+        even,
+        seed,
+        "legacy CLAASP ChaCha differential-linear empirical fixture",
+    )
+
+
+_CHACHA_COLUMNS = ((0, 4, 8, 12), (1, 5, 9, 13), (2, 6, 10, 14), (3, 7, 11, 15))
+_CHACHA_DIAGONALS = ((0, 5, 10, 15), (1, 6, 11, 12), (2, 7, 8, 13), (3, 4, 9, 14))
+_WORD_MASK = (1 << 32) - 1
+
+
+def _rotate_left_32(value: int, amount: int) -> int:
+    return ((value << amount) & _WORD_MASK) | (value >> (32 - amount))
+
+
+def _chacha_permute(value: int, rounds: int) -> int:
+    state = [(value >> (32 * (15 - index))) & _WORD_MASK for index in range(16)]
+    for round_number in range(rounds):
+        groups = _CHACHA_COLUMNS if round_number % 2 == 0 else _CHACHA_DIAGONALS
+        for a, b, c, d in groups:
+            state[a] = (state[a] + state[b]) & _WORD_MASK
+            state[d] = _rotate_left_32(state[d] ^ state[a], 16)
+            state[c] = (state[c] + state[d]) & _WORD_MASK
+            state[b] = _rotate_left_32(state[b] ^ state[c], 12)
+            state[a] = (state[a] + state[b]) & _WORD_MASK
+            state[d] = _rotate_left_32(state[d] ^ state[a], 8)
+            state[c] = (state[c] + state[d]) & _WORD_MASK
+            state[b] = _rotate_left_32(state[b] ^ state[c], 7)
+    return sum(word << (32 * (15 - index)) for index, word in enumerate(state))
 
 
 def speck32_differential_linear_legacy_fixture() -> DifferentialLinearFixture:

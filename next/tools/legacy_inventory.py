@@ -31,6 +31,126 @@ CATEGORY_BY_DIRECTORY = {
 }
 
 MIGRATION_OVERRIDES = {
+    "claasp/cipher_modules/models/cp/minizinc_utils/usefulfunctions.py": {
+        "v5_destination": "next/src/claasp_next/representations/constraints/cp/trails.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Exact modular-add differential relations and explicit weight bounds are emitted by typed CP representations and independently decoded.",
+        "rationale": "The embedded MiniZinc word-operation text, search annotations and fixed scale constants are representation internals. Typed model parts now derive the relation from shared semantics and keep exact versus scaled weights explicit.",
+    },
+    "claasp/cipher_modules/models/cp/mzn_model.py": {
+        "v5_destination": "next/src/claasp_next/representations/constraints/cp/model.py; next/src/claasp_next/drivers/solvers/minizinc.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Immutable MiniZinc IR, explicit solver configuration and typed result/status decoding cover model assembly, fixed constraints, enumeration and weight bounds.",
+        "rationale": "Mutable declarations, generated variable-name parsing, subprocess command dictionaries and mixed model/driver state are replaced by the representation/driver boundary. Scientific helper tables and result fixtures are inventoried separately.",
+    },
+    "claasp/cipher_modules/models/cp/mzn_models/mzn_deterministic_truncated_xor_differential_model.py": {
+        "v5_destination": "next/src/claasp_next/semantics/cryptanalysis/truncated.py; next/src/claasp_next/representations/constraints/cp/trails.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Three-valued deterministic propagation is typed, graph-derived and independently checked, including the fixed Speck round boundary.",
+        "rationale": "Generated declarations, model-line counts and arbitrary first witnesses are not public contracts. Shared truncated semantics and native CP projection replace component method-name dispatch.",
+    },
+    "claasp/cipher_modules/models/cp/mzn_models/mzn_deterministic_truncated_xor_differential_model_arx_optimized.py": {
+        "v5_destination": "next/src/claasp_next/semantics/cryptanalysis/truncated.py; next/src/claasp_next/representations/constraints/cp/trails.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "The ARX subset uses the same checked deterministic truncated semantics without a distinct public graph model.",
+        "rationale": "The legacy test is assertion-free construction. A separate optimized class would conflate graph realization with execution/search strategy; v5 keeps the semantic problem shared and solver selection explicit.",
+    },
+    "tests/unit/cipher_modules/models/cp/mzn_models/mzn_deterministic_truncated_xor_differential_model_test.py": {
+        "v5_destination": "next/tests/unit/test_truncated_differences.py; next/tests/integration/test_minizinc_integration.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "The fixed Speck deterministic boundary and real MiniZinc projection are independently preserved.",
+        "rationale": "The count four is enumeration of unconstrained symmetric unknown patterns and the remaining checks are generated names, line counts, metadata and arbitrary witnesses. v5 tests the fixed mathematical boundary rather than serialization accidents.",
+    },
+    "tests/unit/cipher_modules/models/cp/mzn_models/mzn_deterministic_truncated_xor_differential_model_arx_optimized_test.py": {
+        "v5_destination": "next/tests/unit/test_truncated_differences.py",
+        "prerequisites": [], "disposition": "remove", "status": "removed-in-m10.8d",
+        "acceptance_criterion": "The shared deterministic ARX semantics has executable fixed-vector coverage.",
+        "rationale": "The legacy test calls a builder and contains no assertion.",
+    },
+    "claasp/cipher_modules/models/cp/mzn_models/mzn_semi_deterministic_truncated_xor_differential_model.py": {
+        "v5_destination": "next/src/claasp_next/semantics/cryptanalysis/truncated.py; next/src/claasp_next/representations/constraints/cp/trails.py",
+        "prerequisites": [], "disposition": "migrate", "status": "migrated-in-m10.8d",
+        "acceptance_criterion": "Probabilistic-truncated modular addition retains independently checked scaled costs 309/700 and multi-round Speck patterns/weights 1.0/0.0.",
+        "rationale": None,
+    },
+    "tests/unit/cipher_modules/models/cp/mzn_models/mzn_semi_deterministic_truncated_xor_differential_model_test.py": {
+        "v5_destination": "next/tests/integration/test_minizinc_integration.py; next/tests/unit/test_truncated_differences.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "All fixed modular-add costs and Speck output/weight fixtures are solved and independently checked.",
+        "rationale": "Unfixed one-solution/optimization metadata and Monte Carlo ChaCha smoke checks have no stable oracle. Fixed result-bearing CP fixtures are retained; empirical composed ChaCha evidence is owned by the separately seeded differential-linear audit.",
+    },
+    "claasp/cipher_modules/models/cp/mzn_models/mzn_wordwise_deterministic_truncated_xor_differential_model.py": {
+        "v5_destination": "next/src/claasp_next/semantics/cryptanalysis/truncated.py; next/src/claasp_next/representations/constraints/cp/trails.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Typed zero/known/nonzero/unknown word domains propagate through graph-derived AES diffusion and native CP projection.",
+        "rationale": "Activity integers, negative value sentinels and generated declaration counts are replaced by explicit typed domains. Exact and coarse abstractions are labelled separately.",
+    },
+    "tests/unit/cipher_modules/models/cp/mzn_models/mzn_wordwise_deterministic_truncated_xor_differential_model_test.py": {
+        "v5_destination": "next/tests/unit/test_truncated_differences.py; next/tests/integration/test_minizinc_integration.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "A fixed one-byte AES input difference becomes four guaranteed nonzero column bytes and projects losslessly through MiniZinc.",
+        "rationale": "The legacy test checks only mutable line counts and declarations. The v5 fixed diffusion fixture provides stronger semantic coverage without exposing sentinel encodings.",
+    },
+    "claasp/cipher_modules/models/cp/mzn_models/mzn_impossible_xor_differential_model.py": {
+        "v5_destination": "next/src/claasp_next/semantics/cryptanalysis/truncated.py; next/src/claasp_next/representations/constraints/cp/trails.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Typed forward/backward boundaries, Speck-7 UNSAT and the exact Simon-11 middle contradiction are independently preserved through CP.",
+        "rationale": "Cipher graph mutation, inverse-name correspondence, generated-line cleanup and arbitrary low-complexity witnesses are replaced by explicit directional dataflows and contradiction positions.",
+    },
+    "tests/unit/cipher_modules/models/cp/mzn_models/mzn_impossible_xor_differential_model_test.py": {
+        "v5_destination": "next/tests/unit/test_truncated_differences.py; next/tests/integration/test_minizinc_integration.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "The seven-round Speck split is proven UNSAT and Simon-11 fixed external/middle patterns preserve the bit-23 contradiction.",
+        "rationale": "Generated counts, solver labels and unfixed arbitrary witnesses are not stable evidence. The fully automatic Simon literals and the result-bearing Speck infeasibility are retained with independent semantic checks.",
+    },
+    "claasp/cipher_modules/models/cp/mzn_models/mzn_hybrid_impossible_xor_differential_model.py": {
+        "v5_destination": "next/src/claasp_next/semantics/cryptanalysis/truncated.py; next/src/claasp_next/representations/constraints/cp/trails.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Exact local incompatibility and typed multi-round forward/backward contradiction composition replace mixed sentinel domains.",
+        "rationale": "The legacy LBlock tests fix no input/output difference and assert counts of six placeholder-only solutions, solver metadata and arbitrary weights. They establish no reproducible cryptanalytic result beyond the shared incompatibility semantics.",
+    },
+    "tests/unit/cipher_modules/models/cp/mzn_models/mzn_hybrid_impossible_xor_differential_model_test.py": {
+        "v5_destination": "next/tests/unit/test_truncated_differences.py; next/tests/integration/test_minizinc_integration.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Possible and impossible middle boundaries receive real CP SAT/UNSAT checks and independent contradiction decoding.",
+        "rationale": "Six all-unknown LBlock outputs, generated declarations and a first arbitrary weight in {2,3} are not fixed scientific vectors. Exact typed boundary tests supersede them.",
+    },
+    "claasp/cipher_modules/models/cp/mzn_models/mzn_differential_linear_model.py": {
+        "v5_destination": "next/src/claasp_next/semantics/cryptanalysis/composed.py; next/src/claasp_next/analysis/composed.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Typed differential/connector/linear composition preserves the fixed Speck p=1,r=7,q=3 fixture and seeded ChaCha differential-linear evidence with explicit claim kinds.",
+        "rationale": "Mutable component partitions, mixed approximate/exact objectives and solver-shaped dictionaries are replaced by typed composition. Search weight, exact composed weight and sampled correlation are never conflated.",
+    },
+    "tests/unit/cipher_modules/models/cp/mzn_models/mzn_differential_linear_model_test.py": {
+        "v5_destination": "next/tests/unit/test_composed_trails.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Speck's fixed weight-14 decomposition and all three fixed ChaCha input/mask empirical bounds are retained with deterministic samples.",
+        "rationale": "Ballet/SipHash and golden-search cases assert only existence of an unfixed solver witness. Generated component names and arbitrary intermediate formatting are not contracts; all fixed boundaries, objective terms and empirical threshold fixtures are preserved.",
+    },
+    "claasp/cipher_modules/models/cp/mzn_models/mzn_xor_differential_model_arx_optimized.py": {
+        "v5_destination": "next/src/claasp_next/representations/constraints/cp/trails.py; next/src/claasp_next/representations/constraints/smt/word_differential.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Generic word-graph composition, explicit bounds/enumeration and independent transition decoding retain all fixed Speck optimum/count fixtures.",
+        "rationale": "Search annotations, mutable probability arrays and permutation/key-schedule variable-name partitions are optimizer details. Exact semantics are shared across CP and SMT rather than exposed as a separate graph realization.",
+    },
+    "tests/unit/cipher_modules/models/cp/mzn_models/mzn_xor_differential_model_arx_optimized_test.py": {
+        "v5_destination": "next/tests/integration/test_minizinc_integration.py; next/tests/integration/test_word_differential.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Speck-5 optimum 9, short optimum 5, min-max 5 and fixed-weight/count evidence are independently solved and checked.",
+        "rationale": "Assertions on nSolutions>1, arbitrary weights>1 and internal probability-variable names are not scientific fixtures. Every exact numeric result is retained by generic graph models.",
+    },
+    "claasp/cipher_modules/models/cp/mzn_models/mzn_xor_differential_model.py": {
+        "v5_destination": "next/src/claasp_next/representations/constraints/cp/trails.py; next/src/claasp_next/representations/constraints/smt/word_differential.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Shared exact differential semantics support fixed/bounded/optimal/enumerated trails with independently validated graph wiring.",
+        "rationale": "The legacy model duplicates search modes, parsing and component dispatch. v5 separates one semantic problem from CP/SMT representations and explicit solver drivers.",
+    },
+    "claasp/cipher_modules/models/cp/mzn_models/mzn_xor_linear_model.py": {
+        "v5_destination": "next/src/claasp_next/representations/constraints/cp/trails.py; next/src/claasp_next/representations/constraints/smt/word_linear.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Shared signed-correlation semantics support fixed/bounded/optimal/enumerated graph trails and preserve every fixed Speck result.",
+        "rationale": "Generated declarations, probability arrays, mutable dispatch and result dictionaries are backend internals. v5 retains masks, exact Walsh counts/signs and complete enumeration independently of the solver encoding.",
+    },
     "claasp/cipher_modules/models/cp/minizinc_utils/mzn_bct_predicates.py": {
         "v5_destination": "next/src/claasp_next/semantics/cryptanalysis/composed.py",
         "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",

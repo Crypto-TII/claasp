@@ -1,4 +1,4 @@
-from math import isclose
+from math import isclose, log2
 
 import pytest
 
@@ -13,6 +13,7 @@ from claasp_next.semantics.cryptanalysis import (
 from claasp_next.primitives import Present
 from claasp_next.analysis import (
     check_speck32_differential_linear_fixture,
+    run_chacha_differential_linear_experiment,
     run_speck32_boomerang_experiment,
     speck32_differential_linear_legacy_fixture,
 )
@@ -138,3 +139,41 @@ def test_fixed_speck_differential_linear_fixture_separates_search_and_exact_weig
     assert fixture.trail.linear.total_weight == 3
     assert fixture.legacy_search_weight == 14
     assert isclose(fixture.exact_weight, 14.994353436858859)
+
+
+@pytest.mark.parametrize(
+    "input_difference,output_mask,rounds,samples,maximum_weight,even_parities",
+    (
+        (
+            int("8000000080000000000000000000000080000000000000000000000000000000"
+                "8080000080000000000000000000000000000080800080000000000000000000", 16),
+            int("0000000100000000000000010000000004000000000800800000000000000000"
+                "000000010008008000001000000000000000000000000101000000c000000001", 16),
+            4, 8192, 4, 4528,
+        ),
+        (
+            int("0000000000000000000000000000000000000000000000000000000000000000"
+                "0000000000000000000000000000000000000008000000000000000000000000", 16),
+            int("0001000000010001000000010003000300000080000000800000000000000180"
+                "0000000000000001000000010000000201000101010000000000010103000101", 16),
+            3, 8192, 3, 5204,
+        ),
+        (
+            int("0000000000000000000000000000000000000000000000000000000000000000"
+                "0000000000000000000000000000000000000000000000000000000040000000", 16),
+            int("0000000100000000000000010101018100008080000000000000000000080080"
+                "0000100000000101000000010000000000000000000000010100000100000101", 16),
+            4, 1024, 8, 618,
+        ),
+    ),
+)
+def test_fixed_chacha_differential_linear_pairs_remain_seeded_empirical_evidence(
+    input_difference, output_mask, rounds, samples, maximum_weight, even_parities
+):
+    result = run_chacha_differential_linear_experiment(
+        input_difference, output_mask, rounds=rounds, samples=samples, seed=42
+    )
+
+    assert result.even_parities == even_parities
+    assert -log2(abs(result.correlation)) < maximum_weight
+    assert result.claim_kind == "empirical"
