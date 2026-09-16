@@ -33,9 +33,9 @@ TikZ source is available with ``primitive.draw("tikz", trace)``; PDF output with
    >>> traced_drawing = primitive.draw("ascii", trace)
    >>> "| initial_add_round_key |" in traced_drawing
    True
-   >>> "| # (0x63,0x63,0x63,0x63) |" in traced_drawing
+   >>> "| # (0x63)" in traced_drawing
    True
-   >>> "[0] add_round_key_1[0:16] --> +------------+" in traced_drawing
+   >>> "[0] round_1/add_round_key[0:16] --> +------------+" in traced_drawing
    True
 
 Analysis reports

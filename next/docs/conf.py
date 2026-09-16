@@ -32,6 +32,7 @@ if guide == "user":
         "developer_guide.rst",
         "development.rst",
         "architecture.rst",
+        "composite_architecture.rst",
         "representation_architecture.rst",
         "diagram_representations.rst",
         "extending_analysis.rst",
@@ -47,6 +48,7 @@ else:
         "user_guide.rst",
         "getting_started.rst",
         "traditional_primitives.rst",
+        "composite_blocks.rst",
         "batch_evaluation.rst",
         "displaying_results.rst",
     ])
@@ -56,7 +58,9 @@ show_warning_types = True
 # cross-reference, but a TypeVar is not itself a documented class.
 nitpick_ignore = [
     ("py:class", "claasp_next.analysis.statistical_results.StatisticalReport"),
+    ("py:class", "claasp_next.graph.composite.CompositeTemplate"),
 ]
+nitpick_ignore_regex = [("py:class", r"(?:~T|.*\.T)")]
 
 html_theme = "furo"
 html_title = f"CLAASP {guide.title()} Guide"

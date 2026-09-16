@@ -11,6 +11,7 @@ renderers.
    :caption: Architecture
 
    architecture
+   composite_architecture
    representation_architecture
    diagram_representations
    concepts

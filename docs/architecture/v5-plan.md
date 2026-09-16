@@ -974,17 +974,14 @@ path is correct and stable.
 Unless this plan is explicitly revised, “next milestone” means the first
 unfinished item in this order:
 
-1. M10.9c10: add hierarchical composite graphs, reusable blocks, compositional
-   AES variants, and scoped representation access as the approved follow-on to
-   the closed reusable component catalogue.
-2. M10.9d: migrate every in-scope fixed-length primitive and its evidence;
+1. M10.9d: migrate every in-scope fixed-length primitive and its evidence;
    complete the remaining general realization/provenance work in M10.9e, then
    close the typed catalogue discovery/query API in M10.9f.
-3. M10.10, M10.11, M10.14, and M10.15: inversion/transformations, component
+2. M10.10, M10.11, M10.14, and M10.15: inversion/transformations, component
    analysis, reports, serialization, diagrams, code generation, and remaining
    tooling. M10.12 datasets/statistics and M10.13 neural distinguishers are
    already achieved.
-4. Build and validate the queued canonical v5 image before M11 integration
+3. Build and validate the queued canonical v5 image before M11 integration
    and release; run the M11a bidirectional migration audit before and after the
    final package rename. Image work is not a prerequisite for continuing
    M10.9c/M10.9d locally.
@@ -1013,10 +1010,11 @@ second checklist is intentionally not maintained. At this revision:
 - M10.6, including its advanced exact and heuristic analyses, is achieved.
 - M10.7 is achieved: the exhaustive inventory and filesystem gate include the
   reconciled ``develop`` changes.
-- M10.8, M10.9a, and M10.9b are achieved. M10.9c1–M10.9c9 closed the reusable
-  component catalogue with all 75 behavioral records resolved and a passing
-  machine gate. The approved M10.9c10 composite-graph follow-on is in progress;
-  complete primitive/evidence migration in M10.9d follows it.
+- M10.8, M10.9a, M10.9b, and M10.9c are achieved. M10.9c1–M10.9c9 closed the
+  inventoried reusable component catalogue; M10.9c10 adds immutable hierarchical
+  composite graphs, reusable blocks, compositional AES variants, and scoped
+  representation access. Complete primitive/evidence migration in M10.9d is
+  next.
 - M10.9e has an achieved AES vertical slice but still needs general result
   provenance and task-directed realization selection. M10.9f explicitly owns
   migration of the legacy catalogue/discovery API after the component and
@@ -1143,7 +1141,7 @@ is absent). Update this table in the same commit that changes milestone state.
 | Remaining model inventory closure (M10.8d) | Achieved | 149/149 model entries resolved with zero deferrals and a passing closure gate. Every executed fixed result is migrated or retained with an explicit exact/lower-bound/heuristic/empirical/legacy-regression claim kind; backend syntax, mutable registries, search-only heuristics and permanently skipped proprietary-only hypotheses are superseded or removed without being promoted to evidence. CP, SAT, CMS, SMT, MILP, algebraic and shared utility inventories are closed |
 | Primitive terminology/public API (M10.9a) | Achieved | Generic graph class `Cipher`→`Primitive` and catalogue package `ciphers`→`primitives`; official bare catalogue class names (`AES`/`AES128`, `Present`/`Present80`, `Speck`, `Simon`, `MiMC`, `Poseidon`, `ChaCha`, `Salsa`); `CipherDiagram`→`PrimitiveDiagram` and its `cipher_name`→`primitive_name` field; generic vocabulary (cipher graph/input/output/evaluation, `cipher_output` sentinel) replaced by primitive-oriented terms throughout source, tests, and both guides; dependency-free `tools/terminology_guard.py` wired into `pytest tests/unit` blocks new generic `cipher`/`ciphers` usage outside the real `block_cipher(s)`/`tweakable_block_cipher(s)` taxonomy and `ciphertext` |
 | Fixed-length primitive classification (M10.9b) | Achieved | All 149 legacy catalogue modules classified by fixed-length interface: 112 in the six semantic categories, 33 in orthogonal fixture folders, and four explicit non-primitive helpers. A dependency-free gate validates key/tweak roles, bijectivity obligations, official names, destinations, and removal of hash/MAC/stream as v5 categories |
-| Complete reusable component catalogue (M10.9c) | In progress | M10.9c1–M10.9c9 closed all 75 inventoried behavioral records; the approved M10.9c10 follow-on adds hierarchical reusable composite graphs before M10.9d |
+| Complete reusable component catalogue (M10.9c) | Achieved | M10.9c1–M10.9c9 close all 75 inventoried behavioral records; M10.9c10 adds immutable hierarchical composite graphs, reusable blocks, compositional AES variants, scoped representations, and executable documentation |
 | Component catalogue audit (M10.9c1) | Achieved | 77 owned records (44 source, 33 test), two package markers, 75 behavioral records, 252 legacy test functions, and 15 existing typed component baselines are machine checked and assigned without claiming semantic parity |
 | Authoring/state/helper foundations (M10.9c2) | Achieved | All 17 owned records have concrete dispositions; immutable graph types supersede mutable DTO/base/input/round state, Sage/report/discovery leftovers are removed or reassigned, and dependency-free integer/word/sequence/layout helpers preserve fixed evidence |
 | Structural and graph-boundary components (M10.9c3) | Achieved | All 12 records resolved: typed constants/permutations retain semantic values, generic logical-unit permutations supersede reverse/word subclasses, graph outputs/traces supersede output pseudo-operations, and explicit MSB-first `PackBits`/`UnpackBits` conversions have scalar/batch round-trip checks |
@@ -1153,12 +1151,12 @@ is absent). Update this table in the same commit that changes milestone state.
 | Feedback-register components (M10.9c7) | Achieved | Both records resolved: immutable feedback terms/register specs provide binary, conditional-clock, multi-clock, and explicit binary-extension-field word semantics with exhaustive truth maps and scalar/transposed-batch parity |
 | Permutation-specific reusable components (M10.9c8) | Achieved | All ten records resolved by composition: ShiftRows returns a generic logical-unit permutation, while Sigma and Gaston/Keccak/Xoodoo theta return typed binary `LinearMap` components; fixed legacy prefixes and independent Keccak diffusion are preserved without Sage or pickle caches |
 | Reusable component catalogue closure (M10.9c9) | Achieved | Central `claasp_next.components` exports and `Primitive.add_component` authoring are documented; 75/75 behavioral records have final dispositions and existing evidence destinations; host 506 passed/78 external deselected; user/developer doctests 213/460; Python-3.10 compatibility Docker 503 passed/3 skipped/78 deselected and external 76 passed/2 skipped/506 deselected |
-| Hierarchical composite graphs and reusable blocks (M10.9c10) | In progress | Immutable composite definitions/scopes, flat typed lowering, reusable parallel S-box and ChaCha-quarter-round blocks, compositional AES variants, scoped representation access, and user/developer documentation |
+| Hierarchical composite graphs and reusable blocks (M10.9c10) | Achieved | Immutable definitions and scope overlays lower to the canonical flat DAG; parallel S-box, ChaCha-quarter-round, AES key-schedule, and AES-round blocks support scoped evaluation/modelling; explicit AES variants and executable documentation complete the slice |
 | Immutable composite graph foundation (M10.9c10a) | Achieved | Frozen definitions and instances retain typed named boundaries and provenance; deterministic namespaced lowering preserves nested scope paths over the ordinary leaf DAG; definitions and instances project to the existing primitive representations; host 510 passed/78 external deselected |
 | Reusable composite block catalogue (M10.9c10b) | Achieved | Generic 2^n-entry parallel S-box definitions support arbitrary counts, flat-bit SAT-ready lowering, and typed finite-domain units; ChaCha quarter rounds expose named and joined outputs and preserve the RFC 8439 vector; host 514 passed/78 external deselected |
 | Compositional AES and variants (M10.9c10c) | Achieved | Canonical AES is assembled from reusable key-schedule, substitution-layer, and round definitions while preserving AES-128/192/256 and lookup/algebraic vectors; `AESVariant` supports alternate S-boxes and omitted MixColumns under an `aes_variant` identity with immutable derivation metadata; host 516 passed/78 external deselected |
-| Composite documentation and closure (M10.9c10d) | Next | Executable user/developer examples and complete host, documentation, compatibility, and external checkpoints |
-| Complete primitive implementations/evidence (M10.9d) | Planned | Every in-scope fixed-length primitive and parameter family migrated under the new taxonomy with evaluation and cryptanalytic fixtures |
+| Composite documentation and closure (M10.9c10d) | Achieved | User examples build AES from blocks, replace its S-box, omit MixColumns, evaluate ChaCha quarter rounds, and generate parallel-S-box/quarter-round CNF; developer docs specify immutable hierarchy and flat lowering; host 516 passed/78 external deselected; API/user/developer doctests 39/243/480; warning-free user/developer HTML; Python-3.10 compatibility Docker 513 passed/3 skipped/78 deselected and external 76 passed/2 skipped/516 deselected |
+| Complete primitive implementations/evidence (M10.9d) | Next | Every in-scope fixed-length primitive and parameter family migrated under the new taxonomy with evaluation and cryptanalytic fixtures |
 | ChaCha permutation evaluation slice (M10.9d1) | Achieved | Official `ChaCha` class, standard round convention, typed ARX graph, full ChaCha20 and two legacy toy vectors, and scalar/batch parity; cryptanalytic fixture migration remains separately tracked |
 | Salsa permutation evaluation slice (M10.9d2) | Achieved | Official `Salsa` class, standard full-round convention, typed ARX graph, both fixed legacy vectors, and scalar/batch parity; cryptanalytic fixtures remain separately tracked |
 | Primitive realizations/task selection (M10.9e) | In progress | Generic capability metadata and AES lookup/algebraic realizations implemented; result provenance and broader task-directed selection remain |

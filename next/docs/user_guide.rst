@@ -22,6 +22,7 @@ analysis guides for your own work.
    :caption: Working with primitives
 
    primitive_authoring
+   composite_blocks
    batch_evaluation
    analysis
    displaying_results

@@ -74,7 +74,16 @@ class _AESComposition(Primitive):
 
 
 class AES(_AESComposition):
-    """Construct canonical AES-128, AES-192, or AES-256 from reusable blocks."""
+    """Construct canonical AES-128, AES-192, or AES-256 from reusable blocks.
+
+    EXAMPLES::
+
+        >>> primitive = AES()
+        >>> plaintext = 0x00112233445566778899AABBCCDDEEFF
+        >>> key = 0x000102030405060708090A0B0C0D0E0F
+        >>> hex(primitive.evaluate(plaintext, key))
+        '0x69c4e0d86a7b0430d8cdb78070b4c55a'
+    """
 
     REALIZATIONS = (
         RealizationDescriptor(

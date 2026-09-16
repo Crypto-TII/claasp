@@ -17,9 +17,9 @@ def ParallelSBoxLayer(
     """Return independent equal-width S-boxes applied in parallel.
 
     With no ``domain`` the boundary is one flat MSB-first bit vector and each
-    box is a :class:`BitVectorSBox`, which is directly consumable by Boolean
+    box is a :class:`~claasp_next.components.BitVectorSBox`, which is directly consumable by Boolean
     constraint representations.  Supplying a finite encoded domain gives one
-    logical unit per box and uses ordinary :class:`SBox` leaves.
+    logical unit per box and uses ordinary :class:`~claasp_next.components.SBox` leaves.
     """
 
     frozen_table = tuple(table)

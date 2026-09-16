@@ -70,7 +70,7 @@ class CompositeDefinition:
 
         from claasp_next.graph.primitive import Primitive
 
-        primitive = Primitive(self.name, dict(self.input_types))
+        primitive = Primitive(self.name, dict(self.input_types), provenance=self.provenance)
         for components in self.rounds:
             primitive.add_round()
             for component in components:

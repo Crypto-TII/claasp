@@ -46,6 +46,12 @@ Components
 .. automodule:: claasp_next.components
    :members:
 
+Composite blocks
+----------------
+
+.. automodule:: claasp_next.composites
+   :members:
+
 Authoring utilities
 -------------------
 
