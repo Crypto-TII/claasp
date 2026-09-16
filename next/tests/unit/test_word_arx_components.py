@@ -115,7 +115,7 @@ def test_new_word_operations_have_transposed_batch_parity():
         "values": ((0x80, 0x55), (0xFF, 0x10), (0x01, 0x80)),
         "amount": ((0,), (4,), (9,)),
     }
-    expected = ((0x80, 0x55), (0x0F, 0x01), (0, 0))
+    expected = ((0x80, 0x55), (0x0F, 0x01), (0, 0x40))
     assert TransposedBatchEvaluator().evaluate(primitive, inputs).outputs == expected
 
 

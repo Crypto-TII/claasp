@@ -164,7 +164,19 @@ M10_9D_COMPLETION_SLICES = (
     "M10.9d1", "M10.9d2", "M10.9d3", "M10.9d4", "M10.9d5",
     "M10.9d6", "M10.9d7", "M10.9d8",
 )
-M10_9D_COMPLETED_SLICES = {"M10.9d4"}
+M10_9D_COMPLETED_SLICES = {"M10.9d1", "M10.9d2", "M10.9d4", "M10.9d5"}
+M10_9D_TEST_DESTINATIONS = {
+    "M10.9d1": "next/tests/unit/test_chacha.py",
+    "M10.9d2": "next/tests/unit/test_salsa.py",
+    "M10.9d4": (
+        "next/tests/unit/test_single_component_primitives.py; "
+        "next/tests/unit/test_toy_primitive_catalogue.py"
+    ),
+    "M10.9d5": (
+        "next/tests/unit/test_word_block_catalogue.py; "
+        "next/tests/unit/test_simon_cipher.py; next/tests/unit/test_speck.py"
+    ),
+}
 
 
 def _m10_9c_slice(path: str) -> str | None:
@@ -1561,8 +1573,7 @@ def record(path: Path) -> dict[str, Any]:
         is_test = item["kind"] == "test"
         item.update({
             "v5_destination": (
-                "next/tests/unit/test_single_component_primitives.py; "
-                "next/tests/unit/test_toy_primitive_catalogue.py"
+                M10_9D_TEST_DESTINATIONS[item["milestone_owner"]]
                 if is_test else item["v5_destination"]
             ),
             "prerequisites": ["M10.9c10"],

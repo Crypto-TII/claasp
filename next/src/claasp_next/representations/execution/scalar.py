@@ -334,8 +334,9 @@ class ScalarExecutionDriver:
     def _evaluate_variable_shift(
         cls, component: VariableShift, inputs: tuple[RuntimeValue, ...]
     ) -> RuntimeValue:
+        width = component.output_type.domain.width
         return cls._shift_values(
-            inputs[0], component.output_type.domain.width, inputs[1][0], component.direction
+            inputs[0], width, inputs[1][0] % width, component.direction
         )
 
     @staticmethod

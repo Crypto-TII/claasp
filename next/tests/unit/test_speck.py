@@ -1,5 +1,6 @@
 from claasp_next.primitives import Speck
 from claasp_next.representations.execution import BatchEvaluator, ScalarEvaluator, TransposedBatchEvaluator
+import pytest
 
 
 PLAINTEXT = (0x3B726574, 0x7475432D)
@@ -34,3 +35,11 @@ def test_speck_batch_backends_match_scalar_reference():
     )
     assert BatchEvaluator().evaluate(primitive, inputs).outputs == expected
     assert TransposedBatchEvaluator().evaluate(primitive, inputs).outputs == expected
+
+
+@pytest.mark.parametrize("block_size,key_size,plaintext,key,ciphertext", (
+    (32, 64, 0x6574694C, 0x1918111009080100, 0xA86842F2),
+    (64, 96, 0x74614620736E6165, 0x131211100B0A090803020100, 0x9F7952EC4175946C),
+))
+def test_speck_preserves_legacy_catalogue_vectors(block_size,key_size,plaintext,key,ciphertext):
+    assert Speck(block_size,key_size).evaluate(plaintext,key) == ciphertext
