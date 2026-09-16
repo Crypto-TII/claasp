@@ -129,6 +129,13 @@ class CompositeInstance:
     def evaluate(self, *args: object, output: str = "output", **kwargs: object):
         return self.definition.evaluate(*args, output=output, **kwargs)
 
+    def value_from(self, evaluation, output: str = "output") -> tuple[int, ...]:
+        """Read one named scope output from a parent-graph evaluation result."""
+
+        selection = self.output(output)
+        value = evaluation.value_of(selection.source.owner_id)
+        return tuple(value[position] for position in selection.positions)
+
     def analyze(self, output: str = "output"):
         return self.definition.analyze(output)
 

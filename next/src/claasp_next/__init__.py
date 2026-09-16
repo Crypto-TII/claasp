@@ -16,7 +16,9 @@ from claasp_next.representations.execution import (
     TransposedBatchExecutionDriver,
 )
 from claasp_next.encoding import bits_from_int, int_from_bits, int_from_units, units_from_int
-from claasp_next.composites import ChaChaQuarterRound, ParallelSBoxLayer
+from claasp_next.composites import (
+    AESKeySchedule, AESRound, AESSubstitutionLayer, ChaChaQuarterRound, ParallelSBoxLayer,
+)
 
 __all__ = [
     "BinaryExtensionField",
@@ -24,6 +26,9 @@ __all__ = [
     "BatchEvaluationResult",
     "BatchEvaluator",
     "BatchExecutionDriver",
+    "AESKeySchedule",
+    "AESRound",
+    "AESSubstitutionLayer",
     "CompositeBuilder",
     "CompositeDefinition",
     "CompositeInstance",

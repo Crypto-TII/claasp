@@ -127,7 +127,8 @@ def test_aes_preserves_legacy_configuration_semantics(key_size, rounds, nk):
     assert primitive.input("key").value_type.encoded_bit_size == key_size
     assert primitive.output.value_type.encoded_bit_size == 128
     assert primitive.input("plaintext").value_type.domain == BinaryExtensionField(8, 0x11B)
-    assert isinstance(primitive.components[0], Add)
+    assert isinstance(primitive.component("initial_add_round_key"), Add)
+    assert primitive.scope("key_schedule").definition.name == "AESKeySchedule"
 
 
 def test_aes_rejects_legacy_invalid_key_size():

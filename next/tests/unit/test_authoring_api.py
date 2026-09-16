@@ -66,7 +66,7 @@ def test_primitive_evaluate_accepts_packed_positional_keyword_and_mapping_inputs
     assert primitive.evaluate(plaintext=plaintext, key=key) == positional
     assert primitive.evaluate({"plaintext": plaintext, "key": key}) == positional
     trace = primitive.evaluate_with_trace(plaintext, key)
-    assert trace.value_of("sub_bytes_1")
+    assert primitive.scope("round_1").value_from(trace, "sub_bytes")
     assert positional == int.from_bytes(bytes(trace.output), "big")
 
 

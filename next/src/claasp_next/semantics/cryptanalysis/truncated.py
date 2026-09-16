@@ -487,8 +487,8 @@ def propagate_single_active_aes_byte(
         raise ValueError("primitive must contain at least one AES round")
     if not isinstance(byte_index, int) or isinstance(byte_index, bool) or not 0 <= byte_index < 16:
         raise ValueError("byte_index must be in range(16)")
-    shifted = _named_component(primitive, "shift_rows_1", Permutation)
-    mixed = _named_component(primitive, "mix_columns_1", LinearMap)
+    shifted = _named_component(primitive, "round_1/shift_rows", Permutation)
+    mixed = _named_component(primitive, "round_1/mix_columns", LinearMap)
     sbox_activity = [WordwiseXorDifference(8, WordwiseDifferenceKind.ZERO) for _ in range(16)]
     sbox_activity[byte_index] = WordwiseXorDifference(8, WordwiseDifferenceKind.NONZERO)
     shifted_activity = [sbox_activity[source] for source in shifted.mapping]

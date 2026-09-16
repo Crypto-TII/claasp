@@ -13,7 +13,13 @@ from claasp_next.graph.value_type import ValueType
 class Primitive:
     """A round-oriented directed acyclic graph of typed components."""
 
-    def __init__(self, family_name: str, inputs: Mapping[str, ValueType]) -> None:
+    def __init__(
+        self,
+        family_name: str,
+        inputs: Mapping[str, ValueType],
+        *,
+        provenance: tuple[tuple[str, str], ...] = (),
+    ) -> None:
         if not isinstance(family_name, str):
             raise TypeError("family_name must be a string")
         if not family_name:
@@ -34,6 +40,7 @@ class Primitive:
             ports[name] = Port(name, value_type)
 
         self._family_name = family_name
+        self._provenance = tuple(provenance)
         self._input_ports = ports
         self._ports = dict(ports)
         self._rounds: list[Round] = []
@@ -44,6 +51,12 @@ class Primitive:
     @property
     def family_name(self) -> str:
         return self._family_name
+
+    @property
+    def provenance(self) -> tuple[tuple[str, str], ...]:
+        """Stable identity and derivation metadata for this graph."""
+
+        return self._provenance
 
     @property
     def inputs(self) -> Mapping[str, Port]:

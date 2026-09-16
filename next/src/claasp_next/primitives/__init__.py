@@ -3,6 +3,7 @@
 from claasp_next.primitives.block_ciphers import (
     AES128,
     AES,
+    AESVariant,
     Present80,
     Present,
     Speck,
@@ -18,6 +19,7 @@ from claasp_next.primitives.toy_primitives import ToySpeck
 __all__ = [
     "AES128",
     "AES",
+    "AESVariant",
     "ChaCha",
     "MiMC",
     "Poseidon",
