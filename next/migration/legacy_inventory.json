@@ -28,9 +28,9 @@
       "v5_destination": "inapplicable: package marker reviewed with its containing module"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Typed Sage-independent graph and helper contracts preserve applicable semantic results without legacy mutable state, generated strings, or presentation behavior.",
       "dependencies": [],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
@@ -38,22 +38,20 @@
       "kind": "source",
       "milestone_owner": "M10.9c2",
       "path": "claasp/DTOs/component_state.py",
-      "prerequisites": [
-        "M10.9c1"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "ComponentState"
       ],
-      "rationale": null,
+      "rationale": "Immutable Port and Selection objects replace mutable component-id/bit-position state.",
       "responsibility": "component state",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.9c2",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/graph/port.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Typed Sage-independent graph and helper contracts preserve applicable semantic results without legacy mutable state, generated strings, or presentation behavior.",
       "dependencies": [],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
@@ -61,17 +59,15 @@
       "kind": "source",
       "milestone_owner": "M10.9c2",
       "path": "claasp/DTOs/power_of_2_word_based_dto.py",
-      "prerequisites": [
-        "M10.9c1"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "PowerOf2WordBasedDTO"
       ],
-      "rationale": null,
+      "rationale": "Typed Word domains and ValueType replace a mutable optional word-size probe DTO.",
       "responsibility": "power of 2 word based dto",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.9c2",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/domains/word.py; next/src/claasp_next/graph/value_type.py"
     },
     {
       "acceptance_criterion": "Containing package is represented by its non-marker entries.",
@@ -9055,14 +9051,14 @@
       "v5_destination": "claasp_next/primitives/toy_primitives/toyspn2.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Typed Sage-independent graph and helper contracts preserve applicable semantic results without legacy mutable state, generated strings, or presentation behavior.",
       "dependencies": [
         "bitstring",
         "claasp",
         "copy",
         "sage"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
@@ -9070,20 +9066,18 @@
       "kind": "source",
       "milestone_owner": "M10.9c2",
       "path": "claasp/component.py",
-      "prerequisites": [
-        "M10.9c1"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "check_size",
         "linear_layer_to_binary_matrix",
         "free_input",
         "Component"
       ],
-      "rationale": null,
+      "rationale": "The immutable component contract is separate from semantic providers and backend representations; legacy backend methods, generated identifiers, and printing are not component behavior.",
       "responsibility": "component",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.9c2",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/graph/component.py; next/src/claasp_next/semantics; next/src/claasp_next/representations/constraints"
     },
     {
       "acceptance_criterion": "Containing package is represented by its non-marker entries.",
@@ -9990,9 +9984,9 @@
       "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Typed Sage-independent graph and helper contracts preserve applicable semantic results without legacy mutable state, generated strings, or presentation behavior.",
       "dependencies": [],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
@@ -10000,22 +9994,20 @@
       "kind": "source",
       "milestone_owner": "M10.9c2",
       "path": "claasp/input.py",
-      "prerequisites": [
-        "M10.9c1"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "Input"
       ],
-      "rationale": null,
+      "rationale": "Validated immutable logical-unit selections replace parallel mutable id-link and bit-position arrays.",
       "responsibility": "input",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.9c2",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/graph/port.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Typed Sage-independent graph and helper contracts preserve applicable semantic results without legacy mutable state, generated strings, or presentation behavior.",
       "dependencies": [],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
@@ -10023,20 +10015,18 @@
       "kind": "source",
       "milestone_owner": "M10.9c2",
       "path": "claasp/name_mappings.py",
-      "prerequisites": [
-        "M10.9c1"
-      ],
+      "prerequisites": [],
       "public_entry_points": [],
-      "rationale": null,
+      "rationale": "Typed classes and the fixed-length taxonomy replace global free-form strings; historical names remain only in inventory evidence.",
       "responsibility": "name mappings",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.9c2",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/graph; next/src/claasp_next/primitives; next/src/claasp_next/semantics"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Typed Sage-independent graph and helper contracts preserve applicable semantic results without legacy mutable state, generated strings, or presentation behavior.",
       "dependencies": [],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
@@ -10044,24 +10034,22 @@
       "kind": "source",
       "milestone_owner": "M10.9c2",
       "path": "claasp/round.py",
-      "prerequisites": [
-        "M10.9c1"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "Round"
       ],
-      "rationale": null,
+      "rationale": "Primitive owns validated append-only graph construction; mutable reordering, removal, printing, and dictionary serialization belong to M10.10/M10.14/M10.15.",
       "responsibility": "round",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.9c2",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/graph/round.py; next/src/claasp_next/graph/primitive.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Typed Sage-independent graph and helper contracts preserve applicable semantic results without legacy mutable state, generated strings, or presentation behavior.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
@@ -10069,17 +10057,15 @@
       "kind": "source",
       "milestone_owner": "M10.9c2",
       "path": "claasp/rounds.py",
-      "prerequisites": [
-        "M10.9c1"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "Rounds"
       ],
-      "rationale": null,
+      "rationale": "Primitive and Round provide typed ownership and deterministic order without legacy mutable graph indexes or serialization helpers.",
       "responsibility": "rounds",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.9c2",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/graph/round.py; next/src/claasp_next/graph/primitive.py"
     },
     {
       "acceptance_criterion": "Containing package is represented by its non-marker entries.",
@@ -10102,7 +10088,7 @@
       "v5_destination": "inapplicable: package marker reviewed with its containing module"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Dependency-free bitmask and little-endian bit expansion reproduce fixed legacy results with explicit width validation.",
       "dependencies": [
         "sage"
       ],
@@ -10114,21 +10100,19 @@
       "kind": "source",
       "milestone_owner": "M10.9c2",
       "path": "claasp/utils/integer.py",
-      "prerequisites": [
-        "M10.9c1"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "generate_bitmask",
         "to_binary"
       ],
       "rationale": null,
       "responsibility": "integer",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9c2",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/utils/integers.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Integer/byte/word conversions and both rotation directions round-trip under explicit widths and byte orders.",
       "dependencies": [],
       "disposition": "migrate",
       "fixed_evidence": {
@@ -10138,9 +10122,7 @@
       "kind": "source",
       "milestone_owner": "M10.9c2",
       "path": "claasp/utils/integer_functions.py",
-      "prerequisites": [
-        "M10.9c1"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "bytearray_to_int",
         "int_to_bytearray",
@@ -10153,18 +10135,18 @@
       ],
       "rationale": null,
       "responsibility": "integer functions",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9c2",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/utils/integers.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "No filename/class-name heuristic, YAML dependency, or legacy taxonomy is retained in component authoring.",
       "dependencies": [
         "claasp",
         "os",
         "yaml"
       ],
-      "disposition": "migrate",
+      "disposition": "remove",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
@@ -10172,9 +10154,7 @@
       "kind": "source",
       "milestone_owner": "M10.9c2",
       "path": "claasp/utils/sage_scripts.py",
-      "prerequisites": [
-        "M10.9c1"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "get_cipher",
         "get_ciphers",
@@ -10183,14 +10163,14 @@
         "load_parameters",
         "get_cipher_type"
       ],
-      "rationale": null,
+      "rationale": "Dynamic folder scanning and class-name matching conflict with the committed typed catalogue required by M10.9f; the remaining identifier/scenario strings have no fixed tests or reusable mathematical semantics.",
       "responsibility": "sage scripts",
-      "status": "planned-or-partially-migrated",
+      "status": "removed-in-m10.9c2",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "removed: typed catalogue discovery is owned by M10.9f"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "List and tuple rotations/shifts preserve the legacy values and concrete sequence type without importing Sage.",
       "dependencies": [
         "sage"
       ],
@@ -10202,9 +10182,7 @@
       "kind": "source",
       "milestone_owner": "M10.9c2",
       "path": "claasp/utils/sequence_operations.py",
-      "prerequisites": [
-        "M10.9c1"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "rotate_right",
         "rotate_left",
@@ -10213,16 +10191,16 @@
       ],
       "rationale": null,
       "responsibility": "This module implements functions that operate on sequence types, such as list or tuple.",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9c2",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/utils/sequences.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "The component/authoring package imports no Jinja or report template machinery.",
       "dependencies": [
         "jinja2"
       ],
-      "disposition": "migrate",
+      "disposition": "remove",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
@@ -10230,9 +10208,7 @@
       "kind": "source",
       "milestone_owner": "M10.9c2",
       "path": "claasp/utils/templates.py",
-      "prerequisites": [
-        "M10.9c1"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "TemplateManager",
         "Template",
@@ -10243,14 +10219,14 @@
         "Footer",
         "Body"
       ],
-      "rationale": null,
+      "rationale": "The untested mutable builder renders legacy reports and carries no component semantics; typed report presentation is explicitly owned by M10.14.",
       "responsibility": "templates",
-      "status": "planned-or-partially-migrated",
+      "status": "removed-in-m10.9c2",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "removed: report templates belong to M10.14 presentation rather than the component-authoring layer"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Typed Sage-independent graph and helper contracts preserve applicable semantic results without legacy mutable state, generated strings, or presentation behavior.",
       "dependencies": [
         "claasp",
         "collections",
@@ -10263,7 +10239,7 @@
         "random",
         "sage"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
@@ -10271,9 +10247,7 @@
       "kind": "source",
       "milestone_owner": "M10.9c2",
       "path": "claasp/utils/utils.py",
-      "prerequisites": [
-        "M10.9c1"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "aggregate_list_of_dictionary",
         "bytes_positions_to_little_endian_for_32_bits",
@@ -10302,11 +10276,11 @@
         "poly_to_int",
         "coerce_exact_int"
       ],
-      "rationale": null,
+      "rationale": "The mixed Sage/NumPy/presentation module is split into small typed helpers and existing analysis modules. Fixed byte-layout, sign, distance, and exact-integer results are preserved where semantically applicable; random and printing details are not authoring contracts.",
       "responsibility": "utils",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.9c2",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/utils/integers.py; next/src/claasp_next/utils/layouts.py; next/src/claasp_next/utils/sequences.py; next/src/claasp_next/analysis"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -18557,12 +18531,12 @@
       "v5_destination": "next/tests (mapped to the owning migrated behavior)"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Typed components validate graph ownership while semantic registries and representations reject unsupported operations explicitly.",
       "dependencies": [
         "claasp",
         "pytest"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -18577,9 +18551,7 @@
       "kind": "test",
       "milestone_owner": "M10.9c2",
       "path": "tests/unit/component_test.py",
-      "prerequisites": [
-        "M10.9c1"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "DummyComponent",
         "make_component",
@@ -18590,9 +18562,9 @@
         "test_linear_mask_alias_methods_execute_updated_paths",
         "test_sat_linear_alias_uses_sat_constraints_fallback_when_available"
       ],
-      "rationale": null,
+      "rationale": "Backend-method aliases and their exact NotImplementedError strings came from the removed component/backend monolith; v5 tests the separated contracts directly.",
       "responsibility": "component test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.9c2",
       "tests": [
         "test_alias_method_falls_back_to_unimplemented_error_message",
         "test_alias_method_uses_common_base_implementation_when_available",
@@ -18601,7 +18573,7 @@
         "test_unimplemented_component_method_raises_not_implemented_error",
         "test_unimplemented_component_methods_accept_documented_arguments"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_typed_graph.py; next/tests/unit/test_propagation_problem.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -20161,7 +20133,7 @@
       "v5_destination": "next/tests (mapped to the owning migrated behavior)"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "The exact 4-/32-bit masks and 0x67452301 little-endian bit vector are independently checked.",
       "dependencies": [
         "claasp"
       ],
@@ -20176,21 +20148,19 @@
       "kind": "test",
       "milestone_owner": "M10.9c2",
       "path": "tests/unit/utils/integer_test.py",
-      "prerequisites": [
-        "M10.9c1"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "test_generate_bitmask",
         "test_to_binary"
       ],
       "rationale": null,
       "responsibility": "integer test",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9c2",
       "tests": [
         "test_generate_bitmask",
         "test_to_binary"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_authoring_utilities.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -20226,7 +20196,7 @@
       "v5_destination": "next/tests (mapped to the owning migrated behavior)"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Legacy list/tuple rotation and boundary shift values pass without Sage; arbitrary fill values cover symbolic-sequence use.",
       "dependencies": [
         "claasp",
         "sage"
@@ -20244,9 +20214,7 @@
       "kind": "test",
       "milestone_owner": "M10.9c2",
       "path": "tests/unit/utils/sequence_operations_test.py",
-      "prerequisites": [
-        "M10.9c1"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "test_rotate_left",
         "test_rotate_right",
@@ -20255,23 +20223,23 @@
       ],
       "rationale": null,
       "responsibility": "sequence operations test",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9c2",
       "tests": [
         "test_rotate_left",
         "test_rotate_right",
         "test_shift_left",
         "test_shift_right"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_authoring_utilities.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Byte layout and exact-integer fixed results remain executable; analysis semantics retain sign/distance evidence under their achieved owners.",
       "dependencies": [
         "claasp",
         "inspect",
         "os"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -20300,9 +20268,7 @@
       "kind": "test",
       "milestone_owner": "M10.9c2",
       "path": "tests/unit/utils/utils_test.py",
-      "prerequisites": [
-        "M10.9c1"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "test_bytes_positions_to_little_endian_for_32_bits",
         "test_pprint_dictionary",
@@ -20325,9 +20291,9 @@
         "test_coerce_exact_int_preserves_value",
         "test_coerce_exact_int_parameter_name_in_error"
       ],
-      "rationale": null,
+      "rationale": "Pretty-print/file smoke tests and unseeded random point shapes are presentation or incidental implementation details, while avalanche and continuous evidence already use typed deterministic results.",
       "responsibility": "utils test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.9c2",
       "tests": [
         "test_bytes_positions_to_little_endian_for_32_bits",
         "test_coerce_exact_int_parameter_name_in_error",
@@ -20350,7 +20316,7 @@
         "test_sgn_function",
         "test_signed_distance"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_authoring_utilities.py; next/tests/unit/test_avalanche_analysis.py; next/tests/unit/test_continuous_heuristics.py"
     }
   ],
   "schema_version": 1,

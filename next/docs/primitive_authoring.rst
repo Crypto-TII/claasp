@@ -30,8 +30,19 @@ so rebuilding the same graph produces the same names. Pass
 documentation. Duplicate explicit names are rejected.
 
 The ``claasp_next.utils`` module provides reusable finite-field arithmetic,
-fixed-width rotation, and matrix-layout helpers. Primitive classes should contain
-their round and key-schedule logic, not private copies of generic mathematics.
+fixed-width integer/word conversion, rotations, sequence shifts, and layout
+helpers. Primitive classes should contain their round and key-schedule logic,
+not private copies of generic mathematics.
+
+.. doctest::
+
+   >>> from claasp_next.utils import int_to_words, reverse_bytes_in_words
+   >>> int_to_words(0x01234567, 8, 32)
+   (1, 35, 69, 103)
+   >>> reverse_bytes_in_words(range(32))[:8]
+   (24, 25, 26, 27, 28, 29, 30, 31)
+
+These helpers validate widths and ordering explicitly and do not import Sage.
 The AES implementation is the current full-size example.
 
 Catalogue categories

@@ -1010,6 +1010,108 @@ for _module, (_disposition, _destination, _criterion) in _CMS_TEST_REPLACEMENTS.
     }
 
 
+_M10_9C2_SUPERSEDED_SOURCES = {
+    "claasp/DTOs/component_state.py": (
+        "next/src/claasp_next/graph/port.py",
+        "Immutable Port and Selection objects replace mutable component-id/bit-position state.",
+    ),
+    "claasp/DTOs/power_of_2_word_based_dto.py": (
+        "next/src/claasp_next/domains/word.py; next/src/claasp_next/graph/value_type.py",
+        "Typed Word domains and ValueType replace a mutable optional word-size probe DTO.",
+    ),
+    "claasp/component.py": (
+        "next/src/claasp_next/graph/component.py; next/src/claasp_next/semantics; next/src/claasp_next/representations/constraints",
+        "The immutable component contract is separate from semantic providers and backend representations; legacy backend methods, generated identifiers, and printing are not component behavior.",
+    ),
+    "claasp/input.py": (
+        "next/src/claasp_next/graph/port.py",
+        "Validated immutable logical-unit selections replace parallel mutable id-link and bit-position arrays.",
+    ),
+    "claasp/round.py": (
+        "next/src/claasp_next/graph/round.py; next/src/claasp_next/graph/primitive.py",
+        "Primitive owns validated append-only graph construction; mutable reordering, removal, printing, and dictionary serialization belong to M10.10/M10.14/M10.15.",
+    ),
+    "claasp/rounds.py": (
+        "next/src/claasp_next/graph/round.py; next/src/claasp_next/graph/primitive.py",
+        "Primitive and Round provide typed ownership and deterministic order without legacy mutable graph indexes or serialization helpers.",
+    ),
+    "claasp/name_mappings.py": (
+        "next/src/claasp_next/graph; next/src/claasp_next/primitives; next/src/claasp_next/semantics",
+        "Typed classes and the fixed-length taxonomy replace global free-form strings; historical names remain only in inventory evidence.",
+    ),
+    "claasp/utils/utils.py": (
+        "next/src/claasp_next/utils/integers.py; next/src/claasp_next/utils/layouts.py; next/src/claasp_next/utils/sequences.py; next/src/claasp_next/analysis",
+        "The mixed Sage/NumPy/presentation module is split into small typed helpers and existing analysis modules. Fixed byte-layout, sign, distance, and exact-integer results are preserved where semantically applicable; random and printing details are not authoring contracts.",
+    ),
+}
+for _path, (_destination, _rationale) in _M10_9C2_SUPERSEDED_SOURCES.items():
+    MIGRATION_OVERRIDES[_path] = {
+        "v5_destination": _destination,
+        "prerequisites": [],
+        "disposition": "supersede",
+        "status": "superseded-in-m10.9c2",
+        "acceptance_criterion": "Typed Sage-independent graph and helper contracts preserve applicable semantic results without legacy mutable state, generated strings, or presentation behavior.",
+        "rationale": _rationale,
+    }
+
+MIGRATION_OVERRIDES.update({
+    "claasp/utils/integer.py": {
+        "v5_destination": "next/src/claasp_next/utils/integers.py",
+        "prerequisites": [], "disposition": "migrate", "status": "migrated-in-m10.9c2",
+        "acceptance_criterion": "Dependency-free bitmask and little-endian bit expansion reproduce fixed legacy results with explicit width validation.",
+        "rationale": None,
+    },
+    "claasp/utils/integer_functions.py": {
+        "v5_destination": "next/src/claasp_next/utils/integers.py",
+        "prerequisites": [], "disposition": "migrate", "status": "migrated-in-m10.9c2",
+        "acceptance_criterion": "Integer/byte/word conversions and both rotation directions round-trip under explicit widths and byte orders.",
+        "rationale": None,
+    },
+    "claasp/utils/sequence_operations.py": {
+        "v5_destination": "next/src/claasp_next/utils/sequences.py",
+        "prerequisites": [], "disposition": "migrate", "status": "migrated-in-m10.9c2",
+        "acceptance_criterion": "List and tuple rotations/shifts preserve the legacy values and concrete sequence type without importing Sage.",
+        "rationale": None,
+    },
+    "claasp/utils/templates.py": {
+        "v5_destination": "removed: report templates belong to M10.14 presentation rather than the component-authoring layer",
+        "prerequisites": [], "disposition": "remove", "status": "removed-in-m10.9c2",
+        "acceptance_criterion": "The component/authoring package imports no Jinja or report template machinery.",
+        "rationale": "The untested mutable builder renders legacy reports and carries no component semantics; typed report presentation is explicitly owned by M10.14.",
+    },
+    "claasp/utils/sage_scripts.py": {
+        "v5_destination": "removed: typed catalogue discovery is owned by M10.9f",
+        "prerequisites": [], "disposition": "remove", "status": "removed-in-m10.9c2",
+        "acceptance_criterion": "No filename/class-name heuristic, YAML dependency, or legacy taxonomy is retained in component authoring.",
+        "rationale": "Dynamic folder scanning and class-name matching conflict with the committed typed catalogue required by M10.9f; the remaining identifier/scenario strings have no fixed tests or reusable mathematical semantics.",
+    },
+    "tests/unit/component_test.py": {
+        "v5_destination": "next/tests/unit/test_typed_graph.py; next/tests/unit/test_propagation_problem.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.9c2",
+        "acceptance_criterion": "Typed components validate graph ownership while semantic registries and representations reject unsupported operations explicitly.",
+        "rationale": "Backend-method aliases and their exact NotImplementedError strings came from the removed component/backend monolith; v5 tests the separated contracts directly.",
+    },
+    "tests/unit/utils/integer_test.py": {
+        "v5_destination": "next/tests/unit/test_authoring_utilities.py",
+        "prerequisites": [], "disposition": "migrate", "status": "migrated-in-m10.9c2",
+        "acceptance_criterion": "The exact 4-/32-bit masks and 0x67452301 little-endian bit vector are independently checked.",
+        "rationale": None,
+    },
+    "tests/unit/utils/sequence_operations_test.py": {
+        "v5_destination": "next/tests/unit/test_authoring_utilities.py",
+        "prerequisites": [], "disposition": "migrate", "status": "migrated-in-m10.9c2",
+        "acceptance_criterion": "Legacy list/tuple rotation and boundary shift values pass without Sage; arbitrary fill values cover symbolic-sequence use.",
+        "rationale": None,
+    },
+    "tests/unit/utils/utils_test.py": {
+        "v5_destination": "next/tests/unit/test_authoring_utilities.py; next/tests/unit/test_avalanche_analysis.py; next/tests/unit/test_continuous_heuristics.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.9c2",
+        "acceptance_criterion": "Byte layout and exact-integer fixed results remain executable; analysis semantics retain sign/distance evidence under their achieved owners.",
+        "rationale": "Pretty-print/file smoke tests and unseeded random point shapes are presentation or incidental implementation details, while avalanche and continuous evidence already use typed deterministic results.",
+    },
+})
+
+
 def python_paths() -> list[Path]:
     return sorted(path for root in LEGACY_ROOTS for path in root.rglob("*.py"))
 
