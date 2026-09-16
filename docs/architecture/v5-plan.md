@@ -593,6 +593,16 @@ permanently skipped tests.
   reduced-round behavior, scalar/batch parity, and cryptanalytic fixtures.
 - Record intentional exclusions explicitly; representative-family coverage is
   not completion of this milestone.
+- Let a simple primitive remain one module. When a primitive owns multiple
+  realizations, vetted parameter sets, generated constants, or substantial
+  supporting data, replace ``<primitive>.py`` with a same-import-path
+  ``<primitive>/`` package. Keep its public class, realizations, parameter
+  schemas, pinned data, provenance, licenses, and reference vectors together;
+  for example ``poseidon/{__init__,primitive,parameters,data}``.
+- Move the current Poseidon BN254 catalogue into that Poseidon package. A
+  top-level ``claasp_next.parameters`` namespace may remain only as a thin
+  convenience re-export and must not own primitive-specific data. Do not force
+  package directories on small primitives that need only one module.
 
 ##### M10.9e: Primitive realizations and task-directed selection
 
@@ -614,6 +624,49 @@ permanently skipped tests.
   algebraic graph consisting of inversion in ``GF(2^8)`` followed by the
   binary affine transformation. Trail-oriented tasks can require S-box
   semantics while algebraic tasks can require explicit algebraic semantics.
+
+##### M10.9f: Catalogue discovery and query API
+
+- Migrate ``claasp/catalog.py`` as a typed, Sage-independent catalogue API
+  over committed v5 primitive, component, realization, parameter, and driver
+  metadata. Do not rediscover the public taxonomy by importing every module or
+  by treating legacy folder names as semantic categories.
+- Preserve useful discovery and filtering behavior, including category,
+  component, ARX/AND-RX, S-box, FSR, tweak, realization capability, parameter
+  set, and available-driver queries. Availability probes must not import or
+  require optional solvers and frameworks during normal package import.
+- Return immutable structured records first. Terminal, Markdown, CSV, JSON,
+  and optional dataframe views consume those records through the M10.14
+  presentation layer rather than defining catalogue semantics themselves.
+- Preserve applicable legacy catalogue tests and add invariants tying every
+  discoverable entry to the M10.9b classification, official public name,
+  import path, input roles, bijectivity obligation, realization metadata, and
+  fixed evidence. Complete this milestone after M10.9c/M10.9d so discovery
+  cannot hide missing components or primitives.
+
+#### Cross-cutting legacy module ownership
+
+The exhaustive inventory remains the completion gate. The following ownership
+map prevents top-level utility modules from falling between family milestones:
+
+- M10.9c owns reusable component modules plus legacy DTOs, component-state,
+  input/round authoring helpers, name mappings, integer/sequence utilities,
+  templates, and Sage-helper replacement or removal.
+- M10.9f owns ``catalog.py`` and catalogue-specific discovery/filtering.
+- M10.10 owns ``editor.py``, ``inverse_cipher.py``, graph splitting/traversal,
+  and compound paired/XOR graph transformations.
+- M10.14 owns ``report.py`` and presentation/export behavior.
+- M10.15 owns evaluator/native/vectorized helper modules, the existing generic
+  bit/word C sources and headers, C/CUDA/Python code generation, serialization,
+  and remaining diagram/compiler utilities.
+- M11 owns reference-vector/test orchestration from ``tester.py`` and the final
+  audit that every legacy top-level module and test has a migrated,
+  superseded, removed, or explicitly out-of-scope disposition.
+
+Analysis-specific top-level modules remain owned by their existing achieved or
+planned analysis milestones: algebraic/model evidence by M10.8, continuous
+analysis by M10.6d6, component analysis by M10.11, avalanche/statistics by
+M10.12, and neural experiments by M10.13.
 
 #### M10.10: Primitive inversion and graph transformations
 
@@ -814,7 +867,8 @@ unfinished item in this order:
 1. M10.9c: migrate the complete reusable component catalogue in dependency
    order, using the M10.9b classification and inventory gates.
 2. M10.9d: migrate every in-scope fixed-length primitive and its evidence;
-   complete the remaining general realization/provenance work in M10.9e.
+   complete the remaining general realization/provenance work in M10.9e, then
+   close the typed catalogue discovery/query API in M10.9f.
 3. M10.10, M10.11, M10.14, and M10.15: inversion/transformations, component
    analysis, reports, serialization, diagrams, code generation, and remaining
    tooling. M10.12 datasets/statistics and M10.13 neural distinguishers are
@@ -849,8 +903,10 @@ second checklist is intentionally not maintained. At this revision:
 - M10.8, M10.9a, and M10.9b are achieved. M10.9c is the next catalogue
   checkpoint, followed by complete primitive/evidence migration in M10.9d.
 - M10.9e has an achieved AES vertical slice but still needs general result
-  provenance and task-directed realization selection. M10.10, M10.11,
-  M10.14, and M10.15 remain planned; M10.12 and M10.13 are achieved.
+  provenance and task-directed realization selection. M10.9f explicitly owns
+  migration of the legacy catalogue/discovery API after the component and
+  primitive catalogues are complete. M10.10, M10.11, M10.14, and M10.15
+  remain planned; M10.12 and M10.13 are achieved.
 - The canonical multi-architecture Python 3.11+ Docker image remains required
   before release, but is queued rather than the active migration workstream.
   Until then, local Python 3.11 and the legacy compatibility image are reported
@@ -978,6 +1034,7 @@ is absent). Update this table in the same commit that changes milestone state.
 | Salsa permutation evaluation slice (M10.9d2) | Achieved | Official `Salsa` class, standard full-round convention, typed ARX graph, both fixed legacy vectors, and scalar/batch parity; cryptanalytic fixtures remain separately tracked |
 | Primitive realizations/task selection (M10.9e) | In progress | Generic capability metadata and AES lookup/algebraic realizations implemented; result provenance and broader task-directed selection remain |
 | AES realization vertical slice (M10.9e1) | Achieved | Lookup S-box and field-inverse-plus-binary-affine graphs share one public class and all AES-128/192/256 fixed vectors; deterministic capability selection is documented and tested |
+| Catalogue discovery/query API (M10.9f) | Planned | Replace `claasp/catalog.py` with typed discovery over v5 primitive/component/realization/parameter/driver metadata; preserve filters and structured exports without eager optional dependencies or legacy taxonomy leakage |
 | Primitive inversion and graph transformations (M10.10) | Planned | Typed inverse semantics, partial inversion, round trips, slicing, key-schedule removal, and editor transformations |
 | Component analysis (M10.11) | Planned | Structured S-box, linear-layer, Boolean, field, and word-operation properties with optional heavy algebra/plots |
 | Dataset/statistical testing (M10.12) | Achieved | Seeded dependency-free datasets, canonical streaming artifacts, result parsers, and optional shell-free Dieharder and NIST STS execution drivers, each with bounded dedicated CI against the real executable |
