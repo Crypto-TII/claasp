@@ -109,6 +109,49 @@ def run_chacha_differential_linear_experiment(
     )
 
 
+def run_speck32_differential_linear_experiment(
+    input_difference: int,
+    output_mask: int,
+    *,
+    rounds: int,
+    samples: int,
+    seed: int,
+) -> DifferentialLinearExperimentResult:
+    """Evaluate a fixed zero-key Speck32/64 pair reproducibly."""
+
+    limit = 1 << 32
+    for name, value in (("input_difference", input_difference), ("output_mask", output_mask)):
+        if not isinstance(value, int) or isinstance(value, bool) or not 0 <= value < limit:
+            raise ValueError(f"{name} must be a 32-bit integer")
+    if not isinstance(rounds, int) or isinstance(rounds, bool) or not 1 <= rounds <= 22:
+        raise ValueError("rounds must be between 1 and 22")
+    if not isinstance(samples, int) or isinstance(samples, bool) or samples <= 0:
+        raise ValueError("samples must be a positive integer")
+    if not isinstance(seed, int) or isinstance(seed, bool):
+        raise TypeError("seed must be an integer")
+
+    from claasp_next.analysis.boomerang import _encrypt, _expand_key
+
+    round_keys = _expand_key((0, 0, 0, 0), rounds)
+    generator = Random(seed)
+    even = 0
+    for _ in range(samples):
+        value = generator.getrandbits(32)
+        first = _encrypt(divmod(value, 1 << 16), round_keys)
+        paired = _encrypt(divmod(value ^ input_difference, 1 << 16), round_keys)
+        difference = ((first[0] ^ paired[0]) << 16) | (first[1] ^ paired[1])
+        even += ((difference & output_mask).bit_count() & 1) == 0
+    return DifferentialLinearExperimentResult(
+        input_difference,
+        output_mask,
+        rounds,
+        samples,
+        even,
+        seed,
+        "legacy CLAASP zero-key Speck32/64 differential-linear empirical fixture",
+    )
+
+
 _CHACHA_COLUMNS = ((0, 4, 8, 12), (1, 5, 9, 13), (2, 6, 10, 14), (3, 7, 11, 15))
 _CHACHA_DIAGONALS = ((0, 5, 10, 15), (1, 6, 11, 12), (2, 7, 8, 13), (3, 4, 9, 14))
 _WORD_MASK = (1 << 32) - 1

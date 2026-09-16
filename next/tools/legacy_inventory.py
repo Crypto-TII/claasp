@@ -31,6 +31,84 @@ CATEGORY_BY_DIRECTORY = {
 }
 
 MIGRATION_OVERRIDES = {
+    "claasp/cipher_modules/models/sat/sat_models/sat_differential_linear_model.py": {
+        "v5_destination": "next/src/claasp_next/semantics/cryptanalysis/composed.py; next/src/claasp_next/analysis/composed.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Typed composition separates exact differential, connector and linear terms from seeded empirical correlations for fixed Speck and ChaCha pairs.",
+        "rationale": "A heterogeneous list of component method names, guessed unknown counts and one CNF objective do not define a distinct semantic model. v5 preserves reproducible fixed evidence and does not give sampled or approximate results SAT-proof status.",
+    },
+    "tests/unit/cipher_modules/models/sat/sat_models/sat_differential_linear_test.py": {
+        "v5_destination": "next/tests/unit/test_composed_trails.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "The fixed Speck weight decomposition, zero-key empirical bound and fixed ChaCha 6/8-half-round pairs are retained with deterministic sample counts.",
+        "rationale": "Unfixed existence checks for Speck, ChaCha and Aradi return arbitrary witnesses; their requested upper bounds are search parameters, not proven optima. Fixed result-bearing pairs are retained. Aradi primitive evaluation evidence remains owned by its catalogue migration rather than this removed SAT wrapper.",
+    },
+    "claasp/cipher_modules/models/sat/sat_models/sat_probabilistic_xor_truncated_differential_model.py": {
+        "v5_destination": "next/src/claasp_next/semantics/cryptanalysis/truncated.py; next/src/claasp_next/representations/constraints/cp/trails.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Exact prefixes and typed probabilistic/deterministic truncated suffixes compose explicitly and preserve all fixed Speck boundary patterns.",
+        "rationale": "Per-component string dispatch and heterogeneous SAT encodings are replaced by explicit phase composition. Empirical probability estimates remain labelled observations, not model weights or solver proofs.",
+    },
+    "tests/unit/cipher_modules/models/sat/sat_models/sat_probabilistic_xor_truncated_differential_test.py": {
+        "v5_destination": "next/tests/unit/test_truncated_differences.py; next/tests/integration/test_minizinc_integration.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "The fixed four-/five-round Speck outputs and modular-add probability costs are independently retained; invalid ternary values are rejected by typed constructors.",
+        "rationale": "Monte Carlo ranges are empirical and backend-independent; the Aradi/ChaCha searches fix no complete solver witness. Exact boundary literals and result-bearing weights are preserved by shared semantics, while catalogue-specific empirical vectors belong with their primitives.",
+    },
+    "claasp/cipher_modules/models/sat/sat_models/sat_semi_deterministic_truncated_xor_differential_model.py": {
+        "v5_destination": "next/src/claasp_next/semantics/cryptanalysis/truncated.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Typed partial differences preserve fixed Speck/ChaCha boundary values without exposing unknown-run counters as semantics.",
+        "rationale": "Unknown-window limits are optional pruning constraints, not probabilities. Direct strongest propagation owns deterministic claims; probabilistic transitions carry independently checked costs.",
+    },
+    "tests/unit/cipher_modules/models/sat/sat_models/sat_semi_deterministic_xor_differential_model_test.py": {
+        "v5_destination": "next/tests/unit/test_truncated_differences.py; next/tests/unit/test_composed_trails.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Both fixed three-round Speck outputs and the fixed reduced-ChaCha empirical evidence remain executable with explicit claim types.",
+        "rationale": "SAT/UNSAT caused solely by caller-selected unknown-run caps characterizes a heuristic configuration, not primitive infeasibility. The fixed semantic boundaries are retained; mutable counter configuration is removed.",
+    },
+    "claasp/cipher_modules/models/sat/sat_models/sat_shared_difference_paired_input_differential_model.py": {
+        "v5_destination": "next/src/claasp_next/analysis/composed.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Shared-input-difference experiments use explicit fixed differences, deterministic sampling and empirical result types.",
+        "rationale": "Four graph copies and equality clauses are an experimental construction, not a new propagation meaning. v5 keeps permutation execution separate from the statistical observation.",
+    },
+    "tests/unit/cipher_modules/models/sat/sat_models/sat_shared_difference_paired_input_differential_model_test.py": {
+        "v5_destination": "next/tests/unit/test_composed_trails.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Reduced ChaCha fixed-difference empirical evidence is represented without claiming an exact probability or SAT proof.",
+        "rationale": "The legacy checker has no seed and the assertion only bounds one stochastic run; solver status plus sampled weight cannot establish a cryptanalytic proof. The fixed ChaCha family is covered by deterministic composed experiments.",
+    },
+    "claasp/cipher_modules/models/sat/sat_models/sat_shared_difference_paired_input_differential_linear_model.py": {
+        "v5_destination": "next/src/claasp_next/analysis/composed.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Backward composed evidence is represented as explicit permutation execution plus an empirical observation, never as an exact trail probability.",
+        "rationale": "Graph inversion, prefix mutation, pickled cache files and four-copy CNF construction conflate graph editing, representation and experiment. Those concerns are separated in v5.",
+    },
+    "tests/unit/cipher_modules/models/sat/sat_models/sat_shared_difference_paired_input_differential_linear_model_test.py": {
+        "v5_destination": "next/tests/unit/test_composed_trails.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Fixed reduced-ChaCha composed observations retain empirical provenance without generated inverse-graph cache state.",
+        "rationale": "The legacy test mutates/pickles a graph, uses only 256 unseeded samples and asserts a broad bound. It is not reproducible proof evidence; deterministic fixed-pair experiments supersede it.",
+    },
+    "claasp/cipher_modules/models/sat/utils/mzn_predicates.py": {
+        "v5_destination": "next/src/claasp_next/representations/constraints/cp/trails.py; next/src/claasp_next/representations/constraints/smt/transitions.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Exact word-operation relations are derived from shared semantics by each representation rather than embedded as cross-backend MiniZinc strings.",
+        "rationale": "Despite its SAT location this file is a large MiniZinc source template. Typed CP and SMT lowerings replace copied predicate text and fixed search annotations.",
+    },
+    "claasp/cipher_modules/models/sat/utils/n_window_heuristic_helper.py": {
+        "v5_destination": "next/src/claasp_next/analysis",
+        "prerequisites": [], "disposition": "remove", "status": "removed-in-m10.8d",
+        "acceptance_criterion": "Exact trail models remain complete without window pruning; optional search strategies cannot change decoded transition validity.",
+        "rationale": "Full-window counters constrain solver search and may deliberately discard valid trails. They are neither primitive semantics nor probability evidence and are not part of the simple v5 public API.",
+    },
+    "claasp/cipher_modules/models/sat/utils/utils.py": {
+        "v5_destination": "next/src/claasp_next/representations/constraints/sat; next/src/claasp_next/semantics/cryptanalysis",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Component semantics selection, phase composition and CNF helpers use typed registries/models and fail explicitly for unsupported operations.",
+        "rationale": "Method-name dictionaries and in-place component-list rewrites conflate semantic selection with backend dispatch. v5 uses immutable propagation problems and explicit phase boundaries.",
+    },
     "claasp/cipher_modules/models/sat/sat_model.py": {
         "v5_destination": "next/src/claasp_next/representations/constraints/sat/model.py; next/src/claasp_next/drivers/solvers/minisat.py",
         "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",

@@ -52,6 +52,22 @@ def test_speck_three_round_truncated_output_reproduces_legacy_sat_fixture():
     assert str(difference) == "???????????????0????????????????"
 
 
+def test_speck_mixed_exact_truncated_sat_boundaries_are_preserved():
+    start = "00000000011000000000000000000000"
+    expected = {
+        4: "????????10000000????????100000?1",
+        5: "???????????????0????????????????",
+    }
+    for rounds, output in expected.items():
+        primitive = Speck(number_of_rounds=rounds)
+        difference = TruncatedXorDifference.parse(start)
+        for round_number in range(2, rounds):
+            difference = propagate_two_word_speck_round(
+                primitive, difference, round_number
+            )
+        assert str(difference) == output
+
+
 def test_graph_level_impossible_sbox_transition_is_exhaustively_refuted():
     primitive = Present(number_of_rounds=1)
 

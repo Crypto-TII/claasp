@@ -14,6 +14,7 @@ from claasp_next.primitives import Present
 from claasp_next.analysis import (
     check_speck32_differential_linear_fixture,
     run_chacha_differential_linear_experiment,
+    run_speck32_differential_linear_experiment,
     run_speck32_boomerang_experiment,
     speck32_differential_linear_legacy_fixture,
 )
@@ -176,4 +177,14 @@ def test_fixed_chacha_differential_linear_pairs_remain_seeded_empirical_evidence
 
     assert result.even_parities == even_parities
     assert -log2(abs(result.correlation)) < maximum_weight
+    assert result.claim_kind == "empirical"
+
+
+def test_fixed_speck_differential_linear_pair_remains_seeded_empirical_evidence():
+    result = run_speck32_differential_linear_experiment(
+        0x02110A04, 0x02000201, rounds=6, samples=1 << 15, seed=42
+    )
+
+    assert result.even_parities == 16589
+    assert -log2(abs(result.correlation)) <= 8
     assert result.claim_kind == "empirical"

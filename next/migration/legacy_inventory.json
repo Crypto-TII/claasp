@@ -2326,133 +2326,123 @@
       "v5_destination": "next/src/claasp_next/analysis/boolean.py; next/src/claasp_next/representations/constraints/sat/lowering.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Typed composition separates exact differential, connector and linear terms from seeded empirical correlations for fixed Speck and ChaCha pairs.",
       "dependencies": [
         "claasp",
         "time"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
       "path": "claasp/cipher_modules/models/sat/sat_models/sat_differential_linear_model.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "SatDifferentialLinearModel"
       ],
-      "rationale": null,
+      "rationale": "A heterogeneous list of component method names, guessed unknown counts and one CNF objective do not define a distinct semantic model. v5 preserves reproducible fixed evidence and does not give sampled or approximate results SAT-proof status.",
       "responsibility": "sat differential linear model",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/semantics/cryptanalysis/composed.py; next/src/claasp_next/analysis/composed.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Exact prefixes and typed probabilistic/deterministic truncated suffixes compose explicitly and preserve all fixed Speck boundary patterns.",
       "dependencies": [
         "claasp",
         "time"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
       "path": "claasp/cipher_modules/models/sat/sat_models/sat_probabilistic_xor_truncated_differential_model.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "SatProbabilisticXorTruncatedDifferentialModel"
       ],
-      "rationale": null,
+      "rationale": "Per-component string dispatch and heterogeneous SAT encodings are replaced by explicit phase composition. Empirical probability estimates remain labelled observations, not model weights or solver proofs.",
       "responsibility": "sat probabilistic xor truncated differential model",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/semantics/cryptanalysis/truncated.py; next/src/claasp_next/representations/constraints/cp/trails.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Typed partial differences preserve fixed Speck/ChaCha boundary values without exposing unknown-run counters as semantics.",
       "dependencies": [
         "claasp",
         "time"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
       "path": "claasp/cipher_modules/models/sat/sat_models/sat_semi_deterministic_truncated_xor_differential_model.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "group_triples",
         "SatSemiDeterministicTruncatedXorDifferentialModel"
       ],
-      "rationale": null,
+      "rationale": "Unknown-window limits are optional pruning constraints, not probabilities. Direct strongest propagation owns deterministic claims; probabilistic transitions carry independently checked costs.",
       "responsibility": "sat semi deterministic truncated xor differential model",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/semantics/cryptanalysis/truncated.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Backward composed evidence is represented as explicit permutation execution plus an empirical observation, never as an exact trail probability.",
       "dependencies": [
         "claasp",
         "copy",
         "time"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
       "path": "claasp/cipher_modules/models/sat/sat_models/sat_shared_difference_paired_input_differential_linear_model.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "SharedDifferencePairedInputDifferentialLinearModel"
       ],
-      "rationale": null,
+      "rationale": "Graph inversion, prefix mutation, pickled cache files and four-copy CNF construction conflate graph editing, representation and experiment. Those concerns are separated in v5.",
       "responsibility": "sat shared difference paired input differential linear model",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/analysis/composed.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Shared-input-difference experiments use explicit fixed differences, deterministic sampling and empirical result types.",
       "dependencies": [
         "claasp",
         "copy",
         "time"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
       "path": "claasp/cipher_modules/models/sat/sat_models/sat_shared_difference_paired_input_differential_model.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "add_prefix_id_to_components",
         "SharedDifferencePairedInputDifferentialModel"
       ],
-      "rationale": null,
+      "rationale": "Four graph copies and equality clauses are an experimental construction, not a new propagation meaning. v5 keeps permutation execution separate from the statistical observation.",
       "responsibility": "sat shared difference paired input differential model",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/analysis/composed.py"
     },
     {
       "acceptance_criterion": "Exact, deterministic and probabilistic truncated meanings use separate typed result classes and validation rules.",
@@ -2581,29 +2571,27 @@
       "v5_destination": "next/src/claasp_next/graph"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Exact word-operation relations are derived from shared semantics by each representation rather than embedded as cross-backend MiniZinc strings.",
       "dependencies": [],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
       "path": "claasp/cipher_modules/models/sat/utils/mzn_predicates.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "get_word_operations"
       ],
-      "rationale": null,
+      "rationale": "Despite its SAT location this file is a large MiniZinc source template. Typed CP and SMT lowerings replace copied predicate text and fixed search annotations.",
       "responsibility": "mzn predicates",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/representations/constraints/cp/trails.py; next/src/claasp_next/representations/constraints/smt/transitions.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Exact trail models remain complete without window pruning; optional search strategies cannot change decoded transition validity.",
       "dependencies": [
         "joblib",
         "os",
@@ -2611,16 +2599,14 @@
         "re",
         "sympy"
       ],
-      "disposition": "migrate",
+      "disposition": "remove",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
       "path": "claasp/cipher_modules/models/sat/utils/n_window_heuristic_helper.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "save_list",
         "load_list",
@@ -2628,14 +2614,14 @@
         "convert_clauses",
         "generate_window_size_clauses"
       ],
-      "rationale": null,
+      "rationale": "Full-window counters constrain solver search and may deliberately discard valid trails. They are neither primitive semantics nor probability evidence and are not part of the simple v5 public API.",
       "responsibility": "n window heuristic helper",
-      "status": "planned-or-partially-migrated",
+      "status": "removed-in-m10.8d",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/analysis"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Component semantics selection, phase composition and CNF helpers use typed registries/models and fail explicitly for unsupported operations.",
       "dependencies": [
         "claasp",
         "itertools",
@@ -2644,16 +2630,14 @@
         "subprocess",
         "time"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
       "path": "claasp/cipher_modules/models/sat/utils/utils.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "cms_add_clauses_to_solver",
         "create_numerical_cnf",
@@ -2694,11 +2678,11 @@
         "get_cnf_semi_deterministic_window_2",
         "get_cnf_semi_deterministic_window_3"
       ],
-      "rationale": null,
+      "rationale": "Method-name dictionaries and in-place component-list rewrites conflate semantic selection with backend dispatch. v5 uses immutable propagation problems and explicit phase boundaries.",
       "responsibility": "Utilities for SAT model.",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/representations/constraints/sat; next/src/claasp_next/semantics/cryptanalysis"
     },
     {
       "acceptance_criterion": "Containing package is represented by its non-marker entries.",
@@ -12231,7 +12215,7 @@
       "v5_destination": "next/tests/integration/test_z3_integration.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "The fixed Speck weight decomposition, zero-key empirical bound and fixed ChaCha 6/8-half-round pairs are retained with deterministic sample counts.",
       "dependencies": [
         "claasp",
         "itertools",
@@ -12239,7 +12223,7 @@
         "platform",
         "pytest"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -12259,9 +12243,7 @@
       },
       "kind": "test",
       "path": "tests/unit/cipher_modules/models/sat/sat_models/sat_differential_linear_test.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "test_differential_linear_trail_with_fixed_weight_6_rounds_speck",
         "test_lowest_differential_linear_trail_with_fixed_weight_6_rounds_speck",
@@ -12276,9 +12258,9 @@
         "test_diff_lin_speck",
         "test_diff_lin_aradi"
       ],
-      "rationale": null,
+      "rationale": "Unfixed existence checks for Speck, ChaCha and Aradi return arbitrary witnesses; their requested upper bounds are search parameters, not proven optima. Fixed result-bearing pairs are retained. Aradi primitive evaluation evidence remains owned by its catalogue migration rather than this removed SAT wrapper.",
       "responsibility": "sat differential linear test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [
         "test_diff_lin_aradi",
         "test_diff_lin_chacha",
@@ -12293,16 +12275,16 @@
         "test_differential_linear_trail_with_fixed_weight_8_rounds_chacha_one_case",
         "test_lowest_differential_linear_trail_with_fixed_weight_6_rounds_speck"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_composed_trails.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "The fixed four-/five-round Speck outputs and modular-add probability costs are independently retained; invalid ternary values are rejected by typed constructors.",
       "dependencies": [
         "claasp",
         "itertools",
         "pytest"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -12318,9 +12300,7 @@
       },
       "kind": "test",
       "path": "tests/unit/cipher_modules/models/sat/sat_models/sat_probabilistic_xor_truncated_differential_test.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "test_differential_truncated_in_single_key_scenario_speck3264",
         "test_differential_in_single_key_scenario_aradi",
@@ -12331,9 +12311,9 @@
         "test_differential_linear_trail_with_fixed_weight_4_rounds_aradi",
         "test_differential_linear_trail_with_fixed_weight_3_rounds_chacha"
       ],
-      "rationale": null,
+      "rationale": "Monte Carlo ranges are empirical and backend-independent; the Aradi/ChaCha searches fix no complete solver witness. Exact boundary literals and result-bearing weights are preserved by shared semantics, while catalogue-specific empirical vectors belong with their primitives.",
       "responsibility": "sat probabilistic xor truncated differential test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [
         "test_differential_in_single_key_scenario_aradi",
         "test_differential_linear_trail_with_fixed_weight_3_rounds_chacha",
@@ -12344,14 +12324,14 @@
         "test_find_one_xor_probabilistic_truncated_differential_trail_with_fixed_weight_5_rounds",
         "test_wrong_fixed_variables_assignment"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_truncated_differences.py; next/tests/integration/test_minizinc_integration.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Both fixed three-round Speck outputs and the fixed reduced-ChaCha empirical evidence remain executable with explicit claim types.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -12364,9 +12344,7 @@
       },
       "kind": "test",
       "path": "tests/unit/cipher_modules/models/sat/sat_models/sat_semi_deterministic_xor_differential_model_test.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "test_find_one_semi_deterministic_truncated_xor_differential_trail",
         "test_find_one_semi_deterministic_truncated_xor_differential_trail_with_window_size_configuration",
@@ -12374,9 +12352,9 @@
         "test_find_one_semi_deterministic_truncated_xor_differential_trail_with_window_size_configuration_chacha",
         "test_find_one_semi_deterministic_truncated_xor_differential_trail_with_window_size_for_chacha_1_round_satisfiable"
       ],
-      "rationale": null,
+      "rationale": "SAT/UNSAT caused solely by caller-selected unknown-run caps characterizes a heuristic configuration, not primitive infeasibility. The fixed semantic boundaries are retained; mutable counter configuration is removed.",
       "responsibility": "sat semi deterministic xor differential model test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [
         "test_find_one_semi_deterministic_truncated_xor_differential_trail",
         "test_find_one_semi_deterministic_truncated_xor_differential_trail_with_window_size_configuration",
@@ -12384,17 +12362,17 @@
         "test_find_one_semi_deterministic_truncated_xor_differential_trail_with_window_size_configuration_unsat",
         "test_find_one_semi_deterministic_truncated_xor_differential_trail_with_window_size_for_chacha_1_round_satisfiable"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_truncated_differences.py; next/tests/unit/test_composed_trails.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Fixed reduced-ChaCha composed observations retain empirical provenance without generated inverse-graph cache state.",
       "dependencies": [
         "claasp",
         "itertools",
         "os",
         "pickle"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -12403,9 +12381,7 @@
       },
       "kind": "test",
       "path": "tests/unit/cipher_modules/models/sat/sat_models/sat_shared_difference_paired_input_differential_linear_model_test.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "add_prefix_id_to_inputs",
         "add_ciphertext_and_new_plaintext_to_inputs",
@@ -12413,20 +12389,20 @@
         "construct_backward_chacha",
         "test_backward_direction_distinguisher"
       ],
-      "rationale": null,
+      "rationale": "The legacy test mutates/pickles a graph, uses only 256 unseeded samples and asserts a broad bound. It is not reproducible proof evidence; deterministic fixed-pair experiments supersede it.",
       "responsibility": "sat shared difference paired input differential linear model test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [
         "test_backward_direction_distinguisher"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_composed_trails.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Reduced ChaCha fixed-difference empirical evidence is represented without claiming an exact probability or SAT proof.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -12435,19 +12411,17 @@
       },
       "kind": "test",
       "path": "tests/unit/cipher_modules/models/sat/sat_models/sat_shared_difference_paired_input_differential_model_test.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "test_sat_shared_difference_paired_input_differential_model_on_chacha_permutation"
       ],
-      "rationale": null,
+      "rationale": "The legacy checker has no seed and the assertion only bounds one stochastic run; solver status plus sampled weight cannot establish a cryptanalytic proof. The fixed ChaCha family is covered by deterministic composed experiments.",
       "responsibility": "sat shared difference paired input differential model test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [
         "test_sat_shared_difference_paired_input_differential_model_on_chacha_permutation"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_composed_trails.py"
     },
     {
       "acceptance_criterion": "Speck-5 optimum/count, fixed weights, Speck-9 27-trail aggregate 29.47 and all exact graph transitions are retained.",

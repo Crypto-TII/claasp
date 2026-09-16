@@ -45,6 +45,7 @@ from claasp_next.analysis.composed import (
     DifferentialLinearFixture,
     check_speck32_differential_linear_fixture,
     run_chacha_differential_linear_experiment,
+    run_speck32_differential_linear_experiment,
     speck32_differential_linear_legacy_fixture,
 )
 from claasp_next.analysis.monomial import (
@@ -112,6 +113,7 @@ __all__ = [
     "DifferentialLinearExperimentResult",
     "check_speck32_differential_linear_fixture",
     "run_chacha_differential_linear_experiment",
+    "run_speck32_differential_linear_experiment",
     "speck32_differential_linear_legacy_fixture",
     "MonomialTrail",
     "MonomialTrailStep",
