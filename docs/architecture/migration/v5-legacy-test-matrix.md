@@ -13,8 +13,9 @@ module/class names, and any higher-level hash, MAC, or stream construction from
 which its primitive is extracted. M10.9a landed the generic graph abstraction
 and catalogue package rename (``Cipher``/``ciphers`` to ``Primitive``/
 ``primitives``, plus official catalogue class names such as ``AES`` and
-``Speck``); M10.9b–M10.9d apply the remaining taxonomy decisions on top of
-that renamed v5 API. Legacy CLAASP 4 paths and class names below (for example
+``Speck``); M10.9b completes the fixed-length classification, while M10.9c–M10.9d
+apply the remaining component and implementation work on top of that renamed
+v5 API. Legacy CLAASP 4 paths and class names below (for example
 `claasp.cipher_modules...` or `SpeckBlockCipher`) remain correct as historical
 citations into the legacy oracle and are not part of the v5 API surface.
 
@@ -38,6 +39,41 @@ citations into the legacy oracle and are not part of the v5 API surface.
 
 Legacy paths above are under `tests/unit/ciphers/`; v5 paths are under
 `next/tests/unit/`.
+
+## Fixed-length catalogue classification
+
+M10.9b classifies all 149 legacy catalogue modules from their declared input
+roles and reviewed interface: **61 block ciphers, 9 tweakable block ciphers,
+27 permutations, 8 block functions, 7 functions, 26 single-component
+fixtures, 7 toy fixtures, and 4 explicitly out-of-scope support modules**.
+There are currently no legacy entries in ``tweakable_block_functions``.
+
+The nine designs declaring ``INPUT_TWEAK`` are no longer misfiled as ordinary
+block ciphers. TinyJambu's three realizations and keyed Subterranean v1 are
+keyed permutations and therefore receive the mathematical ``block_ciphers``
+category even though their legacy folder says ``permutations``. Bluetooth E0's
+fixed state-to-keystream core is an unkeyed ``function``. Hash, MAC, and stream
+folder names survive only as ``higher_level_parent`` provenance; they are not
+v5 categories. LowMC matrix generation, the permutation utility module, the
+single-component abstract base, and its usage-doctest module are explicitly
+outside the primitive catalogue.
+
+``python tools/legacy_inventory.py --check-catalogue-classification`` is the
+dependency-free completion gate. It checks every category, key/tweak role,
+bijectivity obligation, and outside-scope disposition without importing Sage
+or the legacy package.
+
+M10.9b closing checkpoint (2026-09-16): Darwin arm64, Python 3.11.12,
+dependency-free suite: **455 passed, 0 skipped, 78 external deselected** in
+19.32 s; focused inventory group: **9 passed, 0 skipped, 0 deselected** in
+1.51 s. User/developer guides: **185/420 doctests passed**, with no failures or
+warnings. The emulated amd64 ``tiicrc/claasp-base`` compatibility container on
+Python 3.10.12 reports **452 passed, 3 skipped, 78 external deselected** in
+18.61 s; skips are msolve unavailable (1) and scikit-learn unavailable (2).
+Its combined external group reports **76 passed, 2 skipped, 455 deselected**
+in 79.36 s; skips are the msolve and scikit-learn integrations. No solver code
+changed in M10.9b. The legacy image remains a compatibility check, not the
+planned canonical multi-architecture Python 3.11+ v5 image.
 
 ## SAT cipher evaluation and recovery
 

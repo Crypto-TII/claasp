@@ -3284,12 +3284,18 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext"
+        ],
         "official_name": "AES",
+        "outside_scope_reason": null,
         "primitive_category": "block_ciphers",
         "proposed_class": "AES",
-        "proposed_module": "claasp_next.primitives.block_ciphers.aes_block_cipher"
+        "proposed_module": "claasp_next.primitives.block_ciphers.aes"
       },
       "public_entry_points": [
         "AESBlockCipher"
@@ -3298,7 +3304,7 @@
       "responsibility": "aes block cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/aes_block_cipher.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/aes.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -3316,12 +3322,18 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext"
+        ],
         "official_name": "Aradi",
+        "outside_scope_reason": null,
         "primitive_category": "block_ciphers",
         "proposed_class": "Aradi",
-        "proposed_module": "claasp_next.primitives.block_ciphers.aradi_block_cipher"
+        "proposed_module": "claasp_next.primitives.block_ciphers.aradi"
       },
       "public_entry_points": [
         "get_key_word_bit_indexes",
@@ -3331,7 +3343,7 @@
       "responsibility": "aradi block cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/aradi_block_cipher.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/aradi.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -3349,9 +3361,15 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext"
+        ],
         "official_name": "AradiBlockCipherSBox",
+        "outside_scope_reason": null,
         "primitive_category": "block_ciphers",
         "proposed_class": "AradiBlockCipherSBox",
         "proposed_module": "claasp_next.primitives.block_ciphers.aradi_block_cipher_sbox"
@@ -3382,9 +3400,15 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext"
+        ],
         "official_name": "AradiBlockCipherSBoxAndCompactLinearMap",
+        "outside_scope_reason": null,
         "primitive_category": "block_ciphers",
         "proposed_class": "AradiBlockCipherSBoxAndCompactLinearMap",
         "proposed_module": "claasp_next.primitives.block_ciphers.aradi_block_cipher_sbox_and_compact_linear_map"
@@ -3418,12 +3442,18 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext"
+        ],
         "official_name": "Baksheesh",
+        "outside_scope_reason": null,
         "primitive_category": "block_ciphers",
         "proposed_class": "Baksheesh",
-        "proposed_module": "claasp_next.primitives.block_ciphers.baksheesh_block_cipher"
+        "proposed_module": "claasp_next.primitives.block_ciphers.baksheesh"
       },
       "public_entry_points": [
         "BaksheeshBlockCipher"
@@ -3432,7 +3462,7 @@
       "responsibility": "baksheesh block cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/baksheesh_block_cipher.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/baksheesh.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -3450,12 +3480,18 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext"
+        ],
         "official_name": "Ballet",
+        "outside_scope_reason": null,
         "primitive_category": "block_ciphers",
         "proposed_class": "Ballet",
-        "proposed_module": "claasp_next.primitives.block_ciphers.ballet_block_cipher"
+        "proposed_module": "claasp_next.primitives.block_ciphers.ballet"
       },
       "public_entry_points": [
         "BalletBlockCipher"
@@ -3464,7 +3500,7 @@
       "responsibility": "ballet block cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/ballet_block_cipher.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/ballet.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -3482,12 +3518,18 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext"
+        ],
         "official_name": "BEA1",
+        "outside_scope_reason": null,
         "primitive_category": "block_ciphers",
         "proposed_class": "BEA1",
-        "proposed_module": "claasp_next.primitives.block_ciphers.bea1_block_cipher"
+        "proposed_module": "claasp_next.primitives.block_ciphers.bea1"
       },
       "public_entry_points": [
         "BEA1BlockCipher"
@@ -3496,7 +3538,7 @@
       "responsibility": "bea1 block cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/bea1_block_cipher.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/bea1.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -3514,12 +3556,19 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext",
+          "tweak"
+        ],
         "official_name": "BipBip",
-        "primitive_category": "block_ciphers",
+        "outside_scope_reason": null,
+        "primitive_category": "tweakable_block_ciphers",
         "proposed_class": "BipBip",
-        "proposed_module": "claasp_next.primitives.block_ciphers.bipbip_block_cipher"
+        "proposed_module": "claasp_next.primitives.tweakable_block_ciphers.bipbip"
       },
       "public_entry_points": [
         "BipBipBlockCipher"
@@ -3528,7 +3577,7 @@
       "responsibility": "bipbip block cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/bipbip_block_cipher.py"
+      "v5_destination": "claasp_next/primitives/tweakable_block_ciphers/bipbip.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -3546,12 +3595,19 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext",
+          "tweak"
+        ],
         "official_name": "Blink",
-        "primitive_category": "block_ciphers",
+        "outside_scope_reason": null,
+        "primitive_category": "tweakable_block_ciphers",
         "proposed_class": "Blink",
-        "proposed_module": "claasp_next.primitives.block_ciphers.blink_block_cipher"
+        "proposed_module": "claasp_next.primitives.tweakable_block_ciphers.blink"
       },
       "public_entry_points": [
         "BlinkBlockCipher"
@@ -3560,7 +3616,7 @@
       "responsibility": "blink block cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/blink_block_cipher.py"
+      "v5_destination": "claasp_next/primitives/tweakable_block_ciphers/blink.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -3578,12 +3634,18 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext"
+        ],
         "official_name": "Cast",
+        "outside_scope_reason": null,
         "primitive_category": "block_ciphers",
         "proposed_class": "Cast",
-        "proposed_module": "claasp_next.primitives.block_ciphers.cast_block_cipher"
+        "proposed_module": "claasp_next.primitives.block_ciphers.cast"
       },
       "public_entry_points": [
         "CastBlockCipher"
@@ -3592,7 +3654,7 @@
       "responsibility": "cast block cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/cast_block_cipher.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/cast.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -3610,12 +3672,18 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext"
+        ],
         "official_name": "Cham",
+        "outside_scope_reason": null,
         "primitive_category": "block_ciphers",
         "proposed_class": "Cham",
-        "proposed_module": "claasp_next.primitives.block_ciphers.cham_block_cipher"
+        "proposed_module": "claasp_next.primitives.block_ciphers.cham"
       },
       "public_entry_points": [
         "ChamBlockCipher"
@@ -3624,7 +3692,7 @@
       "responsibility": "cham block cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/cham_block_cipher.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/cham.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -3643,12 +3711,19 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
-        "official_name": "State",
-        "primitive_category": "block_ciphers",
-        "proposed_class": "State",
-        "proposed_module": "claasp_next.primitives.block_ciphers.chilow_block_cipher"
+        "input_roles": [
+          "key",
+          "plaintext",
+          "tweak"
+        ],
+        "official_name": "Chilow",
+        "outside_scope_reason": null,
+        "primitive_category": "tweakable_block_ciphers",
+        "proposed_class": "Chilow",
+        "proposed_module": "claasp_next.primitives.tweakable_block_ciphers.chilow"
       },
       "public_entry_points": [
         "State",
@@ -3659,7 +3734,7 @@
       "responsibility": "chilow block cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/chilow_block_cipher.py"
+      "v5_destination": "claasp_next/primitives/tweakable_block_ciphers/chilow.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -3677,12 +3752,18 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext"
+        ],
         "official_name": "DES",
+        "outside_scope_reason": null,
         "primitive_category": "block_ciphers",
         "proposed_class": "DES",
-        "proposed_module": "claasp_next.primitives.block_ciphers.des_block_cipher"
+        "proposed_module": "claasp_next.primitives.block_ciphers.des"
       },
       "public_entry_points": [
         "DESBlockCipher"
@@ -3691,7 +3772,7 @@
       "responsibility": "des block cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/des_block_cipher.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/des.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -3709,12 +3790,18 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext"
+        ],
         "official_name": "DESExactKeyLength",
+        "outside_scope_reason": null,
         "primitive_category": "block_ciphers",
         "proposed_class": "DESExactKeyLength",
-        "proposed_module": "claasp_next.primitives.block_ciphers.des_exact_key_length_block_cipher"
+        "proposed_module": "claasp_next.primitives.block_ciphers.des_exact_key_length"
       },
       "public_entry_points": [
         "DESExactKeyLengthBlockCipher"
@@ -3723,7 +3810,7 @@
       "responsibility": "des exact key length block cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/des_exact_key_length_block_cipher.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/des_exact_key_length.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -3742,12 +3829,18 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext"
+        ],
         "official_name": "Gift",
+        "outside_scope_reason": null,
         "primitive_category": "block_ciphers",
         "proposed_class": "Gift",
-        "proposed_module": "claasp_next.primitives.block_ciphers.gift_block_cipher"
+        "proposed_module": "claasp_next.primitives.block_ciphers.gift"
       },
       "public_entry_points": [
         "GiftBlockCipher"
@@ -3756,7 +3849,7 @@
       "responsibility": "gift block cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/gift_block_cipher.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/gift.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -3775,12 +3868,18 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext"
+        ],
         "official_name": "GiftSbox",
+        "outside_scope_reason": null,
         "primitive_category": "block_ciphers",
         "proposed_class": "GiftSbox",
-        "proposed_module": "claasp_next.primitives.block_ciphers.gift_sbox_block_cipher"
+        "proposed_module": "claasp_next.primitives.block_ciphers.gift_sbox"
       },
       "public_entry_points": [
         "GiftSboxBlockCipher"
@@ -3789,7 +3888,7 @@
       "responsibility": "gift sbox block cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/gift_sbox_block_cipher.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/gift_sbox.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -3807,12 +3906,18 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext"
+        ],
         "official_name": "Gost",
+        "outside_scope_reason": null,
         "primitive_category": "block_ciphers",
         "proposed_class": "Gost",
-        "proposed_module": "claasp_next.primitives.block_ciphers.gost_block_cipher"
+        "proposed_module": "claasp_next.primitives.block_ciphers.gost"
       },
       "public_entry_points": [
         "GostBlockCipher"
@@ -3821,7 +3926,7 @@
       "responsibility": "gost block cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/gost_block_cipher.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/gost.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -3839,12 +3944,18 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext"
+        ],
         "official_name": "Hight",
+        "outside_scope_reason": null,
         "primitive_category": "block_ciphers",
         "proposed_class": "Hight",
-        "proposed_module": "claasp_next.primitives.block_ciphers.hight_block_cipher"
+        "proposed_module": "claasp_next.primitives.block_ciphers.hight"
       },
       "public_entry_points": [
         "init_input",
@@ -3856,7 +3967,7 @@
       "responsibility": "hight block cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/hight_block_cipher.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/hight.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -3874,12 +3985,18 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext"
+        ],
         "official_name": "Idea",
+        "outside_scope_reason": null,
         "primitive_category": "block_ciphers",
         "proposed_class": "Idea",
-        "proposed_module": "claasp_next.primitives.block_ciphers.idea_block_cipher"
+        "proposed_module": "claasp_next.primitives.block_ciphers.idea"
       },
       "public_entry_points": [
         "IdeaBlockCipher"
@@ -3888,7 +4005,7 @@
       "responsibility": "idea block cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/idea_block_cipher.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/idea.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -3907,12 +4024,18 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext"
+        ],
         "official_name": "Kalyna",
+        "outside_scope_reason": null,
         "primitive_category": "block_ciphers",
         "proposed_class": "Kalyna",
-        "proposed_module": "claasp_next.primitives.block_ciphers.kalyna_block_cipher"
+        "proposed_module": "claasp_next.primitives.block_ciphers.kalyna"
       },
       "public_entry_points": [
         "KalynaBlockCipher"
@@ -3921,7 +4044,7 @@
       "responsibility": "kalyna block cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/kalyna_block_cipher.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/kalyna.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -3939,12 +4062,18 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext"
+        ],
         "official_name": "Kasumi",
+        "outside_scope_reason": null,
         "primitive_category": "block_ciphers",
         "proposed_class": "Kasumi",
-        "proposed_module": "claasp_next.primitives.block_ciphers.kasumi_block_cipher"
+        "proposed_module": "claasp_next.primitives.block_ciphers.kasumi"
       },
       "public_entry_points": [
         "KasumiBlockCipher"
@@ -3953,7 +4082,7 @@
       "responsibility": "kasumi block cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/kasumi_block_cipher.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/kasumi.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -3971,12 +4100,18 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext"
+        ],
         "official_name": "Katan",
+        "outside_scope_reason": null,
         "primitive_category": "block_ciphers",
         "proposed_class": "Katan",
-        "proposed_module": "claasp_next.primitives.block_ciphers.katan_block_cipher"
+        "proposed_module": "claasp_next.primitives.block_ciphers.katan"
       },
       "public_entry_points": [
         "normalize_number_of_rounds",
@@ -3987,7 +4122,7 @@
       "responsibility": "katan block cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/katan_block_cipher.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/katan.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -4005,12 +4140,18 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext"
+        ],
         "official_name": "KatanFSR",
+        "outside_scope_reason": null,
         "primitive_category": "block_ciphers",
         "proposed_class": "KatanFSR",
-        "proposed_module": "claasp_next.primitives.block_ciphers.katan_fsr_block_cipher"
+        "proposed_module": "claasp_next.primitives.block_ciphers.katan_fsr"
       },
       "public_entry_points": [
         "KatanFSRBlockCipher"
@@ -4019,7 +4160,7 @@
       "responsibility": "FSR-based implementation of the KATAN block cipher.",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/katan_fsr_block_cipher.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/katan_fsr.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -4037,12 +4178,18 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext"
+        ],
         "official_name": "Ktantan",
+        "outside_scope_reason": null,
         "primitive_category": "block_ciphers",
         "proposed_class": "Ktantan",
-        "proposed_module": "claasp_next.primitives.block_ciphers.ktantan_block_cipher"
+        "proposed_module": "claasp_next.primitives.block_ciphers.ktantan"
       },
       "public_entry_points": [
         "KtantanBlockCipher"
@@ -4051,7 +4198,7 @@
       "responsibility": "ktantan block cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/ktantan_block_cipher.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/ktantan.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -4069,12 +4216,18 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext"
+        ],
         "official_name": "KtantanFSR",
+        "outside_scope_reason": null,
         "primitive_category": "block_ciphers",
         "proposed_class": "KtantanFSR",
-        "proposed_module": "claasp_next.primitives.block_ciphers.ktantan_fsr_block_cipher"
+        "proposed_module": "claasp_next.primitives.block_ciphers.ktantan_fsr"
       },
       "public_entry_points": [
         "KtantanFSRBlockCipher"
@@ -4083,7 +4236,7 @@
       "responsibility": "FSR-based implementation of the KTANTAN block cipher.",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/ktantan_fsr_block_cipher.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/ktantan_fsr.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -4101,12 +4254,18 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext"
+        ],
         "official_name": "LBlock",
+        "outside_scope_reason": null,
         "primitive_category": "block_ciphers",
         "proposed_class": "LBlock",
-        "proposed_module": "claasp_next.primitives.block_ciphers.lblock_block_cipher"
+        "proposed_module": "claasp_next.primitives.block_ciphers.lblock"
       },
       "public_entry_points": [
         "LBlockBlockCipher"
@@ -4115,7 +4274,7 @@
       "responsibility": "lblock block cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/lblock_block_cipher.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/lblock.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -4134,12 +4293,18 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext"
+        ],
         "official_name": "Lea",
+        "outside_scope_reason": null,
         "primitive_category": "block_ciphers",
         "proposed_class": "Lea",
-        "proposed_module": "claasp_next.primitives.block_ciphers.lea_block_cipher"
+        "proposed_module": "claasp_next.primitives.block_ciphers.lea"
       },
       "public_entry_points": [
         "format_output",
@@ -4150,7 +4315,7 @@
       "responsibility": "lea block cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/lea_block_cipher.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/lea.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -4168,12 +4333,18 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext"
+        ],
         "official_name": "Led",
+        "outside_scope_reason": null,
         "primitive_category": "block_ciphers",
         "proposed_class": "Led",
-        "proposed_module": "claasp_next.primitives.block_ciphers.led_block_cipher"
+        "proposed_module": "claasp_next.primitives.block_ciphers.led"
       },
       "public_entry_points": [
         "get_round_register",
@@ -4183,7 +4354,7 @@
       "responsibility": "led block cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/led_block_cipher.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/led.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -4202,12 +4373,18 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext"
+        ],
         "official_name": "LowMC",
+        "outside_scope_reason": null,
         "primitive_category": "block_ciphers",
         "proposed_class": "LowMC",
-        "proposed_module": "claasp_next.primitives.block_ciphers.lowmc_block_cipher"
+        "proposed_module": "claasp_next.primitives.block_ciphers.lowmc"
       },
       "public_entry_points": [
         "LowMCBlockCipher"
@@ -4216,31 +4393,32 @@
       "responsibility": "lowmc block cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/lowmc_block_cipher.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/lowmc.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "The helper remains outside the primitive catalogue.",
       "dependencies": [
         "os",
         "sys"
       ],
-      "disposition": "migrate",
+      "disposition": "inapplicable",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
       "path": "claasp/ciphers/block_ciphers/lowmc_generate_matrices.py",
-      "prerequisites": [
-        "M10.9b"
-      ],
+      "prerequisites": [],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": false,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [],
         "official_name": "LowmcGenerateMatrices",
-        "primitive_category": "block_ciphers",
+        "outside_scope_reason": "LowMC matrix-generation helper",
+        "primitive_category": "outside_scope",
         "proposed_class": "LowmcGenerateMatrices",
-        "proposed_module": "claasp_next.primitives.block_ciphers.lowmc_generate_matrices"
+        "proposed_module": "claasp_next.primitives.support.lowmc_generate_matrices"
       },
       "public_entry_points": [
         "main",
@@ -4249,11 +4427,11 @@
         "rank",
         "xor_matrix_values"
       ],
-      "rationale": null,
+      "rationale": "LowMC matrix-generation helper",
       "responsibility": "Generator for LowMC constants.",
-      "status": "planned-or-partially-migrated",
+      "status": "classified-outside-scope-in-m10.9b",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/lowmc_generate_matrices.py"
+      "v5_destination": "inapplicable: LowMC matrix-generation helper"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -4271,12 +4449,19 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext",
+          "tweak"
+        ],
         "official_name": "Mantis",
-        "primitive_category": "block_ciphers",
+        "outside_scope_reason": null,
+        "primitive_category": "tweakable_block_ciphers",
         "proposed_class": "Mantis",
-        "proposed_module": "claasp_next.primitives.block_ciphers.mantis_block_cipher"
+        "proposed_module": "claasp_next.primitives.tweakable_block_ciphers.mantis"
       },
       "public_entry_points": [
         "MantisBlockCipher"
@@ -4285,7 +4470,7 @@
       "responsibility": "mantis block cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/mantis_block_cipher.py"
+      "v5_destination": "claasp_next/primitives/tweakable_block_ciphers/mantis.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -4303,12 +4488,18 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext"
+        ],
         "official_name": "Midori",
+        "outside_scope_reason": null,
         "primitive_category": "block_ciphers",
         "proposed_class": "Midori",
-        "proposed_module": "claasp_next.primitives.block_ciphers.midori_block_cipher"
+        "proposed_module": "claasp_next.primitives.block_ciphers.midori"
       },
       "public_entry_points": [
         "MidoriBlockCipher"
@@ -4317,7 +4508,7 @@
       "responsibility": "midori block cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/midori_block_cipher.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/midori.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -4335,12 +4526,18 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext"
+        ],
         "official_name": "MSX",
+        "outside_scope_reason": null,
         "primitive_category": "block_ciphers",
         "proposed_class": "MSX",
-        "proposed_module": "claasp_next.primitives.block_ciphers.msx_block_cipher"
+        "proposed_module": "claasp_next.primitives.block_ciphers.msx"
       },
       "public_entry_points": [
         "MSXBlockCipher"
@@ -4349,7 +4546,7 @@
       "responsibility": "msx block cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/msx_block_cipher.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/msx.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -4368,12 +4565,18 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext"
+        ],
         "official_name": "Piccolo",
+        "outside_scope_reason": null,
         "primitive_category": "block_ciphers",
         "proposed_class": "Piccolo",
-        "proposed_module": "claasp_next.primitives.block_ciphers.piccolo_block_cipher"
+        "proposed_module": "claasp_next.primitives.block_ciphers.piccolo"
       },
       "public_entry_points": [
         "PiccoloBlockCipher"
@@ -4382,7 +4585,7 @@
       "responsibility": "piccolo block cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/piccolo_block_cipher.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/piccolo.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -4400,12 +4603,18 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext"
+        ],
         "official_name": "Present",
+        "outside_scope_reason": null,
         "primitive_category": "block_ciphers",
         "proposed_class": "Present",
-        "proposed_module": "claasp_next.primitives.block_ciphers.present_block_cipher"
+        "proposed_module": "claasp_next.primitives.block_ciphers.present"
       },
       "public_entry_points": [
         "PresentBlockCipher"
@@ -4414,7 +4623,7 @@
       "responsibility": "present block cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/present_block_cipher.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/present.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -4433,12 +4642,18 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext"
+        ],
         "official_name": "Prince",
+        "outside_scope_reason": null,
         "primitive_category": "block_ciphers",
         "proposed_class": "Prince",
-        "proposed_module": "claasp_next.primitives.block_ciphers.prince_block_cipher"
+        "proposed_module": "claasp_next.primitives.block_ciphers.prince"
       },
       "public_entry_points": [
         "get_shift_rows_matrix",
@@ -4450,7 +4665,7 @@
       "responsibility": "prince block cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/prince_block_cipher.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/prince.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -4469,12 +4684,18 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext"
+        ],
         "official_name": "PrinceV2",
+        "outside_scope_reason": null,
         "primitive_category": "block_ciphers",
         "proposed_class": "PrinceV2",
-        "proposed_module": "claasp_next.primitives.block_ciphers.prince_v2_block_cipher"
+        "proposed_module": "claasp_next.primitives.block_ciphers.prince_v2"
       },
       "public_entry_points": [
         "get_shift_rows_matrix",
@@ -4486,7 +4707,7 @@
       "responsibility": "prince v2 block cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/prince_v2_block_cipher.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/prince_v2.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -4504,12 +4725,19 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext",
+          "tweak"
+        ],
         "official_name": "QARMAv2",
-        "primitive_category": "block_ciphers",
+        "outside_scope_reason": null,
+        "primitive_category": "tweakable_block_ciphers",
         "proposed_class": "QARMAv2",
-        "proposed_module": "claasp_next.primitives.block_ciphers.qarmav2_block_cipher"
+        "proposed_module": "claasp_next.primitives.tweakable_block_ciphers.qarmav2"
       },
       "public_entry_points": [
         "QARMAv2BlockCipher"
@@ -4518,7 +4746,7 @@
       "responsibility": "qarmav2 block cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/qarmav2_block_cipher.py"
+      "v5_destination": "claasp_next/primitives/tweakable_block_ciphers/qarmav2.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -4536,12 +4764,19 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext",
+          "tweak"
+        ],
         "official_name": "QARMAv2MixColumn",
-        "primitive_category": "block_ciphers",
+        "outside_scope_reason": null,
+        "primitive_category": "tweakable_block_ciphers",
         "proposed_class": "QARMAv2MixColumn",
-        "proposed_module": "claasp_next.primitives.block_ciphers.qarmav2_with_mixcolumn_block_cipher"
+        "proposed_module": "claasp_next.primitives.tweakable_block_ciphers.qarmav2_with_mixcolumn"
       },
       "public_entry_points": [
         "QARMAv2MixColumnBlockCipher"
@@ -4550,7 +4785,7 @@
       "responsibility": "qarmav2 with mixcolumn block cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/qarmav2_with_mixcolumn_block_cipher.py"
+      "v5_destination": "claasp_next/primitives/tweakable_block_ciphers/qarmav2_with_mixcolumn.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -4568,12 +4803,18 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext"
+        ],
         "official_name": "Raiden",
+        "outside_scope_reason": null,
         "primitive_category": "block_ciphers",
         "proposed_class": "Raiden",
-        "proposed_module": "claasp_next.primitives.block_ciphers.raiden_block_cipher"
+        "proposed_module": "claasp_next.primitives.block_ciphers.raiden"
       },
       "public_entry_points": [
         "RaidenBlockCipher"
@@ -4582,7 +4823,7 @@
       "responsibility": "raiden block cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/raiden_block_cipher.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/raiden.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -4602,12 +4843,18 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext"
+        ],
         "official_name": "RC5",
+        "outside_scope_reason": null,
         "primitive_category": "block_ciphers",
         "proposed_class": "RC5",
-        "proposed_module": "claasp_next.primitives.block_ciphers.rc5_block_cipher"
+        "proposed_module": "claasp_next.primitives.block_ciphers.rc5"
       },
       "public_entry_points": [
         "RC5BlockCipher"
@@ -4616,7 +4863,7 @@
       "responsibility": "rc5 block cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/rc5_block_cipher.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/rc5.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -4634,12 +4881,18 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext"
+        ],
         "official_name": "Rectangle",
+        "outside_scope_reason": null,
         "primitive_category": "block_ciphers",
         "proposed_class": "Rectangle",
-        "proposed_module": "claasp_next.primitives.block_ciphers.rectangle_block_cipher"
+        "proposed_module": "claasp_next.primitives.block_ciphers.rectangle"
       },
       "public_entry_points": [
         "RectangleBlockCipher"
@@ -4648,7 +4901,7 @@
       "responsibility": "rectangle block cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/rectangle_block_cipher.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/rectangle.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -4666,12 +4919,18 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext"
+        ],
         "official_name": "Rijndael",
+        "outside_scope_reason": null,
         "primitive_category": "block_ciphers",
         "proposed_class": "Rijndael",
-        "proposed_module": "claasp_next.primitives.block_ciphers.rijndael_block_cipher"
+        "proposed_module": "claasp_next.primitives.block_ciphers.rijndael"
       },
       "public_entry_points": [
         "RijndaelBlockCipher"
@@ -4680,7 +4939,7 @@
       "responsibility": "rijndael block cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/rijndael_block_cipher.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/rijndael.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -4698,12 +4957,18 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext"
+        ],
         "official_name": "Saecham",
+        "outside_scope_reason": null,
         "primitive_category": "block_ciphers",
         "proposed_class": "Saecham",
-        "proposed_module": "claasp_next.primitives.block_ciphers.saecham_block_cipher"
+        "proposed_module": "claasp_next.primitives.block_ciphers.saecham"
       },
       "public_entry_points": [
         "SaechamBlockCipher"
@@ -4712,7 +4977,7 @@
       "responsibility": "saecham block cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/saecham_block_cipher.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/saecham.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -4730,12 +4995,19 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext",
+          "tweak"
+        ],
         "official_name": "SCARF",
-        "primitive_category": "block_ciphers",
+        "outside_scope_reason": null,
+        "primitive_category": "tweakable_block_ciphers",
         "proposed_class": "SCARF",
-        "proposed_module": "claasp_next.primitives.block_ciphers.scarf_block_cipher"
+        "proposed_module": "claasp_next.primitives.tweakable_block_ciphers.scarf"
       },
       "public_entry_points": [
         "SCARFBlockCipher"
@@ -4744,7 +5016,7 @@
       "responsibility": "scarf block cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/scarf_block_cipher.py"
+      "v5_destination": "claasp_next/primitives/tweakable_block_ciphers/scarf.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -4762,12 +5034,18 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext"
+        ],
         "official_name": "Serpent",
+        "outside_scope_reason": null,
         "primitive_category": "block_ciphers",
         "proposed_class": "Serpent",
-        "proposed_module": "claasp_next.primitives.block_ciphers.serpent_block_cipher"
+        "proposed_module": "claasp_next.primitives.block_ciphers.serpent"
       },
       "public_entry_points": [
         "get_reversed_byte_positions",
@@ -4777,7 +5055,7 @@
       "responsibility": "serpent block cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/serpent_block_cipher.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/serpent.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -4795,12 +5073,18 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext"
+        ],
         "official_name": "Simeck",
+        "outside_scope_reason": null,
         "primitive_category": "block_ciphers",
         "proposed_class": "Simeck",
-        "proposed_module": "claasp_next.primitives.block_ciphers.simeck_block_cipher"
+        "proposed_module": "claasp_next.primitives.block_ciphers.simeck"
       },
       "public_entry_points": [
         "SimeckBlockCipher"
@@ -4809,7 +5093,7 @@
       "responsibility": "simeck block cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/simeck_block_cipher.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/simeck.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -4827,12 +5111,18 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext"
+        ],
         "official_name": "SimeckSbox",
+        "outside_scope_reason": null,
         "primitive_category": "block_ciphers",
         "proposed_class": "SimeckSbox",
-        "proposed_module": "claasp_next.primitives.block_ciphers.simeck_sbox_block_cipher"
+        "proposed_module": "claasp_next.primitives.block_ciphers.simeck_sbox"
       },
       "public_entry_points": [
         "SimeckSboxBlockCipher"
@@ -4841,7 +5131,7 @@
       "responsibility": "simeck sbox block cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/simeck_sbox_block_cipher.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/simeck_sbox.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -4859,12 +5149,18 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext"
+        ],
         "official_name": "Simon",
+        "outside_scope_reason": null,
         "primitive_category": "block_ciphers",
         "proposed_class": "Simon",
-        "proposed_module": "claasp_next.primitives.block_ciphers.simon_block_cipher"
+        "proposed_module": "claasp_next.primitives.block_ciphers.simon"
       },
       "public_entry_points": [
         "SimonBlockCipher"
@@ -4873,7 +5169,7 @@
       "responsibility": "simon block cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/simon_block_cipher.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/simon.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -4891,12 +5187,18 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext"
+        ],
         "official_name": "SimonSbox",
+        "outside_scope_reason": null,
         "primitive_category": "block_ciphers",
         "proposed_class": "SimonSbox",
-        "proposed_module": "claasp_next.primitives.block_ciphers.simon_sbox_block_cipher"
+        "proposed_module": "claasp_next.primitives.block_ciphers.simon_sbox"
       },
       "public_entry_points": [
         "SimonSboxBlockCipher"
@@ -4905,7 +5207,7 @@
       "responsibility": "simon sbox block cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/simon_sbox_block_cipher.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/simon_sbox.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -4923,12 +5225,18 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext"
+        ],
         "official_name": "Skinny",
+        "outside_scope_reason": null,
         "primitive_category": "block_ciphers",
         "proposed_class": "Skinny",
-        "proposed_module": "claasp_next.primitives.block_ciphers.skinny_block_cipher"
+        "proposed_module": "claasp_next.primitives.block_ciphers.skinny"
       },
       "public_entry_points": [
         "SkinnyBlockCipher"
@@ -4937,7 +5245,7 @@
       "responsibility": "skinny block cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/skinny_block_cipher.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/skinny.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -4955,12 +5263,18 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext"
+        ],
         "official_name": "Skipjack",
+        "outside_scope_reason": null,
         "primitive_category": "block_ciphers",
         "proposed_class": "Skipjack",
-        "proposed_module": "claasp_next.primitives.block_ciphers.skipjack_block_cipher"
+        "proposed_module": "claasp_next.primitives.block_ciphers.skipjack"
       },
       "public_entry_points": [
         "SkipjackBlockCipher"
@@ -4969,7 +5283,7 @@
       "responsibility": "SKIPJACK block cipher [NIST1998]",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/skipjack_block_cipher.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/skipjack.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -4987,12 +5301,18 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext"
+        ],
         "official_name": "SM4",
+        "outside_scope_reason": null,
         "primitive_category": "block_ciphers",
         "proposed_class": "SM4",
-        "proposed_module": "claasp_next.primitives.block_ciphers.sm4_block_cipher"
+        "proposed_module": "claasp_next.primitives.block_ciphers.sm4"
       },
       "public_entry_points": [
         "SM4"
@@ -5001,7 +5321,7 @@
       "responsibility": "sm4 block cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/sm4_block_cipher.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/sm4.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -5019,12 +5339,18 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext"
+        ],
         "official_name": "Sparx",
+        "outside_scope_reason": null,
         "primitive_category": "block_ciphers",
         "proposed_class": "Sparx",
-        "proposed_module": "claasp_next.primitives.block_ciphers.sparx_block_cipher"
+        "proposed_module": "claasp_next.primitives.block_ciphers.sparx"
       },
       "public_entry_points": [
         "get_number_of_steps_from",
@@ -5034,7 +5360,7 @@
       "responsibility": "sparx block cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/sparx_block_cipher.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/sparx.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -5052,12 +5378,18 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext"
+        ],
         "official_name": "Speck",
+        "outside_scope_reason": null,
         "primitive_category": "block_ciphers",
         "proposed_class": "Speck",
-        "proposed_module": "claasp_next.primitives.block_ciphers.speck_block_cipher"
+        "proposed_module": "claasp_next.primitives.block_ciphers.speck"
       },
       "public_entry_points": [
         "SpeckBlockCipher"
@@ -5066,7 +5398,7 @@
       "responsibility": "speck block cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/speck_block_cipher.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/speck.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -5084,12 +5416,18 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext"
+        ],
         "official_name": "Speedy",
+        "outside_scope_reason": null,
         "primitive_category": "block_ciphers",
         "proposed_class": "Speedy",
-        "proposed_module": "claasp_next.primitives.block_ciphers.speedy_block_cipher"
+        "proposed_module": "claasp_next.primitives.block_ciphers.speedy"
       },
       "public_entry_points": [
         "SpeedyBlockCipher"
@@ -5098,7 +5436,7 @@
       "responsibility": "speedy block cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/speedy_block_cipher.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/speedy.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -5116,12 +5454,18 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext"
+        ],
         "official_name": "Splight",
+        "outside_scope_reason": null,
         "primitive_category": "block_ciphers",
         "proposed_class": "Splight",
-        "proposed_module": "claasp_next.primitives.block_ciphers.splight_block_cipher"
+        "proposed_module": "claasp_next.primitives.block_ciphers.splight"
       },
       "public_entry_points": [
         "SplightBlockCipher"
@@ -5130,7 +5474,7 @@
       "responsibility": "splight block cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/splight_block_cipher.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/splight.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -5148,12 +5492,18 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext"
+        ],
         "official_name": "Tea",
+        "outside_scope_reason": null,
         "primitive_category": "block_ciphers",
         "proposed_class": "Tea",
-        "proposed_module": "claasp_next.primitives.block_ciphers.tea_block_cipher"
+        "proposed_module": "claasp_next.primitives.block_ciphers.tea"
       },
       "public_entry_points": [
         "TeaBlockCipher"
@@ -5162,7 +5512,7 @@
       "responsibility": "tea block cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/tea_block_cipher.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/tea.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -5181,12 +5531,19 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext",
+          "tweak"
+        ],
         "official_name": "Threefish",
-        "primitive_category": "block_ciphers",
+        "outside_scope_reason": null,
+        "primitive_category": "tweakable_block_ciphers",
         "proposed_class": "Threefish",
-        "proposed_module": "claasp_next.primitives.block_ciphers.threefish_block_cipher"
+        "proposed_module": "claasp_next.primitives.tweakable_block_ciphers.threefish"
       },
       "public_entry_points": [
         "ThreefishBlockCipher"
@@ -5195,7 +5552,7 @@
       "responsibility": "threefish block cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/threefish_block_cipher.py"
+      "v5_destination": "claasp_next/primitives/tweakable_block_ciphers/threefish.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -5213,12 +5570,19 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext",
+          "tweak"
+        ],
         "official_name": "Trax",
-        "primitive_category": "block_ciphers",
+        "outside_scope_reason": null,
+        "primitive_category": "tweakable_block_ciphers",
         "proposed_class": "Trax",
-        "proposed_module": "claasp_next.primitives.block_ciphers.trax_block_cipher"
+        "proposed_module": "claasp_next.primitives.tweakable_block_ciphers.trax"
       },
       "public_entry_points": [
         "TraxBlockCipher"
@@ -5227,7 +5591,7 @@
       "responsibility": "trax block cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/trax_block_cipher.py"
+      "v5_destination": "claasp_next/primitives/tweakable_block_ciphers/trax.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -5245,12 +5609,18 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext"
+        ],
         "official_name": "Twine",
+        "outside_scope_reason": null,
         "primitive_category": "block_ciphers",
         "proposed_class": "Twine",
-        "proposed_module": "claasp_next.primitives.block_ciphers.twine_block_cipher"
+        "proposed_module": "claasp_next.primitives.block_ciphers.twine"
       },
       "public_entry_points": [
         "get_word_bit_indexes",
@@ -5260,7 +5630,7 @@
       "responsibility": "twine block cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/twine_block_cipher.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/twine.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -5280,12 +5650,18 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext"
+        ],
         "official_name": "Twofish",
+        "outside_scope_reason": null,
         "primitive_category": "block_ciphers",
         "proposed_class": "Twofish",
-        "proposed_module": "claasp_next.primitives.block_ciphers.twofish_block_cipher"
+        "proposed_module": "claasp_next.primitives.block_ciphers.twofish"
       },
       "public_entry_points": [
         "TwofishBlockCipher"
@@ -5294,7 +5670,7 @@
       "responsibility": "twofish block cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/twofish_block_cipher.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/twofish.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -5312,12 +5688,18 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext"
+        ],
         "official_name": "Ublock",
+        "outside_scope_reason": null,
         "primitive_category": "block_ciphers",
         "proposed_class": "Ublock",
-        "proposed_module": "claasp_next.primitives.block_ciphers.ublock_block_cipher"
+        "proposed_module": "claasp_next.primitives.block_ciphers.ublock"
       },
       "public_entry_points": [
         "UblockBlockCipher"
@@ -5326,7 +5708,7 @@
       "responsibility": "ublock block cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/ublock_block_cipher.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/ublock.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -5345,12 +5727,18 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext"
+        ],
         "official_name": "UblockSingleLinearLayer",
+        "outside_scope_reason": null,
         "primitive_category": "block_ciphers",
         "proposed_class": "UblockSingleLinearLayer",
-        "proposed_module": "claasp_next.primitives.block_ciphers.ublock_single_linear_layer_block_cipher"
+        "proposed_module": "claasp_next.primitives.block_ciphers.ublock_single_linear_layer"
       },
       "public_entry_points": [
         "generate_ublock_matrix",
@@ -5360,7 +5748,7 @@
       "responsibility": "ublock single linear layer block cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/ublock_single_linear_layer_block_cipher.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/ublock_single_linear_layer.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -5378,12 +5766,18 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext"
+        ],
         "official_name": "UKNIT",
+        "outside_scope_reason": null,
         "primitive_category": "block_ciphers",
         "proposed_class": "UKNIT",
-        "proposed_module": "claasp_next.primitives.block_ciphers.uknit_block_cipher"
+        "proposed_module": "claasp_next.primitives.block_ciphers.uknit"
       },
       "public_entry_points": [
         "apply_bit_permutation",
@@ -5402,7 +5796,7 @@
       "responsibility": "uknit block cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/uknit_block_cipher.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/uknit.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -5421,12 +5815,18 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext"
+        ],
         "official_name": "Warp",
+        "outside_scope_reason": null,
         "primitive_category": "block_ciphers",
         "proposed_class": "Warp",
-        "proposed_module": "claasp_next.primitives.block_ciphers.warp_block_cipher"
+        "proposed_module": "claasp_next.primitives.block_ciphers.warp"
       },
       "public_entry_points": [
         "WarpBlockCipher"
@@ -5435,7 +5835,7 @@
       "responsibility": "warp block cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/warp_block_cipher.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/warp.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -5453,12 +5853,18 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext"
+        ],
         "official_name": "XTea",
+        "outside_scope_reason": null,
         "primitive_category": "block_ciphers",
         "proposed_class": "XTea",
-        "proposed_module": "claasp_next.primitives.block_ciphers.xtea_block_cipher"
+        "proposed_module": "claasp_next.primitives.block_ciphers.xtea"
       },
       "public_entry_points": [
         "XTeaBlockCipher"
@@ -5467,7 +5873,7 @@
       "responsibility": "xtea block cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/xtea_block_cipher.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/xtea.py"
     },
     {
       "acceptance_criterion": "Containing package is represented by its non-marker entries.",
@@ -5506,12 +5912,18 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "provisional fixed-length core classification; confirm bijectivity and interface during M10.9b",
+        "bijectivity_obligation": false,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": "hash_functions",
+        "input_roles": [
+          "message",
+          "state"
+        ],
         "official_name": "Blake2",
+        "outside_scope_reason": null,
         "primitive_category": "functions",
         "proposed_class": "Blake2",
-        "proposed_module": "claasp_next.primitives.functions.blake2_hash_function"
+        "proposed_module": "claasp_next.primitives.functions.blake2"
       },
       "public_entry_points": [
         "Blake2HashFunction"
@@ -5520,7 +5932,7 @@
       "responsibility": "blake2 hash function",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/functions/blake2_hash_function.py"
+      "v5_destination": "claasp_next/primitives/functions/blake2.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -5539,12 +5951,18 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "provisional fixed-length core classification; confirm bijectivity and interface during M10.9b",
+        "bijectivity_obligation": false,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": "hash_functions",
+        "input_roles": [
+          "message",
+          "state"
+        ],
         "official_name": "Blake",
+        "outside_scope_reason": null,
         "primitive_category": "functions",
         "proposed_class": "Blake",
-        "proposed_module": "claasp_next.primitives.functions.blake_hash_function"
+        "proposed_module": "claasp_next.primitives.functions.blake"
       },
       "public_entry_points": [
         "BlakeHashFunction"
@@ -5553,7 +5971,7 @@
       "responsibility": "blake hash function",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/functions/blake_hash_function.py"
+      "v5_destination": "claasp_next/primitives/functions/blake.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -5571,12 +5989,17 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "provisional fixed-length core classification; confirm bijectivity and interface during M10.9b",
+        "bijectivity_obligation": false,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": "hash_functions",
+        "input_roles": [
+          "message"
+        ],
         "official_name": "MD5",
+        "outside_scope_reason": null,
         "primitive_category": "functions",
         "proposed_class": "MD5",
-        "proposed_module": "claasp_next.primitives.functions.md5_hash_function"
+        "proposed_module": "claasp_next.primitives.functions.md5"
       },
       "public_entry_points": [
         "MD5HashFunction"
@@ -5585,7 +6008,7 @@
       "responsibility": "MD5 cipher.",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/functions/md5_hash_function.py"
+      "v5_destination": "claasp_next/primitives/functions/md5.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -5603,12 +6026,17 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "provisional fixed-length core classification; confirm bijectivity and interface during M10.9b",
+        "bijectivity_obligation": false,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": "hash_functions",
+        "input_roles": [
+          "message"
+        ],
         "official_name": "SHA1",
+        "outside_scope_reason": null,
         "primitive_category": "functions",
         "proposed_class": "SHA1",
-        "proposed_module": "claasp_next.primitives.functions.sha1_hash_function"
+        "proposed_module": "claasp_next.primitives.functions.sha1"
       },
       "public_entry_points": [
         "SHA1HashFunction"
@@ -5617,7 +6045,7 @@
       "responsibility": "SHA-1 cipher.",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/functions/sha1_hash_function.py"
+      "v5_destination": "claasp_next/primitives/functions/sha1.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -5635,12 +6063,17 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "provisional fixed-length core classification; confirm bijectivity and interface during M10.9b",
+        "bijectivity_obligation": false,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": "hash_functions",
+        "input_roles": [
+          "message"
+        ],
         "official_name": "SHA2",
+        "outside_scope_reason": null,
         "primitive_category": "functions",
         "proposed_class": "SHA2",
-        "proposed_module": "claasp_next.primitives.functions.sha2_hash_function"
+        "proposed_module": "claasp_next.primitives.functions.sha2"
       },
       "public_entry_points": [
         "SHA2HashFunction"
@@ -5649,7 +6082,7 @@
       "responsibility": "SHA-2 family cipher.",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/functions/sha2_hash_function.py"
+      "v5_destination": "claasp_next/primitives/functions/sha2.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -5667,12 +6100,17 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "provisional fixed-length core classification; confirm bijectivity and interface during M10.9b",
+        "bijectivity_obligation": false,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": "hash_functions",
+        "input_roles": [
+          "message"
+        ],
         "official_name": "Whirlpool",
+        "outside_scope_reason": null,
         "primitive_category": "functions",
         "proposed_class": "Whirlpool",
-        "proposed_module": "claasp_next.primitives.functions.whirlpool_hash_function"
+        "proposed_module": "claasp_next.primitives.functions.whirlpool"
       },
       "public_entry_points": [
         "WhirlpoolHashFunction"
@@ -5681,7 +6119,7 @@
       "responsibility": "whirlpool hash function",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/functions/whirlpool_hash_function.py"
+      "v5_destination": "claasp_next/primitives/functions/whirlpool.py"
     },
     {
       "acceptance_criterion": "Containing package is represented by its non-marker entries.",
@@ -5719,12 +6157,18 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "provisional fixed-length core classification; confirm bijectivity and interface during M10.9b",
+        "bijectivity_obligation": false,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": "mac",
+        "input_roles": [
+          "key",
+          "message"
+        ],
         "official_name": "SiphashMAC",
+        "outside_scope_reason": null,
         "primitive_category": "block_functions",
         "proposed_class": "SiphashMAC",
-        "proposed_module": "claasp_next.primitives.block_functions.siphash_mac"
+        "proposed_module": "claasp_next.primitives.block_functions.siphash"
       },
       "public_entry_points": [
         "SiphashMAC"
@@ -5733,7 +6177,7 @@
       "responsibility": "siphash mac",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_functions/siphash_mac.py"
+      "v5_destination": "claasp_next/primitives/block_functions/siphash.py"
     },
     {
       "acceptance_criterion": "Containing package is represented by its non-marker entries.",
@@ -5771,12 +6215,17 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "plaintext"
+        ],
         "official_name": "Ascon",
+        "outside_scope_reason": null,
         "primitive_category": "permutations",
         "proposed_class": "Ascon",
-        "proposed_module": "claasp_next.primitives.permutations.ascon_permutation"
+        "proposed_module": "claasp_next.primitives.permutations.ascon"
       },
       "public_entry_points": [
         "AsconPermutation"
@@ -5785,7 +6234,7 @@
       "responsibility": "ascon permutation",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/permutations/ascon_permutation.py"
+      "v5_destination": "claasp_next/primitives/permutations/ascon.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -5803,12 +6252,17 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "plaintext"
+        ],
         "official_name": "AsconSboxSigmaNoMatrix",
+        "outside_scope_reason": null,
         "primitive_category": "permutations",
         "proposed_class": "AsconSboxSigmaNoMatrix",
-        "proposed_module": "claasp_next.primitives.permutations.ascon_sbox_sigma_no_matrix_permutation"
+        "proposed_module": "claasp_next.primitives.permutations.ascon_sbox_sigma_no_matrix"
       },
       "public_entry_points": [
         "AsconSboxSigmaNoMatrixPermutation"
@@ -5817,7 +6271,7 @@
       "responsibility": "ascon sbox sigma no matrix permutation",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/permutations/ascon_sbox_sigma_no_matrix_permutation.py"
+      "v5_destination": "claasp_next/primitives/permutations/ascon_sbox_sigma_no_matrix.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -5835,12 +6289,17 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "plaintext"
+        ],
         "official_name": "AsconSboxSigma",
+        "outside_scope_reason": null,
         "primitive_category": "permutations",
         "proposed_class": "AsconSboxSigma",
-        "proposed_module": "claasp_next.primitives.permutations.ascon_sbox_sigma_permutation"
+        "proposed_module": "claasp_next.primitives.permutations.ascon_sbox_sigma"
       },
       "public_entry_points": [
         "AsconSboxSigmaPermutation"
@@ -5849,7 +6308,7 @@
       "responsibility": "ascon sbox sigma permutation",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/permutations/ascon_sbox_sigma_permutation.py"
+      "v5_destination": "claasp_next/primitives/permutations/ascon_sbox_sigma.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -5867,12 +6326,15 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [],
         "official_name": "Chacha",
+        "outside_scope_reason": null,
         "primitive_category": "permutations",
         "proposed_class": "Chacha",
-        "proposed_module": "claasp_next.primitives.permutations.chacha_permutation"
+        "proposed_module": "claasp_next.primitives.permutations.chacha"
       },
       "public_entry_points": [
         "ChachaPermutation"
@@ -5881,7 +6343,7 @@
       "responsibility": "chacha permutation",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/permutations/chacha_permutation.py"
+      "v5_destination": "claasp_next/primitives/permutations/chacha.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -5899,12 +6361,17 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "plaintext"
+        ],
         "official_name": "ChaskeyPi",
+        "outside_scope_reason": null,
         "primitive_category": "permutations",
         "proposed_class": "ChaskeyPi",
-        "proposed_module": "claasp_next.primitives.permutations.chaskeypi_permutation"
+        "proposed_module": "claasp_next.primitives.permutations.chaskeypi"
       },
       "public_entry_points": [
         "ChaskeyPiPermutation"
@@ -5913,7 +6380,7 @@
       "responsibility": "chaskeypi permutation",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/permutations/chaskeypi_permutation.py"
+      "v5_destination": "claasp_next/primitives/permutations/chaskeypi.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -5931,12 +6398,17 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "plaintext"
+        ],
         "official_name": "Forro",
+        "outside_scope_reason": null,
         "primitive_category": "permutations",
         "proposed_class": "Forro",
-        "proposed_module": "claasp_next.primitives.permutations.forro_permutation"
+        "proposed_module": "claasp_next.primitives.permutations.forro"
       },
       "public_entry_points": [
         "ForroPermutation"
@@ -5945,7 +6417,7 @@
       "responsibility": "forro permutation",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/permutations/forro_permutation.py"
+      "v5_destination": "claasp_next/primitives/permutations/forro.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -5963,12 +6435,17 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "plaintext"
+        ],
         "official_name": "Gaston",
+        "outside_scope_reason": null,
         "primitive_category": "permutations",
         "proposed_class": "Gaston",
-        "proposed_module": "claasp_next.primitives.permutations.gaston_permutation"
+        "proposed_module": "claasp_next.primitives.permutations.gaston"
       },
       "public_entry_points": [
         "GastonPermutation"
@@ -5977,7 +6454,7 @@
       "responsibility": "gaston permutation",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/permutations/gaston_permutation.py"
+      "v5_destination": "claasp_next/primitives/permutations/gaston.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -5995,12 +6472,17 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "plaintext"
+        ],
         "official_name": "GastonSbox",
+        "outside_scope_reason": null,
         "primitive_category": "permutations",
         "proposed_class": "GastonSbox",
-        "proposed_module": "claasp_next.primitives.permutations.gaston_sbox_permutation"
+        "proposed_module": "claasp_next.primitives.permutations.gaston_sbox"
       },
       "public_entry_points": [
         "GastonSboxPermutation"
@@ -6009,7 +6491,7 @@
       "responsibility": "gaston sbox permutation",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/permutations/gaston_sbox_permutation.py"
+      "v5_destination": "claasp_next/primitives/permutations/gaston_sbox.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -6027,12 +6509,17 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "plaintext"
+        ],
         "official_name": "GastonSboxTheta",
+        "outside_scope_reason": null,
         "primitive_category": "permutations",
         "proposed_class": "GastonSboxTheta",
-        "proposed_module": "claasp_next.primitives.permutations.gaston_sbox_theta_permutation"
+        "proposed_module": "claasp_next.primitives.permutations.gaston_sbox_theta"
       },
       "public_entry_points": [
         "GastonSboxThetaPermutation"
@@ -6041,7 +6528,7 @@
       "responsibility": "gaston sbox theta permutation",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/permutations/gaston_sbox_theta_permutation.py"
+      "v5_destination": "claasp_next/primitives/permutations/gaston_sbox_theta.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -6059,12 +6546,17 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "plaintext"
+        ],
         "official_name": "Gimli",
+        "outside_scope_reason": null,
         "primitive_category": "permutations",
         "proposed_class": "Gimli",
-        "proposed_module": "claasp_next.primitives.permutations.gimli_permutation"
+        "proposed_module": "claasp_next.primitives.permutations.gimli"
       },
       "public_entry_points": [
         "big_swap",
@@ -6075,7 +6567,7 @@
       "responsibility": "gimli permutation",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/permutations/gimli_permutation.py"
+      "v5_destination": "claasp_next/primitives/permutations/gimli.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -6093,12 +6585,17 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "plaintext"
+        ],
         "official_name": "GimliSbox",
+        "outside_scope_reason": null,
         "primitive_category": "permutations",
         "proposed_class": "GimliSbox",
-        "proposed_module": "claasp_next.primitives.permutations.gimli_sbox_permutation"
+        "proposed_module": "claasp_next.primitives.permutations.gimli_sbox"
       },
       "public_entry_points": [
         "big_swap",
@@ -6109,7 +6606,7 @@
       "responsibility": "gimli sbox permutation",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/permutations/gimli_sbox_permutation.py"
+      "v5_destination": "claasp_next/primitives/permutations/gimli_sbox.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -6127,12 +6624,17 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "state"
+        ],
         "official_name": "GrainCore",
+        "outside_scope_reason": null,
         "primitive_category": "permutations",
         "proposed_class": "GrainCore",
-        "proposed_module": "claasp_next.primitives.permutations.grain_core_permutation"
+        "proposed_module": "claasp_next.primitives.permutations.grain_core"
       },
       "public_entry_points": [
         "GrainCorePermutation"
@@ -6141,7 +6643,7 @@
       "responsibility": "grain core permutation",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/permutations/grain_core_permutation.py"
+      "v5_destination": "claasp_next/primitives/permutations/grain_core.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -6160,12 +6662,17 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "plaintext"
+        ],
         "official_name": "KeccakInvertible",
+        "outside_scope_reason": null,
         "primitive_category": "permutations",
         "proposed_class": "KeccakInvertible",
-        "proposed_module": "claasp_next.primitives.permutations.keccak_invertible_permutation"
+        "proposed_module": "claasp_next.primitives.permutations.keccak_invertible"
       },
       "public_entry_points": [
         "KeccakInvertiblePermutation"
@@ -6174,7 +6681,7 @@
       "responsibility": "keccak invertible permutation",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/permutations/keccak_invertible_permutation.py"
+      "v5_destination": "claasp_next/primitives/permutations/keccak_invertible.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -6192,12 +6699,17 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "plaintext"
+        ],
         "official_name": "Keccak",
+        "outside_scope_reason": null,
         "primitive_category": "permutations",
         "proposed_class": "Keccak",
-        "proposed_module": "claasp_next.primitives.permutations.keccak_permutation"
+        "proposed_module": "claasp_next.primitives.permutations.keccak"
       },
       "public_entry_points": [
         "KeccakPermutation"
@@ -6206,7 +6718,7 @@
       "responsibility": "keccak permutation",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/permutations/keccak_permutation.py"
+      "v5_destination": "claasp_next/primitives/permutations/keccak.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -6225,12 +6737,17 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "plaintext"
+        ],
         "official_name": "KeccakSbox",
+        "outside_scope_reason": null,
         "primitive_category": "permutations",
         "proposed_class": "KeccakSbox",
-        "proposed_module": "claasp_next.primitives.permutations.keccak_sbox_permutation"
+        "proposed_module": "claasp_next.primitives.permutations.keccak_sbox"
       },
       "public_entry_points": [
         "KeccakSboxPermutation"
@@ -6239,7 +6756,7 @@
       "responsibility": "keccak sbox permutation",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/permutations/keccak_sbox_permutation.py"
+      "v5_destination": "claasp_next/primitives/permutations/keccak_sbox.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -6257,12 +6774,17 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "plaintext"
+        ],
         "official_name": "Knot",
+        "outside_scope_reason": null,
         "primitive_category": "permutations",
         "proposed_class": "Knot",
-        "proposed_module": "claasp_next.primitives.permutations.knot_permutation"
+        "proposed_module": "claasp_next.primitives.permutations.knot"
       },
       "public_entry_points": [
         "lfsr_next_state",
@@ -6272,7 +6794,7 @@
       "responsibility": "knot permutation",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/permutations/knot_permutation.py"
+      "v5_destination": "claasp_next/primitives/permutations/knot.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -6290,12 +6812,17 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "plaintext"
+        ],
         "official_name": "Norx",
+        "outside_scope_reason": null,
         "primitive_category": "permutations",
         "proposed_class": "Norx",
-        "proposed_module": "claasp_next.primitives.permutations.norx_permutation"
+        "proposed_module": "claasp_next.primitives.permutations.norx"
       },
       "public_entry_points": [
         "NorxPermutation"
@@ -6304,7 +6831,7 @@
       "responsibility": "norx permutation",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/permutations/norx_permutation.py"
+      "v5_destination": "claasp_next/primitives/permutations/norx.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -6323,12 +6850,17 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "plaintext"
+        ],
         "official_name": "Photon",
+        "outside_scope_reason": null,
         "primitive_category": "permutations",
         "proposed_class": "Photon",
-        "proposed_module": "claasp_next.primitives.permutations.photon_permutation"
+        "proposed_module": "claasp_next.primitives.permutations.photon"
       },
       "public_entry_points": [
         "PhotonPermutation"
@@ -6337,7 +6869,7 @@
       "responsibility": "photon permutation",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/permutations/photon_permutation.py"
+      "v5_destination": "claasp_next/primitives/permutations/photon.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -6355,12 +6887,15 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [],
         "official_name": "Salsa",
+        "outside_scope_reason": null,
         "primitive_category": "permutations",
         "proposed_class": "Salsa",
-        "proposed_module": "claasp_next.primitives.permutations.salsa_permutation"
+        "proposed_module": "claasp_next.primitives.permutations.salsa"
       },
       "public_entry_points": [
         "SalsaPermutation"
@@ -6369,7 +6904,7 @@
       "responsibility": "salsa permutation",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/permutations/salsa_permutation.py"
+      "v5_destination": "claasp_next/primitives/permutations/salsa.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -6388,12 +6923,17 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "plaintext"
+        ],
         "official_name": "Sparkle",
+        "outside_scope_reason": null,
         "primitive_category": "permutations",
         "proposed_class": "Sparkle",
-        "proposed_module": "claasp_next.primitives.permutations.sparkle_permutation"
+        "proposed_module": "claasp_next.primitives.permutations.sparkle"
       },
       "public_entry_points": [
         "SparklePermutation"
@@ -6402,7 +6942,7 @@
       "responsibility": "sparkle permutation",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/permutations/sparkle_permutation.py"
+      "v5_destination": "claasp_next/primitives/permutations/sparkle.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -6420,12 +6960,17 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "plaintext"
+        ],
         "official_name": "Speckey",
+        "outside_scope_reason": null,
         "primitive_category": "permutations",
         "proposed_class": "Speckey",
-        "proposed_module": "claasp_next.primitives.permutations.speckey_permutation"
+        "proposed_module": "claasp_next.primitives.permutations.speckey"
       },
       "public_entry_points": [
         "SpeckeyPermutation"
@@ -6434,7 +6979,7 @@
       "responsibility": "speckey permutation",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/permutations/speckey_permutation.py"
+      "v5_destination": "claasp_next/primitives/permutations/speckey.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -6452,12 +6997,17 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "plaintext"
+        ],
         "official_name": "SpongentPiFSR",
+        "outside_scope_reason": null,
         "primitive_category": "permutations",
         "proposed_class": "SpongentPiFSR",
-        "proposed_module": "claasp_next.primitives.permutations.spongent_pi_fsr_permutation"
+        "proposed_module": "claasp_next.primitives.permutations.spongent_pi_fsr"
       },
       "public_entry_points": [
         "SpongentPiFSRPermutation"
@@ -6466,7 +7016,7 @@
       "responsibility": "spongent pi fsr permutation",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/permutations/spongent_pi_fsr_permutation.py"
+      "v5_destination": "claasp_next/primitives/permutations/spongent_pi_fsr.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -6484,12 +7034,17 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "plaintext"
+        ],
         "official_name": "SpongentPi",
+        "outside_scope_reason": null,
         "primitive_category": "permutations",
         "proposed_class": "SpongentPi",
-        "proposed_module": "claasp_next.primitives.permutations.spongent_pi_permutation"
+        "proposed_module": "claasp_next.primitives.permutations.spongent_pi"
       },
       "public_entry_points": [
         "SpongentPiPermutation"
@@ -6498,7 +7053,7 @@
       "responsibility": "spongent pi permutation",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/permutations/spongent_pi_permutation.py"
+      "v5_destination": "claasp_next/primitives/permutations/spongent_pi.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -6516,12 +7071,17 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "plaintext"
+        ],
         "official_name": "SpongentPiPrecomputation",
+        "outside_scope_reason": null,
         "primitive_category": "permutations",
         "proposed_class": "SpongentPiPrecomputation",
-        "proposed_module": "claasp_next.primitives.permutations.spongent_pi_precomputation_permutation"
+        "proposed_module": "claasp_next.primitives.permutations.spongent_pi_precomputation"
       },
       "public_entry_points": [
         "SpongentPiPrecomputationPermutation"
@@ -6530,7 +7090,7 @@
       "responsibility": "spongent pi precomputation permutation",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/permutations/spongent_pi_precomputation_permutation.py"
+      "v5_destination": "claasp_next/primitives/permutations/spongent_pi_precomputation.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -6549,12 +7109,18 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
-        "official_name": "Version",
-        "primitive_category": "permutations",
-        "proposed_class": "Version",
-        "proposed_module": "claasp_next.primitives.permutations.subterranean_permutation"
+        "input_roles": [
+          "key",
+          "plaintext"
+        ],
+        "official_name": "Subterranean",
+        "outside_scope_reason": null,
+        "primitive_category": "block_ciphers",
+        "proposed_class": "Subterranean",
+        "proposed_module": "claasp_next.primitives.block_ciphers.subterranean"
       },
       "public_entry_points": [
         "Version",
@@ -6564,7 +7130,7 @@
       "responsibility": "subterranean permutation",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/permutations/subterranean_permutation.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/subterranean.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -6583,12 +7149,18 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext"
+        ],
         "official_name": "TinyJambuWordBased",
-        "primitive_category": "permutations",
+        "outside_scope_reason": null,
+        "primitive_category": "block_ciphers",
         "proposed_class": "TinyJambuWordBased",
-        "proposed_module": "claasp_next.primitives.permutations.tinyjambu_32bits_word_permutation"
+        "proposed_module": "claasp_next.primitives.block_ciphers.tinyjambu_32bits_word"
       },
       "public_entry_points": [
         "TinyJambuWordBasedPermutation"
@@ -6597,7 +7169,7 @@
       "responsibility": "tinyjambu 32bits word permutation",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/permutations/tinyjambu_32bits_word_permutation.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/tinyjambu_32bits_word.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -6616,12 +7188,18 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext"
+        ],
         "official_name": "TinyJambuFSRWordBased",
-        "primitive_category": "permutations",
+        "outside_scope_reason": null,
+        "primitive_category": "block_ciphers",
         "proposed_class": "TinyJambuFSRWordBased",
-        "proposed_module": "claasp_next.primitives.permutations.tinyjambu_fsr_32bits_word_permutation"
+        "proposed_module": "claasp_next.primitives.block_ciphers.tinyjambu_fsr_32bits_word"
       },
       "public_entry_points": [
         "TinyJambuFSRWordBasedPermutation"
@@ -6630,7 +7208,7 @@
       "responsibility": "tinyjambu fsr 32bits word permutation",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/permutations/tinyjambu_fsr_32bits_word_permutation.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/tinyjambu_fsr_32bits_word.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -6649,12 +7227,18 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext"
+        ],
         "official_name": "TinyJambu",
-        "primitive_category": "permutations",
+        "outside_scope_reason": null,
+        "primitive_category": "block_ciphers",
         "proposed_class": "TinyJambu",
-        "proposed_module": "claasp_next.primitives.permutations.tinyjambu_permutation"
+        "proposed_module": "claasp_next.primitives.block_ciphers.tinyjambu"
       },
       "public_entry_points": [
         "TinyJambuPermutation"
@@ -6663,30 +7247,31 @@
       "responsibility": "tinyjambu permutation",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/permutations/tinyjambu_permutation.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/tinyjambu.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "The helper remains outside the primitive catalogue.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "inapplicable",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
       "path": "claasp/ciphers/permutations/util.py",
-      "prerequisites": [
-        "M10.9b"
-      ],
+      "prerequisites": [],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": false,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [],
         "official_name": "Util",
-        "primitive_category": "permutations",
+        "outside_scope_reason": "permutation helper algorithms",
+        "primitive_category": "outside_scope",
         "proposed_class": "Util",
-        "proposed_module": "claasp_next.primitives.permutations.util"
+        "proposed_module": "claasp_next.primitives.support.util"
       },
       "public_entry_points": [
         "print_state_ids",
@@ -6697,11 +7282,11 @@
         "init_state_latin_dances",
         "init_latin_dances_cipher"
       ],
-      "rationale": null,
+      "rationale": "permutation helper algorithms",
       "responsibility": "util",
-      "status": "planned-or-partially-migrated",
+      "status": "classified-outside-scope-in-m10.9b",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/permutations/util.py"
+      "v5_destination": "inapplicable: permutation helper algorithms"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -6721,12 +7306,17 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "plaintext"
+        ],
         "official_name": "XoodooInvertible",
+        "outside_scope_reason": null,
         "primitive_category": "permutations",
         "proposed_class": "XoodooInvertible",
-        "proposed_module": "claasp_next.primitives.permutations.xoodoo_invertible_permutation"
+        "proposed_module": "claasp_next.primitives.permutations.xoodoo_invertible"
       },
       "public_entry_points": [
         "XoodooInvertiblePermutation"
@@ -6735,7 +7325,7 @@
       "responsibility": "xoodoo invertible permutation",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/permutations/xoodoo_invertible_permutation.py"
+      "v5_destination": "claasp_next/primitives/permutations/xoodoo_invertible.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -6755,12 +7345,17 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "plaintext"
+        ],
         "official_name": "Xoodoo",
+        "outside_scope_reason": null,
         "primitive_category": "permutations",
         "proposed_class": "Xoodoo",
-        "proposed_module": "claasp_next.primitives.permutations.xoodoo_permutation"
+        "proposed_module": "claasp_next.primitives.permutations.xoodoo"
       },
       "public_entry_points": [
         "XoodooPermutation"
@@ -6769,7 +7364,7 @@
       "responsibility": "xoodoo permutation",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/permutations/xoodoo_permutation.py"
+      "v5_destination": "claasp_next/primitives/permutations/xoodoo.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -6789,12 +7384,17 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": true,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "plaintext"
+        ],
         "official_name": "XoodooSbox",
+        "outside_scope_reason": null,
         "primitive_category": "permutations",
         "proposed_class": "XoodooSbox",
-        "proposed_module": "claasp_next.primitives.permutations.xoodoo_sbox_permutation"
+        "proposed_module": "claasp_next.primitives.permutations.xoodoo_sbox"
       },
       "public_entry_points": [
         "XoodooSboxPermutation"
@@ -6803,7 +7403,7 @@
       "responsibility": "xoodoo sbox permutation",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/permutations/xoodoo_sbox_permutation.py"
+      "v5_destination": "claasp_next/primitives/permutations/xoodoo_sbox.py"
     },
     {
       "acceptance_criterion": "Containing package is represented by its non-marker entries.",
@@ -6826,27 +7426,31 @@
       "v5_destination": "inapplicable: package marker reviewed with its containing module"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "The helper remains outside the primitive catalogue.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "inapplicable",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
       "path": "claasp/ciphers/single_component_ciphers/_base.py",
-      "prerequisites": [
-        "M10.9b"
-      ],
+      "prerequisites": [],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": false,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext"
+        ],
         "official_name": "SingleComponent",
-        "primitive_category": "single_component_primitives",
+        "outside_scope_reason": "abstract fixture base",
+        "primitive_category": "outside_scope",
         "proposed_class": "SingleComponent",
-        "proposed_module": "claasp_next.primitives.single_component_primitives._base"
+        "proposed_module": "claasp_next.primitives.support._base"
       },
       "public_entry_points": [
         "add_cipher_output_from_component",
@@ -6854,11 +7458,11 @@
         "equal_input_bit_positions",
         "SingleComponentCipher"
       ],
-      "rationale": null,
+      "rationale": "abstract fixture base",
       "responsibility": " base",
-      "status": "planned-or-partially-migrated",
+      "status": "classified-outside-scope-in-m10.9b",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/single_component_primitives/_base.py"
+      "v5_destination": "inapplicable: abstract fixture base"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -6876,12 +7480,15 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": false,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [],
         "official_name": "And",
+        "outside_scope_reason": null,
         "primitive_category": "single_component_primitives",
         "proposed_class": "And",
-        "proposed_module": "claasp_next.primitives.single_component_primitives.and_cipher"
+        "proposed_module": "claasp_next.primitives.single_component_primitives.and"
       },
       "public_entry_points": [
         "AndCipher"
@@ -6890,7 +7497,7 @@
       "responsibility": "and cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/single_component_primitives/and_cipher.py"
+      "v5_destination": "claasp_next/primitives/single_component_primitives/and.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -6908,12 +7515,15 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": false,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [],
         "official_name": "Constant",
+        "outside_scope_reason": null,
         "primitive_category": "single_component_primitives",
         "proposed_class": "Constant",
-        "proposed_module": "claasp_next.primitives.single_component_primitives.constant_cipher"
+        "proposed_module": "claasp_next.primitives.single_component_primitives.constant"
       },
       "public_entry_points": [
         "ConstantCipher"
@@ -6922,7 +7532,7 @@
       "responsibility": "constant cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/single_component_primitives/constant_cipher.py"
+      "v5_destination": "claasp_next/primitives/single_component_primitives/constant.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -6940,12 +7550,17 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": false,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "plaintext"
+        ],
         "official_name": "Fsr",
+        "outside_scope_reason": null,
         "primitive_category": "single_component_primitives",
         "proposed_class": "Fsr",
-        "proposed_module": "claasp_next.primitives.single_component_primitives.fsr_cipher"
+        "proposed_module": "claasp_next.primitives.single_component_primitives.fsr"
       },
       "public_entry_points": [
         "FsrCipher"
@@ -6954,7 +7569,7 @@
       "responsibility": "fsr cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/single_component_primitives/fsr_cipher.py"
+      "v5_destination": "claasp_next/primitives/single_component_primitives/fsr.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -6972,12 +7587,15 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": false,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [],
         "official_name": "IdeaModmul",
+        "outside_scope_reason": null,
         "primitive_category": "single_component_primitives",
         "proposed_class": "IdeaModmul",
-        "proposed_module": "claasp_next.primitives.single_component_primitives.idea_modmul_cipher"
+        "proposed_module": "claasp_next.primitives.single_component_primitives.idea_modmul"
       },
       "public_entry_points": [
         "IdeaModmulCipher"
@@ -6986,7 +7604,7 @@
       "responsibility": "idea modmul cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/single_component_primitives/idea_modmul_cipher.py"
+      "v5_destination": "claasp_next/primitives/single_component_primitives/idea_modmul.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -7004,12 +7622,17 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": false,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "plaintext"
+        ],
         "official_name": "Identity",
+        "outside_scope_reason": null,
         "primitive_category": "single_component_primitives",
         "proposed_class": "Identity",
-        "proposed_module": "claasp_next.primitives.single_component_primitives.identity_cipher"
+        "proposed_module": "claasp_next.primitives.single_component_primitives.identity"
       },
       "public_entry_points": [
         "IdentityCipher"
@@ -7018,7 +7641,7 @@
       "responsibility": "identity cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/single_component_primitives/identity_cipher.py"
+      "v5_destination": "claasp_next/primitives/single_component_primitives/identity.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -7036,12 +7659,17 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": false,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "plaintext"
+        ],
         "official_name": "LinearLayer",
+        "outside_scope_reason": null,
         "primitive_category": "single_component_primitives",
         "proposed_class": "LinearLayer",
-        "proposed_module": "claasp_next.primitives.single_component_primitives.linear_layer_cipher"
+        "proposed_module": "claasp_next.primitives.single_component_primitives.linear_layer"
       },
       "public_entry_points": [
         "LinearLayerCipher"
@@ -7050,7 +7678,7 @@
       "responsibility": "linear layer cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/single_component_primitives/linear_layer_cipher.py"
+      "v5_destination": "claasp_next/primitives/single_component_primitives/linear_layer.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -7068,12 +7696,17 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": false,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "plaintext"
+        ],
         "official_name": "MixColumn",
+        "outside_scope_reason": null,
         "primitive_category": "single_component_primitives",
         "proposed_class": "MixColumn",
-        "proposed_module": "claasp_next.primitives.single_component_primitives.mix_column_cipher"
+        "proposed_module": "claasp_next.primitives.single_component_primitives.mix_column"
       },
       "public_entry_points": [
         "MixColumnCipher"
@@ -7082,7 +7715,7 @@
       "responsibility": "mix column cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/single_component_primitives/mix_column_cipher.py"
+      "v5_destination": "claasp_next/primitives/single_component_primitives/mix_column.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -7100,12 +7733,15 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": false,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [],
         "official_name": "Modadd",
+        "outside_scope_reason": null,
         "primitive_category": "single_component_primitives",
         "proposed_class": "Modadd",
-        "proposed_module": "claasp_next.primitives.single_component_primitives.modadd_cipher"
+        "proposed_module": "claasp_next.primitives.single_component_primitives.modadd"
       },
       "public_entry_points": [
         "ModaddCipher"
@@ -7114,7 +7750,7 @@
       "responsibility": "modadd cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/single_component_primitives/modadd_cipher.py"
+      "v5_destination": "claasp_next/primitives/single_component_primitives/modadd.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -7132,12 +7768,15 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": false,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [],
         "official_name": "Modmul",
+        "outside_scope_reason": null,
         "primitive_category": "single_component_primitives",
         "proposed_class": "Modmul",
-        "proposed_module": "claasp_next.primitives.single_component_primitives.modmul_cipher"
+        "proposed_module": "claasp_next.primitives.single_component_primitives.modmul"
       },
       "public_entry_points": [
         "ModmulCipher"
@@ -7146,7 +7785,7 @@
       "responsibility": "modmul cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/single_component_primitives/modmul_cipher.py"
+      "v5_destination": "claasp_next/primitives/single_component_primitives/modmul.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -7164,12 +7803,15 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": false,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [],
         "official_name": "Modsub",
+        "outside_scope_reason": null,
         "primitive_category": "single_component_primitives",
         "proposed_class": "Modsub",
-        "proposed_module": "claasp_next.primitives.single_component_primitives.modsub_cipher"
+        "proposed_module": "claasp_next.primitives.single_component_primitives.modsub"
       },
       "public_entry_points": [
         "ModsubCipher"
@@ -7178,7 +7820,7 @@
       "responsibility": "modsub cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/single_component_primitives/modsub_cipher.py"
+      "v5_destination": "claasp_next/primitives/single_component_primitives/modsub.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -7196,12 +7838,17 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": false,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "plaintext"
+        ],
         "official_name": "Not",
+        "outside_scope_reason": null,
         "primitive_category": "single_component_primitives",
         "proposed_class": "Not",
-        "proposed_module": "claasp_next.primitives.single_component_primitives.not_cipher"
+        "proposed_module": "claasp_next.primitives.single_component_primitives.not"
       },
       "public_entry_points": [
         "NotCipher"
@@ -7210,7 +7857,7 @@
       "responsibility": "not cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/single_component_primitives/not_cipher.py"
+      "v5_destination": "claasp_next/primitives/single_component_primitives/not.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -7228,12 +7875,15 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": false,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [],
         "official_name": "Or",
+        "outside_scope_reason": null,
         "primitive_category": "single_component_primitives",
         "proposed_class": "Or",
-        "proposed_module": "claasp_next.primitives.single_component_primitives.or_cipher"
+        "proposed_module": "claasp_next.primitives.single_component_primitives.or"
       },
       "public_entry_points": [
         "OrCipher"
@@ -7242,7 +7892,7 @@
       "responsibility": "or cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/single_component_primitives/or_cipher.py"
+      "v5_destination": "claasp_next/primitives/single_component_primitives/or.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -7260,12 +7910,17 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": false,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "plaintext"
+        ],
         "official_name": "Permutation",
+        "outside_scope_reason": null,
         "primitive_category": "single_component_primitives",
         "proposed_class": "Permutation",
-        "proposed_module": "claasp_next.primitives.single_component_primitives.permutation_cipher"
+        "proposed_module": "claasp_next.primitives.single_component_primitives.permutation"
       },
       "public_entry_points": [
         "PermutationCipher"
@@ -7274,7 +7929,7 @@
       "responsibility": "permutation cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/single_component_primitives/permutation_cipher.py"
+      "v5_destination": "claasp_next/primitives/single_component_primitives/permutation.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -7292,12 +7947,17 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": false,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "plaintext"
+        ],
         "official_name": "Reverse",
+        "outside_scope_reason": null,
         "primitive_category": "single_component_primitives",
         "proposed_class": "Reverse",
-        "proposed_module": "claasp_next.primitives.single_component_primitives.reverse_cipher"
+        "proposed_module": "claasp_next.primitives.single_component_primitives.reverse"
       },
       "public_entry_points": [
         "ReverseCipher"
@@ -7306,7 +7966,7 @@
       "responsibility": "reverse cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/single_component_primitives/reverse_cipher.py"
+      "v5_destination": "claasp_next/primitives/single_component_primitives/reverse.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -7324,12 +7984,17 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": false,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "plaintext"
+        ],
         "official_name": "Rotate",
+        "outside_scope_reason": null,
         "primitive_category": "single_component_primitives",
         "proposed_class": "Rotate",
-        "proposed_module": "claasp_next.primitives.single_component_primitives.rotate_cipher"
+        "proposed_module": "claasp_next.primitives.single_component_primitives.rotate"
       },
       "public_entry_points": [
         "RotateCipher"
@@ -7338,7 +8003,7 @@
       "responsibility": "rotate cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/single_component_primitives/rotate_cipher.py"
+      "v5_destination": "claasp_next/primitives/single_component_primitives/rotate.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -7356,12 +8021,17 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": false,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "plaintext"
+        ],
         "official_name": "Sbox",
+        "outside_scope_reason": null,
         "primitive_category": "single_component_primitives",
         "proposed_class": "Sbox",
-        "proposed_module": "claasp_next.primitives.single_component_primitives.sbox_cipher"
+        "proposed_module": "claasp_next.primitives.single_component_primitives.sbox"
       },
       "public_entry_points": [
         "SboxCipher"
@@ -7370,7 +8040,7 @@
       "responsibility": "sbox cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/single_component_primitives/sbox_cipher.py"
+      "v5_destination": "claasp_next/primitives/single_component_primitives/sbox.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -7388,12 +8058,17 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": false,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "plaintext"
+        ],
         "official_name": "Shift",
+        "outside_scope_reason": null,
         "primitive_category": "single_component_primitives",
         "proposed_class": "Shift",
-        "proposed_module": "claasp_next.primitives.single_component_primitives.shift_cipher"
+        "proposed_module": "claasp_next.primitives.single_component_primitives.shift"
       },
       "public_entry_points": [
         "ShiftCipher"
@@ -7402,7 +8077,7 @@
       "responsibility": "shift cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/single_component_primitives/shift_cipher.py"
+      "v5_destination": "claasp_next/primitives/single_component_primitives/shift.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -7420,12 +8095,17 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": false,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "plaintext"
+        ],
         "official_name": "ShiftRows",
+        "outside_scope_reason": null,
         "primitive_category": "single_component_primitives",
         "proposed_class": "ShiftRows",
-        "proposed_module": "claasp_next.primitives.single_component_primitives.shift_rows_cipher"
+        "proposed_module": "claasp_next.primitives.single_component_primitives.shift_rows"
       },
       "public_entry_points": [
         "ShiftRowsCipher"
@@ -7434,7 +8114,7 @@
       "responsibility": "shift rows cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/single_component_primitives/shift_rows_cipher.py"
+      "v5_destination": "claasp_next/primitives/single_component_primitives/shift_rows.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -7452,12 +8132,17 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": false,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "plaintext"
+        ],
         "official_name": "Sigma",
+        "outside_scope_reason": null,
         "primitive_category": "single_component_primitives",
         "proposed_class": "Sigma",
-        "proposed_module": "claasp_next.primitives.single_component_primitives.sigma_cipher"
+        "proposed_module": "claasp_next.primitives.single_component_primitives.sigma"
       },
       "public_entry_points": [
         "SigmaCipher"
@@ -7466,35 +8151,36 @@
       "responsibility": "sigma cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/single_component_primitives/sigma_cipher.py"
+      "v5_destination": "claasp_next/primitives/single_component_primitives/sigma.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "The helper remains outside the primitive catalogue.",
       "dependencies": [],
-      "disposition": "migrate",
+      "disposition": "inapplicable",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
       "path": "claasp/ciphers/single_component_ciphers/single_component_ciphers_usage_doctest.py",
-      "prerequisites": [
-        "M10.9b"
-      ],
+      "prerequisites": [],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": false,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [],
         "official_name": "SingleComponentCiphersUsageDoctest",
-        "primitive_category": "single_component_primitives",
+        "outside_scope_reason": "documentation-only module",
+        "primitive_category": "outside_scope",
         "proposed_class": "SingleComponentCiphersUsageDoctest",
-        "proposed_module": "claasp_next.primitives.single_component_primitives.single_component_ciphers_usage_doctest"
+        "proposed_module": "claasp_next.primitives.support.single_component_ciphers_usage_doctest"
       },
       "public_entry_points": [],
-      "rationale": null,
+      "rationale": "documentation-only module",
       "responsibility": "Usage-focused doctests for single component ciphers.",
-      "status": "planned-or-partially-migrated",
+      "status": "classified-outside-scope-in-m10.9b",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/single_component_primitives/single_component_ciphers_usage_doctest.py"
+      "v5_destination": "inapplicable: documentation-only module"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -7512,12 +8198,17 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": false,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "plaintext"
+        ],
         "official_name": "ThetaGaston",
+        "outside_scope_reason": null,
         "primitive_category": "single_component_primitives",
         "proposed_class": "ThetaGaston",
-        "proposed_module": "claasp_next.primitives.single_component_primitives.theta_gaston_cipher"
+        "proposed_module": "claasp_next.primitives.single_component_primitives.theta_gaston"
       },
       "public_entry_points": [
         "ThetaGastonCipher"
@@ -7526,7 +8217,7 @@
       "responsibility": "theta gaston cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/single_component_primitives/theta_gaston_cipher.py"
+      "v5_destination": "claasp_next/primitives/single_component_primitives/theta_gaston.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -7544,12 +8235,17 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": false,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "plaintext"
+        ],
         "official_name": "ThetaKeccak",
+        "outside_scope_reason": null,
         "primitive_category": "single_component_primitives",
         "proposed_class": "ThetaKeccak",
-        "proposed_module": "claasp_next.primitives.single_component_primitives.theta_keccak_cipher"
+        "proposed_module": "claasp_next.primitives.single_component_primitives.theta_keccak"
       },
       "public_entry_points": [
         "ThetaKeccakCipher"
@@ -7558,7 +8254,7 @@
       "responsibility": "theta keccak cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/single_component_primitives/theta_keccak_cipher.py"
+      "v5_destination": "claasp_next/primitives/single_component_primitives/theta_keccak.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -7576,12 +8272,17 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": false,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "plaintext"
+        ],
         "official_name": "ThetaXoodoo",
+        "outside_scope_reason": null,
         "primitive_category": "single_component_primitives",
         "proposed_class": "ThetaXoodoo",
-        "proposed_module": "claasp_next.primitives.single_component_primitives.theta_xoodoo_cipher"
+        "proposed_module": "claasp_next.primitives.single_component_primitives.theta_xoodoo"
       },
       "public_entry_points": [
         "ThetaXoodooCipher"
@@ -7590,7 +8291,7 @@
       "responsibility": "theta xoodoo cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/single_component_primitives/theta_xoodoo_cipher.py"
+      "v5_destination": "claasp_next/primitives/single_component_primitives/theta_xoodoo.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -7608,12 +8309,18 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": false,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext"
+        ],
         "official_name": "VariableRotate",
+        "outside_scope_reason": null,
         "primitive_category": "single_component_primitives",
         "proposed_class": "VariableRotate",
-        "proposed_module": "claasp_next.primitives.single_component_primitives.variable_rotate_cipher"
+        "proposed_module": "claasp_next.primitives.single_component_primitives.variable_rotate"
       },
       "public_entry_points": [
         "VariableRotateCipher"
@@ -7622,7 +8329,7 @@
       "responsibility": "variable rotate cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/single_component_primitives/variable_rotate_cipher.py"
+      "v5_destination": "claasp_next/primitives/single_component_primitives/variable_rotate.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -7640,12 +8347,18 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": false,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext"
+        ],
         "official_name": "VariableShift",
+        "outside_scope_reason": null,
         "primitive_category": "single_component_primitives",
         "proposed_class": "VariableShift",
-        "proposed_module": "claasp_next.primitives.single_component_primitives.variable_shift_cipher"
+        "proposed_module": "claasp_next.primitives.single_component_primitives.variable_shift"
       },
       "public_entry_points": [
         "VariableShiftCipher"
@@ -7654,7 +8367,7 @@
       "responsibility": "variable shift cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/single_component_primitives/variable_shift_cipher.py"
+      "v5_destination": "claasp_next/primitives/single_component_primitives/variable_shift.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -7672,12 +8385,17 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": false,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "plaintext"
+        ],
         "official_name": "WordPermutation",
+        "outside_scope_reason": null,
         "primitive_category": "single_component_primitives",
         "proposed_class": "WordPermutation",
-        "proposed_module": "claasp_next.primitives.single_component_primitives.word_permutation_cipher"
+        "proposed_module": "claasp_next.primitives.single_component_primitives.word_permutation"
       },
       "public_entry_points": [
         "WordPermutationCipher"
@@ -7686,7 +8404,7 @@
       "responsibility": "word permutation cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/single_component_primitives/word_permutation_cipher.py"
+      "v5_destination": "claasp_next/primitives/single_component_primitives/word_permutation.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -7704,12 +8422,15 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": false,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [],
         "official_name": "Xor",
+        "outside_scope_reason": null,
         "primitive_category": "single_component_primitives",
         "proposed_class": "Xor",
-        "proposed_module": "claasp_next.primitives.single_component_primitives.xor_cipher"
+        "proposed_module": "claasp_next.primitives.single_component_primitives.xor"
       },
       "public_entry_points": [
         "XorCipher"
@@ -7718,7 +8439,7 @@
       "responsibility": "xor cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/single_component_primitives/xor_cipher.py"
+      "v5_destination": "claasp_next/primitives/single_component_primitives/xor.py"
     },
     {
       "acceptance_criterion": "Containing package is represented by its non-marker entries.",
@@ -7756,12 +8477,18 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "provisional fixed-length core classification; confirm bijectivity and interface during M10.9b",
+        "bijectivity_obligation": false,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": "stream_ciphers",
+        "input_roles": [
+          "frame",
+          "key"
+        ],
         "official_name": "A51",
+        "outside_scope_reason": null,
         "primitive_category": "block_functions",
         "proposed_class": "A51",
-        "proposed_module": "claasp_next.primitives.block_functions.a5_1_stream_cipher"
+        "proposed_module": "claasp_next.primitives.block_functions.a5_1"
       },
       "public_entry_points": [
         "A51StreamCipher"
@@ -7770,7 +8497,7 @@
       "responsibility": "a5 1 stream cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_functions/a5_1_stream_cipher.py"
+      "v5_destination": "claasp_next/primitives/block_functions/a5_1.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -7788,12 +8515,18 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "provisional fixed-length core classification; confirm bijectivity and interface during M10.9b",
+        "bijectivity_obligation": false,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": "stream_ciphers",
+        "input_roles": [
+          "frame",
+          "key"
+        ],
         "official_name": "A52",
+        "outside_scope_reason": null,
         "primitive_category": "block_functions",
         "proposed_class": "A52",
-        "proposed_module": "claasp_next.primitives.block_functions.a5_2_stream_cipher"
+        "proposed_module": "claasp_next.primitives.block_functions.a5_2"
       },
       "public_entry_points": [
         "A52StreamCipher"
@@ -7802,7 +8535,7 @@
       "responsibility": "a5 2 stream cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_functions/a5_2_stream_cipher.py"
+      "v5_destination": "claasp_next/primitives/block_functions/a5_2.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -7820,12 +8553,18 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "provisional fixed-length core classification; confirm bijectivity and interface during M10.9b",
+        "bijectivity_obligation": false,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": "stream_ciphers",
+        "input_roles": [
+          "initialization_vector",
+          "key"
+        ],
         "official_name": "Bivium",
+        "outside_scope_reason": null,
         "primitive_category": "block_functions",
         "proposed_class": "Bivium",
-        "proposed_module": "claasp_next.primitives.block_functions.bivium_stream_cipher"
+        "proposed_module": "claasp_next.primitives.block_functions.bivium"
       },
       "public_entry_points": [
         "BiviumStreamCipher"
@@ -7834,7 +8573,7 @@
       "responsibility": "bivium stream cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_functions/bivium_stream_cipher.py"
+      "v5_destination": "claasp_next/primitives/block_functions/bivium.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -7852,12 +8591,17 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "provisional fixed-length core classification; confirm bijectivity and interface during M10.9b",
+        "bijectivity_obligation": false,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": "stream_ciphers",
+        "input_roles": [
+          "state"
+        ],
         "official_name": "BluetoothStreamCipherE0",
-        "primitive_category": "block_functions",
+        "outside_scope_reason": null,
+        "primitive_category": "functions",
         "proposed_class": "BluetoothStreamCipherE0",
-        "proposed_module": "claasp_next.primitives.block_functions.bluetooth_stream_cipher_e0"
+        "proposed_module": "claasp_next.primitives.functions.bluetooth_stream_cipher_e0"
       },
       "public_entry_points": [
         "BluetoothStreamCipherE0"
@@ -7866,7 +8610,7 @@
       "responsibility": "bluetooth stream cipher e0",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_functions/bluetooth_stream_cipher_e0.py"
+      "v5_destination": "claasp_next/primitives/functions/bluetooth_stream_cipher_e0.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -7884,12 +8628,19 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "provisional fixed-length core classification; confirm bijectivity and interface during M10.9b",
+        "bijectivity_obligation": false,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": "stream_ciphers",
-        "official_name": "Chacha",
+        "input_roles": [
+          "key",
+          "nonce",
+          "plaintext"
+        ],
+        "official_name": "ChaChaKeystreamBlock",
+        "outside_scope_reason": null,
         "primitive_category": "block_functions",
-        "proposed_class": "Chacha",
-        "proposed_module": "claasp_next.primitives.block_functions.chacha_stream_cipher"
+        "proposed_class": "ChaChaKeystreamBlock",
+        "proposed_module": "claasp_next.primitives.block_functions.chacha"
       },
       "public_entry_points": [
         "init_state_plaintext",
@@ -7899,7 +8650,7 @@
       "responsibility": "chacha stream cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_functions/chacha_stream_cipher.py"
+      "v5_destination": "claasp_next/primitives/block_functions/chacha.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -7917,12 +8668,18 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "provisional fixed-length core classification; confirm bijectivity and interface during M10.9b",
+        "bijectivity_obligation": false,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": "stream_ciphers",
+        "input_roles": [
+          "initialization_vector",
+          "key"
+        ],
         "official_name": "Snow3G",
+        "outside_scope_reason": null,
         "primitive_category": "block_functions",
         "proposed_class": "Snow3G",
-        "proposed_module": "claasp_next.primitives.block_functions.snow3g_stream_cipher"
+        "proposed_module": "claasp_next.primitives.block_functions.snow3g"
       },
       "public_entry_points": [
         "Snow3GStreamCipher"
@@ -7931,7 +8688,7 @@
       "responsibility": "snow3g stream cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_functions/snow3g_stream_cipher.py"
+      "v5_destination": "claasp_next/primitives/block_functions/snow3g.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -7949,12 +8706,18 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "provisional fixed-length core classification; confirm bijectivity and interface during M10.9b",
+        "bijectivity_obligation": false,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": "stream_ciphers",
+        "input_roles": [
+          "initialization_vector",
+          "key"
+        ],
         "official_name": "Trivium",
+        "outside_scope_reason": null,
         "primitive_category": "block_functions",
         "proposed_class": "Trivium",
-        "proposed_module": "claasp_next.primitives.block_functions.trivium_stream_cipher"
+        "proposed_module": "claasp_next.primitives.block_functions.trivium"
       },
       "public_entry_points": [
         "TriviumStreamCipher"
@@ -7963,7 +8726,7 @@
       "responsibility": "trivium stream cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_functions/trivium_stream_cipher.py"
+      "v5_destination": "claasp_next/primitives/block_functions/trivium.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -7981,12 +8744,18 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "provisional fixed-length core classification; confirm bijectivity and interface during M10.9b",
+        "bijectivity_obligation": false,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": "stream_ciphers",
+        "input_roles": [
+          "initialization_vector",
+          "key"
+        ],
         "official_name": "Zuc",
+        "outside_scope_reason": null,
         "primitive_category": "block_functions",
         "proposed_class": "Zuc",
-        "proposed_module": "claasp_next.primitives.block_functions.zuc_stream_cipher"
+        "proposed_module": "claasp_next.primitives.block_functions.zuc"
       },
       "public_entry_points": [
         "ZucStreamCipher"
@@ -7995,7 +8764,7 @@
       "responsibility": "zuc stream cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_functions/zuc_stream_cipher.py"
+      "v5_destination": "claasp_next/primitives/block_functions/zuc.py"
     },
     {
       "acceptance_criterion": "Containing package is represented by its non-marker entries.",
@@ -8033,12 +8802,18 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": false,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext"
+        ],
         "official_name": "CipherFour",
+        "outside_scope_reason": null,
         "primitive_category": "toy_primitives",
         "proposed_class": "CipherFour",
-        "proposed_module": "claasp_next.primitives.toy_primitives.cipherfour_block_cipher"
+        "proposed_module": "claasp_next.primitives.toy_primitives.cipherfour"
       },
       "public_entry_points": [
         "CipherFourBlockCipher"
@@ -8047,7 +8822,7 @@
       "responsibility": "cipherfour block cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/toy_primitives/cipherfour_block_cipher.py"
+      "v5_destination": "claasp_next/primitives/toy_primitives/cipherfour.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -8065,12 +8840,18 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": false,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext"
+        ],
         "official_name": "Fancy",
+        "outside_scope_reason": null,
         "primitive_category": "toy_primitives",
         "proposed_class": "Fancy",
-        "proposed_module": "claasp_next.primitives.toy_primitives.fancy_block_cipher"
+        "proposed_module": "claasp_next.primitives.toy_primitives.fancy"
       },
       "public_entry_points": [
         "FancyBlockCipher"
@@ -8079,7 +8860,7 @@
       "responsibility": "fancy block cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/toy_primitives/fancy_block_cipher.py"
+      "v5_destination": "claasp_next/primitives/toy_primitives/fancy.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -8097,12 +8878,18 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": false,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext"
+        ],
         "official_name": "Heys",
+        "outside_scope_reason": null,
         "primitive_category": "toy_primitives",
         "proposed_class": "Heys",
-        "proposed_module": "claasp_next.primitives.toy_primitives.heys_block_cipher"
+        "proposed_module": "claasp_next.primitives.toy_primitives.heys"
       },
       "public_entry_points": [
         "HeysBlockCipher"
@@ -8111,7 +8898,7 @@
       "responsibility": "heys block cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/toy_primitives/heys_block_cipher.py"
+      "v5_destination": "claasp_next/primitives/toy_primitives/heys.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -8129,12 +8916,18 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": false,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext"
+        ],
         "official_name": "ToyAES",
+        "outside_scope_reason": null,
         "primitive_category": "toy_primitives",
         "proposed_class": "ToyAES",
-        "proposed_module": "claasp_next.primitives.toy_primitives.toyaes_block_cipher"
+        "proposed_module": "claasp_next.primitives.toy_primitives.toyaes"
       },
       "public_entry_points": [
         "ToyAESBlockCipher"
@@ -8143,7 +8936,7 @@
       "responsibility": "toyaes block cipher",
       "status": "planned-or-partially-migrated",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/toy_primitives/toyaes_block_cipher.py"
+      "v5_destination": "claasp_next/primitives/toy_primitives/toyaes.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -8161,9 +8954,15 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": false,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext"
+        ],
         "official_name": "ToyFeistel",
+        "outside_scope_reason": null,
         "primitive_category": "toy_primitives",
         "proposed_class": "ToyFeistel",
         "proposed_module": "claasp_next.primitives.toy_primitives.toyfeistel"
@@ -8193,9 +8992,15 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": false,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext"
+        ],
         "official_name": "ToySPN1",
+        "outside_scope_reason": null,
         "primitive_category": "toy_primitives",
         "proposed_class": "ToySPN1",
         "proposed_module": "claasp_next.primitives.toy_primitives.toyspn1"
@@ -8225,9 +9030,15 @@
         "M10.9b"
       ],
       "primitive": {
-        "classification_basis": "legacy catalogue semantics; validate category invariant during M10.9b",
+        "bijectivity_obligation": false,
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
+        "input_roles": [
+          "key",
+          "plaintext"
+        ],
         "official_name": "ToySPN2",
+        "outside_scope_reason": null,
         "primitive_category": "toy_primitives",
         "proposed_class": "ToySPN2",
         "proposed_module": "claasp_next.primitives.toy_primitives.toyspn2"

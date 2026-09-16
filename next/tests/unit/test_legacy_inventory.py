@@ -47,7 +47,7 @@ def test_every_primitive_record_has_naming_and_taxonomy_metadata():
     categories = {
         "permutations", "functions", "block_ciphers", "block_functions",
         "tweakable_block_ciphers", "tweakable_block_functions",
-        "single_component_primitives", "toy_primitives",
+        "single_component_primitives", "toy_primitives", "outside_scope",
     }
     primitive_records = [record for record in payload["records"] if "primitive" in record]
     assert primitive_records
@@ -57,6 +57,35 @@ def test_every_primitive_record_has_naming_and_taxonomy_metadata():
         assert metadata["official_name"]
         assert metadata["proposed_module"].startswith("claasp_next.primitives.")
         assert metadata["proposed_class"]
+
+
+def test_m10_9b_catalogue_classification_is_complete_and_checks_input_roles():
+    payload = json.loads(INVENTORY.read_text(encoding="utf-8"))
+    records = {record["path"]: record for record in payload["records"]}
+    status = _module().catalogue_classification_status(payload)
+
+    assert status == {
+        "total": 149,
+        "classified": 149,
+        "categories": {
+            "block_ciphers": 61,
+            "block_functions": 8,
+            "functions": 7,
+            "outside_scope": 4,
+            "permutations": 27,
+            "single_component_primitives": 26,
+            "toy_primitives": 7,
+            "tweakable_block_ciphers": 9,
+        },
+        "errors": [],
+        "complete": True,
+    }
+    assert records["claasp/ciphers/block_ciphers/mantis_block_cipher.py"]["primitive"]["primitive_category"] == "tweakable_block_ciphers"
+    assert records["claasp/ciphers/permutations/tinyjambu_permutation.py"]["primitive"]["primitive_category"] == "block_ciphers"
+    assert records["claasp/ciphers/stream_ciphers/bluetooth_stream_cipher_e0.py"]["primitive"]["primitive_category"] == "functions"
+    helper = records["claasp/ciphers/block_ciphers/lowmc_generate_matrices.py"]
+    assert helper["primitive"]["primitive_category"] == "outside_scope"
+    assert helper["disposition"] == "inapplicable"
 
 
 def test_m10_8d_boolean_constraint_entries_are_resolved():

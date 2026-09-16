@@ -30,6 +30,24 @@ CATEGORY_BY_DIRECTORY = {
     "toys": "toy_primitives",
 }
 
+SEMANTIC_PRIMITIVE_CATEGORIES = {
+    "permutations", "functions", "block_ciphers", "block_functions",
+    "tweakable_block_ciphers", "tweakable_block_functions",
+}
+ORTHOGONAL_CATALOGUE_FOLDERS = {"single_component_primitives", "toy_primitives"}
+CATALOGUE_CATEGORIES = SEMANTIC_PRIMITIVE_CATEGORIES | ORTHOGONAL_CATALOGUE_FOLDERS | {"outside_scope"}
+CATALOGUE_OUT_OF_SCOPE = {
+    "claasp/ciphers/block_ciphers/lowmc_generate_matrices.py": "LowMC matrix-generation helper",
+    "claasp/ciphers/permutations/util.py": "permutation helper algorithms",
+    "claasp/ciphers/single_component_ciphers/_base.py": "abstract fixture base",
+    "claasp/ciphers/single_component_ciphers/single_component_ciphers_usage_doctest.py": "documentation-only module",
+}
+OFFICIAL_NAME_OVERRIDES = {
+    "claasp/ciphers/block_ciphers/chilow_block_cipher.py": "Chilow",
+    "claasp/ciphers/permutations/subterranean_permutation.py": "Subterranean",
+    "claasp/ciphers/stream_ciphers/chacha_stream_cipher.py": "ChaChaKeystreamBlock",
+}
+
 MIGRATION_OVERRIDES = {
     "claasp/cipher_modules/models/milp/milp_models/Gurobi/monomial_prediction.py": {
         "v5_destination": "next/src/claasp_next/semantics/cryptanalysis/monomial.py; next/src/claasp_next/analysis/algebraic.py; next/src/claasp_next/representations/constraints/milp/monomial.py",
@@ -929,32 +947,84 @@ def _official_name(entries: list[str], stem: str) -> str:
     return candidate or "".join(part.capitalize() for part in stem.split("_"))
 
 
-def _catalogue_metadata(relative: Path, entries: list[str]) -> dict[str, Any] | None:
+def _input_roles(tree: ast.Module) -> list[str]:
+    """Return declared external input roles without importing legacy CLAASP."""
+
+    roles = set()
+    aliases = {}
+    for node in ast.walk(tree):
+        if (isinstance(node, ast.Assign) and len(node.targets) == 1
+                and isinstance(node.targets[0], ast.Name)):
+            aliases[node.targets[0].id] = {
+                value.id.removeprefix("INPUT_").lower()
+                for value in ast.walk(node.value)
+                if isinstance(value, ast.Name) and value.id.startswith("INPUT_")
+            }
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Call):
+            continue
+        for keyword in node.keywords:
+            if keyword.arg not in {"cipher_inputs", "inputs"}:
+                continue
+            if isinstance(keyword.value, ast.Name):
+                roles.update(aliases.get(keyword.value.id, set()))
+            for value in ast.walk(keyword.value):
+                if isinstance(value, ast.Name) and value.id.startswith("INPUT_"):
+                    roles.add(value.id.removeprefix("INPUT_").lower())
+                elif isinstance(value, ast.Constant) and isinstance(value.value, str):
+                    roles.add(value.value.removeprefix("input_").lower())
+    return sorted(roles)
+
+
+def _fixed_length_category(directory: str, roles: list[str]) -> str:
+    if directory in {"single_component_ciphers", "toys"}:
+        return CATEGORY_BY_DIRECTORY[directory]
+    if directory == "block_ciphers":
+        return "tweakable_block_ciphers" if "tweak" in roles else "block_ciphers"
+    if directory == "permutations":
+        return "block_ciphers" if "key" in roles else "permutations"
+    if directory == "stream_ciphers":
+        return "block_functions" if "key" in roles else "functions"
+    return CATEGORY_BY_DIRECTORY[directory]
+
+
+def _proposed_module_stem(stem: str) -> str:
+    for suffix in ("_block_cipher", "_hash_function", "_stream_cipher", "_permutation", "_cipher", "_mac"):
+        if stem.endswith(suffix):
+            return stem[:-len(suffix)]
+    return stem
+
+
+def _catalogue_metadata(relative: Path, entries: list[str], tree: ast.Module) -> dict[str, Any] | None:
     parts = relative.parts
     if len(parts) < 3 or parts[0:2] != ("claasp", "ciphers"):
         return None
     directory = parts[2]
     if directory not in CATEGORY_BY_DIRECTORY or relative.name == "__init__.py":
         return None
-    official_name = _official_name(entries, relative.stem)
+    path = relative.as_posix()
+    roles = _input_roles(tree)
+    official_name = OFFICIAL_NAME_OVERRIDES.get(path, _official_name(entries, relative.stem))
     high_level_parent = directory if directory in {"hash_functions", "mac", "stream_ciphers"} else None
-    category = CATEGORY_BY_DIRECTORY[directory]
+    category = "outside_scope" if path in CATALOGUE_OUT_OF_SCOPE else _fixed_length_category(directory, roles)
+    destination_category = category if category != "outside_scope" else "support"
     return {
         "official_name": official_name,
         "primitive_category": category,
-        "proposed_module": f"claasp_next.primitives.{category}.{relative.stem}",
+        "proposed_module": f"claasp_next.primitives.{destination_category}.{_proposed_module_stem(relative.stem)}",
         "proposed_class": official_name,
         "higher_level_parent": high_level_parent,
-        "classification_basis": (
-            "provisional fixed-length core classification; confirm bijectivity and interface during M10.9b"
-            if high_level_parent
-            else "legacy catalogue semantics; validate category invariant during M10.9b"
-        ),
+        "input_roles": roles,
+        "bijectivity_obligation": category in {"permutations", "block_ciphers", "tweakable_block_ciphers"},
+        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
+        "outside_scope_reason": CATALOGUE_OUT_OF_SCOPE.get(path),
     }
 
 
 def _destination(relative: Path, catalogue: dict[str, Any] | None) -> str:
     if catalogue:
+        if catalogue["primitive_category"] == "outside_scope":
+            return "inapplicable: " + catalogue["outside_scope_reason"]
         return catalogue["proposed_module"].replace(".", "/") + ".py"
     if relative.parts[0] == "tests":
         return "next/tests (mapped to the owning migrated behavior)"
@@ -975,7 +1045,7 @@ def record(path: Path) -> dict[str, Any]:
     tree = _parse(path)
     entries = _public_entries(tree)
     tests = _test_entries(tree)
-    catalogue = _catalogue_metadata(relative, entries)
+    catalogue = _catalogue_metadata(relative, entries, tree)
     is_marker = path.name == "__init__.py" and not entries
     kind = "test" if relative.parts[0] == "tests" else "source"
     item: dict[str, Any] = {
@@ -1006,6 +1076,14 @@ def record(path: Path) -> dict[str, Any]:
     }
     if catalogue:
         item["primitive"] = catalogue
+        if catalogue["primitive_category"] == "outside_scope":
+            item.update({
+                "prerequisites": [],
+                "disposition": "inapplicable",
+                "status": "classified-outside-scope-in-m10.9b",
+                "acceptance_criterion": "The helper remains outside the primitive catalogue.",
+                "rationale": catalogue["outside_scope_reason"],
+            })
     item.update(MIGRATION_OVERRIDES.get(relative.as_posix(), {}))
     return item
 
@@ -1051,16 +1129,74 @@ def model_closure_status(payload: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def catalogue_classification_status(payload: dict[str, Any]) -> dict[str, Any]:
+    """Validate M10.9b category, key/tweak, and bijectivity obligations."""
+
+    records = [item for item in payload["records"] if "primitive" in item]
+    errors = []
+    invalid_paths = set()
+    counts = {}
+    destinations = {}
+    def fail(path: str, message: str) -> None:
+        invalid_paths.add(path)
+        errors.append(f"{path}: {message}")
+
+    for item in records:
+        metadata = item["primitive"]
+        category = metadata["primitive_category"]
+        roles = set(metadata["input_roles"])
+        counts[category] = counts.get(category, 0) + 1
+        if category not in CATALOGUE_CATEGORIES:
+            fail(item["path"], f"unknown category {category}")
+        if category in {"block_ciphers", "block_functions", "tweakable_block_ciphers", "tweakable_block_functions"} and "key" not in roles:
+            fail(item["path"], "keyed category lacks key input")
+        if category in {"tweakable_block_ciphers", "tweakable_block_functions"} and "tweak" not in roles:
+            fail(item["path"], "tweakable category lacks tweak input")
+        if category in {"permutations", "functions"} and roles & {"key", "tweak"}:
+            fail(item["path"], "unkeyed category has key/tweak input")
+        expected_bijective = category in {"permutations", "block_ciphers", "tweakable_block_ciphers"}
+        if metadata["bijectivity_obligation"] != expected_bijective:
+            fail(item["path"], "inconsistent bijectivity obligation")
+        if category == "outside_scope" and item["disposition"] != "inapplicable":
+            fail(item["path"], "outside-scope entry is not inapplicable")
+        if not metadata["official_name"] or not metadata["proposed_class"]:
+            fail(item["path"], "official module/class name is missing")
+        destination = metadata["proposed_module"]
+        if not destination.startswith("claasp_next.primitives."):
+            fail(item["path"], "destination is outside the v5 primitive catalogue")
+        if category != "outside_scope":
+            destinations.setdefault(destination, []).append(item["path"])
+            if any(part in destination.split(".") for part in ("hash_functions", "mac", "stream_ciphers")):
+                fail(item["path"], "legacy construction folder leaked into v5 taxonomy")
+    for destination, paths in destinations.items():
+        if len(paths) > 1:
+            for path in paths:
+                fail(path, f"duplicate proposed module {destination}")
+    return {
+        "total": len(records),
+        "classified": len(records) - len(invalid_paths),
+        "categories": dict(sorted(counts.items())),
+        "errors": errors,
+        "complete": not errors,
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--check", action="store_true", help="fail if the checked-in inventory is stale")
     parser.add_argument("--model-status", action="store_true", help="report remaining M10.8 model work without rewriting the inventory")
     parser.add_argument("--check-model-closure", action="store_true", help="fail until all M10.8 model entries are resolved, including deferrals")
+    parser.add_argument("--catalogue-status", action="store_true", help="report M10.9b fixed-length catalogue classification")
+    parser.add_argument("--check-catalogue-classification", action="store_true", help="fail until every catalogue entry satisfies M10.9b invariants")
     args = parser.parse_args()
     if args.model_status or args.check_model_closure:
         status = model_closure_status(build_inventory())
         print(json.dumps({key: value for key, value in status.items() if key != "unresolved"}, indent=2))
         return int(args.check_model_closure and not status["complete"])
+    if args.catalogue_status or args.check_catalogue_classification:
+        status = catalogue_classification_status(build_inventory())
+        print(json.dumps(status, indent=2))
+        return int(args.check_catalogue_classification and not status["complete"])
     expected = serialized_inventory()
     if args.check:
         if not OUTPUT.exists() or OUTPUT.read_text(encoding="utf-8") != expected:

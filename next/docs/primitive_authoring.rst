@@ -33,3 +33,21 @@ The ``claasp_next.utils`` module provides reusable finite-field arithmetic,
 fixed-width rotation, and matrix-layout helpers. Primitive classes should contain
 their round and key-schedule logic, not private copies of generic mathematics.
 The AES implementation is the current full-size example.
+
+Catalogue categories
+--------------------
+
+The public catalogue classifies fixed-length maps by their mathematical
+interface.  Unkeyed maps belong to ``permutations`` when bijectivity is an
+obligation and to ``functions`` otherwise.  Keyed maps use ``block_ciphers``
+or ``block_functions``; an explicit tweak promotes those categories to
+``tweakable_block_ciphers`` or ``tweakable_block_functions``.  Execution
+engines and graph realizations do not change this classification.
+
+``single_component_primitives`` and ``toy_primitives`` are orthogonal fixture
+folders.  Hash, MAC, and stream constructions are not catalogue categories:
+only a fixed-length core is catalogued, with the higher-level construction
+recorded as provenance.  A catalogue record also states its external input
+roles and whether bijectivity must eventually be demonstrated by the migrated
+implementation.  Helpers and documentation modules receive an explicit
+outside-scope disposition instead of being silently counted as primitives.
