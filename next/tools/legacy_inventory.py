@@ -164,6 +164,7 @@ M10_9D_COMPLETION_SLICES = (
     "M10.9d1", "M10.9d2", "M10.9d3", "M10.9d4", "M10.9d5",
     "M10.9d6", "M10.9d7", "M10.9d8",
 )
+M10_9D_COMPLETED_SLICES = {"M10.9d4"}
 
 
 def _m10_9c_slice(path: str) -> str | None:
@@ -1556,6 +1557,23 @@ def record(path: Path) -> dict[str, Any]:
         item["milestone_owner"] = m10_9d_test_slice
         item["prerequisites"] = ["M10.9c10"]
     item.update(MIGRATION_OVERRIDES.get(relative.as_posix(), {}))
+    if item.get("milestone_owner") in M10_9D_COMPLETED_SLICES:
+        is_test = item["kind"] == "test"
+        item.update({
+            "v5_destination": (
+                "next/tests/unit/test_single_component_primitives.py; "
+                "next/tests/unit/test_toy_primitive_catalogue.py"
+                if is_test else item["v5_destination"]
+            ),
+            "prerequisites": ["M10.9c10"],
+            "disposition": "migrate",
+            "status": "migrated-in-" + item["milestone_owner"].lower(),
+            "acceptance_criterion": (
+                "Applicable fixed vectors, parameter variants, and independent semantic checks pass "
+                "through the typed v5 primitive graph."
+            ),
+            "rationale": None,
+        })
     return item
 
 

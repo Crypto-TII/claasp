@@ -216,7 +216,12 @@ def test_m10_9d_primitive_catalogue_audit_assigns_every_source_and_test_once():
     assert status["owner_errors"] == []
     assert status["audit_complete"]
     assert not status["closure_complete"]
-    assert len(status["unresolved"]) == 145
+    assert len(status["unresolved"]) == 112
+    assert not any(
+        record["path"] in status["unresolved"]
+        for record in payload["records"]
+        if record.get("milestone_owner") == "M10.9d4" and record["kind"] == "source"
+    )
 
 
 def test_m10_9d_primitive_catalogue_cli_audit_gate_passes():

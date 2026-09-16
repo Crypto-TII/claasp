@@ -26,9 +26,6 @@ class Primitive:
             raise ValueError("family_name must not be empty")
         if not isinstance(inputs, Mapping):
             raise TypeError("inputs must be a mapping from names to ValueType objects")
-        if not inputs:
-            raise ValueError("a primitive must declare at least one input")
-
         ports: dict[str, Port] = {}
         for name, value_type in inputs.items():
             if not isinstance(name, str):

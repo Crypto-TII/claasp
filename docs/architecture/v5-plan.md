@@ -707,6 +707,9 @@ accepted early vertical slices and remain subject to the final closure gate:
 4. **M10.9d4 — single-component and toy primitives.** Resolve 33 source and
    31 test records after M10.9d3. Reuse the M10.9c component catalogue and
    preserve fixture semantics without restoring backend methods on components.
+   This slice is achieved: all 26 one-operation primitives and seven toy
+   families use typed graphs, all fixed vectors and parameter fixtures pass,
+   and ToyAES diffusion matrices have independent finite-field checks.
 5. **M10.9d5 — word-oriented and ARX/Feistel block primitives.** Resolve the
    15 source and 15 test records assigned by the machine inventory, preserving
    official parameter families, reduced rounds, and fixed vectors.
@@ -1207,8 +1210,8 @@ is absent). Update this table in the same commit that changes milestone state.
 | ChaCha permutation evaluation slice (M10.9d1) | Achieved | Official `ChaCha` class, standard round convention, typed ARX graph, full ChaCha20 and two legacy toy vectors, and scalar/batch parity; cryptanalytic fixture migration remains separately tracked |
 | Salsa permutation evaluation slice (M10.9d2) | Achieved | Official `Salsa` class, standard full-round convention, typed ARX graph, both fixed legacy vectors, and scalar/batch parity; cryptanalytic fixtures remain separately tracked |
 | Primitive catalogue audit (M10.9d3) | Achieved | Machine inventory assigns 149 source and 143 primitive-test records (265 functions) exactly once across M10.9d1–M10.9d8: 145 behavioral sources and four reviewed outside-scope helpers; the audit gate passes while the separate closure gate exposes every unimplemented destination |
-| Single-component and toy primitives (M10.9d4) | Next | Resolve 33 source and 31 test records through the typed component catalogue and preserve applicable fixture behavior |
-| Word-oriented block primitives (M10.9d5) | Planned | Resolve 15 source and 15 test records covering assigned ARX/Feistel/word families and parameter variants |
+| Single-component and toy primitives (M10.9d4) | Achieved | All 33 source and 31 test records are resolved by 26 typed one-operation primitives and seven toy families; fixed vectors, reduced/custom parameters, scalar semantics, and every ToyAES matrix MDS status are independently checked; host checkpoint: 548 passed, 78 external deselected |
+| Word-oriented block primitives (M10.9d5) | Next | Resolve 15 source and 15 test records covering assigned ARX/Feistel/word families and parameter variants |
 | Substitution/linear and tweakable block primitives (M10.9d6) | Planned | Resolve 55 source and 55 test records covering the remaining block and tweakable families |
 | Remaining permutations (M10.9d7) | Planned | Resolve 25 source and 25 test records after shared block-operation dependencies |
 | Fixed-length functions/block functions (M10.9d8) | Planned | Resolve 15 source and 15 test records extracted from legacy hash, MAC, and stream construction folders |

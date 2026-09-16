@@ -44,6 +44,9 @@ SKIPPED_DIR_PARTS = ("__pycache__", "_build", ".egg-info")
 #: generic-vocabulary scan runs, so these exact phrases never trigger a
 #: violation while any other appearance of "cipher"/"ciphers" does.
 ALLOWED_PHRASES = (
+    # CipherFour is the published proper name of the teaching primitive, not
+    # generic public-API vocabulary.
+    "CipherFour",
     "block_ciphers",
     "block_cipher",
     "block ciphers",
