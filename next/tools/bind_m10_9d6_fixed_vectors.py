@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import argparse
 import gzip
 import importlib
 import json
@@ -34,14 +35,20 @@ def _load_candidates(module_name: str, class_name: str):
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--slice", default="M10.9d6")
+    parser.add_argument("--observations", type=Path)
+    parser.add_argument("--output", type=Path)
+    arguments = parser.parse_args()
+    suffix = arguments.slice.lower().replace(".", "_")
+    observations_path = arguments.observations or ROOT / f"next/migration/{suffix}_fixed_observations.json"
+    destination = arguments.output or ROOT / f"next/migration/{suffix}_fixed_vectors.json"
     inventory = json.loads((ROOT / "next/migration/legacy_inventory.json").read_text(encoding="utf-8"))
-    observations = json.loads(
-        (ROOT / "next/migration/m10_9d6_fixed_observations.json").read_text(encoding="utf-8")
-    )
+    observations = json.loads(observations_path.read_text(encoding="utf-8"))
     records = {
         record["path"][:-3].replace("/", "."): record
         for record in inventory["records"]
-        if record.get("milestone_owner") == "M10.9d6" and record["kind"] == "source"
+        if record.get("milestone_owner") == arguments.slice and record["kind"] == "source"
     }
     grouped = {}
     for observation in observations:
@@ -68,6 +75,8 @@ def main() -> None:
                 "number_of_rounds": rounds,
                 "version": version.V1 if len(vectors[0]["inputs"]) == 2 else version.V2,
             }, None)]
+        elif class_name in {"KeccakInvertible", "XoodooInvertible"}:
+            candidates = [({"number_of_rounds": rounds}, None)]
         matches = []
         for parameters, spec in candidates:
             if spec is not None:
@@ -103,7 +112,6 @@ def main() -> None:
                 "output": item["output"],
             } for item in vectors],
         })
-    destination = ROOT / "next/migration/m10_9d6_fixed_vectors.json"
     destination.write_text(json.dumps(bound, sort_keys=True, indent=2) + "\n", encoding="utf-8")
     print(json.dumps({"bound_groups": len(bound), "vectors": sum(len(x["vectors"]) for x in bound),
                       "unresolved": unresolved}, indent=2))

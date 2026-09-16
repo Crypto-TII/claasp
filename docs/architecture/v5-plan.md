@@ -724,7 +724,9 @@ accepted early vertical slices and remain subject to the final closure gate:
 7. **M10.9d7 — remaining permutations.** Resolve 25 source and 25 test records
    after shared block operations are stable, including invertible interfaces
    represented as forward primitive graphs without claiming the general graph
-   inversion work owned by M10.10.
+   inversion work owned by M10.10. This slice is achieved: every assigned
+   permutation has a typed forward graph, alternate invertible/FSR realizations
+   retain distinct public identities, and all fixed evidence passes.
 8. **M10.9d8 — fixed-length functions and block functions.** Resolve all 15
    source and 15 test records extracted from legacy hash, MAC, and stream
    construction folders. Preserve their fixed-length mappings and parent
@@ -1218,8 +1220,8 @@ is absent). Update this table in the same commit that changes milestone state.
 | Single-component and toy primitives (M10.9d4) | Achieved | All 33 source and 31 test records are resolved by 26 typed one-operation primitives and seven toy families; fixed vectors, reduced/custom parameters, scalar semantics, and every ToyAES matrix MDS status are independently checked; host checkpoint: 548 passed, 78 external deselected |
 | Word-oriented block primitives (M10.9d5) | Achieved | All 15 source and 15 test records are resolved by typed graphs for Aradi, CHAM, HIGHT, IDEA, LEA, Raiden, RC5, Simeck, Simon, SPARX, Speck, TEA, Threefish, TRAX, and XTEA; applicable fixed vectors, parameter variants, reduced rounds, and scalar/batch parity pass; host checkpoint: 602 passed, 78 external deselected |
 | Substitution/linear and tweakable block primitives (M10.9d6) | Achieved | All 55 source and 55 test records have concrete typed-graph destinations; 242 audited parameter variants construct, all 267 fixed observations captured by the 198 legacy tests pass, and all 55 defaults have scalar/batch parity; frozen compressed graph specifications require neither Sage nor the legacy package at runtime; host checkpoint: 835 passed, 78 external deselected |
-| Remaining permutations (M10.9d7) | Next | Resolve 25 source and 25 test records after shared block-operation dependencies |
-| Fixed-length functions/block functions (M10.9d8) | Planned | Resolve 15 source and 15 test records extracted from legacy hash, MAC, and stream construction folders |
+| Remaining permutations (M10.9d7) | Achieved | All 25 source and 25 test records have typed forward-graph destinations; 101 audited parameter variants construct, all 55 fixed observations captured by the 46 legacy tests pass, and all 25 families have scalar/batch parity; Keccak/Xoodoo invertible and Spongent FSR remain distinct realizations without claiming M10.10 graph inversion; host checkpoint: 899 passed, 78 external deselected |
+| Fixed-length functions/block functions (M10.9d8) | Next | Resolve 15 source and 15 test records extracted from legacy hash, MAC, and stream construction folders |
 | Primitive-owned parameters/data (M10.9d9) | Planned | Colocate Poseidon and other primitive-specific parameters, generated constants, data, licenses, provenance, and vectors under their owning packages |
 | Complete primitive catalogue closure (M10.9d10) | Planned | Central exports/docs and the machine gate prove all 145 behavioral sources and applicable fixed evidence have concrete v5 destinations |
 | Primitive realizations/task selection (M10.9e) | In progress | Generic capability metadata and AES lookup/algebraic realizations implemented; result provenance and broader task-directed selection remain |

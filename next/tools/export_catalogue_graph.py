@@ -53,12 +53,19 @@ def _mix_binary_matrix(description) -> list[list[int]]:
     return bit_rows
 
 
+def _json_default(value):
+    if isinstance(value, Enum):
+        return value.value
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return list(value)
+
+
 def export(module_name: str, class_name: str, destination: Path, parameters: dict) -> None:
     module = importlib.import_module(module_name)
     primitive = getattr(module, class_name)(**parameters)
     graph = primitive.as_python_dictionary()
-    zero_inputs = [0] * len(graph["cipher_inputs"])
-    zero_output = int(primitive.evaluate(zero_inputs))
     rounds = []
     for primitive_round in graph["cipher_rounds"]:
         exported_round = []
@@ -82,13 +89,12 @@ def export(module_name: str, class_name: str, destination: Path, parameters: dic
         "output_size": graph["cipher_output_bit_size"],
         "parameters": parameters,
         "provenance": [["migration_source", module_name]],
-        "legacy_regression": {"inputs": zero_inputs, "output": zero_output},
         "rounds": rounds,
     }
     destination.parent.mkdir(parents=True, exist_ok=True)
     encoded = json.dumps(
         payload, sort_keys=True, separators=(",", ":"),
-        default=lambda value: value.value if isinstance(value, Enum) else int(value),
+        default=_json_default,
     ).encode()
     destination.write_bytes(gzip.compress(encoded, compresslevel=9, mtime=0))
 
@@ -168,6 +174,8 @@ def export_milestone_slice(inventory_path: Path, slice_name: str) -> None:
         if stem in {"aes", "present"} or generated_and_complete:
             continue
         legacy_module = record["path"][:-3].replace("/", ".")
+        if "invertible_permutation" in legacy_module or legacy_module.endswith("spongent_pi_fsr_permutation"):
+            continue
         module = importlib.import_module(legacy_module)
         candidates = [
             value for value in vars(module).values()
@@ -180,7 +188,10 @@ def export_milestone_slice(inventory_path: Path, slice_name: str) -> None:
         legacy_class_name = legacy_class.__name__
         signature = inspect.signature(legacy_class)
         parameter_names = tuple(signature.parameters)
-        configurations = [{}]
+        # The legacy invertible-permutation defaults synthesize large inverse
+        # matrices in Sage. M10.9d7 freezes the explicitly tested forward
+        # graphs; general graph inversion remains owned by M10.10.
+        configurations = [] if "invertible" in legacy_module else [{}]
         parameter_catalogue = getattr(module, "PARAMETERS_CONFIGURATION_LIST", ())
         configurations.extend(dict(item) for item in parameter_catalogue if isinstance(item, dict))
         configurations.extend(_literal_test_configurations(legacy_class_name, parameter_names))

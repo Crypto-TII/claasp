@@ -168,6 +168,7 @@ M10_9D_COMPLETION_SLICES = (
 )
 M10_9D_COMPLETED_SLICES = {
     "M10.9d1", "M10.9d2", "M10.9d4", "M10.9d5", "M10.9d6",
+    "M10.9d7",
 }
 M10_9D_TEST_DESTINATIONS = {
     "M10.9d1": "next/tests/unit/test_chacha.py",
@@ -183,6 +184,10 @@ M10_9D_TEST_DESTINATIONS = {
     "M10.9d6": (
         "next/tests/unit/test_catalogue_graph_migration.py; "
         "next/tests/integration/test_substitution_block_catalogue.py"
+    ),
+    "M10.9d7": (
+        "next/tests/unit/test_permutation_catalogue.py; "
+        "next/tests/integration/test_permutation_catalogue_evidence.py"
     ),
 }
 

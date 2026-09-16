@@ -1,0 +1,19 @@
+{
+  "parameter_names": [
+    "state_bit_size",
+    "number_of_rounds",
+    "lfsr_degree",
+    "bit_slice"
+  ],
+  "variants": {
+    "{\"bit_slice\":true,\"state_bit_size\":512}": "v8",
+    "{\"number_of_rounds\":100,\"state_bit_size\":512}": "v3",
+    "{\"number_of_rounds\":52,\"state_bit_size\":256}": "v1",
+    "{\"number_of_rounds\":7,\"state_bit_size\":256}": "v6",
+    "{\"number_of_rounds\":76,\"state_bit_size\":384}": "v2",
+    "{\"state_bit_size\":256}": "v7",
+    "{\"state_bit_size\":384}": "v4",
+    "{\"state_bit_size\":512}": "v5",
+    "{}": "v0"
+  }
+}
