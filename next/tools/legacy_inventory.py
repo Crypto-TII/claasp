@@ -31,6 +31,71 @@ CATEGORY_BY_DIRECTORY = {
 }
 
 MIGRATION_OVERRIDES = {
+    "claasp/cipher_modules/models/milp/utils/generate_inequalities_for_and_operation_2_input_bits.py": {
+        "v5_destination": "next/src/claasp_next/semantics/cryptanalysis/bitwise.py; next/src/claasp_next/representations/constraints/milp/relations.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Exact independent-bit AND DDT/LAT counts and weights are retained; finite binary relations provide an exact open extended formulation.",
+        "rationale": "Sage convex-hull construction and greedy/minimum-facet selection tune an encoding, not cryptanalytic semantics. The exact baseline replaces these algorithms without promising identical facets, inequality counts or Sage object types.",
+    },
+    "claasp/cipher_modules/models/milp/utils/generate_inequalities_for_large_sboxes.py": {
+        "v5_destination": "next/src/claasp_next/representations/constraints/milp/sbox.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Exact full DDT and signed Walsh relations support small and eight-bit tables, including nonzero probability-one transitions, with independently checked weights and signs.",
+        "rationale": "Espresso product-of-sum minimization, PLA formatting and mutable pickled caches are replaced by an exact one-hot baseline. Full Walsh counts are explicit rather than silently mixing half-Walsh LAT scales. Encoding minimization is not a scientific fixture contract.",
+    },
+    "claasp/cipher_modules/models/milp/utils/generate_sbox_inequalities_for_trail_search.py": {
+        "v5_destination": "next/src/claasp_next/representations/constraints/milp/sbox.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Full probability-class support is retained, and the legacy PRESENT probability-2/16 facet is independently valid on every corresponding row.",
+        "rationale": "The module itself calls the small-S-box convex-hull code a comparison-only alternative to large-S-box Espresso generation. v5 uses the same exact finite-relation baseline for both; greedy/minimum-facet algorithms, Sage polyhedra and pickled caches are not public APIs.",
+    },
+    "tests/unit/cipher_modules/models/milp/utils/generate_sbox_inequalities_for_trail_search_test.py": {
+        "v5_destination": "next/tests/unit/test_sbox_milp_relation.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Every supported PRESENT DDT/LAT entry and exact objective/sign is checked; the fixed legacy facet holds for all probability-2/16 entries.",
+        "rationale": "A particular Sage inequality's position and printed object representation are not v5 contracts; its mathematical validity is preserved explicitly.",
+    },
+    "claasp/cipher_modules/models/milp/utils/generate_undisturbed_bits_inequalities_for_sboxes.py": {
+        "v5_destination": "next/src/claasp_next/semantics/cryptanalysis/trails.py; next/src/claasp_next/representations/constraints/milp/relations.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "All 81 PRESENT truncated inputs and four undisturbed transitions match the fixed evidence; exact finite relations replace single-output-bit minimization.",
+        "rationale": "Typed strongest bitwise derivative joins retain semantics without Espresso, Sage SBox objects, mutable pickle caches or a fixed chosen cube ordering. Unknown bits remain sound abstractions, not probability-bearing joint witnesses.",
+    },
+    "tests/unit/cipher_modules/models/milp/utils/generate_undisturbed_bits_inequalities_for_sboxes_test.py": {
+        "v5_destination": "next/tests/unit/test_sbox_undisturbed.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "All 81 rows, four fixed undisturbed transitions and the five legacy projected forbidden cubes are independently checked.",
+        "rationale": "Global cache deletion/repopulation and a particular Espresso output sequence are replaced by immutable in-memory exact relations.",
+    },
+    "claasp/cipher_modules/models/milp/utils/generate_inequalities_for_wordwise_truncated_mds_matrices.py": {
+        "v5_destination": "next/src/claasp_next/semantics/cryptanalysis/truncated.py; next/src/claasp_next/representations/constraints/milp/relations.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Typed dense-layer activity reproduces every one of the 256 model-5 rows; the caller must prove nonzero coefficients and no exact joint field witness is claimed.",
+        "rationale": "The coarse domain transfer, not Espresso output or a wordsize-keyed mutable cache, owns the mathematics. This abstraction is distinct from the separate 94-row branch-number table and from exact field-matrix support.",
+    },
+    "tests/unit/cipher_modules/models/milp/utils/generate_inequalities_for_wordwise_truncated_mds_matrix_test.py": {
+        "v5_destination": "next/tests/unit/test_wordwise_relation_tables.py",
+        "prerequisites": [], "disposition": "migrate", "status": "migrated-in-m10.8d",
+        "acceptance_criterion": "All 256 rows match the isolated dependency-free legacy generator, including its four fixed first/last row values.", "rationale": None,
+    },
+    "claasp/cipher_modules/models/milp/utils/generate_inequalities_for_wordwise_truncated_xor_with_n_input_bits.py": {
+        "v5_destination": "next/src/claasp_next/semantics/cryptanalysis/truncated.py; next/src/claasp_next/representations/constraints/milp/relations.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Typed word domains and n-ary XOR reproduce all 18 input/324 binary-XOR rows and all 1000 three-input width-three rows, including recovery of a lone nonzero term after known cancellation.",
+        "rationale": "Direct semantic transfer and exact finite relations replace Espresso and mutable arity/matrix-indexed pickle caches. Unknown and nonzero words have no fabricated concrete sentinel values.",
+    },
+    "tests/unit/cipher_modules/models/milp/utils/generate_inequalities_for_wordwise_truncated_xor_with_n_input_bits_test.py": {
+        "v5_destination": "next/tests/unit/test_wordwise_relation_tables.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "All fixed counts/rows and full generators match; the seven fixed input cubes define exactly the same domain, and four fixed three-input XOR cubes reject no valid row.",
+        "rationale": "Exact semantic rows supersede pickle-cache updates and deterministic choices of minimized Espresso cubes; no minimum-cube count is claimed.",
+    },
+    "claasp/cipher_modules/models/milp/utils/generate_inequalities_for_xor_with_n_input_bits.py": {
+        "v5_destination": "next/src/claasp_next/representations/constraints/sat/lowering.py; next/src/claasp_next/representations/constraints/milp/boolean.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Complete multi-operand XOR truth tables and exact binary clause inequalities retain parity without external dependencies.",
+        "rationale": "Parity clauses are compiled directly from graph wiring. LSB-first point-string enumeration, matrix-arity cache population and pickled global dictionaries are obsolete representation details.",
+    },
     "claasp/cipher_modules/models/cp/mzn_models/mzn_cipher_model.py": {
         "v5_destination": "next/src/claasp_next/analysis/boolean.py; next/src/claasp_next/representations/constraints/cp/lowering.py",
         "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",

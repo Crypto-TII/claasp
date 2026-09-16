@@ -106,6 +106,44 @@ the full Speck-22 legacy output ``A86842F2``. Solver undefined outcomes are
 rejects them explicitly. Solver registries and Sage backend aliases are not
 v5 API contracts. Other optimizers remain optional third-party drivers.
 
+Finite component relations
+--------------------------
+
+Exact finite relations provide a dependency-free baseline in place of Sage
+convex hulls, Espresso minimization, and global pickled inequality caches.
+``FiniteBinaryRelationMILPModel`` selects one supported row and equates every
+semantic column to that row. Row selectors are auxiliary variables: this
+is not a minimum-facet or minimum-inequality claim.
+
+.. doctest::
+
+   >>> from claasp_next.representations.constraints.milp import SBoxTransitionMILPModel
+   >>> from claasp_next.primitives.block_ciphers.present import PRESENT_SBOX
+   >>> from claasp_next.semantics.cryptanalysis import TrailKind, SBoxTransitionSemantics, TruncatedXorDifference
+   >>> relation = SBoxTransitionMILPModel(PRESENT_SBOX, TrailKind.XOR_LINEAR)
+   >>> fixed = relation.milp_model(input_pattern=1, output_pattern=5)
+   >>> transition = relation.decode_transition(relation.relation.witness((0, 0, 0, 1, 0, 1, 0, 1)))
+   >>> (transition.weight, transition.sign)
+   (1.0, -1)
+   >>> semantics = SBoxTransitionSemantics(PRESENT_SBOX)
+   >>> str(semantics.truncated_xor_differential(TruncatedXorDifference.parse("0001")))
+   '???1'
+
+The complete DDT is computed by derivative counting; the signed full Walsh
+table uses an integer fast Walsh transform and is checked against independent
+transition counts. These support eight-bit tables without confusing full
+Walsh coefficients with half-Walsh legacy LAT entries or discarding nonzero
+probability-one transitions. MILP logarithmic objective coefficients are
+floating approximations; decoding retains exact counts and signs and checks
+the objective against them.
+
+``WordwiseXorDifference.xor_many`` preserves known-term cancellation, including
+recovery of a lone nonzero term. ``propagate_dense_wordwise_activity`` retains
+the legacy 256-row model-5 abstraction only for a field-linear layer whose
+coefficients are proven nonzero. It does not apply to rings with zero divisors,
+does not assume exact joint support, and is distinct from branch-number
+activity tables. S-box undisturbed outputs likewise carry no probabilities.
+
 ARX linear transitions
 ----------------------
 

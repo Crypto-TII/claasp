@@ -3,9 +3,12 @@ import pytest
 from claasp_next.representations.constraints.milp import (
     BooleanMonomialGraphMILPModel, ConstraintSense, LinearConstraint, LinearExpression, LinearVariable,
     MILPModel, ObjectiveSense, VariableKind,
+    SBoxTransitionMILPModel,
 )
 from claasp_next.primitives import Simon, Speck
 from claasp_next.analysis import AnalysisProblem, FixedValue
+from claasp_next.primitives.block_ciphers.present import PRESENT_SBOX
+from claasp_next.semantics.cryptanalysis import TrailKind
 from claasp_next.drivers.solvers import GLPKSolver, MILPStatus
 
 
@@ -49,6 +52,25 @@ def test_glpk_preserves_complete_speck_execution_not_legacy_partial_model():
     assert result.is_satisfiable
     assert result.value("ciphertext") == 0xA86842F2
     assert primitive.evaluate(0x6574694C, 0x1918111009080100) == result.value("ciphertext")
+
+
+@pytest.mark.parametrize("kind,output,weight,sign", [
+    (TrailKind.XOR_DIFFERENTIAL, 3, 2, 1), (TrailKind.XOR_LINEAR, 5, 1, -1),
+])
+def test_glpk_solves_exact_finite_sbox_relation(kind, output, weight, sign):
+    relation = SBoxTransitionMILPModel(PRESENT_SBOX, kind)
+    model = relation.milp_model(input_pattern=1, output_pattern=output)
+    result = GLPKSolver(timeout_seconds=10).solve(model)
+    assert result.status is MILPStatus.OPTIMAL
+    transition = relation.decode_transition(result.assignment)
+    assert (transition.weight, transition.sign) == (weight, sign)
+    assert result.objective_value == weight
+
+
+def test_glpk_proves_impossible_finite_sbox_relation():
+    relation = SBoxTransitionMILPModel(PRESENT_SBOX, TrailKind.XOR_DIFFERENTIAL)
+    result = GLPKSolver(timeout_seconds=10).solve(relation.milp_model(input_pattern=1, output_pattern=1))
+    assert result.status is MILPStatus.INFEASIBLE and result.assignment is None
 
 
 @pytest.mark.parametrize("rounds, expected", ((1, 2), (2, 3), (4, 8)))

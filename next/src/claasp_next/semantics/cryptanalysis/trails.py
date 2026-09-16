@@ -176,6 +176,33 @@ class SBoxTransitionSemantics:
         if any(not isinstance(value, int) or not 0 <= value < size for value in self.table):
             raise ValueError("S-box values must fit the table width")
 
+    def difference_distribution_table(self):
+        """Return the complete exact integer DDT in quadratic time."""
+        rows = []
+        for alpha in range(len(self.table)):
+            row = [0] * len(self.table)
+            for value, output in enumerate(self.table):
+                row[output ^ self.table[value ^ alpha]] += 1
+            rows.append(tuple(row))
+        return tuple(rows)
+
+    def walsh_correlation_table(self):
+        """Return full signed Walsh coefficients, not half-Walsh LAT counts."""
+        size = len(self.table)
+        rows = [[0] * size for _ in range(size)]
+        for beta in range(size):
+            values = [1 if (output & beta).bit_count() % 2 == 0 else -1 for output in self.table]
+            stride = 1
+            while stride < size:
+                for start in range(0, size, 2 * stride):
+                    for offset in range(stride):
+                        left, right = values[start + offset], values[start + offset + stride]
+                        values[start + offset], values[start + offset + stride] = left + right, left - right
+                stride *= 2
+            for alpha, coefficient in enumerate(values):
+                rows[alpha][beta] = coefficient
+        return tuple(tuple(row) for row in rows)
+
     def xor_differential(self, input_difference: int, output_difference: int) -> Transition:
         """Return the exact differential transition counted over all inputs."""
 
@@ -214,6 +241,28 @@ class SBoxTransitionSemantics:
             len(self.table),
             -1 if walsh < 0 else 1,
         )
+
+    def truncated_xor_differential(self, difference):
+        """Join every compatible concrete derivative into undisturbed bits.
+
+        This strongest bitwise abstraction is not a probability-bearing
+        transition. Unknown output bits do not identify feasible joint values.
+        """
+        from .truncated import TruncatedBit, TruncatedXorDifference
+        if not isinstance(difference, TruncatedXorDifference) or len(difference.bits) != self.width:
+            raise ValueError("truncated difference must match the S-box width")
+        outputs = set()
+        for alpha in range(len(self.table)):
+            if any(bit is not TruncatedBit.UNKNOWN and bit.encoded != ((alpha >> (self.width - 1 - position)) & 1)
+                   for position, bit in enumerate(difference.bits)):
+                continue
+            outputs.update(self.table[x] ^ self.table[x ^ alpha] for x in range(len(self.table)))
+        joined = []
+        for position in range(self.width):
+            values = {(output >> (self.width - 1 - position)) & 1 for output in outputs}
+            joined.append(TruncatedBit.UNKNOWN if len(values) > 1 else
+                          TruncatedBit.ONE if 1 in values else TruncatedBit.ZERO)
+        return TruncatedXorDifference(tuple(joined))
 
     def check(self, transition: Transition) -> bool:
         """Recompute a transition without trusting a solver-provided weight."""

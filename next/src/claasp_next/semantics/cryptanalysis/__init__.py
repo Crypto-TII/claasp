@@ -34,6 +34,7 @@ from claasp_next.semantics.cryptanalysis.truncated import (
     propagate_two_word_speck_inverse_round, propagate_two_word_speck_round,
     propagate_two_word_simon_inverse_round, propagate_two_word_simon_round,
     propagate_single_active_aes_byte,
+    propagate_dense_wordwise_activity,
     truncated_modular_add, truncated_modular_subtract,
 )
 
@@ -54,6 +55,7 @@ __all__ = [
     "ProbabilisticTruncatedTrail",
     "check_probabilistic_truncated_modular_add",
     "propagate_single_active_aes_byte",
+    "propagate_dense_wordwise_activity",
     "WordwiseDifferenceKind", "WordwiseXorDifference",
     "BoomerangConnectivity", "BoomerangSwitchBoundary", "BoomerangTrail",
     "DifferentialLinearTrail", "SBoxBoomerangSemantics",

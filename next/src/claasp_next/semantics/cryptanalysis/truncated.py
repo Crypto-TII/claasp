@@ -73,6 +73,33 @@ class WordwiseXorDifference:
             return type(self)(self.width, WordwiseDifferenceKind.ZERO) if value == 0 else type(self).known(self.width, value)
         return type(self)(self.width, WordwiseDifferenceKind.UNKNOWN)
 
+    @classmethod
+    def xor_many(cls, differences):
+        """Join an n-ary XOR, retaining cancellation of all known terms.
+
+        Unknown/nonzero terms are abstract sets, not chosen concrete values.
+        This preserves a lone nonzero term when known terms cancel.
+        """
+        differences = tuple(differences)
+        if not differences or any(not isinstance(item, cls) for item in differences):
+            raise ValueError("wordwise XOR requires nonempty wordwise differences")
+        width = differences[0].width
+        if any(item.width != width for item in differences):
+            raise ValueError("wordwise XOR operands must have the same width")
+        if any(item.kind is WordwiseDifferenceKind.UNKNOWN for item in differences):
+            return cls(width, WordwiseDifferenceKind.UNKNOWN)
+        known, nonzero = 0, 0
+        for item in differences:
+            if item.kind is WordwiseDifferenceKind.KNOWN:
+                known ^= item.value
+            elif item.kind is WordwiseDifferenceKind.NONZERO:
+                nonzero += 1
+        if not nonzero:
+            return cls.known(width, known) if known else cls(width, WordwiseDifferenceKind.ZERO)
+        if nonzero == 1 and not known:
+            return cls(width, WordwiseDifferenceKind.NONZERO)
+        return cls(width, WordwiseDifferenceKind.UNKNOWN)
+
     def through_bijection(self) -> "WordwiseXorDifference":
         """Propagate activity through a bijection without claiming a value."""
 
@@ -81,6 +108,27 @@ class WordwiseXorDifference:
         if self.kind in (WordwiseDifferenceKind.KNOWN, WordwiseDifferenceKind.NONZERO):
             return type(self)(self.width, WordwiseDifferenceKind.NONZERO)
         return self
+
+
+def propagate_dense_wordwise_activity(differences, output_units):
+    """Legacy model-5 abstraction for a field-linear layer with nonzero coefficients.
+
+    The caller must prove every matrix coefficient is nonzero in a field;
+    ring matrices with zero divisors do not satisfy this precondition.
+    Zero inputs yield zero outputs; one active input yields nonzero outputs;
+    multiple active or unrestricted inputs are conservatively unknown.
+    This does not claim exact joint support or supply concrete field values.
+    """
+    differences = tuple(differences)
+    if (not differences or any(not isinstance(item, WordwiseXorDifference) for item in differences)
+            or len({item.width for item in differences}) != 1):
+        raise ValueError("dense layer inputs must have the same wordwise width")
+    if not isinstance(output_units, int) or isinstance(output_units, bool) or output_units < 1:
+        raise ValueError("output_units must be a positive integer")
+    active = sum(item.kind is not WordwiseDifferenceKind.ZERO for item in differences)
+    kind = (WordwiseDifferenceKind.UNKNOWN if any(item.kind is WordwiseDifferenceKind.UNKNOWN for item in differences) or active > 1
+            else WordwiseDifferenceKind.NONZERO if active else WordwiseDifferenceKind.ZERO)
+    return tuple(WordwiseXorDifference(differences[0].width, kind) for _ in range(output_units))
 
 
 @dataclass(frozen=True, slots=True)

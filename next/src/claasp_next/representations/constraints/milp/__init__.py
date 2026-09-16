@@ -2,6 +2,8 @@
 
 from claasp_next.representations.constraints.milp.exporter import LPExporter
 from claasp_next.representations.constraints.milp.boolean import BooleanGraphMILPModel, cnf_to_milp
+from claasp_next.representations.constraints.milp.relations import FiniteBinaryRelationMILPModel
+from claasp_next.representations.constraints.milp.sbox import SBoxTransitionMILPModel
 from claasp_next.representations.constraints.milp.model import (
     ConstraintSense,
     LinearConstraint,
@@ -25,4 +27,5 @@ __all__ = [
     "PresentMonomialTrailMILPModel",
     "BooleanMonomialGraphMILPModel",
     "BooleanGraphMILPModel", "cnf_to_milp",
+    "FiniteBinaryRelationMILPModel", "SBoxTransitionMILPModel",
 ]
