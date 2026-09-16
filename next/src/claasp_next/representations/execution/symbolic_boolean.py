@@ -3,7 +3,9 @@
 from collections.abc import Mapping
 from dataclasses import dataclass
 
-from claasp_next.components import BitwiseAnd, Concatenate, Constant, ModularAdd, Rotate, Xor
+from claasp_next.components import (
+    BitwiseAnd, BitwiseNot, BitwiseOr, Concatenate, Constant, ModularAdd, Rotate, Xor,
+)
 from claasp_next.domains import Bit, Word
 from claasp_next.graph import Primitive
 from claasp_next.representations.constraints.polynomial import BooleanPolynomial
@@ -86,13 +88,17 @@ class BooleanSymbolicEvaluator:
             return tuple(unit for operand in inputs for unit in operand)
         if isinstance(component, Rotate):
             return tuple(self._rotate(unit, component.amount, component.direction) for unit in inputs[0])
-        if isinstance(component, (Xor, BitwiseAnd, ModularAdd)):
+        if isinstance(component, BitwiseNot):
+            return tuple(self._word_not(unit) for unit in inputs[0])
+        if isinstance(component, (Xor, BitwiseAnd, BitwiseOr, ModularAdd)):
             result = list(inputs[0])
             for operand in inputs[1:]:
                 if isinstance(component, Xor):
                     result = [self._word_xor(left, right) for left, right in zip(result, operand)]
                 elif isinstance(component, BitwiseAnd):
                     result = [self._word_and(left, right) for left, right in zip(result, operand)]
+                elif isinstance(component, BitwiseOr):
+                    result = [self._word_or(left, right) for left, right in zip(result, operand)]
                 else:
                     result = [self._word_add(left, right) for left, right in zip(result, operand)]
             return tuple(result)
@@ -116,6 +122,17 @@ class BooleanSymbolicEvaluator:
         if isinstance(left, BooleanPolynomial):
             return left * right
         return tuple(a * b for a, b in zip(left, right))
+
+    @classmethod
+    def _word_or(cls, left, right):
+        return cls._word_xor(cls._word_xor(left, right), cls._word_and(left, right))
+
+    @staticmethod
+    def _word_not(word):
+        one = BooleanPolynomial.one()
+        if isinstance(word, BooleanPolynomial):
+            return word + one
+        return tuple(bit + one for bit in word)
 
     @staticmethod
     def _word_add(left, right):

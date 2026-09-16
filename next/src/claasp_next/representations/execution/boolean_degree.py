@@ -2,7 +2,9 @@
 
 from dataclasses import dataclass
 
-from claasp_next.components import BitwiseAnd, Concatenate, Constant, ModularAdd, Rotate, Xor
+from claasp_next.components import (
+    BitwiseAnd, BitwiseNot, BitwiseOr, Concatenate, Constant, ModularAdd, Rotate, Xor,
+)
 from claasp_next.domains import Bit, Word
 from claasp_next.graph import Primitive
 
@@ -77,10 +79,15 @@ class BooleanDegreeEvaluator:
                     self._rotate(unit, component.amount, component.direction) for unit in operands[0]
                 )
                 continue
-            if isinstance(component, (Xor, BitwiseAnd, ModularAdd)):
+            if isinstance(component, BitwiseNot):
+                values[component.component_id] = operands[0]
+                continue
+            if isinstance(component, (Xor, BitwiseAnd, BitwiseOr, ModularAdd)):
                 result = list(operands[0])
                 for operand in operands[1:]:
                     operation = self._xor if isinstance(component, Xor) else self._and
+                    if isinstance(component, BitwiseOr):
+                        operation = self._or
                     if isinstance(component, ModularAdd):
                         operation = self._add
                     result = [operation(left, right, capacity) for left, right in zip(result, operand)]
@@ -123,6 +130,10 @@ class BooleanDegreeEvaluator:
             )
             return _Degree(value, support)
         return tuple(cls._and(a, b, capacity) for a, b in zip(left, right))
+
+    @classmethod
+    def _or(cls, left: DegreeUnit, right: DegreeUnit, capacity: int) -> DegreeUnit:
+        return cls._xor(cls._xor(left, right, capacity), cls._and(left, right, capacity), capacity)
 
     @classmethod
     def _add(cls, left: DegreeUnit, right: DegreeUnit, capacity: int) -> DegreeUnit:

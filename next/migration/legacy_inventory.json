@@ -9100,7 +9100,7 @@
       "v5_destination": "inapplicable: package marker reviewed with its containing module"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Typed logical/substitution components have exhaustive small-domain or fixed lookup checks, scalar/batch parity, and shared semantics where cryptanalytic relations apply.",
       "dependencies": [
         "claasp"
       ],
@@ -9112,9 +9112,7 @@
       "kind": "source",
       "milestone_owner": "M10.9c4",
       "path": "claasp/components/and_component.py",
-      "prerequisites": [
-        "M10.9c3"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "cp_twoterms",
         "cp_xor_differential_probability_ddt",
@@ -9123,9 +9121,9 @@
       ],
       "rationale": null,
       "responsibility": "and component",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9c4",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/components/word/bitwise_and.py; next/src/claasp_next/semantics/cryptanalysis/bitwise.py"
     },
     {
       "acceptance_criterion": "Domain-neutral structural evaluation, graph boundaries, and scalar/batch behavior preserve applicable values independently of backend strings.",
@@ -9420,11 +9418,11 @@
       "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Explicit immutable AND and OR classes validate homogeneous operands and use shared evaluator/semantic dispatch.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
@@ -9432,20 +9430,18 @@
       "kind": "source",
       "milestone_owner": "M10.9c4",
       "path": "claasp/components/multi_input_non_linear_logical_operator_component.py",
-      "prerequisites": [
-        "M10.9c3"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "MultiInputNonlinearLogicalOperator"
       ],
-      "rationale": null,
+      "rationale": "A backend-bearing mutable superclass adds no mathematical operation; shared validation plus explicit component types replace its operand-count inference and delegated constraint strings.",
       "responsibility": "multi input non linear logical operator component",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.9c4",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/components/word/bitwise_and.py; next/src/claasp_next/components/word/bitwise_or.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Typed logical/substitution components have exhaustive small-domain or fixed lookup checks, scalar/batch parity, and shared semantics where cryptanalytic relations apply.",
       "dependencies": [
         "claasp"
       ],
@@ -9457,20 +9453,18 @@
       "kind": "source",
       "milestone_owner": "M10.9c4",
       "path": "claasp/components/not_component.py",
-      "prerequisites": [
-        "M10.9c3"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "Not"
       ],
       "rationale": null,
       "responsibility": "not component",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9c4",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/components/word/bitwise_not.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Typed logical/substitution components have exhaustive small-domain or fixed lookup checks, scalar/batch parity, and shared semantics where cryptanalytic relations apply.",
       "dependencies": [
         "claasp"
       ],
@@ -9482,17 +9476,15 @@
       "kind": "source",
       "milestone_owner": "M10.9c4",
       "path": "claasp/components/or_component.py",
-      "prerequisites": [
-        "M10.9c3"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "Or"
       ],
       "rationale": null,
       "responsibility": "or component",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9c4",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/components/word/bitwise_or.py"
     },
     {
       "acceptance_criterion": "Domain-neutral structural evaluation, graph boundaries, and scalar/batch behavior preserve applicable values independently of backend strings.",
@@ -9566,7 +9558,7 @@
       "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Typed logical/substitution components have exhaustive small-domain or fixed lookup checks, scalar/batch parity, and shared semantics where cryptanalytic relations apply.",
       "dependencies": [
         "claasp",
         "itertools",
@@ -9583,9 +9575,7 @@
       "kind": "source",
       "milestone_owner": "M10.9c4",
       "path": "claasp/components/sbox_component.py",
-      "prerequisites": [
-        "M10.9c3"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "check_table_feasibility",
         "cp_update_ddt_valid_probabilities",
@@ -9599,9 +9589,9 @@
       ],
       "rationale": null,
       "responsibility": "sbox component",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9c4",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/components/substitution; next/src/claasp_next/semantics/cryptanalysis/trails.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -9831,7 +9821,7 @@
       "v5_destination": "next/src/claasp_next/components/structural/permutation.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Typed logical/substitution components have exhaustive small-domain or fixed lookup checks, scalar/batch parity, and shared semantics where cryptanalytic relations apply.",
       "dependencies": [
         "claasp"
       ],
@@ -9843,9 +9833,7 @@
       "kind": "source",
       "milestone_owner": "M10.9c4",
       "path": "claasp/components/xor_component.py",
-      "prerequisites": [
-        "M10.9c3"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "cp_build_truncated_table",
         "generic_with_constant_sign_linear_constraints",
@@ -9855,9 +9843,9 @@
       ],
       "rationale": null,
       "responsibility": "xor component",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9c4",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/components/word/xor.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -18564,11 +18552,11 @@
       "v5_destination": "next/tests/unit/test_typed_graph.py; next/tests/unit/test_propagation_problem.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Concrete truth tables, exact S-box DDT/LAT/undisturbed relations, symbolic ANFs, and typed validation preserve all applicable semantic results.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -18586,9 +18574,7 @@
       "kind": "test",
       "milestone_owner": "M10.9c4",
       "path": "tests/unit/components/and_component_test.py",
-      "prerequisites": [
-        "M10.9c3"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "test_cp_xor_differential_probability_ddt",
         "test_cp_xor_linear_probability_lat",
@@ -18600,9 +18586,9 @@
         "test_smt_constraints",
         "test_milp_bitwise_deterministic_truncated_xor_differential_constraints"
       ],
-      "rationale": null,
+      "rationale": "Backend variable names, serialized inequalities, mutable probability maps, generated code fragments, and exact constraint ordering are not component semantics and are covered only at their representation owners where applicable.",
       "responsibility": "and component test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.9c4",
       "tests": [
         "test_cp_constraints",
         "test_cp_wordwise_deterministic_truncated_xor_differential_constraints",
@@ -18614,7 +18600,7 @@
         "test_sat_constraints",
         "test_smt_constraints"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_logical_components.py; next/tests/unit/test_bitwise_transition_semantics.py"
     },
     {
       "acceptance_criterion": "Typed structural values, validation, graph boundaries, and trace projections preserve semantic assertions with independent scalar/batch checks.",
@@ -19097,11 +19083,11 @@
       "v5_destination": "next/tests (mapped to the owning migrated behavior)"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Concrete truth tables, exact S-box DDT/LAT/undisturbed relations, symbolic ANFs, and typed validation preserve all applicable semantic results.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -19116,9 +19102,7 @@
       "kind": "test",
       "milestone_owner": "M10.9c4",
       "path": "tests/unit/components/multi_input_non_linear_logical_operator_component_test.py",
-      "prerequisites": [
-        "M10.9c3"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "make_component",
         "test_constructor_infers_operand_count_from_inputs",
@@ -19128,9 +19112,9 @@
         "test_cp_xor_differential_updates_model_counter_and_probability_map",
         "test_cp_wordwise_deterministic_constraints_use_model_word_size"
       ],
-      "rationale": null,
+      "rationale": "Backend variable names, serialized inequalities, mutable probability maps, generated code fragments, and exact constraint ordering are not component semantics and are covered only at their representation owners where applicable.",
       "responsibility": "multi input non linear logical operator component test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.9c4",
       "tests": [
         "test_cms_delegates_to_sat_methods",
         "test_constructor_infers_operand_count_from_inputs",
@@ -19139,14 +19123,14 @@
         "test_cp_wordwise_deterministic_constraints_use_model_word_size",
         "test_cp_xor_differential_updates_model_counter_and_probability_map"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_logical_components.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Concrete truth tables, exact S-box DDT/LAT/undisturbed relations, symbolic ANFs, and typed validation preserve all applicable semantic results.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -19174,9 +19158,7 @@
       "kind": "test",
       "milestone_owner": "M10.9c4",
       "path": "tests/unit/components/not_component_test.py",
-      "prerequisites": [
-        "M10.9c3"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "test_algebraic_polynomials",
         "test_cms_constraints",
@@ -19198,9 +19180,9 @@
         "test_smt_xor_linear_mask_propagation_constraints",
         "test_milp_deterministic_truncated_xor_differential_constraints"
       ],
-      "rationale": null,
+      "rationale": "Backend variable names, serialized inequalities, mutable probability maps, generated code fragments, and exact constraint ordering are not component semantics and are covered only at their representation owners where applicable.",
       "responsibility": "not component test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.9c4",
       "tests": [
         "test_algebraic_polynomials",
         "test_cms_constraints",
@@ -19222,14 +19204,14 @@
         "test_smt_xor_differential_propagation_constraints",
         "test_smt_xor_linear_mask_propagation_constraints"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_logical_components.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Concrete truth tables, exact S-box DDT/LAT/undisturbed relations, symbolic ANFs, and typed validation preserve all applicable semantic results.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -19244,9 +19226,7 @@
       "kind": "test",
       "milestone_owner": "M10.9c4",
       "path": "tests/unit/components/or_component_test.py",
-      "prerequisites": [
-        "M10.9c3"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "test_algebraic_polynomials",
         "test_cp_constraints",
@@ -19255,9 +19235,9 @@
         "test_sat_constraints",
         "test_smt_constraints"
       ],
-      "rationale": null,
+      "rationale": "Backend variable names, serialized inequalities, mutable probability maps, generated code fragments, and exact constraint ordering are not component semantics and are covered only at their representation owners where applicable.",
       "responsibility": "or component test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.9c4",
       "tests": [
         "test_algebraic_polynomials",
         "test_cp_constraints",
@@ -19266,7 +19246,7 @@
         "test_sat_constraints",
         "test_smt_constraints"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_logical_components.py"
     },
     {
       "acceptance_criterion": "Typed structural values, validation, graph boundaries, and trace projections preserve semantic assertions with independent scalar/batch checks.",
@@ -19463,11 +19443,11 @@
       "v5_destination": "next/tests (mapped to the owning migrated behavior)"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Concrete truth tables, exact S-box DDT/LAT/undisturbed relations, symbolic ANFs, and typed validation preserve all applicable semantic results.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -19499,9 +19479,7 @@
       "kind": "test",
       "milestone_owner": "M10.9c4",
       "path": "tests/unit/components/sbox_component_test.py",
-      "prerequisites": [
-        "M10.9c3"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "test_algebraic_polynomials",
         "test_cms_constraints",
@@ -19527,9 +19505,9 @@
         "test_milp_wordwise_deterministic_truncated_xor_differential_constraints",
         "test_milp_wordwise_deterministic_truncated_xor_differential_simple_constraints"
       ],
-      "rationale": null,
+      "rationale": "Backend variable names, serialized inequalities, mutable probability maps, generated code fragments, and exact constraint ordering are not component semantics and are covered only at their representation owners where applicable.",
       "responsibility": "sbox component test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.9c4",
       "tests": [
         "test_algebraic_polynomials",
         "test_cms_constraints",
@@ -19555,7 +19533,7 @@
         "test_smt_xor_differential_propagation_constraints",
         "test_smt_xor_linear_mask_propagation_constraints"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_sbox.py; next/tests/unit/test_bit_vector_sbox.py; next/tests/unit/test_trail_semantics.py; next/tests/unit/test_sbox_milp_relation.py; next/tests/unit/test_sbox_undisturbed.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -19931,11 +19909,11 @@
       "v5_destination": "next/tests/unit/test_conversion_components.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Concrete truth tables, exact S-box DDT/LAT/undisturbed relations, symbolic ANFs, and typed validation preserve all applicable semantic results.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -19955,9 +19933,7 @@
       "kind": "test",
       "milestone_owner": "M10.9c4",
       "path": "tests/unit/components/xor_component_test.py",
-      "prerequisites": [
-        "M10.9c3"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "test_cp_build_truncated_table",
         "test_generic_with_constant_sign_linear_constraints",
@@ -19971,9 +19947,9 @@
         "test_milp_wordwise_deterministic_truncated_xor_differential_sequential_constraints",
         "test_milp_wordwise_deterministic_truncated_xor_differential_simple_constraints"
       ],
-      "rationale": null,
+      "rationale": "Backend variable names, serialized inequalities, mutable probability maps, generated code fragments, and exact constraint ordering are not component semantics and are covered only at their representation owners where applicable.",
       "responsibility": "xor component test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.9c4",
       "tests": [
         "test_algebraic_polynomials",
         "test_cp_build_truncated_table",
@@ -19987,7 +19963,7 @@
         "test_milp_wordwise_deterministic_truncated_xor_differential_simple_constraints",
         "test_smt_constraints"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_logical_components.py; next/tests/unit/test_word_components.py; next/tests/unit/test_wordwise_relation_tables.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",

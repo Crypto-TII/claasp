@@ -8,7 +8,7 @@ from claasp_next.components.algebraic import Add, BinaryAffineMap, LinearMap, Mu
 from claasp_next.components.conversion import PackBits, UnpackBits
 from claasp_next.components.structural import Concatenate, Constant, Identity, Permutation
 from claasp_next.components.substitution import BitVectorSBox, SBox
-from claasp_next.components.word import BitwiseAnd, ModularAdd, Rotate, Xor
+from claasp_next.components.word import BitwiseAnd, BitwiseNot, BitwiseOr, ModularAdd, Rotate, Xor
 from claasp_next.graph.primitive import Primitive
 from claasp_next.graph.component import Component
 from claasp_next.semantics import CONCRETE
@@ -61,6 +61,8 @@ class ScalarExecutionDriver:
             LinearMap: self._evaluate_linear_map,
             BinaryAffineMap: self._evaluate_binary_affine_map,
             BitwiseAnd: self._evaluate_bitwise_and,
+            BitwiseNot: self._evaluate_bitwise_not,
+            BitwiseOr: self._evaluate_bitwise_or,
             ModularAdd: self._evaluate_modular_add,
             Rotate: self._evaluate_rotate,
             Xor: self._evaluate_xor,
@@ -241,6 +243,22 @@ class ScalarExecutionDriver:
         for operand in inputs[1:]:
             output = [left & right for left, right in zip(output, operand)]
         return tuple(output)
+
+    @staticmethod
+    def _evaluate_bitwise_or(
+        component: BitwiseOr, inputs: tuple[RuntimeValue, ...]
+    ) -> RuntimeValue:
+        output = list(inputs[0])
+        for operand in inputs[1:]:
+            output = [left | right for left, right in zip(output, operand)]
+        return tuple(output)
+
+    @staticmethod
+    def _evaluate_bitwise_not(
+        component: BitwiseNot, inputs: tuple[RuntimeValue, ...]
+    ) -> RuntimeValue:
+        mask = (1 << component.output_type.domain.width) - 1
+        return tuple((~value) & mask for value in inputs[0])
 
     @staticmethod
     def _evaluate_rotate(component: Rotate, inputs: tuple[RuntimeValue, ...]) -> RuntimeValue:

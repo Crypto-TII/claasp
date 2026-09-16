@@ -1165,6 +1165,43 @@ for _path, _destination in _M10_9C3_TEST_DESTINATIONS.items():
         "rationale": "Exact SAT/SMT/CP/MILP strings, legacy descriptions, generated identifiers, and mutable wrapper aliases are representation details; shared v5 lowerings consume typed components instead.",
     }
 
+_M10_9C4_SOURCE_DESTINATIONS = {
+    "claasp/components/and_component.py": "next/src/claasp_next/components/word/bitwise_and.py; next/src/claasp_next/semantics/cryptanalysis/bitwise.py",
+    "claasp/components/not_component.py": "next/src/claasp_next/components/word/bitwise_not.py",
+    "claasp/components/or_component.py": "next/src/claasp_next/components/word/bitwise_or.py",
+    "claasp/components/sbox_component.py": "next/src/claasp_next/components/substitution; next/src/claasp_next/semantics/cryptanalysis/trails.py",
+    "claasp/components/xor_component.py": "next/src/claasp_next/components/word/xor.py",
+}
+for _path, _destination in _M10_9C4_SOURCE_DESTINATIONS.items():
+    MIGRATION_OVERRIDES[_path] = {
+        "v5_destination": _destination,
+        "prerequisites": [], "disposition": "migrate", "status": "migrated-in-m10.9c4",
+        "acceptance_criterion": "Typed logical/substitution components have exhaustive small-domain or fixed lookup checks, scalar/batch parity, and shared semantics where cryptanalytic relations apply.",
+        "rationale": None,
+    }
+MIGRATION_OVERRIDES["claasp/components/multi_input_non_linear_logical_operator_component.py"] = {
+    "v5_destination": "next/src/claasp_next/components/word/bitwise_and.py; next/src/claasp_next/components/word/bitwise_or.py",
+    "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.9c4",
+    "acceptance_criterion": "Explicit immutable AND and OR classes validate homogeneous operands and use shared evaluator/semantic dispatch.",
+    "rationale": "A backend-bearing mutable superclass adds no mathematical operation; shared validation plus explicit component types replace its operand-count inference and delegated constraint strings.",
+}
+
+_M10_9C4_TEST_DESTINATIONS = {
+    "tests/unit/components/and_component_test.py": "next/tests/unit/test_logical_components.py; next/tests/unit/test_bitwise_transition_semantics.py",
+    "tests/unit/components/multi_input_non_linear_logical_operator_component_test.py": "next/tests/unit/test_logical_components.py",
+    "tests/unit/components/not_component_test.py": "next/tests/unit/test_logical_components.py",
+    "tests/unit/components/or_component_test.py": "next/tests/unit/test_logical_components.py",
+    "tests/unit/components/sbox_component_test.py": "next/tests/unit/test_sbox.py; next/tests/unit/test_bit_vector_sbox.py; next/tests/unit/test_trail_semantics.py; next/tests/unit/test_sbox_milp_relation.py; next/tests/unit/test_sbox_undisturbed.py",
+    "tests/unit/components/xor_component_test.py": "next/tests/unit/test_logical_components.py; next/tests/unit/test_word_components.py; next/tests/unit/test_wordwise_relation_tables.py",
+}
+for _path, _destination in _M10_9C4_TEST_DESTINATIONS.items():
+    MIGRATION_OVERRIDES[_path] = {
+        "v5_destination": _destination,
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.9c4",
+        "acceptance_criterion": "Concrete truth tables, exact S-box DDT/LAT/undisturbed relations, symbolic ANFs, and typed validation preserve all applicable semantic results.",
+        "rationale": "Backend variable names, serialized inequalities, mutable probability maps, generated code fragments, and exact constraint ordering are not component semantics and are covered only at their representation owners where applicable.",
+    }
+
 
 def python_paths() -> list[Path]:
     return sorted(path for root in LEGACY_ROOTS for path in root.rglob("*.py"))
