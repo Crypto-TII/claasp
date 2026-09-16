@@ -209,14 +209,15 @@ class BooleanCNFModel:
             elif isinstance(component, BitVectorSBox):
                 inputs = [group[0] for group in selected[0]]
                 outputs = [group[0] for group in outputs]
-                width = len(inputs)
+                input_width = len(inputs)
+                output_width = len(outputs)
                 for input_value, output_value in enumerate(component.table):
                     antecedent = tuple(
-                        -indices[name] if (input_value >> (width - 1 - i)) & 1 else indices[name]
+                        -indices[name] if (input_value >> (input_width - 1 - i)) & 1 else indices[name]
                         for i, name in enumerate(inputs)
                     )
                     for i, output in enumerate(outputs):
-                        expected = (output_value >> (width - 1 - i)) & 1
+                        expected = (output_value >> (output_width - 1 - i)) & 1
                         literal = indices[output] if expected else -indices[output]
                         add_clause(antecedent + (literal,), label)
             else:

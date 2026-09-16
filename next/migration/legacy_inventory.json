@@ -3267,7 +3267,7 @@
       "v5_destination": "inapplicable: package marker reviewed with its containing module"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -3280,7 +3280,7 @@
       "milestone_owner": "M10.9d6",
       "path": "claasp/ciphers/block_ciphers/aes_block_cipher.py",
       "prerequisites": [
-        "M10.9b"
+        "M10.9c10"
       ],
       "primitive": {
         "bijectivity_obligation": true,
@@ -3301,7 +3301,7 @@
       ],
       "rationale": null,
       "responsibility": "aes block cipher",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [],
       "v5_destination": "claasp_next/primitives/block_ciphers/aes.py"
     },
@@ -3346,7 +3346,7 @@
       "v5_destination": "claasp_next/primitives/block_ciphers/aradi.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -3359,7 +3359,7 @@
       "milestone_owner": "M10.9d6",
       "path": "claasp/ciphers/block_ciphers/aradi_block_cipher_sbox.py",
       "prerequisites": [
-        "M10.9b"
+        "M10.9c10"
       ],
       "primitive": {
         "bijectivity_obligation": true,
@@ -3369,10 +3369,10 @@
           "key",
           "plaintext"
         ],
-        "official_name": "AradiBlockCipherSBox",
+        "official_name": "AradiSBox",
         "outside_scope_reason": null,
         "primitive_category": "block_ciphers",
-        "proposed_class": "AradiBlockCipherSBox",
+        "proposed_class": "AradiSBox",
         "proposed_module": "claasp_next.primitives.block_ciphers.aradi_block_cipher_sbox"
       },
       "public_entry_points": [
@@ -3381,12 +3381,12 @@
       ],
       "rationale": null,
       "responsibility": "aradi block cipher sbox",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [],
       "v5_destination": "claasp_next/primitives/block_ciphers/aradi_block_cipher_sbox.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -3399,7 +3399,7 @@
       "milestone_owner": "M10.9d6",
       "path": "claasp/ciphers/block_ciphers/aradi_block_cipher_sbox_and_compact_linear_map.py",
       "prerequisites": [
-        "M10.9b"
+        "M10.9c10"
       ],
       "primitive": {
         "bijectivity_obligation": true,
@@ -3409,10 +3409,10 @@
           "key",
           "plaintext"
         ],
-        "official_name": "AradiBlockCipherSBoxAndCompactLinearMap",
+        "official_name": "AradiSBoxCompactLinearMap",
         "outside_scope_reason": null,
         "primitive_category": "block_ciphers",
-        "proposed_class": "AradiBlockCipherSBoxAndCompactLinearMap",
+        "proposed_class": "AradiSBoxCompactLinearMap",
         "proposed_module": "claasp_next.primitives.block_ciphers.aradi_block_cipher_sbox_and_compact_linear_map"
       },
       "public_entry_points": [
@@ -3424,12 +3424,12 @@
       ],
       "rationale": null,
       "responsibility": "aradi block cipher sbox and compact linear map",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [],
       "v5_destination": "claasp_next/primitives/block_ciphers/aradi_block_cipher_sbox_and_compact_linear_map.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -3442,7 +3442,7 @@
       "milestone_owner": "M10.9d6",
       "path": "claasp/ciphers/block_ciphers/baksheesh_block_cipher.py",
       "prerequisites": [
-        "M10.9b"
+        "M10.9c10"
       ],
       "primitive": {
         "bijectivity_obligation": true,
@@ -3463,12 +3463,12 @@
       ],
       "rationale": null,
       "responsibility": "baksheesh block cipher",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [],
       "v5_destination": "claasp_next/primitives/block_ciphers/baksheesh.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -3481,7 +3481,7 @@
       "milestone_owner": "M10.9d6",
       "path": "claasp/ciphers/block_ciphers/ballet_block_cipher.py",
       "prerequisites": [
-        "M10.9b"
+        "M10.9c10"
       ],
       "primitive": {
         "bijectivity_obligation": true,
@@ -3502,12 +3502,12 @@
       ],
       "rationale": null,
       "responsibility": "ballet block cipher",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [],
       "v5_destination": "claasp_next/primitives/block_ciphers/ballet.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -3520,7 +3520,7 @@
       "milestone_owner": "M10.9d6",
       "path": "claasp/ciphers/block_ciphers/bea1_block_cipher.py",
       "prerequisites": [
-        "M10.9b"
+        "M10.9c10"
       ],
       "primitive": {
         "bijectivity_obligation": true,
@@ -3541,12 +3541,12 @@
       ],
       "rationale": null,
       "responsibility": "bea1 block cipher",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [],
       "v5_destination": "claasp_next/primitives/block_ciphers/bea1.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -3559,7 +3559,7 @@
       "milestone_owner": "M10.9d6",
       "path": "claasp/ciphers/block_ciphers/bipbip_block_cipher.py",
       "prerequisites": [
-        "M10.9b"
+        "M10.9c10"
       ],
       "primitive": {
         "bijectivity_obligation": true,
@@ -3581,12 +3581,12 @@
       ],
       "rationale": null,
       "responsibility": "bipbip block cipher",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [],
       "v5_destination": "claasp_next/primitives/tweakable_block_ciphers/bipbip.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -3599,7 +3599,7 @@
       "milestone_owner": "M10.9d6",
       "path": "claasp/ciphers/block_ciphers/blink_block_cipher.py",
       "prerequisites": [
-        "M10.9b"
+        "M10.9c10"
       ],
       "primitive": {
         "bijectivity_obligation": true,
@@ -3621,12 +3621,12 @@
       ],
       "rationale": null,
       "responsibility": "blink block cipher",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [],
       "v5_destination": "claasp_next/primitives/tweakable_block_ciphers/blink.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -3639,7 +3639,7 @@
       "milestone_owner": "M10.9d6",
       "path": "claasp/ciphers/block_ciphers/cast_block_cipher.py",
       "prerequisites": [
-        "M10.9b"
+        "M10.9c10"
       ],
       "primitive": {
         "bijectivity_obligation": true,
@@ -3660,7 +3660,7 @@
       ],
       "rationale": null,
       "responsibility": "cast block cipher",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [],
       "v5_destination": "claasp_next/primitives/block_ciphers/cast.py"
     },
@@ -3704,7 +3704,7 @@
       "v5_destination": "claasp_next/primitives/block_ciphers/cham.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp",
         "typing"
@@ -3718,7 +3718,7 @@
       "milestone_owner": "M10.9d6",
       "path": "claasp/ciphers/block_ciphers/chilow_block_cipher.py",
       "prerequisites": [
-        "M10.9b"
+        "M10.9c10"
       ],
       "primitive": {
         "bijectivity_obligation": true,
@@ -3742,12 +3742,12 @@
       ],
       "rationale": null,
       "responsibility": "chilow block cipher",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [],
       "v5_destination": "claasp_next/primitives/tweakable_block_ciphers/chilow.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -3760,7 +3760,7 @@
       "milestone_owner": "M10.9d6",
       "path": "claasp/ciphers/block_ciphers/des_block_cipher.py",
       "prerequisites": [
-        "M10.9b"
+        "M10.9c10"
       ],
       "primitive": {
         "bijectivity_obligation": true,
@@ -3781,12 +3781,12 @@
       ],
       "rationale": null,
       "responsibility": "des block cipher",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [],
       "v5_destination": "claasp_next/primitives/block_ciphers/des.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -3799,7 +3799,7 @@
       "milestone_owner": "M10.9d6",
       "path": "claasp/ciphers/block_ciphers/des_exact_key_length_block_cipher.py",
       "prerequisites": [
-        "M10.9b"
+        "M10.9c10"
       ],
       "primitive": {
         "bijectivity_obligation": true,
@@ -3820,12 +3820,12 @@
       ],
       "rationale": null,
       "responsibility": "des exact key length block cipher",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [],
       "v5_destination": "claasp_next/primitives/block_ciphers/des_exact_key_length.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp",
         "copy"
@@ -3839,7 +3839,7 @@
       "milestone_owner": "M10.9d6",
       "path": "claasp/ciphers/block_ciphers/gift_block_cipher.py",
       "prerequisites": [
-        "M10.9b"
+        "M10.9c10"
       ],
       "primitive": {
         "bijectivity_obligation": true,
@@ -3860,12 +3860,12 @@
       ],
       "rationale": null,
       "responsibility": "gift block cipher",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [],
       "v5_destination": "claasp_next/primitives/block_ciphers/gift.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp",
         "copy"
@@ -3879,7 +3879,7 @@
       "milestone_owner": "M10.9d6",
       "path": "claasp/ciphers/block_ciphers/gift_sbox_block_cipher.py",
       "prerequisites": [
-        "M10.9b"
+        "M10.9c10"
       ],
       "primitive": {
         "bijectivity_obligation": true,
@@ -3900,12 +3900,12 @@
       ],
       "rationale": null,
       "responsibility": "gift sbox block cipher",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [],
       "v5_destination": "claasp_next/primitives/block_ciphers/gift_sbox.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -3918,7 +3918,7 @@
       "milestone_owner": "M10.9d6",
       "path": "claasp/ciphers/block_ciphers/gost_block_cipher.py",
       "prerequisites": [
-        "M10.9b"
+        "M10.9c10"
       ],
       "primitive": {
         "bijectivity_obligation": true,
@@ -3939,7 +3939,7 @@
       ],
       "rationale": null,
       "responsibility": "gost block cipher",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [],
       "v5_destination": "claasp_next/primitives/block_ciphers/gost.py"
     },
@@ -4025,7 +4025,7 @@
       "v5_destination": "claasp_next/primitives/block_ciphers/idea.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp",
         "numpy"
@@ -4039,7 +4039,7 @@
       "milestone_owner": "M10.9d6",
       "path": "claasp/ciphers/block_ciphers/kalyna_block_cipher.py",
       "prerequisites": [
-        "M10.9b"
+        "M10.9c10"
       ],
       "primitive": {
         "bijectivity_obligation": true,
@@ -4060,12 +4060,12 @@
       ],
       "rationale": null,
       "responsibility": "kalyna block cipher",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [],
       "v5_destination": "claasp_next/primitives/block_ciphers/kalyna.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -4078,7 +4078,7 @@
       "milestone_owner": "M10.9d6",
       "path": "claasp/ciphers/block_ciphers/kasumi_block_cipher.py",
       "prerequisites": [
-        "M10.9b"
+        "M10.9c10"
       ],
       "primitive": {
         "bijectivity_obligation": true,
@@ -4099,12 +4099,12 @@
       ],
       "rationale": null,
       "responsibility": "kasumi block cipher",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [],
       "v5_destination": "claasp_next/primitives/block_ciphers/kasumi.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -4117,7 +4117,7 @@
       "milestone_owner": "M10.9d6",
       "path": "claasp/ciphers/block_ciphers/katan_block_cipher.py",
       "prerequisites": [
-        "M10.9b"
+        "M10.9c10"
       ],
       "primitive": {
         "bijectivity_obligation": true,
@@ -4140,12 +4140,12 @@
       ],
       "rationale": null,
       "responsibility": "katan block cipher",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [],
       "v5_destination": "claasp_next/primitives/block_ciphers/katan.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -4158,7 +4158,7 @@
       "milestone_owner": "M10.9d6",
       "path": "claasp/ciphers/block_ciphers/katan_fsr_block_cipher.py",
       "prerequisites": [
-        "M10.9b"
+        "M10.9c10"
       ],
       "primitive": {
         "bijectivity_obligation": true,
@@ -4179,12 +4179,12 @@
       ],
       "rationale": null,
       "responsibility": "FSR-based implementation of the KATAN block cipher.",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [],
       "v5_destination": "claasp_next/primitives/block_ciphers/katan_fsr.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -4197,7 +4197,7 @@
       "milestone_owner": "M10.9d6",
       "path": "claasp/ciphers/block_ciphers/ktantan_block_cipher.py",
       "prerequisites": [
-        "M10.9b"
+        "M10.9c10"
       ],
       "primitive": {
         "bijectivity_obligation": true,
@@ -4218,12 +4218,12 @@
       ],
       "rationale": null,
       "responsibility": "ktantan block cipher",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [],
       "v5_destination": "claasp_next/primitives/block_ciphers/ktantan.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -4236,7 +4236,7 @@
       "milestone_owner": "M10.9d6",
       "path": "claasp/ciphers/block_ciphers/ktantan_fsr_block_cipher.py",
       "prerequisites": [
-        "M10.9b"
+        "M10.9c10"
       ],
       "primitive": {
         "bijectivity_obligation": true,
@@ -4257,12 +4257,12 @@
       ],
       "rationale": null,
       "responsibility": "FSR-based implementation of the KTANTAN block cipher.",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [],
       "v5_destination": "claasp_next/primitives/block_ciphers/ktantan_fsr.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -4275,7 +4275,7 @@
       "milestone_owner": "M10.9d6",
       "path": "claasp/ciphers/block_ciphers/lblock_block_cipher.py",
       "prerequisites": [
-        "M10.9b"
+        "M10.9c10"
       ],
       "primitive": {
         "bijectivity_obligation": true,
@@ -4296,7 +4296,7 @@
       ],
       "rationale": null,
       "responsibility": "lblock block cipher",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [],
       "v5_destination": "claasp_next/primitives/block_ciphers/lblock.py"
     },
@@ -4343,7 +4343,7 @@
       "v5_destination": "claasp_next/primitives/block_ciphers/lea.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -4356,7 +4356,7 @@
       "milestone_owner": "M10.9d6",
       "path": "claasp/ciphers/block_ciphers/led_block_cipher.py",
       "prerequisites": [
-        "M10.9b"
+        "M10.9c10"
       ],
       "primitive": {
         "bijectivity_obligation": true,
@@ -4378,12 +4378,12 @@
       ],
       "rationale": null,
       "responsibility": "led block cipher",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [],
       "v5_destination": "claasp_next/primitives/block_ciphers/led.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp",
         "os"
@@ -4397,7 +4397,7 @@
       "milestone_owner": "M10.9d6",
       "path": "claasp/ciphers/block_ciphers/lowmc_block_cipher.py",
       "prerequisites": [
-        "M10.9b"
+        "M10.9c10"
       ],
       "primitive": {
         "bijectivity_obligation": true,
@@ -4418,7 +4418,7 @@
       ],
       "rationale": null,
       "responsibility": "lowmc block cipher",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [],
       "v5_destination": "claasp_next/primitives/block_ciphers/lowmc.py"
     },
@@ -4462,7 +4462,7 @@
       "v5_destination": "inapplicable: LowMC matrix-generation helper"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -4475,7 +4475,7 @@
       "milestone_owner": "M10.9d6",
       "path": "claasp/ciphers/block_ciphers/mantis_block_cipher.py",
       "prerequisites": [
-        "M10.9b"
+        "M10.9c10"
       ],
       "primitive": {
         "bijectivity_obligation": true,
@@ -4497,12 +4497,12 @@
       ],
       "rationale": null,
       "responsibility": "mantis block cipher",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [],
       "v5_destination": "claasp_next/primitives/tweakable_block_ciphers/mantis.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -4515,7 +4515,7 @@
       "milestone_owner": "M10.9d6",
       "path": "claasp/ciphers/block_ciphers/midori_block_cipher.py",
       "prerequisites": [
-        "M10.9b"
+        "M10.9c10"
       ],
       "primitive": {
         "bijectivity_obligation": true,
@@ -4536,12 +4536,12 @@
       ],
       "rationale": null,
       "responsibility": "midori block cipher",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [],
       "v5_destination": "claasp_next/primitives/block_ciphers/midori.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -4554,7 +4554,7 @@
       "milestone_owner": "M10.9d6",
       "path": "claasp/ciphers/block_ciphers/msx_block_cipher.py",
       "prerequisites": [
-        "M10.9b"
+        "M10.9c10"
       ],
       "primitive": {
         "bijectivity_obligation": true,
@@ -4575,12 +4575,12 @@
       ],
       "rationale": null,
       "responsibility": "msx block cipher",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [],
       "v5_destination": "claasp_next/primitives/block_ciphers/msx.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp",
         "typing"
@@ -4594,7 +4594,7 @@
       "milestone_owner": "M10.9d6",
       "path": "claasp/ciphers/block_ciphers/piccolo_block_cipher.py",
       "prerequisites": [
-        "M10.9b"
+        "M10.9c10"
       ],
       "primitive": {
         "bijectivity_obligation": true,
@@ -4615,12 +4615,12 @@
       ],
       "rationale": null,
       "responsibility": "piccolo block cipher",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [],
       "v5_destination": "claasp_next/primitives/block_ciphers/piccolo.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -4633,7 +4633,7 @@
       "milestone_owner": "M10.9d6",
       "path": "claasp/ciphers/block_ciphers/present_block_cipher.py",
       "prerequisites": [
-        "M10.9b"
+        "M10.9c10"
       ],
       "primitive": {
         "bijectivity_obligation": true,
@@ -4654,12 +4654,12 @@
       ],
       "rationale": null,
       "responsibility": "present block cipher",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [],
       "v5_destination": "claasp_next/primitives/block_ciphers/present.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp",
         "numpy"
@@ -4673,7 +4673,7 @@
       "milestone_owner": "M10.9d6",
       "path": "claasp/ciphers/block_ciphers/prince_block_cipher.py",
       "prerequisites": [
-        "M10.9b"
+        "M10.9c10"
       ],
       "primitive": {
         "bijectivity_obligation": true,
@@ -4697,12 +4697,12 @@
       ],
       "rationale": null,
       "responsibility": "prince block cipher",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [],
       "v5_destination": "claasp_next/primitives/block_ciphers/prince.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp",
         "numpy"
@@ -4716,7 +4716,7 @@
       "milestone_owner": "M10.9d6",
       "path": "claasp/ciphers/block_ciphers/prince_v2_block_cipher.py",
       "prerequisites": [
-        "M10.9b"
+        "M10.9c10"
       ],
       "primitive": {
         "bijectivity_obligation": true,
@@ -4740,12 +4740,12 @@
       ],
       "rationale": null,
       "responsibility": "prince v2 block cipher",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [],
       "v5_destination": "claasp_next/primitives/block_ciphers/prince_v2.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -4758,7 +4758,7 @@
       "milestone_owner": "M10.9d6",
       "path": "claasp/ciphers/block_ciphers/qarmav2_block_cipher.py",
       "prerequisites": [
-        "M10.9b"
+        "M10.9c10"
       ],
       "primitive": {
         "bijectivity_obligation": true,
@@ -4780,12 +4780,12 @@
       ],
       "rationale": null,
       "responsibility": "qarmav2 block cipher",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [],
       "v5_destination": "claasp_next/primitives/tweakable_block_ciphers/qarmav2.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -4798,7 +4798,7 @@
       "milestone_owner": "M10.9d6",
       "path": "claasp/ciphers/block_ciphers/qarmav2_with_mixcolumn_block_cipher.py",
       "prerequisites": [
-        "M10.9b"
+        "M10.9c10"
       ],
       "primitive": {
         "bijectivity_obligation": true,
@@ -4820,7 +4820,7 @@
       ],
       "rationale": null,
       "responsibility": "qarmav2 with mixcolumn block cipher",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [],
       "v5_destination": "claasp_next/primitives/tweakable_block_ciphers/qarmav2_with_mixcolumn.py"
     },
@@ -4905,7 +4905,7 @@
       "v5_destination": "claasp_next/primitives/block_ciphers/rc5.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -4918,7 +4918,7 @@
       "milestone_owner": "M10.9d6",
       "path": "claasp/ciphers/block_ciphers/rectangle_block_cipher.py",
       "prerequisites": [
-        "M10.9b"
+        "M10.9c10"
       ],
       "primitive": {
         "bijectivity_obligation": true,
@@ -4939,12 +4939,12 @@
       ],
       "rationale": null,
       "responsibility": "rectangle block cipher",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [],
       "v5_destination": "claasp_next/primitives/block_ciphers/rectangle.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -4957,7 +4957,7 @@
       "milestone_owner": "M10.9d6",
       "path": "claasp/ciphers/block_ciphers/rijndael_block_cipher.py",
       "prerequisites": [
-        "M10.9b"
+        "M10.9c10"
       ],
       "primitive": {
         "bijectivity_obligation": true,
@@ -4978,12 +4978,12 @@
       ],
       "rationale": null,
       "responsibility": "rijndael block cipher",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [],
       "v5_destination": "claasp_next/primitives/block_ciphers/rijndael.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -4996,7 +4996,7 @@
       "milestone_owner": "M10.9d6",
       "path": "claasp/ciphers/block_ciphers/saecham_block_cipher.py",
       "prerequisites": [
-        "M10.9b"
+        "M10.9c10"
       ],
       "primitive": {
         "bijectivity_obligation": true,
@@ -5017,12 +5017,12 @@
       ],
       "rationale": null,
       "responsibility": "saecham block cipher",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [],
       "v5_destination": "claasp_next/primitives/block_ciphers/saecham.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -5035,7 +5035,7 @@
       "milestone_owner": "M10.9d6",
       "path": "claasp/ciphers/block_ciphers/scarf_block_cipher.py",
       "prerequisites": [
-        "M10.9b"
+        "M10.9c10"
       ],
       "primitive": {
         "bijectivity_obligation": true,
@@ -5057,12 +5057,12 @@
       ],
       "rationale": null,
       "responsibility": "scarf block cipher",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [],
       "v5_destination": "claasp_next/primitives/tweakable_block_ciphers/scarf.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -5075,7 +5075,7 @@
       "milestone_owner": "M10.9d6",
       "path": "claasp/ciphers/block_ciphers/serpent_block_cipher.py",
       "prerequisites": [
-        "M10.9b"
+        "M10.9c10"
       ],
       "primitive": {
         "bijectivity_obligation": true,
@@ -5097,7 +5097,7 @@
       ],
       "rationale": null,
       "responsibility": "serpent block cipher",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [],
       "v5_destination": "claasp_next/primitives/block_ciphers/serpent.py"
     },
@@ -5141,7 +5141,7 @@
       "v5_destination": "claasp_next/primitives/block_ciphers/simeck.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -5154,7 +5154,7 @@
       "milestone_owner": "M10.9d6",
       "path": "claasp/ciphers/block_ciphers/simeck_sbox_block_cipher.py",
       "prerequisites": [
-        "M10.9b"
+        "M10.9c10"
       ],
       "primitive": {
         "bijectivity_obligation": true,
@@ -5175,7 +5175,7 @@
       ],
       "rationale": null,
       "responsibility": "simeck sbox block cipher",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [],
       "v5_destination": "claasp_next/primitives/block_ciphers/simeck_sbox.py"
     },
@@ -5219,7 +5219,7 @@
       "v5_destination": "claasp_next/primitives/block_ciphers/simon.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -5232,7 +5232,7 @@
       "milestone_owner": "M10.9d6",
       "path": "claasp/ciphers/block_ciphers/simon_sbox_block_cipher.py",
       "prerequisites": [
-        "M10.9b"
+        "M10.9c10"
       ],
       "primitive": {
         "bijectivity_obligation": true,
@@ -5253,12 +5253,12 @@
       ],
       "rationale": null,
       "responsibility": "simon sbox block cipher",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [],
       "v5_destination": "claasp_next/primitives/block_ciphers/simon_sbox.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -5271,7 +5271,7 @@
       "milestone_owner": "M10.9d6",
       "path": "claasp/ciphers/block_ciphers/skinny_block_cipher.py",
       "prerequisites": [
-        "M10.9b"
+        "M10.9c10"
       ],
       "primitive": {
         "bijectivity_obligation": true,
@@ -5292,12 +5292,12 @@
       ],
       "rationale": null,
       "responsibility": "skinny block cipher",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [],
       "v5_destination": "claasp_next/primitives/block_ciphers/skinny.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -5310,7 +5310,7 @@
       "milestone_owner": "M10.9d6",
       "path": "claasp/ciphers/block_ciphers/skipjack_block_cipher.py",
       "prerequisites": [
-        "M10.9b"
+        "M10.9c10"
       ],
       "primitive": {
         "bijectivity_obligation": true,
@@ -5331,12 +5331,12 @@
       ],
       "rationale": null,
       "responsibility": "SKIPJACK block cipher [NIST1998]",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [],
       "v5_destination": "claasp_next/primitives/block_ciphers/skipjack.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -5349,7 +5349,7 @@
       "milestone_owner": "M10.9d6",
       "path": "claasp/ciphers/block_ciphers/sm4_block_cipher.py",
       "prerequisites": [
-        "M10.9b"
+        "M10.9c10"
       ],
       "primitive": {
         "bijectivity_obligation": true,
@@ -5370,7 +5370,7 @@
       ],
       "rationale": null,
       "responsibility": "sm4 block cipher",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [],
       "v5_destination": "claasp_next/primitives/block_ciphers/sm4.py"
     },
@@ -5454,7 +5454,7 @@
       "v5_destination": "claasp_next/primitives/block_ciphers/speck.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -5467,7 +5467,7 @@
       "milestone_owner": "M10.9d6",
       "path": "claasp/ciphers/block_ciphers/speedy_block_cipher.py",
       "prerequisites": [
-        "M10.9b"
+        "M10.9c10"
       ],
       "primitive": {
         "bijectivity_obligation": true,
@@ -5488,12 +5488,12 @@
       ],
       "rationale": null,
       "responsibility": "speedy block cipher",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [],
       "v5_destination": "claasp_next/primitives/block_ciphers/speedy.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -5506,7 +5506,7 @@
       "milestone_owner": "M10.9d6",
       "path": "claasp/ciphers/block_ciphers/splight_block_cipher.py",
       "prerequisites": [
-        "M10.9b"
+        "M10.9c10"
       ],
       "primitive": {
         "bijectivity_obligation": true,
@@ -5527,7 +5527,7 @@
       ],
       "rationale": null,
       "responsibility": "splight block cipher",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [],
       "v5_destination": "claasp_next/primitives/block_ciphers/splight.py"
     },
@@ -5652,7 +5652,7 @@
       "v5_destination": "claasp_next/primitives/tweakable_block_ciphers/trax.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -5665,7 +5665,7 @@
       "milestone_owner": "M10.9d6",
       "path": "claasp/ciphers/block_ciphers/twine_block_cipher.py",
       "prerequisites": [
-        "M10.9b"
+        "M10.9c10"
       ],
       "primitive": {
         "bijectivity_obligation": true,
@@ -5687,12 +5687,12 @@
       ],
       "rationale": null,
       "responsibility": "twine block cipher",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [],
       "v5_destination": "claasp_next/primitives/block_ciphers/twine.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp",
         "itertools",
@@ -5707,7 +5707,7 @@
       "milestone_owner": "M10.9d6",
       "path": "claasp/ciphers/block_ciphers/twofish_block_cipher.py",
       "prerequisites": [
-        "M10.9b"
+        "M10.9c10"
       ],
       "primitive": {
         "bijectivity_obligation": true,
@@ -5728,12 +5728,12 @@
       ],
       "rationale": null,
       "responsibility": "twofish block cipher",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [],
       "v5_destination": "claasp_next/primitives/block_ciphers/twofish.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -5746,7 +5746,7 @@
       "milestone_owner": "M10.9d6",
       "path": "claasp/ciphers/block_ciphers/ublock_block_cipher.py",
       "prerequisites": [
-        "M10.9b"
+        "M10.9c10"
       ],
       "primitive": {
         "bijectivity_obligation": true,
@@ -5767,12 +5767,12 @@
       ],
       "rationale": null,
       "responsibility": "ublock block cipher",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [],
       "v5_destination": "claasp_next/primitives/block_ciphers/ublock.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp",
         "sys"
@@ -5786,7 +5786,7 @@
       "milestone_owner": "M10.9d6",
       "path": "claasp/ciphers/block_ciphers/ublock_single_linear_layer_block_cipher.py",
       "prerequisites": [
-        "M10.9b"
+        "M10.9c10"
       ],
       "primitive": {
         "bijectivity_obligation": true,
@@ -5808,12 +5808,12 @@
       ],
       "rationale": null,
       "responsibility": "ublock single linear layer block cipher",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [],
       "v5_destination": "claasp_next/primitives/block_ciphers/ublock_single_linear_layer.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -5826,7 +5826,7 @@
       "milestone_owner": "M10.9d6",
       "path": "claasp/ciphers/block_ciphers/uknit_block_cipher.py",
       "prerequisites": [
-        "M10.9b"
+        "M10.9c10"
       ],
       "primitive": {
         "bijectivity_obligation": true,
@@ -5857,12 +5857,12 @@
       ],
       "rationale": null,
       "responsibility": "uknit block cipher",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [],
       "v5_destination": "claasp_next/primitives/block_ciphers/uknit.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp",
         "typing"
@@ -5876,7 +5876,7 @@
       "milestone_owner": "M10.9d6",
       "path": "claasp/ciphers/block_ciphers/warp_block_cipher.py",
       "prerequisites": [
-        "M10.9b"
+        "M10.9c10"
       ],
       "primitive": {
         "bijectivity_obligation": true,
@@ -5897,7 +5897,7 @@
       ],
       "rationale": null,
       "responsibility": "warp block cipher",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [],
       "v5_destination": "claasp_next/primitives/block_ciphers/warp.py"
     },
@@ -7189,7 +7189,7 @@
       "v5_destination": "claasp_next/primitives/permutations/spongent_pi_precomputation.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp",
         "enum"
@@ -7203,7 +7203,7 @@
       "milestone_owner": "M10.9d6",
       "path": "claasp/ciphers/permutations/subterranean_permutation.py",
       "prerequisites": [
-        "M10.9b"
+        "M10.9c10"
       ],
       "primitive": {
         "bijectivity_obligation": true,
@@ -7225,12 +7225,12 @@
       ],
       "rationale": null,
       "responsibility": "subterranean permutation",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [],
       "v5_destination": "claasp_next/primitives/block_ciphers/subterranean.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp",
         "copy"
@@ -7244,7 +7244,7 @@
       "milestone_owner": "M10.9d6",
       "path": "claasp/ciphers/permutations/tinyjambu_32bits_word_permutation.py",
       "prerequisites": [
-        "M10.9b"
+        "M10.9c10"
       ],
       "primitive": {
         "bijectivity_obligation": true,
@@ -7265,12 +7265,12 @@
       ],
       "rationale": null,
       "responsibility": "tinyjambu 32bits word permutation",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [],
       "v5_destination": "claasp_next/primitives/block_ciphers/tinyjambu_32bits_word.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp",
         "copy"
@@ -7284,7 +7284,7 @@
       "milestone_owner": "M10.9d6",
       "path": "claasp/ciphers/permutations/tinyjambu_fsr_32bits_word_permutation.py",
       "prerequisites": [
-        "M10.9b"
+        "M10.9c10"
       ],
       "primitive": {
         "bijectivity_obligation": true,
@@ -7305,12 +7305,12 @@
       ],
       "rationale": null,
       "responsibility": "tinyjambu fsr 32bits word permutation",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [],
       "v5_destination": "claasp_next/primitives/block_ciphers/tinyjambu_fsr_32bits_word.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp",
         "copy"
@@ -7324,7 +7324,7 @@
       "milestone_owner": "M10.9d6",
       "path": "claasp/ciphers/permutations/tinyjambu_permutation.py",
       "prerequisites": [
-        "M10.9b"
+        "M10.9c10"
       ],
       "primitive": {
         "bijectivity_obligation": true,
@@ -7345,7 +7345,7 @@
       ],
       "rationale": null,
       "responsibility": "tinyjambu permutation",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [],
       "v5_destination": "claasp_next/primitives/block_ciphers/tinyjambu.py"
     },
@@ -14175,7 +14175,7 @@
       "v5_destination": "next/tests (mapped to the owning migrated behavior)"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -14205,7 +14205,7 @@
       ],
       "rationale": null,
       "responsibility": "aes block cipher test",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [
         "test_aes128_block_cipher",
         "test_aes192_block_cipher",
@@ -14213,10 +14213,10 @@
         "test_aes_invalid_key_size",
         "test_aes_parameters_configuration_list"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_catalogue_graph_migration.py; next/tests/integration/test_substitution_block_catalogue.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -14238,14 +14238,14 @@
       ],
       "rationale": null,
       "responsibility": "aradi block cipher sbox and compact linear map test",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [
         "test_aradi_block_cipher_sbox_and_compact_linear_map"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_catalogue_graph_migration.py; next/tests/integration/test_substitution_block_catalogue.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -14267,11 +14267,11 @@
       ],
       "rationale": null,
       "responsibility": "aradi block cipher sbox test",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [
         "test_aradi_block_cipher_sbox"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_catalogue_graph_migration.py; next/tests/integration/test_substitution_block_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -14303,7 +14303,7 @@
       "v5_destination": "next/tests/unit/test_word_block_catalogue.py; next/tests/unit/test_simon_cipher.py; next/tests/unit/test_speck.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp",
         "pytest"
@@ -14326,14 +14326,14 @@
       ],
       "rationale": null,
       "responsibility": "BAKSHEESH tests",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [
         "test_baksheesh_block_cipher"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_catalogue_graph_migration.py; next/tests/integration/test_substitution_block_catalogue.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -14355,14 +14355,14 @@
       ],
       "rationale": null,
       "responsibility": "ballet block cipher test",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [
         "test_ballet_block_cipher"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_catalogue_graph_migration.py; next/tests/integration/test_substitution_block_catalogue.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -14384,14 +14384,14 @@
       ],
       "rationale": null,
       "responsibility": "bea1 block cipher test",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [
         "test_bea1_block_cipher"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_catalogue_graph_migration.py; next/tests/integration/test_substitution_block_catalogue.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -14429,7 +14429,7 @@
       ],
       "rationale": null,
       "responsibility": "bipbip block cipher test",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [
         "test_0",
         "test_0_custom_rounds",
@@ -14441,10 +14441,10 @@
         "test_single_1_custom_rounds",
         "test_structure"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_catalogue_graph_migration.py; next/tests/integration/test_substitution_block_catalogue.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp",
         "pytest"
@@ -14479,7 +14479,7 @@
       ],
       "rationale": null,
       "responsibility": "blink block cipher test",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [
         "test_blink_128A",
         "test_blink_128B",
@@ -14489,10 +14489,10 @@
         "test_blink_64b",
         "test_blink_invalid_configuration"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_catalogue_graph_migration.py; next/tests/integration/test_substitution_block_catalogue.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -14522,7 +14522,7 @@
       ],
       "rationale": null,
       "responsibility": "cast block cipher test",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [
         "test_basic_cast_block_cipher",
         "test_custom_key_nrounds",
@@ -14530,7 +14530,7 @@
         "test_vector_40_bit",
         "test_vector_80_bit"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_catalogue_graph_migration.py; next/tests/integration/test_substitution_block_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -14571,7 +14571,7 @@
       "v5_destination": "next/tests/unit/test_word_block_catalogue.py; next/tests/unit/test_simon_cipher.py; next/tests/unit/test_speck.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -14595,15 +14595,15 @@
       ],
       "rationale": null,
       "responsibility": "chilow block cipher test",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [
         "test_chilow_block_cipher_32",
         "test_chilow_block_cipher_40"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_catalogue_graph_migration.py; next/tests/integration/test_substitution_block_catalogue.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -14625,14 +14625,14 @@
       ],
       "rationale": null,
       "responsibility": "des block cipher test",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [
         "test_des_block_cipher"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_catalogue_graph_migration.py; next/tests/integration/test_substitution_block_catalogue.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -14654,11 +14654,11 @@
       ],
       "rationale": null,
       "responsibility": "des exact key length block cipher test",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [
         "test_des_exact_key_length_block_cipher"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_catalogue_graph_migration.py; next/tests/integration/test_substitution_block_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -14690,7 +14690,7 @@
       "v5_destination": "next/tests/unit/test_single_component_primitives.py; next/tests/unit/test_toy_primitive_catalogue.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -14712,14 +14712,14 @@
       ],
       "rationale": null,
       "responsibility": "gift block cipher test",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [
         "test_gift_block_cipher"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_catalogue_graph_migration.py; next/tests/integration/test_substitution_block_catalogue.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -14741,14 +14741,14 @@
       ],
       "rationale": null,
       "responsibility": "gift sbox block cipher test",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [
         "test_gift_sbox_block_cipher"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_catalogue_graph_migration.py; next/tests/integration/test_substitution_block_catalogue.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -14770,11 +14770,11 @@
       ],
       "rationale": null,
       "responsibility": "gost block cipher test",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [
         "test_gost_block_cipher"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_catalogue_graph_migration.py; next/tests/integration/test_substitution_block_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -14863,7 +14863,7 @@
       "v5_destination": "next/tests/unit/test_word_block_catalogue.py; next/tests/unit/test_simon_cipher.py; next/tests/unit/test_speck.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -14885,14 +14885,14 @@
       ],
       "rationale": null,
       "responsibility": "Kalyna tests",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [
         "test_kalyna_block_cipher"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_catalogue_graph_migration.py; next/tests/integration/test_substitution_block_catalogue.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -14914,14 +14914,14 @@
       ],
       "rationale": null,
       "responsibility": "kasumi block cipher test",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [
         "test_kasumi_block_cipher_test_vector"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_catalogue_graph_migration.py; next/tests/integration/test_substitution_block_catalogue.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp",
         "pytest"
@@ -14946,15 +14946,15 @@
       ],
       "rationale": null,
       "responsibility": "katan block cipher test",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [
         "test_katan_block_cipher",
         "test_katan_block_cipher_round_validation"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_catalogue_graph_migration.py; next/tests/integration/test_substitution_block_catalogue.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp",
         "pytest"
@@ -14979,15 +14979,15 @@
       ],
       "rationale": null,
       "responsibility": "katan fsr block cipher test",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [
         "test_katan_fsr_block_cipher",
         "test_katan_fsr_block_cipher_round_validation"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_catalogue_graph_migration.py; next/tests/integration/test_substitution_block_catalogue.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp",
         "pytest"
@@ -15012,15 +15012,15 @@
       ],
       "rationale": null,
       "responsibility": "ktantan block cipher test",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [
         "test_ktantan_block_cipher",
         "test_ktantan_block_cipher_round_validation"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_catalogue_graph_migration.py; next/tests/integration/test_substitution_block_catalogue.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp",
         "pytest"
@@ -15045,15 +15045,15 @@
       ],
       "rationale": null,
       "responsibility": "ktantan fsr block cipher test",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [
         "test_ktantan_fsr_block_cipher",
         "test_ktantan_fsr_block_cipher_round_validation"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_catalogue_graph_migration.py; next/tests/integration/test_substitution_block_catalogue.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -15075,11 +15075,11 @@
       ],
       "rationale": null,
       "responsibility": "lblock block cipher test",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [
         "test_lblock_block_cipher"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_catalogue_graph_migration.py; next/tests/integration/test_substitution_block_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -15111,7 +15111,7 @@
       "v5_destination": "next/tests/unit/test_word_block_catalogue.py; next/tests/unit/test_simon_cipher.py; next/tests/unit/test_speck.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp",
         "pytest"
@@ -15134,14 +15134,14 @@
       ],
       "rationale": null,
       "responsibility": "LED tests",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [
         "test_led_block_cipher"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_catalogue_graph_migration.py; next/tests/integration/test_substitution_block_catalogue.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -15163,14 +15163,14 @@
       ],
       "rationale": null,
       "responsibility": "lowmc block cipher test",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [
         "test_lowmc_block_cipher"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_catalogue_graph_migration.py; next/tests/integration/test_substitution_block_catalogue.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -15192,14 +15192,14 @@
       ],
       "rationale": null,
       "responsibility": "mantis block cipher test",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [
         "test_mantis_block_cipher"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_catalogue_graph_migration.py; next/tests/integration/test_substitution_block_catalogue.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp",
         "pytest"
@@ -15222,14 +15222,14 @@
       ],
       "rationale": null,
       "responsibility": "midori block cipher test",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [
         "test_midori_block_cipher"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_catalogue_graph_migration.py; next/tests/integration/test_substitution_block_catalogue.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -15255,16 +15255,16 @@
       ],
       "rationale": null,
       "responsibility": "msx block cipher test",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [
         "test_msx128_128_vector",
         "test_msx128_256_vector",
         "test_msx64_128_vector"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_catalogue_graph_migration.py; next/tests/integration/test_substitution_block_catalogue.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -15288,15 +15288,15 @@
       ],
       "rationale": null,
       "responsibility": "piccolo block cipher test",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [
         "test_piccolo_block_cipher_128",
         "test_piccolo_block_cipher_80"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_catalogue_graph_migration.py; next/tests/integration/test_substitution_block_catalogue.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -15318,14 +15318,14 @@
       ],
       "rationale": null,
       "responsibility": "present block cipher test",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [
         "test_present_block_cipher"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_catalogue_graph_migration.py; next/tests/integration/test_substitution_block_catalogue.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -15347,14 +15347,14 @@
       ],
       "rationale": null,
       "responsibility": "prince block cipher test",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [
         "test_prince_block_cipher"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_catalogue_graph_migration.py; next/tests/integration/test_substitution_block_catalogue.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -15376,14 +15376,14 @@
       ],
       "rationale": null,
       "responsibility": "prince v2 block cipher test",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [
         "test_princeV2_block_cipher"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_catalogue_graph_migration.py; next/tests/integration/test_substitution_block_catalogue.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp",
         "pytest"
@@ -15406,14 +15406,14 @@
       ],
       "rationale": null,
       "responsibility": "qarmav2 block cipher test",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [
         "test_qarmav2_block_cipher"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_catalogue_graph_migration.py; next/tests/integration/test_substitution_block_catalogue.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp",
         "pytest"
@@ -15436,11 +15436,11 @@
       ],
       "rationale": null,
       "responsibility": "qarmav2 with mixcolumn block cipher test",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [
         "test_qarmav2_mixcolumn_block_cipher"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_catalogue_graph_migration.py; next/tests/integration/test_substitution_block_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -15501,7 +15501,7 @@
       "v5_destination": "next/tests/unit/test_word_block_catalogue.py; next/tests/unit/test_simon_cipher.py; next/tests/unit/test_speck.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -15523,14 +15523,14 @@
       ],
       "rationale": null,
       "responsibility": "Test vectors from Table 10 of https://eprint.iacr.org/2014/084.pdf",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [
         "test_rectangle_block_cipher"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_catalogue_graph_migration.py; next/tests/integration/test_substitution_block_catalogue.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp",
         "pytest"
@@ -15562,7 +15562,7 @@
       ],
       "rationale": null,
       "responsibility": "Unit tests for Rijndael block cipher vectors.",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [
         "test_rijndael_192_bit_key_rounds",
         "test_rijndael_256_bit_key_rounds",
@@ -15575,10 +15575,10 @@
         "test_rijndael_invalid_key_size",
         "test_rijndael_round_count_table"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_catalogue_graph_migration.py; next/tests/integration/test_substitution_block_catalogue.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -15604,16 +15604,16 @@
       ],
       "rationale": null,
       "responsibility": "Tests for SaechamBlockCipher.",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [
         "test_saecham_block_cipher_structure",
         "test_saecham_generated_vectors",
         "test_saecham_paper_vector"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_catalogue_graph_migration.py; next/tests/integration/test_substitution_block_catalogue.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -15635,14 +15635,14 @@
       ],
       "rationale": null,
       "responsibility": "scarf block cipher test",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [
         "test_scarf_block_cipher"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_catalogue_graph_migration.py; next/tests/integration/test_substitution_block_catalogue.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp",
         "pytest"
@@ -15670,7 +15670,7 @@
       ],
       "rationale": null,
       "responsibility": "Unit tests for the Serpent block cipher.",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [
         "test_serpent_default_construction",
         "test_serpent_invalid_key_size",
@@ -15679,7 +15679,7 @@
         "test_serpent_test_vectors",
         "test_serpent_vectorized_evaluation"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_catalogue_graph_migration.py; next/tests/integration/test_substitution_block_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -15711,7 +15711,7 @@
       "v5_destination": "next/tests/unit/test_word_block_catalogue.py; next/tests/unit/test_simon_cipher.py; next/tests/unit/test_speck.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -15733,11 +15733,11 @@
       ],
       "rationale": null,
       "responsibility": "simeck sbox block cipher test",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [
         "test_simeck_sbox_block_cipher"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_catalogue_graph_migration.py; next/tests/integration/test_substitution_block_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -15769,7 +15769,7 @@
       "v5_destination": "next/tests/unit/test_word_block_catalogue.py; next/tests/unit/test_simon_cipher.py; next/tests/unit/test_speck.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -15791,14 +15791,14 @@
       ],
       "rationale": null,
       "responsibility": "simon sbox block cipher test",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [
         "test_simon_sbox_block_cipher"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_catalogue_graph_migration.py; next/tests/integration/test_substitution_block_catalogue.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp",
         "pytest"
@@ -15821,14 +15821,14 @@
       ],
       "rationale": null,
       "responsibility": "SKINNY tests",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [
         "test_skinny_block_cipher"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_catalogue_graph_migration.py; next/tests/integration/test_substitution_block_catalogue.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -15852,15 +15852,15 @@
       ],
       "rationale": null,
       "responsibility": "skipjack block cipher test",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [
         "test_skipjack_all_rounds",
         "test_skipjack_block_cipher"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_catalogue_graph_migration.py; next/tests/integration/test_substitution_block_catalogue.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -15884,12 +15884,12 @@
       ],
       "rationale": null,
       "responsibility": "sm4 block cipher test",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [
         "test_sm4_block_cipher",
         "test_sm4_block_cipher"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_catalogue_graph_migration.py; next/tests/integration/test_substitution_block_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -15950,7 +15950,7 @@
       "v5_destination": "next/tests/unit/test_word_block_catalogue.py; next/tests/unit/test_simon_cipher.py; next/tests/unit/test_speck.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -15972,14 +15972,14 @@
       ],
       "rationale": null,
       "responsibility": "speedy block cipher test",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [
         "test_speedy_block_cipher"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_catalogue_graph_migration.py; next/tests/integration/test_substitution_block_catalogue.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp",
         "pytest"
@@ -16002,11 +16002,11 @@
       ],
       "rationale": null,
       "responsibility": "splight block cipher test",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [
         "test_splight_block_cipher"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_catalogue_graph_migration.py; next/tests/integration/test_substitution_block_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -16105,7 +16105,7 @@
       "v5_destination": "next/tests/unit/test_word_block_catalogue.py; next/tests/unit/test_simon_cipher.py; next/tests/unit/test_speck.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -16127,14 +16127,14 @@
       ],
       "rationale": null,
       "responsibility": "twine block cipher test",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [
         "test_twine_block_cipher"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_catalogue_graph_migration.py; next/tests/integration/test_substitution_block_catalogue.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp",
         "pytest"
@@ -16157,14 +16157,14 @@
       ],
       "rationale": null,
       "responsibility": "twofish block cipher test",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [
         "test_twofish_block_cipher"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_catalogue_graph_migration.py; next/tests/integration/test_substitution_block_catalogue.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -16186,14 +16186,14 @@
       ],
       "rationale": null,
       "responsibility": "ublock block cipher test",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [
         "test_ublock_block_cipher"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_catalogue_graph_migration.py; next/tests/integration/test_substitution_block_catalogue.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -16215,14 +16215,14 @@
       ],
       "rationale": null,
       "responsibility": "ublock single linear layer block cipher test",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [
         "test_ublock_single_linear_layer_block_cipher"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_catalogue_graph_migration.py; next/tests/integration/test_substitution_block_catalogue.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -16252,7 +16252,7 @@
       ],
       "rationale": null,
       "responsibility": "uknit block cipher test",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [
         "test_structure",
         "test_vector_1",
@@ -16260,10 +16260,10 @@
         "test_vector_3",
         "test_vector_4"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_catalogue_graph_migration.py; next/tests/integration/test_substitution_block_catalogue.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -16285,11 +16285,11 @@
       ],
       "rationale": null,
       "responsibility": "warp block cipher test",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [
         "test_warp_block_cipher"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_catalogue_graph_migration.py; next/tests/integration/test_substitution_block_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -17302,7 +17302,7 @@
       "v5_destination": "next/tests (mapped to the owning migrated behavior)"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp",
         "pytest"
@@ -17329,16 +17329,16 @@
       ],
       "rationale": null,
       "responsibility": "subterranean permutation test",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [
         "test_subterranean_output_size",
         "test_subterranean_permutation",
         "test_subterranean_v2_permutation"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_catalogue_graph_migration.py; next/tests/integration/test_substitution_block_catalogue.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -17360,14 +17360,14 @@
       ],
       "rationale": null,
       "responsibility": "tinyjambu 32bits word permutation test",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [
         "test_tinyjambu_32bits_word_permutation"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_catalogue_graph_migration.py; next/tests/integration/test_substitution_block_catalogue.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -17389,14 +17389,14 @@
       ],
       "rationale": null,
       "responsibility": "tinyjambu fsr 32bits word permutation test",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [
         "test_tinyjambu_fsr_32bits_word_permutation"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_catalogue_graph_migration.py; next/tests/integration/test_substitution_block_catalogue.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
       "dependencies": [
         "claasp"
       ],
@@ -17418,11 +17418,11 @@
       ],
       "rationale": null,
       "responsibility": "tinyjambu permutation test",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9d6",
       "tests": [
         "test_tinyjambu_permutation"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_catalogue_graph_migration.py; next/tests/integration/test_substitution_block_catalogue.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",

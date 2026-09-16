@@ -718,6 +718,9 @@ accepted early vertical slices and remain subject to the final closure gate:
 6. **M10.9d6 — substitution/linear and tweakable block primitives.** Resolve
    the remaining 55 block/tweakable source and 55 test records, reusing typed
    S-box, field, linear-layer, key-schedule, and composite-block foundations.
+   This slice is achieved: deterministic Sage-free specifications reconstruct
+   immutable typed graphs for all families and audited parameter variants;
+   every captured legacy fixed vector and independent scalar/batch parity pass.
 7. **M10.9d7 — remaining permutations.** Resolve 25 source and 25 test records
    after shared block operations are stable, including invertible interfaces
    represented as forward primitive graphs without claiming the general graph
@@ -1214,8 +1217,8 @@ is absent). Update this table in the same commit that changes milestone state.
 | Primitive catalogue audit (M10.9d3) | Achieved | Machine inventory assigns 149 source and 143 primitive-test records (265 functions) exactly once across M10.9d1–M10.9d8: 145 behavioral sources and four reviewed outside-scope helpers; the audit gate passes while the separate closure gate exposes every unimplemented destination |
 | Single-component and toy primitives (M10.9d4) | Achieved | All 33 source and 31 test records are resolved by 26 typed one-operation primitives and seven toy families; fixed vectors, reduced/custom parameters, scalar semantics, and every ToyAES matrix MDS status are independently checked; host checkpoint: 548 passed, 78 external deselected |
 | Word-oriented block primitives (M10.9d5) | Achieved | All 15 source and 15 test records are resolved by typed graphs for Aradi, CHAM, HIGHT, IDEA, LEA, Raiden, RC5, Simeck, Simon, SPARX, Speck, TEA, Threefish, TRAX, and XTEA; applicable fixed vectors, parameter variants, reduced rounds, and scalar/batch parity pass; host checkpoint: 602 passed, 78 external deselected |
-| Substitution/linear and tweakable block primitives (M10.9d6) | Next | Resolve 55 source and 55 test records covering the remaining block and tweakable families |
-| Remaining permutations (M10.9d7) | Planned | Resolve 25 source and 25 test records after shared block-operation dependencies |
+| Substitution/linear and tweakable block primitives (M10.9d6) | Achieved | All 55 source and 55 test records have concrete typed-graph destinations; 242 audited parameter variants construct, all 267 fixed observations captured by the 198 legacy tests pass, and all 55 defaults have scalar/batch parity; frozen compressed graph specifications require neither Sage nor the legacy package at runtime; host checkpoint: 835 passed, 78 external deselected |
+| Remaining permutations (M10.9d7) | Next | Resolve 25 source and 25 test records after shared block-operation dependencies |
 | Fixed-length functions/block functions (M10.9d8) | Planned | Resolve 15 source and 15 test records extracted from legacy hash, MAC, and stream construction folders |
 | Primitive-owned parameters/data (M10.9d9) | Planned | Colocate Poseidon and other primitive-specific parameters, generated constants, data, licenses, provenance, and vectors under their owning packages |
 | Complete primitive catalogue closure (M10.9d10) | Planned | Central exports/docs and the machine gate prove all 145 behavioral sources and applicable fixed evidence have concrete v5 destinations |

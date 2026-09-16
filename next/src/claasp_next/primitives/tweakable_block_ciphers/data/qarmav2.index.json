@@ -1,0 +1,15 @@
+{
+  "parameter_names": [
+    "number_of_rounds",
+    "number_of_layers",
+    "key_bit_size",
+    "tweak_bit_size"
+  ],
+  "variants": {
+    "{\"key_bit_size\":128,\"number_of_layers\":1,\"number_of_rounds\":10,\"tweak_bit_size\":128}": "v1",
+    "{\"key_bit_size\":256,\"number_of_layers\":2,\"number_of_rounds\":9,\"tweak_bit_size\":256}": "v4",
+    "{\"number_of_rounds\":4}": "v2",
+    "{\"number_of_rounds\":9}": "v3",
+    "{}": "v0"
+  }
+}

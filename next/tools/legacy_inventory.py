@@ -43,6 +43,8 @@ CATALOGUE_OUT_OF_SCOPE = {
     "claasp/ciphers/single_component_ciphers/single_component_ciphers_usage_doctest.py": "documentation-only module",
 }
 OFFICIAL_NAME_OVERRIDES = {
+    "claasp/ciphers/block_ciphers/aradi_block_cipher_sbox.py": "AradiSBox",
+    "claasp/ciphers/block_ciphers/aradi_block_cipher_sbox_and_compact_linear_map.py": "AradiSBoxCompactLinearMap",
     "claasp/ciphers/block_ciphers/chilow_block_cipher.py": "Chilow",
     "claasp/ciphers/permutations/subterranean_permutation.py": "Subterranean",
     "claasp/ciphers/stream_ciphers/chacha_stream_cipher.py": "ChaChaKeystreamBlock",
@@ -164,7 +166,9 @@ M10_9D_COMPLETION_SLICES = (
     "M10.9d1", "M10.9d2", "M10.9d3", "M10.9d4", "M10.9d5",
     "M10.9d6", "M10.9d7", "M10.9d8",
 )
-M10_9D_COMPLETED_SLICES = {"M10.9d1", "M10.9d2", "M10.9d4", "M10.9d5"}
+M10_9D_COMPLETED_SLICES = {
+    "M10.9d1", "M10.9d2", "M10.9d4", "M10.9d5", "M10.9d6",
+}
 M10_9D_TEST_DESTINATIONS = {
     "M10.9d1": "next/tests/unit/test_chacha.py",
     "M10.9d2": "next/tests/unit/test_salsa.py",
@@ -175,6 +179,10 @@ M10_9D_TEST_DESTINATIONS = {
     "M10.9d5": (
         "next/tests/unit/test_word_block_catalogue.py; "
         "next/tests/unit/test_simon_cipher.py; next/tests/unit/test_speck.py"
+    ),
+    "M10.9d6": (
+        "next/tests/unit/test_catalogue_graph_migration.py; "
+        "next/tests/integration/test_substitution_block_catalogue.py"
     ),
 }
 
