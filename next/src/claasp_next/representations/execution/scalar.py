@@ -5,6 +5,7 @@ from dataclasses import dataclass
 
 from claasp_next.annotations import ExecutionTrace, GraphAnnotation
 from claasp_next.components.algebraic import Add, BinaryAffineMap, LinearMap, Multiply, Power
+from claasp_next.components.conversion import PackBits, UnpackBits
 from claasp_next.components.structural import Concatenate, Constant, Identity, Permutation
 from claasp_next.components.substitution import BitVectorSBox, SBox
 from claasp_next.components.word import BitwiseAnd, ModularAdd, Rotate, Xor
@@ -65,6 +66,8 @@ class ScalarExecutionDriver:
             Xor: self._evaluate_xor,
             SBox: self._evaluate_sbox,
             BitVectorSBox: self._evaluate_bit_vector_sbox,
+            PackBits: self._evaluate_pack_bits,
+            UnpackBits: self._evaluate_unpack_bits,
         }
 
     def register(self, component_type: type[Component], handler: Handler) -> None:
@@ -280,6 +283,25 @@ class ScalarExecutionDriver:
         substituted = component.table[value]
         width = component.output_type.unit_count
         return tuple((substituted >> position) & 1 for position in range(width - 1, -1, -1))
+
+    @staticmethod
+    def _evaluate_pack_bits(component: PackBits, inputs: tuple[RuntimeValue, ...]) -> RuntimeValue:
+        bits = inputs[0]
+        output = []
+        for start in range(0, len(bits), component.word_width):
+            word = 0
+            for bit in bits[start : start + component.word_width]:
+                word = (word << 1) | bit
+            output.append(word)
+        return tuple(output)
+
+    @staticmethod
+    def _evaluate_unpack_bits(component: UnpackBits, inputs: tuple[RuntimeValue, ...]) -> RuntimeValue:
+        return tuple(
+            (word >> position) & 1
+            for word in inputs[0]
+            for position in range(component.word_width - 1, -1, -1)
+        )
 
 
 # Transitional spelling for code written during the early v5 milestones.

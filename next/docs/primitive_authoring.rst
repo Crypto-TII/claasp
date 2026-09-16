@@ -45,6 +45,23 @@ not private copies of generic mathematics.
 These helpers validate widths and ordering explicitly and do not import Sage.
 The AES implementation is the current full-size example.
 
+Conversions between bits and words are graph operations rather than implicit
+evaluator behavior. ``PackBits`` and ``UnpackBits`` use an explicit MSB-first
+convention, so the same graph has unambiguous scalar and batch semantics.
+
+.. doctest::
+
+   >>> from claasp_next import Bit, Primitive, ValueType
+   >>> from claasp_next.components import PackBits, UnpackBits
+   >>> conversion = Primitive("conversion", {"bits": ValueType(Bit(), (16,))})
+   >>> conversion.add_round()
+   Round(number=0)
+   >>> words = conversion.add_component(PackBits(conversion.input("bits"), 8))
+   >>> bits = conversion.add_component(UnpackBits(words))
+   >>> conversion.set_output(bits)
+   >>> conversion.evaluate(0x1234)
+   4660
+
 Catalogue categories
 --------------------
 

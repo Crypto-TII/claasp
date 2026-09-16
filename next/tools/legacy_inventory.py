@@ -1111,6 +1111,60 @@ MIGRATION_OVERRIDES.update({
     },
 })
 
+_M10_9C3_SOURCE_DISPOSITIONS = {
+    "claasp/components/constant_component.py": (
+        "migrate", "next/src/claasp_next/components/structural/constant.py",
+        None,
+    ),
+    "claasp/components/permutation_component.py": (
+        "migrate", "next/src/claasp_next/components/structural/permutation.py",
+        None,
+    ),
+    "claasp/components/reverse_component.py": (
+        "supersede", "next/src/claasp_next/components/structural/permutation.py",
+        "Reverse is the ordinary domain-neutral permutation with reversed positions; a separate class would duplicate semantics.",
+    ),
+    "claasp/components/word_permutation_component.py": (
+        "supersede", "next/src/claasp_next/components/structural/permutation.py",
+        "Typed selections already operate on logical words, so the generic permutation carries the complete behavior without a bit-size side channel.",
+    ),
+    "claasp/components/cipher_output_component.py": (
+        "supersede", "next/src/claasp_next/graph/primitive.py; next/src/claasp_next/annotations/traces.py",
+        "A declared Primitive output is a graph boundary, not an operation with duplicated backend encodings.",
+    ),
+    "claasp/components/intermediate_output_component.py": (
+        "supersede", "next/src/claasp_next/annotations/traces.py; next/src/claasp_next/components/structural/identity.py",
+        "Every typed component output is directly traceable; Identity provides an explicit stable semantic boundary when an author needs one.",
+    ),
+}
+for _path, (_disposition, _destination, _rationale) in _M10_9C3_SOURCE_DISPOSITIONS.items():
+    MIGRATION_OVERRIDES[_path] = {
+        "v5_destination": _destination,
+        "prerequisites": [],
+        "disposition": _disposition,
+        "status": f"{_disposition}d-in-m10.9c3" if _disposition == "supersede" else "migrated-in-m10.9c3",
+        "acceptance_criterion": "Domain-neutral structural evaluation, graph boundaries, and scalar/batch behavior preserve applicable values independently of backend strings.",
+        "rationale": _rationale,
+    }
+
+_M10_9C3_TEST_DESTINATIONS = {
+    "tests/unit/components/constant_component_test.py": "next/tests/unit/test_structural_evaluation.py",
+    "tests/unit/components/permutation_component_test.py": "next/tests/unit/test_structural_evaluation.py; next/tests/unit/test_conversion_components.py",
+    "tests/unit/components/reverse_component_test.py": "next/tests/unit/test_conversion_components.py",
+    "tests/unit/components/word_permutation_component_test.py": "next/tests/unit/test_conversion_components.py",
+    "tests/unit/components/cipher_output_component_test.py": "next/tests/unit/test_typed_graph.py; next/tests/unit/test_neural_projections.py",
+    "tests/unit/components/intermediate_output_component_test.py": "next/tests/unit/test_neural_projections.py; next/tests/unit/test_structural_evaluation.py",
+}
+for _path, _destination in _M10_9C3_TEST_DESTINATIONS.items():
+    MIGRATION_OVERRIDES[_path] = {
+        "v5_destination": _destination,
+        "prerequisites": [],
+        "disposition": "supersede",
+        "status": "superseded-in-m10.9c3",
+        "acceptance_criterion": "Typed structural values, validation, graph boundaries, and trace projections preserve semantic assertions with independent scalar/batch checks.",
+        "rationale": "Exact SAT/SMT/CP/MILP strings, legacy descriptions, generated identifiers, and mutable wrapper aliases are representation details; shared v5 lowerings consume typed components instead.",
+    }
+
 
 def python_paths() -> list[Path]:
     return sorted(path for root in LEGACY_ROOTS for path in root.rglob("*.py"))

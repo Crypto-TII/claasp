@@ -9128,11 +9128,11 @@
       "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Domain-neutral structural evaluation, graph boundaries, and scalar/batch behavior preserve applicable values independently of backend strings.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
@@ -9140,20 +9140,18 @@
       "kind": "source",
       "milestone_owner": "M10.9c3",
       "path": "claasp/components/cipher_output_component.py",
-      "prerequisites": [
-        "M10.9c2"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "CipherOutput"
       ],
-      "rationale": null,
+      "rationale": "A declared Primitive output is a graph boundary, not an operation with duplicated backend encodings.",
       "responsibility": "cipher output component",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.9c3",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/graph/primitive.py; next/src/claasp_next/annotations/traces.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Domain-neutral structural evaluation, graph boundaries, and scalar/batch behavior preserve applicable values independently of backend strings.",
       "dependencies": [
         "claasp"
       ],
@@ -9165,18 +9163,16 @@
       "kind": "source",
       "milestone_owner": "M10.9c3",
       "path": "claasp/components/constant_component.py",
-      "prerequisites": [
-        "M10.9c2"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "constant_to_repr",
         "Constant"
       ],
       "rationale": null,
       "responsibility": "constant component",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9c3",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/components/structural/constant.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -9230,11 +9226,11 @@
       "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Domain-neutral structural evaluation, graph boundaries, and scalar/batch behavior preserve applicable values independently of backend strings.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
@@ -9242,18 +9238,16 @@
       "kind": "source",
       "milestone_owner": "M10.9c3",
       "path": "claasp/components/intermediate_output_component.py",
-      "prerequisites": [
-        "M10.9c2"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "update_xor_linear_constraints_for_more_than_one_bit",
         "IntermediateOutput"
       ],
-      "rationale": null,
+      "rationale": "Every typed component output is directly traceable; Identity provides an explicit stable semantic boundary when an author needs one.",
       "responsibility": "intermediate output component",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.9c3",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/annotations/traces.py; next/src/claasp_next/components/structural/identity.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -9501,7 +9495,7 @@
       "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Domain-neutral structural evaluation, graph boundaries, and scalar/batch behavior preserve applicable values independently of backend strings.",
       "dependencies": [
         "claasp"
       ],
@@ -9513,24 +9507,22 @@
       "kind": "source",
       "milestone_owner": "M10.9c3",
       "path": "claasp/components/permutation_component.py",
-      "prerequisites": [
-        "M10.9c2"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "Permutation"
       ],
       "rationale": null,
       "responsibility": "permutation component",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.9c3",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/components/structural/permutation.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Domain-neutral structural evaluation, graph boundaries, and scalar/batch behavior preserve applicable values independently of backend strings.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
@@ -9538,17 +9530,15 @@
       "kind": "source",
       "milestone_owner": "M10.9c3",
       "path": "claasp/components/reverse_component.py",
-      "prerequisites": [
-        "M10.9c2"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "Reverse"
       ],
-      "rationale": null,
+      "rationale": "Reverse is the ordinary domain-neutral permutation with reversed positions; a separate class would duplicate semantics.",
       "responsibility": "reverse component",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.9c3",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/components/structural/permutation.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -9818,11 +9808,11 @@
       "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Domain-neutral structural evaluation, graph boundaries, and scalar/batch behavior preserve applicable values independently of backend strings.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
@@ -9830,17 +9820,15 @@
       "kind": "source",
       "milestone_owner": "M10.9c3",
       "path": "claasp/components/word_permutation_component.py",
-      "prerequisites": [
-        "M10.9c2"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "WordPermutation"
       ],
-      "rationale": null,
+      "rationale": "Typed selections already operate on logical words, so the generic permutation carries the complete behavior without a bit-size side channel.",
       "responsibility": "word permutation component",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.9c3",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/components/structural/permutation.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -18629,11 +18617,11 @@
       "v5_destination": "next/tests (mapped to the owning migrated behavior)"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Typed structural values, validation, graph boundaries, and trace projections preserve semantic assertions with independent scalar/batch checks.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -18644,28 +18632,26 @@
       "kind": "test",
       "milestone_owner": "M10.9c3",
       "path": "tests/unit/components/cipher_output_component_test.py",
-      "prerequisites": [
-        "M10.9c2"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "test_cp_constraints",
         "test_cp_wordwise_deterministic_truncated_xor_differential_constraints"
       ],
-      "rationale": null,
+      "rationale": "Exact SAT/SMT/CP/MILP strings, legacy descriptions, generated identifiers, and mutable wrapper aliases are representation details; shared v5 lowerings consume typed components instead.",
       "responsibility": "cipher output component test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.9c3",
       "tests": [
         "test_cp_constraints",
         "test_cp_wordwise_deterministic_truncated_xor_differential_constraints"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_typed_graph.py; next/tests/unit/test_neural_projections.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Typed structural values, validation, graph boundaries, and trace projections preserve semantic assertions with independent scalar/batch checks.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -18679,9 +18665,7 @@
       "kind": "test",
       "milestone_owner": "M10.9c3",
       "path": "tests/unit/components/constant_component_test.py",
-      "prerequisites": [
-        "M10.9c2"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "test_cp_wordwise_deterministic_truncated_xor_differential_constraints",
         "test_cp_xor_linear_mask_propagation_constraints",
@@ -18689,9 +18673,9 @@
         "test_smt_xor_differential_propagation_constraints",
         "test_smt_xor_linear_mask_propagation_constraints"
       ],
-      "rationale": null,
+      "rationale": "Exact SAT/SMT/CP/MILP strings, legacy descriptions, generated identifiers, and mutable wrapper aliases are representation details; shared v5 lowerings consume typed components instead.",
       "responsibility": "constant component test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.9c3",
       "tests": [
         "test_cp_wordwise_deterministic_truncated_xor_differential_constraints",
         "test_cp_xor_linear_mask_propagation_constraints",
@@ -18699,7 +18683,7 @@
         "test_smt_xor_differential_propagation_constraints",
         "test_smt_xor_linear_mask_propagation_constraints"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_structural_evaluation.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -18763,12 +18747,12 @@
       "v5_destination": "next/tests (mapped to the owning migrated behavior)"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Typed structural values, validation, graph boundaries, and trace projections preserve semantic assertions with independent scalar/batch checks.",
       "dependencies": [
         "claasp",
         "sage"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -18782,9 +18766,7 @@
       "kind": "test",
       "milestone_owner": "M10.9c3",
       "path": "tests/unit/components/intermediate_output_component_test.py",
-      "prerequisites": [
-        "M10.9c2"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "DummyCpModel",
         "DummySatModel",
@@ -18797,9 +18779,9 @@
         "test_sat_xor_linear_mask_propagation_constraints",
         "test_smt_xor_linear_mask_propagation_constraints"
       ],
-      "rationale": null,
+      "rationale": "Exact SAT/SMT/CP/MILP strings, legacy descriptions, generated identifiers, and mutable wrapper aliases are representation details; shared v5 lowerings consume typed components instead.",
       "responsibility": "intermediate output component test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.9c3",
       "tests": [
         "test_cp_constraints",
         "test_cp_xor_linear_mask_propagation_constraints",
@@ -18807,7 +18789,7 @@
         "test_sat_xor_linear_mask_propagation_constraints",
         "test_smt_xor_linear_mask_propagation_constraints"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_neural_projections.py; next/tests/unit/test_structural_evaluation.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -19287,12 +19269,12 @@
       "v5_destination": "next/tests (mapped to the owning migrated behavior)"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Typed structural values, validation, graph boundaries, and trace projections preserve semantic assertions with independent scalar/batch checks.",
       "dependencies": [
         "claasp",
         "pytest"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -19333,9 +19315,7 @@
       "kind": "test",
       "milestone_owner": "M10.9c3",
       "path": "tests/unit/components/permutation_component_test.py",
-      "prerequisites": [
-        "M10.9c2"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "make_permutation_component",
         "test_constructor_builds_permutation_component",
@@ -19371,9 +19351,9 @@
         "test_milp_bitwise_deterministic_truncated_binary_constraints",
         "test_milp_wordwise_deterministic_truncated_constraints"
       ],
-      "rationale": null,
+      "rationale": "Exact SAT/SMT/CP/MILP strings, legacy descriptions, generated identifiers, and mutable wrapper aliases are representation details; shared v5 lowerings consume typed components instead.",
       "responsibility": "permutation component test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.9c3",
       "tests": [
         "test_algebraic_polynomials",
         "test_cms_constraints_match_sat_constraints",
@@ -19408,14 +19388,14 @@
         "test_validation_word_size_valid",
         "test_validation_zero_word_size"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_structural_evaluation.py; next/tests/unit/test_conversion_components.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Typed structural values, validation, graph boundaries, and trace projections preserve semantic assertions with independent scalar/batch checks.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -19428,9 +19408,7 @@
       "kind": "test",
       "milestone_owner": "M10.9c3",
       "path": "tests/unit/components/reverse_component_test.py",
-      "prerequisites": [
-        "M10.9c2"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "make_reverse_component",
         "test_constructor_builds_reverse_matrix",
@@ -19438,16 +19416,16 @@
         "test_sat_constraints",
         "test_smt_constraints"
       ],
-      "rationale": null,
+      "rationale": "Exact SAT/SMT/CP/MILP strings, legacy descriptions, generated identifiers, and mutable wrapper aliases are representation details; shared v5 lowerings consume typed components instead.",
       "responsibility": "reverse component test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.9c3",
       "tests": [
         "test_constructor_builds_reverse_matrix",
         "test_cp_constraints",
         "test_sat_constraints",
         "test_smt_constraints"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_conversion_components.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -19910,11 +19888,11 @@
       "v5_destination": "next/tests (mapped to the owning migrated behavior)"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Typed structural values, validation, graph boundaries, and trace projections preserve semantic assertions with independent scalar/batch checks.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -19929,9 +19907,7 @@
       "kind": "test",
       "milestone_owner": "M10.9c3",
       "path": "tests/unit/components/word_permutation_component_test.py",
-      "prerequisites": [
-        "M10.9c2"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "make_word_permutation_component",
         "test_constructor_builds_word_permutation_description",
@@ -19941,9 +19917,9 @@
         "test_algebraic_polynomials_word_size_greater_than_one",
         "test_milp_constraints_word_size_greater_than_one"
       ],
-      "rationale": null,
+      "rationale": "Exact SAT/SMT/CP/MILP strings, legacy descriptions, generated identifiers, and mutable wrapper aliases are representation details; shared v5 lowerings consume typed components instead.",
       "responsibility": "word permutation component test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.9c3",
       "tests": [
         "test_algebraic_polynomials_word_size_greater_than_one",
         "test_constructor_builds_word_permutation_description",
@@ -19952,7 +19928,7 @@
         "test_sat_constraints",
         "test_smt_constraints"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_conversion_components.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",

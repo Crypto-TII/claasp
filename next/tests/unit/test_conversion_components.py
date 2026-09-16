@@ -1,0 +1,60 @@
+"""Semantic checks for explicit structural domain conversions."""
+
+import pytest
+
+from claasp_next import Bit, Primitive, ScalarEvaluator, TransposedBatchEvaluator, ValueType, Word
+from claasp_next.components import PackBits, Permutation, UnpackBits
+
+
+def _conversion_primitive() -> Primitive:
+    primitive = Primitive("conversion", {"bits": ValueType(Bit(), (16,))})
+    primitive.add_round()
+    packed = primitive.add_component(PackBits(primitive.input("bits"), 8))
+    swapped = primitive.add_component(Permutation(packed, (1, 0)))
+    unpacked = primitive.add_component(UnpackBits(swapped))
+    primitive.set_output(unpacked)
+    return primitive
+
+
+def test_pack_permute_unpack_has_independent_msb_first_result():
+    primitive = _conversion_primitive()
+    bits = tuple((0x1234 >> position) & 1 for position in range(15, -1, -1))
+    expected = tuple((0x3412 >> position) & 1 for position in range(15, -1, -1))
+
+    result = ScalarEvaluator().evaluate(primitive, {"bits": bits})
+
+    assert result.value_of("pack_bits_0_0") == (0x12, 0x34)
+    assert result.value_of("permutation_0_1") == (0x34, 0x12)
+    assert result.output == expected
+
+
+def test_conversion_scalar_and_transposed_batch_agree():
+    primitive = _conversion_primitive()
+    items = tuple(
+        tuple((value >> position) & 1 for position in range(15, -1, -1))
+        for value in (0x0000, 0x1234, 0xFFFF)
+    )
+    batch = TransposedBatchEvaluator().evaluate(primitive, {"bits": items})
+    scalar = tuple(ScalarEvaluator().evaluate(primitive, {"bits": item}).output for item in items)
+    assert batch.outputs == scalar
+
+
+def test_conversion_components_reject_implicit_or_partial_reinterpretation():
+    bit_primitive = Primitive("bits", {"state": ValueType(Bit(), (7,))})
+    with pytest.raises(ValueError, match="multiple"):
+        PackBits(bit_primitive.input("state"), 4)
+    with pytest.raises(ValueError, match="Word"):
+        UnpackBits(bit_primitive.input("state"))
+
+    word_primitive = Primitive("words", {"state": ValueType(Word(8), (2,))})
+    with pytest.raises(ValueError, match="Bit"):
+        PackBits(word_primitive.input("state"), 8)
+
+
+def test_reverse_and_word_permutation_are_domain_neutral_permutations():
+    primitive = Primitive("structural", {"words": ValueType(Word(5), (4,))})
+    primitive.add_round()
+    reverse = primitive.add_component(Permutation(primitive.input("words"), (3, 2, 1, 0)))
+    reordered = primitive.add_component(Permutation(reverse, (1, 3, 0, 2)))
+    primitive.set_output(reordered)
+    assert ScalarEvaluator().evaluate(primitive, {"words": (1, 2, 3, 4)}).output == (3, 1, 4, 2)
