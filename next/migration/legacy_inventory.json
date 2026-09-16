@@ -823,29 +823,27 @@
       "v5_destination": "inapplicable: package marker reviewed with its containing module"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Exact S-box and modular-add boomerang connectivity is counted independently, including the fixed 16-bit Speck switch entry.",
       "dependencies": [],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
       "path": "claasp/cipher_modules/models/cp/minizinc_utils/mzn_bct_predicates.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "get_bct_operations"
       ],
-      "rationale": null,
+      "rationale": "The fixed four-worker MiniZinc table is an optimization-specific restricted switch predicate. v5 exposes exact BCT semantics and a scalable carry/borrow automaton instead of treating that table or its unweighted acceptance as the mathematical contract.",
       "responsibility": "mzn bct predicates",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/semantics/cryptanalysis/composed.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Equations 3--5 for continuous XOR, modular addition and rotations preserve the fixed one- and two-round Speck vectors within the legacy tolerance.",
       "dependencies": [],
       "disposition": "migrate",
       "fixed_evidence": {
@@ -854,17 +852,15 @@
       },
       "kind": "source",
       "path": "claasp/cipher_modules/models/cp/minizinc_utils/mzn_continuous_predicates.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "get_continuous_operations"
       ],
       "rationale": null,
       "responsibility": "mzn continuous predicates",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.8d",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/semantics/cryptanalysis/continuous.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -962,30 +958,28 @@
       "v5_destination": "inapplicable: package marker reviewed with its containing module"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Typed upper/switch/lower composition retains explicit weights and exact switch counts; the fixed Speck32/64-8 distinguisher is reproducibly evaluated.",
       "dependencies": [
         "claasp",
         "copy",
         "minizinc"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
       "path": "claasp/cipher_modules/models/cp/mzn_models/mzn_boomerang_model_arx_optimized.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "MznBoomerangModelARXOptimized"
       ],
-      "rationale": null,
+      "rationale": "Graph splitting, generated filenames, mutable model concatenation and solver-output parsing are representation details. Exact switch semantics and separately labelled seeded empirical evidence replace an optimizer-specific builder; an observed rate is never presented as a proof probability.",
       "responsibility": "mzn boomerang model arx optimized",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/semantics/cryptanalysis/composed.py; next/src/claasp_next/analysis/boomerang.py"
     },
     {
       "acceptance_criterion": "Typed analysis constraints compile graph execution and projections; MiniZinc independently reproduces the full Speck-22 fixed output A86842F2.",
@@ -1081,7 +1075,7 @@
       "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Continuous propagation and fixed-mask correlation retain numeric provenance and tolerance while never claiming feasibility, optimality or exact probability.",
       "dependencies": [
         "claasp",
         "datetime",
@@ -1089,24 +1083,22 @@
         "minizinc",
         "time"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
       "path": "claasp/cipher_modules/models/cp/mzn_models/mzn_differential_linear_continuous_model.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "MznDifferentialLinearContinuousModel"
       ],
-      "rationale": null,
+      "rationale": "The legacy floating SCIP search uses a piecewise approximation and labels numerical candidates SATISFIED. v5 preserves the underlying heuristic equations and fixed evidence but deliberately removes proof-shaped status from continuous results.",
       "responsibility": "mzn differential linear continuous model",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/semantics/cryptanalysis/continuous.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -10576,13 +10568,13 @@
       "v5_destination": "next/tests/unit/test_sbox_activity.py; next/tests/integration/test_minizinc_integration.py; next/tests/integration/test_speck_trail_enumeration.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "The Speck32/64-8 differences 28000010 and 8000840A retain a seeded positive empirical rate; exact BCT and modular-add switch counts are independently checked.",
       "dependencies": [
         "claasp",
         "numpy",
         "os"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -10592,9 +10584,7 @@
       },
       "kind": "test",
       "path": "tests/unit/cipher_modules/models/cp/mzn_models/mzn_boomerang_model_arx_optimized_test.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "speck32_64_rol",
         "speck32_64_ror",
@@ -10607,14 +10597,14 @@
         "test_build_boomerang_model_speck_single_key",
         "test_build_boomerang_model_chacha"
       ],
-      "rationale": null,
+      "rationale": "The legacy Speck assertion depends on random os.urandom samples and does not fix the solver-selected boundaries; the ChaCha case only checks temporary-file creation and self-consistent parsing. v5 retains the scientific distinguisher as deterministic empirical evidence and replaces construction smoke checks with typed composition tests.",
       "responsibility": "mzn boomerang model arx optimized test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [
         "test_build_boomerang_model_chacha",
         "test_build_boomerang_model_speck_single_key"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_composed_trails.py"
     },
     {
       "acceptance_criterion": "Complete full-round execution is solved and independently validated rather than merely constructed.",
@@ -10731,12 +10721,12 @@
       "v5_destination": "next/tests (mapped to the owning migrated behavior)"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "All fixed component, one-/two-round and mask-correlation values are preserved with the stated tolerances and explicitly heuristic result type.",
       "dependencies": [
         "claasp",
         "minizinc"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -10753,9 +10743,7 @@
       },
       "kind": "test",
       "path": "tests/unit/cipher_modules/models/cp/mzn_models/mzn_differential_linear_continuous_model_test.py",
-      "prerequisites": [
-        "owning migration milestone"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "test_cp_modadd_test_vectors",
         "test_cp_xor_test_vectors",
@@ -10767,9 +10755,9 @@
         "test_find_lowest_continuous_propagation",
         "test_find_lowest_continuous_propagation_with_fixed_masks"
       ],
-      "rationale": null,
+      "rationale": "The unconstrained lowest-correlation test asserts only that SCIP returned an in-range nonzero float and supplies no fixed oracle. Typed dependency-free equations preserve every fixed literal while removing solver and generated-variable incidental contracts.",
       "responsibility": "mzn differential linear continuous model test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.8d",
       "tests": [
         "test_cp_modadd_test_vectors",
         "test_cp_rotate_test_vectors",
@@ -10781,7 +10769,7 @@
         "test_generic_cp_full_round_pipeline",
         "test_generic_cp_modadd_test_vectors"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_continuous_heuristics.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",

@@ -31,6 +31,42 @@ CATEGORY_BY_DIRECTORY = {
 }
 
 MIGRATION_OVERRIDES = {
+    "claasp/cipher_modules/models/cp/minizinc_utils/mzn_bct_predicates.py": {
+        "v5_destination": "next/src/claasp_next/semantics/cryptanalysis/composed.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Exact S-box and modular-add boomerang connectivity is counted independently, including the fixed 16-bit Speck switch entry.",
+        "rationale": "The fixed four-worker MiniZinc table is an optimization-specific restricted switch predicate. v5 exposes exact BCT semantics and a scalable carry/borrow automaton instead of treating that table or its unweighted acceptance as the mathematical contract.",
+    },
+    "claasp/cipher_modules/models/cp/mzn_models/mzn_boomerang_model_arx_optimized.py": {
+        "v5_destination": "next/src/claasp_next/semantics/cryptanalysis/composed.py; next/src/claasp_next/analysis/boomerang.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Typed upper/switch/lower composition retains explicit weights and exact switch counts; the fixed Speck32/64-8 distinguisher is reproducibly evaluated.",
+        "rationale": "Graph splitting, generated filenames, mutable model concatenation and solver-output parsing are representation details. Exact switch semantics and separately labelled seeded empirical evidence replace an optimizer-specific builder; an observed rate is never presented as a proof probability.",
+    },
+    "tests/unit/cipher_modules/models/cp/mzn_models/mzn_boomerang_model_arx_optimized_test.py": {
+        "v5_destination": "next/tests/unit/test_composed_trails.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "The Speck32/64-8 differences 28000010 and 8000840A retain a seeded positive empirical rate; exact BCT and modular-add switch counts are independently checked.",
+        "rationale": "The legacy Speck assertion depends on random os.urandom samples and does not fix the solver-selected boundaries; the ChaCha case only checks temporary-file creation and self-consistent parsing. v5 retains the scientific distinguisher as deterministic empirical evidence and replaces construction smoke checks with typed composition tests.",
+    },
+    "claasp/cipher_modules/models/cp/minizinc_utils/mzn_continuous_predicates.py": {
+        "v5_destination": "next/src/claasp_next/semantics/cryptanalysis/continuous.py",
+        "prerequisites": [], "disposition": "migrate", "status": "migrated-in-m10.8d",
+        "acceptance_criterion": "Equations 3--5 for continuous XOR, modular addition and rotations preserve the fixed one- and two-round Speck vectors within the legacy tolerance.",
+        "rationale": None,
+    },
+    "claasp/cipher_modules/models/cp/mzn_models/mzn_differential_linear_continuous_model.py": {
+        "v5_destination": "next/src/claasp_next/semantics/cryptanalysis/continuous.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "Continuous propagation and fixed-mask correlation retain numeric provenance and tolerance while never claiming feasibility, optimality or exact probability.",
+        "rationale": "The legacy floating SCIP search uses a piecewise approximation and labels numerical candidates SATISFIED. v5 preserves the underlying heuristic equations and fixed evidence but deliberately removes proof-shaped status from continuous results.",
+    },
+    "tests/unit/cipher_modules/models/cp/mzn_models/mzn_differential_linear_continuous_model_test.py": {
+        "v5_destination": "next/tests/unit/test_continuous_heuristics.py",
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
+        "acceptance_criterion": "All fixed component, one-/two-round and mask-correlation values are preserved with the stated tolerances and explicitly heuristic result type.",
+        "rationale": "The unconstrained lowest-correlation test asserts only that SCIP returned an in-range nonzero float and supplies no fixed oracle. Typed dependency-free equations preserve every fixed literal while removing solver and generated-variable incidental contracts.",
+    },
     "claasp/cipher_modules/models/milp/utils/generate_inequalities_for_and_operation_2_input_bits.py": {
         "v5_destination": "next/src/claasp_next/semantics/cryptanalysis/bitwise.py; next/src/claasp_next/representations/constraints/milp/relations.py",
         "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.8d",
