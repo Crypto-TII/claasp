@@ -1,6 +1,9 @@
 """Sage-independent typed core for the next major CLAASP release."""
 
-from claasp_next.graph import Primitive, Component, Port, Round, Selection, ValueType
+from claasp_next.graph import (
+    CompositeBuilder, CompositeDefinition, CompositeInstance, Primitive, Component,
+    Port, Round, Selection, ValueType,
+)
 from claasp_next.domains import BinaryExtensionField, Bit, PrimeField, Word
 from claasp_next.representations.execution import (
     BatchEvaluationResult,
@@ -20,6 +23,9 @@ __all__ = [
     "BatchEvaluationResult",
     "BatchEvaluator",
     "BatchExecutionDriver",
+    "CompositeBuilder",
+    "CompositeDefinition",
+    "CompositeInstance",
     "Primitive",
     "Component",
     "EvaluationResult",

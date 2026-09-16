@@ -11,6 +11,7 @@ class Round:
 
     number: int
     _components: list[Component] = field(default_factory=list, init=False, repr=False)
+    _scopes: list[object] = field(default_factory=list, init=False, repr=False)
 
     def __post_init__(self) -> None:
         if not isinstance(self.number, int) or isinstance(self.number, bool):
@@ -24,3 +25,12 @@ class Round:
 
     def _append(self, component: Component) -> None:
         self._components.append(component)
+
+    @property
+    def scopes(self) -> tuple[object, ...]:
+        """Composite scopes instantiated in this round, including nested scopes."""
+
+        return tuple(self._scopes)
+
+    def _append_scope(self, scope: object) -> None:
+        self._scopes.append(scope)

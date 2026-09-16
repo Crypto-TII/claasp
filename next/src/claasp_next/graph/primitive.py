@@ -38,6 +38,7 @@ class Primitive:
         self._ports = dict(ports)
         self._rounds: list[Round] = []
         self._components: dict[str, Component] = {}
+        self._scopes: dict[str, object] = {}
         self._output: Selection | None = None
 
     @property
@@ -57,6 +58,12 @@ class Primitive:
         return tuple(self._components.values())
 
     @property
+    def scopes(self) -> tuple[object, ...]:
+        """Composite instances in deterministic path order."""
+
+        return tuple(self._scopes.values())
+
+    @property
     def output(self) -> Selection | None:
         return self._output
 
@@ -71,6 +78,20 @@ class Primitive:
             return self._ports[owner_id]
         except KeyError as error:
             raise KeyError(f"graph source {owner_id!r} does not exist") from error
+
+    def component(self, component_id: str) -> Component:
+        try:
+            return self._components[component_id]
+        except KeyError as error:
+            raise KeyError(f"component {component_id!r} does not exist") from error
+
+    def scope(self, path: str):
+        """Return a composite instance by its deterministic hierarchical path."""
+
+        try:
+            return self._scopes[path]
+        except KeyError as error:
+            raise KeyError(f"composite scope {path!r} does not exist") from error
 
     def add_round(self) -> Round:
         primitive_round = Round(len(self._rounds))
@@ -111,6 +132,99 @@ class Primitive:
         self._components[component.component_id] = component
         self._ports[component.component_id] = component.output
         return component.output
+
+    def add_composite(
+        self,
+        definition,
+        bindings: Mapping[str, PortLike],
+        *,
+        scope_id: str | None = None,
+        primitive_round: Round | None = None,
+    ):
+        """Instantiate a reusable definition and lower its leaves into this graph."""
+
+        from claasp_next.graph.composite import CompositeDefinition, CompositeInstance
+
+        if not isinstance(definition, CompositeDefinition):
+            raise TypeError("definition must be a CompositeDefinition")
+        if not self._rounds:
+            raise ValueError("add a round before adding a composite")
+        target_round = self._rounds[-1] if primitive_round is None else primitive_round
+        if target_round is not self._rounds[-1]:
+            raise ValueError("composites may only be appended to the current round")
+        if not isinstance(bindings, Mapping):
+            raise TypeError("bindings must map composite input names to graph ports")
+        expected = set(definition.inputs)
+        if set(bindings) != expected:
+            missing = sorted(expected - set(bindings))
+            unexpected = sorted(set(bindings) - expected)
+            raise ValueError(f"composite bindings do not match: missing={missing}, unexpected={unexpected}")
+
+        normalized: dict[str, Selection] = {}
+        for name, value_type in definition.input_types:
+            selection = as_selection(bindings[name])
+            actual = self.port(selection.source.owner_id)
+            if actual != selection.source:
+                raise ValueError(f"binding {name!r} does not match its graph port type")
+            if selection.value_type != value_type:
+                raise ValueError(
+                    f"binding {name!r} has type {selection.value_type!r}, expected {value_type!r}"
+                )
+            normalized[name] = selection
+
+        if scope_id is None:
+            kind = re.sub(r"(?<!^)(?=[A-Z])", "_", definition.name).lower()
+            scope_id = f"{kind}_{target_round.number}_{len(target_round.scopes)}"
+        if not isinstance(scope_id, str) or not scope_id or "/" in scope_id:
+            raise ValueError("scope_id must be a non-empty local path segment")
+        if scope_id in self._scopes or scope_id in self._ports:
+            raise ValueError(f"graph scope {scope_id!r} already exists")
+
+        remapped: dict[str, Selection] = dict(normalized)
+
+        def remap(selection: Selection) -> Selection:
+            source = remapped[selection.source.owner_id]
+            return source[selection.positions]
+
+        component_ids: list[str] = []
+        for components in definition.rounds:
+            for template_component in components:
+                component = copy(template_component)
+                local_id = template_component.component_id
+                if local_id is None:
+                    raise ValueError("composite definitions must contain assigned component identifiers")
+                component_id = f"{scope_id}/{local_id}"
+                object.__setattr__(component, "component_id", component_id)
+                object.__setattr__(component, "inputs", tuple(remap(item) for item in component.inputs))
+                output = self.add_component(component, primitive_round=target_round)
+                remapped[local_id] = output.select_all()
+                component_ids.append(component_id)
+
+        outputs = tuple((name, remap(selection)) for name, selection in definition.outputs)
+        instance = CompositeInstance(
+            scope_id,
+            definition,
+            tuple(normalized.items()),
+            outputs,
+            tuple(component_ids),
+            self,
+        )
+        self._scopes[scope_id] = instance
+        target_round._append_scope(instance)
+
+        for template in definition.nested_scopes:
+            nested_path = f"{scope_id}/{template.path}"
+            nested = CompositeInstance(
+                nested_path,
+                template.definition,
+                tuple((name, remap(selection)) for name, selection in template.input_bindings),
+                tuple((name, remap(selection)) for name, selection in template.output_bindings),
+                tuple(f"{scope_id}/{component_id}" for component_id in template.component_ids),
+                self,
+            )
+            self._scopes[nested_path] = nested
+            target_round._append_scope(nested)
+        return instance
 
     def set_output(self, output: PortLike) -> None:
         """Declare the ordered logical units returned by this primitive."""
