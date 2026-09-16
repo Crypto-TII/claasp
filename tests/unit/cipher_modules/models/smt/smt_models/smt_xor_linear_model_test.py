@@ -38,7 +38,7 @@ def test_find_one_xor_linear_trail():
 def test_find_one_xor_linear_trail_with_fixed_weight():
     speck = SpeckBlockCipher(number_of_rounds=3)
     smt = SmtXorLinearModel(speck)
-    result = smt.find_one_xor_linear_trail_with_fixed_weight(7)
+    result = smt.find_one_xor_linear_trail(lower_bound=7, upper_bound=7)
     assert result["total_weight"] == 7.0
 
 

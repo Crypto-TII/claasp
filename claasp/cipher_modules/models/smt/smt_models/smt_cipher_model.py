@@ -45,14 +45,8 @@ class SmtCipherModel(SmtModel):
 
         INPUT:
 
-        - ``fixed_variables`` -- **list** (default: `[]`); dictionaries contain name, bit_size, value (as integer) for
-          the variables that need to be fixed to a certain value
-          | {
-          |     'component_id': 'plaintext',
-          |     'constraint_type': 'equal'/'not_equal'
-          |     'bit_positions': [0, 1, 2, 3],
-          |     'binary_value': '[0, 0, 0, 0]'
-          | }
+        - ``fixed_variables`` -- **list** (default: `[]`); the variables to be fixed in standard format, as
+          returned by :py:meth:`~cipher_modules.models.utils.set_fixed_variables`
 
         EXAMPLES::
 
@@ -102,12 +96,10 @@ class SmtCipherModel(SmtModel):
 
         INPUT:
 
-        - ``fixed_values`` -- **list** (default: `[]`); can be created using ``set_fixed_variables`` method
-        - ``solver_name`` -- **string** (default: `z3`); the name of the solver
-
-        .. SEEALSO::
-
-            :ref:`smt-solvers`
+        - ``fixed_values`` -- **list** (default: `[]`); the variables to be fixed in standard format, as returned
+          by :py:meth:`~cipher_modules.models.utils.set_fixed_variables`
+        - ``solver_name`` -- **string** (default: `Z3_EXT`); the name of the solver, one of those listed in
+          :ref:`smt-solvers`
 
         EXAMPLES::
 

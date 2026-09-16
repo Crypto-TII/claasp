@@ -46,16 +46,8 @@ class SmtXorDifferentialModel(SmtModel):
 
         - ``weight`` -- **integer** (default: `-1`); if set to non-negative integer, fixes the xor trail search to a
           specific weight
-        - ``fixed_variables`` -- **list** (default: `[]`); dictionaries contain name, bit_size, value (as integer) for
-          the variables that need to be fixed to a certain value
-          | [
-          |     {
-          |         'component_id': 'plaintext',
-          |         'constraint_type': 'equal'/'not_equal'
-          |         'bit_positions': [0, 1, 2, 3],
-          |         'binary_value': [0, 0, 0, 0]
-          |     }
-          | ]
+        - ``fixed_variables`` -- **list** (default: `[]`); the variables to be fixed in standard format, as
+          returned by :py:meth:`~cipher_modules.models.utils.set_fixed_variables`
 
         EXAMPLES::
 
@@ -110,18 +102,17 @@ class SmtXorDifferentialModel(SmtModel):
         self, fixed_weight, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT
     ):
         """
-        Return a list of solutions  containing all the XOR differential trails having the ``fixed_weight`` weight.
+        Return a list of solutions containing all the XOR differential trails having the ``fixed_weight`` weight.
+
         By default, the search is set in the single-key setting.
 
         INPUT:
 
         - ``fixed_weight`` -- **integer**; the weight to be fixed
-        - ``fixed_values`` -- **list** (default: `[]`); they can be created using ``set_fixed_variables`` in method
-        - ``solver_name`` -- **string** (default: `Z3_EXT`); the name of the solver
-
-        .. SEEALSO::
-
-            :ref:`smt-solvers`
+        - ``fixed_values`` -- **list** (default: `[]`); the variables to be fixed in standard format, as returned
+          by :py:meth:`~cipher_modules.models.utils.set_fixed_variables`
+        - ``solver_name`` -- **string** (default: `Z3_EXT`); the name of the solver, one of those listed in
+          :ref:`smt-solvers`
 
         EXAMPLES::
 
@@ -195,8 +186,8 @@ class SmtXorDifferentialModel(SmtModel):
     ):
         """
         Return a list of solutions.
-        By default, the search is set in the single-key setting.
 
+        By default, the search is set in the single-key setting.
         The list contains all the XOR differential trails having the weight lying in the interval
         ``[min_weight, max_weight]``.
 
@@ -204,12 +195,10 @@ class SmtXorDifferentialModel(SmtModel):
 
         - ``max_weight`` -- **integer**; the maximum weight at which the search stops
         - ``min_weight`` -- **integer** (default: 0); the minimum weight from which to start the search
-        - ``fixed_values`` -- **list** (default: `[]`); they can be created using ``set_fixed_variables`` method
-        - ``solver_name`` -- **string** (default: `Z3_EXT`); the name of the solver
-
-        .. SEEALSO::
-
-            :ref:`smt-solvers`
+        - ``fixed_values`` -- **list** (default: `[]`); the variables to be fixed in standard format, as returned
+          by :py:meth:`~cipher_modules.models.utils.set_fixed_variables`
+        - ``solver_name`` -- **string** (default: `Z3_EXT`); the name of the solver, one of those listed in
+          :ref:`smt-solvers`
 
         EXAMPLES::
 
@@ -251,6 +240,7 @@ class SmtXorDifferentialModel(SmtModel):
     def find_lowest_weight_xor_differential_trail(self, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT):
         """
         Return the solution representing a trail with the lowest weight.
+
         By default, the search is set in the single-key setting.
 
         .. NOTE::
@@ -260,12 +250,10 @@ class SmtXorDifferentialModel(SmtModel):
 
         INPUT:
 
-        - ``fixed_values`` -- **list** (default: `[]`); they can be created using ``set_fixed_variables`` method
-        - ``solver_name`` -- **string** (default: `Z3_EXT`); the name of the solver
-
-        .. SEEALSO::
-
-            :ref:`smt-solvers`
+        - ``fixed_values`` -- **list** (default: `[]`); the variables to be fixed in standard format, as returned
+          by :py:meth:`~cipher_modules.models.utils.set_fixed_variables`
+        - ``solver_name`` -- **string** (default: `Z3_EXT`); the name of the solver, one of those listed in
+          :ref:`smt-solvers`
 
         EXAMPLES::
 
@@ -316,76 +304,30 @@ class SmtXorDifferentialModel(SmtModel):
 
         return solution
 
-    def find_one_xor_differential_trail(self, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT):
-        """
-        Return the solution representing a XOR differential trail.
-        By default, the search is set in the single-key setting.
-        The solution probability is almost always lower than the one of a random guess of the longest input.
-
-        INPUT:
-
-        - ``fixed_values`` -- **list** (default: `[]`); can be created using ``set_fixed_variables`` method
-        - ``solver_name`` -- **string** (default: `Z3_EXT`); the name of the solver
-
-        .. SEEALSO::
-
-            :ref:`smt-solvers`
-
-        EXAMPLES::
-
-            # single-key setting
-            sage: from claasp.cipher_modules.models.smt.smt_models.smt_xor_differential_model import SmtXorDifferentialModel
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: speck = SpeckBlockCipher(number_of_rounds=5)
-            sage: smt = SmtXorDifferentialModel(speck)
-            sage: smt.find_one_xor_differential_trail() # random
-            {'cipher_id': 'speck_p32_k64_o32_r5',
-             'model_type': 'xor_differential',
-             'solver_name': 'Z3_EXT',
-             'solving_time_seconds': 0.05,
-             'memory_megabytes': 19.28,
-             ...
-             'total_weight': 93,
-             'building_time_seconds': 0.002946615219116211}
-
-             # related-key setting
-            sage: from claasp.cipher_modules.models.smt.smt_models.smt_xor_differential_model import SmtXorDifferentialModel
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.models.utils import set_fixed_variables
-            sage: speck = SpeckBlockCipher(number_of_rounds=5)
-            sage: smt = SmtXorDifferentialModel(speck)
-            sage: key = set_fixed_variables(
-            ....:     component_id='key',
-            ....:     constraint_type='not_equal',
-            ....:     bit_positions=range(64),
-            ....:     bit_values=[0]*64)
-            sage: smt.find_one_xor_differential_trail(fixed_values=[key]) # random
-        """
-        start_building_time = time.time()
-        self.build_xor_differential_trail_model(fixed_variables=fixed_values)
-        end_building_time = time.time()
-        solution = self.solve(XOR_DIFFERENTIAL, solver_name=solver_name)
-        solution["building_time_seconds"] = end_building_time - start_building_time
-        solution["test_name"] = "find_one_xor_differential_trail"
-
-        return solution
-
-    def find_one_xor_differential_trail_with_fixed_weight(
-        self, fixed_weight, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT
+    def find_one_xor_differential_trail(
+        self, fixed_values=[], lower_bound=None, upper_bound=None, solver_name=solvers.SOLVER_DEFAULT
     ):
         """
-        Return the solution representing a XOR differential trail whose probability is ``2 ** fixed_weight``.
-        By default, the search is set in the single-key setting.
+        Return the solution representing a XOR differential trail.
+
+        The weight of the trail found lies in ``[lower_bound, upper_bound]``. When ``lower_bound`` is `None`, no
+        lower bound is enforced. When ``upper_bound`` is `None`, it defaults to the minimum of the cipher input
+        sizes. With the parallel counter the weight is always fixed to exactly ``upper_bound``, so a ``lower_bound``,
+        when given, must then be equal to ``upper_bound``.
+
+        By default, the search is set in the single-key setting. The solution probability is almost always lower
+        than the one of a random guess of the longest input.
 
         INPUT:
 
-        - ``fixed_weight`` -- **integer**; the weight to be fixed
-        - ``fixed_values`` -- **list** (default: `[]`); can be created using ``set_fixed_variables`` method
-        - ``solver_name`` -- **string** (default: `cryptominismt`); the name of the solver
-
-        .. SEEALSO::
-
-            :ref:`smt-solvers`
+        - ``fixed_values`` -- **list** (default: `[]`); the variables to be fixed in standard format, as returned
+          by :py:meth:`~cipher_modules.models.utils.set_fixed_variables`
+        - ``lower_bound`` -- **integer** (default: `None`); the lower bound for the weight. If `None`, no lower
+          bound is enforced
+        - ``upper_bound`` -- **integer** (default: `None`); the upper bound for the weight. If `None`, it defaults
+          to the minimum of the cipher input sizes
+        - ``solver_name`` -- **string** (default: `Z3_EXT`); the name of the solver, one of those listed in
+          :ref:`smt-solvers`
 
         EXAMPLES::
 
@@ -394,10 +336,11 @@ class SmtXorDifferentialModel(SmtModel):
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: speck = SpeckBlockCipher(number_of_rounds=3)
             sage: smt = SmtXorDifferentialModel(speck)
-            sage: trail = smt.find_one_xor_differential_trail_with_fixed_weight(3)
+            sage: trail = smt.find_one_xor_differential_trail(lower_bound=3, upper_bound=3)
             sage: trail['total_weight']
             3.0
 
+            # related-key setting
             sage: from claasp.cipher_modules.models.smt.smt_models.smt_xor_differential_model import SmtXorDifferentialModel
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: from claasp.cipher_modules.models.utils import set_fixed_variables
@@ -408,22 +351,50 @@ class SmtXorDifferentialModel(SmtModel):
             ....:     constraint_type='not_equal',
             ....:     bit_positions=range(64),
             ....:     bit_values=[0]*64)
-            sage: trail = smt.find_one_xor_differential_trail_with_fixed_weight(3, fixed_values=[key])
+            sage: trail = smt.find_one_xor_differential_trail(fixed_values=[key], lower_bound=3, upper_bound=3)
             sage: trail['total_weight']
             3.0
-
         """
+        if upper_bound is None:
+            upper_bound = min(self._cipher.inputs_bit_size)
+        if lower_bound is not None and lower_bound > upper_bound:
+            raise ValueError("lower_bound must be <= upper_bound")
+        if self._counter == self._parallel_counter and lower_bound is not None and lower_bound != upper_bound:
+            raise ValueError("No search allowed using different bounds and parallel counter.")
+
         start_building_time = time.time()
-        self.build_xor_differential_trail_model(weight=fixed_weight, fixed_variables=fixed_values)
-        if self._counter == self._sequential_counter:
-            self._sequential_counter_greater_or_equal(fixed_weight, "dummy_hw_1")
+        self.build_xor_differential_trail_model(weight=upper_bound, fixed_variables=fixed_values)
+        if lower_bound is not None and self._counter == self._sequential_counter:
+            self._sequential_counter_greater_or_equal(lower_bound, "dummy_hw_1")
         end_building_time = time.time()
         solution = self.solve(XOR_DIFFERENTIAL, solver_name=solver_name)
         solution["building_time_seconds"] = end_building_time - start_building_time
-        solution["test_name"] = "find_one_xor_differential_trail_with_fixed_weight"
+        solution["test_name"] = "find_one_xor_differential_trail"
+
         return solution
 
     def get_operands(self, solution):
+        """
+        Return the SMT-LIB literals negating every cipher-input bit of ``solution``.
+
+        Used by :py:meth:`~SmtXorDifferentialModel.find_all_xor_differential_trails_with_fixed_weight` to start
+        building the clause that excludes an already-found trail before searching for the next one.
+
+        INPUT:
+
+        - ``solution`` -- **dictionary**; a trail found with
+          :py:meth:`~SmtXorDifferentialModel.find_all_xor_differential_trails_with_fixed_weight`
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: from claasp.cipher_modules.models.smt.smt_models.smt_xor_differential_model import SmtXorDifferentialModel
+            sage: speck = SpeckBlockCipher(number_of_rounds=3)
+            sage: smt = SmtXorDifferentialModel(speck)
+            sage: trail = smt.find_one_xor_differential_trail()
+            sage: len(smt.get_operands(trail)) == sum(speck.inputs_bit_size)
+            True
+        """
         operands = []
         for input_, bit_len in zip(self._cipher.inputs, self._cipher.inputs_bit_size):
             value_to_avoid = int(solution["components_values"][input_]["value"], base=16)
@@ -436,6 +407,16 @@ class SmtXorDifferentialModel(SmtModel):
         return operands
 
     def _parse_solver_output(self, variable2value):
+        """
+        Return the per-component solution values and the total weight from a raw solver assignment.
+
+        Used by :py:meth:`~SmtModel.solve` to turn the solver's variable assignment into the
+        ``components_values``/``total_weight`` pair stored in the returned solution dictionary.
+
+        INPUT:
+
+        - ``variable2value`` -- **dict**; maps every SMT variable name to its `0`/`1` value found by the solver
+        """
         out_suffix = ""
         components_solutions = self._get_cipher_inputs_components_solutions(out_suffix, variable2value)
         total_weight = 0
