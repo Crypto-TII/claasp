@@ -48,6 +48,10 @@ OFFICIAL_NAME_OVERRIDES = {
     "claasp/ciphers/block_ciphers/chilow_block_cipher.py": "Chilow",
     "claasp/ciphers/permutations/subterranean_permutation.py": "Subterranean",
     "claasp/ciphers/stream_ciphers/chacha_stream_cipher.py": "ChaChaKeystreamBlock",
+    "claasp/ciphers/stream_ciphers/bluetooth_stream_cipher_e0.py": "BluetoothE0",
+}
+PROPOSED_MODULE_STEM_OVERRIDES = {
+    "claasp/ciphers/stream_ciphers/bluetooth_stream_cipher_e0.py": "bluetooth_e0",
 }
 
 M10_9C_PATHS_BY_SLICE = {
@@ -168,7 +172,7 @@ M10_9D_COMPLETION_SLICES = (
 )
 M10_9D_COMPLETED_SLICES = {
     "M10.9d1", "M10.9d2", "M10.9d4", "M10.9d5", "M10.9d6",
-    "M10.9d7",
+    "M10.9d7", "M10.9d8",
 }
 M10_9D_TEST_DESTINATIONS = {
     "M10.9d1": "next/tests/unit/test_chacha.py",
@@ -188,6 +192,10 @@ M10_9D_TEST_DESTINATIONS = {
     "M10.9d7": (
         "next/tests/unit/test_permutation_catalogue.py; "
         "next/tests/integration/test_permutation_catalogue_evidence.py"
+    ),
+    "M10.9d8": (
+        "next/tests/unit/test_function_catalogue.py; "
+        "next/tests/integration/test_function_catalogue_evidence.py"
     ),
 }
 
@@ -1496,10 +1504,13 @@ def _catalogue_metadata(relative: Path, entries: list[str], tree: ast.Module) ->
     high_level_parent = directory if directory in {"hash_functions", "mac", "stream_ciphers"} else None
     category = "outside_scope" if path in CATALOGUE_OUT_OF_SCOPE else _fixed_length_category(directory, roles)
     destination_category = category if category != "outside_scope" else "support"
+    proposed_stem = PROPOSED_MODULE_STEM_OVERRIDES.get(
+        path, _proposed_module_stem(relative.stem)
+    )
     return {
         "official_name": official_name,
         "primitive_category": category,
-        "proposed_module": f"claasp_next.primitives.{destination_category}.{_proposed_module_stem(relative.stem)}",
+        "proposed_module": f"claasp_next.primitives.{destination_category}.{proposed_stem}",
         "proposed_class": official_name,
         "higher_level_parent": high_level_parent,
         "input_roles": roles,

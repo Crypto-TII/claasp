@@ -12,10 +12,11 @@ from importlib.resources import files
 
 from claasp_next.components import (
     BitVectorSBox, BitwiseAnd, BitwiseNot, BitwiseOr, Concatenate, Constant, Identity,
-    LinearMap, ModularAdd, ModularMultiply, ModularSubtract, PackBits,
+    FeedbackRegister, FeedbackRegisterSpec, FeedbackTerm, LinearMap,
+    ModularAdd, ModularMultiply, ModularSubtract, PackBits,
     Permutation, Rotate, Shift, UnpackBits, VariableRotate, Xor,
 )
-from claasp_next.domains import Bit
+from claasp_next.domains import BinaryExtensionField, Bit
 from claasp_next.encoding import bits_from_int
 from claasp_next.graph import Primitive, ValueType, as_selection
 
@@ -54,7 +55,11 @@ def _word_operation(
     elif operation == "NOT":
         output = primitive.add_component(BitwiseNot(words[0], component_id=component_id))
     elif operation == "MODADD":
-        output = primitive.add_component(ModularAdd(words, component_id=component_id))
+        modulus = description[2] if len(description) > 2 else None
+        output = primitive.add_component(ModularAdd(
+            words, component_id=component_id,
+            modulus=None if modulus is None else int(modulus),
+        ))
     elif operation == "MODSUB":
         output = primitive.add_component(ModularSubtract(words, component_id=component_id))
     elif operation == "MODMUL":
@@ -81,12 +86,61 @@ def _word_operation(
 def _feedback_register(primitive: Primitive, source, description, component_id: str):
     registers = description[0]
     bits_inside_word = int(description[1])
-    if bits_inside_word != 1:
-        raise ValueError("word-oriented catalogue feedback registers require an explicit migration")
     clocks = int(description[2]) if len(description) > 2 else 1
+    if bits_inside_word != 1:
+        # Sage's historical GF(2^n) constructor selected these deterministic
+        # Conway-compatible polynomial-basis moduli for catalogue word FSRs.
+        sage_moduli = {8: 0x11D, 16: 0x1002D, 32: 0x100008299}
+        try:
+            field = BinaryExtensionField(bits_inside_word, sage_moduli[bits_inside_word])
+        except KeyError as error:
+            raise ValueError(
+                f"unsupported catalogue feedback-register word width {bits_inside_word}"
+            ) from error
+        words = primitive.add_component(PackBits(
+            source, bits_inside_word, output_domain=field,
+            component_id=f"{component_id}_pack",
+        ))
+        specifications = tuple(
+            FeedbackRegisterSpec(
+                length=int(length),
+                feedback=tuple(
+                    FeedbackTerm(tuple(term[1]), int(term[0])) for term in feedback
+                ),
+                clock=(
+                    None if not clock_terms or not clock_terms[0]
+                    else tuple(
+                        FeedbackTerm(tuple(term[1]), int(term[0]))
+                        for term in clock_terms[0]
+                    )
+                ),
+            )
+            for length, feedback, *clock_terms in registers
+        )
+        updated = primitive.add_component(FeedbackRegister(
+            words, specifications, clocks=clocks, component_id=component_id
+        ))
+        return primitive.add_component(UnpackBits(
+            updated, component_id=f"{component_id}_unpack"
+        ))
+    specifications = tuple(
+        FeedbackRegisterSpec(
+            length=int(length),
+            feedback=tuple(FeedbackTerm(tuple(term)) for term in feedback),
+            clock=(
+                None if not clock_terms or not clock_terms[0]
+                else tuple(FeedbackTerm(tuple(term)) for term in clock_terms[0])
+            ),
+        )
+        for length, feedback, *clock_terms in registers
+    )
     state = source
     register_size = sum(register[0] for register in registers)
     external = source[register_size:] if source.value_type.unit_count > register_size else None
+    if external is None:
+        return primitive.add_component(FeedbackRegister(
+            source, specifications, clocks=clocks, component_id=component_id
+        ))
     for clock in range(clocks):
         outputs = []
         start = 0
@@ -109,11 +163,8 @@ def _feedback_register(primitive: Primitive, source, description, component_id: 
                 feedback_bit = primitive.add_component(UnpackBits(primitive.add_component(Xor(
                     packed, component_id=f"{component_id}_feedback_{clock}_{start}"
                 ))))
-            # Catalogue FSRs in this slice are unconditionally clocked. Keep the
-            # validation explicit so a later conditional register cannot silently
-            # acquire the wrong semantics.
             if clock_terms and clock_terms[0]:
-                raise ValueError("conditional catalogue feedback registers require an explicit migration")
+                raise ValueError("conditional registers with external inputs are unsupported")
             outputs.extend((state[position] for position in range(start + 1, start + length)))
             outputs.append(feedback_bit)
             start += length
@@ -170,7 +221,29 @@ class CatalogueGraphPrimitive(Primitive):
         legacy_final_output = "ci" + "pher_output"
         for round_spec in specification["rounds"]:
             self.add_round()
-            for component in round_spec:
+            # A few legacy builders append a shared constant after operations
+            # that consume it.  Connection identifiers, rather than mutable
+            # insertion order, are the semantic dependency relation.
+            pending = list(round_spec)
+            ordered_round = []
+            available = set(ports)
+            while pending:
+                ready = next((
+                    component for component in pending
+                    if all(not source_id or source_id in available
+                           for source_id in component["input_ids"])
+                ), None)
+                if ready is None:
+                    missing = sorted({
+                        source_id for component in pending
+                        for source_id in component["input_ids"]
+                        if source_id and source_id not in available
+                    })
+                    raise ValueError(f"catalogue graph has unresolved dependencies: {missing}")
+                pending.remove(ready)
+                ordered_round.append(ready)
+                available.add(ready["id"])
+            for component in ordered_round:
                 selected_inputs = tuple(
                     ports[source_id][tuple(positions)]
                     for source_id, positions in zip(

@@ -171,7 +171,7 @@ def export_milestone_slice(inventory_path: Path, slice_name: str) -> None:
         generated_and_complete = index_path.exists() and bool(
             json.loads(index_path.read_text(encoding="utf-8")).get("variants")
         )
-        if stem in {"aes", "present"} or generated_and_complete:
+        if stem in {"aes", "present", "trivium"} or generated_and_complete:
             continue
         legacy_module = record["path"][:-3].replace("/", ".")
         if "invertible_permutation" in legacy_module or legacy_module.endswith("spongent_pi_fsr_permutation"):
@@ -196,6 +196,16 @@ def export_milestone_slice(inventory_path: Path, slice_name: str) -> None:
         configurations.extend(dict(item) for item in parameter_catalogue if isinstance(item, dict))
         configurations.extend(_literal_test_configurations(legacy_class_name, parameter_names))
         configurations.extend(_observed_identity_configurations(legacy_class_name, parameter_names))
+        if legacy_class_name == "SiphashMAC":
+            # The selected official vectors are parameterized through ``range``
+            # expressions, so they are intentionally outside literal AST
+            # extraction.
+            configurations.extend({
+                "message_byte_size": size,
+                "compression_rounds": 2,
+                "finalization_rounds": 4,
+                "output_bit_size": 64,
+            } for size in (0, 63))
         unique = []
         seen = set()
         for configuration in configurations:

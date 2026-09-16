@@ -1,0 +1,16 @@
+{
+  "parameter_names": [
+    "block_bit_size",
+    "state_bit_size",
+    "number_of_rounds",
+    "word_size",
+    "permutations",
+    "rot_amounts"
+  ],
+  "variants": {
+    "{\"block_bit_size\":1024,\"number_of_rounds\":12,\"state_bit_size\":1024}": "v1",
+    "{\"block_bit_size\":512,\"number_of_rounds\":12,\"state_bit_size\":512,\"word_size\":32}": "v3",
+    "{\"number_of_rounds\":4}": "v2",
+    "{}": "v0"
+  }
+}

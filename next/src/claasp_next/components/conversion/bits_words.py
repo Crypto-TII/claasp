@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 
-from claasp_next.domains import Bit, Word
+from claasp_next.domains import BinaryExtensionField, Bit, Word
 from claasp_next.graph.component import Component
 from claasp_next.graph.port import PortLike, as_selection
 from claasp_next.graph.value_type import ValueType
@@ -21,7 +21,8 @@ class PackBits(Component):
     word_width: int
 
     def __init__(
-        self, component_input: PortLike, word_width: int, component_id: str | None = None
+        self, component_input: PortLike, word_width: int, component_id: str | None = None,
+        *, output_domain: BinaryExtensionField | None = None,
     ) -> None:
         component_input = as_selection(component_input)
         if not isinstance(component_input.value_type.domain, Bit):
@@ -33,7 +34,10 @@ class PackBits(Component):
             raise ValueError("input bit count must be a multiple of word_width")
         object.__setattr__(self, "component_id", component_id)
         object.__setattr__(self, "inputs", (component_input,))
-        object.__setattr__(self, "output_type", ValueType(Word(word_width), (bit_count // word_width,)))
+        if output_domain is not None and output_domain.degree != word_width:
+            raise ValueError("binary-field degree must equal word_width")
+        domain = output_domain if output_domain is not None else Word(word_width)
+        object.__setattr__(self, "output_type", ValueType(domain, (bit_count // word_width,)))
         object.__setattr__(self, "word_width", word_width)
         Component.__post_init__(self)
 
@@ -47,11 +51,12 @@ class UnpackBits(Component):
     def __init__(self, component_input: PortLike, component_id: str | None = None) -> None:
         component_input = as_selection(component_input)
         domain = component_input.value_type.domain
-        if not isinstance(domain, Word):
-            raise ValueError("UnpackBits input must use a Word domain")
+        if not isinstance(domain, (Word, BinaryExtensionField)):
+            raise ValueError("UnpackBits input must use a Word or binary-field domain")
         word_count = component_input.value_type.unit_count
+        word_width = domain.width if isinstance(domain, Word) else domain.degree
         object.__setattr__(self, "component_id", component_id)
         object.__setattr__(self, "inputs", (component_input,))
-        object.__setattr__(self, "output_type", ValueType(Bit(), (word_count * domain.width,)))
-        object.__setattr__(self, "word_width", domain.width)
+        object.__setattr__(self, "output_type", ValueType(Bit(), (word_count * word_width,)))
+        object.__setattr__(self, "word_width", word_width)
         Component.__post_init__(self)

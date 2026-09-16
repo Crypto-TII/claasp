@@ -77,11 +77,19 @@ def main() -> None:
             }, None)]
         elif class_name in {"KeccakInvertible", "XoodooInvertible"}:
             candidates = [({"number_of_rounds": rounds}, None)]
+        elif class_name == "Trivium":
+            output_size = int(re.search(r"_o(\d+)_", identity).group(1))
+            candidates = [({"keystream_bit_size": output_size}, None)]
+        round_candidates = [
+            candidate for candidate in candidates
+            if candidate[1] is not None and rounds is not None
+            and len(candidate[1]["rounds"]) == rounds
+        ]
+        if round_candidates:
+            candidates = round_candidates
         matches = []
         for parameters, spec in candidates:
             if spec is not None:
-                if rounds is not None and len(spec["rounds"]) != rounds:
-                    continue
                 if len(spec["inputs"]) != len(vectors[0]["inputs"]):
                     continue
             try:

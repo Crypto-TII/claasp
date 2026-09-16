@@ -236,8 +236,11 @@ class ScalarExecutionDriver:
     def _evaluate_modular_add(
         component: ModularAdd, inputs: tuple[RuntimeValue, ...]
     ) -> RuntimeValue:
-        mask = (1 << component.output_type.domain.width) - 1
-        return tuple(sum(values) & mask for values in zip(*inputs))
+        modulus = component.modulus
+        if modulus is None:
+            mask = (1 << component.output_type.domain.width) - 1
+            return tuple(sum(values) & mask for values in zip(*inputs))
+        return tuple(sum(values) % modulus for values in zip(*inputs))
 
     @staticmethod
     def _evaluate_modular_subtract(

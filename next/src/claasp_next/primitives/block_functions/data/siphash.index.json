@@ -1,0 +1,17 @@
+{
+  "parameter_names": [
+    "message_byte_size",
+    "compression_rounds",
+    "finalization_rounds",
+    "output_bit_size"
+  ],
+  "variants": {
+    "{\"compression_rounds\":1,\"finalization_rounds\":3,\"message_byte_size\":16,\"output_bit_size\":64}": "v2",
+    "{\"compression_rounds\":2,\"finalization_rounds\":4,\"message_byte_size\":0,\"output_bit_size\":64}": "v5",
+    "{\"compression_rounds\":2,\"finalization_rounds\":4,\"message_byte_size\":15,\"output_bit_size\":128}": "v4",
+    "{\"compression_rounds\":2,\"finalization_rounds\":4,\"message_byte_size\":15,\"output_bit_size\":64}": "v1",
+    "{\"compression_rounds\":2,\"finalization_rounds\":4,\"message_byte_size\":16,\"output_bit_size\":128}": "v3",
+    "{\"compression_rounds\":2,\"finalization_rounds\":4,\"message_byte_size\":63,\"output_bit_size\":64}": "v6",
+    "{}": "v0"
+  }
+}

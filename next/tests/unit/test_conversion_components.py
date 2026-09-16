@@ -2,7 +2,10 @@
 
 import pytest
 
-from claasp_next import Bit, Primitive, ScalarEvaluator, TransposedBatchEvaluator, ValueType, Word
+from claasp_next import (
+    BinaryExtensionField, Bit, Primitive, ScalarEvaluator, TransposedBatchEvaluator,
+    ValueType, Word,
+)
 from claasp_next.components import PackBits, Permutation, UnpackBits
 
 
@@ -49,6 +52,19 @@ def test_conversion_components_reject_implicit_or_partial_reinterpretation():
     word_primitive = Primitive("words", {"state": ValueType(Word(8), (2,))})
     with pytest.raises(ValueError, match="Bit"):
         PackBits(word_primitive.input("state"), 8)
+
+
+def test_pack_and_unpack_can_explicitly_cross_a_binary_field_boundary():
+    primitive = Primitive("field_conversion", {"bits": ValueType(Bit(), (16,))})
+    primitive.add_round()
+    field = BinaryExtensionField(8, 0x11D)
+    packed = primitive.add_component(PackBits(
+        primitive.input("bits"), 8, output_domain=field
+    ))
+    primitive.set_output(primitive.add_component(UnpackBits(packed)))
+
+    assert primitive.evaluate(0x12A5) == 0x12A5
+    assert packed.value_type == ValueType(field, (2,))
 
 
 def test_reverse_and_word_permutation_are_domain_neutral_permutations():
