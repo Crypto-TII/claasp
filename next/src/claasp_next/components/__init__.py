@@ -3,6 +3,7 @@
 from claasp_next.components.algebraic import Add, BinaryAffineMap, LinearMap, Multiply, Power
 from claasp_next.components.conversion import PackBits, UnpackBits
 from claasp_next.components.feedback import FeedbackRegister, FeedbackRegisterSpec, FeedbackTerm
+from claasp_next.components.permutation import gaston_theta, keccak_theta, shift_rows, sigma, xoodoo_theta
 from claasp_next.components.structural import Concatenate, Constant, Identity, Permutation
 from claasp_next.components.substitution import BitVectorSBox, SBox
 from claasp_next.components.word import (
@@ -22,9 +23,11 @@ __all__ = [
     "FeedbackRegister",
     "FeedbackRegisterSpec",
     "FeedbackTerm",
+    "gaston_theta",
     "Identity",
     "IDEAMultiply",
     "LinearMap",
+    "keccak_theta",
     "Multiply",
     "PackBits",
     "Permutation",
@@ -34,9 +37,12 @@ __all__ = [
     "ModularSubtract",
     "Rotate",
     "Shift",
+    "shift_rows",
+    "sigma",
     "SBox",
     "UnpackBits",
     "VariableRotate",
     "VariableShift",
+    "xoodoo_theta",
     "Xor",
 ]

@@ -1282,6 +1282,36 @@ MIGRATION_OVERRIDES["tests/unit/components/fsr_component_test.py"] = {
     "rationale": "Exact Sage polynomial variable names and rendering are incidental; exhaustive concrete truth maps independently establish the same binary and field-word transformations.",
 }
 
+_M10_9C8_SOURCE_DESTINATIONS = {
+    "claasp/components/shift_rows_component.py": "next/src/claasp_next/components/permutation/layers.py; next/src/claasp_next/components/structural/permutation.py",
+    "claasp/components/sigma_component.py": "next/src/claasp_next/components/permutation/layers.py; next/src/claasp_next/components/algebraic/linear_map.py",
+    "claasp/components/theta_gaston_component.py": "next/src/claasp_next/components/permutation/layers.py; next/src/claasp_next/components/algebraic/linear_map.py",
+    "claasp/components/theta_keccak_component.py": "next/src/claasp_next/components/permutation/layers.py; next/src/claasp_next/components/algebraic/linear_map.py",
+    "claasp/components/theta_xoodoo_component.py": "next/src/claasp_next/components/permutation/layers.py; next/src/claasp_next/components/algebraic/linear_map.py",
+}
+for _path, _destination in _M10_9C8_SOURCE_DESTINATIONS.items():
+    MIGRATION_OVERRIDES[_path] = {
+        "v5_destination": _destination,
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.9c8",
+        "acceptance_criterion": "Dependency-free constructors compose typed Permutation or LinearMap components and preserve fixed Sigma/Gaston/Keccak/Xoodoo values.",
+        "rationale": "Dedicated backend-bearing subclasses duplicate generic permutation or binary-linear semantics; pure constructors retain published structure without Sage matrices, pickle caches, or operation-specific lowering methods.",
+    }
+
+_M10_9C8_TEST_DESTINATIONS = {
+    "tests/unit/components/shift_rows_component_test.py": "next/tests/unit/test_permutation_layers.py",
+    "tests/unit/components/sigma_component_test.py": "next/tests/unit/test_permutation_layers.py",
+    "tests/unit/components/theta_gaston_component_test.py": "next/tests/unit/test_permutation_layers.py",
+    "tests/unit/components/theta_keccak_component_test.py": "next/tests/unit/test_permutation_layers.py",
+    "tests/unit/components/theta_xoodoo_component_test.py": "next/tests/unit/test_permutation_layers.py",
+}
+for _path, _destination in _M10_9C8_TEST_DESTINATIONS.items():
+    MIGRATION_OVERRIDES[_path] = {
+        "v5_destination": _destination,
+        "prerequisites": [], "disposition": "supersede", "status": "superseded-in-m10.9c8",
+        "acceptance_criterion": "Domain-neutral row permutation, legacy Sigma output, independently derived Keccak diffusion, and fixed Xoodoo/Gaston prefixes are executable.",
+        "rationale": "Component identifiers, matrix dimensions, generated clauses, and exact constraint ordering do not add semantics beyond the tested permutation and linear maps.",
+    }
+
 
 def python_paths() -> list[Path]:
     return sorted(path for root in LEGACY_ROOTS for path in root.rglob("*.py"))

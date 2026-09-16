@@ -9599,11 +9599,11 @@
       "v5_destination": "next/src/claasp_next/components/word/shift.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Dependency-free constructors compose typed Permutation or LinearMap components and preserve fixed Sigma/Gaston/Keccak/Xoodoo values.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
@@ -9611,24 +9611,22 @@
       "kind": "source",
       "milestone_owner": "M10.9c8",
       "path": "claasp/components/shift_rows_component.py",
-      "prerequisites": [
-        "M10.9c7"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "ShiftRows"
       ],
-      "rationale": null,
+      "rationale": "Dedicated backend-bearing subclasses duplicate generic permutation or binary-linear semantics; pure constructors retain published structure without Sage matrices, pickle caches, or operation-specific lowering methods.",
       "responsibility": "shift rows component",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.9c8",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/components/permutation/layers.py; next/src/claasp_next/components/structural/permutation.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Dependency-free constructors compose typed Permutation or LinearMap components and preserve fixed Sigma/Gaston/Keccak/Xoodoo values.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
@@ -9636,27 +9634,25 @@
       "kind": "source",
       "milestone_owner": "M10.9c8",
       "path": "claasp/components/sigma_component.py",
-      "prerequisites": [
-        "M10.9c7"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "Sigma"
       ],
-      "rationale": null,
+      "rationale": "Dedicated backend-bearing subclasses duplicate generic permutation or binary-linear semantics; pure constructors retain published structure without Sage matrices, pickle caches, or operation-specific lowering methods.",
       "responsibility": "sigma component",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.9c8",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/components/permutation/layers.py; next/src/claasp_next/components/algebraic/linear_map.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Dependency-free constructors compose typed Permutation or LinearMap components and preserve fixed Sigma/Gaston/Keccak/Xoodoo values.",
       "dependencies": [
         "claasp",
         "os",
         "pickle",
         "typing"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
@@ -9664,24 +9660,22 @@
       "kind": "source",
       "milestone_owner": "M10.9c8",
       "path": "claasp/components/theta_gaston_component.py",
-      "prerequisites": [
-        "M10.9c7"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "ThetaGaston"
       ],
-      "rationale": null,
+      "rationale": "Dedicated backend-bearing subclasses duplicate generic permutation or binary-linear semantics; pure constructors retain published structure without Sage matrices, pickle caches, or operation-specific lowering methods.",
       "responsibility": "theta gaston component",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.9c8",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/components/permutation/layers.py; next/src/claasp_next/components/algebraic/linear_map.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Dependency-free constructors compose typed Permutation or LinearMap components and preserve fixed Sigma/Gaston/Keccak/Xoodoo values.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
@@ -9689,24 +9683,22 @@
       "kind": "source",
       "milestone_owner": "M10.9c8",
       "path": "claasp/components/theta_keccak_component.py",
-      "prerequisites": [
-        "M10.9c7"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "ThetaKeccak"
       ],
-      "rationale": null,
+      "rationale": "Dedicated backend-bearing subclasses duplicate generic permutation or binary-linear semantics; pure constructors retain published structure without Sage matrices, pickle caches, or operation-specific lowering methods.",
       "responsibility": "theta keccak component",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.9c8",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/components/permutation/layers.py; next/src/claasp_next/components/algebraic/linear_map.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Dependency-free constructors compose typed Permutation or LinearMap components and preserve fixed Sigma/Gaston/Keccak/Xoodoo values.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
@@ -9714,17 +9706,15 @@
       "kind": "source",
       "milestone_owner": "M10.9c8",
       "path": "claasp/components/theta_xoodoo_component.py",
-      "prerequisites": [
-        "M10.9c7"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "ThetaXoodoo"
       ],
-      "rationale": null,
+      "rationale": "Dedicated backend-bearing subclasses duplicate generic permutation or binary-linear semantics; pure constructors retain published structure without Sage matrices, pickle caches, or operation-specific lowering methods.",
       "responsibility": "theta xoodoo component",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.9c8",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/components/permutation/layers.py; next/src/claasp_next/components/algebraic/linear_map.py"
     },
     {
       "acceptance_criterion": "Typed word operations match independently computed exhaustive small-width arithmetic and scalar/transposed-batch evaluation.",
@@ -19570,11 +19560,11 @@
       "v5_destination": "next/tests/unit/test_word_arx_components.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Domain-neutral row permutation, legacy Sigma output, independently derived Keccak diffusion, and fixed Xoodoo/Gaston prefixes are executable.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -19587,9 +19577,7 @@
       "kind": "test",
       "milestone_owner": "M10.9c8",
       "path": "tests/unit/components/shift_rows_component_test.py",
-      "prerequisites": [
-        "M10.9c7"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "make_shift_rows_component",
         "make_shift_rows_cipher",
@@ -19598,23 +19586,23 @@
         "test_sat_constraints",
         "test_smt_constraints"
       ],
-      "rationale": null,
+      "rationale": "Component identifiers, matrix dimensions, generated clauses, and exact constraint ordering do not add semantics beyond the tested permutation and linear maps.",
       "responsibility": "shift rows component test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.9c8",
       "tests": [
         "test_constructor_sets_shift_rows_identity",
         "test_cp_constraints",
         "test_sat_constraints",
         "test_smt_constraints"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_permutation_layers.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Domain-neutral row permutation, legacy Sigma output, independently derived Keccak diffusion, and fixed Xoodoo/Gaston prefixes are executable.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -19627,9 +19615,7 @@
       "kind": "test",
       "milestone_owner": "M10.9c8",
       "path": "tests/unit/components/sigma_component_test.py",
-      "prerequisites": [
-        "M10.9c7"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "make_sigma_component",
         "test_constructor_sets_sigma_identity",
@@ -19637,23 +19623,23 @@
         "test_sat_constraints",
         "test_smt_constraints"
       ],
-      "rationale": null,
+      "rationale": "Component identifiers, matrix dimensions, generated clauses, and exact constraint ordering do not add semantics beyond the tested permutation and linear maps.",
       "responsibility": "sigma component test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.9c8",
       "tests": [
         "test_constructor_sets_sigma_identity",
         "test_cp_constraints",
         "test_sat_constraints",
         "test_smt_constraints"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_permutation_layers.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Domain-neutral row permutation, legacy Sigma output, independently derived Keccak diffusion, and fixed Xoodoo/Gaston prefixes are executable.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -19663,27 +19649,25 @@
       "kind": "test",
       "milestone_owner": "M10.9c8",
       "path": "tests/unit/components/theta_gaston_component_test.py",
-      "prerequisites": [
-        "M10.9c7"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "make_theta_gaston_component",
         "test_constructor_sets_theta_gaston_identity"
       ],
-      "rationale": null,
+      "rationale": "Component identifiers, matrix dimensions, generated clauses, and exact constraint ordering do not add semantics beyond the tested permutation and linear maps.",
       "responsibility": "theta gaston component test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.9c8",
       "tests": [
         "test_constructor_sets_theta_gaston_identity"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_permutation_layers.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Domain-neutral row permutation, legacy Sigma output, independently derived Keccak diffusion, and fixed Xoodoo/Gaston prefixes are executable.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -19696,9 +19680,7 @@
       "kind": "test",
       "milestone_owner": "M10.9c8",
       "path": "tests/unit/components/theta_keccak_component_test.py",
-      "prerequisites": [
-        "M10.9c7"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "make_theta_keccak_component",
         "test_constructor_sets_theta_keccak_identity",
@@ -19706,23 +19688,23 @@
         "test_sat_constraints",
         "test_smt_constraints"
       ],
-      "rationale": null,
+      "rationale": "Component identifiers, matrix dimensions, generated clauses, and exact constraint ordering do not add semantics beyond the tested permutation and linear maps.",
       "responsibility": "theta keccak component test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.9c8",
       "tests": [
         "test_constructor_sets_theta_keccak_identity",
         "test_cp_constraints",
         "test_sat_constraints",
         "test_smt_constraints"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_permutation_layers.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Domain-neutral row permutation, legacy Sigma output, independently derived Keccak diffusion, and fixed Xoodoo/Gaston prefixes are executable.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -19732,20 +19714,18 @@
       "kind": "test",
       "milestone_owner": "M10.9c8",
       "path": "tests/unit/components/theta_xoodoo_component_test.py",
-      "prerequisites": [
-        "M10.9c7"
-      ],
+      "prerequisites": [],
       "public_entry_points": [
         "make_theta_xoodoo_component",
         "test_constructor_sets_theta_xoodoo_identity"
       ],
-      "rationale": null,
+      "rationale": "Component identifiers, matrix dimensions, generated clauses, and exact constraint ordering do not add semantics beyond the tested permutation and linear maps.",
       "responsibility": "theta xoodoo component test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.9c8",
       "tests": [
         "test_constructor_sets_theta_xoodoo_identity"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_permutation_layers.py"
     },
     {
       "acceptance_criterion": "Exhaustive three-bit arithmetic, fixed word-motion values, boundary behavior, validation, and scalar/batch parity preserve applicable semantics.",
