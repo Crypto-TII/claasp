@@ -242,6 +242,12 @@
         Cryptology ePrint Archive, Report 2016/660, 2016.
         https://eprint.iacr.org/2016/660.pdf
 
+.. [BSSTWW2013]
+        Beaulieu R., Shors D., Smith J., Treatman-Clark S., Weeks B., Wingers
+        L. : *The SIMON and SPECK Families of Lightweight Block Ciphers* :
+        Cryptology ePrint Archive, Report 2013/404, 2013 :
+        https://eprint.iacr.org/2013/404
+
 .. _claasp-ref-C:
 
 .. only:: html
@@ -748,6 +754,12 @@
         Yang B.-Y., Chen J.-M. : *Theoretical analysis of XL over small fields*
         : In Information Security and Privacy, pages 277–288, Berlin,
         Heidelberg, 2004. Springer Berlin Heidelberg
+
+.. [YZSAG2015]
+        Yang G., Zhu B., Suder V., Aagaard M. D., Gong G. : *The Simeck Family
+        of Lightweight Block Ciphers* : In Cryptographic Hardware and Embedded
+        Systems -- CHES 2015, LNCS 9293, pp. 307-329, Springer 2015 :
+        https://eprint.iacr.org/2015/612
 
 .. _claasp-ref-Z:
 
