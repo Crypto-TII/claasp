@@ -171,7 +171,7 @@ class Blake2(BitGraphPrimitive):
         self,
         block_bit_size=1024,
         state_bit_size=1024,
-        number_of_rounds=0,
+        number_of_rounds=None,
         word_size=64,
         permutations=None,
         rot_amounts=None,
@@ -249,7 +249,7 @@ class Blake2(BitGraphPrimitive):
         return new_state_word_ids, new_state_word_ranges
 
     def define_number_of_rounds(self, number_of_rounds, state_bit_size):
-        if number_of_rounds == 0:
+        if number_of_rounds is None:
             custom_number_of_rounds = None
             for parameters in PARAMETERS_CONFIGURATION_LIST:
                 if (
@@ -262,6 +262,13 @@ class Blake2(BitGraphPrimitive):
                 raise ValueError("No available number of rounds for the given parameters.")
         else:
             custom_number_of_rounds = number_of_rounds
+
+        if (
+            not isinstance(custom_number_of_rounds, int)
+            or isinstance(custom_number_of_rounds, bool)
+            or custom_number_of_rounds <= 0
+        ):
+            raise ValueError("number_of_rounds must be a positive integer")
 
         return custom_number_of_rounds
 

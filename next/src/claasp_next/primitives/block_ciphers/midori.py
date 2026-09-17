@@ -207,7 +207,7 @@ class Midori(BitGraphPrimitive):
         'xor_0_0'
     """
 
-    def __init__(self, block_bit_size=64, key_bit_size=128, number_of_rounds=0):
+    def __init__(self, block_bit_size=64, key_bit_size=128, number_of_rounds=None):
         self.block_bit_size = block_bit_size
         self.word_size = self.block_bit_size // 16
 
@@ -216,7 +216,7 @@ class Midori(BitGraphPrimitive):
         else:
             self.polynomial = 283
 
-        if number_of_rounds == 0:
+        if number_of_rounds is None:
             n = None
 
             for parameters in PARAMETERS_CONFIGURATION_LIST:
@@ -228,6 +228,8 @@ class Midori(BitGraphPrimitive):
                 raise ValueError("No available number of rounds for the given parameters.")
         else:
             n = number_of_rounds
+        if not isinstance(n, int) or isinstance(n, bool) or n <= 0:
+            raise ValueError("number_of_rounds must be a positive integer")
 
         super().__init__(
             family_name="midori",

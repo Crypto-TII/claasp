@@ -43,6 +43,9 @@ linear maps are row-major, permutation mappings directly select the source for
 each output, directions are explicit strings, and feedback registers use typed
 parameters. Legacy argument aliases, orientation conversions, nested FSR
 descriptions, and ignored canonical-modulus arguments are deliberately absent.
+Optional catalogue parameters use ``None`` to mean “select the documented
+configuration”; an explicit zero round, step, or S-box count is invalid rather
+than a hidden request for defaults.
 
 Owned package layout
 --------------------

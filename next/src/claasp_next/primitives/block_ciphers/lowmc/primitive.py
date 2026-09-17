@@ -213,7 +213,10 @@ class LowMC(BitGraphPrimitive):
 
     """
 
-    def __init__(self, block_bit_size=128, key_bit_size=128, number_of_rounds=0, number_of_sboxes=0):
+    def __init__(
+        self, block_bit_size=128, key_bit_size=128,
+        number_of_rounds=None, number_of_sboxes=None,
+    ):
         self.block_bit_size = block_bit_size
         self.key_bit_size = key_bit_size
         self.word_size = self.block_bit_size // 2
@@ -283,7 +286,7 @@ class LowMC(BitGraphPrimitive):
         ).id
 
     def define_number_of_rounds(self, number_of_rounds):
-        if number_of_rounds == 0:
+        if number_of_rounds is None:
             custom_number_of_rounds = None
             for parameters in PARAMETERS_CONFIGURATION_LIST:
                 if (
@@ -297,10 +300,17 @@ class LowMC(BitGraphPrimitive):
         else:
             custom_number_of_rounds = number_of_rounds
 
+        if (
+            not isinstance(custom_number_of_rounds, int)
+            or isinstance(custom_number_of_rounds, bool)
+            or custom_number_of_rounds <= 0
+        ):
+            raise ValueError("number_of_rounds must be a positive integer")
+
         return custom_number_of_rounds
 
     def define_number_of_sboxes(self, number_of_rounds, n_sbox):
-        if n_sbox == 0:
+        if n_sbox is None:
             number_of_sboxes = None
 
             for parameters in PARAMETERS_CONFIGURATION_LIST:
@@ -316,6 +326,13 @@ class LowMC(BitGraphPrimitive):
                 raise ValueError("No available number of sboxes for the given parameters.")
         else:
             number_of_sboxes = n_sbox
+
+        if (
+            not isinstance(number_of_sboxes, int)
+            or isinstance(number_of_sboxes, bool)
+            or number_of_sboxes <= 0
+        ):
+            raise ValueError("number_of_sboxes must be a positive integer")
 
         return number_of_sboxes
 

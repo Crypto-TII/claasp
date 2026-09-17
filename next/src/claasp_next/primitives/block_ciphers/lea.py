@@ -14,11 +14,13 @@ KEY_ROTATIONS = (-1, -3, -6, -11, -13, -17)
 class LEA(Primitive):
     """LEA-128 with 128-, 192-, or 256-bit keys."""
 
-    def __init__(self, block_bit_size=128, key_bit_size=192, number_of_rounds=0,
+    def __init__(self, block_bit_size=128, key_bit_size=192, number_of_rounds=None,
                  reorder_input_and_output=True):
         if block_bit_size != 128 or key_bit_size not in DEFAULT_ROUNDS:
             raise ValueError("LEA requires a 128-bit block and 128-, 192-, or 256-bit key")
-        rounds = DEFAULT_ROUNDS[key_bit_size] if number_of_rounds == 0 else number_of_rounds
+        rounds = DEFAULT_ROUNDS[key_bit_size] if number_of_rounds is None else number_of_rounds
+        if not isinstance(rounds, int) or isinstance(rounds, bool) or rounds <= 0:
+            raise ValueError("number_of_rounds must be a positive integer")
         key_word_count = key_bit_size // 32
         super().__init__("lea", {"plaintext": word_type(32, 4), "key": word_type(32, key_word_count)})
         state = [select(self.input("plaintext"), index) for index in range(4)]

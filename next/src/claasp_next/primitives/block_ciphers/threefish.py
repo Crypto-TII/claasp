@@ -24,11 +24,13 @@ class Threefish(Primitive):
     """Threefish-256, Threefish-512, or Threefish-1024."""
 
     def __init__(self, block_bit_size=256, key_bit_size=None, tweak_bit_size=128,
-                 number_of_rounds=0):
+                 number_of_rounds=None):
         key_bit_size = block_bit_size if key_bit_size is None else key_bit_size
         if block_bit_size not in DEFAULT_ROUNDS or key_bit_size != block_bit_size or tweak_bit_size != 128:
             raise ValueError("Threefish requires equal 256/512/1024-bit block and key plus a 128-bit tweak")
-        rounds = DEFAULT_ROUNDS[block_bit_size] if number_of_rounds == 0 else number_of_rounds
+        rounds = DEFAULT_ROUNDS[block_bit_size] if number_of_rounds is None else number_of_rounds
+        if not isinstance(rounds, int) or isinstance(rounds, bool) or rounds <= 0:
+            raise ValueError("number_of_rounds must be a positive integer")
         count = block_bit_size // 64
         parameter_index = {4: 0, 8: 1, 16: 2}[count]
         super().__init__("threefish", {

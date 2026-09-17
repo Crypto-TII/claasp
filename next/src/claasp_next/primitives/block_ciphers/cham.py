@@ -11,10 +11,12 @@ DEFAULT_ROUNDS = {(64, 128): 88, (128, 128): 112, (128, 256): 120}
 class CHAM(Primitive):
     """CHAM-64/128, CHAM-128/128, or CHAM-128/256."""
 
-    def __init__(self, block_bit_size=64, key_bit_size=128, number_of_rounds=0):
+    def __init__(self, block_bit_size=64, key_bit_size=128, number_of_rounds=None):
         if (block_bit_size, key_bit_size) not in DEFAULT_ROUNDS:
             raise ValueError("unsupported CHAM parameter set")
-        rounds = DEFAULT_ROUNDS[(block_bit_size, key_bit_size)] if number_of_rounds == 0 else number_of_rounds
+        rounds = DEFAULT_ROUNDS[(block_bit_size, key_bit_size)] if number_of_rounds is None else number_of_rounds
+        if not isinstance(rounds, int) or isinstance(rounds, bool) or rounds <= 0:
+            raise ValueError("number_of_rounds must be a positive integer")
         width = block_bit_size // 4
         key_words = key_bit_size // width
         super().__init__("cham", {"key": word_type(width, key_words), "plaintext": word_type(width, 4)})

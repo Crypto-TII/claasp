@@ -8,14 +8,14 @@ from ._word_graph import add, concatenate, constant, select, shift, word_type, x
 class XTEA(Primitive):
     """XTEA with configurable word size, shifts, and reduced rounds."""
 
-    def __init__(self, block_bit_size=64, key_bit_size=128, number_of_rounds=0,
+    def __init__(self, block_bit_size=64, key_bit_size=128, number_of_rounds=None,
                  right_shift_amount=5, left_shift_amount=4):
         width = block_bit_size // 2
         if key_bit_size != 4 * width or block_bit_size % 2:
             raise ValueError("XTEA requires a four-word key and a two-word block")
-        rounds = 32 if number_of_rounds == 0 and block_bit_size == 64 else number_of_rounds
-        if rounds <= 0:
-            raise ValueError("number_of_rounds must be positive")
+        rounds = 32 if number_of_rounds is None and block_bit_size == 64 else number_of_rounds
+        if not isinstance(rounds, int) or isinstance(rounds, bool) or rounds <= 0:
+            raise ValueError("number_of_rounds must be a positive integer")
         super().__init__("xtea", {"plaintext": word_type(width, 2), "key": word_type(width, 4)})
         left, right = select(self.input("plaintext"), 0), select(self.input("plaintext"), 1)
         keys = tuple(select(self.input("key"), index) for index in range(4))

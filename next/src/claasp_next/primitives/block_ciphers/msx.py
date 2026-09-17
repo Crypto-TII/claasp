@@ -59,7 +59,7 @@ class MSX(BitGraphPrimitive):
         {"block_bit_size": 128, "key_bit_size": 256, "number_of_rounds": 18},
     ]
 
-    def __init__(self, block_bit_size=64, key_bit_size=128, number_of_rounds=0):
+    def __init__(self, block_bit_size=64, key_bit_size=128, number_of_rounds=None):
         self.word_size = 32
         self.block_bit_size = block_bit_size
         self.key_bit_size = key_bit_size

@@ -11,12 +11,16 @@ PARAMETERS = {(64,128):(8,3), (128,128):(8,4), (128,256):(10,4)}
 class SPARX(Primitive):
     """SPARX-64/128, SPARX-128/128, or SPARX-128/256."""
 
-    def __init__(self, block_bit_size=64, key_bit_size=128, number_of_rounds=0, steps=0):
+    def __init__(self, block_bit_size=64, key_bit_size=128, number_of_rounds=None, steps=None):
         if (block_bit_size,key_bit_size) not in PARAMETERS:
             raise ValueError("unsupported SPARX parameter set")
         default_rounds, default_steps = PARAMETERS[(block_bit_size,key_bit_size)]
-        rounds = default_rounds if number_of_rounds == 0 else number_of_rounds
-        arx_rounds = default_steps if steps == 0 else steps
+        rounds = default_rounds if number_of_rounds is None else number_of_rounds
+        arx_rounds = default_steps if steps is None else steps
+        if not isinstance(rounds, int) or isinstance(rounds, bool) or rounds <= 0:
+            raise ValueError("number_of_rounds must be a positive integer")
+        if not isinstance(arx_rounds, int) or isinstance(arx_rounds, bool) or arx_rounds <= 0:
+            raise ValueError("steps must be a positive integer")
         word_count, key_count = block_bit_size//32, key_bit_size//32
         super().__init__("sparx", {"plaintext":word_type(32,word_count), "key":word_type(32,key_count)})
         state=[select(self.input("plaintext"),i) for i in range(word_count)]

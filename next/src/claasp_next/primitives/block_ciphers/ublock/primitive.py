@@ -104,7 +104,7 @@ class Ublock(BitGraphPrimitive):
         True
     """
 
-    def __init__(self, block_bit_size=128, key_bit_size=128, number_of_rounds=0):
+    def __init__(self, block_bit_size=128, key_bit_size=128, number_of_rounds=None):
         self.half_block_bit_size = int(block_bit_size / 2)
         self.key_block_size = int(key_bit_size / 4)
         self.block_bit_size = block_bit_size
@@ -157,11 +157,11 @@ class Ublock(BitGraphPrimitive):
             self.pr = PR[0]
             if self.key_bit_size == 128:
                 self.pk = PK[0]
-                if self.r == 0:
+                if self.r is None:
                     self.r = 16
             elif self.key_bit_size == 256:
                 self.pk = PK[1]
-                if self.r == 0:
+                if self.r is None:
                     self.r = 24
             else:
                 print("The round_key size of block size 128 should be 128 or 256.")
@@ -171,7 +171,7 @@ class Ublock(BitGraphPrimitive):
             self.pr = PR[1]
             if self.key_bit_size == 256:
                 self.pk = PK[2]
-                if self.r == 0:
+                if self.r is None:
                     self.r = 24
             else:
                 print("The round_key size of block size 256 should be 256.")
@@ -180,6 +180,8 @@ class Ublock(BitGraphPrimitive):
             print("The block size should be 128 or 256.")
             return 1
 
+        if not isinstance(self.r, int) or isinstance(self.r, bool) or self.r <= 0:
+            raise ValueError("number_of_rounds must be a positive integer")
         return 0
 
     def round_initialization(self):

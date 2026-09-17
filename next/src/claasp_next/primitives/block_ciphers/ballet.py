@@ -79,7 +79,7 @@ class Ballet(BitGraphPrimitive):
 
     """
 
-    def __init__(self, block_bit_size=128, key_bit_size=128, number_of_rounds=0):
+    def __init__(self, block_bit_size=128, key_bit_size=128, number_of_rounds=None):
         self.block_bit_size = block_bit_size
         self.key_bit_size = key_bit_size
         self.quater_block_bit_size = int(self.block_bit_size / 4)
@@ -142,17 +142,17 @@ class Ballet(BitGraphPrimitive):
     def check_parameters(self):
         if self.block_bit_size == 128:
             if self.key_bit_size == 128:
-                if self.r == 0:
+                if self.r is None:
                     self.r = 46
             elif self.key_bit_size == 256:
-                if self.r == 0:
+                if self.r is None:
                     self.r = 48
             else:
                 print("The round_key size of block size 128 should be 128 or 256.")
                 return 1
         elif self.block_bit_size == 256:
             if self.key_bit_size == 256:
-                if self.r == 0:
+                if self.r is None:
                     self.r = 74
             else:
                 print("The round_key size of block size 256 should be 256.")
@@ -160,6 +160,8 @@ class Ballet(BitGraphPrimitive):
         else:
             print("The block size should be 128 or 256.")
             return 1
+        if not isinstance(self.r, int) or isinstance(self.r, bool) or self.r <= 0:
+            raise ValueError("number_of_rounds must be a positive integer")
         return 0
 
     def round_initialization(self):

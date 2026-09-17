@@ -117,12 +117,16 @@ def extract_inputs(input_ids_list, input_bit_positions_list, positions):
 
 
 def get_number_of_rounds_from(block_bit_size, key_bit_size, number_of_rounds, configurations):
-    if number_of_rounds:
-        return number_of_rounds
-    for parameters in configurations:
-        if parameters["block_bit_size"] == block_bit_size and parameters["key_bit_size"] == key_bit_size:
-            return parameters["number_of_rounds"]
-    raise ValueError("No available number of rounds for the given parameters.")
+    if number_of_rounds is None:
+        for parameters in configurations:
+            if parameters["block_bit_size"] == block_bit_size and parameters["key_bit_size"] == key_bit_size:
+                number_of_rounds = parameters["number_of_rounds"]
+                break
+        else:
+            raise ValueError("No available number of rounds for the given parameters.")
+    if not isinstance(number_of_rounds, int) or isinstance(number_of_rounds, bool) or number_of_rounds <= 0:
+        raise ValueError("number_of_rounds must be a positive integer")
+    return number_of_rounds
 
 
 def bytes_positions_to_little_endian_for_multiple_of_32(values, number_of_blocks):

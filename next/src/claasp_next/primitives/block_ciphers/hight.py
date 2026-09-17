@@ -20,11 +20,11 @@ DELTA = (
 class HIGHT(Primitive):
     """HIGHT with optional whitening transformations and zeroed deltas."""
 
-    def __init__(self, block_bit_size=64, key_bit_size=128, number_of_rounds=0,
+    def __init__(self, block_bit_size=64, key_bit_size=128, number_of_rounds=None,
                  sub_keys_zero=False, transformations_flag=True):
         if (block_bit_size, key_bit_size) != (64, 128):
             raise ValueError("HIGHT has a 64-bit block and 128-bit key")
-        rounds = 32 if number_of_rounds == 0 else number_of_rounds
+        rounds = 32 if number_of_rounds is None else number_of_rounds
         if not 1 <= rounds <= 32:
             raise ValueError("HIGHT number_of_rounds must be between 1 and 32")
         super().__init__("hight", {"plaintext": word_type(8, 8), "key": word_type(8, 16)})
