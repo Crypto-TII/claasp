@@ -44,6 +44,8 @@ def test_cbc_dataset_chains_outputs_and_serializes_lazily(speck):
     manifest = dataset.manifest()
     assert manifest.primitive == "speck"
     assert manifest.realization == "default"
+    assert manifest.execution_engine == "python_scalar"
+    assert manifest.schema_version == 2
     assert manifest.record_count == 3
     assert manifest.byte_count == 12
     assert manifest.sha256 == "15ec7bf0b50732b49f8228e07d24365338f9e3ab994b00af08e5a3bffe55fd8b"
@@ -66,6 +68,7 @@ def test_manifest_binds_construction_and_realization_provenance():
 
     assert manifest.primitive == "aes"
     assert manifest.realization == "algebraic"
+    assert manifest.execution_engine == "python_scalar"
     assert manifest.serialization == "raw_fixed_width_outputs_v1"
     assert manifest.record_order == "sample_major_then_block"
     assert manifest.fixed_inputs == (("key", 0),)

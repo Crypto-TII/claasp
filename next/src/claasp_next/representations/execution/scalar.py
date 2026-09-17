@@ -16,6 +16,7 @@ from claasp_next.components.word import (
 from claasp_next.graph.primitive import Primitive
 from claasp_next.graph.component import Component
 from claasp_next.semantics import CONCRETE
+from claasp_next.provenance import DriverIdentity, DriverKind, ResultProvenance
 
 RuntimeValue = tuple[int, ...]
 Handler = Callable[[Component, tuple[RuntimeValue, ...]], RuntimeValue]
@@ -28,6 +29,7 @@ class EvaluationResult:
     values: Mapping[str, RuntimeValue]
     output: RuntimeValue | None
     trace: ExecutionTrace
+    provenance: ResultProvenance
 
     def value_of(self, source_id: str) -> RuntimeValue:
         try:
@@ -39,7 +41,13 @@ class EvaluationResult:
     def realization(self):
         """Realization metadata retained by the evaluated graph, when declared."""
 
-        return getattr(self.trace.annotation.primitive, "realization", None)
+        return self.provenance.realization
+
+    @property
+    def execution_engine(self) -> DriverIdentity:
+        """Engine identity, kept distinct from the selected graph realization."""
+
+        return self.provenance.driver
 
 
 class ScalarExecutionDriver:
@@ -52,6 +60,8 @@ class ScalarExecutionDriver:
         >>> ScalarEvaluator().evaluate(primitive, {"state": (5,)}).output
         (5,)
     """
+
+    identity = DriverIdentity("python_scalar", DriverKind.EXECUTION_ENGINE)
 
     def __init__(self) -> None:
         self._handlers: dict[type[Component], Handler] = {
@@ -137,7 +147,10 @@ class ScalarExecutionDriver:
         annotation = GraphAnnotation.from_values(
             primitive, CONCRETE, values, output=output
         )
-        return EvaluationResult(dict(values), output, ExecutionTrace(annotation))
+        return EvaluationResult(
+            dict(values), output, ExecutionTrace(annotation),
+            ResultProvenance.for_primitive(primitive, self.identity),
+        )
 
     @staticmethod
     def _validate_value(source_id: str, value: RuntimeValue, size: int, domain: object) -> None:

@@ -68,6 +68,24 @@ def test_direct_execution_returns_a_concrete_graph_trace():
     assert result.trace.annotation.primitive is primitive
     assert result.trace.value_of("plaintext") == (0,) * 64
     assert result.trace.annotation.semantics is CONCRETE
+    assert result.provenance.realization_identity == "present:default"
+    assert result.realization is primitive.realization
+    assert result.execution_engine.name == "python_scalar"
+    assert result.execution_engine.kind.value == "execution_engine"
+    assert result.trace.annotation.realization_identity == "present:default"
+
+
+def test_representation_artifact_can_retain_typed_result_provenance():
+    primitive = Present(number_of_rounds=1)
+    execution = ScalarExecutionDriver().evaluate(
+        primitive, {"plaintext": (0,) * 64, "key": (0,) * 80}
+    )
+    artifact = Artifact(
+        Representation("trace", "application/json"), {}, ("unit-test",),
+        execution.provenance,
+    )
+    assert artifact.result_provenance.realization is primitive.realization
+    assert artifact.result_provenance.driver.name == "python_scalar"
 
 
 def test_cryptanalytic_trail_uses_the_same_annotation_foundation():

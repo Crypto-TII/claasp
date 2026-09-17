@@ -39,6 +39,16 @@ class GraphAnnotation:
     semantics: SemanticType
     entries: tuple[AnnotationEntry, ...]
 
+    @property
+    def realization(self):
+        """Realization descriptor of the graph to which values are attached."""
+
+        return self.primitive.realization
+
+    @property
+    def realization_identity(self) -> str:
+        return self.primitive.realization_identity
+
     def __init__(
         self,
         primitive: Primitive,

@@ -99,6 +99,9 @@ def test_solution_enumeration_blocks_projected_values_and_honors_limit():
     )
     assert {result.value("key") for result in results} == {0, 1}
     assert len(results) == 2
+    assert all(result.provenance.realization is primitive.realization for result in results)
+    assert all(result.provenance.driver.name == "_ExhaustiveSolver" for result in results)
+    assert all(result.reproducibility["realization"] == "default" for result in results)
 
 
 def test_solution_enumeration_requires_a_positive_limit_and_projection():

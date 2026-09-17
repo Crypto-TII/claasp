@@ -21,6 +21,7 @@ from claasp_next.encoding import bits_from_int, int_from_bits, int_from_units, u
 from claasp_next.composites import (
     AESKeySchedule, AESRound, AESSubstitutionLayer, ChaChaQuarterRound, ParallelSBoxLayer,
 )
+from claasp_next.provenance import DriverIdentity, DriverKind, ResultProvenance
 
 __all__ = [
     "BinaryExtensionField",
@@ -39,6 +40,8 @@ __all__ = [
     "Primitive",
     "Component",
     "EvaluationResult",
+    "DriverIdentity",
+    "DriverKind",
     "InputVisibility",
     "Port",
     "ParallelSBoxLayer",
@@ -46,6 +49,7 @@ __all__ = [
     "PrimitiveKind",
     "PrimeField",
     "Round",
+    "ResultProvenance",
     "ScalarEvaluator",
     "ScalarExecutionDriver",
     "Selection",

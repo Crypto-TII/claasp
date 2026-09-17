@@ -11,6 +11,7 @@ from claasp_next.representations.constraints.sat.cnf import CNFFormula
 from claasp_next.representations.constraints.sat.encoding import decode_unit, selection_variable_names
 from claasp_next.drivers.solvers import MinisatSolver, SatResult, SatStatus
 from claasp_next.graph import Primitive, Selection
+from claasp_next.provenance import DriverIdentity, DriverKind, ResultProvenance
 
 
 @dataclass(frozen=True, slots=True)
@@ -24,6 +25,7 @@ class AnalysisResult:
     statistics: Mapping[str, int]
     reproducibility: Mapping[str, str]
     solver_result: object
+    provenance: ResultProvenance
 
     @property
     def is_satisfiable(self) -> bool:
@@ -125,11 +127,16 @@ class Analysis:
             {"variables": formula.variable_count, "clauses": formula.clause_count},
             {
                 "primitive": self.primitive.family_name,
+                "realization": self.primitive.realization.name,
                 "backend": type(selected_solver).__name__,
                 "executable": str(getattr(selected_solver, "executable", "embedded")),
                 "formula_sha256": sha256(repr((formula.variables, formula.clauses)).encode()).hexdigest(),
             },
             solved,
+            ResultProvenance.for_primitive(
+                self.primitive,
+                DriverIdentity(type(selected_solver).__name__, DriverKind.SOLVER),
+            ),
         )
 
     def recover_input(

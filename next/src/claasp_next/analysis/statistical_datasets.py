@@ -36,6 +36,7 @@ class StatisticalDatasetManifest:
     schema_version: int
     primitive: str
     realization: str
+    execution_engine: str
     kind: str
     input_name: str
     sample_count: int
@@ -127,9 +128,10 @@ class StatisticalDataset:
         realization = getattr(getattr(self.primitive, "realization", None), "name", "default")
         byte_count = self.record_count * (self.output_bit_count // 8)
         return StatisticalDatasetManifest(
-            schema_version=1,
+            schema_version=2,
             primitive=self.primitive.family_name,
             realization=realization,
+            execution_engine="python_scalar",
             kind=self.kind,
             input_name=self.input_name,
             sample_count=self.sample_count,

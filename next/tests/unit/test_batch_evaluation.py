@@ -26,6 +26,8 @@ def test_mimc_batch_matches_individual_scalar_evaluations():
         ScalarEvaluator().evaluate(primitive, {"state": state}).value_of("power_0_2")
         for state in states
     )
+    assert batch_result.realization is primitive.realization
+    assert batch_result.execution_engine.name == "python_batch"
 
 
 def test_poseidon_batch_matches_scalar_evaluation():
@@ -83,6 +85,12 @@ def test_batch_backends_have_identical_poseidon_values(evaluator):
 
     assert result.outputs == reference.outputs
     assert result.values_of("linear_map_2_4") == reference.values_of("linear_map_2_4")
+    expected_engine = (
+        "python_transposed_batch"
+        if isinstance(evaluator, TransposedBatchEvaluator)
+        else "python_batch"
+    )
+    assert result.execution_engine.name == expected_engine
 
 
 def test_transposed_backend_supports_empty_batches():

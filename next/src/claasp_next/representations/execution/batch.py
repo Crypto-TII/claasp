@@ -14,6 +14,7 @@ from claasp_next.components.word import (
     ModularSubtract, Rotate, Shift, VariableRotate, VariableShift, Xor,
 )
 from claasp_next.representations.execution.scalar import EvaluationResult, RuntimeValue, ScalarExecutionDriver
+from claasp_next.provenance import DriverIdentity, DriverKind, ResultProvenance
 
 
 @dataclass(frozen=True, slots=True)
@@ -21,6 +22,15 @@ class BatchEvaluationResult:
     """One scalar evaluation result for every item in a batch."""
 
     items: tuple[EvaluationResult, ...]
+    provenance: ResultProvenance
+
+    @property
+    def realization(self):
+        return self.provenance.realization
+
+    @property
+    def execution_engine(self) -> DriverIdentity:
+        return self.provenance.driver
 
     @property
     def outputs(self) -> tuple[RuntimeValue | None, ...]:
@@ -58,6 +68,8 @@ class BatchExecutionDriver:
         ((1,), (8,), (10,))
     """
 
+    identity = DriverIdentity("python_batch", DriverKind.EXECUTION_ENGINE)
+
     def __init__(self, scalar_evaluator: ScalarExecutionDriver | None = None) -> None:
         self._scalar_evaluator = scalar_evaluator or ScalarExecutionDriver()
 
@@ -85,7 +97,9 @@ class BatchExecutionDriver:
         for item_index in range(batch_size):
             item_inputs = {name: inputs[name][item_index] for name in primitive.input_ports}
             results.append(self._scalar_evaluator.evaluate(primitive, item_inputs))
-        return BatchEvaluationResult(tuple(results))
+        return BatchEvaluationResult(
+            tuple(results), ResultProvenance.for_primitive(primitive, self.identity)
+        )
 
 
 class TransposedBatchExecutionDriver(BatchExecutionDriver):
@@ -104,6 +118,8 @@ class TransposedBatchExecutionDriver(BatchExecutionDriver):
         ... ).outputs
         ((1,), (8,), (10,))
     """
+
+    identity = DriverIdentity("python_transposed_batch", DriverKind.EXECUTION_ENGINE)
 
     def evaluate(
         self,
@@ -163,8 +179,13 @@ class TransposedBatchExecutionDriver(BatchExecutionDriver):
             from claasp_next.semantics import CONCRETE
 
             annotation = GraphAnnotation.from_values(primitive, CONCRETE, lane_values, output=output)
-            results.append(EvaluationResult(lane_values, output, ExecutionTrace(annotation)))
-        return BatchEvaluationResult(tuple(results))
+            provenance = ResultProvenance.for_primitive(primitive, self.identity)
+            results.append(EvaluationResult(
+                lane_values, output, ExecutionTrace(annotation), provenance
+            ))
+        return BatchEvaluationResult(
+            tuple(results), ResultProvenance.for_primitive(primitive, self.identity)
+        )
 
     def _evaluate_component(self, component, inputs, batch_size):
         scalar = self._scalar_evaluator
