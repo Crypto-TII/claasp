@@ -28,6 +28,9 @@ Semantics and annotations
 Representations and drivers
 ---------------------------
 
+.. automodule:: claasp_next.provenance
+   :members:
+
 .. automodule:: claasp_next.representations
    :members:
 

@@ -1,6 +1,22 @@
 {
   "schema_version": 1,
-  "milestone": "M10.9e2",
+  "milestone": "M10.9e",
+  "audit_slice": "M10.9e2",
+  "closure": {
+    "status": "achieved-in-m10.9e5",
+    "gate": "tools/realization_closure.py --check",
+    "equivalence_test": "tests/unit/test_primitive_realizations.py",
+    "fixed_evidence": [
+      "migration/m10_9d6_fixed_vectors.json",
+      "migration/m10_9d7_fixed_vectors.json",
+      "tests/unit/test_word_block_catalogue.py",
+      "tests/unit/test_simon_cipher.py",
+      "tests/unit/test_legacy_cipher_parity.py"
+    ],
+    "independent_differential_seed": "M10.9e:<canonical class name>",
+    "interchangeable_families": 16,
+    "realization_graphs": 36
+  },
   "families": [
     {"family": "AES", "canonical": "claasp_next.primitives.block_ciphers.aes.primitive:AES", "equivalent": ["lookup", "algebraic"], "excluded": [{"module": "custom.py", "reason": "distinct AES-derived primitive with user-selected modifications"}]},
     {"family": "Aradi", "canonical": "claasp_next.primitives.block_ciphers.aradi.primitive:Aradi", "equivalent": ["word", "sbox", "sbox_compact_linear_map"], "boundary_normalization": "canonical Word boundary versus legacy-derived Bit boundaries", "excluded": []},

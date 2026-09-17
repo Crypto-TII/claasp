@@ -169,3 +169,41 @@ retain the descriptor through their evaluated graph. Equivalent realizations
 share boundary semantics but may have unrelated internal component identities;
 trails and traces therefore pin their realization rather than attempting an
 implicit component-by-component translation.
+
+``RealizationDescriptor`` contains the stable local name, declared
+capabilities, structural features, maturity, provenance, and preference
+priority. ``Primitive.realize(name, **parameters)`` performs explicit
+selection. ``Primitive.for_capabilities(requirements, policy=...)`` supports
+``preferred`` and ``unique`` policies; equal preferred priorities are an
+error, as is a non-unique match under ``unique``.
+
+.. doctest::
+
+   >>> from claasp_next.graph import AmbiguousRealizationError
+   >>> from claasp_next.primitives import AES
+   >>> AES.for_capabilities({"scalar_evaluation"}).realization.name
+   'lookup'
+   >>> try:
+   ...     AES.for_capabilities({"scalar_evaluation"}, policy="unique")
+   ... except AmbiguousRealizationError as error:
+   ...     "unique policy" in str(error)
+   True
+
+Boundary normalization, when required, is ordinary typed graph structure:
+explicit ``PackBits``/``UnpackBits`` components surround the selected graph.
+It does not rewrite component identifiers to resemble another realization and
+does not imply trace correspondence.
+
+Produced results use ``ResultProvenance``. The selected graph descriptor and
+the ``DriverIdentity`` are separate fields:
+
+.. doctest::
+
+   >>> primitive = AES(number_of_rounds=1, realization="algebraic")
+   >>> result = primitive.evaluate_with_trace(plaintext=0, key=0)
+   >>> result.provenance.realization.name
+   'algebraic'
+   >>> result.provenance.driver.name
+   'python_scalar'
+   >>> result.provenance.realization_identity
+   'aes:algebraic'

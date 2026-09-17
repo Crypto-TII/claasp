@@ -1,5 +1,7 @@
 import json
 from pathlib import Path
+import subprocess
+import sys
 
 import pytest
 
@@ -83,3 +85,11 @@ def test_realization_metadata_and_default_identity_are_stable():
     assert descriptor.structure == frozenset(("sbox",))
     assert descriptor.maturity is RealizationMaturity.EXPERIMENTAL
     assert descriptor.provenance == ("unit fixture",)
+
+
+def test_realization_closure_gate_passes():
+    completed = subprocess.run(
+        [sys.executable, str(ROOT / "tools/realization_closure.py"), "--check"],
+        check=True, capture_output=True, text=True,
+    )
+    assert "16 interchangeable families, 36 graphs" in completed.stdout

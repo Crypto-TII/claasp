@@ -2,7 +2,8 @@ Inspecting and displaying results
 =================================
 
 Analysis results expose projected logical values, status, runtime, backend,
-model statistics, reproducibility metadata, and the raw backend result.
+model statistics, typed realization/driver provenance, reproducibility
+metadata, and the raw backend result.
 
 Primitive diagrams
 -------------------
@@ -46,7 +47,7 @@ Analysis reports
    >>> from claasp_next import Bit, Primitive, ValueType
    >>> from claasp_next.analysis import AnalysisResult
    >>> [field for field in AnalysisResult.__dataclass_fields__ if field != "solver_result"]
-   ['status', 'values', 'runtime_seconds', 'backend', 'statistics', 'reproducibility']
+   ['status', 'values', 'runtime_seconds', 'backend', 'statistics', 'reproducibility', 'provenance']
 
 Values use the same packed-integer conventions as primitive evaluation, so they
 can be displayed with ordinary formatting such as ``hex(result.value("key"))``.

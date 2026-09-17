@@ -100,6 +100,16 @@ The canonical family import remains stable. Twofish and WARP need neither
 alternate realizations nor data, so their implementations remain directly
 visible in ``twofish.py`` and ``warp.py``.
 
+The package layout is not itself a realization claim. The reviewed decisions
+live in ``migration/realization_catalogue.json`` and are checked by
+``tools/realization_closure.py --check``. DES with a 56-bit key boundary is a
+different parameterization from parity-bearing DES; CustomAES and ToyAES are
+different primitives from AES; PRINCEv2 is not a PRINCE realization. Empty
+subclasses that reproduce an identical graph are historical aliases rather
+than extra choices. Legacy-derived Simon, Simeck, and Gimli S-box forms have
+``legacy_regression`` maturity and remain explicitly non-canonical; catalogue
+authenticity/query labels still belong to M10.9f.
+
 Evidence and maintenance
 ------------------------
 

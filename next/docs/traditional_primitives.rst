@@ -105,6 +105,52 @@ Automatic selection is part of reproducibility: results must retain the
 chosen realization, and an unsupported requirement raises an error rather
 than silently changing the analysis.
 
+Selecting realizations in other families
+-----------------------------------------
+
+The same small API applies to every audited family. A realization name
+chooses a graph explicitly, while a task states capabilities rather than
+guessing from component identifiers:
+
+.. doctest::
+
+   >>> from claasp_next.primitives import Gift, Katan
+   >>> gift = Gift.realize("sbox", number_of_rounds=2)
+   >>> gift.realization_identity
+   'gift:sbox'
+   >>> Katan.for_capabilities(
+   ...     {"feedback_register_semantics"}, number_of_rounds=2
+   ... ).realization.name
+   'feedback_register'
+
+The canonical class keeps one external contract across its realizations.
+For example, the word-oriented Simon boundary is unchanged when the explicit
+legacy-regression S-box graph is requested:
+
+.. doctest::
+
+   >>> from claasp_next.primitives import Simon
+   >>> word_graph = Simon.realize("word", number_of_rounds=2)
+   >>> sbox_graph = Simon.realize("legacy_sbox", number_of_rounds=2)
+   >>> word_graph.input("plaintext").value_type == sbox_graph.input("plaintext").value_type
+   True
+   >>> word_graph.evaluate(0x65656877, 0x1918111009080100) == sbox_graph.evaluate(0x65656877, 0x1918111009080100)
+   True
+
+Preferred capability selection is deterministic. A caller that requires a
+single match can instead request the ``unique`` policy; ambiguity and an
+unsupported capability are errors rather than implicit fallbacks.
+
+Result provenance keeps graph and engine identities separate:
+
+.. doctest::
+
+   >>> result = gift.evaluate_with_trace(plaintext=0, key=0)
+   >>> (result.realization.name, result.execution_engine.name)
+   ('sbox', 'python_scalar')
+   >>> result.trace.annotation.realization_identity
+   'gift:sbox'
+
 PRESENT
 -------
 
