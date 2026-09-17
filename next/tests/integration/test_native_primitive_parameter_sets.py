@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from claasp_next.graph import Primitive
+from claasp_next.graph import Primitive, PrimitiveKind
 
 
 PARAMETER_SETS = json.loads(
@@ -28,5 +28,7 @@ def test_every_audited_parameter_set_builds_from_native_source(record):
         parameters["version"] = module.Version[parameters["version"]]
     primitive = getattr(module, record["class"])(**parameters)
     assert isinstance(primitive, Primitive)
+    assert isinstance(primitive.kind, PrimitiveKind)
+    assert set(primitive.input_descriptors) == set(primitive.inputs)
     assert primitive.rounds
     assert primitive.output is not None

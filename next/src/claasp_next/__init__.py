@@ -2,7 +2,8 @@
 
 from claasp_next.graph import (
     CompositeBuilder, CompositeDefinition, CompositeInstance, Primitive, Component,
-    Port, Round, Selection, ValueType,
+    InputVisibility, Port, PrimitiveInput, PrimitiveKind, Round, Selection,
+    ValueType, public_input, secret_input,
 )
 from claasp_next.domains import BinaryExtensionField, Bit, PrimeField, Word
 from claasp_next.representations.execution import (
@@ -36,8 +37,11 @@ __all__ = [
     "Primitive",
     "Component",
     "EvaluationResult",
+    "InputVisibility",
     "Port",
     "ParallelSBoxLayer",
+    "PrimitiveInput",
+    "PrimitiveKind",
     "PrimeField",
     "Round",
     "ScalarEvaluator",
@@ -51,4 +55,6 @@ __all__ = [
     "int_from_bits",
     "int_from_units",
     "units_from_int",
+    "public_input",
+    "secret_input",
 ]

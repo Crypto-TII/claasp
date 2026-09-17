@@ -13,7 +13,8 @@ from claasp_next.components.permutation import gaston_theta, keccak_theta, sigma
 from claasp_next.domains import BinaryExtensionField, Bit, Word
 from claasp_next.domains.validation import is_irreducible_binary_polynomial
 from claasp_next.encoding import bits_from_int
-from claasp_next.graph import Primitive, ValueType
+from claasp_next.graph import Primitive, PrimitiveKind, ValueType
+from claasp_next.utils import binary_field_multiply, binary_field_power
 
 
 def _positive(value: int, name: str) -> int:
@@ -34,7 +35,7 @@ class _NaryWordPrimitive(Primitive):
     operation = None
 
     def __init__(self, name: str, word_bit_size: int, number_of_inputs: int, **options) -> None:
-        super().__init__(name, _inputs(word_bit_size, number_of_inputs))
+        super().__init__(name, _inputs(word_bit_size, number_of_inputs), kind=PrimitiveKind.FUNCTION)
         self.add_round()
         operands = tuple(self.input(name) for name in self.inputs)
         output = self.add_component(self.operation(operands, **options))
@@ -101,7 +102,7 @@ class IdeaModmul(_NaryWordPrimitive):
 class Constant(Primitive):
     def __init__(self, output_bit_size: int = 3, value: int = 0b010) -> None:
         output_bit_size = _positive(output_bit_size, "output_bit_size")
-        super().__init__("constant", {})
+        super().__init__("constant", {}, kind=PrimitiveKind.FUNCTION)
         self.add_round()
         output = self.add_component(ConstantComponent(
             ValueType(Bit(), (output_bit_size,)), bits_from_int(value, output_bit_size)
@@ -112,7 +113,10 @@ class Constant(Primitive):
 class Identity(Primitive):
     def __init__(self, block_bit_size: int = 32) -> None:
         block_bit_size = _positive(block_bit_size, "block_bit_size")
-        super().__init__("identity", {"input": ValueType(Bit(), (block_bit_size,))})
+        super().__init__(
+            "identity", {"input": ValueType(Bit(), (block_bit_size,))},
+            kind=PrimitiveKind.PERMUTATION,
+        )
         self.add_round()
         self.set_output(self.add_component(IdentityComponent(self.input("input"))))
 
@@ -121,7 +125,7 @@ class Not(Primitive):
     def __init__(self, bit_size: int = 4) -> None:
         bit_size = _positive(bit_size, "bit_size")
         value_type = ValueType(Word(bit_size), (1,))
-        super().__init__("not", {"input": value_type})
+        super().__init__("not", {"input": value_type}, kind=PrimitiveKind.PERMUTATION)
         self.add_round()
         self.set_output(self.add_component(BitwiseNot(self.input("input"))))
 
@@ -129,7 +133,10 @@ class Not(Primitive):
 class Rotate(Primitive):
     def __init__(self, bit_size: int = 8, rotation_amount: int = 1) -> None:
         bit_size = _positive(bit_size, "bit_size")
-        super().__init__("rotate", {"input": ValueType(Word(bit_size), (1,))})
+        super().__init__(
+            "rotate", {"input": ValueType(Word(bit_size), (1,))},
+            kind=PrimitiveKind.PERMUTATION,
+        )
         self.add_round()
         direction = "right" if rotation_amount >= 0 else "left"
         self.set_output(self.add_component(RotateComponent(
@@ -140,7 +147,10 @@ class Rotate(Primitive):
 class Shift(Primitive):
     def __init__(self, bit_size: int = 8, shift_amount: int = 1) -> None:
         bit_size = _positive(bit_size, "bit_size")
-        super().__init__("shift", {"input": ValueType(Word(bit_size), (1,))})
+        super().__init__(
+            "shift", {"input": ValueType(Word(bit_size), (1,))},
+            kind=PrimitiveKind.FUNCTION,
+        )
         self.add_round()
         direction = "right" if shift_amount >= 0 else "left"
         self.set_output(self.add_component(ShiftComponent(
@@ -154,7 +164,10 @@ class VariableRotate(Primitive):
         _positive(amount_bit_size, "amount_bit_size")
         value_type = ValueType(Word(bit_size), (1,))
         amount_type = ValueType(Word(amount_bit_size), (1,))
-        super().__init__("variable_rotate", {"input": value_type, "amount": amount_type})
+        super().__init__(
+            "variable_rotate", {"input": value_type, "amount": amount_type},
+            kind=PrimitiveKind.FUNCTION,
+        )
         self.add_round()
         self.set_output(self.add_component(VariableRotateComponent(
             self.input("input"), self.input("amount"), "right" if direction >= 0 else "left"
@@ -167,7 +180,10 @@ class VariableShift(Primitive):
         _positive(amount_bit_size, "amount_bit_size")
         value_type = ValueType(Word(bit_size), (1,))
         amount_type = ValueType(Word(amount_bit_size), (1,))
-        super().__init__("variable_shift", {"input": value_type, "amount": amount_type})
+        super().__init__(
+            "variable_shift", {"input": value_type, "amount": amount_type},
+            kind=PrimitiveKind.FUNCTION,
+        )
         self.add_round()
         self.set_output(self.add_component(VariableShiftComponent(
             self.input("input"), self.input("amount"), "right" if direction >= 0 else "left"
@@ -178,7 +194,8 @@ class Sbox(Primitive):
     def __init__(self, bit_size: int = 4, lookup_table: Iterable[int] | None = None) -> None:
         bit_size = _positive(bit_size, "bit_size")
         table = tuple(range(1 << bit_size)) if lookup_table is None else tuple(lookup_table)
-        super().__init__("sbox", {"input": ValueType(Bit(), (bit_size,))})
+        kind = PrimitiveKind.PERMUTATION if sorted(table) == list(range(1 << bit_size)) else PrimitiveKind.FUNCTION
+        super().__init__("sbox", {"input": ValueType(Bit(), (bit_size,))}, kind=kind)
         self.add_round()
         self.set_output(self.add_component(BitVectorSBox(self.input("input"), table)))
 
@@ -198,7 +215,10 @@ class Permutation(Primitive):
         count = bit_size // word_size
         description = tuple(reversed(range(count))) if permutation_description is None else tuple(permutation_description)
         domain = Bit() if word_size == 1 else Word(word_size)
-        super().__init__("permutation", {"input": ValueType(domain, (count,))})
+        super().__init__(
+            "permutation", {"input": ValueType(domain, (count,))},
+            kind=PrimitiveKind.PERMUTATION,
+        )
         self.add_round()
         self.set_output(self.add_component(PermutationComponent(
             self.input("input"), _inverse_mapping(description)
@@ -223,7 +243,7 @@ class ShiftRows(Primitive):
         _positive(word_bit_size, "word_bit_size")
         _positive(number_of_words, "number_of_words")
         value_type = ValueType(Word(word_bit_size), (number_of_words,))
-        super().__init__("shift_rows", {"input": value_type})
+        super().__init__("shift_rows", {"input": value_type}, kind=PrimitiveKind.PERMUTATION)
         self.add_round()
         mapping = tuple((index - rotation_amount) % number_of_words for index in range(number_of_words))
         self.set_output(self.add_component(PermutationComponent(self.input("input"), mapping)))
@@ -238,7 +258,8 @@ class LinearLayer(Primitive):
         # Legacy linear-layer descriptions store output columns. LinearMap uses
         # the conventional row-per-output representation.
         matrix = tuple(zip(*matrix))
-        super().__init__("linear_layer", {"input": ValueType(Bit(), (bit_size,))})
+        kind = PrimitiveKind.PERMUTATION if _binary_matrix_is_invertible(matrix) else PrimitiveKind.FUNCTION
+        super().__init__("linear_layer", {"input": ValueType(Bit(), (bit_size,))}, kind=kind)
         self.add_round()
         self.set_output(self.add_component(LinearMap(self.input("input"), matrix)))
 
@@ -250,6 +271,46 @@ def _first_irreducible(degree: int) -> int:
     raise ValueError(f"no irreducible polynomial found for degree {degree}")
 
 
+def _binary_matrix_is_invertible(matrix) -> bool:
+    frozen = [list(row) for row in matrix]
+    if not frozen or len(frozen) != len(frozen[0]) or any(len(row) != len(frozen) for row in frozen):
+        return False
+    rank = 0
+    for column in range(len(frozen)):
+        pivot = next((row for row in range(rank, len(frozen)) if frozen[row][column]), None)
+        if pivot is None:
+            continue
+        frozen[rank], frozen[pivot] = frozen[pivot], frozen[rank]
+        for row in range(len(frozen)):
+            if row != rank and frozen[row][column]:
+                frozen[row] = [left ^ right for left, right in zip(frozen[row], frozen[rank])]
+        rank += 1
+    return rank == len(frozen)
+
+
+def _field_matrix_is_invertible(matrix, field: BinaryExtensionField) -> bool:
+    frozen = [list(row) for row in matrix]
+    if not frozen or len(frozen) != len(frozen[0]) or any(len(row) != len(frozen) for row in frozen):
+        return False
+    rank = 0
+    for column in range(len(frozen)):
+        pivot = next((row for row in range(rank, len(frozen)) if frozen[row][column]), None)
+        if pivot is None:
+            continue
+        frozen[rank], frozen[pivot] = frozen[pivot], frozen[rank]
+        inverse = binary_field_power(field, frozen[rank][column], (1 << field.degree) - 2)
+        frozen[rank] = [binary_field_multiply(field, value, inverse) for value in frozen[rank]]
+        for row in range(len(frozen)):
+            factor = frozen[row][column]
+            if row != rank and factor:
+                frozen[row] = [
+                    left ^ binary_field_multiply(field, factor, right)
+                    for left, right in zip(frozen[row], frozen[rank])
+                ]
+        rank += 1
+    return rank == len(frozen)
+
+
 class MixColumn(Primitive):
     def __init__(self, word_size: int = 4, matrix=None, irreducible_polynomial: int = 0) -> None:
         word_size = _positive(word_size, "word_size")
@@ -258,7 +319,8 @@ class MixColumn(Primitive):
         )))
         modulus = irreducible_polynomial or _first_irreducible(word_size)
         field = BinaryExtensionField(word_size, modulus)
-        super().__init__("mix_column", {"input": ValueType(field, (len(frozen[0]),))})
+        kind = PrimitiveKind.PERMUTATION if _field_matrix_is_invertible(frozen, field) else PrimitiveKind.FUNCTION
+        super().__init__("mix_column", {"input": ValueType(field, (len(frozen[0]),))}, kind=kind)
         self.add_round()
         self.set_output(self.add_component(LinearMap(self.input("input"), frozen)))
 
@@ -267,7 +329,10 @@ class Sigma(Primitive):
     def __init__(self, bit_size: int = 8, rotation_amounts_parameter=None) -> None:
         bit_size = _positive(bit_size, "bit_size")
         amounts = (1, 2) if rotation_amounts_parameter is None else tuple(rotation_amounts_parameter)
-        super().__init__("sigma", {"input": ValueType(Bit(), (bit_size,))})
+        super().__init__(
+            "sigma", {"input": ValueType(Bit(), (bit_size,))},
+            kind=PrimitiveKind.FUNCTION,
+        )
         self.add_round()
         self.set_output(self.add_component(sigma(self.input("input"), amounts)))
 
@@ -275,21 +340,30 @@ class Sigma(Primitive):
 class ThetaGaston(Primitive):
     def __init__(self, bit_size: int = 320, rotation_amounts_parameter=None) -> None:
         amounts = (1, 18, 23, 25, 32, 52, 60, 63) if rotation_amounts_parameter is None else tuple(rotation_amounts_parameter)
-        super().__init__("theta_gaston", {"input": ValueType(Bit(), (_positive(bit_size, "bit_size"),))})
+        super().__init__(
+            "theta_gaston", {"input": ValueType(Bit(), (_positive(bit_size, "bit_size"),))},
+            kind=PrimitiveKind.PERMUTATION,
+        )
         self.add_round()
         self.set_output(self.add_component(gaston_theta(self.input("input"), amounts)))
 
 
 class ThetaKeccak(Primitive):
     def __init__(self, bit_size: int = 25) -> None:
-        super().__init__("theta_keccak", {"input": ValueType(Bit(), (_positive(bit_size, "bit_size"),))})
+        super().__init__(
+            "theta_keccak", {"input": ValueType(Bit(), (_positive(bit_size, "bit_size"),))},
+            kind=PrimitiveKind.PERMUTATION,
+        )
         self.add_round()
         self.set_output(self.add_component(keccak_theta(self.input("input"))))
 
 
 class ThetaXoodoo(Primitive):
     def __init__(self, bit_size: int = 384) -> None:
-        super().__init__("theta_xoodoo", {"input": ValueType(Bit(), (_positive(bit_size, "bit_size"),))})
+        super().__init__(
+            "theta_xoodoo", {"input": ValueType(Bit(), (_positive(bit_size, "bit_size"),))},
+            kind=PrimitiveKind.PERMUTATION,
+        )
         self.add_round()
         self.set_output(self.add_component(xoodoo_theta(self.input("input"))))
 
@@ -323,6 +397,9 @@ class Fsr(Primitive):
             specs.append(FeedbackRegisterSpec(legacy_register[0], terms(legacy_register[1]), clock))
         if sum(spec.length for spec in specs) != register_size // word_width:
             raise ValueError("description register lengths do not cover register_size")
-        super().__init__("fsr", {"input": ValueType(domain, (register_size // word_width,))})
+        super().__init__(
+            "fsr", {"input": ValueType(domain, (register_size // word_width,))},
+            kind=PrimitiveKind.FUNCTION,
+        )
         self.add_round()
         self.set_output(self.add_component(FeedbackRegister(self.input("input"), tuple(specs), clocks)))

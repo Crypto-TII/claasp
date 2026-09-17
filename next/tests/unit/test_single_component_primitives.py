@@ -1,5 +1,7 @@
 import pytest
 
+from claasp_next.graph import PrimitiveKind
+
 from claasp_next.primitives.single_component_primitives import (
     And, Constant, Fsr, IdeaModmul, Identity, LinearLayer, MixColumn, Modadd,
     Modmul, Modsub, Not, Or, Permutation, Reverse, Rotate, Sbox, Shift,
@@ -50,3 +52,27 @@ def test_linear_field_feedback_and_permutation_specific_fixtures():
     assert ThetaGaston().evaluate(0) == 0
     assert ThetaKeccak().evaluate(0) == 0
     assert ThetaXoodoo().evaluate(0) == 0
+
+
+def test_single_component_primitives_have_one_round_one_component_and_typed_kinds():
+    permutations = (
+        Identity(), Not(), Rotate(), Sbox(), Permutation(), Reverse(),
+        WordPermutation(), ShiftRows(), LinearLayer(), MixColumn(),
+        ThetaGaston(), ThetaKeccak(), ThetaXoodoo(),
+    )
+    functions = (
+        And(), Or(), Xor(), Modadd(), Modmul(), Modsub(), IdeaModmul(),
+        Constant(), Shift(), VariableRotate(), VariableShift(), Sigma(), Fsr(),
+    )
+    for primitive in (*permutations, *functions):
+        assert len(primitive.rounds) == 1
+        assert len(primitive.components) == 1
+        assert len(primitive.rounds[0].components) == 1
+    assert all(primitive.kind is PrimitiveKind.PERMUTATION for primitive in permutations)
+    assert all(primitive.kind is PrimitiveKind.FUNCTION for primitive in functions)
+
+
+def test_non_bijective_single_component_parameters_are_functions():
+    assert Sbox(2, (0, 0, 1, 1)).kind is PrimitiveKind.FUNCTION
+    assert LinearLayer(2, ((1, 0), (0, 0))).kind is PrimitiveKind.FUNCTION
+    assert MixColumn(2, ((1, 0), (0, 0))).kind is PrimitiveKind.FUNCTION

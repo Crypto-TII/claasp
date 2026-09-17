@@ -17,6 +17,40 @@ The categories describe mathematical interfaces, not execution engines.
 Graph realizations remain separate from scalar, batch, and constraint
 representations.
 
+Primitive kinds and input visibility
+------------------------------------
+
+Each graph states its mathematical interface separately from its execution
+engine. Inputs also carry a semantic role and a default visibility. Keys are
+secret by default, while plaintexts, states, tweaks, and nonces are public:
+
+.. doctest::
+
+   >>> from claasp_next import InputVisibility, PrimitiveKind
+   >>> from claasp_next.primitives import AES
+   >>> aes = AES()
+   >>> aes.kind is PrimitiveKind.BLOCK_CIPHER
+   True
+   >>> aes.secret_inputs
+   ('key',)
+   >>> aes.input_descriptor("plaintext").visibility is InputVisibility.PUBLIC
+   True
+
+Visibility describes a study, not the value or the graph. A known-key study
+can therefore derive new metadata without rebuilding or mutating AES:
+
+.. doctest::
+
+   >>> known_key = aes.with_input_visibility(key="public")
+   >>> known_key.secret_inputs
+   ()
+   >>> aes.secret_inputs
+   ('key',)
+
+Custom authors may use ``public_input`` and ``secret_input`` when conventional
+boundary names are not sufficient. Analyses may override the defaults again
+for a particular experiment.
+
 Importing and evaluating a catalogue primitive
 ----------------------------------------------
 

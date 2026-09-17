@@ -5,6 +5,9 @@ from copy import copy
 import re
 
 from claasp_next.graph.component import Component
+from claasp_next.graph.metadata import (
+    InputVisibility, PrimitiveInput, PrimitiveKind, infer_primitive_kind,
+)
 from claasp_next.graph.port import Port, PortLike, Selection, as_selection
 from claasp_next.graph.round import Round
 from claasp_next.graph.value_type import ValueType
@@ -16,8 +19,9 @@ class Primitive:
     def __init__(
         self,
         family_name: str,
-        inputs: Mapping[str, ValueType],
+        inputs: Mapping[str, ValueType | PrimitiveInput],
         *,
+        kind: PrimitiveKind | str | None = None,
         provenance: tuple[tuple[str, str], ...] = (),
     ) -> None:
         if not isinstance(family_name, str):
@@ -27,17 +31,31 @@ class Primitive:
         if not isinstance(inputs, Mapping):
             raise TypeError("inputs must be a mapping from names to ValueType objects")
         ports: dict[str, Port] = {}
-        for name, value_type in inputs.items():
+        descriptors: dict[str, PrimitiveInput] = {}
+        for name, supplied in inputs.items():
             if not isinstance(name, str):
                 raise TypeError("input names must be strings")
             if not name:
                 raise ValueError("input names must not be empty")
-            if not isinstance(value_type, ValueType):
-                raise TypeError(f"input {name!r} must have a ValueType")
-            ports[name] = Port(name, value_type)
+            if isinstance(supplied, PrimitiveInput):
+                descriptor = supplied
+            elif isinstance(supplied, ValueType):
+                visibility = InputVisibility.SECRET if name in {"key", "secret", "secret_key"} else InputVisibility.PUBLIC
+                descriptor = PrimitiveInput(supplied, role=name, visibility=visibility)
+            else:
+                raise TypeError(f"input {name!r} must have a ValueType or PrimitiveInput")
+            descriptors[name] = descriptor
+            ports[name] = Port(name, descriptor.value_type)
+
+        if kind is None:
+            kind = infer_primitive_kind(descriptors)
+        elif not isinstance(kind, PrimitiveKind):
+            kind = PrimitiveKind(kind)
 
         self._family_name = family_name
+        self._kind = kind
         self._provenance = tuple(provenance)
+        self._input_descriptors = descriptors
         self._input_ports = ports
         self._ports = dict(ports)
         self._rounds: list[Round] = []
@@ -54,6 +72,41 @@ class Primitive:
         """Stable identity and derivation metadata for this graph."""
 
         return self._provenance
+
+    @property
+    def kind(self) -> PrimitiveKind:
+        """Mathematical interface category of this primitive."""
+
+        return self._kind
+
+    @property
+    def input_descriptors(self) -> Mapping[str, PrimitiveInput]:
+        """Typed roles and default visibility for primitive inputs."""
+
+        return dict(self._input_descriptors)
+
+    @property
+    def secret_inputs(self) -> tuple[str, ...]:
+        return tuple(name for name, item in self._input_descriptors.items() if item.is_secret)
+
+    def input_descriptor(self, name: str) -> PrimitiveInput:
+        try:
+            return self._input_descriptors[name]
+        except KeyError as error:
+            raise KeyError(f"primitive input {name!r} does not exist") from error
+
+    def with_input_visibility(self, **overrides: InputVisibility | str) -> "Primitive":
+        """Return the same graph with study-specific input visibility metadata."""
+
+        unexpected = set(overrides) - set(self._input_descriptors)
+        if unexpected:
+            raise KeyError(f"primitive inputs do not exist: {sorted(unexpected)}")
+        derived = copy(self)
+        derived._input_descriptors = {
+            name: descriptor.with_visibility(overrides.get(name, descriptor.visibility))
+            for name, descriptor in self._input_descriptors.items()
+        }
+        return derived
 
     @property
     def inputs(self) -> Mapping[str, Port]:

@@ -6,10 +6,14 @@ from claasp_next.graph.port import Port, PortLike, Selection, as_selection
 from claasp_next.graph.round import Round
 from claasp_next.graph.value_type import ValueType
 from claasp_next.graph.realization import RealizationDescriptor
+from claasp_next.graph.metadata import (
+    InputVisibility, PrimitiveInput, PrimitiveKind, public_input, secret_input,
+)
 from claasp_next.graph.composite import CompositeBuilder, CompositeDefinition, CompositeInstance
 
 __all__ = [
     "CompositeBuilder", "CompositeDefinition", "CompositeInstance", "Primitive",
-    "Component", "Port", "PortLike", "RealizationDescriptor", "Round", "Selection",
-    "ValueType", "as_selection",
+    "Component", "InputVisibility", "Port", "PortLike", "PrimitiveInput",
+    "PrimitiveKind", "RealizationDescriptor", "Round", "Selection", "ValueType",
+    "as_selection", "public_input", "secret_input",
 ]

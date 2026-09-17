@@ -17,6 +17,27 @@ imports cheap while making the full catalogue discoverable through
 ``__all__``. There is one official class name per inventory record; alternate
 graphs belong to realization metadata rather than new execution-engine types.
 
+Primitive and input metadata
+----------------------------
+
+``Primitive.kind`` is a ``PrimitiveKind`` value describing the mathematical
+interface: function, permutation, block function, block primitive, or tweakable
+block primitive. It does not select an evaluator. ``PrimitiveInput`` keeps a
+boundary's ``ValueType``, semantic role, and ``InputVisibility`` together.
+Conventional ``key`` inputs default to secret; other inputs default to public.
+Source can be explicit with ``public_input`` and ``secret_input``.
+
+``Primitive.with_input_visibility`` makes a shallow metadata derivation. The
+typed ports, components, rounds, scopes, output, and semantic results remain
+the same. This is intentional: whether a key is known is a property of one
+analysis scenario, not a different realization of the primitive.
+
+Single-component fixtures obey the ordinary primitive contract. Each contains
+one round and one semantic component. Bijective unary operations are marked as
+permutations; non-bijective, nullary, and multi-input operations are functions.
+S-box and linear-map fixtures determine this classification from their supplied
+table or matrix rather than assuming the default example.
+
 Owned package layout
 --------------------
 

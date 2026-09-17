@@ -21,6 +21,9 @@ from claasp_next.components import (
 from claasp_next.domains import BinaryExtensionField, Bit
 from claasp_next.encoding import bits_from_int
 from claasp_next.graph.port import PortLike, Selection, as_selection
+from claasp_next.graph.metadata import (
+    LEGACY_KIND_NAMES, InputVisibility, PrimitiveInput, infer_primitive_kind,
+)
 from claasp_next.graph.primitive import Primitive
 from claasp_next.graph.value_type import ValueType
 from claasp_next.utils.integers import coerce_exact_int
@@ -250,10 +253,23 @@ class BitGraphPrimitive(Primitive):
         self, family_name, primitive_type, primitive_inputs, primitive_inputs_bit_size,
         primitive_output_bit_size, primitive_reference_code=None,
     ) -> None:
-        del primitive_type, primitive_reference_code
+        del primitive_reference_code
+        descriptors = {
+            name: PrimitiveInput(
+                _bit_type(width), role=name,
+                visibility=InputVisibility.SECRET if name == INPUT_KEY else InputVisibility.PUBLIC,
+            )
+            for name, width in zip(primitive_inputs, primitive_inputs_bit_size)
+        }
+        kind = (
+            infer_primitive_kind(descriptors)
+            if any(descriptor.is_secret for descriptor in descriptors.values())
+            else LEGACY_KIND_NAMES.get(primitive_type)
+        )
         super().__init__(
             family_name,
-            {name: _bit_type(width) for name, width in zip(primitive_inputs, primitive_inputs_bit_size)},
+            descriptors,
+            kind=kind,
         )
         self._declared_output_bit_size = primitive_output_bit_size
         self.output_bit_size = primitive_output_bit_size
