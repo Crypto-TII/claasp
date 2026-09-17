@@ -682,6 +682,14 @@ that catalogue in this dependency order:
   top-level ``claasp_next.parameters`` namespace may remain only as a thin
   convenience re-export and must not own primitive-specific data. Do not force
   package directories on small primitives that need only one module.
+- A frozen exported graph is an intermediate parity oracle, not a completed
+  primitive migration. Final M10.9d destinations must contain readable,
+  Sage-independent v5 construction source expressed with typed components and
+  reusable blocks. Runtime ``CatalogueGraphPrimitive`` wrappers, opaque graph
+  manifests, and compressed graph specifications must be absent at closure.
+  A development-only legacy-to-v5 compiler may generate a first source draft,
+  but its checked-in output must be structured and reviewable as an
+  implementation of the primitive rather than an embedded graph dump.
 
 The M10.9d3 audit covers all 149 classified catalogue source records and the
 143 primitive-specific legacy test modules containing 265 test functions.
@@ -745,10 +753,10 @@ accepted early vertical slices and remain subject to the final closure gate:
     user/developer documentation; require all 145 behavioral sources and their
     applicable fixed evidence to have concrete destinations and make the
     machine closure gate pass before returning to M10.9e. This slice is
-    achieved: all 145 official classes are public at the top level and by
-    semantic category, all 143 legacy primitive-test records resolve to v5
-    evidence, and executable catalogue/ownership documentation closes the
-    milestone.
+    Public exports, evidence destinations, and documentation are achieved, but
+    this slice is reopened: the intermediate frozen-graph-backed primitives
+    must be replaced by readable native v5 construction source and their
+    runtime graph artifacts removed before the milestone can close.
 
 ##### M10.9e: Primitive realizations and task-directed selection
 
@@ -1077,12 +1085,13 @@ second checklist is intentionally not maintained. At this revision:
 - M10.6, including its advanced exact and heuristic analyses, is achieved.
 - M10.7 is achieved: the exhaustive inventory and filesystem gate include the
   reconciled ``develop`` changes.
-- M10.8, M10.9a, M10.9b, M10.9c, and M10.9d are achieved. M10.9c1–M10.9c9 closed the
+- M10.8, M10.9a, M10.9b, and M10.9c are achieved. M10.9c1–M10.9c9 closed the
   inventoried reusable component catalogue; M10.9c10 adds immutable hierarchical
   composite graphs, reusable blocks, compositional AES variants, and scoped
-  representation access. M10.9d closes all 145 behavioral primitive sources,
-  143 legacy evidence modules, primitive-owned data, and central exports.
-- M10.9e is next. It has an achieved AES vertical slice but still needs general result
+  representation access. M10.9d has complete behavioral parity, evidence
+  ownership, data packaging, and public exports, but is reopened until every
+  frozen-graph wrapper is replaced by readable native v5 source.
+- M10.9e has an achieved AES vertical slice but still needs general result
   provenance and task-directed realization selection. M10.9f explicitly owns
   migration of the legacy catalogue/discovery API after the component and
   primitive catalogues are complete. M10.10, M10.11, M10.14, and M10.15
@@ -1223,7 +1232,7 @@ is absent). Update this table in the same commit that changes milestone state.
 | Reusable composite block catalogue (M10.9c10b) | Achieved | Generic 2^n-entry parallel S-box definitions support arbitrary counts, flat-bit SAT-ready lowering, and typed finite-domain units; ChaCha quarter rounds expose named and joined outputs and preserve the RFC 8439 vector; host 514 passed/78 external deselected |
 | Compositional AES and variants (M10.9c10c) | Achieved | Canonical AES is assembled from reusable key-schedule, substitution-layer, and round definitions while preserving AES-128/192/256 and lookup/algebraic vectors; `AESVariant` supports alternate S-boxes and omitted MixColumns under an `aes_variant` identity with immutable derivation metadata; host 516 passed/78 external deselected |
 | Composite documentation and closure (M10.9c10d) | Achieved | User examples build AES from blocks, replace its S-box, omit MixColumns, evaluate ChaCha quarter rounds, and generate parallel-S-box/quarter-round CNF; developer docs specify immutable hierarchy and flat lowering; host 516 passed/78 external deselected; API/user/developer doctests 39/243/480; warning-free user/developer HTML; Python-3.10 compatibility Docker 513 passed/3 skipped/78 deselected and external 76 passed/2 skipped/516 deselected |
-| Complete primitive implementations/evidence (M10.9d) | Achieved | All 145 behavioral source records and 143 legacy primitive-test modules have concrete typed v5 destinations; four helpers remain explicitly outside scope; fixed evidence, primitive-owned data, public exports, wheel resources, and executable documentation pass the machine closure and milestone-group checkpoints |
+| Complete primitive implementations/evidence (M10.9d) | In progress | Behavioral parity, evidence destinations, public exports, and packaging are complete, but 92 destinations still use intermediate frozen graph specifications; replace them with readable Sage-independent v5 construction source and remove the runtime frozen-graph path before closure |
 | ChaCha permutation evaluation slice (M10.9d1) | Achieved | Official `ChaCha` class, standard round convention, typed ARX graph, full ChaCha20 and two legacy toy vectors, and scalar/batch parity; cryptanalytic fixture migration remains separately tracked |
 | Salsa permutation evaluation slice (M10.9d2) | Achieved | Official `Salsa` class, standard full-round convention, typed ARX graph, both fixed legacy vectors, and scalar/batch parity; cryptanalytic fixtures remain separately tracked |
 | Primitive catalogue audit (M10.9d3) | Achieved | Machine inventory assigns 149 source and 143 primitive-test records (265 functions) exactly once across M10.9d1–M10.9d8: 145 behavioral sources and four reviewed outside-scope helpers; the audit gate passes while the separate closure gate exposes every unimplemented destination |
@@ -1233,8 +1242,8 @@ is absent). Update this table in the same commit that changes milestone state.
 | Remaining permutations (M10.9d7) | Achieved | All 25 source and 25 test records have typed forward-graph destinations; 101 audited parameter variants construct, all 55 fixed observations captured by the 46 legacy tests pass, and all 25 families have scalar/batch parity; Keccak/Xoodoo invertible and Spongent FSR remain distinct realizations without claiming M10.10 graph inversion; host checkpoint: 899 passed, 78 external deselected |
 | Fixed-length functions/block functions (M10.9d8) | Achieved | All 15 source and 15 test records have typed graph destinations; 41 fixed observations captured by the 20 legacy tests pass, all 15 families have scalar/batch parity, and conditional/word FSR plus explicit-modulus addition semantics are independently checked; host checkpoint: 941 passed, 78 external deselected |
 | Primitive-owned parameters/data (M10.9d9) | Achieved | Poseidon owns its implementation, typed parameter schema, BN254 data, pinned vector, provenance, and MIT notice; `claasp_next.parameters` is a thin re-export, all 89 frozen graph catalogues are colocated under same-import-path primitive packages, and the built wheel contains every owned artifact; host checkpoint: 943 passed, 78 external deselected |
-| Complete primitive catalogue closure (M10.9d10) | Achieved | All 145 official classes are lazy public exports at the top level and by semantic category; all 143 legacy primitive-test records resolve to existing v5 evidence; the closure gate reports zero source/evidence gaps; host 945 passed/78 external deselected; API/user/developer doctests 39/253/480; warning-free user/developer HTML; Python-3.10 compatibility Docker 942 passed/3 skipped/78 deselected and external 76 passed/2 skipped/945 deselected |
-| Primitive realizations/task selection (M10.9e) | Next | Generic capability metadata and AES lookup/algebraic realizations implemented; result provenance and broader task-directed selection remain |
+| Complete primitive catalogue closure (M10.9d10) | In progress | Public exports, evidence paths, and documentation pass, but closure was reopened because 92 wrappers hide their implementations in 89 compressed graph catalogues; require readable native source and zero runtime frozen graph specifications, then rerun the recorded host/docs/Docker checkpoints |
+| Primitive realizations/task selection (M10.9e) | Planned | Generic capability metadata and AES lookup/algebraic realizations implemented; result provenance and broader task-directed selection follow corrected M10.9d closure |
 | AES realization vertical slice (M10.9e1) | Achieved | Lookup S-box and field-inverse-plus-binary-affine graphs share one public class and all AES-128/192/256 fixed vectors; deterministic capability selection is documented and tested |
 | Catalogue discovery/query API (M10.9f) | Planned | Replace `claasp/catalog.py` with typed discovery over v5 primitive/component/realization/parameter/driver metadata; preserve filters and structured exports without eager optional dependencies or legacy taxonomy leakage |
 | Primitive inversion and graph transformations (M10.10) | Planned | Typed inverse semantics, partial inversion, round trips, slicing, key-schedule removal, and editor transformations |

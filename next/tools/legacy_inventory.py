@@ -1818,6 +1818,16 @@ def primitive_catalogue_audit_status(payload: dict[str, Any]) -> dict[str, Any]:
             )
         )
     ]
+    intermediate_frozen_graphs = []
+    for item in sources:
+        if item["primitive"]["primitive_category"] == "outside_scope":
+            continue
+        path = ROOT / "next/src" / item["primitive"]["proposed_module"].replace(".", "/")
+        implementation = path / "primitive.py" if path.is_dir() else path.with_suffix(".py")
+        if implementation.exists() and "CatalogueGraphPrimitive" in implementation.read_text(
+            encoding="utf-8"
+        ):
+            intermediate_frozen_graphs.append(item["path"])
     return {
         "source": len(sources),
         "test": len(tests),
@@ -1828,8 +1838,12 @@ def primitive_catalogue_audit_status(payload: dict[str, Any]) -> dict[str, Any]:
         "owner_errors": owner_errors,
         "unresolved": unresolved,
         "evidence_unresolved": evidence_unresolved,
+        "intermediate_frozen_graphs": sorted(intermediate_frozen_graphs),
         "audit_complete": not owner_errors,
-        "closure_complete": not owner_errors and not unresolved and not evidence_unresolved,
+        "closure_complete": (
+            not owner_errors and not unresolved and not evidence_unresolved
+            and not intermediate_frozen_graphs
+        ),
     }
 
 
