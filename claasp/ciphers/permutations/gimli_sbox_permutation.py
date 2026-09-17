@@ -131,6 +131,18 @@ class GimliSboxPermutation(Cipher):
     ``0..31``); the S-box construction therefore looks up the correct absolute bit position for that first-round
     ``z`` lane instead of assuming index ``i`` directly.
 
+    REFERENCES:
+
+    Bernstein, D. J., Kölbl, S., Lucks, S., Massolino, P. M. C., Mendel, F., Nawaz, K., Schneider, T., Schwabe, P.,
+    Standaert, F.-X., Todo, Y., & Viguier, B. (2017). Gimli: a cross-platform permutation. CHES 2017, LNCS 10529,
+    299-320. https://gimli.cr.yp.to/spec.html [BKLMMNSSSTV2017]_.
+
+    The test vectors used in this file and in ``gimli_permutation_test.py``/``gimli_sbox_permutation_test.py`` are
+    not individually cited to a specific published source (the repository's own history does not record where they
+    were taken from), but they have been independently re-derived and verified against a fresh transliteration of
+    the official reference algorithm above: all reproduce exactly, and ``GimliPermutation``/``GimliSboxPermutation``
+    additionally agree with each other bit-for-bit across many random inputs and round counts.
+
     INPUT:
 
         - ``number_of_rounds`` -- **integer** (default: `24`); number of rounds of the permutation
