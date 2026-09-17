@@ -1,6 +1,7 @@
 import pytest
 
 from claasp_next.graph import PrimitiveKind
+from claasp_next.primitives._catalogue_exports import CATEGORY_EXPORTS
 
 from claasp_next.primitives.single_component_primitives import (
     And, Constant, Fsr, IdeaModmul, Identity, LinearLayer, MixColumn, Modadd,
@@ -76,3 +77,17 @@ def test_non_bijective_single_component_parameters_are_functions():
     assert Sbox(2, (0, 0, 1, 1)).kind is PrimitiveKind.FUNCTION
     assert LinearLayer(2, ((1, 0), (0, 0))).kind is PrimitiveKind.FUNCTION
     assert MixColumn(2, ((1, 0), (0, 0))).kind is PrimitiveKind.FUNCTION
+
+
+def test_each_public_class_is_defined_in_its_advertised_module():
+    classes = (
+        And, Constant, Fsr, IdeaModmul, Identity, LinearLayer, MixColumn,
+        Modadd, Modmul, Modsub, Not, Or, Permutation, Reverse, Rotate, Sbox,
+        Shift, ShiftRows, Sigma, ThetaGaston, ThetaKeccak, ThetaXoodoo,
+        VariableRotate, VariableShift, WordPermutation, Xor,
+    )
+    advertised = CATEGORY_EXPORTS["single_component_primitives"]
+    assert all(
+        primitive_class.__module__ == advertised[primitive_class.__name__]
+        for primitive_class in classes
+    )
