@@ -10,8 +10,11 @@ from claasp_next.graph import Primitive, PrimitiveKind, ValueType
 class FeedbackRegister(Primitive):
     """Clock a register described by typed feedback parameters.
 
-    >>> FeedbackRegister().evaluate(0b1010)
-    5
+    The default is a four-bit Fibonacci register with feedback taps at
+    positions 0 and 1. One clock changes ``1010`` into ``0101``.
+
+    >>> f"{FeedbackRegister().evaluate(0b1010):04b}"
+    '0101'
     """
 
     def __init__(self, parameters: FeedbackRegisterParameters | None = None) -> None:

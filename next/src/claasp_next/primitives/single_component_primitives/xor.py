@@ -6,10 +6,10 @@ from ._base import word_inputs
 
 
 class Xor(Primitive):
-    """XOR two or more fixed-width words.
+    """XOR two or more fixed-width words, bit by bit.
 
-    >>> Xor().evaluate(0b1010, 0b1100)
-    6
+    >>> f"{Xor().evaluate(0b1010, 0b1100):04b}"
+    '0110'
     """
 
     def __init__(self, word_bit_size: int = 4, number_of_inputs: int = 2) -> None:

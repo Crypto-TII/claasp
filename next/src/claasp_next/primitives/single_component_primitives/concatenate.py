@@ -9,8 +9,11 @@ from ._base import positive
 class Concatenate(Primitive):
     """Join equal-width inputs into one MSB-first bit vector.
 
-    >>> Concatenate().evaluate(0b10, 0b01)
-    9
+    The default joins two two-bit inputs: ``10`` followed by ``01`` is
+    the four-bit vector ``1001``.
+
+    >>> f"{Concatenate().evaluate(0b10, 0b01):04b}"
+    '1001'
     """
 
     def __init__(self, input_bit_size: int = 2, number_of_inputs: int = 2) -> None:

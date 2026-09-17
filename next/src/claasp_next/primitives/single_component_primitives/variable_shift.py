@@ -9,8 +9,11 @@ from ._base import positive
 class VariableShift(Primitive):
     """Shift a word by an amount supplied as a second input.
 
-    >>> hex(VariableShift().evaluate(0x81, 2))
-    '0x20'
+    The default direction is right, so shifting ``10000001`` by two discards
+    the low set bit and fills the two high positions with zeroes.
+
+    >>> f"{VariableShift().evaluate(0x81, 2):08b}"
+    '00100000'
     """
 
     def __init__(

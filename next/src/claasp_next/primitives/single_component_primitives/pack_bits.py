@@ -9,8 +9,15 @@ from ._base import positive
 class PackBits(Primitive):
     """Pack MSB-first bits into fixed-width words.
 
-    >>> PackBits().evaluate(0xAB)
-    171
+    The default converts eight individual bits into two four-bit words. The
+    evaluator encodes both typed forms as the same integer, while the graph's
+    output type records the two-word structure.
+
+    >>> packed = PackBits()
+    >>> packed.components[0].output_type
+    ValueType(domain=Word(width=4), shape=(2,))
+    >>> hex(packed.evaluate(0xAB))
+    '0xab'
     """
 
     def __init__(

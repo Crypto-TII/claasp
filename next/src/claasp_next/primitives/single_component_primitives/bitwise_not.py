@@ -9,8 +9,10 @@ from ._base import positive
 class BitwiseNot(Primitive):
     """Invert every bit in a fixed-width word.
 
-    >>> BitwiseNot().evaluate(0b1010)
-    5
+    The default word width is four bits, so only those four bits are inverted.
+
+    >>> f"{BitwiseNot().evaluate(0b1010):04b}"
+    '0101'
     """
 
     def __init__(self, bit_size: int = 4) -> None:

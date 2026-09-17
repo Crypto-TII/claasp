@@ -7,7 +7,7 @@ from ._base import positive
 
 
 class Identity(Primitive):
-    """Return the input unchanged.
+    """Return a fixed-width bit vector unchanged.
 
     >>> hex(Identity(16).evaluate(0xCAFE))
     '0xcafe'

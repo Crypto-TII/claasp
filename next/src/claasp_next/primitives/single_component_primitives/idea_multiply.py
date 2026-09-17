@@ -8,7 +8,11 @@ from ._base import word_inputs
 class IDEAMultiply(Primitive):
     """Multiply words using IDEA's zero encoding.
 
-    >>> IDEAMultiply(4).evaluate(3, 5)
+    For four-bit words, encoded zero denotes 16; multiplication is modulo
+    17, and a result of 16 is encoded back as zero. Thus ``0 * 2`` means
+    ``16 * 2 mod 17``, which is 15.
+
+    >>> IDEAMultiply(4).evaluate(0, 2)
     15
     """
 

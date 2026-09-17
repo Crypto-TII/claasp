@@ -11,7 +11,9 @@ from ._base import positive
 class Power(Primitive):
     """Raise every input unit to a fixed exponent.
 
-    >>> Power().evaluate(3)
+    By default this cubes elements of GF(17), hence ``3**3 mod 17 = 10``.
+
+    >>> Power(3, PrimeField(17)).evaluate(3)
     10
     """
 

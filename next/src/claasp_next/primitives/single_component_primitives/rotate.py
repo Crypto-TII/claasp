@@ -9,8 +9,11 @@ from ._base import positive
 class Rotate(Primitive):
     """Rotate a fixed-width word in the requested direction.
 
-    >>> hex(Rotate(8, 2, "left").evaluate(0x81))
-    '0x6'
+    Rotating the eight-bit word ``10000001`` left by two positions produces
+    ``00000110``; bits shifted off the left re-enter on the right.
+
+    >>> f"{Rotate(8, 2, 'left').evaluate(0x81):08b}"
+    '00000110'
     """
 
     def __init__(

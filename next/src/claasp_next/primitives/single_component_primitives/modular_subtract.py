@@ -8,6 +8,8 @@ from ._base import word_inputs
 class ModularSubtract(Primitive):
     """Subtract fixed-width words modulo a power of two.
 
+    The default width is four bits, so ``3 - 5 = -2`` wraps modulo 16.
+
     >>> ModularSubtract().evaluate(3, 5)
     14
     """

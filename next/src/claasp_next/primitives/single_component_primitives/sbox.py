@@ -11,8 +11,12 @@ from ._base import positive
 class SBox(Primitive):
     """Apply one lookup table independently to every input unit.
 
-    >>> SBox([3, 2, 1, 0], Word(2), unit_count=2).evaluate(0b0001)
-    14
+    This example splits ``0001`` into two two-bit units, ``00`` and ``01``.
+    The table maps them independently to ``11`` and ``10``, yielding ``1110``.
+
+    >>> result = SBox([3, 2, 1, 0], Word(2), unit_count=2).evaluate(0b0001)
+    >>> f"{result:04b}"
+    '1110'
     """
 
     def __init__(

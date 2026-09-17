@@ -6,10 +6,10 @@ from ._base import word_inputs
 
 
 class BitwiseAnd(Primitive):
-    """AND two or more fixed-width words.
+    """AND two or more fixed-width words, bit by bit.
 
-    >>> BitwiseAnd().evaluate(0b1010, 0b1100)
-    8
+    >>> f"{BitwiseAnd().evaluate(0b1010, 0b1100):04b}"
+    '1000'
     """
 
     def __init__(self, word_bit_size: int = 4, number_of_inputs: int = 2) -> None:

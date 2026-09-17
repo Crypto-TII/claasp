@@ -6,10 +6,10 @@ from ._base import word_inputs
 
 
 class BitwiseOr(Primitive):
-    """OR two or more fixed-width words.
+    """OR two or more fixed-width words, bit by bit.
 
-    >>> BitwiseOr().evaluate(0b1010, 0b0101)
-    15
+    >>> f"{BitwiseOr().evaluate(0b1010, 0b0101):04b}"
+    '1111'
     """
 
     def __init__(self, word_bit_size: int = 4, number_of_inputs: int = 2) -> None:

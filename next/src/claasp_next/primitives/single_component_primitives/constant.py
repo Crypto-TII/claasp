@@ -10,8 +10,8 @@ from ._base import positive
 class Constant(Primitive):
     """Return a fixed bit vector and take no inputs.
 
-    >>> Constant(8, 0x5A).evaluate()
-    90
+    >>> hex(Constant(8, 0x5A).evaluate())
+    '0x5a'
     """
 
     def __init__(self, output_bit_size: int = 3, value: int = 0b010) -> None:

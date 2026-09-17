@@ -8,7 +8,11 @@ from ._base import algebraic_inputs
 class Add(Primitive):
     """Add corresponding units in two or more inputs.
 
-    >>> Add().evaluate(5, 14)
+    The default domain is the prime field GF(17), so results are reduced
+    modulo 17. Here ``5 + 14 = 19``, represented by ``2`` in GF(17).
+
+    >>> from claasp_next import PrimeField
+    >>> Add(PrimeField(17)).evaluate(5, 14)
     2
     """
 

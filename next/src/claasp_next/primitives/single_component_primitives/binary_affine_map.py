@@ -15,8 +15,11 @@ from ._base import positive
 class BinaryAffineMap(Primitive):
     """Apply one GF(2) affine map to every field element.
 
-    >>> BinaryAffineMap().evaluate(0b1010)
-    10
+    The default is the identity map on one four-bit field element. Setting
+    the offset to ``0011`` XORs that constant into the result.
+
+    >>> f"{BinaryAffineMap(offset=0b0011).evaluate(0b1010):04b}"
+    '1001'
     """
 
     def __init__(

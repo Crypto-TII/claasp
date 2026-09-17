@@ -8,8 +8,10 @@ from ._base import word_inputs
 class ModularMultiply(Primitive):
     """Multiply fixed-width words modulo a power of two.
 
-    >>> ModularMultiply().evaluate(3, 5)
-    15
+    The default width is four bits. Here ``3 * 6 = 18`` wraps modulo 16.
+
+    >>> ModularMultiply().evaluate(3, 6)
+    2
     """
 
     def __init__(self, word_bit_size: int = 4, number_of_inputs: int = 2) -> None:

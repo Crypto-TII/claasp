@@ -8,6 +8,8 @@ from ._base import word_inputs
 class ModularAdd(Primitive):
     """Add fixed-width words modulo a power of two.
 
+    The default width is four bits, so ``11 + 7 = 18`` wraps modulo 16.
+
     >>> ModularAdd().evaluate(11, 7)
     2
     """

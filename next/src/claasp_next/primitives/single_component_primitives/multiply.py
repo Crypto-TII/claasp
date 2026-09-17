@@ -8,7 +8,11 @@ from ._base import algebraic_inputs
 class Multiply(Primitive):
     """Multiply corresponding units in two or more inputs.
 
-    >>> Multiply().evaluate(5, 7)
+    The default domain is the prime field GF(17), so ``5 * 7 = 35`` is
+    represented by ``1``.
+
+    >>> from claasp_next import PrimeField
+    >>> Multiply(PrimeField(17)).evaluate(5, 7)
     1
     """
 

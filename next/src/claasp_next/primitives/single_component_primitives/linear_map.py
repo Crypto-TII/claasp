@@ -9,8 +9,11 @@ from claasp_next.utils import identity_matrix, matrix_is_invertible, normalize_m
 class LinearMap(Primitive):
     """Apply a row-major matrix over a chosen scalar domain.
 
-    >>> LinearMap([[1, 0], [1, 1]]).evaluate(0b10)
-    3
+    The default domain is GF(2). With input vector ``[1, 0]``, the rows
+    ``[1, 0]`` and ``[1, 1]`` both produce 1, giving output ``11``.
+
+    >>> f"{LinearMap([[1, 0], [1, 1]]).evaluate(0b10):02b}"
+    '11'
     """
 
     def __init__(self, matrix=None, domain=None) -> None:

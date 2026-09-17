@@ -9,8 +9,11 @@ from ._base import positive
 class VariableRotate(Primitive):
     """Rotate a word by an amount supplied as a second input.
 
-    >>> hex(VariableRotate().evaluate(0x81, 2))
-    '0x60'
+    The default direction is right, so rotating ``10000001`` by two produces
+    ``01100000`` and retains both set bits.
+
+    >>> f"{VariableRotate().evaluate(0x81, 2):08b}"
+    '01100000'
     """
 
     def __init__(

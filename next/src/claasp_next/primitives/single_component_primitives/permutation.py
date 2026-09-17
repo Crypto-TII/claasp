@@ -9,6 +9,8 @@ from ._base import positive
 class Permutation(Primitive):
     """Apply ``output[i] = input[mapping[i]]`` to bits or words.
 
+    This example swaps two four-bit words, turning ``AB`` into ``BA``.
+
     >>> hex(Permutation([1, 0], 4).evaluate(0xAB))
     '0xba'
     """

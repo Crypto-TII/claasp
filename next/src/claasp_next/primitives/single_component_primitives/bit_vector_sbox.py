@@ -10,8 +10,11 @@ from ._base import positive
 class BitVectorSBox(Primitive):
     """Use an entire bit vector as one lookup-table index.
 
-    >>> BitVectorSBox(2, [3, 2, 1, 0]).evaluate(1)
-    2
+    In this two-bit example the table maps indices ``0, 1, 2, 3`` to
+    ``3, 2, 1, 0`` respectively, so input ``01`` maps to ``10``.
+
+    >>> f"{BitVectorSBox(2, [3, 2, 1, 0]).evaluate(0b01):02b}"
+    '10'
     """
 
     def __init__(

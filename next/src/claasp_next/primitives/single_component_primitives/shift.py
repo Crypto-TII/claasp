@@ -9,8 +9,11 @@ from ._base import positive
 class Shift(Primitive):
     """Shift a fixed-width word, filling with zeroes.
 
-    >>> hex(Shift(8, 1).evaluate(0x81))
-    '0x40'
+    The default direction is right. Unlike rotation, the low bit discarded
+    from ``10000001`` does not re-enter at the other end.
+
+    >>> f"{Shift(8, 1).evaluate(0x81):08b}"
+    '01000000'
     """
 
     def __init__(

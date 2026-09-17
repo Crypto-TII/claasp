@@ -9,8 +9,15 @@ from ._base import positive
 class UnpackBits(Primitive):
     """Expand fixed-width words into MSB-first bits.
 
-    >>> UnpackBits().evaluate(0xAB)
-    171
+    The default converts two four-bit words into eight individual bits. The
+    evaluator encodes both typed forms as the same integer, while the graph's
+    output type records the eight-bit structure.
+
+    >>> unpacked = UnpackBits()
+    >>> unpacked.components[0].output_type
+    ValueType(domain=Bit(), shape=(8,))
+    >>> hex(unpacked.evaluate(0xAB))
+    '0xab'
     """
 
     def __init__(self, domain=None, word_count: int = 2) -> None:
