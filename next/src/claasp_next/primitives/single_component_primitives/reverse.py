@@ -14,8 +14,7 @@ class Reverse(Primitive):
             kind=PrimitiveKind.PERMUTATION,
         )
         self.add_round()
-        mapping = tuple(reversed(range(bit_size)))
-        output = self.add_component(PermutationComponent(self.input("input"), mapping))
+        output = self.add_component(PermutationComponent.reverse(self.input("input")))
         self.set_output(output)
 
 

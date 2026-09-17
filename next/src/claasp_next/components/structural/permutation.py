@@ -30,3 +30,32 @@ class Permutation(Component):
         size = component_input.value_type.unit_count
         if len(frozen_mapping) != size or set(frozen_mapping) != set(range(size)):
             raise ValueError(f"mapping must be a permutation of range({size})")
+
+    @classmethod
+    def from_destinations(
+        cls,
+        component_input: PortLike,
+        destination_by_source: Iterable[int],
+        component_id: str | None = None,
+    ) -> "Permutation":
+        """Build from ``destination_by_source[source] = destination`` notation."""
+
+        description = tuple(destination_by_source)
+        if sorted(description) != list(range(len(description))):
+            raise ValueError("permutation description must contain every destination once")
+        mapping = (
+            description.index(destination)
+            for destination in range(len(description))
+        )
+        return cls(component_input, mapping, component_id)
+
+    @classmethod
+    def reverse(
+        cls,
+        component_input: PortLike,
+        component_id: str | None = None,
+    ) -> "Permutation":
+        """Reverse all logical units in a component input."""
+
+        size = as_selection(component_input).value_type.unit_count
+        return cls(component_input, reversed(range(size)), component_id)

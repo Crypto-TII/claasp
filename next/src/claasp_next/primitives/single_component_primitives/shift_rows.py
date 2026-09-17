@@ -1,6 +1,6 @@
 """One-component row/word rotation permutation."""
 
-from claasp_next.components import Permutation as PermutationComponent
+from claasp_next.components.permutation import shift_rows
 from claasp_next.domains import Word
 from claasp_next.graph import Primitive, PrimitiveKind, ValueType
 from ._base import positive
@@ -13,8 +13,8 @@ class ShiftRows(Primitive):
         value_type = ValueType(Word(word_bit_size), (number_of_words,))
         super().__init__("shift_rows", {"input": value_type}, kind=PrimitiveKind.PERMUTATION)
         self.add_round()
-        mapping = tuple((index - rotation_amount) % number_of_words for index in range(number_of_words))
-        self.set_output(self.add_component(PermutationComponent(self.input("input"), mapping)))
+        component = shift_rows(self.input("input"), number_of_words, [rotation_amount])
+        self.set_output(self.add_component(component))
 
 
 __all__ = ["ShiftRows"]

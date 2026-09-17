@@ -6,6 +6,7 @@ from math import gcd
 from claasp_next.components import Add, Concatenate, Constant, LinearMap, Power
 from claasp_next.graph import Primitive, Port, ValueType
 from claasp_next.domains import PrimeField
+from claasp_next.utils import normalize_matrix
 
 
 class Poseidon(Primitive):
@@ -55,11 +56,11 @@ class Poseidon(Primitive):
         if gcd(exponent, modulus - 1) != 1:
             raise ValueError("exponent must be coprime to modulus - 1")
 
-        matrix = tuple(tuple(row) for row in linear_layer)
+        matrix = normalize_matrix(linear_layer)
         if not matrix or any(len(row) != len(matrix) for row in matrix):
             raise ValueError("linear_layer must be a non-empty square matrix")
         width = len(matrix)
-        constants = tuple(tuple(row) for row in round_constants)
+        constants = normalize_matrix(round_constants)
         number_of_rounds = full_rounds + partial_rounds
         if len(constants) != number_of_rounds:
             raise ValueError(f"round_constants must contain {number_of_rounds} rows")

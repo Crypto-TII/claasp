@@ -1,6 +1,6 @@
 """One-component lookup S-box primitive."""
 
-from collections.abc import Iterable
+from collections.abc import Sequence
 
 from claasp_next.components import BitVectorSBox
 from claasp_next.domains import Bit
@@ -9,9 +9,9 @@ from ._base import positive
 
 
 class Sbox(Primitive):
-    def __init__(self, bit_size: int = 4, lookup_table: Iterable[int] | None = None) -> None:
+    def __init__(self, bit_size: int = 4, lookup_table: Sequence[int] | None = None) -> None:
         bit_size = positive(bit_size, "bit_size")
-        table = tuple(range(1 << bit_size)) if lookup_table is None else tuple(lookup_table)
+        table = range(1 << bit_size) if lookup_table is None else lookup_table
         kind = (
             PrimitiveKind.PERMUTATION
             if sorted(table) == list(range(1 << bit_size))

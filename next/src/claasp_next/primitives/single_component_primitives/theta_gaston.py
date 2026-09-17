@@ -11,7 +11,7 @@ class ThetaGaston(Primitive):
         amounts = (
             (1, 18, 23, 25, 32, 52, 60, 63)
             if rotation_amounts_parameter is None
-            else tuple(rotation_amounts_parameter)
+            else rotation_amounts_parameter
         )
         super().__init__(
             "theta_gaston", {"input": ValueType(Bit(), (positive(bit_size, "bit_size"),))},

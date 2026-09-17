@@ -1,6 +1,18 @@
 """Small dependency-free finite-field reference operations."""
 
 from claasp_next.domains import BinaryExtensionField
+from claasp_next.domains.validation import is_irreducible_binary_polynomial
+
+
+def first_irreducible_polynomial(degree: int) -> int:
+    """Return the smallest monic irreducible binary polynomial of ``degree``."""
+
+    if not isinstance(degree, int) or isinstance(degree, bool) or degree <= 0:
+        raise ValueError("degree must be a positive integer")
+    for polynomial in range((1 << degree) | 1, 1 << (degree + 1), 2):
+        if is_irreducible_binary_polynomial(polynomial, degree):
+            return polynomial
+    raise ValueError(f"no irreducible polynomial found for degree {degree}")
 
 
 def binary_field_multiply(field: BinaryExtensionField, left: int, right: int) -> int:

@@ -171,3 +171,28 @@ shows the complete reference sequence: initialize ``Primitive``, call
 with ``set_output()``. Shared private code is limited to validation and
 finite-field/matrix helpers, so following an import path always reaches the
 primitive definition rather than a forwarding shim or hidden graph builder.
+
+Primitive authors supply mathematical parameters using ordinary lists. The
+component and utility layers validate shape, orientation, domains, and stable
+internal storage. Matrix comprehensions and container freezing therefore do
+not belong in primitive definitions.
+
+.. doctest::
+
+   >>> from claasp_next.components import FeedbackRegisterParameters
+   >>> from claasp_next.primitives.single_component_primitives import Fsr, LinearLayer, MixColumn
+   >>> linear = LinearLayer(2, matrix=[[1, 0], [1, 1]])
+   >>> linear.evaluate(0b10)
+   3
+   >>> mixing = MixColumn(4, [[1, 0], [0, 1]])
+   >>> hex(mixing.evaluate(0xAB))
+   '0xab'
+   >>> feedback = FeedbackRegisterParameters.from_taps(4, [0, 1])
+   >>> Fsr(4, parameters=feedback).evaluate(0b1010)
+   5
+
+``FeedbackRegisterParameters.from_legacy_description()`` confines the nested
+v4 FSR encoding to an explicit compatibility boundary. New code can use
+``from_taps()`` or construct typed ``FeedbackRegisterSpec`` and
+``FeedbackTerm`` values directly; both accept ordinary iterables and perform
+their own normalization.

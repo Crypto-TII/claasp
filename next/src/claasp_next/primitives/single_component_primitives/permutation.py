@@ -3,7 +3,7 @@
 from claasp_next.components import Permutation as PermutationComponent
 from claasp_next.domains import Bit, Word
 from claasp_next.graph import Primitive, PrimitiveKind, ValueType
-from ._base import inverse_mapping, positive
+from ._base import positive
 
 
 class Permutation(Primitive):
@@ -14,9 +14,9 @@ class Permutation(Primitive):
             raise ValueError("bit_size must be divisible by word_size")
         count = bit_size // word_size
         description = (
-            tuple(reversed(range(count)))
+            reversed(range(count))
             if permutation_description is None
-            else tuple(permutation_description)
+            else permutation_description
         )
         domain = Bit() if word_size == 1 else Word(word_size)
         super().__init__(
@@ -24,8 +24,8 @@ class Permutation(Primitive):
             kind=PrimitiveKind.PERMUTATION,
         )
         self.add_round()
-        self.set_output(self.add_component(PermutationComponent(
-            self.input("input"), inverse_mapping(description)
+        self.set_output(self.add_component(PermutationComponent.from_destinations(
+            self.input("input"), description,
         )))
 
 

@@ -8,7 +8,11 @@ from claasp_next import (
     BinaryExtensionField, Bit, Primitive, ScalarEvaluator, TransposedBatchEvaluator,
     ValueType, Word,
 )
-from claasp_next.components import FeedbackRegister, FeedbackRegisterSpec, FeedbackTerm
+from claasp_next.components import (
+    FeedbackRegister, FeedbackRegisterParameters, FeedbackRegisterSpec,
+    FeedbackTerm,
+)
+from claasp_next.primitives.single_component_primitives import Fsr
 
 
 def _primitive(domain, unit_count, spec, clocks=1):
@@ -27,6 +31,14 @@ def test_binary_lfsr_matches_complete_legacy_truth_table():
     for state in product(range(2), repeat=4):
         expected = (state[1], state[2], state[3], state[0] ^ state[1])
         assert ScalarEvaluator().evaluate(primitive, {"state": state}).output == expected
+
+
+def test_typed_feedback_parameters_accept_natural_lists_and_tap_positions():
+    parameters = FeedbackRegisterParameters.from_taps(4, [0, 1])
+    assert Fsr(4, parameters=parameters).evaluate(0b1010) == 0b0101
+
+    spec = FeedbackRegisterSpec(4, [FeedbackTerm(0), FeedbackTerm([1])])
+    assert _primitive(Bit(), 4, spec).evaluate(0b1010) == 0b0101
 
 
 def test_clocked_nonlinear_register_updates_only_when_clock_polynomial_is_one():

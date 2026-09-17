@@ -9,7 +9,7 @@ from ._base import positive
 class Sigma(Primitive):
     def __init__(self, bit_size: int = 8, rotation_amounts_parameter=None) -> None:
         bit_size = positive(bit_size, "bit_size")
-        amounts = (1, 2) if rotation_amounts_parameter is None else tuple(rotation_amounts_parameter)
+        amounts = [1, 2] if rotation_amounts_parameter is None else rotation_amounts_parameter
         super().__init__("sigma", {"input": ValueType(Bit(), (bit_size,))}, kind=PrimitiveKind.FUNCTION)
         self.add_round()
         self.set_output(self.add_component(sigma(self.input("input"), amounts)))

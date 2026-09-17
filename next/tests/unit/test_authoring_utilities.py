@@ -9,14 +9,19 @@ from claasp_next.utils import (
     coerce_exact_int,
     int_to_bytes,
     int_to_words,
+    identity_matrix,
+    matrix_is_invertible,
+    normalize_matrix,
     reverse_bytes_in_words,
     rotate_right,
     rotate_sequence_left,
     rotate_sequence_right,
     shift_left,
     shift_right,
+    transpose_matrix,
     words_to_int,
 )
+from claasp_next import BinaryExtensionField, Bit
 
 
 def test_legacy_integer_evidence_and_independent_bit_formula():
@@ -54,6 +59,15 @@ def test_layout_reverses_bytes_in_each_word_independently():
     )
     assert reverse_bytes_in_words(range(32)) == expected
     assert reverse_bytes_in_words(range(64)) == expected + tuple(position + 32 for position in expected)
+
+
+def test_matrix_helpers_hide_normalization_and_preserve_field_semantics():
+    assert identity_matrix(3) == ((1, 0, 0), (0, 1, 0), (0, 0, 1))
+    assert normalize_matrix([[1, 0], [1, 1]]) == ((1, 0), (1, 1))
+    assert transpose_matrix([[1, 0], [1, 1]]) == ((1, 1), (0, 1))
+    assert matrix_is_invertible([[1, 0], [1, 1]], Bit())
+    assert matrix_is_invertible([[1, 1], [1, 2]], BinaryExtensionField(2, 0b111))
+    assert not matrix_is_invertible([[1, 0], [0, 0]], Bit())
 
 
 @pytest.mark.parametrize("value", [True, False, "3", None, 3.5, [], {}])

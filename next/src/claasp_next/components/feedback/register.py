@@ -1,28 +1,33 @@
+from collections.abc import Iterable
 from dataclasses import dataclass
 
 from claasp_next.domains import BinaryExtensionField, Bit
 from claasp_next.graph import Component, PortLike
 from claasp_next.graph.port import as_selection
+from claasp_next.utils.finite_fields import first_irreducible_polynomial
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True, slots=True, init=False)
 class FeedbackTerm:
     """One coefficient times a monomial in global register positions."""
 
     positions: tuple[int, ...]
     coefficient: int = 1
 
-    def __post_init__(self) -> None:
-        if not isinstance(self.positions, tuple) or any(
+    def __init__(self, positions: Iterable[int] | int = (), coefficient: int = 1) -> None:
+        frozen_positions = (positions,) if isinstance(positions, int) else tuple(positions)
+        if any(
             not isinstance(position, int) or isinstance(position, bool) or position < 0
-            for position in self.positions
+            for position in frozen_positions
         ):
-            raise ValueError("feedback positions must be a tuple of non-negative integers")
-        if not isinstance(self.coefficient, int) or isinstance(self.coefficient, bool):
+            raise ValueError("feedback positions must be non-negative integers")
+        if not isinstance(coefficient, int) or isinstance(coefficient, bool):
             raise TypeError("feedback coefficient must be an integer")
+        object.__setattr__(self, "positions", frozen_positions)
+        object.__setattr__(self, "coefficient", coefficient)
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True, slots=True, init=False)
 class FeedbackRegisterSpec:
     """Length, feedback polynomial, and optional Boolean clock polynomial."""
 
@@ -30,20 +35,158 @@ class FeedbackRegisterSpec:
     feedback: tuple[FeedbackTerm, ...]
     clock: tuple[FeedbackTerm, ...] | None = None
 
-    def __post_init__(self) -> None:
-        if not isinstance(self.length, int) or isinstance(self.length, bool):
+    def __init__(
+        self,
+        length: int,
+        feedback: Iterable[FeedbackTerm],
+        clock: Iterable[FeedbackTerm] | None = None,
+    ) -> None:
+        if not isinstance(length, int) or isinstance(length, bool):
             raise TypeError("register length must be an integer")
-        if self.length <= 0:
+        if length <= 0:
             raise ValueError("register length must be positive")
-        if not isinstance(self.feedback, tuple) or not self.feedback:
+        frozen_feedback = tuple(feedback)
+        if not frozen_feedback:
             raise ValueError("register feedback must contain at least one term")
-        if any(not isinstance(term, FeedbackTerm) for term in self.feedback):
+        if any(not isinstance(term, FeedbackTerm) for term in frozen_feedback):
             raise TypeError("register feedback entries must be FeedbackTerm values")
-        if self.clock is not None:
-            if not isinstance(self.clock, tuple) or not self.clock:
-                raise ValueError("register clock must be None or a non-empty tuple")
-            if any(not isinstance(term, FeedbackTerm) for term in self.clock):
+        frozen_clock = None if clock is None else tuple(clock)
+        if frozen_clock is not None:
+            if not frozen_clock:
+                raise ValueError("register clock must be None or non-empty")
+            if any(not isinstance(term, FeedbackTerm) for term in frozen_clock):
                 raise TypeError("register clock entries must be FeedbackTerm values")
+        object.__setattr__(self, "length", length)
+        object.__setattr__(self, "feedback", frozen_feedback)
+        object.__setattr__(self, "clock", frozen_clock)
+
+
+@dataclass(frozen=True, slots=True, init=False)
+class FeedbackRegisterParameters:
+    """Validated domain and register parameters for one feedback component."""
+
+    domain: Bit | BinaryExtensionField
+    registers: tuple[FeedbackRegisterSpec, ...]
+    clocks: int = 1
+
+    def __init__(
+        self,
+        domain: Bit | BinaryExtensionField,
+        registers: Iterable[FeedbackRegisterSpec],
+        clocks: int = 1,
+    ) -> None:
+        frozen_registers = tuple(registers)
+        if not isinstance(domain, (Bit, BinaryExtensionField)):
+            raise TypeError("feedback-register domain must be Bit or BinaryExtensionField")
+        if not frozen_registers or any(
+            not isinstance(register, FeedbackRegisterSpec)
+            for register in frozen_registers
+        ):
+            raise TypeError("registers must contain FeedbackRegisterSpec values")
+        if not isinstance(clocks, int) or isinstance(clocks, bool) or clocks <= 0:
+            raise ValueError("clock count must be a positive integer")
+        object.__setattr__(self, "domain", domain)
+        object.__setattr__(self, "registers", frozen_registers)
+        object.__setattr__(self, "clocks", clocks)
+
+    @property
+    def unit_count(self) -> int:
+        return sum(register.length for register in self.registers)
+
+    @classmethod
+    def from_taps(
+        cls,
+        register_size: int,
+        taps: Iterable[int],
+        *,
+        word_width: int = 1,
+        clocks: int = 1,
+    ) -> "FeedbackRegisterParameters":
+        """Describe one Fibonacci register from its feedback tap positions."""
+
+        if not isinstance(register_size, int) or isinstance(register_size, bool) or register_size <= 0:
+            raise ValueError("register_size must be a positive integer")
+        if not isinstance(word_width, int) or isinstance(word_width, bool) or word_width <= 0:
+            raise ValueError("word_width must be a positive integer")
+        if register_size % word_width:
+            raise ValueError("register_size must be divisible by word_width")
+        domain = Bit() if word_width == 1 else BinaryExtensionField(
+            word_width, first_irreducible_polynomial(word_width),
+        )
+        feedback = [FeedbackTerm(tap) for tap in taps]
+        return cls(
+            domain,
+            [FeedbackRegisterSpec(register_size // word_width, feedback)],
+            clocks,
+        )
+
+    @classmethod
+    def resolve(
+        cls,
+        register_size: int,
+        parameters: "FeedbackRegisterParameters | None" = None,
+        *,
+        legacy_description=None,
+    ) -> "FeedbackRegisterParameters":
+        """Resolve typed, default, or legacy parameters for a fixed bit size."""
+
+        if parameters is not None and legacy_description is not None:
+            raise ValueError("use either parameters or legacy_description, not both")
+        if parameters is None:
+            parameters = (
+                cls.from_taps(register_size, [0, 1])
+                if legacy_description is None
+                else cls.from_legacy_description(register_size, legacy_description)
+            )
+        if parameters.unit_count * parameters.domain.encoded_bit_size != register_size:
+            raise ValueError("feedback-register parameters must cover register_size")
+        return parameters
+
+    @classmethod
+    def from_legacy_description(
+        cls,
+        register_size: int,
+        description=None,
+    ) -> "FeedbackRegisterParameters":
+        """Translate the v4 nested FSR description at the compatibility boundary."""
+
+        if description is None:
+            description = [[[register_size, [[0], [1]]]], 1]
+        if not isinstance(description, (list, tuple)) or len(description) not in (2, 3):
+            raise ValueError(
+                "description must contain registers, word width, and optional clocks"
+            )
+        legacy_registers, word_width = description[:2]
+        clocks = 1 if len(description) == 2 else description[2]
+        if not isinstance(word_width, int) or isinstance(word_width, bool) or word_width <= 0:
+            raise ValueError("description word width must be a positive integer")
+        if register_size % word_width:
+            raise ValueError("register_size must be divisible by the description word width")
+        domain = Bit() if word_width == 1 else BinaryExtensionField(
+            word_width, first_irreducible_polynomial(word_width),
+        )
+
+        def terms(polynomial):
+            if polynomial == []:
+                return [FeedbackTerm()]
+            if word_width == 1:
+                return [FeedbackTerm(monomial) for monomial in polynomial]
+            return [FeedbackTerm(monomial[1], monomial[0]) for monomial in polynomial]
+
+        registers = []
+        for legacy_register in legacy_registers:
+            if len(legacy_register) not in (2, 3):
+                raise ValueError("each register needs a length, feedback, and optional clock")
+            clock = None if len(legacy_register) == 2 else terms(legacy_register[2])
+            registers.append(
+                FeedbackRegisterSpec(
+                    legacy_register[0], terms(legacy_register[1]), clock,
+                )
+            )
+        parameters = cls(domain, registers, clocks)
+        if parameters.unit_count != register_size // word_width:
+            raise ValueError("description register lengths do not cover register_size")
+        return parameters
 
 
 @dataclass(frozen=True, slots=True, init=False)
@@ -56,16 +199,17 @@ class FeedbackRegister(Component):
     def __init__(
         self,
         component_input: PortLike,
-        registers: tuple[FeedbackRegisterSpec, ...],
+        registers: Iterable[FeedbackRegisterSpec],
         clocks: int = 1,
         component_id: str | None = None,
     ) -> None:
         component_input = as_selection(component_input)
+        registers = tuple(registers)
         domain = component_input.value_type.domain
         if not isinstance(domain, (Bit, BinaryExtensionField)):
             raise ValueError("feedback registers require Bit or BinaryExtensionField units")
-        if not isinstance(registers, tuple) or not registers:
-            raise ValueError("feedback registers require a non-empty tuple of register specs")
+        if not registers:
+            raise ValueError("feedback registers require at least one register spec")
         if any(not isinstance(register, FeedbackRegisterSpec) for register in registers):
             raise TypeError("registers must contain FeedbackRegisterSpec values")
         if sum(register.length for register in registers) != component_input.value_type.unit_count:

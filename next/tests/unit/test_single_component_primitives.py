@@ -48,6 +48,7 @@ def test_permutation_fixtures_use_destination_by_source_descriptions():
 def test_linear_field_feedback_and_permutation_specific_fixtures():
     # Legacy linear descriptions are column-oriented: this matrix maps 10 -> 11.
     assert LinearLayer(2, ((1, 1), (0, 1))).evaluate(0b10) == 0b11
+    assert LinearLayer(2, matrix=[[1, 0], [1, 1]]).evaluate(0b10) == 0b11
     assert MixColumn(4).evaluate(0xABCD) == 0xABCD
     assert Fsr(4).evaluate(0b1010) == 0b0101
     assert Fsr(4, [[[4, [[0], [1]], [[0]]]], 1]).evaluate(0b1010) == 0b0101
@@ -107,3 +108,17 @@ def test_each_public_class_shows_the_reference_authoring_sequence():
         assert "self.add_round()" in source, primitive_class.__name__
         assert "self.add_component(" in source, primitive_class.__name__
         assert "self.set_output(" in source, primitive_class.__name__
+
+
+def test_single_component_sources_delegate_container_normalization():
+    classes = (
+        And, Constant, Fsr, IdeaModmul, Identity, LinearLayer, MixColumn,
+        Modadd, Modmul, Modsub, Not, Or, Permutation, Reverse, Rotate, Sbox,
+        Shift, ShiftRows, Sigma, ThetaGaston, ThetaKeccak, ThetaXoodoo,
+        VariableRotate, VariableShift, WordPermutation, Xor,
+    )
+    for primitive_class in classes:
+        source = inspect.getsource(primitive_class)
+        assert "tuple(" not in source, primitive_class.__name__
+        assert "zip(" not in source, primitive_class.__name__
+        assert "[[[" not in source, primitive_class.__name__

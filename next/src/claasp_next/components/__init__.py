@@ -2,7 +2,10 @@
 
 from claasp_next.components.algebraic import Add, BinaryAffineMap, LinearMap, Multiply, Power
 from claasp_next.components.conversion import PackBits, UnpackBits
-from claasp_next.components.feedback import FeedbackRegister, FeedbackRegisterSpec, FeedbackTerm
+from claasp_next.components.feedback import (
+    FeedbackRegister, FeedbackRegisterParameters, FeedbackRegisterSpec,
+    FeedbackTerm,
+)
 from claasp_next.components.permutation import gaston_theta, keccak_theta, shift_rows, sigma, xoodoo_theta
 from claasp_next.components.structural import Concatenate, Constant, Identity, Permutation
 from claasp_next.components.substitution import BitVectorSBox, SBox
@@ -21,6 +24,7 @@ __all__ = [
     "Concatenate",
     "Constant",
     "FeedbackRegister",
+    "FeedbackRegisterParameters",
     "FeedbackRegisterSpec",
     "FeedbackTerm",
     "gaston_theta",
