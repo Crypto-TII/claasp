@@ -16,8 +16,8 @@ class Concatenate(Primitive):
     '1001'
 
     >>> three_bytes = Concatenate(input_bit_size=8, number_of_inputs=3)
-    >>> three_bytes.components[0].output_type
-    ValueType(domain=Bit(), shape=(24,))
+    >>> hex(three_bytes.evaluate(0x12, 0x34, 0x56))
+    '0x123456'
     """
 
     def __init__(self, input_bit_size: int = 2, number_of_inputs: int = 2) -> None:

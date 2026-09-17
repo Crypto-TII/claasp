@@ -15,8 +15,8 @@ class Rotate(Primitive):
     >>> f"{Rotate(8, 2, 'left').evaluate(0x81):08b}"
     '00000110'
 
-    >>> Rotate(bit_size=32, amount=7, direction="right").components[0].amount
-    7
+    >>> hex(Rotate(bit_size=32, amount=7, direction="right").evaluate(1))
+    '0x2000000'
     """
 
     def __init__(

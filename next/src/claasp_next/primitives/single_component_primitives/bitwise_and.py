@@ -14,8 +14,8 @@ class BitwiseAnd(Primitive):
     Request wider words and more operands through the constructor:
 
     >>> three_way = BitwiseAnd(word_bit_size=8, number_of_inputs=3)
-    >>> len(three_way.inputs())
-    3
+    >>> hex(three_way.evaluate(0xF0, 0xCC, 0xAA))
+    '0x80'
     """
 
     def __init__(self, word_bit_size: int = 4, number_of_inputs: int = 2) -> None:

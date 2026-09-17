@@ -22,9 +22,9 @@ class SBox(Primitive):
     Omit the table for the identity lookup, or select another finite domain
     and number of units explicitly:
 
-    >>> identity_layer = SBox(domain=Word(8), unit_count=16)
-    >>> identity_layer.components[0].output_type
-    ValueType(domain=Word(width=8), shape=(16,))
+    >>> identity_layer = SBox(domain=Word(8), unit_count=2)
+    >>> hex(identity_layer.evaluate(0x12AB))
+    '0x12ab'
     """
 
     def __init__(

@@ -14,8 +14,8 @@ class BitwiseNot(Primitive):
     >>> f"{BitwiseNot().evaluate(0b1010):04b}"
     '0101'
 
-    >>> BitwiseNot(bit_size=32).components[0].output_type
-    ValueType(domain=Word(width=32), shape=(1,))
+    >>> hex(BitwiseNot(bit_size=32).evaluate(0))
+    '0xffffffff'
     """
 
     def __init__(self, bit_size: int = 4) -> None:

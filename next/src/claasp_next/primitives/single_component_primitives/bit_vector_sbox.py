@@ -20,8 +20,8 @@ class BitVectorSBox(Primitive):
     The output width may differ from the input width:
 
     >>> compress = BitVectorSBox(2, [0, 0, 1, 1], output_bit_size=1)
-    >>> compress.components[0].output_type
-    ValueType(domain=Bit(), shape=(1,))
+    >>> compress.evaluate(0b10)
+    1
     """
 
     def __init__(

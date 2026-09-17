@@ -21,8 +21,8 @@ class LinearMap(Primitive):
     >>> from claasp_next import BinaryExtensionField
     >>> field = BinaryExtensionField(4, 0b10011)
     >>> mixing = LinearMap([[1, 2], [2, 1]], domain=field)
-    >>> mixing.components[0].output_type
-    ValueType(domain=BinaryExtensionField(degree=4, modulus=19, basis='polynomial'), shape=(2,))
+    >>> hex(mixing.evaluate(0x12))
+    '0x50'
     """
 
     def __init__(self, matrix=None, domain=None) -> None:

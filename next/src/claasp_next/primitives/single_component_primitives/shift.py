@@ -15,8 +15,8 @@ class Shift(Primitive):
     >>> f"{Shift(8, 1).evaluate(0x81):08b}"
     '01000000'
 
-    >>> Shift(bit_size=32, amount=7, direction="left").components[0].direction
-    'left'
+    >>> hex(Shift(bit_size=32, amount=7, direction="left").evaluate(1))
+    '0x80'
     """
 
     def __init__(

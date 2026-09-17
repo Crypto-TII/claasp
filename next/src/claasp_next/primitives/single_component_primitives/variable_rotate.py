@@ -18,8 +18,8 @@ class VariableRotate(Primitive):
     ``amount_bit_size`` sets the width of the second input:
 
     >>> rotate = VariableRotate(bit_size=32, amount_bit_size=5, direction="left")
-    >>> rotate.input("amount").value_type
-    ValueType(domain=Word(width=5), shape=(1,))
+    >>> hex(rotate.evaluate(0x80000001, 1))
+    '0x3'
     """
 
     def __init__(

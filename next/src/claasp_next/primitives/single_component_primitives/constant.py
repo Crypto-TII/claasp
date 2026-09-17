@@ -15,8 +15,8 @@ class Constant(Primitive):
 
     ``output_bit_size`` controls the exact width of the constant:
 
-    >>> Constant(output_bit_size=3, value=0b010).components[0].output_type
-    ValueType(domain=Bit(), shape=(3,))
+    >>> f"{Constant(output_bit_size=3, value=0b010).evaluate():03b}"
+    '010'
     """
 
     def __init__(self, output_bit_size: int = 3, value: int = 0b010) -> None:

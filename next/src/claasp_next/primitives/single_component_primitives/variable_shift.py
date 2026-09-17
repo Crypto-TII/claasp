@@ -16,8 +16,8 @@ class VariableShift(Primitive):
     '00100000'
 
     >>> shift = VariableShift(bit_size=32, amount_bit_size=5, direction="left")
-    >>> shift.input("amount").value_type
-    ValueType(domain=Word(width=5), shape=(1,))
+    >>> hex(shift.evaluate(0x80000001, 1))
+    '0x2'
     """
 
     def __init__(

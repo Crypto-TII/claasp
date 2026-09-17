@@ -14,8 +14,6 @@ class PackBits(Primitive):
     output type records the two-word structure.
 
     >>> packed = PackBits(bit_count=8, word_width=4)
-    >>> packed.components[0].output_type
-    ValueType(domain=Word(width=4), shape=(2,))
     >>> hex(packed.evaluate(0xAB))
     '0xab'
 
@@ -24,8 +22,9 @@ class PackBits(Primitive):
 
     >>> from claasp_next import BinaryExtensionField
     >>> field = BinaryExtensionField(4, 0b10011)
-    >>> PackBits(8, 4, output_domain=field).components[0].output_type
-    ValueType(domain=BinaryExtensionField(degree=4, modulus=19, basis='polynomial'), shape=(2,))
+    >>> field_words = PackBits(8, 4, output_domain=field)
+    >>> hex(field_words.evaluate(0xAB))
+    '0xab'
     """
 
     def __init__(

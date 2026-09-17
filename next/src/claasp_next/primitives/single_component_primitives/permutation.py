@@ -19,8 +19,10 @@ class Permutation(Primitive):
 
     >>> reverse_bits = Permutation(mapping=[3, 2, 1, 0])
     >>> reverse_bytes = Permutation(mapping=[3, 2, 1, 0], word_size=8)
-    >>> (reverse_bits.components[0].output_type, reverse_bytes.components[0].output_type)
-    (ValueType(domain=Bit(), shape=(4,)), ValueType(domain=Word(width=8), shape=(4,)))
+    >>> f"{reverse_bits.evaluate(0b1101):04b}"
+    '1011'
+    >>> hex(reverse_bytes.evaluate(0x01020304))
+    '0x4030201'
     """
 
     def __init__(self, mapping=None, word_size: int = 1) -> None:

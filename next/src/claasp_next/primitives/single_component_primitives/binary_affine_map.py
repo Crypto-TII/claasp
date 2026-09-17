@@ -25,8 +25,9 @@ class BinaryAffineMap(Primitive):
 
     >>> swap_bits = [[0, 1], [1, 0]]
     >>> affine = BinaryAffineMap(swap_bits, offset=1, word_size=2, unit_count=3)
-    >>> affine.components[0].output_type
-    ValueType(domain=BinaryExtensionField(degree=2, modulus=7, basis='polynomial'), shape=(3,))
+    >>> # 00, 01, 10 become 01, 11, 00 respectively.
+    >>> f"{affine.evaluate(0b00_01_10):06b}"
+    '011100'
     """
 
     def __init__(

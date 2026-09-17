@@ -21,8 +21,8 @@ class FeedbackRegister(Primitive):
 
     >>> parameters = FeedbackRegisterParameters.from_taps(8, [0, 2, 3], clocks=2)
     >>> register = FeedbackRegister(parameters)
-    >>> register.components[0].clocks
-    2
+    >>> f"{register.evaluate(0b10110010):08b}"
+    '11001011'
     """
 
     def __init__(self, parameters: FeedbackRegisterParameters | None = None) -> None:

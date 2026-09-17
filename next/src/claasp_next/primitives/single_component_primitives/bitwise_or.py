@@ -12,8 +12,8 @@ class BitwiseOr(Primitive):
     '1111'
 
     >>> three_way = BitwiseOr(word_bit_size=8, number_of_inputs=3)
-    >>> len(three_way.inputs())
-    3
+    >>> hex(three_way.evaluate(0xF0, 0x0C, 0x03))
+    '0xff'
     """
 
     def __init__(self, word_bit_size: int = 4, number_of_inputs: int = 2) -> None:
