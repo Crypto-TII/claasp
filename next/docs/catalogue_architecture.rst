@@ -107,8 +107,45 @@ different parameterization from parity-bearing DES; CustomAES and ToyAES are
 different primitives from AES; PRINCEv2 is not a PRINCE realization. Empty
 subclasses that reproduce an identical graph are historical aliases rather
 than extra choices. Legacy-derived Simon, Simeck, and Gimli S-box forms have
-``legacy_regression`` maturity and remain explicitly non-canonical; catalogue
-authenticity/query labels still belong to M10.9f.
+``legacy_regression`` maturity and remain explicitly non-canonical; M10.9f
+records that distinction in catalogue authenticity and query labels.
+
+Discovery metadata and records
+------------------------------
+
+``claasp_next.catalogue`` is the public discovery boundary. Its packaged,
+versioned ``data/catalogue.json`` joins the M10.9b classification, public
+export map, typed input contract, component vocabulary, parameter sets,
+realization descriptors, fixed evidence, and driver declarations. Runtime
+queries read that committed resource. They never infer semantics from a
+directory name, parse implementation syntax, or import every primitive.
+
+``Catalogue`` materializes frozen ``PrimitiveRecord``, ``ComponentRecord``,
+``RealizationRecord``, ``ParameterSetRecord``, and ``DriverRecord`` values.
+Nested collections are tuples or frozensets, and parameter values are exposed
+through a read-only mapping. The global ``catalogue`` instance is merely a
+small convenience over the same immutable data:
+
+.. doctest::
+
+   >>> from claasp_next.catalogue import Catalogue, catalogue
+   >>> Catalogue().primitive("Prince").name
+   'Prince'
+   >>> catalogue.primitive("PrinceV2").family
+   'prince_v2'
+   >>> catalogue.primitive("PrinceV2").name != catalogue.primitive("Prince").name
+   True
+
+The final comparison is deliberately about distinct primitive identities:
+PRINCEv2 is not advertised as a PRINCE realization. Similarly, the
+``noncanonical_legacy_regression`` authenticity value makes Simon, Simeck, and
+Gimli S-box discovery explicit without claiming specification authenticity.
+
+Driver records describe execution engines, solvers, renderers, and external
+tools separately from graph realizations. Listing records performs no probe.
+An explicit availability call uses ``shutil.which``, MiniZinc's solver list,
+or ``importlib.util.find_spec`` and returns ``DriverAvailabilityRecord``. It
+does not import Z3, scikit-learn, Sage, or another optional implementation.
 
 Evidence and maintenance
 ------------------------
@@ -120,7 +157,11 @@ generated strings, or mutable insertion order. Keep official vectors,
 legacy-regression observations, exact claims, bounds, heuristics, and empirical
 claims separately labelled.
 
-After changing the catalogue, regenerate the inventory and public export map,
-run ``tools/legacy_inventory.py --check-primitive-closure``, build a wheel to
-verify owned resources, and execute the complete dependency-free suite. The
-canonical v5 runtime remains Python 3.11+ and Sage-independent.
+After changing classification or implementation metadata, regenerate the
+inventory and public export map, run
+``tools/generate_catalogue_metadata.py`` and
+``tools/catalogue_closure.py --check``, then run
+``tools/legacy_inventory.py --check-primitive-closure``. Build a wheel to
+verify that ``catalogue/data/catalogue.json`` and primitive-owned resources are
+present, and execute the complete dependency-free suite. The canonical v5
+runtime remains Python 3.11+ and Sage-independent.

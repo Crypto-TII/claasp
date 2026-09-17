@@ -86,6 +86,12 @@ Parameter catalogues
 .. automodule:: claasp_next.parameters
    :members:
 
+Catalogue discovery
+-------------------
+
+.. automodule:: claasp_next.catalogue
+   :members:
+
 Polynomial models
 -----------------
 

@@ -17,6 +17,58 @@ The categories describe mathematical interfaces, not execution engines.
 Graph realizations remain separate from scalar, batch, and constraint
 representations.
 
+Discovering primitives
+----------------------
+
+The catalogue returns immutable records before any primitive graph is built.
+Queries use committed classification and component metadata; they do not scan
+source files or import every implementation module:
+
+.. doctest::
+
+   >>> from claasp_next.catalogue import catalogue
+   >>> aes = catalogue.primitive("AES")
+   >>> (aes.category, aes.kind, aes.bijectivity_obligation)
+   ('block_ciphers', 'block_cipher', True)
+   >>> tuple(item.name for item in aes.inputs)
+   ('plaintext', 'key')
+   >>> [item.name for item in catalogue.primitives(filters="pure-arx") if item.name in {"ChaCha", "Salsa"}]
+   ['ChaCha', 'Salsa']
+   >>> all("Xor" in item.components for item in catalogue.primitives(components="xor"))
+   True
+
+Category, component, and design filters compose. Design names accept the
+familiar ``arx``, ``purearx``, ``andrx``, ``pureandrx``, ``sbox_based``, and
+``fsr_based`` spellings, plus hyphenated aliases. A tweakable query is a
+mathematical-interface query, not a request for an execution backend.
+
+Realizations and parameter sets are records too. Capability queries never
+confuse a graph realization with its eventual execution engine:
+
+.. doctest::
+
+   >>> algebraic, = catalogue.realizations(primitive="AES", capabilities="algebraic_semantics")
+   >>> algebraic.identity
+   'AES:algebraic'
+   >>> speck32, = catalogue.parameter_sets(
+   ...     primitive="Speck", parameters={"block_bit_size": 32, "key_bit_size": 64})
+   >>> dict(speck32.values)
+   {'block_bit_size': 32, 'key_bit_size': 64, 'number_of_rounds': 22}
+
+Driver declarations are also safe to inspect in a dependency-free process.
+Availability is probed only when explicitly requested, and returns another
+record rather than importing the implementation:
+
+.. doctest::
+
+   >>> [item.name for item in catalogue.drivers(kind="execution_engine")]
+   ['python_scalar', 'python_batch', 'python_transposed_batch']
+   >>> catalogue.driver_availability("python_scalar").available
+   True
+
+Formatting these records as terminal tables, Markdown, CSV, JSON, or dataframes
+belongs to the report/presentation layer rather than catalogue semantics.
+
 Single-component primitives mirror the public base-component API exactly.
 For example, ``LinearMap`` covers both binary linear layers and finite-field
 MixColumn-style matrices, while ``BitVectorSBox`` and ``SBox`` distinguish one

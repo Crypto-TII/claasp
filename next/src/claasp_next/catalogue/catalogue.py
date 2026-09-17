@@ -17,10 +17,14 @@ from claasp_next.catalogue.records import (
 FILTER_ALIASES = {
     "block_cipher": "block_ciphers",
     "hash_function": "functions",
+    "hash_functions": "functions",
     "mac": "block_functions",
+    "macs": "block_functions",
     "permutation": "permutations",
     "stream_cipher": "block_functions",
+    "stream_ciphers": "block_functions",
     "toy": "toy_primitives",
+    "toys": "toy_primitives",
     "tweakable_block_cipher": "tweakable_block_cipher",
     "sbox": "sbox_based",
     "sbox-based": "sbox_based",
@@ -133,6 +137,12 @@ class Catalogue:
         requested = tuple(_normalized_filter(item) for item in _tokens(filters))
         if category is not None:
             requested += (_normalized_filter(category),)
+        supported = frozenset(tag for record in self._primitives for tag in record.tags) | frozenset({
+            "arx", "purearx", "andrx", "pureandrx", "sbox_based", "fsr_based",
+        })
+        unknown = frozenset(requested) - supported
+        if unknown:
+            raise ValueError(f"unknown primitive filters: {tuple(sorted(unknown))}")
         required_components = _tokens(components)
         rows = []
         for record in self._primitives:

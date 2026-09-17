@@ -1,5 +1,7 @@
 import json
 from pathlib import Path
+import subprocess
+import sys
 
 from claasp_next.primitives._catalogue_exports import ALL_EXPORTS
 
@@ -45,3 +47,11 @@ def test_legacy_sbox_forms_are_explicitly_noncanonical():
     assert by_name["Gimli"]["authenticity"] == "canonical"
     assert by_name["Simeck"]["authenticity"] == "canonical"
     assert by_name["Simon"]["authenticity"] == "canonical"
+
+
+def test_catalogue_closure_gate_passes():
+    completed = subprocess.run(
+        [sys.executable, str(ROOT / "tools/catalogue_closure.py"), "--check"],
+        check=True, capture_output=True, text=True,
+    )
+    assert "145 primitives, 26 components, 14 drivers" in completed.stdout

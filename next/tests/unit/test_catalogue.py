@@ -53,6 +53,22 @@ def test_category_and_component_filters_compose():
     assert all("Xor" in item.components for item in records)
 
 
+@pytest.mark.parametrize(
+    ("legacy_category", "category"),
+    (("hash_functions", "functions"), ("stream_ciphers", "block_functions"),
+     ("toys", "toy_primitives")),
+)
+def test_legacy_category_aliases_map_to_v5_semantics(legacy_category, category):
+    records = catalogue.primitives(category=legacy_category)
+    assert records
+    assert all(item.category == category for item in records)
+
+
+def test_unknown_filter_has_a_clear_error():
+    with pytest.raises(ValueError, match="unknown primitive filters"):
+        catalogue.primitives(filters="not-a-design")
+
+
 def test_pure_andrx_filter_does_not_promote_constant_bearing_graphs():
     assert catalogue.primitives(filters="pure-andrx") == ()
 
