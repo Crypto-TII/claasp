@@ -100,6 +100,31 @@ class GimliSboxPermutation(Cipher):
     coupling still happens through the explicit shifts applied after the S-box layer, not through the S-box
     itself.
 
+    Side by side, per column (``x[i]`` denotes bit ``i`` of ``x``, etc.)::
+
+        # Official Gimli SP-box (gimli.cr.yp.to/spec.html), as used by GimliPermutation:
+        x = state[0] <<< 24
+        y = state[1] <<< 9
+        z = state[2]
+        new_z = x ^ (z << 1) ^ ((y & z) << 2)
+        new_y = y ^ x         ^ ((x | z) << 1)
+        new_x = z ^ y         ^ ((x & y) << 3)
+
+        # Equivalent bit-sliced form, as used by GimliSboxPermutation:
+        x = state[0] <<< 24
+        y = state[1] <<< 9
+        z = state[2]
+        for i in 0..31:
+            sbox_out      = GIMLI_SBOX[4 * x[i] + 2 * y[i] + z[i]]   # 3 bits packed
+            yz_and[i]     = (sbox_out >> 2) & 1                     # = y[i] & z[i]
+            xz_or[i]      = (sbox_out >> 1) & 1                     # = x[i] | z[i]
+            xy_and[i]     =  sbox_out       & 1                     # = x[i] & y[i]
+        new_z = x ^ (z << 1) ^ (yz_and << 2)
+        new_y = y ^ x         ^ (xz_or << 1)
+        new_x = z ^ y         ^ (xy_and << 3)
+
+        # Both formulations then apply the same x/z lane swap: state[2] = new_z, state[1] = new_y, state[0] = new_x
+
     Special case: for the very first round (``current_round == 24``, since rounds are numbered downward from 24),
     the ``z`` lane of the state is still the raw plaintext input, whose bit positions are not laid out as a plain
     ``0..31`` range (unlike every other round's lanes, which come from intermediate components indexed
