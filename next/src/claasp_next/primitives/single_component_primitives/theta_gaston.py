@@ -7,11 +7,11 @@ from ._base import positive
 
 
 class ThetaGaston(Primitive):
-    def __init__(self, bit_size: int = 320, rotation_amounts_parameter=None) -> None:
+    def __init__(self, bit_size: int = 320, rotation_amounts=None) -> None:
         amounts = (
             (1, 18, 23, 25, 32, 52, 60, 63)
-            if rotation_amounts_parameter is None
-            else rotation_amounts_parameter
+            if rotation_amounts is None
+            else rotation_amounts
         )
         super().__init__(
             "theta_gaston", {"input": ValueType(Bit(), (positive(bit_size, "bit_size"),))},

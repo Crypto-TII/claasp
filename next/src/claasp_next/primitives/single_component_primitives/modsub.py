@@ -6,9 +6,7 @@ from ._base import word_inputs
 
 
 class Modsub(Primitive):
-    def __init__(self, word_bit_size: int = 4, number_of_inputs: int = 2, modulus=None) -> None:
-        if modulus not in (None, 1 << word_bit_size):
-            raise ValueError("Modsub supports the canonical modulus 2^word_bit_size")
+    def __init__(self, word_bit_size: int = 4, number_of_inputs: int = 2) -> None:
         super().__init__(
             "modsub", word_inputs(word_bit_size, number_of_inputs),
             kind=PrimitiveKind.FUNCTION,

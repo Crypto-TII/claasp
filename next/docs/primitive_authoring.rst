@@ -181,18 +181,30 @@ not belong in primitive definitions.
 
    >>> from claasp_next.components import FeedbackRegisterParameters
    >>> from claasp_next.primitives.single_component_primitives import Fsr, LinearLayer, MixColumn
-   >>> linear = LinearLayer(2, matrix=[[1, 0], [1, 1]])
+   >>> linear = LinearLayer([[1, 0], [1, 1]])
    >>> linear.evaluate(0b10)
    3
    >>> mixing = MixColumn(4, [[1, 0], [0, 1]])
    >>> hex(mixing.evaluate(0xAB))
    '0xab'
    >>> feedback = FeedbackRegisterParameters.from_taps(4, [0, 1])
-   >>> Fsr(4, parameters=feedback).evaluate(0b1010)
+   >>> Fsr(feedback).evaluate(0b1010)
    5
 
-``FeedbackRegisterParameters.from_legacy_description()`` confines the nested
-v4 FSR encoding to an explicit compatibility boundary. New code can use
-``from_taps()`` or construct typed ``FeedbackRegisterSpec`` and
-``FeedbackTerm`` values directly; both accept ordinary iterables and perform
-their own normalization.
+``LinearLayer`` accepts one row-major matrix and infers the input size from its
+columns. ``Fsr`` accepts typed feedback parameters. Use ``from_taps()`` for a
+simple Fibonacci register, or construct ``FeedbackRegisterSpec`` and
+``FeedbackTerm`` values for multiple, nonlinear, or clocked registers.
+
+Other one-component primitives follow the same rule: pass the mathematical
+parameter directly. A permutation uses ``output[i] = input[mapping[i]]`` and
+rotation direction is an explicit word, so there are no alternate legacy
+encodings to learn.
+
+.. doctest::
+
+   >>> from claasp_next.primitives.single_component_primitives import Permutation, Rotate
+   >>> hex(Permutation([1, 0], 4).evaluate(0xAB))
+   '0xba'
+   >>> hex(Rotate(8, 2, "left").evaluate(0x81))
+   '0x6'

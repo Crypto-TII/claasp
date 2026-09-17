@@ -35,7 +35,7 @@ def test_binary_lfsr_matches_complete_legacy_truth_table():
 
 def test_typed_feedback_parameters_accept_natural_lists_and_tap_positions():
     parameters = FeedbackRegisterParameters.from_taps(4, [0, 1])
-    assert Fsr(4, parameters=parameters).evaluate(0b1010) == 0b0101
+    assert Fsr(parameters).evaluate(0b1010) == 0b0101
 
     spec = FeedbackRegisterSpec(4, [FeedbackTerm(0), FeedbackTerm([1])])
     assert _primitive(Bit(), 4, spec).evaluate(0b1010) == 0b0101

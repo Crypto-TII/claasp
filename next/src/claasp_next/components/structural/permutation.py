@@ -32,24 +32,6 @@ class Permutation(Component):
             raise ValueError(f"mapping must be a permutation of range({size})")
 
     @classmethod
-    def from_destinations(
-        cls,
-        component_input: PortLike,
-        destination_by_source: Iterable[int],
-        component_id: str | None = None,
-    ) -> "Permutation":
-        """Build from ``destination_by_source[source] = destination`` notation."""
-
-        description = tuple(destination_by_source)
-        if sorted(description) != list(range(len(description))):
-            raise ValueError("permutation description must contain every destination once")
-        mapping = (
-            description.index(destination)
-            for destination in range(len(description))
-        )
-        return cls(component_input, mapping, component_id)
-
-    @classmethod
     def reverse(
         cls,
         component_input: PortLike,

@@ -11,10 +11,17 @@ from ._base import positive
 
 
 class MixColumn(Primitive):
-    def __init__(self, word_size: int = 4, matrix=None, irreducible_polynomial: int = 0) -> None:
+    def __init__(
+        self, word_size: int = 4, matrix=None,
+        irreducible_polynomial: int | None = None,
+    ) -> None:
         word_size = positive(word_size, "word_size")
         matrix = normalize_matrix(identity_matrix(4) if matrix is None else matrix)
-        modulus = irreducible_polynomial or first_irreducible_polynomial(word_size)
+        modulus = (
+            first_irreducible_polynomial(word_size)
+            if irreducible_polynomial is None
+            else irreducible_polynomial
+        )
         field = BinaryExtensionField(word_size, modulus)
         kind = (
             PrimitiveKind.PERMUTATION

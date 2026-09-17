@@ -2,21 +2,16 @@
 
 from claasp_next.components import FeedbackRegister, FeedbackRegisterParameters
 from claasp_next.graph import Primitive, PrimitiveKind, ValueType
-from ._base import positive
 
 
 class Fsr(Primitive):
-    def __init__(
-        self,
-        register_size: int = 4,
-        description=None,
-        *,
-        parameters: FeedbackRegisterParameters | None = None,
-    ) -> None:
-        register_size = positive(register_size, "register_size")
-        parameters = FeedbackRegisterParameters.resolve(
-            register_size, parameters, legacy_description=description,
-        )
+    """Clock a feedback register described by typed parameters."""
+
+    def __init__(self, parameters: FeedbackRegisterParameters | None = None) -> None:
+        if parameters is None:
+            parameters = FeedbackRegisterParameters.from_taps(4, [0, 1])
+        if not isinstance(parameters, FeedbackRegisterParameters):
+            raise TypeError("parameters must be FeedbackRegisterParameters")
         super().__init__(
             "fsr", {"input": ValueType(parameters.domain, (parameters.unit_count,))},
             kind=PrimitiveKind.FUNCTION,

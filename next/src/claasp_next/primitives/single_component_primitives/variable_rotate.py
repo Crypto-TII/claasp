@@ -7,7 +7,10 @@ from ._base import positive
 
 
 class VariableRotate(Primitive):
-    def __init__(self, bit_size: int = 8, amount_bit_size: int = 3, direction: int = 1) -> None:
+    def __init__(
+        self, bit_size: int = 8, amount_bit_size: int = 3,
+        direction: str = "right",
+    ) -> None:
         bit_size = positive(bit_size, "bit_size")
         positive(amount_bit_size, "amount_bit_size")
         super().__init__(
@@ -18,8 +21,7 @@ class VariableRotate(Primitive):
         )
         self.add_round()
         self.set_output(self.add_component(VariableRotateComponent(
-            self.input("input"), self.input("amount"),
-            "right" if direction >= 0 else "left",
+            self.input("input"), self.input("amount"), direction,
         )))
 
 

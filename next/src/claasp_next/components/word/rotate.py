@@ -22,6 +22,8 @@ class Rotate(Component):
         component_input = inputs[0]
         if not isinstance(amount, int) or isinstance(amount, bool):
             raise TypeError("rotation amount must be an integer")
+        if amount < 0:
+            raise ValueError("rotation amount must be non-negative")
         if direction not in ("left", "right"):
             raise ValueError("rotation direction must be 'left' or 'right'")
         object.__setattr__(self, "component_id", component_id)

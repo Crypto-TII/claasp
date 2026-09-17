@@ -38,6 +38,12 @@ permutations; non-bijective, nullary, and multi-input operations are functions.
 S-box and linear-map fixtures determine this classification from their supplied
 table or matrix rather than assuming the default example.
 
+Their public constructors expose only canonical v5 parameters. In particular,
+linear maps are row-major, permutation mappings directly select the source for
+each output, directions are explicit strings, and feedback registers use typed
+parameters. Legacy argument aliases, orientation conversions, nested FSR
+descriptions, and ignored canonical-modulus arguments are deliberately absent.
+
 Owned package layout
 --------------------
 

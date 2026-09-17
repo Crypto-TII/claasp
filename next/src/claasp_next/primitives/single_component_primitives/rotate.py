@@ -7,16 +7,17 @@ from ._base import positive
 
 
 class Rotate(Primitive):
-    def __init__(self, bit_size: int = 8, rotation_amount: int = 1) -> None:
+    def __init__(
+        self, bit_size: int = 8, amount: int = 1, direction: str = "right",
+    ) -> None:
         bit_size = positive(bit_size, "bit_size")
         super().__init__(
             "rotate", {"input": ValueType(Word(bit_size), (1,))},
             kind=PrimitiveKind.PERMUTATION,
         )
         self.add_round()
-        direction = "right" if rotation_amount >= 0 else "left"
         self.set_output(self.add_component(RotateComponent(
-            self.input("input"), abs(rotation_amount), direction
+            self.input("input"), amount, direction
         )))
 
 
