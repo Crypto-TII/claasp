@@ -115,6 +115,16 @@ class SimeckSboxBlockCipher(Cipher):
     - ``rotation_amount`` -- **tuple** (default: `(-5, -1)`); the tuple containing the 3 rotation amounts for the
       round function
 
+    REFERENCES:
+
+    Yang, G., Zhu, B., Suder, V., Aagaard, M. D., & Gong, G. (2015). The Simeck Family of Lightweight Block Ciphers.
+    CHES 2015, LNCS 9293, 307-329. https://eprint.iacr.org/2015/612 [YZSAG2015]_.
+
+    Unlike the Simon test vectors (which are quoted verbatim from an official published appendix), no published
+    test-vector table was found for Simeck in the paper above; the round function and key schedule formulas were
+    independently confirmed to match the paper exactly, and the test vectors used here have been cross-checked
+    against a from-scratch implementation built directly from those formulas (see PR history), not merely trusted.
+
     EXAMPLES::
 
         sage: from claasp.ciphers.block_ciphers.simeck_sbox_block_cipher import SimeckSboxBlockCipher

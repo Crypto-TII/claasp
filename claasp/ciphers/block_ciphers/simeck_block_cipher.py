@@ -43,6 +43,11 @@ class SimeckBlockCipher(Cipher):
     - ``rotation_amount`` -- **tuple** (default: `(-5, -1)`); the tuple containing the 3 rotation amounts for the
       round function
 
+    REFERENCES:
+
+    Yang, G., Zhu, B., Suder, V., Aagaard, M. D., & Gong, G. (2015). The Simeck Family of Lightweight Block Ciphers.
+    CHES 2015, LNCS 9293, 307-329. https://eprint.iacr.org/2015/612 [YZSAG2015]_.
+
     EXAMPLES::
 
         sage: from claasp.ciphers.block_ciphers.simeck_block_cipher import SimeckBlockCipher
