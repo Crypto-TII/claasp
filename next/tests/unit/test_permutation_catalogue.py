@@ -22,4 +22,4 @@ def test_permutation_implementations_are_readable_native_sources():
     root = ROOT / "src/claasp_next/primitives/permutations"
     assert not tuple(root.glob("*/data/index.json"))
     assert not tuple(root.glob("*/data/*.json.gz"))
-    assert "class Xoodoo" in (root / "xoodoo.py").read_text(encoding="utf-8")
+    assert "class Xoodoo" in (root / "xoodoo/primitive.py").read_text(encoding="utf-8")

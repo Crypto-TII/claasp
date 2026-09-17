@@ -120,7 +120,7 @@
     "claim": "legacy-fixed-vector",
     "class": "AradiSBoxCompactLinearMap",
     "legacy_id": "aradi_p128_k256_o128_r16",
-    "module": "claasp_next.primitives.block_ciphers.aradi_block_cipher_sbox_and_compact_linear_map",
+    "module": "claasp_next.primitives.block_ciphers.aradi.sbox_compact_linear_map",
     "parameters": {},
     "vectors": [
       {
@@ -136,7 +136,7 @@
     "claim": "legacy-fixed-vector",
     "class": "AradiSBox",
     "legacy_id": "aradi_p128_k256_o128_r16",
-    "module": "claasp_next.primitives.block_ciphers.aradi_block_cipher_sbox",
+    "module": "claasp_next.primitives.block_ciphers.aradi.sbox",
     "parameters": {},
     "vectors": [
       {
@@ -591,7 +591,7 @@
     "claim": "legacy-fixed-vector",
     "class": "DESExactKeyLength",
     "legacy_id": "des_exact_key_length_block_cipher_k56_p64_o64_r16",
-    "module": "claasp_next.primitives.block_ciphers.des_exact_key_length",
+    "module": "claasp_next.primitives.block_ciphers.des.exact_key_length",
     "parameters": {},
     "vectors": [
       {
@@ -623,7 +623,7 @@
     "claim": "legacy-fixed-vector",
     "class": "GiftSbox",
     "legacy_id": "gift_sbox_p128_k128_o128_r40",
-    "module": "claasp_next.primitives.block_ciphers.gift_sbox",
+    "module": "claasp_next.primitives.block_ciphers.gift.sbox",
     "parameters": {},
     "vectors": [
       {
@@ -714,7 +714,7 @@
     "claim": "legacy-fixed-vector",
     "class": "KatanFSR",
     "legacy_id": "katan_fsr_p32_k80_o32_r41",
-    "module": "claasp_next.primitives.block_ciphers.katan_fsr",
+    "module": "claasp_next.primitives.block_ciphers.katan.fsr",
     "parameters": {
       "block_bit_size": 32,
       "key_bit_size": 80,
@@ -768,7 +768,7 @@
     "claim": "legacy-fixed-vector",
     "class": "KatanFSR",
     "legacy_id": "katan_fsr_p48_k80_o48_r41",
-    "module": "claasp_next.primitives.block_ciphers.katan_fsr",
+    "module": "claasp_next.primitives.block_ciphers.katan.fsr",
     "parameters": {
       "block_bit_size": 48,
       "key_bit_size": 80,
@@ -822,7 +822,7 @@
     "claim": "legacy-fixed-vector",
     "class": "KatanFSR",
     "legacy_id": "katan_fsr_p64_k80_o64_r41",
-    "module": "claasp_next.primitives.block_ciphers.katan_fsr",
+    "module": "claasp_next.primitives.block_ciphers.katan.fsr",
     "parameters": {
       "block_bit_size": 64,
       "key_bit_size": 80,
@@ -849,7 +849,7 @@
     "claim": "legacy-fixed-vector",
     "class": "KatanFSR",
     "legacy_id": "katan_fsr_p32_k80_o32_r254",
-    "module": "claasp_next.primitives.block_ciphers.katan_fsr",
+    "module": "claasp_next.primitives.block_ciphers.katan.fsr",
     "parameters": {},
     "vectors": [
       {
@@ -872,7 +872,7 @@
     "claim": "legacy-fixed-vector",
     "class": "KatanFSR",
     "legacy_id": "katan_fsr_p48_k80_o48_r254",
-    "module": "claasp_next.primitives.block_ciphers.katan_fsr",
+    "module": "claasp_next.primitives.block_ciphers.katan.fsr",
     "parameters": {
       "block_bit_size": 48
     },
@@ -897,7 +897,7 @@
     "claim": "legacy-fixed-vector",
     "class": "KatanFSR",
     "legacy_id": "katan_fsr_p64_k80_o64_r254",
-    "module": "claasp_next.primitives.block_ciphers.katan_fsr",
+    "module": "claasp_next.primitives.block_ciphers.katan.fsr",
     "parameters": {
       "block_bit_size": 64
     },
@@ -949,7 +949,7 @@
     "claim": "legacy-fixed-vector",
     "class": "KtantanFSR",
     "legacy_id": "ktantan_fsr_p32_k80_o32_r8",
-    "module": "claasp_next.primitives.block_ciphers.ktantan_fsr",
+    "module": "claasp_next.primitives.block_ciphers.ktantan.fsr",
     "parameters": {
       "block_bit_size": 32,
       "key_bit_size": 80,
@@ -1003,7 +1003,7 @@
     "claim": "legacy-fixed-vector",
     "class": "KtantanFSR",
     "legacy_id": "ktantan_fsr_p48_k80_o48_r8",
-    "module": "claasp_next.primitives.block_ciphers.ktantan_fsr",
+    "module": "claasp_next.primitives.block_ciphers.ktantan.fsr",
     "parameters": {
       "block_bit_size": 48,
       "key_bit_size": 80,
@@ -1056,7 +1056,7 @@
     "claim": "legacy-fixed-vector",
     "class": "KtantanFSR",
     "legacy_id": "ktantan_fsr_p64_k80_o64_r8",
-    "module": "claasp_next.primitives.block_ciphers.ktantan_fsr",
+    "module": "claasp_next.primitives.block_ciphers.ktantan.fsr",
     "parameters": {
       "block_bit_size": 64,
       "number_of_rounds": 8
@@ -1082,7 +1082,7 @@
     "claim": "legacy-fixed-vector",
     "class": "KtantanFSR",
     "legacy_id": "ktantan_fsr_p32_k80_o32_r254",
-    "module": "claasp_next.primitives.block_ciphers.ktantan_fsr",
+    "module": "claasp_next.primitives.block_ciphers.ktantan.fsr",
     "parameters": {},
     "vectors": [
       {
@@ -1105,7 +1105,7 @@
     "claim": "legacy-fixed-vector",
     "class": "KtantanFSR",
     "legacy_id": "ktantan_fsr_p48_k80_o48_r254",
-    "module": "claasp_next.primitives.block_ciphers.ktantan_fsr",
+    "module": "claasp_next.primitives.block_ciphers.ktantan.fsr",
     "parameters": {
       "block_bit_size": 48
     },
@@ -1130,7 +1130,7 @@
     "claim": "legacy-fixed-vector",
     "class": "KtantanFSR",
     "legacy_id": "ktantan_fsr_p64_k80_o64_r254",
-    "module": "claasp_next.primitives.block_ciphers.ktantan_fsr",
+    "module": "claasp_next.primitives.block_ciphers.ktantan.fsr",
     "parameters": {
       "block_bit_size": 64
     },
@@ -1535,7 +1535,7 @@
     "claim": "legacy-fixed-vector",
     "class": "PrinceV2",
     "legacy_id": "prince_p64_k128_o64_r11",
-    "module": "claasp_next.primitives.block_ciphers.prince_v2",
+    "module": "claasp_next.primitives.block_ciphers.prince.v2",
     "parameters": {},
     "vectors": [
       {
@@ -1639,7 +1639,7 @@
     "claim": "legacy-fixed-vector",
     "class": "QARMAv2MixColumn",
     "legacy_id": "qarmav2_block_cipher_k128_p64_t128_o64_r9",
-    "module": "claasp_next.primitives.tweakable_block_ciphers.qarmav2_with_mixcolumn",
+    "module": "claasp_next.primitives.tweakable_block_ciphers.qarmav2.mixcolumn",
     "parameters": {
       "number_of_rounds": 4
     },
@@ -1658,7 +1658,7 @@
     "claim": "legacy-fixed-vector",
     "class": "QARMAv2MixColumn",
     "legacy_id": "qarmav2_block_cipher_k128_p64_t128_o64_r19",
-    "module": "claasp_next.primitives.tweakable_block_ciphers.qarmav2_with_mixcolumn",
+    "module": "claasp_next.primitives.tweakable_block_ciphers.qarmav2.mixcolumn",
     "parameters": {
       "number_of_rounds": 9
     },
@@ -1677,7 +1677,7 @@
     "claim": "legacy-fixed-vector",
     "class": "QARMAv2MixColumn",
     "legacy_id": "qarmav2_block_cipher_k256_p128_t256_o128_r19",
-    "module": "claasp_next.primitives.tweakable_block_ciphers.qarmav2_with_mixcolumn",
+    "module": "claasp_next.primitives.tweakable_block_ciphers.qarmav2.mixcolumn",
     "parameters": {
       "key_bit_size": 256,
       "number_of_layers": 2,
@@ -2544,7 +2544,7 @@
     "claim": "legacy-fixed-vector",
     "class": "SimeckSbox",
     "legacy_id": "simeck_sbox_p32_k64_o32_r32",
-    "module": "claasp_next.primitives.block_ciphers.simeck_sbox",
+    "module": "claasp_next.primitives.block_ciphers.simeck.sbox",
     "parameters": {},
     "vectors": [
       {
@@ -2560,7 +2560,7 @@
     "claim": "legacy-fixed-vector",
     "class": "SimeckSbox",
     "legacy_id": "simeck_sbox_p48_k96_o48_r36",
-    "module": "claasp_next.primitives.block_ciphers.simeck_sbox",
+    "module": "claasp_next.primitives.block_ciphers.simeck.sbox",
     "parameters": {
       "block_bit_size": 48,
       "key_bit_size": 96
@@ -2579,7 +2579,7 @@
     "claim": "legacy-fixed-vector",
     "class": "SimeckSbox",
     "legacy_id": "simeck_sbox_p64_k128_o64_r44",
-    "module": "claasp_next.primitives.block_ciphers.simeck_sbox",
+    "module": "claasp_next.primitives.block_ciphers.simeck.sbox",
     "parameters": {
       "block_bit_size": 64,
       "key_bit_size": 128
@@ -2598,7 +2598,7 @@
     "claim": "legacy-fixed-vector",
     "class": "SimonSbox",
     "legacy_id": "simon_sbox_p32_k64_o32_r32",
-    "module": "claasp_next.primitives.block_ciphers.simon_sbox",
+    "module": "claasp_next.primitives.block_ciphers.simon.sbox",
     "parameters": {},
     "vectors": [
       {
@@ -2614,7 +2614,7 @@
     "claim": "legacy-fixed-vector",
     "class": "SimonSbox",
     "legacy_id": "simon_sbox_p48_k72_o48_r36",
-    "module": "claasp_next.primitives.block_ciphers.simon_sbox",
+    "module": "claasp_next.primitives.block_ciphers.simon.sbox",
     "parameters": {
       "block_bit_size": 48,
       "key_bit_size": 72
@@ -2633,7 +2633,7 @@
     "claim": "legacy-fixed-vector",
     "class": "SimonSbox",
     "legacy_id": "simon_sbox_p48_k96_o48_r36",
-    "module": "claasp_next.primitives.block_ciphers.simon_sbox",
+    "module": "claasp_next.primitives.block_ciphers.simon.sbox",
     "parameters": {
       "block_bit_size": 48,
       "key_bit_size": 96
@@ -2652,7 +2652,7 @@
     "claim": "legacy-fixed-vector",
     "class": "SimonSbox",
     "legacy_id": "simon_sbox_p128_k256_o128_r72",
-    "module": "claasp_next.primitives.block_ciphers.simon_sbox",
+    "module": "claasp_next.primitives.block_ciphers.simon.sbox",
     "parameters": {
       "block_bit_size": 128,
       "key_bit_size": 256
@@ -3597,7 +3597,7 @@
     "claim": "legacy-fixed-vector",
     "class": "UblockSingleLinearLayer",
     "legacy_id": "ublock_p128_k128_o128_r16",
-    "module": "claasp_next.primitives.block_ciphers.ublock_single_linear_layer",
+    "module": "claasp_next.primitives.block_ciphers.ublock.single_linear_layer",
     "parameters": {},
     "vectors": [
       {
@@ -3613,7 +3613,7 @@
     "claim": "legacy-fixed-vector",
     "class": "UblockSingleLinearLayer",
     "legacy_id": "ublock_p128_k256_o128_r24",
-    "module": "claasp_next.primitives.block_ciphers.ublock_single_linear_layer",
+    "module": "claasp_next.primitives.block_ciphers.ublock.single_linear_layer",
     "parameters": {
       "block_bit_size": 128,
       "key_bit_size": 256,
@@ -3633,7 +3633,7 @@
     "claim": "legacy-fixed-vector",
     "class": "UblockSingleLinearLayer",
     "legacy_id": "ublock_p256_k256_o256_r24",
-    "module": "claasp_next.primitives.block_ciphers.ublock_single_linear_layer",
+    "module": "claasp_next.primitives.block_ciphers.ublock.single_linear_layer",
     "parameters": {
       "block_bit_size": 256,
       "key_bit_size": 256,
@@ -3820,7 +3820,7 @@
     "claim": "legacy-fixed-vector",
     "class": "TinyJambuWordBased",
     "legacy_id": "tinyjambu_word_based_p128_k128_o128_r20",
-    "module": "claasp_next.primitives.block_ciphers.tinyjambu_32bits_word",
+    "module": "claasp_next.primitives.block_ciphers.tinyjambu.word",
     "parameters": {},
     "vectors": [
       {
@@ -3836,7 +3836,7 @@
     "claim": "legacy-fixed-vector",
     "class": "TinyJambuFSRWordBased",
     "legacy_id": "tinyjambu_fsr_word_based_p128_k128_o128_r20",
-    "module": "claasp_next.primitives.block_ciphers.tinyjambu_fsr_32bits_word",
+    "module": "claasp_next.primitives.block_ciphers.tinyjambu.fsr_word",
     "parameters": {},
     "vectors": [
       {

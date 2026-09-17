@@ -3303,7 +3303,7 @@
       "responsibility": "aes block cipher",
       "status": "migrated-in-m10.9d6",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/aes/__init__.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/aes/primitive.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -3343,7 +3343,7 @@
       "responsibility": "aradi block cipher",
       "status": "migrated-in-m10.9d5",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/aradi.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/aradi/primitive.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -3373,7 +3373,7 @@
         "outside_scope_reason": null,
         "primitive_category": "block_ciphers",
         "proposed_class": "AradiSBox",
-        "proposed_module": "claasp_next.primitives.block_ciphers.aradi_block_cipher_sbox"
+        "proposed_module": "claasp_next.primitives.block_ciphers.aradi.sbox"
       },
       "public_entry_points": [
         "get_key_word_bit_indexes",
@@ -3383,7 +3383,7 @@
       "responsibility": "aradi block cipher sbox",
       "status": "migrated-in-m10.9d6",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/aradi_block_cipher_sbox.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/aradi/sbox.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -3413,7 +3413,7 @@
         "outside_scope_reason": null,
         "primitive_category": "block_ciphers",
         "proposed_class": "AradiSBoxCompactLinearMap",
-        "proposed_module": "claasp_next.primitives.block_ciphers.aradi_block_cipher_sbox_and_compact_linear_map"
+        "proposed_module": "claasp_next.primitives.block_ciphers.aradi.sbox_compact_linear_map"
       },
       "public_entry_points": [
         "get_key_word_bit_indexes",
@@ -3426,7 +3426,7 @@
       "responsibility": "aradi block cipher sbox and compact linear map",
       "status": "migrated-in-m10.9d6",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/aradi_block_cipher_sbox_and_compact_linear_map.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/aradi/sbox_compact_linear_map.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -3783,7 +3783,7 @@
       "responsibility": "des block cipher",
       "status": "migrated-in-m10.9d6",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/des.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/des/primitive.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -3813,7 +3813,7 @@
         "outside_scope_reason": null,
         "primitive_category": "block_ciphers",
         "proposed_class": "DESExactKeyLength",
-        "proposed_module": "claasp_next.primitives.block_ciphers.des_exact_key_length"
+        "proposed_module": "claasp_next.primitives.block_ciphers.des.exact_key_length"
       },
       "public_entry_points": [
         "DESExactKeyLengthBlockCipher"
@@ -3822,7 +3822,7 @@
       "responsibility": "des exact key length block cipher",
       "status": "migrated-in-m10.9d6",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/des_exact_key_length.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/des/exact_key_length.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -3862,7 +3862,7 @@
       "responsibility": "gift block cipher",
       "status": "migrated-in-m10.9d6",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/gift.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/gift/primitive.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -3893,7 +3893,7 @@
         "outside_scope_reason": null,
         "primitive_category": "block_ciphers",
         "proposed_class": "GiftSbox",
-        "proposed_module": "claasp_next.primitives.block_ciphers.gift_sbox"
+        "proposed_module": "claasp_next.primitives.block_ciphers.gift.sbox"
       },
       "public_entry_points": [
         "GiftSboxBlockCipher"
@@ -3902,7 +3902,7 @@
       "responsibility": "gift sbox block cipher",
       "status": "migrated-in-m10.9d6",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/gift_sbox.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/gift/sbox.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -4142,7 +4142,7 @@
       "responsibility": "katan block cipher",
       "status": "migrated-in-m10.9d6",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/katan.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/katan/primitive.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -4172,7 +4172,7 @@
         "outside_scope_reason": null,
         "primitive_category": "block_ciphers",
         "proposed_class": "KatanFSR",
-        "proposed_module": "claasp_next.primitives.block_ciphers.katan_fsr"
+        "proposed_module": "claasp_next.primitives.block_ciphers.katan.fsr"
       },
       "public_entry_points": [
         "KatanFSRBlockCipher"
@@ -4181,7 +4181,7 @@
       "responsibility": "FSR-based implementation of the KATAN block cipher.",
       "status": "migrated-in-m10.9d6",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/katan_fsr.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/katan/fsr.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -4220,7 +4220,7 @@
       "responsibility": "ktantan block cipher",
       "status": "migrated-in-m10.9d6",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/ktantan.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/ktantan/primitive.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -4250,7 +4250,7 @@
         "outside_scope_reason": null,
         "primitive_category": "block_ciphers",
         "proposed_class": "KtantanFSR",
-        "proposed_module": "claasp_next.primitives.block_ciphers.ktantan_fsr"
+        "proposed_module": "claasp_next.primitives.block_ciphers.ktantan.fsr"
       },
       "public_entry_points": [
         "KtantanFSRBlockCipher"
@@ -4259,7 +4259,7 @@
       "responsibility": "FSR-based implementation of the KTANTAN block cipher.",
       "status": "migrated-in-m10.9d6",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/ktantan_fsr.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/ktantan/fsr.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -4420,7 +4420,7 @@
       "responsibility": "lowmc block cipher",
       "status": "migrated-in-m10.9d6",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/lowmc/__init__.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/lowmc/primitive.py"
     },
     {
       "acceptance_criterion": "The helper remains outside the primitive catalogue.",
@@ -4699,7 +4699,7 @@
       "responsibility": "prince block cipher",
       "status": "migrated-in-m10.9d6",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/prince.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/prince/primitive.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -4730,7 +4730,7 @@
         "outside_scope_reason": null,
         "primitive_category": "block_ciphers",
         "proposed_class": "PrinceV2",
-        "proposed_module": "claasp_next.primitives.block_ciphers.prince_v2"
+        "proposed_module": "claasp_next.primitives.block_ciphers.prince.v2"
       },
       "public_entry_points": [
         "get_shift_rows_matrix",
@@ -4742,7 +4742,7 @@
       "responsibility": "prince v2 block cipher",
       "status": "migrated-in-m10.9d6",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/prince_v2.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/prince/v2.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -4782,7 +4782,7 @@
       "responsibility": "qarmav2 block cipher",
       "status": "migrated-in-m10.9d6",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/tweakable_block_ciphers/qarmav2.py"
+      "v5_destination": "claasp_next/primitives/tweakable_block_ciphers/qarmav2/primitive.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -4813,7 +4813,7 @@
         "outside_scope_reason": null,
         "primitive_category": "tweakable_block_ciphers",
         "proposed_class": "QARMAv2MixColumn",
-        "proposed_module": "claasp_next.primitives.tweakable_block_ciphers.qarmav2_with_mixcolumn"
+        "proposed_module": "claasp_next.primitives.tweakable_block_ciphers.qarmav2.mixcolumn"
       },
       "public_entry_points": [
         "QARMAv2MixColumnBlockCipher"
@@ -4822,7 +4822,7 @@
       "responsibility": "qarmav2 with mixcolumn block cipher",
       "status": "migrated-in-m10.9d6",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/tweakable_block_ciphers/qarmav2_with_mixcolumn.py"
+      "v5_destination": "claasp_next/primitives/tweakable_block_ciphers/qarmav2/mixcolumn.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -5138,7 +5138,7 @@
       "responsibility": "simeck block cipher",
       "status": "migrated-in-m10.9d5",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/simeck.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/simeck/primitive.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -5168,7 +5168,7 @@
         "outside_scope_reason": null,
         "primitive_category": "block_ciphers",
         "proposed_class": "SimeckSbox",
-        "proposed_module": "claasp_next.primitives.block_ciphers.simeck_sbox"
+        "proposed_module": "claasp_next.primitives.block_ciphers.simeck.sbox"
       },
       "public_entry_points": [
         "SimeckSboxBlockCipher"
@@ -5177,7 +5177,7 @@
       "responsibility": "simeck sbox block cipher",
       "status": "migrated-in-m10.9d6",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/simeck_sbox.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/simeck/sbox.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -5216,7 +5216,7 @@
       "responsibility": "simon block cipher",
       "status": "migrated-in-m10.9d5",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/simon.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/simon/primitive.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -5246,7 +5246,7 @@
         "outside_scope_reason": null,
         "primitive_category": "block_ciphers",
         "proposed_class": "SimonSbox",
-        "proposed_module": "claasp_next.primitives.block_ciphers.simon_sbox"
+        "proposed_module": "claasp_next.primitives.block_ciphers.simon.sbox"
       },
       "public_entry_points": [
         "SimonSboxBlockCipher"
@@ -5255,7 +5255,7 @@
       "responsibility": "simon sbox block cipher",
       "status": "migrated-in-m10.9d6",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/simon_sbox.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/simon/sbox.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -5769,7 +5769,7 @@
       "responsibility": "ublock block cipher",
       "status": "migrated-in-m10.9d6",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/ublock.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/ublock/primitive.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -5800,7 +5800,7 @@
         "outside_scope_reason": null,
         "primitive_category": "block_ciphers",
         "proposed_class": "UblockSingleLinearLayer",
-        "proposed_module": "claasp_next.primitives.block_ciphers.ublock_single_linear_layer"
+        "proposed_module": "claasp_next.primitives.block_ciphers.ublock.single_linear_layer"
       },
       "public_entry_points": [
         "generate_ublock_matrix",
@@ -5810,7 +5810,7 @@
       "responsibility": "ublock single linear layer block cipher",
       "status": "migrated-in-m10.9d6",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/ublock_single_linear_layer.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/ublock/single_linear_layer.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -6307,7 +6307,7 @@
       "responsibility": "ascon permutation",
       "status": "migrated-in-m10.9d7",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/permutations/ascon.py"
+      "v5_destination": "claasp_next/primitives/permutations/ascon/primitive.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -6336,7 +6336,7 @@
         "outside_scope_reason": null,
         "primitive_category": "permutations",
         "proposed_class": "AsconSboxSigmaNoMatrix",
-        "proposed_module": "claasp_next.primitives.permutations.ascon_sbox_sigma_no_matrix"
+        "proposed_module": "claasp_next.primitives.permutations.ascon.sbox_sigma_no_matrix"
       },
       "public_entry_points": [
         "AsconSboxSigmaNoMatrixPermutation"
@@ -6345,7 +6345,7 @@
       "responsibility": "ascon sbox sigma no matrix permutation",
       "status": "migrated-in-m10.9d7",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/permutations/ascon_sbox_sigma_no_matrix.py"
+      "v5_destination": "claasp_next/primitives/permutations/ascon/sbox_sigma_no_matrix.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -6374,7 +6374,7 @@
         "outside_scope_reason": null,
         "primitive_category": "permutations",
         "proposed_class": "AsconSboxSigma",
-        "proposed_module": "claasp_next.primitives.permutations.ascon_sbox_sigma"
+        "proposed_module": "claasp_next.primitives.permutations.ascon.sbox_sigma"
       },
       "public_entry_points": [
         "AsconSboxSigmaPermutation"
@@ -6383,7 +6383,7 @@
       "responsibility": "ascon sbox sigma permutation",
       "status": "migrated-in-m10.9d7",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/permutations/ascon_sbox_sigma.py"
+      "v5_destination": "claasp_next/primitives/permutations/ascon/sbox_sigma.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -6533,7 +6533,7 @@
       "responsibility": "gaston permutation",
       "status": "migrated-in-m10.9d7",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/permutations/gaston.py"
+      "v5_destination": "claasp_next/primitives/permutations/gaston/primitive.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -6562,7 +6562,7 @@
         "outside_scope_reason": null,
         "primitive_category": "permutations",
         "proposed_class": "GastonSbox",
-        "proposed_module": "claasp_next.primitives.permutations.gaston_sbox"
+        "proposed_module": "claasp_next.primitives.permutations.gaston.sbox"
       },
       "public_entry_points": [
         "GastonSboxPermutation"
@@ -6571,7 +6571,7 @@
       "responsibility": "gaston sbox permutation",
       "status": "migrated-in-m10.9d7",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/permutations/gaston_sbox.py"
+      "v5_destination": "claasp_next/primitives/permutations/gaston/sbox.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -6600,7 +6600,7 @@
         "outside_scope_reason": null,
         "primitive_category": "permutations",
         "proposed_class": "GastonSboxTheta",
-        "proposed_module": "claasp_next.primitives.permutations.gaston_sbox_theta"
+        "proposed_module": "claasp_next.primitives.permutations.gaston.sbox_theta"
       },
       "public_entry_points": [
         "GastonSboxThetaPermutation"
@@ -6609,7 +6609,7 @@
       "responsibility": "gaston sbox theta permutation",
       "status": "migrated-in-m10.9d7",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/permutations/gaston_sbox_theta.py"
+      "v5_destination": "claasp_next/primitives/permutations/gaston/sbox_theta.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -6649,7 +6649,7 @@
       "responsibility": "gimli permutation",
       "status": "migrated-in-m10.9d7",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/permutations/gimli.py"
+      "v5_destination": "claasp_next/primitives/permutations/gimli/primitive.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -6678,7 +6678,7 @@
         "outside_scope_reason": null,
         "primitive_category": "permutations",
         "proposed_class": "GimliSbox",
-        "proposed_module": "claasp_next.primitives.permutations.gimli_sbox"
+        "proposed_module": "claasp_next.primitives.permutations.gimli.sbox"
       },
       "public_entry_points": [
         "big_swap",
@@ -6689,7 +6689,7 @@
       "responsibility": "gimli sbox permutation",
       "status": "migrated-in-m10.9d7",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/permutations/gimli_sbox.py"
+      "v5_destination": "claasp_next/primitives/permutations/gimli/sbox.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -6757,7 +6757,7 @@
         "outside_scope_reason": null,
         "primitive_category": "permutations",
         "proposed_class": "KeccakInvertible",
-        "proposed_module": "claasp_next.primitives.permutations.keccak_invertible"
+        "proposed_module": "claasp_next.primitives.permutations.keccak.invertible"
       },
       "public_entry_points": [
         "KeccakInvertiblePermutation"
@@ -6766,7 +6766,7 @@
       "responsibility": "keccak invertible permutation",
       "status": "migrated-in-m10.9d7",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/permutations/keccak_invertible.py"
+      "v5_destination": "claasp_next/primitives/permutations/keccak/invertible.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -6804,7 +6804,7 @@
       "responsibility": "keccak permutation",
       "status": "migrated-in-m10.9d7",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/permutations/keccak.py"
+      "v5_destination": "claasp_next/primitives/permutations/keccak/primitive.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -6834,7 +6834,7 @@
         "outside_scope_reason": null,
         "primitive_category": "permutations",
         "proposed_class": "KeccakSbox",
-        "proposed_module": "claasp_next.primitives.permutations.keccak_sbox"
+        "proposed_module": "claasp_next.primitives.permutations.keccak.sbox"
       },
       "public_entry_points": [
         "KeccakSboxPermutation"
@@ -6843,7 +6843,7 @@
       "responsibility": "keccak sbox permutation",
       "status": "migrated-in-m10.9d7",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/permutations/keccak_sbox.py"
+      "v5_destination": "claasp_next/primitives/permutations/keccak/sbox.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -7101,7 +7101,7 @@
         "outside_scope_reason": null,
         "primitive_category": "permutations",
         "proposed_class": "SpongentPiFSR",
-        "proposed_module": "claasp_next.primitives.permutations.spongent_pi_fsr"
+        "proposed_module": "claasp_next.primitives.permutations.spongent_pi.fsr"
       },
       "public_entry_points": [
         "SpongentPiFSRPermutation"
@@ -7110,7 +7110,7 @@
       "responsibility": "spongent pi fsr permutation",
       "status": "migrated-in-m10.9d7",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/permutations/spongent_pi_fsr.py"
+      "v5_destination": "claasp_next/primitives/permutations/spongent_pi/fsr.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -7148,7 +7148,7 @@
       "responsibility": "spongent pi permutation",
       "status": "migrated-in-m10.9d7",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/permutations/spongent_pi.py"
+      "v5_destination": "claasp_next/primitives/permutations/spongent_pi/primitive.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -7177,7 +7177,7 @@
         "outside_scope_reason": null,
         "primitive_category": "permutations",
         "proposed_class": "SpongentPiPrecomputation",
-        "proposed_module": "claasp_next.primitives.permutations.spongent_pi_precomputation"
+        "proposed_module": "claasp_next.primitives.permutations.spongent_pi.precomputation"
       },
       "public_entry_points": [
         "SpongentPiPrecomputationPermutation"
@@ -7186,7 +7186,7 @@
       "responsibility": "spongent pi precomputation permutation",
       "status": "migrated-in-m10.9d7",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/permutations/spongent_pi_precomputation.py"
+      "v5_destination": "claasp_next/primitives/permutations/spongent_pi/precomputation.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -7258,7 +7258,7 @@
         "outside_scope_reason": null,
         "primitive_category": "block_ciphers",
         "proposed_class": "TinyJambuWordBased",
-        "proposed_module": "claasp_next.primitives.block_ciphers.tinyjambu_32bits_word"
+        "proposed_module": "claasp_next.primitives.block_ciphers.tinyjambu.word"
       },
       "public_entry_points": [
         "TinyJambuWordBasedPermutation"
@@ -7267,7 +7267,7 @@
       "responsibility": "tinyjambu 32bits word permutation",
       "status": "migrated-in-m10.9d6",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/tinyjambu_32bits_word.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/tinyjambu/word.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -7298,7 +7298,7 @@
         "outside_scope_reason": null,
         "primitive_category": "block_ciphers",
         "proposed_class": "TinyJambuFSRWordBased",
-        "proposed_module": "claasp_next.primitives.block_ciphers.tinyjambu_fsr_32bits_word"
+        "proposed_module": "claasp_next.primitives.block_ciphers.tinyjambu.fsr_word"
       },
       "public_entry_points": [
         "TinyJambuFSRWordBasedPermutation"
@@ -7307,7 +7307,7 @@
       "responsibility": "tinyjambu fsr 32bits word permutation",
       "status": "migrated-in-m10.9d6",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/tinyjambu_fsr_32bits_word.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/tinyjambu/fsr_word.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -7347,7 +7347,7 @@
       "responsibility": "tinyjambu permutation",
       "status": "migrated-in-m10.9d6",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/block_ciphers/tinyjambu.py"
+      "v5_destination": "claasp_next/primitives/block_ciphers/tinyjambu/primitive.py"
     },
     {
       "acceptance_criterion": "The helper remains outside the primitive catalogue.",
@@ -7418,7 +7418,7 @@
         "outside_scope_reason": null,
         "primitive_category": "permutations",
         "proposed_class": "XoodooInvertible",
-        "proposed_module": "claasp_next.primitives.permutations.xoodoo_invertible"
+        "proposed_module": "claasp_next.primitives.permutations.xoodoo.invertible"
       },
       "public_entry_points": [
         "XoodooInvertiblePermutation"
@@ -7427,7 +7427,7 @@
       "responsibility": "xoodoo invertible permutation",
       "status": "migrated-in-m10.9d7",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/permutations/xoodoo_invertible.py"
+      "v5_destination": "claasp_next/primitives/permutations/xoodoo/invertible.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -7467,7 +7467,7 @@
       "responsibility": "xoodoo permutation",
       "status": "migrated-in-m10.9d7",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/permutations/xoodoo.py"
+      "v5_destination": "claasp_next/primitives/permutations/xoodoo/primitive.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -7498,7 +7498,7 @@
         "outside_scope_reason": null,
         "primitive_category": "permutations",
         "proposed_class": "XoodooSbox",
-        "proposed_module": "claasp_next.primitives.permutations.xoodoo_sbox"
+        "proposed_module": "claasp_next.primitives.permutations.xoodoo.sbox"
       },
       "public_entry_points": [
         "XoodooSboxPermutation"
@@ -7507,7 +7507,7 @@
       "responsibility": "xoodoo sbox permutation",
       "status": "migrated-in-m10.9d7",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/permutations/xoodoo_sbox.py"
+      "v5_destination": "claasp_next/primitives/permutations/xoodoo/sbox.py"
     },
     {
       "acceptance_criterion": "Containing package is represented by its non-marker entries.",

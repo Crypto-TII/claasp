@@ -31,6 +31,41 @@ def test_packages_are_reserved_for_owned_realizations_or_supporting_data():
         importlib.import_module(f"claasp_next.primitives.block_ciphers.{module}")
 
 
+def test_every_multi_realization_family_uses_one_same_import_path_package():
+    families = {
+        "block_ciphers": {
+            "aradi": ("primitive.py", "sbox.py", "sbox_compact_linear_map.py"),
+            "des": ("primitive.py", "exact_key_length.py"),
+            "gift": ("primitive.py", "sbox.py"),
+            "katan": ("primitive.py", "fsr.py"),
+            "ktantan": ("primitive.py", "fsr.py"),
+            "prince": ("primitive.py", "v2.py"),
+            "simeck": ("primitive.py", "sbox.py"),
+            "simon": ("primitive.py", "sbox.py"),
+            "tinyjambu": ("primitive.py", "word.py", "fsr_word.py"),
+            "ublock": ("primitive.py", "single_linear_layer.py"),
+        },
+        "permutations": {
+            "ascon": ("primitive.py", "sbox_sigma.py", "sbox_sigma_no_matrix.py"),
+            "gaston": ("primitive.py", "sbox.py", "sbox_theta.py"),
+            "gimli": ("primitive.py", "sbox.py"),
+            "keccak": ("primitive.py", "sbox.py", "invertible.py"),
+            "spongent_pi": ("primitive.py", "fsr.py", "precomputation.py"),
+            "xoodoo": ("primitive.py", "sbox.py", "invertible.py"),
+        },
+        "tweakable_block_ciphers": {
+            "qarmav2": ("primitive.py", "mixcolumn.py"),
+        },
+    }
+    for category, packages in families.items():
+        for family, modules in packages.items():
+            package = ROOT / "primitives" / category / family
+            assert (package / "__init__.py").is_file()
+            assert {path.name for path in package.glob("*.py")} == {"__init__.py", *modules}
+            assert not package.with_suffix(".py").exists()
+            importlib.import_module(f"claasp_next.primitives.{category}.{family}")
+
+
 def test_poseidon_owns_parameters_data_provenance_and_license():
     package = ROOT / "primitives/permutations/poseidon"
     assert (package / "primitive.py").is_file()

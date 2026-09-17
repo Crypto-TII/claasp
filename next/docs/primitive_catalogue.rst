@@ -50,7 +50,7 @@ study variants therefore do not depend on a pre-exported graph file:
    5
 
 The implementation is ordinary Python in
-``claasp_next/primitives/permutations/ascon.py``. Twofish and WARP likewise
+``claasp_next/primitives/permutations/ascon/primitive.py``. Twofish and WARP likewise
 live in ``block_ciphers/twofish.py`` and ``block_ciphers/warp.py``; their round
 functions and key schedules can be read directly rather than reconstructed
 from serialized component records.
@@ -71,8 +71,13 @@ The convenience namespace remains available:
    >>> poseidon_bn254_width3() is owned_poseidon_parameters()
    True
 
-Simple primitives remain single modules. Packages are reserved for real owned
-structure: AES has multiple realizations and reusable block composition, LowMC
-has vetted constant files, and Poseidon has a typed parameter catalogue and
-licensed supporting data. There are no runtime frozen-graph indexes or
+Simple primitives remain single modules. A family package co-locates alternate
+realizations without changing the canonical import path. For example,
+``permutations.keccak`` contains ``primitive.py``, ``sbox.py``, and
+``invertible.py``; ``block_ciphers.tinyjambu`` contains its canonical, word,
+and feedback-register realizations. AES uses a package for reusable blocks and
+multiple realizations, LowMC for vetted constant files, and Poseidon for its
+typed parameter catalogue and licensed data. Simon, Simeck, and Gimli S-box
+forms are labelled legacy-regression realizations, not descriptions of their
+canonical specifications. There are no runtime frozen-graph indexes or
 compressed graph specifications.

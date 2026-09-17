@@ -1,12 +1,12 @@
 [
   {
     "class": "AradiSBox",
-    "module": "claasp_next.primitives.block_ciphers.aradi_block_cipher_sbox",
+    "module": "claasp_next.primitives.block_ciphers.aradi.sbox",
     "parameters": {}
   },
   {
     "class": "AradiSBoxCompactLinearMap",
-    "module": "claasp_next.primitives.block_ciphers.aradi_block_cipher_sbox_and_compact_linear_map",
+    "module": "claasp_next.primitives.block_ciphers.aradi.sbox_compact_linear_map",
     "parameters": {}
   },
   {
@@ -151,7 +151,7 @@
   },
   {
     "class": "DESExactKeyLength",
-    "module": "claasp_next.primitives.block_ciphers.des_exact_key_length",
+    "module": "claasp_next.primitives.block_ciphers.des.exact_key_length",
     "parameters": {
       "number_of_rounds": 16,
       "number_of_sboxes": 8
@@ -159,14 +159,14 @@
   },
   {
     "class": "DESExactKeyLength",
-    "module": "claasp_next.primitives.block_ciphers.des_exact_key_length",
+    "module": "claasp_next.primitives.block_ciphers.des.exact_key_length",
     "parameters": {
       "number_of_rounds": 4
     }
   },
   {
     "class": "DESExactKeyLength",
-    "module": "claasp_next.primitives.block_ciphers.des_exact_key_length",
+    "module": "claasp_next.primitives.block_ciphers.des.exact_key_length",
     "parameters": {}
   },
   {
@@ -206,7 +206,7 @@
   },
   {
     "class": "GiftSbox",
-    "module": "claasp_next.primitives.block_ciphers.gift_sbox",
+    "module": "claasp_next.primitives.block_ciphers.gift.sbox",
     "parameters": {
       "block_bit_size": 128,
       "number_of_rounds": 40
@@ -214,7 +214,7 @@
   },
   {
     "class": "GiftSbox",
-    "module": "claasp_next.primitives.block_ciphers.gift_sbox",
+    "module": "claasp_next.primitives.block_ciphers.gift.sbox",
     "parameters": {
       "block_bit_size": 64,
       "number_of_rounds": 28
@@ -222,21 +222,21 @@
   },
   {
     "class": "GiftSbox",
-    "module": "claasp_next.primitives.block_ciphers.gift_sbox",
+    "module": "claasp_next.primitives.block_ciphers.gift.sbox",
     "parameters": {
       "block_bit_size": 64
     }
   },
   {
     "class": "GiftSbox",
-    "module": "claasp_next.primitives.block_ciphers.gift_sbox",
+    "module": "claasp_next.primitives.block_ciphers.gift.sbox",
     "parameters": {
       "number_of_rounds": 4
     }
   },
   {
     "class": "GiftSbox",
-    "module": "claasp_next.primitives.block_ciphers.gift_sbox",
+    "module": "claasp_next.primitives.block_ciphers.gift.sbox",
     "parameters": {}
   },
   {
@@ -356,7 +356,7 @@
   },
   {
     "class": "KatanFSR",
-    "module": "claasp_next.primitives.block_ciphers.katan_fsr",
+    "module": "claasp_next.primitives.block_ciphers.katan.fsr",
     "parameters": {
       "block_bit_size": 32,
       "key_bit_size": 80,
@@ -365,7 +365,7 @@
   },
   {
     "class": "KatanFSR",
-    "module": "claasp_next.primitives.block_ciphers.katan_fsr",
+    "module": "claasp_next.primitives.block_ciphers.katan.fsr",
     "parameters": {
       "block_bit_size": 32,
       "key_bit_size": 80,
@@ -374,7 +374,7 @@
   },
   {
     "class": "KatanFSR",
-    "module": "claasp_next.primitives.block_ciphers.katan_fsr",
+    "module": "claasp_next.primitives.block_ciphers.katan.fsr",
     "parameters": {
       "block_bit_size": 48,
       "key_bit_size": 80,
@@ -383,7 +383,7 @@
   },
   {
     "class": "KatanFSR",
-    "module": "claasp_next.primitives.block_ciphers.katan_fsr",
+    "module": "claasp_next.primitives.block_ciphers.katan.fsr",
     "parameters": {
       "block_bit_size": 48,
       "key_bit_size": 80,
@@ -392,7 +392,7 @@
   },
   {
     "class": "KatanFSR",
-    "module": "claasp_next.primitives.block_ciphers.katan_fsr",
+    "module": "claasp_next.primitives.block_ciphers.katan.fsr",
     "parameters": {
       "block_bit_size": 48,
       "number_of_rounds": 4
@@ -400,14 +400,14 @@
   },
   {
     "class": "KatanFSR",
-    "module": "claasp_next.primitives.block_ciphers.katan_fsr",
+    "module": "claasp_next.primitives.block_ciphers.katan.fsr",
     "parameters": {
       "block_bit_size": 48
     }
   },
   {
     "class": "KatanFSR",
-    "module": "claasp_next.primitives.block_ciphers.katan_fsr",
+    "module": "claasp_next.primitives.block_ciphers.katan.fsr",
     "parameters": {
       "block_bit_size": 64,
       "key_bit_size": 80,
@@ -416,7 +416,7 @@
   },
   {
     "class": "KatanFSR",
-    "module": "claasp_next.primitives.block_ciphers.katan_fsr",
+    "module": "claasp_next.primitives.block_ciphers.katan.fsr",
     "parameters": {
       "block_bit_size": 64,
       "key_bit_size": 80,
@@ -425,14 +425,14 @@
   },
   {
     "class": "KatanFSR",
-    "module": "claasp_next.primitives.block_ciphers.katan_fsr",
+    "module": "claasp_next.primitives.block_ciphers.katan.fsr",
     "parameters": {
       "block_bit_size": 64
     }
   },
   {
     "class": "KatanFSR",
-    "module": "claasp_next.primitives.block_ciphers.katan_fsr",
+    "module": "claasp_next.primitives.block_ciphers.katan.fsr",
     "parameters": {
       "ir_mode": "cycle",
       "number_of_rounds": 255
@@ -440,7 +440,7 @@
   },
   {
     "class": "KatanFSR",
-    "module": "claasp_next.primitives.block_ciphers.katan_fsr",
+    "module": "claasp_next.primitives.block_ciphers.katan.fsr",
     "parameters": {}
   },
   {
@@ -520,7 +520,7 @@
   },
   {
     "class": "KtantanFSR",
-    "module": "claasp_next.primitives.block_ciphers.ktantan_fsr",
+    "module": "claasp_next.primitives.block_ciphers.ktantan.fsr",
     "parameters": {
       "block_bit_size": 32,
       "key_bit_size": 80,
@@ -529,7 +529,7 @@
   },
   {
     "class": "KtantanFSR",
-    "module": "claasp_next.primitives.block_ciphers.ktantan_fsr",
+    "module": "claasp_next.primitives.block_ciphers.ktantan.fsr",
     "parameters": {
       "block_bit_size": 32,
       "key_bit_size": 80,
@@ -538,7 +538,7 @@
   },
   {
     "class": "KtantanFSR",
-    "module": "claasp_next.primitives.block_ciphers.ktantan_fsr",
+    "module": "claasp_next.primitives.block_ciphers.ktantan.fsr",
     "parameters": {
       "block_bit_size": 48,
       "key_bit_size": 80,
@@ -547,7 +547,7 @@
   },
   {
     "class": "KtantanFSR",
-    "module": "claasp_next.primitives.block_ciphers.ktantan_fsr",
+    "module": "claasp_next.primitives.block_ciphers.ktantan.fsr",
     "parameters": {
       "block_bit_size": 48,
       "key_bit_size": 80,
@@ -556,14 +556,14 @@
   },
   {
     "class": "KtantanFSR",
-    "module": "claasp_next.primitives.block_ciphers.ktantan_fsr",
+    "module": "claasp_next.primitives.block_ciphers.ktantan.fsr",
     "parameters": {
       "block_bit_size": 48
     }
   },
   {
     "class": "KtantanFSR",
-    "module": "claasp_next.primitives.block_ciphers.ktantan_fsr",
+    "module": "claasp_next.primitives.block_ciphers.ktantan.fsr",
     "parameters": {
       "block_bit_size": 64,
       "key_bit_size": 80,
@@ -572,7 +572,7 @@
   },
   {
     "class": "KtantanFSR",
-    "module": "claasp_next.primitives.block_ciphers.ktantan_fsr",
+    "module": "claasp_next.primitives.block_ciphers.ktantan.fsr",
     "parameters": {
       "block_bit_size": 64,
       "key_bit_size": 80,
@@ -581,7 +581,7 @@
   },
   {
     "class": "KtantanFSR",
-    "module": "claasp_next.primitives.block_ciphers.ktantan_fsr",
+    "module": "claasp_next.primitives.block_ciphers.ktantan.fsr",
     "parameters": {
       "block_bit_size": 64,
       "number_of_rounds": 8
@@ -589,14 +589,14 @@
   },
   {
     "class": "KtantanFSR",
-    "module": "claasp_next.primitives.block_ciphers.ktantan_fsr",
+    "module": "claasp_next.primitives.block_ciphers.ktantan.fsr",
     "parameters": {
       "block_bit_size": 64
     }
   },
   {
     "class": "KtantanFSR",
-    "module": "claasp_next.primitives.block_ciphers.ktantan_fsr",
+    "module": "claasp_next.primitives.block_ciphers.ktantan.fsr",
     "parameters": {
       "ir_mode": "cycle",
       "number_of_rounds": 255
@@ -604,7 +604,7 @@
   },
   {
     "class": "KtantanFSR",
-    "module": "claasp_next.primitives.block_ciphers.ktantan_fsr",
+    "module": "claasp_next.primitives.block_ciphers.ktantan.fsr",
     "parameters": {}
   },
   {
@@ -874,7 +874,7 @@
   },
   {
     "class": "PrinceV2",
-    "module": "claasp_next.primitives.block_ciphers.prince_v2",
+    "module": "claasp_next.primitives.block_ciphers.prince.v2",
     "parameters": {}
   },
   {
@@ -1230,7 +1230,7 @@
   },
   {
     "class": "SimeckSbox",
-    "module": "claasp_next.primitives.block_ciphers.simeck_sbox",
+    "module": "claasp_next.primitives.block_ciphers.simeck.sbox",
     "parameters": {
       "block_bit_size": 32,
       "key_bit_size": 64,
@@ -1239,7 +1239,7 @@
   },
   {
     "class": "SimeckSbox",
-    "module": "claasp_next.primitives.block_ciphers.simeck_sbox",
+    "module": "claasp_next.primitives.block_ciphers.simeck.sbox",
     "parameters": {
       "block_bit_size": 48,
       "key_bit_size": 96,
@@ -1248,7 +1248,7 @@
   },
   {
     "class": "SimeckSbox",
-    "module": "claasp_next.primitives.block_ciphers.simeck_sbox",
+    "module": "claasp_next.primitives.block_ciphers.simeck.sbox",
     "parameters": {
       "block_bit_size": 48,
       "key_bit_size": 96
@@ -1256,7 +1256,7 @@
   },
   {
     "class": "SimeckSbox",
-    "module": "claasp_next.primitives.block_ciphers.simeck_sbox",
+    "module": "claasp_next.primitives.block_ciphers.simeck.sbox",
     "parameters": {
       "block_bit_size": 64,
       "key_bit_size": 128,
@@ -1265,7 +1265,7 @@
   },
   {
     "class": "SimeckSbox",
-    "module": "claasp_next.primitives.block_ciphers.simeck_sbox",
+    "module": "claasp_next.primitives.block_ciphers.simeck.sbox",
     "parameters": {
       "block_bit_size": 64,
       "key_bit_size": 128
@@ -1273,19 +1273,19 @@
   },
   {
     "class": "SimeckSbox",
-    "module": "claasp_next.primitives.block_ciphers.simeck_sbox",
+    "module": "claasp_next.primitives.block_ciphers.simeck.sbox",
     "parameters": {
       "number_of_rounds": 4
     }
   },
   {
     "class": "SimeckSbox",
-    "module": "claasp_next.primitives.block_ciphers.simeck_sbox",
+    "module": "claasp_next.primitives.block_ciphers.simeck.sbox",
     "parameters": {}
   },
   {
     "class": "SimonSbox",
-    "module": "claasp_next.primitives.block_ciphers.simon_sbox",
+    "module": "claasp_next.primitives.block_ciphers.simon.sbox",
     "parameters": {
       "block_bit_size": 128,
       "key_bit_size": 128,
@@ -1294,7 +1294,7 @@
   },
   {
     "class": "SimonSbox",
-    "module": "claasp_next.primitives.block_ciphers.simon_sbox",
+    "module": "claasp_next.primitives.block_ciphers.simon.sbox",
     "parameters": {
       "block_bit_size": 128,
       "key_bit_size": 192,
@@ -1303,7 +1303,7 @@
   },
   {
     "class": "SimonSbox",
-    "module": "claasp_next.primitives.block_ciphers.simon_sbox",
+    "module": "claasp_next.primitives.block_ciphers.simon.sbox",
     "parameters": {
       "block_bit_size": 128,
       "key_bit_size": 256,
@@ -1312,7 +1312,7 @@
   },
   {
     "class": "SimonSbox",
-    "module": "claasp_next.primitives.block_ciphers.simon_sbox",
+    "module": "claasp_next.primitives.block_ciphers.simon.sbox",
     "parameters": {
       "block_bit_size": 128,
       "key_bit_size": 256
@@ -1320,7 +1320,7 @@
   },
   {
     "class": "SimonSbox",
-    "module": "claasp_next.primitives.block_ciphers.simon_sbox",
+    "module": "claasp_next.primitives.block_ciphers.simon.sbox",
     "parameters": {
       "block_bit_size": 32,
       "key_bit_size": 64,
@@ -1329,7 +1329,7 @@
   },
   {
     "class": "SimonSbox",
-    "module": "claasp_next.primitives.block_ciphers.simon_sbox",
+    "module": "claasp_next.primitives.block_ciphers.simon.sbox",
     "parameters": {
       "block_bit_size": 48,
       "key_bit_size": 72,
@@ -1338,7 +1338,7 @@
   },
   {
     "class": "SimonSbox",
-    "module": "claasp_next.primitives.block_ciphers.simon_sbox",
+    "module": "claasp_next.primitives.block_ciphers.simon.sbox",
     "parameters": {
       "block_bit_size": 48,
       "key_bit_size": 72
@@ -1346,7 +1346,7 @@
   },
   {
     "class": "SimonSbox",
-    "module": "claasp_next.primitives.block_ciphers.simon_sbox",
+    "module": "claasp_next.primitives.block_ciphers.simon.sbox",
     "parameters": {
       "block_bit_size": 48,
       "key_bit_size": 96,
@@ -1355,7 +1355,7 @@
   },
   {
     "class": "SimonSbox",
-    "module": "claasp_next.primitives.block_ciphers.simon_sbox",
+    "module": "claasp_next.primitives.block_ciphers.simon.sbox",
     "parameters": {
       "block_bit_size": 48,
       "key_bit_size": 96
@@ -1363,7 +1363,7 @@
   },
   {
     "class": "SimonSbox",
-    "module": "claasp_next.primitives.block_ciphers.simon_sbox",
+    "module": "claasp_next.primitives.block_ciphers.simon.sbox",
     "parameters": {
       "block_bit_size": 64,
       "key_bit_size": 128,
@@ -1372,7 +1372,7 @@
   },
   {
     "class": "SimonSbox",
-    "module": "claasp_next.primitives.block_ciphers.simon_sbox",
+    "module": "claasp_next.primitives.block_ciphers.simon.sbox",
     "parameters": {
       "block_bit_size": 64,
       "key_bit_size": 96,
@@ -1381,7 +1381,7 @@
   },
   {
     "class": "SimonSbox",
-    "module": "claasp_next.primitives.block_ciphers.simon_sbox",
+    "module": "claasp_next.primitives.block_ciphers.simon.sbox",
     "parameters": {
       "block_bit_size": 96,
       "key_bit_size": 144,
@@ -1390,7 +1390,7 @@
   },
   {
     "class": "SimonSbox",
-    "module": "claasp_next.primitives.block_ciphers.simon_sbox",
+    "module": "claasp_next.primitives.block_ciphers.simon.sbox",
     "parameters": {
       "block_bit_size": 96,
       "key_bit_size": 96,
@@ -1399,14 +1399,14 @@
   },
   {
     "class": "SimonSbox",
-    "module": "claasp_next.primitives.block_ciphers.simon_sbox",
+    "module": "claasp_next.primitives.block_ciphers.simon.sbox",
     "parameters": {
       "number_of_rounds": 4
     }
   },
   {
     "class": "SimonSbox",
-    "module": "claasp_next.primitives.block_ciphers.simon_sbox",
+    "module": "claasp_next.primitives.block_ciphers.simon.sbox",
     "parameters": {}
   },
   {
@@ -1779,7 +1779,7 @@
   },
   {
     "class": "TinyJambuWordBased",
-    "module": "claasp_next.primitives.block_ciphers.tinyjambu_32bits_word",
+    "module": "claasp_next.primitives.block_ciphers.tinyjambu.word",
     "parameters": {
       "key_bit_size": 128,
       "number_of_rounds": 640
@@ -1787,12 +1787,12 @@
   },
   {
     "class": "TinyJambuWordBased",
-    "module": "claasp_next.primitives.block_ciphers.tinyjambu_32bits_word",
+    "module": "claasp_next.primitives.block_ciphers.tinyjambu.word",
     "parameters": {}
   },
   {
     "class": "TinyJambuFSRWordBased",
-    "module": "claasp_next.primitives.block_ciphers.tinyjambu_fsr_32bits_word",
+    "module": "claasp_next.primitives.block_ciphers.tinyjambu.fsr_word",
     "parameters": {
       "key_bit_size": 128,
       "number_of_rounds": 640
@@ -1800,7 +1800,7 @@
   },
   {
     "class": "TinyJambuFSRWordBased",
-    "module": "claasp_next.primitives.block_ciphers.tinyjambu_fsr_32bits_word",
+    "module": "claasp_next.primitives.block_ciphers.tinyjambu.fsr_word",
     "parameters": {}
   },
   {
@@ -1890,7 +1890,7 @@
   },
   {
     "class": "UblockSingleLinearLayer",
-    "module": "claasp_next.primitives.block_ciphers.ublock_single_linear_layer",
+    "module": "claasp_next.primitives.block_ciphers.ublock.single_linear_layer",
     "parameters": {
       "block_bit_size": 128,
       "key_bit_size": 128,
@@ -1899,7 +1899,7 @@
   },
   {
     "class": "UblockSingleLinearLayer",
-    "module": "claasp_next.primitives.block_ciphers.ublock_single_linear_layer",
+    "module": "claasp_next.primitives.block_ciphers.ublock.single_linear_layer",
     "parameters": {
       "block_bit_size": 128,
       "key_bit_size": 128,
@@ -1908,7 +1908,7 @@
   },
   {
     "class": "UblockSingleLinearLayer",
-    "module": "claasp_next.primitives.block_ciphers.ublock_single_linear_layer",
+    "module": "claasp_next.primitives.block_ciphers.ublock.single_linear_layer",
     "parameters": {
       "block_bit_size": 128,
       "key_bit_size": 128
@@ -1916,7 +1916,7 @@
   },
   {
     "class": "UblockSingleLinearLayer",
-    "module": "claasp_next.primitives.block_ciphers.ublock_single_linear_layer",
+    "module": "claasp_next.primitives.block_ciphers.ublock.single_linear_layer",
     "parameters": {
       "block_bit_size": 128,
       "key_bit_size": 256,
@@ -1926,7 +1926,7 @@
   },
   {
     "class": "UblockSingleLinearLayer",
-    "module": "claasp_next.primitives.block_ciphers.ublock_single_linear_layer",
+    "module": "claasp_next.primitives.block_ciphers.ublock.single_linear_layer",
     "parameters": {
       "block_bit_size": 128,
       "key_bit_size": 256,
@@ -1935,7 +1935,7 @@
   },
   {
     "class": "UblockSingleLinearLayer",
-    "module": "claasp_next.primitives.block_ciphers.ublock_single_linear_layer",
+    "module": "claasp_next.primitives.block_ciphers.ublock.single_linear_layer",
     "parameters": {
       "block_bit_size": 256,
       "key_bit_size": 256,
@@ -1945,7 +1945,7 @@
   },
   {
     "class": "UblockSingleLinearLayer",
-    "module": "claasp_next.primitives.block_ciphers.ublock_single_linear_layer",
+    "module": "claasp_next.primitives.block_ciphers.ublock.single_linear_layer",
     "parameters": {
       "block_bit_size": 256,
       "key_bit_size": 256,
@@ -1954,14 +1954,14 @@
   },
   {
     "class": "UblockSingleLinearLayer",
-    "module": "claasp_next.primitives.block_ciphers.ublock_single_linear_layer",
+    "module": "claasp_next.primitives.block_ciphers.ublock.single_linear_layer",
     "parameters": {
       "number_of_rounds": 4
     }
   },
   {
     "class": "UblockSingleLinearLayer",
-    "module": "claasp_next.primitives.block_ciphers.ublock_single_linear_layer",
+    "module": "claasp_next.primitives.block_ciphers.ublock.single_linear_layer",
     "parameters": {}
   },
   {
@@ -2377,47 +2377,47 @@
   },
   {
     "class": "AsconSboxSigma",
-    "module": "claasp_next.primitives.permutations.ascon_sbox_sigma",
+    "module": "claasp_next.primitives.permutations.ascon.sbox_sigma",
     "parameters": {
       "number_of_rounds": 12
     }
   },
   {
     "class": "AsconSboxSigma",
-    "module": "claasp_next.primitives.permutations.ascon_sbox_sigma",
+    "module": "claasp_next.primitives.permutations.ascon.sbox_sigma",
     "parameters": {
       "number_of_rounds": 4
     }
   },
   {
     "class": "AsconSboxSigma",
-    "module": "claasp_next.primitives.permutations.ascon_sbox_sigma",
+    "module": "claasp_next.primitives.permutations.ascon.sbox_sigma",
     "parameters": {}
   },
   {
     "class": "AsconSboxSigmaNoMatrix",
-    "module": "claasp_next.primitives.permutations.ascon_sbox_sigma_no_matrix",
+    "module": "claasp_next.primitives.permutations.ascon.sbox_sigma_no_matrix",
     "parameters": {
       "number_of_rounds": 12
     }
   },
   {
     "class": "AsconSboxSigmaNoMatrix",
-    "module": "claasp_next.primitives.permutations.ascon_sbox_sigma_no_matrix",
+    "module": "claasp_next.primitives.permutations.ascon.sbox_sigma_no_matrix",
     "parameters": {
       "number_of_rounds": 1
     }
   },
   {
     "class": "AsconSboxSigmaNoMatrix",
-    "module": "claasp_next.primitives.permutations.ascon_sbox_sigma_no_matrix",
+    "module": "claasp_next.primitives.permutations.ascon.sbox_sigma_no_matrix",
     "parameters": {
       "number_of_rounds": 4
     }
   },
   {
     "class": "AsconSboxSigmaNoMatrix",
-    "module": "claasp_next.primitives.permutations.ascon_sbox_sigma_no_matrix",
+    "module": "claasp_next.primitives.permutations.ascon.sbox_sigma_no_matrix",
     "parameters": {}
   },
   {
@@ -2480,26 +2480,26 @@
   },
   {
     "class": "GastonSbox",
-    "module": "claasp_next.primitives.permutations.gaston_sbox",
+    "module": "claasp_next.primitives.permutations.gaston.sbox",
     "parameters": {
       "number_of_rounds": 12
     }
   },
   {
     "class": "GastonSbox",
-    "module": "claasp_next.primitives.permutations.gaston_sbox",
+    "module": "claasp_next.primitives.permutations.gaston.sbox",
     "parameters": {}
   },
   {
     "class": "GastonSboxTheta",
-    "module": "claasp_next.primitives.permutations.gaston_sbox_theta",
+    "module": "claasp_next.primitives.permutations.gaston.sbox_theta",
     "parameters": {
       "number_of_rounds": 12
     }
   },
   {
     "class": "GastonSboxTheta",
-    "module": "claasp_next.primitives.permutations.gaston_sbox_theta",
+    "module": "claasp_next.primitives.permutations.gaston.sbox_theta",
     "parameters": {}
   },
   {
@@ -2532,7 +2532,7 @@
   },
   {
     "class": "GimliSbox",
-    "module": "claasp_next.primitives.permutations.gimli_sbox",
+    "module": "claasp_next.primitives.permutations.gimli.sbox",
     "parameters": {
       "number_of_rounds": 24,
       "word_size": 32
@@ -2540,14 +2540,14 @@
   },
   {
     "class": "GimliSbox",
-    "module": "claasp_next.primitives.permutations.gimli_sbox",
+    "module": "claasp_next.primitives.permutations.gimli.sbox",
     "parameters": {
       "number_of_rounds": 24
     }
   },
   {
     "class": "GimliSbox",
-    "module": "claasp_next.primitives.permutations.gimli_sbox",
+    "module": "claasp_next.primitives.permutations.gimli.sbox",
     "parameters": {
       "number_of_rounds": 4,
       "word_size": 32
@@ -2555,7 +2555,7 @@
   },
   {
     "class": "GimliSbox",
-    "module": "claasp_next.primitives.permutations.gimli_sbox",
+    "module": "claasp_next.primitives.permutations.gimli.sbox",
     "parameters": {}
   },
   {
@@ -2630,7 +2630,7 @@
   },
   {
     "class": "KeccakSbox",
-    "module": "claasp_next.primitives.permutations.keccak_sbox",
+    "module": "claasp_next.primitives.permutations.keccak.sbox",
     "parameters": {
       "number_of_rounds": 16,
       "word_size": 16
@@ -2638,7 +2638,7 @@
   },
   {
     "class": "KeccakSbox",
-    "module": "claasp_next.primitives.permutations.keccak_sbox",
+    "module": "claasp_next.primitives.permutations.keccak.sbox",
     "parameters": {
       "number_of_rounds": 18,
       "word_size": 8
@@ -2646,14 +2646,14 @@
   },
   {
     "class": "KeccakSbox",
-    "module": "claasp_next.primitives.permutations.keccak_sbox",
+    "module": "claasp_next.primitives.permutations.keccak.sbox",
     "parameters": {
       "number_of_rounds": 1
     }
   },
   {
     "class": "KeccakSbox",
-    "module": "claasp_next.primitives.permutations.keccak_sbox",
+    "module": "claasp_next.primitives.permutations.keccak.sbox",
     "parameters": {
       "number_of_rounds": 2,
       "word_size": 64
@@ -2661,7 +2661,7 @@
   },
   {
     "class": "KeccakSbox",
-    "module": "claasp_next.primitives.permutations.keccak_sbox",
+    "module": "claasp_next.primitives.permutations.keccak.sbox",
     "parameters": {
       "number_of_rounds": 20,
       "word_size": 16
@@ -2669,14 +2669,14 @@
   },
   {
     "class": "KeccakSbox",
-    "module": "claasp_next.primitives.permutations.keccak_sbox",
+    "module": "claasp_next.primitives.permutations.keccak.sbox",
     "parameters": {
       "number_of_rounds": 24
     }
   },
   {
     "class": "KeccakSbox",
-    "module": "claasp_next.primitives.permutations.keccak_sbox",
+    "module": "claasp_next.primitives.permutations.keccak.sbox",
     "parameters": {
       "number_of_rounds": 4,
       "word_size": 64
@@ -2684,7 +2684,7 @@
   },
   {
     "class": "KeccakSbox",
-    "module": "claasp_next.primitives.permutations.keccak_sbox",
+    "module": "claasp_next.primitives.permutations.keccak.sbox",
     "parameters": {}
   },
   {
@@ -2921,7 +2921,7 @@
   },
   {
     "class": "SpongentPiPrecomputation",
-    "module": "claasp_next.primitives.permutations.spongent_pi_precomputation",
+    "module": "claasp_next.primitives.permutations.spongent_pi.precomputation",
     "parameters": {
       "number_of_rounds": 4,
       "state_bit_size": 160
@@ -2929,7 +2929,7 @@
   },
   {
     "class": "SpongentPiPrecomputation",
-    "module": "claasp_next.primitives.permutations.spongent_pi_precomputation",
+    "module": "claasp_next.primitives.permutations.spongent_pi.precomputation",
     "parameters": {
       "number_of_rounds": 4,
       "state_bit_size": 176
@@ -2937,7 +2937,7 @@
   },
   {
     "class": "SpongentPiPrecomputation",
-    "module": "claasp_next.primitives.permutations.spongent_pi_precomputation",
+    "module": "claasp_next.primitives.permutations.spongent_pi.precomputation",
     "parameters": {
       "number_of_rounds": 80,
       "state_bit_size": 160
@@ -2945,7 +2945,7 @@
   },
   {
     "class": "SpongentPiPrecomputation",
-    "module": "claasp_next.primitives.permutations.spongent_pi_precomputation",
+    "module": "claasp_next.primitives.permutations.spongent_pi.precomputation",
     "parameters": {
       "number_of_rounds": 90,
       "state_bit_size": 176
@@ -2953,7 +2953,7 @@
   },
   {
     "class": "SpongentPiPrecomputation",
-    "module": "claasp_next.primitives.permutations.spongent_pi_precomputation",
+    "module": "claasp_next.primitives.permutations.spongent_pi.precomputation",
     "parameters": {}
   },
   {
@@ -2984,28 +2984,28 @@
   },
   {
     "class": "XoodooSbox",
-    "module": "claasp_next.primitives.permutations.xoodoo_sbox",
+    "module": "claasp_next.primitives.permutations.xoodoo.sbox",
     "parameters": {
       "number_of_rounds": 12
     }
   },
   {
     "class": "XoodooSbox",
-    "module": "claasp_next.primitives.permutations.xoodoo_sbox",
+    "module": "claasp_next.primitives.permutations.xoodoo.sbox",
     "parameters": {
       "number_of_rounds": 3
     }
   },
   {
     "class": "XoodooSbox",
-    "module": "claasp_next.primitives.permutations.xoodoo_sbox",
+    "module": "claasp_next.primitives.permutations.xoodoo.sbox",
     "parameters": {
       "number_of_rounds": 4
     }
   },
   {
     "class": "XoodooSbox",
-    "module": "claasp_next.primitives.permutations.xoodoo_sbox",
+    "module": "claasp_next.primitives.permutations.xoodoo.sbox",
     "parameters": {}
   },
   {
@@ -3196,7 +3196,7 @@
   },
   {
     "class": "QARMAv2MixColumn",
-    "module": "claasp_next.primitives.tweakable_block_ciphers.qarmav2_with_mixcolumn",
+    "module": "claasp_next.primitives.tweakable_block_ciphers.qarmav2.mixcolumn",
     "parameters": {
       "key_bit_size": 128,
       "number_of_layers": 1,
@@ -3206,7 +3206,7 @@
   },
   {
     "class": "QARMAv2MixColumn",
-    "module": "claasp_next.primitives.tweakable_block_ciphers.qarmav2_with_mixcolumn",
+    "module": "claasp_next.primitives.tweakable_block_ciphers.qarmav2.mixcolumn",
     "parameters": {
       "key_bit_size": 256,
       "number_of_layers": 2,
@@ -3216,21 +3216,21 @@
   },
   {
     "class": "QARMAv2MixColumn",
-    "module": "claasp_next.primitives.tweakable_block_ciphers.qarmav2_with_mixcolumn",
+    "module": "claasp_next.primitives.tweakable_block_ciphers.qarmav2.mixcolumn",
     "parameters": {
       "number_of_rounds": 4
     }
   },
   {
     "class": "QARMAv2MixColumn",
-    "module": "claasp_next.primitives.tweakable_block_ciphers.qarmav2_with_mixcolumn",
+    "module": "claasp_next.primitives.tweakable_block_ciphers.qarmav2.mixcolumn",
     "parameters": {
       "number_of_rounds": 9
     }
   },
   {
     "class": "QARMAv2MixColumn",
-    "module": "claasp_next.primitives.tweakable_block_ciphers.qarmav2_with_mixcolumn",
+    "module": "claasp_next.primitives.tweakable_block_ciphers.qarmav2.mixcolumn",
     "parameters": {}
   },
   {

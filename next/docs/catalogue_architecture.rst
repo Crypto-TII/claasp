@@ -51,8 +51,12 @@ schema, BN254 data, upstream commit, reference result, and license notice.
 
 AES is also a package because lookup and algebraic realizations share reusable
 AES blocks. LowMC is a package because its reviewed parameter sets own sizeable
-constant matrices. Twofish and WARP need neither, so their implementation is
-visible directly in ``twofish.py`` and ``warp.py``.
+constant matrices. Families with alternate graphs use the same layout: the
+canonical implementation stays in ``primitive.py`` and concise sibling names
+such as ``sbox.py``, ``fsr.py``, or ``invertible.py`` identify the realization.
+The canonical family import remains stable. Twofish and WARP need neither
+alternate realizations nor data, so their implementations remain directly
+visible in ``twofish.py`` and ``warp.py``.
 
 Evidence and maintenance
 ------------------------

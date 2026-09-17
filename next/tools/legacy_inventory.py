@@ -61,6 +61,32 @@ OFFICIAL_NAME_OVERRIDES = {
 PROPOSED_MODULE_STEM_OVERRIDES = {
     "claasp/ciphers/stream_ciphers/bluetooth_stream_cipher_e0.py": "bluetooth_e0",
 }
+PROPOSED_MODULE_OVERRIDES = {
+    "claasp/ciphers/block_ciphers/aradi_block_cipher_sbox.py": "block_ciphers.aradi.sbox",
+    "claasp/ciphers/block_ciphers/aradi_block_cipher_sbox_and_compact_linear_map.py": "block_ciphers.aradi.sbox_compact_linear_map",
+    "claasp/ciphers/block_ciphers/des_exact_key_length_block_cipher.py": "block_ciphers.des.exact_key_length",
+    "claasp/ciphers/block_ciphers/gift_sbox_block_cipher.py": "block_ciphers.gift.sbox",
+    "claasp/ciphers/block_ciphers/katan_fsr_block_cipher.py": "block_ciphers.katan.fsr",
+    "claasp/ciphers/block_ciphers/ktantan_fsr_block_cipher.py": "block_ciphers.ktantan.fsr",
+    "claasp/ciphers/block_ciphers/prince_v2_block_cipher.py": "block_ciphers.prince.v2",
+    "claasp/ciphers/block_ciphers/qarmav2_with_mixcolumn_block_cipher.py": "tweakable_block_ciphers.qarmav2.mixcolumn",
+    "claasp/ciphers/block_ciphers/simeck_sbox_block_cipher.py": "block_ciphers.simeck.sbox",
+    "claasp/ciphers/block_ciphers/simon_sbox_block_cipher.py": "block_ciphers.simon.sbox",
+    "claasp/ciphers/block_ciphers/ublock_single_linear_layer_block_cipher.py": "block_ciphers.ublock.single_linear_layer",
+    "claasp/ciphers/permutations/ascon_sbox_sigma_no_matrix_permutation.py": "permutations.ascon.sbox_sigma_no_matrix",
+    "claasp/ciphers/permutations/ascon_sbox_sigma_permutation.py": "permutations.ascon.sbox_sigma",
+    "claasp/ciphers/permutations/gaston_sbox_permutation.py": "permutations.gaston.sbox",
+    "claasp/ciphers/permutations/gaston_sbox_theta_permutation.py": "permutations.gaston.sbox_theta",
+    "claasp/ciphers/permutations/gimli_sbox_permutation.py": "permutations.gimli.sbox",
+    "claasp/ciphers/permutations/keccak_invertible_permutation.py": "permutations.keccak.invertible",
+    "claasp/ciphers/permutations/keccak_sbox_permutation.py": "permutations.keccak.sbox",
+    "claasp/ciphers/permutations/spongent_pi_fsr_permutation.py": "permutations.spongent_pi.fsr",
+    "claasp/ciphers/permutations/spongent_pi_precomputation_permutation.py": "permutations.spongent_pi.precomputation",
+    "claasp/ciphers/permutations/tinyjambu_32bits_word_permutation.py": "block_ciphers.tinyjambu.word",
+    "claasp/ciphers/permutations/tinyjambu_fsr_32bits_word_permutation.py": "block_ciphers.tinyjambu.fsr_word",
+    "claasp/ciphers/permutations/xoodoo_invertible_permutation.py": "permutations.xoodoo.invertible",
+    "claasp/ciphers/permutations/xoodoo_sbox_permutation.py": "permutations.xoodoo.sbox",
+}
 
 M10_9C_PATHS_BY_SLICE = {
     "M10.9c2": {
@@ -1512,13 +1538,14 @@ def _catalogue_metadata(relative: Path, entries: list[str], tree: ast.Module) ->
     high_level_parent = directory if directory in {"hash_functions", "mac", "stream_ciphers"} else None
     category = "outside_scope" if path in CATALOGUE_OUT_OF_SCOPE else _fixed_length_category(directory, roles)
     destination_category = category if category != "outside_scope" else "support"
-    proposed_stem = PROPOSED_MODULE_STEM_OVERRIDES.get(
-        path, _proposed_module_stem(relative.stem)
+    proposed_stem = PROPOSED_MODULE_STEM_OVERRIDES.get(path, _proposed_module_stem(relative.stem))
+    proposed_module = PROPOSED_MODULE_OVERRIDES.get(
+        path, f"{destination_category}.{proposed_stem}"
     )
     return {
         "official_name": official_name,
         "primitive_category": category,
-        "proposed_module": f"claasp_next.primitives.{destination_category}.{proposed_stem}",
+        "proposed_module": f"claasp_next.primitives.{proposed_module}",
         "proposed_class": official_name,
         "higher_level_parent": high_level_parent,
         "input_roles": roles,
@@ -1534,6 +1561,9 @@ def _destination(relative: Path, catalogue: dict[str, Any] | None) -> str:
             return "inapplicable: " + catalogue["outside_scope_reason"]
         module_path = catalogue["proposed_module"].replace(".", "/")
         package_marker = ROOT / "next/src" / module_path / "__init__.py"
+        implementation = ROOT / "next/src" / module_path / "primitive.py"
+        if implementation.exists():
+            return module_path + "/primitive.py"
         return module_path + ("/__init__.py" if package_marker.exists() else ".py")
     if relative.parts[0] == "tests":
         return "next/tests (mapped to the owning migrated behavior)"
@@ -1794,7 +1824,8 @@ def primitive_catalogue_audit_status(payload: dict[str, Any]) -> dict[str, Any]:
     ]
     def destination_exists(module_name: str) -> bool:
         path = ROOT / "next" / "src" / module_name.replace(".", "/")
-        return path.with_suffix(".py").exists() or (path / "__init__.py").exists()
+        module_file = Path(str(path) + ".py")
+        return module_file.exists() or (path / "__init__.py").exists()
 
     unresolved = [
         item["path"] for item in sources
@@ -1823,7 +1854,7 @@ def primitive_catalogue_audit_status(payload: dict[str, Any]) -> dict[str, Any]:
         if item["primitive"]["primitive_category"] == "outside_scope":
             continue
         path = ROOT / "next/src" / item["primitive"]["proposed_module"].replace(".", "/")
-        implementation = path / "primitive.py" if path.is_dir() else path.with_suffix(".py")
+        implementation = path / "primitive.py" if path.is_dir() else Path(str(path) + ".py")
         if implementation.exists() and "CatalogueGraphPrimitive" in implementation.read_text(
             encoding="utf-8"
         ):

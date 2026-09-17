@@ -18,7 +18,7 @@
     "claim": "legacy-fixed-vector",
     "class": "AsconSboxSigmaNoMatrix",
     "legacy_id": "ascon_sbox_sigma_no_matrix_p320_o320_r1",
-    "module": "claasp_next.primitives.permutations.ascon_sbox_sigma_no_matrix",
+    "module": "claasp_next.primitives.permutations.ascon.sbox_sigma_no_matrix",
     "parameters": {
       "number_of_rounds": 1
     },
@@ -35,7 +35,7 @@
     "claim": "legacy-fixed-vector",
     "class": "AsconSboxSigmaNoMatrix",
     "legacy_id": "ascon_sbox_sigma_no_matrix_p320_o320_r12",
-    "module": "claasp_next.primitives.permutations.ascon_sbox_sigma_no_matrix",
+    "module": "claasp_next.primitives.permutations.ascon.sbox_sigma_no_matrix",
     "parameters": {},
     "vectors": [
       {
@@ -62,7 +62,7 @@
     "claim": "legacy-fixed-vector",
     "class": "AsconSboxSigma",
     "legacy_id": "ascon_sbox_sigma_p320_o320_r12",
-    "module": "claasp_next.primitives.permutations.ascon_sbox_sigma",
+    "module": "claasp_next.primitives.permutations.ascon.sbox_sigma",
     "parameters": {},
     "vectors": [
       {
@@ -136,7 +136,7 @@
     "claim": "legacy-fixed-vector",
     "class": "GastonSbox",
     "legacy_id": "gaston_p320_o320_r12",
-    "module": "claasp_next.primitives.permutations.gaston_sbox",
+    "module": "claasp_next.primitives.permutations.gaston.sbox",
     "parameters": {},
     "vectors": [
       {
@@ -169,7 +169,7 @@
     "claim": "legacy-fixed-vector",
     "class": "GastonSboxTheta",
     "legacy_id": "gaston_p320_o320_r12",
-    "module": "claasp_next.primitives.permutations.gaston_sbox_theta",
+    "module": "claasp_next.primitives.permutations.gaston.sbox_theta",
     "parameters": {},
     "vectors": [
       {
@@ -217,7 +217,7 @@
     "claim": "legacy-fixed-vector",
     "class": "GimliSbox",
     "legacy_id": "gimli_sbox_p384_o384_r24",
-    "module": "claasp_next.primitives.permutations.gimli_sbox",
+    "module": "claasp_next.primitives.permutations.gimli.sbox",
     "parameters": {},
     "vectors": [
       {
@@ -271,7 +271,7 @@
     "claim": "legacy-fixed-vector",
     "class": "KeccakInvertible",
     "legacy_id": "keccak_invertible_p1600_o1600_r1",
-    "module": "claasp_next.primitives.permutations.keccak_invertible",
+    "module": "claasp_next.primitives.permutations.keccak.invertible",
     "parameters": {
       "number_of_rounds": 1
     },
@@ -320,7 +320,7 @@
     "claim": "legacy-fixed-vector",
     "class": "KeccakSbox",
     "legacy_id": "keccak_sbox_p1600_o1600_r1",
-    "module": "claasp_next.primitives.permutations.keccak_sbox",
+    "module": "claasp_next.primitives.permutations.keccak.sbox",
     "parameters": {
       "number_of_rounds": 1
     },
@@ -337,7 +337,7 @@
     "claim": "legacy-fixed-vector",
     "class": "KeccakSbox",
     "legacy_id": "keccak_sbox_p1600_o1600_r24",
-    "module": "claasp_next.primitives.permutations.keccak_sbox",
+    "module": "claasp_next.primitives.permutations.keccak.sbox",
     "parameters": {},
     "vectors": [
       {
@@ -541,7 +541,7 @@
     "claim": "legacy-fixed-vector",
     "class": "SpongentPiFSR",
     "legacy_id": "spongent_pi_fsr_p160_o160_r4",
-    "module": "claasp_next.primitives.permutations.spongent_pi_fsr",
+    "module": "claasp_next.primitives.permutations.spongent_pi.fsr",
     "parameters": {
       "number_of_rounds": 4,
       "state_bit_size": 160
@@ -559,7 +559,7 @@
     "claim": "legacy-fixed-vector",
     "class": "SpongentPiFSR",
     "legacy_id": "spongent_pi_fsr_p176_o176_r4",
-    "module": "claasp_next.primitives.permutations.spongent_pi_fsr",
+    "module": "claasp_next.primitives.permutations.spongent_pi.fsr",
     "parameters": {
       "number_of_rounds": 4,
       "state_bit_size": 176
@@ -613,7 +613,7 @@
     "claim": "legacy-fixed-vector",
     "class": "SpongentPiPrecomputation",
     "legacy_id": "spongent_pi_precomputation_p160_o160_r4",
-    "module": "claasp_next.primitives.permutations.spongent_pi_precomputation",
+    "module": "claasp_next.primitives.permutations.spongent_pi.precomputation",
     "parameters": {
       "number_of_rounds": 4,
       "state_bit_size": 160
@@ -631,7 +631,7 @@
     "claim": "legacy-fixed-vector",
     "class": "SpongentPiPrecomputation",
     "legacy_id": "spongent_pi_precomputation_p176_o176_r4",
-    "module": "claasp_next.primitives.permutations.spongent_pi_precomputation",
+    "module": "claasp_next.primitives.permutations.spongent_pi.precomputation",
     "parameters": {
       "number_of_rounds": 4,
       "state_bit_size": 176
@@ -649,7 +649,7 @@
     "claim": "legacy-fixed-vector",
     "class": "XoodooInvertible",
     "legacy_id": "xoodoo_invertible_p384_o384_r12",
-    "module": "claasp_next.primitives.permutations.xoodoo_invertible",
+    "module": "claasp_next.primitives.permutations.xoodoo.invertible",
     "parameters": {
       "number_of_rounds": 12
     },
@@ -700,7 +700,7 @@
     "claim": "legacy-fixed-vector",
     "class": "XoodooSbox",
     "legacy_id": "xoodoo_sbox_p384_o384_r12",
-    "module": "claasp_next.primitives.permutations.xoodoo_sbox",
+    "module": "claasp_next.primitives.permutations.xoodoo.sbox",
     "parameters": {},
     "vectors": [
       {

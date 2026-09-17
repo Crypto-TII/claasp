@@ -759,6 +759,40 @@ accepted early vertical slices and remain subject to the final closure gate:
     the runtime frozen-graph loader, manifests, and compressed specifications
     are absent; the complete host, documentation, wheel, and compatibility
     checkpoints pass.
+11. **M10.9d11 — catalogue layout and authoring refinement.** Reopen the
+    milestone for the following corrective, dependency-ordered slices before
+    M10.9e resumes:
+
+    1. **M10.9d11a — realization-family packages.** Use one same-import-path
+       package whenever a primitive family has multiple implementations or
+       legacy-derived realizations. Co-locate Aradi, DES, GIFT, KATAN,
+       KTANTAN, Simeck, Simon, TinyJambu, uBlock, PRINCE, Ascon, Gaston,
+       Gimli, Keccak, Spongent-pi, Xoodoo, and QARMAv2. Preserve the existing
+       public import path while giving each realization a concise module name.
+       The Simon/Simeck/Gimli ``sbox`` forms remain explicitly
+       legacy-regression realizations rather than claims about the canonical
+       specifications; M10.9f owns their discovery labels and authenticity
+       metadata.
+    2. **M10.9d11b — primitive and input metadata.** Add typed primitive-kind
+       metadata and typed input descriptors, including a default
+       public/secret confidentiality marker that callers may override for a
+       study. Classify every single-component primitive as a function,
+       permutation, block function, or block primitive from its actual input
+       and bijectivity contract, and require exactly one round and one semantic
+       component.
+    3. **M10.9d11c — reference authoring implementations.** Make AES, Speck,
+       and ChaCha the documented reference sources: follow their published
+       pseudocode closely, rely on automatic component identifiers, use
+       consistent state/word names, centralize common configuration and input
+       validation helpers in ``Primitive``, expose ordered composite outputs,
+       and move research-only AES modifications to a separate ``CustomAES``
+       module distinct from ToyAES.
+    4. **M10.9d11d — structural wiring and closure.** Reconcile v5 structural
+       joining with the legacy removal of ``Concatenate``. Prefer typed graph
+       wiring at component inputs and primitive/composite outputs; retain a
+       semantic component only if an independently useful operation remains.
+       Update user/developer documentation and rerun the complete M10.9d
+       closure matrix.
 
 ##### M10.9e: Primitive realizations and task-directed selection
 
@@ -1051,7 +1085,9 @@ path is correct and stable.
 Unless this plan is explicitly revised, “next milestone” means the first
 unfinished item in this order:
 
-1. M10.9e: complete the remaining general realization/provenance work, then
+1. M10.9d11: complete the recorded catalogue-layout, metadata, reference
+   authoring, and structural-wiring refinement; then complete the remaining
+   general realization/provenance work in M10.9e and
    close the typed catalogue discovery/query API in M10.9f.
 2. M10.10, M10.11, M10.14, and M10.15: inversion/transformations, component
    analysis, reports, serialization, diagrams, code generation, and remaining
@@ -1086,13 +1122,15 @@ second checklist is intentionally not maintained. At this revision:
 - M10.6, including its advanced exact and heuristic analyses, is achieved.
 - M10.7 is achieved: the exhaustive inventory and filesystem gate include the
   reconciled ``develop`` changes.
-- M10.8, M10.9a, M10.9b, M10.9c, and M10.9d are achieved. M10.9c1–M10.9c9 closed the
+- M10.8, M10.9a, M10.9b, and M10.9c are achieved. M10.9c1–M10.9c9 closed the
   inventoried reusable component catalogue; M10.9c10 adds immutable hierarchical
   composite graphs, reusable blocks, compositional AES variants, and scoped
   representation access. M10.9d provides readable Sage-independent native
   construction source for all 145 behavioral catalogue records, owns its data
-  and evidence, and has no runtime frozen-graph artifacts.
-- M10.9e is next. It has an achieved AES vertical slice but still needs general result
+  and evidence, and has no runtime frozen-graph artifacts. M10.9d11 is the
+  current corrective refinement for family layout, metadata, reference-source
+  ergonomics, and structural wiring.
+- M10.9e follows M10.9d11. It has an achieved AES vertical slice but still needs general result
   provenance and task-directed realization selection. M10.9f explicitly owns
   migration of the legacy catalogue/discovery API after the component and
   primitive catalogues are complete. M10.10, M10.11, M10.14, and M10.15
@@ -1233,7 +1271,7 @@ is absent). Update this table in the same commit that changes milestone state.
 | Reusable composite block catalogue (M10.9c10b) | Achieved | Generic 2^n-entry parallel S-box definitions support arbitrary counts, flat-bit SAT-ready lowering, and typed finite-domain units; ChaCha quarter rounds expose named and joined outputs and preserve the RFC 8439 vector; host 514 passed/78 external deselected |
 | Compositional AES and variants (M10.9c10c) | Achieved | Canonical AES is assembled from reusable key-schedule, substitution-layer, and round definitions while preserving AES-128/192/256 and lookup/algebraic vectors; `AESVariant` supports alternate S-boxes and omitted MixColumns under an `aes_variant` identity with immutable derivation metadata; host 516 passed/78 external deselected |
 | Composite documentation and closure (M10.9c10d) | Achieved | User examples build AES from blocks, replace its S-box, omit MixColumns, evaluate ChaCha quarter rounds, and generate parallel-S-box/quarter-round CNF; developer docs specify immutable hierarchy and flat lowering; host 516 passed/78 external deselected; API/user/developer doctests 39/243/480; warning-free user/developer HTML; Python-3.10 compatibility Docker 513 passed/3 skipped/78 deselected and external 76 passed/2 skipped/516 deselected |
-| Complete primitive implementations/evidence (M10.9d) | Achieved | All 145 behavioral catalogue records have readable Sage-independent v5 construction source and applicable fixed evidence; 432 audited constructor configurations pass, and the runtime frozen-graph loader, manifests, and compressed specifications are absent |
+| Complete primitive implementations/evidence (M10.9d) | In progress | Native-source and evidence closure is achieved; M10.9d11 reopens the milestone to refine realization-family packages, typed primitive/input metadata, reference authoring examples, and structural wiring before M10.9e |
 | ChaCha permutation evaluation slice (M10.9d1) | Achieved | Official `ChaCha` class, standard round convention, typed ARX graph, full ChaCha20 and two legacy toy vectors, and scalar/batch parity; cryptanalytic fixture migration remains separately tracked |
 | Salsa permutation evaluation slice (M10.9d2) | Achieved | Official `Salsa` class, standard full-round convention, typed ARX graph, both fixed legacy vectors, and scalar/batch parity; cryptanalytic fixtures remain separately tracked |
 | Primitive catalogue audit (M10.9d3) | Achieved | Machine inventory assigns 149 source and 143 primitive-test records (265 functions) exactly once across M10.9d1–M10.9d8: 145 behavioral sources and four reviewed outside-scope helpers; the audit gate passes while the separate closure gate exposes every unimplemented destination |
@@ -1244,7 +1282,12 @@ is absent). Update this table in the same commit that changes milestone state.
 | Fixed-length functions/block functions (M10.9d8) | Achieved | All 15 source and 15 test records have typed graph destinations; 41 fixed observations captured by the 20 legacy tests pass, all 15 families have scalar/batch parity, and conditional/word FSR plus explicit-modulus addition semantics are independently checked; host checkpoint: 941 passed, 78 external deselected |
 | Primitive-owned parameters/data (M10.9d9) | Achieved | Poseidon owns its implementation, typed parameter schema, BN254 data, pinned vector, provenance, and MIT notice; LowMC owns its 11 vetted data files; `claasp_next.parameters` is a thin re-export; AES, LowMC, and Poseidon use same-import-path packages for multiple realizations or owned data, while simple primitives use readable modules; the built wheel contains every owned artifact |
 | Complete primitive catalogue closure (M10.9d10) | Achieved | Machine closure reports 149/149 classified sources, 145/145 behavioral destinations, zero unresolved evidence, zero intermediate frozen graphs, and zero runtime frozen artifacts; 432 audited constructor configurations pass; host 946 passed/510 deselected; API/user/developer doctests 39/253/480; warning-free user/developer HTML; wheel 358 files/11 owned data files/zero graph artifacts; Python-3.10 compatibility Docker 943 passed/3 skipped/510 deselected and external 76 passed/2 skipped/1378 deselected |
-| Primitive realizations/task selection (M10.9e) | Next | Generic capability metadata and AES lookup/algebraic realizations implemented; result provenance and broader task-directed selection are the next work item after M10.9d closure |
+| Catalogue layout/authoring refinement (M10.9d11) | In progress | Corrective refinement recorded in four dependency-ordered slices before M10.9e |
+| Realization-family packages (M10.9d11a) | Achieved | All 17 audited multi-realization families use stable same-import-path packages; KTANTAN and PRINCE were added to the initial list, TinyJambu has three realizations, and legacy-derived Simon/Simeck/Gimli S-box forms are explicitly non-canonical pending M10.9f authenticity metadata; 432-constructor audit retained |
+| Primitive/input metadata (M10.9d11b) | Next | Typed primitive kinds and overridable public/secret input descriptors; single-component primitives contain exactly one round and one semantic component |
+| Reference authoring implementations (M10.9d11c) | Planned | AES, Speck, and ChaCha become the intuitive pseudocode-oriented examples; CustomAES owns research variants separately from ToyAES |
+| Structural wiring and closure (M10.9d11d) | Planned | Replace redundant concatenation nodes with typed wiring where representations permit it; document the remaining semantics and rerun host/docs/wheel/Docker closure |
+| Primitive realizations/task selection (M10.9e) | Planned | Generic capability metadata and AES lookup/algebraic realizations implemented; result provenance and broader task-directed selection follow M10.9d11 closure |
 | AES realization vertical slice (M10.9e1) | Achieved | Lookup S-box and field-inverse-plus-binary-affine graphs share one public class and all AES-128/192/256 fixed vectors; deterministic capability selection is documented and tested |
 | Catalogue discovery/query API (M10.9f) | Planned | Replace `claasp/catalog.py` with typed discovery over v5 primitive/component/realization/parameter/driver metadata; preserve filters and structured exports without eager optional dependencies or legacy taxonomy leakage |
 | Primitive inversion and graph transformations (M10.10) | Planned | Typed inverse semantics, partial inversion, round trips, slicing, key-schedule removal, and editor transformations |
