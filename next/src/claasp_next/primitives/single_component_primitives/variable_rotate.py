@@ -7,22 +7,38 @@ from ._base import positive
 
 
 class VariableRotate(Primitive):
+    """Rotate a word by an amount supplied as a second input.
+
+    >>> hex(VariableRotate().evaluate(0x81, 2))
+    '0x60'
+    """
+
     def __init__(
-        self, bit_size: int = 8, amount_bit_size: int = 3,
+        self,
+        bit_size: int = 8,
+        amount_bit_size: int = 3,
         direction: str = "right",
     ) -> None:
         bit_size = positive(bit_size, "bit_size")
         positive(amount_bit_size, "amount_bit_size")
         super().__init__(
             "variable_rotate",
-            {"input": ValueType(Word(bit_size), (1,)),
-             "amount": ValueType(Word(amount_bit_size), (1,))},
+            {
+                "input": ValueType(Word(bit_size), (1,)),
+                "amount": ValueType(Word(amount_bit_size), (1,)),
+            },
             kind=PrimitiveKind.FUNCTION,
         )
         self.add_round()
-        self.set_output(self.add_component(VariableRotateComponent(
-            self.input("input"), self.input("amount"), direction,
-        )))
+        self.set_output(
+            self.add_component(
+                VariableRotateComponent(
+                    self.input("input"),
+                    self.input("amount"),
+                    direction,
+                )
+            )
+        )
 
 
 __all__ = ["VariableRotate"]

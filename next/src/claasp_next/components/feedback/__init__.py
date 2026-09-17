@@ -1,6 +1,6 @@
 """Typed feedback-register descriptions."""
 
-from claasp_next.components.feedback.register import (
+from claasp_next.components.feedback.feedback_register import (
     FeedbackRegister, FeedbackRegisterParameters, FeedbackRegisterSpec,
     FeedbackTerm,
 )

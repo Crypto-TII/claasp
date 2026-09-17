@@ -1,25 +1,39 @@
-"""One-component lookup S-box primitive."""
+"""Primitive consisting of one unit-wise S-box."""
 
 from collections.abc import Sequence
 
-from claasp_next.components import BitVectorSBox
-from claasp_next.domains import Bit
+from claasp_next.components import SBox as SBoxComponent
+from claasp_next.domains import Word
 from claasp_next.graph import Primitive, PrimitiveKind, ValueType
 from ._base import positive
 
 
-class Sbox(Primitive):
-    def __init__(self, bit_size: int = 4, lookup_table: Sequence[int] | None = None) -> None:
-        bit_size = positive(bit_size, "bit_size")
-        table = range(1 << bit_size) if lookup_table is None else lookup_table
-        kind = (
-            PrimitiveKind.PERMUTATION
-            if sorted(table) == list(range(1 << bit_size))
-            else PrimitiveKind.FUNCTION
+class SBox(Primitive):
+    """Apply one lookup table independently to every input unit.
+
+    >>> SBox([3, 2, 1, 0], Word(2), unit_count=2).evaluate(0b0001)
+    14
+    """
+
+    def __init__(
+        self,
+        lookup_table: Sequence[int] | None = None,
+        domain=None,
+        unit_count: int = 1,
+    ) -> None:
+        unit_count = positive(unit_count, "unit_count")
+        domain = Word(4) if domain is None else domain
+        table = (
+            list(range(1 << domain.encoded_bit_size))
+            if lookup_table is None
+            else list(lookup_table)
         )
-        super().__init__("sbox", {"input": ValueType(Bit(), (bit_size,))}, kind=kind)
+        bijective = sorted(table) == list(range(1 << domain.encoded_bit_size))
+        kind = PrimitiveKind.PERMUTATION if bijective else PrimitiveKind.FUNCTION
+        super().__init__("sbox", {"input": ValueType(domain, (unit_count,))}, kind=kind)
         self.add_round()
-        self.set_output(self.add_component(BitVectorSBox(self.input("input"), table)))
+        output = self.add_component(SBoxComponent(self.input("input"), table))
+        self.set_output(output)
 
 
-__all__ = ["Sbox"]
+__all__ = ["SBox"]

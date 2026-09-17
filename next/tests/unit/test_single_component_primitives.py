@@ -1,138 +1,216 @@
 import inspect
+import json
+from pathlib import Path
 
+from claasp_next.components import (
+    Add as AddComponent,
+    BinaryAffineMap as BinaryAffineMapComponent,
+    BitVectorSBox as BitVectorSBoxComponent,
+    BitwiseAnd as BitwiseAndComponent,
+    BitwiseNot as BitwiseNotComponent,
+    BitwiseOr as BitwiseOrComponent,
+    Concatenate as ConcatenateComponent,
+    Constant as ConstantComponent,
+    FeedbackRegister as FeedbackRegisterComponent,
+    IDEAMultiply as IDEAMultiplyComponent,
+    Identity as IdentityComponent,
+    LinearMap as LinearMapComponent,
+    ModularAdd as ModularAddComponent,
+    ModularMultiply as ModularMultiplyComponent,
+    ModularSubtract as ModularSubtractComponent,
+    Multiply as MultiplyComponent,
+    PackBits as PackBitsComponent,
+    Permutation as PermutationComponent,
+    Power as PowerComponent,
+    Rotate as RotateComponent,
+    SBox as SBoxComponent,
+    Shift as ShiftComponent,
+    UnpackBits as UnpackBitsComponent,
+    VariableRotate as VariableRotateComponent,
+    VariableShift as VariableShiftComponent,
+    Xor as XorComponent,
+)
+from claasp_next.domains import BinaryExtensionField, Word
 from claasp_next.graph import PrimitiveKind
 from claasp_next.primitives._catalogue_exports import CATEGORY_EXPORTS
-
 from claasp_next.primitives.single_component_primitives import (
-    And, Constant, Fsr, IdeaModmul, Identity, LinearLayer, MixColumn, Modadd,
-    Modmul, Modsub, Not, Or, Permutation, Reverse, Rotate, Sbox, Shift,
-    ShiftRows, Sigma, ThetaGaston, ThetaKeccak, ThetaXoodoo, VariableRotate,
-    VariableShift, WordPermutation, Xor,
+    Add,
+    BinaryAffineMap,
+    BitVectorSBox,
+    BitwiseAnd,
+    BitwiseNot,
+    BitwiseOr,
+    Concatenate,
+    Constant,
+    FeedbackRegister,
+    IDEAMultiply,
+    Identity,
+    LinearMap,
+    ModularAdd,
+    ModularMultiply,
+    ModularSubtract,
+    Multiply,
+    PackBits,
+    Permutation,
+    Power,
+    Rotate,
+    SBox,
+    Shift,
+    UnpackBits,
+    VariableRotate,
+    VariableShift,
+    Xor,
 )
 
 
-def test_nary_word_fixtures_match_native_integer_operations():
-    values = (0b1010, 0b1100, 0b0111)
-    assert And(4, 3).evaluate(*values) == (values[0] & values[1] & values[2])
-    assert Or(4, 3).evaluate(*values) == (values[0] | values[1] | values[2])
-    assert Xor(4, 3).evaluate(*values) == (values[0] ^ values[1] ^ values[2])
-    assert Modadd(4, 3).evaluate(11, 7, 3) == (11 + 7 + 3) % 16
-    assert Modmul(8).evaluate(13, 19) == (13 * 19) % 256
-    assert Modsub(4).evaluate(11, 7) == 4
-    assert IdeaModmul(4).evaluate(3, 5) == 15
+CLASSES = (
+    Add,
+    BinaryAffineMap,
+    BitVectorSBox,
+    BitwiseAnd,
+    BitwiseNot,
+    BitwiseOr,
+    Concatenate,
+    Constant,
+    FeedbackRegister,
+    IDEAMultiply,
+    Identity,
+    LinearMap,
+    ModularAdd,
+    ModularMultiply,
+    ModularSubtract,
+    Multiply,
+    PackBits,
+    Permutation,
+    Power,
+    Rotate,
+    SBox,
+    Shift,
+    UnpackBits,
+    VariableRotate,
+    VariableShift,
+    Xor,
+)
+
+COMPONENT_CLASSES = (
+    AddComponent,
+    BinaryAffineMapComponent,
+    BitVectorSBoxComponent,
+    BitwiseAndComponent,
+    BitwiseNotComponent,
+    BitwiseOrComponent,
+    ConcatenateComponent,
+    ConstantComponent,
+    FeedbackRegisterComponent,
+    IDEAMultiplyComponent,
+    IdentityComponent,
+    LinearMapComponent,
+    ModularAddComponent,
+    ModularMultiplyComponent,
+    ModularSubtractComponent,
+    MultiplyComponent,
+    PackBitsComponent,
+    PermutationComponent,
+    PowerComponent,
+    RotateComponent,
+    SBoxComponent,
+    ShiftComponent,
+    UnpackBitsComponent,
+    VariableRotateComponent,
+    VariableShiftComponent,
+    XorComponent,
+)
 
 
-def test_structural_and_unary_fixtures_preserve_boundaries():
+def test_catalogue_is_one_to_one_with_public_base_components():
+    advertised = CATEGORY_EXPORTS["single_component_primitives"]
+    expected = {component.__name__ for component in COMPONENT_CLASSES}
+    assert set(advertised) == expected
+    assert {primitive.__name__ for primitive in CLASSES} == expected
+    assert all(
+        primitive().__class__.__name__ == primitive.__name__ for primitive in CLASSES
+    )
+    assert all(
+        type(primitive().components[0]).__name__ == primitive.__name__
+        for primitive in CLASSES
+    )
+
+
+def test_machine_catalogue_matches_generated_exports():
+    path = Path(__file__).parents[2] / "migration" / "single_component_catalogue.json"
+    assert (
+        json.loads(path.read_text()) == CATEGORY_EXPORTS["single_component_primitives"]
+    )
+
+
+def test_fixed_semantic_examples():
+    assert Add().evaluate(5, 14) == 2
+    assert Multiply().evaluate(5, 7) == 1
+    assert Power().evaluate(3) == 10
+    assert BinaryAffineMap(offset=3).evaluate(10) == 9
+    assert LinearMap([[1, 0], [1, 1]]).evaluate(0b10) == 0b11
+    assert PackBits().evaluate(0xAB) == 0xAB
+    assert UnpackBits().evaluate(0xAB) == 0xAB
+    assert Concatenate().evaluate(0b10, 0b01) == 0b1001
     assert Constant(8, 0x5A).evaluate() == 0x5A
+    assert FeedbackRegister().evaluate(0b1010) == 0b0101
     assert Identity(16).evaluate(0xCAFE) == 0xCAFE
-    assert Not(8).evaluate(Not(8).evaluate(0xA5)) == 0xA5
-    assert Rotate(8, 2, "left").evaluate(Rotate(8, 2).evaluate(0xA5)) == 0xA5
-    assert Shift(8, 1).evaluate(0x81) == 0x40
-    assert VariableRotate(8, 3).evaluate(0xA5, 0) == 0xA5
-    assert VariableShift(8, 3).evaluate(0xA5, 0) == 0xA5
-    assert Sbox(4).evaluate(0xA) == 0xA
-
-
-def test_permutation_fixtures_use_direct_output_to_input_mappings():
     assert Permutation([3, 2, 1, 0]).evaluate(0b1100) == 0b0011
-    assert Permutation([1, 0], 4).evaluate(0xAB) == 0xBA
-    assert Reverse(8).evaluate(Reverse(8).evaluate(0xD2)) == 0xD2
-    assert WordPermutation(2).evaluate(0b00_01_10_11) == 0b11_00_01_10
-    assert ShiftRows(1, 8, 4).evaluate(0x01020304) == 0x04010203
+    assert BitVectorSBox(2, [3, 2, 1, 0]).evaluate(1) == 2
+    assert SBox([3, 2, 1, 0], Word(2), unit_count=2).evaluate(0b0001) == 0b1110
+    assert BitwiseAnd().evaluate(0b1010, 0b1100) == 0b1000
+    assert BitwiseNot().evaluate(0b1010) == 0b0101
+    assert BitwiseOr().evaluate(0b1010, 0b0101) == 0b1111
+    assert IDEAMultiply(4).evaluate(3, 5) == 15
+    assert ModularAdd().evaluate(11, 7) == 2
+    assert ModularMultiply().evaluate(3, 5) == 15
+    assert ModularSubtract().evaluate(3, 5) == 14
+    assert Rotate(8, 2, "left").evaluate(0x81) == 0x06
+    assert Shift(8, 1).evaluate(0x81) == 0x40
+    assert VariableRotate().evaluate(0x81, 2) == 0x60
+    assert VariableShift().evaluate(0x81, 2) == 0x20
+    assert Xor().evaluate(0b1010, 0b1100) == 0b0110
 
 
-def test_linear_field_feedback_and_permutation_specific_fixtures():
-    assert LinearLayer([[1, 0], [1, 1]]).evaluate(0b10) == 0b11
-    assert MixColumn(4).evaluate(0xABCD) == 0xABCD
-    assert Fsr().evaluate(0b1010) == 0b0101
-    assert Sigma(8).evaluate(0xA5) == (0xA5 ^ 0xD2 ^ 0x69)
-    assert ThetaGaston().evaluate(0) == 0
-    assert ThetaKeccak().evaluate(0) == 0
-    assert ThetaXoodoo().evaluate(0) == 0
+def test_linear_map_replaces_binary_and_mixcolumn_legacy_wrappers():
+    field = BinaryExtensionField(4, 0b10011)
+    assert LinearMap([[1, 0], [0, 1]], field).evaluate(0xAB) == 0xAB
+    assert LinearMap([[1, 0], [0, 0]]).kind is PrimitiveKind.FUNCTION
+    assert Power(2).kind is PrimitiveKind.FUNCTION
 
 
-def test_single_component_primitives_have_one_round_one_component_and_typed_kinds():
-    permutations = (
-        Identity(), Not(), Rotate(), Sbox(), Permutation(), Reverse(),
-        WordPermutation(), ShiftRows(), LinearLayer(), MixColumn(),
-        ThetaGaston(), ThetaKeccak(), ThetaXoodoo(),
-    )
-    functions = (
-        And(), Or(), Xor(), Modadd(), Modmul(), Modsub(), IdeaModmul(),
-        Constant(), Shift(), VariableRotate(), VariableShift(), Sigma(), Fsr(),
-    )
-    for primitive in (*permutations, *functions):
+def test_each_wrapper_is_a_documented_one_round_one_component_example():
+    advertised = CATEGORY_EXPORTS["single_component_primitives"]
+    for primitive_class in CLASSES:
+        primitive = primitive_class()
         assert len(primitive.rounds) == 1
         assert len(primitive.components) == 1
-        assert len(primitive.rounds[0].components) == 1
-    assert all(primitive.kind is PrimitiveKind.PERMUTATION for primitive in permutations)
-    assert all(primitive.kind is PrimitiveKind.FUNCTION for primitive in functions)
-
-
-def test_non_bijective_single_component_parameters_are_functions():
-    assert Sbox(2, (0, 0, 1, 1)).kind is PrimitiveKind.FUNCTION
-    assert LinearLayer([[1, 0], [0, 0]]).kind is PrimitiveKind.FUNCTION
-    assert MixColumn(2, ((1, 0), (0, 0))).kind is PrimitiveKind.FUNCTION
-
-
-def test_each_public_class_is_defined_in_its_advertised_module():
-    classes = (
-        And, Constant, Fsr, IdeaModmul, Identity, LinearLayer, MixColumn,
-        Modadd, Modmul, Modsub, Not, Or, Permutation, Reverse, Rotate, Sbox,
-        Shift, ShiftRows, Sigma, ThetaGaston, ThetaKeccak, ThetaXoodoo,
-        VariableRotate, VariableShift, WordPermutation, Xor,
-    )
-    advertised = CATEGORY_EXPORTS["single_component_primitives"]
-    assert all(
-        primitive_class.__module__ == advertised[primitive_class.__name__]
-        for primitive_class in classes
-    )
-
-
-def test_each_public_class_shows_the_reference_authoring_sequence():
-    classes = (
-        And, Constant, Fsr, IdeaModmul, Identity, LinearLayer, MixColumn,
-        Modadd, Modmul, Modsub, Not, Or, Permutation, Reverse, Rotate, Sbox,
-        Shift, ShiftRows, Sigma, ThetaGaston, ThetaKeccak, ThetaXoodoo,
-        VariableRotate, VariableShift, WordPermutation, Xor,
-    )
-    for primitive_class in classes:
+        assert primitive_class.__module__ == advertised[primitive_class.__name__]
+        assert ">>>" in inspect.getdoc(primitive_class)
         source = inspect.getsource(primitive_class)
-        assert "self.add_round()" in source, primitive_class.__name__
-        assert "self.add_component(" in source, primitive_class.__name__
-        assert "self.set_output(" in source, primitive_class.__name__
+        assert "self.add_round()" in source
+        assert "self.add_component(" in source
+        assert "self.set_output(" in source
 
 
-def test_single_component_sources_delegate_container_normalization():
-    classes = (
-        And, Constant, Fsr, IdeaModmul, Identity, LinearLayer, MixColumn,
-        Modadd, Modmul, Modsub, Not, Or, Permutation, Reverse, Rotate, Sbox,
-        Shift, ShiftRows, Sigma, ThetaGaston, ThetaKeccak, ThetaXoodoo,
-        VariableRotate, VariableShift, WordPermutation, Xor,
-    )
-    for primitive_class in classes:
-        source = inspect.getsource(primitive_class)
-        assert "tuple(" not in source, primitive_class.__name__
-        assert "zip(" not in source, primitive_class.__name__
-        assert "[[[" not in source, primitive_class.__name__
-
-
-def test_single_component_public_signatures_only_expose_v5_parameters():
-    expected = {
-        LinearLayer: ("matrix",),
-        Fsr: ("parameters",),
-        Modadd: ("word_bit_size", "number_of_inputs"),
-        Modmul: ("word_bit_size", "number_of_inputs"),
-        Modsub: ("word_bit_size", "number_of_inputs"),
-        IdeaModmul: ("word_bit_size", "number_of_inputs"),
-        Permutation: ("mapping", "word_size"),
-        WordPermutation: ("word_size", "mapping"),
-        Rotate: ("bit_size", "amount", "direction"),
-        Shift: ("bit_size", "amount", "direction"),
-        VariableRotate: ("bit_size", "amount_bit_size", "direction"),
-        VariableShift: ("bit_size", "amount_bit_size", "direction"),
-        Sigma: ("bit_size", "rotation_amounts"),
-        ThetaGaston: ("bit_size", "rotation_amounts"),
+def test_all_default_kinds_are_explicit():
+    permutations = {
+        BinaryAffineMap,
+        BitVectorSBox,
+        BitwiseNot,
+        Identity,
+        LinearMap,
+        PackBits,
+        Permutation,
+        Power,
+        Rotate,
+        SBox,
+        UnpackBits,
     }
-    for primitive_class, parameters in expected.items():
-        assert tuple(inspect.signature(primitive_class).parameters) == parameters
+    for primitive_class in CLASSES:
+        expected = (
+            PrimitiveKind.PERMUTATION
+            if primitive_class in permutations
+            else PrimitiveKind.FUNCTION
+        )
+        assert primitive_class().kind is expected

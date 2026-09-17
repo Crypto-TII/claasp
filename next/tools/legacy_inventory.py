@@ -88,6 +88,42 @@ PROPOSED_MODULE_OVERRIDES = {
     "claasp/ciphers/permutations/xoodoo_sbox_permutation.py": "permutations.xoodoo.sbox",
 }
 
+# Legacy one-operation fixtures are evidence for the corresponding v5 base
+# component wrapper. The v5 catalogue itself is recorded separately because
+# it also contains components that had no CLAASP 4 fixture primitive.
+_SINGLE_COMPONENT_REPLACEMENTS = {
+    "and_cipher": ("BitwiseAnd", "bitwise_and"),
+    "constant_cipher": ("Constant", "constant"),
+    "fsr_cipher": ("FeedbackRegister", "feedback_register"),
+    "idea_modmul_cipher": ("IDEAMultiply", "idea_multiply"),
+    "identity_cipher": ("Identity", "identity"),
+    "linear_layer_cipher": ("LinearMap", "linear_map"),
+    "mix_column_cipher": ("LinearMap", "linear_map"),
+    "modadd_cipher": ("ModularAdd", "modular_add"),
+    "modmul_cipher": ("ModularMultiply", "modular_multiply"),
+    "modsub_cipher": ("ModularSubtract", "modular_subtract"),
+    "not_cipher": ("BitwiseNot", "bitwise_not"),
+    "or_cipher": ("BitwiseOr", "bitwise_or"),
+    "permutation_cipher": ("Permutation", "permutation"),
+    "reverse_cipher": ("Permutation", "permutation"),
+    "rotate_cipher": ("Rotate", "rotate"),
+    "sbox_cipher": ("BitVectorSBox", "bit_vector_sbox"),
+    "shift_cipher": ("Shift", "shift"),
+    "shift_rows_cipher": ("Permutation", "permutation"),
+    "sigma_cipher": ("LinearMap", "linear_map"),
+    "theta_gaston_cipher": ("LinearMap", "linear_map"),
+    "theta_keccak_cipher": ("LinearMap", "linear_map"),
+    "theta_xoodoo_cipher": ("LinearMap", "linear_map"),
+    "variable_rotate_cipher": ("VariableRotate", "variable_rotate"),
+    "variable_shift_cipher": ("VariableShift", "variable_shift"),
+    "word_permutation_cipher": ("Permutation", "permutation"),
+    "xor_cipher": ("Xor", "xor"),
+}
+for _stem, (_name, _module) in _SINGLE_COMPONENT_REPLACEMENTS.items():
+    _path = f"claasp/ciphers/single_component_ciphers/{_stem}.py"
+    OFFICIAL_NAME_OVERRIDES[_path] = _name
+    PROPOSED_MODULE_OVERRIDES[_path] = f"single_component_primitives.{_module}"
+
 M10_9C_PATHS_BY_SLICE = {
     "M10.9c2": {
         "claasp/DTOs/component_state.py",
@@ -1385,7 +1421,7 @@ for _path, _destination in _M10_9C6_TEST_DESTINATIONS.items():
     }
 
 MIGRATION_OVERRIDES["claasp/components/fsr_component.py"] = {
-    "v5_destination": "next/src/claasp_next/components/feedback/register.py",
+    "v5_destination": "next/src/claasp_next/components/feedback/feedback_register.py",
     "prerequisites": [], "disposition": "migrate", "status": "migrated-in-m10.9c7",
     "acceptance_criterion": "Immutable term/register descriptors evaluate binary, clock-controlled, multi-clock, and typed binary-field word feedback without Sage.",
     "rationale": None,
@@ -1783,7 +1819,7 @@ def catalogue_classification_status(payload: dict[str, Any]) -> dict[str, Any]:
         destination = metadata["proposed_module"]
         if not destination.startswith("claasp_next.primitives."):
             fail(item["path"], "destination is outside the v5 primitive catalogue")
-        if category != "outside_scope":
+        if category not in {"outside_scope", "single_component_primitives"}:
             destinations.setdefault(destination, []).append(item["path"])
             if any(part in destination.split(".") for part in ("hash_functions", "mac", "stream_ciphers")):
                 fail(item["path"], "legacy construction folder leaked into v5 taxonomy")

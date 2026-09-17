@@ -8,6 +8,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).parents[2]
 INVENTORY = ROOT / "next/migration/legacy_inventory.json"
+SINGLE_COMPONENT_CATALOGUE = ROOT / "next/migration/single_component_catalogue.json"
 DESTINATION = ROOT / "next/src/claasp_next/primitives/_catalogue_exports.py"
 
 
@@ -23,6 +24,15 @@ def main() -> None:
         if "primitive" in item
         and item["primitive"]["primitive_category"] != "outside_scope"
     )
+    rows = [row for row in rows if row[0] != "single_component_primitives"]
+    component_catalogue = json.loads(
+        SINGLE_COMPONENT_CATALOGUE.read_text(encoding="utf-8")
+    )
+    rows.extend(
+        ("single_component_primitives", name, module)
+        for name, module in component_catalogue.items()
+    )
+    rows.sort()
     categories = sorted({category for category, _, _ in rows})
     lines = [
         '"""Generated public primitive catalogue exports.',
@@ -40,29 +50,31 @@ def main() -> None:
         for _, name, module in (row for row in rows if row[0] == category):
             lines.append(f"        {name!r}: {module!r},")
         lines.append("    },")
-    lines.extend([
-        "}",
-        "",
-        "ALL_EXPORTS = {",
-        "    name: module",
-        "    for exports in CATEGORY_EXPORTS.values()",
-        "    for name, module in exports.items()",
-        "}",
-        "",
-        "",
-        "def load_export(name: str, exports=ALL_EXPORTS):",
-        '    """Load one public primitive class without eagerly importing the catalogue."""',
-        "",
-        "    try:",
-        "        module_name = exports[name]",
-        "    except KeyError as error:",
-        "        raise AttributeError(name) from error",
-        "    return getattr(import_module(module_name), name)",
-        "",
-        "",
-        '__all__ = ["ALL_EXPORTS", "CATEGORY_EXPORTS", "load_export"]',
-        "",
-    ])
+    lines.extend(
+        [
+            "}",
+            "",
+            "ALL_EXPORTS = {",
+            "    name: module",
+            "    for exports in CATEGORY_EXPORTS.values()",
+            "    for name, module in exports.items()",
+            "}",
+            "",
+            "",
+            "def load_export(name: str, exports=ALL_EXPORTS):",
+            '    """Load one public primitive class without eagerly importing the catalogue."""',
+            "",
+            "    try:",
+            "        module_name = exports[name]",
+            "    except KeyError as error:",
+            "        raise AttributeError(name) from error",
+            "    return getattr(import_module(module_name), name)",
+            "",
+            "",
+            '__all__ = ["ALL_EXPORTS", "CATEGORY_EXPORTS", "load_export"]',
+            "",
+        ]
+    )
     DESTINATION.write_text("\n".join(lines), encoding="utf-8")
     print(f"wrote {DESTINATION.relative_to(ROOT)} with {len(rows)} exports")
 

@@ -17,6 +17,20 @@ The categories describe mathematical interfaces, not execution engines.
 Graph realizations remain separate from scalar, batch, and constraint
 representations.
 
+Single-component primitives mirror the public base-component API exactly.
+For example, ``LinearMap`` covers both binary linear layers and finite-field
+MixColumn-style matrices, while ``BitVectorSBox`` and ``SBox`` distinguish one
+whole-bit-vector lookup from a lookup applied independently to typed units:
+
+.. doctest::
+
+   >>> from claasp_next import Word
+   >>> from claasp_next.primitives.single_component_primitives import BitVectorSBox, SBox
+   >>> BitVectorSBox(2, [3, 2, 1, 0]).evaluate(1)
+   2
+   >>> SBox([3, 2, 1, 0], Word(2), unit_count=2).evaluate(0b0001)
+   14
+
 Primitive kinds and input visibility
 ------------------------------------
 

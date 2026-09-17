@@ -7,10 +7,17 @@ from ._base import positive
 
 
 class Identity(Primitive):
-    def __init__(self, block_bit_size: int = 32) -> None:
-        block_bit_size = positive(block_bit_size, "block_bit_size")
+    """Return the input unchanged.
+
+    >>> hex(Identity(16).evaluate(0xCAFE))
+    '0xcafe'
+    """
+
+    def __init__(self, bit_size: int = 32) -> None:
+        bit_size = positive(bit_size, "bit_size")
         super().__init__(
-            "identity", {"input": ValueType(Bit(), (block_bit_size,))},
+            "identity",
+            {"input": ValueType(Bit(), (bit_size,))},
             kind=PrimitiveKind.PERMUTATION,
         )
         self.add_round()

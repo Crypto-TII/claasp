@@ -165,7 +165,7 @@ implementation.  Helpers and documentation modules receive an explicit
 outside-scope disposition instead of being silently counted as primitives.
 
 Each module under ``single_component_primitives`` contains the public class it
-advertises. For example, ``single_component_primitives.and.And`` directly
+advertises. For example, ``single_component_primitives.bitwise_and.BitwiseAnd`` directly
 shows the complete reference sequence: initialize ``Primitive``, call
 ``add_round()``, construct the operation, call ``add_component()``, and bind it
 with ``set_output()``. Shared private code is limited to validation and
@@ -179,22 +179,33 @@ not belong in primitive definitions.
 
 .. doctest::
 
+   >>> from claasp_next import BinaryExtensionField
    >>> from claasp_next.components import FeedbackRegisterParameters
-   >>> from claasp_next.primitives.single_component_primitives import Fsr, LinearLayer, MixColumn
-   >>> linear = LinearLayer([[1, 0], [1, 1]])
+   >>> from claasp_next.primitives.single_component_primitives import FeedbackRegister, LinearMap
+   >>> linear = LinearMap([[1, 0], [1, 1]])
    >>> linear.evaluate(0b10)
    3
-   >>> mixing = MixColumn(4, [[1, 0], [0, 1]])
+   >>> field = BinaryExtensionField(4, 0b10011)
+   >>> mixing = LinearMap([[1, 0], [0, 1]], field)
    >>> hex(mixing.evaluate(0xAB))
    '0xab'
    >>> feedback = FeedbackRegisterParameters.from_taps(4, [0, 1])
-   >>> Fsr(feedback).evaluate(0b1010)
+   >>> FeedbackRegister(feedback).evaluate(0b1010)
    5
 
-``LinearLayer`` accepts one row-major matrix and infers the input size from its
-columns. ``Fsr`` accepts typed feedback parameters. Use ``from_taps()`` for a
+``LinearMap`` accepts one row-major matrix and infers the input size from its
+columns. Its domain distinguishes an ordinary binary linear layer from a
+MixColumn-style finite-field matrix; these are not separate operations.
+``FeedbackRegister`` accepts typed feedback parameters. Use ``from_taps()`` for a
 simple Fibonacci register, or construct ``FeedbackRegisterSpec`` and
 ``FeedbackTerm`` values for multiple, nonlinear, or clocked registers.
+
+The folder is a one-to-one view of the public base-component classes, including
+v5 additions such as ``Add``, ``Multiply``, ``Power``, ``BinaryAffineMap``,
+``PackBits``, and ``UnpackBits``. Every wrapper has exactly one round and one
+component, and its class docstring contains a runnable minimal example. Legacy
+names such as ``Modadd``, ``Sbox``, and ``Fsr`` are deliberately not aliases in
+the unreleased v5 API.
 
 Other one-component primitives follow the same rule: pass the mathematical
 parameter directly. A permutation uses ``output[i] = input[mapping[i]]`` and

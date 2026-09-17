@@ -1,3 +1,5 @@
+"""Typed feedback-register component and its authoring parameters."""
+
 from collections.abc import Iterable
 from dataclasses import dataclass
 

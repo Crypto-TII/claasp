@@ -7,7 +7,11 @@ from ._base import positive
 
 
 class Permutation(Primitive):
-    """Apply ``output[i] = input[mapping[i]]`` to bits or words."""
+    """Apply ``output[i] = input[mapping[i]]`` to bits or words.
+
+    >>> hex(Permutation([1, 0], 4).evaluate(0xAB))
+    '0xba'
+    """
 
     def __init__(self, mapping=None, word_size: int = 1) -> None:
         word_size = positive(word_size, "word_size")
@@ -15,13 +19,19 @@ class Permutation(Primitive):
         count = len(mapping)
         domain = Bit() if word_size == 1 else Word(word_size)
         super().__init__(
-            "permutation", {"input": ValueType(domain, (count,))},
+            "permutation",
+            {"input": ValueType(domain, (count,))},
             kind=PrimitiveKind.PERMUTATION,
         )
         self.add_round()
-        self.set_output(self.add_component(PermutationComponent(
-            self.input("input"), mapping,
-        )))
+        self.set_output(
+            self.add_component(
+                PermutationComponent(
+                    self.input("input"),
+                    mapping,
+                )
+            )
+        )
 
 
 __all__ = ["Permutation"]

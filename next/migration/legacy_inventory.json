@@ -7590,11 +7590,11 @@
         "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
         "input_roles": [],
-        "official_name": "And",
+        "official_name": "BitwiseAnd",
         "outside_scope_reason": null,
         "primitive_category": "single_component_primitives",
-        "proposed_class": "And",
-        "proposed_module": "claasp_next.primitives.single_component_primitives.and"
+        "proposed_class": "BitwiseAnd",
+        "proposed_module": "claasp_next.primitives.single_component_primitives.bitwise_and"
       },
       "public_entry_points": [
         "AndCipher"
@@ -7603,7 +7603,7 @@
       "responsibility": "and cipher",
       "status": "migrated-in-m10.9d4",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/single_component_primitives/and.py"
+      "v5_destination": "claasp_next/primitives/single_component_primitives/bitwise_and.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -7664,11 +7664,11 @@
         "input_roles": [
           "plaintext"
         ],
-        "official_name": "Fsr",
+        "official_name": "FeedbackRegister",
         "outside_scope_reason": null,
         "primitive_category": "single_component_primitives",
-        "proposed_class": "Fsr",
-        "proposed_module": "claasp_next.primitives.single_component_primitives.fsr"
+        "proposed_class": "FeedbackRegister",
+        "proposed_module": "claasp_next.primitives.single_component_primitives.feedback_register"
       },
       "public_entry_points": [
         "FsrCipher"
@@ -7677,7 +7677,7 @@
       "responsibility": "fsr cipher",
       "status": "migrated-in-m10.9d4",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/single_component_primitives/fsr.py"
+      "v5_destination": "claasp_next/primitives/single_component_primitives/feedback_register.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -7700,11 +7700,11 @@
         "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
         "input_roles": [],
-        "official_name": "IdeaModmul",
+        "official_name": "IDEAMultiply",
         "outside_scope_reason": null,
         "primitive_category": "single_component_primitives",
-        "proposed_class": "IdeaModmul",
-        "proposed_module": "claasp_next.primitives.single_component_primitives.idea_modmul"
+        "proposed_class": "IDEAMultiply",
+        "proposed_module": "claasp_next.primitives.single_component_primitives.idea_multiply"
       },
       "public_entry_points": [
         "IdeaModmulCipher"
@@ -7713,7 +7713,7 @@
       "responsibility": "idea modmul cipher",
       "status": "migrated-in-m10.9d4",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/single_component_primitives/idea_modmul.py"
+      "v5_destination": "claasp_next/primitives/single_component_primitives/idea_multiply.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -7776,11 +7776,11 @@
         "input_roles": [
           "plaintext"
         ],
-        "official_name": "LinearLayer",
+        "official_name": "LinearMap",
         "outside_scope_reason": null,
         "primitive_category": "single_component_primitives",
-        "proposed_class": "LinearLayer",
-        "proposed_module": "claasp_next.primitives.single_component_primitives.linear_layer"
+        "proposed_class": "LinearMap",
+        "proposed_module": "claasp_next.primitives.single_component_primitives.linear_map"
       },
       "public_entry_points": [
         "LinearLayerCipher"
@@ -7789,7 +7789,7 @@
       "responsibility": "linear layer cipher",
       "status": "migrated-in-m10.9d4",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/single_component_primitives/linear_layer.py"
+      "v5_destination": "claasp_next/primitives/single_component_primitives/linear_map.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -7814,11 +7814,11 @@
         "input_roles": [
           "plaintext"
         ],
-        "official_name": "MixColumn",
+        "official_name": "LinearMap",
         "outside_scope_reason": null,
         "primitive_category": "single_component_primitives",
-        "proposed_class": "MixColumn",
-        "proposed_module": "claasp_next.primitives.single_component_primitives.mix_column"
+        "proposed_class": "LinearMap",
+        "proposed_module": "claasp_next.primitives.single_component_primitives.linear_map"
       },
       "public_entry_points": [
         "MixColumnCipher"
@@ -7827,7 +7827,7 @@
       "responsibility": "mix column cipher",
       "status": "migrated-in-m10.9d4",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/single_component_primitives/mix_column.py"
+      "v5_destination": "claasp_next/primitives/single_component_primitives/linear_map.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -7850,11 +7850,11 @@
         "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
         "input_roles": [],
-        "official_name": "Modadd",
+        "official_name": "ModularAdd",
         "outside_scope_reason": null,
         "primitive_category": "single_component_primitives",
-        "proposed_class": "Modadd",
-        "proposed_module": "claasp_next.primitives.single_component_primitives.modadd"
+        "proposed_class": "ModularAdd",
+        "proposed_module": "claasp_next.primitives.single_component_primitives.modular_add"
       },
       "public_entry_points": [
         "ModaddCipher"
@@ -7863,7 +7863,7 @@
       "responsibility": "modadd cipher",
       "status": "migrated-in-m10.9d4",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/single_component_primitives/modadd.py"
+      "v5_destination": "claasp_next/primitives/single_component_primitives/modular_add.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -7886,11 +7886,11 @@
         "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
         "input_roles": [],
-        "official_name": "Modmul",
+        "official_name": "ModularMultiply",
         "outside_scope_reason": null,
         "primitive_category": "single_component_primitives",
-        "proposed_class": "Modmul",
-        "proposed_module": "claasp_next.primitives.single_component_primitives.modmul"
+        "proposed_class": "ModularMultiply",
+        "proposed_module": "claasp_next.primitives.single_component_primitives.modular_multiply"
       },
       "public_entry_points": [
         "ModmulCipher"
@@ -7899,7 +7899,7 @@
       "responsibility": "modmul cipher",
       "status": "migrated-in-m10.9d4",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/single_component_primitives/modmul.py"
+      "v5_destination": "claasp_next/primitives/single_component_primitives/modular_multiply.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -7922,11 +7922,11 @@
         "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
         "input_roles": [],
-        "official_name": "Modsub",
+        "official_name": "ModularSubtract",
         "outside_scope_reason": null,
         "primitive_category": "single_component_primitives",
-        "proposed_class": "Modsub",
-        "proposed_module": "claasp_next.primitives.single_component_primitives.modsub"
+        "proposed_class": "ModularSubtract",
+        "proposed_module": "claasp_next.primitives.single_component_primitives.modular_subtract"
       },
       "public_entry_points": [
         "ModsubCipher"
@@ -7935,7 +7935,7 @@
       "responsibility": "modsub cipher",
       "status": "migrated-in-m10.9d4",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/single_component_primitives/modsub.py"
+      "v5_destination": "claasp_next/primitives/single_component_primitives/modular_subtract.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -7960,11 +7960,11 @@
         "input_roles": [
           "plaintext"
         ],
-        "official_name": "Not",
+        "official_name": "BitwiseNot",
         "outside_scope_reason": null,
         "primitive_category": "single_component_primitives",
-        "proposed_class": "Not",
-        "proposed_module": "claasp_next.primitives.single_component_primitives.not"
+        "proposed_class": "BitwiseNot",
+        "proposed_module": "claasp_next.primitives.single_component_primitives.bitwise_not"
       },
       "public_entry_points": [
         "NotCipher"
@@ -7973,7 +7973,7 @@
       "responsibility": "not cipher",
       "status": "migrated-in-m10.9d4",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/single_component_primitives/not.py"
+      "v5_destination": "claasp_next/primitives/single_component_primitives/bitwise_not.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -7996,11 +7996,11 @@
         "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
         "input_roles": [],
-        "official_name": "Or",
+        "official_name": "BitwiseOr",
         "outside_scope_reason": null,
         "primitive_category": "single_component_primitives",
-        "proposed_class": "Or",
-        "proposed_module": "claasp_next.primitives.single_component_primitives.or"
+        "proposed_class": "BitwiseOr",
+        "proposed_module": "claasp_next.primitives.single_component_primitives.bitwise_or"
       },
       "public_entry_points": [
         "OrCipher"
@@ -8009,7 +8009,7 @@
       "responsibility": "or cipher",
       "status": "migrated-in-m10.9d4",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/single_component_primitives/or.py"
+      "v5_destination": "claasp_next/primitives/single_component_primitives/bitwise_or.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -8072,11 +8072,11 @@
         "input_roles": [
           "plaintext"
         ],
-        "official_name": "Reverse",
+        "official_name": "Permutation",
         "outside_scope_reason": null,
         "primitive_category": "single_component_primitives",
-        "proposed_class": "Reverse",
-        "proposed_module": "claasp_next.primitives.single_component_primitives.reverse"
+        "proposed_class": "Permutation",
+        "proposed_module": "claasp_next.primitives.single_component_primitives.permutation"
       },
       "public_entry_points": [
         "ReverseCipher"
@@ -8085,7 +8085,7 @@
       "responsibility": "reverse cipher",
       "status": "migrated-in-m10.9d4",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/single_component_primitives/reverse.py"
+      "v5_destination": "claasp_next/primitives/single_component_primitives/permutation.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -8148,11 +8148,11 @@
         "input_roles": [
           "plaintext"
         ],
-        "official_name": "Sbox",
+        "official_name": "BitVectorSBox",
         "outside_scope_reason": null,
         "primitive_category": "single_component_primitives",
-        "proposed_class": "Sbox",
-        "proposed_module": "claasp_next.primitives.single_component_primitives.sbox"
+        "proposed_class": "BitVectorSBox",
+        "proposed_module": "claasp_next.primitives.single_component_primitives.bit_vector_sbox"
       },
       "public_entry_points": [
         "SboxCipher"
@@ -8161,7 +8161,7 @@
       "responsibility": "sbox cipher",
       "status": "migrated-in-m10.9d4",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/single_component_primitives/sbox.py"
+      "v5_destination": "claasp_next/primitives/single_component_primitives/bit_vector_sbox.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -8224,11 +8224,11 @@
         "input_roles": [
           "plaintext"
         ],
-        "official_name": "ShiftRows",
+        "official_name": "Permutation",
         "outside_scope_reason": null,
         "primitive_category": "single_component_primitives",
-        "proposed_class": "ShiftRows",
-        "proposed_module": "claasp_next.primitives.single_component_primitives.shift_rows"
+        "proposed_class": "Permutation",
+        "proposed_module": "claasp_next.primitives.single_component_primitives.permutation"
       },
       "public_entry_points": [
         "ShiftRowsCipher"
@@ -8237,7 +8237,7 @@
       "responsibility": "shift rows cipher",
       "status": "migrated-in-m10.9d4",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/single_component_primitives/shift_rows.py"
+      "v5_destination": "claasp_next/primitives/single_component_primitives/permutation.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -8262,11 +8262,11 @@
         "input_roles": [
           "plaintext"
         ],
-        "official_name": "Sigma",
+        "official_name": "LinearMap",
         "outside_scope_reason": null,
         "primitive_category": "single_component_primitives",
-        "proposed_class": "Sigma",
-        "proposed_module": "claasp_next.primitives.single_component_primitives.sigma"
+        "proposed_class": "LinearMap",
+        "proposed_module": "claasp_next.primitives.single_component_primitives.linear_map"
       },
       "public_entry_points": [
         "SigmaCipher"
@@ -8275,7 +8275,7 @@
       "responsibility": "sigma cipher",
       "status": "migrated-in-m10.9d4",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/single_component_primitives/sigma.py"
+      "v5_destination": "claasp_next/primitives/single_component_primitives/linear_map.py"
     },
     {
       "acceptance_criterion": "The helper remains outside the primitive catalogue.",
@@ -8330,11 +8330,11 @@
         "input_roles": [
           "plaintext"
         ],
-        "official_name": "ThetaGaston",
+        "official_name": "LinearMap",
         "outside_scope_reason": null,
         "primitive_category": "single_component_primitives",
-        "proposed_class": "ThetaGaston",
-        "proposed_module": "claasp_next.primitives.single_component_primitives.theta_gaston"
+        "proposed_class": "LinearMap",
+        "proposed_module": "claasp_next.primitives.single_component_primitives.linear_map"
       },
       "public_entry_points": [
         "ThetaGastonCipher"
@@ -8343,7 +8343,7 @@
       "responsibility": "theta gaston cipher",
       "status": "migrated-in-m10.9d4",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/single_component_primitives/theta_gaston.py"
+      "v5_destination": "claasp_next/primitives/single_component_primitives/linear_map.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -8368,11 +8368,11 @@
         "input_roles": [
           "plaintext"
         ],
-        "official_name": "ThetaKeccak",
+        "official_name": "LinearMap",
         "outside_scope_reason": null,
         "primitive_category": "single_component_primitives",
-        "proposed_class": "ThetaKeccak",
-        "proposed_module": "claasp_next.primitives.single_component_primitives.theta_keccak"
+        "proposed_class": "LinearMap",
+        "proposed_module": "claasp_next.primitives.single_component_primitives.linear_map"
       },
       "public_entry_points": [
         "ThetaKeccakCipher"
@@ -8381,7 +8381,7 @@
       "responsibility": "theta keccak cipher",
       "status": "migrated-in-m10.9d4",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/single_component_primitives/theta_keccak.py"
+      "v5_destination": "claasp_next/primitives/single_component_primitives/linear_map.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -8406,11 +8406,11 @@
         "input_roles": [
           "plaintext"
         ],
-        "official_name": "ThetaXoodoo",
+        "official_name": "LinearMap",
         "outside_scope_reason": null,
         "primitive_category": "single_component_primitives",
-        "proposed_class": "ThetaXoodoo",
-        "proposed_module": "claasp_next.primitives.single_component_primitives.theta_xoodoo"
+        "proposed_class": "LinearMap",
+        "proposed_module": "claasp_next.primitives.single_component_primitives.linear_map"
       },
       "public_entry_points": [
         "ThetaXoodooCipher"
@@ -8419,7 +8419,7 @@
       "responsibility": "theta xoodoo cipher",
       "status": "migrated-in-m10.9d4",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/single_component_primitives/theta_xoodoo.py"
+      "v5_destination": "claasp_next/primitives/single_component_primitives/linear_map.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -8522,11 +8522,11 @@
         "input_roles": [
           "plaintext"
         ],
-        "official_name": "WordPermutation",
+        "official_name": "Permutation",
         "outside_scope_reason": null,
         "primitive_category": "single_component_primitives",
-        "proposed_class": "WordPermutation",
-        "proposed_module": "claasp_next.primitives.single_component_primitives.word_permutation"
+        "proposed_class": "Permutation",
+        "proposed_module": "claasp_next.primitives.single_component_primitives.permutation"
       },
       "public_entry_points": [
         "WordPermutationCipher"
@@ -8535,7 +8535,7 @@
       "responsibility": "word permutation cipher",
       "status": "migrated-in-m10.9d4",
       "tests": [],
-      "v5_destination": "claasp_next/primitives/single_component_primitives/word_permutation.py"
+      "v5_destination": "claasp_next/primitives/single_component_primitives/permutation.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -9343,7 +9343,7 @@
       "responsibility": "fsr component",
       "status": "migrated-in-m10.9c7",
       "tests": [],
-      "v5_destination": "next/src/claasp_next/components/feedback/register.py"
+      "v5_destination": "next/src/claasp_next/components/feedback/feedback_register.py"
     },
     {
       "acceptance_criterion": "Typed word operations match independently computed exhaustive small-width arithmetic and scalar/transposed-batch evaluation.",

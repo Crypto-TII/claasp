@@ -1,27 +1,27 @@
-"""One-component bitwise-XOR primitive."""
+"""Primitive consisting of one bitwise OR."""
 
-from claasp_next.components import Xor as XorComponent
+from claasp_next.components import BitwiseOr as BitwiseOrComponent
 from claasp_next.graph import Primitive, PrimitiveKind
 from ._base import word_inputs
 
 
-class Xor(Primitive):
-    """XOR two or more fixed-width words.
+class BitwiseOr(Primitive):
+    """OR two or more fixed-width words.
 
-    >>> Xor().evaluate(0b1010, 0b1100)
-    6
+    >>> BitwiseOr().evaluate(0b1010, 0b0101)
+    15
     """
 
     def __init__(self, word_bit_size: int = 4, number_of_inputs: int = 2) -> None:
         super().__init__(
-            "xor",
+            "or",
             word_inputs(word_bit_size, number_of_inputs),
             kind=PrimitiveKind.FUNCTION,
         )
         self.add_round()
         operands = self.inputs()
-        output = self.add_component(XorComponent(operands))
+        output = self.add_component(BitwiseOrComponent(operands))
         self.set_output(output)
 
 
-__all__ = ["Xor"]
+__all__ = ["BitwiseOr"]

@@ -1,6 +1,6 @@
-"""Shared validation helpers for one-component primitive modules."""
+"""Small authoring helpers shared by one-component primitive examples."""
 
-from claasp_next.domains import Word
+from claasp_next.domains import PrimeField, Word
 from claasp_next.graph import ValueType
 
 
@@ -12,7 +12,24 @@ def positive(value: int, name: str) -> int:
 
 def word_inputs(word_bit_size: int, number_of_inputs: int):
     positive(word_bit_size, "word_bit_size")
-    if not isinstance(number_of_inputs, int) or isinstance(number_of_inputs, bool) or number_of_inputs < 2:
+    if (
+        not isinstance(number_of_inputs, int)
+        or isinstance(number_of_inputs, bool)
+        or number_of_inputs < 2
+    ):
         raise ValueError("number_of_inputs must be at least 2")
     value_type = ValueType(Word(word_bit_size), (1,))
+    return {f"input_{index}": value_type for index in range(number_of_inputs)}
+
+
+def algebraic_inputs(domain, unit_count: int, number_of_inputs: int):
+    domain = PrimeField(17) if domain is None else domain
+    positive(unit_count, "unit_count")
+    if (
+        not isinstance(number_of_inputs, int)
+        or isinstance(number_of_inputs, bool)
+        or number_of_inputs < 2
+    ):
+        raise ValueError("number_of_inputs must be at least 2")
+    value_type = ValueType(domain, (unit_count,))
     return {f"input_{index}": value_type for index in range(number_of_inputs)}

@@ -14,8 +14,12 @@ Public export layer
 map from each official public class name to its module. The top-level package
 and each semantic category expose those classes lazily. This keeps simple
 imports cheap while making the full catalogue discoverable through
-``__all__``. There is one official class name per inventory record; alternate
-graphs belong to realization metadata rather than new execution-engine types.
+``__all__``. Ordinary primitive exports come from the legacy migration
+inventory. ``migration/single_component_catalogue.json`` separately records
+the one-to-one v5 base-component wrappers: several obsolete legacy fixtures
+may be evidence for one modern component, while new v5 components may have no
+legacy fixture. Alternate graphs belong to realization metadata rather than
+new execution-engine types.
 
 Primitive and input metadata
 ----------------------------
@@ -37,6 +41,14 @@ one round and one semantic component. Bijective unary operations are marked as
 permutations; non-bijective, nullary, and multi-input operations are functions.
 S-box and linear-map fixtures determine this classification from their supplied
 table or matrix rather than assuming the default example.
+
+Each fixture has the same class and module name as its base component. Thus
+``LinearMap`` handles both bit matrices and finite-field MixColumn-style
+matrices, ``FeedbackRegister`` lives in ``feedback_register.py``, and the
+catalogue includes v5 algebraic and conversion components such as ``Add``,
+``Power``, ``PackBits``, and ``UnpackBits``. Permutation-specific builders such
+as Sigma and theta remain reusable constructors, not invented base-component
+types. Every fixture class docstring is an executable minimal authoring example.
 
 Their public constructors expose only canonical v5 parameters. In particular,
 linear maps are row-major, permutation mappings directly select the source for

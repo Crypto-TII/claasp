@@ -2,16 +2,8 @@
 
 from claasp_next.primitives._catalogue_exports import CATEGORY_EXPORTS, load_export
 
-__all__ = [
-    "And", "Constant", "Fsr", "IdeaModmul", "Identity", "LinearLayer",
-    "MixColumn", "Modadd", "Modmul", "Modsub", "Not", "Or", "Permutation",
-    "Reverse", "Rotate", "Sbox", "Shift", "ShiftRows", "Sigma", "ThetaGaston",
-    "ThetaKeccak", "ThetaXoodoo", "VariableRotate", "VariableShift",
-    "WordPermutation", "Xor",
-]
-
 _PUBLIC = CATEGORY_EXPORTS["single_component_primitives"]
-__all__ = sorted(set(__all__) | set(_PUBLIC))
+__all__ = sorted(_PUBLIC)
 
 
 def __getattr__(name: str):

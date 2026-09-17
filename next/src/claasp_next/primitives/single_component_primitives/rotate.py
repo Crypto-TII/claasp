@@ -7,18 +7,28 @@ from ._base import positive
 
 
 class Rotate(Primitive):
+    """Rotate a fixed-width word in the requested direction.
+
+    >>> hex(Rotate(8, 2, "left").evaluate(0x81))
+    '0x6'
+    """
+
     def __init__(
-        self, bit_size: int = 8, amount: int = 1, direction: str = "right",
+        self,
+        bit_size: int = 8,
+        amount: int = 1,
+        direction: str = "right",
     ) -> None:
         bit_size = positive(bit_size, "bit_size")
         super().__init__(
-            "rotate", {"input": ValueType(Word(bit_size), (1,))},
+            "rotate",
+            {"input": ValueType(Word(bit_size), (1,))},
             kind=PrimitiveKind.PERMUTATION,
         )
         self.add_round()
-        self.set_output(self.add_component(RotateComponent(
-            self.input("input"), amount, direction
-        )))
+        self.set_output(
+            self.add_component(RotateComponent(self.input("input"), amount, direction))
+        )
 
 
 __all__ = ["Rotate"]
