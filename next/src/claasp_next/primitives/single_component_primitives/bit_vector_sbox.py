@@ -3,8 +3,13 @@
 from collections.abc import Sequence
 from claasp_next.components import BitVectorSBox as BitVectorSBoxComponent
 from claasp_next.domains import Bit
-from claasp_next.graph import Primitive, PrimitiveKind, ValueType
-from ._base import positive
+from claasp_next.graph import Primitive, ValueType
+from ._base import (
+    lookup_table_kind,
+    lookup_table_or_identity,
+    positive,
+    positive_or_default,
+)
 
 
 class BitVectorSBox(Primitive):
@@ -31,20 +36,11 @@ class BitVectorSBox(Primitive):
         output_bit_size: int | None = None,
     ) -> None:
         input_bit_size = positive(input_bit_size, "input_bit_size")
-        table = (
-            list(range(1 << input_bit_size))
-            if lookup_table is None
-            else list(lookup_table)
+        table = lookup_table_or_identity(lookup_table, input_bit_size)
+        output_bit_size = positive_or_default(
+            output_bit_size, input_bit_size, "output_bit_size"
         )
-        output_bit_size = (
-            input_bit_size
-            if output_bit_size is None
-            else positive(output_bit_size, "output_bit_size")
-        )
-        bijective = output_bit_size == input_bit_size and sorted(table) == list(
-            range(1 << input_bit_size)
-        )
-        kind = PrimitiveKind.PERMUTATION if bijective else PrimitiveKind.FUNCTION
+        kind = lookup_table_kind(table, input_bit_size, output_bit_size)
         super().__init__(
             "bit_vector_sbox", {"input": ValueType(Bit(), (input_bit_size,))}, kind=kind
         )
