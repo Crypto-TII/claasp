@@ -207,6 +207,25 @@ component, and its class docstring contains a runnable minimal example. Legacy
 names such as ``Modadd``, ``Sbox``, and ``Fsr`` are deliberately not aliases in
 the unreleased v5 API.
 
+Lookup tables are immutable validated values rather than loose lists once they
+enter the component layer. ``LookupTable`` owns input/output widths, entry
+validation, identity construction, and the bijectivity question used to
+classify a primitive:
+
+.. doctest::
+
+   >>> from claasp_next.components import LookupTable
+   >>> table = LookupTable([3, 2, 1, 0], input_bit_size=2)
+   >>> table.is_bijective()
+   True
+   >>> compression = LookupTable([0, 0, 1, 1], input_bit_size=2, output_bit_size=1)
+   >>> compression.is_bijective()
+   False
+
+``BitVectorSBox`` and ``SBox`` still accept ordinary lists for concise primitive
+source; each immediately converts that list to a ``LookupTable`` before
+choosing its kind or constructing the component.
+
 Other one-component primitives follow the same rule: pass the mathematical
 parameter directly. A permutation uses ``output[i] = input[mapping[i]]`` and
 rotation direction is an explicit word, so there are no alternate legacy

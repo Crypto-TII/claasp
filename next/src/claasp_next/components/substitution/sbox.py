@@ -5,6 +5,7 @@ from dataclasses import dataclass
 
 from claasp_next.graph import Component, PortLike, as_selection
 from claasp_next.domains import BinaryExtensionField, Bit, Word
+from claasp_next.components.substitution.lookup_table import LookupTable
 
 
 @dataclass(frozen=True, slots=True, init=False)
@@ -21,21 +22,26 @@ class SBox(Component):
     def __init__(
         self,
         component_input: PortLike,
-        table: Iterable[int],
+        table: Iterable[int] | LookupTable,
         component_id: str | None = None,
     ) -> None:
         component_input = as_selection(component_input)
         domain = component_input.value_type.domain
         if not isinstance(domain, (Bit, Word, BinaryExtensionField)):
             raise ValueError("S-box requires a densely encoded finite domain")
-        frozen_table = tuple(table)
-        expected_size = 1 << domain.encoded_bit_size
-        if len(frozen_table) != expected_size:
-            raise ValueError(f"S-box table must contain {expected_size} entries")
-        for value in frozen_table:
-            domain.validate(value)
+        if isinstance(table, LookupTable):
+            lookup_table = table
+            if (
+                lookup_table.input_bit_size != domain.encoded_bit_size
+                or lookup_table.output_bit_size != domain.encoded_bit_size
+            ):
+                raise ValueError("lookup-table widths must match the S-box domain")
+        else:
+            lookup_table = LookupTable(
+                table, domain.encoded_bit_size, domain.encoded_bit_size
+            )
         object.__setattr__(self, "component_id", component_id)
         object.__setattr__(self, "inputs", (component_input,))
         object.__setattr__(self, "output_type", component_input.value_type)
-        object.__setattr__(self, "table", frozen_table)
+        object.__setattr__(self, "table", lookup_table.values)
         Component.__post_init__(self)

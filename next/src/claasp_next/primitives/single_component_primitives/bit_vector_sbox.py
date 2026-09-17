@@ -1,15 +1,12 @@
 """Primitive consisting of one whole-bit-vector S-box."""
 
 from collections.abc import Sequence
-from claasp_next.components import BitVectorSBox as BitVectorSBoxComponent
-from claasp_next.domains import Bit
-from claasp_next.graph import Primitive, ValueType
-from ._base import (
-    lookup_table_kind,
-    lookup_table_or_identity,
-    positive,
-    positive_or_default,
+from claasp_next.components import (
+    BitVectorSBox as BitVectorSBoxComponent,
+    LookupTable,
 )
+from claasp_next.domains import Bit
+from claasp_next.graph import Primitive, PrimitiveKind, ValueType
 
 
 class BitVectorSBox(Primitive):
@@ -35,21 +32,23 @@ class BitVectorSBox(Primitive):
         lookup_table: Sequence[int] | None = None,
         output_bit_size: int | None = None,
     ) -> None:
-        input_bit_size = positive(input_bit_size, "input_bit_size")
-        table = lookup_table_or_identity(lookup_table, input_bit_size)
-        output_bit_size = positive_or_default(
-            output_bit_size, input_bit_size, "output_bit_size"
+        table = (
+            LookupTable.identity(input_bit_size, output_bit_size)
+            if lookup_table is None
+            else LookupTable(lookup_table, input_bit_size, output_bit_size)
         )
-        kind = lookup_table_kind(table, input_bit_size, output_bit_size)
+        kind = (
+            PrimitiveKind.PERMUTATION
+            if table.is_bijective()
+            else PrimitiveKind.FUNCTION
+        )
         super().__init__(
-            "bit_vector_sbox", {"input": ValueType(Bit(), (input_bit_size,))}, kind=kind
+            "bit_vector_sbox",
+            {"input": ValueType(Bit(), (table.input_bit_size,))},
+            kind=kind,
         )
         self.add_round()
-        output = self.add_component(
-            BitVectorSBoxComponent(
-                self.input("input"), table, output_bit_size=output_bit_size
-            )
-        )
+        output = self.add_component(BitVectorSBoxComponent(self.input("input"), table))
         self.set_output(output)
 
 
