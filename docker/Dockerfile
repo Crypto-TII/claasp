@@ -5,6 +5,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 ARG COPY_CLAASP_LIBRARY=false
 ARG INSTALL_CLAASP_LIBRARY=false
 ARG TARGETARCH
+ARG JOBS=4
 
 # Install dependencies with apt-get
 RUN apt-get -q update && \
@@ -73,7 +74,7 @@ RUN wget https://github.com/ERGO-Code/HiGHS/releases/download/v1.10.0/source-arc
     && rm source-archive.tar.gz \
     && cd HiGHS \
     && cmake -B build -S . \
-    && cmake --build build -- -j4
+    && cmake --build build -- -j{JOBS}
 
 ENV PATH="/opt/HiGHS/build/bin:${PATH}"
 
@@ -83,7 +84,7 @@ RUN git clone --depth 1 https://github.com/tinycthread/tinycthread.git \
     && mkdir build \
     && cd build \
     && cmake .. -DCMAKE_PREFIX_PATH=/usr/local \
-    && make -j$(nproc) \
+    && make -j{JOBS} \
     && cp libtinycthread.a /usr/local/lib/ \
     && cp ../source/tinycthread.h /usr/local/include/ \
     && ldconfig
@@ -96,7 +97,7 @@ RUN wget https://github.com/scipopt/scip/archive/refs/tags/v803.tar.gz \
     && mkdir build \
     && cd build \
     && cmake .. -DAUTOBUILD=on -DSOPLEX_DIR=${SOPLEX_HOME} -DTPI=tny -DCMAKE_PREFIX_PATH=/usr/local \
-    && make -j$(nproc)
+    && make -j{JOBS}
 
 ENV PATH="${PATH}:/opt/scip-803/build/bin"
 ENV LD_LIBRARY_PATH="/opt/scip-803/build/lib:/usr/local/lib:${LD_LIBRARY_PATH}"
@@ -150,7 +151,7 @@ RUN if [ "$TARGETARCH" = "arm64" ]; then \
         && tar -xf 2.9.4.tar.gz \
         && rm 2.9.4.tar.gz \
         && cmake -B libminizinc-2.9.4/build -S libminizinc-2.9.4 -DCMAKE_INSTALL_PREFIX=/MiniZinc \
-        && cmake --build libminizinc-2.9.4/build -j$(nproc) \
+        && cmake --build libminizinc-2.9.4/build -j{JOBS} \
         && cmake --install libminizinc-2.9.4/build \
         && rm -rf libminizinc-2.9.4; \
     else \
@@ -355,8 +356,23 @@ RUN wget https://github.com/SRI-CSL/yices2/archive/refs/tags/yices-2.7.0.tar.gz 
     && cd yices2-yices-2.7.0 \
     && autoconf \
     && ./configure --enable-thread-safety \
-    && make -j4 \
+    && make -j{JOBS} \
     && ln -sf /opt/yices2-yices-2.7.0/build/*/dist/bin/* /usr/local/bin/
+
+# Boolector's bundled Lingeling/Treengeling has implicit-pointer-conversion
+# bugs that GCC 13 rejects by default where GCC 11 (previously the default here)
+# only warned; gcc-10 tolerates it too.
+RUN wget https://github.com/Boolector/boolector/archive/refs/tags/3.2.4.tar.gz \
+    && tar -xf 3.2.4.tar.gz \
+    && rm 3.2.4.tar.gz \
+    && cd boolector-3.2.4 \
+    && ./contrib/setup-lingeling.sh \
+    && ./contrib/setup-btor2tools.sh \
+    && ./configure.sh --prefix /usr/local --no-minisat \
+    && cd build \
+    && make -j{JOBS} \
+    && make install \
+    && ldconfig
 
 COPY required_dependencies/sage_numerical_backends_gurobi-9.3.1.tar.gz /opt/
 RUN cd /opt/ && sage -pip install sage_numerical_backends_gurobi-9.3.1.tar.gz
