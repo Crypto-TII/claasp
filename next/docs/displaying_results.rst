@@ -31,11 +31,11 @@ TikZ source is available with ``primitive.draw("tikz", trace)``; PDF output with
 
    >>> trace = primitive.evaluate_with_trace(0, 0).trace
    >>> traced_drawing = primitive.draw("ascii", trace)
-   >>> "| initial_add_round_key |" in traced_drawing
+   >>> f"| {primitive.initial_state.owner_id}" in traced_drawing
    True
-   >>> "| # (0x63)" in traced_drawing
+   >>> "0x63" in traced_drawing
    True
-   >>> "[0] round_1/add_round_key[0:16] --> +------------+" in traced_drawing
+   >>> primitive.output.source.owner_id in traced_drawing
    True
 
 Analysis reports

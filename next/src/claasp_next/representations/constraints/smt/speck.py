@@ -109,7 +109,8 @@ class SpeckLinearSMTModel:
             local = ModularAddLinearSMTModel(self.width)
             projected = {name: assignment[f"round_{r}_{name}"]
                          for name in local.smt_formula().variables}
-            steps.append(TrailStep(f"round_{r}_modular_add", local.decode_transition(projected)))
+            component_id = self.primitive.round_operations[r]["modular_add"].component_id
+            steps.append(TrailStep(component_id, local.decode_transition(projected)))
 
         def packed(names):
             value = 0
@@ -129,8 +130,7 @@ class SpeckLinearSMTModel:
         return trail
 
     def _rotation(self, round_number, direction):
-        component_id = f"round_{round_number}_rotate_{direction}"
-        component = next((item for item in self.primitive.components if item.component_id == component_id), None)
+        component = self.primitive.round_operations[round_number][f"rotate_{direction}"]
         if not isinstance(component, Rotate):
-            raise ValueError(f"primitive is missing {component_id!r}")
+            raise ValueError(f"Speck round {round_number} is missing its {direction} rotation")
         return component.amount

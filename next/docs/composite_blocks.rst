@@ -11,8 +11,9 @@ Building AES from blocks
 ------------------------
 
 ``AESKeySchedule`` and ``AESRound`` are normal reusable definitions.  The
-following function assembles AES-128 explicitly.  It is essentially the public
-``AES`` construction, shown here so that the block boundaries are visible.
+following function assembles an AES-derived graph explicitly.  The canonical
+``AES`` source is deliberately direct and pseudocode-oriented; this example
+shows the alternative reusable-block style used by ``CustomAES``.
 
 .. doctest::
 
@@ -28,18 +29,17 @@ following function assembles AES-128 explicitly.  It is essentially the public
    ...         "key": schedule_definition.inputs["key"],
    ...     })
    ...     primitive.add_round()
-   ...     schedule = primitive.add_composite(
+   ...     key_schedule = primitive.add_composite(
    ...         schedule_definition, {"key": primitive.input("key")},
    ...         scope_id="key_schedule")
    ...     state = primitive.add_component(Add((
-   ...         primitive.input("plaintext"), schedule.output("round_key_0")),
-   ...         component_id="initial_add_round_key"))
+   ...         primitive.input("plaintext"), key_schedule.output[0])))
    ...     for number in range(1, 11):
    ...         primitive.add_round()
    ...         definition = final_round if number == 10 else middle_round
    ...         block = primitive.add_composite(definition, {
    ...             "state": state,
-   ...             "round_key": schedule.output(f"round_key_{number}"),
+   ...             "round_key": key_schedule.output[number],
    ...         }, scope_id=f"round_{number}")
    ...         state = block.output()
    ...     primitive.set_output(state)
@@ -54,18 +54,18 @@ following function assembles AES-128 explicitly.  It is essentially the public
    >>> built.scope("key_schedule/sub_word_1").definition.name
    'ParallelSBoxLayer'
 
-The packaged ``AES`` class uses this composition and keeps the canonical AES
-identity.  Experimental changes use ``AESVariant`` so results cannot be
-mistaken for standard AES.  A replacement table applies to both round
-SubBytes and SubWord in the key schedule.
+Experimental changes use ``CustomAES`` so results cannot be mistaken for
+standard AES.  A replacement table applies to both round SubBytes and SubWord
+in the key schedule. ``ToyAES`` has a different purpose: small teaching and
+exhaustive-analysis instances.
 
 .. doctest::
 
-   >>> from claasp_next.primitives import AES, AESVariant
-   >>> alternate = AESVariant(sbox_table=tuple(range(256)))
-   >>> no_mix = AESVariant(include_mix_columns=False, number_of_rounds=2)
+   >>> from claasp_next.primitives import AES, CustomAES
+   >>> alternate = CustomAES(sbox_table=tuple(range(256)))
+   >>> no_mix = CustomAES(include_mix_columns=False, number_of_rounds=2)
    >>> alternate.family_name, no_mix.family_name
-   ('aes_variant', 'aes_variant')
+   ('custom_aes', 'custom_aes')
    >>> dict(no_mix.provenance)
    {'derived_from': 'AES', 'modifications': 'removed MixColumns'}
    >>> any(component.component_id.endswith("/mix_columns") for component in no_mix.components)

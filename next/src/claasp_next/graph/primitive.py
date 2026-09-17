@@ -16,6 +16,38 @@ from claasp_next.graph.value_type import ValueType
 class Primitive:
     """A round-oriented directed acyclic graph of typed components."""
 
+    @staticmethod
+    def select_configuration(configurations, **parameters):
+        """Return the unique standard configuration matching ``parameters``."""
+
+        matches = [
+            configuration for configuration in configurations
+            if all(configuration.get(name) == value for name, value in parameters.items())
+        ]
+        if len(matches) != 1:
+            rendered = ", ".join(f"{name}={value}" for name, value in parameters.items())
+            raise ValueError(f"unsupported primitive configuration: {rendered}")
+        return matches[0]
+
+    @staticmethod
+    def validate_number_of_rounds(value, *, default: int, maximum: int, name: str) -> int:
+        """Resolve and validate a positive, optionally reduced round count."""
+
+        rounds = default if value is None else value
+        if not isinstance(rounds, int) or isinstance(rounds, bool):
+            raise TypeError("number_of_rounds must be an integer")
+        if not 1 <= rounds <= maximum:
+            raise ValueError(f"{name} requires between 1 and {maximum} rounds")
+        return rounds
+
+    @staticmethod
+    def validate_positive_integer(value, *, name: str) -> int:
+        """Validate a positive integer authoring parameter."""
+
+        if not isinstance(value, int) or isinstance(value, bool) or value <= 0:
+            raise ValueError(f"{name} must be a positive integer")
+        return value
+
     def __init__(
         self,
         family_name: str,

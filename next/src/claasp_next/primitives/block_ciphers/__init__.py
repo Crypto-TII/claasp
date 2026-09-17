@@ -1,6 +1,6 @@
 """Keyed block-primitive graphs."""
 
-from claasp_next.primitives.block_ciphers.aes import AES128, AES, AESVariant
+from claasp_next.primitives.block_ciphers.aes import AES128, AES, CustomAES
 from claasp_next.primitives.block_ciphers.aradi import Aradi
 from claasp_next.primitives.block_ciphers.cham import CHAM
 from claasp_next.primitives.block_ciphers.hight import HIGHT
@@ -22,7 +22,7 @@ from claasp_next.primitives._catalogue_exports import CATEGORY_EXPORTS, load_exp
 __all__ = [
     "AES128",
     "AES",
-    "AESVariant",
+    "CustomAES",
     "Aradi",
     "CHAM",
     "HIGHT",

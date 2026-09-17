@@ -3,7 +3,7 @@
 from claasp_next.primitives.block_ciphers import (
     AES128,
     AES,
-    AESVariant,
+    CustomAES,
     Present80,
     Present,
     Speck,
@@ -20,7 +20,7 @@ from claasp_next.primitives._catalogue_exports import ALL_EXPORTS, load_export
 __all__ = [
     "AES128",
     "AES",
-    "AESVariant",
+    "CustomAES",
     "ChaCha",
     "MiMC",
     "Poseidon",

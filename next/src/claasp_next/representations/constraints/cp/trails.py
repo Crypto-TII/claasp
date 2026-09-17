@@ -998,6 +998,11 @@ def _component(primitive, component_id, expected_type):
     component = next(
         (item for item in primitive.components if item.component_id == component_id), None
     )
+    if component is None and primitive.family_name == "speck":
+        parts = component_id.split("_")
+        if len(parts) >= 4 and parts[0] == "round" and parts[1].isdigit():
+            operation = "_".join(parts[2:])
+            component = primitive.round_operations[int(parts[1])].get(operation)
     if not isinstance(component, expected_type):
         raise ValueError(f"primitive is missing {component_id!r}")
     return component

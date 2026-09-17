@@ -127,12 +127,12 @@ def test_aes_preserves_legacy_configuration_semantics(key_size, rounds, nk):
     assert primitive.input("key").value_type.encoded_bit_size == key_size
     assert primitive.output.value_type.encoded_bit_size == 128
     assert primitive.input("plaintext").value_type.domain == BinaryExtensionField(8, 0x11B)
-    assert isinstance(primitive.component("initial_add_round_key"), Add)
-    assert primitive.scope("key_schedule").definition.name == "AESKeySchedule"
+    assert isinstance(primitive.component(primitive.initial_state.owner_id), Add)
+    assert len(primitive.round_keys) == rounds + 1
 
 
 def test_aes_rejects_legacy_invalid_key_size():
-    with pytest.raises(ValueError, match="128, 192, or 256"):
+    with pytest.raises(ValueError, match="unsupported primitive configuration"):
         AES(512)
 
 

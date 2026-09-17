@@ -1,4 +1,4 @@
-from claasp_next.primitives import AES, AES128, AESVariant
+from claasp_next.primitives import AES, AES128, CustomAES
 from claasp_next.composites import AESKeySchedule, AESRound
 from claasp_next.domains import BinaryExtensionField
 from claasp_next.representations.execution import BatchEvaluator, ScalarEvaluator, TransposedBatchEvaluator
@@ -21,14 +21,18 @@ def test_aes128_matches_fips_197_known_answer_vector_and_uses_field_bytes():
 def test_aes128_matches_fips_first_round_intermediate_values():
     primitive = AES128(number_of_rounds=1)
     result = ScalarEvaluator().evaluate(primitive, {"plaintext": PLAINTEXT, "key": KEY})
-    round_scope = primitive.scope("round_1")
-    schedule_scope = primitive.scope("key_schedule")
 
-    assert bytes(result.value_of("initial_add_round_key")).hex() == "00102030405060708090a0b0c0d0e0f0"
-    assert bytes(round_scope.value_from(result, "sub_bytes")).hex() == "63cab7040953d051cd60e0e7ba70e18c"
-    assert bytes(round_scope.value_from(result, "shift_rows")).hex() == "6353e08c0960e104cd70b751bacad0e7"
-    assert bytes(round_scope.value_from(result, "mix_columns")).hex() == "5f72641557f5bc92f7be3b291db9f91a"
-    assert bytes(schedule_scope.value_from(result, "round_key_1")).hex() == "d6aa74fdd2af72fadaa678f1d6ab76fe"
+    def value(selection):
+        selection = selection.select_all() if hasattr(selection, "select_all") else selection
+        source = result.value_of(selection.source.owner_id)
+        return tuple(source[position] for position in selection.positions)
+
+    round_state = primitive.round_states[0]
+    assert bytes(value(primitive.initial_state)).hex() == "00102030405060708090a0b0c0d0e0f0"
+    assert bytes(value(round_state["sub_bytes"])).hex() == "63cab7040953d051cd60e0e7ba70e18c"
+    assert bytes(value(round_state["shift_rows"])).hex() == "6353e08c0960e104cd70b751bacad0e7"
+    assert bytes(value(round_state["mix_columns"])).hex() == "5f72641557f5bc92f7be3b291db9f91a"
+    assert bytes(value(primitive.round_keys[1])).hex() == "d6aa74fdd2af72fadaa678f1d6ab76fe"
     assert bytes(result.output).hex() == "89d810e8855ace682d1843d8cb128fe4"
 
 
@@ -61,16 +65,16 @@ def test_aes_key_schedule_and_round_are_independently_evaluable_blocks():
     ) == 0x89D810E8855ACE682D1843D8CB128FE4
 
 
-def test_aes_variant_records_changes_and_supports_sbox_and_layer_studies():
+def test_custom_aes_records_changes_and_supports_sbox_and_layer_studies():
     canonical = AES(number_of_rounds=2)
-    identity_sbox = AESVariant(sbox_table=tuple(range(256)), number_of_rounds=2)
-    no_mix = AESVariant(include_mix_columns=False, number_of_rounds=2)
+    identity_sbox = CustomAES(sbox_table=tuple(range(256)), number_of_rounds=2)
+    no_mix = CustomAES(include_mix_columns=False, number_of_rounds=2)
     plaintext = int.from_bytes(bytes(PLAINTEXT), "big")
     key = int.from_bytes(bytes(KEY), "big")
 
     assert identity_sbox.evaluate(plaintext, key) != canonical.evaluate(plaintext, key)
     assert no_mix.evaluate(plaintext, key) != canonical.evaluate(plaintext, key)
-    assert not any(component.component_id.endswith("/mix_columns") for component in no_mix.components)
+    assert not any(type(component).__name__ == "LinearMap" for component in no_mix.components)
     assert dict(identity_sbox.provenance) == {
         "derived_from": "AES",
         "modifications": "replaced AES S-box in rounds and key schedule",

@@ -47,7 +47,8 @@ primitive or inspecting round values:
 
    >>> one_round = AES(number_of_rounds=1)
    >>> trace = one_round.evaluate_with_trace(plaintext, key)
-   >>> bytes(one_round.scope("round_1").value_from(trace, "sub_bytes")).hex()
+   >>> sub_bytes = one_round.round_states[0]["sub_bytes"]
+   >>> bytes(trace.trace.value_of(sub_bytes.owner_id)).hex()
    '63cab7040953d051cd60e0e7ba70e18c'
    >>> len(one_round.components) > 0
    True

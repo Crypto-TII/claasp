@@ -9,10 +9,12 @@ from claasp_next.graph.realization import RealizationDescriptor
 from claasp_next.graph.metadata import (
     InputVisibility, PrimitiveInput, PrimitiveKind, public_input, secret_input,
 )
-from claasp_next.graph.composite import CompositeBuilder, CompositeDefinition, CompositeInstance
+from claasp_next.graph.composite import (
+    CompositeBuilder, CompositeDefinition, CompositeInstance, CompositeOutputs,
+)
 
 __all__ = [
-    "CompositeBuilder", "CompositeDefinition", "CompositeInstance", "Primitive",
+    "CompositeBuilder", "CompositeDefinition", "CompositeInstance", "CompositeOutputs", "Primitive",
     "Component", "InputVisibility", "Port", "PortLike", "PrimitiveInput",
     "PrimitiveKind", "RealizationDescriptor", "Round", "Selection", "ValueType",
     "as_selection", "public_input", "secret_input",

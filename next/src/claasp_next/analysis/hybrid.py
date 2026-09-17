@@ -63,12 +63,13 @@ class SpeckHybridDifferentialProblem:
             return False
         left, right = divmod(prefix.input_pattern.value, 1 << 16)
         semantics = ModularAddTransitionSemantics(16)
-        components = {component.component_id: component for component in self.primitive.components}
         for r, step in enumerate(prefix.steps):
-            alpha = components[f"round_{r}_rotate_right"].amount
-            beta = components[f"round_{r}_rotate_left"].amount
+            operations = self.primitive.round_operations[r]
+            alpha = operations["rotate_right"].amount
+            beta = operations["rotate_left"].amount
             rotated_left = ((left >> alpha) | (left << (16 - alpha))) & 0xFFFF
-            if (step.component_id != f"round_{r}_modular_add" or not semantics.check(step.transition)
+            if (step.component_id != operations["modular_add"].component_id
+                    or not semantics.check(step.transition)
                     or step.transition.input_pattern.value != (rotated_left << 16) | right):
                 return False
             left = step.transition.output_pattern.value

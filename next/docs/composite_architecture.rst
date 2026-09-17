@@ -67,7 +67,7 @@ Round and primitive scopes
 lowered in that round, including nested paths. A scope provides its bound
 ``inputs``, named ``outputs``, actual parent-graph ``components``, definition
 ``provenance``, and nested lookup. A primitive's separate ``provenance`` records
-identity or derivation, which is why ``AES`` and ``AESVariant`` cannot silently
+identity or derivation, which is why ``AES`` and ``CustomAES`` cannot silently
 share a catalogue identity.
 
 Editing remains outside this milestone: definitions and instances are frozen,

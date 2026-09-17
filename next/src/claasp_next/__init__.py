@@ -1,7 +1,8 @@
 """Sage-independent typed core for the next major CLAASP release."""
 
 from claasp_next.graph import (
-    CompositeBuilder, CompositeDefinition, CompositeInstance, Primitive, Component,
+    CompositeBuilder, CompositeDefinition, CompositeInstance, CompositeOutputs,
+    Primitive, Component,
     InputVisibility, Port, PrimitiveInput, PrimitiveKind, Round, Selection,
     ValueType, public_input, secret_input,
 )
@@ -33,6 +34,7 @@ __all__ = [
     "CompositeBuilder",
     "CompositeDefinition",
     "CompositeInstance",
+    "CompositeOutputs",
     "ChaChaQuarterRound",
     "Primitive",
     "Component",

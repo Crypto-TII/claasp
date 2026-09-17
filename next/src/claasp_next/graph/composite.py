@@ -2,12 +2,35 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 
 from claasp_next.graph.component import Component
 from claasp_next.graph.port import Port, PortLike, Selection, as_selection
 from claasp_next.graph.value_type import ValueType
+
+
+class CompositeOutputs(Sequence[Selection]):
+    """Ordered composite outputs with optional access by semantic name."""
+
+    def __init__(self, outputs: tuple[tuple[str, Selection], ...]) -> None:
+        self._outputs = outputs
+        self._by_name = dict(outputs)
+
+    def __len__(self) -> int:
+        return len(self._outputs)
+
+    def __getitem__(self, key: int | slice | str):
+        if isinstance(key, str):
+            try:
+                return self._by_name[key]
+            except KeyError as error:
+                raise KeyError(f"composite output {key!r} does not exist") from error
+        values = tuple(value for _, value in self._outputs)
+        return values[key]
+
+    def __call__(self, name: str = "output") -> Selection:
+        return self[name]
 
 
 @dataclass(frozen=True, slots=True)
@@ -57,11 +80,9 @@ class CompositeDefinition:
     def named_outputs(self) -> Mapping[str, Selection]:
         return dict(self.outputs)
 
-    def output(self, name: str = "output") -> Selection:
-        try:
-            return self.named_outputs[name]
-        except KeyError as error:
-            raise KeyError(f"composite output {name!r} does not exist") from error
+    @property
+    def output(self) -> CompositeOutputs:
+        return CompositeOutputs(self.outputs)
 
     def as_primitive(self, output: str = "output"):
         """Project this definition to a standalone flat primitive graph."""
@@ -112,11 +133,9 @@ class CompositeInstance:
     def components(self) -> tuple[Component, ...]:
         return tuple(self._primitive.component(component_id) for component_id in self.component_ids)
 
-    def output(self, name: str = "output") -> Selection:
-        try:
-            return self.outputs[name]
-        except KeyError as error:
-            raise KeyError(f"composite output {name!r} does not exist") from error
+    @property
+    def output(self) -> CompositeOutputs:
+        return CompositeOutputs(self.output_bindings)
 
     def scope(self, relative_path: str) -> "CompositeInstance":
         return self._primitive.scope(f"{self.path}/{relative_path}")

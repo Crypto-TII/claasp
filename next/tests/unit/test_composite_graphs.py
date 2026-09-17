@@ -44,6 +44,8 @@ def test_instantiation_lowers_namespaced_leaves_and_retains_scope_outputs():
     assert primitive.scope("block") is instance
     assert primitive_round.scopes == (instance,)
     assert instance.output("doubled").source.owner_id == "block/double"
+    assert instance.output[0].source.owner_id == "block/double"
+    assert instance.output[1].source.owner_id == "block/sum"
     assert primitive.evaluate(5, 4) == 14
     assert instance.evaluate(5, 4) == 14
 

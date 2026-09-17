@@ -10,7 +10,7 @@ from claasp_next.semantics.cryptanalysis import (
     XorDifference,
     XorMask,
 )
-from claasp_next.components import Rotate
+from claasp_next.components import ModularAdd, Rotate
 from claasp_next.graph import Primitive
 from claasp_next.domains import Word
 
@@ -20,8 +20,8 @@ def find_two_round_speck_xor_differential(primitive: Primitive) -> TrailSearchRe
 
     width = _validate_speck_slice(primitive)
     semantics = ModularAddTransitionSemantics(width)
-    alpha = _component(primitive, "round_0_rotate_right", Rotate).amount
-    beta = _component(primitive, "round_0_rotate_left", Rotate).amount
+    _, alpha_component, beta_component = _state_round_components(primitive, 0)
+    alpha, beta = alpha_component.amount, beta_component.amount
     legacy_lower_bound = 1.0
 
     best = None
@@ -47,8 +47,8 @@ def find_two_round_speck_xor_differential(primitive: Primitive) -> TrailSearchRe
                 XorDifference((left << width) | right, 2 * width),
                 XorDifference((final_left << width) | final_right, 2 * width),
                 (
-                    TrailStep("round_0_modular_add", first),
-                    TrailStep("round_1_modular_add", second),
+                    TrailStep(_state_round_components(primitive, 0)[0].component_id, first),
+                    TrailStep(_state_round_components(primitive, 1)[0].component_id, second),
                 ),
             )
             if best is None or trail.total_weight < best.total_weight:
@@ -73,8 +73,8 @@ def check_speck_trail(primitive: Primitive, trail: Trail) -> bool:
     semantics = ModularAddTransitionSemantics(width)
     if any(not semantics.check(step.transition) for step in trail.steps):
         return False
-    alpha = _component(primitive, "round_0_rotate_right", Rotate).amount
-    beta = _component(primitive, "round_0_rotate_left", Rotate).amount
+    _, alpha_component, beta_component = _state_round_components(primitive, 0)
+    alpha, beta = alpha_component.amount, beta_component.amount
     mask = (1 << width) - 1
     left, right = trail.input_pattern.value >> width, trail.input_pattern.value & mask
     first, second = (step.transition for step in trail.steps)
@@ -107,13 +107,15 @@ def find_four_round_speck_xor_linear(primitive: Primitive) -> TrailSearchResult:
     for round_number, ((left, right), (next_left, next_right)) in enumerate(
         zip(boundary_masks, boundary_masks[1:])
     ):
-        alpha = _component(primitive, f"round_{round_number}_rotate_right", Rotate).amount
-        beta = _component(primitive, f"round_{round_number}_rotate_left", Rotate).amount
+        addition, alpha_component, beta_component = _state_round_components(
+            primitive, round_number,
+        )
+        alpha, beta = alpha_component.amount, beta_component.amount
         add_left = _rotate_right(left, alpha, width)
         add_right = right ^ _rotate_right(next_right, beta, width)
         add_output = next_left ^ next_right
         steps.append(TrailStep(
-            f"round_{round_number}_modular_add",
+            addition.component_id,
             semantics.xor_linear(add_left, add_right, add_output),
         ))
     trail = Trail(
@@ -141,7 +143,11 @@ def check_speck_linear_trail(primitive: Primitive, trail: Trail) -> bool:
         return False
     if trail.input_pattern.width != 2 * width or trail.output_pattern.width != 2 * width:
         return False
-    if any(step.component_id != f"round_{r}_modular_add" for r, step in enumerate(trail.steps)):
+    expected_ids = tuple(
+        _state_round_components(primitive, round_number)[0].component_id
+        for round_number in range(len(primitive.rounds))
+    )
+    if tuple(step.component_id for step in trail.steps) != expected_ids:
         return False
     semantics = ModularAddLinearSemantics(width)
     if any(not semantics.check(step.transition) for step in trail.steps):
@@ -150,8 +156,10 @@ def check_speck_linear_trail(primitive: Primitive, trail: Trail) -> bool:
     left = trail.input_pattern.value >> width
     right = trail.input_pattern.value & mask
     for round_number, step in enumerate(trail.steps):
-        alpha = _component(primitive, f"round_{round_number}_rotate_right", Rotate).amount
-        beta = _component(primitive, f"round_{round_number}_rotate_left", Rotate).amount
+        _, alpha_component, beta_component = _state_round_components(
+            primitive, round_number,
+        )
+        alpha, beta = alpha_component.amount, beta_component.amount
         add_left = step.transition.input_pattern.value >> width
         add_right = step.transition.input_pattern.value & mask
         add_output = step.transition.output_pattern.value
@@ -195,11 +203,15 @@ def _validate_speck_linear_slice(primitive: Primitive) -> int:
     return 16
 
 
-def _component(primitive: Primitive, component_id: str, expected_type):
-    component = next((item for item in primitive.components if item.component_id == component_id), None)
-    if not isinstance(component, expected_type):
-        raise ValueError(f"primitive is missing {component_id!r} {expected_type.__name__}")
-    return component
+def _state_round_components(primitive: Primitive, round_number: int):
+    """Return the state addition and rotations by graph structure, not ids."""
+
+    components = primitive.rounds[round_number].components
+    addition = next((item for item in components if isinstance(item, ModularAdd)), None)
+    rotations = tuple(item for item in components if isinstance(item, Rotate))[:2]
+    if addition is None or len(rotations) != 2:
+        raise ValueError(f"Speck round {round_number} lacks its ARX state operations")
+    return addition, rotations[0], rotations[1]
 
 
 def _rotate_left(value: int, amount: int, width: int) -> int:

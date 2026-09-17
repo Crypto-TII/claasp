@@ -19,12 +19,10 @@ def test_round_component_ids_matches_the_primitive_graph_round_structure():
 
     assert round_0 == tuple(component.component_id for component in primitive.rounds[0].components)
     assert round_1 == tuple(component.component_id for component in primitive.rounds[1].components)
-    # Round 0 interleaves the state round function with the key schedule
-    # round function, matching legacy's round_output/round_key_output split.
-    assert "round_0_xor_xy" in round_0
-    assert "key_0_xor_xy" in round_0
-    # The final round carries the primitive output component too.
-    assert "primitive_output" in round_1
+    # Semantic references stay stable even when automatic identifiers change.
+    assert primitive.round_states[0][1].owner_id in round_0
+    assert primitive.key_schedule_states[0][1].owner_id in round_0
+    assert primitive.output.source.owner_id in round_1
 
     with pytest.raises(ValueError, match="range"):
         round_component_ids(primitive, 2)
@@ -35,15 +33,15 @@ def test_round_component_ids_matches_the_primitive_graph_round_structure():
 def test_component_output_dataset_matches_direct_trace_inspection_of_round_state():
     """Cross-check the projected feature bits against a direct trace lookup.
 
-    This targets ``round_0_xor_xy`` -- one of the two components that jointly
-    hold Speck's state after round 0 -- exactly like legacy's
+    This targets the right word of round zero -- one of the two components that
+    jointly hold Speck's state -- exactly like legacy's
     ``round_output`` projection in ``claasp/cipher_modules/neural_network_tests.py``,
     but through the typed ``ExecutionTrace`` instead of a description-string
     match.
     """
 
     primitive = Speck(number_of_rounds=2)
-    component_id = "round_0_xor_xy"
+    component_id = primitive.round_states[0][1].owner_id
     seed = 5
     samples = 16
     dataset = component_output_dataset(
@@ -86,7 +84,7 @@ def test_component_output_dataset_matches_direct_trace_inspection_of_round_state
 
 def test_component_output_dataset_supports_concatenated_round_projection():
     primitive = Speck(number_of_rounds=2)
-    ids = round_component_ids(primitive, 1)  # ("round_1_...", ..., "primitive_output")
+    ids = round_component_ids(primitive, 1)
     dataset = component_output_dataset(primitive, "key", ids, samples=6, seed=2)
 
     expected_width = sum(
@@ -100,7 +98,7 @@ def test_component_output_dataset_supports_concatenated_round_projection():
 
 def test_xor_differential_component_dataset_matches_direct_trace_inspection():
     primitive = Speck(number_of_rounds=2)
-    component_id = "key_0_xor_xy"  # the round-key projection for round 0
+    component_id = primitive.key_schedule_states[0][1].owner_id
     differences = {"plaintext": 0x0040_0000, "key": 0}
     seed = 11
     samples = 10

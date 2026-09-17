@@ -84,15 +84,16 @@ exact wire:
 
    >>> from claasp_next.analysis import component_output_dataset, round_component_ids
    >>> reduced = Speck(number_of_rounds=2)
-   >>> round_component_ids(reduced, 0)
-   ('round_0_rotate_right', 'round_0_modular_add', 'round_0_xor_key', 'round_0_rotate_left', 'round_0_xor_xy', 'key_constant_0', 'key_0_rotate_right', 'key_0_modular_add', 'key_0_xor_key', 'key_0_rotate_left', 'key_0_xor_xy')
+   >>> round_component_ids(reduced, 0)[:3]
+   ('rotate_0_0', 'modular_add_0_1', 'xor_0_2')
+   >>> right_word = reduced.round_states[0][1].owner_id
    >>> projected = component_output_dataset(
-   ...     reduced, "plaintext", "round_0_xor_xy", samples=4, seed=5
+   ...     reduced, "plaintext", right_word, samples=4, seed=5
    ... )
    >>> projected.kind, projected.sample_count, projected.feature_width
    ('black_box', 4, 48)
    >>> projected.feature_names[-1]
-   'round_0_xor_xy[15]'
+   'xor_0_4[15]'
 
 ``xor_differential_component_dataset`` projects the same way for related
 input pairs, replacing ``xor_differential_dataset``'s final-output pair with

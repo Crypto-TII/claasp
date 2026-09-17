@@ -25,9 +25,20 @@ identifiers are optional.
    >>> primitive.set_output(output)
 
 Automatic identifiers combine the component kind, round number, and position,
-so rebuilding the same graph produces the same names. Pass
-``component_id="round_output"`` when a stable semantic name helps analysis or
-documentation. Duplicate explicit names are rejected.
+so rebuilding the same graph produces the same names.  Normal primitive source
+should omit identifiers and retain semantic ports instead, for example
+``self.round_states`` or ``self.round_keys``.  This keeps analysis code stable
+when an implementation is simplified.  Explicit identifiers remain available
+for exceptional interchange contracts; duplicates are rejected.
+
+``Primitive.select_configuration``, ``validate_number_of_rounds``, and
+``validate_positive_integer`` centralize the common parameter checks.  See the
+direct ``AES``, ``Speck``, and ``ChaCha`` sources for full reference examples:
+their local variables follow the specification pseudocode (``state``;
+``x``/``y``; and ``a``/``b``/``c``/``d``), while ``CustomAES`` demonstrates
+the reusable-block style. Composite outputs are ordered, so a key schedule can
+be read naturally as ``key_schedule.output[round_number]``; named lookup is
+also available for self-documenting boundaries.
 
 The ``claasp_next.utils`` module provides reusable finite-field arithmetic,
 fixed-width integer/word conversion, rotations, sequence shifts, and layout
