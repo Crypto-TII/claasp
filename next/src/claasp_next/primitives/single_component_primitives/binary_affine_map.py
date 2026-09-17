@@ -24,7 +24,7 @@ class BinaryAffineMap(Primitive):
     A matrix, word size, and number of field elements can all be selected:
 
     >>> swap_bits = [[0, 1], [1, 0]]
-    >>> affine = BinaryAffineMap(swap_bits, offset=1, word_size=2, unit_count=3)
+    >>> affine = BinaryAffineMap(swap_bits, offset=0b01, word_size=2, unit_count=3)
     >>> # 00, 01, 10 become 01, 11, 00 respectively.
     >>> f"{affine.evaluate(0b00_01_10):06b}"
     '011100'
