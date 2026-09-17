@@ -68,7 +68,7 @@ PROPOSED_MODULE_OVERRIDES = {
     "claasp/ciphers/block_ciphers/gift_sbox_block_cipher.py": "block_ciphers.gift.sbox",
     "claasp/ciphers/block_ciphers/katan_fsr_block_cipher.py": "block_ciphers.katan.fsr",
     "claasp/ciphers/block_ciphers/ktantan_fsr_block_cipher.py": "block_ciphers.ktantan.fsr",
-    "claasp/ciphers/block_ciphers/prince_v2_block_cipher.py": "block_ciphers.prince.v2",
+    "claasp/ciphers/block_ciphers/prince_v2_block_cipher.py": "block_ciphers.prince_v2",
     "claasp/ciphers/block_ciphers/qarmav2_with_mixcolumn_block_cipher.py": "tweakable_block_ciphers.qarmav2.mixcolumn",
     "claasp/ciphers/block_ciphers/simeck_sbox_block_cipher.py": "block_ciphers.simeck.sbox",
     "claasp/ciphers/block_ciphers/simon_sbox_block_cipher.py": "block_ciphers.simon.sbox",

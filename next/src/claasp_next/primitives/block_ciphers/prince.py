@@ -1,4 +1,4 @@
-"""Canonical PRINCE construction."""
+"""Canonical PRINCE block primitive."""
 
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
@@ -102,12 +102,12 @@ class Prince(BitGraphPrimitive):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.block_ciphers.prince_block_cipher import Prince
-        sage: prince = Prince()
-        sage: key = 0xffffffffffffffff0000000000000000
-        sage: plaintext = 0x0000000000000000
-        sage: ciphertext = 0x9fb51935fc3df524
-        sage: prince.evaluate([plaintext, key]) == ciphertext
+        >>> from claasp_next.primitives.block_ciphers.prince import Prince
+        >>> prince = Prince()
+        >>> key = 0xffffffffffffffff0000000000000000
+        >>> plaintext = 0x0000000000000000
+        >>> ciphertext = 0x9fb51935fc3df524
+        >>> prince.evaluate(plaintext, key) == ciphertext
         True
     """
 

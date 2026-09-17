@@ -39,7 +39,7 @@ CATEGORY_EXPORTS = {
         'Piccolo': 'claasp_next.primitives.block_ciphers.piccolo',
         'Present': 'claasp_next.primitives.block_ciphers.present',
         'Prince': 'claasp_next.primitives.block_ciphers.prince',
-        'PrinceV2': 'claasp_next.primitives.block_ciphers.prince.v2',
+        'PrinceV2': 'claasp_next.primitives.block_ciphers.prince_v2',
         'RC5': 'claasp_next.primitives.block_ciphers.rc5',
         'Raiden': 'claasp_next.primitives.block_ciphers.raiden',
         'Rectangle': 'claasp_next.primitives.block_ciphers.rectangle',

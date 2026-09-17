@@ -39,7 +39,6 @@ def test_every_multi_realization_family_uses_one_same_import_path_package():
             "gift": ("primitive.py", "sbox.py"),
             "katan": ("primitive.py", "fsr.py"),
             "ktantan": ("primitive.py", "fsr.py"),
-            "prince": ("primitive.py", "v2.py"),
             "simeck": ("primitive.py", "sbox.py"),
             "simon": ("primitive.py", "sbox.py"),
             "tinyjambu": ("primitive.py", "word.py", "fsr_word.py"),

@@ -1,4 +1,4 @@
-"""Version-two PRINCE construction retained from the legacy catalogue."""
+"""PRINCEv2 block primitive from its revised specification."""
 
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
@@ -103,12 +103,12 @@ class PrinceV2(BitGraphPrimitive):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.block_ciphers.prince_v2_block_cipher import PrinceV2
-        sage: prince_v2 = PrinceV2()
-        sage: key = 0x00000000000000000000000000000000
-        sage: plaintext = 0x0000000000000000
-        sage: ciphertext = 0x0125fc7359441690
-        sage: prince_v2.evaluate([plaintext, key]) == ciphertext
+        >>> from claasp_next.primitives.block_ciphers.prince_v2 import PrinceV2
+        >>> prince_v2 = PrinceV2()
+        >>> key = 0x00000000000000000000000000000000
+        >>> plaintext = 0x0000000000000000
+        >>> ciphertext = 0x0125fc7359441690
+        >>> prince_v2.evaluate(plaintext, key) == ciphertext
         True
 
     """
@@ -244,7 +244,7 @@ class PrinceV2(BitGraphPrimitive):
 
     def __init__(self, number_of_rounds=12):
         super().__init__(
-            family_name="prince",
+            family_name="prince_v2",
             primitive_type=BLOCK_CIPHER,
             primitive_inputs=[INPUT_PLAINTEXT, INPUT_KEY],
             primitive_inputs_bit_size=[64, 128],
