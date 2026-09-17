@@ -30,11 +30,11 @@ def evaluate_cube_sum(
     symbolic variable names. The supplied value of each cube bit is ignored.
     """
 
-    if variable_input not in primitive.inputs:
+    if variable_input not in primitive.input_ports:
         raise ValueError(f"unknown variable input: {variable_input}")
-    if set(inputs) != set(primitive.inputs):
+    if set(inputs) != set(primitive.input_ports):
         raise ValueError("inputs must provide every primitive input exactly once")
-    width = primitive.inputs[variable_input].value_type.encoded_bit_size
+    width = primitive.input_ports[variable_input].value_type.encoded_bit_size
     output_width = primitive.output.value_type.encoded_bit_size if primitive.output else 0
     if width is None or output_width is None:
         raise TypeError("cube sums require canonically bit-encoded input and output domains")

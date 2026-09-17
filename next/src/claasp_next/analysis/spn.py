@@ -229,8 +229,8 @@ def check_spn_linear_trail(primitive: Primitive, trail: Trail) -> bool:
 
 
 def _validate_present_slice(primitive: Primitive) -> None:
-    plaintext = primitive.inputs.get("plaintext")
-    key = primitive.inputs.get("key")
+    plaintext = primitive.input_ports.get("plaintext")
+    key = primitive.input_ports.get("key")
     if (
         primitive.family_name != "present"
         or len(primitive.rounds) != 2
@@ -245,7 +245,7 @@ def _validate_present_slice(primitive: Primitive) -> None:
 
 
 def _validate_present_linear_slice(primitive: Primitive) -> None:
-    plaintext = primitive.inputs.get("plaintext")
+    plaintext = primitive.input_ports.get("plaintext")
     if (
         primitive.family_name != "present"
         or len(primitive.rounds) != 3

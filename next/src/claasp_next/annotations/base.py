@@ -53,7 +53,7 @@ class GraphAnnotation:
         identifiers = tuple((entry.role, entry.source_id) for entry in frozen)
         if len(set(identifiers)) != len(identifiers):
             raise ValueError("each graph source and role may be annotated only once")
-        inputs = set(primitive.inputs)
+        inputs = set(primitive.input_ports)
         components = {component.component_id for component in primitive.components}
         for entry in frozen:
             if entry.role is AnnotationRole.INPUT and entry.source_id not in inputs:
@@ -85,7 +85,7 @@ class GraphAnnotation:
     ) -> "GraphAnnotation":
         """Build entries from familiar source-ID mappings."""
 
-        input_names = set(primitive.inputs)
+        input_names = set(primitive.input_ports)
         entries = [
             AnnotationEntry(
                 source_id,

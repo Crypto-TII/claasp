@@ -173,11 +173,14 @@ class CompositeBuilder:
         return self._primitive.family_name
 
     @property
-    def inputs(self) -> Mapping[str, Port]:
-        return self._primitive.inputs
+    def input_ports(self) -> Mapping[str, Port]:
+        return self._primitive.input_ports
 
-    def input(self, name: str) -> Port:
-        return self._primitive.input(name)
+    def inputs(self, *selectors: str | int) -> Sequence[Port]:
+        return self._primitive.inputs(*selectors)
+
+    def input(self, selector: str | int) -> Port:
+        return self._primitive.input(selector)
 
     def add_round(self):
         return self._primitive.add_round()
@@ -221,7 +224,7 @@ class CompositeBuilder:
         )
         return CompositeDefinition(
             self.name,
-            tuple((name, port.value_type) for name, port in self.inputs.items()),
+            tuple((name, port.value_type) for name, port in self.input_ports.items()),
             tuple(tuple(primitive_round.components) for primitive_round in self._primitive.rounds),
             tuple(self._outputs.items()),
             tuple(sorted((provenance or {}).items())),

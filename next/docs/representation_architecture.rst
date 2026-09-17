@@ -99,7 +99,7 @@ annotation used by ``ExecutionTrace``:
    ... })
    >>> result.trace.annotation.semantics.name
    'concrete'
-   >>> len(result.trace.annotation.entries) == len(primitive.inputs) + len(primitive.components) + 1
+   >>> len(result.trace.annotation.entries) == len(primitive.input_ports) + len(primitive.components) + 1
    True
 
 Normal users continue to write ``primitive.evaluate(plaintext, key)``. The

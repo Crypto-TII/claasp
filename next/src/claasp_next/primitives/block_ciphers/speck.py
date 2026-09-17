@@ -1,7 +1,5 @@
 """Reference Speck implementation following the designers' pseudocode."""
 
-from types import MappingProxyType
-
 from claasp_next.components import Constant, ModularAdd, Rotate, Xor
 from claasp_next.domains import Word
 from claasp_next.graph import Primitive, PrimitiveKind, ValueType
@@ -84,11 +82,6 @@ class Speck(Primitive):
         key = self.input("key")
         schedule = [key[position] for position in range(key_word_count - 2, -1, -1)]
         round_key = key[key_word_count - 1]
-        round_states = []
-        round_keys = []
-        key_schedule_states = []
-        round_operations = []
-
         def round_function(x, y, key):
             x = self.add_component(Rotate(x, alpha, "right"))
             x = self.add_component(ModularAdd((x, y)))
@@ -99,16 +92,16 @@ class Speck(Primitive):
 
         for round_number in range(rounds):
             self.add_round()
-            round_keys.append(round_key)
+            self.add_round_key(round_key)
             start = len(self.rounds[-1].components)
             x, y = round_function(x, y, round_key)
             operations = self.rounds[-1].components[start:]
-            round_operations.append(MappingProxyType({
-                "rotate_right": operations[0],
-                "modular_add": operations[1],
-                "rotate_left": operations[3],
-            }))
-            round_states.append((x, y))
+            self.add_round_operations(
+                rotate_right=operations[0],
+                modular_add=operations[1],
+                rotate_left=operations[3],
+            )
+            self.add_round_state(x, y)
 
             if round_number + 1 < rounds:
                 index = round_number % len(schedule)
@@ -116,10 +109,6 @@ class Speck(Primitive):
                 schedule[index], round_key = round_function(
                     schedule[index], round_key, constant,
                 )
-                key_schedule_states.append((schedule[index], round_key))
+                self.add_key_schedule_state(schedule[index], round_key)
 
-        self.round_keys = tuple(round_keys)
-        self.round_states = tuple(round_states)
-        self.key_schedule_states = tuple(key_schedule_states)
-        self.round_operations = tuple(round_operations)
         self.set_output((x, y))

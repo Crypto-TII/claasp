@@ -95,7 +95,7 @@ class ScalarExecutionDriver:
     def evaluate(self, primitive: Primitive, inputs: Mapping[str, Sequence[int]]) -> EvaluationResult:
         if not isinstance(primitive, Primitive):
             raise TypeError("primitive must be a Primitive")
-        expected_names = set(primitive.inputs)
+        expected_names = set(primitive.input_ports)
         actual_names = set(inputs)
         if actual_names != expected_names:
             missing = sorted(expected_names - actual_names)
@@ -103,7 +103,7 @@ class ScalarExecutionDriver:
             raise ValueError(f"primitive inputs do not match: missing={missing}, unexpected={unexpected}")
 
         values: dict[str, RuntimeValue] = {}
-        for name, port in primitive.inputs.items():
+        for name, port in primitive.input_ports.items():
             value = tuple(inputs[name])
             self._validate_value(name, value, port.value_type.unit_count, port.value_type.domain)
             values[name] = value

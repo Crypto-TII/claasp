@@ -40,7 +40,7 @@ class PrimeFieldPolynomialModel:
     ) -> None:
         if not isinstance(primitive, Primitive):
             raise TypeError("primitive must be a Primitive")
-        domains = {port.value_type.domain for port in primitive.inputs.values()}
+        domains = {port.value_type.domain for port in primitive.input_ports.values()}
         domains.update(component.output_type.domain for component in primitive.components)
         if len(domains) != 1 or not isinstance(next(iter(domains)), PrimeField):
             raise ValueError("PrimeFieldPolynomialModel requires one homogeneous prime field")
@@ -67,7 +67,7 @@ class PrimeFieldPolynomialModel:
 
     def polynomial_system(self) -> PolynomialSystem:
         variables = []
-        for name, port in self._primitive.inputs.items():
+        for name, port in self._primitive.input_ports.items():
             variables.extend(self.variable_name(name, position) for position in range(port.value_type.unit_count))
         for component in self._primitive.components:
             variables.extend(

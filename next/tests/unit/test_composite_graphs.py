@@ -7,11 +7,12 @@ from claasp_next.components import Add
 def _double_then_add_definition():
     value_type = ValueType(PrimeField(17), (1,))
     builder = CompositeBuilder("DoubleThenAdd", {"value": value_type, "addend": value_type})
+    value, addend = builder.inputs("value", 1)
     builder.add_round()
     doubled = builder.add_component(
-        Add((builder.input("value"), builder.input("value")), component_id="double")
+        Add((value, value), component_id="double")
     )
-    output = builder.add_component(Add((doubled, builder.input("addend")), component_id="sum"))
+    output = builder.add_component(Add((doubled, addend), component_id="sum"))
     builder.set_output("doubled", doubled)
     builder.set_output("output", output)
     return builder.build(provenance={"source": "test construction"})

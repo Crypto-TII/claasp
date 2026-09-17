@@ -33,12 +33,12 @@ class BooleanDegreeEvaluator:
     """Propagate degree bounds without constructing Boolean polynomials."""
 
     def evaluate(self, primitive: Primitive, variable_input: str) -> BooleanDegreeResult:
-        if variable_input not in primitive.inputs:
+        if variable_input not in primitive.input_ports:
             raise ValueError(f"unknown variable input: {variable_input}")
-        capacity = primitive.inputs[variable_input].value_type.encoded_bit_size
+        capacity = primitive.input_ports[variable_input].value_type.encoded_bit_size
         assert capacity is not None
         values: dict[str, tuple[DegreeUnit, ...]] = {}
-        for name, port in primitive.inputs.items():
+        for name, port in primitive.input_ports.items():
             domain = port.value_type.domain
             width = domain.width if isinstance(domain, Word) else 1
             bits = iter(range(capacity)) if name == variable_input else None

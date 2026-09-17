@@ -20,7 +20,7 @@ class BooleanMonomialGraphMILPModel:
                  variable_positions=None) -> None:
         from claasp_next.domains import Bit, Word
 
-        if variable_input not in primitive.inputs:
+        if variable_input not in primitive.input_ports:
             raise ValueError(f"unknown variable input: {variable_input}")
         if primitive.output is None:
             raise ValueError("primitive must have an output")
@@ -28,14 +28,14 @@ class BooleanMonomialGraphMILPModel:
         if not isinstance(output_bit, int) or isinstance(output_bit, bool) \
                 or output_width is None or not 0 <= output_bit < output_width:
             raise ValueError("output_bit must fit the primitive output")
-        domains = [port.value_type.domain for port in primitive.inputs.values()]
+        domains = [port.value_type.domain for port in primitive.input_ports.values()]
         domains += [component.output_type.domain for component in primitive.components]
         if not all(isinstance(domain, (Bit, Word)) for domain in domains):
             raise TypeError("Boolean monomial graph models require Bit or Word domains")
         self.primitive = primitive
         self.output_bit = output_bit
         self.variable_input = variable_input
-        selected_width = self._width(primitive.inputs[variable_input].value_type)
+        selected_width = self._width(primitive.input_ports[variable_input].value_type)
         self.variable_positions = tuple(
             range(selected_width) if variable_positions is None else variable_positions
         )
@@ -75,7 +75,7 @@ class BooleanMonomialGraphMILPModel:
                 variables.append(LinearVariable(name, VariableKind.BINARY))
                 uses[name] = []
 
-        for name, port in self.primitive.inputs.items():
+        for name, port in self.primitive.input_ports.items():
             add_wire(name, self._width(port.value_type))
         for component in self.primitive.components:
             add_wire(component.component_id, self._width(component.output_type))
@@ -173,7 +173,7 @@ class BooleanMonomialGraphMILPModel:
                 ConstraintSense.LESS_EQUAL, 0, f"copy_upper_{wire}",
             ))
 
-        selected_width = self._width(self.primitive.inputs[self.variable_input].value_type)
+        selected_width = self._width(self.primitive.input_ports[self.variable_input].value_type)
         selected_positions = set(self.variable_positions)
         for bit in range(selected_width):
             if bit not in selected_positions:

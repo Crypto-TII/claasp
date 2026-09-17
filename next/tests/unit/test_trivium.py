@@ -147,8 +147,8 @@ def test_graph_shape_and_reused_components():
     primitive = Trivium(number_of_initialization_clocks=13, keystream_bit_size=1)
 
     assert primitive.family_name == "trivium"
-    assert primitive.inputs["key"].value_type.unit_count == 80
-    assert primitive.inputs["iv"].value_type.unit_count == 80
+    assert primitive.input_ports["key"].value_type.unit_count == 80
+    assert primitive.input_ports["iv"].value_type.unit_count == 80
     assert primitive.output.value_type.encoded_bit_size == 1
     assert len(primitive.rounds) == 15
     assert {type(component) for component in primitive.components} == {

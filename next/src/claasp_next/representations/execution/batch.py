@@ -69,7 +69,7 @@ class BatchExecutionDriver:
         if not isinstance(primitive, Primitive):
             raise TypeError("primitive must be a Primitive")
 
-        expected_names = set(primitive.inputs)
+        expected_names = set(primitive.input_ports)
         actual_names = set(inputs)
         if actual_names != expected_names:
             missing = sorted(expected_names - actual_names)
@@ -83,7 +83,7 @@ class BatchExecutionDriver:
 
         results = []
         for item_index in range(batch_size):
-            item_inputs = {name: inputs[name][item_index] for name in primitive.inputs}
+            item_inputs = {name: inputs[name][item_index] for name in primitive.input_ports}
             results.append(self._scalar_evaluator.evaluate(primitive, item_inputs))
         return BatchEvaluationResult(tuple(results))
 
@@ -112,7 +112,7 @@ class TransposedBatchExecutionDriver(BatchExecutionDriver):
     ) -> BatchEvaluationResult:
         if not isinstance(primitive, Primitive):
             raise TypeError("primitive must be a Primitive")
-        expected_names = set(primitive.inputs)
+        expected_names = set(primitive.input_ports)
         actual_names = set(inputs)
         if actual_names != expected_names:
             missing = sorted(expected_names - actual_names)
@@ -124,7 +124,7 @@ class TransposedBatchExecutionDriver(BatchExecutionDriver):
         batch_size = batch_sizes.pop() if batch_sizes else 0
 
         values: dict[str, tuple[RuntimeValue, ...]] = {}
-        for name, port in primitive.inputs.items():
+        for name, port in primitive.input_ports.items():
             batch = tuple(tuple(item) for item in inputs[name])
             for item in batch:
                 self._scalar_evaluator._validate_value(

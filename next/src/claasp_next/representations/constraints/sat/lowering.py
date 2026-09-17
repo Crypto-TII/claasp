@@ -46,7 +46,7 @@ class BooleanCNFModel:
 
         if self._formula is not None:
             return self._formula
-        sources = list(self.primitive.inputs.values()) + [component.output for component in self.primitive.components]
+        sources = list(self.primitive.input_ports.values()) + [component.output for component in self.primitive.components]
         for port in sources:
             if not isinstance(port.value_type.domain, (Bit, Word)):
                 raise ValueError(
@@ -256,7 +256,7 @@ class BooleanCNFModel:
         return {name: assignment[name] for name in formula.variables}
 
     def _port_type(self, owner_id: str):
-        for port in list(self.primitive.inputs.values()) + [item.output for item in self.primitive.components]:
+        for port in list(self.primitive.input_ports.values()) + [item.output for item in self.primitive.components]:
             if port.owner_id == owner_id:
                 return port.value_type
         raise KeyError(owner_id)

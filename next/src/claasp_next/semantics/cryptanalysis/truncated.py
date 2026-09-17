@@ -389,7 +389,7 @@ def propagate_two_word_speck_round(
 ) -> TruncatedXorDifference:
     """Propagate a zero-key-difference pattern through a selected Speck round."""
 
-    plaintext = primitive.inputs.get("plaintext")
+    plaintext = primitive.input_ports.get("plaintext")
     if primitive.family_name != "speck" or plaintext is None:
         raise ValueError("primitive must be Speck")
     width = plaintext.value_type.domain.width
@@ -412,7 +412,7 @@ def propagate_two_word_speck_inverse_round(
 ) -> TruncatedXorDifference:
     """Soundly propagate a zero-key difference through one inverse Speck round."""
 
-    plaintext = primitive.inputs.get("plaintext")
+    plaintext = primitive.input_ports.get("plaintext")
     if primitive.family_name != "speck" or plaintext is None:
         raise ValueError("primitive must be Speck")
     width = plaintext.value_type.domain.width

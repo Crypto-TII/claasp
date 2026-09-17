@@ -142,11 +142,11 @@ class Analysis:
     ) -> AnalysisResult:
         """Recover one unknown input from known inputs and primitive output."""
 
-        if input_name not in self.primitive.inputs:
+        if input_name not in self.primitive.input_ports:
             raise ValueError(f"unknown primitive input {input_name!r}")
         if input_name in known_inputs:
             raise ValueError("the recovered input must not also be fixed")
-        expected_known = set(self.primitive.inputs) - {input_name}
+        expected_known = set(self.primitive.input_ports) - {input_name}
         if set(known_inputs) != expected_known:
             raise ValueError(
                 f"known_inputs must contain exactly {sorted(expected_known)!r}"
@@ -218,7 +218,7 @@ class Analysis:
         from claasp_next.drivers.solvers import Z3Solver
         from claasp_next.representations.constraints.smt import WordDifferentialSMTModel
         if fixed_input_differences is None:
-            fixed_input_differences = {"key": 0} if "key" in self.primitive.inputs and nonzero_input != "key" else {}
+            fixed_input_differences = {"key": 0} if "key" in self.primitive.input_ports and nonzero_input != "key" else {}
         model = WordDifferentialSMTModel(
             self.primitive, maximum_weight=maximum_weight, fixed_weight=fixed_weight,
             nonzero_input=nonzero_input, fixed_input_differences=fixed_input_differences,
@@ -238,7 +238,7 @@ class Analysis:
         from claasp_next.drivers.solvers import Z3Solver
         from claasp_next.representations.constraints.smt import WordLinearSMTModel
         if fixed_inputs is None and fixed_input_masks is None:
-            fixed_inputs = {"key": 0} if "key" in self.primitive.inputs and nonzero_input != "key" else {}
+            fixed_inputs = {"key": 0} if "key" in self.primitive.input_ports and nonzero_input != "key" else {}
         model = WordLinearSMTModel(self.primitive, maximum_weight=maximum_weight,
                                    nonzero_input=nonzero_input, fixed_input_masks=fixed_input_masks,
                                    fixed_inputs=fixed_inputs)

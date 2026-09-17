@@ -224,7 +224,7 @@ class SpeckDifferentialCPModel:
             raise TypeError("problem must be a PropagationProblem")
         if problem.semantics != XOR_DIFFERENTIAL:
             raise ValueError("Speck CP lowering requires XOR-differential semantics")
-        plaintext = problem.primitive.inputs.get("plaintext")
+        plaintext = problem.primitive.input_ports.get("plaintext")
         if (
             problem.primitive.family_name != "speck"
             or plaintext is None
@@ -480,7 +480,7 @@ class SpeckProbabilisticTruncatedCPModel:
 
         if problem.semantics != PROBABILISTIC_TRUNCATED_XOR:
             raise ValueError("Speck model requires probabilistic-truncated XOR semantics")
-        plaintext = problem.primitive.inputs.get("plaintext")
+        plaintext = problem.primitive.input_ports.get("plaintext")
         if (
             problem.primitive.family_name != "speck" or plaintext is None
             or not isinstance(plaintext.value_type.domain, Word)
@@ -699,7 +699,7 @@ class SpeckImpossibleCPModel:
     """
 
     def __init__(self, primitive, middle_round: int) -> None:
-        plaintext = primitive.inputs.get("plaintext")
+        plaintext = primitive.input_ports.get("plaintext")
         if (
             primitive.family_name != "speck" or plaintext is None
             or not isinstance(plaintext.value_type.domain, Word)

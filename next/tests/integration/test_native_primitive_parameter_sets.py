@@ -29,6 +29,6 @@ def test_every_audited_parameter_set_builds_from_native_source(record):
     primitive = getattr(module, record["class"])(**parameters)
     assert isinstance(primitive, Primitive)
     assert isinstance(primitive.kind, PrimitiveKind)
-    assert set(primitive.input_descriptors) == set(primitive.inputs)
+    assert set(primitive.input_descriptors) == set(primitive.input_ports)
     assert primitive.rounds
     assert primitive.output is not None

@@ -68,17 +68,17 @@ class WordLinearSMTModel:
         self.fixed_input_masks = dict(fixed_input_masks or {})
         self.fixed_inputs = dict(fixed_inputs or {})
         for name, value in self.fixed_inputs.items():
-            if name not in primitive.inputs:
+            if name not in primitive.input_ports:
                 raise ValueError("unknown fixed concrete input")
-            primitive._decode_boundary(value, primitive.inputs[name].value_type)
+            primitive._decode_boundary(value, primitive.input_ports[name].value_type)
         if nonzero_input in self.fixed_inputs:
             raise ValueError("a concrete fixed input cannot have a nonzero external mask")
-        if nonzero_input is not None and nonzero_input not in primitive.inputs:
+        if nonzero_input is not None and nonzero_input not in primitive.input_ports:
             raise ValueError("unknown nonzero input")
         for name, value in self.fixed_input_masks.items():
-            if name not in primitive.inputs:
+            if name not in primitive.input_ports:
                 raise ValueError("unknown fixed input")
-            value_type = primitive.inputs[name].value_type
+            value_type = primitive.input_ports[name].value_type
             if (not isinstance(value_type.domain, Word) or not isinstance(value, int)
                     or isinstance(value, bool) or not 0 <= value < (1 << (value_type.unit_count * value_type.domain.width))):
                 raise ValueError("fixed masks must fit the input word type")
@@ -89,7 +89,7 @@ class WordLinearSMTModel:
         if not self.fixed_inputs:
             return {}
         trace = self.primitive.evaluate_with_trace({name: self.fixed_inputs.get(name, 0)
-                                                    for name in self.primitive.inputs}).trace
+                                                    for name in self.primitive.input_ports}).trace
         known = {name: tuple(trace.value_of(name)) for name in self.fixed_inputs}
         for component in self.primitive.components:
             if all(selection.source.owner_id in known for selection in component.inputs):
@@ -115,7 +115,7 @@ class WordLinearSMTModel:
             clauses.append(tuple(items))
             provenance.append(label)
 
-        sources = [(name, port.value_type) for name, port in self.primitive.inputs.items()]
+        sources = [(name, port.value_type) for name, port in self.primitive.input_ports.items()]
         sources += [(item.component_id, item.output_type) for item in self.primitive.components]
         ports = {name: tuple(allocate(n) for n in self._names(f"mask_{name}", vt)) for name, vt in sources}
         consumers = {name: [[] for _ in names] for name, names in ports.items()}
@@ -223,7 +223,7 @@ class WordLinearSMTModel:
         constant_sign = 1
         for name in self.fixed_inputs:
             for unit, value in enumerate(self._folded_values[name]):
-                width = self.primitive.inputs[name].value_type.domain.width
+                width = self.primitive.input_ports[name].value_type.domain.width
                 mask = _packed(self._ports[name][unit * width:(unit + 1) * width], assignment)
                 if (mask & value).bit_count() % 2:
                     constant_sign *= -1
@@ -235,7 +235,7 @@ class WordLinearSMTModel:
                 if (value & _packed(self._ports[component.component_id], assignment)).bit_count() % 2:
                     constant_sign *= -1
         result = WordLinearCharacteristic(
-            tuple((name, 0 if name in self.fixed_inputs else _packed(self._ports[name], assignment)) for name in self.primitive.inputs),
+            tuple((name, 0 if name in self.fixed_inputs else _packed(self._ports[name], assignment)) for name in self.primitive.input_ports),
             _packed(self._output, assignment), tuple(steps), constant_sign,
             tuple((name, assignment[name]) for name in self._semantic_names),
         )
@@ -253,7 +253,7 @@ class WordLinearSMTModel:
         if (len(values) != len(trail.semantic_assignment) or set(values) != set(self._semantic_names)
                 or any(value not in (0, 1) for value in values.values())):
             return False
-        sources = [(name, port.value_type) for name, port in self.primitive.inputs.items()]
+        sources = [(name, port.value_type) for name, port in self.primitive.input_ports.items()]
         sources += [(item.component_id, item.output_type) for item in self.primitive.components]
         fanout = {name: [0] * vt.unit_count for name, vt in sources}
         steps, constant_sign = [], 1
@@ -262,7 +262,7 @@ class WordLinearSMTModel:
             return tuple(_packed(names[i:i + width], values) for i in range(0, len(names), width))
 
         for name in self.fixed_inputs:
-            masks = units(self._ports[name], self.primitive.inputs[name].value_type.domain.width)
+            masks = units(self._ports[name], self.primitive.input_ports[name].value_type.domain.width)
             if sum((mask & value).bit_count() for mask, value in zip(masks, self._folded_values[name])) % 2:
                 constant_sign *= -1
 
@@ -312,7 +312,7 @@ class WordLinearSMTModel:
             fanout[self.primitive.output.source.owner_id][position] ^= mask
         if any(tuple(fanout[name]) != units(self._ports[name], vt.domain.width) for name, vt in sources):
             return False
-        inputs = tuple((name, 0 if name in self.fixed_inputs else _packed(self._ports[name], values)) for name in self.primitive.inputs)
+        inputs = tuple((name, 0 if name in self.fixed_inputs else _packed(self._ports[name], values)) for name in self.primitive.input_ports)
         input_dict = dict(inputs)
         return (trail.input_masks == inputs and trail.output_mask == _packed(self._output, values)
                 and trail.steps == tuple(steps) and trail.constant_sign == constant_sign
@@ -331,7 +331,7 @@ class WordLinearSMTModel:
             ("solver", type(solver).__name__),
             ("executable", str(getattr(solver, "executable", "embedded"))),
             ("version", solver.version() if callable(getattr(solver, "version", None)) else "unreported"),
-            ("graph_sha256", sha256(repr((self.primitive.inputs, tuple(self.primitive.components), self.primitive.output)).encode()).hexdigest()),
+            ("graph_sha256", sha256(repr((self.primitive.input_ports, tuple(self.primitive.components), self.primitive.output)).encode()).hexdigest()),
             ("formula_sha256", sha256(repr(formula).encode()).hexdigest()),
             ("fixed_inputs", repr(tuple(sorted(self.fixed_inputs.items())))),
         )

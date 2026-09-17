@@ -64,7 +64,7 @@ def packed_bit_width(primitive: Primitive, input_name: str | None = None) -> int
     value_type = primitive.output.value_type if input_name is None and primitive.output else None
     if input_name is not None:
         try:
-            value_type = primitive.inputs[input_name].value_type
+            value_type = primitive.input_ports[input_name].value_type
         except KeyError as error:
             raise KeyError(f"primitive input {input_name!r} does not exist") from error
     if value_type is None:
@@ -96,11 +96,11 @@ def generate_random_dataset(
     if not isinstance(seed, int) or isinstance(seed, bool):
         raise TypeError("seed must be an integer")
     fixed = dict(fixed_inputs or {})
-    unexpected = set(fixed) - set(primitive.inputs)
+    unexpected = set(fixed) - set(primitive.input_ports)
     if unexpected:
         raise ValueError(f"unknown fixed inputs: {sorted(unexpected)}")
 
-    widths = {name: packed_bit_width(primitive, name) for name in primitive.inputs}
+    widths = {name: packed_bit_width(primitive, name) for name in primitive.input_ports}
     random = Random(seed)
     samples = []
     for _ in range(number_of_samples):

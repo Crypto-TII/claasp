@@ -71,16 +71,16 @@ class WordDifferentialSMTModel:
         for weight in (maximum_weight, fixed_weight):
             if weight is not None and (not isinstance(weight, int) or isinstance(weight, bool) or weight < 0):
                 raise ValueError("weights must be nonnegative integers")
-        if nonzero_input is not None and nonzero_input not in primitive.inputs:
+        if nonzero_input is not None and nonzero_input not in primitive.input_ports:
             raise ValueError("unknown nonzero input")
         self.primitive, self.maximum_weight, self.fixed_weight = primitive, maximum_weight, fixed_weight
         self.nonzero_input = nonzero_input
         self.fixed_input_differences = dict(fixed_input_differences or {})
         self.output_difference = output_difference
         for name, value in self.fixed_input_differences.items():
-            if name not in primitive.inputs:
+            if name not in primitive.input_ports:
                 raise ValueError("unknown fixed input difference")
-            self._validate(value, primitive.inputs[name].value_type)
+            self._validate(value, primitive.input_ports[name].value_type)
         if output_difference is not None:
             self._validate(output_difference, primitive.output.value_type)
         self._formula = None
@@ -106,7 +106,7 @@ class WordDifferentialSMTModel:
             clauses.append(tuple(literals))
             provenance.append(label)
 
-        sources = [(name, port.value_type) for name, port in self.primitive.inputs.items()]
+        sources = [(name, port.value_type) for name, port in self.primitive.input_ports.items()]
         sources += [(item.component_id, item.output_type) for item in self.primitive.components]
         ports = {}
         for name, value_type in sources:
@@ -241,7 +241,7 @@ class WordDifferentialSMTModel:
         if not CNFFormula(self._formula.variables, self._formula.assertions, self._formula.provenance).is_satisfied(assignment):
             raise ValueError("invalid word differential witness")
         result = WordDifferentialCharacteristic(
-            tuple((name, _packed(self._ports[name], assignment)) for name in self.primitive.inputs),
+            tuple((name, _packed(self._ports[name], assignment)) for name in self.primitive.input_ports),
             _packed(self._output, assignment), self._steps_and_wiring(assignment),
             tuple((name, assignment[name]) for name in self._semantic_names),
         )
@@ -257,7 +257,7 @@ class WordDifferentialSMTModel:
                 or any(value not in (0, 1) for value in values.values())):
             return False
         steps = self._steps_and_wiring(values)
-        inputs = tuple((name, _packed(self._ports[name], values)) for name in self.primitive.inputs)
+        inputs = tuple((name, _packed(self._ports[name], values)) for name in self.primitive.input_ports)
         output = _packed(self._output, values)
         return (steps is not None and trail.steps == steps and trail.input_differences == inputs
                 and trail.output_difference == output
@@ -278,7 +278,7 @@ class WordDifferentialSMTModel:
                     ("weight_range", repr((self.fixed_weight, self.maximum_weight))),
                     ("fixed_input_differences", repr(tuple(sorted(self.fixed_input_differences.items())))),
                     ("output_difference", repr(self.output_difference)),
-                    ("graph_sha256", sha256(repr((self.primitive.inputs, tuple(self.primitive.components), self.primitive.output)).encode()).hexdigest()),
+                    ("graph_sha256", sha256(repr((self.primitive.input_ports, tuple(self.primitive.components), self.primitive.output)).encode()).hexdigest()),
                     ("formula_sha256", sha256(repr(formula).encode()).hexdigest()))
         indices = {name: index for index, name in enumerate(formula.variables, 1)}
         trails, blocks, runtime = [], [], 0.0

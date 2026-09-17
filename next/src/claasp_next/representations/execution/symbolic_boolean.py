@@ -35,7 +35,7 @@ class BooleanSymbolicEvaluator:
         if not isinstance(primitive, Primitive):
             raise TypeError("primitive must be a typed graph")
         values = {}
-        for name, port in primitive.inputs.items():
+        for name, port in primitive.input_ports.items():
             prefix = {"plaintext": "p", "key": "k", "state": "s"}.get(name, name[:1])
             domain = port.value_type.domain
             if isinstance(domain, Bit):

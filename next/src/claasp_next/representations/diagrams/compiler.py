@@ -41,7 +41,7 @@ class DiagramCompiler:
                 name, name, "input", None,
                 values.get((AnnotationRole.INPUT, name)),
             )
-            for name in primitive.inputs
+            for name in primitive.input_ports
         ]
         edges = []
         rounds = []

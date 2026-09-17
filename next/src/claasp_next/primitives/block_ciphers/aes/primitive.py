@@ -1,7 +1,5 @@
 """Reference AES implementation following the FIPS 197 pseudocode."""
 
-from types import MappingProxyType
-
 from claasp_next.components import (
     Add, BinaryAffineMap, Constant, LinearMap, Permutation, Power,
     SBox,
@@ -127,10 +125,9 @@ class AES(Primitive):
 
         # KEYEXPANSION(key)
         self.add_round()
-        round_keys = _key_schedule(
-            self, self.input("key"), self.Nk, rounds, descriptor.name,
+        round_keys = self.set_round_keys(
+            _key_schedule(self, self.input("key"), self.Nk, rounds, descriptor.name),
         )
-        self.round_keys = tuple(round_keys)
 
         # state <- ADDROUNDKEY(state, round_key[0])
         state = self.add_component(Add((self.input("plaintext"), round_keys[0])))
@@ -138,7 +135,6 @@ class AES(Primitive):
 
         # Rounds 1..Nr follow FIPS 197's main algorithm. Reduced studies retain
         # MixColumns because they are prefixes of the standard AES execution.
-        round_states = []
         for round_number in range(1, rounds + 1):
             self.add_round()
             state = _sub_bytes(self, state, descriptor.name)
@@ -150,9 +146,8 @@ class AES(Primitive):
                 boundaries["mix_columns"] = state
             state = self.add_component(Add((state, round_keys[round_number])))
             boundaries["add_round_key"] = state
-            round_states.append(MappingProxyType(boundaries))
+            self.add_round_state(**boundaries)
 
-        self.round_states = tuple(round_states)
         self.set_output(state)
 
     @classmethod

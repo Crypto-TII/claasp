@@ -18,7 +18,7 @@ class SpeckLinearSMTModel:
 
     def __init__(self, primitive, *, maximum_weight=None, fixed_weight=None,
                  input_mask=None, output_mask=None):
-        plaintext = primitive.inputs.get("plaintext")
+        plaintext = primitive.input_ports.get("plaintext")
         if (primitive.family_name != "speck" or plaintext is None
                 or not isinstance(plaintext.value_type.domain, Word)
                 or not primitive.rounds):

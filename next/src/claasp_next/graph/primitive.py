@@ -1,8 +1,9 @@
 """Validated typed primitive graph."""
 
-from collections.abc import Mapping, Sequence
+from collections.abc import Iterable, Mapping, Sequence
 from copy import copy
 import re
+from types import MappingProxyType
 
 from claasp_next.graph.component import Component
 from claasp_next.graph.metadata import (
@@ -141,12 +142,90 @@ class Primitive:
         return derived
 
     @property
-    def inputs(self) -> Mapping[str, Port]:
+    def input_ports(self) -> Mapping[str, Port]:
+        """Name-to-port mapping for representations and other graph consumers."""
+
         return dict(self._input_ports)
+
+    def inputs(self, *selectors: str | int) -> Sequence[Port]:
+        """Return input ports in declaration or explicitly requested order.
+
+        With no selectors, all inputs are returned in declaration order. Names
+        are preferable in specification-oriented code; zero-based positions
+        are useful to generic primitive builders.
+        """
+
+        if not selectors:
+            return tuple(self._input_ports.values())
+        return tuple(self.input(selector) for selector in selectors)
 
     @property
     def rounds(self) -> tuple[Round, ...]:
         return tuple(self._rounds)
+
+    def set_round_keys(self, round_keys: Iterable[object]) -> Sequence[object]:
+        """Publish round keys without exposing their storage representation."""
+
+        self.round_keys = tuple(round_keys)
+        return self.round_keys
+
+    def add_round_key(self, round_key: object) -> object:
+        """Publish one round key in authoring order."""
+
+        self.round_keys = (*getattr(self, "round_keys", ()), round_key)
+        return round_key
+
+    def set_round_states(self, round_states: Iterable[object]) -> Sequence[object]:
+        """Publish round states without exposing their storage representation."""
+
+        self.round_states = tuple(round_states)
+        return self.round_states
+
+    def add_round_state(self, *values: object, **boundaries: object) -> object:
+        """Publish one positional or named round-state observation."""
+
+        if values and boundaries:
+            raise ValueError("round state must be positional or named, not both")
+        if boundaries:
+            state: object = MappingProxyType(dict(boundaries))
+        elif len(values) == 1:
+            state = values[0]
+        elif values:
+            state = tuple(values)
+        else:
+            raise ValueError("round state must contain at least one value")
+        self.round_states = (*getattr(self, "round_states", ()), state)
+        return state
+
+    def set_key_schedule_states(self, states: Iterable[object]) -> Sequence[object]:
+        """Publish key-schedule states without exposing their storage representation."""
+
+        self.key_schedule_states = tuple(states)
+        return self.key_schedule_states
+
+    def add_key_schedule_state(self, *values: object) -> object:
+        """Publish one key-schedule state in authoring order."""
+
+        if not values:
+            raise ValueError("key-schedule state must contain at least one value")
+        state = values[0] if len(values) == 1 else tuple(values)
+        self.key_schedule_states = (*getattr(self, "key_schedule_states", ()), state)
+        return state
+
+    def set_round_operations(self, operations: Iterable[object]) -> Sequence[object]:
+        """Publish round-operation landmarks without exposing their storage representation."""
+
+        self.round_operations = tuple(operations)
+        return self.round_operations
+
+    def add_round_operations(self, **operations: object) -> Mapping[str, object]:
+        """Publish named operation landmarks for one round."""
+
+        if not operations:
+            raise ValueError("round operations must not be empty")
+        observation = MappingProxyType(dict(operations))
+        self.round_operations = (*getattr(self, "round_operations", ()), observation)
+        return observation
 
     @property
     def components(self) -> tuple[Component, ...]:
@@ -162,11 +241,19 @@ class Primitive:
     def output(self) -> Selection | None:
         return self._output
 
-    def input(self, name: str) -> Port:
-        try:
-            return self._input_ports[name]
-        except KeyError as error:
-            raise KeyError(f"primitive input {name!r} does not exist") from error
+    def input(self, selector: str | int) -> Port:
+        """Return one input port by name or zero-based declaration position."""
+
+        if isinstance(selector, str):
+            try:
+                return self._input_ports[selector]
+            except KeyError as error:
+                raise KeyError(f"primitive input {selector!r} does not exist") from error
+        if isinstance(selector, bool) or not isinstance(selector, int):
+            raise TypeError("primitive input selector must be a name or integer position")
+        if selector < 0 or selector >= len(self._input_ports):
+            raise IndexError(f"primitive input position {selector} is out of range")
+        return tuple(self._input_ports.values())[selector]
 
     def port(self, owner_id: str) -> Port:
         try:

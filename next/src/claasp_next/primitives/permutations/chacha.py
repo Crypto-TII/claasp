@@ -55,7 +55,6 @@ class ChaCha(Primitive):
             kind=PrimitiveKind.PERMUTATION,
         )
         state = [self.input("state")[index] for index in range(16)]
-        round_states = []
 
         def quarter_round(a, b, c, d):
             a = self.add_component(ModularAdd((a, b)))
@@ -79,7 +78,6 @@ class ChaCha(Primitive):
                 state[a], state[b], state[c], state[d] = quarter_round(
                     state[a], state[b], state[c], state[d],
                 )
-            round_states.append(tuple(state))
+            self.add_round_state(*state)
 
-        self.round_states = tuple(round_states)
         self.set_output(state)

@@ -5,6 +5,13 @@ Primitive code should resemble the primitive's pseudocode. Whole ports can be
 passed directly to components, indexing selects logical units, and component
 identifiers are optional.
 
+``input(name_or_position)`` returns one graph input port. ``inputs()`` returns
+all input ports in declaration order, while selectors can request a subset in
+an explicit order. These methods expose graph references, not runtime values,
+and deliberately leave the collection representation unspecified. The
+``input_ports`` mapping is reserved for representations and other consumers
+that need names and ports together.
+
 .. doctest::
 
    >>> from claasp_next import Primitive, PrimeField, ValueType
@@ -12,6 +19,10 @@ identifiers are optional.
    >>> field_vector = ValueType(PrimeField(17), (3,))
    >>> primitive = Primitive("small_permutation", {"state": field_vector})
    >>> state = primitive.input("state")
+   >>> primitive.input(0) is state
+   True
+   >>> list(primitive.inputs("state")) == [state]
+   True
    >>> state[2, 0].positions
    (2, 0)
    >>> primitive.add_round()
@@ -27,9 +38,14 @@ identifiers are optional.
 Automatic identifiers combine the component kind, round number, and position,
 so rebuilding the same graph produces the same names.  Normal primitive source
 should omit identifiers and retain semantic ports instead, for example
-``self.round_states`` or ``self.round_keys``.  This keeps analysis code stable
-when an implementation is simplified.  Explicit identifiers remain available
-for exceptional interchange contracts; duplicates are rejected.
+round states or round keys. Publish precomputed collections through
+``set_round_states()`` and ``set_round_keys()``, or record them incrementally
+with ``add_round_state()`` and ``add_round_key()``. Named operation landmarks
+similarly use ``add_round_operations()``. Primitive source therefore does not
+assign a particular container to public attributes. This keeps analysis code
+stable when an implementation or the library's collection representation
+changes. Explicit identifiers remain available for exceptional interchange
+contracts; duplicates are rejected.
 
 ``Primitive.select_configuration``, ``validate_number_of_rounds``, and
 ``validate_positive_integer`` centralize the common parameter checks.  See the

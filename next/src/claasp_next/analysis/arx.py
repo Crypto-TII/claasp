@@ -134,7 +134,7 @@ def find_four_round_speck_xor_linear(primitive: Primitive) -> TrailSearchResult:
 def check_speck_linear_trail(primitive: Primitive, trail: Trail) -> bool:
     """Independently check modular-add correlations and backward mask wiring."""
 
-    plaintext = primitive.inputs.get("plaintext")
+    plaintext = primitive.input_ports.get("plaintext")
     if (primitive.family_name != "speck" or plaintext is None
             or not isinstance(plaintext.value_type.domain, Word)):
         return False
@@ -174,7 +174,7 @@ def check_speck_linear_trail(primitive: Primitive, trail: Trail) -> bool:
 
 
 def _validate_speck_slice(primitive: Primitive) -> int:
-    plaintext = primitive.inputs.get("plaintext")
+    plaintext = primitive.input_ports.get("plaintext")
     if (
         primitive.family_name != "speck"
         or len(primitive.rounds) != 2
@@ -189,7 +189,7 @@ def _validate_speck_slice(primitive: Primitive) -> int:
 
 
 def _validate_speck_linear_slice(primitive: Primitive) -> int:
-    plaintext = primitive.inputs.get("plaintext")
+    plaintext = primitive.input_ports.get("plaintext")
     if (
         primitive.family_name != "speck"
         or len(primitive.rounds) != 4

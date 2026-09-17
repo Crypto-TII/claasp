@@ -12,7 +12,7 @@ class Xor(Primitive):
             kind=PrimitiveKind.FUNCTION,
         )
         self.add_round()
-        operands = tuple(self.input(name) for name in self.inputs)
+        operands = self.inputs()
         output = self.add_component(XorComponent(operands))
         self.set_output(output)
 

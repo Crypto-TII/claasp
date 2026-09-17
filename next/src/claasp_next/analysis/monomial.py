@@ -254,7 +254,7 @@ def enumerate_optimal_monomial_parity(compilation, solver, max_paths=10000):
         assignment = result.assignment
         mask = 0
         width = compilation._width(
-            compilation.primitive.inputs[compilation.variable_input].value_type
+            compilation.primitive.input_ports[compilation.variable_input].value_type
         )
         for bit in range(width):
             mask = (mask << 1) | int(round(

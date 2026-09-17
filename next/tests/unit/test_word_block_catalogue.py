@@ -11,7 +11,7 @@ def _assert_scalar_and_batch(primitive, values, expected):
     assert primitive.evaluate(*values) == expected
     decoded = {
         name: (primitive._decode_boundary(value, port.value_type),)
-        for (name, port), value in zip(primitive.inputs.items(), values)
+        for (name, port), value in zip(primitive.input_ports.items(), values)
     }
     result = BatchEvaluator().evaluate(primitive, decoded).outputs[0]
     assert primitive._encode_boundary(result, primitive.output.value_type) == expected

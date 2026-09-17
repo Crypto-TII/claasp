@@ -26,6 +26,37 @@ def test_ports_support_whole_input_coercion_indexing_and_slicing():
     assert ScalarEvaluator().evaluate(primitive, {"state": (1, 2, 3, 4)}).output == (4, 3, 2, 1)
 
 
+def test_inputs_support_named_and_positional_authoring_without_exposing_storage():
+    value_type = ValueType(PrimeField(17), (1,))
+    primitive = Primitive("inputs", {"left": value_type, "right": value_type})
+
+    assert primitive.input("left") is primitive.input(0)
+    assert primitive.input("right") is primitive.input(1)
+    assert list(primitive.inputs()) == [primitive.input("left"), primitive.input("right")]
+    assert list(primitive.inputs("right", 0)) == [primitive.input("right"), primitive.input("left")]
+    assert primitive.input_ports == {"left": primitive.input(0), "right": primitive.input(1)}
+
+    with pytest.raises(KeyError, match="does not exist"):
+        primitive.input("missing")
+    with pytest.raises(IndexError, match="out of range"):
+        primitive.input(-1)
+    with pytest.raises(IndexError, match="out of range"):
+        primitive.input(2)
+    with pytest.raises(TypeError, match="name or integer position"):
+        primitive.input(True)
+
+
+def test_round_observations_do_not_expose_authoring_collections():
+    value_type = ValueType(PrimeField(17), (1,))
+    primitive = Primitive("observations", {"state": value_type})
+    states = [primitive.input("state")]
+    published = primitive.set_round_states(states)
+    states.append(primitive.input("state"))
+
+    assert list(published) == [primitive.input("state")]
+    assert primitive.round_states is published
+
+
 def test_automatic_component_ids_are_deterministic_and_explicit_ids_remain_available():
     primitive = Primitive("ids", {
         "left": ValueType(PrimeField(17), (1,)),
