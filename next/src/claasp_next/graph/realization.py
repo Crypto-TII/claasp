@@ -107,3 +107,109 @@ def select_realization(
             f"{primitive_name} capability request {rendered} has equal-priority matches {names}"
         )
     return preferred[0]
+
+
+def normalize_realization_contract(reference, candidate, descriptor: RealizationDescriptor):
+    """Return ``candidate`` behind ``reference``'s exact typed boundary.
+
+    Legacy-derived graphs sometimes expose bits where the canonical authoring
+    graph exposes words, or declare the same named inputs in another order.
+    This adapter adds explicit conversions and clones graph components; it
+    never treats an execution engine as part of the realization.
+    """
+
+    from copy import copy
+
+    from claasp_next.components import PackBits, UnpackBits
+    from claasp_next.domains import BinaryExtensionField, Bit, Word
+    from claasp_next.graph.port import as_selection
+    from claasp_next.graph.primitive import Primitive
+
+    if not isinstance(reference, Primitive) or not isinstance(candidate, Primitive):
+        raise TypeError("realization contract normalization requires Primitive graphs")
+    if reference.kind != candidate.kind:
+        raise ValueError("equivalent realizations must have the same primitive kind")
+    if set(reference.input_descriptors) != set(candidate.input_descriptors):
+        raise ValueError("equivalent realizations must have the same named inputs")
+    if reference.output is None or candidate.output is None:
+        raise ValueError("equivalent realizations require declared outputs")
+
+    def encoded_size(value_type):
+        if value_type.encoded_bit_size is None:
+            raise ValueError("realization boundary normalization requires fixed-width types")
+        return value_type.encoded_bit_size
+
+    for name, expected in reference.input_descriptors.items():
+        actual = candidate.input_descriptor(name)
+        if encoded_size(expected.value_type) != encoded_size(actual.value_type):
+            raise ValueError(f"realization input {name!r} has a different encoded width")
+        if expected.role != actual.role or expected.visibility != actual.visibility:
+            raise ValueError(f"realization input {name!r} has different role or visibility metadata")
+    if encoded_size(reference.output.value_type) != encoded_size(candidate.output.value_type):
+        raise ValueError("equivalent realizations have different output widths")
+
+    exact_inputs = tuple(reference.input_descriptors.items()) == tuple(candidate.input_descriptors.items())
+    if exact_inputs and reference.output.value_type == candidate.output.value_type:
+        candidate._family_name = reference.family_name
+        candidate.realization = descriptor
+        return candidate
+    if candidate.scopes:
+        raise ValueError("boundary normalization of hierarchical realizations is not supported")
+
+    normalized = Primitive(
+        reference.family_name,
+        reference.input_descriptors,
+        kind=reference.kind,
+        provenance=reference.provenance + candidate.provenance,
+    )
+    normalized.realization = descriptor
+    remapped = {}
+
+    def convert(selection, target_type, component_id):
+        selection = as_selection(selection)
+        if selection.value_type == target_type:
+            return selection
+        source_domain = selection.value_type.domain
+        target_domain = target_type.domain
+        value = selection
+        if not isinstance(source_domain, Bit):
+            value = normalized.add_component(UnpackBits(value, component_id=f"{component_id}_unpack"))
+        if isinstance(target_domain, Bit):
+            converted = value
+        elif isinstance(target_domain, Word):
+            converted = normalized.add_component(PackBits(
+                value, target_domain.width, component_id=f"{component_id}_pack"
+            ))
+        elif isinstance(target_domain, BinaryExtensionField):
+            converted = normalized.add_component(PackBits(
+                value, target_domain.degree, component_id=f"{component_id}_pack",
+                output_domain=target_domain,
+            ))
+        else:
+            raise ValueError(
+                f"cannot normalize realization boundary to {type(target_domain).__name__}"
+            )
+        if converted.value_type != target_type:
+            raise ValueError("realization boundary conversion produced the wrong typed shape")
+        return converted
+
+    candidate_rounds = candidate.rounds or ((),)
+    for round_index, candidate_round in enumerate(candidate_rounds):
+        normalized.add_round()
+        if round_index == 0:
+            for name, port in candidate.input_ports.items():
+                remapped[name] = as_selection(convert(
+                    normalized.input(name), port.value_type, f"__realization_input_{name}"
+                ))
+        for component in getattr(candidate_round, "components", ()):
+            cloned = copy(component)
+            object.__setattr__(cloned, "inputs", tuple(
+                remapped[item.source.owner_id][item.positions] for item in component.inputs
+            ))
+            remapped[component.component_id] = normalized.add_component(cloned).select_all()
+
+    candidate_output = remapped[candidate.output.source.owner_id][candidate.output.positions]
+    normalized.set_output(convert(
+        candidate_output, reference.output.value_type, "__realization_output"
+    ))
+    return normalized

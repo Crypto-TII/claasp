@@ -8,7 +8,7 @@ from claasp_next.graph.value_type import ValueType
 from claasp_next.graph.realization import (
     AmbiguousRealizationError, RealizationDescriptor, RealizationMaturity,
     RealizationSelectionError, RealizationSelectionPolicy,
-    UnsupportedRealizationError, select_realization,
+    UnsupportedRealizationError, normalize_realization_contract, select_realization,
 )
 from claasp_next.graph.metadata import (
     InputVisibility, PrimitiveInput, PrimitiveKind, public_input, secret_input,
@@ -23,6 +23,6 @@ __all__ = [
     "PrimitiveKind", "RealizationDescriptor", "RealizationMaturity",
     "RealizationSelectionError", "RealizationSelectionPolicy", "Round", "Selection",
     "UnsupportedRealizationError", "AmbiguousRealizationError", "ValueType",
-    "select_realization",
+    "normalize_realization_contract", "select_realization",
     "as_selection", "public_input", "secret_input",
 ]

@@ -13,7 +13,7 @@ from claasp_next.graph.port import Port, PortLike, Selection, as_selection
 from claasp_next.graph.round import Round
 from claasp_next.graph.realization import (
     RealizationDescriptor, RealizationMaturity, RealizationSelectionPolicy,
-    UnsupportedRealizationError, select_realization,
+    UnsupportedRealizationError, normalize_realization_contract, select_realization,
 )
 from claasp_next.graph.value_type import ValueType
 
@@ -103,7 +103,7 @@ class Primitive:
         self._scopes: dict[str, object] = {}
         self._output: Selection | None = None
         if not hasattr(self, "realization"):
-            self.realization = self._default_realization()
+            self.realization = self.available_realizations()[0]
 
     @staticmethod
     def _default_realization() -> RealizationDescriptor:
@@ -164,7 +164,9 @@ class Primitive:
                 )
             primitive = cls(**parameters)
         else:
-            primitive = builder(**parameters)
+            candidate = builder(**parameters)
+            reference = cls(**parameters)
+            primitive = normalize_realization_contract(reference, candidate, descriptor)
         if not isinstance(primitive, Primitive):
             raise TypeError("a realization builder must return a Primitive")
         primitive.realization = descriptor
