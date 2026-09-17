@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "milestone": "M10.9e2",
+  "families": [
+    {"family": "AES", "canonical": "claasp_next.primitives.block_ciphers.aes.primitive:AES", "equivalent": ["lookup", "algebraic"], "excluded": [{"module": "custom.py", "reason": "distinct AES-derived primitive with user-selected modifications"}]},
+    {"family": "Aradi", "canonical": "claasp_next.primitives.block_ciphers.aradi.primitive:Aradi", "equivalent": ["word", "sbox", "sbox_compact_linear_map"], "boundary_normalization": "canonical Word boundary versus legacy-derived Bit boundaries", "excluded": []},
+    {"family": "DES", "canonical": "claasp_next.primitives.block_ciphers.des.primitive:DES", "equivalent": ["parity_key"], "excluded": [{"module": "exact_key_length.py", "reason": "distinct 56-bit key boundary rather than the canonical parity-bearing 64-bit key boundary"}]},
+    {"family": "GIFT", "canonical": "claasp_next.primitives.block_ciphers.gift.primitive:Gift", "equivalent": ["bitsliced", "sbox"], "excluded": []},
+    {"family": "KATAN", "canonical": "claasp_next.primitives.block_ciphers.katan.primitive:Katan", "equivalent": ["bitsliced", "feedback_register"], "excluded": []},
+    {"family": "KTANTAN", "canonical": "claasp_next.primitives.block_ciphers.ktantan.primitive:Ktantan", "equivalent": ["bitsliced", "feedback_register"], "excluded": []},
+    {"family": "Simeck", "canonical": "claasp_next.primitives.block_ciphers.simeck.primitive:Simeck", "equivalent": ["word", "legacy_sbox"], "boundary_normalization": "canonical Word boundary versus legacy-derived Bit boundary", "excluded": []},
+    {"family": "Simon", "canonical": "claasp_next.primitives.block_ciphers.simon.primitive:Simon", "equivalent": ["word", "legacy_sbox"], "boundary_normalization": "canonical Word boundary versus legacy-derived Bit boundary", "excluded": []},
+    {"family": "TinyJambu", "canonical": "claasp_next.primitives.block_ciphers.tinyjambu.primitive:TinyJambu", "equivalent": ["bitsliced", "word", "feedback_register_word"], "boundary_normalization": "canonical key/plaintext declaration order versus alternate plaintext/key order", "excluded": []},
+    {"family": "uBlock", "canonical": "claasp_next.primitives.block_ciphers.ublock.primitive:Ublock", "equivalent": ["decomposed_linear_layer", "single_linear_layer"], "excluded": []},
+    {"family": "Ascon", "canonical": "claasp_next.primitives.permutations.ascon.primitive:Ascon", "equivalent": ["bitsliced", "sbox_sigma", "sbox_sigma_no_matrix"], "excluded": []},
+    {"family": "Gaston", "canonical": "claasp_next.primitives.permutations.gaston.primitive:Gaston", "equivalent": ["bitsliced", "sbox", "sbox_theta"], "excluded": []},
+    {"family": "Gimli", "canonical": "claasp_next.primitives.permutations.gimli.primitive:Gimli", "equivalent": ["word", "legacy_sbox"], "excluded": []},
+    {"family": "Keccak", "canonical": "claasp_next.primitives.permutations.keccak.primitive:Keccak", "equivalent": ["bitsliced", "sbox"], "excluded": [{"module": "invertible.py", "reason": "exact subclass alias of the S-box graph, not a structurally distinct realization"}]},
+    {"family": "Spongent-pi", "canonical": "claasp_next.primitives.permutations.spongent_pi.primitive:SpongentPi", "equivalent": ["direct", "precomputation"], "excluded": [{"module": "fsr.py", "reason": "exact subclass alias of the direct graph, not a structurally distinct realization"}]},
+    {"family": "Xoodoo", "canonical": "claasp_next.primitives.permutations.xoodoo.primitive:Xoodoo", "equivalent": ["bitsliced", "sbox"], "excluded": [{"module": "invertible.py", "reason": "exact subclass alias of the S-box graph, not a structurally distinct realization"}]},
+    {"family": "QARMAv2", "canonical": "claasp_next.primitives.tweakable_block_ciphers.qarmav2.primitive:QARMAv2", "equivalent": ["permutation_linear_layer", "mix_column"], "excluded": []},
+    {"family": "PRINCE", "canonical": "claasp_next.primitives.block_ciphers.prince:Prince", "equivalent": ["specified"], "excluded": [{"module": "claasp_next.primitives.block_ciphers.prince_v2", "reason": "PRINCEv2 is a distinct mathematical primitive"}]}
+  ]
+}

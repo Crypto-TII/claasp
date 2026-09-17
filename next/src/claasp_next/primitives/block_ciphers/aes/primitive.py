@@ -94,12 +94,16 @@ class AES(Primitive):
             frozenset(("scalar_evaluation", "batch_evaluation", "sbox_semantics")),
             frozenset(("lookup_sbox", "matrix_linear_layer")),
             "AES S-boxes represented by their complete lookup table",
+            provenance=("FIPS 197 substitution table",),
+            priority=0,
         ),
         RealizationDescriptor(
             "algebraic",
             frozenset(("scalar_evaluation", "batch_evaluation", "algebraic_semantics")),
             frozenset(("field_inverse", "binary_affine_map", "matrix_linear_layer")),
             "AES S-boxes represented as field inversion followed by the affine map",
+            provenance=("FIPS 197 section 5.1.1",),
+            priority=10,
         ),
     )
 
@@ -151,16 +155,9 @@ class AES(Primitive):
         self.set_output(state)
 
     @classmethod
-    def available_realizations(cls) -> tuple[RealizationDescriptor, ...]:
-        return cls.REALIZATIONS
-
-    @classmethod
-    def for_capabilities(cls, requirements, **parameters) -> "AES":
-        requested = frozenset(requirements)
-        for descriptor in cls.REALIZATIONS:
-            if descriptor.supports(requested):
-                return cls(realization=descriptor.name, **parameters)
-        raise ValueError(f"no AES realization supports {tuple(sorted(requested))}")
+    def realize(cls, name: str = "lookup", **parameters) -> "AES":
+        cls.realization_descriptor(name)
+        return cls(realization=name, **parameters)
 
 
 class AES128(AES):

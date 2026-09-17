@@ -828,6 +828,33 @@ accepted early vertical slices and remain subject to the final closure gate:
   binary affine transformation. Trail-oriented tasks can require S-box
   semantics while algebraic tasks can require explicit algebraic semantics.
 
+The achieved AES slice is followed by these dependency-ordered slices.  They
+remain part of M10.9e rather than forming a separate catalogue milestone:
+
+1. **M10.9e2 — realization audit and generic metadata.** Classify every
+   multi-module family as equivalent graphs, a distinct parameterization or
+   primitive, or a duplicate/historical regression; make stable identity,
+   capabilities, structural features, maturity, provenance, priority, and
+   explicit selection generic graph metadata; define deterministic preferred
+   and unique-match selection policies with precise unsupported/ambiguous
+   errors.
+2. **M10.9e3 — family selection and equivalence.** Register only proved
+   equivalent graphs under their canonical primitive, normalize their typed
+   boundaries where legacy-derived source used a different internal unit
+   shape or input order, and preserve every assigned fixed vector plus seeded
+   independent differential comparisons. Exact aliases are not promoted to
+   realizations; DES key-boundary variants, CustomAES/ToyAES, and
+   PRINCE/PRINCEv2 remain distinct.
+3. **M10.9e4 — result and artifact provenance.** Carry realization identity
+   and execution/solver engine identity as separate typed fields through
+   scalar and batch evaluation, graph annotations, the high-level analysis
+   result, and representation artifacts without confusing an engine
+   capability with graph structure.
+4. **M10.9e5 — documentation and closure.** Complete executable user and
+   developer guidance, add a machine-checkable realization closure gate, and
+   run the host, external, doctest/HTML, wheel, and Python-3.10 compatibility
+   checkpoints with generated artifacts removed afterwards.
+
 ##### M10.9f: Catalogue discovery and query API
 
 - Migrate ``claasp/catalog.py`` as a typed, Sage-independent catalogue API
@@ -1301,8 +1328,12 @@ is absent). Update this table in the same commit that changes milestone state.
 | Reference authoring implementations (M10.9d11c) | Achieved | Direct AES, Speck, and ChaCha sources follow specification pseudocode, omit incidental ids, retain semantic boundary references, and share Primitive configuration validation; semantic setters and incremental recorders publish round keys, states, key-schedule states, and named operation landmarks without author-visible storage conversions; ordered composite outputs support `key_schedule.output[n]`; `CustomAES` owns research variants separately from ToyAES |
 | Structural wiring and closure (M10.9d11d) | Achieved | `Primitive.join`, `CompositeBuilder.join`, and multi-value `set_output` make joining an authoring-level typed wiring operation; one-source joins are elided and multi-source joins normalize to an internal addressable node shared by traces and every representation, matching the intent of legacy removal without mutable input links. The corrected PRINCE identities and discoverable single-component sources retain the extended 432-constructor audit, and every single-component source now visibly demonstrates the complete authoring sequence without inline container normalization; host 966 passed/510 deselected; API/user/developer doctests 41/281/495; warning-free HTML; wheel 380 files/14 owned data files/zero graph artifacts; Python-3.10 compatibility Docker 963 passed/3 skipped/510 deselected and external 76 passed/2 skipped/1398 deselected |
 | Base-component primitive alignment (M10.9d11e) | Achieved | A dedicated machine catalogue maps all 26 public base component classes one-to-one to same-named, same-module teaching primitives with one round, one component, class docstrings, and executable examples. `LinearMap` replaces legacy LinearLayer/MixColumn fixture types, all new algebraic/conversion components are represented, and `FeedbackRegister` uses `feedback_register.py`; legacy fixture records remain many-to-one migration evidence. Host: 980 passed/510 external deselected; API/user/developer doctests: 67/290/500; warning-free user/developer HTML; Python-3.10 compatibility Docker: 977 passed/3 skipped/510 deselected; Docker external: 76 passed/2 skipped/1412 deselected |
-| Primitive realizations/task selection (M10.9e) | Planned | Generic capability metadata and AES lookup/algebraic realizations implemented; result provenance and broader task-directed selection follow M10.9d11 closure |
+| Primitive realizations/task selection (M10.9e) | Planned | M10.9e1 is achieved; dependency-ordered M10.9e2–M10.9e5 now own the audited generic metadata/selection foundation, proved family equivalence, separate realization/engine provenance, and machine-checked closure |
 | AES realization vertical slice (M10.9e1) | Achieved | Lookup S-box and field-inverse-plus-binary-affine graphs share one public class and all AES-128/192/256 fixed vectors; deterministic capability selection is documented and tested |
+| Realization audit and generic metadata (M10.9e2) | Achieved | Machine audit covers all 17 packaged implementation families plus the PRINCE/PRINCEv2 boundary; exact aliases, distinct parameterizations, and derived primitives are excluded explicitly. Generic descriptors carry stable primitive-qualified identity, capabilities, structural features, maturity, provenance, and priority; preferred and unique policies have typed unsupported/ambiguous failures. Host: 1425 passed/78 external deselected |
+| Realization family selection/equivalence (M10.9e3) | Planned | Canonical family APIs select only contract-compatible equivalent graphs; fixed evidence and independent differential checks cover every interchangeable realization |
+| Realization and engine provenance (M10.9e4) | Planned | Evaluation, annotations, analysis results, and representation artifacts retain realization identity separately from the execution or solver engine |
+| Realization documentation and closure (M10.9e5) | Planned | Executable guides, closure gate, full host/external/docs/wheel checks, and Python-3.10 compatibility checkpoints close M10.9e |
 | Catalogue discovery/query API (M10.9f) | Planned | Replace `claasp/catalog.py` with typed discovery over v5 primitive/component/realization/parameter/driver metadata; preserve filters and structured exports without eager optional dependencies or legacy taxonomy leakage |
 | Primitive inversion and graph transformations (M10.10) | Planned | Typed inverse semantics, partial inversion, round trips, slicing, key-schedule removal, and editor transformations |
 | Component analysis (M10.11) | Planned | Structured S-box, linear-layer, Boolean, field, and word-operation properties with optional heavy algebra/plots |

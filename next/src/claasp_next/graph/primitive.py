@@ -11,11 +11,18 @@ from claasp_next.graph.metadata import (
 )
 from claasp_next.graph.port import Port, PortLike, Selection, as_selection
 from claasp_next.graph.round import Round
+from claasp_next.graph.realization import (
+    RealizationDescriptor, RealizationMaturity, RealizationSelectionPolicy,
+    UnsupportedRealizationError, select_realization,
+)
 from claasp_next.graph.value_type import ValueType
 
 
 class Primitive:
     """A round-oriented directed acyclic graph of typed components."""
+
+    REALIZATIONS: tuple[RealizationDescriptor, ...] = ()
+    REALIZATION_BUILDERS: Mapping[str, object] = MappingProxyType({})
 
     @staticmethod
     def select_configuration(configurations, **parameters):
@@ -95,6 +102,20 @@ class Primitive:
         self._components: dict[str, Component] = {}
         self._scopes: dict[str, object] = {}
         self._output: Selection | None = None
+        if not hasattr(self, "realization"):
+            self.realization = self._default_realization()
+
+    @staticmethod
+    def _default_realization() -> RealizationDescriptor:
+        return RealizationDescriptor(
+            "default",
+            frozenset(("scalar_evaluation", "batch_evaluation")),
+            frozenset(("typed_graph",)),
+            "the primitive's canonical typed graph",
+            RealizationMaturity.STABLE,
+            ("native CLAASP v5 source",),
+            0,
+        )
 
     @property
     def family_name(self) -> str:
@@ -105,6 +126,61 @@ class Primitive:
         """Stable identity and derivation metadata for this graph."""
 
         return self._provenance
+
+    @property
+    def realization_identity(self) -> str:
+        """Return the stable primitive-qualified identity of this graph."""
+
+        return f"{self.family_name}:{self.realization.name}"
+
+    @classmethod
+    def available_realizations(cls) -> tuple[RealizationDescriptor, ...]:
+        """Return declared realizations in stable preference order."""
+
+        return tuple(cls.REALIZATIONS) or (cls._default_realization(),)
+
+    @classmethod
+    def realization_descriptor(cls, name: str) -> RealizationDescriptor:
+        """Resolve an explicitly named realization or fail clearly."""
+
+        matches = tuple(item for item in cls.available_realizations() if item.name == name)
+        if len(matches) != 1:
+            available = tuple(item.name for item in cls.available_realizations())
+            raise UnsupportedRealizationError(
+                f"{cls.__name__} realization {name!r} is unavailable; choose one of {available}"
+            )
+        return matches[0]
+
+    @classmethod
+    def realize(cls, name: str = "default", **parameters) -> "Primitive":
+        """Construct an explicitly named graph realization."""
+
+        descriptor = cls.realization_descriptor(name)
+        builder = cls.REALIZATION_BUILDERS.get(name)
+        if builder is None:
+            if name not in {"default", cls.available_realizations()[0].name}:
+                raise UnsupportedRealizationError(
+                    f"{cls.__name__} realization {name!r} has no registered graph builder"
+                )
+            primitive = cls(**parameters)
+        else:
+            primitive = builder(**parameters)
+        if not isinstance(primitive, Primitive):
+            raise TypeError("a realization builder must return a Primitive")
+        primitive.realization = descriptor
+        return primitive
+
+    @classmethod
+    def for_capabilities(
+        cls, requirements, *, policy: RealizationSelectionPolicy | str = RealizationSelectionPolicy.PREFERRED,
+        **parameters,
+    ) -> "Primitive":
+        """Construct the deterministic realization satisfying a task request."""
+
+        descriptor = select_realization(
+            cls.available_realizations(), requirements, policy=policy, primitive_name=cls.__name__,
+        )
+        return cls.realize(descriptor.name, **parameters)
 
     @property
     def kind(self) -> PrimitiveKind:
