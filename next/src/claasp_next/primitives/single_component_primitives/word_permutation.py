@@ -1,16 +1,33 @@
 """One-component word permutation."""
 
-from .permutation import Permutation
+from claasp_next.components import Permutation as PermutationComponent
+from claasp_next.domains import Word
+from claasp_next.graph import Primitive, PrimitiveKind, ValueType
+from ._base import inverse_mapping, positive
 
 
-class WordPermutation(Permutation):
+class WordPermutation(Primitive):
     def __init__(
         self, word_size: int = 4, number_of_words: int = 4,
         permutation_description=None,
     ) -> None:
-        description = [1, 2, 3, 0] if permutation_description is None else permutation_description
-        super().__init__(word_size * number_of_words, description, word_size)
-        self._family_name = "word_permutation"
+        word_size = positive(word_size, "word_size")
+        number_of_words = positive(number_of_words, "number_of_words")
+        description = (
+            (1, 2, 3, 0)
+            if permutation_description is None
+            else tuple(permutation_description)
+        )
+        super().__init__(
+            "word_permutation",
+            {"input": ValueType(Word(word_size), (number_of_words,))},
+            kind=PrimitiveKind.PERMUTATION,
+        )
+        self.add_round()
+        output = self.add_component(PermutationComponent(
+            self.input("input"), inverse_mapping(description)
+        ))
+        self.set_output(output)
 
 
 __all__ = ["WordPermutation"]

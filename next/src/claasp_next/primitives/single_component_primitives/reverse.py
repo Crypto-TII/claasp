@@ -1,12 +1,22 @@
 """One-component bit-reversal permutation."""
 
-from .permutation import Permutation
+from claasp_next.components import Permutation as PermutationComponent
+from claasp_next.domains import Bit
+from claasp_next.graph import Primitive, PrimitiveKind, ValueType
+from ._base import positive
 
 
-class Reverse(Permutation):
+class Reverse(Primitive):
     def __init__(self, bit_size: int = 8) -> None:
-        super().__init__(bit_size, tuple(reversed(range(bit_size))))
-        self._family_name = "reverse"
+        bit_size = positive(bit_size, "bit_size")
+        super().__init__(
+            "reverse", {"input": ValueType(Bit(), (bit_size,))},
+            kind=PrimitiveKind.PERMUTATION,
+        )
+        self.add_round()
+        mapping = tuple(reversed(range(bit_size)))
+        output = self.add_component(PermutationComponent(self.input("input"), mapping))
+        self.set_output(output)
 
 
 __all__ = ["Reverse"]

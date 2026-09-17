@@ -1,3 +1,5 @@
+import inspect
+
 import pytest
 
 from claasp_next.graph import PrimitiveKind
@@ -91,3 +93,17 @@ def test_each_public_class_is_defined_in_its_advertised_module():
         primitive_class.__module__ == advertised[primitive_class.__name__]
         for primitive_class in classes
     )
+
+
+def test_each_public_class_shows_the_reference_authoring_sequence():
+    classes = (
+        And, Constant, Fsr, IdeaModmul, Identity, LinearLayer, MixColumn,
+        Modadd, Modmul, Modsub, Not, Or, Permutation, Reverse, Rotate, Sbox,
+        Shift, ShiftRows, Sigma, ThetaGaston, ThetaKeccak, ThetaXoodoo,
+        VariableRotate, VariableShift, WordPermutation, Xor,
+    )
+    for primitive_class in classes:
+        source = inspect.getsource(primitive_class)
+        assert "self.add_round()" in source, primitive_class.__name__
+        assert "self.add_component(" in source, primitive_class.__name__
+        assert "self.set_output(" in source, primitive_class.__name__

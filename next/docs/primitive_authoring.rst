@@ -150,6 +150,8 @@ outside-scope disposition instead of being silently counted as primitives.
 
 Each module under ``single_component_primitives`` contains the public class it
 advertises. For example, ``single_component_primitives.and.And`` directly
-shows the one-round construction around ``BitwiseAnd``. Shared private code is
-limited to validation and finite-field/matrix helpers, so following an import
-path always reaches the primitive definition rather than a forwarding shim.
+shows the complete reference sequence: initialize ``Primitive``, call
+``add_round()``, construct the operation, call ``add_component()``, and bind it
+with ``set_output()``. Shared private code is limited to validation and
+finite-field/matrix helpers, so following an import path always reaches the
+primitive definition rather than a forwarding shim or hidden graph builder.

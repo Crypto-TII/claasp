@@ -2,7 +2,7 @@
 
 from claasp_next.domains import BinaryExtensionField, Word
 from claasp_next.domains.validation import is_irreducible_binary_polynomial
-from claasp_next.graph import Primitive, PrimitiveKind, ValueType
+from claasp_next.graph import ValueType
 from claasp_next.utils import binary_field_multiply, binary_field_power
 
 
@@ -18,19 +18,6 @@ def word_inputs(word_bit_size: int, number_of_inputs: int):
         raise ValueError("number_of_inputs must be at least 2")
     value_type = ValueType(Word(word_bit_size), (1,))
     return {f"input_{index}": value_type for index in range(number_of_inputs)}
-
-
-class NaryWordPrimitive(Primitive):
-    """Shared one-operation construction for homogeneous word operands."""
-
-    def _build(self, name, operation, word_bit_size, number_of_inputs, **options):
-        Primitive.__init__(
-            self, name, word_inputs(word_bit_size, number_of_inputs),
-            kind=PrimitiveKind.FUNCTION,
-        )
-        self.add_round()
-        operands = tuple(self.input(input_name) for input_name in self.inputs)
-        self.set_output(self.add_component(operation(operands, **options)))
 
 
 def inverse_mapping(destination_by_source: tuple[int, ...]) -> tuple[int, ...]:
