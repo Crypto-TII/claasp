@@ -215,10 +215,11 @@ def test_m10_9d_primitive_catalogue_audit_assigns_every_source_and_test_once():
     }
     assert status["owner_errors"] == []
     assert status["audit_complete"]
-    assert not status["closure_complete"]
+    assert status["closure_complete"]
     assert status["unresolved"] == []
     assert status["evidence_unresolved"] == []
-    assert len(status["intermediate_frozen_graphs"]) == 92
+    assert status["intermediate_frozen_graphs"] == []
+    assert status["runtime_frozen_graph_artifacts"] == []
     assert not any(
         record["path"] in status["unresolved"]
         for record in payload["records"]
@@ -241,4 +242,4 @@ def test_m10_9d_primitive_catalogue_cli_audit_gate_passes():
     assert result.returncode == 0, result.stdout + result.stderr
     status = json.loads(result.stdout)
     assert status["audit_complete"]
-    assert not status["closure_complete"]
+    assert status["closure_complete"]

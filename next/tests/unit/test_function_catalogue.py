@@ -18,17 +18,8 @@ def test_every_m10_9d8_source_has_its_typed_public_class():
         assert hasattr(module, record["primitive"]["proposed_class"])
 
 
-def test_generated_function_parameter_indexes_are_deterministic():
-    indexes = []
+def test_function_implementations_have_no_frozen_graph_indexes():
     for category in ("block_functions", "functions"):
-        indexes.extend(
-            (ROOT / f"src/claasp_next/primitives/{category}").glob("*/data/index.json")
-        )
-    # Trivium has a native typed implementation; the other families use
-    # deterministic frozen catalogue specifications.
-    assert len(indexes) == 14
-    for path in indexes:
-        variants = json.loads(path.read_text(encoding="utf-8"))["variants"]
-        assert variants
-        assert all(json.dumps(json.loads(key), sort_keys=True, separators=(",", ":")) == key
-                   for key in variants)
+        root = ROOT / f"src/claasp_next/primitives/{category}"
+        assert not tuple(root.glob("*/data/index.json"))
+        assert not tuple(root.glob("*/data/*.json.gz"))

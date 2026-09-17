@@ -30,20 +30,29 @@ same-import-path package:
    ├── primitive.py
    ├── parameters.py       # when the primitive has vetted parameter sets
    └── data/
-       ├── __init__.py
-       ├── index.json      # audited constructor combinations, when generated
-       └── v0.json.gz      # deterministic frozen typed-graph specification
+       ├── NOTICE.md       # provenance/license when required
+       └── constants.dat   # vetted primitive-owned supporting data
 
-The runtime loader uses :mod:`importlib.resources`, so installed wheels and
-source checkouts behave identically. It imports neither legacy CLAASP nor Sage.
-The compatibility image is used only by the development exporter to produce
-reviewed migration artifacts. ``tools/colocate_primitive_data.py`` records the
-one-time deterministic layout conversion; new exports write the owned layout
-directly.
+Simple primitives remain ``name.py`` modules. Their constructors contain the
+readable round function, key schedule, constants, and parameter validation and
+emit ordinary typed v5 components. ``tools/compile_legacy_primitive_sources.py``
+is a development-only source compiler used to bootstrap the mechanical parts
+of migration; its checked-in output is reviewed Python source, not serialized
+graph data. Runtime construction imports neither legacy CLAASP nor Sage.
+
+``BitGraphPrimitive`` is a concise authoring facade for bit-oriented source.
+It resolves temporary source/position references while a constructor runs and
+immediately emits immutable typed components into the canonical ``Primitive``
+DAG. It is not an evaluator, realization selector, or second graph model.
 
 Poseidon is the parameter-catalogue reference: its package owns the typed
 schema, BN254 data, upstream commit, reference result, and license notice.
 ``claasp_next.parameters`` contains only convenience re-exports.
+
+AES is also a package because lookup and algebraic realizations share reusable
+AES blocks. LowMC is a package because its reviewed parameter sets own sizeable
+constant matrices. Twofish and WARP need neither, so their implementation is
+visible directly in ``twofish.py`` and ``warp.py``.
 
 Evidence and maintenance
 ------------------------

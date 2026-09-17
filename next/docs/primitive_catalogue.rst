@@ -41,16 +41,19 @@ catalogue browsers and type-directed applications:
    >>> CategorizedAscon is Ascon
    True
 
-Audited parameter sets are explicit. A generated catalogue graph accepts only
-combinations present in its primitive-owned index, so a typo or unsupported
-combination cannot silently select a different graph:
+Constructor parameters build the graph from readable source. Reduced-round
+study variants therefore do not depend on a pre-exported graph file:
 
 .. doctest::
 
-   >>> Ascon(number_of_rounds=5)
-   Traceback (most recent call last):
-   ...
-   ValueError: unsupported ascon parameter combination; ...
+   >>> len(Ascon(number_of_rounds=5).rounds)
+   5
+
+The implementation is ordinary Python in
+``claasp_next/primitives/permutations/ascon.py``. Twofish and WARP likewise
+live in ``block_ciphers/twofish.py`` and ``block_ciphers/warp.py``; their round
+functions and key schedules can be read directly rather than reconstructed
+from serialized component records.
 
 Primitive-owned data
 --------------------
@@ -68,6 +71,8 @@ The convenience namespace remains available:
    >>> poseidon_bn254_width3() is owned_poseidon_parameters()
    True
 
-Frozen graph files are package implementation data. Users should construct the
-public class and inspect its immutable typed graph instead of parsing those
-files directly.
+Simple primitives remain single modules. Packages are reserved for real owned
+structure: AES has multiple realizations and reusable block composition, LowMC
+has vetted constant files, and Poseidon has a typed parameter catalogue and
+licensed supporting data. There are no runtime frozen-graph indexes or
+compressed graph specifications.

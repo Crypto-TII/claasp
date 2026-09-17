@@ -12,21 +12,23 @@ CATEGORIES = (
 )
 
 
-def test_every_frozen_graph_catalogue_is_owned_by_its_public_primitive_package():
-    indexes = []
+def test_native_catalogue_has_no_frozen_graph_artifacts():
     for category in CATEGORIES:
         category_root = ROOT / "primitives" / category
         assert not (category_root / "data").exists()
-        indexes.extend(category_root.glob("*/data/index.json"))
+        assert not tuple(category_root.glob("*/data/index.json"))
+        assert not tuple(category_root.glob("*/data/*.json.gz"))
 
-    assert len(indexes) == 89
-    for index in indexes:
-        owner = index.parents[1]
-        assert (owner / "__init__.py").is_file()
-        assert (owner / "primitive.py").is_file()
-        importlib.import_module(
-            f"claasp_next.primitives.{owner.parent.name}.{owner.name}"
-        )
+
+def test_packages_are_reserved_for_owned_realizations_or_supporting_data():
+    primitive_root = ROOT / "primitives"
+    assert (primitive_root / "block_ciphers/aes/primitive.py").is_file()
+    assert (primitive_root / "block_ciphers/lowmc/data/lowmc_constants_p128_k128_r20.dat").is_file()
+    assert (primitive_root / "permutations/poseidon/parameters.py").is_file()
+    assert (primitive_root / "block_ciphers/twofish.py").is_file()
+    assert (primitive_root / "block_ciphers/warp.py").is_file()
+    for module in ("aes", "lowmc"):
+        importlib.import_module(f"claasp_next.primitives.block_ciphers.{module}")
 
 
 def test_poseidon_owns_parameters_data_provenance_and_license():

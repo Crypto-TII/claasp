@@ -1,4 +1,3 @@
-import json
 from pathlib import Path
 
 from claasp_next.components import BitVectorSBox
@@ -30,16 +29,8 @@ def test_rectangular_sbox_evaluation_and_cnf_use_all_output_bits():
     assert all(f"{sbox.output.owner_id}_{position}" in cnf.variables for position in range(8))
 
 
-def test_generated_parameter_indexes_are_nonempty_and_deterministic():
+def test_runtime_has_no_generated_graph_indexes_or_loader():
     primitive_root = Path(__file__).parents[2] / "src/claasp_next/primitives"
-    paths = sorted(
-        tuple((primitive_root / "block_ciphers").glob("*/data/index.json"))
-        + tuple((primitive_root / "tweakable_block_ciphers").glob("*/data/index.json"))
-    )
-    assert len(paths) == 53
-    for path in paths:
-        index = json.loads(path.read_text(encoding="utf-8"))
-        keys = tuple(index["variants"])
-        assert keys
-        assert len(keys) == len(set(keys))
-        assert all(json.dumps(json.loads(key), sort_keys=True, separators=(",", ":")) == key for key in keys)
+    assert not tuple(primitive_root.glob("**/data/index.json"))
+    assert not tuple(primitive_root.glob("**/*.json.gz"))
+    assert not (primitive_root / "_catalogue_graph.py").exists()

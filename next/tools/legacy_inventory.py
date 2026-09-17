@@ -1828,6 +1828,16 @@ def primitive_catalogue_audit_status(payload: dict[str, Any]) -> dict[str, Any]:
             encoding="utf-8"
         ):
             intermediate_frozen_graphs.append(item["path"])
+    primitive_root = ROOT / "next/src/claasp_next/primitives"
+    runtime_frozen_graph_artifacts = sorted(
+        str(path.relative_to(ROOT))
+        for path in (
+            list(primitive_root.glob("**/data/index.json"))
+            + list(primitive_root.glob("**/*.json.gz"))
+            + ([primitive_root / "_catalogue_graph.py"]
+               if (primitive_root / "_catalogue_graph.py").exists() else [])
+        )
+    )
     return {
         "source": len(sources),
         "test": len(tests),
@@ -1839,10 +1849,11 @@ def primitive_catalogue_audit_status(payload: dict[str, Any]) -> dict[str, Any]:
         "unresolved": unresolved,
         "evidence_unresolved": evidence_unresolved,
         "intermediate_frozen_graphs": sorted(intermediate_frozen_graphs),
+        "runtime_frozen_graph_artifacts": runtime_frozen_graph_artifacts,
         "audit_complete": not owner_errors,
         "closure_complete": (
             not owner_errors and not unresolved and not evidence_unresolved
-            and not intermediate_frozen_graphs
+            and not intermediate_frozen_graphs and not runtime_frozen_graph_artifacts
         ),
     }
 

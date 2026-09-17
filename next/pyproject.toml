@@ -18,11 +18,14 @@ ml = ["numpy>=1.24", "scikit-learn>=1.3"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = '-ra -m "not external"'
-markers = ["external: requires an executable supplied by a dedicated integration job"]
+addopts = '-ra -m "not external and not extended"'
+markers = [
+  "external: requires an executable supplied by a dedicated integration job",
+  "extended: exhaustive dependency-free audit kept outside the routine time budget",
+]
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
 [tool.setuptools.package-data]
-"*" = ["data/*.json", "data/*.json.gz", "data/*.md"]
+"*" = ["data/*.json", "data/*.dat", "data/*.md"]

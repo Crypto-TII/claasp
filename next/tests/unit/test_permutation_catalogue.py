@@ -18,13 +18,8 @@ def test_every_m10_9d7_source_has_its_typed_public_class():
         assert hasattr(module, record["primitive"]["proposed_class"])
 
 
-def test_generated_permutation_parameter_indexes_are_deterministic():
-    indexes = sorted(
-        (ROOT / "src/claasp_next/primitives/permutations").glob("*/data/index.json")
-    )
-    assert len(indexes) == 22
-    for path in indexes:
-        variants = json.loads(path.read_text(encoding="utf-8"))["variants"]
-        assert variants
-        assert all(json.dumps(json.loads(key), sort_keys=True, separators=(",", ":")) == key
-                   for key in variants)
+def test_permutation_implementations_are_readable_native_sources():
+    root = ROOT / "src/claasp_next/primitives/permutations"
+    assert not tuple(root.glob("*/data/index.json"))
+    assert not tuple(root.glob("*/data/*.json.gz"))
+    assert "class Xoodoo" in (root / "xoodoo.py").read_text(encoding="utf-8")
