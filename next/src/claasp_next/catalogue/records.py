@@ -116,7 +116,17 @@ class DriverRecord:
     implementation: str
 
 
+@dataclass(frozen=True, slots=True)
+class DriverAvailabilityRecord:
+    """Result of an explicit, lazy driver availability probe."""
+
+    driver: DriverRecord
+    available: bool
+    resolved: str | None = None
+    detail: str | None = None
+
+
 __all__ = [
-    "ComponentRecord", "DriverRecord", "InputRecord", "ParameterSetRecord",
+    "ComponentRecord", "DriverAvailabilityRecord", "DriverRecord", "InputRecord", "ParameterSetRecord",
     "PrimitiveRecord", "RealizationRecord",
 ]

@@ -3,10 +3,13 @@
 from __future__ import annotations
 
 import json
+import importlib.util
 from importlib.resources import files
+import shutil
+import subprocess
 
 from claasp_next.catalogue.records import (
-    ComponentRecord, DriverRecord, InputRecord, ParameterSetRecord,
+    ComponentRecord, DriverAvailabilityRecord, DriverRecord, InputRecord, ParameterSetRecord,
     PrimitiveRecord, RealizationRecord,
 )
 
@@ -158,6 +161,94 @@ class Catalogue:
             record for record in self._components
             if not requested or record.name in requested
         )
+
+    def realizations(
+        self, *, primitive: str | None = None, capabilities=None,
+        structure=None, maturity: str | None = None,
+    ) -> tuple[RealizationRecord, ...]:
+        """Return realization records satisfying all requested features."""
+
+        requested_capabilities = frozenset(_tokens(capabilities))
+        requested_structure = frozenset(_tokens(structure))
+        records = (
+            realization
+            for item in self._primitives
+            if primitive is None or item.name == primitive
+            for realization in item.realizations
+        )
+        return tuple(
+            record for record in records
+            if requested_capabilities <= record.capabilities
+            and requested_structure <= record.structure
+            and (maturity is None or record.maturity == maturity)
+        )
+
+    def parameter_sets(
+        self, *, primitive: str | None = None, parameters=None,
+    ) -> tuple[ParameterSetRecord, ...]:
+        """Return named parameter sets containing the requested values."""
+
+        requested = dict(parameters or {})
+        records = (
+            parameter_set
+            for item in self._primitives
+            if primitive is None or item.name == primitive
+            for parameter_set in item.parameter_sets
+        )
+        return tuple(
+            record for record in records
+            if all(record.values.get(name) == value for name, value in requested.items())
+        )
+
+    def drivers(self, *, kind: str | None = None) -> tuple[DriverRecord, ...]:
+        """Return declared drivers without probing or importing implementations."""
+
+        return tuple(
+            record for record in self._drivers
+            if kind is None or record.kind == kind
+        )
+
+    def driver(self, name: str) -> DriverRecord:
+        """Return one declared driver by stable name."""
+
+        matches = tuple(record for record in self._drivers if record.name == name)
+        if len(matches) != 1:
+            raise KeyError(f"unknown driver {name!r}")
+        return matches[0]
+
+    def driver_availability(self, driver: str | DriverRecord) -> DriverAvailabilityRecord:
+        """Probe one driver lazily without importing its implementation."""
+
+        record = self.driver(driver) if isinstance(driver, str) else driver
+        if not isinstance(record, DriverRecord):
+            raise TypeError("driver must be a driver name or DriverRecord")
+        if record.availability == "builtin":
+            return DriverAvailabilityRecord(record, True, detail="part of the dependency-free core")
+        if record.availability == "executable":
+            resolved = shutil.which(record.target or "")
+            return DriverAvailabilityRecord(record, resolved is not None, resolved=resolved)
+        if record.availability == "python_module":
+            available = importlib.util.find_spec(record.target or "") is not None
+            return DriverAvailabilityRecord(record, available, resolved=record.target if available else None)
+        if record.availability == "minizinc_solver":
+            executable_name, solver_name = (record.target or "").split(":", 1)
+            resolved = shutil.which(executable_name)
+            if resolved is None:
+                return DriverAvailabilityRecord(record, False, detail="MiniZinc executable not found")
+            completed = subprocess.run(
+                (resolved, "--solvers"), text=True, capture_output=True, check=False,
+                timeout=10,
+            )
+            available = completed.returncode == 0 and solver_name.lower() in completed.stdout.lower()
+            detail = None if available else f"MiniZinc solver {solver_name!r} not registered"
+            return DriverAvailabilityRecord(record, available, resolved=resolved, detail=detail)
+        raise ValueError(f"unknown availability probe {record.availability!r}")
+
+    def available_drivers(self, *, kind: str | None = None) -> tuple[DriverAvailabilityRecord, ...]:
+        """Return successful explicit availability probes in declaration order."""
+
+        probes = tuple(self.driver_availability(record) for record in self.drivers(kind=kind))
+        return tuple(probe for probe in probes if probe.available)
 
 
 __all__ = ["Catalogue"]

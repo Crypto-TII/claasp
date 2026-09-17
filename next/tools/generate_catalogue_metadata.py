@@ -37,7 +37,7 @@ DRIVERS = (
      "claasp_next.representations.execution:TransposedBatchExecutionDriver"),
     ("minizinc", "solver", "executable", "minizinc",
      "claasp_next.drivers.solvers.minizinc:MiniZincSolver"),
-    ("minizinc_chuffed", "solver", "executable", "minizinc",
+    ("minizinc_chuffed", "solver", "minizinc_solver", "minizinc:chuffed",
      "claasp_next.drivers.solvers.minizinc:MiniZincSolver"),
     ("minisat", "solver", "executable", "minisat",
      "claasp_next.drivers.solvers.minisat:MinisatSolver"),

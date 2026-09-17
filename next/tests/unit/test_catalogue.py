@@ -1,4 +1,5 @@
 from dataclasses import FrozenInstanceError
+import importlib
 
 import pytest
 
@@ -67,3 +68,48 @@ def test_component_records_are_one_to_one_with_teaching_wrappers():
 def test_unknown_primitive_has_clear_error():
     with pytest.raises(KeyError, match="unknown primitive 'Missing'"):
         catalogue.primitive("Missing")
+
+
+def test_realization_queries_filter_capabilities_and_maturity():
+    records = catalogue.realizations(primitive="AES", capabilities="algebraic_semantics")
+    assert tuple(item.identity for item in records) == ("AES:algebraic",)
+    assert catalogue.realizations(primitive="AES", structure="lookup_sbox")[0].name == "lookup"
+    assert all(item.maturity == "stable" for item in catalogue.realizations(maturity="stable"))
+
+
+def test_parameter_queries_return_read_only_structured_values():
+    records = catalogue.parameter_sets(
+        primitive="Speck", parameters={"block_bit_size": 32, "key_bit_size": 64},
+    )
+    assert len(records) == 1
+    assert records[0].name == "standard-1"
+    assert records[0].values["number_of_rounds"] == 22
+    with pytest.raises(TypeError):
+        records[0].values["number_of_rounds"] = 1
+
+
+def test_driver_queries_are_lazy_and_availability_is_structured(monkeypatch):
+    assert {item.name for item in catalogue.drivers(kind="execution_engine")} == {
+        "python_scalar", "python_batch", "python_transposed_batch",
+    }
+    assert catalogue.driver_availability("python_scalar").available
+    module = importlib.import_module("claasp_next.catalogue.catalogue")
+    monkeypatch.setattr(module.shutil, "which", lambda name: None)
+    unavailable = catalogue.driver_availability("z3")
+    assert not unavailable.available
+    assert unavailable.driver.name == "z3"
+    with pytest.raises(KeyError, match="unknown driver"):
+        catalogue.driver("missing")
+
+
+def test_minizinc_solver_probe_checks_the_requested_solver(monkeypatch):
+    class Completed:
+        returncode = 0
+        stdout = "Chuffed 0.13"
+
+    module = importlib.import_module("claasp_next.catalogue.catalogue")
+    monkeypatch.setattr(module.shutil, "which", lambda name: "/bin/minizinc")
+    monkeypatch.setattr(module.subprocess, "run", lambda *args, **kwargs: Completed())
+    probe = catalogue.driver_availability("minizinc_chuffed")
+    assert probe.available
+    assert probe.resolved == "/bin/minizinc"
