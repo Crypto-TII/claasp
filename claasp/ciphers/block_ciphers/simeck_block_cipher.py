@@ -100,7 +100,14 @@ class SimeckBlockCipher(Cipher):
     def feistel_function(self, left, right, round_key):
         # f(x) = (x & x <<< 5) ⊕ x <<< 1
         s5x_id = self.add_rotate_component([left[0]], [left[1]], self.word_size, self.rotation_amounts[0]).id
-        x_and_s5x_id = self.add_and_component([left[0], s5x_id], [list(range(self.word_size))] * 2, self.word_size).id
+        # `left[0]`'s own bits live at positions `left[1]` (not necessarily range(0, word_size)):
+        # `feistel_function` is reused unchanged by the key schedule, where `left` can be a key word
+        # offset within INPUT_KEY, so `left[1]` -- not a bare range(0, word_size) -- must be used
+        # here to select the correct bits of `left[0]` to AND with `s5x_id` (whose own output is
+        # naturally addressed as range(0, word_size)).
+        x_and_s5x_id = self.add_and_component(
+            [left[0], s5x_id], [left[1], list(range(self.word_size))], self.word_size
+        ).id
         s1x_id = self.add_rotate_component([left[0]], [left[1]], self.word_size, self.rotation_amounts[1]).id
         # Rk(x, y) = (y ⊕ f(x) ⊕ k, x)
         f_id = self.add_xor_component([x_and_s5x_id, s1x_id], [list(range(self.word_size))] * 2, self.word_size).id

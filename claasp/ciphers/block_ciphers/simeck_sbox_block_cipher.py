@@ -26,6 +26,37 @@ PARAMETERS_CONFIGURATION_LIST = [
 ]
 Z = [5557826286501673759, 3114073359753873471]
 WORDSIZE_TO_ZINDEX = {16: 0, 24: 0, 32: 1}
+
+# What SBOX actually is
+# ----------------------
+# Simeck's nonlinear round function is g(x) = (x & (x <<< 5)) ^ (x <<< 1), where "<<<" is a cyclic
+# left rotation of the whole word and "&"/"^" act bitwise. Since the AND combines x with a
+# DIFFERENT rotation of itself, computing it bit-by-bit couples bits at different positions of x --
+# it is not, on its face, a per-position lookup the way an ordinary S-box is.
+#
+# It becomes one once the AND is isolated from the rest of g: this SBOX table implements ONLY the
+# AND part, x & (x <<< 5); the outer XOR with (x <<< 1) is applied afterwards by a plain XOR
+# component in feistel_function() below, exactly as in the plaintext formula.
+#
+# Bit j of (x <<< 5) is x_{j+5} (index mod word_size), so the AND part at position j is x_j &
+# x_{j+5}. For 8 output positions spaced 5 apart, j, j+5, j+10, ..., j+35, the AND needs the 8+1 = 9
+# bits of x at positions j, j+5, ..., j+40 -- because bit (j+35)+5 = j+40 is also the "+5" needed by
+# the position j+35 itself, and simultaneously equals the base "x_j" term of the position j+5 step
+# later. Writing v_k = x_{j+5k} for k = 0..8 (9 bits, spaced 5 apart), the AND part at output
+# position j+5k is simply v_k & v_{k+1} for k = 0..7 -- an 8-bit result depending on exactly 9 input
+# bits, hence the 512 = 2**9 entries below (SBOX has 512 entries, NOT 256 -- it is addressed by a
+# genuine 9-bit index, nothing is truncated or wrapped). Concretely, SBOX[v_0 v_1 ... v_8] (9-bit
+# binary index, MSB-first) = (v_0&v_1)(v_1&v_2)...(v_6&v_7)(v_7&v_8) (8-bit binary output,
+# MSB-first) -- the same "AND of a 9-bit sliding window" table used by SimonSboxBlockCipher (this is
+# why the two files' SBOX arrays are byte-for-byte identical: only the *step* between selected
+# positions -- 5 here, 7 for Simon, matching each cipher's rotation-vs-rotation gap in its AND --
+# and the outer rotation amount XORed in afterwards differ between the two ciphers).
+#
+# feistel_function() below builds exactly this: for each 8-bit output chunk it selects the 9 input
+# positions positions_pattern (+ an 8-bit-aligned offset) as the SBOX's input, and wires the SBOX's
+# 8-bit output to the first 8 of those same positions (+ the same offset). Repeating this
+# self.number_of_sboxes = word_size // 8 times, with each chunk's 9-position window overlapping its
+# neighbour by exactly 1 bit, covers the whole word.
 # fmt: off
 SBOX = [
     0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x02, 0x03, 0x00, 0x00, 0x00, 0x01, 0x04, 0x04, 0x06, 0x07,
@@ -69,6 +100,11 @@ class SimeckSboxBlockCipher(Cipher):
     Construct an instance of the SimeckBlockCipher class.
 
     This class is used to store compact representations of a cipher, used to generate the corresponding cipher.
+
+    This is functionally equivalent to :py:class:`SimeckBlockCipher`: it replaces the AND of x with
+    a rotated copy of itself in the round function with a 512-entry SBOX lookup table (see the
+    module-level comment above ``SBOX`` and the ``feistel_function`` method for exactly what that
+    table computes and why it is addressed by 9 -- not 8 -- input bits).
 
     INPUT:
 
@@ -136,8 +172,23 @@ class SimeckSboxBlockCipher(Cipher):
 
     def feistel_function(self, left, right, round_key):
         # g(x) = (x & x <<< 5) ⊕ (x <<< 1)
-        # ┌ both for input and output positions
-        # │ output have not the last element
+        #
+        # The SBOX table (see its definition above for the full derivation) computes only the AND
+        # part, x & (x <<< 5), 8 bits at a time; the XOR with (x <<< 1) is applied below by a plain
+        # XOR component, mirroring the plaintext formula exactly.
+        #
+        # positions_pattern has 9 entries (not 8): each 8-bit SBOX call needs 9 bits of x, since two
+        # neighbouring output bits' windows overlap by 1 bit (see the module-level comment on
+        # SBOX). positions_pattern[:-1] gives the corresponding 8 output positions. SBOX itself has
+        # 512 = 2**9 entries -- it is genuinely addressed by all 9 selected bits, nothing is
+        # truncated, wrapped, or otherwise discarded.
+        #
+        # `left[1]` (rather than a bare position arithmetic expression) is used to look up each
+        # selected bit's ACTUAL position, because `left` is not always the plaintext half at
+        # bit-identical positions [0, word_size): this same method is reused, unchanged, by the key
+        # schedule (see update_keys_buffer / simeck_sbox_block_cipher's key words), where `left` can
+        # be a key word whose bits sit at some offset within INPUT_KEY. Indexing through `left[1]`
+        # keeps the construction correct regardless of that offset.
         positions_pattern = (0, 5, 10, 15, 20, 25, 30, 35, 40)
         output_ids = [""] * self.word_size
         output_positions = [0] * self.word_size
