@@ -874,6 +874,30 @@ remain part of M10.9e rather than forming a separate catalogue milestone:
   fixed evidence. Complete this milestone after M10.9c/M10.9d so discovery
   cannot hide missing components or primitives.
 
+The remaining work is divided into these dependency-ordered slices:
+
+1. **M10.9f1 — authoritative catalogue metadata.** Commit a versioned,
+   machine-checkable catalogue joining every public primitive export to its
+   M10.9b classification, official name and import path, input roles,
+   bijectivity obligation, fixed evidence, component vocabulary,
+   parameter-set metadata, and realization identities. Record components and
+   drivers without importing optional implementations.
+2. **M10.9f2 — immutable discovery records.** Add the Sage-independent public
+   catalogue facade and frozen primitive, component, realization, parameter,
+   and driver records. Query only committed metadata and preserve category,
+   component, ARX/AND-RX, S-box, FSR, and tweak filters without deriving
+   semantics from package paths or source syntax.
+3. **M10.9f3 — capability, parameter, and availability queries.** Provide
+   deterministic realization-capability and parameter-set filtering plus
+   explicit, lazy driver availability probes which neither import nor require
+   optional solver, algebra, statistical, renderer, or ML dependencies during
+   ordinary package import.
+4. **M10.9f4 — documentation and closure.** Preserve applicable legacy
+   discovery invariants, document executable user and developer examples,
+   add a machine closure gate, and run host, affected external,
+   doctest/HTML, wheel, and Python-3.10 compatibility checkpoints with
+   generated artifacts removed afterwards.
+
 #### Cross-cutting legacy module ownership
 
 The exhaustive inventory remains the completion gate. The following ownership
@@ -1335,6 +1359,10 @@ is absent). Update this table in the same commit that changes milestone state.
 | Realization and engine provenance (M10.9e4) | Achieved | Typed `ResultProvenance` records the selected descriptor separately from a typed execution/solver driver identity. Scalar, ordinary-batch, transposed-batch, graph annotations, high-level SAT results, generic representation artifacts, neural runs, and statistical manifests preserve the two axes without treating engines as realizations. Statistical manifest schema v2 names `python_scalar`. Host: 1447 passed/78 external deselected; affected host solver group: 39 passed/8 Chuffed-only skipped. The aggregate host external run was stopped after macOS left Dieharder in uninterruptible I/O despite its 10-second timeout; isolated Docker external coverage remains required by M10.9e5 |
 | Realization documentation and closure (M10.9e5) | Achieved | `realization_closure.py --check` validates 16 interchangeable families/36 graphs against the committed audit. Host Darwin arm64/Python 3.11.12: 1448 passed/78 external deselected; external except the host-stuck Dieharder case: 68 passed/9 skipped/1448 deselected. API/user/developer doctests: 68/307/517; both HTML sites warning-free. Wheel: 379 files/14 owned data files/zero frozen graph artifacts. amd64 Python 3.10.12 Docker: 1445 passed/3 skipped/78 deselected; Docker external: 76 passed/2 skipped/1448 deselected, including Dieharder and NIST STS. Docker tools: MiniZinc 2.9.4/Chuffed 0.13.2, GLPK 5.0, Z3 4.8.12, Singular 4.2.1, MiniSat 2.2.1, Dieharder 3.31.1. Host tools: MiniZinc 2.9.3 without Chuffed, GLPK 5.0, Z3 4.14.1, Singular 4.4.1; NIST STS absent. Generated Sphinx and package-build artifacts were removed |
 | Catalogue discovery/query API (M10.9f) | Planned | Replace `claasp/catalog.py` with typed discovery over v5 primitive/component/realization/parameter/driver metadata; preserve filters and structured exports without eager optional dependencies or legacy taxonomy leakage |
+| Authoritative catalogue metadata (M10.9f1) | Achieved | Versioned committed metadata covers 145 public primitives, 26 public base components, and 14 drivers; it joins M10.9b classification, typed contracts, fixed-evidence paths, component/design tags, parameter sets, realization descriptors, and explicit non-canonical legacy-regression labels without runtime taxonomy inference. Host: 1451 passed/78 external deselected |
+| Immutable catalogue discovery records (M10.9f2) | Planned | Frozen typed records and metadata-backed category/component/design queries, with presentation deferred to M10.14 |
+| Capability, parameter, and availability queries (M10.9f3) | Planned | Deterministic realization and parameter filtering plus lazy optional-driver availability probes |
+| Catalogue documentation and closure (M10.9f4) | Planned | Executable guidance, legacy invariants, machine closure, and full host/Docker/package checkpoints |
 | Primitive inversion and graph transformations (M10.10) | Planned | Typed inverse semantics, partial inversion, round trips, slicing, key-schedule removal, and editor transformations |
 | Component analysis (M10.11) | Planned | Structured S-box, linear-layer, Boolean, field, and word-operation properties with optional heavy algebra/plots |
 | Dataset/statistical testing (M10.12) | Achieved | Seeded dependency-free datasets, canonical streaming artifacts, result parsers, and optional shell-free Dieharder and NIST STS execution drivers, each with bounded dedicated CI against the real executable |
