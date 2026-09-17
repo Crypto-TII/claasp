@@ -40,6 +40,12 @@ the reusable-block style. Composite outputs are ordered, so a key schedule can
 be read naturally as ``key_schedule.output[round_number]``; named lookup is
 also available for self-documenting boundaries.
 
+Use ``primitive.join(left, right)`` when several homogeneous ports form one
+state for a later operation, or simply ``primitive.set_output((left, right))``
+at the boundary. This is structural wiring. The flat representation may retain
+an internal normalization node, but primitive source need not construct or
+name a ``Concatenate`` component.
+
 The ``claasp_next.utils`` module provides reusable finite-field arithmetic,
 fixed-width integer/word conversion, rotations, sequence shifts, and layout
 helpers. Primitive classes should contain their round and key-schedule logic,

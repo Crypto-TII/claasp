@@ -1,6 +1,6 @@
 """Nonstandard Speck8/16 fixture, distinct from the official catalogue."""
 
-from claasp_next.components import Concatenate, Constant, ModularAdd, Rotate, Xor
+from claasp_next.components import Constant, ModularAdd, Rotate, Xor
 from claasp_next.domains import Word
 from claasp_next.graph import Primitive, PrimitiveKind, ValueType
 
@@ -40,4 +40,4 @@ class ToySpeck(Primitive):
                 index = round_number % len(schedule)
                 constant = self.add_component(Constant(word_type, (round_number,)))
                 schedule[index], round_key = round_function(schedule[index], round_key, constant)
-        self.set_output(self.add_component(Concatenate((x, y))))
+        self.set_output((x, y))

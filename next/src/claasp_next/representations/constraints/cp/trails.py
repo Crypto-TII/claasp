@@ -329,7 +329,8 @@ class SpeckDifferentialCPModel:
             next_right = _rotate_left_integer(right, beta, self.width) ^ output
             if next_right != _boolean_word(assignment[f"y_{round_number + 1}"]):
                 raise ValueError("MiniZinc returned invalid Speck round wiring")
-            steps.append(TrailStep(f"round_{round_number}_modular_add", transition))
+            component_id = self.primitive.round_operations[round_number]["modular_add"].component_id
+            steps.append(TrailStep(component_id, transition))
             left, right = output, next_right
         trail = Trail(
             TrailKind.XOR_DIFFERENTIAL,

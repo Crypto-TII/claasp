@@ -1,6 +1,6 @@
 """Reference ChaCha implementation following the designers' pseudocode."""
 
-from claasp_next.components import Concatenate, ModularAdd, Rotate, Xor
+from claasp_next.components import ModularAdd, Rotate, Xor
 from claasp_next.domains import Word
 from claasp_next.graph import Primitive, PrimitiveKind, ValueType
 
@@ -82,4 +82,4 @@ class ChaCha(Primitive):
             round_states.append(tuple(state))
 
         self.round_states = tuple(round_states)
-        self.set_output(self.add_component(Concatenate(state)))
+        self.set_output(state)

@@ -41,6 +41,31 @@ def test_selection_identity_and_concatenation_use_logical_units():
     assert result.value_of("concatenate_0_2") == (40, 30, 20, 10)
 
 
+def test_primitive_output_accepts_multi_source_structural_wiring():
+    field = PrimeField(257)
+    primitive = Primitive("wired_output", {
+        "left": ValueType(field, (2,)), "right": ValueType(field, (2,)),
+    })
+    primitive.add_round()
+    primitive.set_output((primitive.input("left"), primitive.input("right")[1, 0]))
+
+    assert primitive.evaluate((1, 2), (3, 4)) == (1, 2, 4, 3)
+    assert type(primitive.components[-1]).__name__ == "Concatenate"
+
+
+def test_join_keeps_one_source_as_wiring_and_normalizes_multiple_sources():
+    field = PrimeField(17)
+    primitive = Primitive("wiring", {"state": ValueType(field, (2,))})
+    primitive.add_round()
+    state = primitive.input("state")
+
+    assert primitive.join(state).source == state
+    joined = primitive.join(state[1], state[0])
+    assert joined.owner_id == "concatenate_0_0"
+    with pytest.raises(ValueError, match="at least one"):
+        primitive.join()
+
+
 def test_constant_has_no_graph_inputs_and_is_domain_checked():
     field = PrimeField(17)
     primitive = Primitive("constant", {"state": ValueType(field, (1,))})

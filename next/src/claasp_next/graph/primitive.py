@@ -228,6 +228,23 @@ class Primitive:
         self._ports[component.component_id] = component.output
         return component.output
 
+    def join(self, *values: PortLike) -> PortLike:
+        """Join homogeneous values as structural wiring.
+
+        A single value remains a selection. Multiple sources are normalized to
+        an internal structural node so all execution and modelling backends see
+        the same addressable typed wire. Primitive authors should use this
+        method instead of constructing ``Concatenate`` directly.
+        """
+
+        if not values:
+            raise ValueError("structural wiring requires at least one value")
+        if len(values) == 1:
+            return as_selection(values[0])
+        from claasp_next.components.structural import Concatenate
+
+        return self.add_component(Concatenate(values))
+
     def add_composite(
         self,
         definition,
@@ -321,9 +338,11 @@ class Primitive:
             target_round._append_scope(nested)
         return instance
 
-    def set_output(self, output: PortLike) -> None:
+    def set_output(self, output: PortLike | Sequence[PortLike]) -> None:
         """Declare the ordered logical units returned by this primitive."""
 
+        if isinstance(output, Sequence) and not isinstance(output, (Port, Selection)):
+            output = self.join(*output)
         output = as_selection(output)
         try:
             actual_port = self._ports[output.source.owner_id]

@@ -188,11 +188,18 @@ class CompositeBuilder:
     def add_composite(self, definition: CompositeDefinition, bindings: Mapping[str, PortLike], **kwargs):
         return self._primitive.add_composite(definition, bindings, **kwargs)
 
-    def set_output(self, name: str, output: PortLike) -> None:
+    def join(self, *values: PortLike) -> PortLike:
+        """Join values through the graph's normalized structural wiring."""
+
+        return self._primitive.join(*values)
+
+    def set_output(self, name: str, output: PortLike | Sequence[PortLike]) -> None:
         if not isinstance(name, str) or not name:
             raise ValueError("composite output name must be a non-empty string")
         if name in self._outputs:
             raise ValueError(f"composite output {name!r} already exists")
+        if isinstance(output, Sequence) and not isinstance(output, (Port, Selection)):
+            output = self.join(*output)
         selection = as_selection(output)
         actual = self._primitive.port(selection.source.owner_id)
         if actual != selection.source:

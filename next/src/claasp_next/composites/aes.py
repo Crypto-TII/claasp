@@ -2,9 +2,7 @@
 
 from collections.abc import Iterable
 
-from claasp_next.components import (
-    Add, BinaryAffineMap, Concatenate, Constant, LinearMap, Permutation, Power,
-)
+from claasp_next.components import Add, BinaryAffineMap, Constant, LinearMap, Permutation, Power
 from claasp_next.composites.substitution import ParallelSBoxLayer
 from claasp_next.domains import BinaryExtensionField
 from claasp_next.graph import CompositeBuilder, CompositeDefinition, ValueType, as_selection
@@ -121,12 +119,10 @@ def AESKeySchedule(
     round_keys = []
     for round_number in range(rounds + 1):
         selected = words[4 * round_number : 4 * round_number + 4]
-        round_key = builder.input("key")[:16] if round_number == 0 else builder.add_component(
-            Concatenate(selected, component_id=f"round_key_{round_number}")
-        )
+        round_key = builder.input("key")[:16] if round_number == 0 else builder.join(*selected)
         builder.set_output(f"round_key_{round_number}", round_key)
         round_keys.append(round_key)
-    expanded = builder.add_component(Concatenate(round_keys, component_id="output"))
+    expanded = builder.join(*round_keys)
     builder.set_output("output", expanded)
     return builder.build(provenance={"specification": "FIPS 197 key expansion"})
 

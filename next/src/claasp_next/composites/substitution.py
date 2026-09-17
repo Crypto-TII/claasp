@@ -2,7 +2,7 @@
 
 from collections.abc import Iterable
 
-from claasp_next.components import BitVectorSBox, Concatenate, SBox
+from claasp_next.components import BitVectorSBox, SBox
 from claasp_next.domains import Bit
 from claasp_next.domains.base import Domain
 from claasp_next.graph import CompositeBuilder, CompositeDefinition, ValueType
@@ -47,6 +47,6 @@ def ParallelSBoxLayer(
         else:
             component = SBox(builder.input("state")[index], frozen_table, component_id=f"sbox_{index}")
         outputs.append(builder.add_component(component))
-    output = builder.add_component(Concatenate(outputs, component_id="output"))
+    output = builder.join(*outputs)
     builder.set_output("output", output)
     return builder.build(provenance={"construction": "independent parallel lookup tables"})

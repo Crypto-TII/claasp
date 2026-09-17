@@ -43,6 +43,30 @@ shape.
    >>> selected.value_type.unit_count
    2
 
+Joining graph wires
+-------------------
+
+Joining values is structural wiring, not a cryptographic operation. Pass a
+sequence directly as a primitive output, or use ``join`` when a later operation
+needs one combined value. Homogeneous units are kept in the supplied order.
+
+.. doctest::
+
+   >>> from claasp_next import Primitive
+   >>> pair = ValueType(PrimeField(257), (2,))
+   >>> wiring = Primitive("wiring", {"left": pair, "right": pair})
+   >>> wiring.add_round()
+   Round(number=0)
+   >>> state = wiring.join(wiring.input("left"), wiring.input("right")[1, 0])
+   >>> wiring.set_output(state)
+   >>> wiring.evaluate((1, 2), (3, 4))
+   (1, 2, 4, 3)
+
+CLAASP normalizes a multi-source join to an internal addressable node because
+execution traces and constraint models require every wire to have one typed
+owner. Authors do not need to construct ``Concatenate`` components. A
+single-source ``join`` adds no node.
+
 Components and backends
 -----------------------
 

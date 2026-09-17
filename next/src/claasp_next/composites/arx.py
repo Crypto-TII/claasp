@@ -1,6 +1,6 @@
 """Reusable add-rotate-XOR composites."""
 
-from claasp_next.components import Concatenate, ModularAdd, Rotate, Xor
+from claasp_next.components import ModularAdd, Rotate, Xor
 from claasp_next.domains import Word
 from claasp_next.graph import CompositeBuilder, CompositeDefinition, ValueType
 
@@ -44,6 +44,6 @@ def ChaChaQuarterRound(
 
     for name, output in (("a", a), ("b", b), ("c", c), ("d", d)):
         builder.set_output(name, output)
-    joined = builder.add_component(Concatenate((a, b, c, d), component_id="output"))
+    joined = builder.join(a, b, c, d)
     builder.set_output("output", joined)
     return builder.build(provenance={"specification": "RFC 8439 section 2.1"})

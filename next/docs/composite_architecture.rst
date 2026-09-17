@@ -59,6 +59,23 @@ one component dispatch contract and permits two representations of the same
 mathematical block—for example expanded lookup S-boxes for Boolean constraints
 or field inversion plus an affine map for algebraic AES studies.
 
+Structural joins
+----------------
+
+Legacy CLAASP removed its public concatenate operation because component input
+links already described an ordered concatenation. V5 selections deliberately
+have one typed source, which makes ownership and modelling boundaries
+unambiguous. ``Primitive.join`` and ``CompositeBuilder.join`` restore the
+authoring convenience without presenting concatenation as a basic operation.
+Passing several values to ``set_output`` uses the same path.
+
+The canonical flat DAG currently normalizes a multi-source join to an internal
+``Concatenate`` node. This is not cryptographic semantics: it gives execution
+traces, annotations, diagrams, and every constraint backend one addressable
+owner for the combined value. One-source joins are elided. Future
+representations may consume multi-source bindings directly without changing
+primitive source or public results.
+
 Round and primitive scopes
 --------------------------
 

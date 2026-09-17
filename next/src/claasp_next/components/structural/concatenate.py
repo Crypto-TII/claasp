@@ -1,4 +1,4 @@
-"""Domain-neutral concatenation."""
+"""Internal normalization node for multi-source structural wiring."""
 
 from dataclasses import dataclass
 from collections.abc import Iterable
@@ -10,7 +10,12 @@ from claasp_next.graph.value_type import ValueType
 
 @dataclass(frozen=True, slots=True, init=False)
 class Concatenate(Component):
-    """Concatenate homogeneous selections in input order."""
+    """Normalize homogeneous selections to one addressable graph source.
+
+    Primitive authors normally use :meth:`claasp_next.graph.Primitive.join` or pass a sequence
+    to ``set_output``. This explicit class remains for low-level graph and
+    representation tests, not as a cryptographic operation.
+    """
 
     def __init__(self, component_inputs: Iterable[PortLike], component_id: str | None = None) -> None:
         frozen_inputs = tuple(as_selection(item) for item in component_inputs)

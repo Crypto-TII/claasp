@@ -3,7 +3,7 @@
 from types import MappingProxyType
 
 from claasp_next.components import (
-    Add, BinaryAffineMap, Concatenate, Constant, LinearMap, Permutation, Power,
+    Add, BinaryAffineMap, Constant, LinearMap, Permutation, Power,
     SBox,
 )
 from claasp_next.composites.aes import (
@@ -68,8 +68,8 @@ def _key_schedule(primitive, key, key_word_count, number_of_rounds, realization)
         words.append(primitive.add_component(Add((words[word_index - key_word_count], temporary))))
 
     return [
-        key[:16] if round_number == 0 else primitive.add_component(
-            Concatenate(words[4 * round_number:4 * round_number + 4])
+        key[:16] if round_number == 0 else primitive.join(
+            *words[4 * round_number:4 * round_number + 4]
         )
         for round_number in range(number_of_rounds + 1)
     ]

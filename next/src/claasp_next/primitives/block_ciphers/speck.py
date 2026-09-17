@@ -2,7 +2,7 @@
 
 from types import MappingProxyType
 
-from claasp_next.components import Concatenate, Constant, ModularAdd, Rotate, Xor
+from claasp_next.components import Constant, ModularAdd, Rotate, Xor
 from claasp_next.domains import Word
 from claasp_next.graph import Primitive, PrimitiveKind, ValueType
 
@@ -122,4 +122,4 @@ class Speck(Primitive):
         self.round_states = tuple(round_states)
         self.key_schedule_states = tuple(key_schedule_states)
         self.round_operations = tuple(round_operations)
-        self.set_output(self.add_component(Concatenate((x, y))))
+        self.set_output((x, y))
