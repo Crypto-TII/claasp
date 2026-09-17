@@ -12,6 +12,10 @@ class ModularSubtract(Primitive):
 
     >>> ModularSubtract().evaluate(3, 5)
     14
+
+    >>> three_way = ModularSubtract(word_bit_size=8, number_of_inputs=3)
+    >>> three_way.evaluate(20, 7, 2)
+    11
     """
 
     def __init__(self, word_bit_size: int = 4, number_of_inputs: int = 2) -> None:

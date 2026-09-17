@@ -10,6 +10,12 @@ class BitwiseAnd(Primitive):
 
     >>> f"{BitwiseAnd().evaluate(0b1010, 0b1100):04b}"
     '1000'
+
+    Request wider words and more operands through the constructor:
+
+    >>> three_way = BitwiseAnd(word_bit_size=8, number_of_inputs=3)
+    >>> len(three_way.inputs())
+    3
     """
 
     def __init__(self, word_bit_size: int = 4, number_of_inputs: int = 2) -> None:

@@ -14,6 +14,10 @@ class IDEAMultiply(Primitive):
 
     >>> IDEAMultiply(4).evaluate(0, 2)
     15
+
+    >>> three_way = IDEAMultiply(word_bit_size=16, number_of_inputs=3)
+    >>> len(three_way.inputs())
+    3
     """
 
     def __init__(self, word_bit_size: int = 16, number_of_inputs: int = 2) -> None:

@@ -1,6 +1,6 @@
 """Small authoring helpers shared by one-component primitive examples."""
 
-from claasp_next.domains import PrimeField, Word
+from claasp_next.domains import Bit, Word
 from claasp_next.graph import ValueType
 
 
@@ -23,7 +23,7 @@ def word_inputs(word_bit_size: int, number_of_inputs: int):
 
 
 def algebraic_inputs(domain, unit_count: int, number_of_inputs: int):
-    domain = PrimeField(17) if domain is None else domain
+    domain = Bit() if domain is None else domain
     positive(unit_count, "unit_count")
     if (
         not isinstance(number_of_inputs, int)

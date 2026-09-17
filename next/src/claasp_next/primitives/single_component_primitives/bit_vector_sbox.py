@@ -13,8 +13,15 @@ class BitVectorSBox(Primitive):
     In this two-bit example the table maps indices ``0, 1, 2, 3`` to
     ``3, 2, 1, 0`` respectively, so input ``01`` maps to ``10``.
 
-    >>> f"{BitVectorSBox(2, [3, 2, 1, 0]).evaluate(0b01):02b}"
+    >>> reverse = BitVectorSBox(input_bit_size=2, lookup_table=[3, 2, 1, 0])
+    >>> f"{reverse.evaluate(0b01):02b}"
     '10'
+
+    The output width may differ from the input width:
+
+    >>> compress = BitVectorSBox(2, [0, 0, 1, 1], output_bit_size=1)
+    >>> compress.components[0].output_type
+    ValueType(domain=Bit(), shape=(1,))
     """
 
     def __init__(

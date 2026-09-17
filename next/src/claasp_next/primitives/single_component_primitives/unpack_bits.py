@@ -18,6 +18,13 @@ class UnpackBits(Primitive):
     ValueType(domain=Bit(), shape=(8,))
     >>> hex(unpacked.evaluate(0xAB))
     '0xab'
+
+    The input can instead be a vector of binary-field elements:
+
+    >>> from claasp_next import BinaryExtensionField
+    >>> field = BinaryExtensionField(4, 0b10011)
+    >>> UnpackBits(domain=field, word_count=3).components[0].output_type
+    ValueType(domain=Bit(), shape=(12,))
     """
 
     def __init__(self, domain=None, word_count: int = 2) -> None:

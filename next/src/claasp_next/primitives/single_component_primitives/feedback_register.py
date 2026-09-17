@@ -15,6 +15,14 @@ class FeedbackRegister(Primitive):
 
     >>> f"{FeedbackRegister().evaluate(0b1010):04b}"
     '0101'
+
+    Supply typed parameters for another register size, tap set, or clock
+    count:
+
+    >>> parameters = FeedbackRegisterParameters.from_taps(8, [0, 2, 3], clocks=2)
+    >>> register = FeedbackRegister(parameters)
+    >>> register.components[0].clocks
+    2
     """
 
     def __init__(self, parameters: FeedbackRegisterParameters | None = None) -> None:

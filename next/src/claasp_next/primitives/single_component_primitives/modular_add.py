@@ -12,6 +12,10 @@ class ModularAdd(Primitive):
 
     >>> ModularAdd().evaluate(11, 7)
     2
+
+    >>> three_way = ModularAdd(word_bit_size=8, number_of_inputs=3)
+    >>> three_way.evaluate(200, 100, 10)
+    54
     """
 
     def __init__(self, word_bit_size: int = 4, number_of_inputs: int = 2) -> None:

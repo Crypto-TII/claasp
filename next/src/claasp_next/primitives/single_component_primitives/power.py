@@ -11,14 +11,18 @@ from ._base import positive
 class Power(Primitive):
     """Raise every input unit to a fixed exponent.
 
-    By default this cubes elements of GF(17), hence ``3**3 mod 17 = 10``.
+    The default cubes one GF(2) element. Choose a different exponent, domain,
+    or vector length through the constructor:
 
-    >>> Power(3, PrimeField(17)).evaluate(3)
+    >>> Power().evaluate(1)
+    1
+    >>> cubic = Power(exponent=3, domain=PrimeField(17), unit_count=1)
+    >>> cubic.evaluate(3)
     10
     """
 
     def __init__(self, exponent: int = 3, domain=None, unit_count: int = 1) -> None:
-        domain = PrimeField(17) if domain is None else domain
+        domain = Bit() if domain is None else domain
         exponent = positive(exponent, "exponent")
         unit_count = positive(unit_count, "unit_count")
         if isinstance(domain, Bit):

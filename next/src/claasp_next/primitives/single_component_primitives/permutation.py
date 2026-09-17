@@ -13,6 +13,14 @@ class Permutation(Primitive):
 
     >>> hex(Permutation([1, 0], 4).evaluate(0xAB))
     '0xba'
+
+    Omit ``word_size`` for a bit permutation, or set it to permute wider
+    logical units:
+
+    >>> reverse_bits = Permutation(mapping=[3, 2, 1, 0])
+    >>> reverse_bytes = Permutation(mapping=[3, 2, 1, 0], word_size=8)
+    >>> (reverse_bits.components[0].output_type, reverse_bytes.components[0].output_type)
+    (ValueType(domain=Bit(), shape=(4,)), ValueType(domain=Word(width=8), shape=(4,)))
     """
 
     def __init__(self, mapping=None, word_size: int = 1) -> None:

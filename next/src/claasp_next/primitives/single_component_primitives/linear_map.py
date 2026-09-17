@@ -14,6 +14,15 @@ class LinearMap(Primitive):
 
     >>> f"{LinearMap([[1, 0], [1, 1]]).evaluate(0b10):02b}"
     '11'
+
+    Select a field domain to express a MixColumn-style matrix with the same
+    component:
+
+    >>> from claasp_next import BinaryExtensionField
+    >>> field = BinaryExtensionField(4, 0b10011)
+    >>> mixing = LinearMap([[1, 2], [2, 1]], domain=field)
+    >>> mixing.components[0].output_type
+    ValueType(domain=BinaryExtensionField(degree=4, modulus=19, basis='polynomial'), shape=(2,))
     """
 
     def __init__(self, matrix=None, domain=None) -> None:

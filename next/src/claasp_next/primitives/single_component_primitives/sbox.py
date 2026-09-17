@@ -14,9 +14,17 @@ class SBox(Primitive):
     This example splits ``0001`` into two two-bit units, ``00`` and ``01``.
     The table maps them independently to ``11`` and ``10``, yielding ``1110``.
 
-    >>> result = SBox([3, 2, 1, 0], Word(2), unit_count=2).evaluate(0b0001)
+    >>> layer = SBox(lookup_table=[3, 2, 1, 0], domain=Word(2), unit_count=2)
+    >>> result = layer.evaluate(0b0001)
     >>> f"{result:04b}"
     '1110'
+
+    Omit the table for the identity lookup, or select another finite domain
+    and number of units explicitly:
+
+    >>> identity_layer = SBox(domain=Word(8), unit_count=16)
+    >>> identity_layer.components[0].output_type
+    ValueType(domain=Word(width=8), shape=(16,))
     """
 
     def __init__(

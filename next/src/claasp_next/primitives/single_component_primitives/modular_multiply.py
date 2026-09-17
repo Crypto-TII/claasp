@@ -12,6 +12,10 @@ class ModularMultiply(Primitive):
 
     >>> ModularMultiply().evaluate(3, 6)
     2
+
+    >>> three_way = ModularMultiply(word_bit_size=8, number_of_inputs=3)
+    >>> three_way.evaluate(2, 3, 5)
+    30
     """
 
     def __init__(self, word_bit_size: int = 4, number_of_inputs: int = 2) -> None:

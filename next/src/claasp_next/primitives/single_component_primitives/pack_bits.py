@@ -13,11 +13,19 @@ class PackBits(Primitive):
     evaluator encodes both typed forms as the same integer, while the graph's
     output type records the two-word structure.
 
-    >>> packed = PackBits()
+    >>> packed = PackBits(bit_count=8, word_width=4)
     >>> packed.components[0].output_type
     ValueType(domain=Word(width=4), shape=(2,))
     >>> hex(packed.evaluate(0xAB))
     '0xab'
+
+    ``output_domain`` can preserve finite-field semantics for each packed
+    word:
+
+    >>> from claasp_next import BinaryExtensionField
+    >>> field = BinaryExtensionField(4, 0b10011)
+    >>> PackBits(8, 4, output_domain=field).components[0].output_type
+    ValueType(domain=BinaryExtensionField(degree=4, modulus=19, basis='polynomial'), shape=(2,))
     """
 
     def __init__(

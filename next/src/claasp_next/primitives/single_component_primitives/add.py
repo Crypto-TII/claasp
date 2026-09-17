@@ -8,12 +8,23 @@ from ._base import algebraic_inputs
 class Add(Primitive):
     """Add corresponding units in two or more inputs.
 
-    The default domain is the prime field GF(17), so results are reduced
-    modulo 17. Here ``5 + 14 = 19``, represented by ``2`` in GF(17).
+    The default domain is GF(2), where addition is XOR.
+
+    >>> Add().evaluate(1, 1)
+    0
+
+    Select another domain explicitly when needed:
 
     >>> from claasp_next import PrimeField
-    >>> Add(PrimeField(17)).evaluate(5, 14)
+    >>> Add(domain=PrimeField(17)).evaluate(5, 14)
     2
+
+    ``unit_count`` applies addition component-wise to vectors, while
+    ``number_of_inputs`` controls their arity:
+
+    >>> vector_add = Add(unit_count=4, number_of_inputs=3)
+    >>> f"{vector_add.evaluate(0b1010, 0b1100, 0b0111):04b}"
+    '0001'
     """
 
     def __init__(

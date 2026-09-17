@@ -10,6 +10,10 @@ class BitwiseOr(Primitive):
 
     >>> f"{BitwiseOr().evaluate(0b1010, 0b0101):04b}"
     '1111'
+
+    >>> three_way = BitwiseOr(word_bit_size=8, number_of_inputs=3)
+    >>> len(three_way.inputs())
+    3
     """
 
     def __init__(self, word_bit_size: int = 4, number_of_inputs: int = 2) -> None:

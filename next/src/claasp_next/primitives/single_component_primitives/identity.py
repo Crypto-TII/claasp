@@ -11,6 +11,9 @@ class Identity(Primitive):
 
     >>> hex(Identity(16).evaluate(0xCAFE))
     '0xcafe'
+
+    >>> Identity(bit_size=128).components[0].output_type
+    ValueType(domain=Bit(), shape=(128,))
     """
 
     def __init__(self, bit_size: int = 32) -> None:

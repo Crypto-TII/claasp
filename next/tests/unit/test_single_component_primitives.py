@@ -30,7 +30,7 @@ from claasp_next.components import (
     VariableShift as VariableShiftComponent,
     Xor as XorComponent,
 )
-from claasp_next.domains import BinaryExtensionField, Word
+from claasp_next.domains import BinaryExtensionField, PrimeField, Word
 from claasp_next.graph import PrimitiveKind
 from claasp_next.primitives._catalogue_exports import CATEGORY_EXPORTS
 from claasp_next.primitives.single_component_primitives import (
@@ -144,9 +144,12 @@ def test_machine_catalogue_matches_generated_exports():
 
 
 def test_fixed_semantic_examples():
-    assert Add().evaluate(5, 14) == 2
-    assert Multiply().evaluate(5, 7) == 1
-    assert Power().evaluate(3) == 10
+    assert Add().evaluate(1, 1) == 0
+    assert Add(PrimeField(17)).evaluate(5, 14) == 2
+    assert Multiply().evaluate(1, 0) == 0
+    assert Multiply(PrimeField(17)).evaluate(5, 7) == 1
+    assert Power().evaluate(1) == 1
+    assert Power(3, PrimeField(17)).evaluate(3) == 10
     assert BinaryAffineMap(offset=3).evaluate(10) == 9
     assert LinearMap([[1, 0], [1, 1]]).evaluate(0b10) == 0b11
     assert PackBits().evaluate(0xAB) == 0xAB
@@ -176,7 +179,7 @@ def test_linear_map_replaces_binary_and_mixcolumn_legacy_wrappers():
     field = BinaryExtensionField(4, 0b10011)
     assert LinearMap([[1, 0], [0, 1]], field).evaluate(0xAB) == 0xAB
     assert LinearMap([[1, 0], [0, 0]]).kind is PrimitiveKind.FUNCTION
-    assert Power(2).kind is PrimitiveKind.FUNCTION
+    assert Power(2, PrimeField(17)).kind is PrimitiveKind.FUNCTION
 
 
 def test_each_wrapper_is_a_documented_one_round_one_component_example():
@@ -191,6 +194,13 @@ def test_each_wrapper_is_a_documented_one_round_one_component_example():
         assert "self.add_round()" in source
         assert "self.add_component(" in source
         assert "self.set_output(" in source
+
+
+def test_each_wrapper_docstring_covers_its_public_parameters():
+    for primitive_class in CLASSES:
+        documentation = inspect.getdoc(primitive_class)
+        for parameter in inspect.signature(primitive_class).parameters:
+            assert parameter in documentation, (primitive_class.__name__, parameter)
 
 
 def test_all_default_kinds_are_explicit():

@@ -12,6 +12,11 @@ class Constant(Primitive):
 
     >>> hex(Constant(8, 0x5A).evaluate())
     '0x5a'
+
+    ``output_bit_size`` controls the exact width of the constant:
+
+    >>> Constant(output_bit_size=3, value=0b010).components[0].output_type
+    ValueType(domain=Bit(), shape=(3,))
     """
 
     def __init__(self, output_bit_size: int = 3, value: int = 0b010) -> None:

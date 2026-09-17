@@ -10,6 +10,10 @@ class Xor(Primitive):
 
     >>> f"{Xor().evaluate(0b1010, 0b1100):04b}"
     '0110'
+
+    >>> three_way = Xor(word_bit_size=8, number_of_inputs=3)
+    >>> len(three_way.inputs())
+    3
     """
 
     def __init__(self, word_bit_size: int = 4, number_of_inputs: int = 2) -> None:

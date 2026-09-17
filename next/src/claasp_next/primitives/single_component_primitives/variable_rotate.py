@@ -14,6 +14,12 @@ class VariableRotate(Primitive):
 
     >>> f"{VariableRotate().evaluate(0x81, 2):08b}"
     '01100000'
+
+    ``amount_bit_size`` sets the width of the second input:
+
+    >>> rotate = VariableRotate(bit_size=32, amount_bit_size=5, direction="left")
+    >>> rotate.input("amount").value_type
+    ValueType(domain=Word(width=5), shape=(1,))
     """
 
     def __init__(

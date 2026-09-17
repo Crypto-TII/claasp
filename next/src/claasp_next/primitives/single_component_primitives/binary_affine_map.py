@@ -20,6 +20,13 @@ class BinaryAffineMap(Primitive):
 
     >>> f"{BinaryAffineMap(offset=0b0011).evaluate(0b1010):04b}"
     '1001'
+
+    A matrix, word size, and number of field elements can all be selected:
+
+    >>> swap_bits = [[0, 1], [1, 0]]
+    >>> affine = BinaryAffineMap(swap_bits, offset=1, word_size=2, unit_count=3)
+    >>> affine.components[0].output_type
+    ValueType(domain=BinaryExtensionField(degree=2, modulus=7, basis='polynomial'), shape=(3,))
     """
 
     def __init__(
