@@ -15,11 +15,15 @@ from claasp_next.transformations.inverse_rules import (
     DEFAULT_INVERSE_REGISTRY, invert_component,
 )
 from claasp_next.transformations.inversion import invert_primitive, partial_inverse
+from claasp_next.transformations.editing import (
+    inline_reorderings, prune_orphans, remove_key_schedule,
+)
 
 __all__ = [
     "ComponentInverseRegistry", "ComponentInverseSemantics", "DEFAULT_INVERSE_REGISTRY",
     "DependencyIndex", "DependencySplit", "GraphSource", "GraphSourceKind", "TransformationError",
     "TransformationFailureReason", "TransformationResult",
-    "invert_component", "invert_primitive", "partial_inverse", "reduce_rounds",
+    "inline_reorderings", "invert_component", "invert_primitive", "partial_inverse",
+    "prune_orphans", "reduce_rounds", "remove_key_schedule",
     "slice_primitive", "slice_rounds", "split_dependencies",
 ]

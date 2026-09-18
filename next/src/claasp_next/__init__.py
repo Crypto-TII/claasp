@@ -28,7 +28,8 @@ from claasp_next.transformations import (
     ComponentInverseRegistry, ComponentInverseSemantics, DEFAULT_INVERSE_REGISTRY,
     DependencyIndex, DependencySplit, GraphSource, GraphSourceKind,
     TransformationError, TransformationFailureReason, TransformationResult,
-    invert_component, invert_primitive, partial_inverse, reduce_rounds,
+    inline_reorderings, invert_component, invert_primitive, partial_inverse,
+    prune_orphans, reduce_rounds, remove_key_schedule,
     slice_primitive, slice_rounds, split_dependencies,
 )
 
@@ -82,9 +83,12 @@ __all__ = [
     "int_from_units",
     "invert_component",
     "invert_primitive",
+    "inline_reorderings",
     "partial_inverse",
+    "prune_orphans",
     "units_from_int",
     "reduce_rounds",
+    "remove_key_schedule",
     "slice_primitive",
     "slice_rounds",
     "split_dependencies",

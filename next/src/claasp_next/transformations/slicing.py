@@ -181,10 +181,16 @@ def slice_primitive(
         if source_id in required and source_id not in boundary_by_source:
             boundary_descriptors[source_id] = primitive.input_descriptor(source_id)
 
+    exact_contract = (
+        inputs is None
+        and len(output_selections) == 1
+        and primitive.output == output_selections[0]
+        and set(primitive.input_ports) <= required
+    )
     derived = Primitive(
         family_name or f"{primitive.family_name}_slice",
         boundary_descriptors,
-        kind=primitive.kind,
+        kind=primitive.kind if exact_contract else None,
         provenance=primitive.provenance,
     )
     derived.realization = primitive.realization

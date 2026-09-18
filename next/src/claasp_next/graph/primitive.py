@@ -771,6 +771,43 @@ class Primitive:
 
         return partial_inverse(self, target, known=known, **options)
 
+    def sliced(self, outputs=None, **options):
+        """Return a validated dependency slice of this graph."""
+
+        from claasp_next.transformations import slice_primitive
+
+        return slice_primitive(self, outputs, **options)
+
+    def reduced_rounds(self, number_of_rounds: int):
+        """Return the validated prefix ending at a published round state."""
+
+        from claasp_next.transformations import reduce_rounds
+
+        return reduce_rounds(self, number_of_rounds)
+
+    def without_key_schedule(self, *, keep_round_key_injection: bool = True):
+        """Return a graph without its computed key schedule."""
+
+        from claasp_next.transformations import remove_key_schedule
+
+        return remove_key_schedule(
+            self, keep_round_key_injection=keep_round_key_injection,
+        )
+
+    def with_inlined_reorderings(self):
+        """Return a graph whose exact reorder operations are bindings."""
+
+        from claasp_next.transformations import inline_reorderings
+
+        return inline_reorderings(self)
+
+    def pruned(self):
+        """Return this graph's validated output dependency closure."""
+
+        from claasp_next.transformations import prune_orphans
+
+        return prune_orphans(self)
+
     def diagram(self, annotation=None):
         """Compile this graph and an optional trace or trail to diagram IR."""
 
