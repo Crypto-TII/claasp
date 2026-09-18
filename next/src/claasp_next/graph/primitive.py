@@ -753,6 +753,24 @@ class Primitive:
 
         return Analysis(self)
 
+    def inverse(self, recover_input: str | int = 0, **options):
+        """Return a validated inverse graph for one primitive input.
+
+        See :func:`claasp_next.invert_primitive` for retained-input options and
+        the typed transformation result.
+        """
+
+        from claasp_next.transformations import invert_primitive
+
+        return invert_primitive(self, recover_input, **options)
+
+    def partial_inverse(self, target: PortLike, *, known, **options):
+        """Return a solver-free partial inverse from explicit known wires."""
+
+        from claasp_next.transformations import partial_inverse
+
+        return partial_inverse(self, target, known=known, **options)
+
     def diagram(self, annotation=None):
         """Compile this graph and an optional trace or trail to diagram IR."""
 

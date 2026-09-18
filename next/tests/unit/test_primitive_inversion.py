@@ -1,0 +1,131 @@
+import random
+
+import pytest
+
+from claasp_next import (
+    Bit, Primitive, PrimitiveKind, TransformationError,
+    TransformationFailureReason, ValueType, Word, invert_primitive,
+    partial_inverse,
+)
+from claasp_next.components import Identity, Permutation, Shift, Xor
+from claasp_next.primitives import Present, Simon, Speck
+
+
+PLAINTEXT = 0x6574694C
+KEY = 0x1918111009080100
+
+
+def test_complete_speck_inverse_matches_fixed_and_seeded_independent_evaluation():
+    primitive = Speck()
+    inverse = invert_primitive(primitive).primitive
+
+    assert primitive.evaluate(PLAINTEXT, KEY) == 0xA86842F2
+    assert inverse.evaluate(0xA86842F2, KEY) == PLAINTEXT
+    random_source = random.Random(0xC1AA5)
+    for _ in range(20):
+        plaintext = random_source.getrandbits(32)
+        key = random_source.getrandbits(64)
+        assert inverse.evaluate(primitive.evaluate(plaintext, key), key) == plaintext
+
+
+@pytest.mark.parametrize(
+    ("primitive", "plaintext", "key", "ciphertext"),
+    (
+        (Present(number_of_rounds=2), 0, 0, 0xD0FF18FFFF008001),
+        (Simon(number_of_rounds=2), 0x6120676E, 0x1211100A09080201, 0x6CD2E1AE),
+    ),
+)
+def test_representative_bit_and_feistel_primitive_inverses_match_fixed_evidence(
+    primitive, plaintext, key, ciphertext,
+):
+    assert primitive.evaluate(plaintext, key) == ciphertext
+    assert invert_primitive(primitive).primitive.evaluate(ciphertext, key) == plaintext
+
+
+def test_inverse_preserves_realization_and_records_transformation_separately():
+    primitive = Speck(number_of_rounds=2)
+    result = primitive.inverse()
+    inverse = result.primitive
+
+    assert inverse.kind is PrimitiveKind.BLOCK_CIPHER
+    assert inverse.realization is primitive.realization
+    assert inverse.transformation_provenance[-1].operation == "inverse"
+    assert primitive.transformation_provenance == ()
+    assert not any(isinstance(component, Identity) for component in inverse.components)
+    assert tuple(inverse.input_ports) == ("output", "key")
+
+
+def test_partial_inverse_recovers_through_equivalent_fanout_wires():
+    graph = Primitive(
+        "fanout", {"left": ValueType(Word(8), (1,)), "right": ValueType(Word(8), (1,))},
+    )
+    graph.add_round()
+    first = graph.add_component(Xor(graph.inputs()))
+    second = graph.add_component(Xor((first, graph.input("right"))))
+    graph.set_output(second)
+
+    inverse = partial_inverse(
+        graph, graph.input("left"),
+        known={"observed": graph.output, "right": graph.input("right")},
+    ).primitive
+
+    assert inverse.evaluate(0xA5, 0x3C) == 0xA5
+    assert len(inverse.components) == 2
+    assert not any(isinstance(component, Identity) for component in inverse.components)
+
+
+def test_partial_inverse_can_recover_an_internal_wire():
+    graph = Primitive(
+        "internal", {"left": ValueType(Word(8), (1,)), "right": ValueType(Word(8), (1,))},
+    )
+    graph.add_round()
+    mixed = graph.add_component(Xor(graph.inputs()))
+    rotated = graph.add_component(Xor((mixed, graph.input("right"))))
+    graph.set_output(rotated)
+
+    inverse = partial_inverse(
+        graph, mixed,
+        known={"observed": graph.output, "right": graph.input("right")},
+    ).primitive
+    assert inverse.evaluate(0xA5, 0x3C) == 0x99
+
+
+def test_pack_unpack_bindings_remain_structural_during_inversion():
+    graph = Primitive("packed", {"state": ValueType(Word(8), (1,))}, kind=PrimitiveKind.PERMUTATION)
+    graph.add_round()
+    bits = graph.unpack_bits(graph.input("state"))
+    permuted = graph.add_component(Permutation(bits, (7, 6, 5, 4, 3, 2, 1, 0)))
+    graph.set_output(graph.pack_bits(permuted, 8))
+
+    inverse = invert_primitive(graph).primitive
+    for value in (0, 1, 0x5A, 0x80, 0xFF):
+        assert inverse.evaluate(graph.evaluate(value)) == value
+    assert tuple(binding.kind.value for binding in inverse.bindings) == ("unpack_bits", "pack_bits")
+    assert not any(isinstance(component, Identity) for component in inverse.components)
+
+
+def test_stalls_report_multiple_predecessors_information_loss_and_disconnection():
+    speck = Speck(number_of_rounds=1)
+    with pytest.raises(TransformationError) as multiple:
+        invert_primitive(speck, retained_inputs=())
+    assert multiple.value.reason is TransformationFailureReason.MULTIPLE_PREDECESSORS
+
+    shifted = Primitive("shifted", {"state": ValueType(Word(8), (1,))})
+    shifted.add_round()
+    shifted.set_output(shifted.add_component(Shift(shifted.input("state"), 1, "left", "loss")))
+    with pytest.raises(TransformationError) as loss:
+        invert_primitive(shifted)
+    assert loss.value.reason is TransformationFailureReason.INFORMATION_LOSS
+    assert loss.value.source_ids == ("loss",)
+
+    disconnected = Primitive(
+        "disconnected", {"left": ValueType(Bit(), (1,)), "right": ValueType(Bit(), (1,))},
+    )
+    disconnected.add_round()
+    disconnected.set_output(disconnected.input("right"))
+    with pytest.raises(TransformationError) as absent:
+        partial_inverse(
+            disconnected, disconnected.input("left"),
+            known={"observed": disconnected.output},
+        )
+    assert absent.value.reason is TransformationFailureReason.DISCONNECTED_DEPENDENCY
