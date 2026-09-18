@@ -17,6 +17,11 @@ from claasp_next.presentation.formatting import FormatSpec, ValueKind, format_va
 from claasp_next.presentation.model import (
     Alignment, ReportData, ReportSection, Table, TableCell, TableColumn, TableRow,
 )
+from claasp_next.presentation.adapters import (
+    AdaptationResult, adapt_result, avalanche_section, catalogue_section,
+    component_property_section, continuous_section, dieharder_section, neural_section,
+    nist_section, trace_section, trail_section,
+)
 
 __all__ = [
     "Applicability", "Citation", "DiagnosticCode", "EvidenceClass",
@@ -25,4 +30,7 @@ __all__ = [
     "ReproducibilityMetadata",
     "Alignment", "FormatSpec", "ReportData", "ReportSection", "Table", "TableCell",
     "TableColumn", "TableRow", "ValueKind", "format_value",
+    "AdaptationResult", "adapt_result", "avalanche_section", "catalogue_section",
+    "component_property_section", "continuous_section", "dieharder_section",
+    "neural_section", "nist_section", "trace_section", "trail_section",
 ]
