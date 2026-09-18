@@ -3001,7 +3001,7 @@
       "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Immutable typed tables, sections, report artifacts, adapters, renderers, exports, citations, reproducibility metadata, and safe file output preserve applicable presentation behavior without accepting legacy nested dictionaries.",
       "dependencies": [
         "claasp",
         "datetime",
@@ -3013,24 +3013,27 @@
         "plotly",
         "shutil"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
+      "milestone_owner": "M10.14a",
       "path": "claasp/cipher_modules/report.py",
       "prerequisites": [
-        "owning migration milestone"
+        "M10.11",
+        "M10.12",
+        "M10.13"
       ],
       "public_entry_points": [
         "Report"
       ],
-      "rationale": null,
+      "rationale": "One mutable object dispatches by test-name substrings, recomputes graph structure from component ids, imports pandas and Plotly eagerly, embeds wall-clock paths, and recursively deletes report directories. Explicit typed adapters and output operations replace that unsafe catch-all API.",
       "responsibility": "report",
-      "status": "planned-or-partially-migrated",
+      "status": "assigned-to-m10.14a",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/presentation"
     },
     {
       "acceptance_criterion": "Containing package is represented by its non-marker entries.",
@@ -3142,31 +3145,32 @@
       "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "NIST typed rows retain names, bins, p-values, proportions, unavailable states, dataset identity, and tool provenance in dependency-free tables plus explicitly requested optional plots and safe exports.",
       "dependencies": [
         "datetime",
         "math",
         "matplotlib",
         "os"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
+      "milestone_owner": "M10.14a",
       "path": "claasp/cipher_modules/statistical_tests/nist_statistical_tests_report.py",
       "prerequisites": [
-        "owning migration milestone"
+        "M10.12d"
       ],
       "public_entry_points": [
         "NISTStatisticalTestsReport"
       ],
-      "rationale": null,
+      "rationale": "M10.12 owns parsing and execution. M10.14 supersedes this mutable, Matplotlib-importing, timestamped report generator with typed presentation over NISTFinalReport and StatisticalTestRun.",
       "responsibility": "nist statistical tests report",
-      "status": "planned-or-partially-migrated",
+      "status": "assigned-to-m10.14a",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/presentation; next/src/claasp_next/drivers/renderers"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -13628,7 +13632,7 @@
       "v5_destination": "next/tests (mapped to the owning migrated behavior)"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Fixed typed trail, avalanche, component, statistical, neural, continuous, text-export, optional-plot, and safe-file evidence covers every retained report behavior without solver execution or pickle caches.",
       "dependencies": [
         "claasp",
         "contextlib",
@@ -13640,7 +13644,7 @@
         "plotly",
         "tempfile"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -13656,9 +13660,10 @@
         ]
       },
       "kind": "test",
+      "milestone_owner": "M10.14a",
       "path": "tests/unit/cipher_modules/report_test.py",
       "prerequisites": [
-        "owning migration milestone"
+        "M10.14a"
       ],
       "public_entry_points": [
         "test_save_as_image",
@@ -13671,9 +13676,9 @@
         "test_clean_reports_uses_runtime_cwd_default",
         "test_show_rejects_invalid_hex_word_size"
       ],
-      "rationale": null,
+      "rationale": "The legacy tests execute analyses while testing presentation, cache mutable result dictionaries with pickle, accept implicit current-directory output, and assert only that plotting methods were called. M10.14 uses fixed typed inputs and structural output assertions.",
       "responsibility": "report test",
-      "status": "planned-or-partially-migrated",
+      "status": "assigned-to-m10.14a",
       "tests": [
         "test_clean_reports_uses_runtime_cwd_default",
         "test_report_accepts_cp_trail_output",
@@ -13685,7 +13690,7 @@
         "test_show",
         "test_show_rejects_invalid_hex_word_size"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_presentation_contracts.py; next/tests/unit/test_presentation_tables.py; next/tests/unit/test_presentation_adapters.py; next/tests/unit/test_presentation_exports.py; next/tests/unit/test_presentation_files.py; next/tests/unit/test_presentation_plots.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -13771,12 +13776,12 @@
       "v5_destination": "next/tests (mapped to the owning migrated behavior)"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Committed NIST fixtures and fixed synthetic unavailable rows verify complete table data, deterministic aggregate series, headless figure structure, UTF-8 output, extensions, and overwrite policy.",
       "dependencies": [
         "claasp",
         "pathlib"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -13784,20 +13789,22 @@
         ]
       },
       "kind": "test",
+      "milestone_owner": "M10.14a",
       "path": "tests/unit/cipher_modules/statistical_tests/nist_statistical_tests_report_test.py",
       "prerequisites": [
-        "owning migration milestone"
+        "M10.12d",
+        "M10.14a"
       ],
       "public_entry_points": [
         "test_generate_reports_and_charts"
       ],
-      "rationale": null,
+      "rationale": "The legacy smoke test checks only that files exist for a two-row mutable dictionary. Typed parser fixtures provide stronger fixed evidence and do not regenerate NIST-format scientific artifacts as a presentation side effect.",
       "responsibility": "nist statistical tests report test",
-      "status": "planned-or-partially-migrated",
+      "status": "assigned-to-m10.14a",
       "tests": [
         "test_generate_reports_and_charts"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_presentation_adapters.py; next/tests/unit/test_presentation_plots.py; next/tests/unit/test_presentation_files.py"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",

@@ -1126,6 +1126,50 @@ MIGRATION_OVERRIDES.update({
     },
 })
 
+# M10.14 replaces the mutable catch-all Report and the dedicated NIST report
+# writer with immutable presentation artifacts and explicit adapters.  Plotting
+# and catalogue-display deferrals remain recorded separately in the M10.14
+# obligation manifest so achieved analysis and discovery records are not
+# rewritten merely because presentation consumes their typed results.
+MIGRATION_OVERRIDES.update({
+    "claasp/cipher_modules/report.py": {
+        "milestone_owner": "M10.14a",
+        "v5_destination": "next/src/claasp_next/presentation",
+        "prerequisites": ["M10.11", "M10.12", "M10.13"],
+        "disposition": "supersede",
+        "status": "assigned-to-m10.14a",
+        "acceptance_criterion": "Immutable typed tables, sections, report artifacts, adapters, renderers, exports, citations, reproducibility metadata, and safe file output preserve applicable presentation behavior without accepting legacy nested dictionaries.",
+        "rationale": "One mutable object dispatches by test-name substrings, recomputes graph structure from component ids, imports pandas and Plotly eagerly, embeds wall-clock paths, and recursively deletes report directories. Explicit typed adapters and output operations replace that unsafe catch-all API.",
+    },
+    "tests/unit/cipher_modules/report_test.py": {
+        "milestone_owner": "M10.14a",
+        "v5_destination": "next/tests/unit/test_presentation_contracts.py; next/tests/unit/test_presentation_tables.py; next/tests/unit/test_presentation_adapters.py; next/tests/unit/test_presentation_exports.py; next/tests/unit/test_presentation_files.py; next/tests/unit/test_presentation_plots.py",
+        "prerequisites": ["M10.14a"],
+        "disposition": "supersede",
+        "status": "assigned-to-m10.14a",
+        "acceptance_criterion": "Fixed typed trail, avalanche, component, statistical, neural, continuous, text-export, optional-plot, and safe-file evidence covers every retained report behavior without solver execution or pickle caches.",
+        "rationale": "The legacy tests execute analyses while testing presentation, cache mutable result dictionaries with pickle, accept implicit current-directory output, and assert only that plotting methods were called. M10.14 uses fixed typed inputs and structural output assertions.",
+    },
+    "claasp/cipher_modules/statistical_tests/nist_statistical_tests_report.py": {
+        "milestone_owner": "M10.14a",
+        "v5_destination": "next/src/claasp_next/presentation; next/src/claasp_next/drivers/renderers",
+        "prerequisites": ["M10.12d"],
+        "disposition": "supersede",
+        "status": "assigned-to-m10.14a",
+        "acceptance_criterion": "NIST typed rows retain names, bins, p-values, proportions, unavailable states, dataset identity, and tool provenance in dependency-free tables plus explicitly requested optional plots and safe exports.",
+        "rationale": "M10.12 owns parsing and execution. M10.14 supersedes this mutable, Matplotlib-importing, timestamped report generator with typed presentation over NISTFinalReport and StatisticalTestRun.",
+    },
+    "tests/unit/cipher_modules/statistical_tests/nist_statistical_tests_report_test.py": {
+        "milestone_owner": "M10.14a",
+        "v5_destination": "next/tests/unit/test_presentation_adapters.py; next/tests/unit/test_presentation_plots.py; next/tests/unit/test_presentation_files.py",
+        "prerequisites": ["M10.12d", "M10.14a"],
+        "disposition": "supersede",
+        "status": "assigned-to-m10.14a",
+        "acceptance_criterion": "Committed NIST fixtures and fixed synthetic unavailable rows verify complete table data, deterministic aggregate series, headless figure structure, UTF-8 output, extensions, and overwrite policy.",
+        "rationale": "The legacy smoke test checks only that files exist for a two-row mutable dictionary. Typed parser fixtures provide stronger fixed evidence and do not regenerate NIST-format scientific artifacts as a presentation side effect.",
+    },
+})
+
 
 _CMS_REPLACEMENTS = {
     "cms_cipher_model": "next/src/claasp_next/representations/constraints/sat/lowering.py",

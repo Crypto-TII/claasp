@@ -1124,6 +1124,48 @@ of this component-analysis milestone, not independent milestones:
   classification, citations, and reproducibility metadata.
 - Keep presentation independent of solver and ML backends.
 
+M10.14 is delivered through these dependency-ordered slices. They remain
+slices of the presentation milestone rather than independent milestones:
+
+1. **M10.14a — contracts, evidence, provenance, and ownership.** Define
+   immutable presentation evidence, applicability, citation, reproducibility,
+   and diagnostic contracts; keep mathematical, primitive-realization, and
+   execution/driver provenance separate; assign the legacy report records and
+   every presentation deferral from catalogue, component, statistical,
+   continuous, avalanche, and neural work to explicit destinations and fixed
+   evidence.
+2. **M10.14b — dependency-free tables and formatting.** Add immutable table,
+   column, row, cell, section, and report-data models plus deterministic
+   formatters for integers, hexadecimal values, bit/word vectors,
+   probabilities, correlations, weights, bounds, booleans, unavailable values,
+   and multiline diagnostics. Core imports must not load pandas, NumPy,
+   Matplotlib, Plotly, Sage, scikit-learn, or a solver.
+3. **M10.14c — typed result adapters.** Adapt trails, execution traces,
+   component-property results, avalanche results, NIST STS and Dieharder
+   parser artifacts, neural experiments, and conservative catalogue summaries
+   without recomputing any analysis. Preserve semantic order and expose graph
+   locations only as optional evidence references.
+4. **M10.14d — deterministic text and report-data exports.** Render terminal
+   and escaped Markdown tables, produce standard-library CSV, and expose
+   recursively JSON-compatible report data. These are report exports, not the
+   versioned graph/result serialization owned by M10.15.
+5. **M10.14e — optional plotting drivers.** Add explicitly requested,
+   headless-testable Matplotlib drivers for justified component-property radar
+   views, avalanche matrices, and statistical summaries. Normalization must
+   carry scale, direction, applicability, and evidence class and must omit
+   incomparable or unavailable properties rather than inventing scores.
+6. **M10.14f — composition, citations, files, and catalogue integration.**
+   Compose immutable report artifacts from existing results, retain citations
+   and reproducibility metadata, write only explicit validated formats through
+   safe predictable paths and overwrite policies, add optional dataframe
+   conversion, and publish presentation capabilities in catalogue metadata.
+7. **M10.14g — public API, documentation, CI, and closure.** Centralize public
+   exports and primitive-facing composition, add executable user/developer
+   documentation and doctests, close the four report inventory records and all
+   deferred presentation obligations, and run the complete host, affected
+   optional/external, documentation, wheel, and compatibility-container
+   checkpoints before marking M10.14 achieved.
+
 #### M10.15: Serialization, diagrams, and code generation
 
 - Migrate versioned serialization, diagrams, generated Python/C/CUDA where in
