@@ -96,6 +96,7 @@ class Primitive:
         self._family_name = family_name
         self._kind = kind
         self._provenance = tuple(provenance)
+        self._transformation_provenance = ()
         self._input_descriptors = descriptors
         self._input_ports = ports
         self._ports = dict(ports)
@@ -128,6 +129,19 @@ class Primitive:
         """Stable identity and derivation metadata for this graph."""
 
         return self._provenance
+
+    @property
+    def transformation_provenance(self) -> tuple[object, ...]:
+        """Immutable graph derivations, distinct from realization and execution.
+
+        EXAMPLES::
+
+            >>> from claasp_next.primitives import Speck
+            >>> Speck(number_of_rounds=1).transformation_provenance
+            ()
+        """
+
+        return self._transformation_provenance
 
     @property
     def realization_identity(self) -> str:
