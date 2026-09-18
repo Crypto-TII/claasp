@@ -62,10 +62,9 @@ needs one combined value. Homogeneous units are kept in the supplied order.
    >>> wiring.evaluate((1, 2), (3, 4))
    (1, 2, 4, 3)
 
-CLAASP normalizes a multi-source join to an internal addressable node because
-execution traces and constraint models require every wire to have one typed
-owner. Authors do not need to construct ``Concatenate`` components. A
-single-source ``join`` adds no node.
+CLAASP records a multi-source join as an addressable typed binding. Evaluators,
+traces, diagrams, and constraint models resolve the binding without presenting
+it as a cryptographic component. A single-source ``join`` adds no binding.
 
 Components and backends
 -----------------------

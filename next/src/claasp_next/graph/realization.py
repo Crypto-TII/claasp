@@ -120,7 +120,6 @@ def normalize_realization_contract(reference, candidate, descriptor: Realization
 
     from copy import copy
 
-    from claasp_next.components import PackBits, UnpackBits
     from claasp_next.domains import BinaryExtensionField, Bit, Word
     from claasp_next.graph.port import as_selection
     from claasp_next.graph.primitive import Primitive
@@ -173,18 +172,15 @@ def normalize_realization_contract(reference, candidate, descriptor: Realization
         target_domain = target_type.domain
         value = selection
         if not isinstance(source_domain, Bit):
-            value = normalized.add_component(UnpackBits(value, component_id=f"{component_id}_unpack"))
+            value = normalized.unpack_bits(value)
         if isinstance(target_domain, Bit):
             converted = value
         elif isinstance(target_domain, Word):
-            converted = normalized.add_component(PackBits(
-                value, target_domain.width, component_id=f"{component_id}_pack"
-            ))
+            converted = normalized.pack_bits(value, target_domain.width)
         elif isinstance(target_domain, BinaryExtensionField):
-            converted = normalized.add_component(PackBits(
-                value, target_domain.degree, component_id=f"{component_id}_pack",
-                output_domain=target_domain,
-            ))
+            converted = normalized.pack_bits(
+                value, target_domain.degree, output_domain=target_domain,
+            )
         else:
             raise ValueError(
                 f"cannot normalize realization boundary to {type(target_domain).__name__}"
@@ -194,6 +190,39 @@ def normalize_realization_contract(reference, candidate, descriptor: Realization
         return converted
 
     candidate_rounds = candidate.rounds or ((),)
+    pending_bindings = list(candidate.bindings)
+
+    def drain_bindings():
+        from claasp_next.graph.binding import BindingKind
+
+        changed = True
+        while changed:
+            changed = False
+            for binding in tuple(pending_bindings):
+                if not all(item.source.owner_id in remapped for item in binding.inputs):
+                    continue
+                inputs = tuple(
+                    remapped[item.source.owner_id][item.positions] for item in binding.inputs
+                )
+                if binding.kind is BindingKind.JOIN:
+                    output = normalized.join(*inputs)
+                elif binding.kind is BindingKind.VIEW:
+                    output = normalized.view(inputs[0])
+                elif binding.kind is BindingKind.PACK_BITS:
+                    output = normalized.pack_bits(
+                        inputs[0], binding.word_width,
+                        output_domain=(
+                            binding.output_type.domain
+                            if isinstance(binding.output_type.domain, BinaryExtensionField)
+                            else None
+                        ),
+                    )
+                else:
+                    output = normalized.unpack_bits(inputs[0])
+                remapped[binding.binding_id] = as_selection(output)
+                pending_bindings.remove(binding)
+                changed = True
+
     for round_index, candidate_round in enumerate(candidate_rounds):
         normalized.add_round()
         if round_index == 0:
@@ -201,12 +230,17 @@ def normalize_realization_contract(reference, candidate, descriptor: Realization
                 remapped[name] = as_selection(convert(
                     normalized.input(name), port.value_type, f"__realization_input_{name}"
                 ))
+            drain_bindings()
         for component in getattr(candidate_round, "components", ()):
+            drain_bindings()
             cloned = copy(component)
             object.__setattr__(cloned, "inputs", tuple(
                 remapped[item.source.owner_id][item.positions] for item in component.inputs
             ))
             remapped[component.component_id] = normalized.add_component(cloned).select_all()
+    drain_bindings()
+    if pending_bindings:
+        raise ValueError("realization contains unresolved structural bindings")
 
     candidate_output = remapped[candidate.output.source.owner_id][candidate.output.positions]
     normalized.set_output(convert(

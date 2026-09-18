@@ -3,7 +3,7 @@ Boolean CNF models
 
 Bit-oriented primitive graphs can be lowered to a solver-independent conjunctive
 normal form without installing SageMath or a SAT solver. The initial lowering
-supports constants, identity, permutation, concatenation, bitwise addition
+supports constants, identity, permutation, structural bindings, bitwise addition
 (XOR), and bit-vector S-boxes. Word graphs additionally support XOR, AND,
 rotation and exact modular addition. Unsupported domains and components fail
 explicitly instead of silently changing their semantics.
@@ -20,7 +20,7 @@ linear and nonlinear layers:
    >>> primitive = Present80(number_of_rounds=1)
    >>> model = BooleanCNFModel(primitive)
    >>> formula = model.cnf_formula()
-   >>> formula.variable_count > 500, formula.clause_count > 1000
+   >>> formula.variable_count > 400, formula.clause_count > 1000
    (True, True)
    >>> evaluation = ScalarEvaluator().evaluate(primitive, {
    ...     "plaintext": bits_from_int(0, 64),
@@ -46,7 +46,7 @@ wires.
    >>> from claasp_next.representations.constraints.sat.exporters import DimacsExporter
    >>> dimacs = DimacsExporter().export(formula)
    >>> [line for line in dimacs.splitlines() if line.startswith("p ")]
-   ['p cnf 718 2361']
+   ['p cnf 494 1913']
    >>> dimacs.splitlines()[0]
    'c 1 plaintext_0'
 

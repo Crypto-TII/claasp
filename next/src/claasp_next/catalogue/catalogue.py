@@ -132,7 +132,7 @@ class Catalogue:
         >>> (aes.name, aes.category, aes.kind)
         ('AES', 'block_ciphers', 'block_cipher')
         >>> len(catalogue.primitives())
-        145
+        142
 
         >>> # Category, design, and component filters compose.
         >>> [item.name for item in catalogue.primitives(

@@ -28,13 +28,12 @@ def test_boolean_addition_partitions_selected_output_variables_between_inputs():
     assert not ComponentMonomialSemantics.is_possible(addition, (0b1001, 0b1000), 0b1001)
 
 
-def test_concatenation_and_constants_have_exact_structural_semantics():
+def test_structural_join_is_wiring_and_constants_have_exact_semantics():
     primitive = Present(number_of_rounds=1)
-    concatenation = _component(primitive, "sbox_layer_1")
     counter = _component(primitive, "key_counter_1")
 
-    masks = (1,) + (0,) * 15
-    assert ComponentMonomialSemantics.is_possible(concatenation, masks, 1 << 60)
-    assert not ComponentMonomialSemantics.is_possible(concatenation, masks, 1)
+    joined = next(binding for binding in primitive.bindings if binding.output_type.unit_count == 64)
+    assert joined.kind.value == "join"
+    assert len(primitive.selection_bit_sources(joined.output.select_all())) == 64
     assert ComponentMonomialSemantics.is_possible(counter, (), 1)
     assert not ComponentMonomialSemantics.is_possible(counter, (), 2)

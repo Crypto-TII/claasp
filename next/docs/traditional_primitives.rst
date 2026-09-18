@@ -237,9 +237,9 @@ each byte are numbered from its least significant bit.
 
 Setting ``keystream_bit_size=0`` returns the complete 288-bit state instead,
 which is the natural boundary for state-recovery and division-property work.
-The graph is built only from the reusable ``Constant``, ``Xor``,
-``BitwiseAnd``, and ``Concatenate`` components; the three shift registers are
-graph wiring rather than a private feedback implementation. Tests retain five
+The graph is built only from the reusable ``Constant``, ``Xor``, and
+``BitwiseAnd`` components; joins and the three shift registers are graph wiring
+rather than private operations. Tests retain five
 published eSTREAM 80/80 vectors, the legacy CLAASP all-zero 256-bit keystream,
 scalar/batch parity, and reduced instances checked against an independently
 written transcription of the specification pseudocode.

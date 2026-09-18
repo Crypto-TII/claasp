@@ -175,11 +175,6 @@
       "primitive_wrapper": "BitwiseOr"
     },
     {
-      "module": "claasp_next.primitives.single_component_primitives.concatenate",
-      "name": "Concatenate",
-      "primitive_wrapper": "Concatenate"
-    },
-    {
       "module": "claasp_next.primitives.single_component_primitives.constant",
       "name": "Constant",
       "primitive_wrapper": "Constant"
@@ -225,11 +220,6 @@
       "primitive_wrapper": "Multiply"
     },
     {
-      "module": "claasp_next.primitives.single_component_primitives.pack_bits",
-      "name": "PackBits",
-      "primitive_wrapper": "PackBits"
-    },
-    {
       "module": "claasp_next.primitives.single_component_primitives.permutation",
       "name": "Permutation",
       "primitive_wrapper": "Permutation"
@@ -253,11 +243,6 @@
       "module": "claasp_next.primitives.single_component_primitives.shift",
       "name": "Shift",
       "primitive_wrapper": "Shift"
-    },
-    {
-      "module": "claasp_next.primitives.single_component_primitives.unpack_bits",
-      "name": "UnpackBits",
-      "primitive_wrapper": "UnpackBits"
     },
     {
       "module": "claasp_next.primitives.single_component_primitives.variable_rotate",
@@ -413,7 +398,7 @@
       "target": "sklearn"
     }
   ],
-  "milestone": "M10.9f5",
+  "milestone": "M10.9f6",
   "primitives": [
     {
       "authenticity": "canonical",
@@ -422,7 +407,6 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "Add",
-        "Concatenate",
         "Constant",
         "LinearMap",
         "Permutation",
@@ -532,15 +516,11 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "BitwiseAnd",
-        "Concatenate",
         "Constant",
-        "PackBits",
         "Rotate",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
-        "Bit",
         "Word"
       ],
       "family": "aradi",
@@ -648,12 +628,8 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "BitVectorSBox",
-        "Concatenate",
         "Constant",
-        "Identity",
-        "PackBits",
         "Rotate",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -728,13 +704,9 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "BitVectorSBox",
-        "Concatenate",
         "Constant",
-        "Identity",
         "LinearMap",
-        "PackBits",
         "Rotate",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -809,12 +781,8 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "BitVectorSBox",
-        "Concatenate",
         "Constant",
-        "Identity",
         "LinearMap",
-        "PackBits",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -885,13 +853,9 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "BitVectorSBox",
-        "Concatenate",
         "Constant",
-        "Identity",
-        "PackBits",
         "Permutation",
         "Rotate",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -963,13 +927,9 @@
       "category": "block_ciphers",
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
-        "Concatenate",
         "Constant",
-        "Identity",
         "ModularAdd",
-        "PackBits",
         "Rotate",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -1057,7 +1017,6 @@
       "category": "block_ciphers",
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
-        "Concatenate",
         "Constant",
         "ModularAdd",
         "Rotate",
@@ -1133,14 +1092,10 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "BitVectorSBox",
-        "Concatenate",
         "Constant",
-        "Identity",
         "ModularAdd",
         "ModularSubtract",
-        "PackBits",
         "Permutation",
-        "UnpackBits",
         "VariableRotate",
         "Xor"
       ],
@@ -1227,12 +1182,8 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "BitVectorSBox",
-        "Concatenate",
-        "Identity",
-        "PackBits",
         "Permutation",
         "Rotate",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -1308,12 +1259,8 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "BitVectorSBox",
-        "Concatenate",
-        "Identity",
-        "PackBits",
         "Permutation",
         "Rotate",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -1387,12 +1334,8 @@
         "BitwiseAnd",
         "BitwiseNot",
         "BitwiseOr",
-        "Concatenate",
         "Constant",
-        "Identity",
-        "PackBits",
         "Rotate",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -1485,13 +1428,9 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "BitVectorSBox",
-        "Concatenate",
         "Constant",
-        "Identity",
-        "PackBits",
         "Permutation",
         "Rotate",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -1572,12 +1511,8 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "BitVectorSBox",
-        "Concatenate",
-        "Identity",
         "ModularAdd",
-        "PackBits",
         "Rotate",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -1649,7 +1584,6 @@
       "category": "block_ciphers",
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
-        "Concatenate",
         "Constant",
         "ModularAdd",
         "Rotate",
@@ -1726,10 +1660,8 @@
       "category": "block_ciphers",
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
-        "Concatenate",
         "IDEAMultiply",
         "ModularAdd",
-        "PackBits",
         "Permutation",
         "Xor"
       ],
@@ -1801,14 +1733,10 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "BitVectorSBox",
-        "Concatenate",
         "Constant",
-        "Identity",
         "LinearMap",
         "ModularAdd",
-        "PackBits",
         "Rotate",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -1881,12 +1809,8 @@
         "BitVectorSBox",
         "BitwiseAnd",
         "BitwiseOr",
-        "Concatenate",
         "Constant",
-        "Identity",
-        "PackBits",
         "Rotate",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -1959,11 +1883,7 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "BitwiseAnd",
-        "Concatenate",
         "Constant",
-        "Identity",
-        "PackBits",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -2058,10 +1978,6 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "BitwiseAnd",
-        "Concatenate",
-        "Identity",
-        "PackBits",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -2151,11 +2067,7 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "BitwiseAnd",
-        "Concatenate",
         "Constant",
-        "Identity",
-        "PackBits",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -2250,10 +2162,6 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "BitwiseAnd",
-        "Concatenate",
-        "Identity",
-        "PackBits",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -2343,12 +2251,8 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "BitVectorSBox",
-        "Concatenate",
         "Constant",
-        "Identity",
-        "PackBits",
         "Rotate",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -2420,13 +2324,10 @@
       "category": "block_ciphers",
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
-        "Concatenate",
         "Constant",
         "ModularAdd",
-        "PackBits",
         "Permutation",
         "Rotate",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -2501,12 +2402,8 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "BitVectorSBox",
-        "Concatenate",
         "Constant",
-        "Identity",
         "LinearMap",
-        "PackBits",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -2585,12 +2482,8 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "BitVectorSBox",
-        "Concatenate",
         "Constant",
-        "Identity",
         "LinearMap",
-        "PackBits",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -2663,14 +2556,10 @@
       "category": "block_ciphers",
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
-        "Concatenate",
         "Constant",
-        "Identity",
         "ModularAdd",
         "ModularMultiply",
-        "PackBits",
         "Rotate",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -2758,13 +2647,9 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "BitVectorSBox",
-        "Concatenate",
         "Constant",
-        "Identity",
         "LinearMap",
-        "PackBits",
         "Permutation",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -2845,13 +2730,9 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "BitVectorSBox",
-        "Concatenate",
         "Constant",
-        "Identity",
         "LinearMap",
-        "PackBits",
         "Permutation",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -2931,7 +2812,6 @@
       "components": [
         "Add",
         "BitVectorSBox",
-        "Concatenate",
         "Constant",
         "Permutation"
       ],
@@ -3003,14 +2883,10 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "BitVectorSBox",
-        "Concatenate",
         "Constant",
-        "Identity",
         "LinearMap",
-        "PackBits",
         "Rotate",
         "Shift",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -3083,12 +2959,8 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "BitVectorSBox",
-        "Concatenate",
         "Constant",
-        "Identity",
         "LinearMap",
-        "PackBits",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -3158,13 +3030,10 @@
       "category": "block_ciphers",
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
-        "Concatenate",
         "Constant",
         "ModularAdd",
-        "PackBits",
         "Permutation",
         "Rotate",
-        "UnpackBits",
         "VariableRotate",
         "Xor"
       ],
@@ -3237,7 +3106,6 @@
       "category": "block_ciphers",
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
-        "Concatenate",
         "ModularAdd",
         "ModularSubtract",
         "Shift",
@@ -3315,12 +3183,8 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "BitVectorSBox",
-        "Concatenate",
         "Constant",
-        "Identity",
-        "PackBits",
         "Rotate",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -3399,13 +3263,9 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "BitVectorSBox",
-        "Concatenate",
         "Constant",
-        "Identity",
         "LinearMap",
-        "PackBits",
         "Rotate",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -3670,12 +3530,8 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "BitVectorSBox",
-        "Concatenate",
         "Constant",
-        "Identity",
-        "PackBits",
         "Rotate",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -3747,16 +3603,12 @@
       "category": "block_ciphers",
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
-        "Concatenate",
         "Constant",
         "ModularAdd",
-        "PackBits",
         "Rotate",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
-        "Bit",
         "Word"
       ],
       "family": "sparx",
@@ -3826,13 +3678,9 @@
       "category": "block_ciphers",
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
-        "Concatenate",
         "Constant",
-        "Identity",
         "ModularAdd",
-        "PackBits",
         "Rotate",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -3905,13 +3753,9 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "BitVectorSBox",
-        "Concatenate",
         "Constant",
-        "Identity",
-        "PackBits",
         "Rotate",
         "Shift",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -3997,7 +3841,6 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "BitwiseAnd",
-        "Concatenate",
         "Constant",
         "Rotate",
         "Xor"
@@ -4097,11 +3940,7 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "BitVectorSBox",
-        "Concatenate",
         "Constant",
-        "Identity",
-        "PackBits",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -4192,7 +4031,6 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "BitwiseAnd",
-        "Concatenate",
         "Constant",
         "Rotate",
         "Xor"
@@ -4288,11 +4126,7 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "BitVectorSBox",
-        "Concatenate",
         "Constant",
-        "Identity",
-        "PackBits",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -4439,11 +4273,7 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "BitVectorSBox",
-        "Concatenate",
         "Constant",
-        "Identity",
-        "PackBits",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -4556,11 +4386,7 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "BitVectorSBox",
-        "Concatenate",
         "Constant",
-        "Identity",
-        "PackBits",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -4630,7 +4456,6 @@
       "category": "block_ciphers",
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
-        "Concatenate",
         "Constant",
         "ModularAdd",
         "Rotate",
@@ -4778,12 +4603,8 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "BitVectorSBox",
-        "Concatenate",
-        "Identity",
-        "PackBits",
         "Permutation",
         "Rotate",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -4856,13 +4677,9 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "BitVectorSBox",
-        "Concatenate",
         "Constant",
-        "Identity",
         "LinearMap",
-        "PackBits",
         "Rotate",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -4936,12 +4753,8 @@
       "components": [
         "BitwiseNot",
         "BitwiseOr",
-        "Concatenate",
-        "Identity",
-        "PackBits",
         "Permutation",
         "Rotate",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -5010,7 +4823,6 @@
       "category": "block_ciphers",
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
-        "Concatenate",
         "Constant",
         "ModularAdd",
         "Shift",
@@ -5088,10 +4900,6 @@
       "components": [
         "BitwiseAnd",
         "BitwiseNot",
-        "Concatenate",
-        "Identity",
-        "PackBits",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -5202,12 +5010,8 @@
       "category": "block_ciphers",
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
-        "Concatenate",
         "Constant",
         "FeedbackRegister",
-        "Identity",
-        "PackBits",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -5282,10 +5086,6 @@
       "components": [
         "BitwiseAnd",
         "BitwiseNot",
-        "Concatenate",
-        "Identity",
-        "PackBits",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -5358,11 +5158,7 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "BitVectorSBox",
-        "Concatenate",
         "Constant",
-        "Identity",
-        "PackBits",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -5443,16 +5239,12 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "BitVectorSBox",
-        "Concatenate",
         "Constant",
-        "Identity",
         "LinearMap",
         "ModularAdd",
-        "PackBits",
         "Permutation",
         "Rotate",
         "Shift",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -5524,12 +5316,8 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "BitVectorSBox",
-        "Concatenate",
-        "Identity",
         "LinearMap",
-        "PackBits",
         "Permutation",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -5600,13 +5388,9 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "BitVectorSBox",
-        "Concatenate",
         "Constant",
-        "Identity",
-        "PackBits",
         "Permutation",
         "Rotate",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -5704,13 +5488,9 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "BitVectorSBox",
-        "Concatenate",
         "Constant",
-        "Identity",
         "LinearMap",
-        "PackBits",
         "Permutation",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -5801,12 +5581,8 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "BitVectorSBox",
-        "Concatenate",
         "Constant",
-        "Identity",
-        "PackBits",
         "Permutation",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -5876,7 +5652,6 @@
       "category": "block_ciphers",
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
-        "Concatenate",
         "Constant",
         "ModularAdd",
         "Shift",
@@ -5952,12 +5727,8 @@
       "category": "block_functions",
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
-        "Concatenate",
         "Constant",
         "FeedbackRegister",
-        "Identity",
-        "PackBits",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -6032,12 +5803,8 @@
       "components": [
         "BitwiseAnd",
         "BitwiseOr",
-        "Concatenate",
         "Constant",
         "FeedbackRegister",
-        "Identity",
-        "PackBits",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -6110,12 +5877,8 @@
       "category": "block_functions",
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
-        "Concatenate",
         "Constant",
         "FeedbackRegister",
-        "Identity",
-        "PackBits",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -6189,12 +5952,9 @@
       "category": "block_functions",
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
-        "Concatenate",
         "Constant",
         "ModularAdd",
-        "PackBits",
         "Rotate",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -6272,13 +6032,9 @@
       "category": "block_functions",
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
-        "Concatenate",
         "Constant",
-        "Identity",
         "ModularAdd",
-        "PackBits",
         "Rotate",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -6352,13 +6108,9 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "BitVectorSBox",
-        "Concatenate",
         "Constant",
         "FeedbackRegister",
-        "Identity",
         "ModularAdd",
-        "PackBits",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -6434,7 +6186,6 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "BitwiseAnd",
-        "Concatenate",
         "Constant",
         "Xor"
       ],
@@ -6505,14 +6256,10 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "BitVectorSBox",
-        "Concatenate",
         "Constant",
-        "Identity",
         "ModularAdd",
-        "PackBits",
         "Rotate",
         "Shift",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -6585,13 +6332,9 @@
       "category": "functions",
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
-        "Concatenate",
         "Constant",
-        "Identity",
         "ModularAdd",
-        "PackBits",
         "Rotate",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -6672,12 +6415,8 @@
       "category": "functions",
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
-        "Concatenate",
-        "Identity",
         "ModularAdd",
-        "PackBits",
         "Rotate",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -6751,11 +6490,7 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "BitwiseAnd",
-        "Concatenate",
         "FeedbackRegister",
-        "Identity",
-        "PackBits",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -6825,13 +6560,9 @@
         "BitwiseAnd",
         "BitwiseNot",
         "BitwiseOr",
-        "Concatenate",
         "Constant",
-        "Identity",
         "ModularAdd",
-        "PackBits",
         "Rotate",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -6898,13 +6629,9 @@
         "BitwiseAnd",
         "BitwiseNot",
         "BitwiseOr",
-        "Concatenate",
         "Constant",
-        "Identity",
         "ModularAdd",
-        "PackBits",
         "Rotate",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -6970,14 +6697,10 @@
       "components": [
         "BitwiseAnd",
         "BitwiseNot",
-        "Concatenate",
         "Constant",
-        "Identity",
         "ModularAdd",
-        "PackBits",
         "Rotate",
         "Shift",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -7063,13 +6786,9 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "BitVectorSBox",
-        "Concatenate",
         "Constant",
-        "Identity",
         "LinearMap",
-        "PackBits",
         "Rotate",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -7137,12 +6856,8 @@
       "components": [
         "BitwiseAnd",
         "BitwiseNot",
-        "Concatenate",
         "Constant",
-        "Identity",
-        "PackBits",
         "Rotate",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -7250,12 +6965,8 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "BitVectorSBox",
-        "Concatenate",
         "Constant",
-        "Identity",
         "LinearMap",
-        "PackBits",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -7322,12 +7033,8 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "BitVectorSBox",
-        "Concatenate",
         "Constant",
-        "Identity",
-        "PackBits",
         "Rotate",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -7393,7 +7100,6 @@
       "category": "permutations",
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
-        "Concatenate",
         "ModularAdd",
         "Rotate",
         "Xor"
@@ -7463,12 +7169,8 @@
       "category": "permutations",
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
-        "Concatenate",
-        "Identity",
         "ModularAdd",
-        "PackBits",
         "Rotate",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -7534,12 +7236,8 @@
       "category": "permutations",
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
-        "Concatenate",
-        "Identity",
         "ModularAdd",
-        "PackBits",
         "Rotate",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -7612,12 +7310,8 @@
       "components": [
         "BitwiseAnd",
         "BitwiseNot",
-        "Concatenate",
         "Constant",
-        "Identity",
-        "PackBits",
         "Rotate",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -7725,12 +7419,8 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "BitVectorSBox",
-        "Concatenate",
         "Constant",
-        "Identity",
-        "PackBits",
         "Rotate",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -7797,13 +7487,9 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "BitVectorSBox",
-        "Concatenate",
         "Constant",
-        "Identity",
         "LinearMap",
-        "PackBits",
         "Rotate",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -7871,13 +7557,9 @@
       "components": [
         "BitwiseAnd",
         "BitwiseOr",
-        "Concatenate",
         "Constant",
-        "Identity",
-        "PackBits",
         "Rotate",
         "Shift",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -7963,13 +7645,9 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "BitVectorSBox",
-        "Concatenate",
         "Constant",
-        "Identity",
-        "PackBits",
         "Rotate",
         "Shift",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -8036,10 +7714,6 @@
       "category": "permutations",
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
-        "Concatenate",
-        "Identity",
-        "PackBits",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -8104,12 +7778,8 @@
       "components": [
         "BitwiseAnd",
         "BitwiseNot",
-        "Concatenate",
         "Constant",
-        "Identity",
-        "PackBits",
         "Rotate",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -8198,12 +7868,8 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "BitVectorSBox",
-        "Concatenate",
         "Constant",
-        "Identity",
-        "PackBits",
         "Rotate",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -8271,12 +7937,8 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "BitVectorSBox",
-        "Concatenate",
         "Constant",
-        "Identity",
-        "PackBits",
         "Rotate",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -8358,12 +8020,8 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "BitVectorSBox",
-        "Concatenate",
         "Constant",
-        "Identity",
-        "PackBits",
         "Rotate",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -8443,12 +8101,8 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "BitwiseAnd",
-        "Concatenate",
-        "Identity",
-        "PackBits",
         "Rotate",
         "Shift",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -8520,12 +8174,8 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "BitVectorSBox",
-        "Concatenate",
         "Constant",
-        "Identity",
         "LinearMap",
-        "PackBits",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -8589,7 +8239,6 @@
       "category": "permutations",
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
-        "Concatenate",
         "ModularAdd",
         "Rotate",
         "Xor"
@@ -8659,13 +8308,9 @@
       "category": "permutations",
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
-        "Concatenate",
         "Constant",
-        "Identity",
         "ModularAdd",
-        "PackBits",
         "Rotate",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -8765,12 +8410,8 @@
       "category": "permutations",
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
-        "Concatenate",
-        "Identity",
         "ModularAdd",
-        "PackBits",
         "Rotate",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -8836,12 +8477,8 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "BitVectorSBox",
-        "Concatenate",
         "Constant",
-        "Identity",
-        "PackBits",
         "Permutation",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -8931,12 +8568,8 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "BitVectorSBox",
-        "Concatenate",
         "Constant",
-        "Identity",
-        "PackBits",
         "Permutation",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -9026,12 +8659,8 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "BitVectorSBox",
-        "Concatenate",
         "Constant",
-        "Identity",
-        "PackBits",
         "Permutation",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -9107,12 +8736,8 @@
       "components": [
         "BitwiseAnd",
         "BitwiseNot",
-        "Concatenate",
         "Constant",
-        "Identity",
-        "PackBits",
         "Rotate",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -9200,12 +8825,8 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "BitVectorSBox",
-        "Concatenate",
         "Constant",
-        "Identity",
-        "PackBits",
         "Rotate",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -9272,12 +8893,8 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "BitVectorSBox",
-        "Concatenate",
         "Constant",
-        "Identity",
-        "PackBits",
         "Rotate",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -9699,73 +9316,6 @@
           "values": {
             "number_of_inputs": 2,
             "word_bit_size": 4
-          }
-        }
-      ],
-      "realizations": [
-        {
-          "capabilities": [
-            "batch_evaluation",
-            "scalar_evaluation"
-          ],
-          "maturity": "stable",
-          "name": "default",
-          "priority": 0,
-          "provenance": [
-            "native CLAASP v5 source"
-          ],
-          "structure": [
-            "typed_graph"
-          ]
-        }
-      ],
-      "tags": [
-        "single_component_primitives"
-      ]
-    },
-    {
-      "authenticity": "canonical",
-      "bijectivity_obligation": false,
-      "category": "single_component_primitives",
-      "classification_basis": "new v5 base-component primitive classified by its typed boundary",
-      "components": [
-        "Concatenate"
-      ],
-      "domains": [
-        "Bit"
-      ],
-      "family": "concatenate",
-      "fixed_evidence": [
-        "next/tests/unit/test_single_component_primitives.py"
-      ],
-      "input_roles": [
-        "input_0",
-        "input_1"
-      ],
-      "inputs": [
-        {
-          "name": "input_0",
-          "role": "input_0",
-          "visibility": "public"
-        },
-        {
-          "name": "input_1",
-          "role": "input_1",
-          "visibility": "public"
-        }
-      ],
-      "kind": "function",
-      "labels": [],
-      "legacy_source": null,
-      "module": "claasp_next.primitives.single_component_primitives.concatenate",
-      "name": "Concatenate",
-      "official_name": "Concatenate",
-      "parameter_sets": [
-        {
-          "name": "default",
-          "values": {
-            "input_bit_size": 2,
-            "number_of_inputs": 2
           }
         }
       ],
@@ -10359,69 +9909,6 @@
     },
     {
       "authenticity": "canonical",
-      "bijectivity_obligation": true,
-      "category": "single_component_primitives",
-      "classification_basis": "new v5 base-component primitive classified by its typed boundary",
-      "components": [
-        "PackBits"
-      ],
-      "domains": [
-        "Bit",
-        "Word"
-      ],
-      "family": "pack_bits",
-      "fixed_evidence": [
-        "next/tests/unit/test_single_component_primitives.py"
-      ],
-      "input_roles": [
-        "input"
-      ],
-      "inputs": [
-        {
-          "name": "input",
-          "role": "input",
-          "visibility": "public"
-        }
-      ],
-      "kind": "permutation",
-      "labels": [],
-      "legacy_source": null,
-      "module": "claasp_next.primitives.single_component_primitives.pack_bits",
-      "name": "PackBits",
-      "official_name": "PackBits",
-      "parameter_sets": [
-        {
-          "name": "default",
-          "values": {
-            "bit_count": 8,
-            "output_domain": null,
-            "word_width": 4
-          }
-        }
-      ],
-      "realizations": [
-        {
-          "capabilities": [
-            "batch_evaluation",
-            "scalar_evaluation"
-          ],
-          "maturity": "stable",
-          "name": "default",
-          "priority": 0,
-          "provenance": [
-            "native CLAASP v5 source"
-          ],
-          "structure": [
-            "typed_graph"
-          ]
-        }
-      ],
-      "tags": [
-        "single_component_primitives"
-      ]
-    },
-    {
-      "authenticity": "canonical",
       "bijectivity_obligation": false,
       "category": "single_component_primitives",
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
@@ -10735,68 +10222,6 @@
     },
     {
       "authenticity": "canonical",
-      "bijectivity_obligation": true,
-      "category": "single_component_primitives",
-      "classification_basis": "new v5 base-component primitive classified by its typed boundary",
-      "components": [
-        "UnpackBits"
-      ],
-      "domains": [
-        "Bit",
-        "Word"
-      ],
-      "family": "unpack_bits",
-      "fixed_evidence": [
-        "next/tests/unit/test_single_component_primitives.py"
-      ],
-      "input_roles": [
-        "input"
-      ],
-      "inputs": [
-        {
-          "name": "input",
-          "role": "input",
-          "visibility": "public"
-        }
-      ],
-      "kind": "permutation",
-      "labels": [],
-      "legacy_source": null,
-      "module": "claasp_next.primitives.single_component_primitives.unpack_bits",
-      "name": "UnpackBits",
-      "official_name": "UnpackBits",
-      "parameter_sets": [
-        {
-          "name": "default",
-          "values": {
-            "domain": null,
-            "word_count": 2
-          }
-        }
-      ],
-      "realizations": [
-        {
-          "capabilities": [
-            "batch_evaluation",
-            "scalar_evaluation"
-          ],
-          "maturity": "stable",
-          "name": "default",
-          "priority": 0,
-          "provenance": [
-            "native CLAASP v5 source"
-          ],
-          "structure": [
-            "typed_graph"
-          ]
-        }
-      ],
-      "tags": [
-        "single_component_primitives"
-      ]
-    },
-    {
-      "authenticity": "canonical",
       "bijectivity_obligation": false,
       "category": "single_component_primitives",
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
@@ -11005,10 +10430,7 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "BitVectorSBox",
-        "Concatenate",
-        "PackBits",
         "Permutation",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -11085,14 +10507,11 @@
       "components": [
         "BitVectorSBox",
         "BitwiseAnd",
-        "Concatenate",
         "Constant",
         "LinearMap",
         "ModularAdd",
-        "PackBits",
         "Permutation",
         "Shift",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -11165,10 +10584,7 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "BitVectorSBox",
-        "Concatenate",
-        "PackBits",
         "Permutation",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -11241,7 +10657,6 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "Add",
-        "Concatenate",
         "Constant",
         "LinearMap",
         "Permutation",
@@ -11316,11 +10731,8 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "BitVectorSBox",
-        "Concatenate",
         "Constant",
-        "PackBits",
         "Permutation",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -11411,10 +10823,7 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "BitVectorSBox",
-        "Concatenate",
-        "PackBits",
         "Permutation",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -11498,10 +10907,7 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "BitVectorSBox",
-        "Concatenate",
-        "PackBits",
         "Permutation",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -11588,12 +10994,8 @@
         "BitVectorSBox",
         "BitwiseAnd",
         "BitwiseNot",
-        "Concatenate",
         "Constant",
-        "Identity",
-        "PackBits",
         "Permutation",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -11674,11 +11076,7 @@
       "components": [
         "BitVectorSBox",
         "BitwiseAnd",
-        "Concatenate",
         "Constant",
-        "Identity",
-        "PackBits",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -11811,11 +11209,7 @@
       "components": [
         "BitwiseAnd",
         "BitwiseNot",
-        "Concatenate",
         "Constant",
-        "Identity",
-        "PackBits",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -11893,15 +11287,11 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "BitVectorSBox",
-        "Concatenate",
         "Constant",
-        "Identity",
         "LinearMap",
-        "PackBits",
         "Permutation",
         "Rotate",
         "Shift",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -11979,13 +11369,9 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "BitVectorSBox",
-        "Concatenate",
         "Constant",
-        "Identity",
-        "PackBits",
         "Rotate",
         "Shift",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -12091,15 +11477,11 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "BitVectorSBox",
-        "Concatenate",
         "Constant",
-        "Identity",
         "LinearMap",
-        "PackBits",
         "Permutation",
         "Rotate",
         "Shift",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -12183,13 +11565,9 @@
       "components": [
         "BitVectorSBox",
         "BitwiseAnd",
-        "Concatenate",
         "Constant",
-        "Identity",
-        "PackBits",
         "Permutation",
         "Rotate",
-        "UnpackBits",
         "Xor"
       ],
       "domains": [
@@ -12266,7 +11644,6 @@
       "category": "tweakable_block_ciphers",
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
-        "Concatenate",
         "Constant",
         "ModularAdd",
         "Rotate",
@@ -12349,7 +11726,6 @@
       "category": "tweakable_block_ciphers",
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
-        "Concatenate",
         "Constant",
         "ModularAdd",
         "Rotate",
@@ -12430,7 +11806,6 @@
         "Add",
         "BitVectorSBox",
         "BitwiseAnd",
-        "Concatenate",
         "Constant",
         "Identity",
         "ModularAdd",
@@ -12458,7 +11833,6 @@
         "BitwiseAnd",
         "BitwiseNot",
         "BitwiseOr",
-        "Concatenate",
         "Constant",
         "ModularAdd",
         "Rotate",
@@ -12477,7 +11851,6 @@
     {
       "components": [
         "BitwiseAnd",
-        "Concatenate",
         "Constant",
         "Rotate",
         "Xor"
@@ -12499,7 +11872,6 @@
         "Add",
         "BitVectorSBox",
         "BitwiseAnd",
-        "Concatenate",
         "Constant",
         "Identity",
         "ModularAdd",
@@ -12524,7 +11896,6 @@
         "BitwiseAnd",
         "BitwiseNot",
         "BitwiseOr",
-        "Concatenate",
         "Constant",
         "ModularAdd",
         "Rotate",
@@ -12548,7 +11919,6 @@
         "BitwiseAnd",
         "BitwiseNot",
         "BitwiseOr",
-        "Concatenate",
         "Constant",
         "FeedbackRegister",
         "IDEAMultiply",
@@ -12558,13 +11928,11 @@
         "ModularMultiply",
         "ModularSubtract",
         "Multiply",
-        "PackBits",
         "Permutation",
         "Power",
         "Rotate",
         "SBox",
         "Shift",
-        "UnpackBits",
         "VariableRotate",
         "VariableShift",
         "Xor"
@@ -12588,7 +11956,6 @@
     {
       "components": [
         "Add",
-        "Concatenate",
         "Constant",
         "Identity",
         "LinearMap",
@@ -12610,7 +11977,6 @@
     {
       "components": [
         "Add",
-        "Concatenate",
         "Constant",
         "Identity",
         "LinearMap",
@@ -12635,7 +12001,6 @@
         "BitwiseAnd",
         "BitwiseNot",
         "BitwiseOr",
-        "Concatenate",
         "Constant",
         "FeedbackRegister",
         "IDEAMultiply",
@@ -12645,13 +12010,11 @@
         "ModularMultiply",
         "ModularSubtract",
         "Multiply",
-        "PackBits",
         "Permutation",
         "Power",
         "Rotate",
         "SBox",
         "Shift",
-        "UnpackBits",
         "VariableRotate",
         "VariableShift",
         "Xor"
@@ -12686,7 +12049,6 @@
     {
       "components": [
         "Add",
-        "Concatenate",
         "Constant",
         "Identity",
         "LinearMap",
@@ -12708,7 +12070,6 @@
     {
       "components": [
         "BitwiseAnd",
-        "Concatenate",
         "Constant",
         "Identity",
         "ModularAdd",
@@ -12729,7 +12090,6 @@
     {
       "components": [
         "BitwiseAnd",
-        "Concatenate",
         "Constant",
         "Identity",
         "ModularAdd",

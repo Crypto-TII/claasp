@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 
 from claasp_next.components import (
-    BitwiseAnd, BitwiseNot, BitwiseOr, Concatenate, Constant, ModularAdd, Rotate, Xor,
+    BitwiseAnd, BitwiseNot, BitwiseOr, Constant, ModularAdd, Rotate, Xor,
 )
 from claasp_next.domains import Bit, Word
 from claasp_next.graph import Primitive
@@ -52,9 +52,10 @@ class BooleanDegreeEvaluator:
             else:
                 raise NotImplementedError("Boolean degree evaluation supports Bit and Word domains")
 
+        binding_cache = {}
         for component in primitive.components:
             operands = tuple(
-                tuple(values[selection.source.owner_id][position] for position in selection.positions)
+                primitive.resolve_selection(selection, values, binding_cache)
                 for selection in component.inputs
             )
             if isinstance(component, Constant):
@@ -70,9 +71,6 @@ class BooleanDegreeEvaluator:
                               for bit in range(domain.width))
                         for value in component.values
                     )
-                continue
-            if isinstance(component, Concatenate):
-                values[component.component_id] = tuple(unit for operand in operands for unit in operand)
                 continue
             if isinstance(component, Rotate):
                 values[component.component_id] = tuple(
@@ -99,9 +97,7 @@ class BooleanDegreeEvaluator:
 
         if primitive.output is None:
             return BooleanDegreeResult((), variable_input)
-        selected = tuple(
-            values[primitive.output.source.owner_id][position] for position in primitive.output.positions
-        )
+        selected = primitive.resolve_selection(primitive.output, values, binding_cache)
         flattened = tuple(degree.value for unit in selected
                           for degree in ((unit,) if isinstance(unit, _Degree) else unit))
         return BooleanDegreeResult(flattened, variable_input)

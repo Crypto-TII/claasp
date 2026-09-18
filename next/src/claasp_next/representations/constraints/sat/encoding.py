@@ -29,6 +29,33 @@ def selection_variable_names(selection: Selection) -> tuple[tuple[str, ...], ...
     )
 
 
+def resolved_selection_variable_names(
+    primitive, selection: Selection,
+) -> tuple[tuple[str, ...], ...]:
+    """Return Boolean variable groups after resolving structural bindings.
+
+    Bindings have no variables of their own.  Their selected bits therefore
+    inherit the stable names of the primitive inputs or semantic component
+    outputs that carry them.
+    """
+
+    width = selection.value_type.domain.encoded_bit_size
+    if width is None:
+        raise ValueError("Boolean encoding requires a canonically encoded selection domain")
+    names = []
+    for owner_id, flat_bit in primitive.selection_bit_sources(selection):
+        value_type = primitive.port(owner_id).value_type
+        source_width = value_type.domain.encoded_bit_size
+        if source_width is None:  # pragma: no cover - guarded by selection_bit_sources
+            raise ValueError("Boolean encoding requires canonically encoded source domains")
+        position, local_bit = divmod(flat_bit, source_width)
+        names.append(unit_variable_names(owner_id, value_type, position)[local_bit])
+    return tuple(
+        tuple(names[start:start + width])
+        for start in range(0, len(names), width)
+    )
+
+
 def encode_unit(value: int, value_type: ValueType) -> tuple[int, ...]:
     """Encode one logical Bit or Word value as MSB-first Boolean values."""
 

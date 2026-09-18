@@ -6,6 +6,7 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 
 from claasp_next.graph.component import Component
+from claasp_next.graph.binding import ValueBinding
 from claasp_next.graph.port import Port, PortLike, Selection, as_selection
 from claasp_next.graph.value_type import ValueType
 
@@ -56,6 +57,7 @@ class CompositeDefinition:
     name: str
     input_types: tuple[tuple[str, ValueType], ...]
     rounds: tuple[tuple[Component, ...], ...]
+    bindings: tuple[ValueBinding, ...]
     outputs: tuple[tuple[str, Selection], ...]
     provenance: tuple[tuple[str, str], ...] = ()
     nested_scopes: tuple[CompositeTemplate, ...] = field(default=(), repr=False)
@@ -92,6 +94,12 @@ class CompositeDefinition:
         from claasp_next.graph.primitive import Primitive
 
         primitive = Primitive(self.name, dict(self.input_types), provenance=self.provenance)
+        for binding in self.bindings:
+            primitive._add_binding(
+                binding.kind, binding.inputs, binding.output_type,
+                word_width=binding.word_width, binding_id=binding.binding_id,
+                _validate_inputs=False,
+            )
         for components in self.rounds:
             primitive.add_round()
             for component in components:
@@ -196,6 +204,12 @@ class CompositeBuilder:
 
         return self._primitive.join(*values)
 
+    def pack_bits(self, value: PortLike, word_width: int, *, output_domain=None) -> Port:
+        return self._primitive.pack_bits(value, word_width, output_domain=output_domain)
+
+    def unpack_bits(self, value: PortLike) -> Port:
+        return self._primitive.unpack_bits(value)
+
     def set_output(self, name: str, output: PortLike | Sequence[PortLike]) -> None:
         if not isinstance(name, str) or not name:
             raise ValueError("composite output name must be a non-empty string")
@@ -223,10 +237,11 @@ class CompositeBuilder:
             for instance in self._primitive.scopes
         )
         return CompositeDefinition(
-            self.name,
-            tuple((name, port.value_type) for name, port in self.input_ports.items()),
-            tuple(tuple(primitive_round.components) for primitive_round in self._primitive.rounds),
-            tuple(self._outputs.items()),
-            tuple(sorted((provenance or {}).items())),
-            templates,
+            name=self.name,
+            input_types=tuple((name, port.value_type) for name, port in self.input_ports.items()),
+            rounds=tuple(tuple(primitive_round.components) for primitive_round in self._primitive.rounds),
+            bindings=self._primitive.bindings,
+            outputs=tuple(self._outputs.items()),
+            provenance=tuple(sorted((provenance or {}).items())),
+            nested_scopes=templates,
         )

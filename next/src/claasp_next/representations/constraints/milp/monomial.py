@@ -63,7 +63,7 @@ class BooleanMonomialGraphMILPModel:
     def milp_model(self) -> MILPModel:
         """Return a portable maximization model for the selected output bit."""
 
-        from claasp_next.components import BitwiseAnd, Concatenate, Constant, Rotate, Xor
+        from claasp_next.components import BitwiseAnd, Constant, Rotate, Xor
 
         variables = []
         constraints = []
@@ -83,16 +83,14 @@ class BooleanMonomialGraphMILPModel:
         for component_index, component in enumerate(self.primitive.components):
             operand_edges = []
             for operand, selection in enumerate(component.inputs):
-                domain_width = selection.value_type.domain.encoded_bit_size
                 edges = []
-                for selected_index, position in enumerate(selection.positions):
-                    for local_bit in range(domain_width):
-                        bit = selected_index * domain_width + local_bit
-                        edge = self._edge(component_index, operand, bit)
-                        variables.append(LinearVariable(edge, VariableKind.BINARY))
-                        source_bit = position * domain_width + local_bit
-                        uses[self._wire(selection.source.owner_id, source_bit)].append(edge)
-                        edges.append(edge)
+                for bit, (owner_id, source_bit) in enumerate(
+                    self.primitive.selection_bit_sources(selection)
+                ):
+                    edge = self._edge(component_index, operand, bit)
+                    variables.append(LinearVariable(edge, VariableKind.BINARY))
+                    uses[self._wire(owner_id, source_bit)].append(edge)
+                    edges.append(edge)
                 operand_edges.append(tuple(edges))
 
             output = tuple(self._wire(component.component_id, bit)
@@ -121,13 +119,6 @@ class BooleanMonomialGraphMILPModel:
                         LinearExpression.from_terms({operand_edges[0][source_bit]: 1, target: -1}),
                         ConstraintSense.EQUAL, 0, f"rotate_{component_index}_{bit}",
                     ))
-            elif isinstance(component, Concatenate):
-                flattened = tuple(edge for edges in operand_edges for edge in edges)
-                for bit, target in enumerate(output):
-                    constraints.append(LinearConstraint(
-                        LinearExpression.from_terms({flattened[bit]: 1, target: -1}),
-                        ConstraintSense.EQUAL, 0, f"concat_{component_index}_{bit}",
-                    ))
             elif isinstance(component, Constant):
                 domain_width = component.output_type.domain.encoded_bit_size
                 for unit, value in enumerate(component.values):
@@ -143,18 +134,16 @@ class BooleanMonomialGraphMILPModel:
                     f"Boolean monomial graph MILP does not support {type(component).__name__}"
                 )
 
-        output_domain_width = self.primitive.output.value_type.domain.encoded_bit_size
-        for selected_index, position in enumerate(self.primitive.output.positions):
-            for local_bit in range(output_domain_width):
-                bit = selected_index * output_domain_width + local_bit
-                edge = f"primitive_output_{bit}"
-                variables.append(LinearVariable(edge, VariableKind.BINARY))
-                source_bit = position * output_domain_width + local_bit
-                uses[self._wire(self.primitive.output.source.owner_id, source_bit)].append(edge)
-                constraints.append(LinearConstraint(
-                    LinearExpression.from_terms({edge: 1}), ConstraintSense.EQUAL,
-                    int(bit == self.output_bit), f"fix_output_{bit}",
-                ))
+        for bit, (owner_id, source_bit) in enumerate(
+            self.primitive.selection_bit_sources(self.primitive.output)
+        ):
+            edge = f"primitive_output_{bit}"
+            variables.append(LinearVariable(edge, VariableKind.BINARY))
+            uses[self._wire(owner_id, source_bit)].append(edge)
+            constraints.append(LinearConstraint(
+                LinearExpression.from_terms({edge: 1}), ConstraintSense.EQUAL,
+                int(bit == self.output_bit), f"fix_output_{bit}",
+            ))
 
         for wire, consumers in uses.items():
             if not consumers:

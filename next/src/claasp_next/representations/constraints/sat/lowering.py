@@ -8,7 +8,6 @@ from claasp_next.components import (
     Add,
     BitVectorSBox,
     BitwiseAnd,
-    Concatenate,
     Constant,
     Identity,
     ModularAdd,
@@ -110,10 +109,14 @@ class BooleanCNFModel:
                 unit_variable_names(label, component.output_type, i)
                 for i in range(component.output_type.unit_count)
             ]
-            selected = [
-                [unit_variable_names(item.source.owner_id, item.source.value_type, position) for position in item.positions]
-                for item in component.inputs
-            ]
+            selected = []
+            for item in component.inputs:
+                width = item.value_type.domain.encoded_bit_size
+                names = [self._bit_name(owner_id, bit) for owner_id, bit in self.primitive.selection_bit_sources(item)]
+                selected.append([
+                    tuple(names[start:start + width])
+                    for start in range(0, len(names), width)
+                ])
             if isinstance(component, Constant):
                 for output, value in zip(outputs, component.values):
                     for bit_name, bit in zip(output, encode_unit(value, component.output_type)):
@@ -125,11 +128,6 @@ class BooleanCNFModel:
             elif isinstance(component, Permutation):
                 for output, position in zip(outputs, component.mapping):
                     for output_bit, input_bit in zip(output, selected[0][position]):
-                        equal(output_bit, input_bit, label)
-            elif isinstance(component, Concatenate):
-                inputs = [name for group in selected for name in group]
-                for output, input_ in zip(outputs, inputs):
-                    for output_bit, input_bit in zip(output, input_):
                         equal(output_bit, input_bit, label)
             elif isinstance(component, Add):
                 for position, output in enumerate(outputs):
@@ -239,6 +237,8 @@ class BooleanCNFModel:
         assignment = {
             name: bit
             for source_id, values in evaluation.values.items()
+            if source_id in self.primitive.input_ports
+            or any(component.component_id == source_id for component in self.primitive.components)
             for position, value in enumerate(values)
             for name, bit in zip(
                 unit_variable_names(source_id, self._port_type(source_id), position),
@@ -260,3 +260,9 @@ class BooleanCNFModel:
             if port.owner_id == owner_id:
                 return port.value_type
         raise KeyError(owner_id)
+
+    def _bit_name(self, owner_id: str, flat_bit: int) -> str:
+        value_type = self._port_type(owner_id)
+        width = value_type.domain.encoded_bit_size
+        position, local_bit = divmod(flat_bit, width)
+        return unit_variable_names(owner_id, value_type, position)[local_bit]

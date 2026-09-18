@@ -1,7 +1,7 @@
 import pytest
 
 from claasp_next import Bit, Primitive, PrimeField, ScalarEvaluator, ValueType
-from claasp_next.components import Concatenate, Constant, Identity, Permutation
+from claasp_next.components import Constant, Identity, Permutation
 
 
 @pytest.mark.parametrize(
@@ -33,12 +33,14 @@ def test_selection_identity_and_concatenation_use_logical_units():
     low = Identity(primitive.input("state")[1, 0], component_id="identity_0_1")
     high_port = primitive.add_component(high)
     low_port = primitive.add_component(low)
-    joined = Concatenate((high_port, low_port), component_id="concatenate_0_2")
-    primitive.add_component(joined)
+    joined = primitive.join(high_port, low_port)
+    primitive.set_output(joined)
 
     result = ScalarEvaluator().evaluate(primitive, {"state": (10, 20, 30, 40)})
 
-    assert result.value_of("concatenate_0_2") == (40, 30, 20, 10)
+    assert result.output == (40, 30, 20, 10)
+    assert len(primitive.components) == 2
+    assert len(primitive.bindings) == 1
 
 
 def test_primitive_output_accepts_multi_source_structural_wiring():
@@ -50,7 +52,8 @@ def test_primitive_output_accepts_multi_source_structural_wiring():
     primitive.set_output((primitive.input("left"), primitive.input("right")[1, 0]))
 
     assert primitive.evaluate((1, 2), (3, 4)) == (1, 2, 4, 3)
-    assert type(primitive.components[-1]).__name__ == "Concatenate"
+    assert primitive.components == ()
+    assert len(primitive.bindings) == 1
 
 
 def test_join_keeps_one_source_as_wiring_and_normalizes_multiple_sources():
@@ -61,9 +64,20 @@ def test_join_keeps_one_source_as_wiring_and_normalizes_multiple_sources():
 
     assert primitive.join(state).source == state
     joined = primitive.join(state[1], state[0])
-    assert joined.owner_id == "concatenate_0_0"
+    assert joined.owner_id == "__join_0"
     with pytest.raises(ValueError, match="at least one"):
         primitive.join()
+
+
+def test_structural_binding_resolution_is_not_limited_by_python_recursion_depth():
+    primitive = Primitive("deep_wiring", {"state": ValueType(Bit(), (1,))})
+    primitive.add_round()
+    state = primitive.input("state")
+    for _ in range(1_100):
+        state = primitive.view(state)
+    primitive.set_output(state)
+
+    assert primitive.evaluate(1) == 1
 
 
 def test_constant_has_no_graph_inputs_and_is_domain_checked():

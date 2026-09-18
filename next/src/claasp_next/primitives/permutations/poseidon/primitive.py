@@ -3,7 +3,7 @@
 from collections.abc import Iterable
 from math import gcd
 
-from claasp_next.components import Add, Concatenate, Constant, LinearMap, Power
+from claasp_next.components import Add, Constant, LinearMap, Power
 from claasp_next.graph import Primitive, Port, ValueType
 from claasp_next.domains import PrimeField
 from claasp_next.utils import normalize_matrix
@@ -125,8 +125,4 @@ class Poseidon(Primitive):
         first_output = self.add_component(first)
         if state.value_type.unit_count == 1:
             return first_output
-        concatenate = Concatenate(
-            (first_output, state[1:]),
-            component_id=f"concatenate_{round_number}_3",
-        )
-        return self.add_component(concatenate)
+        return self.join(first_output, state[1:])

@@ -3,7 +3,7 @@
 from enum import Enum
 
 from claasp_next.components.algebraic import Add, LinearMap, Multiply, Power
-from claasp_next.components.structural import Concatenate, Constant, Identity, Permutation
+from claasp_next.components.structural import Constant, Identity, Permutation
 from claasp_next.graph import Primitive, Selection
 from claasp_next.domains import PrimeField
 from claasp_next.representations.constraints.polynomial.expression import Polynomial
@@ -31,7 +31,7 @@ class PrimeFieldPolynomialModel:
         ('constant_0_0', 'add_0_1', 'power_0_2')
     """
 
-    _supported_components = (Constant, Identity, Permutation, Concatenate, Add, Multiply, Power, LinearMap)
+    _supported_components = (Constant, Identity, Permutation, Add, Multiply, Power, LinearMap)
 
     def __init__(
         self,
@@ -63,7 +63,16 @@ class PrimeFieldPolynomialModel:
         return Polynomial.variable(self._field, self.variable_name(source_id, position))
 
     def _selection(self, selection: Selection) -> tuple[Polynomial, ...]:
-        return tuple(self._variable(selection.source.owner_id, position) for position in selection.positions)
+        values = {
+            port.owner_id: tuple(
+                self._variable(port.owner_id, position)
+                for position in range(port.value_type.unit_count)
+            )
+            for port in tuple(self._primitive.input_ports.values()) + tuple(
+                component.output for component in self._primitive.components
+            )
+        }
+        return self._primitive.resolve_selection(selection, values)
 
     def polynomial_system(self) -> PolynomialSystem:
         variables = []
@@ -124,8 +133,6 @@ class PrimeFieldPolynomialModel:
             expressions = selected_inputs[0]
         elif isinstance(component, Permutation):
             expressions = tuple(selected_inputs[0][position] for position in component.mapping)
-        elif isinstance(component, Concatenate):
-            expressions = tuple(value for group in selected_inputs for value in group)
         elif isinstance(component, Add):
             expressions = tuple(sum(values) for values in zip(*selected_inputs))
         elif isinstance(component, Multiply):
@@ -150,9 +157,11 @@ class PrimeFieldPolynomialModel:
         equations: list[Polynomial] = []
         provenance: list[str] = []
         selection = component.inputs[0]
-        for position, (source_position, output) in enumerate(zip(selection.positions, outputs)):
-            base_name = self.variable_name(selection.source.owner_id, source_position)
-            base = Polynomial.variable(self._field, base_name)
+        for position, (base, output) in enumerate(zip(self._selection(selection), outputs)):
+            if len(base.terms) != 1 or base.terms[0][1] != 1 \
+                    or len(base.terms[0][0].powers) != 1 or base.terms[0][0].powers[0][1] != 1:
+                raise ValueError("binary-chain power input must resolve to one graph variable")
+            base_name = base.terms[0][0].powers[0][0]
             powers: dict[int, Polynomial] = {1: base}
 
             def lower(exponent: int, *, final: bool = False) -> Polynomial:

@@ -8,7 +8,10 @@ from claasp_next.analysis.boolean import lower_boolean_problem
 from claasp_next.analysis.constraints import FixedValue
 from claasp_next.analysis.problem import AnalysisProblem
 from claasp_next.representations.constraints.sat.cnf import CNFFormula
-from claasp_next.representations.constraints.sat.encoding import decode_unit, selection_variable_names
+from claasp_next.representations.constraints.sat.encoding import (
+    decode_unit,
+    resolved_selection_variable_names,
+)
 from claasp_next.drivers.solvers import MinisatSolver, SatResult, SatStatus
 from claasp_next.graph import Primitive, Selection
 from claasp_next.provenance import DriverIdentity, DriverKind, ResultProvenance
@@ -85,7 +88,7 @@ class Analysis:
         projected_names = tuple(
             name
             for selection in problem.projections.values()
-            for group in selection_variable_names(selection)
+            for group in resolved_selection_variable_names(self.primitive, selection)
             for name in group
         )
         while len(results) < limit:
@@ -262,9 +265,8 @@ class Analysis:
 
         return find_three_round_spn_xor_linear(self.primitive)
 
-    @staticmethod
-    def _project(selection: Selection, assignment: Mapping[str, int]) -> tuple[int, ...]:
+    def _project(self, selection: Selection, assignment: Mapping[str, int]) -> tuple[int, ...]:
         return tuple(
             decode_unit(names, assignment)
-            for names in selection_variable_names(selection)
+            for names in resolved_selection_variable_names(self.primitive, selection)
         )

@@ -9,7 +9,6 @@ from claasp_next.components import (
     BitwiseAnd as BitwiseAndComponent,
     BitwiseNot as BitwiseNotComponent,
     BitwiseOr as BitwiseOrComponent,
-    Concatenate as ConcatenateComponent,
     Constant as ConstantComponent,
     FeedbackRegister as FeedbackRegisterComponent,
     IDEAMultiply as IDEAMultiplyComponent,
@@ -19,13 +18,11 @@ from claasp_next.components import (
     ModularMultiply as ModularMultiplyComponent,
     ModularSubtract as ModularSubtractComponent,
     Multiply as MultiplyComponent,
-    PackBits as PackBitsComponent,
     Permutation as PermutationComponent,
     Power as PowerComponent,
     Rotate as RotateComponent,
     SBox as SBoxComponent,
     Shift as ShiftComponent,
-    UnpackBits as UnpackBitsComponent,
     VariableRotate as VariableRotateComponent,
     VariableShift as VariableShiftComponent,
     Xor as XorComponent,
@@ -40,7 +37,6 @@ from claasp_next.primitives.single_component_primitives import (
     BitwiseAnd,
     BitwiseNot,
     BitwiseOr,
-    Concatenate,
     Constant,
     FeedbackRegister,
     IDEAMultiply,
@@ -50,13 +46,11 @@ from claasp_next.primitives.single_component_primitives import (
     ModularMultiply,
     ModularSubtract,
     Multiply,
-    PackBits,
     Permutation,
     Power,
     Rotate,
     SBox,
     Shift,
-    UnpackBits,
     VariableRotate,
     VariableShift,
     Xor,
@@ -70,7 +64,6 @@ CLASSES = (
     BitwiseAnd,
     BitwiseNot,
     BitwiseOr,
-    Concatenate,
     Constant,
     FeedbackRegister,
     IDEAMultiply,
@@ -80,13 +73,11 @@ CLASSES = (
     ModularMultiply,
     ModularSubtract,
     Multiply,
-    PackBits,
     Permutation,
     Power,
     Rotate,
     SBox,
     Shift,
-    UnpackBits,
     VariableRotate,
     VariableShift,
     Xor,
@@ -99,7 +90,6 @@ COMPONENT_CLASSES = (
     BitwiseAndComponent,
     BitwiseNotComponent,
     BitwiseOrComponent,
-    ConcatenateComponent,
     ConstantComponent,
     FeedbackRegisterComponent,
     IDEAMultiplyComponent,
@@ -109,13 +99,11 @@ COMPONENT_CLASSES = (
     ModularMultiplyComponent,
     ModularSubtractComponent,
     MultiplyComponent,
-    PackBitsComponent,
     PermutationComponent,
     PowerComponent,
     RotateComponent,
     SBoxComponent,
     ShiftComponent,
-    UnpackBitsComponent,
     VariableRotateComponent,
     VariableShiftComponent,
     XorComponent,
@@ -152,9 +140,6 @@ def test_fixed_semantic_examples():
     assert Power(3, PrimeField(17)).evaluate(3) == 10
     assert BinaryAffineMap(offset=3).evaluate(10) == 9
     assert LinearMap([[1, 0], [1, 1]]).evaluate(0b10) == 0b11
-    assert PackBits().evaluate(0xAB) == 0xAB
-    assert UnpackBits().evaluate(0xAB) == 0xAB
-    assert Concatenate().evaluate(0b10, 0b01) == 0b1001
     assert Constant(8, 0x5A).evaluate() == 0x5A
     assert FeedbackRegister().evaluate(0b1010) == 0b0101
     assert Identity(16).evaluate(0xCAFE) == 0xCAFE
@@ -210,12 +195,10 @@ def test_all_default_kinds_are_explicit():
         BitwiseNot,
         Identity,
         LinearMap,
-        PackBits,
         Permutation,
         Power,
         Rotate,
         SBox,
-        UnpackBits,
     }
     for primitive_class in CLASSES:
         expected = (

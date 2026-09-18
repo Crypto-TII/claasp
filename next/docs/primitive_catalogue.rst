@@ -74,7 +74,7 @@ than being inferred from package names. Queries work in either direction:
    >>> [item.name for item in catalogue.representations(component="Power")]
    ['concrete_execution', 'msolve_input', 'prime_field_polynomial', 'primitive_diagram', 'singular_program']
    >>> [item.name for item in catalogue.components(representation="boolean_cnf")]
-   ['Add', 'BitVectorSBox', 'BitwiseAnd', 'Concatenate', 'Constant', 'Identity', 'ModularAdd', 'Permutation', 'Rotate', 'Xor']
+   ['Add', 'BitVectorSBox', 'BitwiseAnd', 'Constant', 'Identity', 'ModularAdd', 'Permutation', 'Rotate', 'Xor']
    >>> [item.name for item in catalogue.drivers(representation="boolean_cnf")]
    ['minizinc', 'minisat', 'z3', 'glpk']
    >>> "enumerate_xor_differential_trails" in {

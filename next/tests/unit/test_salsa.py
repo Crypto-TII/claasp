@@ -45,7 +45,7 @@ def test_parameters_and_standard_round_boundaries():
     permutation = Salsa(number_of_rounds=2)
 
     assert len(permutation.rounds) == 2
-    assert len(permutation.components) == 2 * 4 * 12 + 1
+    assert len(permutation.components) == 2 * 4 * 12
 
 
 def test_invalid_parameters_are_rejected():

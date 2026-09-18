@@ -26,7 +26,7 @@ EQUIVALENT_EXPORTS = frozenset({
 })
 EXACT_ALIASES = frozenset({"KeccakInvertible", "SpongentPiFSR", "XoodooInvertible"})
 STRUCTURAL_COMPONENTS = frozenset({
-    "Concatenate", "Identity", "PackBits", "Permutation", "UnpackBits",
+    "Identity", "Permutation",
 })
 DRIVERS = (
     ("python_scalar", "execution_engine", "builtin", None,
@@ -61,23 +61,23 @@ DRIVERS = (
 
 ALL_COMPONENTS = frozenset({
     "Add", "BinaryAffineMap", "BitVectorSBox", "BitwiseAnd", "BitwiseNot", "BitwiseOr",
-    "Concatenate", "Constant", "FeedbackRegister", "IDEAMultiply", "Identity", "LinearMap",
-    "ModularAdd", "ModularMultiply", "ModularSubtract", "Multiply", "PackBits", "Permutation",
-    "Power", "Rotate", "SBox", "Shift", "UnpackBits", "VariableRotate", "VariableShift", "Xor",
+    "Constant", "FeedbackRegister", "IDEAMultiply", "Identity", "LinearMap",
+    "ModularAdd", "ModularMultiply", "ModularSubtract", "Multiply", "Permutation",
+    "Power", "Rotate", "SBox", "Shift", "VariableRotate", "VariableShift", "Xor",
 })
 ALL_DOMAINS = frozenset({"BinaryExtensionField", "Bit", "PrimeField", "Word"})
 BOOLEAN_CNF_COMPONENTS = frozenset({
-    "Add", "BitVectorSBox", "BitwiseAnd", "Concatenate", "Constant", "Identity",
+    "Add", "BitVectorSBox", "BitwiseAnd", "Constant", "Identity",
     "ModularAdd", "Permutation", "Rotate", "Xor",
 })
 BOOLEAN_SYMBOLIC_COMPONENTS = frozenset({
-    "BitwiseAnd", "BitwiseNot", "BitwiseOr", "Concatenate", "Constant", "ModularAdd", "Rotate", "Xor",
+    "BitwiseAnd", "BitwiseNot", "BitwiseOr", "Constant", "ModularAdd", "Rotate", "Xor",
 })
 PRIME_FIELD_POLYNOMIAL_COMPONENTS = frozenset({
-    "Add", "Concatenate", "Constant", "Identity", "LinearMap", "Multiply", "Permutation", "Power",
+    "Add", "Constant", "Identity", "LinearMap", "Multiply", "Permutation", "Power",
 })
 WORD_TRAIL_COMPONENTS = frozenset({
-    "BitwiseAnd", "Concatenate", "Constant", "Identity", "ModularAdd", "Rotate", "Xor",
+    "BitwiseAnd", "Constant", "Identity", "ModularAdd", "Rotate", "Xor",
 })
 
 # These declarations are reviewed compatibility edges, not filesystem-derived
@@ -89,7 +89,7 @@ REPRESENTATIONS = (
     ("boolean_degree_bounds", "analysis", "claasp_next.representations.execution:BooleanDegreeEvaluator",
      BOOLEAN_SYMBOLIC_COMPONENTS, {"Bit", "Word"}, set(), "generic_graph"),
     ("boolean_monomial_milp", "constraint", "claasp_next.representations.constraints.milp:BooleanMonomialGraphMILPModel",
-     {"BitwiseAnd", "Concatenate", "Constant", "Rotate", "Xor"}, {"Bit", "Word"}, {"glpk"}, "generic_graph"),
+     {"BitwiseAnd", "Constant", "Rotate", "Xor"}, {"Bit", "Word"}, {"glpk"}, "generic_graph"),
     ("boolean_smt", "constraint", "claasp_next.representations.constraints.smt:BooleanSMTModel",
      BOOLEAN_CNF_COMPONENTS, {"Bit", "Word"}, {"z3"}, "generic_graph"),
     ("boolean_symbolic_anf", "analysis", "claasp_next.representations.execution:BooleanSymbolicEvaluator",
@@ -309,7 +309,7 @@ def build_catalogue() -> dict:
     ]
     return {
         "schema_version": 2,
-        "milestone": "M10.9f5",
+        "milestone": "M10.9f6",
         "sources": {
             "classification": "migration/legacy_inventory.json",
             "components": "migration/single_component_catalogue.json",

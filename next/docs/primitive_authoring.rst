@@ -58,9 +58,8 @@ also available for self-documenting boundaries.
 
 Use ``primitive.join(left, right)`` when several homogeneous ports form one
 state for a later operation, or simply ``primitive.set_output((left, right))``
-at the boundary. This is structural wiring. The flat representation may retain
-an internal normalization node, but primitive source need not construct or
-name a ``Concatenate`` component.
+at the boundary. This creates an addressable typed binding, not a semantic
+component, so component queries contain only actual operations.
 
 The ``claasp_next.utils`` module provides reusable finite-field arithmetic,
 fixed-width integer/word conversion, rotations, sequence shifts, and layout
@@ -129,19 +128,19 @@ Permutation-specific helpers return ordinary generic components. For example,
 Keccak, and Xoodoo theta helpers return ``LinearMap``. This keeps their graph
 semantics reusable by every execution or analysis backend.
 
-Conversions between bits and words are graph operations rather than implicit
-evaluator behavior. ``PackBits`` and ``UnpackBits`` use an explicit MSB-first
-convention, so the same graph has unambiguous scalar and batch semantics.
+Conversions between bits and words are typed graph bindings rather than
+implicit evaluator behavior or cryptographic operations. ``pack_bits`` and
+``unpack_bits`` use an explicit MSB-first convention, so the same graph has
+unambiguous scalar, batch, diagram, and model semantics.
 
 .. doctest::
 
    >>> from claasp_next import Bit, Primitive, ValueType
-   >>> from claasp_next.components import PackBits, UnpackBits
    >>> conversion = Primitive("conversion", {"bits": ValueType(Bit(), (16,))})
    >>> conversion.add_round()
    Round(number=0)
-   >>> words = conversion.add_component(PackBits(conversion.input("bits"), 8))
-   >>> bits = conversion.add_component(UnpackBits(words))
+   >>> words = conversion.pack_bits(conversion.input("bits"), 8)
+   >>> bits = conversion.unpack_bits(words)
    >>> conversion.set_output(bits)
    >>> conversion.evaluate(0x1234)
    4660
@@ -201,8 +200,8 @@ simple Fibonacci register, or construct ``FeedbackRegisterSpec`` and
 ``FeedbackTerm`` values for multiple, nonlinear, or clocked registers.
 
 The folder is a one-to-one view of the public base-component classes, including
-v5 additions such as ``Add``, ``Multiply``, ``Power``, ``BinaryAffineMap``,
-``PackBits``, and ``UnpackBits``. Every wrapper has exactly one round and one
+v5 additions such as ``Add``, ``Multiply``, ``Power``, and ``BinaryAffineMap``.
+Structural joins and bit/word views are deliberately absent. Every wrapper has exactly one round and one
 component, and its class docstring contains a runnable minimal example. Legacy
 names such as ``Modadd``, ``Sbox``, and ``Fsr`` are deliberately not aliases in
 the unreleased v5 API.

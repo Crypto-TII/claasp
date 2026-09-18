@@ -6,15 +6,15 @@ from claasp_next import (
     BinaryExtensionField, Bit, Primitive, ScalarEvaluator, TransposedBatchEvaluator,
     ValueType, Word,
 )
-from claasp_next.components import PackBits, Permutation, UnpackBits
+from claasp_next.components import Permutation
 
 
 def _conversion_primitive() -> Primitive:
     primitive = Primitive("conversion", {"bits": ValueType(Bit(), (16,))})
     primitive.add_round()
-    packed = primitive.add_component(PackBits(primitive.input("bits"), 8))
+    packed = primitive.pack_bits(primitive.input("bits"), 8)
     swapped = primitive.add_component(Permutation(packed, (1, 0)))
-    unpacked = primitive.add_component(UnpackBits(swapped))
+    unpacked = primitive.unpack_bits(swapped)
     primitive.set_output(unpacked)
     return primitive
 
@@ -26,8 +26,10 @@ def test_pack_permute_unpack_has_independent_msb_first_result():
 
     result = ScalarEvaluator().evaluate(primitive, {"bits": bits})
 
-    assert result.value_of("pack_bits_0_0") == (0x12, 0x34)
-    assert result.value_of("permutation_0_1") == (0x34, 0x12)
+    assert primitive.resolve_selection(
+        primitive.bindings[0].output.select_all(), result.values
+    ) == (0x12, 0x34)
+    assert result.value_of("permutation_0_0") == (0x34, 0x12)
     assert result.output == expected
 
 
@@ -45,23 +47,21 @@ def test_conversion_scalar_and_transposed_batch_agree():
 def test_conversion_components_reject_implicit_or_partial_reinterpretation():
     bit_primitive = Primitive("bits", {"state": ValueType(Bit(), (7,))})
     with pytest.raises(ValueError, match="multiple"):
-        PackBits(bit_primitive.input("state"), 4)
+        bit_primitive.pack_bits(bit_primitive.input("state"), 4)
     with pytest.raises(ValueError, match="Word"):
-        UnpackBits(bit_primitive.input("state"))
+        bit_primitive.unpack_bits(bit_primitive.input("state"))
 
     word_primitive = Primitive("words", {"state": ValueType(Word(8), (2,))})
     with pytest.raises(ValueError, match="Bit"):
-        PackBits(word_primitive.input("state"), 8)
+        word_primitive.pack_bits(word_primitive.input("state"), 8)
 
 
 def test_pack_and_unpack_can_explicitly_cross_a_binary_field_boundary():
     primitive = Primitive("field_conversion", {"bits": ValueType(Bit(), (16,))})
     primitive.add_round()
     field = BinaryExtensionField(8, 0x11D)
-    packed = primitive.add_component(PackBits(
-        primitive.input("bits"), 8, output_domain=field
-    ))
-    primitive.set_output(primitive.add_component(UnpackBits(packed)))
+    packed = primitive.pack_bits(primitive.input("bits"), 8, output_domain=field)
+    primitive.set_output(primitive.unpack_bits(packed))
 
     assert primitive.evaluate(0x12A5) == 0x12A5
     assert packed.value_type == ValueType(field, (2,))

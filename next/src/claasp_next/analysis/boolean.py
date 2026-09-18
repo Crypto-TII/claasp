@@ -5,7 +5,7 @@ from itertools import combinations
 from claasp_next.analysis.constraints import Equal, FixedValue, HammingWeight, Nonzero, NotEqual
 from claasp_next.analysis.problem import AnalysisProblem
 from claasp_next.representations.constraints.sat import BooleanCNFModel, CNFFormula
-from claasp_next.representations.constraints.sat.encoding import selection_variable_names
+from claasp_next.representations.constraints.sat.encoding import resolved_selection_variable_names
 from claasp_next.domains import Bit
 
 
@@ -24,7 +24,7 @@ def lower_boolean_problem(problem: AnalysisProblem) -> CNFFormula:
         try:
             return tuple(
                 tuple(indices[name] for name in names)
-                for names in selection_variable_names(selection)
+                for names in resolved_selection_variable_names(problem.primitive, selection)
             )
         except KeyError as error:
             raise ValueError("constraint target does not belong to the analyzed primitive") from error

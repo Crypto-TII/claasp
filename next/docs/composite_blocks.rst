@@ -104,7 +104,7 @@ logic lives in the block itself.
    '0xc2'
    >>> formula = BooleanCNFModel(layer.as_primitive()).cnf_formula()
    >>> formula.variable_count, formula.clause_count
-   (24, 144)
+   (16, 128)
    >>> quarter_formula = BooleanCNFModel(quarter_round.as_primitive()).cnf_formula()
    >>> quarter_formula.variable_count > 128 and quarter_formula.clause_count > 0
    True

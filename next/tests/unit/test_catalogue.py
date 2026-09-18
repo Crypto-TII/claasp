@@ -8,7 +8,7 @@ from claasp_next.catalogue import Catalogue, PrimitiveRecord, RepresentationReco
 
 def test_catalogue_returns_sorted_immutable_records():
     records = catalogue.primitives()
-    assert len(records) == 145
+    assert len(records) == 142
     assert isinstance(records, tuple)
     assert records == tuple(sorted(records, key=lambda item: (item.category, item.name)))
     assert isinstance(records[0], PrimitiveRecord)
@@ -75,7 +75,7 @@ def test_pure_andrx_filter_does_not_promote_constant_bearing_graphs():
 
 def test_component_records_are_one_to_one_with_teaching_wrappers():
     components = catalogue.components()
-    assert len(components) == 26
+    assert len(components) == 23
     assert {item.name for item in catalogue.components(names=("SBox", "LinearMap"))} == {
         "SBox", "LinearMap",
     }
@@ -89,7 +89,7 @@ def test_representation_component_queries_are_bidirectional():
         "primitive_diagram", "singular_program",
     )
     assert {item.name for item in catalogue.components(representation="boolean_cnf")} == {
-        "Add", "BitVectorSBox", "BitwiseAnd", "Concatenate", "Constant", "Identity",
+        "Add", "BitVectorSBox", "BitwiseAnd", "Constant", "Identity",
         "ModularAdd", "Permutation", "Rotate", "Xor",
     }
     with pytest.raises(KeyError, match="unknown component"):

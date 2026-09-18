@@ -4,9 +4,9 @@ from claasp_next import primitives
 from claasp_next.primitives._catalogue_exports import ALL_EXPORTS, CATEGORY_EXPORTS
 
 
-def test_all_145_catalogue_classes_are_public_at_top_level_and_by_category():
-    assert len(ALL_EXPORTS) == 145
-    assert sum(map(len, CATEGORY_EXPORTS.values())) == 145
+def test_all_142_catalogue_classes_are_public_at_top_level_and_by_category():
+    assert len(ALL_EXPORTS) == 142
+    assert sum(map(len, CATEGORY_EXPORTS.values())) == 142
     for category, exports in CATEGORY_EXPORTS.items():
         category_module = importlib.import_module(f"claasp_next.primitives.{category}")
         for name, module_name in exports.items():

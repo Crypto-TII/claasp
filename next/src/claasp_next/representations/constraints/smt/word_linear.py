@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from contextlib import nullcontext
 from hashlib import sha256
 
-from claasp_next.components import BitwiseAnd, Concatenate, Constant, Identity, ModularAdd, Rotate, Xor
+from claasp_next.components import BitwiseAnd, Constant, Identity, ModularAdd, Rotate, Xor
 from claasp_next.domains import Word
 from claasp_next.drivers.solvers import SatStatus
 from claasp_next.representations.constraints.smt.formula import SMTFormula
@@ -92,7 +92,10 @@ class WordLinearSMTModel:
                                                     for name in self.primitive.input_ports}).trace
         known = {name: tuple(trace.value_of(name)) for name in self.fixed_inputs}
         for component in self.primitive.components:
-            if all(selection.source.owner_id in known for selection in component.inputs):
+            if all(
+                all(owner_id in known for owner_id, _ in self.primitive.selection_bit_sources(selection))
+                for selection in component.inputs
+            ):
                 known[component.component_id] = tuple(trace.value_of(component.component_id))
         return known
 
@@ -129,10 +132,10 @@ class WordLinearSMTModel:
             for operand, selection in enumerate(component.inputs):
                 names = tuple(allocate(n) for n in self._names(f"edge_{component.component_id}_{operand}", selection.value_type))
                 operands.append(names)
-                width = selection.value_type.domain.width
-                for unit, position in enumerate(selection.positions):
-                    for bit in range(width):
-                        consumers[selection.source.owner_id][position * width + bit].append(names[unit * width + bit])
+                for edge_name, (owner_id, source_bit) in zip(
+                    names, self.primitive.selection_bit_sources(selection)
+                ):
+                    consumers[owner_id][source_bit].append(edge_name)
             edges[component.component_id] = tuple(operands)
             output = ports[component.component_id]
             width = component.output_type.domain.width
@@ -164,7 +167,7 @@ class WordLinearSMTModel:
                 for operand in operands:
                     for source, target in zip(operand, output):
                         _xor_equivalence((source, target), indices, clauses, provenance)
-            elif isinstance(component, (Identity, Concatenate)):
+            elif isinstance(component, Identity):
                 flattened = tuple(name for operand in operands for name in operand)
                 for source, target in zip(flattened, output):
                     _xor_equivalence((source, target), indices, clauses, provenance)
@@ -176,10 +179,10 @@ class WordLinearSMTModel:
             elif not isinstance(component, Constant):
                 raise NotImplementedError(f"no word linear semantics for {type(component).__name__}")
         output = tuple(allocate(n) for n in self._names("external_output", self.primitive.output.value_type))
-        width = self.primitive.output.value_type.domain.width
-        for unit, position in enumerate(self.primitive.output.positions):
-            for bit in range(width):
-                consumers[self.primitive.output.source.owner_id][position * width + bit].append(output[unit * width + bit])
+        for output_name, (owner_id, source_bit) in zip(
+            output, self.primitive.selection_bit_sources(self.primitive.output)
+        ):
+            consumers[owner_id][source_bit].append(output_name)
         for name, names in ports.items():
             for bit, target in enumerate(names):
                 _xor_equivalence((target, *consumers[name][bit]), indices, clauses, provenance)
@@ -271,9 +274,14 @@ class WordLinearSMTModel:
             output = units(self._ports[component.component_id], width)
             operands = [units(names, selection.value_type.domain.width)
                         for names, selection in zip(self._edges[component.component_id], component.inputs)]
-            for selection, masks in zip(component.inputs, operands):
-                for position, mask in zip(selection.positions, masks):
-                    fanout[selection.source.owner_id][position] ^= mask
+            for selection, edge_names in zip(component.inputs, self._edges[component.component_id]):
+                for edge_name, (owner_id, source_bit) in zip(
+                    edge_names, self.primitive.selection_bit_sources(selection)
+                ):
+                    source_type = dict(sources)[owner_id]
+                    source_width = source_type.domain.width
+                    position, bit = divmod(source_bit, source_width)
+                    fanout[owner_id][position] ^= values[edge_name] << (source_width - 1 - bit)
             if component.component_id in self._folded_values:
                 if sum((mask & value).bit_count() for mask, value in zip(output, self._folded_values[component.component_id])) % 2:
                     constant_sign *= -1
@@ -292,7 +300,7 @@ class WordLinearSMTModel:
             elif isinstance(component, Xor):
                 if any(operand != output for operand in operands):
                     return False
-            elif isinstance(component, (Identity, Concatenate)):
+            elif isinstance(component, Identity):
                 if tuple(value for operand in operands for value in operand) != output:
                     return False
             elif isinstance(component, Rotate):
@@ -307,9 +315,13 @@ class WordLinearSMTModel:
                     constant_sign *= -1
             else:
                 return False
-        width = self.primitive.output.value_type.domain.width
-        for position, mask in zip(self.primitive.output.positions, units(self._output, width)):
-            fanout[self.primitive.output.source.owner_id][position] ^= mask
+        for output_name, (owner_id, source_bit) in zip(
+            self._output, self.primitive.selection_bit_sources(self.primitive.output)
+        ):
+            source_type = dict(sources)[owner_id]
+            source_width = source_type.domain.width
+            position, bit = divmod(source_bit, source_width)
+            fanout[owner_id][position] ^= values[output_name] << (source_width - 1 - bit)
         if any(tuple(fanout[name]) != units(self._ports[name], vt.domain.width) for name, vt in sources):
             return False
         inputs = tuple((name, 0 if name in self.fixed_inputs else _packed(self._ports[name], values)) for name in self.primitive.input_ports)
@@ -331,7 +343,7 @@ class WordLinearSMTModel:
             ("solver", type(solver).__name__),
             ("executable", str(getattr(solver, "executable", "embedded"))),
             ("version", solver.version() if callable(getattr(solver, "version", None)) else "unreported"),
-            ("graph_sha256", sha256(repr((self.primitive.input_ports, tuple(self.primitive.components), self.primitive.output)).encode()).hexdigest()),
+            ("graph_sha256", sha256(repr((self.primitive.input_ports, self.primitive.bindings, tuple(self.primitive.components), self.primitive.output)).encode()).hexdigest()),
             ("formula_sha256", sha256(repr(formula).encode()).hexdigest()),
             ("fixed_inputs", repr(tuple(sorted(self.fixed_inputs.items())))),
         )

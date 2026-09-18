@@ -4,7 +4,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 
 from claasp_next.components import (
-    BitwiseAnd, BitwiseNot, BitwiseOr, Concatenate, Constant, ModularAdd, Rotate, Xor,
+    BitwiseAnd, BitwiseNot, BitwiseOr, Constant, ModularAdd, Rotate, Xor,
 )
 from claasp_next.domains import Bit, Word
 from claasp_next.graph import Primitive
@@ -53,18 +53,16 @@ class BooleanSymbolicEvaluator:
             else:
                 raise NotImplementedError("Boolean symbolic evaluation supports Bit and Word domains")
 
+        binding_cache = {}
         for component in primitive.components:
             inputs = tuple(
-                tuple(values[selection.source.owner_id][position] for position in selection.positions)
+                primitive.resolve_selection(selection, values, binding_cache)
                 for selection in component.inputs
             )
             values[component.component_id] = self._component(component, inputs)
         if primitive.output is None:
             return BooleanSymbolicResult((), values)
-        selected = tuple(
-            values[primitive.output.source.owner_id][position]
-            for position in primitive.output.positions
-        )
+        selected = primitive.resolve_selection(primitive.output, values, binding_cache)
         flattened = tuple(
             polynomial
             for unit in selected
@@ -84,8 +82,6 @@ class BooleanSymbolicEvaluator:
                     else BooleanPolynomial.zero()
                     for bit in range(domain.width)
                 ) for value in component.values)
-        if isinstance(component, Concatenate):
-            return tuple(unit for operand in inputs for unit in operand)
         if isinstance(component, Rotate):
             return tuple(self._rotate(unit, component.amount, component.direction) for unit in inputs[0])
         if isinstance(component, BitwiseNot):

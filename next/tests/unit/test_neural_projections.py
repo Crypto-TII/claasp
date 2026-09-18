@@ -22,7 +22,9 @@ def test_round_component_ids_matches_the_primitive_graph_round_structure():
     # Semantic references stay stable even when automatic identifiers change.
     assert primitive.round_states[0][1].owner_id in round_0
     assert primitive.key_schedule_states[0][1].owner_id in round_0
-    assert primitive.output.source.owner_id in round_1
+    assert {
+        owner_id for owner_id, _ in primitive.selection_bit_sources(primitive.output)
+    } <= set(round_1)
 
     with pytest.raises(ValueError, match="range"):
         round_component_ids(primitive, 2)

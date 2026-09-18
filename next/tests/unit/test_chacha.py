@@ -63,4 +63,4 @@ def test_graph_exposes_standard_round_boundaries():
     permutation = ChaCha(number_of_rounds=2)
 
     assert len(permutation.rounds) == 2
-    assert len(permutation.components) == 2 * 4 * 12 + 1
+    assert len(permutation.components) == 2 * 4 * 12

@@ -1,6 +1,6 @@
 """International Data Encryption Algorithm (IDEA)."""
 
-from claasp_next.components import PackBits, Permutation
+from claasp_next.components import Permutation
 from claasp_next.domains import Bit
 from claasp_next.graph import Primitive, ValueType
 
@@ -25,7 +25,7 @@ class IDEA(Primitive):
                 if len(subkeys) == needed:
                     break
                 bits = key_state[tuple(range(16 * index, 16 * (index + 1)))]
-                subkeys.append(self.add_component(PackBits(bits, 16)))
+                subkeys.append(self.pack_bits(bits, 16))
             if len(subkeys) < needed:
                 mapping = tuple((index + 25) % 128 for index in range(128))
                 key_state = self.add_component(Permutation(key_state, mapping))

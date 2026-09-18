@@ -69,12 +69,10 @@ unambiguous. ``Primitive.join`` and ``CompositeBuilder.join`` restore the
 authoring convenience without presenting concatenation as a basic operation.
 Passing several values to ``set_output`` uses the same path.
 
-The canonical flat DAG currently normalizes a multi-source join to an internal
-``Concatenate`` node. This is not cryptographic semantics: it gives execution
-traces, annotations, diagrams, and every constraint backend one addressable
-owner for the combined value. One-source joins are elided. Future
-representations may consume multi-source bindings directly without changing
-primitive source or public results.
+The canonical flat DAG records a multi-source join as an addressable typed
+binding, separate from its semantic components. Execution traces, annotations,
+diagrams, and constraint backends resolve the same ordered sources directly.
+One-source joins are elided.
 
 Round and primitive scopes
 --------------------------

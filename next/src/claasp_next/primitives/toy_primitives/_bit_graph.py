@@ -3,11 +3,8 @@
 from claasp_next.components import (
     BitVectorSBox,
     BitwiseAnd,
-    Concatenate,
     Constant,
-    PackBits,
     Permutation,
-    UnpackBits,
     ModularAdd,
     Shift,
     Xor,
@@ -27,7 +24,8 @@ def concatenate(primitive, selections, *, component_id=None):
     frozen = tuple(as_selection(item) for item in selections)
     if len(frozen) == 1:
         return frozen[0]
-    return primitive.add_component(Concatenate(frozen, component_id=component_id))
+    del component_id
+    return primitive.join(*frozen)
 
 
 def xor_bits(primitive, *operands, component_id=None):
@@ -37,9 +35,9 @@ def xor_bits(primitive, *operands, component_id=None):
     width = selections[0].value_type.unit_count
     if any(item.value_type != bit_type(width) for item in selections):
         raise ValueError("bit XOR operands must have the same Bit value type")
-    words = tuple(primitive.add_component(PackBits(item, width)) for item in selections)
+    words = tuple(primitive.pack_bits(item, width) for item in selections)
     output = primitive.add_component(Xor(words, component_id=component_id))
-    return primitive.add_component(UnpackBits(output))
+    return primitive.unpack_bits(output)
 
 
 def and_bits(primitive, *operands, component_id=None):
@@ -47,9 +45,9 @@ def and_bits(primitive, *operands, component_id=None):
     width = selections[0].value_type.unit_count
     if len(selections) < 2 or any(item.value_type != bit_type(width) for item in selections):
         raise ValueError("bit AND operands must have the same Bit value type")
-    words = tuple(primitive.add_component(PackBits(item, width)) for item in selections)
+    words = tuple(primitive.pack_bits(item, width) for item in selections)
     output = primitive.add_component(BitwiseAnd(words, component_id=component_id))
-    return primitive.add_component(UnpackBits(output))
+    return primitive.unpack_bits(output)
 
 
 def modular_add_bits(primitive, *operands, component_id=None):
@@ -57,18 +55,18 @@ def modular_add_bits(primitive, *operands, component_id=None):
     width = selections[0].value_type.unit_count
     if len(selections) < 2 or any(item.value_type != bit_type(width) for item in selections):
         raise ValueError("modular-add operands must have the same Bit value type")
-    words = tuple(primitive.add_component(PackBits(item, width)) for item in selections)
+    words = tuple(primitive.pack_bits(item, width) for item in selections)
     output = primitive.add_component(ModularAdd(words, component_id=component_id))
-    return primitive.add_component(UnpackBits(output))
+    return primitive.unpack_bits(output)
 
 
 def shift_bits(primitive, source: PortLike, amount: int, *, component_id=None):
     source = as_selection(source)
     width = source.value_type.unit_count
-    word = primitive.add_component(PackBits(source, width))
+    word = primitive.pack_bits(source, width)
     direction = "right" if amount >= 0 else "left"
     output = primitive.add_component(Shift(word, abs(amount), direction, component_id=component_id))
-    return primitive.add_component(UnpackBits(output))
+    return primitive.unpack_bits(output)
 
 
 def constant_bits(primitive, width: int, value: int, *, component_id=None):

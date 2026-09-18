@@ -1,6 +1,6 @@
 """Generalized small AES teaching family."""
 
-from claasp_next.components import Add, Concatenate, Constant, LinearMap, Permutation, SBox
+from claasp_next.components import Add, Constant, LinearMap, Permutation, SBox
 from claasp_next.composites.aes import AES_SBOX
 from claasp_next.domains import BinaryExtensionField
 from claasp_next.graph import Primitive, ValueType
@@ -37,10 +37,8 @@ ROUND_CONSTANT_WORDS = {
 
 
 def _concat(primitive, items, component_id=None):
-    items = tuple(items)
-    return items[0] if len(items) == 1 else primitive.add_component(
-        Concatenate(items, component_id=component_id)
-    )
+    del component_id
+    return primitive.join(*items)
 
 
 class ToyAES(Primitive):

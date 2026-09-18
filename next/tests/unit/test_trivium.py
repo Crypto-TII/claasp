@@ -12,7 +12,7 @@ import pytest
 
 from claasp_next.primitives import Trivium
 from claasp_next.primitives.block_functions.trivium import estream_bytes_to_bit_sequence
-from claasp_next.components import BitwiseAnd, Concatenate, Constant, Xor
+from claasp_next.components import BitwiseAnd, Constant, Xor
 from claasp_next.encoding import units_from_int
 from claasp_next.representations.execution import BatchEvaluator
 
@@ -152,7 +152,7 @@ def test_graph_shape_and_reused_components():
     assert primitive.output.value_type.encoded_bit_size == 1
     assert len(primitive.rounds) == 15
     assert {type(component) for component in primitive.components} == {
-        Constant, Xor, BitwiseAnd, Concatenate
+        Constant, Xor, BitwiseAnd
     }
     assert sum(isinstance(component, BitwiseAnd) for component in primitive.components) == 42
 

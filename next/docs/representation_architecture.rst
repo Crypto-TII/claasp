@@ -189,10 +189,10 @@ error, as is a non-unique match under ``unique``.
    ...     "unique policy" in str(error)
    True
 
-Boundary normalization, when required, is ordinary typed graph structure:
-explicit ``PackBits``/``UnpackBits`` components surround the selected graph.
-It does not rewrite component identifiers to resemble another realization and
-does not imply trace correspondence.
+Boundary normalization, when required, uses explicit MSB-first typed bindings
+around the selected graph. These conversions are wiring metadata rather than
+cryptographic components. Normalization does not rewrite component identifiers
+to resemble another realization and does not imply trace correspondence.
 
 Produced results use ``ResultProvenance``. The selected graph descriptor and
 the ``DriverIdentity`` are separate fields:

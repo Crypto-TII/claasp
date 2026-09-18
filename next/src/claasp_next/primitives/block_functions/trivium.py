@@ -33,7 +33,7 @@ state, key unit ``m`` is loaded at ``s(80 - m)`` and IV unit ``m`` at
 ``s(173 - m)``; output unit ``m`` is the keystream bit ``z(m + 1)``.
 """
 
-from claasp_next.components import BitwiseAnd, Concatenate, Constant, Xor
+from claasp_next.components import BitwiseAnd, Constant, Xor
 from claasp_next.domains import Word
 from claasp_next.graph import Port, Primitive, Selection, ValueType
 
@@ -159,9 +159,7 @@ class Trivium(Primitive):
             state, keystream_bit = self._clock(state, emitting)
             if emitting:
                 keystream.append(keystream_bit)
-        self.set_output(self.add_component(
-            Concatenate(keystream if keystream_bit_size else state, component_id="output")
-        ))
+        self.set_output(keystream if keystream_bit_size else state)
 
     def _clock(self, state, emitting):
         """Apply one Trivium state update and optionally emit a keystream bit."""

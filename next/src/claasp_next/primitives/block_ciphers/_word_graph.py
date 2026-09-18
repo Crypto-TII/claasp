@@ -1,8 +1,8 @@
 """Concise helpers for typed word-oriented primitive graphs."""
 
 from claasp_next.components import (
-    BitwiseAnd, Concatenate, Constant, IDEAMultiply, ModularAdd, ModularMultiply, ModularSubtract,
-    PackBits, Permutation, Rotate, Shift, UnpackBits, VariableRotate, VariableShift, Xor,
+    BitwiseAnd, Constant, IDEAMultiply, ModularAdd, ModularMultiply, ModularSubtract,
+    Permutation, Rotate, Shift, VariableRotate, VariableShift, Xor,
 )
 from claasp_next.domains import Word
 from claasp_next.graph import ValueType, as_selection
@@ -17,8 +17,8 @@ def select(source, index):
 
 
 def concatenate(primitive, *items, component_id=None):
-    items = tuple(items)
-    return items[0] if len(items) == 1 else primitive.add_component(Concatenate(items, component_id=component_id))
+    del component_id
+    return primitive.join(*items)
 
 
 def constant(primitive, width, value, component_id=None):
@@ -74,7 +74,7 @@ def variable_shift(primitive, item, amount, *, left=True, component_id=None):
 def byte_swap(primitive, item, width):
     if width % 8:
         raise ValueError("byte swapping requires a byte-aligned word")
-    bits = primitive.add_component(UnpackBits(item))
+    bits = primitive.unpack_bits(item)
     byte_count = width // 8
     mapping = tuple(
         byte * 8 + bit
@@ -82,20 +82,20 @@ def byte_swap(primitive, item, width):
         for bit in range(8)
     )
     permuted = primitive.add_component(Permutation(bits, mapping))
-    return primitive.add_component(PackBits(permuted, width))
+    return primitive.pack_bits(permuted, width)
 
 
 def low_bits(primitive, item, count):
-    bits = primitive.add_component(UnpackBits(item))
-    return primitive.add_component(PackBits(bits[tuple(range(bits.value_type.unit_count - count,
-                                                              bits.value_type.unit_count))], count))
+    bits = primitive.unpack_bits(item)
+    return primitive.pack_bits(bits[tuple(range(bits.value_type.unit_count - count,
+                                                bits.value_type.unit_count))], count)
 
 
 def split_word(primitive, item, part_width):
-    bits = primitive.add_component(UnpackBits(item))
-    return primitive.add_component(PackBits(bits, part_width))
+    bits = primitive.unpack_bits(item)
+    return primitive.pack_bits(bits, part_width)
 
 
 def join_words(primitive, items, width):
     joined = concatenate(primitive, *items)
-    return primitive.add_component(PackBits(primitive.add_component(UnpackBits(joined)), width))
+    return primitive.pack_bits(primitive.unpack_bits(joined), width)

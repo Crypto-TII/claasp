@@ -45,8 +45,8 @@ table or matrix rather than assuming the default example.
 Each fixture has the same class and module name as its base component. Thus
 ``LinearMap`` handles both bit matrices and finite-field MixColumn-style
 matrices, ``FeedbackRegister`` lives in ``feedback_register.py``, and the
-catalogue includes v5 algebraic and conversion components such as ``Add``,
-``Power``, ``PackBits``, and ``UnpackBits``. Permutation-specific builders such
+catalogue includes v5 algebraic components such as ``Add`` and ``Power``.
+Joins and bit/word conversions are typed bindings, not base components. Permutation-specific builders such
 as Sigma and theta remain reusable constructors, not invented base-component
 types. Every fixture class docstring is an executable minimal authoring example.
 

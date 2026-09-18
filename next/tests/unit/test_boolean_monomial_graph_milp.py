@@ -12,7 +12,7 @@ def test_simon_graph_model_has_a_maximum_degree_objective():
     ).milp_model()
     assert model.objective_sense.value == "maximize"
     assert len(model.objective.terms) == 32
-    assert len(model.variables) == 448
+    assert len(model.variables) == 384
 
 
 def test_simon_graph_model_can_restrict_degree_to_cube_positions():

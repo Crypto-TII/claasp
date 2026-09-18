@@ -7,7 +7,6 @@ from claasp_next.components.algebraic import (
     Multiply,
     Power,
 )
-from claasp_next.components.conversion import PackBits, UnpackBits
 from claasp_next.components.feedback import (
     FeedbackRegister,
     FeedbackRegisterParameters,
@@ -22,7 +21,6 @@ from claasp_next.components.permutation import (
     xoodoo_theta,
 )
 from claasp_next.components.structural import (
-    Concatenate,
     Constant,
     Identity,
     Permutation,
@@ -50,7 +48,6 @@ __all__ = [
     "BitwiseNot",
     "BitwiseOr",
     "BinaryAffineMap",
-    "Concatenate",
     "Constant",
     "FeedbackRegister",
     "FeedbackRegisterParameters",
@@ -63,7 +60,6 @@ __all__ = [
     "LookupTable",
     "keccak_theta",
     "Multiply",
-    "PackBits",
     "Permutation",
     "Power",
     "ModularAdd",
@@ -74,7 +70,6 @@ __all__ = [
     "shift_rows",
     "sigma",
     "SBox",
-    "UnpackBits",
     "VariableRotate",
     "VariableShift",
     "xoodoo_theta",

@@ -1,6 +1,6 @@
 """The fixed-length ChaCha keystream block function."""
 
-from claasp_next.components import Concatenate, Constant, ModularAdd, PackBits, Rotate, UnpackBits, Xor
+from claasp_next.components import Constant, ModularAdd, Rotate, Xor
 from claasp_next.domains import Bit
 from claasp_next.encoding import bits_from_int
 from claasp_next.graph import Primitive, ValueType
@@ -56,9 +56,9 @@ class ChaChaKeystreamBlock(Primitive):
         initial_bits += [self.input("key")[_little_endian_word_positions(index)] for index in range(8)]
         initial_bits.append(counter_bits)
         initial_bits += [self.input("nonce")[_little_endian_word_positions(index)] for index in range(3)]
-        feed_forward = [self.add_component(PackBits(bits, 32)) for bits in initial_bits]
+        feed_forward = [self.pack_bits(bits, 32) for bits in initial_bits]
         state = [
-            self.add_component(PackBits(self.input("plaintext")[index * 32:(index + 1) * 32], 32))
+            self.pack_bits(self.input("plaintext")[index * 32:(index + 1) * 32], 32)
             for index in range(16)
         ]
         for half_round in range(half_rounds):
@@ -77,8 +77,8 @@ class ChaChaKeystreamBlock(Primitive):
             self.add_component(ModularAdd((before, after), component_id=f"feed_forward_{index}"))
             for index, (before, after) in enumerate(zip(feed_forward, state))
         ]
-        bits = [self.add_component(UnpackBits(word)) for word in summed]
-        self.set_output(self.add_component(Concatenate(bits, component_id="keystream_block")))
+        bits = [self.unpack_bits(word) for word in summed]
+        self.set_output(bits)
 
     def _half_quarter_round(self, a, b, c, d, rotations, prefix):
         a = self.add_component(ModularAdd((a, b), component_id=f"{prefix}_add0"))

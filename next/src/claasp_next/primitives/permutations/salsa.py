@@ -1,6 +1,6 @@
 """The fixed-length Salsa permutation."""
 
-from claasp_next.components import Concatenate, ModularAdd, Rotate, Xor
+from claasp_next.components import ModularAdd, Rotate, Xor
 from claasp_next.domains import Word
 from claasp_next.graph import Primitive, Port, Selection, ValueType
 
@@ -55,7 +55,7 @@ class Salsa(Primitive):
                     state[a], state[b], state[c], state[d], rotations,
                     f"round_{round_number}_quarter_{quarter_number}",
                 )
-        self.set_output(self.add_component(Concatenate(state, component_id="permutation_output")))
+        self.set_output(state)
 
     def _quarter_round(
         self,

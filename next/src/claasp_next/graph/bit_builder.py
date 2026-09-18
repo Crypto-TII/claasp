@@ -12,10 +12,10 @@ from __future__ import annotations
 from copy import deepcopy
 from dataclasses import dataclass
 from claasp_next.components import (
-    BitVectorSBox, BitwiseAnd, BitwiseNot, BitwiseOr, Concatenate, Constant,
-    FeedbackRegister, FeedbackRegisterSpec, FeedbackTerm, IDEAMultiply, Identity,
-    LinearMap, ModularAdd, ModularMultiply, ModularSubtract, PackBits, Permutation,
-    Rotate, Shift, UnpackBits, VariableRotate, VariableShift, Xor, gaston_theta,
+    BitVectorSBox, BitwiseAnd, BitwiseNot, BitwiseOr, Constant,
+    FeedbackRegister, FeedbackRegisterSpec, FeedbackTerm, IDEAMultiply,
+    LinearMap, ModularAdd, ModularMultiply, ModularSubtract, Permutation,
+    Rotate, Shift, VariableRotate, VariableShift, Xor, gaston_theta,
     keccak_theta, sigma, xoodoo_theta,
 )
 from claasp_next.domains import BinaryExtensionField, Bit
@@ -316,7 +316,7 @@ class BitGraphPrimitive(Primitive):
             raise ValueError("component input must select at least one bit")
         if len(selections) == 1:
             return selections[0]
-        return self.add_component(Concatenate(selections)).select_all()
+        return self.join(*selections).select_all()
 
     def _record(self, port: PortLike, input_positions=None) -> BitComponent:
         selection = as_selection(port)
@@ -345,11 +345,11 @@ class BitGraphPrimitive(Primitive):
             count = 1 if unary else source.value_type.unit_count // width
             operands = tuple(source[index * width:(index + 1) * width] for index in range(count))
         if operation in {"ROTATE_BY_VARIABLE_AMOUNT", "SHIFT_BY_VARIABLE_AMOUNT"}:
-            words = (Primitive.add_component(self, PackBits(operands[0], width)),)
+            words = (self.pack_bits(operands[0], width),)
         else:
-            words = tuple(Primitive.add_component(self, PackBits(value, width)) for value in operands)
+            words = tuple(self.pack_bits(value, width) for value in operands)
         if operation in {"XOR", "AND", "OR"} and len(words) == 1:
-            output = super().add_component(Identity(operands[0], component_id=component_id))
+            return self._record(operands[0], positions)
         elif operation == "XOR": output = super().add_component(Xor(words, component_id=component_id))
         elif operation == "AND": output = super().add_component(BitwiseAnd(words, component_id=component_id))
         elif operation == "OR": output = super().add_component(BitwiseOr(words, component_id=component_id))
@@ -364,12 +364,12 @@ class BitGraphPrimitive(Primitive):
             output = super().add_component(cls(words[0], abs(parameter), direction, component_id=component_id))
         else:
             cls = VariableRotate if operation == "ROTATE_BY_VARIABLE_AMOUNT" else VariableShift
-            amount = super().add_component(PackBits(operands[1], operands[1].value_type.unit_count))
+            amount = self.pack_bits(operands[1], operands[1].value_type.unit_count)
             direction = "right" if parameter >= 0 else "left"
             output = super().add_component(cls(words[0], amount, direction, component_id=component_id))
         if isinstance(output.value_type.domain, Bit):
             return self._record(output, positions)
-        return self._record(super().add_component(UnpackBits(output)), positions)
+        return self._record(self.unpack_bits(output), positions)
 
     def add_xor_component(self, ids, positions, output_bit_size): return self._add_word_operation(ids, positions, output_bit_size, "XOR")
     def add_and_component(self, ids, positions, output_bit_size): return self._add_word_operation(ids, positions, output_bit_size, "AND")
@@ -473,7 +473,7 @@ class BitGraphPrimitive(Primitive):
         clocks = clock_values[0] if clock_values else 1
         if bits_inside_word != 1:
             field = BinaryExtensionField(bits_inside_word, {8: 0x11D, 16: 0x1002D, 32: 0x100008299}[bits_inside_word])
-            source = super().add_component(PackBits(source, bits_inside_word, output_domain=field))
+            source = self.pack_bits(source, bits_inside_word, output_domain=field)
             terms = lambda values: tuple(FeedbackTerm(tuple(term[1]), int(term[0])) for term in values)
         else:
             terms = lambda values: tuple(FeedbackTerm(tuple(term)) for term in values)
@@ -482,7 +482,7 @@ class BitGraphPrimitive(Primitive):
         if bits_inside_word != 1 or source.value_type.unit_count == register_size:
             output = super().add_component(FeedbackRegister(source, specifications, clocks=clocks, component_id=base_id))
             if bits_inside_word != 1:
-                output = super().add_component(UnpackBits(output))
+                output = self.unpack_bits(output)
             return self._record(output, positions)
 
         # Some source descriptions feed key/control bits into nonlinear
@@ -498,25 +498,25 @@ class BitGraphPrimitive(Primitive):
                     if len(selected) == 1:
                         term = selected[0]
                     else:
-                        packed = tuple(Primitive.add_component(self, PackBits(value, 1)) for value in selected)
-                        term = Primitive.add_component(self, UnpackBits(Primitive.add_component(
+                        packed = tuple(self.pack_bits(value, 1) for value in selected)
+                        term = self.unpack_bits(Primitive.add_component(
                             self, BitwiseAnd(packed, component_id=f"{base_id}_and_{clock}_{start}_{term_index}")
-                        )))
+                        ))
                     feedback_terms.append(term)
                 if len(feedback_terms) == 1:
                     feedback_bit = feedback_terms[0]
                 else:
-                    packed = tuple(Primitive.add_component(self, PackBits(value, 1)) for value in feedback_terms)
-                    feedback_bit = Primitive.add_component(self, UnpackBits(Primitive.add_component(
+                    packed = tuple(self.pack_bits(value, 1) for value in feedback_terms)
+                    feedback_bit = self.unpack_bits(Primitive.add_component(
                         self, Xor(packed, component_id=f"{base_id}_feedback_{clock}_{start}")
-                    )))
+                    ))
                 if clock_terms and clock_terms[0]:
                     raise ValueError("conditional registers with external inputs are unsupported")
                 outputs.extend(state[position] for position in range(start + 1, start + length))
                 outputs.append(feedback_bit)
                 start += length
             outputs.append(state[register_size:])
-            state = Primitive.add_component(self, Concatenate(outputs))
+            state = self.join(*outputs)
         output = state[:register_size]
         return self._record(output, positions)
 
@@ -524,9 +524,10 @@ class BitGraphPrimitive(Primitive):
         source = self._selection(ids, positions)
         if source.value_type.unit_count != output_bit_size:
             raise ValueError("output selection size does not match output_bit_size")
-        state = self._add(Identity(source, self._component_id(prefix)))
+        output = self.view(source)
+        state = self._record(output)
         if final:
-            self.set_output(self.port(state.id))
+            self.set_output(output)
         return state
 
     def add_primitive_output_component(self, ids, positions, output_bit_size): return self._output_component(ids, positions, output_bit_size, "primitive_output", True)

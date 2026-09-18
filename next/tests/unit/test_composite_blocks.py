@@ -9,8 +9,8 @@ def test_parallel_sbox_layer_handles_different_box_widths_and_counts():
 
     assert nibble.evaluate(0x0F) == 0xC2
     assert byte.evaluate(0x001122) == 0xA5B487
-    assert len(nibble.rounds[0]) == 3
-    assert len(byte.rounds[0]) == 4
+    assert len(nibble.rounds[0]) == 2
+    assert len(byte.rounds[0]) == 3
 
 
 def test_parallel_bit_sbox_scope_generates_constraints_and_a_valid_witness():
@@ -52,6 +52,6 @@ def test_composite_block_can_be_instantiated_and_queried_as_a_scope():
     primitive.set_output(scope.output())
 
     assert scope.as_primitive().family_name == "ChaChaQuarterRound"
-    assert len(scope.components) == 13
+    assert len(scope.components) == 12
     assert primitive.evaluate(0x11111111, 0x01020304, 0x9B8D6F43, 0x01234567) == \
         0xEA2A92F4CB1CF8CE4581472E5881C4BB

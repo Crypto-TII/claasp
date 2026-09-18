@@ -5,9 +5,8 @@ from dataclasses import dataclass
 
 from claasp_next.annotations import ExecutionTrace, GraphAnnotation
 from claasp_next.components.algebraic import Add, BinaryAffineMap, LinearMap, Multiply, Power
-from claasp_next.components.conversion import PackBits, UnpackBits
 from claasp_next.components.feedback import FeedbackRegister, FeedbackTerm
-from claasp_next.components.structural import Concatenate, Constant, Identity, Permutation
+from claasp_next.components.structural import Constant, Identity, Permutation
 from claasp_next.components.substitution import BitVectorSBox, SBox
 from claasp_next.components.word import (
     BitwiseAnd, BitwiseNot, BitwiseOr, IDEAMultiply, ModularAdd, ModularMultiply,
@@ -68,7 +67,6 @@ class ScalarExecutionDriver:
             Constant: self._evaluate_constant,
             Identity: self._evaluate_identity,
             Permutation: self._evaluate_permutation,
-            Concatenate: self._evaluate_concatenate,
             Add: self._evaluate_add,
             Multiply: self._evaluate_multiply,
             Power: self._evaluate_power,
@@ -88,8 +86,6 @@ class ScalarExecutionDriver:
             Xor: self._evaluate_xor,
             SBox: self._evaluate_sbox,
             BitVectorSBox: self._evaluate_bit_vector_sbox,
-            PackBits: self._evaluate_pack_bits,
-            UnpackBits: self._evaluate_unpack_bits,
             FeedbackRegister: self._evaluate_feedback_register,
         }
 
@@ -118,9 +114,10 @@ class ScalarExecutionDriver:
             self._validate_value(name, value, port.value_type.unit_count, port.value_type.domain)
             values[name] = value
 
+        binding_cache = {}
         for component in primitive.components:
             selected_inputs = tuple(
-                tuple(values[item.source.owner_id][position] for position in item.positions)
+                primitive.resolve_selection(item, values, binding_cache)
                 for item in component.inputs
             )
             try:
@@ -140,15 +137,14 @@ class ScalarExecutionDriver:
 
         output = None
         if primitive.output is not None:
-            output = tuple(
-                values[primitive.output.source.owner_id][position]
-                for position in primitive.output.positions
-            )
+            output = primitive.resolve_selection(primitive.output, values, binding_cache)
+        for binding in primitive.bindings:
+            primitive.resolve_selection(binding.output.select_all(), values, binding_cache)
         annotation = GraphAnnotation.from_values(
             primitive, CONCRETE, values, output=output
         )
         return EvaluationResult(
-            dict(values), output, ExecutionTrace(annotation),
+            dict(values) | dict(binding_cache), output, ExecutionTrace(annotation),
             ResultProvenance.for_primitive(primitive, self.identity),
         )
 
@@ -170,10 +166,6 @@ class ScalarExecutionDriver:
     @staticmethod
     def _evaluate_permutation(component: Permutation, inputs: tuple[RuntimeValue, ...]) -> RuntimeValue:
         return tuple(inputs[0][position] for position in component.mapping)
-
-    @staticmethod
-    def _evaluate_concatenate(component: Concatenate, inputs: tuple[RuntimeValue, ...]) -> RuntimeValue:
-        return tuple(scalar for component_input in inputs for scalar in component_input)
 
     @staticmethod
     def _add_scalar(domain: object, left: int, right: int) -> int:
@@ -434,26 +426,6 @@ class ScalarExecutionDriver:
         substituted = component.table[value]
         width = component.output_type.unit_count
         return tuple((substituted >> position) & 1 for position in range(width - 1, -1, -1))
-
-    @staticmethod
-    def _evaluate_pack_bits(component: PackBits, inputs: tuple[RuntimeValue, ...]) -> RuntimeValue:
-        bits = inputs[0]
-        output = []
-        for start in range(0, len(bits), component.word_width):
-            word = 0
-            for bit in bits[start : start + component.word_width]:
-                word = (word << 1) | bit
-            output.append(word)
-        return tuple(output)
-
-    @staticmethod
-    def _evaluate_unpack_bits(component: UnpackBits, inputs: tuple[RuntimeValue, ...]) -> RuntimeValue:
-        return tuple(
-            (word >> position) & 1
-            for word in inputs[0]
-            for position in range(component.word_width - 1, -1, -1)
-        )
-
 
 # Transitional spelling for code written during the early v5 milestones.
 ScalarEvaluator = ScalarExecutionDriver

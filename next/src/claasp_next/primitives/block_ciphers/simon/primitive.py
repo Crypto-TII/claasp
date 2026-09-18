@@ -1,6 +1,6 @@
 """Canonical word-oriented Simon block primitive."""
 
-from claasp_next.components import BitwiseAnd, Concatenate, Constant, Rotate, Xor
+from claasp_next.components import BitwiseAnd, Constant, Rotate, Xor
 from claasp_next.domains import Word
 from claasp_next.graph import Primitive, Port, Selection, ValueType
 
@@ -64,7 +64,7 @@ class Simon(Primitive):
                     component_id=f"round_key_{round_number}",
                 )))
             left, right = self._round(left, right, round_keys[round_number], round_number)
-        self.set_output(self.add_component(Concatenate((left, right), component_id="primitive_output")))
+        self.set_output((left, right))
 
     def _round(self, left, right, round_key, round_number):
         rotate_1 = self.add_component(Rotate(left, 1, "left"))

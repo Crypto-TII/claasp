@@ -6,6 +6,7 @@ import re
 from types import MappingProxyType
 
 from claasp_next.graph.component import Component
+from claasp_next.graph.binding import BindingKind, ValueBinding
 from claasp_next.graph.metadata import (
     InputVisibility, PrimitiveInput, PrimitiveKind, infer_primitive_kind,
 )
@@ -100,6 +101,7 @@ class Primitive:
         self._ports = dict(ports)
         self._rounds: list[Round] = []
         self._components: dict[str, Component] = {}
+        self._bindings: dict[str, ValueBinding] = {}
         self._scopes: dict[str, object] = {}
         self._output: Selection | None = None
         if not hasattr(self, "realization"):
@@ -310,6 +312,12 @@ class Primitive:
         return tuple(self._components.values())
 
     @property
+    def bindings(self) -> tuple[ValueBinding, ...]:
+        """Return structural wiring values in construction order."""
+
+        return tuple(self._bindings.values())
+
+    @property
     def scopes(self) -> tuple[object, ...]:
         """Composite instances in deterministic path order."""
 
@@ -396,19 +404,182 @@ class Primitive:
     def join(self, *values: PortLike) -> PortLike:
         """Join homogeneous values as structural wiring.
 
-        A single value remains a selection. Multiple sources are normalized to
-        an internal structural node so all execution and modelling backends see
-        the same addressable typed wire. Primitive authors should use this
-        method instead of constructing ``Concatenate`` directly.
+        A single value remains a selection. Multiple sources become an
+        addressable edge binding rather than a semantic graph component.
         """
 
         if not values:
             raise ValueError("structural wiring requires at least one value")
         if len(values) == 1:
             return as_selection(values[0])
-        from claasp_next.components.structural import Concatenate
+        selections = tuple(as_selection(value) for value in values)
+        domain = selections[0].value_type.domain
+        if any(item.value_type.domain != domain for item in selections[1:]):
+            raise ValueError("structural wiring requires one homogeneous domain")
+        output_type = ValueType(domain, (sum(item.value_type.unit_count for item in selections),))
+        return self._add_binding(BindingKind.JOIN, selections, output_type)
 
-        return self.add_component(Concatenate(values))
+    def pack_bits(
+        self, value: PortLike, word_width: int, *, output_domain=None,
+    ) -> Port:
+        """View consecutive MSB-first bits as fixed-width words."""
+
+        from claasp_next.domains import BinaryExtensionField, Bit, Word
+
+        selection = as_selection(value)
+        if not isinstance(selection.value_type.domain, Bit):
+            raise ValueError("pack_bits input must use the Bit domain")
+        if not isinstance(word_width, int) or isinstance(word_width, bool) or word_width <= 0:
+            raise ValueError("word_width must be a positive integer")
+        if selection.value_type.unit_count % word_width:
+            raise ValueError("input bit count must be a multiple of word_width")
+        if output_domain is not None:
+            if not isinstance(output_domain, BinaryExtensionField):
+                raise TypeError("output_domain must be a BinaryExtensionField")
+            if output_domain.degree != word_width:
+                raise ValueError("binary-field degree must equal word_width")
+        domain = output_domain if output_domain is not None else Word(word_width)
+        output_type = ValueType(domain, (selection.value_type.unit_count // word_width,))
+        return self._add_binding(
+            BindingKind.PACK_BITS, (selection,), output_type, word_width=word_width,
+        )
+
+    def view(self, value: PortLike) -> Port:
+        """Give an ordered selection its own non-semantic wiring boundary."""
+
+        selection = as_selection(value)
+        return self._add_binding(BindingKind.VIEW, (selection,), selection.value_type)
+
+    def unpack_bits(self, value: PortLike) -> Port:
+        """View fixed-width words as consecutive MSB-first bits."""
+
+        from claasp_next.domains import BinaryExtensionField, Bit, Word
+
+        selection = as_selection(value)
+        domain = selection.value_type.domain
+        if not isinstance(domain, (Word, BinaryExtensionField)):
+            raise ValueError("unpack_bits input must use a Word or binary-field domain")
+        word_width = domain.width if isinstance(domain, Word) else domain.degree
+        output_type = ValueType(Bit(), (selection.value_type.unit_count * word_width,))
+        return self._add_binding(
+            BindingKind.UNPACK_BITS, (selection,), output_type, word_width=word_width,
+        )
+
+    def _add_binding(
+        self, kind: BindingKind, inputs: tuple[Selection, ...], output_type: ValueType,
+        *, word_width: int | None = None, binding_id: str | None = None,
+        _validate_inputs: bool = True,
+    ) -> Port:
+        if _validate_inputs:
+            for selection in inputs:
+                actual = self._ports.get(selection.source.owner_id)
+                if actual != selection.source:
+                    raise ValueError("binding input does not match its graph port type")
+        if binding_id is None:
+            binding_id = f"__{kind.value}_{len(self._bindings)}"
+        if binding_id in self._ports:
+            raise ValueError(f"graph source {binding_id!r} already exists")
+        binding = ValueBinding(binding_id, kind, inputs, output_type, word_width)
+        self._bindings[binding_id] = binding
+        self._ports[binding_id] = binding.output
+        return binding.output
+
+    def resolve_selection(self, selection: Selection, values: Mapping[str, tuple], cache=None) -> tuple:
+        """Resolve a selection through structural bindings for a representation."""
+
+        cache = {} if cache is None else cache
+
+        def available(source_id: str) -> bool:
+            return source_id in values or source_id in cache
+
+        def selected(item: Selection) -> tuple:
+            source = (
+                tuple(values[item.source.owner_id])
+                if item.source.owner_id in values
+                else cache[item.source.owner_id]
+            )
+            return tuple(source[position] for position in item.positions)
+
+        pending = [selection.source.owner_id]
+        while pending:
+            source_id = pending[-1]
+            if available(source_id):
+                pending.pop()
+                continue
+            try:
+                binding = self._bindings[source_id]
+            except KeyError as error:
+                raise KeyError(f"graph source {source_id!r} has no available value") from error
+            missing = tuple(
+                item.source.owner_id for item in binding.inputs
+                if not available(item.source.owner_id)
+            )
+            if missing:
+                pending.extend(reversed(missing))
+                continue
+            operands = tuple(selected(item) for item in binding.inputs)
+            if binding.kind is BindingKind.JOIN:
+                result = tuple(unit for operand in operands for unit in operand)
+            elif binding.kind is BindingKind.VIEW:
+                result = operands[0]
+            elif binding.kind is BindingKind.PACK_BITS:
+                bits = operands[0]
+                groups = tuple(
+                    bits[start:start + binding.word_width]
+                    for start in range(0, len(bits), binding.word_width)
+                )
+                result = tuple(
+                    sum(
+                        int(bit) << (binding.word_width - 1 - index)
+                        for index, bit in enumerate(group)
+                    )
+                    if all(isinstance(bit, int) for bit in group) else tuple(group)
+                    for group in groups
+                )
+            elif binding.kind is BindingKind.UNPACK_BITS:
+                result_units = []
+                for unit in operands[0]:
+                    if isinstance(unit, int):
+                        result_units.extend(
+                            (unit >> (binding.word_width - 1 - bit)) & 1
+                            for bit in range(binding.word_width)
+                        )
+                    else:
+                        result_units.extend(unit)
+                result = tuple(result_units)
+            else:  # pragma: no cover - closed enum
+                raise AssertionError("unknown graph binding")
+            cache[source_id] = result
+            pending.pop()
+
+        source_id = selection.source.owner_id
+        source = tuple(values[source_id]) if source_id in values else cache[source_id]
+        return tuple(source[position] for position in selection.positions)
+
+    def selection_bit_sources(self, selection: Selection) -> tuple[tuple[str, int], ...]:
+        """Flatten a selection to the encoded bits of semantic graph sources."""
+
+        values = {}
+        ports = tuple(self._input_ports.values()) + tuple(
+            component.output for component in self.components
+        )
+        for port in ports:
+            width = port.value_type.domain.encoded_bit_size
+            if width is None:
+                raise TypeError("graph wiring requires canonically encoded domains")
+            units = []
+            for position in range(port.value_type.unit_count):
+                refs = tuple(
+                    (port.owner_id, position * width + bit) for bit in range(width)
+                )
+                units.append(refs[0] if width == 1 else refs)
+            values[port.owner_id] = tuple(units)
+        selected = self.resolve_selection(selection, values)
+        return tuple(
+            ref
+            for unit in selected
+            for ref in ((unit,) if len(unit) == 2 and isinstance(unit[0], str) else unit)
+        )
 
     def add_composite(
         self,
@@ -458,18 +629,37 @@ class Primitive:
             raise ValueError(f"graph scope {scope_id!r} already exists")
 
         remapped: dict[str, Selection] = dict(normalized)
+        for binding in definition.bindings:
+            remapped[binding.binding_id] = Port(
+                f"{scope_id}/{binding.binding_id}", binding.output_type
+            ).select_all()
+        for components in definition.rounds:
+            for template_component in components:
+                if template_component.component_id is None:
+                    raise ValueError("composite definitions must contain assigned component identifiers")
+                remapped[template_component.component_id] = Port(
+                    f"{scope_id}/{template_component.component_id}", template_component.output_type
+                ).select_all()
 
         def remap(selection: Selection) -> Selection:
             source = remapped[selection.source.owner_id]
             return source[selection.positions]
+
+        for binding in definition.bindings:
+            self._add_binding(
+                binding.kind,
+                tuple(remap(item) for item in binding.inputs),
+                binding.output_type,
+                word_width=binding.word_width,
+                binding_id=f"{scope_id}/{binding.binding_id}",
+                _validate_inputs=False,
+            )
 
         component_ids: list[str] = []
         for components in definition.rounds:
             for template_component in components:
                 component = copy(template_component)
                 local_id = template_component.component_id
-                if local_id is None:
-                    raise ValueError("composite definitions must contain assigned component identifiers")
                 component_id = f"{scope_id}/{local_id}"
                 object.__setattr__(component, "component_id", component_id)
                 object.__setattr__(component, "inputs", tuple(remap(item) for item in component.inputs))

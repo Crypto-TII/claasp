@@ -2,6 +2,7 @@
 
 from claasp_next.graph.primitive import Primitive
 from claasp_next.graph.component import Component
+from claasp_next.graph.binding import BindingKind, ValueBinding
 from claasp_next.graph.port import Port, PortLike, Selection, as_selection
 from claasp_next.graph.round import Round
 from claasp_next.graph.value_type import ValueType
@@ -19,10 +20,10 @@ from claasp_next.graph.composite import (
 
 __all__ = [
     "CompositeBuilder", "CompositeDefinition", "CompositeInstance", "CompositeOutputs", "Primitive",
-    "Component", "InputVisibility", "Port", "PortLike", "PrimitiveInput",
+    "BindingKind", "Component", "InputVisibility", "Port", "PortLike", "PrimitiveInput",
     "PrimitiveKind", "RealizationDescriptor", "RealizationMaturity",
     "RealizationSelectionError", "RealizationSelectionPolicy", "Round", "Selection",
-    "UnsupportedRealizationError", "AmbiguousRealizationError", "ValueType",
+    "UnsupportedRealizationError", "AmbiguousRealizationError", "ValueBinding", "ValueType",
     "normalize_realization_contract", "select_realization",
     "as_selection", "public_input", "secret_input",
 ]

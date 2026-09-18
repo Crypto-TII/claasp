@@ -50,7 +50,7 @@ def test_toy_poseidon_matches_direct_round_function():
         matrix,
     )
     assert len(primitive.rounds) == 3
-    assert [len(primitive_round.components) for primitive_round in primitive.rounds] == [4, 5, 4]
+    assert [len(primitive_round.components) for primitive_round in primitive.rounds] == [4, 4, 4]
 
 
 def test_poseidon_validates_structural_parameters():

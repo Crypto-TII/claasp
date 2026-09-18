@@ -1,6 +1,6 @@
 """Generic component semantics for Boolean monomial trails."""
 
-from claasp_next.components import Add, BitVectorSBox, Concatenate, Constant, Identity, Permutation
+from claasp_next.components import Add, BitVectorSBox, Constant, Identity, Permutation
 from claasp_next.domains import Bit
 from claasp_next.representations.constraints.polynomial import monomial_transition_table
 
@@ -32,11 +32,6 @@ class ComponentMonomialSemantics:
             return input_masks == (output_mask,)
         if isinstance(component, Permutation):
             return input_masks == (ComponentMonomialSemantics._permutation_input(component, output_mask),)
-        if isinstance(component, Concatenate):
-            combined = 0
-            for mask, selection in zip(input_masks, component.inputs):
-                combined = (combined << selection.value_type.unit_count) | mask
-            return combined == output_mask
         if isinstance(component, Add):
             # Over GF(2), each selected output variable chooses exactly one of
             # the corresponding operand variables. Input masks form a disjoint

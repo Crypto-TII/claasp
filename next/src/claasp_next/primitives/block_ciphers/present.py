@@ -1,6 +1,6 @@
 """Bit-oriented PRESENT block primitive."""
 
-from claasp_next.components import Add, BitVectorSBox, Concatenate, Constant, Permutation
+from claasp_next.components import Add, BitVectorSBox, Constant, Permutation
 from claasp_next.graph import Primitive, Port, ValueType
 from claasp_next.domains import Bit
 
@@ -62,9 +62,7 @@ class Present(Primitive):
                     component_id=f"sbox_{round_number}_{nibble}",
                 ))
                 substituted_nibbles.append(substituted)
-            substituted_state = self.add_component(Concatenate(
-                substituted_nibbles, component_id=f"sbox_layer_{round_number}"
-            ))
+            substituted_state = self.join(*substituted_nibbles)
             state = self.add_component(Permutation(
                 substituted_state, P_LAYER_MAPPING, component_id=f"p_layer_{round_number}"
             ))
@@ -102,10 +100,7 @@ class Present(Primitive):
             ))
             prefix.append(second_nibble)
             remaining_start = 8
-        substituted = self.add_component(Concatenate(
-            (*prefix, rotated[remaining_start:key_bit_size]),
-            component_id=f"key_substituted_{round_number}",
-        ))
+        substituted = self.join(*prefix, rotated[remaining_start:key_bit_size])
         counter_bits = tuple(
             (round_number >> position) & 1 for position in range(4, -1, -1)
         )
@@ -117,14 +112,11 @@ class Present(Primitive):
             (substituted[counter_start:counter_start + 5], counter),
             component_id=f"key_counter_xor_{round_number}",
         ))
-        return self.add_component(Concatenate(
-            (
-                substituted[:counter_start],
-                counter_xor,
-                substituted[counter_start + 5:key_bit_size],
-            ),
-            component_id=f"round_key_state_{round_number + 1}",
-        ))
+        return self.join(
+            substituted[:counter_start],
+            counter_xor,
+            substituted[counter_start + 5:key_bit_size],
+        )
 
 
 class Present80(Present):

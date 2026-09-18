@@ -3,7 +3,6 @@
 from decimal import Decimal, localcontext
 from math import ceil, log10
 
-from claasp_next.components import Concatenate, PackBits, UnpackBits
 from claasp_next.domains import Bit, Word
 from claasp_next.graph import Primitive, ValueType
 
@@ -37,8 +36,8 @@ class RC5(Primitive):
 
         def pack_little_endian(byte_selection):
             byte_selection = tuple(reversed(tuple(byte_selection)))
-            joined = self.add_component(Concatenate(byte_selection)) if len(byte_selection) > 1 else byte_selection[0]
-            return self.add_component(PackBits(self.add_component(UnpackBits(joined)), word_size))
+            joined = self.join(*byte_selection)
+            return self.pack_bits(self.unpack_bits(joined), word_size)
 
         if key_size in (0, 1):
             key_words = [constant(self, word_size, 0)]

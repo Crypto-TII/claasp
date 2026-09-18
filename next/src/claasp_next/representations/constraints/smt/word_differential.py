@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from hashlib import sha256
 from fractions import Fraction
 
-from claasp_next.components import BitwiseAnd, Concatenate, Constant, Identity, ModularAdd, Rotate, Xor
+from claasp_next.components import BitwiseAnd, Constant, Identity, ModularAdd, Rotate, Xor
 from claasp_next.domains import Word
 from claasp_next.drivers.solvers import SatStatus
 from claasp_next.representations.constraints.smt.formula import SMTFormula
@@ -115,9 +115,10 @@ class WordDifferentialSMTModel:
                                 for bit in range(value_type.unit_count * value_type.domain.width))
 
         def selected(selection):
-            width = selection.value_type.domain.width
-            return tuple(ports[selection.source.owner_id][position * width + bit]
-                         for position in selection.positions for bit in range(width))
+            return tuple(
+                ports[owner_id][bit]
+                for owner_id, bit in self.primitive.selection_bit_sources(selection)
+            )
 
         weights, operands_by_id = [], {}
         for component in self.primitive.components:
@@ -152,7 +153,7 @@ class WordDifferentialSMTModel:
             elif isinstance(component, Xor):
                 for bit, target in enumerate(output):
                     _xor_equivalence((target, *(operand[bit] for operand in operands)), indices, clauses, provenance)
-            elif isinstance(component, (Identity, Concatenate)):
+            elif isinstance(component, Identity):
                 for source, target in zip((name for operand in operands for name in operand), output):
                     _xor_equivalence((source, target), indices, clauses, provenance)
             elif isinstance(component, Rotate):
@@ -278,7 +279,7 @@ class WordDifferentialSMTModel:
                     ("weight_range", repr((self.fixed_weight, self.maximum_weight))),
                     ("fixed_input_differences", repr(tuple(sorted(self.fixed_input_differences.items())))),
                     ("output_difference", repr(self.output_difference)),
-                    ("graph_sha256", sha256(repr((self.primitive.input_ports, tuple(self.primitive.components), self.primitive.output)).encode()).hexdigest()),
+                    ("graph_sha256", sha256(repr((self.primitive.input_ports, self.primitive.bindings, tuple(self.primitive.components), self.primitive.output)).encode()).hexdigest()),
                     ("formula_sha256", sha256(repr(formula).encode()).hexdigest()))
         indices = {name: index for index, name in enumerate(formula.variables, 1)}
         trails, blocks, runtime = [], [], 0.0

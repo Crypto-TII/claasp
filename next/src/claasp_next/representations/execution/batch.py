@@ -5,9 +5,8 @@ from dataclasses import dataclass
 
 from claasp_next.graph import Primitive
 from claasp_next.components.algebraic import Add, BinaryAffineMap, LinearMap, Multiply, Power
-from claasp_next.components.conversion import PackBits, UnpackBits
 from claasp_next.components.feedback import FeedbackRegister
-from claasp_next.components.structural import Concatenate, Constant, Identity, Permutation
+from claasp_next.components.structural import Constant, Identity, Permutation
 from claasp_next.components.substitution import BitVectorSBox, SBox
 from claasp_next.components.word import (
     BitwiseAnd, BitwiseNot, BitwiseOr, IDEAMultiply, ModularAdd, ModularMultiply,
@@ -148,10 +147,15 @@ class TransposedBatchExecutionDriver(BatchExecutionDriver):
                 )
             values[name] = batch
 
+        binding_caches = [{} for _ in range(batch_size)]
         for component in primitive.components:
             selected = tuple(
                 tuple(
-                    tuple(values[item.source.owner_id][lane][position] for position in item.positions)
+                    primitive.resolve_selection(
+                        item,
+                        {source_id: batch[lane] for source_id, batch in values.items()},
+                        binding_caches[lane],
+                    )
                     for lane in range(batch_size)
                 )
                 for item in component.inputs
@@ -171,9 +175,12 @@ class TransposedBatchExecutionDriver(BatchExecutionDriver):
             lane_values = {source_id: batch[lane] for source_id, batch in values.items()}
             output = None
             if primitive.output is not None:
-                output = tuple(
-                    lane_values[primitive.output.source.owner_id][position]
-                    for position in primitive.output.positions
+                output = primitive.resolve_selection(
+                    primitive.output, lane_values, binding_caches[lane]
+                )
+            for binding in primitive.bindings:
+                primitive.resolve_selection(
+                    binding.output.select_all(), lane_values, binding_caches[lane]
                 )
             from claasp_next.annotations import ExecutionTrace, GraphAnnotation
             from claasp_next.semantics import CONCRETE
@@ -181,7 +188,7 @@ class TransposedBatchExecutionDriver(BatchExecutionDriver):
             annotation = GraphAnnotation.from_values(primitive, CONCRETE, lane_values, output=output)
             provenance = ResultProvenance.for_primitive(primitive, self.identity)
             results.append(EvaluationResult(
-                lane_values, output, ExecutionTrace(annotation), provenance
+                lane_values | binding_caches[lane], output, ExecutionTrace(annotation), provenance
             ))
         return BatchEvaluationResult(
             tuple(results), ResultProvenance.for_primitive(primitive, self.identity)
@@ -194,7 +201,6 @@ class TransposedBatchExecutionDriver(BatchExecutionDriver):
         handlers = {
             Identity: scalar._evaluate_identity,
             Permutation: scalar._evaluate_permutation,
-            Concatenate: scalar._evaluate_concatenate,
             Add: scalar._evaluate_add,
             Multiply: scalar._evaluate_multiply,
             Power: scalar._evaluate_power,
@@ -214,8 +220,6 @@ class TransposedBatchExecutionDriver(BatchExecutionDriver):
             Xor: scalar._evaluate_xor,
             SBox: scalar._evaluate_sbox,
             BitVectorSBox: scalar._evaluate_bit_vector_sbox,
-            PackBits: scalar._evaluate_pack_bits,
-            UnpackBits: scalar._evaluate_unpack_bits,
             FeedbackRegister: scalar._evaluate_feedback_register,
         }
         try:
