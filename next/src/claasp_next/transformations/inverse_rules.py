@@ -398,6 +398,38 @@ def _inverse_variable_rotate(component, output, auxiliaries, recover_input):
     return VariableRotate(output, auxiliaries[0], "right" if component.direction == "left" else "left")
 
 
+def _recover_idea_multiply(component, output, auxiliaries, recover_input):
+    return IDEAMultiply((output, *auxiliaries), inverse_inputs=range(1, len(auxiliaries) + 1))
+
+
+def _inverse_feedback_register(component, output, auxiliaries, recover_input):
+    starts = []
+    start = 0
+    for register in component.registers:
+        starts.append(start)
+        start += register.length
+    forbidden = set(starts)
+    for register, start in zip(component.registers, starts):
+        pivots = tuple(term for term in register.feedback if term.positions == (start,))
+        if (
+            register.clock is not None or len(pivots) != 1
+            or not pivots[0].coefficient
+            or any(
+                forbidden.intersection(term.positions)
+                for term in register.feedback if term is not pivots[0]
+            )
+        ):
+            raise TransformationError(
+                TransformationFailureReason.INFORMATION_LOSS,
+                "feedback transition has no explicit reversible outgoing-unit pivot",
+                source_ids=_component_ids(component),
+            )
+    direction = "inverse" if component.direction == "forward" else "forward"
+    return FeedbackRegister(
+        output, component.registers, component.clocks, direction=direction,
+    )
+
+
 def _unsupported(component_type, reason, rationale):
     return ComponentInverseSemantics(component_type, None, reason, rationale)
 
@@ -424,8 +456,8 @@ DEFAULT_INVERSE_REGISTRY = ComponentInverseRegistry((
     _unsupported(BitwiseOr, TransformationFailureReason.INFORMATION_LOSS, "bitwise OR is not bijective in an operand"),
     _unsupported(Multiply, TransformationFailureReason.INFORMATION_LOSS, "multiplication is not bijective when an auxiliary can be zero"),
     _unsupported(ModularMultiply, TransformationFailureReason.INFORMATION_LOSS, "modular multiplication is not bijective for every auxiliary"),
-    _unsupported(IDEAMultiply, TransformationFailureReason.UNSUPPORTED_COMPONENT, "IDEA multiplication needs its encoded-group inverse operation"),
-    _unsupported(FeedbackRegister, TransformationFailureReason.UNSUPPORTED_COMPONENT, "feedback-register inversion requires an explicit reversible transition contract"),
+    ComponentInverseSemantics(IDEAMultiply, _recover_idea_multiply),
+    ComponentInverseSemantics(FeedbackRegister, _inverse_feedback_register),
 ))
 
 

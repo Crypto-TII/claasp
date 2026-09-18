@@ -7,9 +7,9 @@ from claasp_next import (
     TransformationFailureReason, ValueType, Word, invert_component,
 )
 from claasp_next.components import (
-    Add, BinaryAffineMap, BitVectorSBox, BitwiseAnd, LinearMap, ModularAdd,
-    ModularSubtract, Permutation, Power, Rotate, SBox, Shift, VariableRotate,
-    Xor,
+    Add, BinaryAffineMap, BitVectorSBox, BitwiseAnd, FeedbackRegister,
+    FeedbackRegisterSpec, FeedbackTerm, IDEAMultiply, LinearMap, ModularAdd,
+    ModularSubtract, Permutation, Power, Rotate, SBox, Shift, VariableRotate, Xor,
 )
 
 def test_permutation_and_rotation_inverse_semantics_are_independent_components():
@@ -120,6 +120,71 @@ def test_modular_subtract_recovers_each_operand():
         output = (values[0] - values[1] - values[2]) & 15
         arguments = (output, *(values[index] for index in range(3) if index != recover))
         assert inverse.evaluate(*arguments) == values[recover]
+
+
+def test_idea_multiply_recovers_each_operand_exhaustively():
+    source = Primitive("source", {
+        name: ValueType(Word(4), (1,)) for name in ("a", "b", "c")
+    })
+    component = IDEAMultiply(source.inputs())
+    for recover in range(3):
+        retained = tuple(
+            name for index, name in enumerate(("a", "b", "c"))
+            if index != recover
+        )
+        inverse = Primitive("inverse", {
+            "output": ValueType(Word(4), (1,)),
+            **{name: ValueType(Word(4), (1,)) for name in retained},
+        })
+        inverse.add_round()
+        auxiliaries = {
+            index: inverse.input(name)
+            for index, name in enumerate(("a", "b", "c"))
+            if index != recover
+        }
+        recovered = invert_component(
+            component, inverse.input("output"), recover_input=recover,
+            auxiliary_inputs=auxiliaries,
+        )
+        inverse.set_output(inverse.add_component(recovered))
+        for values in itertools.product(range(16), repeat=3):
+            encoded = tuple(16 if value == 0 else value for value in values)
+            output = encoded[0] * encoded[1] * encoded[2] % 17
+            output = 0 if output == 16 else output
+            arguments = (output, *(values[index] for index in range(3) if index != recover))
+            assert inverse.evaluate(*arguments) == values[recover]
+
+
+def test_reversible_feedback_register_inverse_round_trips_all_states():
+    source = Primitive("source", {"state": ValueType(Bit(), (4,))})
+    component = FeedbackRegister(
+        source.input("state"),
+        (FeedbackRegisterSpec(4, (FeedbackTerm((0,)), FeedbackTerm((1,)))),),
+        clocks=3,
+    )
+    forward = Primitive("forward", {"state": ValueType(Bit(), (4,))})
+    forward.add_round()
+    forward.set_output(forward.add_component(FeedbackRegister(
+        forward.input("state"), component.registers, component.clocks,
+    )))
+    inverse = Primitive("inverse", {"state": ValueType(Bit(), (4,))})
+    inverse.add_round()
+    recovered = invert_component(component, inverse.input("state"), recover_input=0)
+    inverse.set_output(inverse.add_component(recovered))
+
+    for state in range(16):
+        assert inverse.evaluate(forward.evaluate(state)) == state
+
+
+def test_nonreversible_feedback_register_reports_information_loss():
+    source = Primitive("source", {"state": ValueType(Bit(), (4,))})
+    component = FeedbackRegister(
+        source.input("state"),
+        (FeedbackRegisterSpec(4, (FeedbackTerm((1,)), FeedbackTerm((2,)))),),
+    )
+    with pytest.raises(TransformationError) as caught:
+        invert_component(component, source.input("state"), recover_input=0)
+    assert caught.value.reason is TransformationFailureReason.INFORMATION_LOSS
 
 
 def test_variable_rotation_only_recovers_value_with_retained_amount():

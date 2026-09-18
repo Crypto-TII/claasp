@@ -272,10 +272,16 @@ class ScalarExecutionDriver:
     ) -> RuntimeValue:
         encoded_zero = 1 << component.output_type.domain.width
         modulus = encoded_zero + 1
-        output = [encoded_zero if value == 0 else value for value in inputs[0]]
-        for operand in inputs[1:]:
+        encoded_inputs = [
+            [encoded_zero if value == 0 else value for value in operand]
+            for operand in inputs
+        ]
+        for index in component.inverse_inputs:
+            encoded_inputs[index] = [pow(value, -1, modulus) for value in encoded_inputs[index]]
+        output = encoded_inputs[0]
+        for operand in encoded_inputs[1:]:
             output = [
-                (left * (encoded_zero if right == 0 else right)) % modulus
+                (left * right) % modulus
                 for left, right in zip(output, operand)
             ]
         return tuple(0 if value == encoded_zero else value for value in output)
@@ -380,6 +386,8 @@ class ScalarExecutionDriver:
     ) -> RuntimeValue:
         domain = component.output_type.domain
         state = inputs[0]
+        if component.direction == "inverse":
+            return cls._evaluate_inverse_feedback_register(component, state)
         for _ in range(component.clocks):
             previous = state
             updated = list(previous)
@@ -394,6 +402,60 @@ class ScalarExecutionDriver:
                     updated[start:stop] = previous[start + 1:stop] + (feedback,)
                 start = stop
             state = tuple(updated)
+        return state
+
+    @classmethod
+    def _evaluate_inverse_feedback_register(cls, component, state):
+        from claasp_next.domains import Bit
+        from claasp_next.utils import binary_field_multiply
+
+        domain = component.output_type.domain
+        starts = []
+        start = 0
+        for register in component.registers:
+            starts.append(start)
+            start += register.length
+        for _ in range(component.clocks):
+            current = state
+            previous = list(current)
+            for start, register in zip(starts, component.registers):
+                stop = start + register.length
+                pivot_terms = tuple(
+                    term for term in register.feedback if term.positions == (start,)
+                )
+                forbidden = set(starts)
+                if (
+                    register.clock is not None or len(pivot_terms) != 1
+                    or any(
+                        forbidden.intersection(term.positions)
+                        for term in register.feedback if term is not pivot_terms[0]
+                    )
+                ):
+                    raise ValueError("feedback transition has no explicit reversible pivot")
+                known_previous = list(current)
+                known_previous[start + 1:stop] = current[start:stop - 1]
+                known_previous[start] = 0
+                remainder = cls._evaluate_feedback_polynomial(
+                    domain,
+                    tuple(term for term in register.feedback if term is not pivot_terms[0]),
+                    tuple(known_previous),
+                )
+                target = current[stop - 1] ^ remainder
+                coefficient = pivot_terms[0].coefficient
+                if isinstance(domain, Bit):
+                    recovered = target
+                else:
+                    inverse = pow(2, domain.degree) - 2
+                    scale = 1
+                    base = coefficient
+                    while inverse:
+                        if inverse & 1:
+                            scale = binary_field_multiply(domain, scale, base)
+                        base = binary_field_multiply(domain, base, base)
+                        inverse >>= 1
+                    recovered = binary_field_multiply(domain, target, scale)
+                previous[start:stop] = [recovered, *current[start:stop - 1]]
+            state = tuple(previous)
         return state
 
     @staticmethod

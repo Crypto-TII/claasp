@@ -128,6 +128,7 @@ class FeedbackRegister(Component):
 
     registers: tuple[FeedbackRegisterSpec, ...]
     clocks: int
+    direction: str
 
     def __init__(
         self,
@@ -135,6 +136,8 @@ class FeedbackRegister(Component):
         registers: Iterable[FeedbackRegisterSpec],
         clocks: int = 1,
         component_id: str | None = None,
+        *,
+        direction: str = "forward",
     ) -> None:
         component_input = as_selection(component_input)
         registers = tuple(registers)
@@ -151,6 +154,8 @@ class FeedbackRegister(Component):
             raise TypeError("clock count must be an integer")
         if clocks <= 0:
             raise ValueError("clock count must be positive")
+        if direction not in ("forward", "inverse"):
+            raise ValueError("feedback-register direction must be 'forward' or 'inverse'")
         unit_count = component_input.value_type.unit_count
         for register in registers:
             terms = register.feedback + (() if register.clock is None else register.clock)
@@ -165,4 +170,5 @@ class FeedbackRegister(Component):
         object.__setattr__(self, "output_type", component_input.value_type)
         object.__setattr__(self, "registers", registers)
         object.__setattr__(self, "clocks", clocks)
+        object.__setattr__(self, "direction", direction)
         Component.__post_init__(self)

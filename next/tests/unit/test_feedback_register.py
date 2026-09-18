@@ -94,6 +94,23 @@ def test_multiple_clocks_and_transposed_batch_match_independent_iteration():
     assert TransposedBatchEvaluator().evaluate(primitive, inputs).outputs == expected
 
 
+def test_inverse_field_word_register_recovers_nonunit_pivot():
+    field = BinaryExtensionField(2, 0b111)
+    spec = FeedbackRegisterSpec(
+        2, (FeedbackTerm((0,), coefficient=2), FeedbackTerm((1,))),
+    )
+    forward = _primitive(field, 2, spec, clocks=2)
+    inverse = Primitive("inverse", {"state": ValueType(field, (2,))})
+    inverse.add_round()
+    inverse.set_output(inverse.add_component(FeedbackRegister(
+        inverse.input("state"), (spec,), clocks=2, direction="inverse",
+    )))
+
+    for state in product(range(4), repeat=2):
+        encoded = state[0] << 2 | state[1]
+        assert inverse.evaluate(forward.evaluate(encoded)) == encoded
+
+
 def test_feedback_register_validation_rejects_ambiguous_word_arithmetic():
     primitive = Primitive("invalid", {"state": ValueType(Word(4), (2,))})
     spec = FeedbackRegisterSpec(2, (FeedbackTerm((0,)),))
