@@ -16,6 +16,12 @@ Primitive graph
 .. automodule:: claasp_next.graph
    :members:
 
+Graph transformations
+---------------------
+
+.. automodule:: claasp_next.transformations
+   :members:
+
 Semantics and annotations
 -------------------------
 

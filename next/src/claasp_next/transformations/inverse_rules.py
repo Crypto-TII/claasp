@@ -38,6 +38,7 @@ class ComponentInverseSemantics:
         return self.factory is not None
 
 
+@dataclass(frozen=True, slots=True, init=False)
 class ComponentInverseRegistry:
     """Immutable exact-type registry of component inverse semantics.
 
@@ -56,6 +57,8 @@ class ComponentInverseRegistry:
         ('Rotate', 3, 'right')
     """
 
+    _semantics: Mapping[type[Component], ComponentInverseSemantics]
+
     def __init__(self, semantics: Sequence[ComponentInverseSemantics]) -> None:
         records = tuple(semantics)
         if any(not isinstance(item, ComponentInverseSemantics) for item in records):
@@ -63,7 +66,10 @@ class ComponentInverseRegistry:
         types = tuple(item.component_type for item in records)
         if len(set(types)) != len(types):
             raise ValueError("component inverse semantics must have unique component types")
-        self._semantics = MappingProxyType({item.component_type: item for item in records})
+        object.__setattr__(
+            self, "_semantics",
+            MappingProxyType({item.component_type: item for item in records}),
+        )
 
     @property
     def semantics(self) -> Mapping[type[Component], ComponentInverseSemantics]:

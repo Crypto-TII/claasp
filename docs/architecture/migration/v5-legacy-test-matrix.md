@@ -328,12 +328,18 @@ The preserved evidence is semantic:
 | `claasp/cipher_modules/inverse_cipher.py`; `cipher_test.py::test_cipher_inverse` | M10.10c–d | Per-component complete/partial inverse rules, precise typed failures, and independently evaluated round trips for representative SPN, ARX, permutation, keyed, and tweakable primitives |
 | `Cipher.get_partial_cipher` and its three fixed structural tests | M10.10b | Validated round/dependency slices with no dangling sources; legacy component-id pictures are superseded by semantic boundary and evaluation checks |
 | `claasp/editor.py`; `editor_test.py` | M10.10e | Immutable round reduction, explicit key-schedule boundaries/removal, orphan pruning, and semantics-preserving reorder inlining |
-| `claasp/compound_xor_differential_cipher.py`; its six tests | M10.10f | Typed paired/XOR observations and the fixed Speck single-key/related-key compatible and incompatible boundary evidence; SAT model syntax and mutating `_pair1`/`_pair2` ids are superseded |
+| `claasp/compound_xor_differential_cipher.py`; its six tests | M10.10f | Typed paired/XOR observations plus direct MiniSat checks preserve the fixed 10-round single-key compatible trail and the 14-round related-key compatible/incompatible trails; XOR-model search/window orchestration remains with its existing model milestone, while SAT variable spelling and mutating `_pair1`/`_pair2` ids are superseded |
 
 The already resolved impossible, boomerang, differential-linear, monomial,
 and model-helper records remain owned by M10.8. Their use of legacy inversion
 or key-schedule mutation is historical evidence, not a reason to reopen those
 model milestones.
+
+The M10.10 closure gate resolves all nine owned records (five sources and four
+tests), verifies every destination exists, and requires fixed evidence on each
+test record. The direct compound checks run on the ordinary paired typed graph
+and Boolean CNF lowering; they do not depend on legacy copied ids or dictionary
+serialization.
 
 M10.12b–c supersede the legacy eager NumPy dataset containers with lazy,
 re-iterable correlation, zero-IV CBC, low-density, and high-density streams.

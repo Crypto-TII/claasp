@@ -43,6 +43,7 @@ if guide == "user":
         "milp_models.rst",
         "cp_models.rst",
         "catalogue_architecture.rst",
+        "transformation_architecture.rst",
     ])
 else:
     exclude_patterns.extend([
@@ -53,6 +54,7 @@ else:
         "batch_evaluation.rst",
         "displaying_results.rst",
         "primitive_catalogue.rst",
+        "transformations.rst",
     ])
 nitpicky = True
 show_warning_types = True

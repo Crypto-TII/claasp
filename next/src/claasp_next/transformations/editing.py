@@ -23,7 +23,15 @@ def _record(derived, source, operation, parameters=()):
 
 
 def prune_orphans(primitive: Primitive) -> TransformationResult:
-    """Return the validated output dependency closure of ``primitive``."""
+    """Return the validated output dependency closure of ``primitive``.
+
+    EXAMPLES::
+
+        >>> from claasp_next.primitives import Speck
+        >>> source = Speck(number_of_rounds=1)
+        >>> prune_orphans(source).primitive.evaluate(0x6574694c, 0x1918111009080100) == source.evaluate(0x6574694c, 0x1918111009080100)
+        True
+    """
 
     result = slice_primitive(primitive, family_name=f"{primitive.family_name}_pruned")
     _record(result.primitive, primitive, "prune_orphans")
@@ -190,6 +198,13 @@ def remove_key_schedule(
     Retained injections become explicit ``round_key_*`` inputs.  With
     ``keep_round_key_injection=False``, recognized zero-neutral injection
     operations are bypassed and the resulting graph has no key inputs.
+
+    EXAMPLES::
+
+        >>> from claasp_next.primitives import Speck
+        >>> transformed = remove_key_schedule(Speck(number_of_rounds=2)).primitive
+        >>> tuple(transformed.input_ports)
+        ('plaintext', 'round_key_0', 'round_key_1')
     """
 
     if not isinstance(primitive, Primitive):
@@ -266,7 +281,16 @@ def _linear_permutation(component):
 
 
 def inline_reorderings(primitive: Primitive) -> TransformationResult:
-    """Replace exact reorder-only semantic components with graph bindings."""
+    """Replace exact reorder-only semantic components with graph bindings.
+
+    EXAMPLES::
+
+        >>> from claasp_next.primitives import Speck
+        >>> source = Speck(number_of_rounds=1)
+        >>> derived = inline_reorderings(source).primitive
+        >>> derived.evaluate(0x6574694c, 0x1918111009080100) == source.evaluate(0x6574694c, 0x1918111009080100)
+        True
+    """
 
     if not isinstance(primitive, Primitive):
         raise TypeError("inline_reorderings requires a Primitive")

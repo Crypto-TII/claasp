@@ -243,3 +243,39 @@ def test_m10_9d_primitive_catalogue_cli_audit_gate_passes():
     status = json.loads(result.stdout)
     assert status["audit_complete"]
     assert status["closure_complete"]
+
+
+def test_m10_10_transformation_inventory_has_final_owners_and_evidence():
+    payload = json.loads(INVENTORY.read_text(encoding="utf-8"))
+    status = _module().transformation_closure_status(payload)
+
+    assert status == {
+        "total": 9,
+        "source": 5,
+        "test": 4,
+        "by_slice": {
+            "M10.10a": 2,
+            "M10.10c": 1,
+            "M10.10d": 2,
+            "M10.10e": 2,
+            "M10.10f": 2,
+        },
+        "missing": [],
+        "owner_errors": [],
+        "destination_errors": [],
+        "unresolved": [],
+        "evidence_errors": [],
+        "complete": True,
+    }
+
+
+def test_m10_10_transformation_cli_closure_gate_passes():
+    result = subprocess.run(
+        [sys.executable, str(SCRIPT), "--check-transformation-closure"],
+        cwd=ROOT / "next",
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert json.loads(result.stdout)["complete"]

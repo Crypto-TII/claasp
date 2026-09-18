@@ -137,7 +137,7 @@
         "os",
         "sys"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -156,7 +156,7 @@
       ],
       "rationale": "M10.10 owns only the legacy inversion, partial-graph, round-reduction, key-schedule, and paired-transformation entry points. Evaluation, reporting, serialization, code generation, and remaining helpers retain their recorded milestone ownership.",
       "responsibility": "cipher",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.10d",
       "tests": [
         "test_against_reference_code",
         "test_vector_check"
@@ -643,7 +643,7 @@
       ],
       "rationale": "A standard-library typed dependency index replaces NetworkX graphs and legacy dictionaries while preserving predecessor, descendant, and split-boundary semantics across components and structural bindings.",
       "responsibility": "graph generator",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.10b",
       "tests": [],
       "v5_destination": "next/src/claasp_next/transformations/traversal.py"
     },
@@ -669,7 +669,7 @@
       "public_entry_points": [],
       "rationale": "Typed component inverse rules and immutable graph reconstruction replace the Sage-backed mutable bit-equivalence engine; retained auxiliary inputs and partial inverses are explicit contracts.",
       "responsibility": "Cipher inversion engine.",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m10.10d",
       "tests": [],
       "v5_destination": "next/src/claasp_next/transformations/inversion.py; next/src/claasp_next/transformations/inverse_rules.py"
     },
@@ -9971,7 +9971,7 @@
         "claasp",
         "copy"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
@@ -9992,7 +9992,7 @@
       ],
       "rationale": "An immutable typed paired graph plus XOR observations replaces deep-copy mutation and `_pair1`/`_pair2` generated ids; solver lowering remains outside the transformation.",
       "responsibility": "compound xor differential cipher",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.10f",
       "tests": [],
       "v5_destination": "next/src/claasp_next/transformations/paired.py"
     },
@@ -10003,7 +10003,7 @@
         "copy",
         "sys"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
@@ -10076,7 +10076,7 @@
       ],
       "rationale": "Validated graph reconstruction replaces deep-copy mutation. Existing v5 authoring already supersedes legacy add-component helpers; M10.10 preserves slicing, round reduction, key-schedule removal, orphan pruning, and reorder-only inlining.",
       "responsibility": "editor",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.10e",
       "tests": [],
       "v5_destination": "next/src/claasp_next/transformations/slicing.py; next/src/claasp_next/transformations/editing.py"
     },
@@ -11229,7 +11229,7 @@
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -11249,7 +11249,7 @@
       ],
       "rationale": "Exact legacy node ids and the malformed descendant edge shape are incidental; source membership, dependency direction, closure, and validated slices are preserved.",
       "responsibility": "graph generator test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.10b",
       "tests": [
         "test_get_descendants_subgraph",
         "test_split_cipher_graph_into_top_bottom"
@@ -14044,7 +14044,7 @@
         "pytest",
         "sys"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -14138,7 +14138,7 @@
       ],
       "rationale": "M10.10 owns the direct primitive inversion and partial-graph assertions in this mixed legacy module. Other test functions remain evidence for their existing analysis, execution, presentation, or compiler milestones.",
       "responsibility": "cipher test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.10d",
       "tests": [
         "test_algebraic_tests",
         "test_algebraic_tests_toy_aes",
@@ -14180,7 +14180,7 @@
         "test_vector_check",
         "test_zero_correlation_linear_search"
       ],
-      "v5_destination": "next/tests/unit/test_primitive_inversion.py; next/tests/unit/test_graph_slicing.py; next/tests/unit/test_editor_transformations.py"
+      "v5_destination": "next/tests/unit/test_primitive_inversion.py; next/tests/unit/test_graph_slicing.py; next/tests/unit/test_graph_editing.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -20202,7 +20202,7 @@
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -20236,7 +20236,7 @@
       ],
       "rationale": "The fixed compatible/incompatible Speck boundary evidence is retained through typed paired semantics; legacy SAT variable spelling and mutable copied-graph ids are superseded.",
       "responsibility": "compound xor differential cipher test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.10f",
       "tests": [
         "test_build_xor_differential_model_and_checker_sat",
         "test_build_xor_differential_model_and_checker_unsat",
@@ -20245,7 +20245,7 @@
         "test_satisfiable_differential_trail_single_key_generated_using_claasp",
         "test_unsatisfiable_differential_trail_related_key"
       ],
-      "v5_destination": "next/tests/unit/test_paired_transformations.py; next/tests/integration/test_paired_constraints.py"
+      "v5_destination": "next/tests/unit/test_paired_xor_transformation.py; next/tests/integration/test_paired_constraints.py"
     },
     {
       "acceptance_criterion": "Round/key transformations and reorder inlining have validated graphs, explicit boundaries, unchanged sources, and scalar semantic parity.",
@@ -20255,7 +20255,7 @@
         "io",
         "random"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -20300,7 +20300,7 @@
       ],
       "rationale": "Mutable dictionaries, generated component ids, and add-without-round printing are not v5 contracts; key-schedule boundaries and reorder-only semantic equivalence are retained.",
       "responsibility": "editor test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.10e",
       "tests": [
         "test_add_components_without_round_returns_none",
         "test_add_fsr_component",
@@ -20317,7 +20317,7 @@
         "test_replace_bit_reordering_components_as_direct_wiring_removes_only_reorder_only_components",
         "test_replace_bit_reordering_components_as_direct_wiring_rewires_permutation_component"
       ],
-      "v5_destination": "next/tests/unit/test_editor_transformations.py"
+      "v5_destination": "next/tests/unit/test_graph_editing.py"
     },
     {
       "acceptance_criterion": "The exact 4-/32-bit masks and 0x67452301 little-endian bit vector are independently checked.",

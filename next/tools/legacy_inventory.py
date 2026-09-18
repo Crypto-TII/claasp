@@ -1468,7 +1468,7 @@ M10_10_OVERRIDES = {
     },
     "tests/unit/editor_test.py": {
         "milestone_owner": "M10.10e",
-        "v5_destination": "next/tests/unit/test_editor_transformations.py",
+        "v5_destination": "next/tests/unit/test_graph_editing.py",
         "prerequisites": ["M10.10b", "M10.10d"],
         "rationale": "Mutable dictionaries, generated component ids, and add-without-round printing are not v5 contracts; key-schedule boundaries and reorder-only semantic equivalence are retained.",
         "acceptance_criterion": "Round/key transformations and reorder inlining have validated graphs, explicit boundaries, unchanged sources, and scalar semantic parity.",
@@ -1482,7 +1482,7 @@ M10_10_OVERRIDES = {
     },
     "tests/unit/compound_xor_differential_cipher_test.py": {
         "milestone_owner": "M10.10f",
-        "v5_destination": "next/tests/unit/test_paired_transformations.py; next/tests/integration/test_paired_constraints.py",
+        "v5_destination": "next/tests/unit/test_paired_xor_transformation.py; next/tests/integration/test_paired_constraints.py",
         "prerequisites": ["M10.10e"],
         "rationale": "The fixed compatible/incompatible Speck boundary evidence is retained through typed paired semantics; legacy SAT variable spelling and mutable copied-graph ids are superseded.",
         "acceptance_criterion": "Fixed single-key and related-key Speck observations agree with independent paired evaluation, with solver-facing feasibility checked only in the affected integration group.",
@@ -1496,12 +1496,28 @@ M10_10_OVERRIDES = {
     },
     "tests/unit/cipher_test.py": {
         "milestone_owner": "M10.10d",
-        "v5_destination": "next/tests/unit/test_primitive_inversion.py; next/tests/unit/test_graph_slicing.py; next/tests/unit/test_editor_transformations.py",
+        "v5_destination": "next/tests/unit/test_primitive_inversion.py; next/tests/unit/test_graph_slicing.py; next/tests/unit/test_graph_editing.py",
         "prerequisites": ["M10.10c"],
         "rationale": "M10.10 owns the direct primitive inversion and partial-graph assertions in this mixed legacy module. Other test functions remain evidence for their existing analysis, execution, presentation, or compiler milestones.",
         "acceptance_criterion": "Applicable direct inversion and partial-graph tests are preserved by independent scalar round trips, typed boundaries, and dangling-dependency validation.",
     },
 }
+M10_10_FINAL_DISPOSITIONS = {
+    "claasp/cipher_modules/graph_generator.py": ("migrate", "migrated-in-m10.10b"),
+    "tests/unit/cipher_modules/graph_generator_test.py": ("supersede", "superseded-in-m10.10b"),
+    "claasp/cipher_modules/inverse_cipher.py": ("migrate", "migrated-in-m10.10d"),
+    "claasp/editor.py": ("supersede", "superseded-in-m10.10e"),
+    "tests/unit/editor_test.py": ("supersede", "superseded-in-m10.10e"),
+    "claasp/compound_xor_differential_cipher.py": ("supersede", "superseded-in-m10.10f"),
+    "tests/unit/compound_xor_differential_cipher_test.py": ("supersede", "superseded-in-m10.10f"),
+    "claasp/cipher.py": ("supersede", "superseded-in-m10.10d"),
+    "tests/unit/cipher_test.py": ("supersede", "superseded-in-m10.10d"),
+}
+for _path, (_disposition, _status) in M10_10_FINAL_DISPOSITIONS.items():
+    M10_10_OVERRIDES[_path].update({
+        "disposition": _disposition,
+        "status": _status,
+    })
 MIGRATION_OVERRIDES.update(M10_10_OVERRIDES)
 
 _M10_9C8_SOURCE_DESTINATIONS = {
@@ -1775,6 +1791,53 @@ def build_inventory() -> dict[str, Any]:
     }
 
 
+def transformation_closure_status(payload: dict[str, Any]) -> dict[str, Any]:
+    """Report the exact M10.10 transformation surface and evidence closure."""
+
+    expected = set(M10_10_OVERRIDES)
+    records = {
+        item["path"]: item for item in payload["records"]
+        if item["path"] in expected
+    }
+    missing = sorted(expected - set(records))
+    owner_errors = sorted(
+        path for path, item in records.items()
+        if not item["milestone_owner"].startswith("M10.10")
+    )
+    unresolved = sorted(
+        path for path, item in records.items()
+        if item["status"] == "planned-or-partially-migrated"
+        or item["disposition"] == "defer"
+    )
+    destination_errors = []
+    for path, item in records.items():
+        destinations = tuple(
+            destination.strip() for destination in item["v5_destination"].split(";")
+        )
+        if not destinations or any(not (ROOT / destination).exists() for destination in destinations):
+            destination_errors.append(path)
+    tests = tuple(item for item in records.values() if item["kind"] == "test")
+    evidence_errors = sorted(
+        item["path"] for item in tests
+        if not item["fixed_evidence"] or not item["acceptance_criterion"]
+    )
+    return {
+        "total": len(records),
+        "source": sum(item["kind"] == "source" for item in records.values()),
+        "test": len(tests),
+        "by_slice": {
+            owner: sum(item["milestone_owner"] == owner for item in records.values())
+            for owner in sorted({item["milestone_owner"] for item in records.values()})
+        },
+        "missing": missing,
+        "owner_errors": owner_errors,
+        "destination_errors": sorted(destination_errors),
+        "unresolved": unresolved,
+        "evidence_errors": evidence_errors,
+        "complete": not any((missing, owner_errors, destination_errors, unresolved, evidence_errors)),
+    }
+
+
 def serialized_inventory() -> str:
     return json.dumps(build_inventory(), indent=2, sort_keys=True) + "\n"
 
@@ -2008,6 +2071,8 @@ def main() -> int:
     parser.add_argument("--primitive-status", action="store_true", help="report M10.9d primitive catalogue ownership and closure")
     parser.add_argument("--check-primitive-audit", action="store_true", help="fail until every M10.9d source and test has a slice owner")
     parser.add_argument("--check-primitive-closure", action="store_true", help="fail until every in-scope M10.9d primitive has a concrete v5 destination")
+    parser.add_argument("--transformation-status", action="store_true", help="report M10.10 transformation and evidence closure")
+    parser.add_argument("--check-transformation-closure", action="store_true", help="fail until every M10.10 record has final evidence and an existing destination")
     args = parser.parse_args()
     if args.model_status or args.check_model_closure:
         status = model_closure_status(build_inventory())
@@ -2027,6 +2092,10 @@ def main() -> int:
         if args.check_primitive_audit:
             return int(not status["audit_complete"])
         return int(args.check_primitive_closure and not status["closure_complete"])
+    if args.transformation_status or args.check_transformation_closure:
+        status = transformation_closure_status(build_inventory())
+        print(json.dumps(status, indent=2))
+        return int(args.check_transformation_closure and not status["complete"])
     expected = serialized_inventory()
     if args.check:
         if not OUTPUT.exists() or OUTPUT.read_text(encoding="utf-8") != expected:

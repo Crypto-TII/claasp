@@ -24,6 +24,7 @@ analysis guides for your own work.
 
    primitive_authoring
    composite_blocks
+   transformations
    batch_evaluation
    analysis
    displaying_results

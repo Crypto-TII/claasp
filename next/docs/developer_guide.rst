@@ -12,6 +12,7 @@ renderers.
 
    architecture
    composite_architecture
+   transformation_architecture
    catalogue_architecture
    representation_architecture
    diagram_representations

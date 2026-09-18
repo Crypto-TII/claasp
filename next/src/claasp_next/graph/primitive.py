@@ -756,7 +756,7 @@ class Primitive:
     def inverse(self, recover_input: str | int = 0, **options):
         """Return a validated inverse graph for one primitive input.
 
-        See :func:`claasp_next.invert_primitive` for retained-input options and
+        See :func:`claasp_next.transformations.invert_primitive` for retained-input options and
         the typed transformation result.
         """
 
