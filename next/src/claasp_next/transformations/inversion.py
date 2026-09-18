@@ -4,7 +4,8 @@ from collections import deque
 from collections.abc import Mapping, Sequence
 from copy import copy
 
-from claasp_next.domains import BinaryExtensionField
+from claasp_next.components import Add, Rotate, Xor
+from claasp_next.domains import BinaryExtensionField, Bit, Word
 from claasp_next.graph import (
     BindingKind, Component, Port, PortLike, Primitive, PrimitiveInput,
     PrimitiveKind, Selection, ValueType, as_selection,
@@ -16,6 +17,7 @@ from claasp_next.transformations.contracts import (
 from claasp_next.transformations.inverse_rules import (
     ComponentInverseRegistry, DEFAULT_INVERSE_REGISTRY,
 )
+from claasp_next.transformations.inverse_equivalents import inversion_equivalent
 from claasp_next.transformations.traversal import DependencyIndex
 
 
@@ -201,6 +203,204 @@ def _propagate_bindings(primitive, derived, equivalents):
     return changed
 
 
+def _recover_xor_region(primitive, components, derived, equivalents, bit_cache):
+    """Recover units isolated by exact bit-level elimination of XOR regions."""
+
+    def width(domain):
+        if isinstance(domain, Bit):
+            return 1
+        if isinstance(domain, Word):
+            return domain.width
+        if isinstance(domain, BinaryExtensionField):
+            return domain.degree
+        return None
+
+    def virtual_bits(selection):
+        domain_width = width(selection.value_type.domain)
+        if domain_width is None:
+            return ()
+        return tuple(
+            (selection.source.owner_id, position, bit)
+            for position in selection.positions for bit in range(domain_width)
+        )
+
+    raw_equations = []
+
+    def add_equation(*variables):
+        coefficients = set()
+        for variable in variables:
+            if variable in coefficients:
+                coefficients.remove(variable)
+            else:
+                coefficients.add(variable)
+        if coefficients:
+            raw_equations.append(coefficients)
+
+    for binding in primitive.bindings:
+        output = primitive.port(binding.binding_id).select_all()
+        output_bits = virtual_bits(output)
+        input_bits = tuple(
+            bit for selection in binding.inputs for bit in virtual_bits(selection)
+        )
+        if len(output_bits) == len(input_bits):
+            for output_bit, input_bit in zip(output_bits, input_bits):
+                add_equation(output_bit, input_bit)
+
+    for component in components:
+        output = primitive.port(component.component_id).select_all()
+        output_bits = virtual_bits(output)
+        input_bits = tuple(virtual_bits(item) for item in component.inputs)
+        if type(component) is Xor or (
+            type(component) is Add
+            and isinstance(component.output_type.domain, (Bit, BinaryExtensionField))
+        ):
+            if any(len(bits) != len(output_bits) for bits in input_bits):
+                continue  # pragma: no cover - component validation owns this
+            for index, output_bit in enumerate(output_bits):
+                add_equation(output_bit, *(bits[index] for bits in input_bits))
+        elif type(component) is Rotate:
+            domain_width = component.output_type.domain.width
+            amount = component.amount
+            for unit in range(component.output_type.unit_count):
+                for bit in range(domain_width):
+                    input_bit = (
+                        (bit + amount) % domain_width
+                        if component.direction == "left"
+                        else (bit - amount) % domain_width
+                    )
+                    add_equation(
+                        output_bits[unit * domain_width + bit],
+                        input_bits[0][unit * domain_width + input_bit],
+                    )
+
+    def known_bits(atom):
+        if atom not in equivalents:
+            return None
+        if atom in bit_cache:
+            return bit_cache[atom]
+        selection = equivalents[atom]
+        domain = selection.value_type.domain
+        if isinstance(domain, Bit):
+            bits = (selection,)
+        elif isinstance(domain, (Word, BinaryExtensionField)):
+            unpacked = derived.unpack_bits(selection)
+            bits = tuple(unpacked[index] for index in range(unpacked.value_type.unit_count))
+        else:
+            return None
+        bit_cache[atom] = bits
+        return bits
+
+    known = {}
+    for atom in equivalents:
+        bits = known_bits(atom)
+        if bits is None:
+            continue
+        for bit, selection in enumerate(bits):
+            known[(atom[0], atom[1], bit)] = (
+                selection.source.owner_id, selection.positions[0],
+            )
+
+    equations = []
+    for coefficients in raw_equations:
+        coefficients = set(coefficients)
+        right_hand_side = set()
+        for variable in tuple(coefficients):
+            token = known.get(variable)
+            if token is None:
+                continue
+            coefficients.remove(variable)
+            if token in right_hand_side:
+                right_hand_side.remove(token)
+            else:
+                right_hand_side.add(token)
+        if coefficients:
+            equations.append((coefficients, right_hand_side))
+
+    parents = {}
+
+    def find(variable):
+        parents.setdefault(variable, variable)
+        while parents[variable] != variable:
+            parents[variable] = parents[parents[variable]]
+            variable = parents[variable]
+        return variable
+
+    def union(left, right):
+        left, right = find(left), find(right)
+        if left != right:
+            parents[right] = left
+
+    for coefficients, _ in equations:
+        first = next(iter(coefficients))
+        for variable in coefficients:
+            union(first, variable)
+    groups = {}
+    for equation in equations:
+        groups.setdefault(find(next(iter(equation[0]))), []).append(equation)
+
+    solved = {}
+    for group in groups.values():
+        if not any(right_hand_side for _, right_hand_side in group):
+            continue
+        basis = {}
+        for coefficients, right_hand_side in group:
+            coefficients = set(coefficients)
+            right_hand_side = set(right_hand_side)
+            while coefficients:
+                pivot = min(coefficients)
+                if pivot not in basis:
+                    basis[pivot] = (coefficients, right_hand_side)
+                    break
+                other_coefficients, other_right_hand_side = basis[pivot]
+                coefficients.symmetric_difference_update(other_coefficients)
+                right_hand_side.symmetric_difference_update(other_right_hand_side)
+        for pivot in sorted(basis, reverse=True):
+            pivot_coefficients, pivot_right_hand_side = basis[pivot]
+            for other_pivot, (coefficients, right_hand_side) in basis.items():
+                if other_pivot != pivot and pivot in coefficients:
+                    coefficients.symmetric_difference_update(pivot_coefficients)
+                    right_hand_side.symmetric_difference_update(pivot_right_hand_side)
+        for coefficients, right_hand_side in basis.values():
+            if len(coefficients) == 1 and right_hand_side:
+                solved[next(iter(coefficients))] = right_hand_side
+
+    solved_units = {}
+    for (source_id, position, bit), expression in solved.items():
+        solved_units.setdefault((source_id, position), {})[bit] = expression
+
+    changed_atoms = []
+    for atom, expressions in solved_units.items():
+        if atom in equivalents:
+            continue
+        port = primitive.port(atom[0])
+        domain_width = width(port.value_type.domain)
+        if domain_width is None or set(expressions) != set(range(domain_width)):
+            continue
+        bits = []
+        for bit in range(domain_width):
+            selections = tuple(
+                derived.port(source_id)[position]
+                for source_id, position in sorted(expressions[bit])
+            )
+            bits.append(
+                selections[0] if len(selections) == 1
+                else derived.add_component(Add(selections))
+            )
+        if isinstance(port.value_type.domain, Bit):
+            value = bits[0]
+        else:
+            value = derived.pack_bits(
+                derived.join(*bits), domain_width,
+                output_domain=(
+                    port.value_type.domain
+                    if isinstance(port.value_type.domain, BinaryExtensionField)
+                    else None
+                ),
+            )
+        _assign(equivalents, (atom,), value, changed_atoms=changed_atoms)
+    return changed_atoms
+
+
 def partial_inverse(
     primitive: Primitive,
     target: PortLike,
@@ -244,6 +444,7 @@ def partial_inverse(
     derived.realization = primitive.realization
     derived.add_round()
     equivalents: dict[Atom, Selection] = {}
+    bit_cache = {}
     for name, atoms in boundaries.items():
         _assign(equivalents, atoms, derived.input(name))
 
@@ -285,7 +486,15 @@ def partial_inverse(
                     queue.append(operation)
                     queued.add(operation)
 
-    while queue and not all(atom in equivalents for atom in target_atoms):
+    while not all(atom in equivalents for atom in target_atoms):
+        if not queue:
+            changed_atoms = _recover_xor_region(
+                primitive, components, derived, equivalents, bit_cache,
+            )
+            if not changed_atoms:
+                break
+            schedule(changed_atoms)
+            continue
         operation_kind, operation_index = queue.popleft()
         queued.remove((operation_kind, operation_index))
         changed_atoms = []
@@ -436,10 +645,21 @@ def invert_primitive(
             TransformationFailureReason.AMBIGUOUS_BOUNDARY,
             "primitive has no declared output",
         )
-    recovered = primitive.input(recover_input)
+    if not primitive.input_ports:
+        raise TransformationError(
+            TransformationFailureReason.AMBIGUOUS_BOUNDARY,
+            "primitive has no input to recover",
+        )
+    source_recovered = primitive.input(recover_input)
+    working, equivalent_contract = inversion_equivalent(primitive)
+    if working is None:
+        working = primitive
+    recovered = working.input(source_recovered.owner_id)
     retained = (
-        tuple(port for port in primitive.inputs() if port.owner_id != recovered.owner_id)
-        if retained_inputs is None else tuple(primitive.input(selector) for selector in retained_inputs)
+        tuple(port for port in working.inputs() if port.owner_id != recovered.owner_id)
+        if retained_inputs is None else tuple(
+            working.input(primitive.input(selector).owner_id) for selector in retained_inputs
+        )
     )
     if any(port.owner_id == recovered.owner_id for port in retained):
         raise TransformationError(
@@ -452,10 +672,10 @@ def invert_primitive(
             TransformationFailureReason.MULTIPLE_PREDECESSORS,
             "retained primitive inputs must be unique",
         )
-    known = {output_name: primitive.output}
+    known = {output_name: working.output}
     known.update((port.owner_id, port) for port in retained)
     result = partial_inverse(
-        primitive,
+        working,
         recovered,
         known=known,
         family_name=family_name or f"{primitive.family_name}_inverse",
@@ -464,14 +684,15 @@ def invert_primitive(
     derived = result.primitive
     complete = (
         set(port.owner_id for port in retained)
-        == set(primitive.input_ports) - {recovered.owner_id}
-        and primitive.output.value_type == recovered.value_type
+        == set(working.input_ports) - {recovered.owner_id}
+        and working.output.value_type == recovered.value_type
     )
     if complete and primitive.kind in (
         PrimitiveKind.BLOCK_CIPHER, PrimitiveKind.TWEAKABLE_BLOCK_CIPHER,
         PrimitiveKind.PERMUTATION,
     ):
         object.__setattr__(derived, "_kind", primitive.kind)
+    derived.realization = primitive.realization
     record = TransformationRecord(
         "inverse",
         (("recover", recovered.owner_id), ("retained", ",".join(port.owner_id for port in retained))),
@@ -479,7 +700,18 @@ def invert_primitive(
     )
     object.__setattr__(
         derived, "_transformation_provenance",
-        (*primitive.transformation_provenance, record),
+        (
+            *primitive.transformation_provenance,
+            *(() if equivalent_contract is None else (TransformationRecord(
+                "inverse_equivalent",
+                (
+                    ("source", equivalent_contract.source_type),
+                    ("replacement", equivalent_contract.replacement_type),
+                ),
+                primitive.realization_identity,
+            ),)),
+            record,
+        ),
     )
     return TransformationResult(derived, result.sources)
 

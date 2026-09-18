@@ -90,6 +90,27 @@ def test_partial_inverse_can_recover_an_internal_wire():
     assert inverse.evaluate(0xA5, 0x3C) == 0x99
 
 
+def test_joint_xor_region_recovers_multiple_predecessors_without_a_solver():
+    graph = Primitive(
+        "joint", {"state": ValueType(Word(4), (3,))},
+        kind=PrimitiveKind.PERMUTATION,
+    )
+    graph.add_round()
+    state = graph.input("state")
+    x, y, z = (state[index] for index in range(3))
+    outputs = (
+        graph.add_component(Xor((x, y))),
+        graph.add_component(Xor((y, z))),
+        graph.add_component(Xor((x, y, z))),
+    )
+    graph.set_output(graph.join(*outputs))
+
+    inverse = invert_primitive(graph).primitive
+
+    for value in range(1 << 12):
+        assert inverse.evaluate(graph.evaluate(value)) == value
+
+
 def test_pack_unpack_bindings_remain_structural_during_inversion():
     graph = Primitive("packed", {"state": ValueType(Word(8), (1,))}, kind=PrimitiveKind.PERMUTATION)
     graph.add_round()
@@ -129,3 +150,14 @@ def test_stalls_report_multiple_predecessors_information_loss_and_disconnection(
             known={"observed": disconnected.output},
         )
     assert absent.value.reason is TransformationFailureReason.DISCONNECTED_DEPENDENCY
+
+
+def test_zero_input_primitive_reports_an_ambiguous_boundary():
+    graph = Primitive("constant", {})
+    graph.add_round()
+    from claasp_next.components import Constant
+    graph.set_output(graph.add_component(Constant(ValueType(Bit(), (1,)), (1,))))
+
+    with pytest.raises(TransformationError) as caught:
+        invert_primitive(graph)
+    assert caught.value.reason is TransformationFailureReason.AMBIGUOUS_BOUNDARY

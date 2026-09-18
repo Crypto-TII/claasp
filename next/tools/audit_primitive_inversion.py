@@ -49,21 +49,22 @@ def _encoded_value(value_type, seed: bytes):
     return integer & ((1 << width) - 1)
 
 
-def _round_trip(primitive, inverse, sample_number: int) -> bool:
+def _round_trip(primitive, inverse, recover_input: str, sample_number: int) -> bool:
     values = {
         name: _encoded_value(port.value_type, f"{primitive.family_name}:{name}:{sample_number}".encode())
         for name, port in primitive.input_ports.items()
     }
     output = primitive.evaluate(values)
-    recovered_name = next(iter(primitive.input_ports))
     inverse_values = {"output": output}
     inverse_values.update(
-        (name, value) for name, value in values.items() if name != recovered_name
+        (name, value) for name, value in values.items() if name != recover_input
     )
-    return inverse.evaluate(inverse_values) == values[recovered_name]
+    return inverse.evaluate(inverse_values) == values[recover_input]
 
 
-def _attempt_inversion(primitive, timeout: float, repetitions: int) -> dict:
+def _attempt_inversion(
+    primitive, recover_input: str, timeout: float, repetitions: int,
+) -> dict:
     import signal
 
     from claasp_next.transformations import TransformationError
@@ -78,7 +79,7 @@ def _attempt_inversion(primitive, timeout: float, repetitions: int) -> dict:
         for _ in range(repetitions):
             signal.setitimer(signal.ITIMER_REAL, timeout)
             attempt_started = time.perf_counter_ns()
-            inverse = primitive.inverse().primitive
+            inverse = primitive.inverse(recover_input).primitive
             timings.append((time.perf_counter_ns() - attempt_started) / 1_000_000)
             signal.setitimer(signal.ITIMER_REAL, 0)
     except _InversionTimeout:
@@ -108,7 +109,9 @@ def _attempt_inversion(primitive, timeout: float, repetitions: int) -> dict:
         signal.signal(signal.SIGALRM, timed_out)
         signal.setitimer(signal.ITIMER_REAL, timeout)
         for sample_number in range(2):
-            semantic_passes += _round_trip(primitive, inverse, sample_number)
+            semantic_passes += _round_trip(
+                primitive, inverse, recover_input, sample_number,
+            )
     except _InversionTimeout:
         status = "semantic-timeout"
         diagnostic = f"two semantic round trips exceeded {timeout:g} s"
@@ -146,6 +149,20 @@ def _one_round_instance(primitive_class, parameters: dict, graph_rounds: int):
     return None, "public constructor has no single-round parameter"
 
 
+def _recover_input(primitive, bijectivity_obligation: bool) -> str:
+    if not bijectivity_obligation:
+        return next(iter(primitive.input_ports))
+    preferred_roles = ("plaintext", "state", "input_state", "input")
+    by_role = {
+        primitive.input_descriptor(name).role: name
+        for name in primitive.input_ports
+    }
+    for role in preferred_roles:
+        if role in by_role:
+            return by_role[role]
+    return next(iter(primitive.input_ports))
+
+
 def _worker(primitive_index: int, parameter_index: int, timeout: float, repetitions: int) -> dict:
     from claasp_next.catalogue import catalogue
     from claasp_next.primitives._catalogue_exports import load_export
@@ -176,6 +193,16 @@ def _worker(primitive_index: int, parameter_index: int, timeout: float, repetiti
         components=len(primitive.components),
         bindings=len(primitive.bindings),
     )
+    if not primitive.input_ports:
+        result.update(
+            status="not-applicable",
+            diagnostic="primitive has no input to recover",
+            one_round_status="not-applicable",
+            one_round_diagnostic="primitive has no input to recover",
+        )
+        return result
+    recover_input = _recover_input(primitive, record.bijectivity_obligation)
+    result["recover_input"] = recover_input
 
     try:
         one_round, one_round_basis = _one_round_instance(
@@ -192,11 +219,15 @@ def _worker(primitive_index: int, parameter_index: int, timeout: float, repetiti
         if one_round is None:
             result["one_round_status"] = "unavailable"
         else:
-            one_round_result = _attempt_inversion(one_round, timeout, repetitions)
+            one_round_result = _attempt_inversion(
+                one_round, recover_input, timeout, repetitions,
+            )
             result.update((f"one_round_{name}", value) for name, value in one_round_result.items())
             result["one_round_graph_rounds"] = len(one_round.rounds)
 
-    full_result = _attempt_inversion(primitive, timeout, repetitions)
+    full_result = _attempt_inversion(
+        primitive, recover_input, timeout, repetitions,
+    )
     result.update(full_result)
     if "inversion_ms" in result:
         result["normalized_ms_per_graph_round"] = result["inversion_ms"] / len(primitive.rounds)
@@ -312,10 +343,12 @@ def _write_report(
         "",
         "This audit covers every public primitive and every named parameter set in the "
         "committed v5 catalogue, including toy and single-component primitives. The "
-        "operation under test recovers the first primitive input from the primitive output "
-        "while retaining every other primitive input. Therefore, **verified** means that "
+        "operation under test recovers the catalogue data/state input from the primitive "
+        "output while retaining every other primitive input. For a primitive without a "
+        "bijectivity obligation, the first input remains the explicitly qualified recovery "
+        "target. Therefore, **verified** means that "
         "the current solver-free graph transformation constructed an inverse and recovered "
-        "the original first input for two deterministic semantic samples. It does not mean "
+        "the original target input for two deterministic semantic samples. It does not mean "
         "that a multi-input primitive is globally bijective without retained inputs.",
         "",
         "The catalogue's bijectivity obligation is reported independently. A `yes` is a "
@@ -410,8 +443,8 @@ def _write_report(
             "",
             f"### {category}",
             "",
-            "| Primitive | Parameter set | Parameters | Obligation | Graph rounds | Components | 1-round outcome | 1-round ms | Full outcome | Full ms | ms/round | Semantic | Diagnostic |",
-            "|---|---|---|:---:|---:|---:|---|---:|---|---:|---:|:---:|---|",
+            "| Primitive | Parameter set | Parameters | Recover | Obligation | Graph rounds | Components | 1-round outcome | 1-round ms | Full outcome | Full ms | ms/round | Semantic | Diagnostic |",
+            "|---|---|---|---|:---:|---:|---:|---|---:|---|---:|---:|:---:|---|",
         ])
         for item in sorted(items, key=lambda value: (value["primitive"], value["parameter_set"])):
             parameters = json.dumps(item["parameters"], sort_keys=True, separators=(",", ":"))
@@ -431,6 +464,7 @@ def _write_report(
                 one_round_status += f": {one_round_diagnostic}"
             lines.append(
                 f"| `{item['primitive']}` | `{item['parameter_set']}` | `{_escape(parameters)}` | "
+                f"`{item.get('recover_input', '—')}` | "
                 f"{'yes' if item['bijectivity_obligation'] else 'no'} | "
                 f"{item.get('graph_rounds', '—')} | {item.get('components', '—')} | "
                 f"`{_escape(one_round_status)}` | {_milliseconds(item.get('one_round_inversion_ms'))} | "
