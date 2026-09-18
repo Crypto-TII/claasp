@@ -347,7 +347,13 @@ def analyze_component_property(
     component construction boundaries.
     """
 
-    from claasp_next.components import BinaryAffineMap, BitVectorSBox, LinearMap, Permutation, SBox
+    from claasp_next.components import (
+        BinaryAffineMap, BitVectorSBox, FeedbackRegister, LinearMap,
+        Permutation, SBox,
+    )
+    from claasp_next.components.word import (
+        BitwiseAnd, BitwiseNot, BitwiseOr, ModularAdd, Rotate, Shift, Xor,
+    )
 
     if isinstance(component, (BitVectorSBox, SBox)):
         return _analyze_lookup_component(
@@ -355,6 +361,14 @@ def analyze_component_property(
         )
     if isinstance(component, (LinearMap, BinaryAffineMap, Permutation)):
         return _analyze_linear_component(
+            component, request, graph_locations, primitive, realization
+        )
+    if isinstance(component, (Xor, BitwiseAnd, BitwiseOr, BitwiseNot, Rotate, Shift, ModularAdd)):
+        return _analyze_boolean_word_component(
+            component, request, graph_locations, primitive, realization
+        )
+    if isinstance(component, FeedbackRegister):
+        return _analyze_feedback_component(
             component, request, graph_locations, primitive, realization
         )
     provenance = ComponentAnalysisProvenance(
@@ -643,6 +657,129 @@ def _analyze_linear_component(component, request, graph_locations, primitive, re
 def _semantic_key_identity(key):
     digest = sha256(repr((key.component_type, key.input_types, key.output_type, key.parameters, key.domain)).encode()).hexdigest()[:16]
     return f"{key.component_type.rsplit('.', 1)[-1]}:{key.domain.value}:{digest}"
+
+
+def _analyze_boolean_word_component(component, request, graph_locations, primitive, realization):
+    from claasp_next.representations.constraints.polynomial import BooleanMonomial
+    from claasp_next.representations.execution import BooleanSymbolicEvaluator
+
+    provenance = ComponentAnalysisProvenance(
+        _semantic_key_identity(semantic_component_key(component, request.domain)),
+        "exact_sparse_component_anf", primitive, realization, graph_locations,
+    )
+    if request.domain not in {PropertyDomain.BOOLEAN, PropertyDomain.WORD_OPERATION}:
+        return unavailable_result(
+            request, provenance, DiagnosticCode.INAPPLICABLE_DOMAIN,
+            "Boolean word properties require the boolean or word-operation domain",
+        )
+    supported = {
+        ComponentProperty.ALGEBRAIC_DEGREE, ComponentProperty.TERM_COUNT,
+        ComponentProperty.VARIABLE_COUNT, ComponentProperty.LINEAR,
+        ComponentProperty.INVERTIBLE, ComponentProperty.ORDER,
+    }
+    if request.property not in supported:
+        return unavailable_result(
+            request, provenance, DiagnosticCode.UNSUPPORTED_PROPERTY,
+            f"{request.property.value!r} is not a Boolean word-operation property",
+        )
+    polynomials = BooleanSymbolicEvaluator().component_anfs(component)
+    degrees = tuple(polynomial.degree for polynomial in polynomials)
+    term_counts = tuple(len(polynomial.monomials) for polynomial in polynomials)
+    variable_counts = tuple(
+        len({variable for monomial in polynomial.monomials for variable in monomial.variables})
+        for polynomial in polynomials
+    )
+    has_constants = any(BooleanMonomial() in polynomial.monomials for polynomial in polynomials)
+    linear = max(degrees, default=-1) <= 1 and not has_constants
+    if request.property is ComponentProperty.ALGEBRAIC_DEGREE:
+        value = max(degrees, default=-1)
+    elif request.property is ComponentProperty.TERM_COUNT:
+        value = term_counts
+    elif request.property is ComponentProperty.VARIABLE_COUNT:
+        value = variable_counts
+    elif request.property is ComponentProperty.LINEAR:
+        value = linear
+    else:
+        value = _word_permutation_property(component, request.property)
+        if value is None:
+            return unavailable_result(
+                request, provenance, DiagnosticCode.INAPPLICABLE_DOMAIN,
+                f"{request.property.value} is not defined for {type(component).__name__} without retained operands",
+            )
+    return ComponentPropertyResult(request, PropertyClaim.EXACT, value, True, provenance)
+
+
+def _word_permutation_property(component, property_):
+    from math import gcd
+    from claasp_next.components import BitwiseNot, Rotate
+
+    if isinstance(component, BitwiseNot):
+        return True if property_ is ComponentProperty.INVERTIBLE else 2
+    if isinstance(component, Rotate):
+        if property_ is ComponentProperty.INVERTIBLE:
+            return True
+        width = component.output_type.domain.width
+        return 1 if component.amount == 0 else width // gcd(width, component.amount)
+    return None
+
+
+def _analyze_feedback_component(component, request, graph_locations, primitive, realization):
+    provenance = ComponentAnalysisProvenance(
+        _semantic_key_identity(semantic_component_key(component, request.domain)),
+        "typed_feedback_specification", primitive, realization, graph_locations,
+    )
+    if request.domain is not PropertyDomain.FEEDBACK_REGISTER:
+        return unavailable_result(
+            request, provenance, DiagnosticCode.INAPPLICABLE_DOMAIN,
+            "feedback properties require the feedback-register domain",
+        )
+    supported = {
+        ComponentProperty.REGISTER_STRUCTURE, ComponentProperty.ALGEBRAIC_DEGREE,
+        ComponentProperty.TERM_COUNT, ComponentProperty.VARIABLE_COUNT,
+        ComponentProperty.LINEAR, ComponentProperty.CONNECTION_POLYNOMIAL,
+    }
+    if request.property not in supported:
+        return unavailable_result(
+            request, provenance, DiagnosticCode.UNSUPPORTED_PROPERTY,
+            f"{request.property.value!r} is not a feedback-register property",
+        )
+    degrees = tuple(
+        max((len(term.positions) for term in register.feedback if term.coefficient), default=-1)
+        for register in component.registers
+    )
+    linear = all(
+        register.clock is None
+        and all(len(term.positions) <= 1 for term in register.feedback if term.coefficient)
+        for register in component.registers
+    )
+    if request.property is ComponentProperty.REGISTER_STRUCTURE:
+        value = tuple({
+            "length": register.length,
+            "feedback": tuple((term.positions, term.coefficient) for term in register.feedback),
+            "clock": None if register.clock is None else tuple(
+                (term.positions, term.coefficient) for term in register.clock
+            ),
+        } for register in component.registers)
+    elif request.property is ComponentProperty.ALGEBRAIC_DEGREE:
+        value = degrees
+    elif request.property is ComponentProperty.TERM_COUNT:
+        value = tuple(sum(term.coefficient != 0 for term in register.feedback) for register in component.registers)
+    elif request.property is ComponentProperty.VARIABLE_COUNT:
+        value = tuple(len({position for term in register.feedback if term.coefficient for position in term.positions}) for register in component.registers)
+    elif request.property is ComponentProperty.LINEAR:
+        value = linear
+    else:
+        if not linear:
+            return unavailable_result(
+                request, provenance, DiagnosticCode.INAPPLICABLE_DOMAIN,
+                "connection polynomials require unconditional linear feedback rules",
+            )
+        value = tuple({
+            "degree": register.length,
+            "terms": tuple((term.positions[0] if term.positions else None, term.coefficient) for term in register.feedback if term.coefficient),
+            "domain": repr(component.output_type.domain),
+        } for register in component.registers)
+    return ComponentPropertyResult(request, PropertyClaim.EXACT, value, True, provenance)
 
 
 def unavailable_result(

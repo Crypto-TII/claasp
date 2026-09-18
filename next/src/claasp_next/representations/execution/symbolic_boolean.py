@@ -4,7 +4,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 
 from claasp_next.components import (
-    BitwiseAnd, BitwiseNot, BitwiseOr, Constant, ModularAdd, Rotate, Xor,
+    BitwiseAnd, BitwiseNot, BitwiseOr, Constant, ModularAdd, Rotate, Shift, Xor,
 )
 from claasp_next.domains import Bit, Word
 from claasp_next.graph import Primitive
@@ -70,6 +70,36 @@ class BooleanSymbolicEvaluator:
         )
         return BooleanSymbolicResult(flattened, values)
 
+    def component_anfs(self, component) -> tuple[BooleanPolynomial, ...]:
+        """Return exact output ANFs for one supported Bit/Word component.
+
+        Input names encode operand, logical unit, and MSB-first bit position;
+        the result therefore describes the operation rather than a graph id.
+        """
+
+        symbolic_inputs = []
+        for operand_index, selection in enumerate(component.inputs):
+            domain = selection.value_type.domain
+            if isinstance(domain, Bit):
+                symbolic_inputs.append(tuple(
+                    BooleanPolynomial.variable(f"x{operand_index}_{unit_index}")
+                    for unit_index in range(selection.value_type.unit_count)
+                ))
+            elif isinstance(domain, Word):
+                symbolic_inputs.append(tuple(
+                    tuple(BooleanPolynomial.variable(
+                        f"x{operand_index}_{unit_index}_{bit_index}"
+                    ) for bit_index in range(domain.width))
+                    for unit_index in range(selection.value_type.unit_count)
+                ))
+            else:
+                raise NotImplementedError("component ANFs require Bit or Word domains")
+        output = self._component(component, tuple(symbolic_inputs))
+        return tuple(
+            polynomial for unit in output
+            for polynomial in ((unit,) if isinstance(unit, BooleanPolynomial) else unit)
+        )
+
     def _component(self, component, inputs):
         if isinstance(component, Constant):
             domain = component.output_type.domain
@@ -84,6 +114,8 @@ class BooleanSymbolicEvaluator:
                 ) for value in component.values)
         if isinstance(component, Rotate):
             return tuple(self._rotate(unit, component.amount, component.direction) for unit in inputs[0])
+        if isinstance(component, Shift):
+            return tuple(self._shift(unit, component.amount, component.direction) for unit in inputs[0])
         if isinstance(component, BitwiseNot):
             return tuple(self._word_not(unit) for unit in inputs[0])
         if isinstance(component, (Xor, BitwiseAnd, BitwiseOr, ModularAdd)):
@@ -106,6 +138,17 @@ class BooleanSymbolicEvaluator:
         if not amount:
             return word
         return word[amount:] + word[:amount] if direction == "left" else word[-amount:] + word[:-amount]
+
+    @staticmethod
+    def _shift(word, amount, direction):
+        if isinstance(word, BooleanPolynomial):
+            return BooleanPolynomial.zero() if amount else word
+        if amount >= len(word):
+            return (BooleanPolynomial.zero(),) * len(word)
+        if not amount:
+            return word
+        zeros = (BooleanPolynomial.zero(),) * amount
+        return word[amount:] + zeros if direction == "left" else zeros + word[:-amount]
 
     @staticmethod
     def _word_xor(left, right):
