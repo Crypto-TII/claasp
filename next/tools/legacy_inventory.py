@@ -1433,6 +1433,77 @@ MIGRATION_OVERRIDES["tests/unit/components/fsr_component_test.py"] = {
     "rationale": "Exact Sage polynomial variable names and rendering are incidental; exhaustive concrete truth maps independently establish the same binary and field-word transformations.",
 }
 
+# M10.10 owns immutable primitive-graph transformations. These entries make
+# the previously generic planning records concrete before implementation; the
+# achieved M10.8 model records that happened to call legacy mutation helpers
+# retain their existing owners and destinations.
+M10_10_OVERRIDES = {
+    "claasp/cipher_modules/graph_generator.py": {
+        "milestone_owner": "M10.10a",
+        "v5_destination": "next/src/claasp_next/transformations/traversal.py",
+        "prerequisites": ["M10.9f6"],
+        "rationale": "A standard-library typed dependency index replaces NetworkX graphs and legacy dictionaries while preserving predecessor, descendant, and split-boundary semantics across components and structural bindings.",
+        "acceptance_criterion": "Deterministic typed traversal and split-boundary closure match preserved graph-source and edge evidence without importing NetworkX.",
+    },
+    "tests/unit/cipher_modules/graph_generator_test.py": {
+        "milestone_owner": "M10.10a",
+        "v5_destination": "next/tests/unit/test_transformation_traversal.py; next/tests/unit/test_graph_slicing.py",
+        "prerequisites": ["M10.9f6"],
+        "rationale": "Exact legacy node ids and the malformed descendant edge shape are incidental; source membership, dependency direction, closure, and validated slices are preserved.",
+        "acceptance_criterion": "Typed predecessor/descendant closures and top/bottom splits preserve the applicable ChaCha and Speck dependency assertions.",
+    },
+    "claasp/cipher_modules/inverse_cipher.py": {
+        "milestone_owner": "M10.10c",
+        "v5_destination": "next/src/claasp_next/transformations/inversion.py; next/src/claasp_next/transformations/inverse_rules.py",
+        "prerequisites": ["M10.10b"],
+        "rationale": "Typed component inverse rules and immutable graph reconstruction replace the Sage-backed mutable bit-equivalence engine; retained auxiliary inputs and partial inverses are explicit contracts.",
+        "acceptance_criterion": "Supported complete and partial inversions round-trip under independent scalar evaluation and every stall reports its exact typed reason.",
+    },
+    "claasp/editor.py": {
+        "milestone_owner": "M10.10e",
+        "v5_destination": "next/src/claasp_next/transformations/slicing.py; next/src/claasp_next/transformations/editing.py",
+        "prerequisites": ["M10.10b", "M10.10d"],
+        "rationale": "Validated graph reconstruction replaces deep-copy mutation. Existing v5 authoring already supersedes legacy add-component helpers; M10.10 preserves slicing, round reduction, key-schedule removal, orphan pruning, and reorder-only inlining.",
+        "acceptance_criterion": "Every retained editor operation returns a new validated graph, leaves its source unchanged, and preserves independently evaluated semantics at its declared boundaries.",
+    },
+    "tests/unit/editor_test.py": {
+        "milestone_owner": "M10.10e",
+        "v5_destination": "next/tests/unit/test_editor_transformations.py",
+        "prerequisites": ["M10.10b", "M10.10d"],
+        "rationale": "Mutable dictionaries, generated component ids, and add-without-round printing are not v5 contracts; key-schedule boundaries and reorder-only semantic equivalence are retained.",
+        "acceptance_criterion": "Round/key transformations and reorder inlining have validated graphs, explicit boundaries, unchanged sources, and scalar semantic parity.",
+    },
+    "claasp/compound_xor_differential_cipher.py": {
+        "milestone_owner": "M10.10f",
+        "v5_destination": "next/src/claasp_next/transformations/paired.py",
+        "prerequisites": ["M10.10e"],
+        "rationale": "An immutable typed paired graph plus XOR observations replaces deep-copy mutation and `_pair1`/`_pair2` generated ids; solver lowering remains outside the transformation.",
+        "acceptance_criterion": "Paired evaluation and XOR observations equal two independent primitive evaluations for single-key and related-key inputs.",
+    },
+    "tests/unit/compound_xor_differential_cipher_test.py": {
+        "milestone_owner": "M10.10f",
+        "v5_destination": "next/tests/unit/test_paired_transformations.py; next/tests/integration/test_paired_constraints.py",
+        "prerequisites": ["M10.10e"],
+        "rationale": "The fixed compatible/incompatible Speck boundary evidence is retained through typed paired semantics; legacy SAT variable spelling and mutable copied-graph ids are superseded.",
+        "acceptance_criterion": "Fixed single-key and related-key Speck observations agree with independent paired evaluation, with solver-facing feasibility checked only in the affected integration group.",
+    },
+    "claasp/cipher.py": {
+        "milestone_owner": "M10.10d",
+        "v5_destination": "next/src/claasp_next/graph/primitive.py; next/src/claasp_next/transformations",
+        "prerequisites": ["M10.10c"],
+        "rationale": "M10.10 owns only the legacy inversion, partial-graph, round-reduction, key-schedule, and paired-transformation entry points. Evaluation, reporting, serialization, code generation, and remaining helpers retain their recorded milestone ownership.",
+        "acceptance_criterion": "Concise primitive-oriented transformation entry points return validated immutable graphs and pass their focused public doctests and semantic tests.",
+    },
+    "tests/unit/cipher_test.py": {
+        "milestone_owner": "M10.10d",
+        "v5_destination": "next/tests/unit/test_primitive_inversion.py; next/tests/unit/test_graph_slicing.py; next/tests/unit/test_editor_transformations.py",
+        "prerequisites": ["M10.10c"],
+        "rationale": "M10.10 owns the direct primitive inversion and partial-graph assertions in this mixed legacy module. Other test functions remain evidence for their existing analysis, execution, presentation, or compiler milestones.",
+        "acceptance_criterion": "Applicable direct inversion and partial-graph tests are preserved by independent scalar round trips, typed boundaries, and dangling-dependency validation.",
+    },
+}
+MIGRATION_OVERRIDES.update(M10_10_OVERRIDES)
+
 _M10_9C8_SOURCE_DESTINATIONS = {
     "claasp/components/shift_rows_component.py": "next/src/claasp_next/components/permutation/layers.py; next/src/claasp_next/components/structural/permutation.py",
     "claasp/components/sigma_component.py": "next/src/claasp_next/components/permutation/layers.py; next/src/claasp_next/components/algebraic/linear_map.py",

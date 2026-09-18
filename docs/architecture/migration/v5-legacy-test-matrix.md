@@ -315,6 +315,26 @@ Each cryptanalytic row must say whether its expected result is an optimum,
 feasibility witness, or bound; record publication or legacy origin and solver
 version; and name the independent semantic checker used by v5.
 
+### M10.10 inversion and transformation audit
+
+The machine inventory assigns the unresolved transformation surface to
+M10.10a–M10.10f. Legacy dictionaries, generated ids, NetworkX objects, mutable
+round lists, and solver-ready copied graphs are not compatibility contracts.
+The preserved evidence is semantic:
+
+| Legacy source or test | M10.10 owner | Preserved evidence and v5 destination |
+| --- | --- | --- |
+| `claasp/cipher_modules/graph_generator.py`; `graph_generator_test.py` | M10.10a–b | Typed dependency traversal and split-boundary closure in `claasp_next.transformations`; tests use graph-source membership and edges without NetworkX-specific artifacts |
+| `claasp/cipher_modules/inverse_cipher.py`; `cipher_test.py::test_cipher_inverse` | M10.10c–d | Per-component complete/partial inverse rules, precise typed failures, and independently evaluated round trips for representative SPN, ARX, permutation, keyed, and tweakable primitives |
+| `Cipher.get_partial_cipher` and its three fixed structural tests | M10.10b | Validated round/dependency slices with no dangling sources; legacy component-id pictures are superseded by semantic boundary and evaluation checks |
+| `claasp/editor.py`; `editor_test.py` | M10.10e | Immutable round reduction, explicit key-schedule boundaries/removal, orphan pruning, and semantics-preserving reorder inlining |
+| `claasp/compound_xor_differential_cipher.py`; its six tests | M10.10f | Typed paired/XOR observations and the fixed Speck single-key/related-key compatible and incompatible boundary evidence; SAT model syntax and mutating `_pair1`/`_pair2` ids are superseded |
+
+The already resolved impossible, boomerang, differential-linear, monomial,
+and model-helper records remain owned by M10.8. Their use of legacy inversion
+or key-schedule mutation is historical evidence, not a reason to reopen those
+model milestones.
+
 M10.12b–c supersede the legacy eager NumPy dataset containers with lazy,
 re-iterable correlation, zero-IV CBC, low-density, and high-density streams.
 The v5 stream format is fixed-width raw output bytes with explicit MSB-first,
