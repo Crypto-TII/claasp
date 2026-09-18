@@ -7,6 +7,8 @@ Concrete analyzers added by later M10.11 slices consume these contracts.
 from collections.abc import Mapping
 from dataclasses import dataclass, fields, is_dataclass
 from enum import Enum
+from functools import lru_cache
+from hashlib import sha256
 from types import MappingProxyType
 from typing import Protocol
 
@@ -318,6 +320,217 @@ def _freeze_hashable(value):
     return value
 
 
+_LOOKUP_PROPERTIES = frozenset({
+    ComponentProperty.DIFFERENTIAL_UNIFORMITY,
+    ComponentProperty.NONLINEARITY,
+    ComponentProperty.ALGEBRAIC_DEGREE,
+    ComponentProperty.BALANCED,
+    ComponentProperty.APN,
+    ComponentProperty.DIFFERENTIAL_BRANCH_NUMBER,
+    ComponentProperty.LINEAR_BRANCH_NUMBER,
+    ComponentProperty.BOOMERANG_UNIFORMITY,
+})
+
+
+def analyze_component_property(
+    component,
+    request: PropertyRequest,
+    *,
+    graph_locations: tuple[str, ...] = (),
+    primitive: str | None = None,
+    realization: str | None = None,
+) -> ComponentPropertyResult:
+    """Analyze one semantic component under an explicit typed request.
+
+    Unsupported component/property/domain combinations return a typed
+    unavailable result. Invalid component parameters continue to raise at
+    component construction boundaries.
+    """
+
+    from claasp_next.components import BitVectorSBox, SBox
+
+    if isinstance(component, (BitVectorSBox, SBox)):
+        return _analyze_lookup_component(
+            component, request, graph_locations, primitive, realization
+        )
+    provenance = ComponentAnalysisProvenance(
+        semantic_component_key(component, request.domain).component_type,
+        "core_dispatch",
+        primitive,
+        realization,
+        graph_locations,
+    )
+    return unavailable_result(
+        request,
+        provenance,
+        DiagnosticCode.UNSUPPORTED_COMPONENT,
+        f"no core component-property analyzer for {type(component).__name__}",
+    )
+
+
+def analyze_lookup_table(
+    table,
+    request: PropertyRequest,
+    *,
+    graph_locations: tuple[str, ...] = (),
+) -> ComponentPropertyResult:
+    """Analyze an immutable lookup table without constructing a graph.
+
+    >>> from claasp_next.analysis.component_properties import *
+    >>> from claasp_next.components import LookupTable
+    >>> table = LookupTable((0, 1, 3, 2), 2)
+    >>> result = analyze_lookup_table(table, PropertyRequest(
+    ...     ComponentProperty.DIFFERENTIAL_UNIFORMITY, PropertyDomain.LOOKUP_TABLE))
+    >>> result.value, result.claim.value
+    (4, 'exact')
+    """
+
+    from claasp_next.components import LookupTable
+
+    if not isinstance(table, LookupTable):
+        raise TypeError("lookup analysis requires a LookupTable")
+    identity = _lookup_identity(table.values, table.input_bit_size, table.output_bit_size)
+    provenance = ComponentAnalysisProvenance(
+        identity, "exact_exhaustive_lookup", graph_locations=graph_locations
+    )
+    return _lookup_result(table.values, table.input_bit_size, table.output_bit_size, request, provenance)
+
+
+def _analyze_lookup_component(component, request, graph_locations, primitive, realization):
+    from claasp_next.components import LookupTable
+
+    input_width = component.inputs[0].value_type.encoded_bit_size
+    output_width = component.output_type.encoded_bit_size
+    if input_width is None or output_width is None:
+        raise ValueError("lookup component domains must have canonical bit encodings")
+    table = LookupTable(component.table, input_width, output_width)
+    provenance = ComponentAnalysisProvenance(
+        _lookup_identity(table.values, input_width, output_width),
+        "exact_exhaustive_lookup",
+        primitive,
+        realization,
+        graph_locations,
+    )
+    return _lookup_result(table.values, input_width, output_width, request, provenance)
+
+
+def _lookup_result(table, input_width, output_width, request, provenance):
+    if request.domain not in {PropertyDomain.LOOKUP_TABLE, PropertyDomain.BOOLEAN}:
+        return unavailable_result(
+            request, provenance, DiagnosticCode.INAPPLICABLE_DOMAIN,
+            f"lookup properties do not apply in {request.domain.value!r}",
+        )
+    if request.property not in _LOOKUP_PROPERTIES:
+        return unavailable_result(
+            request, provenance, DiagnosticCode.UNSUPPORTED_PROPERTY,
+            f"{request.property.value!r} is not a lookup-table property",
+        )
+    if request.property is ComponentProperty.BOOMERANG_UNIFORMITY:
+        if input_width != output_width or sorted(table) != list(range(1 << input_width)):
+            return unavailable_result(
+                request, provenance, DiagnosticCode.INAPPLICABLE_DOMAIN,
+                "boomerang uniformity requires a bijective square lookup table",
+            )
+    facts = _exact_lookup_facts(tuple(table), input_width, output_width)
+    return ComponentPropertyResult(
+        request, PropertyClaim.EXACT, facts[request.property], True, provenance
+    )
+
+
+def _lookup_identity(table, input_width, output_width):
+    digest = sha256(bytes(table)).hexdigest()[:16]
+    return f"lookup_table:{input_width}->{output_width}:{digest}"
+
+
+@lru_cache(maxsize=128)
+def _exact_lookup_facts(table, input_width, output_width):
+    from claasp_next.components import LookupTable
+    from claasp_next.representations.constraints.polynomial import vectorial_anf
+    from claasp_next.semantics.cryptanalysis import (
+        SBoxBoomerangSemantics, SBoxTransitionSemantics,
+    )
+
+    LookupTable(table, input_width, output_width)
+    input_size, output_size = 1 << input_width, 1 << output_width
+    if input_width == output_width:
+        transitions = SBoxTransitionSemantics(table)
+        ddt = transitions.difference_distribution_table()
+        walsh = transitions.walsh_correlation_table()
+    else:
+        ddt = _rectangular_ddt(table, input_size, output_size)
+        walsh = _rectangular_walsh(table, input_size, output_size)
+    differential_uniformity = max(max(row) for row in ddt[1:])
+    maximum_walsh = max(
+        abs(walsh[input_mask][output_mask])
+        for input_mask in range(input_size)
+        for output_mask in range(1, output_size)
+    )
+    nonlinearity = (input_size // 2) - (maximum_walsh // 2)
+    anfs = vectorial_anf(table)
+    algebraic_degree = max(polynomial.degree for polynomial in anfs)
+    counts = [0] * output_size
+    for value in table:
+        counts[value] += 1
+    balanced = len(set(counts)) == 1
+    differential_branch = min(
+        alpha.bit_count() + beta.bit_count()
+        for alpha in range(1, input_size)
+        for beta in range(output_size)
+        if ddt[alpha][beta]
+    )
+    linear_branch = min(
+        alpha.bit_count() + beta.bit_count()
+        for alpha in range(input_size)
+        for beta in range(1, output_size)
+        if walsh[alpha][beta]
+    )
+    boomerang = None
+    if input_width == output_width and sorted(table) == list(range(input_size)):
+        semantics = SBoxBoomerangSemantics(table)
+        boomerang = max(
+            semantics.connectivity(alpha, beta).count
+            for alpha in range(1, input_size)
+            for beta in range(1, output_size)
+        )
+    return MappingProxyType({
+        ComponentProperty.DIFFERENTIAL_UNIFORMITY: differential_uniformity,
+        ComponentProperty.NONLINEARITY: nonlinearity,
+        ComponentProperty.ALGEBRAIC_DEGREE: algebraic_degree,
+        ComponentProperty.BALANCED: balanced,
+        ComponentProperty.APN: differential_uniformity == 2,
+        ComponentProperty.DIFFERENTIAL_BRANCH_NUMBER: differential_branch,
+        ComponentProperty.LINEAR_BRANCH_NUMBER: linear_branch,
+        ComponentProperty.BOOMERANG_UNIFORMITY: boomerang,
+    })
+
+
+def _rectangular_ddt(table, input_size, output_size):
+    rows = []
+    for alpha in range(input_size):
+        row = [0] * output_size
+        for value in range(input_size):
+            row[table[value] ^ table[value ^ alpha]] += 1
+        rows.append(tuple(row))
+    return tuple(rows)
+
+
+def _rectangular_walsh(table, input_size, output_size):
+    rows = [[0] * output_size for _ in range(input_size)]
+    for beta in range(output_size):
+        values = [1 if (output & beta).bit_count() % 2 == 0 else -1 for output in table]
+        stride = 1
+        while stride < input_size:
+            for start in range(0, input_size, 2 * stride):
+                for offset in range(stride):
+                    left, right = values[start + offset], values[start + offset + stride]
+                    values[start + offset] = left + right
+                    values[start + offset + stride] = left - right
+            stride *= 2
+        for alpha, coefficient in enumerate(values):
+            rows[alpha][beta] = coefficient
+    return tuple(tuple(row) for row in rows)
+
+
 def unavailable_result(
     request: PropertyRequest,
     provenance: ComponentAnalysisProvenance,
@@ -349,6 +562,8 @@ __all__ = [
     "PropertyDiagnostic",
     "PropertyDomain",
     "PropertyRequest",
+    "analyze_component_property",
+    "analyze_lookup_table",
     "semantic_component_groups",
     "semantic_component_key",
     "unavailable_result",
