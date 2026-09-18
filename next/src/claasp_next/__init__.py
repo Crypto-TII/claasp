@@ -25,9 +25,10 @@ from claasp_next.provenance import (
     DriverIdentity, DriverKind, ResultProvenance, TransformationRecord,
 )
 from claasp_next.transformations import (
+    ComponentInverseRegistry, ComponentInverseSemantics, DEFAULT_INVERSE_REGISTRY,
     DependencyIndex, DependencySplit, GraphSource, GraphSourceKind,
     TransformationError, TransformationFailureReason, TransformationResult,
-    reduce_rounds, slice_primitive, slice_rounds, split_dependencies,
+    invert_component, reduce_rounds, slice_primitive, slice_rounds, split_dependencies,
 )
 
 __all__ = [
@@ -46,6 +47,9 @@ __all__ = [
     "ChaChaQuarterRound",
     "Primitive",
     "Component",
+    "ComponentInverseRegistry",
+    "ComponentInverseSemantics",
+    "DEFAULT_INVERSE_REGISTRY",
     "EvaluationResult",
     "DriverIdentity",
     "DriverKind",
@@ -75,6 +79,7 @@ __all__ = [
     "bits_from_int",
     "int_from_bits",
     "int_from_units",
+    "invert_component",
     "units_from_int",
     "reduce_rounds",
     "slice_primitive",
