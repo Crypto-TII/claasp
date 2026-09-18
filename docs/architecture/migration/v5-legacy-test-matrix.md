@@ -303,6 +303,18 @@ starts:
 - Graph, serialization, code generation, diagrams, transformations, and
   compilers, classified during M10.10 and M10.14–M10.15.
 
+M10.11 owns the mathematical component-analysis behavior in
+`claasp/cipher_modules/component_analysis_tests.py` and its unit test. The
+typed destination is `claasp_next.analysis.component_properties`, with
+optional computation in `claasp_next.drivers.analysis`; exact S-box facts,
+binary/field matrix facts, Boolean/word specifications, and feedback-register
+structure are preserved as independently checked evidence. The nested legacy
+report dictionary, component-id grouping, Sage objects, mutable caches, and
+default solver selection are superseded. Radar charts and all Matplotlib
+behavior are assigned to M10.14. The M10.8d wordwise branch-number MILP rows
+stay superseded: constraint models may consume M10.11 results, but M10.11 does
+not recreate those solver models.
+
 The diagram milestone is complete in M10.5d5: graph structure, rounds,
 logical-unit selections, and concrete annotations are covered through one
 backend-neutral IR with routed box-and-connector ASCII art, TikZ serialization,

@@ -1055,6 +1055,45 @@ of the existing transformation milestone, not independent milestones:
   optional heavy algebra and plotting behind drivers consuming the same
   structured results.
 
+M10.11 is delivered through these dependency-ordered slices. They are slices
+of this component-analysis milestone, not independent milestones:
+
+1. **M10.11a — contracts, applicability, provenance, and ownership.** Define
+   immutable typed requests, property results, exactness/claim kinds,
+   diagnostics, semantic domains, and separate realization/analysis/execution
+   provenance. Assign every legacy component-analysis source and test
+   assertion to M10.11 or M10.14, and retain the M10.8d disposition of
+   solver-shaped wordwise branch-number models.
+2. **M10.11b — semantic grouping and graph discovery.** Discover only semantic
+   components in immutable primitive graphs and group equal operations by
+   exact component type, typed parameters, input/output value types, and
+   analysis domain. Structural joins, ordered views, PackBits, and UnpackBits
+   remain bindings and component identifiers remain optional evidence only.
+3. **M10.11c — lookup-table properties.** Provide dependency-free exact
+   differential uniformity, nonlinearity, coordinate algebraic degree,
+   balancedness, APN status, differential/linear branch numbers, and
+   mathematically applicable boomerang uniformity by reusing lookup, trail,
+   Boolean-polynomial, and boomerang semantics.
+4. **M10.11d — linear, affine, permutation, and MixColumn properties.** Add
+   validated rank, invertibility, order where meaningful, MDS status, and
+   exact or explicitly bounded bit/word differential and linear branch
+   numbers with row-major matrices, explicit field moduli and the required
+   differential-versus-linear transpose rule.
+5. **M10.11e — Boolean, word, and feedback properties.** Report justified ANF
+   degree, term/variable structure, permutation/linearity facts, and typed
+   feedback register/connection-polynomial properties without restoring
+   legacy plot-oriented averages or requiring Sage.
+6. **M10.11f — optional heavy drivers and bounded fallbacks.** Put optional
+   algebra and MiniZinc execution behind explicit drivers consuming the same
+   typed requests and returning the same result contracts. Bounded enumeration
+   remains a proved bound or incomplete observation unless coverage proves
+   exactness.
+7. **M10.11g — public API, catalogue integration, documentation, and closure.**
+   Expose concise primitive-oriented APIs, add conservative catalogue
+   capability metadata, executable S-box/binary-linear/MixColumn examples,
+   extension documentation, machine inventory closure, and the complete host,
+   affected-external, documentation, wheel, and compatibility checkpoints.
+
 #### M10.12: Dataset generation and statistical testing
 
 - Define reproducible, streaming dataset generators for avalanche,
@@ -1525,7 +1564,14 @@ is absent). Update this table in the same commit that changes milestone state.
 | Complete bijective catalogue coverage (M10.10h5) | Achieved | All 188/188 configurations carrying a catalogue bijectivity obligation construct and pass two independent scalar round trips. Exact solver-free recovery now covers reviewed compact/triangular realizations for Aradi, Gimli, Keccak, NORX, QARMAv2, Xoodoo, and TinyJambu FSR plus directly authored published inverses for Subterranean and ChiLow; SCARF's two public state halves are correctly bound. The complete 234-configuration audit records 207 verified, 21 typed unsupported, 5 timed out, and one zero-input not-applicable result, with every non-verified row outside the catalogue bijectivity obligation. Darwin x86_64/Python 3.11.12 dependency-free checkpoint: 1547 passed/81 external deselected; focused reviewed-realization/direct-inverse and SCARF checks: 20 passed. |
 | Inversion performance/documentation closure (M10.10h6) | Achieved | The regenerated Markdown audit records 142 primitives/234 configurations, separate one-round and official full timings, 207 verified outcomes, and complete 188/188 catalogue-bijective semantic coverage; non-obligated lossy/stalled/timeout rows remain explicitly qualified. Full KATAN-FSR-64, Gimli, and NORX-32 regression cases each stay below the ten-second integration budget. Host Darwin x86_64/Python 3.11.12: 1549 dependency-free passed/81 external deselected; solver-facing external reruns were not applicable because M10.10h changed no solver representation or driver. API/user/developer doctests: 87/354/517; both HTML guides build warning-free. Inventory, catalogue, realization, and terminology gates pass; catalogue closure remains 142 primitives/23 components/13 representations/9 analyses/14 drivers. Wheel: 388 files/15 owned data files/zero frozen graph artifacts. amd64 Linux/Python 3.10.12 compatibility Docker: 1114 passed/3 optional-dependency skips/513 external-or-extended deselected; Docker external: 79 passed/2 optional-dependency skips/1549 deselected. Docker tools: MiniZinc 2.9.4 with Chuffed 0.13.2, GLPK 5.0, Z3 4.8.12, Singular 4.2.1, MiniSat 2.2.1, and Dieharder 3.31.1. Host tools: MiniZinc 2.9.3 without Chuffed, GLPK 5.0, Z3 4.14.1, Singular 4.4.1, and MiniSat 2.2.1; the installed host Dieharder remains broken by its pre-existing missing GSL dylib. The canonical multi-architecture Python 3.11+ image remains queued independently of this milestone. Generated documentation, wheel, build, egg-info, pytest, and project-source bytecode artifacts were removed. |
 | Retained-input obligation correction (M10.10h7) | Achieved | A shared reviewed authority replaces folder-only inference and classifies the designated data/state map with auxiliaries retained: 6/7 named toy configurations, 16/23 single-component defaults, and ChaChaKeystreamBlock now carry precise positive obligations. Fixed collisions prove Fancy's lossy odd-round map and optional two-bit ToyAES variants are not permutations; the named eight-bit ToyAES configuration remains bijective. The regenerated 142-primitive/234-configuration report records 208 verified, 20 typed unsupported, 5 timed out, and one not-applicable result, with complete 208/208 obligated coverage and zero successful non-obligated full configurations. Host Darwin x86_64/Python 3.11.12: 1575 dependency-free passed/81 external deselected; routine host: 1143 passed/513 extended-or-external deselected; focused toy/inversion checks: 61 passed. API/user/developer doctests: 87/357/517; both HTML guides warning-free. Inventory and catalogue gates pass; wheel: 388 files/15 owned data files/zero frozen graph artifacts. amd64 Linux/Python 3.10.12 compatibility Docker: 1140 passed/3 optional-dependency skips/513 external-or-extended deselected; Docker external: 79 passed/2 optional-dependency skips/1575 deselected. Docker tools remain MiniZinc 2.9.4 with Chuffed 0.13.2, GLPK 5.0, Z3 4.8.12, Singular 4.2.1, MiniSat 2.2.1, and Dieharder 3.31.1; no solver representation or driver changed. |
-| Component analysis (M10.11) | Planned | Structured S-box, linear-layer, Boolean, field, and word-operation properties with optional heavy algebra/plots |
+| Component analysis (M10.11) | In progress | M10.11a contracts and ownership are complete; M10.11b semantic grouping and immutable graph discovery is next |
+| Component-analysis contracts and ownership (M10.11a) | Achieved | Immutable requests/results distinguish exact values, proved bounds, empirical observations, and typed unavailable diagnostics; semantic/realization provenance is separate from optional driver provenance. The two legacy records have explicit M10.11 destinations and evidence, while radar plots stay with M10.14 and M10.8d wordwise MILP dispositions remain closed. Darwin arm64/Python 3.11.12: 1579 dependency-free passed/81 external deselected; routine subset: 1147 passed/513 external-or-extended deselected. |
+| Semantic component grouping (M10.11b) | Next | Group immutable graph components by exact semantic type, typed parameters, value domains, and requested analysis domain; retain graph locations only as optional evidence |
+| Exact lookup-table properties (M10.11c) | Queued | Exact S-box and lookup-table differential, linear, algebraic, balancedness, APN, branch-number, and applicable boomerang properties |
+| Linear/affine/MixColumn properties (M10.11d) | Queued | Validated rank, invertibility, order, MDS, and bit/word differential/linear branch properties with explicit orientation and field conventions |
+| Boolean/word/feedback properties (M10.11e) | Queued | Specification-oriented ANF structure, operation facts, and typed register/connection-polynomial properties |
+| Optional component-analysis drivers (M10.11f) | Queued | Explicit heavy algebra/MiniZinc drivers and completeness-qualified bounded fallbacks over the common result contract |
+| Component-analysis API and closure (M10.11g) | Queued | Public facade, catalogue capability metadata, executable documentation, inventory closure, and full checkpoint matrix |
 | Dataset/statistical testing (M10.12) | Achieved | Seeded dependency-free datasets, canonical streaming artifacts, result parsers, and optional shell-free Dieharder and NIST STS execution drivers, each with bounded dedicated CI against the real executable |
 | Reproducible avalanche foundation (M10.12a) | Achieved | Immutable MSB-first paired bit-flip datasets, local seeded RNG, simple `primitive.analyze().avalanche(...)` API, fixed Speck evidence, and explicitly empirical result metadata |
 | Streaming statistical dataset families (M10.12b) | Achieved | Lazy re-iterable correlation, zero-IV CBC, low-/high-density generators, deterministic weight-two sampling, streamed big-endian bytes, and fixed Speck evidence require no NumPy |

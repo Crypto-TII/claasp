@@ -1440,6 +1440,31 @@ MIGRATION_OVERRIDES["tests/unit/components/fsr_component_test.py"] = {
     "rationale": "Exact Sage polynomial variable names and rendering are incidental; exhaustive concrete truth maps independently establish the same binary and field-word transformations.",
 }
 
+# M10.11 separates component-property semantics, optional computation drivers,
+# and presentation. These are the only two legacy records owned by the
+# milestone; solver-shaped wordwise branch-number records retain their closed
+# M10.8d disposition.
+MIGRATION_OVERRIDES.update({
+    "claasp/cipher_modules/component_analysis_tests.py": {
+        "milestone_owner": "M10.11a",
+        "v5_destination": "next/src/claasp_next/analysis/component_properties.py; next/src/claasp_next/drivers/analysis; M10.14 presentation layer",
+        "prerequisites": ["M10.9f6", "M10.10"],
+        "disposition": "migrate",
+        "status": "m10.11-owned",
+        "acceptance_criterion": "M10.11 returns immutable typed component-property results with explicit applicability and exactness; fixed S-box, Boolean, matrix, branch-number, and feedback evidence passes independently, while Matplotlib presentation remains assigned to M10.14.",
+        "rationale": "Typed Sage-independent analysis contracts and explicit optional drivers replace the nested legacy report dictionary, component-id identity, default solver selection, and mutable caches. Plotting is assigned to M10.14.",
+    },
+    "tests/unit/cipher_modules/component_analysis_tests_test.py": {
+        "milestone_owner": "M10.11a",
+        "v5_destination": "next/tests/unit/test_component_properties.py; next/tests/integration/test_component_analysis_drivers.py; M10.14 presentation tests",
+        "prerequisites": ["M10.11a", "M10.9f6"],
+        "disposition": "migrate",
+        "status": "m10.11-owned",
+        "acceptance_criterion": "Independent fixed evidence covers exact S-box, Boolean, matrix, branch-number, feedback, driver, applicability, and exactness contracts; plotting assertions remain assigned to M10.14.",
+        "rationale": "Typed v5 tests preserve mathematical evidence. Legacy helper internals and Sage/MiniZinc method-consistency tests become contract and driver tests; the radar-chart assertion belongs to M10.14.",
+    },
+})
+
 # M10.10 owns immutable primitive-graph transformations. These entries make
 # the previously generic planning records concrete before implementation; the
 # achieved M10.8 model records that happened to call legacy mutation helpers

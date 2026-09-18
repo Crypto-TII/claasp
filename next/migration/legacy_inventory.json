@@ -291,7 +291,7 @@
       "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "M10.11 returns immutable typed component-property results with explicit applicability and exactness; fixed S-box, Boolean, matrix, branch-number, and feedback evidence passes independently, while Matplotlib presentation remains assigned to M10.14.",
       "dependencies": [
         "claasp",
         "itertools",
@@ -310,9 +310,11 @@
         "test_functions": []
       },
       "kind": "source",
+      "milestone_owner": "M10.11a",
       "path": "claasp/cipher_modules/component_analysis_tests.py",
       "prerequisites": [
-        "owning migration milestone"
+        "M10.9f6",
+        "M10.10"
       ],
       "public_entry_points": [
         "CipherComponentsAnalysis",
@@ -335,11 +337,11 @@
         "compute_word_branch_number_from_binary_matrix_with_minizinc",
         "compute_branch_number_from_binary_matrix"
       ],
-      "rationale": null,
+      "rationale": "Typed Sage-independent analysis contracts and explicit optional drivers replace the nested legacy report dictionary, component-id identity, default solver selection, and mutable caches. Plotting is assigned to M10.14.",
       "responsibility": "component analysis tests",
-      "status": "planned-or-partially-migrated",
+      "status": "m10.11-owned",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/analysis/component_properties.py; next/src/claasp_next/drivers/analysis; M10.14 presentation layer"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
@@ -10697,7 +10699,7 @@
       "v5_destination": "next/tests (mapped to the owning migrated behavior)"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Independent fixed evidence covers exact S-box, Boolean, matrix, branch-number, feedback, driver, applicability, and exactness contracts; plotting assertions remain assigned to M10.14.",
       "dependencies": [
         "builtins",
         "claasp",
@@ -10814,9 +10816,11 @@
         ]
       },
       "kind": "test",
+      "milestone_owner": "M10.11a",
       "path": "tests/unit/cipher_modules/component_analysis_tests_test.py",
       "prerequisites": [
-        "owning migration milestone"
+        "M10.11a",
+        "M10.9f6"
       ],
       "public_entry_points": [
         "aes_mix_column_component",
@@ -10852,9 +10856,9 @@
         "TestBranchNumberHelperEdgePaths",
         "TestConsistency"
       ],
-      "rationale": null,
+      "rationale": "Typed v5 tests preserve mathematical evidence. Legacy helper internals and Sage/MiniZinc method-consistency tests become contract and driver tests; the radar-chart assertion belongs to M10.14.",
       "responsibility": "component analysis tests test",
-      "status": "planned-or-partially-migrated",
+      "status": "m10.11-owned",
       "tests": [
         "test_4x4_identity",
         "test_already_conway_field_returns_input_matrix",
@@ -10957,7 +10961,7 @@
         "test_validate_irreducible_polynomial_errors",
         "test_word_grouping_is_forwarded_to_shared_minizinc_solver"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_component_properties.py; next/tests/integration/test_component_analysis_drivers.py; M10.14 presentation tests"
     },
     {
       "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
