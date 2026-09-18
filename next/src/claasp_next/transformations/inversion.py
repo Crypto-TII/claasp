@@ -1,5 +1,6 @@
 """Complete and partial inversion of immutable typed primitive graphs."""
 
+from collections import deque
 from collections.abc import Mapping, Sequence
 from copy import copy
 
@@ -114,7 +115,13 @@ def _assembled(derived: Primitive, equivalents: Mapping[Atom, Selection], atoms:
     return as_selection(derived.join(*groups))
 
 
-def _assign(equivalents: dict[Atom, Selection], atoms: tuple[Atom, ...], value: PortLike) -> bool:
+def _assign(
+    equivalents: dict[Atom, Selection],
+    atoms: tuple[Atom, ...],
+    value: PortLike,
+    *,
+    changed_atoms: list[Atom] | None = None,
+) -> bool:
     selection = as_selection(value)
     if selection.value_type.unit_count != len(atoms):
         raise AssertionError("equivalent wire width mismatch")
@@ -122,57 +129,75 @@ def _assign(equivalents: dict[Atom, Selection], atoms: tuple[Atom, ...], value: 
     for atom, position in zip(atoms, selection.positions):
         if atom not in equivalents:
             equivalents[atom] = selection.source[position]
+            if changed_atoms is not None:
+                changed_atoms.append(atom)
             changed = True
+    return changed
+
+
+def _propagate_binding(binding, derived, equivalents, *, changed_atoms=None):
+    changed = False
+    output_atoms = tuple(
+        (binding.binding_id, index) for index in range(binding.output_type.unit_count)
+    )
+    input_atoms = tuple(atom for item in binding.inputs for atom in _atoms(item))
+    if binding.kind in (BindingKind.JOIN, BindingKind.VIEW):
+        for output_atom, input_atom in zip(output_atoms, input_atoms):
+            if output_atom in equivalents and input_atom not in equivalents:
+                equivalents[input_atom] = equivalents[output_atom]
+                if changed_atoms is not None:
+                    changed_atoms.append(input_atom)
+                changed = True
+            elif input_atom in equivalents and output_atom not in equivalents:
+                equivalents[output_atom] = equivalents[input_atom]
+                if changed_atoms is not None:
+                    changed_atoms.append(output_atom)
+                changed = True
+        return changed
+    width = binding.word_width
+    if width is None:  # pragma: no cover - graph validation owns this invariant
+        raise AssertionError("conversion binding has no word width")
+    if binding.kind is BindingKind.PACK_BITS:
+        for index, output_atom in enumerate(output_atoms):
+            group = input_atoms[index * width:(index + 1) * width]
+            if output_atom in equivalents and not all(atom in equivalents for atom in group):
+                bits = derived.unpack_bits(equivalents[output_atom])
+                changed |= _assign(equivalents, group, bits, changed_atoms=changed_atoms)
+            elif output_atom not in equivalents and all(atom in equivalents for atom in group):
+                bits = _assembled(derived, equivalents, group)
+                domain = binding.output_type.domain
+                packed = derived.pack_bits(
+                    bits, width,
+                    output_domain=domain if isinstance(domain, BinaryExtensionField) else None,
+                )
+                equivalents[output_atom] = packed[0]
+                if changed_atoms is not None:
+                    changed_atoms.append(output_atom)
+                changed = True
+    elif binding.kind is BindingKind.UNPACK_BITS:
+        for index, input_atom in enumerate(input_atoms):
+            group = output_atoms[index * width:(index + 1) * width]
+            if input_atom in equivalents and not all(atom in equivalents for atom in group):
+                bits = derived.unpack_bits(equivalents[input_atom])
+                changed |= _assign(equivalents, group, bits, changed_atoms=changed_atoms)
+            elif input_atom not in equivalents and all(atom in equivalents for atom in group):
+                bits = _assembled(derived, equivalents, group)
+                domain = binding.inputs[0].value_type.domain
+                packed = derived.pack_bits(
+                    bits, width,
+                    output_domain=domain if isinstance(domain, BinaryExtensionField) else None,
+                )
+                equivalents[input_atom] = packed[0]
+                if changed_atoms is not None:
+                    changed_atoms.append(input_atom)
+                changed = True
     return changed
 
 
 def _propagate_bindings(primitive, derived, equivalents):
     changed = False
     for binding in primitive.bindings:
-        output_atoms = tuple((binding.binding_id, index) for index in range(binding.output_type.unit_count))
-        input_atoms = tuple(atom for item in binding.inputs for atom in _atoms(item))
-        if binding.kind in (BindingKind.JOIN, BindingKind.VIEW):
-            for output_atom, input_atom in zip(output_atoms, input_atoms):
-                if output_atom in equivalents and input_atom not in equivalents:
-                    equivalents[input_atom] = equivalents[output_atom]
-                    changed = True
-                elif input_atom in equivalents and output_atom not in equivalents:
-                    equivalents[output_atom] = equivalents[input_atom]
-                    changed = True
-            continue
-        width = binding.word_width
-        if width is None:  # pragma: no cover - graph validation owns this invariant
-            raise AssertionError("conversion binding has no word width")
-        if binding.kind is BindingKind.PACK_BITS:
-            for index, output_atom in enumerate(output_atoms):
-                group = input_atoms[index * width:(index + 1) * width]
-                if output_atom in equivalents and not all(atom in equivalents for atom in group):
-                    bits = derived.unpack_bits(equivalents[output_atom])
-                    changed |= _assign(equivalents, group, bits)
-                elif output_atom not in equivalents and all(atom in equivalents for atom in group):
-                    bits = _assembled(derived, equivalents, group)
-                    domain = binding.output_type.domain
-                    packed = derived.pack_bits(
-                        bits, width,
-                        output_domain=domain if isinstance(domain, BinaryExtensionField) else None,
-                    )
-                    equivalents[output_atom] = packed[0]
-                    changed = True
-        elif binding.kind is BindingKind.UNPACK_BITS:
-            for index, input_atom in enumerate(input_atoms):
-                group = output_atoms[index * width:(index + 1) * width]
-                if input_atom in equivalents and not all(atom in equivalents for atom in group):
-                    bits = derived.unpack_bits(equivalents[input_atom])
-                    changed |= _assign(equivalents, group, bits)
-                elif input_atom not in equivalents and all(atom in equivalents for atom in group):
-                    bits = _assembled(derived, equivalents, group)
-                    domain = binding.inputs[0].value_type.domain
-                    packed = derived.pack_bits(
-                        bits, width,
-                        output_domain=domain if isinstance(domain, BinaryExtensionField) else None,
-                    )
-                    equivalents[input_atom] = packed[0]
-                    changed = True
+        changed |= _propagate_binding(binding, derived, equivalents)
     return changed
 
 
@@ -223,87 +248,146 @@ def partial_inverse(
         _assign(equivalents, atoms, derived.input(name))
 
     components = tuple(primitive.components)
+    bindings_to_process = tuple(primitive.bindings)
     relevant_sources = set(DependencyIndex(primitive).descendants(target_selection.source.owner_id))
     produced = set()
-    stalled_errors = []
+    stalled_errors = {}
     target_atoms = _atoms(target_selection)
-    while not all(atom in equivalents for atom in target_atoms):
-        changed = _propagate_bindings(primitive, derived, equivalents)
-        stalled_errors = []
-        for component in components:
-            component_id = component.component_id
-            output_atoms = tuple((component_id, index) for index in range(component.output_type.unit_count))
-            input_atoms = tuple(_atoms(item) for item in component.inputs)
-            known_inputs = tuple(all(atom in equivalents for atom in atoms) for atoms in input_atoms)
-            output_known = all(atom in equivalents for atom in output_atoms)
-
-            if component_id not in produced and all(known_inputs):
-                clone = copy(component)
-                object.__setattr__(clone, "component_id", None)
-                object.__setattr__(
-                    clone, "inputs",
-                    tuple(_assembled(derived, equivalents, atoms) for atoms in input_atoms),
-                )
-                result = derived.add_component(clone)
-                _assign(equivalents, output_atoms, result)
-                produced.add(component_id)
-                changed = True
-                continue
-
-            if not output_known or component_id not in relevant_sources:
-                continue
-            unknown = tuple(index for index, available in enumerate(known_inputs) if not available)
-            if len(unknown) > 1:
-                stalled_errors.append(TransformationError(
-                    TransformationFailureReason.MULTIPLE_PREDECESSORS,
-                    "component output leaves multiple unknown predecessors",
-                    source_ids=(component_id,) if component_id else (),
-                ))
-                continue
-            if not unknown:
-                continue
-            recover = unknown[0]
-            if any(atom in equivalents for atom in input_atoms[recover]):
-                stalled_errors.append(TransformationError(
-                    TransformationFailureReason.AMBIGUOUS_BOUNDARY,
-                    "only part of a component predecessor is known",
-                    source_ids=(component.inputs[recover].source.owner_id,),
-                ))
-                continue
-            auxiliaries = {
-                index: _assembled(derived, equivalents, atoms)
-                for index, atoms in enumerate(input_atoms) if index != recover
-            }
-            try:
-                inverse = registry.invert(
-                    component,
-                    _assembled(derived, equivalents, output_atoms),
-                    recover_input=recover,
-                    auxiliary_inputs=auxiliaries,
-                )
-            except TransformationError as error:
-                stalled_errors.append(error)
-                continue
-            result = derived.add_component(inverse)
-            _assign(equivalents, input_atoms[recover], result)
-            produced.add(component_id)
-            changed = True
-        if not changed:
-            if stalled_errors:
-                priorities = {
-                    TransformationFailureReason.UNSUPPORTED_COMPONENT: 0,
-                    TransformationFailureReason.INFORMATION_LOSS: 1,
-                    TransformationFailureReason.MISSING_AUXILIARY_VALUE: 2,
-                    TransformationFailureReason.MULTIPLE_PREDECESSORS: 3,
-                    TransformationFailureReason.AMBIGUOUS_BOUNDARY: 4,
-                }
-                raise min(stalled_errors, key=lambda error: priorities.get(error.reason, 99))
-            missing = tuple(sorted({source_id for source_id, position in target_atoms if (source_id, position) not in equivalents}))
-            raise TransformationError(
-                TransformationFailureReason.DISCONNECTED_DEPENDENCY,
-                "known boundaries do not connect to every requested target wire",
-                source_ids=missing,
+    operations = (
+        *(("binding", index) for index in range(len(bindings_to_process))),
+        *(("component", index) for index in range(len(components))),
+    )
+    watchers: dict[Atom, list[tuple[str, int]]] = {}
+    for operation in operations:
+        operation_kind, operation_index = operation
+        if operation_kind == "binding":
+            binding = bindings_to_process[operation_index]
+            watched_atoms = (
+                *((binding.binding_id, index) for index in range(binding.output_type.unit_count)),
+                *(atom for item in binding.inputs for atom in _atoms(item)),
             )
+        else:
+            component = components[operation_index]
+            watched_atoms = (
+                *((component.component_id, index) for index in range(component.output_type.unit_count)),
+                *(atom for item in component.inputs for atom in _atoms(item)),
+            )
+        for atom in watched_atoms:
+            watchers.setdefault(atom, []).append(operation)
+
+    queue = deque(operations)
+    queued = set(operations)
+
+    def schedule(changed_atoms):
+        for atom in changed_atoms:
+            for operation in watchers.get(atom, ()):
+                if operation not in queued:
+                    queue.append(operation)
+                    queued.add(operation)
+
+    while queue and not all(atom in equivalents for atom in target_atoms):
+        operation_kind, operation_index = queue.popleft()
+        queued.remove((operation_kind, operation_index))
+        changed_atoms = []
+        if operation_kind == "binding":
+            _propagate_binding(
+                bindings_to_process[operation_index],
+                derived,
+                equivalents,
+                changed_atoms=changed_atoms,
+            )
+            schedule(changed_atoms)
+            continue
+
+        component = components[operation_index]
+        component_id = component.component_id
+        output_atoms = tuple(
+            (component_id, index) for index in range(component.output_type.unit_count)
+        )
+        input_atoms = tuple(_atoms(item) for item in component.inputs)
+        known_inputs = tuple(all(atom in equivalents for atom in atoms) for atoms in input_atoms)
+        output_known = all(atom in equivalents for atom in output_atoms)
+        stalled_errors.pop(operation_index, None)
+
+        if component_id not in produced and all(known_inputs):
+            clone = copy(component)
+            object.__setattr__(clone, "component_id", None)
+            object.__setattr__(
+                clone, "inputs",
+                tuple(_assembled(derived, equivalents, atoms) for atoms in input_atoms),
+            )
+            result = derived.add_component(clone)
+            _assign(equivalents, output_atoms, result, changed_atoms=changed_atoms)
+            produced.add(component_id)
+            schedule(changed_atoms)
+            continue
+
+        if not output_known or component_id not in relevant_sources:
+            continue
+        unknown = tuple(index for index, available in enumerate(known_inputs) if not available)
+        if len(unknown) > 1:
+            stalled_errors[operation_index] = TransformationError(
+                TransformationFailureReason.MULTIPLE_PREDECESSORS,
+                "component output leaves multiple unknown predecessors",
+                source_ids=(component_id,) if component_id else (),
+            )
+            continue
+        if not unknown:
+            continue
+        recover = unknown[0]
+        if any(atom in equivalents for atom in input_atoms[recover]):
+            stalled_errors[operation_index] = TransformationError(
+                TransformationFailureReason.AMBIGUOUS_BOUNDARY,
+                "only part of a component predecessor is known",
+                source_ids=(component.inputs[recover].source.owner_id,),
+            )
+            continue
+        auxiliaries = {
+            index: _assembled(derived, equivalents, atoms)
+            for index, atoms in enumerate(input_atoms) if index != recover
+        }
+        try:
+            inverse = registry.invert(
+                component,
+                _assembled(derived, equivalents, output_atoms),
+                recover_input=recover,
+                auxiliary_inputs=auxiliaries,
+            )
+        except TransformationError as error:
+            stalled_errors[operation_index] = error
+            continue
+        result = derived.add_component(inverse)
+        _assign(
+            equivalents,
+            input_atoms[recover],
+            result,
+            changed_atoms=changed_atoms,
+        )
+        produced.add(component_id)
+        schedule(changed_atoms)
+
+    if not all(atom in equivalents for atom in target_atoms):
+        if stalled_errors:
+            priorities = {
+                TransformationFailureReason.UNSUPPORTED_COMPONENT: 0,
+                TransformationFailureReason.INFORMATION_LOSS: 1,
+                TransformationFailureReason.MISSING_AUXILIARY_VALUE: 2,
+                TransformationFailureReason.MULTIPLE_PREDECESSORS: 3,
+                TransformationFailureReason.AMBIGUOUS_BOUNDARY: 4,
+            }
+            raise min(
+                stalled_errors.values(),
+                key=lambda error: priorities.get(error.reason, 99),
+            )
+        missing = tuple(sorted({
+            source_id for source_id, position in target_atoms
+            if (source_id, position) not in equivalents
+        }))
+        raise TransformationError(
+            TransformationFailureReason.DISCONNECTED_DEPENDENCY,
+            "known boundaries do not connect to every requested target wire",
+            source_ids=missing,
+        )
 
     derived.set_output(_assembled(derived, equivalents, target_atoms))
     record = TransformationRecord(
