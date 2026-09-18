@@ -2,6 +2,7 @@
 
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
+from functools import lru_cache
 from math import gcd
 from types import MappingProxyType
 
@@ -259,10 +260,32 @@ def _domain_inverse(domain, value):
     raise TypeError(f"matrix inversion does not support {type(domain).__name__}")
 
 
+@lru_cache(maxsize=64)
 def _inverse_matrix(matrix, domain):
     size = len(matrix)
     if size == 0 or any(len(row) != size for row in matrix):
         return None
+    if isinstance(domain, Bit):
+        augmented = [
+            sum((coefficient & 1) << column for column, coefficient in enumerate(row))
+            | (1 << (size + row_index))
+            for row_index, row in enumerate(matrix)
+        ]
+        for column in range(size):
+            pivot = next(
+                (row for row in range(column, size) if augmented[row] & (1 << column)),
+                None,
+            )
+            if pivot is None:
+                return None
+            augmented[column], augmented[pivot] = augmented[pivot], augmented[column]
+            for row in range(size):
+                if row != column and augmented[row] & (1 << column):
+                    augmented[row] ^= augmented[column]
+        return tuple(
+            tuple((row >> (size + column)) & 1 for column in range(size))
+            for row in augmented
+        )
     augmented = [list(row) + [int(column == row_index) for column in range(size)] for row_index, row in enumerate(matrix)]
     for column in range(size):
         pivot = next((row for row in range(column, size) if augmented[row][column]), None)

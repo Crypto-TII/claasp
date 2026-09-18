@@ -1,6 +1,7 @@
 """Sage-independent structural and linear permutation layers."""
 
 from collections.abc import Callable, Iterable
+from functools import lru_cache
 
 from claasp_next.components.algebraic import LinearMap
 from claasp_next.components.structural import Permutation
@@ -117,12 +118,13 @@ def keccak_theta(component_input: PortLike, component_id: str | None = None) -> 
     size = selection.value_type.unit_count
     if size % 25:
         raise ValueError("Keccak theta state size must be divisible by 25")
+    return LinearMap(selection, _keccak_matrix(size), component_id=component_id)
+
+
+@lru_cache(maxsize=8)
+def _keccak_matrix(size: int):
     lane_width = size // 25
-    return LinearMap(
-        selection,
-        _binary_matrix(size, lambda state: _keccak_values(state, lane_width)),
-        component_id=component_id,
-    )
+    return _binary_matrix(size, lambda state: _keccak_values(state, lane_width))
 
 
 def _xoodoo_values(state: BitState, lane_width: int) -> BitState:
@@ -149,12 +151,13 @@ def xoodoo_theta(component_input: PortLike, component_id: str | None = None) -> 
     size = selection.value_type.unit_count
     if size % 12:
         raise ValueError("Xoodoo theta state size must be divisible by 12")
+    return LinearMap(selection, _xoodoo_matrix(size), component_id=component_id)
+
+
+@lru_cache(maxsize=8)
+def _xoodoo_matrix(size: int):
     lane_width = size // 12
-    return LinearMap(
-        selection,
-        _binary_matrix(size, lambda state: _xoodoo_values(state, lane_width)),
-        component_id=component_id,
-    )
+    return _binary_matrix(size, lambda state: _xoodoo_values(state, lane_width))
 
 
 def _gaston_values(state: BitState, rotations: tuple[int, ...]) -> BitState:
@@ -189,8 +192,9 @@ def gaston_theta(
         raise ValueError("Gaston theta requires exactly eight integer rotation amounts")
     if size % 5:
         raise ValueError("Gaston theta state size must be divisible by five")
-    return LinearMap(
-        selection,
-        _binary_matrix(size, lambda state: _gaston_values(state, rotations)),
-        component_id=component_id,
-    )
+    return LinearMap(selection, _gaston_matrix(size, rotations), component_id=component_id)
+
+
+@lru_cache(maxsize=8)
+def _gaston_matrix(size: int, rotations: tuple[int, ...]):
+    return _binary_matrix(size, lambda state: _gaston_values(state, rotations))

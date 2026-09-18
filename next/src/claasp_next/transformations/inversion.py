@@ -4,7 +4,7 @@ from collections import deque
 from collections.abc import Mapping, Sequence
 from copy import copy
 
-from claasp_next.components import Add, Rotate, Xor
+from claasp_next.components import Add, LinearMap, Rotate, Xor
 from claasp_next.domains import BinaryExtensionField, Bit, Word
 from claasp_next.graph import (
     BindingKind, Component, Port, PortLike, Primitive, PrimitiveInput,
@@ -17,11 +17,17 @@ from claasp_next.transformations.contracts import (
 from claasp_next.transformations.inverse_rules import (
     ComponentInverseRegistry, DEFAULT_INVERSE_REGISTRY,
 )
-from claasp_next.transformations.inverse_equivalents import inversion_equivalent
+from claasp_next.transformations.inverse_equivalents import (
+    direct_inversion_equivalent, inversion_equivalent,
+)
 from claasp_next.transformations.traversal import DependencyIndex
 
 
 Atom = tuple[str, int]
+
+
+def _qualified_primitive_type(primitive):
+    return f"{type(primitive).__module__}.{type(primitive).__qualname__}"
 
 
 def _as_selections(value) -> tuple[Selection, ...]:
@@ -203,7 +209,9 @@ def _propagate_bindings(primitive, derived, equivalents):
     return changed
 
 
-def _recover_xor_region(primitive, components, derived, equivalents, bit_cache):
+def _recover_xor_region(
+    primitive, components, derived, equivalents, bit_cache, region_cache,
+):
     """Recover units isolated by exact bit-level elimination of XOR regions."""
 
     def width(domain):
@@ -224,54 +232,84 @@ def _recover_xor_region(primitive, components, derived, equivalents, bit_cache):
             for position in selection.positions for bit in range(domain_width)
         )
 
-    raw_equations = []
+    if "groups" not in region_cache:
+        raw_equations = []
 
-    def add_equation(*variables):
-        coefficients = set()
-        for variable in variables:
-            if variable in coefficients:
-                coefficients.remove(variable)
-            else:
-                coefficients.add(variable)
-        if coefficients:
-            raw_equations.append(coefficients)
+        def add_equation(*variables):
+            coefficients = set()
+            for variable in variables:
+                if variable in coefficients:
+                    coefficients.remove(variable)
+                else:
+                    coefficients.add(variable)
+            if coefficients:
+                raw_equations.append(frozenset(coefficients))
 
-    for binding in primitive.bindings:
-        output = primitive.port(binding.binding_id).select_all()
-        output_bits = virtual_bits(output)
-        input_bits = tuple(
-            bit for selection in binding.inputs for bit in virtual_bits(selection)
-        )
-        if len(output_bits) == len(input_bits):
-            for output_bit, input_bit in zip(output_bits, input_bits):
-                add_equation(output_bit, input_bit)
+        for binding in primitive.bindings:
+            output = primitive.port(binding.binding_id).select_all()
+            output_bits = virtual_bits(output)
+            input_bits = tuple(
+                bit for selection in binding.inputs for bit in virtual_bits(selection)
+            )
+            if len(output_bits) == len(input_bits):
+                for output_bit, input_bit in zip(output_bits, input_bits):
+                    add_equation(output_bit, input_bit)
 
-    for component in components:
-        output = primitive.port(component.component_id).select_all()
-        output_bits = virtual_bits(output)
-        input_bits = tuple(virtual_bits(item) for item in component.inputs)
-        if type(component) is Xor or (
-            type(component) is Add
-            and isinstance(component.output_type.domain, (Bit, BinaryExtensionField))
-        ):
-            if any(len(bits) != len(output_bits) for bits in input_bits):
-                continue  # pragma: no cover - component validation owns this
-            for index, output_bit in enumerate(output_bits):
-                add_equation(output_bit, *(bits[index] for bits in input_bits))
-        elif type(component) is Rotate:
-            domain_width = component.output_type.domain.width
-            amount = component.amount
-            for unit in range(component.output_type.unit_count):
-                for bit in range(domain_width):
-                    input_bit = (
-                        (bit + amount) % domain_width
-                        if component.direction == "left"
-                        else (bit - amount) % domain_width
-                    )
+        for component in components:
+            output = primitive.port(component.component_id).select_all()
+            output_bits = virtual_bits(output)
+            input_bits = tuple(virtual_bits(item) for item in component.inputs)
+            if type(component) is Xor or (
+                type(component) is Add
+                and isinstance(component.output_type.domain, (Bit, BinaryExtensionField))
+            ):
+                if any(len(bits) != len(output_bits) for bits in input_bits):
+                    continue  # pragma: no cover - component validation owns this
+                for index, output_bit in enumerate(output_bits):
+                    add_equation(output_bit, *(bits[index] for bits in input_bits))
+            elif type(component) is Rotate:
+                domain_width = component.output_type.domain.width
+                amount = component.amount
+                for unit in range(component.output_type.unit_count):
+                    for bit in range(domain_width):
+                        input_bit = (
+                            (bit + amount) % domain_width
+                            if component.direction == "left"
+                            else (bit - amount) % domain_width
+                        )
+                        add_equation(
+                            output_bits[unit * domain_width + bit],
+                            input_bits[0][unit * domain_width + input_bit],
+                        )
+            elif type(component) is LinearMap and isinstance(component.output_type.domain, Bit):
+                for output_bit, row in zip(output_bits, component.matrix):
                     add_equation(
-                        output_bits[unit * domain_width + bit],
-                        input_bits[0][unit * domain_width + input_bit],
+                        output_bit,
+                        *(input_bit for input_bit, coefficient in zip(input_bits[0], row) if coefficient),
                     )
+
+        parents = {}
+
+        def find(variable):
+            parents.setdefault(variable, variable)
+            while parents[variable] != variable:
+                parents[variable] = parents[parents[variable]]
+                variable = parents[variable]
+            return variable
+
+        def union(left, right):
+            left, right = find(left), find(right)
+            if left != right:
+                parents[right] = left
+
+        for coefficients in raw_equations:
+            first = next(iter(coefficients))
+            for variable in coefficients:
+                union(first, variable)
+        raw_groups = {}
+        for coefficients in raw_equations:
+            raw_groups.setdefault(find(next(iter(coefficients))), []).append(coefficients)
+        region_cache["groups"] = tuple(tuple(group) for group in raw_groups.values())
 
     def known_bits(atom):
         if atom not in equivalents:
@@ -300,69 +338,62 @@ def _recover_xor_region(primitive, components, derived, equivalents, bit_cache):
                 selection.source.owner_id, selection.positions[0],
             )
 
-    equations = []
-    for coefficients in raw_equations:
-        coefficients = set(coefficients)
-        right_hand_side = set()
-        for variable in tuple(coefficients):
-            token = known.get(variable)
-            if token is None:
-                continue
-            coefficients.remove(variable)
-            if token in right_hand_side:
-                right_hand_side.remove(token)
-            else:
-                right_hand_side.add(token)
-        if coefficients:
-            equations.append((coefficients, right_hand_side))
-
-    parents = {}
-
-    def find(variable):
-        parents.setdefault(variable, variable)
-        while parents[variable] != variable:
-            parents[variable] = parents[parents[variable]]
-            variable = parents[variable]
-        return variable
-
-    def union(left, right):
-        left, right = find(left), find(right)
-        if left != right:
-            parents[right] = left
-
-    for coefficients, _ in equations:
-        first = next(iter(coefficients))
-        for variable in coefficients:
-            union(first, variable)
-    groups = {}
-    for equation in equations:
-        groups.setdefault(find(next(iter(equation[0]))), []).append(equation)
-
     solved = {}
-    for group in groups.values():
+    for raw_group in region_cache["groups"]:
+        group = []
+        for raw_coefficients in raw_group:
+            coefficients = set(raw_coefficients)
+            right_hand_side = set()
+            for variable in tuple(coefficients):
+                token = known.get(variable)
+                if token is None:
+                    continue
+                coefficients.remove(variable)
+                if token in right_hand_side:
+                    right_hand_side.remove(token)
+                else:
+                    right_hand_side.add(token)
+            if coefficients:
+                group.append((coefficients, right_hand_side))
+        if not group:
+            continue
         if not any(right_hand_side for _, right_hand_side in group):
             continue
+        variables = tuple(sorted({
+            variable for coefficients, _ in group for variable in coefficients
+        }))
+        tokens = tuple(sorted({
+            token for _, right_hand_side in group for token in right_hand_side
+        }))
+        variable_indexes = {variable: index for index, variable in enumerate(variables)}
+        token_indexes = {token: index for index, token in enumerate(tokens)}
         basis = {}
         for coefficients, right_hand_side in group:
-            coefficients = set(coefficients)
-            right_hand_side = set(right_hand_side)
-            while coefficients:
-                pivot = min(coefficients)
+            coefficient_bits = sum(1 << variable_indexes[item] for item in coefficients)
+            right_hand_side_bits = sum(1 << token_indexes[item] for item in right_hand_side)
+            while coefficient_bits:
+                pivot_bit = coefficient_bits & -coefficient_bits
+                pivot = pivot_bit.bit_length() - 1
                 if pivot not in basis:
-                    basis[pivot] = (coefficients, right_hand_side)
+                    basis[pivot] = [coefficient_bits, right_hand_side_bits]
                     break
                 other_coefficients, other_right_hand_side = basis[pivot]
-                coefficients.symmetric_difference_update(other_coefficients)
-                right_hand_side.symmetric_difference_update(other_right_hand_side)
+                coefficient_bits ^= other_coefficients
+                right_hand_side_bits ^= other_right_hand_side
         for pivot in sorted(basis, reverse=True):
             pivot_coefficients, pivot_right_hand_side = basis[pivot]
             for other_pivot, (coefficients, right_hand_side) in basis.items():
-                if other_pivot != pivot and pivot in coefficients:
-                    coefficients.symmetric_difference_update(pivot_coefficients)
-                    right_hand_side.symmetric_difference_update(pivot_right_hand_side)
+                if other_pivot != pivot and coefficients & (1 << pivot):
+                    basis[other_pivot][0] ^= pivot_coefficients
+                    basis[other_pivot][1] ^= pivot_right_hand_side
         for coefficients, right_hand_side in basis.values():
-            if len(coefficients) == 1 and right_hand_side:
-                solved[next(iter(coefficients))] = right_hand_side
+            if coefficients.bit_count() == 1 and right_hand_side:
+                variable = variables[(coefficients & -coefficients).bit_length() - 1]
+                solved[variable] = {
+                    tokens[index]
+                    for index in range(len(tokens))
+                    if right_hand_side & (1 << index)
+                }
 
     solved_units = {}
     for (source_id, position, bit), expression in solved.items():
@@ -445,6 +476,7 @@ def partial_inverse(
     derived.add_round()
     equivalents: dict[Atom, Selection] = {}
     bit_cache = {}
+    region_cache = {}
     for name, atoms in boundaries.items():
         _assign(equivalents, atoms, derived.input(name))
 
@@ -489,7 +521,7 @@ def partial_inverse(
     while not all(atom in equivalents for atom in target_atoms):
         if not queue:
             changed_atoms = _recover_xor_region(
-                primitive, components, derived, equivalents, bit_cache,
+                primitive, components, derived, equivalents, bit_cache, region_cache,
             )
             if not changed_atoms:
                 break
@@ -651,6 +683,35 @@ def invert_primitive(
             "primitive has no input to recover",
         )
     source_recovered = primitive.input(recover_input)
+    if source_recovered.owner_id == "plaintext" and retained_inputs is None:
+        direct, direct_contract = direct_inversion_equivalent(primitive, output_name)
+        if direct is not None:
+            direct.realization = primitive.realization
+            equivalent_record = TransformationRecord(
+                "inverse_equivalent",
+                (("source", _qualified_primitive_type(primitive)),
+                 ("replacement", direct_contract[0])),
+                primitive.realization_identity,
+            )
+            inverse_record = TransformationRecord(
+                "inverse",
+                (("recover", source_recovered.owner_id),
+                 ("retained", ",".join(
+                     port.owner_id for port in primitive.inputs()
+                     if port.owner_id != source_recovered.owner_id
+                 ))),
+                primitive.realization_identity,
+            )
+            object.__setattr__(
+                direct, "_transformation_provenance",
+                (*primitive.transformation_provenance, equivalent_record, inverse_record),
+            )
+            return TransformationResult(
+                direct,
+                ((primitive.output.source.owner_id, output_name),
+                 *((port.owner_id, port.owner_id) for port in primitive.inputs()
+                   if port.owner_id != source_recovered.owner_id)),
+            )
     working, equivalent_contract = inversion_equivalent(primitive)
     if working is None:
         working = primitive

@@ -2,6 +2,7 @@
 
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
+from functools import lru_cache
 
 from claasp_next.annotations import ExecutionTrace, GraphAnnotation
 from claasp_next.components.algebraic import Add, BinaryAffineMap, LinearMap, Multiply, Power
@@ -19,6 +20,12 @@ from claasp_next.provenance import DriverIdentity, DriverKind, ResultProvenance
 
 RuntimeValue = tuple[int, ...]
 Handler = Callable[[Component, tuple[RuntimeValue, ...]], RuntimeValue]
+@lru_cache(maxsize=64)
+def _binary_row_masks(matrix):
+    return tuple(
+        sum((coefficient & 1) << column for column, coefficient in enumerate(row))
+        for row in matrix
+    )
 
 
 @dataclass(frozen=True, slots=True)
@@ -226,8 +233,16 @@ class ScalarExecutionDriver:
 
     @classmethod
     def _evaluate_linear_map(cls, component: LinearMap, inputs: tuple[RuntimeValue, ...]) -> RuntimeValue:
+        from claasp_next.domains import Bit
+
         domain = component.inputs[0].value_type.domain
         vector = inputs[0]
+        if isinstance(domain, Bit):
+            packed = sum((value & 1) << index for index, value in enumerate(vector))
+            return tuple(
+                (packed & mask).bit_count() & 1
+                for mask in _binary_row_masks(component.matrix)
+            )
         output = []
         for row in component.matrix:
             products = [cls._multiply_scalar(domain, coefficient, value) for coefficient, value in zip(row, vector)]
