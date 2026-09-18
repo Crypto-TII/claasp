@@ -63,6 +63,10 @@ DRIVERS = (
      "claasp_next.drivers.analysis:BoundedBranchNumberDriver"),
     ("component_minizinc", "analysis_driver", "executable", "minizinc",
      "claasp_next.drivers.analysis:MiniZincBranchNumberDriver"),
+    ("text_presentation", "renderer", "builtin", None,
+     "claasp_next.presentation:render_report"),
+    ("matplotlib_presentation", "renderer", "python_module", "matplotlib",
+     "claasp_next.drivers.renderers.presentation:MatplotlibPresentationDriver"),
 )
 
 ALL_COMPONENTS = frozenset({
@@ -120,6 +124,8 @@ REPRESENTATIONS = (
      {"BinaryAffineMap", "BitVectorSBox", "BitwiseAnd", "BitwiseNot", "BitwiseOr",
       "FeedbackRegister", "LinearMap", "ModularAdd", "Permutation", "Rotate", "SBox",
       "Shift", "Xor"}, ALL_DOMAINS, {"component_bounded", "component_minizinc"}, "component"),
+    ("report_presentation", "presentation", "claasp_next.presentation:ReportData",
+     set(), set(), {"text_presentation", "matplotlib_presentation"}, "result"),
 )
 
 ANALYSES = (
@@ -147,6 +153,9 @@ ANALYSES = (
      {"boolean_cnf"}, {"minizinc", "minisat", "z3", "glpk"}, set(), set(), None),
     ("solve", "Primitive.analyze().solve", "constraint", "exact",
      {"boolean_cnf"}, {"minizinc", "minisat", "z3", "glpk"}, set(), set(), None),
+    ("present", "claasp_next.presentation.present", "result_presentation", "qualified",
+     {"report_presentation"}, {"text_presentation", "matplotlib_presentation"}, set(), set(),
+     "consumes already-produced typed results and never executes an analysis"),
 )
 
 
@@ -324,7 +333,7 @@ def build_catalogue() -> dict:
     ]
     return {
         "schema_version": 2,
-        "milestone": "M10.11g",
+        "milestone": "M10.14f",
         "sources": {
             "classification": "migration/legacy_inventory.json",
             "components": "migration/single_component_catalogue.json",

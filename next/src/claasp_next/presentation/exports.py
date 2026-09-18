@@ -172,4 +172,11 @@ def render_section(section: ReportSection, *, format: str = "terminal") -> str:
             blocks.append(f"### {table.title}" if normalized == "markdown" else table.title)
         blocks.append(renderer(table))
         blocks.extend(table.notes)
+    if section.citations:
+        blocks.append("Citations")
+        blocks.extend(
+            f"[{citation.identifier}] {citation.title}"
+            + (f" ({citation.locator})" if citation.locator else "")
+            for citation in section.citations
+        )
     return "\n\n".join(blocks) + "\n"

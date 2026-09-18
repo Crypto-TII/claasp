@@ -157,6 +157,22 @@
       ],
       "required_components": [],
       "restriction": null
+    },
+    {
+      "drivers": [
+        "matplotlib_presentation",
+        "text_presentation"
+      ],
+      "entry_point": "claasp_next.presentation.present",
+      "evidence": "qualified",
+      "kind": "result_presentation",
+      "name": "present",
+      "primitives": [],
+      "representations": [
+        "report_presentation"
+      ],
+      "required_components": [],
+      "restriction": "consumes already-produced typed results and never executes an analysis"
     }
   ],
   "components": [
@@ -432,9 +448,29 @@
         "component_properties"
       ],
       "target": "minizinc"
+    },
+    {
+      "availability": "builtin",
+      "implementation": "claasp_next.presentation:render_report",
+      "kind": "renderer",
+      "name": "text_presentation",
+      "representations": [
+        "report_presentation"
+      ],
+      "target": null
+    },
+    {
+      "availability": "python_module",
+      "implementation": "claasp_next.drivers.renderers.presentation:MatplotlibPresentationDriver",
+      "kind": "renderer",
+      "name": "matplotlib_presentation",
+      "representations": [
+        "report_presentation"
+      ],
+      "target": "matplotlib"
     }
   ],
-  "milestone": "M10.11g",
+  "milestone": "M10.14f",
   "primitives": [
     {
       "authenticity": "canonical",
@@ -12163,6 +12199,18 @@
       "kind": "analysis",
       "name": "component_properties",
       "scope": "component"
+    },
+    {
+      "components": [],
+      "domains": [],
+      "drivers": [
+        "matplotlib_presentation",
+        "text_presentation"
+      ],
+      "implementation": "claasp_next.presentation:ReportData",
+      "kind": "presentation",
+      "name": "report_presentation",
+      "scope": "result"
     }
   ],
   "schema_version": 2,

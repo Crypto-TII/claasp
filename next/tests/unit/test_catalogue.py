@@ -169,3 +169,14 @@ def test_minizinc_solver_probe_checks_the_requested_solver(monkeypatch):
     probe = catalogue.driver_availability("minizinc_chuffed")
     assert probe.available
     assert probe.resolved == "/bin/minizinc"
+
+
+def test_catalogue_exposes_presentation_capabilities_separately():
+    representations = catalogue.representations(driver="text_presentation")
+    assert [item.name for item in representations] == ["report_presentation"]
+    assert [item.name for item in catalogue.drivers(representation="report_presentation")] == [
+        "text_presentation", "matplotlib_presentation"
+    ]
+    presentation = next(item for item in catalogue.analyses() if item.name == "present")
+    assert presentation.kind == "result_presentation"
+    assert "never executes" in presentation.restriction

@@ -315,6 +315,8 @@ class Catalogue:
                     continue
                 if record.representations and not any(
                     (
+                        candidate.scope == "result"
+                    ) or (
                         candidate.scope == "component"
                         and (
                             record.required_components <= primitive_record.components

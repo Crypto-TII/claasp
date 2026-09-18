@@ -26,6 +26,9 @@ from claasp_next.presentation.exports import (
     cell_data, render_csv_table, render_markdown_table, render_section,
     render_terminal_table, report_data, section_data, table_data,
 )
+from claasp_next.presentation.composition import compose_report, present
+from claasp_next.presentation.dataframe import to_dataframe
+from claasp_next.presentation.files import WrittenReport, render_report, write_report
 
 __all__ = [
     "Applicability", "Citation", "DiagnosticCode", "EvidenceClass",
@@ -39,4 +42,6 @@ __all__ = [
     "neural_section", "nist_section", "trace_section", "trail_section",
     "cell_data", "render_csv_table", "render_markdown_table", "render_section",
     "render_terminal_table", "report_data", "section_data", "table_data",
+    "WrittenReport", "compose_report", "present", "render_report", "to_dataframe",
+    "write_report",
 ]
