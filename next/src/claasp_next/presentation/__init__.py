@@ -22,6 +22,10 @@ from claasp_next.presentation.adapters import (
     component_property_section, continuous_section, dieharder_section, neural_section,
     nist_section, trace_section, trail_section,
 )
+from claasp_next.presentation.exports import (
+    cell_data, render_csv_table, render_markdown_table, render_section,
+    render_terminal_table, report_data, section_data, table_data,
+)
 
 __all__ = [
     "Applicability", "Citation", "DiagnosticCode", "EvidenceClass",
@@ -33,4 +37,6 @@ __all__ = [
     "AdaptationResult", "adapt_result", "avalanche_section", "catalogue_section",
     "component_property_section", "continuous_section", "dieharder_section",
     "neural_section", "nist_section", "trace_section", "trail_section",
+    "cell_data", "render_csv_table", "render_markdown_table", "render_section",
+    "render_terminal_table", "report_data", "section_data", "table_data",
 ]
