@@ -82,6 +82,7 @@ class PrimitiveRecord:
     classified_input_roles: tuple[str, ...]
     bijectivity_obligation: bool
     components: frozenset[str]
+    domains: frozenset[str]
     tags: frozenset[str]
     authenticity: str
     labels: frozenset[str]
@@ -106,6 +107,34 @@ class ComponentRecord:
 
 
 @dataclass(frozen=True, slots=True)
+class RepresentationRecord:
+    """One declared representation and its conservative compatibility edges."""
+
+    name: str
+    kind: str
+    implementation: str
+    components: frozenset[str]
+    domains: frozenset[str]
+    drivers: frozenset[str]
+    scope: str
+
+
+@dataclass(frozen=True, slots=True)
+class AnalysisRecord:
+    """One discoverable analysis and its representation requirements."""
+
+    name: str
+    entry_point: str
+    kind: str
+    evidence: str
+    representations: frozenset[str]
+    drivers: frozenset[str]
+    required_components: frozenset[str]
+    primitives: frozenset[str]
+    restriction: str | None
+
+
+@dataclass(frozen=True, slots=True)
 class DriverRecord:
     """A result-producing driver and its side-effect-free availability rule."""
 
@@ -114,6 +143,7 @@ class DriverRecord:
     availability: str
     target: str | None
     implementation: str
+    representations: frozenset[str]
 
 
 @dataclass(frozen=True, slots=True)
@@ -127,6 +157,6 @@ class DriverAvailabilityRecord:
 
 
 __all__ = [
-    "ComponentRecord", "DriverAvailabilityRecord", "DriverRecord", "InputRecord", "ParameterSetRecord",
-    "PrimitiveRecord", "RealizationRecord",
+    "AnalysisRecord", "ComponentRecord", "DriverAvailabilityRecord", "DriverRecord", "InputRecord",
+    "ParameterSetRecord", "PrimitiveRecord", "RealizationRecord", "RepresentationRecord",
 ]

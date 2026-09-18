@@ -2,14 +2,15 @@
 
 from claasp_next.catalogue.catalogue import Catalogue
 from claasp_next.catalogue.records import (
-    ComponentRecord, DriverAvailabilityRecord, DriverRecord, InputRecord, ParameterSetRecord,
-    PrimitiveRecord, RealizationRecord,
+    AnalysisRecord, ComponentRecord, DriverAvailabilityRecord, DriverRecord, InputRecord,
+    ParameterSetRecord, PrimitiveRecord, RealizationRecord, RepresentationRecord,
 )
 
 
 catalogue = Catalogue()
 
 __all__ = [
-    "Catalogue", "ComponentRecord", "DriverAvailabilityRecord", "DriverRecord", "InputRecord",
-    "ParameterSetRecord", "PrimitiveRecord", "RealizationRecord", "catalogue",
+    "AnalysisRecord", "Catalogue", "ComponentRecord", "DriverAvailabilityRecord", "DriverRecord",
+    "InputRecord", "ParameterSetRecord", "PrimitiveRecord", "RealizationRecord",
+    "RepresentationRecord", "catalogue",
 ]

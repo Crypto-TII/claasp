@@ -121,7 +121,8 @@ queries read that committed resource. They never infer semantics from a
 directory name, parse implementation syntax, or import every primitive.
 
 ``Catalogue`` materializes frozen ``PrimitiveRecord``, ``ComponentRecord``,
-``RealizationRecord``, ``ParameterSetRecord``, and ``DriverRecord`` values.
+``RealizationRecord``, ``ParameterSetRecord``, ``RepresentationRecord``,
+``AnalysisRecord``, and ``DriverRecord`` values.
 Nested collections are tuples or frozensets, and parameter values are exposed
 through a read-only mapping. The global ``catalogue`` instance is merely a
 small convenience over the same immutable data:
@@ -146,6 +147,19 @@ tools separately from graph realizations. Listing records performs no probe.
 An explicit availability call uses ``shutil.which``, MiniZinc's solver list,
 or ``importlib.util.find_spec`` and returns ``DriverAvailabilityRecord``. It
 does not import Z3, scikit-learn, Sage, or another optional implementation.
+
+Representation records are the edges between component semantics and drivers.
+Their component and domain sets state reviewed support, not presence in a
+module. ``Catalogue.representations(component=...)`` and
+``Catalogue.components(representation=...)`` expose the two directions;
+``Catalogue.drivers(representation=...)`` and
+``Catalogue.representations(driver=...)`` do the same for consumers.
+Analysis records then name the representation and driver requirements used to
+answer ``Catalogue.analyses(primitive=...)`` conservatively. A component-scope
+representation requires the named component to occur; a generic graph
+representation requires every component and domain in the primitive graph to
+be supported. Parameter-limited reviewed slices remain labelled rather than
+being promoted to unrestricted family-wide support.
 
 Evidence and maintenance
 ------------------------

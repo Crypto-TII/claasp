@@ -3,7 +3,7 @@ import importlib
 
 import pytest
 
-from claasp_next.catalogue import Catalogue, PrimitiveRecord, catalogue
+from claasp_next.catalogue import Catalogue, PrimitiveRecord, RepresentationRecord, catalogue
 
 
 def test_catalogue_returns_sorted_immutable_records():
@@ -78,6 +78,46 @@ def test_component_records_are_one_to_one_with_teaching_wrappers():
     assert len(components) == 26
     assert {item.name for item in catalogue.components(names=("SBox", "LinearMap"))} == {
         "SBox", "LinearMap",
+    }
+
+
+def test_representation_component_queries_are_bidirectional():
+    representations = catalogue.representations(component="Power")
+    assert all(isinstance(item, RepresentationRecord) for item in representations)
+    assert tuple(item.name for item in representations) == (
+        "concrete_execution", "msolve_input", "prime_field_polynomial",
+        "primitive_diagram", "singular_program",
+    )
+    assert {item.name for item in catalogue.components(representation="boolean_cnf")} == {
+        "Add", "BitVectorSBox", "BitwiseAnd", "Concatenate", "Constant", "Identity",
+        "ModularAdd", "Permutation", "Rotate", "Xor",
+    }
+    with pytest.raises(KeyError, match="unknown component"):
+        catalogue.representations(component="Missing")
+
+
+def test_representation_driver_queries_are_bidirectional():
+    assert tuple(item.name for item in catalogue.drivers(representation="boolean_cnf")) == (
+        "minizinc", "minisat", "z3", "glpk",
+    )
+    assert catalogue.driver("z3").representations == frozenset({
+        "boolean_cnf", "boolean_smt", "word_differential_smt", "word_linear_smt",
+    })
+    assert tuple(item.name for item in catalogue.representations(driver="singular")) == (
+        "singular_program",
+    )
+
+
+def test_analysis_queries_apply_representation_requirements_conservatively():
+    speck = {item.name: item for item in catalogue.analyses(primitive="Speck")}
+    assert "avalanche" in speck
+    assert "enumerate_xor_differential_trails" in speck
+    assert speck["find_lowest_weight_xor_differential_trail"].restriction
+    aes = {item.name for item in catalogue.analyses(primitive="AES")}
+    assert "avalanche" in aes
+    assert "solve" not in aes  # its current CNF lowering has no LinearMap semantics
+    assert "is_xor_differential_transition_possible" in {
+        item.name for item in catalogue.analyses(primitive="Present")
     }
 
 

@@ -1,4 +1,148 @@
 {
+  "analyses": [
+    {
+      "drivers": [
+        "python_scalar"
+      ],
+      "entry_point": "Primitive.analyze().avalanche",
+      "evidence": "empirical",
+      "kind": "statistical",
+      "name": "avalanche",
+      "primitives": [],
+      "representations": [
+        "concrete_execution"
+      ],
+      "required_components": [],
+      "restriction": null
+    },
+    {
+      "drivers": [
+        "glpk",
+        "minisat",
+        "minizinc",
+        "z3"
+      ],
+      "entry_point": "Primitive.analyze().enumerate_solutions",
+      "evidence": "exact",
+      "kind": "constraint",
+      "name": "enumerate_solutions",
+      "primitives": [],
+      "representations": [
+        "boolean_cnf"
+      ],
+      "required_components": [],
+      "restriction": null
+    },
+    {
+      "drivers": [
+        "z3"
+      ],
+      "entry_point": "Primitive.analyze().enumerate_xor_differential_trails",
+      "evidence": "exact_characteristic",
+      "kind": "xor_differential",
+      "name": "enumerate_xor_differential_trails",
+      "primitives": [],
+      "representations": [
+        "word_differential_smt"
+      ],
+      "required_components": [],
+      "restriction": null
+    },
+    {
+      "drivers": [
+        "z3"
+      ],
+      "entry_point": "Primitive.analyze().enumerate_xor_linear_trails",
+      "evidence": "exact_characteristic",
+      "kind": "xor_linear",
+      "name": "enumerate_xor_linear_trails",
+      "primitives": [],
+      "representations": [
+        "word_linear_smt"
+      ],
+      "required_components": [],
+      "restriction": null
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analyze().find_lowest_weight_xor_differential_trail",
+      "evidence": "exact",
+      "kind": "xor_differential",
+      "name": "find_lowest_weight_xor_differential_trail",
+      "primitives": [
+        "Present",
+        "Speck"
+      ],
+      "representations": [],
+      "required_components": [],
+      "restriction": "reviewed reduced-round slice only"
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analyze().find_lowest_weight_xor_linear_trail",
+      "evidence": "exact",
+      "kind": "xor_linear",
+      "name": "find_lowest_weight_xor_linear_trail",
+      "primitives": [
+        "Present",
+        "Speck"
+      ],
+      "representations": [],
+      "required_components": [],
+      "restriction": "reviewed reduced-round slice only"
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analyze().is_xor_differential_transition_possible",
+      "evidence": "exact",
+      "kind": "component_transition",
+      "name": "is_xor_differential_transition_possible",
+      "primitives": [],
+      "representations": [
+        "sbox_transition_table"
+      ],
+      "required_components": [
+        "BitVectorSBox"
+      ],
+      "restriction": null
+    },
+    {
+      "drivers": [
+        "glpk",
+        "minisat",
+        "minizinc",
+        "z3"
+      ],
+      "entry_point": "Primitive.analyze().recover_input",
+      "evidence": "exact",
+      "kind": "constraint",
+      "name": "recover_input",
+      "primitives": [],
+      "representations": [
+        "boolean_cnf"
+      ],
+      "required_components": [],
+      "restriction": null
+    },
+    {
+      "drivers": [
+        "glpk",
+        "minisat",
+        "minizinc",
+        "z3"
+      ],
+      "entry_point": "Primitive.analyze().solve",
+      "evidence": "exact",
+      "kind": "constraint",
+      "name": "solve",
+      "primitives": [],
+      "representations": [
+        "boolean_cnf"
+      ],
+      "required_components": [],
+      "restriction": null
+    }
+  ],
   "components": [
     {
       "module": "claasp_next.primitives.single_component_primitives.add",
@@ -137,6 +281,9 @@
       "implementation": "claasp_next.representations.execution:ScalarExecutionDriver",
       "kind": "execution_engine",
       "name": "python_scalar",
+      "representations": [
+        "concrete_execution"
+      ],
       "target": null
     },
     {
@@ -144,6 +291,9 @@
       "implementation": "claasp_next.representations.execution:BatchExecutionDriver",
       "kind": "execution_engine",
       "name": "python_batch",
+      "representations": [
+        "concrete_execution"
+      ],
       "target": null
     },
     {
@@ -151,6 +301,9 @@
       "implementation": "claasp_next.representations.execution:TransposedBatchExecutionDriver",
       "kind": "execution_engine",
       "name": "python_transposed_batch",
+      "representations": [
+        "concrete_execution"
+      ],
       "target": null
     },
     {
@@ -158,6 +311,9 @@
       "implementation": "claasp_next.drivers.solvers.minizinc:MiniZincSolver",
       "kind": "solver",
       "name": "minizinc",
+      "representations": [
+        "boolean_cnf"
+      ],
       "target": "minizinc"
     },
     {
@@ -165,6 +321,7 @@
       "implementation": "claasp_next.drivers.solvers.minizinc:MiniZincSolver",
       "kind": "solver",
       "name": "minizinc_chuffed",
+      "representations": [],
       "target": "minizinc:chuffed"
     },
     {
@@ -172,6 +329,9 @@
       "implementation": "claasp_next.drivers.solvers.minisat:MinisatSolver",
       "kind": "solver",
       "name": "minisat",
+      "representations": [
+        "boolean_cnf"
+      ],
       "target": "minisat"
     },
     {
@@ -179,6 +339,12 @@
       "implementation": "claasp_next.drivers.solvers.z3:Z3Solver",
       "kind": "solver",
       "name": "z3",
+      "representations": [
+        "boolean_cnf",
+        "boolean_smt",
+        "word_differential_smt",
+        "word_linear_smt"
+      ],
       "target": "z3"
     },
     {
@@ -186,6 +352,10 @@
       "implementation": "claasp_next.drivers.solvers.glpk:GLPKSolver",
       "kind": "solver",
       "name": "glpk",
+      "representations": [
+        "boolean_cnf",
+        "boolean_monomial_milp"
+      ],
       "target": "glpsol"
     },
     {
@@ -193,6 +363,9 @@
       "implementation": "claasp_next.drivers.algebra.singular:SingularDriver",
       "kind": "solver",
       "name": "singular",
+      "representations": [
+        "singular_program"
+      ],
       "target": "Singular"
     },
     {
@@ -200,6 +373,9 @@
       "implementation": "claasp_next.drivers.algebra.msolve:MsolveDriver",
       "kind": "solver",
       "name": "msolve",
+      "representations": [
+        "msolve_input"
+      ],
       "target": "msolve"
     },
     {
@@ -207,6 +383,7 @@
       "implementation": "claasp_next.drivers.statistical.dieharder:DieharderDriver",
       "kind": "external_tool",
       "name": "dieharder",
+      "representations": [],
       "target": "dieharder"
     },
     {
@@ -214,6 +391,7 @@
       "implementation": "claasp_next.drivers.statistical.nist:NistStsDriver",
       "kind": "external_tool",
       "name": "nist_sts",
+      "representations": [],
       "target": "niststs"
     },
     {
@@ -221,6 +399,9 @@
       "implementation": "claasp_next.drivers.renderers.latex:LaTeXDriver",
       "kind": "renderer",
       "name": "latex",
+      "representations": [
+        "primitive_diagram"
+      ],
       "target": "pdflatex"
     },
     {
@@ -228,10 +409,11 @@
       "implementation": "claasp_next.drivers.neural.sklearn_driver:SklearnMLPDriver",
       "kind": "external_tool",
       "name": "sklearn_mlp",
+      "representations": [],
       "target": "sklearn"
     }
   ],
-  "milestone": "M10.9f1",
+  "milestone": "M10.9f5",
   "primitives": [
     {
       "authenticity": "canonical",
@@ -245,6 +427,9 @@
         "LinearMap",
         "Permutation",
         "SBox"
+      ],
+      "domains": [
+        "BinaryExtensionField"
       ],
       "family": "aes",
       "fixed_evidence": [
@@ -353,6 +538,10 @@
         "Rotate",
         "UnpackBits",
         "Xor"
+      ],
+      "domains": [
+        "Bit",
+        "Word"
       ],
       "family": "aradi",
       "fixed_evidence": [
@@ -467,6 +656,10 @@
         "UnpackBits",
         "Xor"
       ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
       "family": "aradi",
       "fixed_evidence": [
         "next/tests/integration/test_substitution_block_catalogue.py",
@@ -544,6 +737,10 @@
         "UnpackBits",
         "Xor"
       ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
       "family": "aradi",
       "fixed_evidence": [
         "next/tests/integration/test_substitution_block_catalogue.py",
@@ -620,6 +817,10 @@
         "UnpackBits",
         "Xor"
       ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
       "family": "bea1_block_cipher",
       "fixed_evidence": [
         "next/tests/integration/test_substitution_block_catalogue.py",
@@ -692,6 +893,10 @@
         "Rotate",
         "UnpackBits",
         "Xor"
+      ],
+      "domains": [
+        "Bit",
+        "Word"
       ],
       "family": "baksheesh",
       "fixed_evidence": [
@@ -766,6 +971,10 @@
         "Rotate",
         "UnpackBits",
         "Xor"
+      ],
+      "domains": [
+        "Bit",
+        "Word"
       ],
       "family": "ballet",
       "fixed_evidence": [
@@ -854,6 +1063,9 @@
         "Rotate",
         "Xor"
       ],
+      "domains": [
+        "Word"
+      ],
       "family": "cham",
       "fixed_evidence": [
         "next/tests/unit/test_simon_cipher.py",
@@ -931,6 +1143,10 @@
         "UnpackBits",
         "VariableRotate",
         "Xor"
+      ],
+      "domains": [
+        "Bit",
+        "Word"
       ],
       "family": "cast_block_cipher",
       "fixed_evidence": [
@@ -1019,6 +1235,10 @@
         "UnpackBits",
         "Xor"
       ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
       "family": "des_block_cipher",
       "fixed_evidence": [
         "next/tests/integration/test_substitution_block_catalogue.py",
@@ -1096,6 +1316,10 @@
         "UnpackBits",
         "Xor"
       ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
       "family": "des_exact_key_length_block_cipher",
       "fixed_evidence": [
         "next/tests/integration/test_substitution_block_catalogue.py",
@@ -1170,6 +1394,10 @@
         "Rotate",
         "UnpackBits",
         "Xor"
+      ],
+      "domains": [
+        "Bit",
+        "Word"
       ],
       "family": "gift",
       "fixed_evidence": [
@@ -1266,6 +1494,10 @@
         "UnpackBits",
         "Xor"
       ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
       "family": "gift_sbox",
       "fixed_evidence": [
         "next/tests/integration/test_substitution_block_catalogue.py",
@@ -1348,6 +1580,10 @@
         "UnpackBits",
         "Xor"
       ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
       "family": "gost",
       "fixed_evidence": [
         "next/tests/integration/test_substitution_block_catalogue.py",
@@ -1418,6 +1654,9 @@
         "ModularAdd",
         "Rotate",
         "Xor"
+      ],
+      "domains": [
+        "Word"
       ],
       "family": "hight",
       "fixed_evidence": [
@@ -1494,6 +1733,10 @@
         "Permutation",
         "Xor"
       ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
       "family": "idea",
       "fixed_evidence": [
         "next/tests/unit/test_simon_cipher.py",
@@ -1567,6 +1810,10 @@
         "Rotate",
         "UnpackBits",
         "Xor"
+      ],
+      "domains": [
+        "Bit",
+        "Word"
       ],
       "family": "kalyna_block_cipher",
       "fixed_evidence": [
@@ -1642,6 +1889,10 @@
         "UnpackBits",
         "Xor"
       ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
       "family": "kasumi_block_cipher",
       "fixed_evidence": [
         "next/tests/integration/test_substitution_block_catalogue.py",
@@ -1714,6 +1965,10 @@
         "PackBits",
         "UnpackBits",
         "Xor"
+      ],
+      "domains": [
+        "Bit",
+        "Word"
       ],
       "family": "katan",
       "fixed_evidence": [
@@ -1809,6 +2064,10 @@
         "UnpackBits",
         "Xor"
       ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
       "family": "katan_fsr",
       "fixed_evidence": [
         "next/tests/integration/test_substitution_block_catalogue.py",
@@ -1898,6 +2157,10 @@
         "PackBits",
         "UnpackBits",
         "Xor"
+      ],
+      "domains": [
+        "Bit",
+        "Word"
       ],
       "family": "ktantan",
       "fixed_evidence": [
@@ -1993,6 +2256,10 @@
         "UnpackBits",
         "Xor"
       ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
       "family": "ktantan_fsr",
       "fixed_evidence": [
         "next/tests/integration/test_substitution_block_catalogue.py",
@@ -2084,6 +2351,10 @@
         "UnpackBits",
         "Xor"
       ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
       "family": "lblock",
       "fixed_evidence": [
         "next/tests/integration/test_substitution_block_catalogue.py",
@@ -2157,6 +2428,10 @@
         "Rotate",
         "UnpackBits",
         "Xor"
+      ],
+      "domains": [
+        "Bit",
+        "Word"
       ],
       "family": "lea",
       "fixed_evidence": [
@@ -2233,6 +2508,10 @@
         "PackBits",
         "UnpackBits",
         "Xor"
+      ],
+      "domains": [
+        "Bit",
+        "Word"
       ],
       "family": "led",
       "fixed_evidence": [
@@ -2314,6 +2593,10 @@
         "UnpackBits",
         "Xor"
       ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
       "family": "lowmc",
       "fixed_evidence": [
         "next/tests/integration/test_substitution_block_catalogue.py",
@@ -2389,6 +2672,10 @@
         "Rotate",
         "UnpackBits",
         "Xor"
+      ],
+      "domains": [
+        "Bit",
+        "Word"
       ],
       "family": "msx",
       "fixed_evidence": [
@@ -2480,6 +2767,10 @@
         "UnpackBits",
         "Xor"
       ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
       "family": "midori",
       "fixed_evidence": [
         "next/tests/integration/test_substitution_block_catalogue.py",
@@ -2563,6 +2854,10 @@
         "UnpackBits",
         "Xor"
       ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
       "family": "piccolo",
       "fixed_evidence": [
         "next/tests/integration/test_substitution_block_catalogue.py",
@@ -2640,6 +2935,9 @@
         "Constant",
         "Permutation"
       ],
+      "domains": [
+        "Bit"
+      ],
       "family": "present",
       "fixed_evidence": [
         "next/tests/integration/test_substitution_block_catalogue.py",
@@ -2715,6 +3013,10 @@
         "UnpackBits",
         "Xor"
       ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
       "family": "prince",
       "fixed_evidence": [
         "next/tests/integration/test_substitution_block_catalogue.py",
@@ -2789,6 +3091,10 @@
         "UnpackBits",
         "Xor"
       ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
       "family": "prince_v2",
       "fixed_evidence": [
         "next/tests/integration/test_substitution_block_catalogue.py",
@@ -2862,6 +3168,10 @@
         "VariableRotate",
         "Xor"
       ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
       "family": "rc5",
       "fixed_evidence": [
         "next/tests/unit/test_simon_cipher.py",
@@ -2933,6 +3243,9 @@
         "Shift",
         "VariableShift",
         "Xor"
+      ],
+      "domains": [
+        "Word"
       ],
       "family": "raiden",
       "fixed_evidence": [
@@ -3009,6 +3322,10 @@
         "Rotate",
         "UnpackBits",
         "Xor"
+      ],
+      "domains": [
+        "Bit",
+        "Word"
       ],
       "family": "rectangle",
       "fixed_evidence": [
@@ -3090,6 +3407,10 @@
         "Rotate",
         "UnpackBits",
         "Xor"
+      ],
+      "domains": [
+        "Bit",
+        "Word"
       ],
       "family": "rijndael",
       "fixed_evidence": [
@@ -3357,6 +3678,10 @@
         "UnpackBits",
         "Xor"
       ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
       "family": "sm4_block_cipher",
       "fixed_evidence": [
         "next/tests/integration/test_substitution_block_catalogue.py",
@@ -3429,6 +3754,10 @@
         "Rotate",
         "UnpackBits",
         "Xor"
+      ],
+      "domains": [
+        "Bit",
+        "Word"
       ],
       "family": "sparx",
       "fixed_evidence": [
@@ -3506,6 +3835,10 @@
         "UnpackBits",
         "Xor"
       ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
       "family": "saecham_block_cipher",
       "fixed_evidence": [
         "next/tests/integration/test_substitution_block_catalogue.py",
@@ -3580,6 +3913,10 @@
         "Shift",
         "UnpackBits",
         "Xor"
+      ],
+      "domains": [
+        "Bit",
+        "Word"
       ],
       "family": "serpent",
       "fixed_evidence": [
@@ -3664,6 +4001,9 @@
         "Constant",
         "Rotate",
         "Xor"
+      ],
+      "domains": [
+        "Word"
       ],
       "family": "simeck",
       "fixed_evidence": [
@@ -3764,6 +4104,10 @@
         "UnpackBits",
         "Xor"
       ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
       "family": "simeck_sbox",
       "fixed_evidence": [
         "next/tests/integration/test_substitution_block_catalogue.py",
@@ -3852,6 +4196,9 @@
         "Constant",
         "Rotate",
         "Xor"
+      ],
+      "domains": [
+        "Word"
       ],
       "family": "simon",
       "fixed_evidence": [
@@ -3947,6 +4294,10 @@
         "PackBits",
         "UnpackBits",
         "Xor"
+      ],
+      "domains": [
+        "Bit",
+        "Word"
       ],
       "family": "simon_sbox",
       "fixed_evidence": [
@@ -4095,6 +4446,10 @@
         "UnpackBits",
         "Xor"
       ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
       "family": "skinny",
       "fixed_evidence": [
         "next/tests/integration/test_substitution_block_catalogue.py",
@@ -4208,6 +4563,10 @@
         "UnpackBits",
         "Xor"
       ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
       "family": "skipjack",
       "fixed_evidence": [
         "next/tests/integration/test_substitution_block_catalogue.py",
@@ -4276,6 +4635,9 @@
         "ModularAdd",
         "Rotate",
         "Xor"
+      ],
+      "domains": [
+        "Word"
       ],
       "family": "speck",
       "fixed_evidence": [
@@ -4424,6 +4786,10 @@
         "UnpackBits",
         "Xor"
       ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
       "family": "speedy",
       "fixed_evidence": [
         "next/tests/integration/test_substitution_block_catalogue.py",
@@ -4498,6 +4864,10 @@
         "Rotate",
         "UnpackBits",
         "Xor"
+      ],
+      "domains": [
+        "Bit",
+        "Word"
       ],
       "family": "splight",
       "fixed_evidence": [
@@ -4574,6 +4944,10 @@
         "UnpackBits",
         "Xor"
       ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
       "family": "subterranean",
       "fixed_evidence": [
         "next/tests/integration/test_substitution_block_catalogue.py",
@@ -4641,6 +5015,9 @@
         "ModularAdd",
         "Shift",
         "Xor"
+      ],
+      "domains": [
+        "Word"
       ],
       "family": "tea",
       "fixed_evidence": [
@@ -4716,6 +5093,10 @@
         "PackBits",
         "UnpackBits",
         "Xor"
+      ],
+      "domains": [
+        "Bit",
+        "Word"
       ],
       "family": "tinyjambu",
       "fixed_evidence": [
@@ -4829,6 +5210,10 @@
         "UnpackBits",
         "Xor"
       ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
       "family": "tinyjambu_fsr_word_based",
       "fixed_evidence": [
         "next/tests/integration/test_substitution_block_catalogue.py",
@@ -4903,6 +5288,10 @@
         "UnpackBits",
         "Xor"
       ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
       "family": "tinyjambu_word_based",
       "fixed_evidence": [
         "next/tests/integration/test_substitution_block_catalogue.py",
@@ -4975,6 +5364,10 @@
         "PackBits",
         "UnpackBits",
         "Xor"
+      ],
+      "domains": [
+        "Bit",
+        "Word"
       ],
       "family": "twine",
       "fixed_evidence": [
@@ -5062,6 +5455,10 @@
         "UnpackBits",
         "Xor"
       ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
       "family": "twofish_block_cipher",
       "fixed_evidence": [
         "next/tests/integration/test_substitution_block_catalogue.py",
@@ -5135,6 +5532,10 @@
         "UnpackBits",
         "Xor"
       ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
       "family": "uknit_block_cipher",
       "fixed_evidence": [
         "next/tests/integration/test_substitution_block_catalogue.py",
@@ -5207,6 +5608,10 @@
         "Rotate",
         "UnpackBits",
         "Xor"
+      ],
+      "domains": [
+        "Bit",
+        "Word"
       ],
       "family": "ublock",
       "fixed_evidence": [
@@ -5308,6 +5713,10 @@
         "UnpackBits",
         "Xor"
       ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
       "family": "ublock",
       "fixed_evidence": [
         "next/tests/integration/test_substitution_block_catalogue.py",
@@ -5400,6 +5809,10 @@
         "UnpackBits",
         "Xor"
       ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
       "family": "warp",
       "fixed_evidence": [
         "next/tests/integration/test_substitution_block_catalogue.py",
@@ -5468,6 +5881,9 @@
         "ModularAdd",
         "Shift",
         "Xor"
+      ],
+      "domains": [
+        "Word"
       ],
       "family": "xtea",
       "fixed_evidence": [
@@ -5543,6 +5959,10 @@
         "PackBits",
         "UnpackBits",
         "Xor"
+      ],
+      "domains": [
+        "Bit",
+        "Word"
       ],
       "family": "a51",
       "fixed_evidence": [
@@ -5620,6 +6040,10 @@
         "UnpackBits",
         "Xor"
       ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
       "family": "a52",
       "fixed_evidence": [
         "next/tests/integration/test_function_catalogue_evidence.py",
@@ -5693,6 +6117,10 @@
         "PackBits",
         "UnpackBits",
         "Xor"
+      ],
+      "domains": [
+        "Bit",
+        "Word"
       ],
       "family": "bivium_stream_cipher",
       "fixed_evidence": [
@@ -5768,6 +6196,10 @@
         "Rotate",
         "UnpackBits",
         "Xor"
+      ],
+      "domains": [
+        "Bit",
+        "Word"
       ],
       "family": "chacha_stream_cipher",
       "fixed_evidence": [
@@ -5849,6 +6281,10 @@
         "UnpackBits",
         "Xor"
       ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
       "family": "siphash",
       "fixed_evidence": [
         "next/tests/integration/test_function_catalogue_evidence.py",
@@ -5925,6 +6361,11 @@
         "UnpackBits",
         "Xor"
       ],
+      "domains": [
+        "BinaryExtensionField",
+        "Bit",
+        "Word"
+      ],
       "family": "snow3g_stream_cipher",
       "fixed_evidence": [
         "next/tests/integration/test_function_catalogue_evidence.py",
@@ -5996,6 +6437,9 @@
         "Concatenate",
         "Constant",
         "Xor"
+      ],
+      "domains": [
+        "Word"
       ],
       "family": "trivium",
       "fixed_evidence": [
@@ -6071,6 +6515,10 @@
         "UnpackBits",
         "Xor"
       ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
       "family": "zuc_stream_cipher",
       "fixed_evidence": [
         "next/tests/integration/test_function_catalogue_evidence.py",
@@ -6145,6 +6593,10 @@
         "Rotate",
         "UnpackBits",
         "Xor"
+      ],
+      "domains": [
+        "Bit",
+        "Word"
       ],
       "family": "blake",
       "fixed_evidence": [
@@ -6228,6 +6680,10 @@
         "UnpackBits",
         "Xor"
       ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
       "family": "blake2",
       "fixed_evidence": [
         "next/tests/integration/test_function_catalogue_evidence.py",
@@ -6302,6 +6758,10 @@
         "UnpackBits",
         "Xor"
       ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
       "family": "bluetooth_E0_stream_cipher",
       "fixed_evidence": [
         "next/tests/integration/test_function_catalogue_evidence.py",
@@ -6374,6 +6834,10 @@
         "UnpackBits",
         "Xor"
       ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
       "family": "MD5",
       "fixed_evidence": [
         "next/tests/integration/test_function_catalogue_evidence.py",
@@ -6443,6 +6907,10 @@
         "UnpackBits",
         "Xor"
       ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
       "family": "SHA1",
       "fixed_evidence": [
         "next/tests/integration/test_function_catalogue_evidence.py",
@@ -6511,6 +6979,10 @@
         "Shift",
         "UnpackBits",
         "Xor"
+      ],
+      "domains": [
+        "Bit",
+        "Word"
       ],
       "family": "SHA2_family",
       "fixed_evidence": [
@@ -6600,6 +7072,10 @@
         "UnpackBits",
         "Xor"
       ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
       "family": "whirlpool_hash_function",
       "fixed_evidence": [
         "next/tests/integration/test_function_catalogue_evidence.py",
@@ -6668,6 +7144,10 @@
         "Rotate",
         "UnpackBits",
         "Xor"
+      ],
+      "domains": [
+        "Bit",
+        "Word"
       ],
       "family": "ascon",
       "fixed_evidence": [
@@ -6778,6 +7258,10 @@
         "UnpackBits",
         "Xor"
       ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
       "family": "ascon_sbox_sigma",
       "fixed_evidence": [
         "next/tests/integration/test_permutation_catalogue_evidence.py",
@@ -6846,6 +7330,10 @@
         "UnpackBits",
         "Xor"
       ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
       "family": "ascon_sbox_sigma_no_matrix",
       "fixed_evidence": [
         "next/tests/integration/test_permutation_catalogue_evidence.py",
@@ -6909,6 +7397,9 @@
         "ModularAdd",
         "Rotate",
         "Xor"
+      ],
+      "domains": [
+        "Word"
       ],
       "family": "chacha",
       "fixed_evidence": [
@@ -6980,6 +7471,10 @@
         "UnpackBits",
         "Xor"
       ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
       "family": "chaskeypi_permutation",
       "fixed_evidence": [
         "next/tests/integration/test_permutation_catalogue_evidence.py",
@@ -7046,6 +7541,10 @@
         "Rotate",
         "UnpackBits",
         "Xor"
+      ],
+      "domains": [
+        "Bit",
+        "Word"
       ],
       "family": "forro_permutation",
       "fixed_evidence": [
@@ -7120,6 +7619,10 @@
         "Rotate",
         "UnpackBits",
         "Xor"
+      ],
+      "domains": [
+        "Bit",
+        "Word"
       ],
       "family": "gaston",
       "fixed_evidence": [
@@ -7230,6 +7733,10 @@
         "UnpackBits",
         "Xor"
       ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
       "family": "gaston",
       "fixed_evidence": [
         "next/tests/integration/test_permutation_catalogue_evidence.py",
@@ -7298,6 +7805,10 @@
         "Rotate",
         "UnpackBits",
         "Xor"
+      ],
+      "domains": [
+        "Bit",
+        "Word"
       ],
       "family": "gaston",
       "fixed_evidence": [
@@ -7368,6 +7879,10 @@
         "Shift",
         "UnpackBits",
         "Xor"
+      ],
+      "domains": [
+        "Bit",
+        "Word"
       ],
       "family": "gimli",
       "fixed_evidence": [
@@ -7457,6 +7972,10 @@
         "UnpackBits",
         "Xor"
       ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
       "family": "gimli_sbox",
       "fixed_evidence": [
         "next/tests/integration/test_permutation_catalogue_evidence.py",
@@ -7523,6 +8042,10 @@
         "UnpackBits",
         "Xor"
       ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
       "family": "grain_core",
       "fixed_evidence": [
         "next/tests/integration/test_permutation_catalogue_evidence.py",
@@ -7588,6 +8111,10 @@
         "Rotate",
         "UnpackBits",
         "Xor"
+      ],
+      "domains": [
+        "Bit",
+        "Word"
       ],
       "family": "keccak",
       "fixed_evidence": [
@@ -7679,6 +8206,10 @@
         "UnpackBits",
         "Xor"
       ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
       "family": "keccak_sbox",
       "fixed_evidence": [
         "next/tests/integration/test_permutation_catalogue_evidence.py",
@@ -7747,6 +8278,10 @@
         "Rotate",
         "UnpackBits",
         "Xor"
+      ],
+      "domains": [
+        "Bit",
+        "Word"
       ],
       "family": "keccak_sbox",
       "fixed_evidence": [
@@ -7831,6 +8366,10 @@
         "UnpackBits",
         "Xor"
       ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
       "family": "knot",
       "fixed_evidence": [
         "next/tests/integration/test_permutation_catalogue_evidence.py",
@@ -7912,6 +8451,10 @@
         "UnpackBits",
         "Xor"
       ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
       "family": "norx",
       "fixed_evidence": [
         "next/tests/integration/test_permutation_catalogue_evidence.py",
@@ -7985,6 +8528,10 @@
         "UnpackBits",
         "Xor"
       ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
       "family": "photon",
       "fixed_evidence": [
         "next/tests/integration/test_permutation_catalogue_evidence.py",
@@ -8046,6 +8593,9 @@
         "ModularAdd",
         "Rotate",
         "Xor"
+      ],
+      "domains": [
+        "Word"
       ],
       "family": "salsa",
       "fixed_evidence": [
@@ -8117,6 +8667,10 @@
         "Rotate",
         "UnpackBits",
         "Xor"
+      ],
+      "domains": [
+        "Bit",
+        "Word"
       ],
       "family": "sparkle",
       "fixed_evidence": [
@@ -8219,6 +8773,10 @@
         "UnpackBits",
         "Xor"
       ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
       "family": "speckey_permutation",
       "fixed_evidence": [
         "next/tests/integration/test_permutation_catalogue_evidence.py",
@@ -8285,6 +8843,10 @@
         "Permutation",
         "UnpackBits",
         "Xor"
+      ],
+      "domains": [
+        "Bit",
+        "Word"
       ],
       "family": "spongent_pi",
       "fixed_evidence": [
@@ -8377,6 +8939,10 @@
         "UnpackBits",
         "Xor"
       ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
       "family": "spongent_pi",
       "fixed_evidence": [
         "next/tests/integration/test_permutation_catalogue_evidence.py",
@@ -8468,6 +9034,10 @@
         "UnpackBits",
         "Xor"
       ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
       "family": "spongent_pi_precomputation",
       "fixed_evidence": [
         "next/tests/integration/test_permutation_catalogue_evidence.py",
@@ -8544,6 +9114,10 @@
         "Rotate",
         "UnpackBits",
         "Xor"
+      ],
+      "domains": [
+        "Bit",
+        "Word"
       ],
       "family": "xoodoo",
       "fixed_evidence": [
@@ -8634,6 +9208,10 @@
         "UnpackBits",
         "Xor"
       ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
       "family": "xoodoo_sbox",
       "fixed_evidence": [
         "next/tests/integration/test_permutation_catalogue_evidence.py",
@@ -8702,6 +9280,10 @@
         "UnpackBits",
         "Xor"
       ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
       "family": "xoodoo_sbox",
       "fixed_evidence": [
         "next/tests/integration/test_permutation_catalogue_evidence.py",
@@ -8762,6 +9344,9 @@
       "classification_basis": "new v5 base-component primitive classified by its typed boundary",
       "components": [
         "Add"
+      ],
+      "domains": [
+        "Bit"
       ],
       "family": "add",
       "fixed_evidence": [
@@ -8828,6 +9413,9 @@
       "components": [
         "BinaryAffineMap"
       ],
+      "domains": [
+        "BinaryExtensionField"
+      ],
       "family": "binary_affine_map",
       "fixed_evidence": [
         "next/tests/unit/test_single_component_primitives.py"
@@ -8887,6 +9475,9 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "BitVectorSBox"
+      ],
+      "domains": [
+        "Bit"
       ],
       "family": "bit_vector_sbox",
       "fixed_evidence": [
@@ -8948,6 +9539,9 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "BitwiseAnd"
+      ],
+      "domains": [
+        "Word"
       ],
       "family": "and",
       "fixed_evidence": [
@@ -9011,6 +9605,9 @@
       "components": [
         "BitwiseNot"
       ],
+      "domains": [
+        "Word"
+      ],
       "family": "not",
       "fixed_evidence": [
         "next/tests/unit/test_single_component_primitives.py",
@@ -9068,6 +9665,9 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "BitwiseOr"
+      ],
+      "domains": [
+        "Word"
       ],
       "family": "or",
       "fixed_evidence": [
@@ -9130,6 +9730,9 @@
       "classification_basis": "new v5 base-component primitive classified by its typed boundary",
       "components": [
         "Concatenate"
+      ],
+      "domains": [
+        "Bit"
       ],
       "family": "concatenate",
       "fixed_evidence": [
@@ -9195,6 +9798,9 @@
       "components": [
         "Constant"
       ],
+      "domains": [
+        "Bit"
+      ],
       "family": "constant",
       "fixed_evidence": [
         "next/tests/unit/test_single_component_primitives.py",
@@ -9245,6 +9851,9 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "FeedbackRegister"
+      ],
+      "domains": [
+        "Bit"
       ],
       "family": "feedback_register",
       "fixed_evidence": [
@@ -9304,6 +9913,9 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "IDEAMultiply"
+      ],
+      "domains": [
+        "Word"
       ],
       "family": "idea_modmul",
       "fixed_evidence": [
@@ -9367,6 +9979,9 @@
       "components": [
         "Identity"
       ],
+      "domains": [
+        "Bit"
+      ],
       "family": "identity",
       "fixed_evidence": [
         "next/tests/unit/test_single_component_primitives.py",
@@ -9424,6 +10039,9 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "LinearMap"
+      ],
+      "domains": [
+        "Bit"
       ],
       "family": "linear_map",
       "fixed_evidence": [
@@ -9483,6 +10101,9 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "ModularAdd"
+      ],
+      "domains": [
+        "Word"
       ],
       "family": "modadd",
       "fixed_evidence": [
@@ -9546,6 +10167,9 @@
       "components": [
         "ModularMultiply"
       ],
+      "domains": [
+        "Word"
+      ],
       "family": "modmul",
       "fixed_evidence": [
         "next/tests/unit/test_single_component_primitives.py",
@@ -9608,6 +10232,9 @@
       "components": [
         "ModularSubtract"
       ],
+      "domains": [
+        "Word"
+      ],
       "family": "modsub",
       "fixed_evidence": [
         "next/tests/unit/test_single_component_primitives.py",
@@ -9669,6 +10296,9 @@
       "classification_basis": "new v5 base-component primitive classified by its typed boundary",
       "components": [
         "Multiply"
+      ],
+      "domains": [
+        "Bit"
       ],
       "family": "multiply",
       "fixed_evidence": [
@@ -9735,6 +10365,10 @@
       "components": [
         "PackBits"
       ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
       "family": "pack_bits",
       "fixed_evidence": [
         "next/tests/unit/test_single_component_primitives.py"
@@ -9793,6 +10427,9 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "Permutation"
+      ],
+      "domains": [
+        "Bit"
       ],
       "family": "permutation",
       "fixed_evidence": [
@@ -9853,6 +10490,9 @@
       "components": [
         "Power"
       ],
+      "domains": [
+        "Bit"
+      ],
       "family": "power",
       "fixed_evidence": [
         "next/tests/unit/test_single_component_primitives.py"
@@ -9911,6 +10551,9 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "Rotate"
+      ],
+      "domains": [
+        "Word"
       ],
       "family": "rotate",
       "fixed_evidence": [
@@ -9972,6 +10615,9 @@
       "components": [
         "SBox"
       ],
+      "domains": [
+        "Word"
+      ],
       "family": "sbox",
       "fixed_evidence": [
         "next/tests/unit/test_single_component_primitives.py"
@@ -10031,6 +10677,9 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "Shift"
+      ],
+      "domains": [
+        "Word"
       ],
       "family": "shift",
       "fixed_evidence": [
@@ -10092,6 +10741,10 @@
       "components": [
         "UnpackBits"
       ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
       "family": "unpack_bits",
       "fixed_evidence": [
         "next/tests/unit/test_single_component_primitives.py"
@@ -10149,6 +10802,9 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "VariableRotate"
+      ],
+      "domains": [
+        "Word"
       ],
       "family": "variable_rotate",
       "fixed_evidence": [
@@ -10216,6 +10872,9 @@
       "components": [
         "VariableShift"
       ],
+      "domains": [
+        "Word"
+      ],
       "family": "variable_shift",
       "fixed_evidence": [
         "next/tests/unit/test_single_component_primitives.py",
@@ -10281,6 +10940,9 @@
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "Xor"
+      ],
+      "domains": [
+        "Word"
       ],
       "family": "xor",
       "fixed_evidence": [
@@ -10348,6 +11010,10 @@
         "Permutation",
         "UnpackBits",
         "Xor"
+      ],
+      "domains": [
+        "Bit",
+        "Word"
       ],
       "family": "cipherfour",
       "fixed_evidence": [
@@ -10429,6 +11095,10 @@
         "UnpackBits",
         "Xor"
       ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
       "family": "fancy",
       "fixed_evidence": [
         "next/tests/unit/test_single_component_primitives.py",
@@ -10500,6 +11170,10 @@
         "Permutation",
         "UnpackBits",
         "Xor"
+      ],
+      "domains": [
+        "Bit",
+        "Word"
       ],
       "family": "heys",
       "fixed_evidence": [
@@ -10573,6 +11247,9 @@
         "Permutation",
         "SBox"
       ],
+      "domains": [
+        "BinaryExtensionField"
+      ],
       "family": "toy_aes",
       "fixed_evidence": [
         "next/tests/unit/test_single_component_primitives.py",
@@ -10645,6 +11322,10 @@
         "Permutation",
         "UnpackBits",
         "Xor"
+      ],
+      "domains": [
+        "Bit",
+        "Word"
       ],
       "family": "toyfeistel",
       "fixed_evidence": [
@@ -10736,6 +11417,10 @@
         "UnpackBits",
         "Xor"
       ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
       "family": "toyspn1",
       "fixed_evidence": [
         "next/tests/unit/test_single_component_primitives.py",
@@ -10818,6 +11503,10 @@
         "Permutation",
         "UnpackBits",
         "Xor"
+      ],
+      "domains": [
+        "Bit",
+        "Word"
       ],
       "family": "toyspn2",
       "fixed_evidence": [
@@ -10907,6 +11596,10 @@
         "UnpackBits",
         "Xor"
       ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
       "family": "bipbip_block_cipher",
       "fixed_evidence": [
         "next/tests/integration/test_substitution_block_catalogue.py",
@@ -10987,6 +11680,10 @@
         "PackBits",
         "UnpackBits",
         "Xor"
+      ],
+      "domains": [
+        "Bit",
+        "Word"
       ],
       "family": "blink",
       "fixed_evidence": [
@@ -11121,6 +11818,10 @@
         "UnpackBits",
         "Xor"
       ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
       "family": "chilow",
       "fixed_evidence": [
         "next/tests/integration/test_substitution_block_catalogue.py",
@@ -11203,6 +11904,10 @@
         "UnpackBits",
         "Xor"
       ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
       "family": "mantis",
       "fixed_evidence": [
         "next/tests/integration/test_substitution_block_catalogue.py",
@@ -11282,6 +11987,10 @@
         "Shift",
         "UnpackBits",
         "Xor"
+      ],
+      "domains": [
+        "Bit",
+        "Word"
       ],
       "family": "qarmav2_block_cipher",
       "fixed_evidence": [
@@ -11393,6 +12102,10 @@
         "UnpackBits",
         "Xor"
       ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
       "family": "qarmav2_block_cipher",
       "fixed_evidence": [
         "next/tests/integration/test_substitution_block_catalogue.py",
@@ -11479,6 +12192,10 @@
         "UnpackBits",
         "Xor"
       ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
       "family": "scarf",
       "fixed_evidence": [
         "next/tests/integration/test_substitution_block_catalogue.py",
@@ -11554,6 +12271,9 @@
         "ModularAdd",
         "Rotate",
         "Xor"
+      ],
+      "domains": [
+        "Word"
       ],
       "family": "threefish",
       "fixed_evidence": [
@@ -11636,6 +12356,9 @@
         "Shift",
         "Xor"
       ],
+      "domains": [
+        "Word"
+      ],
       "family": "trax",
       "fixed_evidence": [
         "next/tests/unit/test_simon_cipher.py",
@@ -11701,7 +12424,331 @@
       ]
     }
   ],
-  "schema_version": 1,
+  "representations": [
+    {
+      "components": [
+        "Add",
+        "BitVectorSBox",
+        "BitwiseAnd",
+        "Concatenate",
+        "Constant",
+        "Identity",
+        "ModularAdd",
+        "Permutation",
+        "Rotate",
+        "Xor"
+      ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
+      "drivers": [
+        "glpk",
+        "minisat",
+        "minizinc",
+        "z3"
+      ],
+      "implementation": "claasp_next.representations.constraints.sat:BooleanCNFModel",
+      "kind": "constraint",
+      "name": "boolean_cnf",
+      "scope": "generic_graph"
+    },
+    {
+      "components": [
+        "BitwiseAnd",
+        "BitwiseNot",
+        "BitwiseOr",
+        "Concatenate",
+        "Constant",
+        "ModularAdd",
+        "Rotate",
+        "Xor"
+      ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
+      "drivers": [],
+      "implementation": "claasp_next.representations.execution:BooleanDegreeEvaluator",
+      "kind": "analysis",
+      "name": "boolean_degree_bounds",
+      "scope": "generic_graph"
+    },
+    {
+      "components": [
+        "BitwiseAnd",
+        "Concatenate",
+        "Constant",
+        "Rotate",
+        "Xor"
+      ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
+      "drivers": [
+        "glpk"
+      ],
+      "implementation": "claasp_next.representations.constraints.milp:BooleanMonomialGraphMILPModel",
+      "kind": "constraint",
+      "name": "boolean_monomial_milp",
+      "scope": "generic_graph"
+    },
+    {
+      "components": [
+        "Add",
+        "BitVectorSBox",
+        "BitwiseAnd",
+        "Concatenate",
+        "Constant",
+        "Identity",
+        "ModularAdd",
+        "Permutation",
+        "Rotate",
+        "Xor"
+      ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
+      "drivers": [
+        "z3"
+      ],
+      "implementation": "claasp_next.representations.constraints.smt:BooleanSMTModel",
+      "kind": "constraint",
+      "name": "boolean_smt",
+      "scope": "generic_graph"
+    },
+    {
+      "components": [
+        "BitwiseAnd",
+        "BitwiseNot",
+        "BitwiseOr",
+        "Concatenate",
+        "Constant",
+        "ModularAdd",
+        "Rotate",
+        "Xor"
+      ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
+      "drivers": [],
+      "implementation": "claasp_next.representations.execution:BooleanSymbolicEvaluator",
+      "kind": "analysis",
+      "name": "boolean_symbolic_anf",
+      "scope": "generic_graph"
+    },
+    {
+      "components": [
+        "Add",
+        "BinaryAffineMap",
+        "BitVectorSBox",
+        "BitwiseAnd",
+        "BitwiseNot",
+        "BitwiseOr",
+        "Concatenate",
+        "Constant",
+        "FeedbackRegister",
+        "IDEAMultiply",
+        "Identity",
+        "LinearMap",
+        "ModularAdd",
+        "ModularMultiply",
+        "ModularSubtract",
+        "Multiply",
+        "PackBits",
+        "Permutation",
+        "Power",
+        "Rotate",
+        "SBox",
+        "Shift",
+        "UnpackBits",
+        "VariableRotate",
+        "VariableShift",
+        "Xor"
+      ],
+      "domains": [
+        "BinaryExtensionField",
+        "Bit",
+        "PrimeField",
+        "Word"
+      ],
+      "drivers": [
+        "python_batch",
+        "python_scalar",
+        "python_transposed_batch"
+      ],
+      "implementation": "claasp_next.graph:Primitive",
+      "kind": "execution",
+      "name": "concrete_execution",
+      "scope": "generic_graph"
+    },
+    {
+      "components": [
+        "Add",
+        "Concatenate",
+        "Constant",
+        "Identity",
+        "LinearMap",
+        "Multiply",
+        "Permutation",
+        "Power"
+      ],
+      "domains": [
+        "PrimeField"
+      ],
+      "drivers": [
+        "msolve"
+      ],
+      "implementation": "claasp_next.representations.constraints.polynomial.exporters:MsolveExporter",
+      "kind": "serialization",
+      "name": "msolve_input",
+      "scope": "generic_graph"
+    },
+    {
+      "components": [
+        "Add",
+        "Concatenate",
+        "Constant",
+        "Identity",
+        "LinearMap",
+        "Multiply",
+        "Permutation",
+        "Power"
+      ],
+      "domains": [
+        "PrimeField"
+      ],
+      "drivers": [],
+      "implementation": "claasp_next.representations.constraints.polynomial:PrimeFieldPolynomialModel",
+      "kind": "constraint",
+      "name": "prime_field_polynomial",
+      "scope": "generic_graph"
+    },
+    {
+      "components": [
+        "Add",
+        "BinaryAffineMap",
+        "BitVectorSBox",
+        "BitwiseAnd",
+        "BitwiseNot",
+        "BitwiseOr",
+        "Concatenate",
+        "Constant",
+        "FeedbackRegister",
+        "IDEAMultiply",
+        "Identity",
+        "LinearMap",
+        "ModularAdd",
+        "ModularMultiply",
+        "ModularSubtract",
+        "Multiply",
+        "PackBits",
+        "Permutation",
+        "Power",
+        "Rotate",
+        "SBox",
+        "Shift",
+        "UnpackBits",
+        "VariableRotate",
+        "VariableShift",
+        "Xor"
+      ],
+      "domains": [
+        "BinaryExtensionField",
+        "Bit",
+        "PrimeField",
+        "Word"
+      ],
+      "drivers": [
+        "latex"
+      ],
+      "implementation": "claasp_next.representations.diagrams:DiagramCompiler",
+      "kind": "diagram",
+      "name": "primitive_diagram",
+      "scope": "generic_graph"
+    },
+    {
+      "components": [
+        "BitVectorSBox"
+      ],
+      "domains": [
+        "Bit"
+      ],
+      "drivers": [],
+      "implementation": "claasp_next.semantics.cryptanalysis:SBoxTransitionSemantics",
+      "kind": "analysis",
+      "name": "sbox_transition_table",
+      "scope": "component"
+    },
+    {
+      "components": [
+        "Add",
+        "Concatenate",
+        "Constant",
+        "Identity",
+        "LinearMap",
+        "Multiply",
+        "Permutation",
+        "Power"
+      ],
+      "domains": [
+        "PrimeField"
+      ],
+      "drivers": [
+        "singular"
+      ],
+      "implementation": "claasp_next.representations.constraints.polynomial.exporters:SingularExporter",
+      "kind": "serialization",
+      "name": "singular_program",
+      "scope": "generic_graph"
+    },
+    {
+      "components": [
+        "BitwiseAnd",
+        "Concatenate",
+        "Constant",
+        "Identity",
+        "ModularAdd",
+        "Rotate",
+        "Xor"
+      ],
+      "domains": [
+        "Word"
+      ],
+      "drivers": [
+        "z3"
+      ],
+      "implementation": "claasp_next.representations.constraints.smt:WordDifferentialSMTModel",
+      "kind": "constraint",
+      "name": "word_differential_smt",
+      "scope": "generic_graph"
+    },
+    {
+      "components": [
+        "BitwiseAnd",
+        "Concatenate",
+        "Constant",
+        "Identity",
+        "ModularAdd",
+        "Rotate",
+        "Xor"
+      ],
+      "domains": [
+        "Word"
+      ],
+      "drivers": [
+        "z3"
+      ],
+      "implementation": "claasp_next.representations.constraints.smt:WordLinearSMTModel",
+      "kind": "constraint",
+      "name": "word_linear_smt",
+      "scope": "generic_graph"
+    }
+  ],
+  "schema_version": 2,
   "sources": {
     "classification": "migration/legacy_inventory.json",
     "components": "migration/single_component_catalogue.json",

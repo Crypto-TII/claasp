@@ -17,7 +17,7 @@ REALIZATIONS = ROOT / "migration/realization_catalogue.json"
 SINGLE_COMPONENTS = ROOT / "migration/single_component_catalogue.json"
 
 
-def check() -> tuple[int, int, int]:
+def check() -> tuple[int, int, int, int, int]:
     catalogue = json.loads(CATALOGUE.read_text(encoding="utf-8"))
     inventory = json.loads(INVENTORY.read_text(encoding="utf-8"))
     realization_audit = json.loads(REALIZATIONS.read_text(encoding="utf-8"))
@@ -26,12 +26,37 @@ def check() -> tuple[int, int, int]:
 
     primitives = catalogue["primitives"]
     by_name = {item["name"]: item for item in primitives}
-    assert catalogue["schema_version"] == 1
+    assert catalogue["schema_version"] == 2
     assert len(by_name) == len(primitives) == len(ALL_EXPORTS) == 145
     assert {name: item["module"] for name, item in by_name.items()} == ALL_EXPORTS
     assert {item["name"]: item["module"] for item in catalogue["components"]} == single_components
     assert len(catalogue["components"]) == 26
     assert len({item["name"] for item in catalogue["drivers"]}) == len(catalogue["drivers"]) == 14
+    representations = catalogue["representations"]
+    analyses = catalogue["analyses"]
+    representation_names = {item["name"] for item in representations}
+    driver_names = {item["name"] for item in catalogue["drivers"]}
+    component_names = {item["name"] for item in catalogue["components"]}
+    assert len(representation_names) == len(representations) == 13
+    assert len({item["name"] for item in analyses}) == len(analyses) == 9
+    for item in representations:
+        assert set(item["components"]) <= component_names
+        assert set(item["drivers"]) <= driver_names
+    for item in analyses:
+        assert set(item["representations"]) <= representation_names
+        assert set(item["drivers"]) <= driver_names
+        assert set(item["required_components"]) <= component_names
+        assert set(item["primitives"]) <= set(by_name)
+        assert set(item["drivers"]) <= {
+            driver
+            for representation in representations
+            if representation["name"] in item["representations"]
+            for driver in representation["drivers"]
+        }
+    for driver in catalogue["drivers"]:
+        assert set(driver["representations"]) == {
+            item["name"] for item in representations if driver["name"] in item["drivers"]
+        }
 
     classified = {
         item["primitive"]["proposed_class"]: item
@@ -66,14 +91,18 @@ def check() -> tuple[int, int, int]:
         [sys.executable, str(ROOT / "tools/generate_catalogue_metadata.py"), "--check"],
         cwd=ROOT.parent, env=environment, check=True, capture_output=True, text=True,
     )
-    return len(primitives), len(catalogue["components"]), len(catalogue["drivers"])
+    return (len(primitives), len(catalogue["components"]), len(representations),
+            len(analyses), len(catalogue["drivers"]))
 
 
 def main() -> int:
     if sys.argv[1:] != ["--check"]:
         raise SystemExit("usage: catalogue_closure.py --check")
-    primitives, components, drivers = check()
-    print(f"catalogue closure: {primitives} primitives, {components} components, {drivers} drivers")
+    primitives, components, representations, analyses, drivers = check()
+    print(
+        f"catalogue closure: {primitives} primitives, {components} components, "
+        f"{representations} representations, {analyses} analyses, {drivers} drivers"
+    )
     return 0
 
 

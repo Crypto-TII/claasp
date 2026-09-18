@@ -59,6 +59,83 @@ DRIVERS = (
      "claasp_next.drivers.neural.sklearn_driver:SklearnMLPDriver"),
 )
 
+ALL_COMPONENTS = frozenset({
+    "Add", "BinaryAffineMap", "BitVectorSBox", "BitwiseAnd", "BitwiseNot", "BitwiseOr",
+    "Concatenate", "Constant", "FeedbackRegister", "IDEAMultiply", "Identity", "LinearMap",
+    "ModularAdd", "ModularMultiply", "ModularSubtract", "Multiply", "PackBits", "Permutation",
+    "Power", "Rotate", "SBox", "Shift", "UnpackBits", "VariableRotate", "VariableShift", "Xor",
+})
+ALL_DOMAINS = frozenset({"BinaryExtensionField", "Bit", "PrimeField", "Word"})
+BOOLEAN_CNF_COMPONENTS = frozenset({
+    "Add", "BitVectorSBox", "BitwiseAnd", "Concatenate", "Constant", "Identity",
+    "ModularAdd", "Permutation", "Rotate", "Xor",
+})
+BOOLEAN_SYMBOLIC_COMPONENTS = frozenset({
+    "BitwiseAnd", "BitwiseNot", "BitwiseOr", "Concatenate", "Constant", "ModularAdd", "Rotate", "Xor",
+})
+PRIME_FIELD_POLYNOMIAL_COMPONENTS = frozenset({
+    "Add", "Concatenate", "Constant", "Identity", "LinearMap", "Multiply", "Permutation", "Power",
+})
+WORD_TRAIL_COMPONENTS = frozenset({
+    "BitwiseAnd", "Concatenate", "Constant", "Identity", "ModularAdd", "Rotate", "Xor",
+})
+
+# These declarations are reviewed compatibility edges, not filesystem-derived
+# guesses.  A representation is advertised for a component only when its
+# current lowering/evaluator has explicit semantics for that component.
+REPRESENTATIONS = (
+    ("boolean_cnf", "constraint", "claasp_next.representations.constraints.sat:BooleanCNFModel",
+     BOOLEAN_CNF_COMPONENTS, {"Bit", "Word"}, {"minizinc", "minisat", "z3", "glpk"}, "generic_graph"),
+    ("boolean_degree_bounds", "analysis", "claasp_next.representations.execution:BooleanDegreeEvaluator",
+     BOOLEAN_SYMBOLIC_COMPONENTS, {"Bit", "Word"}, set(), "generic_graph"),
+    ("boolean_monomial_milp", "constraint", "claasp_next.representations.constraints.milp:BooleanMonomialGraphMILPModel",
+     {"BitwiseAnd", "Concatenate", "Constant", "Rotate", "Xor"}, {"Bit", "Word"}, {"glpk"}, "generic_graph"),
+    ("boolean_smt", "constraint", "claasp_next.representations.constraints.smt:BooleanSMTModel",
+     BOOLEAN_CNF_COMPONENTS, {"Bit", "Word"}, {"z3"}, "generic_graph"),
+    ("boolean_symbolic_anf", "analysis", "claasp_next.representations.execution:BooleanSymbolicEvaluator",
+     BOOLEAN_SYMBOLIC_COMPONENTS, {"Bit", "Word"}, set(), "generic_graph"),
+    ("concrete_execution", "execution", "claasp_next.graph:Primitive",
+     ALL_COMPONENTS, ALL_DOMAINS, {"python_scalar", "python_batch", "python_transposed_batch"}, "generic_graph"),
+    ("msolve_input", "serialization", "claasp_next.representations.constraints.polynomial.exporters:MsolveExporter",
+     PRIME_FIELD_POLYNOMIAL_COMPONENTS, {"PrimeField"}, {"msolve"}, "generic_graph"),
+    ("prime_field_polynomial", "constraint", "claasp_next.representations.constraints.polynomial:PrimeFieldPolynomialModel",
+     PRIME_FIELD_POLYNOMIAL_COMPONENTS, {"PrimeField"}, set(), "generic_graph"),
+    ("primitive_diagram", "diagram", "claasp_next.representations.diagrams:DiagramCompiler",
+     ALL_COMPONENTS, ALL_DOMAINS, {"latex"}, "generic_graph"),
+    ("sbox_transition_table", "analysis", "claasp_next.semantics.cryptanalysis:SBoxTransitionSemantics",
+     {"BitVectorSBox"}, {"Bit"}, set(), "component"),
+    ("singular_program", "serialization", "claasp_next.representations.constraints.polynomial.exporters:SingularExporter",
+     PRIME_FIELD_POLYNOMIAL_COMPONENTS, {"PrimeField"}, {"singular"}, "generic_graph"),
+    ("word_differential_smt", "constraint", "claasp_next.representations.constraints.smt:WordDifferentialSMTModel",
+     WORD_TRAIL_COMPONENTS, {"Word"}, {"z3"}, "generic_graph"),
+    ("word_linear_smt", "constraint", "claasp_next.representations.constraints.smt:WordLinearSMTModel",
+     WORD_TRAIL_COMPONENTS, {"Word"}, {"z3"}, "generic_graph"),
+)
+
+ANALYSES = (
+    ("avalanche", "Primitive.analyze().avalanche", "statistical", "empirical",
+     {"concrete_execution"}, {"python_scalar"}, set(), set(), None),
+    ("enumerate_solutions", "Primitive.analyze().enumerate_solutions", "constraint", "exact",
+     {"boolean_cnf"}, {"minizinc", "minisat", "z3", "glpk"}, set(), set(), None),
+    ("enumerate_xor_differential_trails", "Primitive.analyze().enumerate_xor_differential_trails",
+     "xor_differential", "exact_characteristic", {"word_differential_smt"}, {"z3"}, set(), set(), None),
+    ("enumerate_xor_linear_trails", "Primitive.analyze().enumerate_xor_linear_trails",
+     "xor_linear", "exact_characteristic", {"word_linear_smt"}, {"z3"}, set(), set(), None),
+    ("find_lowest_weight_xor_differential_trail",
+     "Primitive.analyze().find_lowest_weight_xor_differential_trail", "xor_differential", "exact",
+     set(), set(), set(), {"Present", "Speck"}, "reviewed reduced-round slice only"),
+    ("find_lowest_weight_xor_linear_trail", "Primitive.analyze().find_lowest_weight_xor_linear_trail",
+     "xor_linear", "exact", set(), set(), set(), {"Present", "Speck"},
+     "reviewed reduced-round slice only"),
+    ("is_xor_differential_transition_possible",
+     "Primitive.analyze().is_xor_differential_transition_possible", "component_transition", "exact",
+     {"sbox_transition_table"}, set(), {"BitVectorSBox"}, set(), None),
+    ("recover_input", "Primitive.analyze().recover_input", "constraint", "exact",
+     {"boolean_cnf"}, {"minizinc", "minisat", "z3", "glpk"}, set(), set(), None),
+    ("solve", "Primitive.analyze().solve", "constraint", "exact",
+     {"boolean_cnf"}, {"minizinc", "minisat", "z3", "glpk"}, set(), set(), None),
+)
+
 
 def _json_value(value):
     try:
@@ -146,6 +223,9 @@ def build_catalogue() -> dict:
                 "bijectivity_obligation": primitive.kind.value == "permutation",
             }
             component_names = {type(component).__name__ for component in primitive.components}
+            domain_names = {
+                type(port.value_type.domain).__name__ for port in primitive.input_ports.values()
+            } | {type(component.output_type.domain).__name__ for component in primitive.components}
             labels = []
             if name in EQUIVALENT_EXPORTS:
                 labels.append("equivalent_realization")
@@ -174,6 +254,7 @@ def build_catalogue() -> dict:
                 ],
                 "bijectivity_obligation": classification["bijectivity_obligation"],
                 "components": sorted(component_names),
+                "domains": sorted(domain_names),
                 "tags": _tags(category, component_names),
                 "authenticity": (
                     "noncanonical_legacy_regression"
@@ -202,14 +283,33 @@ def build_catalogue() -> dict:
         {"name": name, "module": module, "primitive_wrapper": name}
         for name, module in sorted(single_components.items())
     ]
+    representations = [
+        {"name": name, "kind": kind, "implementation": implementation,
+         "components": sorted(components), "domains": sorted(domains),
+         "drivers": sorted(drivers), "scope": scope}
+        for name, kind, implementation, components, domains, drivers, scope in REPRESENTATIONS
+    ]
+    representation_names_by_driver = {
+        driver: sorted(item[0] for item in REPRESENTATIONS if driver in item[5])
+        for driver, *_ in DRIVERS
+    }
     drivers = [
         {"name": name, "kind": kind, "availability": availability,
-         "target": target, "implementation": implementation}
+         "target": target, "implementation": implementation,
+         "representations": representation_names_by_driver[name]}
         for name, kind, availability, target, implementation in DRIVERS
     ]
+    analyses = [
+        {"name": name, "entry_point": entry_point, "kind": kind, "evidence": evidence,
+         "representations": sorted(representations_), "drivers": sorted(drivers_),
+         "required_components": sorted(required_components), "primitives": sorted(primitives_),
+         "restriction": restriction}
+        for (name, entry_point, kind, evidence, representations_, drivers_, required_components,
+             primitives_, restriction) in ANALYSES
+    ]
     return {
-        "schema_version": 1,
-        "milestone": "M10.9f1",
+        "schema_version": 2,
+        "milestone": "M10.9f5",
         "sources": {
             "classification": "migration/legacy_inventory.json",
             "components": "migration/single_component_catalogue.json",
@@ -217,6 +317,8 @@ def build_catalogue() -> dict:
         },
         "primitives": primitives,
         "components": components,
+        "representations": representations,
+        "analyses": analyses,
         "drivers": drivers,
     }
 
@@ -232,7 +334,9 @@ def main() -> None:
             raise SystemExit("committed catalogue metadata is stale; regenerate it")
         print(
             f"catalogue metadata: {len(payload['primitives'])} primitives, "
-            f"{len(payload['components'])} components, {len(payload['drivers'])} drivers"
+            f"{len(payload['components'])} components, "
+            f"{len(payload['representations'])} representations, "
+            f"{len(payload['analyses'])} analyses, {len(payload['drivers'])} drivers"
         )
         return
     DESTINATION.parent.mkdir(parents=True, exist_ok=True)
@@ -240,6 +344,7 @@ def main() -> None:
     print(
         f"wrote {DESTINATION.relative_to(ROOT)} with "
         f"{len(payload['primitives'])} primitives, {len(payload['components'])} components, "
+        f"{len(payload['representations'])} representations, {len(payload['analyses'])} analyses, "
         f"and {len(payload['drivers'])} drivers"
     )
 
