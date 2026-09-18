@@ -990,6 +990,51 @@ of the existing transformation milestone, not independent milestones:
    and key-schedule removal, add executable public-API doctests, and run the
    host, affected-external, documentation, wheel, and compatibility-container
    checkpoints before marking M10.10 achieved.
+8. **M10.10h — catalogue-wide inversion coverage and performance.** Reopen the
+   transformation milestone from the committed catalogue audit and complete
+   the following dependency-ordered slices. ``M10.10h`` improves the existing
+   graph-native methodology; it does not introduce a solver-owned inverse or
+   a second mutable editor model.
+   1. **M10.10h1 — authoritative inversion audit and acceptance contract.**
+      Check every public primitive and named catalogue parameter set, including
+      toys and single-component primitives. Record catalogue bijectivity
+      separately from retained-input recoverability, measure separately built
+      one-round and official full graphs, verify successful inverses by scalar
+      round trips, repair invalid catalogue parameter declarations exposed by
+      the audit, and retain the reproducible Markdown report as fixed baseline.
+   2. **M10.10h2 — dependency-driven inversion engine.** Replace repeated
+      whole-graph propagation scans with a deterministic work queue indexed by
+      newly known wires. Preserve bindings as bindings, equivalent recovered
+      wires, exact typed failures, immutable inputs/results, and separate
+      realization/transformation provenance. Demonstrate substantially better
+      scaling on the audited KATAN/KTANTAN FSR configurations without changing
+      their inverse semantics.
+   3. **M10.10h3 — reversible-region and multi-predecessor recovery.** Add an
+      explicit, solver-free contract for jointly reversing authored reversible
+      state transitions, Feistel/state-split updates, and other catalogue
+      regions whose local components expose several temporarily unknown
+      predecessors. Never classify an arbitrary underdetermined equation
+      system as invertible; require a validated reversible construction or
+      retained information, and keep ambiguity/information-loss diagnostics
+      exact.
+   4. **M10.10h4 — remaining component and boundary semantics.** Add justified
+      inverse semantics for reversible feedback-register transitions and IDEA
+      encoded-group multiplication, make zero-input and partial-boundary cases
+      return typed diagnostics rather than incidental exceptions, and retain
+      explicit information-loss failures for genuinely non-bijective
+      operations.
+   5. **M10.10h5 — complete bijective catalogue coverage.** Require every
+      configuration carrying a catalogue bijectivity obligation to construct
+      and semantically verify an inverse. Qualify non-obligated functions
+      separately when retained-input recovery is valid; keep hashes, stream
+      output functions, lossy teaching components, and other non-bijective
+      maps outside the completeness claim.
+   6. **M10.10h6 — performance, documentation, and closure.** Establish bounded
+      one-round and full-primitive regression budgets, update the audit report
+      and transformation documentation, run the complete host, relevant
+      external, documentation, wheel, and compatibility-container checkpoints,
+      and mark M10.10 achieved again only when the audit has no unsupported,
+      erroneous, or timed-out catalogue-bijective configuration.
 
 #### M10.11: Component analysis
 
@@ -1455,7 +1500,7 @@ is absent). Update this table in the same commit that changes milestone state.
 | Catalogue documentation and closure (M10.9f4) | Achieved | `catalogue_closure.py --check` validates all 145 primitives, 26 components, and 14 drivers against the classification, export, component, realization, evidence, and regenerated metadata authorities. Host Darwin arm64/Python 3.11.12: 1472 passed/78 external deselected; external excluding the known host-stuck Dieharder case: 68 passed/9 skipped/1472 deselected. API/user/developer doctests: 68/319/521; both HTML sites warning-free. Wheel: 383 files/15 data files including the catalogue resource/zero frozen graph artifacts. amd64 Python 3.10.12 Docker: 1469 passed/3 skipped/78 deselected; Docker external: 76 passed/2 skipped/1472 deselected, including Dieharder and NIST STS. Docker tools: MiniZinc 2.9.4/Chuffed 0.13.2, GLPK 5.0, Z3 4.8.12, Singular 4.2.1, MiniSat 2.2.1, Dieharder 3.31.1; msolve and scikit-learn are absent. Generated Sphinx and package-build artifacts were removed |
 | Catalogue capability graph (M10.9f5) | Achieved | Schema v2 adds 13 conservative representation records and 9 public analysis records, with immutable component/domain/scope restrictions and bidirectional component↔representation and representation↔driver queries. Primitive analysis discovery requires full graph coverage except for explicitly component-scoped semantics, and reviewed reduced-round analyses retain visible restrictions. Host Darwin arm64/Python 3.11.12: 1043 passed/510 external deselected; affected external group: not applicable because no solver execution or provenance path changed. API/user/developer doctests: 72/323/521; both HTML sites warning-free. Wheel: 383 files/15 owned data files including the schema-v2 catalogue. amd64 Python 3.10.12 Docker: 1040 passed/3 dependency skips/510 external deselected. The closure gate validates 145 primitives, 26 components, 13 representations, 9 analyses, and 14 drivers; generated Sphinx and package-build artifacts were removed. |
 | Semantic component boundary cleanup (M10.9f6) | Achieved | Concatenation, ordered views, and explicit MSB-first bit/word reinterpretation are immutable graph bindings shared by scalar/batch/symbolic execution, constraints, diagrams, composites, and realization normalization. Concatenate, PackBits, and UnpackBits are absent from the component and teaching-primitive catalogues; the only default catalogue graph containing Identity is the explicitly authored Identity teaching primitive. The closure gate validates 142 primitives, 23 components, 13 representations, 9 analyses, and 14 drivers. Host Darwin arm64/Python 3.11.12: 1476 dependency-free passed/78 external deselected; affected external group: 67 passed/8 Chuffed-only skipped/1479 deselected. API/user/developer doctests: 68/322/517; both HTML sites warning-free. Wheel: 378 files/15 owned data files/zero frozen graph artifacts. amd64 Python 3.10.12 compatibility Docker: 1041 passed/3 dependency skips/510 deselected; Docker external: 76 passed/2 optional-dependency skips/1476 deselected. Docker tools: MiniZinc 2.9.4/Chuffed 0.13.2, GLPK 5.0, Z3 4.8.12, Singular 4.2.1, MiniSat 2.2.1, and Dieharder 3.31.1. Generated documentation and package-build artifacts were removed. |
-| Primitive inversion and graph transformations (M10.10) | Achieved | M10.10a–M10.10g deliver immutable dependency traversal, validated slicing, explicit component inverse semantics, solver-free complete/partial inversion, editor transformations, paired/XOR graphs, and the closed inventory/documentation/checkpoint evidence recorded below |
+| Primitive inversion and graph transformations (M10.10) | Reopened | M10.10a–M10.10g delivered the original immutable transformation layer; the catalogue-wide audit reopened the milestone for M10.10h1–M10.10h6 coverage and performance work |
 | Transformation contracts/traversal/provenance (M10.10a) | Achieved | Immutable results and typed failures; standard-library dependency traversal covers inputs, semantic components, structural bindings, and composite membership; execution provenance carries graph transformations separately from realization and driver identity. Darwin arm64/Python 3.11.12: 1479 passed/78 external deselected; public transformation/provenance doctests: 7 passed |
 | Validated graph slicing/dependency closure (M10.10b) | Achieved | Explicit homogeneous boundaries, forward/backward closure, validated reconstruction, complete composite-scope overlays, structural-binding preservation, dependency splits, and published round-state slicing; incomplete boundaries fail as disconnected dependencies. Independent Speck trace comparisons pass. Darwin arm64/Python 3.11.12: 1484 passed/78 external deselected; focused tests/doctests: 15 passed |
 | Component inverse semantics (M10.10c) | Achieved | Immutable exact-type registry covers bijective permutations, rotations, substitutions, linear/affine maps and finite-field powers plus retained-auxiliary recovery for XOR, additive, modular, and variable-rotation semantics; independent exhaustive evaluation verifies inverse behavior, generated components have no incidental IDs, and typed failures distinguish ambiguity, missing auxiliaries, information loss, and unsupported operations. Darwin arm64/Python 3.11.12: 1496 passed/78 external deselected; focused tests/doctest: 13 passed |
@@ -1463,6 +1508,13 @@ is absent). Update this table in the same commit that changes milestone state.
 | Editor transformations (M10.10e) | Achieved | Validated immutable reconstruction now provides round-prefix reduction, output-closure orphan pruning, explicit secret round-key boundaries with computed key schedules removed, optional bypass of recognized zero-neutral key injections, and exact permutation/permutation-matrix/word-rotation inlining as structural bindings. Independent Speck/PRESENT evaluation confirms semantics; non-permutation linear maps and explicitly authored Identity components remain semantic. Darwin arm64/Python 3.11.12: 1510 passed/78 external deselected; focused tests: 19 passed |
 | Paired/XOR graph transformations (M10.10f) | Achieved | Single-key and related-key transformations instantiate two named composite scopes, preserve nested hierarchy, and publish typed characteristic-two input, round-state, round-key, and output differences without mutable ID suffixing or Identity wiring. Fixed four-round Speck differences, PRESENT bit-domain evaluation, source immutability, explicit unsupported-domain diagnostics, and an independently checked SAT witness pass. Darwin arm64/Python 3.11.12: 1516 passed/78 external deselected; focused tests/doctest: 7 passed; affected host solver integrations: 66 passed/8 Chuffed-only skipped/1 deselected with MiniSat 2.2.1, Z3 4.14.1, GLPK 5.0, MiniZinc 2.9.3, msolve 0.10.1, and Singular 4.4.1 |
 | Transformation documentation and closure (M10.10g) | Achieved | User docs execute complete inversion, retained-auxiliary partial inversion, slicing, round reduction, key-schedule removal, and paired XOR examples; developer docs define reconstruction invariants, dependency closure, binding handling, provenance separation, diagnostics, and registry extension. The machine gate resolves all 9 M10.10 records (5 sources/4 tests), existing destinations, and fixed evidence, including direct MiniSat preservation of the legacy 10-round single-key compatible and 14-round related-key compatible/incompatible Speck trails. Darwin arm64/Python 3.11.12: 1518 dependency-free passed/81 external deselected; host external excluding the known stuck Dieharder executable: 71 passed/9 skipped/1519 deselected. API/user/developer doctests: 87/354/517; both HTML sites warning-free. Wheel: 386 files/15 owned data files/zero frozen graph artifacts. amd64 Linux/Python 3.10.12 compatibility Docker: 1083 passed/3 optional-dependency skips/513 external-or-extended deselected; Docker external: 79 passed/2 optional-dependency skips/1518 deselected, including the three paired constraints, Dieharder, and NIST STS. Docker tools: MiniZinc 2.9.4/Chuffed 0.13.2, GLPK 5.0, Z3 4.8.12, Singular 4.2.1, MiniSat 2.2.1, and Dieharder 3.31.1. Host affected solver tools: MiniZinc 2.9.3 without Chuffed, GLPK 5.0, Z3 4.14.1, Singular 4.4.1, MiniSat 2.2.1, and msolve 0.10.1; NIST STS is absent and the installed host Dieharder remains the pre-existing timeout-stuck environment case. Generated documentation and package-build artifacts were removed. |
+| Catalogue-wide inversion coverage and performance (M10.10h) | In progress | M10.10h1–M10.10h6 own the committed audit baseline, dependency-driven engine, validated reversible-region recovery, remaining component/boundary semantics, complete catalogue-bijective coverage, and closure checkpoints |
+| Inversion audit and acceptance contract (M10.10h1) | Achieved | Reproducible isolated audit covers 142 primitives/234 official configurations, separately measures constructed one-round and full graphs, and verifies two deterministic scalar round trips. It repaired six invalid parameter declarations and added a signature gate. Baseline: 130 verified, 103 typed unsupported/stalled, one zero-input incidental error; 113/188 catalogue-bijective configurations currently verify. Slowest verified configurations are KATAN-FSR-64 at 140.0 s and KTANTAN-FSR-64 at 124.6 s. Host dependency-free: 1519 passed/81 deselected; audited constructor inventory: 432 passed. |
+| Dependency-driven inversion engine (M10.10h2) | Planned | Replace repeated graph scans with deterministic known-wire scheduling and preserve all transformation invariants and diagnostics |
+| Reversible-region recovery (M10.10h3) | Planned | Solver-free validated joint recovery for reversible state transitions and state-split/Feistel structures without treating arbitrary multi-unknown equations as invertible |
+| Remaining inverse/boundary semantics (M10.10h4) | Planned | Reversible FSR and IDEA multiplication rules plus typed zero-input and partial-boundary diagnostics |
+| Complete bijective catalogue coverage (M10.10h5) | Planned | Every configuration with a catalogue bijectivity obligation constructs and semantically verifies an inverse; non-obligated recoverability remains separately qualified |
+| Inversion performance/documentation closure (M10.10h6) | Planned | Bounded regression budgets, regenerated audit/docs, and full host/external/documentation/wheel/container closure before M10.10 returns to achieved |
 | Component analysis (M10.11) | Planned | Structured S-box, linear-layer, Boolean, field, and word-operation properties with optional heavy algebra/plots |
 | Dataset/statistical testing (M10.12) | Achieved | Seeded dependency-free datasets, canonical streaming artifacts, result parsers, and optional shell-free Dieharder and NIST STS execution drivers, each with bounded dedicated CI against the real executable |
 | Reproducible avalanche foundation (M10.12a) | Achieved | Immutable MSB-first paired bit-flip datasets, local seeded RNG, simple `primitive.analyze().avalanche(...)` API, fixed Speck evidence, and explicitly empirical result metadata |
