@@ -25,8 +25,9 @@ from claasp_next.provenance import (
     DriverIdentity, DriverKind, ResultProvenance, TransformationRecord,
 )
 from claasp_next.transformations import (
-    DependencyIndex, GraphSource, GraphSourceKind, TransformationError,
-    TransformationFailureReason, TransformationResult,
+    DependencyIndex, DependencySplit, GraphSource, GraphSourceKind,
+    TransformationError, TransformationFailureReason, TransformationResult,
+    reduce_rounds, slice_primitive, slice_rounds, split_dependencies,
 )
 
 __all__ = [
@@ -49,6 +50,7 @@ __all__ = [
     "DriverIdentity",
     "DriverKind",
     "DependencyIndex",
+    "DependencySplit",
     "GraphSource",
     "GraphSourceKind",
     "InputVisibility",
@@ -74,6 +76,10 @@ __all__ = [
     "int_from_bits",
     "int_from_units",
     "units_from_int",
+    "reduce_rounds",
+    "slice_primitive",
+    "slice_rounds",
+    "split_dependencies",
     "public_input",
     "secret_input",
 ]
