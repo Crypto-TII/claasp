@@ -60,6 +60,24 @@ forward-built when all predecessors are known and reversed only when exactly
 one predecessor remains unknown. Equivalent recovered wires share the same
 selection.
 
+Recovery is dependency-driven. An atom-indexed work queue schedules only the
+components and bindings touched by newly known wires. If local rules stall,
+the engine may solve an authored XOR/linear region by exact binary Gaussian
+elimination, but it publishes only uniquely determined wires and never treats
+an underdetermined system as an inverse. Bit packing, unpacking, rotations, and
+views are traversed as bindings while forming such a region.
+
+Some public realizations obscure a reversible specification step behind a
+large gate network. A reviewed primitive-equivalent registry may replace that
+network with exact compact linear maps or triangular recurrences before
+ordinary inversion. A small number of published recurrences are authored
+directly as inverse graphs when forward-local predecessor recovery is not a
+useful representation. The replacement must have the same public input/output
+contract, is verified by independent evaluation against the source, preserves
+realization identity, and adds its own ``inverse_equivalent`` transformation
+record. This registry is an internal methodology extension point, not a claim
+that structurally similar graphs are interchangeable.
+
 Failure diagnostics are stable contracts:
 
 ``unsupported_component``
@@ -100,5 +118,8 @@ Validation evidence
 Transformation tests compare independently evaluated values, fixed primitive
 vectors, exhaustive small component domains, and fixed compatible/incompatible
 paired Speck constraints. Structural equality alone is not evidence of
-semantic correctness. Ordinary unit cases remain sub-second; external solver
-checks are isolated and marked explicitly.
+semantic correctness. The catalogue audit isolates every official parameter
+set, enforces a per-attempt construction deadline, and records one-round and
+full-round timings in ``docs/primitive_inversion_audit.md``. Ordinary unit
+cases remain sub-second; routine integration cases remain below ten seconds;
+external solver checks are isolated and marked explicitly.

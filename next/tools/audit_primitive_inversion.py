@@ -418,21 +418,20 @@ def _write_report(
             for item in slowest
         ],
         "",
-        "## Candidate follow-up milestone",
+        "## Methodology status",
         "",
-        "This audit does not open or alter a tracker milestone. Its results suggest that a "
-        "future inversion-methodology milestone should, in dependency order:",
+        "This report is the acceptance evidence for tracker slice `M10.10h`. Its catalogue "
+        "completeness condition is that every configuration carrying a bijectivity obligation "
+        "has status `verified`. At this checkpoint, "
+        f"**{sum(item['status'] == 'verified' for item in obligated)}/{len(obligated)}** "
+        "such configurations satisfy that condition.",
         "",
-        "1. replace repeated whole-graph propagation scans with a dependency-driven work queue "
-        "and benchmark scaling from one round to full KATAN/KTANTAN FSR graphs;",
-        "2. distinguish genuinely ambiguous multi-predecessor recovery from reversible "
-        "Feistel/state-split structure, which is the dominant current stall class;",
-        "3. add explicit inverse contracts for reversible feedback-register transitions and "
-        "IDEA encoded-group multiplication while preserving information-loss failures for "
-        "non-bijective operations;",
-        "4. make zero-input and unavailable-one-round boundaries return typed diagnostics "
-        "instead of incidental constructor or indexing exceptions; and",
-        "5. retain this audit as a reproducible performance and semantic regression baseline.",
+        "Non-verified rows remain visible because the audit also probes first-input recovery "
+        "for hashes, stream functions, lossy teaching components, and other primitives without "
+        "a catalogue bijectivity obligation. They are qualified results, not gaps in the "
+        "bijective coverage claim. Future optimization can use the slowest-results table to "
+        "prioritize graph construction cost, but must retain the same solver-free contracts, "
+        "typed failures, provenance, and independent semantic round trips.",
         "",
         "## Configuration results",
         "",

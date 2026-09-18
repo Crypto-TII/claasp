@@ -29,6 +29,30 @@ Only components with explicit inverse semantics are reversed. A non-bijective
 operation fails with a typed ``information_loss`` diagnostic instead of
 claiming an inverse.
 
+Catalogue coverage and timing
+-----------------------------
+
+The reproducible `primitive inversion audit <primitive_inversion_audit.md>`_
+constructs both a one-round instance, where the public constructor supports
+one, and every official full-round configuration. It times graph construction
+separately from semantic evaluation and verifies two deterministic round trips
+for every successful inverse. The current checkpoint verifies every catalogue
+configuration carrying a bijectivity obligation, including toy and
+single-component primitives.
+
+Some primitives use a reviewed equivalent graph that exposes the same
+semantics in an inversion-friendly form; examples include compact linear maps
+and triangular Boolean recurrences. Subterranean and ChiLow instead use
+directly authored inverses from their published recurrences. These are not
+solver shortcuts: the resulting typed graphs retain auxiliary inputs, preserve
+the source realization identity, record a separate ``inverse_equivalent``
+transformation, and are checked against evaluation of the public source graph.
+
+Rows without a catalogue bijectivity obligation remain deliberately
+qualified. A hash, stream-output function, or lossy component may report
+``information_loss``, ``multiple_predecessors``, or a timeout without weakening
+the complete-bijective-coverage claim.
+
 Partial inversion and retained values
 -------------------------------------
 
