@@ -70,7 +70,12 @@ class ParameterSetRecord:
 
 @dataclass(frozen=True, slots=True)
 class PrimitiveRecord:
-    """Committed classification and typed-boundary metadata for a primitive."""
+    """Committed classification and typed-boundary metadata for a primitive.
+
+    ``bijectivity_obligation`` applies to the designated data/state input of
+    each named parameter set while every auxiliary input is retained. It is
+    separate from the whole-arity ``kind`` classification.
+    """
 
     name: str
     official_name: str

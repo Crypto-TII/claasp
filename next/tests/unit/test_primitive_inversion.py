@@ -8,11 +8,21 @@ from claasp_next import (
     partial_inverse,
 )
 from claasp_next.components import Identity, Permutation, Shift, Xor
+from claasp_next.catalogue import catalogue
 from claasp_next.primitives import Present, Simon, Speck
+from claasp_next.primitives._catalogue_exports import load_export
 
 
 PLAINTEXT = 0x6574694C
 KEY = 0x1918111009080100
+
+REVIEWED_RETAINED_INPUT_PRIMITIVES = (
+    "Add", "BinaryAffineMap", "BitVectorSBox", "BitwiseNot",
+    "ChaChaKeystreamBlock", "CipherFour", "FeedbackRegister", "Heys",
+    "IDEAMultiply", "Identity", "LinearMap", "ModularAdd",
+    "ModularSubtract", "Permutation", "Power", "Rotate", "SBox", "ToyAES",
+    "ToyFeistel", "ToySPN1", "ToySPN2", "VariableRotate", "Xor",
+)
 
 
 def test_complete_speck_inverse_matches_fixed_and_seeded_independent_evaluation():
@@ -26,6 +36,34 @@ def test_complete_speck_inverse_matches_fixed_and_seeded_independent_evaluation(
         plaintext = random_source.getrandbits(32)
         key = random_source.getrandbits(64)
         assert inverse.evaluate(primitive.evaluate(plaintext, key), key) == plaintext
+
+
+@pytest.mark.parametrize("primitive_name", REVIEWED_RETAINED_INPUT_PRIMITIVES)
+def test_reviewed_retained_input_obligations_round_trip(primitive_name):
+    record = catalogue.primitive(primitive_name)
+    parameters = dict(record.parameter_sets[0].values)
+    primitive = load_export(primitive_name)(**parameters)
+    by_role = {
+        primitive.input_descriptor(name).role: name for name in primitive.input_ports
+    }
+    recover_input = next(
+        (by_role[role] for role in ("plaintext", "state", "input_state", "input") if role in by_role),
+        next(iter(primitive.input_ports)),
+    )
+    inverse = primitive.inverse(recover_input).primitive
+
+    assert record.bijectivity_obligation
+    for sample in (0x13579BDF, 0xECA86420):
+        values = {
+            name: (sample * (index + 1)) & ((1 << port.value_type.encoded_bit_size) - 1)
+            for index, (name, port) in enumerate(primitive.input_ports.items())
+        }
+        output = primitive.evaluate(values)
+        inverse_values = {"output": output}
+        inverse_values.update(
+            (name, value) for name, value in values.items() if name != recover_input
+        )
+        assert inverse.evaluate(inverse_values) == values[recover_input]
 
 
 @pytest.mark.parametrize(

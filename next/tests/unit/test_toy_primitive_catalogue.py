@@ -23,6 +23,18 @@ def test_fixed_toy_fixture_vectors():
     assert ToySPN2().evaluate(0x3F, 0x01) == 0x1D
 
 
+def test_fancy_is_not_a_block_permutation_after_its_lossy_odd_round():
+    primitive = Fancy(number_of_rounds=2)
+    assert primitive.evaluate(0x684, 0xFFFFFF) == 0x20DEFC
+    assert primitive.evaluate(0x120A, 0xFFFFFF) == 0x20DEFC
+
+
+def test_toy_aes_catalogue_default_does_not_classify_lossy_custom_word_sizes():
+    custom = ToyAES(word_size=2, state_size=2)
+    assert custom.evaluate(0, 1) == 0x2A
+    assert custom.evaluate(0, 2) == 0x2A
+
+
 @pytest.mark.parametrize(
     "word_size,state_size,key,plaintext,ciphertext",
     (

@@ -32,6 +32,12 @@ source files or import every implementation module:
    ('block_ciphers', 'block_cipher', True)
    >>> tuple(item.name for item in aes.inputs)
    ('plaintext', 'key')
+   >>> catalogue.primitive("ToyAES").bijectivity_obligation
+   True
+   >>> [catalogue.primitive(name).bijectivity_obligation for name in ("Identity", "Permutation", "Rotate", "Xor")]
+   [True, True, True, True]
+   >>> catalogue.primitive("Shift").bijectivity_obligation
+   False
    >>> [item.name for item in catalogue.primitives(filters="pure-arx") if item.name in {"ChaCha", "Salsa"}]
    ['ChaCha', 'Salsa']
    >>> all("Xor" in item.components for item in catalogue.primitives(components="xor"))
@@ -41,6 +47,12 @@ Category, component, and design filters compose. Design names accept the
 familiar ``arx``, ``purearx``, ``andrx``, ``pureandrx``, ``sbox_based``, and
 ``fsr_based`` spellings, plus hyphenated aliases. A tweakable query is a
 mathematical-interface query, not a request for an execution backend.
+
+The obligation is configuration-level retained-input bijectivity. It asks
+whether the catalogue's designated data/state input can be recovered while
+all auxiliary inputs are retained. It is not a claim that every possible
+custom constructor argument is bijective, nor that all inputs of a multi-input
+operation can be jointly recovered.
 
 Realizations and parameter sets are records too. Capability queries never
 confuse a graph realization with its eventual execution engine:

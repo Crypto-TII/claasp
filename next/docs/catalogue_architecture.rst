@@ -42,6 +42,17 @@ permutations; non-bijective, nullary, and multi-input operations are functions.
 S-box and linear-map fixtures determine this classification from their supplied
 table or matrix rather than assuming the default example.
 
+``Primitive.kind`` and the catalogue's ``bijectivity_obligation`` answer
+different questions. The kind describes the whole public arity. The obligation
+asks whether the designated data/state input of a named configuration is a
+bijection when all other inputs are retained. Consequently XOR and modular
+addition remain multi-input functions while carrying an inversion obligation;
+identity, permutation, rotation, reversible default feedback, and the reviewed
+toy block primitives carry one as well. Lossy shifts, Boolean AND/OR,
+multiplication with a possibly zero auxiliary, constants, and Fancy do not.
+This review does not promote arbitrary custom tables or matrices: each runtime
+graph still derives its kind and inverse behavior from its actual semantics.
+
 Each fixture has the same class and module name as its base component. Thus
 ``LinearMap`` handles both bit matrices and finite-field MixColumn-style
 matrices, ``FeedbackRegister`` lives in ``feedback_register.py``, and the

@@ -11,8 +11,15 @@ import argparse
 import ast
 import json
 from pathlib import Path
+import sys
 from typing import Any
 import warnings
+
+TOOLS_ROOT = Path(__file__).resolve().parent
+if str(TOOLS_ROOT) not in sys.path:
+    sys.path.insert(0, str(TOOLS_ROOT))
+
+from catalogue_classification import classify_bijectivity
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -1665,6 +1672,9 @@ def _catalogue_metadata(relative: Path, entries: list[str], tree: ast.Module) ->
     proposed_module = PROPOSED_MODULE_OVERRIDES.get(
         path, f"{destination_category}.{proposed_stem}"
     )
+    bijectivity_obligation, classification_basis = classify_bijectivity(
+        official_name, category
+    )
     return {
         "official_name": official_name,
         "primitive_category": category,
@@ -1672,8 +1682,8 @@ def _catalogue_metadata(relative: Path, entries: list[str], tree: ast.Module) ->
         "proposed_class": official_name,
         "higher_level_parent": high_level_parent,
         "input_roles": roles,
-        "bijectivity_obligation": category in {"permutations", "block_ciphers", "tweakable_block_ciphers"},
-        "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
+        "bijectivity_obligation": bijectivity_obligation,
+        "classification_basis": classification_basis,
         "outside_scope_reason": CATALOGUE_OUT_OF_SCOPE.get(path),
     }
 
@@ -1943,9 +1953,13 @@ def catalogue_classification_status(payload: dict[str, Any]) -> dict[str, Any]:
             fail(item["path"], "tweakable category lacks tweak input")
         if category in {"permutations", "functions"} and roles & {"key", "tweak"}:
             fail(item["path"], "unkeyed category has key/tweak input")
-        expected_bijective = category in {"permutations", "block_ciphers", "tweakable_block_ciphers"}
+        expected_bijective, expected_basis = classify_bijectivity(
+            metadata["official_name"], category
+        )
         if metadata["bijectivity_obligation"] != expected_bijective:
             fail(item["path"], "inconsistent bijectivity obligation")
+        if metadata["classification_basis"] != expected_basis:
+            fail(item["path"], "inconsistent bijectivity classification basis")
         if category == "outside_scope" and item["disposition"] != "inapplicable":
             fail(item["path"], "outside-scope entry is not inapplicable")
         if not metadata["official_name"] or not metadata["proposed_class"]:

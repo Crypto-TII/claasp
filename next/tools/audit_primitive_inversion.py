@@ -343,8 +343,10 @@ def _write_report(
         "",
         "This audit covers every public primitive and every named parameter set in the "
         "committed v5 catalogue, including toy and single-component primitives. The "
-        "operation under test recovers the catalogue data/state input from the primitive "
-        "output while retaining every other primitive input. For a primitive without a "
+        "operation under test recovers the catalogue-designated data/state input from the primitive "
+        "output while retaining every other primitive input. The bijectivity obligation therefore "
+        "describes that retained-input map, not global bijectivity of a multi-input function. "
+        "For a primitive without a "
         "bijectivity obligation, the first input remains the explicitly qualified recovery "
         "target. Therefore, **verified** means that "
         "the current solver-free graph transformation constructed an inverse and recovered "
@@ -354,8 +356,12 @@ def _write_report(
         "The catalogue's bijectivity obligation is reported independently. A `yes` is a "
         "specification/classification claim; a failed transformation on such a row identifies "
         "a methodology gap, not proof that the mathematical primitive is non-invertible. "
-        "Conversely, a recoverable operand of XOR or modular addition may verify even when "
-        "the whole multi-input function has no catalogue bijectivity obligation.",
+        "The obligation is attached to each named catalogue configuration; constructors that "
+        "accept arbitrary tables, matrices, or domains can also create non-bijective graphs "
+        "outside those named configurations.",
+        "Fixed semantic evidence separately records Fancy's lossy odd-round collision and "
+        "collisions in ToyAES's optional two-bit-word teaching variants; neither negative "
+        "case changes the positive obligation of ToyAES's named eight-bit-word configuration.",
         "",
         f"Inverse construction was measured {repetitions} time(s) per successful configuration "
         f"and the median is shown. Each attempt had a {timeout:g}-second limit, with {jobs} "
@@ -374,7 +380,7 @@ def _write_report(
         "- Configuration outcomes: " + ", ".join(
             f"**{count} {status}**" for status, count in sorted(statuses.items())
         ),
-        f"- Catalogue-bijective configurations verified by the current transformation: "
+        f"- Retained-input-bijective catalogue configurations verified by the current transformation: "
         f"**{sum(item['status'] == 'verified' for item in obligated)}/{len(obligated)}**",
         f"- Configurations without a catalogue bijectivity obligation that still support "
         f"first-input recovery with auxiliaries: **{sum(item['status'] == 'verified' for item in unobligated)}/{len(unobligated)}**",
@@ -427,7 +433,7 @@ def _write_report(
         "such configurations satisfy that condition.",
         "",
         "Non-verified rows remain visible because the audit also probes first-input recovery "
-        "for hashes, stream functions, lossy teaching components, and other primitives without "
+        "for hashes, stream-output functions, lossy teaching components, and other primitives without "
         "a catalogue bijectivity obligation. They are qualified results, not gaps in the "
         "bijective coverage claim. Future optimization can use the slowest-results table to "
         "prioritize graph construction cost, but must retain the same solver-free contracts, "

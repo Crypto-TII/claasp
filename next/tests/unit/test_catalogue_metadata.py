@@ -59,6 +59,34 @@ def test_every_catalogue_parameter_set_matches_its_public_constructor():
             )
 
 
+def test_reviewed_retained_input_bijectivity_obligations():
+    by_name = {item["name"]: item for item in _catalogue()["primitives"]}
+    expected_components = {
+        "Add", "BinaryAffineMap", "BitVectorSBox", "BitwiseNot",
+        "FeedbackRegister", "IDEAMultiply", "Identity", "LinearMap",
+        "ModularAdd", "ModularSubtract", "Permutation", "Power", "Rotate",
+        "SBox", "VariableRotate", "Xor",
+    }
+    observed_components = {
+        item["name"] for item in by_name.values()
+        if item["category"] == "single_component_primitives"
+        and item["bijectivity_obligation"]
+    }
+    assert observed_components == expected_components
+
+    expected_toys = {
+        "CipherFour", "Heys", "ToyAES", "ToyFeistel", "ToySPN1", "ToySPN2",
+    }
+    observed_toys = {
+        item["name"] for item in by_name.values()
+        if item["category"] == "toy_primitives"
+        and item["bijectivity_obligation"]
+    }
+    assert observed_toys == expected_toys
+    assert not by_name["Fancy"]["bijectivity_obligation"]
+    assert by_name["ChaChaKeystreamBlock"]["bijectivity_obligation"]
+
+
 def test_legacy_sbox_forms_are_explicitly_noncanonical():
     by_name = {item["name"]: item for item in _catalogue()["primitives"]}
     for name in ("GimliSbox", "SimeckSbox", "SimonSbox"):

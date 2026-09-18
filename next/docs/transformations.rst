@@ -40,6 +40,14 @@ for every successful inverse. The current checkpoint verifies every catalogue
 configuration carrying a bijectivity obligation, including toy and
 single-component primitives.
 
+An obligation applies to the designated data/state input of a named catalogue
+configuration, with all other inputs retained. Thus XOR, modular addition,
+rotation, permutation, and identity fixtures have an obligation even though a
+multi-input operation is not globally bijective in all of its inputs at once.
+It does not classify every arbitrary constructor choice: a caller can still
+provide a lossy lookup table, singular matrix, or non-reversible feedback
+description outside the named catalogue configuration.
+
 Some primitives use a reviewed equivalent graph that exposes the same
 semantics in an inversion-friendly form; examples include compact linear maps
 and triangular Boolean recurrences. Subterranean and ChiLow instead use
@@ -48,7 +56,7 @@ solver shortcuts: the resulting typed graphs retain auxiliary inputs, preserve
 the source realization identity, record a separate ``inverse_equivalent``
 transformation, and are checked against evaluation of the public source graph.
 
-Rows without a catalogue bijectivity obligation remain deliberately
+Rows without a catalogue retained-input bijectivity obligation remain deliberately
 qualified. A hash, stream-output function, or lossy component may report
 ``information_loss``, ``multiple_predecessors``, or a timeout without weakening
 the complete-bijective-coverage claim.

@@ -9,6 +9,8 @@ import inspect
 import json
 from pathlib import Path
 
+from catalogue_classification import classify_bijectivity
+
 
 ROOT = Path(__file__).parents[1]
 INVENTORY = ROOT / "migration/legacy_inventory.json"
@@ -215,12 +217,14 @@ def build_catalogue() -> dict:
             primitive_class = getattr(module, name)
             primitive = primitive_class()
             source = source_records.get(name)
+            fallback_obligation, fallback_basis = classify_bijectivity(name, category)
             classification = source["primitive"] if source is not None else {
                 "official_name": name,
                 "input_roles": [
                     descriptor.role for descriptor in primitive.input_descriptors.values()
                 ],
-                "bijectivity_obligation": primitive.kind.value == "permutation",
+                "bijectivity_obligation": fallback_obligation,
+                "classification_basis": fallback_basis,
             }
             component_names = {type(component).__name__ for component in primitive.components}
             domain_names = {
@@ -264,7 +268,7 @@ def build_catalogue() -> dict:
                 "legacy_source": source["path"] if source is not None else None,
                 "classification_basis": (
                     classification.get("classification_basis")
-                    or "new v5 base-component primitive classified by its typed boundary"
+                    or fallback_basis
                 ),
                 "fixed_evidence": evidence,
                 "parameter_sets": _parameter_sets(primitive_class, module),
