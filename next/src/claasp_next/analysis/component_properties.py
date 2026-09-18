@@ -5,7 +5,7 @@ Concrete analyzers added by later M10.11 slices consume these contracts.
 """
 
 from collections.abc import Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, fields, is_dataclass
 from enum import Enum
 from types import MappingProxyType
 from typing import Protocol
@@ -200,6 +200,124 @@ class ComponentPropertyDriver(Protocol):
         """Analyze ``component`` under exactly the supplied typed request."""
 
 
+@dataclass(frozen=True, slots=True)
+class ComponentSemanticKey:
+    """Identity of one operation independent of graph location and inputs."""
+
+    component_type: str
+    input_types: tuple[object, ...]
+    output_type: object
+    parameters: tuple[tuple[str, object], ...]
+    domain: PropertyDomain
+
+
+@dataclass(frozen=True, slots=True)
+class ComponentOccurrence:
+    """One semantic component and its optional stable graph location."""
+
+    component: object
+    graph_location: str | None
+
+
+@dataclass(frozen=True, slots=True)
+class ComponentGroup:
+    """Equivalent semantic operations discovered in an immutable graph."""
+
+    key: ComponentSemanticKey
+    occurrences: tuple[ComponentOccurrence, ...]
+
+    @property
+    def count(self) -> int:
+        """Return the number of graph occurrences in this semantic group."""
+
+        return len(self.occurrences)
+
+    @property
+    def representative(self):
+        """Return a representative component without making it group identity."""
+
+        return self.occurrences[0].component
+
+
+def semantic_component_key(component, domain: PropertyDomain) -> ComponentSemanticKey:
+    """Return a typed key excluding sources and incidental component ids.
+
+    >>> from claasp_next.components import LookupTable
+    >>> table = LookupTable([0, 1, 3, 2], 2)
+    >>> table.is_bijective()
+    True
+
+    ``LookupTable`` is a parameter object rather than a graph component; graph
+    operations are validated explicitly so structural bindings cannot enter
+    analysis grouping.
+    """
+
+    from claasp_next.graph import Component
+
+    if not isinstance(component, Component):
+        raise TypeError("semantic grouping requires a Component")
+    if not isinstance(domain, PropertyDomain):
+        domain = PropertyDomain(domain)
+    parameters = []
+    if is_dataclass(component):
+        for field in fields(component):
+            if field.name in {"component_id", "inputs", "output_type"}:
+                continue
+            parameters.append((field.name, _freeze_hashable(getattr(component, field.name))))
+    return ComponentSemanticKey(
+        component_type=f"{type(component).__module__}.{type(component).__qualname__}",
+        input_types=tuple(selection.value_type for selection in component.inputs),
+        output_type=component.output_type,
+        parameters=tuple(parameters),
+        domain=domain,
+    )
+
+
+def semantic_component_groups(primitive, domain: PropertyDomain) -> tuple[ComponentGroup, ...]:
+    """Group graph operations by semantics while ignoring structural bindings.
+
+    The returned order follows the first semantic occurrence only for
+    presentation stability; it is not part of a group's identity.
+    """
+
+    from claasp_next.graph import Primitive
+
+    if not isinstance(primitive, Primitive):
+        raise TypeError("component discovery requires a Primitive")
+    if not isinstance(domain, PropertyDomain):
+        domain = PropertyDomain(domain)
+
+    locations = {}
+    for round_index, round_ in enumerate(primitive.rounds):
+        for component_index, component in enumerate(round_.components):
+            locations[id(component)] = f"round[{round_index}]/component[{component_index}]"
+
+    grouped: dict[ComponentSemanticKey, list[ComponentOccurrence]] = {}
+    for component in primitive.components:
+        key = semantic_component_key(component, domain)
+        grouped.setdefault(key, []).append(
+            ComponentOccurrence(component, locations.get(id(component)))
+        )
+    return tuple(
+        ComponentGroup(key, tuple(occurrences))
+        for key, occurrences in grouped.items()
+    )
+
+
+def _freeze_hashable(value):
+    if isinstance(value, Mapping):
+        return tuple(sorted((key, _freeze_hashable(item)) for key, item in value.items()))
+    if isinstance(value, (list, tuple)):
+        return tuple(_freeze_hashable(item) for item in value)
+    if isinstance(value, (set, frozenset)):
+        return frozenset(_freeze_hashable(item) for item in value)
+    try:
+        hash(value)
+    except TypeError as error:
+        raise TypeError(f"semantic parameter {value!r} is not immutable") from error
+    return value
+
+
 def unavailable_result(
     request: PropertyRequest,
     provenance: ComponentAnalysisProvenance,
@@ -220,13 +338,18 @@ def unavailable_result(
 
 __all__ = [
     "ComponentAnalysisProvenance",
+    "ComponentGroup",
+    "ComponentOccurrence",
     "ComponentProperty",
     "ComponentPropertyDriver",
     "ComponentPropertyResult",
+    "ComponentSemanticKey",
     "DiagnosticCode",
     "PropertyClaim",
     "PropertyDiagnostic",
     "PropertyDomain",
     "PropertyRequest",
+    "semantic_component_groups",
+    "semantic_component_key",
     "unavailable_result",
 ]
