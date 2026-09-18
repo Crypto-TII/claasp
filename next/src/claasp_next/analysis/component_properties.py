@@ -347,10 +347,14 @@ def analyze_component_property(
     component construction boundaries.
     """
 
-    from claasp_next.components import BitVectorSBox, SBox
+    from claasp_next.components import BinaryAffineMap, BitVectorSBox, LinearMap, Permutation, SBox
 
     if isinstance(component, (BitVectorSBox, SBox)):
         return _analyze_lookup_component(
+            component, request, graph_locations, primitive, realization
+        )
+    if isinstance(component, (LinearMap, BinaryAffineMap, Permutation)):
+        return _analyze_linear_component(
             component, request, graph_locations, primitive, realization
         )
     provenance = ComponentAnalysisProvenance(
@@ -529,6 +533,116 @@ def _rectangular_walsh(table, input_size, output_size):
         for alpha, coefficient in enumerate(values):
             rows[alpha][beta] = coefficient
     return tuple(tuple(row) for row in rows)
+
+
+def _analyze_linear_component(component, request, graph_locations, primitive, realization):
+    from claasp_next.components import BinaryAffineMap, LinearMap, Permutation
+    from claasp_next.domains import BinaryExtensionField, Bit
+    from claasp_next.analysis.linear_properties import (
+        exact_branch_number, exact_matrix_order, expand_binary_field_matrix,
+        matrix_is_mds, matrix_rank, permutation_order,
+    )
+
+    key = semantic_component_key(component, request.domain)
+    provenance = ComponentAnalysisProvenance(
+        _semantic_key_identity(key), "exact_field_linear_algebra",
+        primitive, realization, graph_locations,
+    )
+    supported = {
+        ComponentProperty.RANK, ComponentProperty.INVERTIBLE,
+        ComponentProperty.ORDER, ComponentProperty.MDS,
+        ComponentProperty.DIFFERENTIAL_BRANCH_NUMBER,
+        ComponentProperty.LINEAR_BRANCH_NUMBER,
+    }
+    if request.property not in supported:
+        return unavailable_result(
+            request, provenance, DiagnosticCode.UNSUPPORTED_PROPERTY,
+            f"{request.property.value!r} is not a linear-map property",
+        )
+    if isinstance(component, Permutation):
+        width = component.output_type.unit_count
+        values = {
+            ComponentProperty.RANK: width,
+            ComponentProperty.INVERTIBLE: True,
+            ComponentProperty.ORDER: permutation_order(component.mapping),
+            ComponentProperty.MDS: width == 1,
+            ComponentProperty.DIFFERENTIAL_BRANCH_NUMBER: 2,
+            ComponentProperty.LINEAR_BRANCH_NUMBER: 2,
+        }
+        return ComponentPropertyResult(
+            request, PropertyClaim.EXACT, values[request.property], True, provenance
+        )
+
+    matrix = component.matrix
+    domain = Bit() if isinstance(component, BinaryAffineMap) else component.inputs[0].value_type.domain
+    analysis_matrix = matrix
+    analysis_domain = domain
+    if request.domain is PropertyDomain.BIT_LINEAR and isinstance(domain, BinaryExtensionField):
+        analysis_matrix = expand_binary_field_matrix(matrix, domain)
+        analysis_domain = Bit()
+    elif request.domain is PropertyDomain.BIT_LINEAR and not isinstance(domain, Bit):
+        return unavailable_result(
+            request, provenance, DiagnosticCode.INAPPLICABLE_DOMAIN,
+            "bit-linear analysis requires Bit or binary-extension-field semantics",
+        )
+    elif request.domain in {PropertyDomain.WORD_LINEAR, PropertyDomain.FINITE_FIELD_LINEAR}:
+        if isinstance(component, BinaryAffineMap) or isinstance(domain, Bit):
+            return unavailable_result(
+                request, provenance, DiagnosticCode.INAPPLICABLE_DOMAIN,
+                "word/field analysis requires a non-binary scalar field matrix",
+            )
+    else:
+        if request.domain is not PropertyDomain.BIT_LINEAR:
+            return unavailable_result(
+                request, provenance, DiagnosticCode.INAPPLICABLE_DOMAIN,
+                f"linear properties do not apply in {request.domain.value!r}",
+            )
+
+    rank = matrix_rank(analysis_matrix, analysis_domain)
+    square = len(analysis_matrix) == len(analysis_matrix[0])
+    if request.property is ComponentProperty.RANK:
+        value = rank
+    elif request.property is ComponentProperty.INVERTIBLE:
+        value = square and rank == len(analysis_matrix)
+    elif request.property is ComponentProperty.MDS:
+        value = matrix_is_mds(analysis_matrix, analysis_domain)
+    elif request.property is ComponentProperty.ORDER:
+        maximum_steps = request.option_map.get("maximum_steps", 65536)
+        if not isinstance(maximum_steps, int) or isinstance(maximum_steps, bool) or maximum_steps <= 0:
+            raise ValueError("maximum_steps must be a positive integer")
+        offset = None
+        if isinstance(component, BinaryAffineMap):
+            degree = len(component.matrix)
+            offset = tuple((component.offset >> (degree - 1 - bit)) & 1 for bit in range(degree))
+        value = exact_matrix_order(
+            analysis_matrix, analysis_domain, maximum_steps=maximum_steps, offset=offset
+        )
+        if value is None:
+            code = DiagnosticCode.INAPPLICABLE_DOMAIN if not square or rank != len(analysis_matrix) else DiagnosticCode.BUDGET_EXHAUSTED
+            message = "order requires an invertible square map" if code is DiagnosticCode.INAPPLICABLE_DOMAIN else "matrix order was not reached within maximum_steps"
+            return unavailable_result(request, provenance, code, message)
+    else:
+        maximum_vectors = request.option_map.get("maximum_vectors", 65536)
+        if not isinstance(maximum_vectors, int) or isinstance(maximum_vectors, bool) or maximum_vectors <= 0:
+            raise ValueError("maximum_vectors must be a positive integer")
+        value = exact_branch_number(
+            analysis_matrix, analysis_domain,
+            linear=request.property is ComponentProperty.LINEAR_BRANCH_NUMBER,
+            maximum_vectors=maximum_vectors,
+        )
+        if value is None:
+            return unavailable_result(
+                request, provenance, DiagnosticCode.BUDGET_EXHAUSTED,
+                "exact branch-number enumeration exceeds maximum_vectors",
+            )
+    return ComponentPropertyResult(
+        request, PropertyClaim.EXACT, value, True, provenance
+    )
+
+
+def _semantic_key_identity(key):
+    digest = sha256(repr((key.component_type, key.input_types, key.output_type, key.parameters, key.domain)).encode()).hexdigest()[:16]
+    return f"{key.component_type.rsplit('.', 1)[-1]}:{key.domain.value}:{digest}"
 
 
 def unavailable_result(
