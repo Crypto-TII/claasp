@@ -339,7 +339,7 @@
       ],
       "rationale": "Typed Sage-independent analysis contracts and explicit optional drivers replace the nested legacy report dictionary, component-id identity, default solver selection, and mutable caches. Plotting is assigned to M10.14.",
       "responsibility": "component analysis tests",
-      "status": "m10.11-owned",
+      "status": "migrated-in-m10.11g",
       "tests": [],
       "v5_destination": "next/src/claasp_next/analysis/component_properties.py; next/src/claasp_next/drivers/analysis; M10.14 presentation layer"
     },
@@ -10709,7 +10709,7 @@
         "shutil",
         "types"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -10858,7 +10858,7 @@
       ],
       "rationale": "Typed v5 tests preserve mathematical evidence. Legacy helper internals and Sage/MiniZinc method-consistency tests become contract and driver tests; the radar-chart assertion belongs to M10.14.",
       "responsibility": "component analysis tests test",
-      "status": "m10.11-owned",
+      "status": "superseded-in-m10.11g",
       "tests": [
         "test_4x4_identity",
         "test_already_conway_field_returns_input_matrix",

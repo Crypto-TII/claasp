@@ -23,10 +23,10 @@ def test_committed_catalogue_covers_public_primitives_components_and_drivers():
     assert {item["name"] for item in primitives} == set(ALL_EXPORTS)
     assert len(primitives) == len(ALL_EXPORTS) == 142
     assert len(catalogue["components"]) == 23
-    assert len(catalogue["representations"]) == 13
-    assert len(catalogue["analyses"]) == 9
-    assert len(catalogue["drivers"]) == 14
-    assert len({item["name"] for item in catalogue["drivers"]}) == 14
+    assert len(catalogue["representations"]) == 14
+    assert len(catalogue["analyses"]) == 10
+    assert len(catalogue["drivers"]) == 16
+    assert len({item["name"] for item in catalogue["drivers"]}) == 16
 
 
 def test_every_primitive_has_classification_contract_and_evidence():
@@ -103,6 +103,20 @@ def test_catalogue_closure_gate_passes():
         check=True, capture_output=True, text=True,
     )
     assert (
-        "142 primitives, 23 components, 13 representations, 9 analyses, 14 drivers"
+        "142 primitives, 23 components, 14 representations, 10 analyses, 16 drivers"
         in completed.stdout
     )
+
+
+def test_component_property_capability_is_conservative_and_queryable():
+    from claasp_next.catalogue import catalogue
+
+    representation = catalogue.representation("component_properties")
+    assert "LinearMap" in representation.components
+    assert "Constant" not in representation.components
+    assert {item.name for item in catalogue.drivers(representation="component_properties")} == {
+        "component_minizinc", "component_bounded",
+    }
+    assert "component_property" in {
+        item.name for item in catalogue.analyses(primitive="AES")
+    }

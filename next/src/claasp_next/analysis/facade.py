@@ -198,6 +198,103 @@ class Analysis:
             seed=seed, fixed_inputs=fixed_inputs,
         )
 
+    def component_groups(self, domain):
+        """Return immutable semantic groups, never structural bindings.
+
+        EXAMPLES::
+
+            >>> from claasp_next.analysis import PropertyDomain
+            >>> from claasp_next.primitives import Present
+            >>> groups = Present(number_of_rounds=1).analyze().component_groups(PropertyDomain.LOOKUP_TABLE)
+            >>> max(group.count for group in groups)
+            17
+        """
+
+        from claasp_next.analysis.component_properties import semantic_component_groups
+
+        return semantic_component_groups(self.primitive, domain)
+
+    def component_property(self, component, property_, domain, *, options=(), driver=None):
+        """Return one typed, evidence-qualified semantic component property.
+
+        ``component`` may be a component object or a graph id used only to
+        locate it. The returned semantic identity never depends on that id.
+
+        EXAMPLES::
+
+            >>> from claasp_next.analysis import ComponentProperty, PropertyDomain
+            >>> from claasp_next.components import BitVectorSBox
+            >>> from claasp_next.primitives import Present
+            >>> primitive = Present(number_of_rounds=1)
+            >>> sbox = next(item for item in primitive.components if isinstance(item, BitVectorSBox))
+            >>> result = primitive.analyze().component_property(
+            ...     sbox, ComponentProperty.DIFFERENTIAL_UNIFORMITY,
+            ...     PropertyDomain.LOOKUP_TABLE)
+            >>> result.value, result.claim.value
+            (4, 'exact')
+        """
+
+        from claasp_next.analysis.component_properties import (
+            PropertyRequest, analyze_component_property,
+        )
+
+        selected = self._component(component)
+        request = PropertyRequest(property_, domain, tuple(options))
+        locations = tuple(
+            occurrence.graph_location for group in self.component_groups(request.domain)
+            for occurrence in group.occurrences
+            if occurrence.component is selected and occurrence.graph_location is not None
+        )
+        if driver is not None:
+            from dataclasses import replace
+
+            if not hasattr(driver, "analyze"):
+                raise TypeError("component-property driver must provide analyze(component, request)")
+            result = driver.analyze(selected, request)
+            if result.request != request:
+                raise TypeError("component-property driver returned a result for a different request")
+            return replace(result, provenance=replace(
+                result.provenance,
+                primitive=self.primitive.family_name,
+                realization=self.primitive.realization.name,
+                graph_locations=locations,
+            ))
+        return analyze_component_property(
+            selected,
+            request,
+            graph_locations=locations,
+            primitive=self.primitive.family_name,
+            realization=self.primitive.realization.name,
+        )
+
+    def component_properties(self, component, requests, *, driver=None):
+        """Return typed results for an explicit sequence of property requests."""
+
+        selected = self._component(component)
+        return tuple(
+            self.component_property(
+                selected, request.property, request.domain,
+                options=request.options, driver=driver,
+            )
+            for request in tuple(requests)
+        )
+
+    def _component(self, component):
+        from claasp_next.graph import Component
+
+        if isinstance(component, Component):
+            if not any(item is component for item in self.primitive.components):
+                raise ValueError("component does not belong to this primitive graph")
+            return component
+        if isinstance(component, str):
+            matches = tuple(
+                item for item in self.primitive.components if item.component_id == component
+            )
+            if len(matches) != 1:
+                raise KeyError(f"primitive component {component!r} does not exist")
+            return matches[0]
+        raise TypeError("component must be a graph Component or component id")
+
     def is_xor_differential_transition_possible(
         self, component_id: str, input_difference: int, output_difference: int
     ) -> bool:

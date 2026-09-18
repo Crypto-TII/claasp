@@ -98,6 +98,9 @@ class PropertyDiagnostic:
 class PropertyRequest:
     """One property request with explicit mathematical domain and options.
 
+    >>> from claasp_next.analysis.component_properties import (
+    ...     ComponentProperty, PropertyDomain, PropertyRequest,
+    ... )
     >>> request = PropertyRequest(ComponentProperty.RANK, PropertyDomain.BIT_LINEAR)
     >>> request.property.value, request.domain.value
     ('rank', 'bit_linear')
@@ -415,10 +418,14 @@ def analyze_lookup_table(
 
 
 def _analyze_lookup_component(component, request, graph_locations, primitive, realization):
-    from claasp_next.components import LookupTable
+    from claasp_next.components import LookupTable, SBox
 
-    input_width = component.inputs[0].value_type.encoded_bit_size
-    output_width = component.output_type.encoded_bit_size
+    if isinstance(component, SBox):
+        input_width = component.inputs[0].value_type.domain.encoded_bit_size
+        output_width = component.output_type.domain.encoded_bit_size
+    else:
+        input_width = component.inputs[0].value_type.encoded_bit_size
+        output_width = component.output_type.encoded_bit_size
     if input_width is None or output_width is None:
         raise ValueError("lookup component domains must have canonical bit encodings")
     table = LookupTable(component.table, input_width, output_width)
@@ -456,14 +463,16 @@ def _lookup_result(table, input_width, output_width, request, provenance):
 
 
 def _lookup_identity(table, input_width, output_width):
-    digest = sha256(bytes(table)).hexdigest()[:16]
+    digest = sha256(repr(tuple(table)).encode()).hexdigest()[:16]
     return f"lookup_table:{input_width}->{output_width}:{digest}"
 
 
 @lru_cache(maxsize=128)
 def _exact_lookup_facts(table, input_width, output_width):
     from claasp_next.components import LookupTable
-    from claasp_next.representations.constraints.polynomial import vectorial_anf
+    from claasp_next.representations.constraints.polynomial import (
+        anf_from_truth_table, vectorial_anf,
+    )
     from claasp_next.semantics.cryptanalysis import (
         SBoxBoomerangSemantics, SBoxTransitionSemantics,
     )
@@ -484,7 +493,16 @@ def _exact_lookup_facts(table, input_width, output_width):
         for output_mask in range(1, output_size)
     )
     nonlinearity = (input_size // 2) - (maximum_walsh // 2)
-    anfs = vectorial_anf(table)
+    if input_width == output_width:
+        anfs = vectorial_anf(table)
+    else:
+        names = tuple(f"x{index}" for index in range(input_width))
+        anfs = tuple(
+            anf_from_truth_table(
+                tuple((value >> bit) & 1 for value in table), names,
+            )
+            for bit in reversed(range(output_width))
+        )
     algebraic_degree = max(polynomial.degree for polynomial in anfs)
     counts = [0] * output_size
     for value in table:
@@ -619,6 +637,12 @@ def _analyze_linear_component(component, request, graph_locations, primitive, re
     elif request.property is ComponentProperty.INVERTIBLE:
         value = square and rank == len(analysis_matrix)
     elif request.property is ComponentProperty.MDS:
+        dimension = max(len(analysis_matrix), len(analysis_matrix[0]))
+        if dimension > 6 and all(value != 0 for row in analysis_matrix for value in row):
+            return unavailable_result(
+                request, provenance, DiagnosticCode.BUDGET_EXHAUSTED,
+                "exact all-minors MDS validation is limited to dimension six; use an explicit driver",
+            )
         value = matrix_is_mds(analysis_matrix, analysis_domain)
     elif request.property is ComponentProperty.ORDER:
         maximum_steps = request.option_map.get("maximum_steps", 65536)

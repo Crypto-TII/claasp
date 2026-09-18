@@ -15,6 +15,7 @@ renderers.
    transformation_architecture
    catalogue_architecture
    representation_architecture
+   component_analysis_architecture
    diagram_representations
    concepts
    extending_analysis

@@ -2,6 +2,22 @@
   "analyses": [
     {
       "drivers": [
+        "component_bounded",
+        "component_minizinc"
+      ],
+      "entry_point": "Primitive.analyze().component_property",
+      "evidence": "qualified",
+      "kind": "component_property",
+      "name": "component_property",
+      "primitives": [],
+      "representations": [
+        "component_properties"
+      ],
+      "required_components": [],
+      "restriction": "applicability and evidence strength are reported per semantic component and domain"
+    },
+    {
+      "drivers": [
         "python_scalar"
       ],
       "entry_point": "Primitive.analyze().avalanche",
@@ -396,9 +412,29 @@
       "name": "sklearn_mlp",
       "representations": [],
       "target": "sklearn"
+    },
+    {
+      "availability": "builtin",
+      "implementation": "claasp_next.drivers.analysis:BoundedBranchNumberDriver",
+      "kind": "analysis_driver",
+      "name": "component_bounded",
+      "representations": [
+        "component_properties"
+      ],
+      "target": null
+    },
+    {
+      "availability": "executable",
+      "implementation": "claasp_next.drivers.analysis:MiniZincBranchNumberDriver",
+      "kind": "analysis_driver",
+      "name": "component_minizinc",
+      "representations": [
+        "component_properties"
+      ],
+      "target": "minizinc"
     }
   ],
-  "milestone": "M10.9f6",
+  "milestone": "M10.11g",
   "primitives": [
     {
       "authenticity": "canonical",
@@ -12096,6 +12132,37 @@
       "kind": "constraint",
       "name": "word_linear_smt",
       "scope": "generic_graph"
+    },
+    {
+      "components": [
+        "BinaryAffineMap",
+        "BitVectorSBox",
+        "BitwiseAnd",
+        "BitwiseNot",
+        "BitwiseOr",
+        "FeedbackRegister",
+        "LinearMap",
+        "ModularAdd",
+        "Permutation",
+        "Rotate",
+        "SBox",
+        "Shift",
+        "Xor"
+      ],
+      "domains": [
+        "BinaryExtensionField",
+        "Bit",
+        "PrimeField",
+        "Word"
+      ],
+      "drivers": [
+        "component_bounded",
+        "component_minizinc"
+      ],
+      "implementation": "claasp_next.analysis:analyze_component_property",
+      "kind": "analysis",
+      "name": "component_properties",
+      "scope": "component"
     }
   ],
   "schema_version": 2,

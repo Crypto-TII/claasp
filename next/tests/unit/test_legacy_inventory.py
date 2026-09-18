@@ -279,3 +279,26 @@ def test_m10_10_transformation_cli_closure_gate_passes():
     )
     assert result.returncode == 0, result.stdout + result.stderr
     assert json.loads(result.stdout)["complete"]
+
+
+def test_m10_11_component_analysis_inventory_closes_without_reopening_m10_8d():
+    payload = json.loads(INVENTORY.read_text(encoding="utf-8"))
+    status = _module().component_analysis_closure_status(payload)
+
+    assert status == {
+        "records": 2,
+        "final": 2,
+        "wordwise_m10_8d_retained": True,
+        "errors": [],
+        "complete": True,
+    }
+
+
+def test_m10_11_component_analysis_cli_closure_gate_passes():
+    result = subprocess.run(
+        [sys.executable, str(SCRIPT), "--check-component-analysis-closure"],
+        cwd=ROOT / "next", check=False, capture_output=True, text=True,
+    )
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert json.loads(result.stdout)["complete"]

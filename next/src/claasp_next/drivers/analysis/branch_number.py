@@ -1,6 +1,8 @@
 """Explicit bounded and MiniZinc drivers for linear branch numbers."""
 
+from hashlib import sha256
 from itertools import combinations, product
+from subprocess import TimeoutExpired
 
 from claasp_next.analysis.component_properties import (
     ComponentAnalysisProvenance,
@@ -26,8 +28,9 @@ from claasp_next.utils.matrices import transpose_matrix
 
 def _identity(component, request, driver, method):
     key = semantic_component_key(component, request.domain)
+    digest = sha256(repr(key).encode()).hexdigest()[:16]
     return ComponentAnalysisProvenance(
-        f"{key.component_type.rsplit('.', 1)[-1]}:{request.domain.value}",
+        f"{key.component_type.rsplit('.', 1)[-1]}:{request.domain.value}:{digest}",
         method,
         driver=driver,
     )
@@ -152,11 +155,15 @@ class MiniZincBranchNumberDriver:
         model = _minizinc_model(matrix)
         try:
             solved = self.solver.solve(model)
-        except FileNotFoundError as error:
+        except (FileNotFoundError, RuntimeError, TimeoutExpired) as error:
             return unavailable_result(
                 request, provenance, DiagnosticCode.DRIVER_UNAVAILABLE, str(error)
             )
-        if not solved.is_satisfied or solved.values is None:
+        if (
+            not solved.is_satisfied
+            or solved.values is None
+            or "==========" not in solved.stdout
+        ):
             return unavailable_result(
                 request, provenance, DiagnosticCode.DRIVER_UNAVAILABLE,
                 "MiniZinc did not return an optimal branch number",

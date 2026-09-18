@@ -59,6 +59,10 @@ DRIVERS = (
      "claasp_next.drivers.renderers.latex:LaTeXDriver"),
     ("sklearn_mlp", "external_tool", "python_module", "sklearn",
      "claasp_next.drivers.neural.sklearn_driver:SklearnMLPDriver"),
+    ("component_bounded", "analysis_driver", "builtin", None,
+     "claasp_next.drivers.analysis:BoundedBranchNumberDriver"),
+    ("component_minizinc", "analysis_driver", "executable", "minizinc",
+     "claasp_next.drivers.analysis:MiniZincBranchNumberDriver"),
 )
 
 ALL_COMPONENTS = frozenset({
@@ -112,9 +116,16 @@ REPRESENTATIONS = (
      WORD_TRAIL_COMPONENTS, {"Word"}, {"z3"}, "generic_graph"),
     ("word_linear_smt", "constraint", "claasp_next.representations.constraints.smt:WordLinearSMTModel",
      WORD_TRAIL_COMPONENTS, {"Word"}, {"z3"}, "generic_graph"),
+    ("component_properties", "analysis", "claasp_next.analysis:analyze_component_property",
+     {"BinaryAffineMap", "BitVectorSBox", "BitwiseAnd", "BitwiseNot", "BitwiseOr",
+      "FeedbackRegister", "LinearMap", "ModularAdd", "Permutation", "Rotate", "SBox",
+      "Shift", "Xor"}, ALL_DOMAINS, {"component_bounded", "component_minizinc"}, "component"),
 )
 
 ANALYSES = (
+    ("component_property", "Primitive.analyze().component_property", "component_property",
+     "qualified", {"component_properties"}, {"component_bounded", "component_minizinc"}, set(), set(),
+     "applicability and evidence strength are reported per semantic component and domain"),
     ("avalanche", "Primitive.analyze().avalanche", "statistical", "empirical",
      {"concrete_execution"}, {"python_scalar"}, set(), set(), None),
     ("enumerate_solutions", "Primitive.analyze().enumerate_solutions", "constraint", "exact",
@@ -313,7 +324,7 @@ def build_catalogue() -> dict:
     ]
     return {
         "schema_version": 2,
-        "milestone": "M10.9f6",
+        "milestone": "M10.11g",
         "sources": {
             "classification": "migration/legacy_inventory.json",
             "components": "migration/single_component_catalogue.json",

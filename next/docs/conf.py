@@ -44,6 +44,7 @@ if guide == "user":
         "cp_models.rst",
         "catalogue_architecture.rst",
         "transformation_architecture.rst",
+        "component_analysis_architecture.rst",
     ])
 else:
     exclude_patterns.extend([
@@ -55,6 +56,7 @@ else:
         "displaying_results.rst",
         "primitive_catalogue.rst",
         "transformations.rst",
+        "component_properties.rst",
     ])
 nitpicky = True
 show_warning_types = True

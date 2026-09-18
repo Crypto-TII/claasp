@@ -150,7 +150,7 @@ class Catalogue:
 
         >>> # Capability edges are queryable in both directions.
         >>> [item.name for item in catalogue.representations(component="BitVectorSBox")]
-        ['boolean_cnf', 'boolean_smt', 'concrete_execution', 'primitive_diagram', 'sbox_transition_table']
+        ['boolean_cnf', 'boolean_smt', 'concrete_execution', 'primitive_diagram', 'sbox_transition_table', 'component_properties']
         >>> [item.name for item in catalogue.drivers(representation="boolean_cnf")]
         ['minizinc', 'minisat', 'z3', 'glpk']
     """
@@ -316,7 +316,11 @@ class Catalogue:
                 if record.representations and not any(
                     (
                         candidate.scope == "component"
-                        and record.required_components <= primitive_record.components
+                        and (
+                            record.required_components <= primitive_record.components
+                            if record.required_components
+                            else bool(candidate.components & primitive_record.components)
+                        )
                     ) or (
                         primitive_record.components <= candidate.components
                         and primitive_record.domains <= candidate.domains

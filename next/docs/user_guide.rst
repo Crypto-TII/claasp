@@ -27,6 +27,7 @@ analysis guides for your own work.
    transformations
    batch_evaluation
    analysis
+   component_properties
    displaying_results
    statistical_testing
    neural_distinguishers

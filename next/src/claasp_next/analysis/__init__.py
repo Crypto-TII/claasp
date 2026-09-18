@@ -81,6 +81,23 @@ from claasp_next.analysis.statistical_results import (
 from claasp_next.analysis.legacy_evidence import (
     LegacyBoundedDifferentialCluster, ublock_three_round_legacy_cluster,
 )
+from claasp_next.analysis.component_properties import (
+    ComponentAnalysisProvenance,
+    ComponentGroup,
+    ComponentOccurrence,
+    ComponentProperty,
+    ComponentPropertyResult,
+    ComponentSemanticKey,
+    DiagnosticCode,
+    PropertyClaim,
+    PropertyDiagnostic,
+    PropertyDomain,
+    PropertyRequest,
+    analyze_component_property,
+    analyze_lookup_table,
+    semantic_component_groups,
+    semantic_component_key,
+)
 
 __all__ = [
     "HybridDifferentialResult",
@@ -166,4 +183,19 @@ __all__ = [
     "StatisticalTestRun",
     "LegacyBoundedDifferentialCluster",
     "ublock_three_round_legacy_cluster",
+    "ComponentAnalysisProvenance",
+    "ComponentGroup",
+    "ComponentOccurrence",
+    "ComponentProperty",
+    "ComponentPropertyResult",
+    "ComponentSemanticKey",
+    "DiagnosticCode",
+    "PropertyClaim",
+    "PropertyDiagnostic",
+    "PropertyDomain",
+    "PropertyRequest",
+    "analyze_component_property",
+    "analyze_lookup_table",
+    "semantic_component_groups",
+    "semantic_component_key",
 ]

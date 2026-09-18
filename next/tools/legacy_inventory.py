@@ -1450,7 +1450,7 @@ MIGRATION_OVERRIDES.update({
         "v5_destination": "next/src/claasp_next/analysis/component_properties.py; next/src/claasp_next/drivers/analysis; M10.14 presentation layer",
         "prerequisites": ["M10.9f6", "M10.10"],
         "disposition": "migrate",
-        "status": "m10.11-owned",
+        "status": "migrated-in-m10.11g",
         "acceptance_criterion": "M10.11 returns immutable typed component-property results with explicit applicability and exactness; fixed S-box, Boolean, matrix, branch-number, and feedback evidence passes independently, while Matplotlib presentation remains assigned to M10.14.",
         "rationale": "Typed Sage-independent analysis contracts and explicit optional drivers replace the nested legacy report dictionary, component-id identity, default solver selection, and mutable caches. Plotting is assigned to M10.14.",
     },
@@ -1458,8 +1458,8 @@ MIGRATION_OVERRIDES.update({
         "milestone_owner": "M10.11a",
         "v5_destination": "next/tests/unit/test_component_properties.py; next/tests/integration/test_component_analysis_minizinc.py; M10.14 presentation tests",
         "prerequisites": ["M10.11a", "M10.9f6"],
-        "disposition": "migrate",
-        "status": "m10.11-owned",
+        "disposition": "supersede",
+        "status": "superseded-in-m10.11g",
         "acceptance_criterion": "Independent fixed evidence covers exact S-box, Boolean, matrix, branch-number, feedback, driver, applicability, and exactness contracts; plotting assertions remain assigned to M10.14.",
         "rationale": "Typed v5 tests preserve mathematical evidence. Legacy helper internals and Sage/MiniZinc method-consistency tests become contract and driver tests; the radar-chart assertion belongs to M10.14.",
     },
@@ -2098,6 +2098,47 @@ def primitive_catalogue_audit_status(payload: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def component_analysis_closure_status(payload: dict[str, Any]) -> dict[str, Any]:
+    """Verify M10.11 ownership without reopening M10.8d solver records."""
+
+    owned_paths = {
+        "claasp/cipher_modules/component_analysis_tests.py",
+        "tests/unit/cipher_modules/component_analysis_tests_test.py",
+    }
+    records = {item["path"]: item for item in payload["records"]}
+    errors = []
+    for path in sorted(owned_paths):
+        item = records[path]
+        if item.get("milestone_owner") != "M10.11a":
+            errors.append(f"{path}: missing explicit M10.11 ownership")
+        if item["status"] not in {
+            "migrated-in-m10.11g", "superseded-in-m10.11g",
+        }:
+            errors.append(f"{path}: component-analysis disposition is not final")
+        if not item.get("acceptance_criterion") or not item.get("rationale"):
+            errors.append(f"{path}: rationale or fixed-evidence criterion is missing")
+        for destination in item.get("v5_destination", "").split(";"):
+            destination = destination.strip()
+            if destination.startswith("next/") and not (ROOT / destination).exists():
+                errors.append(f"{path}: missing destination {destination}")
+    wordwise_paths = {
+        "claasp/cipher_modules/models/milp/milp_models/milp_wordwise_branch_number_number_of_active_sboxes_model.py",
+        "tests/unit/cipher_modules/models/milp/milp_models/milp_wordwise_branch_number_number_of_active_sboxes_model_test.py",
+    }
+    for path in sorted(wordwise_paths):
+        if records[path]["status"] != "superseded-in-m10.8d":
+            errors.append(f"{path}: M10.8d closure was reopened")
+    return {
+        "records": len(owned_paths),
+        "final": len(owned_paths) - sum("disposition is not final" in error for error in errors),
+        "wordwise_m10_8d_retained": all(
+            records[path]["status"] == "superseded-in-m10.8d" for path in wordwise_paths
+        ),
+        "errors": errors,
+        "complete": not errors,
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--check", action="store_true", help="fail if the checked-in inventory is stale")
@@ -2112,6 +2153,8 @@ def main() -> int:
     parser.add_argument("--check-primitive-closure", action="store_true", help="fail until every in-scope M10.9d primitive has a concrete v5 destination")
     parser.add_argument("--transformation-status", action="store_true", help="report M10.10 transformation and evidence closure")
     parser.add_argument("--check-transformation-closure", action="store_true", help="fail until every M10.10 record has final evidence and an existing destination")
+    parser.add_argument("--component-analysis-status", action="store_true", help="report M10.11 component-analysis ownership and closure")
+    parser.add_argument("--check-component-analysis-closure", action="store_true", help="fail until M10.11 evidence is final without reopening M10.8d")
     args = parser.parse_args()
     if args.model_status or args.check_model_closure:
         status = model_closure_status(build_inventory())
@@ -2135,6 +2178,10 @@ def main() -> int:
         status = transformation_closure_status(build_inventory())
         print(json.dumps(status, indent=2))
         return int(args.check_transformation_closure and not status["complete"])
+    if args.component_analysis_status or args.check_component_analysis_closure:
+        status = component_analysis_closure_status(build_inventory())
+        print(json.dumps(status, indent=2))
+        return int(args.check_component_analysis_closure and not status["complete"])
     expected = serialized_inventory()
     if args.check:
         if not OUTPUT.exists() or OUTPUT.read_text(encoding="utf-8") != expected:

@@ -92,6 +92,9 @@ than being inferred from package names. Queries work in either direction:
    >>> "enumerate_xor_differential_trails" in {
    ...     item.name for item in catalogue.analyses(primitive="Speck")}
    True
+   >>> "component_property" in {
+   ...     item.name for item in catalogue.analyses(primitive="AES")}
+   True
 
 These declarations are conservative. For example, AES is not advertised for
 the generic Boolean-CNF analysis merely because a CNF module exists: its graph

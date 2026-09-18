@@ -80,6 +80,9 @@ Analysis
    :members:
    :exclude-members: BitPattern,ModularAddLinearSemantics,ModularAddTransitionSemantics,SBoxTransitionSemantics,Trail,TrailKind,TrailSearchResult,TrailStep,Transition,TruncatedBit,TruncatedXorDifference,XorDifference,XorMask,propagate_two_word_speck_round,truncated_modular_add
 
+.. automodule:: claasp_next.drivers.analysis
+   :members:
+
 Primitives
 ----------
 

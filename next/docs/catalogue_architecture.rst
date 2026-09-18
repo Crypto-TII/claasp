@@ -172,6 +172,20 @@ representation requires every component and domain in the primitive graph to
 be supported. Parameter-limited reviewed slices remain labelled rather than
 being promoted to unrestricted family-wide support.
 
+The ``component_properties`` representation is component-scoped. It advertises
+only component classes with a typed analyzer and records core bounded support
+and optional MiniZinc execution separately. The ``component_property``
+analysis may therefore be visible for a mixed primitive such as AES without
+claiming that every AES component supports every property or domain; the
+runtime result remains the authority for applicability and evidence strength.
+
+.. doctest::
+
+   >>> sorted(item.name for item in catalogue.drivers(representation="component_properties"))
+   ['component_bounded', 'component_minizinc']
+   >>> "component_property" in {item.name for item in catalogue.analyses(primitive="AES")}
+   True
+
 Evidence and maintenance
 ------------------------
 
