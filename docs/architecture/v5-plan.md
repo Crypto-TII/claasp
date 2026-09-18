@@ -981,6 +981,29 @@ M10.12, and neural experiments by M10.13.
 - Complete routed ASCII art or retain its explicit work-in-progress status;
   do not silently substitute a structural listing.
 
+#### M10.16: Documentation and static-quality enforcement
+
+- Define one reviewable docstring and doctest convention for public modules,
+  classes, functions, and methods, drawing on the useful legacy CLAASP and
+  CLAASP-pro conventions without carrying Sage prompt syntax into v5.
+- Audit the complete public API for meaningful docstrings and executable
+  examples. Require every public class and user-facing callable to have an
+  appropriately scoped doctest, with an explicit machine-readable exception
+  only where executing an example would be intrinsically unsafe or dependent
+  on unavailable external infrastructure.
+- Add a CI gate which checks docstring presence and structure, runs Python and
+  documentation doctests, and rejects untested examples, inconsistent section
+  layouts, stale output, and undocumented public exports.
+- Establish repository-wide formatting, linting, and static-typing checks in
+  the same CI quality group. Pin tool versions and configuration, keep optional
+  dependencies isolated, and adopt the gates through an explicit audited
+  baseline rather than permanent blanket exclusions.
+
+Exit criterion: every public v5 API entry has a conforming docstring and
+executable example or a reviewed exception; the full tree passes the pinned
+format, lint, type, docstring-structure, Python-doctest, and documentation-
+doctest checks locally and in CI.
+
 Exit criterion for M10: the migration inventory contains no unclassified
 legacy source or test module; all release-scope entries are migrated or
 superseded, and every deferral/removal is recorded with rationale and
@@ -1031,7 +1054,14 @@ machine-readable matrix exactly.
 - Treat the generated site as CLAASP documentation; v5 architecture is one
   section of it, not the organizing principle of the introductory material.
 - Add user-oriented examples and API documentation with each public feature.
+- Treat docstrings and executable doctests as mandatory parts of every new or
+  changed public API. A feature is incomplete until its API-level example is
+  available through ``help(...)`` and passes the Python-module doctest suite;
+  guide-level examples complement rather than replace API docstrings.
 - Write examples as executable doctests rather than unverified snippets.
+- Follow the repository-wide docstring/doctest structure once M10.16 records
+  it; until then, follow the established concise summary plus ``EXAMPLES::``
+  convention used by the legacy public API.
 - Build HTML documentation automatically using a modern responsive theme.
 - Publish independently navigable User Guide and Developer Guide HTML sites.
 - Run both documentation doctests and Python-module doctests in CI.
@@ -1153,10 +1183,11 @@ unfinished item in this order:
    authoring, and structural-wiring refinement; then complete the remaining
    general realization/provenance work in M10.9e and
    close the typed catalogue discovery/query API in M10.9f.
-2. M10.10, M10.11, M10.14, and M10.15: inversion/transformations, component
-   analysis, reports, serialization, diagrams, code generation, and remaining
-   tooling. M10.12 datasets/statistics and M10.13 neural distinguishers are
-   already achieved.
+2. M10.10, M10.11, M10.14, M10.15, and M10.16:
+   inversion/transformations, component analysis, reports, serialization,
+   diagrams, code generation, remaining tooling, and repository-wide
+   documentation/static-quality enforcement. M10.12 datasets/statistics and
+   M10.13 neural distinguishers are already achieved.
 3. Build and validate the queued canonical v5 image before M11 integration
    and release; run the M11a bidirectional migration audit before and after the
    final package rename. Image work is not a prerequisite for continuing
@@ -1376,6 +1407,7 @@ is absent). Update this table in the same commit that changes milestone state.
 | Neural split and provenance contracts (M10.13b) | Achieved | Deterministic optional stratification, explicit disjoint sample partitions, stable dataset SHA-256 identities, and realization/driver/version/seed/options provenance reject stale or incomplete runs |
 | Reports and presentation (M10.14) | Planned | Typed Report replacement, tables, plots, exports, citations, evidence and reproducibility metadata |
 | Serialization, diagrams, code generation (M10.15) | Planned | Versioned formats, routed diagrams, language generators, and remaining compiler workflows |
+| Documentation and static-quality enforcement (M10.16) | Planned | Standardize and audit public docstrings/doctests, then enforce their structure and execution together with pinned formatting, linting, and typing gates in CI |
 | Canonical v5 Docker/CI environment | Queued | Before release, replace the amd64 Python-3.10 compatibility image with a multi-architecture Python-3.11+ image containing Chuffed, GLPK, Z3, MiniSat, Singular, msolve and LaTeX; do not block the current M10.9c/M10.9d migration workstream on image construction |
 | Integration and release (M11) | Planned | Reconcile the latest `develop`, run the complete release matrix in the canonical environment, accept the public API, rename `claasp_next` to `claasp`, publish prereleases, and release 5.0 |
 | Final bidirectional migration audit (M11a) | Planned | Machine matrix and generated human summary map every legacy artifact to v5 migrated/superseded/removed/out-of-scope ownership and every shipped v5 artifact back to legacy predecessors or an explicit new-v5 rationale; enforce 100% coverage before and after the package rename |

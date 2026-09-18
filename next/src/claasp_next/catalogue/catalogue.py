@@ -120,6 +120,32 @@ class Catalogue:
 
     Loading the catalogue reads one packaged JSON resource; it does not import
     primitive implementations or optional solver/framework dependencies.
+
+    EXAMPLES::
+
+        >>> from claasp_next.catalogue import Catalogue
+        >>> catalogue = Catalogue()
+
+        >>> # Primitive discovery returns immutable typed records.
+        >>> aes = catalogue.primitive("AES")
+        >>> (aes.name, aes.category, aes.kind)
+        ('AES', 'block_ciphers', 'block_cipher')
+        >>> len(catalogue.primitives())
+        145
+
+        >>> # Category, design, and component filters compose.
+        >>> [item.name for item in catalogue.primitives(
+        ...     category="permutations", filters="pure-arx", components="xor")]
+        ['ChaCha', 'ChaskeyPi', 'Forro', 'Salsa', 'Speckey']
+
+        >>> # Realizations, parameter sets, and drivers remain distinct records.
+        >>> [item.name for item in catalogue.realizations(
+        ...     primitive="AES", capabilities="algebraic_semantics")]
+        ['algebraic']
+        >>> catalogue.parameter_sets(primitive="AES")[0].values["key_bit_size"]
+        128
+        >>> [item.name for item in catalogue.drivers(kind="execution_engine")]
+        ['python_scalar', 'python_batch', 'python_transposed_batch']
     """
 
     def __init__(self) -> None:
