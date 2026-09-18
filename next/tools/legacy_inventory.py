@@ -1456,7 +1456,7 @@ MIGRATION_OVERRIDES.update({
     },
     "tests/unit/cipher_modules/component_analysis_tests_test.py": {
         "milestone_owner": "M10.11a",
-        "v5_destination": "next/tests/unit/test_component_properties.py; next/tests/integration/test_component_analysis_drivers.py; M10.14 presentation tests",
+        "v5_destination": "next/tests/unit/test_component_properties.py; next/tests/integration/test_component_analysis_minizinc.py; M10.14 presentation tests",
         "prerequisites": ["M10.11a", "M10.9f6"],
         "disposition": "migrate",
         "status": "m10.11-owned",
