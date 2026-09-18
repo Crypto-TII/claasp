@@ -29,7 +29,8 @@ from claasp_next.transformations import (
     DependencyIndex, DependencySplit, GraphSource, GraphSourceKind,
     TransformationError, TransformationFailureReason, TransformationResult,
     inline_reorderings, invert_component, invert_primitive, partial_inverse,
-    prune_orphans, reduce_rounds, remove_key_schedule,
+    PairedTransformationResult, paired_xor_primitive, prune_orphans,
+    reduce_rounds, remove_key_schedule,
     slice_primitive, slice_rounds, split_dependencies,
 )
 
@@ -62,6 +63,7 @@ __all__ = [
     "InputVisibility",
     "Port",
     "ParallelSBoxLayer",
+    "PairedTransformationResult",
     "PrimitiveInput",
     "PrimitiveKind",
     "PrimeField",
@@ -85,6 +87,7 @@ __all__ = [
     "invert_primitive",
     "inline_reorderings",
     "partial_inverse",
+    "paired_xor_primitive",
     "prune_orphans",
     "units_from_int",
     "reduce_rounds",

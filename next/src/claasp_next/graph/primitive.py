@@ -808,6 +808,13 @@ class Primitive:
 
         return prune_orphans(self)
 
+    def paired_xor(self, *, shared_inputs=(), **options):
+        """Return two scoped realizations and their XOR observations."""
+
+        from claasp_next.transformations import paired_xor_primitive
+
+        return paired_xor_primitive(self, shared_inputs=shared_inputs, **options)
+
     def diagram(self, annotation=None):
         """Compile this graph and an optional trace or trail to diagram IR."""
 

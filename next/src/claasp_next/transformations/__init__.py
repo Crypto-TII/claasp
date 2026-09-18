@@ -18,12 +18,16 @@ from claasp_next.transformations.inversion import invert_primitive, partial_inve
 from claasp_next.transformations.editing import (
     inline_reorderings, prune_orphans, remove_key_schedule,
 )
+from claasp_next.transformations.paired import (
+    PairedTransformationResult, paired_xor_primitive,
+)
 
 __all__ = [
     "ComponentInverseRegistry", "ComponentInverseSemantics", "DEFAULT_INVERSE_REGISTRY",
-    "DependencyIndex", "DependencySplit", "GraphSource", "GraphSourceKind", "TransformationError",
+    "DependencyIndex", "DependencySplit", "GraphSource", "GraphSourceKind",
+    "PairedTransformationResult", "TransformationError",
     "TransformationFailureReason", "TransformationResult",
     "inline_reorderings", "invert_component", "invert_primitive", "partial_inverse",
-    "prune_orphans", "reduce_rounds", "remove_key_schedule",
+    "paired_xor_primitive", "prune_orphans", "reduce_rounds", "remove_key_schedule",
     "slice_primitive", "slice_rounds", "split_dependencies",
 ]
