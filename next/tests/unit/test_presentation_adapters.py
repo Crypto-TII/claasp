@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from claasp_next.analysis import (
     ComponentProperty, ComponentPropertyResult, NeuralExperiment, NeuralExperimentResult,
     PropertyClaim, PropertyDiagnostic, PropertyDomain, PropertyRequest,
@@ -20,6 +22,11 @@ from claasp_next.presentation import (
 from claasp_next.semantics.cryptanalysis import (
     Trail, TrailKind, TrailSearchResult, TrailStep, Transition, XorDifference,
 )
+from claasp_next.drivers.statistical import parse_nist_final_report
+
+
+REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
+NIST_FIXTURES = REPOSITORY_ROOT / "tests/unit/cipher_modules/statistical_tests/test_data/assess_output"
 
 
 def fixed_trail():
@@ -109,3 +116,13 @@ def test_unsupported_result_returns_typed_diagnostic():
     adapted = adapt_result(object())
     assert adapted.section is None
     assert adapted.diagnostic.code is DiagnosticCode.UNSUPPORTED_RESULT
+
+
+def test_all_committed_nist_rows_are_presentable_without_losing_order_or_unavailable_rows():
+    paths = sorted(NIST_FIXTURES.glob("*/experiments/AlgorithmTesting/finalAnalysisReport.txt"))
+    assert len(paths) == 5
+    for path in paths:
+        parsed = parse_nist_final_report(path.read_text(encoding="utf-8"))
+        table = nist_section(parsed).tables[0]
+        assert len(parsed.rows) == len(table.rows) == 188
+        assert [row.test_name for row in parsed.rows] == [row.cells[1].text for row in table.rows]

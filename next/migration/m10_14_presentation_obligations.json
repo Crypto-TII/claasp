@@ -11,7 +11,7 @@
       "destinations": ["next/src/claasp_next/presentation", "next/tests/unit/test_presentation_contracts.py"],
       "rationale": "Replace test-name dispatch, mutable nested dictionaries, implicit timestamps, unsafe recursive cleanup, and eager pandas/Plotly imports with typed artifacts and explicit operations.",
       "fixed_evidence": ["immutable evidence and provenance contracts", "fixed typed trail and result adapters", "deterministic text/report-data exports", "safe-path and overwrite tests"],
-      "status": "in-progress"
+      "status": "achieved"
     },
     {
       "id": "nist-report-presentation",
@@ -22,7 +22,7 @@
       "destinations": ["next/src/claasp_next/presentation", "next/src/claasp_next/drivers/renderers"],
       "rationale": "M10.12 already owns complete typed parsing and tool execution; presentation consumes those results and preserves unavailable rows and provenance.",
       "fixed_evidence": ["five committed 188-row NIST fixtures", "synthetic unavailable-row fixture", "headless structural plot checks"],
-      "status": "in-progress"
+      "status": "achieved"
     },
     {
       "id": "component-radar",
@@ -33,7 +33,7 @@
       "destinations": ["next/src/claasp_next/drivers/renderers"],
       "rationale": "Consume M10.11 results with typed normalization, evidence, scale, direction, and applicability instead of logarithmically mixing incidental dictionary fields.",
       "fixed_evidence": ["AES S-box and MixColumns series", "proved-bound label", "inapplicable-property omission"],
-      "status": "in-progress"
+      "status": "achieved"
     },
     {
       "id": "avalanche-presentation",
@@ -44,7 +44,7 @@
       "destinations": ["next/src/claasp_next/presentation", "next/src/claasp_next/drivers/renderers"],
       "rationale": "Consume M10.12 AvalancheResult as empirical evidence; do not rerun datasets or reproduce legacy NumPy calculation containers.",
       "fixed_evidence": ["fixed probability matrix", "seed and sample count", "headless matrix axes and deterministic data"],
-      "status": "in-progress"
+      "status": "achieved"
     },
     {
       "id": "dieharder-presentation",
@@ -55,7 +55,7 @@
       "destinations": ["next/src/claasp_next/presentation", "next/src/claasp_next/drivers/renderers"],
       "rationale": "Consume M10.12 typed parser/run artifacts and preserve assessment, statistic, p-value, dataset hash, command, version, runtime, and diagnostics.",
       "fixed_evidence": ["independently constructed parser rows", "passed/weak/failed series", "tool provenance"],
-      "status": "in-progress"
+      "status": "achieved"
     },
     {
       "id": "neural-presentation",
@@ -66,7 +66,7 @@
       "destinations": ["next/src/claasp_next/presentation"],
       "rationale": "Consume M10.13 framework-neutral results and run provenance without importing or invoking scikit-learn.",
       "fixed_evidence": ["dataset hash", "partition and experiment seeds", "driver/framework version", "metrics and incomplete/failed diagnostics"],
-      "status": "in-progress"
+      "status": "achieved"
     },
     {
       "id": "catalogue-views",
@@ -77,7 +77,7 @@
       "destinations": ["next/src/claasp_next/presentation", "next/src/claasp_next/catalogue"],
       "rationale": "Keep M10.9f immutable discovery semantics and move all rendering and optional dataframe conversion to shared presentation adapters.",
       "fixed_evidence": ["142 primitive records", "escaping and alignment", "standard-library CSV parsing", "optional pandas parity", "safe file output"],
-      "status": "in-progress"
+      "status": "achieved"
     },
     {
       "id": "continuous-result-presentation",
@@ -88,7 +88,7 @@
       "destinations": ["next/src/claasp_next/presentation"],
       "rationale": "Present already-produced M10.6d6 numerical candidates as heuristic or empirical evidence; never promote them to exact proofs.",
       "fixed_evidence": ["fixed heuristic candidate", "claim label and diagnostic/export coverage"],
-      "status": "in-progress"
+      "status": "achieved"
     }
   ]
 }

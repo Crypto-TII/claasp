@@ -70,8 +70,9 @@ def test_invalid_format_values_fail_instead_of_using_object_repr():
 def test_core_presentation_import_does_not_load_optional_packages():
     code = """
 import json, sys
+before = set(sys.modules)
 import claasp_next.presentation
-print(json.dumps(sorted(name for name in sys.modules if name.split('.')[0] in {
+print(json.dumps(sorted(name for name in set(sys.modules) - before if name.split('.')[0] in {
     'matplotlib', 'pandas', 'numpy', 'sklearn', 'sage'
 })))
 """

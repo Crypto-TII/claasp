@@ -45,6 +45,7 @@ if guide == "user":
         "catalogue_architecture.rst",
         "transformation_architecture.rst",
         "component_analysis_architecture.rst",
+        "presentation_architecture.rst",
     ])
 else:
     exclude_patterns.extend([

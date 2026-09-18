@@ -3031,7 +3031,7 @@
       ],
       "rationale": "One mutable object dispatches by test-name substrings, recomputes graph structure from component ids, imports pandas and Plotly eagerly, embeds wall-clock paths, and recursively deletes report directories. Explicit typed adapters and output operations replace that unsafe catch-all API.",
       "responsibility": "report",
-      "status": "assigned-to-m10.14a",
+      "status": "superseded-in-m10.14g",
       "tests": [],
       "v5_destination": "next/src/claasp_next/presentation"
     },
@@ -3168,7 +3168,7 @@
       ],
       "rationale": "M10.12 owns parsing and execution. M10.14 supersedes this mutable, Matplotlib-importing, timestamped report generator with typed presentation over NISTFinalReport and StatisticalTestRun.",
       "responsibility": "nist statistical tests report",
-      "status": "assigned-to-m10.14a",
+      "status": "superseded-in-m10.14g",
       "tests": [],
       "v5_destination": "next/src/claasp_next/presentation; next/src/claasp_next/drivers/renderers"
     },
@@ -13678,7 +13678,7 @@
       ],
       "rationale": "The legacy tests execute analyses while testing presentation, cache mutable result dictionaries with pickle, accept implicit current-directory output, and assert only that plotting methods were called. M10.14 uses fixed typed inputs and structural output assertions.",
       "responsibility": "report test",
-      "status": "assigned-to-m10.14a",
+      "status": "superseded-in-m10.14g",
       "tests": [
         "test_clean_reports_uses_runtime_cwd_default",
         "test_report_accepts_cp_trail_output",
@@ -13800,7 +13800,7 @@
       ],
       "rationale": "The legacy smoke test checks only that files exist for a two-row mutable dictionary. Typed parser fixtures provide stronger fixed evidence and do not regenerate NIST-format scientific artifacts as a presentation side effect.",
       "responsibility": "nist statistical tests report test",
-      "status": "assigned-to-m10.14a",
+      "status": "superseded-in-m10.14g",
       "tests": [
         "test_generate_reports_and_charts"
       ],

@@ -1377,11 +1377,9 @@ unfinished item in this order:
    authoring, and structural-wiring refinement; then complete the remaining
    general realization/provenance work in M10.9e and
    close the typed catalogue discovery/query API in M10.9f.
-2. M10.10, M10.11, M10.14, M10.15, and M10.16:
-   inversion/transformations, component analysis, reports, serialization,
-   diagrams, code generation, remaining tooling, and repository-wide
-   documentation/static-quality enforcement. M10.12 datasets/statistics and
-   M10.13 neural distinguishers are already achieved.
+2. M10.15 and M10.16: serialization, diagrams, code generation, remaining
+   tooling, and repository-wide documentation/static-quality enforcement.
+   M10.10--M10.14 are already achieved.
 3. Build and validate the queued canonical v5 image before M11 integration
    and release; run the M11a bidirectional migration audit before and after the
    final package rename. Image work is not a prerequisite for continuing
@@ -1419,11 +1417,10 @@ second checklist is intentionally not maintained. At this revision:
   and evidence, and has no runtime frozen-graph artifacts. M10.9d11 is the
   current corrective refinement for family layout, metadata, reference-source
   ergonomics, and structural wiring.
-- M10.9e follows M10.9d11. It has an achieved AES vertical slice but still needs general result
-  provenance and task-directed realization selection. M10.9f explicitly owns
-  migration of the legacy catalogue/discovery API after the component and
-  primitive catalogues are complete. M10.10, M10.11, M10.14, and M10.15
-  remain planned; M10.12 and M10.13 are achieved.
+- M10.9e and M10.9f are achieved, as are inversion/transformations (M10.10),
+  component analysis (M10.11), datasets/statistics (M10.12), neural
+  distinguishers (M10.13), and reports/presentation (M10.14). M10.15 is the
+  next open milestone; M10.16 follows it.
 - The canonical multi-architecture Python 3.11+ Docker image remains required
   before release, but is queued rather than the active migration workstream.
   Until then, local Python 3.11 and the legacy compatibility image are reported
@@ -1623,7 +1620,14 @@ is absent). Update this table in the same commit that changes milestone state.
 | Neural distinguishers (M10.13) | Achieved | Framework-independent seeded black-box/differential datasets, experiment/result/driver contracts, round/component trace projections (`component_output_dataset`, `xor_differential_component_dataset`, `round_component_ids`), and an optional scikit-learn `NeuralTrainingDriver` behind a dedicated bounded CI job (`neural-ml-execution`) are all in place |
 | Neural experiment foundation (M10.13a) | Achieved | Pure-Python deterministic MSB-first datasets preserve legacy real/random and XOR-related label semantics; immutable training contracts import no ML framework |
 | Neural split and provenance contracts (M10.13b) | Achieved | Deterministic optional stratification, explicit disjoint sample partitions, stable dataset SHA-256 identities, and realization/driver/version/seed/options provenance reject stale or incomplete runs |
-| Reports and presentation (M10.14) | Planned | Typed Report replacement, tables, plots, exports, citations, evidence and reproducibility metadata |
+| Reports and presentation (M10.14) | Achieved | M10.14a--M10.14g replace the legacy catch-all report with immutable dependency-free presentation contracts, typed result adapters, deterministic terminal/Markdown/CSV/report-data exports, optional plots/dataframes, safe explicit file output, citations, separated provenance, and reproducibility metadata. Presentation consumes existing results without recomputing analyses, training models, or invoking solvers. |
+| Presentation contracts and ownership (M10.14a) | Achieved | Commit `3ac78f9e` defines evidence, applicability, diagnostics, citations, reproducibility, and separate mathematical/primitive/execution provenance contracts. A machine-readable obligation manifest assigns every audited legacy and deferred presentation surface to a destination and fixed evidence. Host dependency-free: 1618 passed/82 external deselected. |
+| Immutable presentation tables (M10.14b) | Achieved | Commit `8a7bc879` adds frozen tables, rows, cells, sections, and report data plus deterministic formatting for numeric, vector, probability, correlation, weight, bound, Boolean, unavailable, and diagnostic values. Core imports remain isolated from optional plotting/dataframe/scientific packages. Host dependency-free: 1623 passed/82 external deselected. |
+| Typed result presentation adapters (M10.14c) | Achieved | Commit `08d38004` adapts trails, traces, component properties, avalanche, NIST STS, Dieharder, neural experiments, continuous diffusion, and catalogue capabilities without recomputation. Ordering comes from typed semantics and graph locations remain optional evidence references. Host dependency-free: 1629 passed/82 external deselected. |
+| Deterministic presentation exports (M10.14d) | Achieved | Commit `206d9225` adds aligned terminal and escaped Markdown output, standard-library CSV, and recursively JSON-compatible report data with deterministic ordering and formatting. These report-data exports are explicitly distinct from M10.15 versioned serialization. Host dependency-free: 1634 passed/82 external deselected. |
+| Optional presentation renderers (M10.14e) | Achieved | Commit `bd179c75` adds lazy, explicitly requested Matplotlib component-radar, avalanche, NIST, and Dieharder renderers. Radar normalization is typed by domain, range, direction, applicability, and evidence; unavailable/incomparable properties are omitted and proved bounds remain visibly bounded. Headless tests inspect figure structure and deterministic data. Host dependency-free: 1639 passed/82 external deselected. |
+| Report composition and safe output (M10.14f) | Achieved | Commit `e1a52e33` adds `present`, immutable report composition, explicit rendering, safe UTF-8 file writing with validated formats/extensions and overwrite policy, a lazy optional pandas adapter, and catalogue presentation capabilities. Catalogue closure: 142 primitives/23 components/15 representations/11 analyses/18 drivers. Host dependency-free: 1646 passed/82 external deselected. |
+| Presentation API, documentation, CI, and closure (M10.14g) | Achieved | Public exports and docstrings, executable user examples, the presentation architecture guide, optional-renderer CI, all five committed 188-row NIST fixture summaries, and the M10.14 machine closure gate are complete. The four report inventory records are `superseded-in-m10.14g`; every retained deferred behavior has fixed evidence and all destinations exist. Darwin x86_64/Python 3.11.12: 1649 dependency-free passed/82 external deselected; routine host: 1217 passed/514 external-or-extended deselected; host external excluding the pre-existing broken Dieharder dylib: 72 passed/9 optional-tool skips/1649 deselected. API/user/developer doctests: 97/404/534; both HTML guides warning-free. Wheel: 402 files/15 owned data files/zero frozen graph artifacts. amd64 Linux/Python 3.10.12 compatibility Docker: 1214 passed/3 optional-dependency skips/514 deselected; Docker external: 80 passed/2 optional-dependency skips/1649 deselected. Host presentation packages: Matplotlib 3.9.3 and pandas 2.0.3. Docker tools: MiniZinc 2.9.4 with Chuffed 0.13.2, COIN-BC 2.10.12/1.17.10, GLPK 5.0, Z3 4.8.12, Singular 4.2.1, MiniSat 2.2.1, and Dieharder 3.31.1; msolve is absent. Host tools: MiniZinc 2.9.3 with COIN-BC, GLPK 5.0, Z3 4.14.1, Singular 4.4.1, MiniSat 2.2.1, and msolve 0.10.1; host Dieharder remains unusable because its installed binary references a missing GSL dylib. Generated documentation and package-build artifacts were removed. |
 | Serialization, diagrams, code generation (M10.15) | Planned | Versioned formats, routed diagrams, language generators, and remaining compiler workflows |
 | Documentation and static-quality enforcement (M10.16) | Planned | Standardize and audit public docstrings/doctests, then enforce their structure and execution together with pinned formatting, linting, and typing gates in CI |
 | Canonical v5 Docker/CI environment | Queued | Before release, replace the amd64 Python-3.10 compatibility image with a multi-architecture Python-3.11+ image containing Chuffed, GLPK, Z3, MiniSat, Singular, msolve and LaTeX; do not block the current M10.9c/M10.9d migration workstream on image construction |

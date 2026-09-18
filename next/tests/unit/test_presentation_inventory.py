@@ -17,7 +17,7 @@ def test_every_presentation_obligation_has_owned_existing_destinations_and_evide
         assert item["disposition"] in {"supersede", "supersede-deferred-presentation"}
         assert item["rationale"]
         assert item["fixed_evidence"]
-        assert item["status"] == "in-progress"
+        assert item["status"] == "achieved"
         for legacy_path in item["legacy_paths"]:
             assert (REPOSITORY_ROOT / legacy_path).exists()
         for destination in item["destinations"]:
@@ -38,7 +38,7 @@ def test_four_report_records_have_explicit_m10_14_ownership():
     for path in paths:
         record = records[path]
         assert record["milestone_owner"] == "M10.14a"
-        assert record["status"] == "assigned-to-m10.14a"
+        assert record["status"] == "superseded-in-m10.14g"
         assert record["rationale"]
         assert record["acceptance_criterion"]
         assert "next/" in record["v5_destination"]

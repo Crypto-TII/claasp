@@ -302,3 +302,25 @@ def test_m10_11_component_analysis_cli_closure_gate_passes():
 
     assert result.returncode == 0, result.stdout + result.stderr
     assert json.loads(result.stdout)["complete"]
+
+
+def test_m10_14_presentation_inventory_and_deferred_obligations_close():
+    payload = json.loads(INVENTORY.read_text(encoding="utf-8"))
+    status = _module().presentation_closure_status(payload)
+    assert status == {
+        "records": 4,
+        "obligations": 8,
+        "final_records": 4,
+        "achieved_obligations": 8,
+        "errors": [],
+        "complete": True,
+    }
+
+
+def test_m10_14_presentation_cli_closure_gate_passes():
+    result = subprocess.run(
+        [sys.executable, str(SCRIPT), "--check-presentation-closure"],
+        cwd=ROOT / "next", check=False, capture_output=True, text=True,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert json.loads(result.stdout)["complete"]

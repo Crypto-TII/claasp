@@ -101,6 +101,12 @@ Catalogue discovery
 .. automodule:: claasp_next.catalogue
    :members:
 
+Presentation
+------------
+
+.. automodule:: claasp_next.presentation
+   :members:
+
 Polynomial models
 -----------------
 

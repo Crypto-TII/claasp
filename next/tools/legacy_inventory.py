@@ -1137,7 +1137,7 @@ MIGRATION_OVERRIDES.update({
         "v5_destination": "next/src/claasp_next/presentation",
         "prerequisites": ["M10.11", "M10.12", "M10.13"],
         "disposition": "supersede",
-        "status": "assigned-to-m10.14a",
+        "status": "superseded-in-m10.14g",
         "acceptance_criterion": "Immutable typed tables, sections, report artifacts, adapters, renderers, exports, citations, reproducibility metadata, and safe file output preserve applicable presentation behavior without accepting legacy nested dictionaries.",
         "rationale": "One mutable object dispatches by test-name substrings, recomputes graph structure from component ids, imports pandas and Plotly eagerly, embeds wall-clock paths, and recursively deletes report directories. Explicit typed adapters and output operations replace that unsafe catch-all API.",
     },
@@ -1146,7 +1146,7 @@ MIGRATION_OVERRIDES.update({
         "v5_destination": "next/tests/unit/test_presentation_contracts.py; next/tests/unit/test_presentation_tables.py; next/tests/unit/test_presentation_adapters.py; next/tests/unit/test_presentation_exports.py; next/tests/unit/test_presentation_files.py; next/tests/unit/test_presentation_plots.py",
         "prerequisites": ["M10.14a"],
         "disposition": "supersede",
-        "status": "assigned-to-m10.14a",
+        "status": "superseded-in-m10.14g",
         "acceptance_criterion": "Fixed typed trail, avalanche, component, statistical, neural, continuous, text-export, optional-plot, and safe-file evidence covers every retained report behavior without solver execution or pickle caches.",
         "rationale": "The legacy tests execute analyses while testing presentation, cache mutable result dictionaries with pickle, accept implicit current-directory output, and assert only that plotting methods were called. M10.14 uses fixed typed inputs and structural output assertions.",
     },
@@ -1155,7 +1155,7 @@ MIGRATION_OVERRIDES.update({
         "v5_destination": "next/src/claasp_next/presentation; next/src/claasp_next/drivers/renderers",
         "prerequisites": ["M10.12d"],
         "disposition": "supersede",
-        "status": "assigned-to-m10.14a",
+        "status": "superseded-in-m10.14g",
         "acceptance_criterion": "NIST typed rows retain names, bins, p-values, proportions, unavailable states, dataset identity, and tool provenance in dependency-free tables plus explicitly requested optional plots and safe exports.",
         "rationale": "M10.12 owns parsing and execution. M10.14 supersedes this mutable, Matplotlib-importing, timestamped report generator with typed presentation over NISTFinalReport and StatisticalTestRun.",
     },
@@ -1164,7 +1164,7 @@ MIGRATION_OVERRIDES.update({
         "v5_destination": "next/tests/unit/test_presentation_adapters.py; next/tests/unit/test_presentation_plots.py; next/tests/unit/test_presentation_files.py",
         "prerequisites": ["M10.12d", "M10.14a"],
         "disposition": "supersede",
-        "status": "assigned-to-m10.14a",
+        "status": "superseded-in-m10.14g",
         "acceptance_criterion": "Committed NIST fixtures and fixed synthetic unavailable rows verify complete table data, deterministic aggregate series, headless figure structure, UTF-8 output, extensions, and overwrite policy.",
         "rationale": "The legacy smoke test checks only that files exist for a two-row mutable dictionary. Typed parser fixtures provide stronger fixed evidence and do not regenerate NIST-format scientific artifacts as a presentation side effect.",
     },
@@ -2183,6 +2183,53 @@ def component_analysis_closure_status(payload: dict[str, Any]) -> dict[str, Any]
     }
 
 
+def presentation_closure_status(payload: dict[str, Any]) -> dict[str, Any]:
+    """Verify M10.14 report records and deferred presentation obligations."""
+
+    owned_paths = {
+        "claasp/cipher_modules/report.py",
+        "tests/unit/cipher_modules/report_test.py",
+        "claasp/cipher_modules/statistical_tests/nist_statistical_tests_report.py",
+        "tests/unit/cipher_modules/statistical_tests/nist_statistical_tests_report_test.py",
+    }
+    records = {item["path"]: item for item in payload["records"]}
+    errors = []
+    for path in sorted(owned_paths):
+        item = records[path]
+        if item.get("milestone_owner") != "M10.14a":
+            errors.append(f"{path}: missing explicit M10.14 ownership")
+        if item.get("status") != "superseded-in-m10.14g":
+            errors.append(f"{path}: report disposition is not final")
+        if not item.get("acceptance_criterion") or not item.get("rationale"):
+            errors.append(f"{path}: rationale or fixed-evidence criterion is missing")
+        for destination in item.get("v5_destination", "").split(";"):
+            destination = destination.strip()
+            if destination.startswith("next/") and not (ROOT / destination).exists():
+                errors.append(f"{path}: missing destination {destination}")
+
+    manifest_path = ROOT / "next/migration/m10_14_presentation_obligations.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    obligations = manifest.get("obligations", ())
+    for item in obligations:
+        if not str(item.get("owner", "")).startswith("M10.14"):
+            errors.append(f"{item.get('id')}: presentation owner is missing")
+        if item.get("status") != "achieved":
+            errors.append(f"{item.get('id')}: presentation obligation is not achieved")
+        if not item.get("rationale") or not item.get("fixed_evidence"):
+            errors.append(f"{item.get('id')}: rationale or fixed evidence is missing")
+        for destination in item.get("destinations", ()):
+            if not (ROOT / destination).exists():
+                errors.append(f"{item.get('id')}: missing destination {destination}")
+    return {
+        "records": len(owned_paths),
+        "obligations": len(obligations),
+        "final_records": sum(records[path].get("status") == "superseded-in-m10.14g" for path in owned_paths),
+        "achieved_obligations": sum(item.get("status") == "achieved" for item in obligations),
+        "errors": errors,
+        "complete": not errors,
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--check", action="store_true", help="fail if the checked-in inventory is stale")
@@ -2199,6 +2246,8 @@ def main() -> int:
     parser.add_argument("--check-transformation-closure", action="store_true", help="fail until every M10.10 record has final evidence and an existing destination")
     parser.add_argument("--component-analysis-status", action="store_true", help="report M10.11 component-analysis ownership and closure")
     parser.add_argument("--check-component-analysis-closure", action="store_true", help="fail until M10.11 evidence is final without reopening M10.8d")
+    parser.add_argument("--presentation-status", action="store_true", help="report M10.14 report and deferred-presentation closure")
+    parser.add_argument("--check-presentation-closure", action="store_true", help="fail until all M10.14 report and presentation evidence is final")
     args = parser.parse_args()
     if args.model_status or args.check_model_closure:
         status = model_closure_status(build_inventory())
@@ -2226,6 +2275,10 @@ def main() -> int:
         status = component_analysis_closure_status(build_inventory())
         print(json.dumps(status, indent=2))
         return int(args.check_component_analysis_closure and not status["complete"])
+    if args.presentation_status or args.check_presentation_closure:
+        status = presentation_closure_status(build_inventory())
+        print(json.dumps(status, indent=2))
+        return int(args.check_presentation_closure and not status["complete"])
     expected = serialized_inventory()
     if args.check:
         if not OUTPUT.exists() or OUTPUT.read_text(encoding="utf-8") != expected:

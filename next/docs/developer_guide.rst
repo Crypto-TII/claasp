@@ -16,6 +16,7 @@ renderers.
    catalogue_architecture
    representation_architecture
    component_analysis_architecture
+   presentation_architecture
    diagram_representations
    concepts
    extending_analysis
