@@ -21,9 +21,9 @@ from claasp_next.graph.bit_builder import BitState
 from claasp_next.primitive_inputs import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
 
 PARAMETERS_CONFIGURATION_LIST = [
-    {"block_bit_size": 128, "key_bit_size": 128, "r": 46},
-    {"block_bit_size": 128, "key_bit_size": 256, "r": 48},
-    {"block_bit_size": 256, "key_bit_size": 256, "r": 74},
+    {"block_bit_size": 128, "key_bit_size": 128, "number_of_rounds": 46},
+    {"block_bit_size": 128, "key_bit_size": 256, "number_of_rounds": 48},
+    {"block_bit_size": 256, "key_bit_size": 256, "number_of_rounds": 74},
 ]
 
 

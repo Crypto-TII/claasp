@@ -1,3 +1,5 @@
+import importlib
+import inspect
 import json
 from pathlib import Path
 import subprocess
@@ -39,6 +41,22 @@ def test_every_primitive_has_classification_contract_and_evidence():
         assert item["realizations"]
         assert item["fixed_evidence"]
         assert all((ROOT.parent / path).is_file() for path in item["fixed_evidence"])
+
+
+def test_every_catalogue_parameter_set_matches_its_public_constructor():
+    for item in _catalogue()["primitives"]:
+        primitive_class = getattr(importlib.import_module(item["module"]), item["name"])
+        signature = inspect.signature(primitive_class)
+        if any(
+            parameter.kind is inspect.Parameter.VAR_KEYWORD
+            for parameter in signature.parameters.values()
+        ):
+            continue
+        accepted = set(signature.parameters)
+        for parameter_set in item["parameter_sets"]:
+            assert set(parameter_set["values"]) <= accepted, (
+                item["name"], parameter_set["name"], set(parameter_set["values"]) - accepted,
+            )
 
 
 def test_legacy_sbox_forms_are_explicitly_noncanonical():

@@ -21,8 +21,8 @@ from claasp_next.primitive_inputs import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEX
 
 input_types = [INPUT_KEY, INPUT_PLAINTEXT]
 PARAMETERS_CONFIGURATION_LIST = [
-    {"block_bit_size": 64, "key_bit_size": 80, "number_of_rounds": 36},
-    {"block_bit_size": 64, "key_bit_size": 128, "number_of_rounds": 36},
+    {"key_bit_size": 80, "number_of_rounds": 36},
+    {"key_bit_size": 128, "number_of_rounds": 36},
 ]
 
 

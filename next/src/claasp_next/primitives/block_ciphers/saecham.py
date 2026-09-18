@@ -20,9 +20,7 @@ from claasp_next.graph.bit_builder import BitState
 from claasp_next.primitive_inputs import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
 
 # SAECHAM is defined only for a 64-bit block and 128-bit key [DampersSAECHAM2025]_.
-PARAMETERS_CONFIGURATION_LIST = [
-    {"block_bit_size": 64, "key_bit_size": 128, "number_of_rounds": 88},
-]
+PARAMETERS_CONFIGURATION_LIST = [{"number_of_rounds": 88}]
 
 _BLOCK_BIT_SIZE = 64
 _KEY_BIT_SIZE = 128
