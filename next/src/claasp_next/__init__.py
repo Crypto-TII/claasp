@@ -33,6 +33,10 @@ from claasp_next.transformations import (
     reduce_rounds, remove_key_schedule,
     slice_primitive, slice_rounds, split_dependencies,
 )
+from claasp_next.serialization import (
+    SerializationDiagnostic, SerializationError, SerializationFailure,
+    deserialize_primitive, primitive_digest, serialize_primitive,
+)
 
 __all__ = [
     "BinaryExtensionField",
@@ -76,6 +80,9 @@ __all__ = [
     "ScalarEvaluator",
     "ScalarExecutionDriver",
     "Selection",
+    "SerializationDiagnostic",
+    "SerializationError",
+    "SerializationFailure",
     "TransposedBatchEvaluator",
     "TransposedBatchExecutionDriver",
     "ValueType",
@@ -95,6 +102,9 @@ __all__ = [
     "slice_primitive",
     "slice_rounds",
     "split_dependencies",
+    "serialize_primitive",
+    "deserialize_primitive",
+    "primitive_digest",
     "public_input",
     "secret_input",
 ]
