@@ -1126,6 +1126,66 @@ MIGRATION_OVERRIDES.update({
     },
 })
 
+# M10.15 owns the remaining mixed serialization/code-generation/evaluator
+# surfaces. Existing typed scalar, batch, component, and continuous-analysis
+# semantics are reused rather than reimplemented under legacy helper names.
+_M10_15_OVERRIDES = {
+    "claasp/cipher_modules/code_generator.py": (
+        "next/src/claasp_next/representations/source; next/src/claasp_next/drivers/source.py",
+        "migrate", "Deterministic typed Python and C compilers plus explicit isolated drivers replace mutable legacy generators, shared package-directory artifacts, and implicit compilation.",
+    ),
+    "claasp/cipher_modules/evaluator.py": (
+        "next/src/claasp_next/representations/execution; next/src/claasp_next/drivers/source.py",
+        "supersede", "The achieved scalar and dependency-free batch engines remain the semantic oracle; only explicit generated-artifact execution is added as a separate driver.",
+    ),
+    "claasp/cipher_modules/generic_functions.py": (
+        "next/src/claasp_next/components; next/src/claasp_next/representations/execution",
+        "supersede", "Typed components and the registered scalar evaluator already own the mathematical behavior; free-form Sage/bitstring helpers and generated-code string helpers are not duplicated.",
+    ),
+    "claasp/cipher_modules/generic_functions_continuous_diffusion_analysis.py": (
+        "next/src/claasp_next/analysis/continuous.py; next/tests/unit/test_continuous_heuristics.py",
+        "supersede", "M10.6d6 already owns typed continuous heuristic semantics and evidence; the NumPy/Sage helper monolith is closed without reopening that milestone.",
+    ),
+    "claasp/cipher_modules/generic_functions_vectorized_bit.py": (
+        "next/src/claasp_next/representations/execution/batch.py",
+        "supersede", "The dependency-free transposed batch driver preserves scalar semantics for arbitrary domains without a required NumPy-specific bit API.",
+    ),
+    "claasp/cipher_modules/generic_functions_vectorized_byte.py": (
+        "next/src/claasp_next/representations/execution/batch.py",
+        "supersede", "Typed logical units and the dependency-free batch driver replace byte-layout heuristics and mandatory NumPy conversion helpers.",
+    ),
+    "tests/unit/cipher_modules/code_generator_test.py": (
+        "next/tests/unit/test_source_generation.py; next/tests/integration/test_native_source_driver.py",
+        "supersede", "Semantic parity, deterministic source, explicit unsupported diagnostics, safe paths, compiler provenance, and bounded subprocess tests replace generated-line and shared-library side-effect assertions.",
+    ),
+    "tests/unit/cipher_modules/generic_functions_test.py": (
+        "next/tests/unit/test_source_generation.py; next/tests/unit/test_batch_evaluation.py; next/tests/unit/test_feedback_register.py",
+        "supersede", "Existing typed component/evaluator evidence plus generated-source parity preserves applicable values; expression-string and mutable helper internals are not contracts.",
+    ),
+    "tests/unit/cipher_modules/generic_functions_continuous_diffusion_analysis_test.py": (
+        "next/tests/unit/test_continuous_heuristics.py",
+        "supersede", "M10.6d6 fixed continuous-analysis evidence already covers the retained heuristic semantics independently of generated evaluator code.",
+    ),
+    "tests/unit/cipher_modules/generic_functions_vectorized_bit_test.py": (
+        "next/tests/unit/test_batch_evaluation.py; next/tests/unit/test_source_generation.py",
+        "supersede", "Scalar/batch and generated-source parity retain semantic results without NumPy array-shape or debug-print contracts.",
+    ),
+    "tests/unit/cipher_modules/generic_functions_vectorized_byte_test.py": (
+        "next/tests/unit/test_batch_evaluation.py; next/tests/unit/test_source_generation.py",
+        "supersede", "Typed batch inputs and exact scalar parity replace byte-oriented NumPy packing helpers; fixed-width source boundary cases are tested directly.",
+    ),
+}
+for _path, (_destination, _disposition, _rationale) in _M10_15_OVERRIDES.items():
+    MIGRATION_OVERRIDES[_path] = {
+        "milestone_owner": "M10.15a",
+        "v5_destination": _destination,
+        "prerequisites": ["M10.14"],
+        "disposition": _disposition,
+        "status": "owned-in-m10.15a",
+        "acceptance_criterion": "The M10.15 closure manifest names fixed evidence for every retained behavior, every destination exists, and the complete tooling closure gate passes.",
+        "rationale": _rationale,
+    }
+
 # M10.14 replaces the mutable catch-all Report and the dedicated NIST report
 # writer with immutable presentation artifacts and explicit adapters.  Plotting
 # and catalogue-display deferrals remain recorded separately in the M10.14

@@ -1175,6 +1175,39 @@ slices of the presentation milestone rather than independent milestones:
 - Complete routed ASCII art or retain its explicit work-in-progress status;
   do not silently substitute a structural listing.
 
+M10.15 is delivered through dependency-ordered slices. They are slices of
+this tooling milestone, not new milestones:
+
+1. **M10.15a — ownership, contracts, and fixed evidence.** Assign every
+   legacy serialization, evaluator, generated-source, vectorized-helper, and
+   native C/header surface to an explicit destination or supersession. Define
+   schema/version policy, immutable artifact and diagnostic contracts, CUDA
+   applicability, and a machine closure gate without reopening achieved
+   evaluation, continuous-analysis, catalogue, or presentation semantics.
+2. **M10.15b — canonical primitive serialization.** Add dependency-free
+   canonical UTF-8 JSON for typed primitive graphs and strict deserialization
+   with schema negotiation, a closed domain/component registry, stable field
+   ordering, complete graph validation, and typed diagnostics.
+3. **M10.15c — typed artifact serialization.** Version explicitly selected
+   execution traces/results and reject unsupported result kinds. Keep these
+   machine formats distinct from M10.14 report-data export.
+4. **M10.15d — evaluation-helper closure.** Prove scalar, batch, structural,
+   feedback, and continuous-helper ownership; use the dependency-free batch
+   engine as the legacy NumPy-vectorized replacement and record removed helper
+   APIs without duplicating component semantics.
+5. **M10.15e — deterministic Python source.** Compile supported typed graphs
+   to immutable Python source artifacts and execute them only through an
+   isolated, bounded driver with source-digest and realization provenance.
+6. **M10.15f — deterministic native source and drivers.** Compile the retained
+   fixed-width scope to self-contained C, use validated argument-vector
+   compiler/run drivers in isolated directories, report unavailable and failed
+   tools honestly, and record CUDA as unsupported unless maintained legacy
+   evidence establishes a release-scope backend.
+7. **M10.15g — diagrams, public API, documentation, packaging, and closure.**
+   Re-audit diagram IR/routing/TikZ/PDF, fill only genuine gaps, publish
+   catalogue capabilities and executable guidance, verify wheel contents and
+   CI, close every M10.15 obligation, and run the full checkpoint matrix.
+
 #### M10.16: Documentation and static-quality enforcement
 
 - Define one reviewable docstring and doctest convention for public modules,
@@ -1628,7 +1661,14 @@ is absent). Update this table in the same commit that changes milestone state.
 | Optional presentation renderers (M10.14e) | Achieved | Commit `bd179c75` adds lazy, explicitly requested Matplotlib component-radar, avalanche, NIST, and Dieharder renderers. Radar normalization is typed by domain, range, direction, applicability, and evidence; unavailable/incomparable properties are omitted and proved bounds remain visibly bounded. Headless tests inspect figure structure and deterministic data. Host dependency-free: 1639 passed/82 external deselected. |
 | Report composition and safe output (M10.14f) | Achieved | Commit `e1a52e33` adds `present`, immutable report composition, explicit rendering, safe UTF-8 file writing with validated formats/extensions and overwrite policy, a lazy optional pandas adapter, and catalogue presentation capabilities. Catalogue closure: 142 primitives/23 components/15 representations/11 analyses/18 drivers. Host dependency-free: 1646 passed/82 external deselected. |
 | Presentation API, documentation, CI, and closure (M10.14g) | Achieved | Public exports and docstrings, executable user examples, the presentation architecture guide, optional-renderer CI, all five committed 188-row NIST fixture summaries, and the M10.14 machine closure gate are complete. The four report inventory records are `superseded-in-m10.14g`; every retained deferred behavior has fixed evidence and all destinations exist. Darwin x86_64/Python 3.11.12: 1649 dependency-free passed/82 external deselected; routine host: 1217 passed/514 external-or-extended deselected; host external excluding the pre-existing broken Dieharder dylib: 72 passed/9 optional-tool skips/1649 deselected. API/user/developer doctests: 97/404/534; both HTML guides warning-free. Wheel: 402 files/15 owned data files/zero frozen graph artifacts. amd64 Linux/Python 3.10.12 compatibility Docker: 1214 passed/3 optional-dependency skips/514 deselected; Docker external: 80 passed/2 optional-dependency skips/1649 deselected. Host presentation packages: Matplotlib 3.9.3 and pandas 2.0.3. Docker tools: MiniZinc 2.9.4 with Chuffed 0.13.2, COIN-BC 2.10.12/1.17.10, GLPK 5.0, Z3 4.8.12, Singular 4.2.1, MiniSat 2.2.1, and Dieharder 3.31.1; msolve is absent. Host tools: MiniZinc 2.9.3 with COIN-BC, GLPK 5.0, Z3 4.14.1, Singular 4.4.1, MiniSat 2.2.1, and msolve 0.10.1; host Dieharder remains unusable because its installed binary references a missing GSL dylib. Generated documentation and package-build artifacts were removed. |
-| Serialization, diagrams, code generation (M10.15) | Planned | Versioned formats, routed diagrams, language generators, and remaining compiler workflows |
+| Serialization, diagrams, code generation (M10.15) | In progress | M10.15a--M10.15g: explicit ownership and contracts, canonical primitive/artifact serialization, evaluator-helper closure, deterministic Python/C compilers and isolated drivers, diagram/public-API/package closure |
+| Tooling ownership and contracts (M10.15a) | Achieved | Eleven Python records, two mixed-module surfaces, four C/header artifacts, the achieved diagram stack, schema/version policy, fixed evidence, and the evidence-based CUDA exclusion have explicit machine ownership. Darwin x86_64/Python 3.11.12 dependency-free: 1651 passed/82 external deselected. |
+| Canonical primitive serialization (M10.15b) | Next | Strict dependency-free versioned JSON round trips and typed diagnostics |
+| Typed artifact serialization (M10.15c) | Planned | Explicitly selected execution artifacts, separate from report-data exports |
+| Evaluation-helper closure (M10.15d) | Planned | Scalar/batch oracle reuse and vectorized/continuous/native helper dispositions |
+| Deterministic Python source (M10.15e) | Planned | Immutable source artifacts and bounded isolated execution |
+| Deterministic native source (M10.15f) | Planned | Self-contained C, optional compiler/run drivers, and explicit CUDA disposition |
+| Tooling documentation and closure (M10.15g) | Planned | Diagrams, public API, catalogue, CI, wheel, inventory, and full checkpoint |
 | Documentation and static-quality enforcement (M10.16) | Planned | Standardize and audit public docstrings/doctests, then enforce their structure and execution together with pinned formatting, linting, and typing gates in CI |
 | Canonical v5 Docker/CI environment | Queued | Before release, replace the amd64 Python-3.10 compatibility image with a multi-architecture Python-3.11+ image containing Chuffed, GLPK, Z3, MiniSat, Singular, msolve and LaTeX; do not block the current M10.9c/M10.9d migration workstream on image construction |
 | Integration and release (M11) | Planned | Reconcile the latest `develop`, run the complete release matrix in the canonical environment, accept the public API, rename `claasp_next` to `claasp`, publish prereleases, and release 5.0 |

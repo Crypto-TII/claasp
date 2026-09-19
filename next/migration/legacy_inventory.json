@@ -237,7 +237,7 @@
       "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "The M10.15 closure manifest names fixed evidence for every retained behavior, every destination exists, and the complete tooling closure gate passes.",
       "dependencies": [
         "claasp",
         "inspect",
@@ -250,9 +250,10 @@
         "test_functions": []
       },
       "kind": "source",
+      "milestone_owner": "M10.15a",
       "path": "claasp/cipher_modules/code_generator.py",
       "prerequisites": [
-        "owning migration milestone"
+        "M10.14"
       ],
       "public_entry_points": [
         "process_tag",
@@ -284,11 +285,11 @@
         "get_word_operation_word_based_c_code",
         "update_intermediate_structure"
       ],
-      "rationale": null,
+      "rationale": "Deterministic typed Python and C compilers plus explicit isolated drivers replace mutable legacy generators, shared package-directory artifacts, and implicit compilation.",
       "responsibility": "code generator",
-      "status": "planned-or-partially-migrated",
+      "status": "owned-in-m10.15a",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/representations/source; next/src/claasp_next/drivers/source.py"
     },
     {
       "acceptance_criterion": "M10.11 returns immutable typed component-property results with explicit applicability and exactness; fixed S-box, Boolean, matrix, branch-number, and feedback evidence passes independently, while Matplotlib presentation remains assigned to M10.14.",
@@ -371,21 +372,22 @@
       "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "The M10.15 closure manifest names fixed evidence for every retained behavior, every destination exists, and the complete tooling closure gate passes.",
       "dependencies": [
         "claasp",
         "subprocess",
         "types"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
+      "milestone_owner": "M10.15a",
       "path": "claasp/cipher_modules/evaluator.py",
       "prerequisites": [
-        "owning migration milestone"
+        "M10.14"
       ],
       "public_entry_points": [
         "evaluate",
@@ -393,14 +395,14 @@
         "evaluate_vectorized",
         "evaluate_with_intermediate_outputs_continuous_diffusion_analysis"
       ],
-      "rationale": null,
+      "rationale": "The achieved scalar and dependency-free batch engines remain the semantic oracle; only explicit generated-artifact execution is added as a separate driver.",
       "responsibility": "evaluator",
-      "status": "planned-or-partially-migrated",
+      "status": "owned-in-m10.15a",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/representations/execution; next/src/claasp_next/drivers/source.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "The M10.15 closure manifest names fixed evidence for every retained behavior, every destination exists, and the complete tooling closure gate passes.",
       "dependencies": [
         "bitstring",
         "claasp",
@@ -408,15 +410,16 @@
         "math",
         "sage"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
+      "milestone_owner": "M10.15a",
       "path": "claasp/cipher_modules/generic_functions.py",
       "prerequisites": [
-        "owning migration milestone"
+        "M10.14"
       ],
       "public_entry_points": [
         "int_to_byte_array",
@@ -461,14 +464,14 @@
         "index_list_to_expression_str_word",
         "fsr_word"
       ],
-      "rationale": null,
+      "rationale": "Typed components and the registered scalar evaluator already own the mathematical behavior; free-form Sage/bitstring helpers and generated-code string helpers are not duplicated.",
       "responsibility": "generic functions",
-      "status": "planned-or-partially-migrated",
+      "status": "owned-in-m10.15a",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/components; next/src/claasp_next/representations/execution"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "The M10.15 closure manifest names fixed evidence for every retained behavior, every destination exists, and the complete tooling closure gate passes.",
       "dependencies": [
         "claasp",
         "copy",
@@ -477,15 +480,16 @@
         "numpy",
         "sage"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
+      "milestone_owner": "M10.15a",
       "path": "claasp/cipher_modules/generic_functions_continuous_diffusion_analysis.py",
       "prerequisites": [
-        "owning migration milestone"
+        "M10.14"
       ],
       "public_entry_points": [
         "AND_continuous_diffusion_analysis",
@@ -523,26 +527,27 @@
         "get_sbox_precomputations",
         "select_bits_continuous_diffusion_analysis"
       ],
-      "rationale": null,
+      "rationale": "M10.6d6 already owns typed continuous heuristic semantics and evidence; the NumPy/Sage helper monolith is closed without reopening that milestone.",
       "responsibility": "generic functions continuous diffusion analysis",
-      "status": "planned-or-partially-migrated",
+      "status": "owned-in-m10.15a",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/analysis/continuous.py; next/tests/unit/test_continuous_heuristics.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "The M10.15 closure manifest names fixed evidence for every retained behavior, every destination exists, and the complete tooling closure gate passes.",
       "dependencies": [
         "numpy"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
+      "milestone_owner": "M10.15a",
       "path": "claasp/cipher_modules/generic_functions_vectorized_bit.py",
       "prerequisites": [
-        "owning migration milestone"
+        "M10.14"
       ],
       "public_entry_points": [
         "bit_vector_to_integer",
@@ -567,28 +572,29 @@
         "bit_vector_mix_column_poly0",
         "bit_vector_permutation"
       ],
-      "rationale": null,
+      "rationale": "The dependency-free transposed batch driver preserves scalar semantics for arbitrary domains without a required NumPy-specific bit API.",
       "responsibility": "generic functions vectorized bit",
-      "status": "planned-or-partially-migrated",
+      "status": "owned-in-m10.15a",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/representations/execution/batch.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "The M10.15 closure manifest names fixed evidence for every retained behavior, every destination exists, and the complete tooling closure gate passes.",
       "dependencies": [
         "functools",
         "math",
         "numpy"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
+      "milestone_owner": "M10.15a",
       "path": "claasp/cipher_modules/generic_functions_vectorized_byte.py",
       "prerequisites": [
-        "owning migration milestone"
+        "M10.14"
       ],
       "public_entry_points": [
         "integer_array_to_evaluate_vectorized_input",
@@ -617,11 +623,11 @@
         "byte_vector_mix_column_poly0",
         "byte_vector_permutation"
       ],
-      "rationale": null,
+      "rationale": "Typed logical units and the dependency-free batch driver replace byte-layout heuristics and mandatory NumPy conversion helpers.",
       "responsibility": "generic functions vectorized byte",
-      "status": "planned-or-partially-migrated",
+      "status": "owned-in-m10.15a",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/representations/execution/batch.py"
     },
     {
       "acceptance_criterion": "Deterministic typed traversal and split-boundary closure match preserved graph-source and edge evidence without importing NetworkX.",
@@ -10665,12 +10671,12 @@
       "v5_destination": "next/tests (mapped to the owning migrated behavior)"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "The M10.15 closure manifest names fixed evidence for every retained behavior, every destination exists, and the complete tooling closure gate passes.",
       "dependencies": [
         "claasp",
         "os"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -10681,9 +10687,10 @@
         ]
       },
       "kind": "test",
+      "milestone_owner": "M10.15a",
       "path": "tests/unit/cipher_modules/code_generator_test.py",
       "prerequisites": [
-        "owning migration milestone"
+        "M10.14"
       ],
       "public_entry_points": [
         "test_generate_bit_based_vectorized_python_code_string",
@@ -10691,16 +10698,16 @@
         "test_get_padding_component_bit_based_c_code",
         "test_generate_evaluate_c_code_shared_library_word_based"
       ],
-      "rationale": null,
+      "rationale": "Semantic parity, deterministic source, explicit unsupported diagnostics, safe paths, compiler provenance, and bounded subprocess tests replace generated-line and shared-library side-effect assertions.",
       "responsibility": "code generator test",
-      "status": "planned-or-partially-migrated",
+      "status": "owned-in-m10.15a",
       "tests": [
         "test_generate_bit_based_vectorized_python_code_string",
         "test_generate_evaluate_c_code_shared_library_word_based",
         "test_generic_c_functions_o_name",
         "test_get_padding_component_bit_based_c_code"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_source_generation.py; next/tests/integration/test_native_source_driver.py"
     },
     {
       "acceptance_criterion": "Independent fixed evidence covers exact S-box, Boolean, matrix, branch-number, feedback, driver, applicability, and exactness contracts; plotting assertions remain assigned to M10.14.",
@@ -11012,12 +11019,12 @@
       "v5_destination": "next/tests (mapped to the owning migrated behavior)"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "The M10.15 closure manifest names fixed evidence for every retained behavior, every destination exists, and the complete tooling closure gate passes.",
       "dependencies": [
         "claasp",
         "decimal"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -11027,32 +11034,33 @@
         ]
       },
       "kind": "test",
+      "milestone_owner": "M10.15a",
       "path": "tests/unit/cipher_modules/generic_functions_continuous_diffusion_analysis_test.py",
       "prerequisites": [
-        "owning migration milestone"
+        "M10.14"
       ],
       "public_entry_points": [
         "test_SBOX_continuous_diffusion_analysis",
         "test_SHIFT_BY_VARIABLE_AMOUNT_continuous_diffusion_analysis",
         "test_MIX_COLUMN_generalized_continuous_diffusion_analysis"
       ],
-      "rationale": null,
+      "rationale": "M10.6d6 fixed continuous-analysis evidence already covers the retained heuristic semantics independently of generated evaluator code.",
       "responsibility": "generic functions continuous diffusion analysis test",
-      "status": "planned-or-partially-migrated",
+      "status": "owned-in-m10.15a",
       "tests": [
         "test_MIX_COLUMN_generalized_continuous_diffusion_analysis",
         "test_SBOX_continuous_diffusion_analysis",
         "test_SHIFT_BY_VARIABLE_AMOUNT_continuous_diffusion_analysis"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_continuous_heuristics.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "The M10.15 closure manifest names fixed evidence for every retained behavior, every destination exists, and the complete tooling closure gate passes.",
       "dependencies": [
         "bitstring",
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -11069,9 +11077,10 @@
         ]
       },
       "kind": "test",
+      "milestone_owner": "M10.15a",
       "path": "tests/unit/cipher_modules/generic_functions_test.py",
       "prerequisites": [
-        "owning migration milestone"
+        "M10.14"
       ],
       "public_entry_points": [
         "test_ROTATE",
@@ -11085,9 +11094,9 @@
         "test_index_list_to_expression_str_word",
         "test_modmul"
       ],
-      "rationale": null,
+      "rationale": "Existing typed component/evaluator evidence plus generated-source parity preserves applicable values; expression-string and mutable helper internals are not contracts.",
       "responsibility": "generic functions test",
-      "status": "planned-or-partially-migrated",
+      "status": "owned-in-m10.15a",
       "tests": [
         "test_ROTATE",
         "test_SHIFT",
@@ -11100,15 +11109,15 @@
         "test_index_list_to_expression_str_word",
         "test_modmul"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_source_generation.py; next/tests/unit/test_batch_evaluation.py; next/tests/unit/test_feedback_register.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "The M10.15 closure manifest names fixed evidence for every retained behavior, every destination exists, and the complete tooling closure gate passes.",
       "dependencies": [
         "claasp",
         "numpy"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -11124,9 +11133,10 @@
         ]
       },
       "kind": "test",
+      "milestone_owner": "M10.15a",
       "path": "tests/unit/cipher_modules/generic_functions_vectorized_bit_test.py",
       "prerequisites": [
-        "owning migration milestone"
+        "M10.14"
       ],
       "public_entry_points": [
         "test_bit_vector_modmul",
@@ -11139,9 +11149,9 @@
         "test_bit_vector_debug_branches_and_print_helpers",
         "test_bit_vector_mix_column_poly0"
       ],
-      "rationale": null,
+      "rationale": "Scalar/batch and generated-source parity retain semantic results without NumPy array-shape or debug-print contracts.",
       "responsibility": "generic functions vectorized bit test",
-      "status": "planned-or-partially-migrated",
+      "status": "owned-in-m10.15a",
       "tests": [
         "test_bit_vector_debug_branches_and_print_helpers",
         "test_bit_vector_mix_column_poly0",
@@ -11153,15 +11163,15 @@
         "test_bit_vector_to_integer_and_concat",
         "test_bit_vector_xor_and_or_not"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_batch_evaluation.py; next/tests/unit/test_source_generation.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "The M10.15 closure manifest names fixed evidence for every retained behavior, every destination exists, and the complete tooling closure gate passes.",
       "dependencies": [
         "claasp",
         "numpy"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -11185,9 +11195,10 @@
         ]
       },
       "kind": "test",
+      "milestone_owner": "M10.15a",
       "path": "tests/unit/cipher_modules/generic_functions_vectorized_byte_test.py",
       "prerequisites": [
-        "owning migration milestone"
+        "M10.14"
       ],
       "public_entry_points": [
         "test_byte_vector_is_consecutive",
@@ -11208,9 +11219,9 @@
         "test_byte_vector_MODSUB",
         "test_byte_vector_ROTATE"
       ],
-      "rationale": null,
+      "rationale": "Typed batch inputs and exact scalar parity replace byte-oriented NumPy packing helpers; fixed-width source boundary cases are tested directly.",
       "responsibility": "generic functions vectorized byte test",
-      "status": "planned-or-partially-migrated",
+      "status": "owned-in-m10.15a",
       "tests": [
         "test_byte_vector_AND",
         "test_byte_vector_MODADD",
@@ -11230,7 +11241,7 @@
         "test_get_number_of_bytes_needed_for_bit_size",
         "test_integer_array_to_evaluate_vectorized_input"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_batch_evaluation.py; next/tests/unit/test_source_generation.py"
     },
     {
       "acceptance_criterion": "Typed predecessor/descendant closures and top/bottom splits preserve the applicable ChaCha and Speck dependency assertions.",
