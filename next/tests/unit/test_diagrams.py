@@ -12,7 +12,7 @@ from claasp_next.semantics.cryptanalysis import (
     XorDifference,
 )
 from claasp_next.representations.diagrams import (
-    ASCIIArtSerializer,
+    ASCIIArtSerializer, DiagramEdge, DiagramNode, DiagramRound,
     PrimitiveDiagram,
     DiagramCompiler,
     TikZSerializer,
@@ -110,3 +110,18 @@ def test_diagram_rejects_annotation_from_another_primitive():
 
     with pytest.raises(ValueError, match="different primitive"):
         first.diagram(second.evaluate_with_trace(0).trace)
+
+
+def test_tikz_escapes_labels_and_is_deterministic():
+    diagram = PrimitiveDiagram(
+        "escape",
+        (
+            DiagramNode("in", "input_100%&{}#\\", "input", None),
+            DiagramNode("copy", "copy", "Identity", 0),
+        ),
+        (DiagramEdge("in", "copy", (0,), 0),),
+        (DiagramRound(0, ("copy",)),),
+    )
+    first = TikZSerializer().serialize(diagram)
+    assert first == TikZSerializer().serialize(diagram)
+    assert r"input\_100\%\&\{\}\#\textbackslash{}" in first

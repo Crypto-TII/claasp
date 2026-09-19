@@ -29,6 +29,7 @@ analysis guides for your own work.
    analysis
    component_properties
    displaying_results
+   serialization_and_source
    statistical_testing
    neural_distinguishers
 

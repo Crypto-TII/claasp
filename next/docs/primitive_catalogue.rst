@@ -74,7 +74,7 @@ record rather than importing the implementation:
 .. doctest::
 
    >>> [item.name for item in catalogue.drivers(kind="execution_engine")]
-   ['python_scalar', 'python_batch', 'python_transposed_batch']
+   ['python_scalar', 'python_batch', 'python_transposed_batch', 'python_generated_source', 'native_generated_c']
    >>> catalogue.driver_availability("python_scalar").available
    True
 
@@ -84,7 +84,7 @@ than being inferred from package names. Queries work in either direction:
 .. doctest::
 
    >>> [item.name for item in catalogue.representations(component="Power")]
-   ['concrete_execution', 'msolve_input', 'prime_field_polynomial', 'primitive_diagram', 'singular_program']
+   ['concrete_execution', 'primitive_serialization', 'python_generated_source', 'msolve_input', 'prime_field_polynomial', 'primitive_diagram', 'singular_program']
    >>> [item.name for item in catalogue.components(representation="boolean_cnf")]
    ['Add', 'BitVectorSBox', 'BitwiseAnd', 'Constant', 'Identity', 'ModularAdd', 'Permutation', 'Rotate', 'Xor']
    >>> [item.name for item in catalogue.drivers(representation="boolean_cnf")]

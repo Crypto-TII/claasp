@@ -31,13 +31,13 @@ def check() -> tuple[int, int, int, int, int]:
     assert {name: item["module"] for name, item in by_name.items()} == ALL_EXPORTS
     assert {item["name"]: item["module"] for item in catalogue["components"]} == single_components
     assert len(catalogue["components"]) == 23
-    assert len({item["name"] for item in catalogue["drivers"]}) == len(catalogue["drivers"]) == 18
+    assert len({item["name"] for item in catalogue["drivers"]}) == len(catalogue["drivers"]) == 24
     representations = catalogue["representations"]
     analyses = catalogue["analyses"]
     representation_names = {item["name"] for item in representations}
     driver_names = {item["name"] for item in catalogue["drivers"]}
     component_names = {item["name"] for item in catalogue["components"]}
-    assert len(representation_names) == len(representations) == 15
+    assert len(representation_names) == len(representations) == 19
     assert len({item["name"] for item in analyses}) == len(analyses) == 11
     for item in representations:
         assert set(item["components"]) <= component_names

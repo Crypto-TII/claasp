@@ -249,6 +249,32 @@ jobs:
       - name: Execute LaTeX rendering integration
         run: python -m pytest -m external tests/integration/test_latex_diagram.py -q
 
+  native-source-execution:
+    name: Generated C compilation and execution
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: next
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install test dependencies
+        run: python -m pip install -e '.[dev]'
+
+      - name: Verify native compiler
+        run: cc --version
+
+      - name: Compile and execute generated C fixtures
+        run: python -m pytest -m external tests/integration/test_native_source_driver.py -q
+
   minizinc-execution:
     name: MiniZinc execution integration
     runs-on: ubuntu-latest

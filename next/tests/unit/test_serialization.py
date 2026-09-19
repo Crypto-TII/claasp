@@ -135,6 +135,8 @@ def test_importing_serialization_does_not_import_optional_packages():
     import subprocess
     import sys
 
-    code = "import sys; import claasp_next.serialization; print(','.join(sorted(set(sys.modules) & {'numpy','pandas','matplotlib','sklearn','sage'})))"
+    code = ("import sys; before=set(sys.modules); import claasp_next.serialization; "
+            "print(','.join(sorted((set(sys.modules)-before) & "
+            "{'numpy','pandas','matplotlib','sklearn','sage'})))")
     completed = subprocess.run([sys.executable, "-c", code], check=True, capture_output=True, text=True)
     assert completed.stdout == "\n"

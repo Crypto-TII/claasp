@@ -75,7 +75,22 @@ def test_batch_and_serialization_imports_do_not_load_numpy():
     import sys
 
     completed = subprocess.run(
-        [sys.executable, "-c", "import sys; import claasp_next.serialization; import claasp_next.representations.execution.batch; print('numpy' in sys.modules)"],
+        [sys.executable, "-c", "import sys; before=set(sys.modules); import claasp_next.serialization; import claasp_next.representations.execution.batch; print('numpy' in set(sys.modules)-before)"],
         check=True, capture_output=True, text=True,
     )
     assert completed.stdout == "False\n"
+
+
+def test_tooling_closure_gate_passes():
+    import subprocess
+    import sys
+
+    completed = subprocess.run(
+        [sys.executable, str(NEXT_ROOT / "tools/legacy_inventory.py"), "--check-tooling-closure"],
+        check=True, capture_output=True, text=True,
+    )
+    status = json.loads(completed.stdout)
+    assert status["complete"]
+    assert status["records"] == status["final_records"] == 11
+    assert status["native_artifacts"] == 4
+    assert status["continuous_m10_6d6_retained"]

@@ -1143,7 +1143,7 @@ _M10_15_OVERRIDES = {
         "supersede", "Typed components and the registered scalar evaluator already own the mathematical behavior; free-form Sage/bitstring helpers and generated-code string helpers are not duplicated.",
     ),
     "claasp/cipher_modules/generic_functions_continuous_diffusion_analysis.py": (
-        "next/src/claasp_next/analysis/continuous.py; next/tests/unit/test_continuous_heuristics.py",
+        "next/src/claasp_next/semantics/cryptanalysis/continuous.py; next/tests/unit/test_continuous_heuristics.py",
         "supersede", "M10.6d6 already owns typed continuous heuristic semantics and evidence; the NumPy/Sage helper monolith is closed without reopening that milestone.",
     ),
     "claasp/cipher_modules/generic_functions_vectorized_bit.py": (
@@ -2314,6 +2314,74 @@ def presentation_closure_status(payload: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def tooling_closure_status(payload: dict[str, Any]) -> dict[str, Any]:
+    """Verify M10.15 records, native dispositions, diagrams, and fixed evidence."""
+
+    records = {item["path"]: item for item in payload["records"]}
+    owned = {
+        path: records[path] for path in _M10_15_OVERRIDES
+    }
+    errors = []
+    final_statuses = {
+        "migrated-in-m10.15f", "superseded-in-m10.15d", "superseded-in-m10.15f",
+    }
+    for path, item in sorted(owned.items()):
+        if item.get("milestone_owner") != "M10.15a":
+            errors.append(f"{path}: missing explicit M10.15 ownership")
+        if item.get("status") not in final_statuses:
+            errors.append(f"{path}: tooling disposition is not final")
+        if not item.get("acceptance_criterion") or not item.get("rationale"):
+            errors.append(f"{path}: rationale or acceptance criterion is missing")
+        for destination in item.get("v5_destination", "").split(";"):
+            destination = destination.strip()
+            if destination.startswith("next/") and not (ROOT / destination).exists():
+                errors.append(f"{path}: missing destination {destination}")
+
+    continuous_paths = {
+        "claasp/cipher_modules/continuous_diffusion_analysis.py",
+        "tests/unit/cipher_modules/continuous_diffusion_analysis_test.py",
+    }
+    for path in sorted(continuous_paths):
+        item = records[path]
+        if item.get("milestone_owner") != "M10.6d6" or item.get("status") != "superseded-in-m10.15d-audit":
+            errors.append(f"{path}: achieved M10.6d6 ownership was reopened")
+
+    manifest_path = ROOT / "next/migration/m10_15_tooling_obligations.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    if manifest.get("status") != "achieved":
+        errors.append("M10.15 manifest is not achieved")
+    obligations = [
+        *manifest.get("native_artifacts", ()),
+        *manifest.get("mixed_module_surfaces", ()),
+        manifest.get("diagram_audit", {}),
+    ]
+    for item in obligations:
+        label = item.get("path", "diagram_audit")
+        if not item.get("rationale") or not item.get("fixed_evidence"):
+            errors.append(f"{label}: rationale or fixed evidence is missing")
+        destinations = item.get("destinations", ())
+        if item.get("destination"):
+            destinations = (*destinations, item["destination"])
+        for destination in destinations:
+            if not (ROOT / destination).exists():
+                errors.append(f"{label}: missing destination {destination}")
+        for evidence in item.get("fixed_evidence", ()):
+            if not (ROOT / evidence).exists():
+                errors.append(f"{label}: missing fixed evidence {evidence}")
+
+    return {
+        "records": len(owned),
+        "final_records": sum(item.get("status") in final_statuses for item in owned.values()),
+        "native_artifacts": len(manifest.get("native_artifacts", ())),
+        "mixed_surfaces": len(manifest.get("mixed_module_surfaces", ())),
+        "continuous_m10_6d6_retained": all(
+            records[path].get("milestone_owner") == "M10.6d6" for path in continuous_paths
+        ),
+        "errors": errors,
+        "complete": not errors,
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--check", action="store_true", help="fail if the checked-in inventory is stale")
@@ -2332,6 +2400,8 @@ def main() -> int:
     parser.add_argument("--check-component-analysis-closure", action="store_true", help="fail until M10.11 evidence is final without reopening M10.8d")
     parser.add_argument("--presentation-status", action="store_true", help="report M10.14 report and deferred-presentation closure")
     parser.add_argument("--check-presentation-closure", action="store_true", help="fail until all M10.14 report and presentation evidence is final")
+    parser.add_argument("--tooling-status", action="store_true", help="report M10.15 serialization, source, native, and diagram closure")
+    parser.add_argument("--check-tooling-closure", action="store_true", help="fail until every M10.15 tooling obligation has final evidence")
     args = parser.parse_args()
     if args.model_status or args.check_model_closure:
         status = model_closure_status(build_inventory())
@@ -2363,6 +2433,10 @@ def main() -> int:
         status = presentation_closure_status(build_inventory())
         print(json.dumps(status, indent=2))
         return int(args.check_presentation_closure and not status["complete"])
+    if args.tooling_status or args.check_tooling_closure:
+        status = tooling_closure_status(build_inventory())
+        print(json.dumps(status, indent=2))
+        return int(args.check_tooling_closure and not status["complete"])
     expected = serialized_inventory()
     if args.check:
         if not OUTPUT.exists() or OUTPUT.read_text(encoding="utf-8") != expected:

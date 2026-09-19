@@ -468,9 +468,69 @@
         "report_presentation"
       ],
       "target": "matplotlib"
+    },
+    {
+      "availability": "builtin",
+      "implementation": "claasp_next.representations.diagrams:ASCIIArtSerializer",
+      "kind": "renderer",
+      "name": "ascii_diagram",
+      "representations": [
+        "primitive_diagram"
+      ],
+      "target": null
+    },
+    {
+      "availability": "builtin",
+      "implementation": "claasp_next.representations.diagrams:TikZSerializer",
+      "kind": "renderer",
+      "name": "tikz_diagram",
+      "representations": [
+        "primitive_diagram"
+      ],
+      "target": null
+    },
+    {
+      "availability": "builtin",
+      "implementation": "claasp_next.representations.source:compile_python_source",
+      "kind": "compiler",
+      "name": "python_source_compiler",
+      "representations": [
+        "python_generated_source"
+      ],
+      "target": null
+    },
+    {
+      "availability": "builtin",
+      "implementation": "claasp_next.drivers.source:run_python_source",
+      "kind": "execution_engine",
+      "name": "python_generated_source",
+      "representations": [
+        "python_generated_source"
+      ],
+      "target": null
+    },
+    {
+      "availability": "builtin",
+      "implementation": "claasp_next.representations.source:compile_c_source",
+      "kind": "compiler",
+      "name": "c_source_compiler",
+      "representations": [
+        "c_generated_source"
+      ],
+      "target": null
+    },
+    {
+      "availability": "executable",
+      "implementation": "claasp_next.drivers.native:compile_native",
+      "kind": "execution_engine",
+      "name": "native_generated_c",
+      "representations": [
+        "c_generated_source"
+      ],
+      "target": "cc"
     }
   ],
-  "milestone": "M10.14f",
+  "milestone": "M10.15g",
   "primitives": [
     {
       "authenticity": "canonical",
@@ -12018,6 +12078,129 @@
     {
       "components": [
         "Add",
+        "BinaryAffineMap",
+        "BitVectorSBox",
+        "BitwiseAnd",
+        "BitwiseNot",
+        "BitwiseOr",
+        "Constant",
+        "FeedbackRegister",
+        "IDEAMultiply",
+        "Identity",
+        "LinearMap",
+        "ModularAdd",
+        "ModularMultiply",
+        "ModularSubtract",
+        "Multiply",
+        "Permutation",
+        "Power",
+        "Rotate",
+        "SBox",
+        "Shift",
+        "VariableRotate",
+        "VariableShift",
+        "Xor"
+      ],
+      "domains": [
+        "BinaryExtensionField",
+        "Bit",
+        "PrimeField",
+        "Word"
+      ],
+      "drivers": [],
+      "implementation": "claasp_next.serialization:serialize_primitive",
+      "kind": "serialization",
+      "name": "primitive_serialization",
+      "scope": "generic_graph"
+    },
+    {
+      "components": [],
+      "domains": [
+        "BinaryExtensionField",
+        "Bit",
+        "PrimeField",
+        "Word"
+      ],
+      "drivers": [],
+      "implementation": "claasp_next.serialization:serialize_artifact",
+      "kind": "serialization",
+      "name": "execution_artifact_serialization",
+      "scope": "result"
+    },
+    {
+      "components": [
+        "Add",
+        "BinaryAffineMap",
+        "BitVectorSBox",
+        "BitwiseAnd",
+        "BitwiseNot",
+        "BitwiseOr",
+        "Constant",
+        "FeedbackRegister",
+        "IDEAMultiply",
+        "Identity",
+        "LinearMap",
+        "ModularAdd",
+        "ModularMultiply",
+        "ModularSubtract",
+        "Multiply",
+        "Permutation",
+        "Power",
+        "Rotate",
+        "SBox",
+        "Shift",
+        "VariableRotate",
+        "VariableShift",
+        "Xor"
+      ],
+      "domains": [
+        "BinaryExtensionField",
+        "Bit",
+        "PrimeField",
+        "Word"
+      ],
+      "drivers": [
+        "python_generated_source",
+        "python_source_compiler"
+      ],
+      "implementation": "claasp_next.representations.source:compile_python_source",
+      "kind": "source",
+      "name": "python_generated_source",
+      "scope": "generic_graph"
+    },
+    {
+      "components": [
+        "BitVectorSBox",
+        "BitwiseAnd",
+        "BitwiseNot",
+        "BitwiseOr",
+        "Constant",
+        "Identity",
+        "ModularAdd",
+        "ModularSubtract",
+        "Permutation",
+        "Rotate",
+        "Shift",
+        "VariableRotate",
+        "VariableShift",
+        "Xor"
+      ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
+      "drivers": [
+        "c_source_compiler",
+        "native_generated_c"
+      ],
+      "implementation": "claasp_next.representations.source:compile_c_source",
+      "kind": "source",
+      "name": "c_generated_source",
+      "scope": "generic_graph"
+    },
+    {
+      "components": [
+        "Add",
         "Constant",
         "Identity",
         "LinearMap",
@@ -12088,7 +12271,9 @@
         "Word"
       ],
       "drivers": [
-        "latex"
+        "ascii_diagram",
+        "latex",
+        "tikz_diagram"
       ],
       "implementation": "claasp_next.representations.diagrams:DiagramCompiler",
       "kind": "diagram",

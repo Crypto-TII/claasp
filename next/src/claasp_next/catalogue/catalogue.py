@@ -146,11 +146,11 @@ class Catalogue:
         >>> catalogue.parameter_sets(primitive="AES")[0].values["key_bit_size"]
         128
         >>> [item.name for item in catalogue.drivers(kind="execution_engine")]
-        ['python_scalar', 'python_batch', 'python_transposed_batch']
+        ['python_scalar', 'python_batch', 'python_transposed_batch', 'python_generated_source', 'native_generated_c']
 
         >>> # Capability edges are queryable in both directions.
         >>> [item.name for item in catalogue.representations(component="BitVectorSBox")]
-        ['boolean_cnf', 'boolean_smt', 'concrete_execution', 'primitive_diagram', 'sbox_transition_table', 'component_properties']
+        ['boolean_cnf', 'boolean_smt', 'concrete_execution', 'primitive_serialization', 'python_generated_source', 'c_generated_source', 'primitive_diagram', 'sbox_transition_table', 'component_properties']
         >>> [item.name for item in catalogue.drivers(representation="boolean_cnf")]
         ['minizinc', 'minisat', 'z3', 'glpk']
     """
@@ -244,7 +244,7 @@ class Catalogue:
 
             >>> from claasp_next.catalogue import catalogue
             >>> [item.name for item in catalogue.representations(component="Power")]
-            ['concrete_execution', 'msolve_input', 'prime_field_polynomial', 'primitive_diagram', 'singular_program']
+            ['concrete_execution', 'primitive_serialization', 'python_generated_source', 'msolve_input', 'prime_field_polynomial', 'primitive_diagram', 'singular_program']
             >>> [item.name for item in catalogue.components(representation="boolean_cnf")][:3]
             ['Add', 'BitVectorSBox', 'BitwiseAnd']
         """

@@ -67,6 +67,18 @@ DRIVERS = (
      "claasp_next.presentation:render_report"),
     ("matplotlib_presentation", "renderer", "python_module", "matplotlib",
      "claasp_next.drivers.renderers.presentation:MatplotlibPresentationDriver"),
+    ("ascii_diagram", "renderer", "builtin", None,
+     "claasp_next.representations.diagrams:ASCIIArtSerializer"),
+    ("tikz_diagram", "renderer", "builtin", None,
+     "claasp_next.representations.diagrams:TikZSerializer"),
+    ("python_source_compiler", "compiler", "builtin", None,
+     "claasp_next.representations.source:compile_python_source"),
+    ("python_generated_source", "execution_engine", "builtin", None,
+     "claasp_next.drivers.source:run_python_source"),
+    ("c_source_compiler", "compiler", "builtin", None,
+     "claasp_next.representations.source:compile_c_source"),
+    ("native_generated_c", "execution_engine", "executable", "cc",
+     "claasp_next.drivers.native:compile_native"),
 )
 
 ALL_COMPONENTS = frozenset({
@@ -89,6 +101,11 @@ PRIME_FIELD_POLYNOMIAL_COMPONENTS = frozenset({
 WORD_TRAIL_COMPONENTS = frozenset({
     "BitwiseAnd", "Constant", "Identity", "ModularAdd", "Rotate", "Xor",
 })
+C_SOURCE_COMPONENTS = frozenset({
+    "BitVectorSBox", "BitwiseAnd", "BitwiseNot", "BitwiseOr", "Constant",
+    "Identity", "ModularAdd", "ModularSubtract", "Permutation", "Rotate",
+    "Shift", "VariableRotate", "VariableShift", "Xor",
+})
 
 # These declarations are reviewed compatibility edges, not filesystem-derived
 # guesses.  A representation is advertised for a component only when its
@@ -106,12 +123,20 @@ REPRESENTATIONS = (
      BOOLEAN_SYMBOLIC_COMPONENTS, {"Bit", "Word"}, set(), "generic_graph"),
     ("concrete_execution", "execution", "claasp_next.graph:Primitive",
      ALL_COMPONENTS, ALL_DOMAINS, {"python_scalar", "python_batch", "python_transposed_batch"}, "generic_graph"),
+    ("primitive_serialization", "serialization", "claasp_next.serialization:serialize_primitive",
+     ALL_COMPONENTS, ALL_DOMAINS, set(), "generic_graph"),
+    ("execution_artifact_serialization", "serialization", "claasp_next.serialization:serialize_artifact",
+     set(), ALL_DOMAINS, set(), "result"),
+    ("python_generated_source", "source", "claasp_next.representations.source:compile_python_source",
+     ALL_COMPONENTS, ALL_DOMAINS, {"python_source_compiler", "python_generated_source"}, "generic_graph"),
+    ("c_generated_source", "source", "claasp_next.representations.source:compile_c_source",
+     C_SOURCE_COMPONENTS, {"Bit", "Word"}, {"c_source_compiler", "native_generated_c"}, "generic_graph"),
     ("msolve_input", "serialization", "claasp_next.representations.constraints.polynomial.exporters:MsolveExporter",
      PRIME_FIELD_POLYNOMIAL_COMPONENTS, {"PrimeField"}, {"msolve"}, "generic_graph"),
     ("prime_field_polynomial", "constraint", "claasp_next.representations.constraints.polynomial:PrimeFieldPolynomialModel",
      PRIME_FIELD_POLYNOMIAL_COMPONENTS, {"PrimeField"}, set(), "generic_graph"),
     ("primitive_diagram", "diagram", "claasp_next.representations.diagrams:DiagramCompiler",
-     ALL_COMPONENTS, ALL_DOMAINS, {"latex"}, "generic_graph"),
+     ALL_COMPONENTS, ALL_DOMAINS, {"ascii_diagram", "tikz_diagram", "latex"}, "generic_graph"),
     ("sbox_transition_table", "analysis", "claasp_next.semantics.cryptanalysis:SBoxTransitionSemantics",
      {"BitVectorSBox"}, {"Bit"}, set(), "component"),
     ("singular_program", "serialization", "claasp_next.representations.constraints.polynomial.exporters:SingularExporter",
@@ -333,7 +358,7 @@ def build_catalogue() -> dict:
     ]
     return {
         "schema_version": 2,
-        "milestone": "M10.14f",
+        "milestone": "M10.15g",
         "sources": {
             "classification": "migration/legacy_inventory.json",
             "components": "migration/single_component_catalogue.json",

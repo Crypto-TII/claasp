@@ -15,6 +15,7 @@ renderers.
    transformation_architecture
    catalogue_architecture
    representation_architecture
+   serialization_architecture
    component_analysis_architecture
    presentation_architecture
    diagram_representations

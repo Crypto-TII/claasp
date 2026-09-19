@@ -85,8 +85,8 @@ def test_representation_component_queries_are_bidirectional():
     representations = catalogue.representations(component="Power")
     assert all(isinstance(item, RepresentationRecord) for item in representations)
     assert tuple(item.name for item in representations) == (
-        "concrete_execution", "msolve_input", "prime_field_polynomial",
-        "primitive_diagram", "singular_program",
+        "concrete_execution", "primitive_serialization", "python_generated_source",
+        "msolve_input", "prime_field_polynomial", "primitive_diagram", "singular_program",
     )
     assert {item.name for item in catalogue.components(representation="boolean_cnf")} == {
         "Add", "BitVectorSBox", "BitwiseAnd", "Constant", "Identity",
@@ -147,6 +147,7 @@ def test_parameter_queries_return_read_only_structured_values():
 def test_driver_queries_are_lazy_and_availability_is_structured(monkeypatch):
     assert {item.name for item in catalogue.drivers(kind="execution_engine")} == {
         "python_scalar", "python_batch", "python_transposed_batch",
+        "python_generated_source", "native_generated_c",
     }
     assert catalogue.driver_availability("python_scalar").available
     module = importlib.import_module("claasp_next.catalogue.catalogue")
@@ -180,3 +181,17 @@ def test_catalogue_exposes_presentation_capabilities_separately():
     presentation = next(item for item in catalogue.analyses() if item.name == "present")
     assert presentation.kind == "result_presentation"
     assert "never executes" in presentation.restriction
+
+
+def test_catalogue_exposes_serialization_source_and_diagram_capabilities():
+    assert catalogue.representation("primitive_serialization").scope == "generic_graph"
+    assert catalogue.representation("execution_artifact_serialization").scope == "result"
+    assert {item.name for item in catalogue.drivers(representation="python_generated_source")} == {
+        "python_source_compiler", "python_generated_source",
+    }
+    assert {item.name for item in catalogue.drivers(representation="c_generated_source")} == {
+        "c_source_compiler", "native_generated_c",
+    }
+    assert {item.name for item in catalogue.drivers(representation="primitive_diagram")} == {
+        "ascii_diagram", "tikz_diagram", "latex",
+    }
