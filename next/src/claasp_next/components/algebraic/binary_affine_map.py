@@ -9,7 +9,14 @@ from claasp_next.graph import Component, PortLike, as_selection
 
 @dataclass(frozen=True, slots=True, init=False)
 class BinaryAffineMap(Component):
-    """Apply the same GF(2) affine map independently to every input unit."""
+    """Apply the same GF(2) affine map independently to every input unit.
+
+    EXAMPLES::
+
+        >>> from claasp_next.primitives.single_component_primitives import BinaryAffineMap
+        >>> BinaryAffineMap(offset=3).evaluate(10)
+        9
+    """
 
     matrix: tuple[tuple[int, ...], ...]
     offset: int

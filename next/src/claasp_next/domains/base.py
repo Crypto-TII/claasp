@@ -4,7 +4,22 @@ from abc import ABC, abstractmethod
 
 
 class Domain(ABC):
-    """Immutable description of a scalar's mathematical semantics."""
+    """Define the immutable semantics and validation of one scalar value.
+
+    Concrete domains implement membership and, when available, a canonical
+    bit encoding width.
+
+    EXAMPLES::
+
+        >>> from claasp_next import Bit
+        >>> domain: Domain = Bit()
+        >>> domain.validate(1)
+        >>> try:
+        ...     domain.validate(2)
+        ... except ValueError as error:
+        ...     "not a canonical element" in str(error)
+        True
+    """
 
     @property
     @abstractmethod

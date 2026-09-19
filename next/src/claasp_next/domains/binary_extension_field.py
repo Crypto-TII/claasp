@@ -45,6 +45,8 @@ class BinaryExtensionField(Domain):
 
     @property
     def encoded_bit_size(self) -> int:
+        """Return the polynomial-basis encoding width in bits."""
+
         return self.degree
 
     def contains(self, value: object) -> bool:

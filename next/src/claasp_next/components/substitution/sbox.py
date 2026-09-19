@@ -15,6 +15,13 @@ class SBox(Component):
     The input and output retain the same domain. This first representation is
     intended for finite, densely encoded domains such as bytes, words, and
     binary-extension-field elements.
+
+    EXAMPLES::
+
+        >>> from claasp_next import Word
+        >>> from claasp_next.primitives.single_component_primitives import SBox
+        >>> SBox([3, 2, 1, 0], Word(2), unit_count=2).evaluate(0b0001)
+        14
     """
 
     table: tuple[int, ...]

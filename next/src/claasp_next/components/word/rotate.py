@@ -6,7 +6,14 @@ from claasp_next.graph import Component, PortLike
 
 @dataclass(frozen=True, slots=True, init=False)
 class Rotate(Component):
-    """Rotate every selected word left or right by a fixed distance."""
+    """Rotate every selected word left or right by a fixed distance.
+
+    EXAMPLES::
+
+        >>> from claasp_next.primitives.single_component_primitives import Rotate as RotatePrimitive
+        >>> RotatePrimitive(8, 1, "left").evaluate(0x81)
+        3
+    """
 
     amount: int
     direction: str

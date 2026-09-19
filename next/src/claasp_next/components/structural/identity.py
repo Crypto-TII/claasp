@@ -8,7 +8,14 @@ from claasp_next.graph.port import PortLike, as_selection
 
 @dataclass(frozen=True, slots=True, init=False)
 class Identity(Component):
-    """Copy a logical-unit selection without changing its domain."""
+    """Copy a logical-unit selection without changing its domain.
+
+    EXAMPLES::
+
+        >>> from claasp_next.primitives.single_component_primitives import Identity
+        >>> Identity(16).evaluate(0xCAFE)
+        51966
+    """
 
     def __init__(self, component_input: PortLike, component_id: str | None = None) -> None:
         component_input = as_selection(component_input)

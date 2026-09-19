@@ -7,7 +7,13 @@ from claasp_next.graph.value_type import ValueType
 
 
 class PrimitiveKind(str, Enum):
-    """Mathematical interface exposed by a primitive graph."""
+    """Classify the mathematical interface exposed by a primitive graph.
+
+    EXAMPLES::
+
+        >>> PrimitiveKind.BLOCK_CIPHER.value
+        'block_cipher'
+    """
 
     FUNCTION = "function"
     PERMUTATION = "permutation"
@@ -17,7 +23,13 @@ class PrimitiveKind(str, Enum):
 
 
 class InputVisibility(str, Enum):
-    """Default confidentiality of a primitive input in a study."""
+    """Describe default confidentiality of a primitive input.
+
+    EXAMPLES::
+
+        >>> InputVisibility.SECRET.value
+        'secret'
+    """
 
     PUBLIC = "public"
     SECRET = "secret"
@@ -25,7 +37,17 @@ class InputVisibility(str, Enum):
 
 @dataclass(frozen=True, slots=True)
 class PrimitiveInput:
-    """Type, semantic role, and default visibility of one graph input."""
+    """Record type, semantic role, and visibility of one graph input.
+
+    EXAMPLES::
+
+        >>> from claasp_next import Bit, ValueType
+        >>> descriptor = PrimitiveInput(ValueType(Bit(), (8,)), "key", InputVisibility.SECRET)
+        >>> (descriptor.role, descriptor.is_secret)
+        ('key', True)
+        >>> descriptor.with_visibility("public").is_secret
+        False
+    """
 
     value_type: ValueType
     role: str = "data"
@@ -41,20 +63,38 @@ class PrimitiveInput:
 
     @property
     def is_secret(self) -> bool:
+        """Return whether the default study visibility is secret."""
+
         return self.visibility is InputVisibility.SECRET
 
     def with_visibility(self, visibility: InputVisibility | str) -> "PrimitiveInput":
+        """Return an immutable copy with explicitly changed visibility."""
+
         return replace(self, visibility=InputVisibility(visibility))
 
 
 def public_input(value_type: ValueType, *, role: str = "data") -> PrimitiveInput:
-    """Describe a public primitive input."""
+    """Describe a public primitive input.
+
+    EXAMPLES::
+
+        >>> from claasp_next import Bit, ValueType
+        >>> public_input(ValueType(Bit(), (1,))).visibility.value
+        'public'
+    """
 
     return PrimitiveInput(value_type, role, InputVisibility.PUBLIC)
 
 
 def secret_input(value_type: ValueType, *, role: str = "key") -> PrimitiveInput:
-    """Describe a secret primitive input."""
+    """Describe a secret primitive input.
+
+    EXAMPLES::
+
+        >>> from claasp_next import Bit, ValueType
+        >>> secret_input(ValueType(Bit(), (1,))).is_secret
+        True
+    """
 
     return PrimitiveInput(value_type, role, InputVisibility.SECRET)
 

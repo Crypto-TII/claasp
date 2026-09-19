@@ -8,7 +8,14 @@ from claasp_next.graph import Primitive
 
 
 class TruncatedBit(str, Enum):
-    """A bit difference known as zero, known as one, or undetermined."""
+    """A bit difference known as zero, known as one, or undetermined.
+
+    EXAMPLES::
+
+        >>> from claasp_next.semantics.cryptanalysis import TruncatedBit
+        >>> TruncatedBit.UNKNOWN.encoded
+        2
+    """
 
     ZERO = "0"
     ONE = "1"
@@ -22,7 +29,14 @@ class TruncatedBit(str, Enum):
 
 
 class WordwiseDifferenceKind(int, Enum):
-    """Legacy word-activity meanings, separated from their CP encoding."""
+    """Legacy word-activity meanings, separated from their CP encoding.
+
+    EXAMPLES::
+
+        >>> from claasp_next.semantics.cryptanalysis import WordwiseDifferenceKind
+        >>> WordwiseDifferenceKind.NONZERO.value
+        2
+    """
 
     ZERO = 0
     KNOWN = 1
@@ -32,7 +46,18 @@ class WordwiseDifferenceKind(int, Enum):
 
 @dataclass(frozen=True, slots=True)
 class WordwiseXorDifference:
-    """A zero, known, nonzero, or unrestricted XOR difference over one word."""
+    """A zero, known, nonzero, or unrestricted XOR difference over one word.
+
+    EXAMPLES::
+
+        >>> from claasp_next.semantics.cryptanalysis import (WordwiseDifferenceKind,
+        ...     WordwiseXorDifference)
+        >>> known = WordwiseXorDifference.known(8, 0x53)
+        >>> known.xor(known).kind is WordwiseDifferenceKind.ZERO
+        True
+        >>> known.through_bijection().kind is WordwiseDifferenceKind.NONZERO
+        True
+    """
 
     width: int
     kind: WordwiseDifferenceKind
@@ -57,6 +82,7 @@ class WordwiseXorDifference:
 
     @classmethod
     def known(cls, width: int, value: int) -> "WordwiseXorDifference":
+        """Create a concrete nonzero wordwise difference."""
         return cls(width, WordwiseDifferenceKind.KNOWN, value)
 
     def xor(self, other: "WordwiseXorDifference") -> "WordwiseXorDifference":
@@ -112,7 +138,14 @@ class WordwiseXorDifference:
 
 @dataclass(frozen=True, slots=True)
 class WordwiseImpossibleFixture:
-    """Fixed abstract wordwise incompatibility witness from reduced AES."""
+    """Fixed abstract wordwise incompatibility witness from reduced AES.
+
+    EXAMPLES::
+
+        >>> from claasp_next.semantics.cryptanalysis import WordwiseImpossibleFixture
+        >>> WordwiseImpossibleFixture().forward_middle
+        '2222333300000000'
+    """
 
     input_pattern: str = "1003000000000000"
     key_pattern: str = "0000000000000000"
@@ -131,7 +164,14 @@ class WordwiseImpossibleFixture:
 
 
 def legacy_wordwise_impossible_fixture() -> WordwiseImpossibleFixture:
-    """Return the backend-independent fixed reduced-AES wordwise witness."""
+    """Return the backend-independent fixed reduced-AES wordwise witness.
+
+    EXAMPLES::
+
+        >>> from claasp_next.semantics.cryptanalysis import legacy_wordwise_impossible_fixture
+        >>> legacy_wordwise_impossible_fixture().claim_kind
+        'abstract-incompatibility-witness'
+    """
 
     return WordwiseImpossibleFixture()
 
@@ -144,6 +184,14 @@ def propagate_dense_wordwise_activity(differences, output_units):
     Zero inputs yield zero outputs; one active input yields nonzero outputs;
     multiple active or unrestricted inputs are conservatively unknown.
     This does not claim exact joint support or supply concrete field values.
+
+    EXAMPLES::
+
+        >>> from claasp_next.semantics.cryptanalysis import (WordwiseDifferenceKind as Kind,
+        ...     WordwiseXorDifference as Difference, propagate_dense_wordwise_activity)
+        >>> output = propagate_dense_wordwise_activity((Difference(8, Kind.NONZERO),), 2)
+        >>> tuple(item.kind for item in output)
+        (<WordwiseDifferenceKind.NONZERO: 2>, <WordwiseDifferenceKind.NONZERO: 2>)
     """
     differences = tuple(differences)
     if (not differences or any(not isinstance(item, WordwiseXorDifference) for item in differences)
@@ -159,7 +207,15 @@ def propagate_dense_wordwise_activity(differences, output_units):
 
 @dataclass(frozen=True, slots=True)
 class TruncatedXorDifference:
-    """An MSB-first deterministic truncated XOR difference."""
+    """An MSB-first deterministic truncated XOR difference.
+
+    EXAMPLES::
+
+        >>> from claasp_next.semantics.cryptanalysis import TruncatedXorDifference
+        >>> difference = TruncatedXorDifference.parse("01??")
+        >>> str(difference.rotate_left(1).xor(TruncatedXorDifference.parse("1??0")))
+        '0??0'
+    """
 
     bits: tuple[TruncatedBit, ...]
 
@@ -169,7 +225,14 @@ class TruncatedXorDifference:
 
     @classmethod
     def parse(cls, pattern: str) -> "TruncatedXorDifference":
-        """Parse a user-facing string such as ``'001?10'``."""
+        """Parse a user-facing string such as ``'001?10'``.
+
+        EXAMPLES::
+
+            >>> from claasp_next.semantics.cryptanalysis import TruncatedXorDifference
+            >>> str(TruncatedXorDifference.parse("001?10"))
+            '001?10'
+        """
 
         if not isinstance(pattern, str) or not pattern:
             raise ValueError("truncated pattern must be a non-empty string")
@@ -182,13 +245,16 @@ class TruncatedXorDifference:
         return "".join(bit.value for bit in self.bits)
 
     def rotate_left(self, amount: int) -> "TruncatedXorDifference":
+        """Rotate the MSB-first difference left by ``amount`` positions."""
         amount %= len(self.bits)
         return type(self)(self.bits[amount:] + self.bits[:amount])
 
     def rotate_right(self, amount: int) -> "TruncatedXorDifference":
+        """Rotate the MSB-first difference right by ``amount`` positions."""
         return self.rotate_left(-amount)
 
     def xor(self, other: "TruncatedXorDifference") -> "TruncatedXorDifference":
+        """XOR two patterns, propagating unknown bits soundly."""
         if len(self.bits) != len(other.bits):
             raise ValueError("truncated XOR operands must have equal width")
         output = []
@@ -202,7 +268,17 @@ class TruncatedXorDifference:
 
 @dataclass(frozen=True, slots=True)
 class ImpossiblePropagationBoundary:
-    """Forward and backward partial differences meeting at one graph boundary."""
+    """Forward and backward partial differences meeting at one graph boundary.
+
+    EXAMPLES::
+
+        >>> from claasp_next.semantics.cryptanalysis import (ImpossiblePropagationBoundary,
+        ...     TruncatedXorDifference)
+        >>> boundary = ImpossiblePropagationBoundary(
+        ...     TruncatedXorDifference.parse("01?"), TruncatedXorDifference.parse("00?"))
+        >>> (boundary.contradictory_positions, boundary.is_impossible)
+        ((1,), True)
+    """
 
     forward: TruncatedXorDifference
     backward: TruncatedXorDifference
@@ -224,6 +300,7 @@ class ImpossiblePropagationBoundary:
 
     @property
     def is_impossible(self) -> bool:
+        """Return whether any fixed position contradicts its counterpart."""
         return bool(self.contradictory_positions)
 
 
@@ -233,6 +310,16 @@ class ProbabilisticTruncatedModularAddTransition:
 
     ``costs`` use the legacy CLAASP fixed-point scale: 100 units represent a
     probability weight of one bit.
+
+    EXAMPLES::
+
+        >>> from claasp_next.semantics.cryptanalysis import (ProbabilisticTruncatedModularAddTransition,
+        ...     TruncatedXorDifference)
+        >>> zero = TruncatedXorDifference.parse("00")
+        >>> transition = ProbabilisticTruncatedModularAddTransition(
+        ...     zero, zero, zero, zero, (100, 0))
+        >>> (transition.scaled_weight, transition.weight)
+        (100, 1.0)
     """
 
     left: TruncatedXorDifference
@@ -265,7 +352,16 @@ class ProbabilisticTruncatedModularAddTransition:
 
 @dataclass(frozen=True, slots=True)
 class ProbabilisticTruncatedTrail:
-    """A composed partial-difference trail with probability-bearing steps."""
+    """A composed partial-difference trail with probability-bearing steps.
+
+    EXAMPLES::
+
+        >>> from claasp_next.semantics.cryptanalysis import (ProbabilisticTruncatedTrail,
+        ...     TruncatedXorDifference)
+        >>> zero = TruncatedXorDifference.parse("0")
+        >>> ProbabilisticTruncatedTrail(zero, zero, ()).weight
+        0.0
+    """
 
     input_pattern: TruncatedXorDifference
     output_pattern: TruncatedXorDifference
@@ -273,17 +369,29 @@ class ProbabilisticTruncatedTrail:
 
     @property
     def scaled_weight(self) -> int:
+        """Return the sum of fixed-point transition costs."""
         return sum(transition.scaled_weight for transition in self.transitions)
 
     @property
     def weight(self) -> float:
+        """Return the trail probability weight in bits."""
         return self.scaled_weight / 100
 
 
 def check_probabilistic_truncated_modular_add(
     transition: ProbabilisticTruncatedModularAddTransition,
 ) -> bool:
-    """Check the legacy counter-based relation independently of MiniZinc."""
+    """Check the legacy counter-based relation independently of MiniZinc.
+
+    EXAMPLES::
+
+        >>> from claasp_next.semantics.cryptanalysis import *
+        >>> zero = TruncatedXorDifference.parse("00")
+        >>> transition = ProbabilisticTruncatedModularAddTransition(
+        ...     zero, zero, zero, zero, (0, 0))
+        >>> check_probabilistic_truncated_modular_add(transition)
+        True
+    """
 
     if not isinstance(transition, ProbabilisticTruncatedModularAddTransition):
         raise TypeError("transition must be a ProbabilisticTruncatedModularAddTransition")
@@ -325,7 +433,16 @@ def check_probabilistic_truncated_modular_add(
 def truncated_modular_add(
     left: TruncatedXorDifference, right: TruncatedXorDifference
 ) -> TruncatedXorDifference:
-    """Soundly propagate patterns through addition using paired carries."""
+    """Soundly propagate patterns through addition using paired carries.
+
+    EXAMPLES::
+
+        >>> from claasp_next.semantics.cryptanalysis import (TruncatedXorDifference,
+        ...     truncated_modular_add)
+        >>> str(truncated_modular_add(TruncatedXorDifference.parse("1000"),
+        ...     TruncatedXorDifference.parse("0000")))
+        '1000'
+    """
 
     if len(left.bits) != len(right.bits):
         raise ValueError("modular-add operands must have equal width")
@@ -356,7 +473,16 @@ def truncated_modular_add(
 def truncated_modular_subtract(
     minuend: TruncatedXorDifference, subtrahend: TruncatedXorDifference
 ) -> TruncatedXorDifference:
-    """Soundly propagate XOR differences through modular subtraction."""
+    """Soundly propagate XOR differences through modular subtraction.
+
+    EXAMPLES::
+
+        >>> from claasp_next.semantics.cryptanalysis import (TruncatedXorDifference,
+        ...     truncated_modular_subtract)
+        >>> zero = TruncatedXorDifference.parse("0000")
+        >>> str(truncated_modular_subtract(zero, zero))
+        '0000'
+    """
 
     if len(minuend.bits) != len(subtrahend.bits):
         raise ValueError("modular-subtract operands must have equal width")
@@ -387,7 +513,17 @@ def truncated_modular_subtract(
 def propagate_two_word_speck_round(
     primitive: Primitive, difference: TruncatedXorDifference, round_number: int = 0,
 ) -> TruncatedXorDifference:
-    """Propagate a zero-key-difference pattern through a selected Speck round."""
+    """Propagate a zero-key-difference pattern through a selected Speck round.
+
+    EXAMPLES::
+
+        >>> from claasp_next.primitives import Speck
+        >>> from claasp_next.semantics.cryptanalysis import (TruncatedXorDifference,
+        ...     propagate_two_word_speck_round)
+        >>> zero = TruncatedXorDifference.parse("0" * 32)
+        >>> str(propagate_two_word_speck_round(Speck(number_of_rounds=1), zero)) == "0" * 32
+        True
+    """
 
     plaintext = primitive.input_ports.get("plaintext")
     if primitive.family_name != "speck" or plaintext is None:
@@ -410,7 +546,17 @@ def propagate_two_word_speck_round(
 def propagate_two_word_speck_inverse_round(
     primitive: Primitive, difference: TruncatedXorDifference, round_number: int = 0,
 ) -> TruncatedXorDifference:
-    """Soundly propagate a zero-key difference through one inverse Speck round."""
+    """Soundly propagate a zero-key difference through one inverse Speck round.
+
+    EXAMPLES::
+
+        >>> from claasp_next.primitives import Speck
+        >>> from claasp_next.semantics.cryptanalysis import (TruncatedXorDifference,
+        ...     propagate_two_word_speck_inverse_round)
+        >>> zero = TruncatedXorDifference.parse("0" * 32)
+        >>> propagate_two_word_speck_inverse_round(Speck(number_of_rounds=1), zero) == zero
+        True
+    """
 
     plaintext = primitive.input_ports.get("plaintext")
     if primitive.family_name != "speck" or plaintext is None:
@@ -432,7 +578,15 @@ def propagate_two_word_speck_inverse_round(
 def propagate_two_word_simon_round(
     difference: TruncatedXorDifference,
 ) -> TruncatedXorDifference:
-    """Propagate a zero-key difference through one standard Simon round."""
+    """Propagate a zero-key difference through one standard Simon round.
+
+    EXAMPLES::
+
+        >>> from claasp_next.semantics.cryptanalysis import (TruncatedXorDifference,
+        ...     propagate_two_word_simon_round)
+        >>> str(propagate_two_word_simon_round(TruncatedXorDifference.parse("0000")))
+        '0000'
+    """
 
     if len(difference.bits) % 2:
         raise ValueError("Simon differences must contain two equal-width words")
@@ -447,7 +601,15 @@ def propagate_two_word_simon_round(
 def propagate_two_word_simon_inverse_round(
     difference: TruncatedXorDifference,
 ) -> TruncatedXorDifference:
-    """Propagate a zero-key difference through one inverse Simon round."""
+    """Propagate a zero-key difference through one inverse Simon round.
+
+    EXAMPLES::
+
+        >>> from claasp_next.semantics.cryptanalysis import (TruncatedXorDifference,
+        ...     propagate_two_word_simon_inverse_round)
+        >>> str(propagate_two_word_simon_inverse_round(TruncatedXorDifference.parse("0000")))
+        '0000'
+    """
 
     if len(difference.bits) % 2:
         raise ValueError("Simon differences must contain two equal-width words")
@@ -481,6 +643,15 @@ def propagate_single_active_aes_byte(
     The key difference is zero. This reviewed wordwise slice uses only facts
     guaranteed by bijectivity and by one nonzero summand in each affected
     MixColumns output; it makes no cancellation assumption.
+
+    EXAMPLES::
+
+        >>> from claasp_next.primitives import AES
+        >>> from claasp_next.semantics.cryptanalysis import (WordwiseDifferenceKind,
+        ...     propagate_single_active_aes_byte)
+        >>> output = propagate_single_active_aes_byte(AES(number_of_rounds=1), 0)
+        >>> tuple(item.kind for item in output[:4]) == (WordwiseDifferenceKind.NONZERO,) * 4
+        True
     """
 
     if primitive.family_name != "aes" or len(primitive.rounds) < 2:

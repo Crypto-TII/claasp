@@ -6,7 +6,15 @@ from math import log2
 
 @dataclass(frozen=True, slots=True)
 class ContinuousHeuristicResult:
-    """A numerical candidate that deliberately carries no proof status."""
+    """A numerical candidate that deliberately carries no proof status.
+
+    EXAMPLES::
+
+        >>> from claasp_next.semantics.cryptanalysis import ContinuousHeuristicResult
+        >>> result = ContinuousHeuristicResult((0.5, -0.25), 1e-4, "fixed model")
+        >>> (result.selected_correlation((1, 1)), result.selected_weight((1, 0)))
+        (0.125, 1.0)
+    """
 
     values: tuple[float, ...]
     tolerance: float
@@ -41,14 +49,28 @@ class ContinuousHeuristicResult:
 
 
 def continuous_xor(left: tuple[float, ...], right: tuple[float, ...]) -> tuple[float, ...]:
-    """Apply equation 5 of the preserved continuous ARX model bitwise."""
+    """Apply equation 5 of the preserved continuous ARX model bitwise.
+
+    EXAMPLES::
+
+        >>> from claasp_next.semantics.cryptanalysis import continuous_xor
+        >>> continuous_xor((-1.0, 0.5), (1.0, -0.5))
+        (1.0, 0.25)
+    """
 
     _equal_vectors(left, right)
     return tuple(-a * b for a, b in zip(left, right))
 
 
 def continuous_modular_add(left: tuple[float, ...], right: tuple[float, ...]) -> tuple[float, ...]:
-    """Apply the continuous majority/carry approximation to modular addition."""
+    """Apply the continuous majority/carry approximation to modular addition.
+
+    EXAMPLES::
+
+        >>> from claasp_next.semantics.cryptanalysis import continuous_modular_add
+        >>> continuous_modular_add((-1.0, -1.0), (-1.0, -1.0))
+        (-1.0, -1.0)
+    """
 
     _equal_vectors(left, right)
     carry = -1.0
@@ -60,14 +82,28 @@ def continuous_modular_add(left: tuple[float, ...], right: tuple[float, ...]) ->
 
 
 def continuous_rotate_left(values: tuple[float, ...], amount: int) -> tuple[float, ...]:
-    """Rotate a big-endian correlation vector left."""
+    """Rotate a big-endian correlation vector left.
+
+    EXAMPLES::
+
+        >>> from claasp_next.semantics.cryptanalysis import continuous_rotate_left
+        >>> continuous_rotate_left((1.0, 0.0, -1.0), 1)
+        (0.0, -1.0, 1.0)
+    """
 
     amount = _rotation(values, amount)
     return values[amount:] + values[:amount]
 
 
 def continuous_rotate_right(values: tuple[float, ...], amount: int) -> tuple[float, ...]:
-    """Rotate a big-endian correlation vector right."""
+    """Rotate a big-endian correlation vector right.
+
+    EXAMPLES::
+
+        >>> from claasp_next.semantics.cryptanalysis import continuous_rotate_right
+        >>> continuous_rotate_right((1.0, 0.0, -1.0), 1)
+        (-1.0, 1.0, 0.0)
+    """
 
     amount = _rotation(values, amount)
     return values[-amount:] + values[:-amount] if amount else values
@@ -80,6 +116,13 @@ def continuous_speck32(
 
     Key and round-counter differences are fixed to zero (correlation ``-1``),
     matching the result-bearing legacy fixtures.
+
+    EXAMPLES::
+
+        >>> from claasp_next.semantics.cryptanalysis import continuous_speck32
+        >>> result = continuous_speck32((-1.0,) * 16, (-1.0,) * 16, rounds=1)
+        >>> (len(result.values), result.claim_kind)
+        (32, 'heuristic')
     """
 
     _equal_vectors(left, right)

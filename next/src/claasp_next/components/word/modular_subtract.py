@@ -7,7 +7,14 @@ from claasp_next.graph import Component, PortLike
 
 @dataclass(frozen=True, slots=True, init=False)
 class ModularSubtract(Component):
-    """Subtract word vectors from left to right modulo ``2^width``."""
+    """Subtract word vectors from left to right modulo ``2^width``.
+
+    EXAMPLES::
+
+        >>> from claasp_next.primitives.single_component_primitives import ModularSubtract as SubtractPrimitive
+        >>> SubtractPrimitive(4).evaluate(1, 2)
+        15
+    """
 
     def __init__(self, component_inputs: Iterable[PortLike], component_id: str | None = None) -> None:
         inputs = tuple(component_inputs)

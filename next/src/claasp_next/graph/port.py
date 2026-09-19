@@ -54,7 +54,15 @@ class Port:
 
 @dataclass(frozen=True, slots=True)
 class Selection:
-    """An ordered selection of logical units from a source port."""
+    """Represent an ordered selection of logical units from a source port.
+
+    EXAMPLES::
+
+        >>> from claasp_next import Port, PrimeField, ValueType
+        >>> selection = Selection(Port("state", ValueType(PrimeField(17), (3,))), (2, 0))
+        >>> (selection.positions, selection.value_type.shape)
+        ((2, 0), (2,))
+    """
 
     source: Port
     positions: tuple[int, ...]
@@ -98,7 +106,14 @@ PortLike = Port | Selection
 
 
 def as_selection(value: PortLike) -> Selection:
-    """Normalize a whole port or an existing selection."""
+    """Normalize a whole port or preserve an existing selection.
+
+    EXAMPLES::
+
+        >>> from claasp_next import Bit, Port, ValueType
+        >>> as_selection(Port("state", ValueType(Bit(), (2,)))).positions
+        (0, 1)
+    """
 
     if isinstance(value, Port):
         return value.select_all()

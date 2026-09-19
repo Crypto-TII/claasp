@@ -22,7 +22,14 @@ from claasp_next.semantics.cryptanalysis.trails import (
 
 
 class PropagationObjective(str, Enum):
-    """Optimization requested independently of a solver representation."""
+    """Optimization requested independently of a solver representation.
+
+    EXAMPLES::
+
+        >>> from claasp_next.semantics.cryptanalysis import PropagationObjective
+        >>> PropagationObjective.MINIMIZE_WEIGHT.value
+        'minimize_weight'
+    """
 
     FEASIBILITY = "feasibility"
     MINIMIZE_WEIGHT = "minimize_weight"
@@ -30,7 +37,17 @@ class PropagationObjective(str, Enum):
 
 @runtime_checkable
 class TransitionProvider(Protocol):
-    """Interpret one component transition without encoding it for a solver."""
+    """Interpret one component transition without encoding it for a solver.
+
+    EXAMPLES::
+
+        >>> from claasp_next.semantics.cryptanalysis import TransitionProvider
+        >>> class Provider:
+        ...     def transition(self, input_patterns, output_pattern):
+        ...         return None
+        >>> isinstance(Provider(), TransitionProvider)
+        True
+    """
 
     def transition(self, input_patterns: tuple[int, ...], output_pattern: int) -> Transition:
         """Return the exact semantic transition for boundary patterns."""
@@ -41,7 +58,17 @@ ProviderFactory = Callable[[Component], TransitionProvider]
 
 @dataclass(frozen=True, slots=True)
 class ComponentSemanticsBinding:
-    """Bind one component class or instance to a semantic provider factory."""
+    """Bind one component class or instance to a semantic provider factory.
+
+    EXAMPLES::
+
+        >>> from claasp_next.components import BitVectorSBox
+        >>> from claasp_next.semantics import XOR_DIFFERENTIAL
+        >>> from claasp_next.semantics.cryptanalysis import ComponentSemanticsBinding
+        >>> binding = ComponentSemanticsBinding(XOR_DIFFERENTIAL, BitVectorSBox, lambda component: None)
+        >>> binding.semantics.name
+        'xor_differential'
+    """
 
     semantics: SemanticType
     component_type: type[Component]
@@ -61,7 +88,19 @@ class ComponentSemanticsBinding:
 
 @dataclass(frozen=True, slots=True)
 class ComponentSemanticsRegistry:
-    """Immutable global and per-component semantic model selection."""
+    """Immutable global and per-component semantic model selection.
+
+    EXAMPLES::
+
+        >>> from claasp_next.components import BitVectorSBox
+        >>> from claasp_next.primitives import Present
+        >>> from claasp_next.semantics import XOR_DIFFERENTIAL
+        >>> from claasp_next.semantics.cryptanalysis import default_component_semantics
+        >>> component = next(item for item in Present(number_of_rounds=1).components
+        ...     if isinstance(item, BitVectorSBox))
+        >>> default_component_semantics().provider(component, XOR_DIFFERENTIAL).transition((1,), 3).weight
+        2.0
+    """
 
     bindings: tuple[ComponentSemanticsBinding, ...] = ()
 
@@ -96,7 +135,21 @@ class ComponentSemanticsRegistry:
 
 @dataclass(frozen=True, slots=True, init=False)
 class PropagationProblem:
-    """A primitive semantics, graph scope, objective, bound, and provenance."""
+    """A primitive semantics, graph scope, objective, bound, and provenance.
+
+    EXAMPLES::
+
+        >>> from claasp_next.components import BitVectorSBox
+        >>> from claasp_next.primitives import Present
+        >>> from claasp_next.semantics import XOR_DIFFERENTIAL
+        >>> from claasp_next.semantics.cryptanalysis import PropagationProblem
+        >>> primitive = Present(number_of_rounds=1)
+        >>> component = next(item for item in primitive.components if isinstance(item, BitVectorSBox))
+        >>> problem = PropagationProblem(primitive, XOR_DIFFERENTIAL,
+        ...     component_ids=(component.component_id,), provenance=("reviewed",))
+        >>> problem.provider_for(component).transition((1,), 3).weight
+        2.0
+    """
 
     primitive: Primitive
     semantics: SemanticType
@@ -219,7 +272,14 @@ class _BitwiseAndProvider(_ModularAddProvider):
 
 
 def default_component_semantics() -> ComponentSemanticsRegistry:
-    """Return reviewed exact bindings for currently supported components."""
+    """Return reviewed exact bindings for currently supported components.
+
+    EXAMPLES::
+
+        >>> from claasp_next.semantics.cryptanalysis import default_component_semantics
+        >>> len(default_component_semantics().bindings)
+        6
+    """
 
     registry = ComponentSemanticsRegistry()
     for semantics in (XOR_DIFFERENTIAL, XOR_LINEAR):

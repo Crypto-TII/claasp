@@ -9,7 +9,14 @@ from claasp_next.semantics.base import XOR_DIFFERENTIAL, XOR_LINEAR
 
 
 class TrailKind(str, Enum):
-    """The propagation semantics represented by a trail."""
+    """The propagation semantics represented by a trail.
+
+    EXAMPLES::
+
+        >>> from claasp_next.semantics.cryptanalysis import TrailKind
+        >>> TrailKind.XOR_DIFFERENTIAL.semantics.name
+        'xor_differential'
+    """
 
     XOR_DIFFERENTIAL = "xor_differential"
     XOR_LINEAR = "xor_linear"
@@ -23,7 +30,18 @@ class TrailKind(str, Enum):
 
 @dataclass(frozen=True, slots=True)
 class BitPattern:
-    """A fixed-width difference or mask represented as an integer."""
+    """A fixed-width difference or mask represented as an integer.
+
+    EXAMPLES::
+
+        >>> from claasp_next.semantics.cryptanalysis import XorDifference
+        >>> XorDifference(0xA, 4).value
+        10
+        >>> XorDifference(4, 2)
+        Traceback (most recent call last):
+        ...
+        ValueError: pattern value must fit its width
+    """
 
     value: int
     width: int
@@ -41,17 +59,41 @@ class BitPattern:
 
 @dataclass(frozen=True, slots=True)
 class XorDifference(BitPattern):
-    """An XOR difference at a typed graph boundary."""
+    """An XOR difference at a typed graph boundary.
+
+    EXAMPLES::
+
+        >>> from claasp_next.semantics.cryptanalysis import XorDifference
+        >>> format(XorDifference(10, 4).value, "04b")
+        '1010'
+    """
 
 
 @dataclass(frozen=True, slots=True)
 class XorMask(BitPattern):
-    """An XOR linear mask at a typed graph boundary."""
+    """An XOR linear mask at a typed graph boundary.
+
+    EXAMPLES::
+
+        >>> from claasp_next.semantics.cryptanalysis import XorMask
+        >>> XorMask(3, 4).width
+        4
+    """
 
 
 @dataclass(frozen=True, slots=True)
 class Transition:
-    """One exact component transition and its probability/correlation weight."""
+    """One exact component transition and its probability/correlation weight.
+
+    EXAMPLES::
+
+        >>> from claasp_next.semantics.cryptanalysis import (TrailKind, Transition,
+        ...     XorDifference)
+        >>> transition = Transition(TrailKind.XOR_DIFFERENTIAL,
+        ...     XorDifference(1, 2), XorDifference(3, 2), 1, 4)
+        >>> (transition.is_possible, transition.weight)
+        (True, 2.0)
+    """
 
     kind: TrailKind
     input_pattern: BitPattern
@@ -82,6 +124,7 @@ class Transition:
 
     @property
     def is_possible(self) -> bool:
+        """Return whether the transition has nonzero probability or correlation."""
         return self.numerator != 0
 
     @property
@@ -93,7 +136,17 @@ class Transition:
 
 @dataclass(frozen=True, slots=True)
 class TrailStep:
-    """A named component transition in a trail."""
+    """A named component transition in a trail.
+
+    EXAMPLES::
+
+        >>> from claasp_next.semantics.cryptanalysis import (TrailKind, TrailStep,
+        ...     Transition, XorDifference)
+        >>> transition = Transition(TrailKind.XOR_DIFFERENTIAL,
+        ...     XorDifference(1, 1), XorDifference(1, 1), 1, 2)
+        >>> TrailStep("sbox_0", transition).component_id
+        'sbox_0'
+    """
 
     component_id: str
     transition: Transition
@@ -105,7 +158,19 @@ class TrailStep:
 
 @dataclass(frozen=True, slots=True)
 class Trail:
-    """A checked sequence of component transitions."""
+    """A checked sequence of component transitions.
+
+    EXAMPLES::
+
+        >>> from claasp_next.semantics.cryptanalysis import (Trail, TrailKind,
+        ...     TrailStep, Transition, XorDifference)
+        >>> transition = Transition(TrailKind.XOR_DIFFERENTIAL,
+        ...     XorDifference(1, 1), XorDifference(1, 1), 1, 2)
+        >>> trail = Trail(TrailKind.XOR_DIFFERENTIAL, XorDifference(1, 1),
+        ...     XorDifference(1, 1), (TrailStep("sbox_0", transition),))
+        >>> trail.total_weight
+        1.0
+    """
 
     kind: TrailKind
     input_pattern: BitPattern
@@ -125,6 +190,7 @@ class Trail:
 
     @property
     def total_weight(self) -> float:
+        """Return the sum of all component-transition weights."""
         return sum(step.transition.weight for step in self.steps)
 
     @property
@@ -153,7 +219,17 @@ class Trail:
 
 @dataclass(frozen=True, slots=True)
 class TrailSearchResult:
-    """A trail together with its optimization claim and provenance."""
+    """A trail together with its optimization claim and provenance.
+
+    EXAMPLES::
+
+        >>> from claasp_next.semantics.cryptanalysis import (Trail, TrailKind,
+        ...     TrailSearchResult, XorDifference)
+        >>> trail = Trail(TrailKind.XOR_DIFFERENTIAL, XorDifference(0, 1),
+        ...     XorDifference(0, 1), ())
+        >>> TrailSearchResult(trail, 0.0, "exhaustive").is_optimal
+        True
+    """
 
     trail: Trail
     lower_bound: float
@@ -161,11 +237,21 @@ class TrailSearchResult:
 
     @property
     def is_optimal(self) -> bool:
+        """Return whether the trail meets the claimed lower bound."""
         return self.trail.total_weight == self.lower_bound
 
 
 class SBoxTransitionSemantics:
-    """Compute and independently check exact S-box DDT and LAT entries."""
+    """Compute and independently check exact S-box DDT and LAT entries.
+
+    EXAMPLES::
+
+        >>> from claasp_next.semantics.cryptanalysis import SBoxTransitionSemantics
+        >>> semantics = SBoxTransitionSemantics((0, 2, 3, 1))
+        >>> transition = semantics.xor_differential(1, 2)
+        >>> (transition.numerator, transition.denominator, semantics.check(transition))
+        (4, 4, True)
+    """
 
     def __init__(self, table: tuple[int, ...] | list[int]) -> None:
         self.table = tuple(table)
@@ -283,7 +369,16 @@ class SBoxTransitionSemantics:
 
 
 class ModularAddTransitionSemantics:
-    """Exact XOR-differential semantics for two-input modular addition."""
+    """Exact XOR-differential semantics for two-input modular addition.
+
+    EXAMPLES::
+
+        >>> from claasp_next.semantics.cryptanalysis import ModularAddTransitionSemantics
+        >>> semantics = ModularAddTransitionSemantics(2)
+        >>> transition = semantics.xor_differential(0, 0, 0)
+        >>> (transition.weight, semantics.check(transition), len(semantics.possible_transitions(0, 0)))
+        (-0.0, True, 1)
+    """
 
     def __init__(self, width: int) -> None:
         if not isinstance(width, int) or isinstance(width, bool) or width <= 0:
@@ -383,7 +478,16 @@ class ModularAddTransitionSemantics:
 
 
 class ModularAddLinearSemantics:
-    """Exact Walsh correlations for masks of two-input modular addition."""
+    """Exact Walsh correlations for masks of two-input modular addition.
+
+    EXAMPLES::
+
+        >>> from claasp_next.semantics.cryptanalysis import ModularAddLinearSemantics
+        >>> semantics = ModularAddLinearSemantics(2)
+        >>> transition = semantics.xor_linear(0, 0, 0)
+        >>> (transition.weight, semantics.check(transition))
+        (-0.0, True)
+    """
 
     def __init__(self, width: int) -> None:
         if not isinstance(width, int) or isinstance(width, bool) or width <= 0:

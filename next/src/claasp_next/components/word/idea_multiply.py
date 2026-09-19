@@ -7,7 +7,14 @@ from claasp_next.graph import Component, PortLike
 
 @dataclass(frozen=True, slots=True, init=False)
 class IDEAMultiply(Component):
-    """IDEA multiplication modulo ``2^width + 1`` with zero encoding ``2^width``."""
+    """IDEA multiplication modulo ``2^width + 1`` with zero encoding ``2^width``.
+
+    EXAMPLES::
+
+        >>> from claasp_next.primitives.single_component_primitives import IDEAMultiply
+        >>> IDEAMultiply(4).evaluate(3, 5)
+        15
+    """
 
     inverse_inputs: tuple[int, ...]
 

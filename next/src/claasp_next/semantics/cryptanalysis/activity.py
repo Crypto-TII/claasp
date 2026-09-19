@@ -9,7 +9,15 @@ from .trails import SBoxTransitionSemantics
 
 @dataclass(frozen=True, slots=True)
 class AESTwoRoundDifferentialEvidence:
-    """Exact evidence behind the legacy two-step active-S-box search."""
+    """Exact evidence behind the legacy two-step active-S-box search.
+
+    EXAMPLES::
+
+        >>> from claasp_next.semantics.cryptanalysis import AESTwoRoundDifferentialEvidence
+        >>> evidence = AESTwoRoundDifferentialEvidence(30, 5, (255,) * 4, 224, 1, 1)
+        >>> (evidence.minimum_weight, evidence.minimum_active_sboxes)
+        (30, 5)
+    """
 
     minimum_weight: int
     minimum_active_sboxes: int
@@ -21,7 +29,14 @@ class AESTwoRoundDifferentialEvidence:
 
 @dataclass(frozen=True, slots=True)
 class WordwiseActiveSBoxEvidence:
-    """Reviewed exact and lower-bound active-S-box sequences."""
+    """Reviewed exact and lower-bound active-S-box sequences.
+
+    EXAMPLES::
+
+        >>> from claasp_next.semantics.cryptanalysis import WordwiseActiveSBoxEvidence
+        >>> WordwiseActiveSBoxEvidence().aes_exact
+        (1, 5, 9, 25)
+    """
 
     aes_exact: tuple[int, ...] = (1, 5, 9, 25)
     ublock_decomposed_lower_bounds: tuple[int, ...] = (1, 6)
@@ -40,6 +55,12 @@ def legacy_wordwise_active_sbox_evidence() -> WordwiseActiveSBoxEvidence:
     AES values are the Rijndael wide-trail bound.  uBlock's decomposed and
     consolidated values are deliberately retained as model lower bounds; the
     published exact values are stored separately and never inferred from them.
+
+    EXAMPLES::
+
+        >>> from claasp_next.semantics.cryptanalysis import legacy_wordwise_active_sbox_evidence
+        >>> legacy_wordwise_active_sbox_evidence().ublock_published_exact
+        (1, 8, 13)
     """
 
     return WordwiseActiveSBoxEvidence()
@@ -53,6 +74,14 @@ def aes_two_round_differential_evidence(table) -> AESTwoRoundDifferentialEvidenc
     three-to-two column activity pattern, exact DDT/MixColumns enumeration finds
     255 weight-30 characteristics.  The all-``ff`` difference supplies the
     preserved feasible weight-224 characteristic.
+
+    EXAMPLES::
+
+        >>> from claasp_next.semantics.cryptanalysis import aes_two_round_differential_evidence
+        >>> aes_two_round_differential_evidence(range(4))
+        Traceback (most recent call last):
+        ...
+        ValueError: AES evidence requires a bijective eight-bit lookup table
     """
 
     table = tuple(table)
@@ -117,6 +146,12 @@ def branch_number_activity_table(input_units, output_units, branch_number):
     A branch number is a caller-supplied proven bound. These rows are a
     necessary condition only: for a general matrix a retained row need not
     have a concrete field-valued witness.
+
+    EXAMPLES::
+
+        >>> from claasp_next.semantics.cryptanalysis import branch_number_activity_table
+        >>> branch_number_activity_table(1, 1, 2)
+        ((0, 0), (1, 1))
     """
     for size in (input_units, output_units, branch_number):
         if not isinstance(size, int) or isinstance(size, bool) or size < 1:
@@ -137,6 +172,12 @@ def possible_active_sbox_counts(tables, weight, *, maximum_active=None):
     This is a table-only necessary condition, not a whole-primitive trail
     claim. Zero input differences are inactive and excluded. Non-dyadic
     entries are compared rationally without rounding logarithms.
+
+    EXAMPLES::
+
+        >>> from claasp_next.semantics.cryptanalysis import possible_active_sbox_counts
+        >>> possible_active_sbox_counts([(0, 1)], 0, maximum_active=2)
+        frozenset({0, 1, 2})
     """
     if not isinstance(weight, int) or isinstance(weight, bool) or weight < 0:
         raise ValueError("weight must be a nonnegative integer")

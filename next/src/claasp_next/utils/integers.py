@@ -9,6 +9,8 @@ def coerce_exact_int(value: object, parameter_name: str) -> int:
     Booleans and numeric strings are deliberately rejected even though
     :class:`int` accepts them.
 
+    EXAMPLES::
+
     >>> from claasp_next.utils import coerce_exact_int
     >>> coerce_exact_int(5.0, "rounds")
     5
@@ -32,6 +34,8 @@ def coerce_exact_int(value: object, parameter_name: str) -> int:
 def bitmask(width: int) -> int:
     """Return an integer with its low ``width`` bits set.
 
+    EXAMPLES::
+
     >>> from claasp_next.utils import bitmask
     >>> hex(bitmask(32))
     '0xffffffff'
@@ -44,7 +48,13 @@ def bitmask(width: int) -> int:
 
 
 def bits_little_endian(value: int, width: int) -> tuple[int, ...]:
-    """Return the low ``width`` bits from least to most significant."""
+    """Return the low ``width`` bits from least to most significant.
+
+    EXAMPLES::
+
+        >>> bits_little_endian(0b1010, 4)
+        (0, 1, 0, 1)
+    """
 
     width = coerce_exact_int(width, "width")
     if width < 0:
@@ -56,7 +66,13 @@ def bits_little_endian(value: int, width: int) -> tuple[int, ...]:
 
 
 def int_to_words(value: int, word_width: int, total_width: int, *, byteorder: str = "big") -> tuple[int, ...]:
-    """Split a fixed-width integer into equally sized words."""
+    """Split a fixed-width integer into equally sized words.
+
+    EXAMPLES::
+
+        >>> int_to_words(0x1234, 8, 16)
+        (18, 52)
+    """
 
     word_width = coerce_exact_int(word_width, "word_width")
     total_width = coerce_exact_int(total_width, "total_width")
@@ -72,7 +88,13 @@ def int_to_words(value: int, word_width: int, total_width: int, *, byteorder: st
 
 
 def words_to_int(words: Iterable[int], word_width: int, *, byteorder: str = "big") -> int:
-    """Pack equally sized words into one integer."""
+    """Pack equally sized words into one integer.
+
+    EXAMPLES::
+
+        >>> hex(words_to_int((0x12, 0x34), 8))
+        '0x1234'
+    """
 
     word_width = coerce_exact_int(word_width, "word_width")
     if word_width <= 0:
@@ -90,7 +112,13 @@ def words_to_int(words: Iterable[int], word_width: int, *, byteorder: str = "big
 
 
 def int_to_bytes(value: int, width: int, *, byteorder: str = "big") -> bytes:
-    """Encode an integer whose declared width is a whole number of bytes."""
+    """Encode an integer whose declared width is a whole number of bytes.
+
+    EXAMPLES::
+
+        >>> int_to_bytes(0x1234, 16)
+        b'\\x124'
+    """
 
     width = coerce_exact_int(width, "width")
     if width < 0 or width % 8:
@@ -104,7 +132,13 @@ def int_to_bytes(value: int, width: int, *, byteorder: str = "big") -> bytes:
 
 
 def bytes_to_int(data: bytes | bytearray, *, byteorder: str = "big") -> int:
-    """Decode unsigned bytes using an explicit byte order."""
+    """Decode unsigned bytes using an explicit byte order.
+
+    EXAMPLES::
+
+        >>> hex(bytes_to_int(b'\\x12\\x34'))
+        '0x1234'
+    """
 
     if not isinstance(data, (bytes, bytearray)):
         raise TypeError("data must be bytes or bytearray")
@@ -135,7 +169,13 @@ def rotate_left(value: int, amount: int, width: int) -> int:
 
 
 def rotate_right(value: int, amount: int, width: int) -> int:
-    """Rotate the low ``width`` bits of ``value`` to the right."""
+    """Rotate the low ``width`` bits of ``value`` to the right.
+
+    EXAMPLES::
+
+        >>> hex(rotate_right(0x81, 1, 8))
+        '0xc0'
+    """
 
     if not isinstance(amount, int) or isinstance(amount, bool):
         raise TypeError("amount must be an integer")

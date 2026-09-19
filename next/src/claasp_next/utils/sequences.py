@@ -19,6 +19,8 @@ def _validate(sequence: Sequence[T], amount: int) -> None:
 def rotate_right(sequence: list[T] | tuple[T, ...], amount: int) -> list[T] | tuple[T, ...]:
     """Return a right-rotated sequence of the same concrete type.
 
+    EXAMPLES::
+
     >>> from claasp_next.utils import rotate_sequence_right
     >>> rotate_sequence_right([1, 2, 3, 4, 5], 2)
     [4, 5, 1, 2, 3]
@@ -34,7 +36,13 @@ def rotate_right(sequence: list[T] | tuple[T, ...], amount: int) -> list[T] | tu
 
 
 def rotate_left(sequence: list[T] | tuple[T, ...], amount: int) -> list[T] | tuple[T, ...]:
-    """Return a left-rotated sequence of the same concrete type."""
+    """Return a left-rotated sequence of the same concrete type.
+
+    EXAMPLES::
+
+        >>> rotate_left((1, 2, 3), 1)
+        (2, 3, 1)
+    """
 
     _validate(sequence, amount)
     if not sequence:
@@ -45,7 +53,13 @@ def rotate_left(sequence: list[T] | tuple[T, ...], amount: int) -> list[T] | tup
 def shift_right(
     sequence: list[T] | tuple[T, ...], amount: int, *, fill: T | int = 0
 ) -> list[T | int] | tuple[T | int, ...]:
-    """Shift right, filling vacated positions with ``fill``."""
+    """Shift right, filling vacated positions with ``fill``.
+
+    EXAMPLES::
+
+        >>> shift_right([1, 2, 3], 1)
+        [0, 1, 2]
+    """
 
     _validate(sequence, amount)
     if amount > len(sequence):
@@ -58,7 +72,13 @@ def shift_right(
 def shift_left(
     sequence: list[T] | tuple[T, ...], amount: int, *, fill: T | int = 0
 ) -> list[T | int] | tuple[T | int, ...]:
-    """Shift left, filling vacated positions with ``fill``."""
+    """Shift left, filling vacated positions with ``fill``.
+
+    EXAMPLES::
+
+        >>> shift_left((1, 2, 3), 1)
+        (2, 3, 0)
+    """
 
     _validate(sequence, amount)
     if amount > len(sequence):

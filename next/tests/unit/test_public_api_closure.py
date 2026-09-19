@@ -124,3 +124,23 @@ def test_private_helpers_do_not_become_public_by_filename():
     assert "claasp_next.components.word._validation" not in modules
     assert "claasp_next.primitives._catalogue_exports" in modules
     assert "claasp_next.primitives" in modules
+
+
+def test_foundational_public_api_documentation_is_closed():
+    """Keep the M10.16c graph-authoring and semantic boundary closed."""
+
+    prefixes = (
+        "claasp_next.annotations",
+        "claasp_next.components",
+        "claasp_next.domains",
+        "claasp_next.encoding",
+        "claasp_next.graph",
+        "claasp_next.provenance",
+        "claasp_next.semantics",
+        "claasp_next.utils",
+    )
+    entries = public_api_closure.enumerate_public_api()
+    authority = public_api_closure.load_authority()
+    violations = public_api_closure.documentation_violations(entries, authority)
+
+    assert not [violation for violation in violations if violation.startswith(prefixes)]

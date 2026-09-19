@@ -9,7 +9,14 @@ from claasp_next.graph.port import PortLike, as_selection
 
 @dataclass(frozen=True, slots=True, init=False)
 class Permutation(Component):
-    """Reorder a selection using ``output[i] = input[mapping[i]]``."""
+    """Reorder a selection using ``output[i] = input[mapping[i]]``.
+
+    EXAMPLES::
+
+        >>> from claasp_next.primitives.single_component_primitives import Permutation
+        >>> Permutation([3, 2, 1, 0]).evaluate(0b1100)
+        3
+    """
 
     mapping: tuple[int, ...]
 
@@ -37,7 +44,17 @@ class Permutation(Component):
         component_input: PortLike,
         component_id: str | None = None,
     ) -> "Permutation":
-        """Reverse all logical units in a component input."""
+        """Reverse all logical units in a component input.
+
+        EXAMPLES::
+
+            >>> from claasp_next import Bit, Primitive, ValueType
+            >>> from claasp_next.components import Permutation
+            >>> graph = Primitive("reverse", {"x": ValueType(Bit(), (4,))})
+            >>> _ = graph.add_round()
+            >>> Permutation.reverse(graph.input("x")).mapping
+            (3, 2, 1, 0)
+        """
 
         size = as_selection(component_input).value_type.unit_count
         return cls(component_input, reversed(range(size)), component_id)

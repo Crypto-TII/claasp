@@ -10,7 +10,14 @@ from claasp_next.graph.port import Selection
 
 @dataclass(frozen=True, slots=True, init=False)
 class Add(Component):
-    """Add two or more homogeneous vectors component-wise."""
+    """Add two or more homogeneous vectors component-wise.
+
+    EXAMPLES::
+
+        >>> from claasp_next.primitives.single_component_primitives import Add as AddPrimitive
+        >>> AddPrimitive().evaluate(1, 1)
+        0
+    """
 
     def __init__(self, component_inputs: Iterable[Selection], component_id: str | None = None) -> None:
         frozen_inputs = normalize_inputs(tuple(component_inputs))

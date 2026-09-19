@@ -11,9 +11,11 @@ def reverse_bytes_in_words(
     This preserves the legacy 32-bit layout result while accepting any whole
     number of equally sized words.
 
-    >>> from claasp_next.utils import reverse_bytes_in_words
-    >>> reverse_bytes_in_words(range(32))[:10]
-    (24, 25, 26, 27, 28, 29, 30, 31, 16, 17)
+    EXAMPLES::
+
+        >>> from claasp_next.utils import reverse_bytes_in_words
+        >>> reverse_bytes_in_words(range(32))[:10]
+        (24, 25, 26, 27, 28, 29, 30, 31, 16, 17)
     """
 
     if not isinstance(word_bit_size, int) or isinstance(word_bit_size, bool) or word_bit_size <= 0:

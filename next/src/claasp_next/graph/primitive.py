@@ -20,7 +20,27 @@ from claasp_next.graph.value_type import ValueType
 
 
 class Primitive:
-    """A round-oriented directed acyclic graph of typed components."""
+    """Build a validated round-oriented directed acyclic graph.
+
+    A primitive owns typed input ports, immutable component descriptions, and
+    an explicit output binding. Components are evaluated by representations;
+    adding one here only authors graph structure.
+
+    EXAMPLES::
+
+        >>> from claasp_next import Primitive, ValueType, Word
+        >>> from claasp_next.components import Xor
+        >>> nibble = ValueType(Word(4), (1,))
+        >>> primitive = Primitive("xor_nibbles", {"left": nibble, "right": nibble})
+        >>> primitive.add_round()
+        Round(number=0)
+        >>> output = primitive.add_component(Xor(primitive.inputs()))
+        >>> primitive.set_output(output)
+        >>> primitive.evaluate(0b1010, 0b0011)
+        9
+        >>> (primitive.family_name, len(primitive.rounds), len(primitive.components))
+        ('xor_nibbles', 1, 1)
+    """
 
     REALIZATIONS: tuple[RealizationDescriptor, ...] = ()
     REALIZATION_BUILDERS: Mapping[str, object] = MappingProxyType({})
@@ -122,6 +142,8 @@ class Primitive:
 
     @property
     def family_name(self) -> str:
+        """Return the stable mathematical family name."""
+
         return self._family_name
 
     @property
@@ -214,9 +236,13 @@ class Primitive:
 
     @property
     def secret_inputs(self) -> tuple[str, ...]:
+        """Return secret input names in declaration order."""
+
         return tuple(name for name, item in self._input_descriptors.items() if item.is_secret)
 
     def input_descriptor(self, name: str) -> PrimitiveInput:
+        """Return the typed role and visibility descriptor for one input."""
+
         try:
             return self._input_descriptors[name]
         except KeyError as error:
@@ -255,6 +281,8 @@ class Primitive:
 
     @property
     def rounds(self) -> tuple[Round, ...]:
+        """Return authored rounds as an immutable ordered tuple."""
+
         return tuple(self._rounds)
 
     def set_round_keys(self, round_keys: Iterable[object]) -> Sequence[object]:
@@ -323,6 +351,8 @@ class Primitive:
 
     @property
     def components(self) -> tuple[Component, ...]:
+        """Return semantic components in deterministic graph order."""
+
         return tuple(self._components.values())
 
     @property
@@ -339,6 +369,8 @@ class Primitive:
 
     @property
     def output(self) -> Selection | None:
+        """Return the selected graph output, or ``None`` before binding it."""
+
         return self._output
 
     def input(self, selector: str | int) -> Port:
@@ -356,12 +388,16 @@ class Primitive:
         return tuple(self._input_ports.values())[selector]
 
     def port(self, owner_id: str) -> Port:
+        """Resolve an input, component, or binding output port by identity."""
+
         try:
             return self._ports[owner_id]
         except KeyError as error:
             raise KeyError(f"graph source {owner_id!r} does not exist") from error
 
     def component(self, component_id: str) -> Component:
+        """Resolve a semantic component by its deterministic identifier."""
+
         try:
             return self._components[component_id]
         except KeyError as error:
@@ -376,6 +412,8 @@ class Primitive:
             raise KeyError(f"composite scope {path!r} does not exist") from error
 
     def add_round(self) -> Round:
+        """Append and return the next sequential primitive round."""
+
         primitive_round = Round(len(self._rounds))
         self._rounds.append(primitive_round)
         return primitive_round

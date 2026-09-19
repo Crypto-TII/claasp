@@ -12,8 +12,9 @@ than silently discarded.
 
 For every exported class the audit also includes its constructor, public
 methods, properties, dataclass fields, enum members, and user-facing members
-inherited from another ``claasp_next`` class. Leading-underscore implementation
-members are private, apart from the constructor. A module without ``__all__``
+inherited from another exported ``claasp_next`` class. Members inherited only
+from an unexported implementation base remain private. Leading-underscore
+implementation members are private, apart from the constructor. A module without ``__all__``
 does not create a new public surface merely because its filename lacks a leading
 underscore; an object defined there is nevertheless public when another module
 exports it. This rule keeps private helpers private while covering root and
@@ -36,8 +37,10 @@ cryptanalytic evidence. Side effects identify process execution and explicit
 file output. Optional dependencies name packages or executables and state when
 they are imported or invoked.
 
-Every public class and user-facing callable has a small executable example in
-the docstring visible through ``help(...)``. Examples use ordinary Python
+Every public class and free function has a small executable example in the
+docstring visible through ``help(...)``. A class example may cover its public
+methods as one coherent workflow; a method with behavior not exercised by that
+workflow carries its own example. Examples use ordinary Python
 ``>>>`` prompts inside ``EXAMPLES::``; Sage prompts are forbidden. An example
 demonstrates behavior, validation, or a typed result rather than construction
 alone. Output must be deterministic across locale, platform, hash order,

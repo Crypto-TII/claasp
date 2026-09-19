@@ -7,7 +7,14 @@ from claasp_next.graph.component import Component
 
 @dataclass(slots=True)
 class Round:
-    """An ordered group of components."""
+    """Group authored components in one sequential primitive round.
+
+    EXAMPLES::
+
+        >>> primitive_round = Round(2)
+        >>> (primitive_round.number, primitive_round.components)
+        (2, ())
+    """
 
     number: int
     _components: list[Component] = field(default_factory=list, init=False, repr=False)
@@ -21,6 +28,8 @@ class Round:
 
     @property
     def components(self) -> tuple[Component, ...]:
+        """Return components in deterministic insertion order."""
+
         return tuple(self._components)
 
     def _append(self, component: Component) -> None:

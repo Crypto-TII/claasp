@@ -8,7 +8,20 @@ from claasp_next.semantics import CONCRETE, LEAKAGE
 
 @dataclass(frozen=True, slots=True)
 class ExecutionTrace:
-    """Concrete values attached to inputs, components, and optional output."""
+    """Expose concrete values attached to graph sources and output.
+
+    EXAMPLES::
+
+        >>> from claasp_next import Bit, Primitive, ValueType
+        >>> from claasp_next.annotations import AnnotationEntry, AnnotationRole
+        >>> from claasp_next.semantics import CONCRETE
+        >>> primitive = Primitive("identity", {"state": ValueType(Bit(), (1,))})
+        >>> trace = ExecutionTrace(GraphAnnotation(primitive, CONCRETE, (
+        ...     AnnotationEntry("state", AnnotationRole.INPUT, 1),
+        ... )))
+        >>> trace.value_of("state")
+        1
+    """
 
     annotation: GraphAnnotation
 
@@ -24,7 +37,13 @@ class ExecutionTrace:
 
 @dataclass(frozen=True, slots=True)
 class LeakageSample:
-    """A simulated leakage observation associated with one component."""
+    """Record one ordered simulated leakage observation.
+
+    EXAMPLES::
+
+        >>> LeakageSample("xor_0_0", 2.5, 0)
+        LeakageSample(component_id='xor_0_0', value=2.5, sample_index=0)
+    """
 
     component_id: str
     value: float
@@ -39,7 +58,18 @@ class LeakageSample:
 
 @dataclass(frozen=True, slots=True)
 class SideChannelTrace:
-    """Leakage annotations plus their ordered sampled observations."""
+    """Pair leakage annotations with contiguous ordered observations.
+
+    EXAMPLES::
+
+        >>> from claasp_next import Bit, Primitive, ValueType
+        >>> from claasp_next.semantics import LEAKAGE
+        >>> primitive = Primitive("leakage", {"state": ValueType(Bit(), (1,))})
+        >>> annotation = GraphAnnotation(primitive, LEAKAGE, ())
+        >>> trace = SideChannelTrace(annotation, (LeakageSample("input", 1.0, 0),))
+        >>> trace.samples[0].value
+        1.0
+    """
 
     annotation: GraphAnnotation
     samples: tuple[LeakageSample, ...]

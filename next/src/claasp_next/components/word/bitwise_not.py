@@ -8,7 +8,14 @@ from claasp_next.graph import Component, PortLike
 
 @dataclass(frozen=True, slots=True, init=False)
 class BitwiseNot(Component):
-    """Complement every bit in a vector of fixed-width words."""
+    """Complement every bit in a vector of fixed-width words.
+
+    EXAMPLES::
+
+        >>> from claasp_next.primitives.single_component_primitives import BitwiseNot as NotPrimitive
+        >>> NotPrimitive(4).evaluate(0b1010)
+        5
+    """
 
     def __init__(self, component_input: PortLike, component_id: str | None = None) -> None:
         inputs, output_type = require_word_inputs((component_input,), "word NOT")

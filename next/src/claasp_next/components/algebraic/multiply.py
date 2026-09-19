@@ -10,7 +10,15 @@ from claasp_next.graph.port import Selection
 
 @dataclass(frozen=True, slots=True, init=False)
 class Multiply(Component):
-    """Multiply two or more homogeneous vectors component-wise."""
+    """Multiply two or more homogeneous vectors component-wise.
+
+    EXAMPLES::
+
+        >>> from claasp_next import PrimeField
+        >>> from claasp_next.primitives.single_component_primitives import Multiply as MultiplyPrimitive
+        >>> MultiplyPrimitive(domain=PrimeField(17)).evaluate(5, 7)
+        1
+    """
 
     def __init__(self, component_inputs: Iterable[Selection], component_id: str | None = None) -> None:
         frozen_inputs = normalize_inputs(tuple(component_inputs))

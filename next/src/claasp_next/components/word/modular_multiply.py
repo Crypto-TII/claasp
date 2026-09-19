@@ -7,7 +7,14 @@ from claasp_next.graph import Component, PortLike
 
 @dataclass(frozen=True, slots=True, init=False)
 class ModularMultiply(Component):
-    """Multiply word vectors component-wise modulo an explicit modulus."""
+    """Multiply word vectors component-wise modulo an explicit modulus.
+
+    EXAMPLES::
+
+        >>> from claasp_next.primitives.single_component_primitives import ModularMultiply
+        >>> ModularMultiply().evaluate(3, 5)
+        15
+    """
 
     modulus: int
 

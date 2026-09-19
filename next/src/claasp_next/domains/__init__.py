@@ -1,4 +1,4 @@
-"""Mathematical scalar domains."""
+"""Define immutable mathematical scalar domains for typed graph values."""
 
 from claasp_next.domains.binary_extension_field import BinaryExtensionField
 from claasp_next.domains.bit import Bit

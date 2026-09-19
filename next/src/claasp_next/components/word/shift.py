@@ -6,7 +6,14 @@ from claasp_next.graph import Component, PortLike
 
 @dataclass(frozen=True, slots=True, init=False)
 class Shift(Component):
-    """Shift every selected word with zero fill and no wraparound."""
+    """Shift every selected word with zero fill and no wraparound.
+
+    EXAMPLES::
+
+        >>> from claasp_next.primitives.single_component_primitives import Shift as ShiftPrimitive
+        >>> ShiftPrimitive(8, 1, "right").evaluate(0x81)
+        64
+    """
 
     amount: int
     direction: str

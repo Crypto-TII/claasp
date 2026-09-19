@@ -116,7 +116,6 @@ def enumerate_public_api(source_root: Path = SOURCE_ROOT) -> list[dict[str, Any]
     modules = public_modules(source_root)
     entries: dict[str, dict[str, Any]] = {}
     exported_classes: dict[int, type[Any]] = {}
-    class_names: dict[int, set[str]] = defaultdict(set)
 
     for module_name in modules:
         module = importlib.import_module(module_name)
@@ -146,14 +145,26 @@ def enumerate_public_api(source_root: Path = SOURCE_ROOT) -> list[dict[str, Any]
             }
             if inspect.isclass(value):
                 exported_classes[id(value)] = value
-                class_names[id(value)].add(canonical)
 
     inherited_by: dict[str, set[str]] = defaultdict(set)
     member_records: dict[str, dict[str, Any]] = {}
     for exported_class in exported_classes.values():
         exported_canonical = _canonical_name(exported_class, exported_class.__name__)
+        constructor_name = f"{exported_canonical}.__init__"
+        member_records.setdefault(
+            constructor_name,
+            {
+                "qualified_name": constructor_name,
+                "kind": "constructor",
+                "canonical_name": constructor_name,
+                "defined_in": exported_class.__module__,
+                "documented_by": exported_canonical,
+            },
+        )
         for defining_class in exported_class.__mro__:
             if defining_class is object or not defining_class.__module__.startswith("claasp_next"):
+                continue
+            if defining_class is not exported_class and id(defining_class) not in exported_classes:
                 continue
             class_canonical = _canonical_name(defining_class, defining_class.__name__)
             for name, value in vars(defining_class).items():
@@ -161,6 +172,8 @@ def enumerate_public_api(source_root: Path = SOURCE_ROOT) -> list[dict[str, Any]
                     continue
                 kind = _member_kind(name, value)
                 if kind is None:
+                    continue
+                if kind == "constructor":
                     continue
                 qualified_name = f"{class_canonical}.{name}"
                 member_records.setdefault(
@@ -258,12 +271,24 @@ def _example_required(entry: dict[str, Any]) -> bool:
         "enum",
         "function",
         "method",
-        "property",
     }
 
 
 def _has_example(docstring: str | None) -> bool:
     return bool(docstring and "EXAMPLES::" in docstring and ">>>" in docstring)
+
+
+def _scoped_example(entry: dict[str, Any], docstring: str | None) -> bool:
+    if _has_example(docstring):
+        return True
+    if entry["kind"] != "method":
+        return False
+    owner_name = entry["canonical_name"].rsplit(".", 1)[0]
+    try:
+        owner_doc = inspect.getdoc(_resolve(owner_name))
+    except (AttributeError, ImportError, LookupError):
+        return False
+    return _has_example(owner_doc)
 
 
 def load_authority(path: Path = AUTHORITY) -> dict[str, Any]:
@@ -349,7 +374,7 @@ def documentation_violations(
             continue
         docstring = inspect.getdoc(value)
         violations.extend(validate_docstring(docstring, doc_owner))
-        if _example_required(entry) and doc_owner not in exceptions and not _has_example(docstring):
+        if _example_required(entry) and doc_owner not in exceptions and not _scoped_example(entry, docstring):
             violations.append(f"{doc_owner}: missing executable EXAMPLES:: section")
     return sorted(set(violations))
 

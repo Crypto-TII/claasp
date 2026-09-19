@@ -11,11 +11,31 @@ class ComponentMonomialSemantics:
     Masks are MSB-first exponent vectors encoded as integers. The relation is
     deliberately local and dependency-free, allowing graph composers and
     solver representations to share the same checker.
+
+    EXAMPLES::
+
+        >>> from claasp_next import Bit, Primitive, ValueType
+        >>> from claasp_next.components import Identity
+        >>> from claasp_next.semantics.cryptanalysis import ComponentMonomialSemantics
+        >>> graph = Primitive("identity", {"x": ValueType(Bit(), (2,))})
+        >>> component = Identity(graph.input("x"))
+        >>> ComponentMonomialSemantics.is_possible(component, (0b10,), 0b10)
+        True
     """
 
     @staticmethod
     def is_possible(component, input_masks: tuple[int, ...], output_mask: int) -> bool:
-        """Return whether a local component monomial transition is possible."""
+        """Return whether a local component monomial transition is possible.
+
+        EXAMPLES::
+
+            >>> from claasp_next import Bit, Primitive, ValueType
+            >>> from claasp_next.components import Identity
+            >>> from claasp_next.semantics.cryptanalysis import ComponentMonomialSemantics
+            >>> graph = Primitive("identity", {"x": ValueType(Bit(), (1,))})
+            >>> ComponentMonomialSemantics.is_possible(Identity(graph.input("x")), (1,), 1)
+            True
+        """
 
         if not isinstance(component.output_type.domain, Bit):
             raise TypeError("Boolean monomial semantics currently require the Bit domain")

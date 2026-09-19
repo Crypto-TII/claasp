@@ -16,10 +16,12 @@ def _positive_bit_size(value: int, name: str) -> int:
 class LookupTable:
     """An immutable lookup table with explicit input and output widths.
 
-    >>> from claasp_next.components import LookupTable
-    >>> table = LookupTable([3, 2, 1, 0], input_bit_size=2)
-    >>> table.is_bijective()
-    True
+    EXAMPLES::
+
+        >>> from claasp_next.components import LookupTable
+        >>> table = LookupTable([3, 2, 1, 0], input_bit_size=2)
+        >>> table.is_bijective()
+        True
     """
 
     values: tuple[int, ...]
@@ -58,13 +60,27 @@ class LookupTable:
     def identity(
         cls, input_bit_size: int, output_bit_size: int | None = None
     ) -> "LookupTable":
-        """Return the identity lookup for the requested widths."""
+        """Return the identity lookup for the requested widths.
+
+        EXAMPLES::
+
+            >>> from claasp_next.components import LookupTable
+            >>> LookupTable.identity(2).values
+            (0, 1, 2, 3)
+        """
 
         input_bit_size = _positive_bit_size(input_bit_size, "input_bit_size")
         return cls(range(1 << input_bit_size), input_bit_size, output_bit_size)
 
     def is_bijective(self) -> bool:
-        """Return whether this table is a bijection on equally sized spaces."""
+        """Return whether this table is a bijection on equally sized spaces.
+
+        EXAMPLES::
+
+            >>> from claasp_next.components import LookupTable
+            >>> LookupTable([0, 0], 1).is_bijective()
+            False
+        """
 
         return self.output_bit_size == self.input_bit_size and sorted(
             self.values

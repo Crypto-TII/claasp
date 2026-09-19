@@ -6,7 +6,13 @@ from enum import Enum
 
 
 class RealizationMaturity(str, Enum):
-    """Review status of one graph realization."""
+    """Describe the review status of one graph realization.
+
+    EXAMPLES::
+
+        >>> RealizationMaturity.LEGACY_REGRESSION.value
+        'legacy_regression'
+    """
 
     STABLE = "stable"
     EXPERIMENTAL = "experimental"
@@ -14,22 +20,46 @@ class RealizationMaturity(str, Enum):
 
 
 class RealizationSelectionPolicy(str, Enum):
-    """How capability selection resolves multiple compatible graphs."""
+    """Choose how multiple compatible realization graphs are resolved.
+
+    EXAMPLES::
+
+        >>> RealizationSelectionPolicy.PREFERRED.value
+        'preferred'
+    """
 
     PREFERRED = "preferred"
     UNIQUE = "unique"
 
 
 class RealizationSelectionError(ValueError):
-    """Base class for realization-selection failures."""
+    """Report a realization-selection failure.
+
+    EXAMPLES::
+
+        >>> str(RealizationSelectionError("no match"))
+        'no match'
+    """
 
 
 class UnsupportedRealizationError(RealizationSelectionError):
-    """No realization satisfies the requested name or capabilities."""
+    """Report that no realization satisfies requested capabilities.
+
+    EXAMPLES::
+
+        >>> isinstance(UnsupportedRealizationError("missing"), RealizationSelectionError)
+        True
+    """
 
 
 class AmbiguousRealizationError(RealizationSelectionError):
-    """A declared selection policy cannot choose one realization."""
+    """Report that a policy cannot choose one compatible realization.
+
+    EXAMPLES::
+
+        >>> isinstance(AmbiguousRealizationError("ambiguous"), RealizationSelectionError)
+        True
+    """
 
 
 def _names(values: Iterable[str], label: str) -> frozenset[str]:
@@ -43,7 +73,16 @@ def _names(values: Iterable[str], label: str) -> frozenset[str]:
 
 @dataclass(frozen=True, slots=True)
 class RealizationDescriptor:
-    """Stable identity, capabilities, structure, maturity, and provenance."""
+    """Record stable realization capabilities, structure, and provenance.
+
+    EXAMPLES::
+
+        >>> descriptor = RealizationDescriptor(
+        ...     "word", frozenset({"scalar"}), frozenset({"word"}), "word graph", priority=2
+        ... )
+        >>> (descriptor.supports({"scalar"}), descriptor.priority)
+        (True, 2)
+    """
 
     name: str
     capabilities: frozenset[str]
@@ -82,7 +121,15 @@ def select_realization(
     policy: RealizationSelectionPolicy | str = RealizationSelectionPolicy.PREFERRED,
     primitive_name: str = "primitive",
 ) -> RealizationDescriptor:
-    """Select a compatible descriptor under an explicit deterministic policy."""
+    """Select a compatible descriptor under a deterministic policy.
+
+    EXAMPLES::
+
+        >>> slow = RealizationDescriptor("slow", frozenset({"scalar"}), frozenset(), "slow", priority=5)
+        >>> fast = RealizationDescriptor("fast", frozenset({"scalar"}), frozenset(), "fast", priority=1)
+        >>> select_realization((slow, fast), {"scalar"}).name
+        'fast'
+    """
 
     requested = _names(requirements, "capability requirements")
     selected_policy = policy if isinstance(policy, RealizationSelectionPolicy) else RealizationSelectionPolicy(policy)
@@ -116,6 +163,14 @@ def normalize_realization_contract(reference, candidate, descriptor: Realization
     graph exposes words, or declare the same named inputs in another order.
     This adapter adds explicit conversions and clones graph components; it
     never treats an execution engine as part of the realization.
+
+    EXAMPLES::
+
+        >>> from claasp_next.primitives import AES
+        >>> reference = AES(number_of_rounds=1)
+        >>> candidate = AES(number_of_rounds=1)
+        >>> normalize_realization_contract(reference, candidate, candidate.realization).family_name
+        'aes'
     """
 
     from copy import copy

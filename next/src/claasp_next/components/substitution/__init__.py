@@ -1,4 +1,4 @@
-"""Finite substitution components."""
+"""Public finite-domain substitution component descriptions."""
 
 from claasp_next.components.substitution.bit_vector_sbox import BitVectorSBox
 from claasp_next.components.substitution.lookup_table import LookupTable

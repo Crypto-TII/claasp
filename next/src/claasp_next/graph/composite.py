@@ -12,7 +12,19 @@ from claasp_next.graph.value_type import ValueType
 
 
 class CompositeOutputs(Sequence[Selection]):
-    """Ordered composite outputs with optional access by semantic name."""
+    """Provide ordered composite outputs with semantic-name lookup.
+
+    EXAMPLES::
+
+        >>> from claasp_next import Bit, ValueType
+        >>> from claasp_next.components import Identity
+        >>> builder = CompositeBuilder("identity", {"state": ValueType(Bit(), (1,))})
+        >>> builder.add_round()
+        Round(number=0)
+        >>> builder.set_output("copy", builder.add_component(Identity(builder.input("state"))))
+        >>> builder.build().output["copy"].positions
+        (0,)
+    """
 
     def __init__(self, outputs: tuple[tuple[str, Selection], ...]) -> None:
         self._outputs = outputs
@@ -52,6 +64,13 @@ class CompositeDefinition:
     The recipe contains only ordinary leaf components.  Execution and model
     generation consume :meth:`as_primitive`; instantiation additionally keeps
     a hierarchical scope overlay on the parent graph.
+
+    EXAMPLES::
+
+        >>> from claasp_next.composites import ChaChaQuarterRound
+        >>> definition = ChaChaQuarterRound(word_size=8, rotations=(1, 2, 3, 4))
+        >>> (definition.name, tuple(definition.inputs), len(definition.output))
+        ('ChaChaQuarterRound', ('a', 'b', 'c', 'd'), 5)
     """
 
     name: str
@@ -76,14 +95,20 @@ class CompositeDefinition:
 
     @property
     def inputs(self) -> Mapping[str, ValueType]:
+        """Return input value types keyed by semantic name."""
+
         return dict(self.input_types)
 
     @property
     def named_outputs(self) -> Mapping[str, Selection]:
+        """Return output selections keyed by semantic name."""
+
         return dict(self.outputs)
 
     @property
     def output(self) -> CompositeOutputs:
+        """Return ordered outputs supporting integer and name lookup."""
+
         return CompositeOutputs(self.outputs)
 
     def as_primitive(self, output: str = "output"):
@@ -120,7 +145,23 @@ class CompositeDefinition:
 
 @dataclass(frozen=True, slots=True)
 class CompositeInstance:
-    """A composite definition bound to a named scope in a parent graph."""
+    """Bind a reusable definition to a named parent-graph scope.
+
+    EXAMPLES::
+
+        >>> from claasp_next import Primitive, ValueType, Word
+        >>> from claasp_next.composites import ChaChaQuarterRound
+        >>> word = ValueType(Word(8), (1,))
+        >>> primitive = Primitive("scoped", {name: word for name in "abcd"})
+        >>> primitive.add_round()
+        Round(number=0)
+        >>> instance = primitive.add_composite(
+        ...     ChaChaQuarterRound(word_size=8, rotations=(1, 2, 3, 4)),
+        ...     {name: primitive.input(name) for name in "abcd"},
+        ... )
+        >>> (instance.path, len(instance.components), len(instance.outputs))
+        ('cha_cha_quarter_round_0_0', 12, 5)
+    """
 
     path: str
     definition: CompositeDefinition
@@ -131,21 +172,31 @@ class CompositeInstance:
 
     @property
     def inputs(self) -> Mapping[str, Selection]:
+        """Return parent-graph selections bound to composite inputs."""
+
         return dict(self.input_bindings)
 
     @property
     def outputs(self) -> Mapping[str, Selection]:
+        """Return parent-graph selections for named composite outputs."""
+
         return dict(self.output_bindings)
 
     @property
     def components(self) -> tuple[Component, ...]:
+        """Return the instantiated leaf components in graph order."""
+
         return tuple(self._primitive.component(component_id) for component_id in self.component_ids)
 
     @property
     def output(self) -> CompositeOutputs:
+        """Return ordered instantiated outputs with semantic-name lookup."""
+
         return CompositeOutputs(self.output_bindings)
 
     def scope(self, relative_path: str) -> "CompositeInstance":
+        """Resolve a nested scope relative to this instance."""
+
         return self._primitive.scope(f"{self.path}/{relative_path}")
 
     def as_primitive(self, output: str = "output"):
@@ -154,6 +205,8 @@ class CompositeInstance:
         return self.definition.as_primitive(output)
 
     def evaluate(self, *args: object, output: str = "output", **kwargs: object):
+        """Evaluate one named output of the reusable definition."""
+
         return self.definition.evaluate(*args, output=output, **kwargs)
 
     def value_from(self, evaluation, output: str = "output") -> tuple[int, ...]:
@@ -164,11 +217,27 @@ class CompositeInstance:
         return tuple(value[position] for position in selection.positions)
 
     def analyze(self, output: str = "output"):
+        """Return an analysis facade projected to one named output."""
+
         return self.definition.analyze(output)
 
 
 class CompositeBuilder:
-    """Author a reusable composite with the ordinary typed graph API."""
+    """Author a reusable composite with the ordinary typed graph API.
+
+    EXAMPLES::
+
+        >>> from claasp_next import Bit, ValueType
+        >>> from claasp_next.components import Identity
+        >>> builder = CompositeBuilder("identity", {"state": ValueType(Bit(), (4,))})
+        >>> builder.add_round()
+        Round(number=0)
+        >>> copy = builder.add_component(Identity(builder.input("state")))
+        >>> builder.set_output("output", copy)
+        >>> definition = builder.build(provenance={"source": "example"})
+        >>> (definition.evaluate(0b1010), definition.provenance)
+        (10, (('source', 'example'),))
+    """
 
     def __init__(self, name: str, inputs: Mapping[str, ValueType]) -> None:
         from claasp_next.graph.primitive import Primitive
@@ -178,25 +247,39 @@ class CompositeBuilder:
 
     @property
     def name(self) -> str:
+        """Return the stable composite-definition name."""
+
         return self._primitive.family_name
 
     @property
     def input_ports(self) -> Mapping[str, Port]:
+        """Return named authoring input ports."""
+
         return self._primitive.input_ports
 
     def inputs(self, *selectors: str | int) -> Sequence[Port]:
+        """Return selected input ports in the requested order."""
+
         return self._primitive.inputs(*selectors)
 
     def input(self, selector: str | int) -> Port:
+        """Resolve one input port by name or position."""
+
         return self._primitive.input(selector)
 
     def add_round(self):
+        """Append and return the next sequential composite round."""
+
         return self._primitive.add_round()
 
     def add_component(self, component: Component, *, primitive_round=None) -> Port:
+        """Validate and append a semantic leaf component."""
+
         return self._primitive.add_component(component, primitive_round=primitive_round)
 
     def add_composite(self, definition: CompositeDefinition, bindings: Mapping[str, PortLike], **kwargs):
+        """Instantiate a nested reusable definition in this scope."""
+
         return self._primitive.add_composite(definition, bindings, **kwargs)
 
     def join(self, *values: PortLike) -> PortLike:
@@ -205,12 +288,18 @@ class CompositeBuilder:
         return self._primitive.join(*values)
 
     def pack_bits(self, value: PortLike, word_width: int, *, output_domain=None) -> Port:
+        """Create an explicit MSB-first bit-to-word structural binding."""
+
         return self._primitive.pack_bits(value, word_width, output_domain=output_domain)
 
     def unpack_bits(self, value: PortLike) -> Port:
+        """Create an explicit MSB-first word-to-bit structural binding."""
+
         return self._primitive.unpack_bits(value)
 
     def set_output(self, name: str, output: PortLike | Sequence[PortLike]) -> None:
+        """Bind one unique semantic output name to graph values."""
+
         if not isinstance(name, str) or not name:
             raise ValueError("composite output name must be a non-empty string")
         if name in self._outputs:
@@ -224,6 +313,8 @@ class CompositeBuilder:
         self._outputs[name] = selection
 
     def build(self, *, provenance: Mapping[str, str] | None = None) -> CompositeDefinition:
+        """Freeze the authored graph as an immutable reusable definition."""
+
         if not self._outputs:
             raise ValueError("a composite must declare at least one named output")
         templates = tuple(

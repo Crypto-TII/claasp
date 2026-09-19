@@ -10,7 +10,14 @@ from claasp_next.components.substitution.lookup_table import LookupTable
 
 @dataclass(frozen=True, slots=True, init=False)
 class BitVectorSBox(Component):
-    """Map one MSB-first bit vector through an integer lookup table."""
+    """Map one MSB-first bit vector through an integer lookup table.
+
+    EXAMPLES::
+
+        >>> from claasp_next.primitives.single_component_primitives import BitVectorSBox
+        >>> BitVectorSBox(2, [3, 2, 1, 0]).evaluate(1)
+        2
+    """
 
     table: tuple[int, ...]
     output_bit_size: int

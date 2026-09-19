@@ -7,7 +7,14 @@ from claasp_next.graph import Component, Selection
 
 @dataclass(frozen=True, slots=True, init=False)
 class Xor(Component):
-    """XOR word vectors component-wise."""
+    """XOR word vectors component-wise.
+
+    EXAMPLES::
+
+        >>> from claasp_next.primitives.single_component_primitives import Xor as XorPrimitive
+        >>> XorPrimitive().evaluate(0b1010, 0b0011)
+        9
+    """
 
     def __init__(self, component_inputs: Iterable[Selection], component_id: str | None = None) -> None:
         inputs = tuple(component_inputs)

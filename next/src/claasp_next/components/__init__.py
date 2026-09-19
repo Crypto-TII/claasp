@@ -1,4 +1,4 @@
-"""Backend-independent operation descriptions."""
+"""Backend-independent public component operation descriptions."""
 
 from claasp_next.components.algebraic import (
     Add,

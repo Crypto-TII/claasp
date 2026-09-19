@@ -38,6 +38,8 @@ class PrimeField(Domain):
 
     @property
     def encoded_bit_size(self) -> int:
+        """Return the unsigned encoding width of canonical representatives."""
+
         return self.modulus.bit_length()
 
     def contains(self, value: object) -> bool:

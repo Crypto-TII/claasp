@@ -8,7 +8,15 @@ from claasp_next.graph.port import PortLike, as_selection
 
 @dataclass(frozen=True, slots=True, init=False)
 class Power(Component):
-    """Raise every selected scalar to a fixed positive exponent."""
+    """Raise every selected scalar to a fixed positive exponent.
+
+    EXAMPLES::
+
+        >>> from claasp_next import PrimeField
+        >>> from claasp_next.primitives.single_component_primitives import Power as PowerPrimitive
+        >>> PowerPrimitive(3, domain=PrimeField(17)).evaluate(5)
+        6
+    """
 
     exponent: int
 

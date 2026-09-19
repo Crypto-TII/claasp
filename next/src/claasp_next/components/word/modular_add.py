@@ -7,7 +7,14 @@ from claasp_next.graph import Component, Selection
 
 @dataclass(frozen=True, slots=True, init=False)
 class ModularAdd(Component):
-    """Add word vectors component-wise modulo an explicit or power-of-two modulus."""
+    """Add word vectors component-wise modulo an explicit or power-of-two modulus.
+
+    EXAMPLES::
+
+        >>> from claasp_next.primitives.single_component_primitives import ModularAdd as AddPrimitive
+        >>> AddPrimitive(4).evaluate(15, 2)
+        1
+    """
 
     modulus: int | None
 

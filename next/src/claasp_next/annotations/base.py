@@ -9,7 +9,13 @@ from claasp_next.semantics import SemanticType
 
 
 class AnnotationRole(str, Enum):
-    """Role of an annotated source in the primitive graph."""
+    """Identify the kind of graph source carrying an annotation.
+
+    EXAMPLES::
+
+        >>> AnnotationRole.COMPONENT.value
+        'component'
+    """
 
     INPUT = "input"
     COMPONENT = "component"
@@ -18,7 +24,13 @@ class AnnotationRole(str, Enum):
 
 @dataclass(frozen=True, slots=True)
 class AnnotationEntry:
-    """One named graph source and its semantics-specific payload."""
+    """Bind one named graph source to a semantics-specific payload.
+
+    EXAMPLES::
+
+        >>> AnnotationEntry("plaintext", AnnotationRole.INPUT, 3).value
+        3
+    """
 
     source_id: str
     role: AnnotationRole
@@ -33,7 +45,17 @@ class AnnotationEntry:
 
 @dataclass(frozen=True, slots=True, init=False)
 class GraphAnnotation:
-    """An immutable, validated assignment of information to graph sources."""
+    """Validate an immutable assignment of information to graph sources.
+
+    EXAMPLES::
+
+        >>> from claasp_next import Bit, Primitive, ValueType
+        >>> from claasp_next.semantics import CONCRETE
+        >>> primitive = Primitive("identity", {"state": ValueType(Bit(), (1,))})
+        >>> annotation = GraphAnnotation.from_values(primitive, CONCRETE, {"state": 1}, output=1)
+        >>> (annotation.value_of("state"), annotation.realization_identity)
+        (1, 'identity:default')
+    """
 
     primitive: Primitive
     semantics: SemanticType
@@ -47,6 +69,8 @@ class GraphAnnotation:
 
     @property
     def realization_identity(self) -> str:
+        """Return the annotated graph's stable realization identity."""
+
         return self.primitive.realization_identity
 
     def __init__(

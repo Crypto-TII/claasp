@@ -43,7 +43,13 @@ def int_from_bits(bits: tuple[int, ...]) -> int:
 
 
 def units_from_int(value: int, unit_width: int, count: int) -> tuple[int, ...]:
-    """Split an integer into ``count`` MSB-first fixed-width units."""
+    """Split an integer into ``count`` MSB-first fixed-width units.
+
+    EXAMPLES::
+
+        >>> units_from_int(0x1234, 8, 2)
+        (18, 52)
+    """
 
     if not isinstance(unit_width, int) or isinstance(unit_width, bool) or unit_width <= 0:
         raise ValueError("unit_width must be a positive integer")
@@ -62,7 +68,13 @@ def units_from_int(value: int, unit_width: int, count: int) -> tuple[int, ...]:
 
 
 def int_from_units(units: tuple[int, ...], unit_width: int) -> int:
-    """Join non-empty MSB-first fixed-width units into one integer."""
+    """Join non-empty MSB-first fixed-width units into one integer.
+
+    EXAMPLES::
+
+        >>> hex(int_from_units((0x12, 0x34), 8))
+        '0x1234'
+    """
 
     if not isinstance(units, tuple) or not units:
         raise ValueError("units must be a non-empty tuple")

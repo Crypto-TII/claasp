@@ -9,7 +9,14 @@ from claasp_next.graph.value_type import ValueType
 
 @dataclass(frozen=True, slots=True, init=False)
 class Constant(Component):
-    """Produce a fixed homogeneous vector in a declared domain."""
+    """Produce a fixed homogeneous vector in a declared domain.
+
+    EXAMPLES::
+
+        >>> from claasp_next.primitives.single_component_primitives import Constant
+        >>> Constant(8, 0x5A).evaluate()
+        90
+    """
 
     values: tuple[int, ...]
 

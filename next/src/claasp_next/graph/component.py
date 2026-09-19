@@ -13,6 +13,13 @@ class Component:
     Concrete component families will add their semantic parameters and
     validation. This base class deliberately contains no evaluator or solver
     methods.
+
+    EXAMPLES::
+
+        >>> from claasp_next import Bit, ValueType
+        >>> component = Component("identity_0", (), ValueType(Bit(), (1,)))
+        >>> component.output.owner_id
+        'identity_0'
     """
 
     component_id: str | None
@@ -34,6 +41,8 @@ class Component:
 
     @property
     def output(self) -> Port:
+        """Return the component output after an identifier is assigned."""
+
         if self.component_id is None:
             raise ValueError("component has no identifier until it is added to a primitive")
         return Port(self.component_id, self.output_type)

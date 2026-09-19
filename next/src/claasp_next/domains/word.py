@@ -29,6 +29,8 @@ class Word(Domain):
 
     @property
     def encoded_bit_size(self) -> int:
+        """Return the declared fixed word width."""
+
         return self.width
 
     def contains(self, value: object) -> bool:

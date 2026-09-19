@@ -9,7 +9,15 @@ from claasp_next.semantics.cryptanalysis.truncated import ProbabilisticTruncated
 
 @dataclass(frozen=True, slots=True)
 class BoomerangConnectivity:
-    """One exact BCT entry for a bijective finite lookup table."""
+    """One exact BCT entry for a bijective finite lookup table.
+
+    EXAMPLES::
+
+        >>> from claasp_next.semantics.cryptanalysis import BoomerangConnectivity, XorDifference
+        >>> entry = BoomerangConnectivity(XorDifference(1, 2), XorDifference(2, 2), 2)
+        >>> (entry.is_possible, entry.weight)
+        (True, 1.0)
+    """
 
     input_difference: XorDifference
     output_difference: XorDifference
@@ -24,15 +32,24 @@ class BoomerangConnectivity:
 
     @property
     def is_possible(self) -> bool:
+        """Return whether at least one boomerang quartet exists."""
         return self.count > 0
 
     @property
     def weight(self) -> float:
+        """Return the negative binary logarithm of the BCT probability."""
         return float("inf") if not self.count else -log2(self.count / (1 << self.input_difference.width))
 
 
 class SBoxBoomerangSemantics:
-    """Exhaustive boomerang-connectivity semantics for a bijective S-box."""
+    """Exhaustive boomerang-connectivity semantics for a bijective S-box.
+
+    EXAMPLES::
+
+        >>> from claasp_next.semantics.cryptanalysis import SBoxBoomerangSemantics
+        >>> SBoxBoomerangSemantics((0, 2, 3, 1)).connectivity(1, 2).count
+        4
+    """
 
     def __init__(self, table) -> None:
         self.table = tuple(table)
@@ -46,7 +63,14 @@ class SBoxBoomerangSemantics:
         self.inverse = tuple(inverse)
 
     def connectivity(self, input_difference: int, output_difference: int) -> BoomerangConnectivity:
-        """Return the exact BCT count by exhaustive evaluation."""
+        """Return the exact BCT count by exhaustive evaluation.
+
+        EXAMPLES::
+
+            >>> from claasp_next.semantics.cryptanalysis import SBoxBoomerangSemantics
+            >>> SBoxBoomerangSemantics((0, 1)).connectivity(1, 1).is_possible
+            True
+        """
 
         size = len(self.table)
         if not 0 <= input_difference < size or not 0 <= output_difference < size:
@@ -64,7 +88,17 @@ class SBoxBoomerangSemantics:
 
 @dataclass(frozen=True, slots=True)
 class ModularAddBoomerangConnectivity:
-    """Exact quartet count for four differences around modular addition."""
+    """Exact quartet count for four differences around modular addition.
+
+    EXAMPLES::
+
+        >>> from claasp_next.semantics.cryptanalysis import (ModularAddBoomerangConnectivity,
+        ...     XorDifference)
+        >>> zero = XorDifference(0, 2)
+        >>> entry = ModularAddBoomerangConnectivity(zero, zero, zero, zero, 16)
+        >>> (entry.is_possible, entry.weight)
+        (True, -0.0)
+    """
 
     delta_left: XorDifference
     delta_right: XorDifference
@@ -82,10 +116,12 @@ class ModularAddBoomerangConnectivity:
 
     @property
     def is_possible(self) -> bool:
+        """Return whether at least one modular-add quartet exists."""
         return self.count > 0
 
     @property
     def weight(self) -> float:
+        """Return the exact negative-log quartet probability."""
         size = 1 << (2 * self.delta_left.width)
         return float("inf") if not self.count else -log2(self.count / size)
 
@@ -95,6 +131,12 @@ class ModularAddBoomerangSemantics:
 
     The exhaustive implementation is deliberately limited to eight-bit words.
     It serves as an independent oracle for optimized bit-automaton lowerings.
+
+    EXAMPLES::
+
+        >>> from claasp_next.semantics.cryptanalysis import ModularAddBoomerangSemantics
+        >>> ModularAddBoomerangSemantics(2).connectivity(0, 0, 0, 0).count
+        16
     """
 
     def __init__(self, width: int) -> None:
@@ -103,7 +145,14 @@ class ModularAddBoomerangSemantics:
         self.width = width
 
     def connectivity(self, delta_left, delta_right, nabla_output, nabla_right):
-        """Count quartets satisfying the modular-add switch equations."""
+        """Count quartets satisfying the modular-add switch equations.
+
+        EXAMPLES::
+
+            >>> from claasp_next.semantics.cryptanalysis import ModularAddBoomerangSemantics
+            >>> ModularAddBoomerangSemantics(4).connectivity(1, 0, 1, 0).weight
+            1.0
+        """
 
         size, mask = 1 << self.width, (1 << self.width) - 1
         values = (delta_left, delta_right, nabla_output, nabla_right)
@@ -128,7 +177,14 @@ class ModularAddBoomerangSemantics:
 
 
 class ModularAddBoomerangAutomaton:
-    """Exact scalable modular-add switch using carry/borrow states."""
+    """Exact scalable modular-add switch using carry/borrow states.
+
+    EXAMPLES::
+
+        >>> from claasp_next.semantics.cryptanalysis import ModularAddBoomerangAutomaton
+        >>> ModularAddBoomerangAutomaton(16).connectivity(1, 0, 1, 0).weight
+        1.0
+    """
 
     def __init__(self, width: int) -> None:
         if not isinstance(width, int) or isinstance(width, bool) or not 1 <= width <= 64:
@@ -136,7 +192,14 @@ class ModularAddBoomerangAutomaton:
         self.width = width
 
     def connectivity(self, delta_left, delta_right, nabla_output, nabla_right):
-        """Count quartets with a sixteen-state least-significant-bit automaton."""
+        """Count quartets with a sixteen-state least-significant-bit automaton.
+
+        EXAMPLES::
+
+            >>> from claasp_next.semantics.cryptanalysis import ModularAddBoomerangAutomaton
+            >>> ModularAddBoomerangAutomaton(3).connectivity(0, 0, 0, 0).count
+            64
+        """
 
         size = 1 << self.width
         values = (delta_left, delta_right, nabla_output, nabla_right)
@@ -176,7 +239,15 @@ class ModularAddBoomerangAutomaton:
 
 @dataclass(frozen=True, slots=True)
 class BoomerangSwitchBoundary:
-    """Four XOR differences related by one boomerang switch."""
+    """Four XOR differences related by one boomerang switch.
+
+    EXAMPLES::
+
+        >>> from claasp_next.semantics.cryptanalysis import BoomerangSwitchBoundary, XorDifference
+        >>> values = tuple(XorDifference(value, 2) for value in range(4))
+        >>> BoomerangSwitchBoundary(*values, 1.5).weight
+        1.5
+    """
 
     upper_input: XorDifference
     upper_output: XorDifference
@@ -194,7 +265,18 @@ class BoomerangSwitchBoundary:
 
 @dataclass(frozen=True, slots=True)
 class BoomerangTrail:
-    """Two differential trails joined by an explicit switch boundary."""
+    """Two differential trails joined by an explicit switch boundary.
+
+    EXAMPLES::
+
+        >>> from claasp_next.semantics.cryptanalysis import *
+        >>> upper = Trail(TrailKind.XOR_DIFFERENTIAL, XorDifference(1, 2), XorDifference(2, 2), ())
+        >>> lower = Trail(TrailKind.XOR_DIFFERENTIAL, XorDifference(3, 2), XorDifference(0, 2), ())
+        >>> switch = BoomerangSwitchBoundary(XorDifference(2, 2), XorDifference(1, 2),
+        ...     XorDifference(0, 2), XorDifference(3, 2), 1.5)
+        >>> BoomerangTrail(upper, switch, lower).total_weight
+        1.5
+    """
 
     upper: Trail
     switch: BoomerangSwitchBoundary
@@ -210,12 +292,24 @@ class BoomerangTrail:
 
     @property
     def total_weight(self) -> float:
+        """Return the combined upper, switch, and lower weight."""
         return self.upper.total_weight + self.switch.weight + self.lower.total_weight
 
 
 @dataclass(frozen=True, slots=True)
 class DifferentialLinearTrail:
-    """Differential prefix, probabilistic connector, and linear suffix."""
+    """Differential prefix, probabilistic connector, and linear suffix.
+
+    EXAMPLES::
+
+        >>> from claasp_next.semantics.cryptanalysis import *
+        >>> differential = Trail(TrailKind.XOR_DIFFERENTIAL, XorDifference(1, 2), XorDifference(2, 2), ())
+        >>> linear = Trail(TrailKind.XOR_LINEAR, XorMask(1, 2), XorMask(2, 2), ())
+        >>> connector = ProbabilisticTruncatedTrail(
+        ...     TruncatedXorDifference.parse("00"), TruncatedXorDifference.parse("??"), ())
+        >>> DifferentialLinearTrail(differential, connector, linear).total_weight
+        0.0
+    """
 
     differential: Trail
     connector: ProbabilisticTruncatedTrail

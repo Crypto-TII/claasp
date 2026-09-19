@@ -9,7 +9,14 @@ from claasp_next.graph import Component, PortLike
 
 @dataclass(frozen=True, slots=True, init=False)
 class BitwiseOr(Component):
-    """OR two or more equally typed word vectors component-wise."""
+    """OR two or more equally typed word vectors component-wise.
+
+    EXAMPLES::
+
+        >>> from claasp_next.primitives.single_component_primitives import BitwiseOr as OrPrimitive
+        >>> OrPrimitive().evaluate(0b1010, 0b0011)
+        11
+    """
 
     def __init__(self, component_inputs: Iterable[PortLike], component_id: str | None = None) -> None:
         inputs = tuple(component_inputs)

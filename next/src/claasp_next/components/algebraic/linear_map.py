@@ -10,7 +10,14 @@ from claasp_next.graph.value_type import ValueType
 
 @dataclass(frozen=True, slots=True, init=False)
 class LinearMap(Component):
-    """Apply a row-major matrix over the input's scalar domain."""
+    """Apply a row-major matrix over the input's scalar domain.
+
+    EXAMPLES::
+
+        >>> from claasp_next.primitives.single_component_primitives import LinearMap
+        >>> LinearMap([[1, 0], [1, 1]]).evaluate(0b10)
+        3
+    """
 
     matrix: tuple[tuple[int, ...], ...]
 

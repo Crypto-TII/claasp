@@ -43,7 +43,16 @@ def shift_rows(
     offsets: Iterable[int],
     component_id: str | None = None,
 ) -> Permutation:
-    """Permute row-major logical units, with positive offsets shifting right."""
+    """Permute row-major logical units, with positive offsets shifting right.
+
+    EXAMPLES::
+
+        >>> from claasp_next import Primitive, ValueType, Word
+        >>> from claasp_next.components import shift_rows
+        >>> graph = Primitive("rows", {"state": ValueType(Word(8), (8,))})
+        >>> shift_rows(graph.input("state"), 4, (1, 2)).mapping
+        (3, 0, 1, 2, 6, 7, 4, 5)
+    """
 
     selection = as_selection(component_input)
     if not isinstance(row_width, int) or isinstance(row_width, bool) or row_width <= 0:
@@ -66,7 +75,16 @@ def sigma(
     rotation_amounts: Iterable[int],
     component_id: str | None = None,
 ) -> LinearMap:
-    """XOR a bit vector with right rotations by every supplied amount."""
+    """XOR a bit vector with right rotations by every supplied amount.
+
+    EXAMPLES::
+
+        >>> from claasp_next import Bit, Primitive, ValueType
+        >>> from claasp_next.components import sigma
+        >>> graph = Primitive("sigma", {"x": ValueType(Bit(), (4,))})
+        >>> sigma(graph.input("x"), (1, 3)).matrix[0]
+        (1, 1, 0, 1)
+    """
 
     selection = _bit_selection(component_input, "sigma")
     width = selection.value_type.unit_count
@@ -112,7 +130,16 @@ def _keccak_values(state: BitState, lane_width: int) -> BitState:
 
 
 def keccak_theta(component_input: PortLike, component_id: str | None = None) -> LinearMap:
-    """Construct the Keccak theta map for any positive lane width."""
+    """Construct the Keccak theta map for any positive lane width.
+
+    EXAMPLES::
+
+        >>> from claasp_next import Bit, Primitive, ValueType
+        >>> from claasp_next.components import keccak_theta
+        >>> graph = Primitive("theta", {"x": ValueType(Bit(), (25,))})
+        >>> len(keccak_theta(graph.input("x")).matrix)
+        25
+    """
 
     selection = _bit_selection(component_input, "Keccak theta")
     size = selection.value_type.unit_count
@@ -145,7 +172,16 @@ def _xoodoo_values(state: BitState, lane_width: int) -> BitState:
 
 
 def xoodoo_theta(component_input: PortLike, component_id: str | None = None) -> LinearMap:
-    """Construct the Xoodoo theta map for three planes of four lanes."""
+    """Construct the Xoodoo theta map for three planes of four lanes.
+
+    EXAMPLES::
+
+        >>> from claasp_next import Bit, Primitive, ValueType
+        >>> from claasp_next.components import xoodoo_theta
+        >>> graph = Primitive("theta", {"x": ValueType(Bit(), (12,))})
+        >>> len(xoodoo_theta(graph.input("x")).matrix)
+        12
+    """
 
     selection = _bit_selection(component_input, "Xoodoo theta")
     size = selection.value_type.unit_count
@@ -181,7 +217,16 @@ def gaston_theta(
     rotation_amounts: Iterable[int] = (1, 18, 23, 25, 32, 52, 60, 63),
     component_id: str | None = None,
 ) -> LinearMap:
-    """Construct Gaston's twin-column parity mixer for five equal rows."""
+    """Construct Gaston's twin-column parity mixer for five equal rows.
+
+    EXAMPLES::
+
+        >>> from claasp_next import Bit, Primitive, ValueType
+        >>> from claasp_next.components import gaston_theta
+        >>> graph = Primitive("theta", {"x": ValueType(Bit(), (320,))})
+        >>> len(gaston_theta(graph.input("x")).matrix)
+        320
+    """
 
     selection = _bit_selection(component_input, "Gaston theta")
     size = selection.value_type.unit_count

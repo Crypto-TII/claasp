@@ -7,7 +7,14 @@ from claasp_next.graph import Component, PortLike
 
 @dataclass(frozen=True, slots=True, init=False)
 class VariableShift(Component):
-    """Shift each word by an amount supplied as a one-unit word input."""
+    """Shift each word by an amount supplied as a one-unit word input.
+
+    EXAMPLES::
+
+        >>> from claasp_next.primitives.single_component_primitives import VariableShift
+        >>> VariableShift().evaluate(0x81, 2)
+        32
+    """
 
     direction: str
 

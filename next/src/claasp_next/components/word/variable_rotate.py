@@ -7,7 +7,14 @@ from claasp_next.graph import Component, PortLike
 
 @dataclass(frozen=True, slots=True, init=False)
 class VariableRotate(Component):
-    """Rotate each word by an amount supplied as a one-unit word input."""
+    """Rotate each word by an amount supplied as a one-unit word input.
+
+    EXAMPLES::
+
+        >>> from claasp_next.primitives.single_component_primitives import VariableRotate
+        >>> VariableRotate().evaluate(0x81, 2)
+        96
+    """
 
     direction: str
 

@@ -5,7 +5,14 @@ from claasp_next.domains.validation import is_irreducible_binary_polynomial
 
 
 def first_irreducible_polynomial(degree: int) -> int:
-    """Return the smallest monic irreducible binary polynomial of ``degree``."""
+    """Return the smallest monic irreducible binary polynomial of ``degree``.
+
+    EXAMPLES::
+
+        >>> from claasp_next.utils import first_irreducible_polynomial
+        >>> bin(first_irreducible_polynomial(4))
+        '0b10011'
+    """
 
     if not isinstance(degree, int) or isinstance(degree, bool) or degree <= 0:
         raise ValueError("degree must be a positive integer")
@@ -46,7 +53,15 @@ def binary_field_multiply(field: BinaryExtensionField, left: int, right: int) ->
 
 
 def binary_field_power(field: BinaryExtensionField, value: int, exponent: int) -> int:
-    """Raise a binary-field element to a non-negative integer exponent."""
+    """Raise a binary-field element to a non-negative integer exponent.
+
+    EXAMPLES::
+
+        >>> from claasp_next import BinaryExtensionField
+        >>> from claasp_next.utils import binary_field_power
+        >>> binary_field_power(BinaryExtensionField(8, 0x11B), 0x53, 254)
+        202
+    """
 
     if not isinstance(exponent, int) or isinstance(exponent, bool):
         raise TypeError("exponent must be an integer")

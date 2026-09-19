@@ -10,6 +10,16 @@ class SemanticType:
     Semantic types describe meaning, not an encoding or a solver. Researchers
     may define additional semantic types without changing representation
     compilers.
+
+    EXAMPLES::
+
+        >>> from claasp_next.semantics import SemanticType
+        >>> SemanticType("custom", "Custom propagation meaning").name
+        'custom'
+        >>> SemanticType("not valid", "description")
+        Traceback (most recent call last):
+        ...
+        ValueError: semantic type name must be a non-empty identifier
     """
 
     name: str

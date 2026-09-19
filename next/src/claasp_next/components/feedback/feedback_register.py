@@ -11,7 +11,14 @@ from claasp_next.utils.finite_fields import first_irreducible_polynomial
 
 @dataclass(frozen=True, slots=True, init=False)
 class FeedbackTerm:
-    """One coefficient times a monomial in global register positions."""
+    """One coefficient times a monomial in global register positions.
+
+    EXAMPLES::
+
+        >>> from claasp_next.components import FeedbackTerm
+        >>> FeedbackTerm((0, 2)).positions
+        (0, 2)
+    """
 
     positions: tuple[int, ...]
     coefficient: int = 1
@@ -31,7 +38,14 @@ class FeedbackTerm:
 
 @dataclass(frozen=True, slots=True, init=False)
 class FeedbackRegisterSpec:
-    """Length, feedback polynomial, and optional Boolean clock polynomial."""
+    """Length, feedback polynomial, and optional Boolean clock polynomial.
+
+    EXAMPLES::
+
+        >>> from claasp_next.components import FeedbackRegisterSpec, FeedbackTerm
+        >>> FeedbackRegisterSpec(4, (FeedbackTerm(0),)).length
+        4
+    """
 
     length: int
     feedback: tuple[FeedbackTerm, ...]
@@ -65,7 +79,15 @@ class FeedbackRegisterSpec:
 
 @dataclass(frozen=True, slots=True, init=False)
 class FeedbackRegisterParameters:
-    """Validated domain and register parameters for one feedback component."""
+    """Validated domain and register parameters for one feedback component.
+
+    EXAMPLES::
+
+        >>> from claasp_next.components import FeedbackRegisterParameters
+        >>> parameters = FeedbackRegisterParameters.from_taps(4, (0, 1))
+        >>> parameters.unit_count
+        4
+    """
 
     domain: Bit | BinaryExtensionField
     registers: tuple[FeedbackRegisterSpec, ...]
@@ -93,6 +115,7 @@ class FeedbackRegisterParameters:
 
     @property
     def unit_count(self) -> int:
+        """Return the total logical-unit width of all registers."""
         return sum(register.length for register in self.registers)
 
     @classmethod
@@ -104,7 +127,14 @@ class FeedbackRegisterParameters:
         word_width: int = 1,
         clocks: int = 1,
     ) -> "FeedbackRegisterParameters":
-        """Describe one Fibonacci register from its feedback tap positions."""
+        """Describe one Fibonacci register from its feedback tap positions.
+
+        EXAMPLES::
+
+            >>> from claasp_next.components import FeedbackRegisterParameters
+            >>> FeedbackRegisterParameters.from_taps(8, (0, 3), word_width=2).unit_count
+            4
+        """
 
         if not isinstance(register_size, int) or isinstance(register_size, bool) or register_size <= 0:
             raise ValueError("register_size must be a positive integer")
@@ -124,7 +154,14 @@ class FeedbackRegisterParameters:
 
 @dataclass(frozen=True, slots=True, init=False)
 class FeedbackRegister(Component):
-    """Clock one or more contiguous binary or binary-field word registers."""
+    """Clock one or more contiguous binary or binary-field word registers.
+
+    EXAMPLES::
+
+        >>> from claasp_next.primitives.single_component_primitives import FeedbackRegister
+        >>> FeedbackRegister().evaluate(0b1010)
+        5
+    """
 
     registers: tuple[FeedbackRegisterSpec, ...]
     clocks: int

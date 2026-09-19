@@ -9,7 +9,13 @@ from claasp_next.graph.realization import RealizationDescriptor
 
 
 class DriverKind(str, Enum):
-    """The role played by a result-producing driver."""
+    """Classify the role played by a result-producing driver.
+
+    EXAMPLES::
+
+        >>> DriverKind.COMPILER.value
+        'compiler'
+    """
 
     EXECUTION_ENGINE = "execution_engine"
     SOLVER = "solver"
@@ -20,7 +26,14 @@ class DriverKind(str, Enum):
 
 @dataclass(frozen=True, slots=True)
 class DriverIdentity:
-    """Stable driver name, role, and optional implementation version."""
+    """Record a stable driver name, role, and implementation version.
+
+    EXAMPLES::
+
+        >>> identity = DriverIdentity("python_scalar", DriverKind.EXECUTION_ENGINE, "3.11")
+        >>> (identity.name, identity.kind.value, identity.version)
+        ('python_scalar', 'execution_engine', '3.11')
+    """
 
     name: str
     kind: DriverKind
@@ -72,7 +85,16 @@ class TransformationRecord:
 
 @dataclass(frozen=True, slots=True)
 class ResultProvenance:
-    """Primitive realization, transformations, and driver recorded separately."""
+    """Record primitive realization, transformations, and driver separately.
+
+    EXAMPLES::
+
+        >>> from claasp_next.primitives import Speck
+        >>> driver = DriverIdentity("example", DriverKind.EXECUTION_ENGINE)
+        >>> provenance = ResultProvenance.for_primitive(Speck(number_of_rounds=1), driver)
+        >>> (provenance.realization_identity, provenance.driver.name)
+        ('speck:default', 'example')
+    """
 
     primitive: str
     realization: RealizationDescriptor
@@ -104,4 +126,6 @@ class ResultProvenance:
 
     @property
     def realization_identity(self) -> str:
+        """Return the stable family-and-realization identity."""
+
         return f"{self.primitive}:{self.realization.name}"
