@@ -15,6 +15,7 @@ class DriverKind(str, Enum):
     SOLVER = "solver"
     RENDERER = "renderer"
     EXTERNAL_TOOL = "external_tool"
+    COMPILER = "compiler"
 
 
 @dataclass(frozen=True, slots=True)

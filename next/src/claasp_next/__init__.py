@@ -39,6 +39,13 @@ from claasp_next.serialization import (
     primitive_digest, serialize_artifact, serialize_evaluation_result,
     serialize_execution_trace, serialize_primitive,
 )
+from claasp_next.representations.source import (
+    SourceArtifact, SourceCompilationResult, SourceDiagnostic, SourceLanguage,
+    SourceStatus, compile_source,
+)
+from claasp_next.drivers.source import (
+    SourceExecutionResult, SourceExecutionStatus, run_python_source, write_source,
+)
 
 __all__ = [
     "BinaryExtensionField",
@@ -85,6 +92,13 @@ __all__ = [
     "SerializationDiagnostic",
     "SerializationError",
     "SerializationFailure",
+    "SourceArtifact",
+    "SourceCompilationResult",
+    "SourceDiagnostic",
+    "SourceExecutionResult",
+    "SourceExecutionStatus",
+    "SourceLanguage",
+    "SourceStatus",
     "TransposedBatchEvaluator",
     "TransposedBatchExecutionDriver",
     "ValueType",
@@ -112,6 +126,9 @@ __all__ = [
     "serialize_artifact",
     "serialize_evaluation_result",
     "serialize_execution_trace",
+    "compile_source",
+    "run_python_source",
+    "write_source",
     "public_input",
     "secret_input",
 ]
