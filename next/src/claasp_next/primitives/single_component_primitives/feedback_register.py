@@ -23,6 +23,15 @@ class FeedbackRegister(Primitive):
     >>> register = FeedbackRegister(parameters)
     >>> f"{register.evaluate(0b10110010):08b}"
     '11001011'
+
+
+    EXAMPLES::
+
+        >>> primitive = FeedbackRegister()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0x0', 0)
     """
 
     def __init__(self, parameters: FeedbackRegisterParameters | None = None) -> None:

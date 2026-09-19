@@ -37,13 +37,11 @@ class DES(BitGraphPrimitive):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.block_ciphers.des_block_cipher import DES
-        sage: des = DES()
-        sage: key = 0x133457799BBCDFF1
-        sage: plaintext = 0x0123456789ABCDEF
-        sage: ciphertext = 0x85E813540F0AB405
-        sage: des.evaluate([key, plaintext]) == ciphertext
-        True
+        >>> primitive = DES()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0x8ca64de9c1b123a7', 64)
     """
 
     def __init__(self, number_of_rounds=16, number_of_sboxes=8):

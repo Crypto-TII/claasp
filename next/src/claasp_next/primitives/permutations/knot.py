@@ -89,16 +89,11 @@ class Knot(BitGraphPrimitive):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.permutations.knot_permutation import Knot
-        sage: knot = Knot(state_bit_size=256, number_of_rounds=52)
-        sage: knot.number_of_rounds
-        52
-
-        sage: knot.id
-        'knot_p256_o256_r52'
-
-        sage: knot.component_from(0, 0).id
-        'constant_0_0'
+        >>> primitive = Knot()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0xbc44b75eeea81b95', 256)
     """
 
     def __init__(self, state_bit_size=256, number_of_rounds=None, lfsr_degree=None, bit_slice=False):
@@ -152,6 +147,7 @@ class Knot(BitGraphPrimitive):
                 self.add_round_output_component(inputs_id, inputs_pos, self.state_bit_size)
 
     def round_function(self, state, round_constant):
+        """Build the round function stage in this primitive's typed operation graph."""
         state = self.add_round_constant(state, round_constant)
         state = self.sub_column(state)
         state = self.shift_row(state)
@@ -162,6 +158,7 @@ class Knot(BitGraphPrimitive):
         # XOR the d-bit round constant onto the first d bits w_0 || ... || w_{d-1} of the state, that is
         # onto a_{0,0} || ... || a_{0,d-1}. In the row 0 word a_{0,j} has integer weight 2 ** j, so the
         # constant is simply the d-bit LFSR value placed in the low bits of the row word.
+        """Add the round constant stage to this primitive's typed operation graph."""
         row_bit_size = self.row_bit_size
         constant_value = round_constant & ((1 << self.lfsr_degree) - 1)
         self.add_constant_component(row_bit_size, constant_value)
@@ -174,6 +171,7 @@ class Knot(BitGraphPrimitive):
         return state
 
     def sub_column(self, state):
+        """Build the sub column stage in this primitive's typed operation graph."""
         if self.bit_slice:
             return self._sub_column_bit_slice(state)
 
@@ -241,6 +239,7 @@ class Knot(BitGraphPrimitive):
         return row_state.input_bit_positions[column][0]
 
     def shift_row(self, state):
+        """Build the shift row stage in this primitive's typed operation graph."""
         row_bit_size = self.row_bit_size
         for row in range(1, NUMBER_OF_ROWS):
             # ShiftRow left-rotates row i over c_i bits, moving a_{i,j} to a_{i,j+c_i}. The row word is

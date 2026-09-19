@@ -1,4 +1,4 @@
-"""One-component bitwise-XOR primitive."""
+"""Single-component bitwise-XOR primitive implementation."""
 
 from claasp_next.components import Xor as XorComponent
 from claasp_next.graph import Primitive, PrimitiveKind
@@ -14,6 +14,15 @@ class Xor(Primitive):
     >>> three_way = Xor(word_bit_size=8, number_of_inputs=3)
     >>> hex(three_way.evaluate(0xF0, 0xCC, 0xAA))
     '0x96'
+
+
+    EXAMPLES::
+
+        >>> primitive = Xor()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0x0', 0)
     """
 
     def __init__(self, word_bit_size: int = 4, number_of_inputs: int = 2) -> None:

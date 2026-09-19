@@ -9,7 +9,16 @@ DEFAULT_ROUNDS = {(64, 128): 88, (128, 128): 112, (128, 256): 120}
 
 
 class CHAM(Primitive):
-    """CHAM-64/128, CHAM-128/128, or CHAM-128/256."""
+    """CHAM-64/128, CHAM-128/128, or CHAM-128/256.
+
+    EXAMPLES::
+
+        >>> primitive = CHAM()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0xce2084f0a4c1b6bf', 64)
+    """
 
     def __init__(self, block_bit_size=64, key_bit_size=128, number_of_rounds=None):
         if (block_bit_size, key_bit_size) not in DEFAULT_ROUNDS:

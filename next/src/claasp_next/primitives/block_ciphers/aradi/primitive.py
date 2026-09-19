@@ -6,7 +6,16 @@ from .._word_graph import bit_and, concatenate, constant, rotate, select, split_
 
 
 class Aradi(Primitive):
-    """The 128-bit Aradi primitive with a 256-bit key."""
+    """The 128-bit Aradi primitive with a 256-bit key.
+
+    EXAMPLES::
+
+        >>> primitive = Aradi()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0xd06c8ab75d191521', 128)
+    """
 
     def __init__(self, number_of_rounds=16):
         super().__init__("aradi", {"plaintext": word_type(16, 8), "key": word_type(32, 8)})

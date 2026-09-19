@@ -64,7 +64,7 @@ def estream_bytes_to_bit_sequence(value: int, byte_length: int) -> int:
     bits inside each byte.  It is its own inverse and is used for keys, IVs and
     keystreams alike.
 
-    Examples:
+    EXAMPLES::
         >>> from claasp_next.primitives.block_functions.trivium import (
         ...     estream_bytes_to_bit_sequence)
         >>> hex(estream_bytes_to_bit_sequence(0x8000, 2))
@@ -98,7 +98,7 @@ class Trivium(Primitive):
     are free so that reduced instances stay small enough for exact algebraic
     evidence.
 
-    Examples:
+    EXAMPLES::
         >>> from claasp_next.primitives import Trivium
         >>> from claasp_next.primitives.block_functions.trivium import (
         ...     estream_bytes_to_bit_sequence)
@@ -113,6 +113,15 @@ class Trivium(Primitive):
         >>> reduced = Trivium(number_of_initialization_clocks=13, keystream_bit_size=1)
         >>> len(reduced.rounds), reduced.evaluate(key=1 << 79, iv=0)
         (15, 1)
+
+
+    EXAMPLES::
+
+        >>> primitive = Trivium()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0xdf07fd641a9aa0d8', 64)
     """
 
     def __init__(

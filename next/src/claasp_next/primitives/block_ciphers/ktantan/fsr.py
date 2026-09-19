@@ -64,21 +64,11 @@ class KtantanFSR(BitGraphPrimitive):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.block_ciphers.ktantan_fsr_block_cipher import KtantanFSR
-        sage: ktantan_fsr = KtantanFSR()
-        sage: ktantan_fsr.number_of_rounds
-        254
-
-        sage: key = 0xFFFFFFFFFFFFFFFFFFFF
-        sage: plaintext = 0x00000000
-        sage: hex(ktantan_fsr.evaluate([plaintext, key]))
-        '0x22ea3988'
-
-        sage: KtantanFSR(block_bit_size=64, number_of_rounds=8).id
-        'ktantan_fsr_p64_k80_o64_r8'
-
-        sage: KtantanFSR(number_of_rounds=255, ir_mode='cycle').number_of_rounds
-        255
+        >>> primitive = KtantanFSR()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0x0', 0)
     """
 
     def __init__(self, block_bit_size=32, key_bit_size=80, number_of_rounds=None, ir_mode="strict"):

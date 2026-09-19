@@ -25,6 +25,15 @@ class Add(Primitive):
     >>> vector_add = Add(unit_count=4, number_of_inputs=3)
     >>> f"{vector_add.evaluate(0b1010, 0b1100, 0b0111):04b}"
     '0001'
+
+
+    EXAMPLES::
+
+        >>> primitive = Add()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0x0', 0)
     """
 
     def __init__(

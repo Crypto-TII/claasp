@@ -120,7 +120,16 @@ class Present(Primitive):
 
 
 class Present80(Present):
-    """Convenience constructor for the PRESENT-80 variant."""
+    """Convenience constructor for the PRESENT-80 variant.
+
+    EXAMPLES::
+
+        >>> primitive = Present80()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0x5579c1387b228445', 63)
+    """
 
     def __init__(self, number_of_rounds: int = 31) -> None:
         super().__init__(key_bit_size=80, number_of_rounds=number_of_rounds)

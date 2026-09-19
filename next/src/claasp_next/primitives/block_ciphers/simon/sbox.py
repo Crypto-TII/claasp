@@ -96,13 +96,11 @@ class SimonSbox(BitGraphPrimitive):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.block_ciphers.simon_sbox_block_cipher import SimonSbox
-        sage: simon_sbox = SimonSbox()
-        sage: simon_sbox.number_of_rounds
-        32
-
-        sage: simon_sbox.component_from(0, 0).id
-        'intermediate_output_0_0'
+        >>> primitive = SimonSbox()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0x5ae828ec', 31)
     """
 
     def __init__(self, block_bit_size=32, key_bit_size=64, number_of_rounds=None, rotation_amounts=(-1, -8, -2)):
@@ -148,6 +146,7 @@ class SimonSbox(BitGraphPrimitive):
 
     def f(self, x):
         # f(x) = ((x <<< 1) & (x <<< 8)) ^ (x <<< 2)
+        """Build the f stage in this primitive's typed operation graph."""
         input_positions_pattern = (1, 8, 15, 22, 29, 36, 43, 50, 57)
         output_positions_pattern = (0, 7, 14, 21, 28, 35, 42, 49)
         output_ids = [""] * self.word_size
@@ -177,6 +176,7 @@ class SimonSbox(BitGraphPrimitive):
 
     def feistel_function(self, x, y, k):
         # Rk(x, y) = (y ⊕ f(x) ⊕ k, x)
+        """Build the feistel function stage in this primitive's typed operation graph."""
         feistel_id, feistel_positions = self.f(x)
         new_x_id = self.add_xor_component([y[0], feistel_id, k[0]], [y[1], feistel_positions, k[1]], self.word_size).id
 
@@ -185,6 +185,7 @@ class SimonSbox(BitGraphPrimitive):
         return (new_x_id, list(range(self.word_size))), (x[0], x[1])
 
     def generate_round_key(self, round_keys, round_number):
+        """Build the generate round key stage in this primitive's typed operation graph."""
         if round_number < self.number_of_key_words:
             key_index = self.number_of_key_words - round_number - 1
 

@@ -48,13 +48,11 @@ class AsconSboxSigma(BitGraphPrimitive):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.permutations.ascon_sbox_sigma_permutation import AsconSboxSigma
-        sage: ascon = AsconSboxSigma(number_of_rounds=12)
-        sage: ascon.number_of_rounds
-        12
-
-        sage: ascon.component_from(0, 0).id
-        'constant_0_0'
+        >>> primitive = AsconSboxSigma()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0x78ea7ae5cfebb108', 319)
     """
 
     def __init__(self, number_of_rounds=12):
@@ -102,6 +100,7 @@ class AsconSboxSigma(BitGraphPrimitive):
 
     def round_function(self, state, ci, first_round=0):
         # W2 = W2 ^ ci
+        """Build the round function stage in this primitive's typed operation graph."""
         self.add_constant_component(WORD_SIZE, ci)
         constant = BitState([self.get_current_component_id()], [list(range(WORD_SIZE))])
         inputs_id, inputs_pos = get_inputs_parameter([state[2], constant])

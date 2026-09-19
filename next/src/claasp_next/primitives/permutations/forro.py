@@ -46,10 +46,11 @@ class Forro(BitGraphPrimitive):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.permutations.forro_permutation import Forro
-        sage: forro = Forro(number_of_rounds=2)
-        sage: forro.number_of_rounds
-        2
+        >>> primitive = Forro()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0x0', 0)
     """
 
     def __init__(

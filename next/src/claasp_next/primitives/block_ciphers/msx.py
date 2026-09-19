@@ -42,14 +42,11 @@ class MSX(BitGraphPrimitive):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.block_ciphers.msx_block_cipher import MSX
-        sage: msx64 = MSX(block_bit_size=64, key_bit_size=128)
-        sage: msx64.n_rounds
-        14
-
-        sage: msx128 = MSX(block_bit_size=128, key_bit_size=256)
-        sage: msx128.key_bit_size
-        256
+        >>> primitive = MSX()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0x915559f800c453f7', 64)
     """
 
 
@@ -377,6 +374,7 @@ class MSX(BitGraphPrimitive):
                 )
 
     def round_function(self, x: BitState, rk_group, c: BitState) -> BitState:
+        """Build the round function stage in this primitive's typed operation graph."""
         n = self.word_size
         x_low16 = BitState(x.id, [list(range(16, 32))])
         x_high16 = BitState(x.id, [list(range(16))])
@@ -431,6 +429,7 @@ class MSX(BitGraphPrimitive):
         return y
 
     def round_initialization_64(self):
+        """Build the round initialization 64 stage in this primitive's typed operation graph."""
         W0_bits = self._load_le_word(0)
         self.add_intermediate_output_component(
             [INPUT_PLAINTEXT] * len(W0_bits),
@@ -450,6 +449,7 @@ class MSX(BitGraphPrimitive):
         return W0, W1
 
     def round_initialization_128(self):
+        """Build the round initialization 128 stage in this primitive's typed operation graph."""
         W0_bits = self._load_le_word(0)
         self.add_intermediate_output_component(
             [INPUT_PLAINTEXT] * len(W0_bits),

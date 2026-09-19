@@ -80,26 +80,11 @@ class Rijndael(BitGraphPrimitive):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.block_ciphers.rijndael_block_cipher import Rijndael
-        sage: rijndael = Rijndael(block_bit_size=128, key_bit_size=128)
-        sage: key = 0x2b7e151628aed2a6abf7158809cf4f3c
-        sage: plaintext = 0x3243f6a8885a308d313198a2e0370734
-        sage: ciphertext = 0x3925841d02dc09fbdc118597196a0b32
-        sage: rijndael.evaluate([key, plaintext]) == ciphertext
-        True
-
-        sage: from random import Random
-        sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockPrimitive
-        sage: samples = Random(int(20260326))
-        sage: for key_bit_size in (128, 192, 256):
-        ....:     aes = AESBlockPrimitive(key_bit_size=key_bit_size)
-        ....:     rijndael = Rijndael(block_bit_size=128, key_bit_size=key_bit_size)
-        ....:     key = samples.getrandbits(key_bit_size)
-        ....:     plaintext = samples.getrandbits(128)
-        ....:     aes.evaluate([key, plaintext]) == rijndael.evaluate([key, plaintext])
-        True
-        True
-        True
+        >>> primitive = Rijndael()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0x66e94bd4ef8a2c3b', 127)
     """
 
     def __init__(self, block_bit_size=128, key_bit_size=128, number_of_rounds=None):

@@ -6,7 +6,16 @@ from claasp_next.graph import Primitive, PrimitiveKind, ValueType
 
 
 class ToySpeck(Primitive):
-    """Four-bit-word regression fixture using the legacy toy rotations."""
+    """Four-bit-word regression fixture using the legacy toy rotations.
+
+    EXAMPLES::
+
+        >>> primitive = ToySpeck()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0x91', 8)
+    """
 
     def __init__(self, number_of_rounds: int = 4) -> None:
         if not isinstance(number_of_rounds, int) or isinstance(number_of_rounds, bool):

@@ -81,11 +81,12 @@ class AradiSBoxCompactLinearMap(BitGraphPrimitive):
     - ``transformations_flag`` -- **boolean** (default: `True`)
 
     EXAMPLES::
-        sage: # The following test vector was taken from [GreMW24].
-        sage: from claasp.ciphers.block_ciphers.aradi_block_cipher_sbox_and_compact_linear_map import AradiSBoxCompactLinearMap
-        sage: aradi = AradiSBoxCompactLinearMap(number_of_rounds=16)
-        sage: aradi.evaluate([0, 0x1f1e1d1c1b1a191817161514131211100f0e0d0c0b0a09080706050403020100])
-        83791582030165712186104466959690447122
+
+        >>> primitive = AradiSBoxCompactLinearMap()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0xd06c8ab75d191521', 128)
     """
 
     def __init__(self, number_of_rounds=16):
@@ -124,12 +125,14 @@ class AradiSBoxCompactLinearMap(BitGraphPrimitive):
         self.add_primitive_output_component([w, x, y, z], [list(range(32)) for _ in range(4)], 128)
 
     def get_round_key_id(self, key, round_i):
+        """Return the round key id used while authoring this primitive graph."""
         j = round_i % 2
         return self.add_round_key_output_component(
             [key, key, key, key], [get_key_word_bit_indexes(4 * j + i) for i in range(4)], 128
         ).id
 
     def l_function(self, xy_id_links, xy_input_bits, round_index):
+        """Build the l function stage in this primitive's typed operation graph."""
         j = round_index % 4
         aradi_linear_layer = self.linear_layers[j]
 
@@ -138,6 +141,7 @@ class AradiSBoxCompactLinearMap(BitGraphPrimitive):
         return l_function_output
 
     def m_function(self, i, j, xy_id_links, xy_input_bits):
+        """Build the m function stage in this primitive's typed operation graph."""
         y_indices = xy_input_bits[32:64]
         x_indices = xy_input_bits[:32]
         rot_i_y = self.add_rotate_component(xy_id_links, [y_indices], 32, -i).id
@@ -149,6 +153,7 @@ class AradiSBoxCompactLinearMap(BitGraphPrimitive):
         return left_part, right_part
 
     def update_key(self, key, round_i):
+        """Build the update key transition in this primitive's typed operation graph."""
         round_constant = self.add_constant_component(32, round_i).id
         k1, k0 = self.m_function(1, 3, [key], get_key_word_bit_indexes(1) + get_key_word_bit_indexes(0))
         key_word_bit_indexes = get_key_word_bit_indexes(3) + get_key_word_bit_indexes(2)
@@ -169,6 +174,7 @@ class AradiSBoxCompactLinearMap(BitGraphPrimitive):
         return updated_key.id
 
     def round_function(self, state, round_key, round_i):
+        """Build the round function stage in this primitive's typed operation graph."""
         def create_xor_component(start_idx, length=32):
             return self.add_xor_component(
                 [round_key, state],

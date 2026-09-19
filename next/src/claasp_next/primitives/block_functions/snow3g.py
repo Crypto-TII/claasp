@@ -77,16 +77,13 @@ class Snow3G(BitGraphPrimitive):
 
         INPUT:
 
-        EXAMPLES::
+    EXAMPLES::
 
-            sage: from claasp.ciphers.stream_ciphers.snow3g_stream_cipher import Snow3G
-            sage: snow = Snow3G(number_of_initialization_clocks=2, keystream_word_size=2)
-            sage: iv = 0xEA024714AD5C4D84DF1F9B251C0BF45F
-            sage: key = 0x2BD6459F82C5B300952C49104881FF48
-            sage: ks_32=0xABEE97047AC31373
-            sage: ks2=10407660024169345926
-            sage: snow.evaluate([key,iv])==ks2
-            True
+        >>> primitive = Snow3G()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0xc764a037b12fc857', 64)
     """
 
     def __init__(self, iv_bit_size=128, key_bit_size=128, number_of_initialization_clocks=32, keystream_word_size=2):
@@ -125,6 +122,7 @@ class Snow3G(BitGraphPrimitive):
         )
 
     def snow3g_state_initialization(self, key, iv):
+        """Build the snow3g state initialization stage in this primitive's typed operation graph."""
         self.add_round()
         self.add_constant_component(WORD_SIZE, 0)
         const_0 = BitState([self.get_current_component_id()], [list(range(WORD_SIZE))])
@@ -138,6 +136,7 @@ class Snow3G(BitGraphPrimitive):
         return const_0
 
     def initial_filling_lfsr_fsm(self, key, iv, const_0):
+        """Initialize the initial filling lfsr fsm stage in this primitive's typed operation graph."""
         self.add_constant_component(WORD_SIZE, 0xFFFFFFFF)
         const_1 = [BitState([self.get_current_component_id()], [list(range(WORD_SIZE))]).id[0]]
         # lfsr cells-1th to 4th:  k_0+1, k_1+1, k_2+1, k_3+1
@@ -214,6 +213,7 @@ class Snow3G(BitGraphPrimitive):
         self.fsm_p[1] = [list(range(8))] * 4
 
     def clock_fsm(self, const_0):
+        """Build the clock fsm transition in this primitive's typed operation graph."""
         self.add_modadd_component(self.lfsr_s[15] + self.fsm_r[0], self.lfsr_p[15] + self.fsm_p[0], WORD_SIZE)
         F = [BitState([self.get_current_component_id()], [list(range(WORD_SIZE))]).id[0]]
 
@@ -234,6 +234,7 @@ class Snow3G(BitGraphPrimitive):
         return F
 
     def S1(self, w_id, w_pos, const_0):
+        """Build the S1 stage in this primitive's typed operation graph."""
         sba = []
         for i in range(4):
             self.add_sbox_component(w_id, [w_pos[0][i * 8 : i * 8 + 8]], 8, SBoxA)
@@ -271,6 +272,7 @@ class Snow3G(BitGraphPrimitive):
         return S1_id, S1_pos
 
     def S2(self, w_id, w_pos, const_0):
+        """Build the S2 stage in this primitive's typed operation graph."""
         sbq = []
         for i in range(4):
             self.add_sbox_component([w_id[i]], [w_pos[i]], 8, SBoxQ)
@@ -308,12 +310,14 @@ class Snow3G(BitGraphPrimitive):
         return S2_id, S2_pos
 
     def clock_lfsr_initialization_mode(self, F, const_0):
+        """Build the clock lfsr initialization mode transition in this primitive's typed operation graph."""
         self.clock_lfsr(const_0)
         self.add_xor_component(self.lfsr_s[15] + F, self.lfsr_p[15] + [list(range(WORD_SIZE))], WORD_SIZE)
         self.lfsr_s[15] = [BitState([self.get_current_component_id()], [list(range(WORD_SIZE))]).id[0]]
         self.lfsr_p[15] = [list(range(WORD_SIZE))]
 
     def clock_lfsr(self, const_0):
+        """Build the clock lfsr transition in this primitive's typed operation graph."""
         S0a, S11a = self.create_alpha_state(const_0)
         fsr_ids = S0a
         fsr_pos = [list(range(WORD_SIZE))]
@@ -335,6 +339,7 @@ class Snow3G(BitGraphPrimitive):
         self.lfsr_p[WORD_NUM - 1] = [list(range((WORD_NUM - 1) * WORD_SIZE, WORD_NUM * WORD_SIZE))]
 
     def create_alpha_state(self, const_0):
+        """Construct the alpha state stage in this primitive's typed operation graph."""
         S0 = self.lfsr_s[0]
         S0a_id, S0a_pos = self.MULalpha(S0, const_0)
         s0_id = S0 + [const_0.id[0]] + S0a_id
@@ -351,6 +356,7 @@ class Snow3G(BitGraphPrimitive):
         return S0a, S11a
 
     def MULalpha(self, S0, const_0):
+        """Build the MULalpha stage in this primitive's typed operation graph."""
         P = self.lfsr_p[0][0][:8]
         mulxpow1 = self.MULxPOW(S0, 23, const_0, P)
         mulxpow2 = self.MULxPOW(S0, 245, const_0, P)
@@ -363,6 +369,7 @@ class Snow3G(BitGraphPrimitive):
         return S0a_id, S0a_pos
 
     def DIValpha(self, S11, const_0):
+        """Build the DIValpha stage in this primitive's typed operation graph."""
         P = self.lfsr_p[11][0][8 * 3 : 8 * 4]
         mulxpow1 = self.MULxPOW(S11, 16, const_0, P)
         mulxpow2 = self.MULxPOW(S11, 39, const_0, P)
@@ -375,6 +382,7 @@ class Snow3G(BitGraphPrimitive):
         return S11a_id, S11a_pos
 
     def MULxPOW(self, V, i, const_0, P):
+        """Build the MULxPOW stage in this primitive's typed operation graph."""
         if i >= 1:
             V = self.MULx(V, const_0, P)
             P = list(range(8))
@@ -383,6 +391,7 @@ class Snow3G(BitGraphPrimitive):
         return V
 
     def MULx(self, V, const_0, P):
+        """Build the MULx stage in this primitive's typed operation graph."""
         m_id1 = V + [const_0.id[0]]
         m_pos1 = [P[1:8]] + [[0]]
         m_id2 = V + [const_0.id[0]] + V + [const_0.id[0]] + V + [const_0.id[0]] + V
@@ -393,6 +402,7 @@ class Snow3G(BitGraphPrimitive):
         return V
 
     def snow3g_key_stream(self, F, keystream, clock_number):
+        """Build the snow3g key stream stage in this primitive's typed operation graph."""
         key_word = self.add_xor_component(F + self.lfsr_s[0], [list(range(WORD_SIZE))] + self.lfsr_p[0], WORD_SIZE).id
         if clock_number == 0:
             keystream = self.add_round_output_component([key_word], [list(range(WORD_SIZE))], WORD_SIZE).id

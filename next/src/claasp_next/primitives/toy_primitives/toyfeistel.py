@@ -10,7 +10,16 @@ DEFAULT_SBOX = (14, 9, 15, 0, 13, 4, 10, 11, 1, 2, 8, 3, 7, 6, 12, 5)
 
 
 class ToyFeistel(Primitive):
-    """A small Feistel network with the historical CLAASP key update."""
+    """A small Feistel network with the historical CLAASP key update.
+
+    EXAMPLES::
+
+        >>> primitive = ToyFeistel()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0xa6', 8)
+    """
 
     def __init__(
         self,

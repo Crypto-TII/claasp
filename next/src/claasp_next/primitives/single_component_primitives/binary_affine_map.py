@@ -28,6 +28,15 @@ class BinaryAffineMap(Primitive):
     >>> # 00, 01, 10 become 01, 11, 00 respectively.
     >>> f"{affine.evaluate(0b00_01_10):06b}"
     '011100'
+
+
+    EXAMPLES::
+
+        >>> primitive = BinaryAffineMap()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0x0', 0)
     """
 
     def __init__(

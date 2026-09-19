@@ -9,7 +9,16 @@ PARAMETERS = {(64,128):(8,3), (128,128):(8,4), (128,256):(10,4)}
 
 
 class SPARX(Primitive):
-    """SPARX-64/128, SPARX-128/128, or SPARX-128/256."""
+    """SPARX-64/128, SPARX-128/128, or SPARX-128/256.
+
+    EXAMPLES::
+
+        >>> primitive = SPARX()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0x23b4b5ae05d40da7', 62)
+    """
 
     def __init__(self, block_bit_size=64, key_bit_size=128, number_of_rounds=None, steps=None):
         if (block_bit_size,key_bit_size) not in PARAMETERS:

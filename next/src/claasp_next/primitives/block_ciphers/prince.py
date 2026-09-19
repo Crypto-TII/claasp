@@ -112,6 +112,7 @@ class Prince(BitGraphPrimitive):
     """
 
     def generate_first_rounds(self, current_state, number_of_rounds):
+        """Build the generate first rounds stage in this primitive's typed operation graph."""
         for round_idx in range(1, number_of_rounds // 2):
             sbox_layer = []
 
@@ -141,6 +142,7 @@ class Prince(BitGraphPrimitive):
         return current_state
 
     def prince_core(self, xor_initial, number_of_rounds):
+        """Build the prince core stage in this primitive's typed operation graph."""
         round_constant_0 = self.add_constant_component(64, round_constants[0])
         round_constant_xor_key_1 = self.add_xor_component(
             [round_constant_0.id, INPUT_KEY], [list(range(64)), list(range(64, 128))], 64
@@ -184,10 +186,12 @@ class Prince(BitGraphPrimitive):
         return final_xor
 
     def pre_whitening(self):
+        """Build the pre whitening stage in this primitive's typed operation graph."""
         self.add_round()
         return self.add_xor_component([INPUT_PLAINTEXT, INPUT_KEY], [list(range(64)), list(range(64))], 64).id
 
     def get_k0_prime(self, key_component_id):
+        """Return the k0 prime used while authoring this primitive graph."""
         k0_rot = self.add_rotate_component([key_component_id], [list(range(64))], 64, 1).id
         k0_shift = self.add_shift_component([key_component_id], [list(range(64))], 64, 63).id
 
@@ -196,10 +200,12 @@ class Prince(BitGraphPrimitive):
         return k0_prime
 
     def pos_whitening(self, final_xor):
+        """Build the pos whitening stage in this primitive's typed operation graph."""
         k0_prime = self.get_k0_prime(INPUT_KEY)
         return self.add_xor_component([final_xor.id, k0_prime], [list(range(64)), list(range(64))], 64)
 
     def get_last_rounds(self, number_of_rounds, input_ids, input_bit_positions):
+        """Return the last rounds used while authoring this primitive graph."""
         for round_idx in range(number_of_rounds // 2, (number_of_rounds // 2 - 1) + number_of_rounds // 2):
             self.add_round()
             round_constant_0 = self.add_constant_component(64, round_constants[round_idx])

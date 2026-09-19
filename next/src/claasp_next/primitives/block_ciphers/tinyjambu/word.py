@@ -43,13 +43,11 @@ class TinyJambuWordBased(BitGraphPrimitive):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.permutations.tinyjambu_32bits_word_permutation import TinyJambuWordBased
-        sage: tinyjambu = TinyJambuWordBased()
-        sage: tinyjambu.number_of_rounds
-        20
-
-        sage: tinyjambu.component_from(0, 0).id
-        'and_0_0'
+        >>> primitive = TinyJambuWordBased()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0xc07a21053c7ca049', 128)
     """
 
     def __init__(self, key_bit_size=128, number_of_rounds=640):
@@ -95,6 +93,7 @@ class TinyJambuWordBased(BitGraphPrimitive):
         # ...
         # feedback = s31 xor s78 xor (~(s101 and s116)) xor s122 xor kr
         # each time executes 32bits
+        """Build the round function stage in this primitive's typed operation graph."""
         input1 = BitState(
             [state[2].id[0], state[3].id[0]],
             [

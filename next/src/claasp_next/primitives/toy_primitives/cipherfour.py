@@ -10,7 +10,16 @@ DEFAULT_PERMUTATION = (0, 4, 8, 12, 1, 5, 9, 13, 2, 6, 10, 14, 3, 7, 11, 15)
 
 
 class CipherFour(Primitive):
-    """The configurable CipherFour SPN used in the legacy teaching fixtures."""
+    """The configurable CipherFour SPN used in the legacy teaching fixtures.
+
+    EXAMPLES::
+
+        >>> primitive = CipherFour()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0x9844', 16)
+    """
 
     def __init__(
         self,

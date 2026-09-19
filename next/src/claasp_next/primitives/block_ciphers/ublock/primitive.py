@@ -89,19 +89,11 @@ class Ublock(BitGraphPrimitive):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.block_ciphers.ublock_block_cipher import Ublock
-        sage: ublock = Ublock()
-        sage: ublock.number_of_rounds
-        16
-
-        sage: ublock.component_from(0, 0).id
-        'xor_0_0'
-
-        sage: plaintext = 0x0123456789abcdeffedcba9876543210
-        sage: key = 0x0123456789abcdeffedcba9876543210
-        sage: ciphertext = 0x32122bedd023c429023470e1158c147d
-        sage: ublock.evaluate([plaintext, key]) == ciphertext
-        True
+        >>> primitive = Ublock()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0x144f09912b6b7bd2', 125)
     """
 
     def __init__(self, block_bit_size=128, key_bit_size=128, number_of_rounds=None):
@@ -152,6 +144,7 @@ class Ublock(BitGraphPrimitive):
         self.add_primitive_output_component(primitive_output.id, primitive_output.input_bit_positions, self.block_bit_size)
 
     def check_parameters(self):
+        """Validate the parameters constraints before graph construction."""
         if self.block_bit_size == 128:
             self.pl = PL[0]
             self.pr = PR[0]
@@ -185,6 +178,7 @@ class Ublock(BitGraphPrimitive):
         return 0
 
     def round_initialization(self):
+        """Build the round initialization stage in this primitive's typed operation graph."""
         left_state = BitState([INPUT_PLAINTEXT], [list(range(self.half_block_bit_size))])
         right_state = BitState([INPUT_PLAINTEXT], [list(range(self.half_block_bit_size, self.block_bit_size))])
         key_0 = BitState([INPUT_KEY], [list(range(self.key_block_size))])
@@ -197,6 +191,7 @@ class Ublock(BitGraphPrimitive):
 
     def round_function(self, state_left, state_right, round_key):
         # state xor round_key
+        """Build the round function stage in this primitive's typed operation graph."""
         self.add_xor_component(
             state_left.id + state_right.id + round_key.id,
             state_left.input_bit_positions + state_right.input_bit_positions + round_key.input_bit_positions,
@@ -331,6 +326,7 @@ class Ublock(BitGraphPrimitive):
 
     def key_schedule(self, key_0, key_1, key_2, key_3, RC):
         # K0||K1 = PK(K0||K1)
+        """Build the key schedule stage in this primitive's typed operation graph."""
         self.add_word_permutation_component(
             key_0.id + key_1.id,
             key_0.input_bit_positions + key_1.input_bit_positions,

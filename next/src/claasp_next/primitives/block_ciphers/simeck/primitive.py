@@ -11,7 +11,16 @@ Z_INDEX = {16: 0, 24: 0, 32: 1}
 
 
 class Simeck(Primitive):
-    """Simeck-32/64, Simeck-48/96, or Simeck-64/128."""
+    """Simeck-32/64, Simeck-48/96, or Simeck-64/128.
+
+    EXAMPLES::
+
+        >>> primitive = Simeck()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0x589290e7', 31)
+    """
 
     def __init__(self, block_bit_size=32, key_bit_size=64, number_of_rounds=None,
                  rotation_amounts=(-5, -1)):

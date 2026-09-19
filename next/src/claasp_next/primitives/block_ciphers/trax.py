@@ -11,7 +11,16 @@ ROUND_CONSTANTS=(0xB7E15162,0xBF715880,0x38B4DA56,0x324E7738,
 
 
 class TRAX(Primitive):
-    """TRAX-L with a configurable number of Alzette steps."""
+    """TRAX-L with a configurable number of Alzette steps.
+
+    EXAMPLES::
+
+        >>> primitive = TRAX()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0x76e1920dad2b0f28', 255)
+    """
 
     def __init__(self, number_of_rounds=17):
         if number_of_rounds <= 0:

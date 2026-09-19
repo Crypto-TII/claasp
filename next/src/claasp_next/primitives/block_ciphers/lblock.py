@@ -41,10 +41,11 @@ class LBlock(BitGraphPrimitive):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.block_ciphers.lblock_block_cipher import LBlock
-        sage: lblock = LBlock(number_of_rounds=32)
-        sage: lblock.evaluate([0,0])
-        13985955387709807565
+        >>> primitive = LBlock()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0xc218185308e75bcd', 64)
     """
 
     def __init__(self, number_of_rounds=32):
@@ -82,6 +83,7 @@ class LBlock(BitGraphPrimitive):
         self.add_primitive_output_component([state, state], [list(range(32, 64)), list(range(32))], 64)
 
     def update_key(self, k, i):
+        """Build the update key transition in this primitive's typed operation graph."""
         rot_k = self.add_rotate_component([k], [list(range(80))], 80, -29).id  #
         s0 = self.add_sbox_component([rot_k], [list(range(4))], 4, self.sboxes[9]).id  #
         s1 = self.add_sbox_component([rot_k], [list(range(4, 8))], 4, self.sboxes[8]).id  #
@@ -96,6 +98,7 @@ class LBlock(BitGraphPrimitive):
         return updated_key.id
 
     def round_function(self, x, k):
+        """Build the round function stage in this primitive's typed operation graph."""
         word_pos = [1, 3, 0, 2, 5, 7, 4, 6]
         sb_order = [6, 4, 7, 5, 2, 0, 3, 1]
         after_key_add = self.add_xor_component([x, k], [list(range(32))] + [list(range(32))], 32).id

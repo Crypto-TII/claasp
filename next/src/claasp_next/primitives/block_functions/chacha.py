@@ -24,6 +24,15 @@ class ChaChaKeystreamBlock(Primitive):
     The retained fixed-length mapping permutes ``plaintext`` and then adds the
     constants/key/counter/nonce state word by word, matching the historical
     CLAASP block-function interface.
+
+
+    EXAMPLES::
+
+        >>> primitive = ChaChaKeystreamBlock()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0x617078653320646e', 511)
     """
 
     def __init__(

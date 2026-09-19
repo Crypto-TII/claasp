@@ -6,7 +6,16 @@ from ._word_graph import add, concatenate, constant, select, shift, word_type, x
 
 
 class TEA(Primitive):
-    """TEA with configurable word size, shifts, and reduced rounds."""
+    """TEA with configurable word size, shifts, and reduced rounds.
+
+    EXAMPLES::
+
+        >>> primitive = TEA()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0x41ea3a0a94baa940', 63)
+    """
 
     def __init__(self, block_bit_size=64, key_bit_size=128, number_of_rounds=None,
                  right_shift_amount=5, left_shift_amount=4):

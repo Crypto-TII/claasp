@@ -21,7 +21,16 @@ DEFAULT_ROUNDS = {256: 72, 512: 72, 1024: 80}
 
 
 class Threefish(Primitive):
-    """Threefish-256, Threefish-512, or Threefish-1024."""
+    """Threefish-256, Threefish-512, or Threefish-1024.
+
+    EXAMPLES::
+
+        >>> primitive = Threefish()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0x94eeea8b1f2ada84', 256)
+    """
 
     def __init__(self, block_bit_size=256, key_bit_size=None, tweak_bit_size=128,
                  number_of_rounds=None):

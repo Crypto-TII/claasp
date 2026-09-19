@@ -164,3 +164,17 @@ def test_processing_public_api_documentation_is_closed():
     violations = public_api_closure.documentation_violations(entries, authority)
 
     assert not [violation for violation in violations if violation.startswith(prefixes)]
+
+
+def test_primitive_catalogue_public_api_documentation_is_closed():
+    """Keep every generated and hand-authored primitive export documented."""
+
+    entries = public_api_closure.enumerate_public_api()
+    authority = public_api_closure.load_authority()
+    violations = public_api_closure.documentation_violations(entries, authority)
+
+    assert not [
+        violation
+        for violation in violations
+        if violation.startswith("claasp_next.primitives")
+    ]

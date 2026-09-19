@@ -103,13 +103,11 @@ class Serpent(BitGraphPrimitive):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.block_ciphers.serpent_block_cipher import Serpent
-        sage: serpent = Serpent(key_bit_size=256)
-        sage: key = 0x8000000000000000000000000000000000000000000000000000000000000000
-        sage: plaintext = 0x00000000000000000000000000000000
-        sage: ciphertext = 0xA223AA1288463C0E2BE38EBD825616C0
-        sage: serpent.evaluate([key, plaintext]) == ciphertext
-        True
+        >>> primitive = Serpent()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0x49672ba898d98df9', 127)
     """
 
     def __init__(

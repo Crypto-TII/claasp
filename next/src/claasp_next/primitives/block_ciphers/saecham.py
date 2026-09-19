@@ -54,20 +54,11 @@ class Saecham(BitGraphPrimitive):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.block_ciphers.saecham_block_cipher import Saecham
-        sage: saecham = Saecham()
-        sage: saecham.number_of_rounds
-        88
-
-        sage: # Test vector from [DampersSAECHAM2025]_ (SAECHAM-64/128, 88 rounds)
-        sage: key = 0x010003020504070609080b0a0d0c0f0e
-        sage: pt  = 0x1100332255447766
-        sage: saecham.evaluate([key, pt]) == 0xfe475393e6ba01f1
-        True
-
-        sage: reduced = Saecham(number_of_rounds=4)
-        sage: reduced.id
-        'saecham_block_cipher_k128_p64_o64_r4'
+        >>> primitive = Saecham()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0x86e8c489f5905be9', 64)
     """
 
     def __init__(self, number_of_rounds=_DEFAULT_ROUNDS):

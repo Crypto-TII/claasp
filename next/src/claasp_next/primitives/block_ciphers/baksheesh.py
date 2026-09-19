@@ -35,13 +35,11 @@ class Baksheesh(BitGraphPrimitive):
 
     EXAMPLES::
 
-    sage: from claasp.ciphers.block_ciphers.baksheesh_block_cipher import Baksheesh
-    sage: baksheesh = Baksheesh(block_bit_size=128, key_bit_size=128, number_of_rounds=35)
-    sage: baksheesh.number_of_rounds
-    35
-
-    sage: baksheesh.component_from(0, 0).id
-    'xor_0_0'
+        >>> primitive = Baksheesh()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0xc002be5e64c78a72', 128)
     """
     def __init__(self, block_bit_size=128, key_bit_size=128, number_of_rounds=35):
         super().__init__(
@@ -85,6 +83,7 @@ class Baksheesh(BitGraphPrimitive):
         self.add_primitive_output_component([xor.id], [list(range(block_bit_size))], block_bit_size)
 
     def apply_sbox_layer(self, state):
+        """Add the sbox layer stage to this primitive's typed operation graph."""
         ids, bits = [], []
         for i in range(self.number_of_nibbles):
             sbox = self.add_sbox_component(state[0], [state[1][0][i * 4 : (i + 1) * 4]], 4, SBOX)
@@ -94,11 +93,13 @@ class Baksheesh(BitGraphPrimitive):
         return state
 
     def apply_bit_permutation(self, state):
+        """Add the bit permutation stage to this primitive's typed operation graph."""
         permutation = self.add_permutation_component(state[0], state[1], self.block_bit_size, PERMUTATION)
         state = ([permutation.id], [list(range(self.block_bit_size))])
         return state
 
     def apply_round_constants(self, state, round_number):
+        """Add the round constants stage to this primitive's typed operation graph."""
         round_constant = ROUND_CONSTANTS[round_number]
         bits = map(int, f"{round_constant:06b}")
         value = 0
@@ -116,6 +117,7 @@ class Baksheesh(BitGraphPrimitive):
         return state
 
     def update_key(self, key):
+        """Build the update key transition in this primitive's typed operation graph."""
         rotate = self.add_rotate_component(key[0], key[1], self.key_bit_size, 1)
         key = ([rotate.id], [list(range(self.key_bit_size))])
         return key

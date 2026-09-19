@@ -8,7 +8,16 @@ from ._word_graph import add, concatenate, idea_multiply, select, word_type, xor
 
 
 class IDEA(Primitive):
-    """IDEA with its 128-bit rotating key schedule."""
+    """IDEA with its 128-bit rotating key schedule.
+
+    EXAMPLES::
+
+        >>> primitive = IDEA()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0x1000100000000', 49)
+    """
 
     def __init__(self, number_of_rounds=8):
         if not isinstance(number_of_rounds, int) or not 1 <= number_of_rounds <= 8:

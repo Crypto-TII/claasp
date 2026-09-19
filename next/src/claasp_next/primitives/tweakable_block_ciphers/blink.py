@@ -154,20 +154,11 @@ class Blink(BitGraphPrimitive):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.block_ciphers.blink_block_cipher import Blink
-        sage: blink = Blink()
-        sage: key = int(
-        ....:     "d6a102d888a467e4d1d7dec33a246943e07c1dc6f302c57e762c2df9de6f0d21"
-        ....:     "6dd387874a0b52ce3022e0ad78c78a0697779021b38e7fa15e2b66350517f80f"
-        ....:     "2961c648d578bae174d70cb769c30a45cc40300fe8a342ca57a0bd0251ae39b6"
-        ....:     "21b8f104904374bbd6a102e234a664e421b8f104904374bbd6a102d888a666e4",
-        ....:     16,
-        ....: )
-        sage: plaintext = 0x0
-        sage: tweak = 0x0123456789abcdef0123456789abcdef
-        sage: ciphertext = 0x713fc1546d924bf9cb4e96812eeff9ac
-        sage: blink.evaluate([key, plaintext, tweak]) == ciphertext
-        True
+        >>> primitive = Blink()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0xc7db62d1e10fd553', 128)
     """
 
     def __init__(

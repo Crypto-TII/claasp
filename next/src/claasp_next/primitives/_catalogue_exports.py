@@ -173,7 +173,21 @@ ALL_EXPORTS = {
 
 
 def load_export(name: str, exports=ALL_EXPORTS):
-    """Load one public primitive class without eagerly importing the catalogue."""
+    """Load one public primitive class without eagerly importing the catalogue.
+
+    Unknown export names are reported as attributes because this loader backs
+    the package-level lazy attribute boundary.
+
+    EXAMPLES::
+
+        >>> load_export("AES").__name__
+        'AES'
+        >>> try:
+        ...     load_export("not-a-primitive")
+        ... except AttributeError as error:
+        ...     print(error)
+        not-a-primitive
+    """
 
     try:
         module_name = exports[name]

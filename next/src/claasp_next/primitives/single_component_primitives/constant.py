@@ -1,4 +1,4 @@
-"""One-component constant function."""
+"""Single-component constant-function primitive implementation."""
 
 from claasp_next.components import Constant as ConstantComponent
 from claasp_next.domains import Bit
@@ -17,6 +17,15 @@ class Constant(Primitive):
 
     >>> f"{Constant(output_bit_size=3, value=0b010).evaluate():03b}"
     '010'
+
+
+    EXAMPLES::
+
+        >>> primitive = Constant()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0x2', 2)
     """
 
     def __init__(self, output_bit_size: int = 3, value: int = 0b010) -> None:

@@ -85,13 +85,11 @@ class SpongentPi(BitGraphPrimitive):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.permutations.spongent_pi_permutation import SpongentPi
-        sage: spongentpi = SpongentPi(state_bit_size=160, number_of_rounds=80)
-        sage: spongentpi.number_of_rounds
-        80
-
-        sage: spongentpi.component_from(0, 0).id
-        'constant_0_0'
+        >>> primitive = SpongentPi()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0xcaed745fb9d13ede', 160)
     """
 
     def __init__(self, state_bit_size=160, number_of_rounds=80):
@@ -148,6 +146,7 @@ class SpongentPi(BitGraphPrimitive):
 
     def icounter_update(self, icounter, const_0):
         # 0||x6||x5||x4||x3||x2||x1||x0 -> 0||x5||x4||x3||x2||x1||x0||x6 xor x5
+        """Build the icounter update stage in this primitive's typed operation graph."""
         self.add_permutation_component(
             icounter.id, icounter.input_bit_positions, SBOX_CELL_SIZE, [0, 7, 1, 2, 3, 4, 5, 6]
         )
@@ -163,6 +162,7 @@ class SpongentPi(BitGraphPrimitive):
 
     def round_function(self, state, icounter):
         # state[len-1] = state[len-1] xor 0|icounter
+        """Build the round function stage in this primitive's typed operation graph."""
         inputs_id, inputs_pos = get_inputs_parameter([state[self.state_len - 1], icounter])
         self.add_xor_component(inputs_id, inputs_pos, SBOX_CELL_SIZE)
         state[self.state_len - 1] = BitState([self.get_current_component_id()], [list(range(SBOX_CELL_SIZE))])

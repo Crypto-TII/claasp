@@ -46,6 +46,15 @@ class Led(BitGraphPrimitive):
 
     Note that this implementation do not use the number of steps as a parameter,
     instead it derives it from the number of rounds (number_of_steps = number_of_rounds // 4).
+
+
+    EXAMPLES::
+
+        >>> primitive = Led()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0x39c2401003a0c798', 62)
     """
 
     def __init__(self, key_bit_size=64, number_of_rounds=32):
@@ -95,6 +104,7 @@ class Led(BitGraphPrimitive):
                 self.add_primitive_output_component(state.id, state.input_bit_positions, self.block_bit_size)
 
     def get_round_constant(self, round_number):
+        """Return the round constant used while authoring this primitive graph."""
         register = get_round_register(round_number)
         rc_high = "".join(map(str, register[0:3]))
         rc_low = "".join(map(str, register[3:6]))
@@ -117,6 +127,7 @@ class Led(BitGraphPrimitive):
         return constant
 
     def add_constants(self, state, round_number):
+        """Add the constants stage to this primitive's typed operation graph."""
         constant = self.get_round_constant(round_number)
         const_id = self.add_constant_component(self.block_bit_size, constant).id
 
@@ -128,6 +139,7 @@ class Led(BitGraphPrimitive):
         return BitState([xor_id], [list(range(self.block_bit_size))])
 
     def sub_cells(self, state):
+        """Build the sub cells stage in this primitive's typed operation graph."""
         sbox_out_ids = []
         for i in range(16):
             id_sbox = self.add_sbox_component(state.id, [state.input_bit_positions[0][i * 4 : (i + 1) * 4]], 4, SBOX).id
@@ -135,6 +147,7 @@ class Led(BitGraphPrimitive):
         return BitState(sbox_out_ids, [list(range(4))] * 16)
 
     def shift_rows(self, state):
+        """Build the shift rows stage in this primitive's typed operation graph."""
         shifted = []
         for i in range(4):
             row_data = state.id[i * 4 : (i + 1) * 4]
@@ -144,6 +157,7 @@ class Led(BitGraphPrimitive):
         return BitState(shifted, [list(range(4))] * 16)
 
     def mix_columns(self, state):
+        """Build the mix columns stage in this primitive's typed operation graph."""
         mix_columns_ids = []
 
         for col in range(4):

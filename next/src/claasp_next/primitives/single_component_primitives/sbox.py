@@ -25,6 +25,15 @@ class SBox(Primitive):
     >>> identity_layer = SBox(domain=Word(8), unit_count=2)
     >>> hex(identity_layer.evaluate(0x12AB))
     '0x12ab'
+
+
+    EXAMPLES::
+
+        >>> primitive = SBox()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0x0', 0)
     """
 
     def __init__(

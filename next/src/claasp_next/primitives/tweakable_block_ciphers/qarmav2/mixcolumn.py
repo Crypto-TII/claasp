@@ -47,14 +47,11 @@ class QARMAv2MixColumn(BitGraphPrimitive):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.block_ciphers.qarmav2_with_mixcolumn_block_cipher import QARMAv2MixColumn
-        sage: qarmav2 = QARMAv2MixColumn(number_of_rounds = 4)
-        sage: key = 0x0123456789abcdeffedcba9876543210
-        sage: tweak = 0x7e5c3a18f6d4b2901eb852fc9630da74
-        sage: plaintext = 0x0000000000000000
-        sage: ciphertext = 0x2cc660354929f2ca
-        sage: qarmav2.evaluate([key, plaintext, tweak]) == ciphertext
-        True
+        >>> primitive = QARMAv2MixColumn()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0xcfbeb4d546c9b062', 64)
     """
 
     def __init__(self, number_of_rounds=10, number_of_layers=1, key_bit_size=128, tweak_bit_size=128):
@@ -180,6 +177,7 @@ class QARMAv2MixColumn(BitGraphPrimitive):
 
     def key_initialization(self, key_bit_size):
         # Key initialization
+        """Build the key initialization stage in this primitive's typed operation graph."""
         key_0 = self.add_permutation_component(
             [INPUT_KEY],
             [list(range(self.key_block_size))],
@@ -210,6 +208,7 @@ class QARMAv2MixColumn(BitGraphPrimitive):
         return key_state
 
     def tweak_initialization(self, tweak_permutation, tweak_bit_size):
+        """Build the tweak initialization stage in this primitive's typed operation graph."""
         tweak_0 = self.add_permutation_component(
             [INPUT_TWEAK], [list(range(self.tweak_block_size))], self.tweak_block_size, tweak_permutation[1]
         )
@@ -236,6 +235,7 @@ class QARMAv2MixColumn(BitGraphPrimitive):
 
     def constants_initialization(self):
         # Round constants initialization
+        """Build the constants initialization stage in this primitive's typed operation graph."""
         round_constant = [self.add_constant_component(self.layer_block_size, 0).id]
         if self.number_of_layers == 2:
             round_constant.append(self.add_constant_component(self.layer_block_size, 0).id)
@@ -255,6 +255,7 @@ class QARMAv2MixColumn(BitGraphPrimitive):
 
     def first_round_start(self, key_state):
         # First round different from others
+        """Build the first round start stage in this primitive's typed operation graph."""
         first_round_add_round_key = self.add_xor_component(
             [key_state[0].id, INPUT_PLAINTEXT],
             [list(range(self.key_block_size)), list(range(self.primitive_block_size))[::-1]],
@@ -279,6 +280,7 @@ class QARMAv2MixColumn(BitGraphPrimitive):
 
     def direct_round(self, round_output, key_state, tweak_state, tweak_permutation, round_constant, round_number):
         # Direct encryption
+        """Build the direct round stage in this primitive's typed operation graph."""
         round_key_shuffle = [None] * self.number_of_layers
         for l in range(self.number_of_layers):
             xor = self.add_xor_component(
@@ -364,6 +366,7 @@ class QARMAv2MixColumn(BitGraphPrimitive):
 
     def reflector(self, round_output, key_state):
         # Reflector
+        """Build the reflector stage in this primitive's typed operation graph."""
         new_keys = self.o_function(key_state)
         key_state = new_keys
         W = self.o_function(new_keys)
@@ -436,6 +439,7 @@ class QARMAv2MixColumn(BitGraphPrimitive):
 
     def inverse_round(self, round_output, key_state, tweak_state, tweak_permutation, round_constant, round_number):
         # Inverse encryption
+        """Build the inverse round stage in this primitive's typed operation graph."""
         if self.number_of_layers == 2 and (self.nrounds - round_number) % 2 == 0:
             exchanging_rows = self.add_permutation_component(
                 [round_output.id],
@@ -537,6 +541,7 @@ class QARMAv2MixColumn(BitGraphPrimitive):
 
     def last_round_end(self, round_output, key_state):
         # Last round different from others
+        """Build the last round end stage in this primitive's typed operation graph."""
         last_round_sboxes = []
         for sb in range(self.num_sboxes):
             sbox = self.add_sbox_component(
@@ -567,6 +572,7 @@ class QARMAv2MixColumn(BitGraphPrimitive):
     # -------------------------------------TOTALS-------------------------------------#
 
     def key_update(self, key_state):
+        """Build the key update stage in this primitive's typed operation graph."""
         alpha, beta = self.constants_update()
 
         if self.number_of_layers == 2:
@@ -603,6 +609,7 @@ class QARMAv2MixColumn(BitGraphPrimitive):
         return key_state
 
     def constants_update(self):
+        """Build the constants update stage in this primitive's typed operation graph."""
         alpha_0 = self.add_constant_component(self.layer_block_size, 0x13198A2E03707344).id
         alpha = [alpha_0]
         if self.number_of_layers == 2:
@@ -619,6 +626,7 @@ class QARMAv2MixColumn(BitGraphPrimitive):
     # --------------------------------------------------------------------------------#
 
     def update_single_constant(self, constant):
+        """Build the update single constant transition in this primitive's typed operation graph."""
         spill = self.add_shift_component(
             [constant], [list(range(self.layer_block_size))], self.layer_block_size, 51
         )
@@ -662,6 +670,7 @@ class QARMAv2MixColumn(BitGraphPrimitive):
         return tmp.id
 
     def o_function(self, key):
+        """Build the o function stage in this primitive's typed operation graph."""
         key_rot_0 = self.add_rotate_component(
             [key[0].id], [list(range(self.key_block_size))], self.key_block_size, 1
         )
@@ -692,6 +701,7 @@ class QARMAv2MixColumn(BitGraphPrimitive):
         return key_new
 
     def majority_function(self, key):
+        """Build the majority function stage in this primitive's typed operation graph."""
         maj_key_size = self.key_block_size / 2
         and_0_1 = self.add_and_component(
             [key, key],

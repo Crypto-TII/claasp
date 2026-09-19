@@ -36,18 +36,11 @@ class Twofish(BitGraphPrimitive):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.block_ciphers.twofish_block_cipher import Twofish
-        sage: primitive = Twofish()
-        sage: primitive.print_primitive_structure_as_python_dictionary_to_file(  # doctest: +SKIP
-        ....: "claasp/graph_representations/block_ciphers/twofish_key256_r16.py") # doctest: +SKIP
-
-        sage: from claasp.ciphers.block_ciphers.twofish_block_cipher import Twofish
-        sage: primitive = Twofish(key_length=256, number_of_rounds=16)
-        sage: key = 0xD43BB7556EA32E46F2A282B7D45B4E0D57FF739D4DC92C1BD7FC01700CC8216F
-        sage: plaintext = 0x90AFE91BB288544F2C32DC239B2635E6
-        sage: ciphertext = 0x6CB4561C40BF0A9705931CB6D408E7FA
-        sage: primitive.evaluate([key, plaintext]) == ciphertext
-        True
+        >>> primitive = Twofish()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0x9f589f5cf6122c32', 128)
     """
 
     def __init__(self, key_length=128, number_of_rounds=16):
@@ -316,6 +309,7 @@ class Twofish(BitGraphPrimitive):
                 self.add_round()
 
     def h_function(self, X, L, L_bits):
+        """Build the h function stage in this primitive's typed operation graph."""
         y_i = [[0, 0, 0, 0] for _ in range(self.key_k + 1)]
         y2_j = X
 

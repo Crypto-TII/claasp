@@ -24,6 +24,15 @@ class BitVectorSBox(Primitive):
     >>> compress = BitVectorSBox(2, [0, 0, 1, 1], output_bit_size=1)
     >>> compress.evaluate(0b10)
     1
+
+
+    EXAMPLES::
+
+        >>> primitive = BitVectorSBox()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0x0', 0)
     """
 
     def __init__(

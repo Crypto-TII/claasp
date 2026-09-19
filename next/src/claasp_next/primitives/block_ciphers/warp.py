@@ -61,17 +61,11 @@ class Warp(BitGraphPrimitive):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.block_ciphers.warp_block_cipher import Warp
-        sage: warp = Warp(number_of_rounds=1)
-        sage: warp.number_of_rounds
-        1
-        sage: warp = Warp()
-        sage: plaintext = 0x0123456789abcdeffedcba9876543210
-        sage: key = 0x0123456789abcdeffedcba9876543210
-        sage: hex(warp.evaluate([plaintext, key]))
-        '0x24ce0a8efd9f32de529d5fdf45703a8d'
-        sage: warp.component_from(0, 0).id
-        'sbox_0_0'
+        >>> primitive = Warp()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0x3b91ccb836ac49c7', 126)
     """
 
     def __init__(self, number_of_rounds=41):

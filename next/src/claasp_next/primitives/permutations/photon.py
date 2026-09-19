@@ -52,13 +52,11 @@ class Photon(BitGraphPrimitive):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.permutations.photon_permutation import Photon
-        sage: photon = Photon(t=256)
-        sage: photon.number_of_rounds
-        12
-
-        sage: photon.component_from(0, 0).id
-        'constant_0_0'
+        >>> primitive = Photon()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0x1165907dbda659c2', 249)
     """
 
     def __init__(self, t=256, number_of_rounds=12):
@@ -112,6 +110,7 @@ class Photon(BitGraphPrimitive):
     def round_function(self, state, component_rc, components_ic):
         # AddConstant
         # state[i,0] = state[i,0] xor RC[r] xor IC[i] for i in range(self.d)
+        """Build the round function stage in this primitive's typed operation graph."""
         for i in range(self.d):
             inputs_id, inputs_pos = get_inputs_parameter([state[i * self.d], component_rc, components_ic[i]])
             self.add_xor_component(inputs_id, inputs_pos, self.cell_bits)

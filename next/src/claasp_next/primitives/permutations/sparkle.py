@@ -49,13 +49,11 @@ class Sparkle(BitGraphPrimitive):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.permutations.sparkle_permutation import Sparkle
-        sage: sparkle = Sparkle()
-        sage: sparkle.number_of_rounds
-        7
-
-        sage: sparkle.component_from(0, 0).id
-        'constant_0_0'
+        >>> primitive = Sparkle()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0x55ce325eb6997652', 255)
     """
 
     def __init__(self, number_of_blocks=4, number_of_steps=7):
@@ -104,6 +102,7 @@ class Sparkle(BitGraphPrimitive):
                 self.add_round()
 
     def alzette(self, state_x, state_y, ci):
+        """Build the alzette stage in this primitive's typed operation graph."""
         for i in range(4):
             state_x, state_y = self.alzette_round(state_x, state_y, AZ_ROTATE[i][1], AZ_ROTATE[i][0], ci)
 
@@ -111,6 +110,7 @@ class Sparkle(BitGraphPrimitive):
 
     def alzette_round(self, state_x, state_y, rotate_x, rotate_y, ci):
         # x = x + (y >> rotate_y)
+        """Build the alzette round stage in this primitive's typed operation graph."""
         self.add_rotate_component(state_y.id, state_y.input_bit_positions, WORD_SIZE, rotate_y)
         temp = BitState([self.get_current_component_id()], [list(range(WORD_SIZE))])
         inputs_id, inputs_pos = get_inputs_parameter([state_x, temp])
@@ -133,6 +133,7 @@ class Sparkle(BitGraphPrimitive):
 
     def ell_function(self, state_i):
         # lx = (x <<< 16) xor (x and 0xffff)
+        """Build the ell function stage in this primitive's typed operation graph."""
         state_left = BitState(state_i.id, [[state_i.input_bit_positions[0][k] for k in range(WORD_SIZE // 2)]])
         state_right = BitState(
             state_i.id, [[state_i.input_bit_positions[0][k] for k in range(WORD_SIZE // 2, WORD_SIZE)]]
@@ -148,6 +149,7 @@ class Sparkle(BitGraphPrimitive):
         return state_i
 
     def linear_layer(self, state):
+        """Build the linear layer stage in this primitive's typed operation graph."""
         omega = len(state) // 4
 
         # tx = x0 xor ... xor x_omega
@@ -197,6 +199,7 @@ class Sparkle(BitGraphPrimitive):
 
     def round_function(self, state, constant_ci, constant_r, r):
         # y0 = y0 xor ci[r mod 8]
+        """Build the round function stage in this primitive's typed operation graph."""
         inputs_id, inputs_pos = get_inputs_parameter([state[1], constant_ci[r % 8]])
         self.add_xor_component(inputs_id, inputs_pos, WORD_SIZE)
         state[1] = BitState([self.get_current_component_id()], [list(range(WORD_SIZE))])

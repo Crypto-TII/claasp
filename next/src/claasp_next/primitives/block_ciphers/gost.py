@@ -48,12 +48,12 @@ class Gost(BitGraphPrimitive):
     - ``number_of_rounds`` -- **integer** (default: `32`); number of rounds of the primitive.
 
     EXAMPLES::
-        sage: from claasp.ciphers.block_ciphers.gost_block_cipher import Gost
-        sage: gost = Gost()
-        sage: gost.number_of_rounds
-        32
-        sage: gost.component_from(0, 0).id
-        'modadd_0_0'
+
+        >>> primitive = Gost()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0x78b6bd4a81726659', 63)
     """
 
     def __init__(
@@ -139,6 +139,7 @@ class Gost(BitGraphPrimitive):
         )
 
     def sbox(self, plaintext: BitState) -> BitState:
+        """Build the sbox stage in this primitive's typed operation graph."""
         plaintext_ids = []
 
         for i, sbox in enumerate(SBOX):
@@ -155,6 +156,7 @@ class Gost(BitGraphPrimitive):
         )
 
     def rotate(self, plaintext: BitState) -> BitState:
+        """Build the rotate stage in this primitive's typed operation graph."""
         plaintext_id = self.add_rotate_component(
             plaintext.id[2:],
             plaintext.input_bit_positions[2:],
@@ -172,6 +174,7 @@ class Gost(BitGraphPrimitive):
         )
 
     def xor(self, plaintext: BitState) -> BitState:
+        """Build the xor stage in this primitive's typed operation graph."""
         plaintext_id = self.add_xor_component(
             [plaintext.id[0], plaintext.id[2]],
             [plaintext.input_bit_positions[0]] + [plaintext.input_bit_positions[2]],
@@ -184,9 +187,11 @@ class Gost(BitGraphPrimitive):
         )
 
     def swap_blocks(self, plaintext: BitState) -> BitState:
+        """Build the swap blocks stage in this primitive's typed operation graph."""
         return BitState(plaintext.id[::-1], plaintext.input_bit_positions[::-1])
 
     def update_key(self, key: BitState, r: int) -> BitState:
+        """Build the update key transition in this primitive's typed operation graph."""
         if r <= 23:
             return BitState(key.id[r % 8], [key.input_bit_positions[r % 8]])
 

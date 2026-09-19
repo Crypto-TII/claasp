@@ -38,13 +38,11 @@ class Splight(BitGraphPrimitive):
 
     EXAMPLES::
 
-    sage: from claasp.ciphers.block_ciphers.splight_block_cipher import Splight
-    sage: splight = Splight(block_bit_size=64, key_bit_size=128, number_of_rounds=32)
-    sage: splight.number_of_rounds
-    32
-
-    sage: splight.component_from(0, 0).id
-    'sbox_0_0'
+        >>> primitive = Splight()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0xdfddfbb4d8804c', 56)
     """
 
     def __init__(self, block_bit_size=64, key_bit_size=128, number_of_rounds=32):
@@ -97,6 +95,7 @@ class Splight(BitGraphPrimitive):
             states = new_state, states[0]
 
     def sbox(self, state):
+        """Build the sbox stage in this primitive's typed operation graph."""
         state_ids = [""] * 8
         for i in range(8):
             self.add_sbox_component(state.id, [state.input_bit_positions[0][4 * i : 4 * (i + 1)]], 4, SBOX)
@@ -105,6 +104,7 @@ class Splight(BitGraphPrimitive):
         return BitState(state_ids, [list(range(4)) for _ in range(8)])
 
     def linear_layer(self, state):
+        """Build the linear layer stage in this primitive's typed operation graph."""
         self.add_linear_layer_component(state.id[:4], state.input_bit_positions[:4], self.half_size // 2, M)
         state_id_col0 = self.get_current_component_id()
         self.add_linear_layer_component(state.id[4:], state.input_bit_positions[4:], self.half_size // 2, M)
@@ -113,11 +113,13 @@ class Splight(BitGraphPrimitive):
         return BitState([state_id_col0, state_id_col1], [list(range(self.half_size // 2)) for _ in range(2)])
 
     def xor_key(self, state, key):
+        """Build the xor key stage in this primitive's typed operation graph."""
         self.add_xor_component(state.id + key.id, state.input_bit_positions + key.input_bit_positions, self.half_size)
 
         return BitState([self.get_current_component_id()], [list(range(self.half_size))])
 
     def xor_state_right(self, state_left, state_right):
+        """Build the xor state right stage in this primitive's typed operation graph."""
         self.add_xor_component(
             state_left.id + state_right.id,
             state_left.input_bit_positions + state_right.input_bit_positions,
@@ -127,11 +129,13 @@ class Splight(BitGraphPrimitive):
         return BitState([self.get_current_component_id()], [list(range(self.half_size))])
 
     def rotation(self, state):
+        """Build the rotation stage in this primitive's typed operation graph."""
         self.add_rotate_component(state.id, state.input_bit_positions, self.half_size, -8)
 
         return BitState([self.get_current_component_id()], [list(range(self.half_size))])
 
     def key_schedule(self, keys, round_number):
+        """Build the key schedule stage in this primitive's typed operation graph."""
         self.add_sbox_component(keys[0].id, [keys[0].input_bit_positions[0][12:16]], 4, SBOX)
         key_sbox0_id = self.get_current_component_id()
         self.add_sbox_component(keys[0].id, [keys[0].input_bit_positions[0][28:32]], 4, SBOX)

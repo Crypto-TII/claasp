@@ -69,13 +69,11 @@ class GimliSbox(BitGraphPrimitive):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.permutations.gimli_sbox_permutation import GimliSbox
-        sage: gimli = GimliSbox(number_of_rounds=24, word_size=32)
-        sage: gimli.number_of_rounds
-        24
-
-        sage: gimli.component_from(0, 0).id
-        'rot_0_0'
+        >>> primitive = GimliSbox()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0x6467d8c407dcf83b', 383)
     """
 
     def __init__(self, number_of_rounds=24, word_size=32):
@@ -120,6 +118,7 @@ class GimliSbox(BitGraphPrimitive):
 
     def sp_box(self, states, current_round):
         # SP-box (Rotation)
+        """Build the sp box stage in this primitive's typed operation graph."""
         b = [[{} for _ in range(N_COLS)] for _ in range(N_ROWS)]
         for column_number in range(N_COLS):
             for row_number in range(N_ROWS - 1):
@@ -224,6 +223,7 @@ class GimliSbox(BitGraphPrimitive):
         return sp_states
 
     def round_constant(self, states, rc):
+        """Build the round constant stage in this primitive's typed operation graph."""
         self.add_constant_component(self.word_bit_size, rc)
         c = BitState([self.get_current_component_id()], [list(range(self.word_bit_size))])
         # state[0,0] = state[0,0] xor RC
@@ -236,6 +236,7 @@ class GimliSbox(BitGraphPrimitive):
         return states
 
     def round_function(self, states, round_number):
+        """Build the round function stage in this primitive's typed operation graph."""
         states = self.sp_box(states, round_number)
 
         inputs_id = []

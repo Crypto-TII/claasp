@@ -19,6 +19,15 @@ class Power(Primitive):
     >>> cubic = Power(exponent=3, domain=PrimeField(17), unit_count=1)
     >>> cubic.evaluate(3)
     10
+
+
+    EXAMPLES::
+
+        >>> primitive = Power()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0x0', 0)
     """
 
     def __init__(self, exponent: int = 3, domain=None, unit_count: int = 1) -> None:

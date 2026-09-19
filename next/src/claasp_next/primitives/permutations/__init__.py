@@ -1,4 +1,4 @@
-"""Unkeyed permutation descriptions."""
+"""Unkeyed cryptographic permutation graph implementations."""
 
 from claasp_next.primitives.permutations.chacha import ChaCha
 from claasp_next.primitives.permutations.mimc import MiMC

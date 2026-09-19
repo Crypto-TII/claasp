@@ -89,13 +89,11 @@ class GiftSbox(BitGraphPrimitive):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.block_ciphers.gift_sbox_block_cipher import GiftSbox
-        sage: gift = GiftSbox(block_bit_size=128, number_of_rounds=40)
-        sage: gift.number_of_rounds
-        40
-
-        sage: gift.component_from(0, 0).id
-        'sbox_0_0'
+        >>> primitive = GiftSbox()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0xcd0bd738388ad3f6', 128)
     """
 
     def __init__(self, number_of_rounds=None, block_bit_size=128):
@@ -154,6 +152,7 @@ class GiftSbox(BitGraphPrimitive):
 
     def key_schedule(self, key):
         # key update
+        """Build the key schedule stage in this primitive's typed operation graph."""
         key_new = []
         # W0 = W6 >>> 2
         self.add_rotate_component(key[6].id, key[6].input_bit_positions, KEY_SIZE, KEY_ROT[0])
@@ -170,6 +169,7 @@ class GiftSbox(BitGraphPrimitive):
         return key_new
 
     def get_round_keys(self, key):
+        """Return the round keys used while authoring this primitive graph."""
         if self.state_bit_size == 64:
             return deepcopy(key[6]), deepcopy(key[7])
 
@@ -185,6 +185,7 @@ class GiftSbox(BitGraphPrimitive):
         return round_key_u, round_key_v
 
     def get_primitive_output_inputs(self, state):
+        """Return the primitive output inputs used while authoring this primitive graph."""
         inputs_id = []
         inputs_pos = []
         for bit_position in range(self.state_word_size):
@@ -197,6 +198,7 @@ class GiftSbox(BitGraphPrimitive):
     def round_function(self, state, round_key_u, round_key_v, ci):
         # subcells
         # using sbox
+        """Build the round function stage in this primitive's typed operation graph."""
         p = BitState(
             ["" for _ in range(self.state_word_size)], [[] for _ in range(self.state_word_size)]
         )

@@ -23,6 +23,15 @@ class LinearMap(Primitive):
     >>> mixing = LinearMap([[1, 2], [2, 1]], domain=field)
     >>> hex(mixing.evaluate(0x12))
     '0x50'
+
+
+    EXAMPLES::
+
+        >>> primitive = LinearMap()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0x0', 0)
     """
 
     def __init__(self, matrix=None, domain=None) -> None:

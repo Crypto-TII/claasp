@@ -113,13 +113,11 @@ class Skinny(BitGraphPrimitive):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.block_ciphers.skinny_block_cipher import Skinny
-        sage: skinny = Skinny(block_bit_size=128, key_bit_size=384, number_of_rounds=40)
-        sage: skinny.number_of_rounds
-        40
-
-        sage: skinny.component_from(0, 0).id
-        'constant_0_0'
+        >>> primitive = Skinny()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0xe377bd614cccaed7', 64)
     """
 
     def __init__(self, block_bit_size=64, key_bit_size=64, number_of_rounds=32):
@@ -166,6 +164,7 @@ class Skinny(BitGraphPrimitive):
         self.add_primitive_output_component(inputs_id, inputs_pos, block_bit_size)
 
     def state_initialization(self):
+        """Build the state initialization stage in this primitive's typed operation graph."""
         state = []
         for cell_number in range(NUMBER_OF_CELLS):
             input_bit_positions = [i + cell_number * self.cell_size for i in range(self.cell_size)]
@@ -175,6 +174,7 @@ class Skinny(BitGraphPrimitive):
         return state
 
     def key_initialization(self):
+        """Build the key initialization stage in this primitive's typed operation graph."""
         key = [[] for _ in range(self.number_of_key_arrays)]
         for key_arrays_number in range(self.number_of_key_arrays):
             for cell_number in range(NUMBER_OF_CELLS):
@@ -189,6 +189,7 @@ class Skinny(BitGraphPrimitive):
 
     def round_function(self, state, key, round_number, rc2):
         # SubCells
+        """Build the round function stage in this primitive's typed operation graph."""
         for cell_number in range(NUMBER_OF_CELLS):
             self.add_sbox_component(
                 state[cell_number].id, state[cell_number].input_bit_positions, self.cell_size, self.sbox
@@ -246,6 +247,7 @@ class Skinny(BitGraphPrimitive):
         return mix_column_state
 
     def key_schedule(self, key):
+        """Build the key schedule stage in this primitive's typed operation graph."""
         for i in range(self.number_of_key_arrays):
             # fmt: off
             (

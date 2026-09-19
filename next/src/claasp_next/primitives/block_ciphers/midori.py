@@ -198,13 +198,11 @@ class Midori(BitGraphPrimitive):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.block_ciphers.midori_block_cipher import Midori
-        sage: midori = Midori()
-        sage: midori.number_of_rounds
-        16
-
-        sage: midori.component_from(0, 0).id
-        'xor_0_0'
+        >>> primitive = Midori()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0x3c9cceda2bbd449a', 62)
     """
 
     def __init__(self, block_bit_size=64, key_bit_size=128, number_of_rounds=None):
@@ -273,6 +271,7 @@ class Midori(BitGraphPrimitive):
         self.add_primitive_output_component(data[0], data[1], self.block_bit_size)
 
     def key_add(self, data, round_key_id):
+        """Build the key add stage in this primitive's typed operation graph."""
         new_data_id = self.add_xor_component(
             data[0] + [round_key_id], data[1] + [list(range(self.block_bit_size))], self.block_bit_size
         ).id
@@ -280,6 +279,7 @@ class Midori(BitGraphPrimitive):
         return [new_data_id], [list(range(self.block_bit_size))]
 
     def mix_column(self, data):
+        """Build the mix column stage in this primitive's typed operation graph."""
         column_size = self.block_bit_size // 4
         new_data_id_list = [""] * 4
 
@@ -294,6 +294,7 @@ class Midori(BitGraphPrimitive):
         return new_data_id_list, [list(range(column_size))] * 4
 
     def round_key(self, key_id, i):
+        """Build the round key stage in this primitive's typed operation graph."""
         round_constant_value = wordlist_to_int([round_constants[i][j % 4][j // 4] for j in range(16)], self.word_size)
 
         round_constant_id = self.add_constant_component(self.block_bit_size, round_constant_value).id
@@ -309,6 +310,7 @@ class Midori(BitGraphPrimitive):
         return xor_id
 
     def shuffle_cell(self, data):
+        """Build the shuffle cell stage in this primitive's typed operation graph."""
         new_data_id = self.add_word_permutation_component(
             data[0], data[1], self.block_bit_size, permutation, self.word_size
         ).id
@@ -316,6 +318,7 @@ class Midori(BitGraphPrimitive):
         return [new_data_id], [list(range(self.block_bit_size))]
 
     def sub_cell(self, data):
+        """Build the sub cell stage in this primitive's typed operation graph."""
         new_data_id_list = [""] * 16
 
         if self.block_bit_size == 64:

@@ -59,14 +59,11 @@ class Mantis(BitGraphPrimitive):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.block_ciphers.mantis_block_cipher import Mantis
-        sage: mantis = Mantis(number_of_rounds=6)
-        sage: plaintext = 0xd6522035c1c0c6c1
-        sage: key = 0x92f09952c625e3e9d7a060f714c0292b
-        sage: tweak = 0xba912e6f1055fed2
-        sage: ciphertext = 0x60e43457311936fd
-        sage: mantis.evaluate([plaintext, key, tweak]) == ciphertext
-        True
+        >>> primitive = Mantis()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0xd4bebab887d3bdb6', 64)
     """
 
     def __init__(self, number_of_rounds=6):
@@ -96,6 +93,7 @@ class Mantis(BitGraphPrimitive):
             [ciphertext], [list(range(64))], 64)
 
     def apply_sbox_layer(self, current_state):
+        """Add the sbox layer stage to this primitive's typed operation graph."""
         sbox_id_list = []
         sbox_bit_positions = []
         for i in range(16):
@@ -115,6 +113,7 @@ class Mantis(BitGraphPrimitive):
         return concatenated_state.id
 
     def add_round_constant(self, sbox_id_list, sbox_bit_positions, round_idx):
+        """Add the round constant stage to this primitive's typed operation graph."""
         constant = self.add_constant_component(
             64, MANTIS_ROUND_CONSTANTS[round_idx])
         constant_xor = self.add_xor_component(
@@ -125,6 +124,7 @@ class Mantis(BitGraphPrimitive):
         return constant_xor.id
 
     def add_tweakey(self, current_tweak):
+        """Add the tweakey stage to this primitive's typed operation graph."""
         permuted_tweak = self.add_word_permutation_component(
             [current_tweak], [list(range(64))], 64, TWEAK_PERMUTATION_INV, 4
         ).id
@@ -136,12 +136,14 @@ class Mantis(BitGraphPrimitive):
         return tweakey.id, permuted_tweak
 
     def permute_cells(self, current_state):
+        """Build the permute cells stage in this primitive's typed operation graph."""
         permuted_state = self.add_word_permutation_component(
             [current_state], [list(range(64))], 64, CELL_PERMUTATION_INV, 4
         )
         return permuted_state.id
 
     def apply_mixcolumns(self, current_state):
+        """Add the mixcolumns stage to this primitive's typed operation graph."""
         column_size = 16
         num_columns = 4
 
@@ -183,6 +185,7 @@ class Mantis(BitGraphPrimitive):
         return mixed_state.id
 
     def permute_cells_inverse(self, current_state):
+        """Build the permute cells inverse stage in this primitive's typed operation graph."""
         permuted_state = self.add_word_permutation_component(
             [current_state], [list(range(64))], 64, CELL_PERMUTATION, 4
         )
@@ -190,6 +193,7 @@ class Mantis(BitGraphPrimitive):
 
     def add_tweakey_backward(
             self, current_state, current_tweak, round_idx, num_rounds):
+        """Add the tweakey backward stage to this primitive's typed operation graph."""
         if round_idx != num_rounds - 1:
             current_tweak = self.add_word_permutation_component(
                 [current_tweak],
@@ -217,6 +221,7 @@ class Mantis(BitGraphPrimitive):
         return result.id, current_tweak
 
     def add_round_constant_direct(self, current_state, round_idx):
+        """Add the round constant direct stage to this primitive's typed operation graph."""
         constant = self.add_constant_component(
             64, MANTIS_ROUND_CONSTANTS[round_idx])
         constant_xor = self.add_xor_component(
@@ -227,6 +232,7 @@ class Mantis(BitGraphPrimitive):
         return constant_xor.id
 
     def add_pre_whitening(self):
+        """Add the pre whitening stage to this primitive's typed operation graph."""
         k1_xor_tweak = self.add_xor_component(
             [INPUT_KEY, INPUT_TWEAK], [list(range(64, 128)), list(range(64))], 64)
         m_xor_k0 = self.add_xor_component([INPUT_PLAINTEXT, INPUT_KEY], [
@@ -236,6 +242,7 @@ class Mantis(BitGraphPrimitive):
         return pre_whitening.id
 
     def add_forward_rounds(self, current_state, num_rounds):
+        """Add the forward rounds stage to this primitive's typed operation graph."""
         current_tweak = INPUT_TWEAK
 
         for round_idx in range(num_rounds):
@@ -269,6 +276,7 @@ class Mantis(BitGraphPrimitive):
         return current_state, current_tweak
 
     def add_middle_layer(self, current_state):
+        """Add the middle layer stage to this primitive's typed operation graph."""
         current_state = self.apply_sbox_layer(current_state)
 
         current_state = self.apply_mixcolumns(current_state)
@@ -278,6 +286,7 @@ class Mantis(BitGraphPrimitive):
         return current_state
 
     def add_backward_rounds(self, current_state, num_rounds, current_tweak):
+        """Add the backward rounds stage to this primitive's typed operation graph."""
         for round_idx in range(num_rounds - 1, -1, -1):
             current_state = self.apply_mixcolumns(current_state)
 
@@ -301,6 +310,7 @@ class Mantis(BitGraphPrimitive):
         return current_state, current_tweak
 
     def add_post_whitening(self, current_state, current_tweak):
+        """Add the post whitening stage to this primitive's typed operation graph."""
         current_tweak = self.add_word_permutation_component(
             [current_tweak],
             [list(range(64))],

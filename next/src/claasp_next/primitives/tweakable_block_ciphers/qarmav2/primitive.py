@@ -44,14 +44,11 @@ class QARMAv2(BitGraphPrimitive):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.block_ciphers.qarmav2_block_cipher import QARMAv2
-        sage: qarmav2 = QARMAv2(number_of_rounds = 4)
-        sage: key = 0x0123456789abcdeffedcba9876543210
-        sage: tweak = 0x7e5c3a18f6d4b2901eb852fc9630da74
-        sage: plaintext = 0x0000000000000000
-        sage: ciphertext = 0x2cc660354929f2ca
-        sage: qarmav2.evaluate([key, plaintext, tweak]) == ciphertext
-        True
+        >>> primitive = QARMAv2()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0xcfbeb4d546c9b062', 64)
     """
 
     def __init__(self, number_of_rounds=10, number_of_layers=1, key_bit_size=128, tweak_bit_size=128):
@@ -173,6 +170,7 @@ class QARMAv2(BitGraphPrimitive):
 
     def key_initialization(self, key_bit_size):
         # Key initialization
+        """Build the key initialization stage in this primitive's typed operation graph."""
         key_0 = [[INPUT_KEY], [list(range(self.key_block_size))]]
         if key_bit_size == 2 * self.key_block_size:
             key_1 = [[INPUT_KEY], [list(range(self.key_block_size, 2 * self.key_block_size))]]
@@ -189,6 +187,7 @@ class QARMAv2(BitGraphPrimitive):
 
     def tweak_initialization(self, tweak_permutation, tweak_bit_size):
         # Tweak initialization
+        """Build the tweak initialization stage in this primitive's typed operation graph."""
         tweak_0 = [[INPUT_TWEAK], [tweak_permutation[1]]]
         for _ in range(1, self.nrounds - 1):
             perm_tweak = [tweak_0[1][0][i] for i in tweak_permutation[1]]
@@ -203,6 +202,7 @@ class QARMAv2(BitGraphPrimitive):
 
     def constants_initialization(self):
         # Round constants initialization
+        """Build the constants initialization stage in this primitive's typed operation graph."""
         round_constant = [self.add_constant_component(self.layer_block_size, 0).id]
         if self.number_of_layers == 2:
             round_constant.append(self.add_constant_component(self.layer_block_size, 0).id)
@@ -222,6 +222,7 @@ class QARMAv2(BitGraphPrimitive):
 
     def first_round_start(self, key_state):
         # First round different from others
+        """Build the first round start stage in this primitive's typed operation graph."""
         id_links = [key_state[0][0] + [INPUT_PLAINTEXT]]
         bit_positions = [[key_state[0][1][0], list(range(64 * self.number_of_layers))[::-1]]]
         masked_state = self.state_masking(id_links, bit_positions)
@@ -234,6 +235,7 @@ class QARMAv2(BitGraphPrimitive):
 
     def direct_round(self, state, key_state, tweak_state, tweak_permutation, constants_states, round_number):
         # Direct encryption
+        """Build the direct round stage in this primitive's typed operation graph."""
         if round_number != 1:
             if len(key_state[round_number % 2][0]) == 1:
                 id_links = [
@@ -388,6 +390,7 @@ class QARMAv2(BitGraphPrimitive):
 
     def reflector(self, state, key_state):
         # Reflector
+        """Build the reflector stage in this primitive's typed operation graph."""
         new_keys = self.o_function(key_state)
         key_state = new_keys
         W = self.o_function(new_keys)
@@ -431,6 +434,7 @@ class QARMAv2(BitGraphPrimitive):
 
     def inverse_round(self, state, key_state, tweak_state, tweak_permutation, constants_states, round_number):
         # Inverse encryption
+        """Build the inverse round stage in this primitive's typed operation graph."""
         if self.number_of_layers == 2 and (self.nrounds - round_number) % 2 == 0:
             exchanging_rows = self.exchange_rows_shuffle
         else:
@@ -508,6 +512,7 @@ class QARMAv2(BitGraphPrimitive):
 
     def last_round_end(self, state, key_state):
         # Last round different from others
+        """Build the last round end stage in this primitive's typed operation graph."""
         id_links = [[state[i]] for i in range(self.num_sboxes)]
         bit_positions = [[list(range(4))] for _ in range(self.num_sboxes)]
         sboxed_state = self.state_sboxing(id_links, bit_positions, self.inverse_sbox)
@@ -531,6 +536,7 @@ class QARMAv2(BitGraphPrimitive):
     # -------------------------------------TOTALS-------------------------------------#
 
     def state_masking(self, id_links, bit_positions):
+        """Build the state masking stage in this primitive's typed operation graph."""
         masked_state = []
         for id_link, bit_position in zip(id_links, bit_positions):
             masked_state.append(self.add_xor_component(id_link, bit_position, len(bit_position[0])).id)
@@ -538,6 +544,7 @@ class QARMAv2(BitGraphPrimitive):
         return masked_state
 
     def state_sboxing(self, id_links, bit_positions, sbox):
+        """Build the state sboxing stage in this primitive's typed operation graph."""
         sboxed_state = []
         for id_link, bit_position in zip(id_links, bit_positions):
             sboxed_state.append(self.add_sbox_component(id_link, bit_position, self.word_size, sbox).id)
@@ -545,11 +552,13 @@ class QARMAv2(BitGraphPrimitive):
         return sboxed_state
 
     def tweak_update(self, bit_positions, tweak_shuffle):  # direct encryption
+        """Build the tweak update stage in this primitive's typed operation graph."""
         perm_tweak = [bit_positions[i] for i in tweak_shuffle]
 
         return perm_tweak
 
     def state_rotation(self, id_links):
+        """Build the state rotation stage in this primitive's typed operation graph."""
         round_state_rotate = []
         for l in range(self.number_of_layers):
             for col in range(4):
@@ -562,6 +571,7 @@ class QARMAv2(BitGraphPrimitive):
         return round_state_rotate
 
     def key_update(self, key_state):
+        """Build the key update stage in this primitive's typed operation graph."""
         alpha, beta = self.constants_update()
 
         if self.number_of_layers == 2:
@@ -610,6 +620,7 @@ class QARMAv2(BitGraphPrimitive):
         return key_state
 
     def constants_update(self):
+        """Build the constants update stage in this primitive's typed operation graph."""
         alpha_0 = self.add_constant_component(self.layer_block_size, 0x13198A2E03707344).id
         alpha = [alpha_0]
         if self.number_of_layers == 2:
@@ -626,6 +637,7 @@ class QARMAv2(BitGraphPrimitive):
     # --------------------------------------------------------------------------------#
 
     def update_single_constant(self, constant):
+        """Build the update single constant transition in this primitive's typed operation graph."""
         spill = self.add_shift_component(
             [constant], [list(range(self.layer_block_size))], self.layer_block_size, 51
         )
@@ -669,6 +681,7 @@ class QARMAv2(BitGraphPrimitive):
         return tmp.id
 
     def o_function(self, key):
+        """Build the o function stage in this primitive's typed operation graph."""
         key_rot_0 = self.add_rotate_component(key[0][0], key[0][1], self.key_block_size, 1)
         key_shift_0 = self.add_shift_component(key[0][0], key[0][1], self.key_block_size, self.key_block_size - 1)
         key_1 = [
@@ -701,6 +714,7 @@ class QARMAv2(BitGraphPrimitive):
         return key_new
 
     def M_function(self, input_ids, input_pos):
+        """Build the M function stage in this primitive's typed operation graph."""
         output = []
         for c in range(4):
             output.append(
@@ -713,6 +727,7 @@ class QARMAv2(BitGraphPrimitive):
         return output
 
     def majority_function(self, key):
+        """Build the majority function stage in this primitive's typed operation graph."""
         maj_key_size = self.key_block_size / 2
         and_0_1 = self.add_and_component(
             [key, key],

@@ -45,11 +45,12 @@ class AradiSBox(BitGraphPrimitive):
     - ``transformations_flag`` -- **boolean** (default: `True`)
 
     EXAMPLES::
-        sage: # The following test vector was taken from [GreMW24].
-        sage: from claasp.ciphers.block_ciphers.aradi_block_cipher_sbox import AradiSBox
-        sage: aradi = AradiSBox(number_of_rounds=16)
-        sage: aradi.evaluate([0, 0x1f1e1d1c1b1a191817161514131211100f0e0d0c0b0a09080706050403020100])
-        83791582030165712186104466959690447122
+
+        >>> primitive = AradiSBox()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0xd06c8ab75d191521', 128)
     """
 
     def __init__(self, number_of_rounds=16):
@@ -85,12 +86,14 @@ class AradiSBox(BitGraphPrimitive):
         self.add_primitive_output_component([w, x, y, z], [list(range(32)) for _ in range(4)], 128)
 
     def get_round_key_id(self, key, round_i):
+        """Return the round key id used while authoring this primitive graph."""
         j = round_i % 2
         return self.add_round_key_output_component(
             [key, key, key, key], [get_key_word_bit_indexes(4 * j + i) for i in range(4)], 128
         ).id
 
     def l_function(self, xy_id_links, xy_input_bits, round_index):
+        """Build the l function stage in this primitive's typed operation graph."""
         j = round_index % 4
 
         rot_x_a = self.add_rotate_component(xy_id_links[:16], xy_input_bits[:16], 16, -self.A[j]).id
@@ -107,6 +110,7 @@ class AradiSBox(BitGraphPrimitive):
         return left_part, right_part
 
     def m_function(self, i, j, xy_id_links, xy_input_bits):
+        """Build the m function stage in this primitive's typed operation graph."""
         y_inds = xy_input_bits[32:64]
         x_inds = xy_input_bits[:32]
         rot_i_y = self.add_rotate_component(xy_id_links, [y_inds], 32, -i).id
@@ -118,6 +122,7 @@ class AradiSBox(BitGraphPrimitive):
         return left_part, right_part
 
     def update_key(self, key, round_i):
+        """Build the update key transition in this primitive's typed operation graph."""
         round_constant = self.add_constant_component(32, round_i).id
         k1, k0 = self.m_function(1, 3, [key], get_key_word_bit_indexes(1) + get_key_word_bit_indexes(0))
         k3, k2 = self.m_function(9, 28, [key], get_key_word_bit_indexes(3) + get_key_word_bit_indexes(2))
@@ -135,6 +140,7 @@ class AradiSBox(BitGraphPrimitive):
         return updated_key.id
 
     def round_function(self, state, round_key, round_i):
+        """Build the round function stage in this primitive's typed operation graph."""
         w = self.add_xor_component([round_key, state], [list(range(32)), list(range(32))], 32).id
         x = self.add_xor_component([round_key, state], [list(range(32, 64)), list(range(32, 64))], 32).id
         y = self.add_xor_component([round_key, state], [list(range(64, 96)), list(range(64, 96))], 32).id

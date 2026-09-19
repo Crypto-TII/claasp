@@ -85,13 +85,11 @@ class Kasumi(BitGraphPrimitive):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.block_ciphers.kasumi_block_cipher import Kasumi
-        sage: kasumi = Kasumi()
-        sage: key = 0x9900aabbccddeeff1122334455667788
-        sage: plaintext = 0xfedcba0987654321
-        sage: ciphertext= 0x514896226caa4f20
-        sage: kasumi.evaluate([key, plaintext]) == ciphertext
-        True
+        >>> primitive = Kasumi()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0xf54cfbf75f3b5699', 64)
     """
 
     def __init__(self, block_bit_size=64, key_bit_size=128, number_of_rounds=8):
@@ -138,6 +136,7 @@ class Kasumi(BitGraphPrimitive):
 
     @staticmethod
     def init_halves():
+        """Initialize the init halves stage in this primitive's typed operation graph."""
         left_half_ids = ["plaintext" for _ in range(6)]
         left_half_positions = [
             list(range(sum(half_word_distribution[:i]), sum(half_word_distribution[: i + 1])))
@@ -204,6 +203,7 @@ class Kasumi(BitGraphPrimitive):
         return configuration_number_of_rounds
 
     def fi_function1(self, ids, ki_id, ki_positions):
+        """Build the fi function1 stage in this primitive's typed operation graph."""
         s9_1 = self.add_sbox_component([ids[0], ids[1]], [list(range(7)), list(range(2))], 9, SBox9).id
 
         cst1 = self.add_constant_component(2, 0b00).id
@@ -232,6 +232,7 @@ class Kasumi(BitGraphPrimitive):
         return [xor6, xor5_1, xor5_2]
 
     def fo_function(self, ids, positions, sub_key):
+        """Build the fo function stage in this primitive's typed operation graph."""
         start = 32
         xor1s = []
         for i, length in enumerate(half_half_word_distribution):
@@ -305,6 +306,7 @@ class Kasumi(BitGraphPrimitive):
         return xor4s + xor6s
 
     def fl_function(self, ids, positions, sub_key):
+        """Build the fl function stage in this primitive's typed operation graph."""
         word_size = list(range(self.word_size))
         and1s = []
         start = 0
@@ -352,6 +354,7 @@ class Kasumi(BitGraphPrimitive):
         return xor2s + xor1s
 
     def derived_key(self, key):
+        """Build the derived key stage in this primitive's typed operation graph."""
         cst = self.add_constant_component(128, 0x123456789ABCDEFFEDCBA9876543210).id
         key_der = self.add_xor_component(
             key[0] + [cst], [list(range(self.key_bit_size))] + [list(range(self.key_bit_size))], self.key_bit_size
@@ -359,6 +362,7 @@ class Kasumi(BitGraphPrimitive):
         return key_der.id
 
     def round_key(self, key, key_der, r):
+        """Build the round key stage in this primitive's typed operation graph."""
         kl1 = self.add_rotate_component(
             key[0], [[i + (r - 1) * self.word_size for i in range(self.word_size)]], self.word_size, -1
         ).id

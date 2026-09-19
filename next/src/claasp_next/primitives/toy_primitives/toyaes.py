@@ -42,7 +42,16 @@ def _concat(primitive, items, component_id=None):
 
 
 class ToyAES(Primitive):
-    """AES-shaped family over 2-, 3-, 4-, or 8-bit binary fields."""
+    """AES-shaped family over 2-, 3-, 4-, or 8-bit binary fields.
+
+    EXAMPLES::
+
+        >>> primitive = ToyAES()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0x66e94bd4ef8a2c3b', 127)
+    """
 
     def __init__(self, number_of_rounds: int = 10, word_size: int = 8, state_size: int = 4) -> None:
         if word_size not in SBOXES:

@@ -6,7 +6,16 @@ from ._bit_graph import bit_type, rotate_bits, sbox_layer, xor_bits
 
 
 class ToySPN1(Primitive):
-    """A repeated-key SPN with configurable S-box and bit rotation."""
+    """A repeated-key SPN with configurable S-box and bit rotation.
+
+    EXAMPLES::
+
+        >>> primitive = ToySPN1()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0x0', 0)
+    """
 
     def __init__(
         self,

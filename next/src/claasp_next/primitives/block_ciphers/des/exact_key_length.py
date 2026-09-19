@@ -35,17 +35,11 @@ class DESExactKeyLength(BitGraphPrimitive):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.block_ciphers.des_exact_key_length_block_cipher import DESExactKeyLength
-        sage: primitive = DESExactKeyLength()
-        sage: primitive.print_as_python_dictionary_to_file("claasp/primitives/"+primitive.file_name) # doctest: +SKIP
-
-        sage: from claasp.ciphers.block_ciphers.des_exact_key_length_block_cipher import DESExactKeyLength
-        sage: des_primitive = DESExactKeyLength()
-        sage: key = 0x12695BC9B7B7F8
-        sage: plaintext = 0x0123456789ABCDEF
-        sage: ciphertext = 0x85E813540F0AB405
-        sage: des_primitive.evaluate([key, plaintext]) == ciphertext
-        True
+        >>> primitive = DESExactKeyLength()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0x8ca64de9c1b123a7', 64)
     """
 
     def __init__(self, number_of_rounds=16, number_of_sboxes=8):

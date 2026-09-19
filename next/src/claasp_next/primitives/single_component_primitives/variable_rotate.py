@@ -20,6 +20,15 @@ class VariableRotate(Primitive):
     >>> rotate = VariableRotate(bit_size=32, amount_bit_size=5, direction="left")
     >>> hex(rotate.evaluate(0x80000001, 1))
     '0x3'
+
+
+    EXAMPLES::
+
+        >>> primitive = VariableRotate()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0x0', 0)
     """
 
     def __init__(

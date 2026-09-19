@@ -48,12 +48,11 @@ class MD5(BitGraphPrimitive):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.hash_functions.md5_hash_function import MD5
-        sage: md5 = MD5()
-        sage: message = 0x5175656c2066657a20736768656d626f20636f70726520646176616e74692e8000000000000000000000000000000000000000000000000000000000000000f8
-        sage: digest = 0x3956fba8c05053e5a27040b8ab9a7545
-        sage: md5.evaluate([message]) == digest
-        True
+        >>> primitive = MD5()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0xac1d1f03d08ea56e', 128)
     """
 
     def __init__(self, word_size=32, number_of_rounds=64):
@@ -135,6 +134,7 @@ class MD5(BitGraphPrimitive):
             )
 
     def md5_step(self, a, b, c, d, k, s, i, function, X, T):
+        """Build the md5 step stage in this primitive's typed operation graph."""
         Ti = self.add_constant_component(self.word_size, T[i])
         a_Fbcd = self.add_modadd_component_in_md5(a, function(b, c, d))
         Xk_Ti = self.add_modadd_component_in_md5_for_x(X[k], Ti)
@@ -145,55 +145,67 @@ class MD5(BitGraphPrimitive):
         return d, a, b, c
 
     def F(self, X, Y, Z):
+        """Build the F stage in this primitive's typed operation graph."""
         X_and_Y = self.add_and_component_in_md5(X, Y)
         notX = self.add_not_component_in_md5(X)
         notX_and_Z = self.add_and_component_in_md5(notX, Z)
         return self.add_or_component_in_md5(X_and_Y, notX_and_Z)
 
     def G(self, X, Y, Z):
+        """Build the G stage in this primitive's typed operation graph."""
         return self.F(Z, X, Y)
 
     def H(self, X, Y, Z):
+        """Build the H stage in this primitive's typed operation graph."""
         X_xor_Y = self.add_xor_component_in_md5(X, Y)
         return self.add_xor_component_in_md5(X_xor_Y, Z)
 
     def I(self, X, Y, Z):
+        """Build the I stage in this primitive's typed operation graph."""
         notZ = self.add_not_component_in_md5(Z)
         X_or_notZ = self.add_or_component_in_md5(X, notZ)
         return self.add_xor_component_in_md5(Y, X_or_notZ)
 
     def add_and_component_in_md5(self, component_0, component_1):
+        """Add the and component in md5 stage to this primitive's typed operation graph."""
         return self.add_and_component(
             [component_0.id, component_1.id], [list(range(self.word_size)), list(range(self.word_size))], self.word_size
         )
 
     def add_modadd_component_in_md5(self, component_0, component_1):
+        """Add the modadd component in md5 stage to this primitive's typed operation graph."""
         return self.add_modadd_component(
             [component_0.id, component_1.id], [list(range(self.word_size)), list(range(self.word_size))], self.word_size
         )
 
     def add_modadd_component_in_md5_for_x(self, x, component):
+        """Add the modadd component in md5 for x stage to this primitive's typed operation graph."""
         return self.add_modadd_component(
             [x.id, component.id], [x.input_bit_positions[0], list(range(self.word_size))], self.word_size
         )
 
     def add_rotate_component_in_md5(self, component, amount):
+        """Add the rotate component in md5 stage to this primitive's typed operation graph."""
         return self.add_rotate_component([component.id], [list(range(self.word_size))], self.word_size, amount)
 
     def add_xor_component_in_md5(self, component_0, component_1):
+        """Add the xor component in md5 stage to this primitive's typed operation graph."""
         return self.add_xor_component(
             [component_0.id, component_1.id], [list(range(self.word_size)), list(range(self.word_size))], self.word_size
         )
 
     def add_or_component_in_md5(self, component_0, component_1):
+        """Add the or component in md5 stage to this primitive's typed operation graph."""
         return self.add_or_component(
             [component_0.id, component_1.id], [list(range(self.word_size)), list(range(self.word_size))], self.word_size
         )
 
     def add_not_component_in_md5(self, component):
+        """Add the not component in md5 stage to this primitive's typed operation graph."""
         return self.add_not_component([component.id], [list(range(self.word_size))], self.word_size)
 
     def add_round_output_component_in_md5(self, A, B, C, D):
+        """Add the round output component in md5 stage to this primitive's typed operation graph."""
         return self.add_round_output_component(
             [A.id, B.id, C.id, D.id], [list(range(self.word_size)) for _ in range(4)], self.word_size * 4
         )

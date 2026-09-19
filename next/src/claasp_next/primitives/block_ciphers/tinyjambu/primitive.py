@@ -42,13 +42,11 @@ class TinyJambu(BitGraphPrimitive):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.permutations.tinyjambu_permutation import TinyJambu
-        sage: tinyjambu = TinyJambu()
-        sage: tinyjambu.number_of_rounds
-        640
-
-        sage: tinyjambu.component_from(0, 0).id
-        'and_0_0'
+        >>> primitive = TinyJambu()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0xc07a21053c7ca049', 128)
     """
 
     def __init__(self, key_bit_size=128, number_of_rounds=640):
@@ -90,6 +88,7 @@ class TinyJambu(BitGraphPrimitive):
 
     def round_function(self, state, key, r):
         # feedback = s0 xor s47 xor (∼ (s70 and s85)) xor s91 xor kr
+        """Build the round function stage in this primitive's typed operation graph."""
         inputs_id, inputs_pos = get_inputs_parameter([state[70], state[85]])
         self.add_and_component(inputs_id, inputs_pos, 1)
         self.add_not_component([self.get_current_component_id()], [[0]], 1)

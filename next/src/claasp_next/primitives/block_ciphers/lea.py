@@ -12,7 +12,16 @@ KEY_ROTATIONS = (-1, -3, -6, -11, -13, -17)
 
 
 class LEA(Primitive):
-    """LEA-128 with 128-, 192-, or 256-bit keys."""
+    """LEA-128 with 128-, 192-, or 256-bit keys.
+
+    EXAMPLES::
+
+        >>> primitive = LEA()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0x5b4b51fd73ec9ed9', 127)
+    """
 
     def __init__(self, block_bit_size=128, key_bit_size=192, number_of_rounds=None,
                  reorder_input_and_output=True):

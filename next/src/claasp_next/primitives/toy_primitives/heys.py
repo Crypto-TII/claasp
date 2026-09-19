@@ -10,7 +10,16 @@ HEYS_PERMUTATION = (0, 4, 8, 12, 1, 5, 9, 13, 2, 6, 10, 14, 3, 7, 11, 15)
 
 
 class Heys(Primitive):
-    """The SPN from Heys' linear and differential cryptanalysis tutorial."""
+    """The SPN from Heys' linear and differential cryptanalysis tutorial.
+
+    EXAMPLES::
+
+        >>> primitive = Heys()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0xe0bb', 16)
+    """
 
     def __init__(self, block_bit_size: int = 16, key_bit_size: int = 80, number_of_rounds: int = 4) -> None:
         if block_bit_size != 16:

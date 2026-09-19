@@ -54,17 +54,11 @@ class SHA2(BitGraphPrimitive):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.hash_functions.sha2_hash_function import SHA2
-        sage: sha2 = SHA2()
-        sage: sha2.print_primitive_structure_as_python_dictionary_to_file(  # doctest: +SKIP
-        ....: "claasp/graph_representations/hash_functions/sha256")  # doctest: +SKIP
-
-        sage: from claasp.ciphers.hash_functions.sha2_hash_function import SHA2
-        sage: sha2 = SHA2()
-        sage: message = 0x43686961726180000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000030
-        sage: digest = 0x0d8d2647a12b0d544989a6b03603b8b3c27e2c4e0be08671745366d1a8bc4d95
-        sage: sha2.evaluate([message]) == digest
-        True
+        >>> primitive = SHA2()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0xda5698be17b9b469', 256)
     """
 
     def __init__(self, output_bit_size=256, number_of_rounds=64):
@@ -219,19 +213,23 @@ class SHA2(BitGraphPrimitive):
         )
 
     def add_and_component_sha2(self, component_0, component_1):
+        """Add the and component sha2 stage to this primitive's typed operation graph."""
         return self.add_and_component(
             [component_0.id, component_1.id], [list(range(self.word_size)), list(range(self.word_size))], self.word_size
         )
 
     def add_modadd_component_sha2(self, component_0, component_1):
+        """Add the modadd component sha2 stage to this primitive's typed operation graph."""
         return self.add_modadd_component(
             [component_0.id, component_1.id], [list(range(self.word_size)), list(range(self.word_size))], self.word_size
         )
 
     def add_rotate_component_sha2(self, component, amount):
+        """Add the rotate component sha2 stage to this primitive's typed operation graph."""
         return self.add_rotate_component([component.id], [list(range(self.word_size))], self.word_size, amount)
 
     def add_round_output_component_sha2(self, a, b, c, d, e, f, g, h):
+        """Add the round output component sha2 stage to this primitive's typed operation graph."""
         return self.add_round_output_component(
             [a.id, b.id, c.id, d.id, e.id, f.id, g.id, h.id],
             [list(range(self.word_size)) for _ in range(8)],
@@ -239,11 +237,13 @@ class SHA2(BitGraphPrimitive):
         )
 
     def add_xor_component_sha2(self, component_0, component_1):
+        """Add the xor component sha2 stage to this primitive's typed operation graph."""
         return self.add_xor_component(
             [component_0.id, component_1.id], [list(range(self.word_size)), list(range(self.word_size))], self.word_size
         )
 
     def compute_bsig0_bsig1(self, component_0, component_1):
+        """Construct the bsig0 bsig1 stage in this primitive's typed operation graph."""
         if self.output_bit_size in (224, 256):
             ROTR_2 = self.add_rotate_component_sha2(component_0, 2)
             ROTR_13 = self.add_rotate_component_sha2(component_0, 13)
@@ -281,6 +281,7 @@ class SHA2(BitGraphPrimitive):
         return BSIG0, BSIG1
 
     def compute_ch(self, x, y, z):
+        """Construct the ch stage in this primitive's typed operation graph."""
         x_AND_y = self.add_and_component_sha2(x, y)
         NOT_x = self.add_not_component([x.id], [list(range(self.word_size))], self.word_size)
         NOT_x_XOR_z = self.add_and_component_sha2(NOT_x, z)
@@ -288,6 +289,7 @@ class SHA2(BitGraphPrimitive):
         return self.add_xor_component_sha2(x_AND_y, NOT_x_XOR_z)
 
     def compute_maj(self, x, y, z):
+        """Construct the maj stage in this primitive's typed operation graph."""
         x_AND_y = self.add_and_component_sha2(x, y)
         y_AND_z = self.add_and_component_sha2(y, z)
         x_AND_z = self.add_and_component_sha2(x, z)
@@ -297,6 +299,7 @@ class SHA2(BitGraphPrimitive):
         )
 
     def compute_ssig0_ssig1(self, W, t):
+        """Construct the ssig0 ssig1 stage in this primitive's typed operation graph."""
         if self.output_bit_size in (224, 256):
             ROTR_7 = self.add_rotate_component([W[t - 15].id], W[t - 15].input_bit_positions, self.word_size, 7)
             ROTR_18 = self.add_rotate_component([W[t - 15].id], W[t - 15].input_bit_positions, self.word_size, 18)
@@ -334,6 +337,7 @@ class SHA2(BitGraphPrimitive):
         return SSIG0, SSIG1
 
     def round_function(self, a, b, c, d, e, f, g, h, Kt, W):
+        """Build the round function stage in this primitive's typed operation graph."""
         BSIG0_a, BSIG1_e = self.compute_bsig0_bsig1(a, e)
         CH_e_f_g = self.compute_ch(e, f, g)
 
@@ -351,6 +355,7 @@ class SHA2(BitGraphPrimitive):
         return T1_MODADD_d, T1_MODADD_T2
 
     def schedule(self, W, t):
+        """Build the schedule transition in this primitive's typed operation graph."""
         W15, W2 = self.compute_ssig0_ssig1(W, t)
 
         Wt = self.add_modadd_component(

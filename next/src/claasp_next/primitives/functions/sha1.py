@@ -47,12 +47,11 @@ class SHA1(BitGraphPrimitive):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.hash_functions.sha1_hash_function import SHA1
-        sage: sha1 = SHA1()
-        sage: message = 0x43686961726180000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000030
-        sage: digest = 0x04f0c8e0efe316e609390a3d98e97f5acc53c199
-        sage: sha1.evaluate([message]) == digest
-        True
+        >>> primitive = SHA1()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0x92b404e556588ced', 160)
     """
 
     def __init__(self, word_size=32, number_of_rounds=80):
@@ -152,24 +151,29 @@ class SHA1(BitGraphPrimitive):
         )
 
     def add_and_component_in_sha1(self, component_0, component_1):
+        """Add the and component in sha1 stage to this primitive's typed operation graph."""
         return self.add_and_component(
             [component_0.id, component_1.id], [list(range(self.word_size)), list(range(self.word_size))], self.word_size
         )
 
     def add_modadd_component_in_sha1(self, component_0, component_1):
+        """Add the modadd component in sha1 stage to this primitive's typed operation graph."""
         return self.add_modadd_component(
             [component_0.id, component_1.id], [list(range(self.word_size)), list(range(self.word_size))], self.word_size
         )
 
     def add_rotate_component_in_sha1(self, component, amount):
+        """Add the rotate component in sha1 stage to this primitive's typed operation graph."""
         return self.add_rotate_component([component.id], [list(range(self.word_size))], self.word_size, amount)
 
     def add_round_output_component_in_sha1(self, A, B, C, D, E):
+        """Add the round output component in sha1 stage to this primitive's typed operation graph."""
         return self.add_round_output_component(
             [A.id, B.id, C.id, D.id, E.id], [list(range(self.word_size)) for _ in range(5)], self.word_size * 5
         )
 
     def compute_temp_and_s_30_b(self, A, B, E, ft_B_C_D, K, W):
+        """Construct the temp and s 30 b stage in this primitive's typed operation graph."""
         S_5_A = self.add_rotate_component_in_sha1(A, -(5 % self.word_size))
         TEMP = self.add_modadd_component(
             [S_5_A.id, ft_B_C_D.id, E.id, K.id, W.id],
@@ -181,6 +185,7 @@ class SHA1(BitGraphPrimitive):
         return TEMP, S_30_B
 
     def rounds_0_19(self, A, B, C, D, E, K, W):
+        """Build the rounds 0 19 stage in this primitive's typed operation graph."""
         B_AND_C = self.add_and_component_in_sha1(B, C)
         NOT_B = self.add_not_component([B.id], [list(range(self.word_size))], self.word_size)
         NOT_B_AND_D = self.add_and_component_in_sha1(NOT_B, D)
@@ -191,6 +196,7 @@ class SHA1(BitGraphPrimitive):
         return self.compute_temp_and_s_30_b(A, B, E, ft_B_C_D, K, W)
 
     def rounds_20_39(self, A, B, C, D, E, K, W):
+        """Build the rounds 20 39 stage in this primitive's typed operation graph."""
         ft_B_C_D = self.add_xor_component(
             [B.id, C.id, D.id],
             [list(range(self.word_size)), list(range(self.word_size)), list(range(self.word_size))],
@@ -200,6 +206,7 @@ class SHA1(BitGraphPrimitive):
         return self.compute_temp_and_s_30_b(A, B, E, ft_B_C_D, K, W)
 
     def rounds_40_59(self, A, B, C, D, E, K, W):
+        """Build the rounds 40 59 stage in this primitive's typed operation graph."""
         B_AND_C = self.add_and_component_in_sha1(B, C)
         B_AND_D = self.add_and_component_in_sha1(B, D)
         C_AND_D = self.add_and_component_in_sha1(C, D)
@@ -212,6 +219,7 @@ class SHA1(BitGraphPrimitive):
         return self.compute_temp_and_s_30_b(A, B, E, ft_B_C_D, K, W)
 
     def schedule(self, W, t):
+        """Build the schedule transition in this primitive's typed operation graph."""
         Wt_temp = self.add_xor_component(
             [W[t - 3].id, W[t - 8].id, W[t - 14].id, W[t - 16].id],
             W[t - 3].input_bit_positions

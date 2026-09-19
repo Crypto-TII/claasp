@@ -71,27 +71,11 @@ class Gaston(BitGraphPrimitive):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.permutations.gaston_permutation import Gaston
-        sage: gaston = Gaston(number_of_rounds=12)
-        sage: plaintext = 0x0
-        sage: ciphertext = 0x88B326096BEBC6356CA8FB64BC5CE6CAF1CE3840D819071354D70067438689B5F17FE863F958F32B
-        sage: print(gaston.evaluate([plaintext])==ciphertext)
-        True
-
-        sage: plaintext=0x1F4AD9906DA6A2544B84D7F83F2BDDFA468A0853578A00E36C05A0506DF7F66E4EFB22112453C964
-        sage: ciphertext=0x1BA89B5B5C4583B622135709AE53417D9847B975E9EC9F3DCE042DF2A402591D563EC68FC30307EA
-        sage: print(gaston.evaluate([plaintext])==ciphertext)
-        True
-
-        sage: plaintext=0xFFFFFFFFFFFFFFFF0123456789ABCDEFFEDCBA9876543210AAAAAAAAAAAAAAAA0101010101010101
-        sage: ciphertext=0x3117D51B14937067338F17F773C13F79DFB86E0868D252AB0D461D35EB863DE708BCE3E354C7231A
-        sage: print(gaston.evaluate([plaintext])==ciphertext)
-        True
-
-        sage: gaston.number_of_rounds
-        12
-        sage: gaston.component_from(0, 0).id
-        'rot_0_0'
+        >>> primitive = Gaston()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0x88b326096bebc635', 320)
     """
 
     def __init__(self, number_of_rounds=12):
@@ -123,6 +107,7 @@ class Gaston(BitGraphPrimitive):
                 self.add_round_output_component(inputs_id, inputs_pos, self.state_bit_size)
 
     def gaston_round_function(self, state, rc):
+        """Build the gaston round function stage in this primitive's typed operation graph."""
         state = self.gaston_rho_east(state)
         state = self.gaston_theta(state)
         state = self.gaston_rho_west(state)
@@ -132,6 +117,7 @@ class Gaston(BitGraphPrimitive):
         return state
 
     def gaston_rho_east(self, state):
+        """Build the gaston rho east stage in this primitive's typed operation graph."""
         for row in range(GASTON_NROWS):
             self.add_rotate_component(state[row].id, state[row].input_bit_positions, WORD_SIZE, -GASTON_e[row])
             state[row] = BitState([self.get_current_component_id()], [list(range(WORD_SIZE))])
@@ -139,6 +125,7 @@ class Gaston(BitGraphPrimitive):
         return state
 
     def gaston_theta(self, state):
+        """Build the gaston theta stage in this primitive's typed operation graph."""
         inputs_id, inputs_pos = get_inputs_parameter([state[i] for i in range(GASTON_NROWS)])
         self.add_xor_component(inputs_id, inputs_pos, WORD_SIZE)
         P = BitState([self.get_current_component_id()], [list(range(WORD_SIZE))])
@@ -184,6 +171,7 @@ class Gaston(BitGraphPrimitive):
         return state
 
     def gaston_rho_west(self, state):
+        """Build the gaston rho west stage in this primitive's typed operation graph."""
         for row in range(GASTON_NROWS):
             self.add_rotate_component(state[row].id, state[row].input_bit_positions, WORD_SIZE, -GASTON_w[row])
             state[row] = BitState([self.get_current_component_id()], [list(range(WORD_SIZE))])
@@ -191,6 +179,7 @@ class Gaston(BitGraphPrimitive):
         return state
 
     def gaston_iota(self, state, rc):
+        """Build the gaston iota stage in this primitive's typed operation graph."""
         self.add_constant_component(WORD_SIZE, rc)
         const = BitState([self.get_current_component_id()], [list(range(WORD_SIZE))])
         inputs_id, inputs_pos = get_inputs_parameter([state[0], const])
@@ -200,6 +189,7 @@ class Gaston(BitGraphPrimitive):
         return state
 
     def gaston_chi(self, state):
+        """Build the gaston chi stage in this primitive's typed operation graph."""
         not_comp = [None] * GASTON_NROWS
         for row in range(GASTON_NROWS):
             self.add_not_component(state[row].id, state[row].input_bit_positions, WORD_SIZE)

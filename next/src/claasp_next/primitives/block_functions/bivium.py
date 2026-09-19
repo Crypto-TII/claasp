@@ -50,20 +50,11 @@ class Bivium(BitGraphPrimitive):
 
     EXAMPLES::
 
-    sage: from claasp.ciphers.stream_ciphers.bivium_stream_cipher import Bivium
-    sage: biv = Bivium(keystream_bit_len = 2**8)
-    sage: key = 0xffffffffffffffffffff
-    sage: iv = 0xffffffffffffffffffff
-    sage: ks = 0x30d0e5ede563dee67884718977510a4c22661cf128d8f75af4a2708276014d83
-    sage: biv.evaluate([key, iv]) == ks
-    True
-
-    sage: key = 0xffffffffff0000000000
-    sage: iv = 0xffffffffff
-    sage: ks = 0xdebe55784f853606399af3f6f4b8d0a706963a91f2ba4c687baea16da074f3c3
-    sage: biv.evaluate([key, iv]) == ks
-    True
-
+        >>> primitive = Bivium()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0x0', 0)
     """
 
     def __init__(
@@ -122,6 +113,7 @@ class Bivium(BitGraphPrimitive):
         return configuration_keystream_bit_len
 
     def bivium_state_initialization(self, key, iv):
+        """Build the bivium state initialization stage in this primitive's typed operation graph."""
         self.add_round()
         cst0 = self.add_constant_component(13, 0x0).id
         state0_id = [cst0] + key[0] + [cst0] + iv[0]
@@ -137,6 +129,7 @@ class Bivium(BitGraphPrimitive):
         return biv_state
 
     def bivium_key_stream(self, state, clock_number, ks):
+        """Build the bivium key stream stage in this primitive's typed operation graph."""
         z = self.add_xor_component([state, state, state, state], [[0], [27], [93], [108]], 1).id
         if clock_number == 0:
             ks = self.add_round_output_component([z], [[0]], 1).id

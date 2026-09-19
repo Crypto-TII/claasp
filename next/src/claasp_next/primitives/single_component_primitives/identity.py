@@ -1,4 +1,4 @@
-"""One-component identity permutation."""
+"""Single-component identity-permutation primitive implementation."""
 
 from claasp_next.components import Identity as IdentityComponent
 from claasp_next.domains import Bit
@@ -14,6 +14,15 @@ class Identity(Primitive):
 
     >>> hex(Identity(bit_size=128).evaluate(0x0123456789ABCDEF))
     '0x123456789abcdef'
+
+
+    EXAMPLES::
+
+        >>> primitive = Identity()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0x0', 0)
     """
 
     def __init__(self, bit_size: int = 32) -> None:

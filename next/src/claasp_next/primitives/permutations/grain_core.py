@@ -52,16 +52,11 @@ class GrainCore(BitGraphPrimitive):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.permutations.grain_core_permutation import GrainCore
-        sage: grain_core = GrainCore()
-        sage: grain_core.number_of_rounds
-        160
-
-        sage: grain_core.component_from(0, 0).id
-        'xor_0_0'
-
-        sage: grain_core.print_primitive_structure_as_python_dictionary_to_file(  # doctest: +SKIP
-        ....: "claasp/graph_representations/permutations/" + gc.file_name)  # doctest: +SKIP
+        >>> primitive = GrainCore()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0x0', 0)
     """
 
     def __init__(self, number_of_rounds=None):

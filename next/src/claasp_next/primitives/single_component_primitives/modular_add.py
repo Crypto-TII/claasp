@@ -1,4 +1,4 @@
-"""One-component modular-addition primitive."""
+"""Single-component modular-addition primitive implementation."""
 
 from claasp_next.components import ModularAdd as ModularAddComponent
 from claasp_next.graph import Primitive, PrimitiveKind
@@ -16,6 +16,15 @@ class ModularAdd(Primitive):
     >>> three_way = ModularAdd(word_bit_size=8, number_of_inputs=3)
     >>> three_way.evaluate(200, 100, 10)
     54
+
+
+    EXAMPLES::
+
+        >>> primitive = ModularAdd()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0x0', 0)
     """
 
     def __init__(self, word_bit_size: int = 4, number_of_inputs: int = 2) -> None:

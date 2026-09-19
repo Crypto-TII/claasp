@@ -47,13 +47,11 @@ class SCARF(BitGraphPrimitive):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.block_ciphers.scarf_block_cipher import SCARF
-        sage: scarf = SCARF()
-        sage: scarf.number_of_rounds
-        8
-
-        sage: scarf.component_from(0, 0).id
-        'constant_0_0'
+        >>> primitive = SCARF()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0x0', 0)
     """
 
     def __init__(self, number_of_rounds=8):
@@ -101,6 +99,7 @@ class SCARF(BitGraphPrimitive):
         )
 
     def add_subkey(self, data, Ti, current_round):
+        """Add the subkey stage to this primitive's typed operation graph."""
         if current_round % 2 == 0:
             xor = self.add_xor_component([data.id[0], Ti.id], [[0, 1, 2, 3, 4], [30, 31, 32, 33, 34]], 5)
         else:
@@ -108,6 +107,7 @@ class SCARF(BitGraphPrimitive):
         return xor
 
     def F_function(self, data, Ti, current_round):
+        """Build the F function stage in this primitive's typed operation graph."""
         rot_components = []
         self.create_rot_components(data, rot_components)
         and_components = []
@@ -121,11 +121,13 @@ class SCARF(BitGraphPrimitive):
         return xor_component
 
     def create_rot_components(self, data, rot_components):
+        """Construct the rot components stage in this primitive's typed operation graph."""
         for i in range(5):
             rot = self.add_rotate_component([data.id[0]], [list(range(5))], 5, -i)
             rot_components.append(rot)
 
     def create_and_components(self, rot_components, and_components, Ti, current_round):
+        """Construct the and components stage in this primitive's typed operation graph."""
         for i in range(5):
             if current_round % 2 == 0:
                 l = [list(range(30 + 5 * j, 30 + 5 * j + 5)) for j in range(6)]
@@ -136,6 +138,7 @@ class SCARF(BitGraphPrimitive):
             and_components.append(and_comp)
 
     def tweakey_schedule(self, tweak, key, constant):
+        """Build the tweakey schedule stage in this primitive's typed operation graph."""
         expansion = [list(range(j, j + 4)) for j in range(0, 48, 4)]
         for i in range(0, 24, 2):
             expansion.insert(i, [0])
@@ -172,11 +175,13 @@ class SCARF(BitGraphPrimitive):
         return T1, T2, T3, T4
 
     def create_sbox_components(self, Ti, sboxes_components):
+        """Construct the sbox components stage in this primitive's typed operation graph."""
         for j in range(12):
             sbox = self.add_sbox_component([Ti.id], [list(range(j * 5, (j + 1) * 5))], 5, scarf_sbox)
             sboxes_components.append(sbox)
 
     def create_sigma_components(self, sboxes_components):
+        """Construct the sigma components stage in this primitive's typed operation graph."""
         input_ids = [sbox_component.id for sbox_component in sboxes_components]
         input_bit_pos = [list(range(5)) for _ in range(12)]
         rot6 = self.add_rotate_component(input_ids, input_bit_pos, 60, -6).id

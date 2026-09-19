@@ -18,7 +18,16 @@ DELTA = (
 
 
 class HIGHT(Primitive):
-    """HIGHT with optional whitening transformations and zeroed deltas."""
+    """HIGHT with optional whitening transformations and zeroed deltas.
+
+    EXAMPLES::
+
+        >>> primitive = HIGHT()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0x56a0f08c3c5ecb3c', 63)
+    """
 
     def __init__(self, block_bit_size=64, key_bit_size=128, number_of_rounds=None,
                  sub_keys_zero=False, transformations_flag=True):

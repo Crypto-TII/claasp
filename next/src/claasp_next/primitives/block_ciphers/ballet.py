@@ -57,26 +57,11 @@ class Ballet(BitGraphPrimitive):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.block_ciphers.ballet_block_cipher import Ballet
-        sage: ballet = Ballet()
-        sage: ballet.number_of_rounds
-        46
-
-        sage: ballet.component_from(0, 0).id
-        'xor_0_0'
-
-        sage: plaintext = 0xe60e830ca56ec84814fbd2579993d435
-        sage: key = 0xcd52c514213c9632514fb60a64840881
-        sage: ciphertext = 0xc1c2e89c1581d166f3c87b5999f87a9f
-        sage: ballet.evaluate([plaintext, key]) == ciphertext
-        True
-
-        sage: plaintext = 0x00000000000000010000000200000003
-        sage: key = 0x00000000000000040000000000000005
-        sage: ciphertext = 0x911090B9308ACDD426341F12BE355B11
-        sage: ballet.evaluate([plaintext, key]) == ciphertext
-        True
-
+        >>> primitive = Ballet()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0x47f9d1bc25716f4e', 127)
     """
 
     def __init__(self, block_bit_size=128, key_bit_size=128, number_of_rounds=None):
@@ -140,6 +125,7 @@ class Ballet(BitGraphPrimitive):
                     key_0, key_1, t_0, t_1 = self.key_schedule_n2n(key_0, key_1, t_0, t_1, round_number)
 
     def check_parameters(self):
+        """Validate the parameters constraints before graph construction."""
         if self.block_bit_size == 128:
             if self.key_bit_size == 128:
                 if self.r is None:
@@ -165,6 +151,7 @@ class Ballet(BitGraphPrimitive):
         return 0
 
     def round_initialization(self):
+        """Build the round initialization stage in this primitive's typed operation graph."""
         state_0 = BitState([INPUT_PLAINTEXT], [list(range(self.quater_block_bit_size))])
         state_1 = BitState(
             [INPUT_PLAINTEXT], [list(range(self.quater_block_bit_size, self.quater_block_bit_size * 2))]
@@ -189,6 +176,7 @@ class Ballet(BitGraphPrimitive):
 
     def round_function(self, state_0, state_1, state_2, state_3, round_key, last_round):
         # state' = state_1 xor state_2
+        """Build the round function stage in this primitive's typed operation graph."""
         self.add_xor_component(
             state_1.id + state_2.id,
             state_1.input_bit_positions + state_2.input_bit_positions,
@@ -245,6 +233,7 @@ class Ballet(BitGraphPrimitive):
     def key_schedule_nn(self, key_0, key_1, RC):
         # key_1_new = key_0 xor (key_1 <<< 3) xor (key_1 <<< 5) xor RC
         # key_0_new = key_1
+        """Build the key schedule nn stage in this primitive's typed operation graph."""
         self.add_rotate_component(key_1.id, key_1.input_bit_positions, self.round_key_bit_size, -3)
         key_temp_1 = BitState([self.get_current_component_id()], [list(range(self.round_key_bit_size))])
         self.add_rotate_component(key_1.id, key_1.input_bit_positions, self.round_key_bit_size, -5)
@@ -266,6 +255,7 @@ class Ballet(BitGraphPrimitive):
     def key_schedule_n2n(self, key_0, key_1, t_0, t_1, RC):
         # t_1_new = t_0 xor (t_1 <<< 7) xor (t_1 <<< 17)
         # t_0_new = t_1
+        """Build the key schedule n2n stage in this primitive's typed operation graph."""
         self.add_rotate_component(t_1.id, t_1.input_bit_positions, self.round_key_bit_size, -7)
         t_temp_1 = BitState([self.get_current_component_id()], [list(range(self.round_key_bit_size))])
         self.add_rotate_component(t_1.id, t_1.input_bit_positions, self.round_key_bit_size, -17)

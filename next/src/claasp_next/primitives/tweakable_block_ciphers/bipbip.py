@@ -34,17 +34,14 @@ class BipBip(BitGraphPrimitive):
         - ``number_of_core_round`` -- **integer** (default: `5`); number of the core rounds
         - ``number_of_shell_round_2`` -- **integer** (default: `3`); number of the last shell rounds
 
-        EXAMPLES::
+    EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.bipbip_block_cipher import BipBip
-            sage: bipbip = BipBip()
-            sage: key = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
-            sage: plaintext = 0xffffff
-            sage: tweak = 0xffffffffff
-            sage: ciphertext = 0x7f15bc
-            sage: bipbip.evaluate([plaintext, key, tweak]) == ciphertext
-            True
-        """
+        >>> primitive = BipBip()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0x7eab9b', 23)
+    """
 
     def __init__(
             self,
@@ -114,6 +111,7 @@ class BipBip(BitGraphPrimitive):
         )
 
     def mixing_layer(self, state_id):
+        """Build the mixing layer stage in this primitive's typed operation graph."""
         return self.add_xor_component(
             [state_id, state_id, state_id],
             [
@@ -125,6 +123,7 @@ class BipBip(BitGraphPrimitive):
         )
 
     def core_round(self, state_id, round_key_id):
+        """Build the core round stage in this primitive's typed operation graph."""
         xored = self.add_xor_component(
             [state_id, round_key_id],
             [list(range(24)), list(range(24))],
@@ -167,6 +166,7 @@ class BipBip(BitGraphPrimitive):
         return round_out
 
     def shell_round(self, state_id, round_key_id):
+        """Build the shell round stage in this primitive's typed operation graph."""
         xored = self.add_xor_component(
             [state_id, round_key_id],
             [list(range(24)), list(range(24))],
@@ -200,6 +200,7 @@ class BipBip(BitGraphPrimitive):
         return round_out
 
     def tweak_key_schedule(self):
+        """Build the tweak key schedule stage in this primitive's typed operation graph."""
         k0 = self.compute_k0()
         round_keys = [k0]
 
@@ -264,6 +265,7 @@ class BipBip(BitGraphPrimitive):
         return round_keys
 
     def compute_k0(self):
+        """Construct the k0 stage in this primitive's typed operation graph."""
         indices = [(3 ** (i + 1)) % 256 for i in range(24)]
         return self.add_permutation_component(
             [INPUT_KEY],
@@ -273,6 +275,7 @@ class BipBip(BitGraphPrimitive):
         )
 
     def compute_ki(self, i):
+        """Construct the ki stage in this primitive's typed operation graph."""
         indices = [(53 * i + j) % 256 for j in range(53)]
         return self.add_permutation_component(
             [INPUT_KEY],
@@ -282,6 +285,7 @@ class BipBip(BitGraphPrimitive):
         )
 
     def initialize_tweak_state(self, k1_id):
+        """Initialize the initialize tweak state stage in this primitive's typed operation graph."""
         const_1 = self.add_constant_component(1, 1)
         const_0 = self.add_constant_component(12, 0)
 
@@ -293,6 +297,7 @@ class BipBip(BitGraphPrimitive):
         return tweak_state
 
     def extract(self, state_id, mode=0):
+        """Build the extract stage in this primitive's typed operation graph."""
         if mode != 0 and mode != 1:
             raise ValueError("function E must be of type 0 or 1.")
         indices = [i * 2 + mode for i in range(24)]
@@ -304,6 +309,7 @@ class BipBip(BitGraphPrimitive):
         )
 
     def permutation_4(self, state_id):
+        """Build the permutation 4 stage in this primitive's typed operation graph."""
         indices = [(49 * i) % 53 for i in range(53)]
         return self.add_permutation_component(
             [state_id],
@@ -313,6 +319,7 @@ class BipBip(BitGraphPrimitive):
         )
 
     def permutation_5(self, state_id):
+        """Build the permutation 5 stage in this primitive's typed operation graph."""
         indices = [(29 * i) % 53 for i in range(53)]
         return self.add_permutation_component(
             [state_id],
@@ -322,6 +329,7 @@ class BipBip(BitGraphPrimitive):
         )
 
     def theta_t(self, state_id):
+        """Build the theta t stage in this primitive's typed operation graph."""
         return self.add_xor_component(
             [state_id, state_id, state_id],
             [
@@ -333,6 +341,7 @@ class BipBip(BitGraphPrimitive):
         )
 
     def theta_prime(self, state_id):
+        """Build the theta prime stage in this primitive's typed operation graph."""
         const = self.add_constant_component(1, 0)
         return self.add_xor_component(
             [state_id, state_id, const.id],
@@ -345,6 +354,7 @@ class BipBip(BitGraphPrimitive):
         )
 
     def chi(self, state_id):
+        """Build the chi stage in this primitive's typed operation graph."""
         not_b = self.add_not_component(
             [state_id],
             [[(i+1) % 53 for i in range(53)]],
@@ -366,6 +376,7 @@ class BipBip(BitGraphPrimitive):
         return chi_out
 
     def function_g(self, state_id, prime = False):
+        """Build the function g stage in this primitive's typed operation graph."""
         s1 = self.permutation_4(state_id)
         if prime:
             s2 = self.theta_prime(s1.id)

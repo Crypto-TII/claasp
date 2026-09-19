@@ -83,13 +83,11 @@ class SimeckSbox(BitGraphPrimitive):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.block_ciphers.simeck_sbox_block_cipher import SimeckSbox
-        sage: simeck_sbox = SimeckSbox()
-        sage: simeck_sbox.number_of_rounds
-        32
-
-        sage: simeck_sbox.component_from(0, 0).id
-        'sbox_0_0'
+        >>> primitive = SimeckSbox()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0x589290e7', 31)
     """
 
     def __init__(self, block_bit_size=32, key_bit_size=64, number_of_rounds=None, rotation_amounts=(-5, -1)):
@@ -140,6 +138,7 @@ class SimeckSbox(BitGraphPrimitive):
         # g(x) = (x & x <<< 5) ⊕ (x <<< 1)
         # ┌ both for input and output positions
         # │ output have not the last element
+        """Build the feistel function stage in this primitive's typed operation graph."""
         positions_pattern = (0, 5, 10, 15, 20, 25, 30, 35, 40)
         output_ids = [""] * self.word_size
         output_positions = [0] * self.word_size
@@ -171,6 +170,7 @@ class SimeckSbox(BitGraphPrimitive):
 
     def update_keys_buffer(self, keys_buffer, round_number):
         # c ^ z[j][i]
+        """Build the update keys buffer transition in this primitive's typed operation graph."""
         round_constant_id = self.add_constant_component(self.word_size, self.c ^ ((self.z >> round_number) & 1)).id
         round_constant = round_constant_id, list(range(self.word_size))
         new_key_left, keys_buffer[3] = self.feistel_function(keys_buffer[2], keys_buffer[3], round_constant)

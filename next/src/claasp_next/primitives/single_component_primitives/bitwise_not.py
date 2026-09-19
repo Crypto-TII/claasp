@@ -16,6 +16,15 @@ class BitwiseNot(Primitive):
 
     >>> hex(BitwiseNot(bit_size=32).evaluate(0))
     '0xffffffff'
+
+
+    EXAMPLES::
+
+        >>> primitive = BitwiseNot()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0xf', 4)
     """
 
     def __init__(self, bit_size: int = 4) -> None:

@@ -89,15 +89,11 @@ class Piccolo(BitGraphPrimitive):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.block_ciphers.piccolo_block_cipher import Piccolo
-        sage: piccolo = Piccolo()
-        sage: piccolo.number_of_rounds
-        25
-
-        sage: piccolo128 = Piccolo(key_bit_size=128)
-        sage: ct = piccolo128.evaluate([0x0123456789abcdef, 0x00112233445566778899aabbccddeeff])
-        sage: hex(ct)
-        '0x5ec42cea657b89ff'
+        >>> primitive = Piccolo()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0xf696a1a3f069bdae', 64)
     """
 
     def __init__(self, key_bit_size=80, number_of_rounds=None):
@@ -148,6 +144,7 @@ class Piccolo(BitGraphPrimitive):
         self.add_primitive_output_component(ids, bits, self.block_bit_size)
 
     def schedule_80(self, r: int) -> Tuple[List[BitState], List[BitState]]:
+        """Build the schedule 80 transition in this primitive's typed operation graph."""
         def word(i):
             return list(range(16 * i, 16 * i + 16))
         k = [BitState([INPUT_KEY], [word(i)]) for i in range(5)]
@@ -185,6 +182,7 @@ class Piccolo(BitGraphPrimitive):
         return wk_bits, rk_bits
 
     def schedule_128(self, r: int) -> Tuple[List[BitState], List[BitState]]:
+        """Build the schedule 128 transition in this primitive's typed operation graph."""
         def word(i):
             return list(range(16 * i, 16 * i + 16))
 

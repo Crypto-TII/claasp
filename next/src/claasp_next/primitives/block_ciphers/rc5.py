@@ -20,7 +20,16 @@ def _magic_constants(width):
 
 
 class RC5(Primitive):
-    """RC5-w/r/b for byte-aligned words and keys, including an empty key."""
+    """RC5-w/r/b for byte-aligned words and keys, including an empty key.
+
+    EXAMPLES::
+
+        >>> primitive = RC5()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0xd9dd7e74', 32)
+    """
 
     def __init__(self, number_of_rounds=16, word_size=16, key_size=64):
         if word_size < 8 or word_size % 8:

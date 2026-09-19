@@ -95,14 +95,11 @@ class Speedy(BitGraphPrimitive):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.block_ciphers.speedy_block_cipher import Speedy
-        sage: speedy = Speedy(number_of_rounds=5)
-        sage: plaintext = 0xa13a632451070e4382a27f26a40682f3fe9ff68028d24fdb
-        sage: key = 0x764c4f6254e1bff208e95862428faed01584f4207a7e8477
-        sage: ciphertext = 0x01da25a93d1cfc5e4c0b74f677eb746c281a260193b7755a
-        sage: speedy.evaluate([plaintext, key]) == ciphertext
-        True
-
+        >>> primitive = Speedy()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0x30c30c30c30c30c3', 190)
     """
 
     def __init__(

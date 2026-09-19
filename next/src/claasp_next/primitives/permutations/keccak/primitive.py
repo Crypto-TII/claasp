@@ -80,13 +80,11 @@ class Keccak(BitGraphPrimitive):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.permutations.keccak_permutation import Keccak
-        sage: keccak = Keccak(number_of_rounds=24, word_size=64)
-        sage: keccak.number_of_rounds
-        24
-
-        sage: keccak.component_from(0, 0).id
-        'xor_0_0'
+        >>> primitive = Keccak()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0xf1258f7940e1dde7', 1600)
     """
 
     def __init__(self, number_of_rounds=24, word_size=64):
@@ -119,6 +117,7 @@ class Keccak(BitGraphPrimitive):
             self.add_output_component(number_of_rounds, round_number, states)
 
     def add_output_component(self, number_of_rounds, round_number, states):
+        """Add the output component stage to this primitive's typed operation graph."""
         inputs_id = []
         inputs_pos = []
         for j in range(Y_NUM):
@@ -132,6 +131,7 @@ class Keccak(BitGraphPrimitive):
             self.add_round_output_component(inputs_id, inputs_pos, self.state_bit_size)
 
     def add_round_output_linear(self, states):
+        """Add the round output linear stage to this primitive's typed operation graph."""
         inputs_id = []
         inputs_pos = []
         for j in range(Y_NUM):
@@ -142,6 +142,7 @@ class Keccak(BitGraphPrimitive):
         self.add_intermediate_output_component(inputs_id, inputs_pos, self.state_bit_size, "round_output_linear")
 
     def add_round_output_nonlinear(self, states):
+        """Add the round output nonlinear stage to this primitive's typed operation graph."""
         inputs_id = []
         inputs_pos = []
         for j in range(Y_NUM):
@@ -153,6 +154,7 @@ class Keccak(BitGraphPrimitive):
 
     def chi_definition(self, b, states):
         # A[x,y] = B[x,y] xor ((not B[x+1,y]) and B[x+2,y]), for (x,y) in (range(5), range(5))
+        """Build the chi definition stage in this primitive's typed operation graph."""
         for i in range(X_NUM):
             for j in range(Y_NUM):
                 self.add_not_component(
@@ -174,6 +176,7 @@ class Keccak(BitGraphPrimitive):
         return states
 
     def get_ci(self, i):
+        """Return the ci used while authoring this primitive graph."""
         ci = ROUND_CONST[i]
         ci = ci % (2**self.word_bit_size)
 
@@ -181,6 +184,7 @@ class Keccak(BitGraphPrimitive):
 
     def iota_definition(self, ci, states):
         # create ci constant
+        """Build the iota definition stage in this primitive's typed operation graph."""
         self.add_constant_component(self.word_bit_size, ci)
         c = BitState([self.get_current_component_id()], [list(range(self.word_bit_size))])
         # A[0,0] = A[0,0] xor RC
@@ -193,6 +197,7 @@ class Keccak(BitGraphPrimitive):
 
     def rho_and_pi_definition(self, states):
         # B[y, 2 * x + 3 * y] = rot(A[x, y], rotate_table[x, y]) for (x, y) in (range(5), range(5))
+        """Build the rho and pi definition stage in this primitive's typed operation graph."""
         b = [[{} for _ in range(Y_NUM)] for _ in range(X_NUM)]
         for i in range(X_NUM):
             for j in range(Y_NUM):
@@ -207,6 +212,7 @@ class Keccak(BitGraphPrimitive):
         return b
 
     def round_function(self, states, ci):
+        """Build the round function stage in this primitive's typed operation graph."""
         states = self.theta_definition(states)
         b = self.rho_and_pi_definition(states)
         states = self.chi_definition(b, states)
@@ -214,6 +220,7 @@ class Keccak(BitGraphPrimitive):
         return self.iota_definition(ci, states)
 
     def state_initialization(self):
+        """Build the state initialization stage in this primitive's typed operation graph."""
         states = [[{} for _ in range(Y_NUM)] for _ in range(X_NUM)]
         for i in range(X_NUM):
             for j in range(Y_NUM):
@@ -227,6 +234,7 @@ class Keccak(BitGraphPrimitive):
     def theta_definition(self, states):
         # states = A[x,y], x in range(5), y in range(5)
         # C[x] = Xor (A[x, 0], ..., A[x, 4]) for x in range(5)
+        """Build the theta definition stage in this primitive's typed operation graph."""
         c = []
         for i in range(X_NUM):
             inputs_id = []

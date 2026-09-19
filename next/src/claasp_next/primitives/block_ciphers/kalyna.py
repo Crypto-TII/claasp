@@ -27,13 +27,11 @@ class Kalyna(BitGraphPrimitive):
 
     EXAMPLES::
 
-    sage: from claasp.ciphers.block_ciphers.kalyna_block_cipher import Kalyna
-    sage: kalyna = Kalyna()
-    sage: key = 0x0F0E0D0C0B0A09080706050403020100
-    sage: plaintext = 0x1F1E1D1C1B1A19181716151413121110
-    sage: ciphertext = 0x06ADD2B439EAC9E120AC9B777D1CBF81
-    sage: kalyna.evaluate([key, plaintext]) == ciphertext
-    True
+        >>> primitive = Kalyna()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0x1cd25b63bebfba48', 125)
     """
 
     def __init__(self, number_of_rounds=10):

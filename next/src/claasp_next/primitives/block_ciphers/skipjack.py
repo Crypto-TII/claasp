@@ -58,7 +58,7 @@ SKIPJACK_FTABLE = [
 
 class Skipjack(BitGraphPrimitive):
     """
-        SKIPJACK block primitive.
+        Build the 32-round SKIPJACK block primitive graph.
 
         This implementation follows the NIST specification with an 80-bit key,
         64-bit block and 32 rounds (Rule A / Rule B schedule).
@@ -67,19 +67,13 @@ class Skipjack(BitGraphPrimitive):
         - [NIST1998] SKIPJACK and KEA Algorithm Specifications, Annex III
             https://csrc.nist.gov/csrc/media/projects/cryptographic-algorithm-validation-program/documents/skipjack/skipjack.pdf
 
-        EXAMPLES::
+    EXAMPLES::
 
-                sage: from claasp.ciphers.block_ciphers.skipjack_block_cipher import Skipjack
-                sage: primitive = Skipjack()
-                sage: primitive.id
-                'skipjack_p64_k80_o64_r32'
-                sage: primitive.number_of_rounds
-                32
-
-                sage: key = 0x00998877665544332211
-                sage: plaintext = 0x33221100ddccbbaa
-                sage: hex(Skipjack().evaluate([plaintext, key]))
-                '0x2587cae27a12d300'
+        >>> primitive = Skipjack()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0xaaae8ede6764143d', 64)
     """
 
     def __init__(self, number_of_rounds=32):

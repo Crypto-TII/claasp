@@ -25,6 +25,15 @@ class Multiply(Primitive):
     >>> vector_multiply = Multiply(unit_count=4, number_of_inputs=3)
     >>> f"{vector_multiply.evaluate(0b1111, 0b1100, 0b1010):04b}"
     '1000'
+
+
+    EXAMPLES::
+
+        >>> primitive = Multiply()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0x0', 0)
     """
 
     def __init__(

@@ -45,13 +45,11 @@ class TinyJambuFSRWordBased(BitGraphPrimitive):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.permutations.tinyjambu_fsr_32bits_word_permutation import TinyJambuFSRWordBased
-        sage: tinyjambu = TinyJambuFSRWordBased()
-        sage: tinyjambu.number_of_rounds
-        20
-
-        sage: tinyjambu.component_from(0, 0).id
-        'constant_0_0'
+        >>> primitive = TinyJambuFSRWordBased()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0xc07a21053c7ca049', 128)
     """
 
     def __init__(self, key_bit_size=128, number_of_rounds=640):
@@ -100,6 +98,7 @@ class TinyJambuFSRWordBased(BitGraphPrimitive):
         # polynomial = s0 xor x47 xor (s70*s85 xor 1) xor s91 xor kr
         # = (s0 xor x47 xor s70*s85 xor s91) xor kr xor 1
         # = fsr xor kr xor 1
+        """Build the round function stage in this primitive's typed operation graph."""
         inputs_id, inputs_pos = get_inputs_parameter([state[0], state[1], state[2], state[3]])
         self.add_fsr_component(inputs_id, inputs_pos, STATE_SIZE, [[[STATE_SIZE, FSR_POLYNOMIAL, []]], 1, FSR_LOOPS])
         fsr_output = BitState([self.get_current_component_id()], [list(range(3 * WORD_SIZE, 4 * WORD_SIZE))])

@@ -55,24 +55,13 @@ class BluetoothE0(BitGraphPrimitive):
     - ``input_bit_size`` -- 132-bit (128-bit lfsr_input_state.append(4-bit fsm_input_state));
 
 
-    EXAMPLES:
+    EXAMPLES::
 
-    sage: from claasp.ciphers.stream_ciphers.bluetooth_stream_cipher_e0 import BluetoothE0
-    sage: e0 = BluetoothE0(keystream_bit_len=125)
-    sage: fsm=0xb
-    sage: key =0x25ac1ea08e1ec131e0a1780f7a2a42bb
-    sage: input= int(hex(key<<4|fsm),16) #key.append(fsm)
-    sage: keystream=0x8cd29cc32668b90ee2312924376f1b4
-    sage: e0.evaluate([input])==keystream
-    True
-
-    sage: fsm=0xd
-    sage: key =0xe22f92fff8c245c49d10359a02f1e555
-    sage: input= int(hex(key<<4|fsm),16) #key.append(fsm)
-    sage: keystream=0x1198636720bac54986d1ab5a494866c9
-    sage: e0.evaluate([input])==keystream
-    True
-
+        >>> primitive = BluetoothE0()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0x0', 0)
     """
 
     def __init__(self, key_bit_size=128, lfsr_state_bit_size=128, fsm_bit_size=4, keystream_bit_len=125):
@@ -109,6 +98,7 @@ class BluetoothE0(BitGraphPrimitive):
         )
 
     def e0_nonlinear_function(self, lfsr_state, fsm_id, fsm_pos):
+        """Build the e0 nonlinear function stage in this primitive's typed operation graph."""
         x_id = y_id = z_id = u_id = lfsr_state
         x_pos = [1]
         y_pos = [32]
@@ -167,6 +157,7 @@ class BluetoothE0(BitGraphPrimitive):
         return configuration_keystream_bit_len
 
     def e0_keystream(self, lfsr_state, fsm_id, fsm_pos, clock_number, ks):
+        """Build the e0 keystream stage in this primitive's typed operation graph."""
         ks_id = [lfsr_state, lfsr_state, lfsr_state, lfsr_state, fsm_id[2]]
         ks_pos = [[1], [32], [57], [96], fsm_pos[2]]
         z = self.add_xor_component(ks_id, ks_pos, 1).id

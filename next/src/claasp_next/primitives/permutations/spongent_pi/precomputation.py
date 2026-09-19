@@ -112,13 +112,11 @@ class SpongentPiPrecomputation(BitGraphPrimitive):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.permutations.spongent_pi_precomputation_permutation import SpongentPiPrecomputation
-        sage: spongentpi = SpongentPiPrecomputation(state_bit_size=160, number_of_rounds=80)
-        sage: spongentpi.number_of_rounds
-        80
-
-        sage: spongentpi.component_from(0, 0).id
-        'constant_0_0'
+        >>> primitive = SpongentPiPrecomputation()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0xcaed745fb9d13ede', 160)
     """
 
     def __init__(self, state_bit_size=160, number_of_rounds=80):
@@ -169,6 +167,7 @@ class SpongentPiPrecomputation(BitGraphPrimitive):
 
     def round_function(self, state, r):
         # state[len-1] = state[len-1] xor 0|icounter
+        """Build the round function stage in this primitive's typed operation graph."""
         self.add_constant_component(SBOX_CELL_SIZE, self.icounter_iv[r])
         icounter = BitState([self.get_current_component_id()], [list(range(SBOX_CELL_SIZE))])
         inputs_id, inputs_pos = get_inputs_parameter([state[self.state_len - 1], icounter])

@@ -55,13 +55,11 @@ class XoodooSbox(BitGraphPrimitive):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.permutations.xoodoo_sbox_permutation import XoodooSbox
-        sage: xoodoo_permutation_sbox = XoodooSbox(number_of_rounds=3)
-        sage: xoodoo_permutation_sbox.number_of_rounds
-        3
-
-        sage: xoodoo_permutation_sbox.component_from(0, 0).id
-        'xor_0_0'
+        >>> primitive = XoodooSbox()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0x89d5d88da963fcbf', 384)
     """
 
     def __init__(self, number_of_rounds=12):
@@ -89,6 +87,7 @@ class XoodooSbox(BitGraphPrimitive):
             self.add_output_component(number_of_rounds, planes, r)
 
     def add_output_component(self, number_of_rounds, planes, r):
+        """Add the output component stage to this primitive's typed operation graph."""
         inputs_id, inputs_pos = calculate_inputs(planes)
         inputs_id, inputs_pos = simplify_inputs(inputs_id, inputs_pos)
         is_last_round = r == number_of_rounds - 1
@@ -98,6 +97,7 @@ class XoodooSbox(BitGraphPrimitive):
             self.add_round_output_component(inputs_id, inputs_pos, self.state_bit_size)
 
     def apply_sbox_to_each_3bit_column(self, planes, planes_new):
+        """Add the sbox to each 3bit column stage to this primitive's typed operation graph."""
         for j in range(LANE_NUM):
             for k in range(LANE_SIZE):
                 inputs_id = []
@@ -114,6 +114,7 @@ class XoodooSbox(BitGraphPrimitive):
         return planes
 
     def chi_definition(self, planes):
+        """Build the chi definition stage in this primitive's typed operation graph."""
         planes_new = create_new_state_for_calculation()
         planes = self.apply_sbox_to_each_3bit_column(planes, planes_new)
 
@@ -121,6 +122,7 @@ class XoodooSbox(BitGraphPrimitive):
 
     def iota_definition(self, ci, planes):
         # create Ci
+        """Build the iota definition stage in this primitive's typed operation graph."""
         self.add_constant_component(LANE_SIZE, ci)
         c = BitState([self.get_current_component_id()], [list(range(LANE_SIZE))])
         # A0,0 = A0,0 + Ci
@@ -132,6 +134,7 @@ class XoodooSbox(BitGraphPrimitive):
 
     def rhoeast_definition(self, planes):
         # Ai = Ai <<< (roheast_rot[i][x], rohwest_rot[i][z])
+        """Build the rhoeast definition stage in this primitive's typed operation graph."""
         for i in range(1, 3):
             planes[i] = self.rotate_x_z(planes[i], RHOEAST_ROT[i]["x"], RHOEAST_ROT[i]["z"])
 
@@ -139,11 +142,13 @@ class XoodooSbox(BitGraphPrimitive):
 
     def rhowest_definition(self, planes):
         # Ai = Ai <<< (rohwest_rot[i][x], rohwest_rot[i][z])
+        """Build the rhowest definition stage in this primitive's typed operation graph."""
         for i in range(1, 3):
             planes[i] = self.rotate_x_z(planes[i], RHOWEST_ROT[i]["x"], RHOWEST_ROT[i]["z"])
 
     def rotate_x_z(self, plane, rotx, rotz):
         # x direction rotation
+        """Build the rotate x z stage in this primitive's typed operation graph."""
         new_plane = BitState(
             [deepcopy(plane.id[(j - rotx) % LANE_NUM]) for j in range(LANE_NUM)],
             [deepcopy(plane.input_bit_positions[(j - rotx) % LANE_NUM]) for j in range(LANE_NUM)],
@@ -163,6 +168,7 @@ class XoodooSbox(BitGraphPrimitive):
         return new_plane
 
     def round_function(self, planes, ci):
+        """Build the round function stage in this primitive's typed operation graph."""
         self.theta_definition(planes)
         self.rhowest_definition(planes)
         self.iota_definition(ci, planes)
@@ -172,6 +178,7 @@ class XoodooSbox(BitGraphPrimitive):
 
     def theta_definition(self, planes):
         # P = A0+A1+A2
+        """Build the theta definition stage in this primitive's typed operation graph."""
         inputs_id, inputs_pos = calculate_inputs(planes)
         inputs_id, inputs_pos = simplify_inputs(inputs_id, inputs_pos)
         self.add_xor_component(inputs_id, inputs_pos, PLANE_SIZE)

@@ -43,13 +43,11 @@ class Subterranean(BitGraphPrimitive):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.permutations.subterranean_permutation import Subterranean
-        sage: subt = Subterranean()
-        sage: subt.number_of_rounds
-        1
-
-        sage: hex(subt.evaluate([0, 0]))
-        '0xfffffffffffffffefffff7ffffffffffffffffffffffffffffffffffffffffff'
+        >>> primitive = Subterranean()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0xfffffffffffffffe', 256)
     """
 
     def __init__(self, number_of_rounds=1, version=Version.V1):

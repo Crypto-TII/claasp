@@ -1,4 +1,4 @@
-"""One-component fixed-rotation permutation."""
+"""Single-component fixed-rotation primitive implementation."""
 
 from claasp_next.components import Rotate as RotateComponent
 from claasp_next.domains import Word
@@ -17,6 +17,15 @@ class Rotate(Primitive):
 
     >>> hex(Rotate(bit_size=32, amount=7, direction="right").evaluate(1))
     '0x2000000'
+
+
+    EXAMPLES::
+
+        >>> primitive = Rotate()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0x0', 0)
     """
 
     def __init__(

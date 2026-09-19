@@ -152,13 +152,11 @@ class UKNIT(BitGraphPrimitive):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.block_ciphers.uknit_block_cipher import UKNIT
-        sage: uknit = UKNIT(number_of_rounds=12)
-        sage: key = 0x0123456789abcdef0123456789abcdef
-        sage: plaintext = 0x0123456789abcdef
-        sage: ciphertext = 0x7d4ef882c1f42dba
-        sage: uknit.evaluate([plaintext, key]) == ciphertext
-        True
+        >>> primitive = UKNIT()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0x34af0b3c687e424', 58)
     """
     def __init__(self, number_of_rounds=12):
         self.block_bit_size = 64

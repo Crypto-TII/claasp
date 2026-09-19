@@ -156,12 +156,22 @@ class AES(Primitive):
 
     @classmethod
     def realize(cls, name: str = "lookup", **parameters) -> "AES":
+        """Resolve this primitive through the registered realization policy."""
         cls.realization_descriptor(name)
         return cls(realization=name, **parameters)
 
 
 class AES128(AES):
-    """Convenience constructor for AES-128."""
+    """Convenience constructor for AES-128.
+
+    EXAMPLES::
+
+        >>> primitive = AES128()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0x66e94bd4ef8a2c3b', 127)
+    """
 
     def __init__(self, number_of_rounds: int = 10, realization: str = "lookup") -> None:
         super().__init__(

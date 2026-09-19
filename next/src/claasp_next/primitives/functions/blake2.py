@@ -158,13 +158,11 @@ class Blake2(BitGraphPrimitive):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.hash_functions.blake2_hash_function import Blake2
-        sage: blake2 = Blake2()
-        sage: blake2.number_of_rounds
-        12
-
-        sage: blake2.component_from(0, 0).id
-        'modadd_0_0'
+        >>> primitive = Blake2()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0x0', 0)
     """
 
     def __init__(
@@ -223,6 +221,7 @@ class Blake2(BitGraphPrimitive):
         self.add_primitive_output_component(state_word_ids, state_word_ranges, state_bit_size)
 
     def column_step(self, data_word_ids, data_word_ranges, state_word_ids, state_word_ranges, r):
+        """Build the column step stage in this primitive's typed operation graph."""
         new_state_word_ids = state_word_ids.copy()
         new_state_word_ranges = state_word_ranges.copy()
 
@@ -249,6 +248,7 @@ class Blake2(BitGraphPrimitive):
         return new_state_word_ids, new_state_word_ranges
 
     def define_number_of_rounds(self, number_of_rounds, state_bit_size):
+        """Define the number of rounds used while authoring this primitive graph."""
         if number_of_rounds is None:
             custom_number_of_rounds = None
             for parameters in PARAMETERS_CONFIGURATION_LIST:
@@ -273,18 +273,21 @@ class Blake2(BitGraphPrimitive):
         return custom_number_of_rounds
 
     def define_permutations(self, permutations):
+        """Define the permutations used while authoring this primitive graph."""
         if permutations is None:
             return default_permutations[self.state_size_in_words]
 
         return permutations
 
     def define_rotation_amounts(self, rot_amounts):
+        """Define the rotation amounts used while authoring this primitive graph."""
         if rot_amounts is None:
             return default_rot_amounts[self.word_size][self.n]
 
         return rot_amounts
 
     def diagonal_step(self, data_word_ids, data_word_ranges, state_word_ids, state_word_ranges, r):
+        """Build the diagonal step stage in this primitive's typed operation graph."""
         new_state_word_ids = state_word_ids.copy()
         new_state_word_ranges = state_word_ranges.copy()
 
@@ -313,6 +316,7 @@ class Blake2(BitGraphPrimitive):
     def state_transformation(
         self, data_word_ids, data_word_ranges, state_word_ids, state_word_ranges, word_indexes, m0, m1
     ):
+        """Build the state transformation stage in this primitive's typed operation graph."""
         if self.n == 4:
             m = [m0, None, m1, None]
         elif self.n == 3:

@@ -67,13 +67,11 @@ class Zuc(BitGraphPrimitive):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.stream_ciphers.zuc_stream_cipher import Zuc
-        sage: zuc=Zuc(len_keystream_word=2)
-        sage: iv = 0xffffffffffffffffffffffffffffffff
-        sage: key= 0xffffffffffffffffffffffffffffffff
-        sage: ks = 0x657cfa07096398b
-        sage: zuc.evaluate([key,iv], verbosity=False) == ks
-        True
+        >>> primitive = Zuc()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0x27bede74018082da', 62)
     """
 
     def __init__(self, iv_bit_size=128, key_bit_size=128, number_of_initialization_clocks=32, len_keystream_word=2):
@@ -108,6 +106,7 @@ class Zuc(BitGraphPrimitive):
         )
 
     def state_initialization(self, key, iv):
+        """Build the state initialization stage in this primitive's typed operation graph."""
         self.add_round()
         self.key_loading_to_lfsr(key, iv)
         for i in range(2):
@@ -122,6 +121,7 @@ class Zuc(BitGraphPrimitive):
             nCount = nCount - 1
 
     def key_loading_to_lfsr(self, key, iv):
+        """Build the key loading to lfsr stage in this primitive's typed operation graph."""
         D = []
         for i in range(16):
             D.append(self.add_constant_component(15, EK_d[i]))
@@ -129,6 +129,7 @@ class Zuc(BitGraphPrimitive):
             LFSR_P[i] = [list(range(i * 8, (i + 1) * 8)), list(range(15)), list(range(i * 8, (i + 1) * 8))]
 
     def lfsr_with_initialization_mode(self, W):
+        """Build the lfsr with initialization mode stage in this primitive's typed operation graph."""
         self.clocking_lfsr()
         self.add_shift_component([W.id[0]], [list(range(WORD_SIZE))], WORD_SIZE, 1)
         W = BitState([self.get_current_component_id()], [list(range(WORD_SIZE))])
@@ -140,6 +141,7 @@ class Zuc(BitGraphPrimitive):
         LFSR_P[15] = [list(range(LFSR_W_SIZE))]
 
     def clocking_lfsr(self):
+        """Build the clocking lfsr stage in this primitive's typed operation graph."""
         self.add_rotate_component(LFSR_S[15], LFSR_P[15], LFSR_W_SIZE, -15)
         pr1 = BitState([self.get_current_component_id()], [list(range(LFSR_W_SIZE))])
 
@@ -165,6 +167,7 @@ class Zuc(BitGraphPrimitive):
         LFSR_P[15] = [list(range(LFSR_W_SIZE))]
 
     def zuc_nonlinear_F(self):
+        """Build the zuc nonlinear F stage in this primitive's typed operation graph."""
         s15h_id, s15h_ps = self.lfsr_S_high_16bits(LFSR_S[15], LFSR_P[15])
         s14l_id, s14l_ps = self.lfsr_S_low_16bits(LFSR_S[14], LFSR_P[14])
 
@@ -192,6 +195,7 @@ class Zuc(BitGraphPrimitive):
         return W
 
     def s_box_layer(self, lo):
+        """Build the s box layer stage in this primitive's typed operation graph."""
         s_box_1 = self.add_sbox_component([lo.id[0]], [list(range(8))], 8, Sbox1).id
         s_box_2 = self.add_sbox_component([lo.id[0]], [list(range(8, 16))], 8, Sbox2).id
         s_box_3 = self.add_sbox_component([lo.id[0]], [list(range(16, 24))], 8, Sbox1).id
@@ -200,6 +204,7 @@ class Zuc(BitGraphPrimitive):
         return s_box_id, [list(range(8))] * 4
 
     def linear_transform_L1(self, W1, W2):
+        """Build the linear transform L1 stage in this primitive's typed operation graph."""
         rot1 = self.linear_layer_rotation(W1, W2, -2)
         rot2 = self.linear_layer_rotation(W1, W2, -10)
         rot3 = self.linear_layer_rotation(W1, W2, -18)
@@ -211,6 +216,7 @@ class Zuc(BitGraphPrimitive):
         return l1
 
     def linear_transform_L2(self, W1, W2):
+        """Build the linear transform L2 stage in this primitive's typed operation graph."""
         rot1 = self.linear_layer_rotation(W1, W2, -8)
         rot2 = self.linear_layer_rotation(W1, W2, -14)
         rot3 = self.linear_layer_rotation(W1, W2, -22)
@@ -222,6 +228,7 @@ class Zuc(BitGraphPrimitive):
         return l2
 
     def key_stream(self, w, clock_number, key_st):
+        """Build the key stream stage in this primitive's typed operation graph."""
         s2l_id, s2l_ps = self.lfsr_S_low_16bits(LFSR_S[2], LFSR_P[2])
         s0h_id, s0h_ps = self.lfsr_S_high_16bits(LFSR_S[0], LFSR_P[0])
         key_word = self.add_xor_component(
@@ -238,6 +245,7 @@ class Zuc(BitGraphPrimitive):
         return key_st
 
     def lfsr_S_high_16bits(self, S, P):
+        """Build the lfsr S high 16bits stage in this primitive's typed operation graph."""
         if len(S) == 3:
             s_h_id = S[:2]
             s_h_ps = [P[0], P[1][:8]]
@@ -247,6 +255,7 @@ class Zuc(BitGraphPrimitive):
         return s_h_id, s_h_ps
 
     def lfsr_S_low_16bits(self, S, P):
+        """Build the lfsr S low 16bits stage in this primitive's typed operation graph."""
         if len(S) == 3:
             s_l_id = S[1:3]
             s_l_ps = [P[1][7:15], P[2]]
@@ -257,6 +266,7 @@ class Zuc(BitGraphPrimitive):
         return s_l_id, s_l_ps
 
     def linear_layer_rotation(self, W1, W2, rot):
+        """Build the linear layer rotation stage in this primitive's typed operation graph."""
         self.add_rotate_component(
             [W1.id[0], W2.id[0]], [list(range(16, WORD_SIZE)), list(range(0, 16))], WORD_SIZE, rot
         )

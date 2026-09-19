@@ -1,4 +1,4 @@
-"""One-component fixed-shift function."""
+"""Single-component fixed-shift primitive implementation."""
 
 from claasp_next.components import Shift as ShiftComponent
 from claasp_next.domains import Word
@@ -17,6 +17,15 @@ class Shift(Primitive):
 
     >>> hex(Shift(bit_size=32, amount=7, direction="left").evaluate(1))
     '0x80'
+
+
+    EXAMPLES::
+
+        >>> primitive = Shift()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0x0', 0)
     """
 
     def __init__(

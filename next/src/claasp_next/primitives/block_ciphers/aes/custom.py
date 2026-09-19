@@ -12,6 +12,15 @@ class CustomAES(Primitive):
 
     This class is intentionally distinct from canonical :class:`AES` and from
     the reduced-size teaching primitive ``ToyAES``.
+
+
+    EXAMPLES::
+
+        >>> primitive = CustomAES()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0x66e94bd4ef8a2c3b', 127)
     """
 
     def __init__(

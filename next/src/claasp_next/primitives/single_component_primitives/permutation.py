@@ -1,4 +1,4 @@
-"""One-component logical-unit permutation."""
+"""Single-component logical-unit permutation primitive implementation."""
 
 from claasp_next.components import Permutation as PermutationComponent
 from claasp_next.domains import Bit, Word
@@ -23,6 +23,15 @@ class Permutation(Primitive):
     '1011'
     >>> hex(reverse_bytes.evaluate(0x01020304))
     '0x4030201'
+
+
+    EXAMPLES::
+
+        >>> primitive = Permutation()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0x0', 0)
     """
 
     def __init__(self, mapping=None, word_size: int = 1) -> None:

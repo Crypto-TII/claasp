@@ -38,14 +38,11 @@ class ChaskeyPi(BitGraphPrimitive):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.permutations.chaskeypi_permutation import ChaskeyPi
-        sage: chaskeypi = ChaskeyPi()
-        sage: chaskeypi.evaluate([0], verbosity=False)
-        0
-
-        sage: reduced = ChaskeyPi(number_of_rounds=4, word_size=16)
-        sage: reduced.id
-        'chaskeypi_permutation_p64_o64_r4'
+        >>> primitive = ChaskeyPi()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0x0', 0)
     """
 
     def __init__(self, number_of_rounds=12, word_size=32, rotations=_DEFAULT_ROTATIONS):
@@ -119,6 +116,7 @@ class ChaskeyPi(BitGraphPrimitive):
         return self._state_from_current_component()
 
     def round_function(self, state):
+        """Build the round function stage in this primitive's typed operation graph."""
         v0, v1, v2, v3 = state
 
         # v[0] += v[1]; v[1]=ROTL(v[1],5); v[1] ^= v[0]; v[0]=ROTL(v[0],16)

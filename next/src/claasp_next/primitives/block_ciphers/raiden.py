@@ -6,7 +6,16 @@ from ._word_graph import add, concatenate, select, shift, subtract, variable_shi
 
 
 class Raiden(Primitive):
-    """Raiden with its data-dependent key update and configurable rounds."""
+    """Raiden with its data-dependent key update and configurable rounds.
+
+    EXAMPLES::
+
+        >>> primitive = Raiden()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0x0', 0)
+    """
 
     def __init__(self, block_bit_size=64, key_bit_size=128, number_of_rounds=None,
                  right_shift_amount=14, left_shift_amount=9):

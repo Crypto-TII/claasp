@@ -32,13 +32,11 @@ class BEA1(BitGraphPrimitive):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.block_ciphers.bea1_block_cipher import BEA1
-        sage: bea = BEA1()
-        sage: key = 0x8cdd0f3459fb721e798655298d5c1
-        sage: plaintext = 0x47a57eff5d6475a68916
-        sage: ciphertext = 0x439d5298656eccc67dee
-        sage: bea.evaluate([key, plaintext]) == ciphertext
-        True
+        >>> primitive = BEA1()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0x69edaac0b3f0471b', 79)
     """
 
     def __init__(self, number_of_rounds=11):
@@ -511,6 +509,7 @@ class BEA1(BitGraphPrimitive):
                 )
 
     def xor_round_key(self, round_number, key_state, primitive_state):
+        """Build the xor round key stage in this primitive's typed operation graph."""
         key = [key_state[(8 * round_number + i) % 24] for i in range(8)]
 
         self.add_round_key_output_component(

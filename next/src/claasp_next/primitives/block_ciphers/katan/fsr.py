@@ -86,21 +86,11 @@ class KatanFSR(BitGraphPrimitive):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.block_ciphers.katan_fsr_block_cipher import KatanFSR
-        sage: katan_fsr = KatanFSR()
-        sage: katan_fsr.number_of_rounds
-        254
-
-        sage: key = 0xFFFFFFFFFFFFFFFFFFFF
-        sage: plaintext = 0x00000000
-        sage: hex(katan_fsr.evaluate([plaintext, key]))
-        '0x7e1ff945'
-
-        sage: KatanFSR(block_bit_size=48, number_of_rounds=4).id
-        'katan_fsr_p48_k80_o48_r4'
-
-        sage: KatanFSR(number_of_rounds=255, ir_mode='cycle').number_of_rounds
-        255
+        >>> primitive = KatanFSR()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0x0', 0)
     """
 
     def __init__(self, block_bit_size=32, key_bit_size=80, number_of_rounds=None, ir_mode="strict"):

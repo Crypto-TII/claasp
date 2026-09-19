@@ -39,7 +39,16 @@ LINEAR_LAYER = (
 
 
 class Fancy(Primitive):
-    """A deliberately heterogeneous 24-bit primitive used for framework tests."""
+    """A deliberately heterogeneous 24-bit primitive used for framework tests.
+
+    EXAMPLES::
+
+        >>> primitive = Fancy()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0xca3417', 24)
+    """
 
     def __init__(self, block_bit_size: int = 24, key_bit_size: int = 24, number_of_rounds: int = 20) -> None:
         if (block_bit_size, key_bit_size) != (24, 24):

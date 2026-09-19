@@ -56,16 +56,11 @@ class Rectangle(BitGraphPrimitive):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.block_ciphers.rectangle_block_cipher import Rectangle
-        sage: rectangle = Rectangle()
-        sage: rectangle.number_of_rounds
-        25
-
-        sage: rectangle.component_from(0, 0).id
-        'xor_0_0'
-
-        sage: Rectangle(number_of_rounds=2).number_of_rounds
-        2
+        >>> primitive = Rectangle()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0x874e8b1e3542d96', 60)
     """
 
     def __init__(self, key_bit_size=80, number_of_rounds=25):
@@ -110,6 +105,7 @@ class Rectangle(BitGraphPrimitive):
         self.add_primitive_output_component(data[0], data[1], self.block_bit_size)
 
     def key_row_positions(self, i, number_of_bits=None):
+        """Build the key row positions stage in this primitive's typed operation graph."""
         number_of_bits = self.key_row_bit_size if number_of_bits is None else number_of_bits
         end = (self.number_of_key_rows - i) * self.key_row_bit_size
         return list(range(end - number_of_bits, end))
@@ -122,6 +118,7 @@ class Rectangle(BitGraphPrimitive):
         return [new_data_id], [list(range(self.block_bit_size))]
 
     def sub_column(self, data):
+        """Build the sub column stage in this primitive's typed operation graph."""
         sbox_outputs = [""] * 16
 
         for j in range(16):
@@ -130,6 +127,7 @@ class Rectangle(BitGraphPrimitive):
         return sbox_outputs
 
     def shift_row(self, sbox_outputs):
+        """Build the shift row stage in this primitive's typed operation graph."""
         row_ids = [sbox_outputs[j] for j in reversed(range(16))]
         data_ids = []
         data_bit_positions = []
@@ -147,6 +145,7 @@ class Rectangle(BitGraphPrimitive):
         return data_ids, data_bit_positions
 
     def update_key_register(self, key, r):
+        """Build the update key register transition in this primitive's typed operation graph."""
         w = self.key_row_bit_size
         m = self.number_of_key_sboxes
 

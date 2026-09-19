@@ -1,4 +1,4 @@
-"""Keyed block-primitive graphs."""
+"""Keyed block-cipher primitive graph implementations."""
 
 from claasp_next.primitives.block_ciphers.aes import AES128, AES, CustomAES
 from claasp_next.primitives.block_ciphers.aradi import Aradi

@@ -18,6 +18,15 @@ class IDEAMultiply(Primitive):
     >>> three_way = IDEAMultiply(word_bit_size=16, number_of_inputs=3)
     >>> three_way.evaluate(2, 3, 4)
     24
+
+
+    EXAMPLES::
+
+        >>> primitive = IDEAMultiply()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0x1', 1)
     """
 
     def __init__(self, word_bit_size: int = 16, number_of_inputs: int = 2) -> None:

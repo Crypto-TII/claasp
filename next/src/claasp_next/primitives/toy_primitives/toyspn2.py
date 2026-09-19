@@ -6,7 +6,16 @@ from ._bit_graph import bit_type, rotate_bits, sbox_layer, xor_bits
 
 
 class ToySPN2(Primitive):
-    """A configurable SPN whose complete key rotates before every round."""
+    """A configurable SPN whose complete key rotates before every round.
+
+    EXAMPLES::
+
+        >>> primitive = ToySPN2()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0x0', 0)
+    """
 
     def __init__(
         self,

@@ -19,11 +19,20 @@ class Salsa(Primitive):
     significant) through word 15 (least significant), matching the retained
     CLAASP vectors.
 
-    Examples:
+    EXAMPLES::
         >>> from claasp_next.primitives.permutations.salsa import Salsa
         >>> state = 1 << (15 * 32)
         >>> hex(Salsa(number_of_rounds=2).evaluate(state))
         '0x8186a22d0040a2848247921006929051080000900240220000004000008000000001020020400000080081040000000020500000a00000400008180a612a8020'
+
+
+    EXAMPLES::
+
+        >>> primitive = Salsa()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0x0', 0)
     """
 
     def __init__(

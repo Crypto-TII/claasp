@@ -58,7 +58,19 @@ class PoseidonParameterSet:
 
 @lru_cache(maxsize=1)
 def poseidon_bn254_width3() -> PoseidonParameterSet:
-    """Load the bundled BN254 scalar-field, width-3 Poseidon parameters."""
+    """Load the bundled BN254 scalar-field, width-3 Poseidon parameters.
+
+    The immutable result records the exact upstream commit and fixed reference
+    vector used to validate the bundled constants.
+
+    EXAMPLES::
+
+        >>> parameters = poseidon_bn254_width3()
+        >>> (parameters.name, parameters.width, parameters.full_rounds)
+        ('poseidon_bn254_width3', 3, 8)
+        >>> parameters is poseidon_bn254_width3()
+        True
+    """
 
     resource = files(__package__).joinpath("data/poseidon_bn254_width3.json")
     payload = json.loads(resource.read_text(encoding="utf-8"))

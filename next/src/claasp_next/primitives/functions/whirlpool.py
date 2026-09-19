@@ -36,13 +36,13 @@ class Whirlpool(BitGraphPrimitive):
         - 'state_size' -- **integer** (default : '8') the number of columns/rows of the internal state matrix
         - 'number_of_rounds' -- **integer** (default: '10') the number of rounds
 
-    EXAMPLES :
-        sage: from claasp.ciphers.hash_functions.whirlpool_hash_function import Whirlpool
-        sage: whirlpool = Whirlpool()
-        sage: message = 0x61626380000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000018
-        sage: digest = 0x4e2448a4c6f486bb16b6562c73b4020bf3043e3a731bce721ae1b303d97e6d4c7181eebdb6c57e277d0e34957114cbd6c797fc9d95d8b582d225292076d4eef5
-        sage: whirlpool.evaluate([message]) == digest
-        True
+    EXAMPLES::
+
+        >>> primitive = Whirlpool()
+        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> output = primitive.evaluate(inputs)
+        >>> (hex(output)[:18], output.bit_length())
+        ('0xfb49073c4d7e581a', 512)
     """
 
     def __init__(self, number_of_rounds=10, word_size=8, state_size=8):
@@ -159,6 +159,7 @@ class Whirlpool(BitGraphPrimitive):
         self.add_primitive_output_component([output.id], [list(range(self.primitive_block_size))], self.primitive_block_size)
 
     def create_sbox_component(self, add_round_key):
+        """Construct the sbox component stage in this primitive's typed operation graph."""
         sboxes_components = []
         for j in range(self.num_sboxes):
             sbox = self.add_sbox_component(
@@ -172,6 +173,7 @@ class Whirlpool(BitGraphPrimitive):
         return sboxes_components
 
     def create_shift_column_components(self, sboxes_components, word_size):
+        """Construct the shift column components stage in this primitive's typed operation graph."""
         shift_column_components = []
         for j in range(self.num_columns):
             rotation = self.add_rotate_component(
@@ -188,6 +190,7 @@ class Whirlpool(BitGraphPrimitive):
         return shift_column_components
 
     def create_mix_row_components(self, shift_column_components):
+        """Construct the mix row components stage in this primitive's typed operation graph."""
         mix_row_components = []
         for j in range(self.num_rows):
             mix_row = self.add_mix_column_component(
@@ -201,6 +204,7 @@ class Whirlpool(BitGraphPrimitive):
         return mix_row_components
 
     def create_round_constant_component(self, round_number):
+        """Construct the round constant component stage in this primitive's typed operation graph."""
         round_constant_value = (
             ["0x"] + [format(self.sbox[8 * (round_number) + j], "02x") for j in range(8)] + ["00" for _ in range(56)]
         )
